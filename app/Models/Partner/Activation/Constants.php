@@ -33,6 +33,9 @@ class Constants
     const PARTNER_MUTEX_LOCK_TIMEOUT = '60';
     const PARTNER_MUTEX_RETRY_COUNT  = '2';
 
+    const TRIGGER_WORKFLOW = 'trigger_workflow';
+    const PARTNER_KYC_FLOW = 'partner_kyc_flow';
+
     /*
      * Allowed next activation statuses mapping
      */

@@ -171,6 +171,10 @@ class Core extends Base\Core
                 'merchant_id' => $merchant->getId(),
             ]);
 
+        $partnerKycFlow = $input[Activation\Constants::PARTNER_KYC_FLOW] ?? false;
+
+        unset($input[Activation\Constants::PARTNER_KYC_FLOW]);
+
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
         $oldMerchantDetails = clone $merchantDetails;
@@ -178,6 +182,8 @@ class Core extends Base\Core
         $this->convertStatesToStatesCode($input);
 
         $merchantDetails->getValidator()->validateIsNotLocked($merchant);
+
+        $merchantDetails->getValidator()->validatePartnerActivationStatus($merchant, $partnerKycFlow);
 
         $merchantDetails->getValidator()->blockInstantActivationCriticalFields($input);
 
@@ -262,7 +268,7 @@ class Core extends Base\Core
                         // blacklisted merchant should not be allowed to submit l2 form
                         $merchantDetails->getValidator()->validateFullActivationForm($merchant);
 
-                        $response = $this->submitActivationForm($merchant, $originProduct);
+                        $response = $this->submitActivationForm($merchant, $input, $originProduct);
 
                         // If activation status changes to under_review and previous activation status is
                         // Needs Clarification, then it means merchant has responded to Needs Clarification.
@@ -547,7 +553,7 @@ class Core extends Base\Core
         }
     }
 
-    public function submitActivationForm(Merchant\Entity $merchant, string $originProduct = Product::PRIMARY)
+    public function submitActivationForm(Merchant\Entity $merchant, array $input = null, string $originProduct = Product::PRIMARY)
     {
         $this->repo->assertTransactionActive();
 
@@ -614,6 +620,8 @@ class Core extends Base\Core
         $this->fireActivationTrigger($merchantDetails, $merchant);
 
         $this->repo->saveOrFail($merchantDetails);
+
+        $this->submitPartnerActivationFormIfApplicable($merchant, $input);
 
         return $response;
     }
@@ -846,6 +854,8 @@ class Core extends Base\Core
         }
 
         $merchantDetails->getValidator()->performInstantActivationValidations($input);
+
+        $merchantDetails->getValidator()->validatePartnerActivationStatus($merchant);
 
         unset($input[Entity::ACTIVATION_FORM_MILESTONE]);
 
@@ -1985,6 +1995,8 @@ class Core extends Base\Core
 
         $newMerchantDetails = clone $merchantDetails;
 
+        $partnerActivationCore = (new Activation\Core());
+
         $this->repo->transactionOnLiveAndTest(function() use ($input, $merchant) {
             switch ($input[Entity::ACTIVATION_STATUS])
             {
@@ -2178,9 +2190,11 @@ class Core extends Base\Core
         ];
         (new OnboardingNotificationHandler($args))->send();
 
-        (new Activation\Core())->autoActivatePartnerIfApplicable($merchant, $merchantDetails);
-
         (new MerchantProduct\Core())->syncMerchantStatusToMerchantProducts($merchantDetails);
+
+        $partnerActivationCore->autoActivatePartnerIfApplicable($merchant, $merchantDetails, $maker);
+
+        $partnerActivationCore->markPartnerFormAsNCIfApplicable($merchant, $merchantDetails, $maker);
 
         return $merchantDetails;
     }
@@ -5096,6 +5110,59 @@ class Core extends Base\Core
         }
 
         throw new BadRequestException(ErrorCode::BAD_REQUEST_ENCRYPTED_COMMENT_NOT_FOUND);
+    }
+
+    /**
+     * Submit partner activation form while submitting merchant activation form if applicable
+     * Case 1: Partner activation status is -> [under review, activated, rejected] or merchant is not partner
+     *       - Do not submit partner activation form
+     * Case 2: Partner activation is under needs clarification
+     *       - Get KYC clarification reasons for common fields and update partner KYC clarification reasons and then
+     *         submit the partner activation form
+     * Case 3: Partner activation form is not submitted (null)
+     *       - Only submit the partner activation form
+     * @param Merchant\Entity $merchant
+     * @param array|null $input
+     *
+     * @throws \Throwable
+     */
+    private function submitPartnerActivationFormIfApplicable(Merchant\Entity $merchant, ?array $input)
+    {
+        $partnerCore = (new PartnerCore());
+
+        $partnerActivation = $partnerCore->getPartnerActivation($merchant);
+
+        $partnerActivationStatus = empty($partnerActivation) ? null : $partnerActivation->getActivationStatus();
+
+        $excludedActivationStatus = [Status::ACTIVATED, Status::UNDER_REVIEW, Status::REJECTED];
+
+        if (empty($partnerActivation) or (in_array($partnerActivationStatus, $excludedActivationStatus, true) === true))
+        {
+            return;
+        }
+
+        if ($partnerActivationStatus === Status::NEEDS_CLARIFICATION)
+        {
+            $merchantDetails = $merchant->merchantDetail;
+
+            $merchantDetails->getValidator()->validatePartnerActivationStatus($merchant);
+
+            $input[DetailEntity::KYC_CLARIFICATION_REASONS] = $partnerCore->fetchCommonFieldsFromMerchantKycClarificationReasons(
+                                                                            $input, $merchant);
+        }
+        else
+        {
+            unset($input[DetailEntity::KYC_CLARIFICATION_REASONS]);
+        }
+
+        $kycClarificationReasons = $partnerCore->getUpdatedPartnerKycClarificationReasons($input, $merchant->getId());
+
+        if (empty($kycClarificationReasons) === false)
+        {
+            $partnerActivation->setKycClarificationReasons($kycClarificationReasons);
+        }
+
+        $partnerCore->submitPartnerActivationForm($merchant, $merchant->merchantDetail, $partnerActivation, Constants::MERCHANT);
     }
 
     public function postAddAdditionalWebsiteSelfServe(Entity $merchantDetails, string $urlType, array $input)

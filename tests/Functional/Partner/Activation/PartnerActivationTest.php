@@ -224,6 +224,8 @@ class PartnerActivationTest extends OAuthTestCase
 
         $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
         $testData = $this->testData['saveAllPartnerActivationDetails'];
+        // clearing content merc
+        $testData['request']['content'] = [];
         $response = $this->runRequestResponseFlow($testData);
         $this->assertTrue($response['partner_activation']['submitted']);
 
@@ -235,7 +237,6 @@ class PartnerActivationTest extends OAuthTestCase
         $workflowAction = $this->getDbEntity('workflow_action');
         $this->assertEquals('partner_activation', $workflowAction['entity_name']);
         $this->assertEquals(self::MERCHANT_ID, $workflowAction['entity_id']);
-
     }
 
     public function testPartnerRejected()

@@ -147,16 +147,18 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'        => 'BAD_REQUEST_ERROR',
-                    'description' => 'Merchant activation form has been locked for editing by admin.',
+                'partner_activation' => [
+                    'merchant_id'       => '1cXSLlUU8V9sXl',
+                    'hold_funds'        => false,
+                    'submitted'         => true,
+                    'activation_status' => 'under_review',
+                    'verification'      => [
+                        'activation_progress' => 100,
+                        'status'              => 'pending',
+                    ],
+                    'can_submit'        => true
                 ]
             ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED,
         ],
     ],
 

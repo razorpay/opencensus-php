@@ -333,22 +333,27 @@ class Core extends Detail\Core
 
     /**
      * This function is used to lock and submit the partner activation form and update the partner with relevant activation status
-     * @param Merchant\Entity   $merchant
-     * @param Entity            $merchantDetails
+     * @param Merchant\Entity $merchant
+     * @param Entity $merchantDetails
      * @param Activation\Entity $partnerActivation
+     * @param string $source
      *
      * @return array
      * @throws \Throwable
      */
-    public function submitPartnerActivationForm(Merchant\Entity $merchant, Entity $merchantDetails, Activation\Entity $partnerActivation)
+    public function submitPartnerActivationForm(Merchant\Entity $merchant, Entity $merchantDetails,
+                                                Activation\Entity $partnerActivation, string $source = Constants::PARTNER): array
     {
         $activationStatus = $this->getApplicablePartnerActivationStatus($merchantDetails);
 
         $this->markPartnerKycSubmittedAndLock($partnerActivation);
 
-        $this->attemptPennyTesting($merchantDetails, $merchant);
+        if ($source === Constants::PARTNER)
+        {
+            $this->attemptPennyTesting($merchantDetails, $merchant);
 
-        $this->triggerValidationRequests($merchant, $merchantDetails);
+            $this->triggerValidationRequests($merchant, $merchantDetails);
+        }
 
         $input = [Activation\Entity::ACTIVATION_STATUS => $activationStatus];
 
@@ -504,6 +509,7 @@ class Core extends Detail\Core
         $partnerActivation         = $this->repo->partner_activation->findOrFailPublic($merchantId);
         $existingKycClarifications = $partnerActivation->getKycClarificationReasons() ?? [];
         $existingReasons           = $existingKycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
+        $existingAdditionalDetails = $existingKycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
 
         $newKycClarifications      = $input[Entity::KYC_CLARIFICATION_REASONS] ?? [];
         $newAdditionalDetails      = $newKycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
@@ -517,16 +523,77 @@ class Core extends Detail\Core
 
         $statusChangeLogs = $partnerActivation->getActivationStatusChangeLog();
 
-        $needsClarificationCount = $this->getStatusChangeCount($statusChangeLogs, Activation\Constants::UNDER_REVIEW);
+        $ncCount = $this->getStatusChangeCount($statusChangeLogs, Activation\Constants::UNDER_REVIEW);
 
-        $clarificationReasons = $this->getClarificationReasons($existingReasons, $newReasons, $needsClarificationCount, $source);
+        $clarificationReasons = $this->getClarificationReasons($existingReasons, $newReasons, $ncCount, $source);
+        $additionalDetails = $this->getClarificationReasons($existingAdditionalDetails, $newAdditionalDetails, $ncCount, $source);
 
         return [
             Entity::CLARIFICATION_REASONS => $clarificationReasons,
-            Entity::ADDITIONAL_DETAILS    => $newAdditionalDetails,
-            Merchant\Constants::NC_COUNT  => $needsClarificationCount
+            Entity::ADDITIONAL_DETAILS    => $additionalDetails,
+            Merchant\Constants::NC_COUNT  => $ncCount
         ];
+    }
 
+    public function fetchCommonFieldsFromMerchantKycClarificationReasons(array $input, Merchant\Entity $merchant): ?array
+    {
+        $kycClarifications      = $input[Entity::KYC_CLARIFICATION_REASONS] ?? [];
+        $clarificationReasons   = $kycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
+
+        if (empty($clarificationReasons) === true)
+        {
+            return null;
+        }
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $commonFields = Detail\Constants::COMMON_FIELDS_WITH_PARTNER_ACTIVATION[Constants::DEFAULT];
+
+        if (isset(Detail\Constants::COMMON_FIELDS_WITH_PARTNER_ACTIVATION[$merchantDetail->getBusinessType()]) === true)
+        {
+            $commonFields = Detail\Constants::COMMON_FIELDS_WITH_PARTNER_ACTIVATION[$merchantDetail->getBusinessType()];
+        }
+
+        $partnerClarificationReasons = [];
+
+        foreach ($clarificationReasons as $key => $values)
+        {
+            if (in_array($key, $commonFields, true) === true)
+            {
+                $commonFieldValues = $this->fetchValuesFromCommonFieldBasedOnSender($values);
+
+                if (empty($commonFieldValues) === false)
+                {
+                    $partnerClarificationReasons[$key] = $commonFieldValues;
+                }
+            }
+        }
+
+        return empty($partnerClarificationReasons) ? null : [Entity::CLARIFICATION_REASONS => $partnerClarificationReasons];
+    }
+
+    private function fetchValuesFromCommonFieldBasedOnSender(array $values): ?array
+    {
+        if ($this->getSender(null) === E::MERCHANT)
+        {
+            return $values;
+        }
+        else if ($this->getSender(null) === E::ADMIN)
+        {
+            $currentValues = [];
+
+            foreach ($values as $value)
+            {
+                if ((isset($value[Constants::IS_CURRENT]) === true) and ($value[Constants::IS_CURRENT] === true))
+                {
+                    array_push($currentValues, $value);
+                }
+            }
+
+            return $currentValues;
+        }
+
+        return null;
     }
 
     private function getPartnerDetails(array $partnerVerification, Activation\Entity $partnerActivation, array $rejectionReasons)
@@ -584,8 +651,8 @@ class Core extends Detail\Core
             $conditions = AutoKyc\Constants::PARTNER_KYC_VERIFICATION_CONDITIONS[$businessType];
         }
 
-        return (new Parser)->parse($conditions, function ($key, $condition) use ($merchantDetails){
-
+        return (new Parser)->parse($conditions, function ($key, $condition) use ($merchantDetails)
+        {
             $entity = $condition[AutoKyc\Constants::ENTITY];
             $in = $condition[AutoKyc\Constants::IN];
 

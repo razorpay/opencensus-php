@@ -1345,6 +1345,20 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validatePartnerActivationStatus(Merchant\Entity $merchant, bool $partnerKycFlow = false)
+    {
+        $partnerActivation = (new PartnerCore())->getPartnerActivation($merchant);
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        if (!empty($partnerActivation) and ($partnerActivation->getActivationStatus() === Status::NEEDS_CLARIFICATION) and
+            empty($merchantDetail->getActivationStatus()) and ($partnerKycFlow === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PARTNER_FORM_UNDER_NEEDS_CLARIFICATION);
+        }
+    }
+
     public function validateAddAdditionalWebsiteConditions(Entity $merchantDetails)
     {
         $merchant = $merchantDetails->merchant;

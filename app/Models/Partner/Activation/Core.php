@@ -17,7 +17,6 @@ use RZP\Models\Workflow\Action\Core as ActionCore;
 use RZP\Mail\Merchant\PartnerActivationRejection as RejectionMail;
 use RZP\Mail\Merchant\PartnerActivationConfirmation as ActivationMail;
 use RZP\Mail\Merchant\PartnerNeedsClarificationEmail as ClarificationEmail;
-use RZP\Models\Merchant\Detail\NeedsClarification\UpdateContextRequirements as Requirements;
 
 class Core extends Base\Core
 {
@@ -176,23 +175,32 @@ class Core extends Base\Core
     }
 
     /**
-     * This function auto activates a partner merchant when merchant is getting activated
+     * This function auto activates a partner merchant when merchant is getting activated by admin
      * Case 1: Partner activation entity has not been created (old partners or new partners who got created when merchant is not activated)
      *      - Create partner activation and auto activate partner activation.
      *      - This would become an invalid case after back fill job is completed
+     * Case 2: Partner activation is under review
+     *       - Auto activate partner and do not create workflow for the same. Send partner activation related events
      *
      * @param Merchant\Entity $merchant
-     * @param Detail\Entity   $merchantDetails
+     * @param Detail\Entity $merchantDetails
+     * @param Base\PublicEntity $maker
+     *
+     * @throws \Throwable
      */
-    public function autoActivatePartnerIfApplicable(Merchant\Entity $merchant, Detail\Entity $merchantDetails)
+    public function autoActivatePartnerIfApplicable(Merchant\Entity $merchant, Detail\Entity $merchantDetails,
+                                                    Base\PublicEntity $maker)
     {
         try
         {
-            if (($merchantDetails->getActivationStatus() === Constants::ACTIVATED) and ($merchant->isPartner() === true))
+            if (($merchantDetails->getActivationStatus() === Constants::ACTIVATED) and ($merchant->isPartner() === true)
+                and ($maker->getEntityName() === Entity::ADMIN))
             {
                 $partnerActivation = $this->createOrFetchPartnerActivationForMerchant($merchant);
 
-                if ($partnerActivation->getActivationStatus() !== Constants::ACTIVATED)
+                $partnerActivationStatus = $partnerActivation->getActivationStatus();
+
+                if (empty($partnerActivationStatus) === true)
                 {
                     $commonFields = $this->populateCommonActivationFields($merchant, $merchantDetails);
 
@@ -204,6 +212,15 @@ class Core extends Base\Core
                         'merchant_id' => $merchant->getId()
                     ]);
                 }
+                else if ($partnerActivationStatus === Constants::UNDER_REVIEW)
+                {
+                    $activationStatusData = [
+                        Detail\Entity::ACTIVATION_STATUS => Constants::ACTIVATED,
+                        Constants::TRIGGER_WORKFLOW      => false,
+                    ];
+
+                    $this->updatePartnerActivationStatus($merchant, $partnerActivation, $maker, $activationStatusData);
+                }
             }
         }
         catch (\Exception $e)
@@ -213,6 +230,68 @@ class Core extends Base\Core
             ]);
 
             $this->trace->count(Metric::PARTNER_ACTIVATION_AUTO_ACTIVATE_FAILURE_TOTAL);
+        }
+    }
+
+    /**
+     * This function marks partner form as NC which was under review if merchant form is marked as NC by the admin
+     *
+     * @param Merchant\Entity $merchant
+     * @param Detail\Entity $merchantDetails
+     * @param Base\PublicEntity $maker
+     *
+     * @throws \Throwable
+     */
+    public function markPartnerFormAsNCIfApplicable(Merchant\Entity $merchant, Detail\Entity $merchantDetails, Base\PublicEntity $maker)
+    {
+        try
+        {
+            if (($merchantDetails->getActivationStatus() === Constants::NEEDS_CLARIFICATION) and ($merchant->isPartner() === true)
+                and ($maker->getEntityName() === Entity::ADMIN))
+            {
+                $partnerActivation = $this->createOrFetchPartnerActivationForMerchant($merchant);
+
+                if ($partnerActivation->getActivationStatus() === Constants::UNDER_REVIEW)
+                {
+                    $partnerCore = (new \RZP\Models\Partner\Core);
+
+                    $kycClarificationReasonsData = [
+                        Detail\Entity::KYC_CLARIFICATION_REASONS => $merchantDetails->getKycClarificationReasons()
+                    ];
+
+                    $partnerKycClarificationReasons = $partnerCore->
+                    fetchCommonFieldsFromMerchantKycClarificationReasons($kycClarificationReasonsData, $merchant);
+
+                    if (empty($partnerKycClarificationReasons) === true)
+                    {
+                        return;
+                    }
+
+                    $kycClarificationReasonsData[Detail\Entity::KYC_CLARIFICATION_REASONS] = $partnerKycClarificationReasons;
+
+                    $partnerKycClarificationReasons = $partnerCore->
+                    getUpdatedPartnerKycClarificationReasons($kycClarificationReasonsData, $merchant->getId());
+
+                    $partnerActivation->setKycClarificationReasons($partnerKycClarificationReasons);
+
+                    $activationStatusData = [
+                        Detail\Entity::ACTIVATION_STATUS => Constants::NEEDS_CLARIFICATION,
+                        Constants::TRIGGER_WORKFLOW      => false
+                    ];
+
+                    $this->updatePartnerActivationStatus($merchant, $partnerActivation, $maker, $activationStatusData);
+
+                    $this->trace->info(TraceCode::PARTNER_AUTO_NC_FROM_MERCHANT_NC_SUCCESS, [
+                        'merchant_id' => $merchant->getId()
+                    ]);
+                }
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(TraceCode::PARTNER_AUTO_NC_FROM_MERCHANT_NC_FAILED, [
+                'merchant_id' => $merchant->getId()
+            ]);
         }
     }
 
@@ -263,6 +342,15 @@ class Core extends Base\Core
      */
     public function updatePartnerActivationStatus(Merchant\Entity $merchant, Entity $partnerActivation, Base\PublicEntity $maker, array $input)
     {
+        $triggerWorkflow = true;
+
+        if (isset($input[Constants::TRIGGER_WORKFLOW]) === true)
+        {
+            $triggerWorkflow = $input[Constants::TRIGGER_WORKFLOW];
+
+            unset($input[Constants::TRIGGER_WORKFLOW]);
+        }
+
         $partnerActivation->getValidator()->validateInput('activationStatus', $input);
 
         $currentActivationStatus = $partnerActivation->getActivationStatus();
@@ -318,7 +406,7 @@ class Core extends Base\Core
             $partnerActivation,
             $input,
             $maker, $merchant, $rejectionReasons,
-            $oldPartnerActivation, $newPartnerActivation
+            $oldPartnerActivation, $newPartnerActivation, $triggerWorkflow
         ) {
 
             $detailCore = (new Detail\Core());
@@ -341,7 +429,7 @@ class Core extends Base\Core
                     ->setOriginal($original)
                     ->setDirty($dirty);
 
-                $this->activate($partnerActivation, $merchant);
+                $this->activate($partnerActivation, $merchant, $triggerWorkflow);
             }
 
             if ($input[Entity::ACTIVATION_STATUS] === Constants::REJECTED)
@@ -389,7 +477,7 @@ class Core extends Base\Core
      * @return Entity
      * @throws \Throwable
      */
-    protected function activate(Entity $partnerActivation, Merchant\Entity $merchant): Entity
+    protected function activate(Entity $partnerActivation, Merchant\Entity $merchant, bool $triggerWorkflow = true): Entity
     {
         $merchantDetail = $merchant->merchantDetail;
 
@@ -404,10 +492,12 @@ class Core extends Base\Core
 
         $partnerActivation->setActivatedAt(time());
 
-        // Triggering workflow for the activation_status change in partner_activation entity
-        $this->app['workflow']
-            ->handle();
-
+        if ($triggerWorkflow === true)
+        {
+            // Triggering workflow for the activation_status change in partner_activation entity
+            $this->app['workflow']
+                ->handle();
+        }
 
         $merchantCore = new Merchant\Core;
 

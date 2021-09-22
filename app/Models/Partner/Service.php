@@ -50,7 +50,12 @@ class Service extends Base\Service
         unset($merchantInput[Detail\Entity::SUBMIT]);
         unset($merchantInput[Detail\Entity::KYC_CLARIFICATION_REASONS]);
 
-        (new Detail\Core())->saveMerchantDetails($merchantInput, $this->merchant);
+        if (empty($merchantInput) === false)
+        {
+            $merchantInput[Activation\Constants::PARTNER_KYC_FLOW] = true;
+
+            (new Detail\Core())->saveMerchantDetails($merchantInput, $this->merchant);
+        }
 
         return $this->core->processPartnerActivation($input, $merchantDetail, $this->merchant);
     }

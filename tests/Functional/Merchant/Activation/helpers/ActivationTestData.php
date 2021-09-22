@@ -2581,6 +2581,60 @@ return [
         ],
     ],
 
+    'testGetActivationDetailsWithPartnerKycLockedForProprietorship' => [
+        'request'  => [
+            'url'     => '/merchant/activation',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'lock_common_fields' => [
+                    'contact_name',
+                    'contact_mobile',
+                    'contact_email',
+                    'business_type',
+                    'bank_account_name',
+                    'bank_account_number',
+                    'bank_branch_ifsc',
+                    'promoter_pan',
+                    'promoter_pan_name',
+                    'gstin'
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetActivationDetailsWithPartnerKycLockedForPvtLtd' => [
+        'request'  => [
+            'url'     => '/merchant/activation',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'lock_common_fields' => [
+                    'contact_name',
+                    'contact_mobile',
+                    'contact_email',
+                    'business_type',
+                    'bank_account_name',
+                    'bank_account_number',
+                    'bank_branch_ifsc',
+                    'company_pan',
+                    'business_name',
+                    'gstin'
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testReleaseFundsWithoutBankAccount' => [
         'request'   => [
             'content' => [
@@ -3081,6 +3135,48 @@ return [
             ],
         ],
         'status_code' => 200,
+    ],
+
+    'testAutoSubmitPartnerKycFromMerchantKycForm' => [
+        'request'  => [
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+            'content' => [
+                'contact_name'                => 'test',
+                'contact_mobile'              => '9123456789',
+                'business_type'               => '1',
+                'business_name'               => 'Acme',
+                'business_dba'                => 'Acme',
+                'bank_account_name'           => 'test',
+                'bank_account_number'         => '123456789012345',
+                'bank_branch_ifsc'            => 'ICIC0000001',
+                'business_operation_address'  => 'Test address',
+                'business_operation_state'    => 'Karnataka',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560030',
+                'business_registered_address' => 'Test address',
+                'business_registered_state'   => 'Karnataka',
+                'business_registered_city'    => 'Bengaluru',
+                'business_registered_pin'     => '560030',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'promoter_pan'         => 'ABCPE0000Z',
+                'promoter_pan_name'    => 'John Doe',
+                'gstin'                => null,
+                'p_gstin'              => null,
+                'business_category'    => 'ecommerce',
+                'business_subcategory' => 'fashion_and_lifestyle',
+                'archived'             => 0,
+                'activation_status'    => 'instantly_activated',
+                'verification'         => [
+                    'status' => 'pending',
+                ],
+                'can_submit'           => true,
+                'activated'            => 1,
+            ],
+        ],
     ],
 
     'testBankDetailsVerificationStatusForUnRegisteredBusiness' => [

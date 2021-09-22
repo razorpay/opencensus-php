@@ -212,6 +212,54 @@ class ActivationTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function  testGetActivationDetailsWithPartnerKycLockedForProprietorship()
+    {
+        $merchant = $this->fixtures->create('merchant', ['partner_type' => MerchantConstants::AGGREGATOR]);
+
+        $user = $this->fixtures->create('user');
+
+        $merchantId = $merchant['id'];
+
+        $userID = $user['id'];
+
+        $this->createMerchantUserMapping($userID, $merchantId, 'owner');
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+            'business_type' => 1
+        ]);
+
+        $this->fixtures->create('partner_activation', ['merchant_id' => $merchantId,'locked' => true]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $userID);
+
+        $this->startTest();
+    }
+
+    public function  testGetActivationDetailsWithPartnerKycLockedForPvtLtd()
+    {
+        $merchant = $this->fixtures->create('merchant', ['partner_type' => MerchantConstants::AGGREGATOR]);
+
+        $user = $this->fixtures->create('user');
+
+        $merchantId = $merchant['id'];
+
+        $userID = $user['id'];
+
+        $this->createMerchantUserMapping($userID, $merchantId, 'owner');
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+            'business_type' => 4
+        ]);
+
+        $this->fixtures->create('partner_activation', ['merchant_id' => $merchantId,'locked' => true]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $userID);
+
+        $this->startTest();
+    }
+
     public function testPostInstantActivation()
     {
         $merchantId = '1cXSLlUU8V9sXl';
@@ -1571,6 +1619,25 @@ class ActivationTest extends OAuthTestCase
         $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
 
         $this->createDocumentEntities($merchantId, ['address_proof_url', 'business_pan_url', 'business_proof_url', 'promoter_address_url']);
+    }
+
+    public function testAutoSubmitPartnerKycFromMerchantKycForm()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $this->fixtures->merchant->editEntity('merchant', $merchantId, ['partner_type' => MerchantConstants::AGGREGATOR]);
+
+        $this->startTest();
+
+        $testData = $this->testData['submitKyc'];
+
+        $this->startTest($testData);
+
+        $partnerActivation = $this->getDbEntityById('partner_activation', $merchantId);
+
+        $this->assertEquals($partnerActivation->getActivationStatus(), 'under_review');
     }
 
     public function testKycSubmissionForInstantlyActivatedMerchantForRazorpayOrg()

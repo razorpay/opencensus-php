@@ -86,7 +86,16 @@ class Service extends Base\Service
     {
         $merchantDetails = $this->core->getMerchantDetails($this->merchant);
 
-        return $this->core->createResponse($merchantDetails);
+        $response = $this->core->createResponse($merchantDetails);
+
+        $partnerActivation = (new Partner\Core())->getPartnerActivation($this->merchant);
+
+        if (!empty($partnerActivation))
+        {
+            $response[DetailConstants::LOCK_COMMON_FIELDS] = $this->core->fetchCommonFieldsToBeLocked($partnerActivation);
+        }
+
+        return $response;
     }
 
     public function getMerchantMethodsCore()

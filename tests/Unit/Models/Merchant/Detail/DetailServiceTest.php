@@ -114,6 +114,8 @@ class DetailServiceTest extends TestCase
 
         $this->merchantDetailEntityMock->shouldReceive('getMerchantId')->andReturn('1cXSLlUU8V9sXl');
 
+        $this->merchantDetailValidator->shouldReceive('validatePartnerActivationStatus')->andReturn();
+
         $this->getFindOrFailPublic();
 
         $this->createMerchantTestDependencyMocks();
@@ -142,6 +144,8 @@ class DetailServiceTest extends TestCase
         $this->repoMock->shouldReceive('driver')->with('merchant_business_detail')->andReturn($this->merchantBusinessDetailEntityMock);
 
         $this->merchantDetailEntityMock->shouldReceive('getMerchantId')->andReturn('1cXSLlUU8V9sXl');
+
+        $this->merchantDetailValidator->shouldReceive('validatePartnerActivationStatus')->andReturn();
 
         $this->getFindOrFailPublic();
 
@@ -188,6 +192,8 @@ class DetailServiceTest extends TestCase
         $this->repoMock->shouldReceive('transactionOnLiveAndTest')->andReturn($response);
 
         $this->merchantEntityMock->shouldReceive('toArrayEvent')->andReturn([]);
+
+        $this->merchantDetailValidator->shouldReceive('validatePartnerActivationStatus')->andReturn();
 
         $this->merchantDetailEntityMock->shouldReceive('getPoiVerificationStatus')->andReturn();
 
