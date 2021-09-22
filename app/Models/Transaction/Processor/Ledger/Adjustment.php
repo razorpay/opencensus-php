@@ -58,6 +58,7 @@ class Adjustment extends Base
                 self::TRANSACTOR_ID      => $adjustment->getPublicId(),
                 self::NOTES              => json_encode($notes),
                 self::TRANSACTOR_TYPE    => $transactorType,
+                self::TRANSACTOR_EVENT   => $transactorType,
                 self::TRANSACTION_DATE   => $adjustment->getCreatedAt(),
                 self::BANKING_ACCOUNT_ID => $adjustment->balance->bankingAccount->getPublicId(),
                 self::API_TRANSACTION_ID => $adjustment->getTransactionId(),

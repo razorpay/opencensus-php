@@ -2793,6 +2793,7 @@ class BankTransferTest extends TestCase
             $this->assertEquals('0', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals('fund_loading_processed', $ledgerRequestPayload['transactor_type']);
+            $this->assertEquals('fund_loading_processed', $ledgerRequestPayload['transactor_event']);
             $this->assertEquals('term_SHRDBANKACC3DS', $ledgerRequestPayload['terminal_id']);
             $this->assertEquals('nodal', $ledgerRequestPayload['terminal_account_type']);
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
@@ -2934,6 +2935,7 @@ class BankTransferTest extends TestCase
             $this->assertEquals('0', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals('fund_loading_processed', $ledgerRequestPayload['transactor_type']);
+            $this->assertEquals('fund_loading_processed', $ledgerRequestPayload['transactor_event']);
             $this->assertEquals('term_SHRDBANKACC3DS', $ledgerRequestPayload['terminal_id']);
             $this->assertEquals('nodal', $ledgerRequestPayload['terminal_account_type']);
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);

@@ -29,6 +29,7 @@ class Base extends Core
     const TRANSACTION_DATE      = 'transaction_date';
     const TRANSACTOR_ID         = 'transactor_id';
     const TRANSACTOR_TYPE       = 'transactor_type';
+    const TRANSACTOR_EVENT      = 'transactor_event';
     const TRANSACTION_CONFIG_ID = 'transaction_config_id';
     const ENTITY                = 'entity';
     const IDEMPOTENCY_KEY       = 'idempotency_key';

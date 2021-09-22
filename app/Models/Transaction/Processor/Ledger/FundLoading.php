@@ -63,6 +63,7 @@ class FundLoading extends Base
                 self::TERMINAL_ACCOUNT_TYPE => $terminalAccountType,
                 self::TRANSACTOR_ID         => $bankTransfer->getPublicId(),
                 self::TRANSACTOR_TYPE       => $transactorType,
+                self::TRANSACTOR_EVENT      => $transactorType,
                 self::TRANSACTION_DATE      => $bankTransfer->getCreatedAt(),
                 self::BANKING_ACCOUNT_ID    => $bankTransfer->balance->bankingAccount->getPublicId(),
                 self::API_TRANSACTION_ID    => $bankTransfer->getTransactionId(),

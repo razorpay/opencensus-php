@@ -59,6 +59,7 @@ class Rewards extends Base
                 self::NOTES                 => json_encode($notes),
                 self::TRANSACTOR_ID         => $credits->getPublicId(),
                 self::TRANSACTOR_TYPE       => $transactorType,
+                self::TRANSACTOR_EVENT      => $transactorType,
                 self::FEE_ACCOUNTING        => self::REWARD,
                 self::TRANSACTION_DATE      => $credits->getCreatedAt(),
                 self::BANKING_ACCOUNT_ID    => $credits->merchant->sharedBankingBalance->bankingAccount->getPublicId(),

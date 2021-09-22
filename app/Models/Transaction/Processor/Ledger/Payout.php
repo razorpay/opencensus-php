@@ -92,6 +92,7 @@ class Payout extends Base
             $payload[self::NOTES]              = json_encode($notes);
             $payload[self::TRANSACTOR_ID]      = $transactorId;
             $payload[self::TRANSACTOR_TYPE]    = $transactorType;
+            $payload[self::TRANSACTOR_EVENT]   = $transactorType;
             $payload[self::TRANSACTION_DATE]   = $transactorDate;
 
             // Only sending api_transaction ID in case of initiated and reversed

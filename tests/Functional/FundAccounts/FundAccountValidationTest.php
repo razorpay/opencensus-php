@@ -454,6 +454,7 @@ class FundAccountValidationTest extends TestCase
             $this->assertEquals('3', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_type']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
         }
 
@@ -526,6 +527,7 @@ class FundAccountValidationTest extends TestCase
             $this->assertEquals('3', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals('fav_initiated', $ledgerRequestPayload['transactor_type']);
+            $this->assertEquals('fav_initiated', $ledgerRequestPayload['transactor_event']);
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
             $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
             $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
@@ -583,6 +585,7 @@ class FundAccountValidationTest extends TestCase
             $this->assertEquals('3', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals('fav_initiated', $ledgerRequestPayload['transactor_type']);
+            $this->assertEquals('fav_initiated', $ledgerRequestPayload['transactor_event']);
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
             $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
             $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
@@ -1657,6 +1660,7 @@ class FundAccountValidationTest extends TestCase
             $this->assertEquals('3', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_type']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
         }
 
@@ -1771,6 +1775,7 @@ class FundAccountValidationTest extends TestCase
             $this->assertEquals('3', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_type']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
         }
 

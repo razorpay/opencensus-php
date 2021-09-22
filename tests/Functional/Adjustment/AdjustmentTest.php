@@ -603,6 +603,7 @@ class AdjustmentTest extends TestCase
             $this->assertEquals('0', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals('positive_adjustment_processed', $ledgerRequestPayload['transactor_type']);
+            $this->assertEquals('positive_adjustment_processed', $ledgerRequestPayload['transactor_event']);
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
             $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
             $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
@@ -743,6 +744,7 @@ class AdjustmentTest extends TestCase
             $this->assertEquals('0', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals('negative_adjustment_processed', $ledgerRequestPayload['transactor_type']);
+            $this->assertEquals('negative_adjustment_processed', $ledgerRequestPayload['transactor_event']);
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
             $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
             $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
@@ -1039,6 +1041,7 @@ class AdjustmentTest extends TestCase
             $this->assertEquals('0', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals('positive_adjustment_processed', $ledgerRequestPayload['transactor_type']);
+            $this->assertEquals('positive_adjustment_processed', $ledgerRequestPayload['transactor_event']);
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
             $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
             $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
@@ -1128,6 +1131,7 @@ class AdjustmentTest extends TestCase
             $this->assertEquals('0', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals('negative_adjustment_processed', $ledgerRequestPayload['transactor_type']);
+            $this->assertEquals('negative_adjustment_processed', $ledgerRequestPayload['transactor_event']);
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
             $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
             $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);

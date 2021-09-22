@@ -110,6 +110,7 @@ class FundAccountValidation extends Base
                 self::NOTES              => json_encode($notes),
                 self::TRANSACTOR_ID      => $transactorId,
                 self::TRANSACTOR_TYPE    => $transactorType,
+                self::TRANSACTOR_EVENT   => $transactorType,
                 self::TRANSACTION_DATE   => $transactorDate,
                 self::BANKING_ACCOUNT_ID => $fundAccountValidation->balance->bankingAccount->getPublicId(),
             ];
