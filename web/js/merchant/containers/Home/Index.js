@@ -10,7 +10,7 @@ import {
   groupByPlatform,
   OTHERS,
 } from 'common/utils/pokedex';
-import LocalStorageService from 'common/utils/localStorage';
+import { getItem, setItem, removeItem } from 'common/utils/localStorage';
 import { getCookie } from '../../../common/utils/cookies';
 import debounce from 'common/utils/debounce';
 import { getFormattedAmountNew, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -20,7 +20,6 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import * as HomeActions from 'merchant/reducers/home';
 import { fetch } from 'merchant/reducers/pokedex';
 import { fetchPayments } from 'merchant/reducers/collection';
-import { fetchOndemandRestrictions, hideTnC } from 'merchant/reducers/home';
 import { fetchLateAuthConfig } from 'merchant/reducers/config';
 import { API_ERROR, API_INVALID_RESP, isMobileDevice } from 'merchant/components/Home/data';
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
@@ -31,7 +30,7 @@ import KYCStatusModal from 'merchant/components/Home/KYCStatusModal';
 import KYCStatusModalOld from 'merchant/components/Home/KYCStatusModal-old';
 import KycDetailsModal from 'merchant/components/Home/KycDetailsModal';
 import FraudDetectionModal from 'merchant/components/Home/FraudDetectionModal';
-import { showWhenUtil } from 'merchant/components/ShowWhen';
+import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
 import {
@@ -42,15 +41,12 @@ import {
   trackTryDashboard,
   trackIAClose,
   iaActivations,
-  trackSupportDetailPopupDisplay,
 } from './ga';
 import Banner from 'common/ui/Banner';
 import Desktop from './Desktop';
 import Mobile from './Mobile';
-import ShowWhen from 'merchant/components/ShowWhen';
 import RTracking from 'react-tracking';
 import { fetchVirtualAccounts } from 'merchant/reducers/virtualaccounts';
-import MerchantDataCollectionModal from 'merchant/views/Settings/SupportDetails/MerchantDataCollectionModal';
 import CardPaymentsBlockedModal from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Modal';
 import CardPaymentsBlockedBanner from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Banner';
 import TnCModal from 'merchant/components/Home/TnCModal';
@@ -60,13 +56,13 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import User from 'merchant/models/User';
 import { analyticsTrack } from 'common/utils/analytics';
 
-const dateRangePresets = [
-    ['Past 7 Days', -7, 'days'],
-    ['Past 30 Days', -30, 'days'],
-    ['Past 90 Days', -90, 'days'],
-    ['All Time', -10, 'years'],
-  ],
-  defaultPreset = 1;
+const DATE_RANGE_PRESETS = [
+  ['Past 7 Days', -7, 'days'],
+  ['Past 30 Days', -30, 'days'],
+  ['Past 90 Days', -90, 'days'],
+  ['All Time', -10, 'years'],
+];
+const defaultPreset = 1;
 
 const getPreviousDates = ({ startDate, endDate }) => {
   const diff = endDate.diff(startDate);
@@ -80,11 +76,12 @@ const getPreviousDates = ({ startDate, endDate }) => {
 const bodyClass = ' analytics-v2-active';
 
 // used to show titles for sections and also GA
-const keymetricsSectionTitle = 'Transactions Overview',
-  paymentInsightsTitle = 'Payment Insights',
-  trafficSectionTitle = 'Traffic split on platforms',
-  recentActivityTitle = 'Recent Activity';
+const keymetricsSectionTitle = 'Transactions Overview';
+const paymentInsightsTitle = 'Payment Insights';
+const trafficSectionTitle = 'Traffic split on platforms';
+const recentActivityTitle = 'Recent Activity';
 
+const { fetchOndemandRestrictions, hideTnC } = HomeActions;
 @connect(
   (state) => {
     return {
@@ -133,18 +130,18 @@ export default class HomeContainer extends Component {
       window.hj('tagRecording', ['new_analytics']);
     }
 
-    let endDate = moment().endOf('day'),
-      startDate = endDate.clone().startOf('day');
+    const endDate = moment().endOf('day');
+    const startDate = endDate.clone().startOf('day');
 
-    startDate.add(...dateRangePresets[defaultPreset].slice(1));
+    startDate.add(...DATE_RANGE_PRESETS[defaultPreset].slice(1));
 
-    const { user, mode, isAdmin } = props,
-      // onboarding card is shown if this is present in localstorage
-      onboardingCardToken = 'show_onboarding_card',
-      // onboarding card first step is shown if this is present in localstorage
-      firstStepToken = 'onboarding_first_step',
-      // partner onboarding is shown if user logs in for 1st time
-      partnerOnBoarding = 'partner_on_boarding_shown';
+    const { user, mode } = props;
+    // onboarding card is shown if this is present in localstorage
+    const onboardingCardToken = 'show_onboarding_card';
+    // onboarding card first step is shown if this is present in localstorage
+    const firstStepToken = 'onboarding_first_step';
+    // partner onboarding is shown if user logs in for 1st time
+    const partnerOnBoarding = 'partner_on_boarding_shown';
 
     // tokens particular for the current merchant
     this.onboardingBannerToken = `${onboardingCardToken}--${user.current}`;
@@ -158,28 +155,29 @@ export default class HomeContainer extends Component {
      * Earlier , the tokens apply at browser level, if old tokens are present
      * converting them specific to the merchants the current user can switch to
      */
-    if (LocalStorageService.getItem(onboardingCardToken)) {
+    if (getItem(onboardingCardToken)) {
       Object.keys(user.merchants).forEach((key) => {
-        LocalStorageService.setItem(`${onboardingCardToken}--${key}`, 'true');
+        setItem(`${onboardingCardToken}--${key}`, 'true');
       });
 
-      LocalStorageService.removeItem(onboardingCardToken);
+      removeItem(onboardingCardToken);
     }
 
-    if (LocalStorageService.getItem(firstStepToken)) {
+    if (getItem(firstStepToken)) {
       Object.keys(user.merchants).forEach((key) => {
-        LocalStorageService.setItem(`${firstStepToken}--${key}`, 'true');
+        setItem(`${firstStepToken}--${key}`, 'true');
       });
 
-      LocalStorageService.removeItem(firstStepToken);
+      removeItem(firstStepToken);
     }
 
-    const hasAccessToOnboardingBanner = (this.hasAccessToOnboardingBanner =
-      [rolesList.MANAGER, rolesList.OWNER, rolesList.ADMIN].indexOf(user.role) >= 0);
+    const hasAccessToOnboardingBanner =
+      [rolesList.MANAGER, rolesList.OWNER, rolesList.ADMIN].indexOf(user.role) >= 0;
 
-    const showOnboardingBanner =
-        hasAccessToOnboardingBanner && LocalStorageService.getItem(this.onboardingBannerToken),
-      showOnboardingBannerFirstStep = LocalStorageService.getItem(this.firstStepToken);
+    this.hasAccessToOnboardingBanner = hasAccessToOnboardingBanner;
+
+    const showOnboardingBanner = hasAccessToOnboardingBanner && getItem(this.onboardingBannerToken);
+    const showOnboardingBannerFirstStep = getItem(this.firstStepToken);
 
     const roleToShowSupportDetailForm =
       [
@@ -189,11 +187,11 @@ export default class HomeContainer extends Component {
         rolesList.SUPPORT,
         rolesList.OWNER,
       ].indexOf(user.role) >= 0;
-    const SUPPORT_DETAIL_LAST_POP_DISPLAY_DATE = LocalStorageService.getItem(
+    const SUPPORT_DETAIL_LAST_POP_DISPLAY_DATE = getItem(
       `SUPPORT_DETAIL_LAST_POP_DISPLAY_DATE--${user.current}`,
     );
     if (mode === 'live' && !SUPPORT_DETAIL_LAST_POP_DISPLAY_DATE && roleToShowSupportDetailForm) {
-      LocalStorageService.setItem(
+      setItem(
         `SUPPORT_DETAIL_LAST_POP_DISPLAY_DATE--${user.current}`,
         moment().subtract(1, 'days').format('DD/MM/YYYY'),
       );
@@ -201,10 +199,10 @@ export default class HomeContainer extends Component {
 
     if (
       mode === 'live' &&
-      !LocalStorageService.getItem(`SUPPORT_DETAIL_CURRENT_POPUP_COUNT--${user.current}`) &&
+      !getItem(`SUPPORT_DETAIL_CURRENT_POPUP_COUNT--${user.current}`) &&
       roleToShowSupportDetailForm
     ) {
-      LocalStorageService.setItem(`SUPPORT_DETAIL_CURRENT_POPUP_COUNT--${user.current}`, 10);
+      setItem(`SUPPORT_DETAIL_CURRENT_POPUP_COUNT--${user.current}`, 10);
     }
 
     this.state = {
@@ -217,7 +215,7 @@ export default class HomeContainer extends Component {
         ...getPreviousDates({ startDate, endDate }),
       },
       isMobile: isMobileDevice(),
-      dateRangePresets,
+      dateRangePresets: DATE_RANGE_PRESETS,
       showGroupingByPtfm: false,
       scrollAmountToStickHeader: 0,
       expandOnboardingBanner: showOnboardingBanner, // used for transition
@@ -229,7 +227,7 @@ export default class HomeContainer extends Component {
         items: [],
       },
       dismissDiwaliPromotion: false,
-      hideDiwaliPromotion: LocalStorageService.getItem('hide_diwali_promotional_banner') || false,
+      hideDiwaliPromotion: getItem('hide_diwali_promotional_banner') || false,
       hasMinTransactionSD: false,
     };
 
@@ -255,10 +253,10 @@ export default class HomeContainer extends Component {
           expandOnboardingBanner: true,
         };
 
-        LocalStorageService.setItem(this.onboardingBannerToken, 'true');
+        setItem(this.onboardingBannerToken, 'true');
 
         if (this.state.showOnboardingBannerFirstStep) {
-          LocalStorageService.setItem(this.firstStepToken, 'true');
+          setItem(this.firstStepToken, 'true');
           this.props.showOrHideHighlightMode(false);
         }
       } else if (mode !== 'live') {
@@ -285,12 +283,30 @@ export default class HomeContainer extends Component {
     this.fetchRestrictionsIfAny = this.fetchRestrictionsIfAny.bind(this);
   }
 
+  restrictedFeatures = [
+    'disable_ondemand_for_loc',
+    'disable_ondemand_for_card',
+    'disable_ondemand_for_loan',
+  ];
+
+  featureName = {
+    disable_ondemand_for_loc: 'LOC',
+    disable_ondemand_for_card: 'Card',
+    disable_ondemand_for_loan: 'Loan',
+  };
+
+  get isOnDemandDisabled() {
+    const { user } = this.props;
+
+    return this.restrictedFeatures.some((feature) => user.isFeatureEnabled(feature));
+  }
+
   get settlementRestricted() {
-    return this.props.user.isFeatureEnabled('es_on_demand_restricted');
+    return this.props.user.isFeatureEnabled('es_on_demand_restricted') || this.isOnDemandDisabled;
   }
 
   get settleNowRestrictionMsg() {
-    if (!this.settlementRestricted) return;
+    if (!this.settlementRestricted) return false;
     const {
       attempts_left,
       settlable_amount,
@@ -298,7 +314,42 @@ export default class HomeContainer extends Component {
       settlements_count_limit,
     } = this.props.ondemand_restrictions.data;
 
-    if (!attempts_left && !settlable_amount) {
+    if (this.settlementRestricted) {
+      const restrictedItem = this.restrictedFeatures
+        .filter((feat) => this.props.user.isFeatureEnabled(feat))
+        .map((feat) => this.featureName[feat]);
+
+      const renderFeatureComponent = () => {
+        return restrictedItem.map((item, i) => {
+          if (i === restrictedItem.length - 1 && i != 0) {
+            return (
+              <>
+                & <span className="highlight-tooltip"> {item}.</span>
+              </>
+            );
+          } else {
+            return (
+              <span className="highlight-tooltip">
+                {item}
+                {i === restrictedItem.length - 1
+                  ? '.'
+                  : i === restrictedItem.length - 2
+                  ? ' '
+                  : ', '}
+              </span>
+            );
+          }
+        });
+      };
+      return (
+        <div className="disable-ondemand-msg">
+          On-demand Instant Settlements have been disabled because you have delayed the repayments
+          on {renderFeatureComponent()}
+          <br /> <br />
+          Please complete the repayments to re-enable Instant Settlements.
+        </div>
+      );
+    } else if (!attempts_left && !settlable_amount) {
       return `You’ve already settled your maximum allowed limit of ${getFormattedAmountNew(
         max_amount_limit,
         true,
@@ -310,7 +361,7 @@ export default class HomeContainer extends Component {
         max_amount_limit,
         true,
       )} for the day.`;
-    } else return;
+    } else return '';
   }
 
   fetchRestrictionsIfAny() {
@@ -331,8 +382,8 @@ export default class HomeContainer extends Component {
     // need to figureout whether we should show group by platform
     // or not
 
-    const { startDate, endDate } = this.state,
-      { isAdmin, analyticsFetch } = this.props;
+    const { startDate, endDate } = this.state;
+    const { isAdmin, analyticsFetch } = this.props;
 
     const query = {
       filters: {
@@ -367,8 +418,9 @@ export default class HomeContainer extends Component {
         console.error(err);
 
         return API_ERROR;
-      })
+      }) /* eslint-disable */
       .then((data) => {
+        /* eslint-enable */
         if (data.error) {
           trackError(`While Fetching Txns Grouped by Ptfm`);
 
@@ -385,7 +437,7 @@ export default class HomeContainer extends Component {
           // if we do not get platforms for given daterange
           // do not show grouping
           if (platforms.length === 0) {
-            return;
+            return false;
           }
 
           let grandTotal = 0;
@@ -403,7 +455,7 @@ export default class HomeContainer extends Component {
           // if the txn count of platforms for given daterange
           // do not show grouping
           if (grandTotal === 0) {
-            return;
+            return false;
           }
 
           const ratio = (totalByPlatform[OTHERS] || 0) / grandTotal;
@@ -412,7 +464,7 @@ export default class HomeContainer extends Component {
           // do not show grouping
           if (ratio > 0.3) {
             trackPlatformAnalyticsHidden(ratio * 100);
-            return;
+            return false;
           }
         }
 
@@ -429,7 +481,7 @@ export default class HomeContainer extends Component {
 
     const { onFirstTxnDate, analyticsFetch } = this.props;
 
-    var oldestTxnReqId = ++this.oldestTxnReqId;
+    const oldestTxnReqId = ++this.oldestTxnReqId;
 
     oldestTransactionDate = { ...oldestTransactionDate };
 
@@ -454,8 +506,8 @@ export default class HomeContainer extends Component {
           return API_INVALID_RESP;
         }
 
-        const records = data.data.records.result[0],
-          value = records && records.created_at;
+        const records = data.data.records.result[0];
+        const value = records && records.created_at;
 
         return { value };
       })
@@ -487,8 +539,8 @@ export default class HomeContainer extends Component {
           return onFirstTxnDate && onFirstTxnDate();
         }
 
-        const presetsLastIndex = dateRangePresets.length - 1,
-          presetsLastItem = dateRangePresets[presetsLastIndex];
+        const presetsLastIndex = dateRangePresets.length - 1;
+        const presetsLastItem = dateRangePresets[presetsLastIndex];
 
         // updates All Time present in daterange picker
         dateRangePresets = [...dateRangePresets];
@@ -573,7 +625,7 @@ export default class HomeContainer extends Component {
   };
 
   triggerTimerToUpdateMode = () => {
-    const { user, mode, updateSession, history } = this.props;
+    const { user, mode } = this.props;
 
     if (
       user.isAutoRefreshExperimentEnabled &&
@@ -648,7 +700,9 @@ export default class HomeContainer extends Component {
 
     if (shouldShowMobileHotjarSurvey) {
       setTimeout(() => {
+        /* eslint-disable */
         window.hj && window.hj('trigger', 'MOBILE_SURVEY');
+        /* eslint-enable */
       }, 0);
     }
     this.triggerTimerToUpdateMode();
@@ -672,7 +726,7 @@ export default class HomeContainer extends Component {
       },
     );
 
-    LocalStorageService.removeItem(this.firstStepToken);
+    removeItem(this.firstStepToken);
   }
 
   onHideOnboardingBanner() {
@@ -689,14 +743,14 @@ export default class HomeContainer extends Component {
       },
     );
 
-    LocalStorageService.removeItem(this.onboardingBannerToken);
+    removeItem(this.onboardingBannerToken);
   }
 
   setShowOnboardingBanner() {
-    const { user } = this.props,
-      showOnboardingBannerFirstStep = user.showInstantActivation
-        ? !user.instantActivation.isL1Submitted
-        : true;
+    const { user } = this.props;
+    const showOnboardingBannerFirstStep = user.showInstantActivation
+      ? !user.instantActivation.isL1Submitted
+      : true;
 
     this.setState(
       {
@@ -716,18 +770,16 @@ export default class HomeContainer extends Component {
     );
 
     if (showOnboardingBannerFirstStep) {
-      LocalStorageService.setItem(this.onboardingBannerToken, 'true');
+      setItem(this.onboardingBannerToken, 'true');
     }
 
-    LocalStorageService.setItem(this.firstStepToken, 'true');
+    setItem(this.firstStepToken, 'true');
   }
 
   onFetchPayments(data) {
     const { user, mode } = this.props;
 
     const items = (data && data.items) || [];
-
-    const { showOnboardingBanner } = this.state;
 
     this.setState({
       payments: {
@@ -759,7 +811,7 @@ export default class HomeContainer extends Component {
   }
 
   onHideDiwaliPromotion() {
-    LocalStorageService.setItem('hide_diwali_promotional_banner', true);
+    setItem('hide_diwali_promotional_banner', true);
     this.setState(
       {
         dismissDiwaliPromotion: true,
@@ -782,7 +834,7 @@ export default class HomeContainer extends Component {
   };
 
   render() {
-    let {
+    const {
       mode,
       current_balance,
       tabsMeta,
@@ -845,10 +897,9 @@ export default class HomeContainer extends Component {
         rolesList.OWNER,
       ].indexOf(user.role) >= 0;
 
-    const isValueFilled =
+    const isValueFilled = !(
       support_detail.error && support_detail.error[0] === 'Merchant email type does not Exist'
-        ? false
-        : true;
+    );
 
     const commonProps = {
       mode,
@@ -868,6 +919,7 @@ export default class HomeContainer extends Component {
       showOnboardingBannerFirstStep,
       expandOnboardingBanner,
       payments,
+      isOnDemandDisabled: this.isOnDemandDisabled,
       // Handling first step in a different way if its instant activations
       showOnboardingBanner: showOnboardingBannerFirstStep
         ? !user.showInstantActivation || user.instantActivation.isL1Submitted
@@ -897,10 +949,10 @@ export default class HomeContainer extends Component {
 
     const { dismissDiwaliPromotion, hideDiwaliPromotion } = this.state;
 
-    const isPartnerOnBoardingModalShown = LocalStorageService.getItem(this.partnerOnBoardingToken);
+    const isPartnerOnBoardingModalShown = getItem(this.partnerOnBoardingToken);
 
     if (user.isPartnerIntent() && !isPartnerOnBoardingModalShown) {
-      LocalStorageService.setItem(this.partnerOnBoardingToken, true);
+      setItem(this.partnerOnBoardingToken, true);
       this.props.openModal({
         size: 'xlarge',
         disableClose: true,
@@ -943,11 +995,9 @@ export default class HomeContainer extends Component {
                     </span>
                     <span class="m-l btn-link">
                       <ShowWhen
-                        additionalCondition={(user) =>
-                          user.isOrgAllowedFunctionality('external_links')
-                        }
+                        additionalCondition={() => user.isOrgAllowedFunctionality('external_links')}
                       >
-                        <a href="https://razorpay.com/pricing" target="_blank">
+                        <a href="https://razorpay.com/pricing" target="_blank" rel="noreferrer">
                           <b>View T&Cs</b>
                         </a>
                       </ShowWhen>

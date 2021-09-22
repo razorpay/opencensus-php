@@ -49,8 +49,25 @@ class SettlementsListContainer extends ListContainer {
     openAutoModal: false,
   };
 
+  restrictedFeatures = [
+    'disable_ondemand_for_loc',
+    'disable_ondemand_for_card',
+    'disable_ondemand_for_loan',
+  ];
+
+  featureName = {
+    disable_ondemand_for_loc: 'LOC',
+    disable_ondemand_for_card: 'Card',
+    disable_ondemand_for_loan: 'Loan',
+  };
+  get isOnDemandDisabled() {
+    const { user } = this.props;
+
+    return this.restrictedFeatures.some((feature) => user.isFeatureEnabled(feature));
+  }
+
   get settlementRestricted() {
-    return this.props.user.isFeatureEnabled('es_on_demand_restricted');
+    return this.props.user.isFeatureEnabled('es_on_demand_restricted') || this.isOnDemandDisabled;
   }
 
   get settleNowRestrictionMsg() {
@@ -62,8 +79,42 @@ class SettlementsListContainer extends ListContainer {
       max_amount_limit,
       settlements_count_limit,
     } = this.props.ondemand_restrictions.data;
+    if (this.settlementRestricted) {
+      const restrictedItem = this.restrictedFeatures
+        .filter((feat) => this.props.user.isFeatureEnabled(feat))
+        .map((feat) => this.featureName[feat]);
 
-    if (!attempts_left && !settlable_amount) {
+      const renderFeatureComponent = () => {
+        return restrictedItem.map((item, i) => {
+          if (i === restrictedItem.length - 1 && i != 0) {
+            return (
+              <>
+                & <span className="highlight-tooltip"> {item}.</span>
+              </>
+            );
+          } else {
+            return (
+              <span className="highlight-tooltip">
+                {item}
+                {i === restrictedItem.length - 1
+                  ? '.'
+                  : i === restrictedItem.length - 2
+                  ? ' '
+                  : ', '}
+              </span>
+            );
+          }
+        });
+      };
+      return (
+        <div className="disable-ondemand-msg">
+          On-demand Instant Settlements have been disabled because you have delayed the repayments
+          on {renderFeatureComponent()}
+          <br /> <br />
+          Please complete the repayments to re-enable Instant Settlements.
+        </div>
+      );
+    } else if (!attempts_left && !settlable_amount) {
       return `You’ve already settled your maximum allowed limit of ${getFormattedAmountNew(
         max_amount_limit,
         true,
@@ -342,7 +393,7 @@ class SettlementsListContainer extends ListContainer {
 
     const nextSettlement = this.props?.settlement_amount?.data?.next_settlement_time;
     const checkIfSettlementDisabled =
-      isSettleNowRestricted || current_balance.loading || balance < 100;
+      isSettleNowRestricted || current_balance.loading || balance < 100 || this.isOnDemandDisabled;
 
     const { no_settlement } = this.props.settlement_amount.data;
 

@@ -18,8 +18,10 @@ const CurrentBalance = ({
   esOndemandSettlementEnabled,
   merchantId,
   checkIfFirstEverSettlement,
+  isOnDemandDisabled,
 }) => {
-  const checkIfSettlementDisabled = isSettleNowRestricted || isBalanceLoading || balance < 100;
+  const checkIfSettlementDisabled =
+    isSettleNowRestricted || isBalanceLoading || balance < 100 || isOnDemandDisabled;
 
   const handleSettleNowClick = (e) => {
     trackIS.clickCTASettleNow();
@@ -43,7 +45,7 @@ const CurrentBalance = ({
         <div className="current-balance--amount">
           {isBalanceLoading ? <PlaceholderLoader /> : <Amount value={balance} currency="INR" />}
         </div>
-        <div>
+        <div className="settlenow-container">
           <SettleNowButton
             disabled={checkIfSettlementDisabled}
             merchantId={merchantId}

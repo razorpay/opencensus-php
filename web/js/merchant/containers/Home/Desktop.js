@@ -38,7 +38,6 @@ import { handleNegativeBalanceLimit, getCommonAnalyticsProperties } from 'common
 import Time from 'common/ui/Time';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { analyticsTrack } from 'common/utils/analytics';
-import LocalStorageService from 'common/utils/localStorage';
 import { fetchUser } from 'merchant/reducers/session';
 import AsyncButton from 'react-async-button';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
@@ -48,7 +47,7 @@ import { isDedupe, getActivationState } from 'merchant/components/Activation/Act
 import NCModal from 'merchant/components/Activation/NCModal';
 import DedupeModal from 'merchant/components/Home/DedupeModal';
 import CongratulatoryBanner from 'merchant/components/Announcements/CongratulatoryBanner';
-
+import moment from 'moment';
 @withRouter
 @connect(
   (state) => ({
@@ -70,7 +69,6 @@ import CongratulatoryBanner from 'merchant/components/Announcements/Congratulato
 class AnalyticsDesktop extends Component {
   state = {
     showNcPopup: true,
-    whatsappNotificationStatus: 'off',
     settlementExists: true,
     shouldShowTnCBannerForAxis: false,
   };
@@ -102,25 +100,11 @@ class AnalyticsDesktop extends Component {
       screen: 'home page',
     });
     this.props.fetchInternationalProductsStatus();
-    merchantFetch({
-      url: `users/whatsapp/opt_in_status`,
-      method: 'get',
-      data: { source: 'pg.settings.config' },
-    })
-      .then((response) => {
-        if (response && response.data && response.data.consent_status)
-          this.setState({ whatsappNotificationStatus: 'on' });
-        else {
-          this.setState({ whatsappNotificationStatus: 'off' });
-        }
-      })
-      .catch((_) => {
-        this.setState({ whatsappNotificationStatus: 'off' });
-      });
 
     this.checkIfFirstEverSettlement();
 
     const { user } = this.props;
+
     const activationState = getActivationState(user, user.isUnregisteredBusiness);
     const shouldShowModal =
       isDedupe(user) === 'blocked' ||
@@ -168,7 +152,7 @@ class AnalyticsDesktop extends Component {
   };
 
   showOndemandSettlementForm() {
-    const { current_balance, ondemand_restrictions, openModal, user } = this.props;
+    const { current_balance, ondemand_restrictions, user } = this.props;
     trackSettleNow();
     const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
     const balance = current_balance.data.balance;
@@ -291,6 +275,7 @@ class AnalyticsDesktop extends Component {
       ondemand_restrictions,
       settleNowRestrictionMsg,
       limitBreach,
+      isOnDemandDisabled,
     } = this.props;
 
     const {
@@ -309,7 +294,10 @@ class AnalyticsDesktop extends Component {
     const isSettleNowRestricted =
       ondemand_restrictions && (!attemptsLeft || !settlableAmount || isOndemandRestrictionsLoading);
     const checkIfSettlementDisabled =
-      isSettleNowRestricted || current_balance.loading || current_balance.data.balance < 100;
+      isSettleNowRestricted ||
+      current_balance.loading ||
+      current_balance.data.balance < 100 ||
+      isOnDemandDisabled;
     let balance = current_balance.data.balance;
     let negativeBalanceClassName = '';
     const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
@@ -614,7 +602,7 @@ class AnalyticsDesktop extends Component {
               <GroupItem>
                 {this.props.user.isOndemandSettlementEnabled &&
                 this.props.user.isAllowedView('early_settlement') ? (
-                  <div>
+                  <div className="settlenow-container">
                     <SettleNowButton
                       disabled={checkIfSettlementDisabled}
                       merchantId={user.current}

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import QueryString from 'query-string';
 
 import Header from 'common/ui/Header';
 import Amount from 'common/ui/Amount';
@@ -26,7 +25,6 @@ import {
   trackSettleNow,
   EVENT_CATEGORY_DASHBOARD_HOME,
 } from './ga';
-import ShowWhen from 'merchant/components/ShowWhen';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
 
@@ -63,7 +61,7 @@ class AnalyticsMobile extends Component {
   };
 
   showOndemandSettlementForm() {
-    const { current_balance, ondemand_restrictions, openModal, user } = this.props;
+    const { current_balance, ondemand_restrictions, user } = this.props;
     trackSettleNow();
     const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
     const balance = current_balance.data.balance;
@@ -115,17 +113,16 @@ class AnalyticsMobile extends Component {
       onHideOnboardingBanner,
       onFirstStepClose,
       showOnboardingBannerFirstStep,
-      keymetricsSectionTitle,
       paymentInsightsTitle,
       recentActivityTitle,
       trafficSectionTitle,
       windowWidth,
       settleNowRestrictionMsg,
+      isOnDemandDisabled,
     } = this.props;
 
     const hasSecondaryBanner =
       showInstantActivation && config.config && !config.config.hasPersonalised;
-    const query = QueryString.parse(window.location.search);
 
     const attemptsLeft = ondemand_restrictions && ondemand_restrictions.data.attempts_left;
     const isOndemandRestrictionsLoading = ondemand_restrictions && ondemand_restrictions.loading;
@@ -133,7 +130,10 @@ class AnalyticsMobile extends Component {
     const isSettleNowRestricted =
       ondemand_restrictions && (!attemptsLeft || !settlableAmount || isOndemandRestrictionsLoading);
     const checkIfSettlementDisabled =
-      isSettleNowRestricted || current_balance.loading || current_balance.data.balance < 100;
+      isSettleNowRestricted ||
+      current_balance.loading ||
+      current_balance.data.balance < 100 ||
+      isOnDemandDisabled;
     const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
 
     return (
@@ -172,14 +172,14 @@ class AnalyticsMobile extends Component {
               Balance:{' '}
               <b>
                 {!current_balance.loading && typeof current_balance.data.balance === 'number' && (
-                  <Amount value={current_balance.data.balance} currency={'INR'} />
+                  <Amount value={current_balance.data.balance} currency="INR" />
                 )}
               </b>
             </div>
             <div className="pull-right">
               {this.props.user.isOndemandSettlementEnabled &&
               this.props.user.isAllowedView('early_settlement') ? (
-                <div>
+                <div className="settlenow-container">
                   <SettleNowButton
                     disabled={checkIfSettlementDisabled}
                     merchantId={user.current}
@@ -193,7 +193,7 @@ class AnalyticsMobile extends Component {
                   {settleNowRestrictionMsg && (
                     <Popover
                       align="top"
-                      parentQuerySelector={`.settle-btn .settle-now--mobile`}
+                      parentQuerySelector=".settle-btn .settle-now--mobile"
                       theme="dark"
                     >
                       <PopoverBody>{settleNowRestrictionMsg}</PopoverBody>
@@ -255,7 +255,7 @@ class AnalyticsMobile extends Component {
             oldestTransactionDate={oldestTransactionDate}
             mode={mode}
             showGroupingByPtfm={showGroupingByPtfm}
-            sectionTitle={''}
+            sectionTitle=""
             tabsMeta={tabsMeta}
             isAdmin={isAdmin}
             analyticsFetch={analyticsFetch}
@@ -279,7 +279,7 @@ class AnalyticsMobile extends Component {
                 endDate={endDate}
                 mode={mode}
                 analyticsFetch={analyticsFetch}
-                sectionTitle={''}
+                sectionTitle=""
                 isMobile={true}
               />
             </React.Fragment>
