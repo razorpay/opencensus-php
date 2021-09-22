@@ -150,6 +150,11 @@ class Service extends Base\Service
 
         $input[Constants::PARTNER_INTENT] = $partnerIntent;
 
+        $this->trace->info(TraceCode::UTM_PARAMS, [
+            'merchant'    => $this->merchant->getId(),
+            'eventParams' => $input
+        ]);
+
         $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_FINISH_SIGNUP_SUCCESS, $this->merchant, null, $input);
 
         unset($input[Constants::PARTNER_INTENT]);
