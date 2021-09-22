@@ -507,6 +507,14 @@ class Type
         self::HITACHI_CBK_MASTERCARD        => Name::BULK_HITACHI_CHARGEBACK,
         self::HITACHI_CBK_VISA              => Name::BULK_HITACHI_CHARGEBACK,
         self::HITACHI_CBK_RUPAY             => Name::BULK_HITACHI_CHARGEBACK,
+
+        self::SUBMERCHANT_ASSIGN                => Name::ADMIN_MANAGE_PARTNERS,
+        self::SUBMERCHANT_LINK                  => Name::ADMIN_MANAGE_PARTNERS,
+        self::SUBMERCHANT_DELINK                => Name::ADMIN_MANAGE_PARTNERS,
+        self::SUB_MERCHANT                      => Name::ADMIN_MANAGE_PARTNERS,
+        self::SUBMERCHANT_PARTNER_CONFIG_UPSERT => Name::ADMIN_MANAGE_PARTNERS,
+        self::SUBMERCHANT_TYPE_UPDATE           => Name::ADMIN_MANAGE_PARTNERS,
+        self::PARTNER_SUBMERCHANTS              => Name::ADMIN_MANAGE_PARTNERS,
     ];
 
     public static $workflowApplicableBatchTypes = [
