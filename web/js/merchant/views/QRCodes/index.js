@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
-import { Route, Switch, NavLink } from 'react-router-dom';
+import { Switch, NavLink } from 'react-router-dom';
+import React from 'react';
 
 import {
   handleProductQuickGuide,
@@ -8,6 +9,7 @@ import {
 import { RZPFeatures } from 'merchant/helpers/data';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import { bindActionCreators } from 'redux';
 
 import ComingSoon from './ComingSoon';
 import QRCodesList from './QRCodes/List';
@@ -15,16 +17,7 @@ import PaymentsList from './Payments/List';
 import QuickGuide, { getQRCodeQuickGuideIsClosed } from './QuickGuide';
 import OnBoarding, { getIsQRCodesEnabled, getIsAllowedResetQRCodesOnBoarding } from './OnBoarding';
 
-@connect(
-  (state) => ({
-    isTestMode: state.session.mode === 'test',
-    user: state.session.user,
-    qr_codes: state.qr_codes,
-    productOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.QR_CODES),
-  }),
-  { handleProductQuickGuide },
-)
-export default class QRCodeContainer extends React.Component {
+class QRCodeContainer extends React.Component {
   componentWillReceiveProps(nextProps) {
     if (nextProps.qr_codes.loading !== this.props.qr_codes.loading) {
       this.initOnboarding(nextProps);
@@ -73,9 +66,9 @@ export default class QRCodeContainer extends React.Component {
   };
 
   render() {
-    const { isTestMode, user, productOnBoarding } = this.props;
+    const { isTestMode, user, productOnBoarding, mode } = this.props;
 
-    if (user.isQRCodeComingSoonExpEnabled && !user.isQRCodeComingSoonEnabled) {
+    if (user.isQRCodeComingSoonExpEnabled && !user.isQRCodeComingSoonEnabled(mode)) {
       return <ComingSoon onInterestClicked={() => this.forceUpdate()} />;
     }
 
@@ -103,10 +96,10 @@ export default class QRCodeContainer extends React.Component {
             <ShowWhenRoute
               path="/qr_codes/payments"
               component={PaymentsList}
-              additionalCondition={(user) => user.isAllowedView('qr_codes')}
+              additionalCondition={(userCurrent) => userCurrent.isAllowedView('qr_codes')}
             />
             <ShowWhenRoute
-              additionalCondition={(user) => user.isAllowedView('qr_codes')}
+              additionalCondition={(userCurrent) => userCurrent.isAllowedView('qr_codes')}
               path="/qr_codes"
               component={QRCodesList}
             />
@@ -116,3 +109,19 @@ export default class QRCodeContainer extends React.Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    mode: state.session.mode,
+    isTestMode: state.session.mode === 'test',
+    user: state.session.user,
+    qr_codes: state.qr_codes,
+    productOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.QR_CODES),
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators({ handleProductQuickGuide }, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(QRCodeContainer);

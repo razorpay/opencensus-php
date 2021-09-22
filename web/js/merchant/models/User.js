@@ -5,7 +5,7 @@ import { RZPFeatures } from 'merchant/helpers/data';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 import isEmpty from '@universe/utils/isEmpty';
 import { fetchFeaturesAjax } from 'merchant/reducers/config';
-import { getOrg, getMode } from 'merchant/store';
+import { getOrg } from 'merchant/store';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { getItem } from 'common/utils/localStorage';
@@ -542,7 +542,7 @@ export default class User {
     return this.tags.some((t) => t.toLowerCase() === tag.toLowerCase());
   }
 
-  /**
+  /*
    * Detects whether user is partner or not.
    * If check has to be made for specific type of partners,
    * then send the types for which check has to be done in arguments
@@ -905,12 +905,12 @@ export default class User {
     return this.isFeatureEnabled('bharat_qr');
   }
 
-  get isQRCodeComingSoonEnabled() {
+  isQRCodeComingSoonEnabled(mode) {
     if (this.isQRCodeProductEnabled) {
       return true;
     }
 
-    const status = !!getItem(`QR-codes-${getMode()}-${this.current}`);
+    const status = !!getItem(`QR-codes-${mode}-${this.current}`);
 
     return status;
   }
@@ -1100,6 +1100,14 @@ export default class User {
     return this.isFeatureEnabled('nps_survey_payment_pages');
   }
 
+  get secondFactorAuthOfCurrentMerchant() {
+    return this.merchants[this.current].second_factor_auth;
+  }
+
+  get secondFactorAuthOfUser() {
+    return this.user.second_factor_auth;
+  }
+
   // No experiment of disable-edit-<moduleName> => Module is not restricted
   isViewRestrictedByRazorX(moduleName) {
     // Eg: disable-view-reports (if corresponding experiment is "on", it can't be viewed by those merchants)
@@ -1147,14 +1155,6 @@ export default class User {
 
   set secondFactorAuthOfUser(secondFactorAuth) {
     this.user.second_factor_auth = secondFactorAuth;
-  }
-
-  get secondFactorAuthOfCurrentMerchant() {
-    return this.merchants[this.current].second_factor_auth;
-  }
-
-  get secondFactorAuthOfUser() {
-    return this.user.second_factor_auth;
   }
 
   isWhatsappNotificationEnabled() {

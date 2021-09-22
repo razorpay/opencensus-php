@@ -6,7 +6,42 @@ const normalizeUrl = (url) => {
   return url.replace(/([^:]\/)\/+/g, '$1').replace(/\/$/, '');
 };
 
-const mockAjax = (url, params = {}, baseUrl = '') => {
+export function merchantFetch(params) {
+  if (typeof params === 'string') {
+    params = {
+      url: params,
+    };
+  }
+
+  let mode = params.mode;
+  if (mode) {
+    delete params.mode;
+  } else {
+    mode = 'test';
+  }
+
+  if (params.accountId) {
+    params.headers = {
+      ...params.headers,
+      'X-Razorpay-Account': params.accountId,
+    };
+  }
+
+  if (window.RZP?.appName === 'businessbanking') {
+    params.headers = {
+      ...params.headers,
+      'X-Origin-Product': window.RZP.appHost,
+    };
+  }
+
+  delete params.accountId;
+
+  params.url = `/merchant/api/${mode}/${params.url}`;
+
+  return ajax(params);
+}
+
+export default (url, params = {}, baseUrl = '') => {
   if (typeof url === 'object') {
     params = url;
   } else if (typeof url === 'string') {
@@ -28,5 +63,3 @@ const mockAjax = (url, params = {}, baseUrl = '') => {
 
   return ajax(ajaxParams, 'test');
 };
-
-module.exports = (...args) => mockAjax(...args);

@@ -11,6 +11,7 @@ const Pagination = ({ next, prev, listData, skip, count }) => {
       <div class="btn-group pull-right">
         <button
           type="button"
+          aria-label="previous"
           class="btn btn-default btn-sm i"
           disabled={skip === 0 && true}
           onClick={prev}
@@ -19,6 +20,7 @@ const Pagination = ({ next, prev, listData, skip, count }) => {
         </button>
         <button
           type="button"
+          aria-label="next"
           class="btn btn-default btn-sm i"
           disabled={listData.length < count && true}
           onClick={next}

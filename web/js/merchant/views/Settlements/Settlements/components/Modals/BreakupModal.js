@@ -10,6 +10,29 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import { handleAnalytics } from 'merchant/views/Settlements/Settlements/analytics';
 import { bindActionCreators } from 'redux';
 
+const calculateSettledAmount = (items, isNew) => {
+  if (!isNew) {
+    // summation of credit - summation of debit
+    const creditSum = items.reduce((acc, item) => {
+      if (item.type === 'credit') acc = acc + item.amount;
+      return acc;
+    }, 0);
+
+    const debitSum = items.reduce((acc, item) => {
+      if (item.type === 'debit') acc = acc + item.amount;
+      return acc;
+    }, 0);
+
+    return creditSum - debitSum;
+  } else {
+    // summation of settled amount per component
+    return items.reduce((acc, item) => {
+      acc = acc + item.settled_amount;
+      return acc;
+    }, 0);
+  }
+};
+
 class BreakdownModal extends Component {
   componentWillMount() {
     this.props
@@ -38,34 +61,11 @@ class BreakdownModal extends Component {
     if (this.props.onUnmount) this.props.onUnmount(this.props.settlementId);
   }
 
-  calculateSettledAmount = (items, isNew) => {
-    if (!isNew) {
-      // summation of credit - summation of debit
-      const creditSum = items.reduce((acc, item) => {
-        if (item.type === 'credit') acc = acc + item.amount;
-        return acc;
-      }, 0);
-
-      const debitSum = items.reduce((acc, item) => {
-        if (item.type === 'debit') acc = acc + item.amount;
-        return acc;
-      }, 0);
-
-      return creditSum - debitSum;
-    } else {
-      // summation of settled amount per component
-      return items.reduce((acc, item) => {
-        acc = acc + item.settled_amount;
-        return acc;
-      }, 0);
-    }
-  };
-
   render() {
     const { settlementId, loading, error, isBreakupNew, items } = this.props;
 
     // If items not yet ready, showing spinner
-    if (items.length === 0) {
+    if (loading) {
       return (
         <div class="page-spinner-container">
           <Spinner />
@@ -83,14 +83,14 @@ class BreakdownModal extends Component {
           <SettlementBreakupTable
             items={items}
             loading={loading}
-            columnNames={Object.keys(items[0])}
+            columnNames={items.length ? Object.keys(items[0]) : []}
             isNew={isBreakupNew}
           />
 
           <div class="Modal__actions text-right settlement-amount-row">
             <span class="settled-amount">
               Total Settled Amount:{' '}
-              <Amount value={this.calculateSettledAmount(items, isBreakupNew)} currency="INR" />
+              <Amount value={calculateSettledAmount(items, isBreakupNew)} currency="INR" />
             </span>
             <button class="btn btn-default" onClick={this.props.closeModal}>
               Close
@@ -115,5 +115,7 @@ const mapDispatchToProps = (dispatch) => {
     dispatch,
   );
 };
+
+export { calculateSettledAmount };
 
 export default connect(mapStateToProps, mapDispatchToProps)(BreakdownModal);

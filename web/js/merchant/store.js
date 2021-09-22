@@ -3,10 +3,10 @@ import apiAsyncMiddleware from 'merchant_common/middlewares/apiAsyncMiddleware';
 import reducers from './reducers';
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-const store = createStore(
-  reducers,
-  composeEnhancers(applyMiddleware(apiAsyncMiddleware))
-);
+const store = createStore(reducers, composeEnhancers(applyMiddleware(apiAsyncMiddleware)));
+
+export const storeWithInitialState = (initialState) =>
+  createStore(reducers, initialState, composeEnhancers(applyMiddleware(apiAsyncMiddleware)));
 
 export default store;
 

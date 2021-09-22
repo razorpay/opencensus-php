@@ -7,45 +7,67 @@ import { createMemoryHistory } from 'history';
 import { Provider } from 'react-redux';
 import { server } from '../../../../mocks/node';
 import { errorHandlers } from '../../../../mocks/errorHandlers';
-import store from '../../../merchant/store';
+import { storeWithInitialState } from '../../../merchant/store';
+import ModalDialog from 'common/ui/ModalDialog';
 import Notifications from 'common/ui/Notifications';
 import Wrapper from '../../components/Bootstrap/Wrapper';
 
-const AllTheProviders: React.FC<{ children: ReactElement<any, any> | null }> = ({ children }) => {
-  const mockRazorXExp = {
-    isInstantActivationEnabled: true,
-    canSkipPoiValidation: false,
-    canGenerateTnCPage: true,
-    isBDAndAovEnabled: true,
-    isAadharEkycMandatory: true,
-  };
-  return (
-    <Provider store={store}>
-      <Wrapper
-        context={{
-          mode: 'test',
-          org: { id: '123' },
-          user: { contact_name: 'prashant' },
-          experiments: mockRazorXExp,
-        }}
-      >
-        <Notifications />
-        <Router history={createMemoryHistory({ initialEntries: ['/'] })}>
-          <Route path="/" component={() => children} />
-        </Router>
-      </Wrapper>
-    </Provider>
-  );
-};
-
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-const customRender = (ui, options) => render(ui, { wrapper: AllTheProviders, ...options });
+const customRender = (
+  ui,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  {
+    initialState,
+    customerReducers,
+    // Remove after updating snapshots
+    showModal,
+    reduxStore = storeWithInitialState(initialState, customerReducers),
+    ...restOptions
+  }: any = {},
+) => {
+  const AllTheProviders: React.FC<{
+    children: ReactElement<any, any> | null;
+  }> = ({ children }) => {
+    const mockRazorXExp = {
+      isInstantActivationEnabled: true,
+      canSkipPoiValidation: false,
+      canGenerateTnCPage: true,
+      isBDAndAovEnabled: true,
+      isAadharEkycMandatory: true,
+    };
+    return (
+      <Provider store={reduxStore}>
+        <Wrapper
+          context={{
+            mode: 'test',
+            org: { id: '123' },
+            user: { contact_name: 'prashant' },
+            experiments: mockRazorXExp,
+          }}
+        >
+          <Notifications />
+
+          <Router history={createMemoryHistory({ initialEntries: ['/'] })}>
+            <>
+              {showModal && <ModalDialog />}
+
+              <Route path="/" component={() => children} />
+            </>
+          </Router>
+        </Wrapper>
+      </Provider>
+    );
+  };
+
+  return render(ui, { wrapper: AllTheProviders, ...restOptions });
+};
 
 const waitForLoadingToFinish = (): Promise<void> =>
   waitForElementToBeRemoved(screen.queryAllByTestId('spinner'));
 
+const delay = (time = 1000): Promise<void> => new Promise((r) => setTimeout(r, time));
 // re-export everything
 export * from '@testing-library/react';
 
 // override render method
-export { customRender as render, waitForLoadingToFinish, server, errorHandlers };
+export { customRender as render, waitForLoadingToFinish, server, errorHandlers, delay };

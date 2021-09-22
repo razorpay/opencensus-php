@@ -14,7 +14,7 @@ const SettlementEntities = (props) => {
       setactiveTab(props.breakupDetails.items[0].component);
   }, [props.breakupDetails]);
 
-  const handleTabChange = (e) => setactiveTab(e.currentTarget.innerText.toLowerCase());
+  const handleTabChange = (e) => setactiveTab(e.currentTarget.textContent.toLowerCase());
 
   if (props.breakupDetails.error) return null;
 

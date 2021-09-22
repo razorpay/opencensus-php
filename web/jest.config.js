@@ -53,6 +53,12 @@ module.exports = {
       functions: 68,
       lines: 72,
     },
+    './js/merchant/views/Settlements/': {
+      statements: 75,
+      branches: 65,
+      functions: 75,
+      lines: 75,
+    },
   },
 
   // An array of glob patterns indicating a set of files for which coverage information should be collected

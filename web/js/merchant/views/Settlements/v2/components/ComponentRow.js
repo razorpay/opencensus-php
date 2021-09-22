@@ -4,7 +4,7 @@ import { titleCase } from 'common/utils/rzp-utils';
 
 const ComponentRow = ({ breakupItem, newResponse }) => {
   return (
-    <tr>
+    <tr data-testid={`settlementBreakup${breakupItem.type}`}>
       <td class={breakupItem.type === 'credit' ? `highlight-credit` : `highlight-debit`}>
         <div>
           <b>{titleCase(breakupItem.component)}</b>

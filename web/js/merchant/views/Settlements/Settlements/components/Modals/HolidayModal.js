@@ -16,14 +16,14 @@ class HolidayModal extends Component {
           title="Holidays List"
           onCloseClick={() => {
             this.props.closeModal();
-            window.rzpAnalytics({
+            window.rzpAnalytics?.({
               eventCategory: 'Settlement Revamp',
               eventAction: 'Close',
               eventLabel: `List of Bank Holidays`,
             });
           }}
         />
-        <HolidaysTable items={this.props.holidayList.data[year]} loading={false} />
+        <HolidaysTable items={this.props.holidayList?.data?.[year] || []} loading={false} />
       </div>
     );
   }

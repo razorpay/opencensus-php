@@ -6,8 +6,7 @@ import * as InternationalWorkflowDB from 'merchant/views/onboarding/mobile/servi
 import * as BusinessCategoryDB from 'merchant/views/onboarding/mobile/services/data/BusinessCategoryDB';
 import * as PaymentEscalationDB from 'merchant/views/onboarding/mobile/services/data/PaymentEscalationDB';
 import * as TermsAndConditionDB from 'merchant/views/TermsAndCondition/services/TermsAndConditionDB';
-
-import * as SettlementsDB from 'merchant/views/Settlements/tests/data/mockData';
+import * as SettlementsDB from 'merchant/views/Settlements/tests/data/SettlementsDB';
 
 export const handlers = [
   // Handles a "Login" mutation
@@ -304,6 +303,93 @@ export const handlers = [
       ctx.json({
         status_code: 200,
         data: SettlementsDB.settlementsInfo,
+      }),
+      ctx.delay(50),
+    );
+  }),
+
+  rest.get('*/merchant/api/test/settlements/:id/details', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        data: SettlementsDB.settleBreakupDetails,
+      }),
+      ctx.delay(50),
+    );
+  }),
+
+  rest.get('*/merchant/api/test/settlement/holidays', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        data: SettlementsDB.holidaysList,
+      }),
+      ctx.delay(50),
+    );
+  }),
+
+  rest.get('*/merchant/api/test/schedule_tasks/settlement', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        data: SettlementsDB.schedule,
+      }),
+      ctx.delay(50),
+    );
+  }),
+
+  rest.get('*/merchant/api/test/es/scheduled_pricing', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        data: SettlementsDB.scheduledPricing,
+      }),
+      ctx.delay(50),
+    );
+  }),
+
+  rest.post('*/merchant/api/test/es/scheduled', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+      }),
+      ctx.delay(50),
+    );
+  }),
+
+  rest.post('*/merchant/api/test/settlements/:id/transaction_source_details', (req, res, ctx) => {
+    if (req.body.limit === '5') {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 200,
+          data: SettlementsDB.settlementsListData.slice(0, 5),
+        }),
+        ctx.delay(50),
+      );
+    }
+
+    if (req.body.source_type === 'refund') {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 200,
+          data: SettlementsDB.settlementsListRefundData,
+        }),
+        ctx.delay(50),
+      );
+    }
+
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        data: SettlementsDB.settlementsListData,
       }),
       ctx.delay(50),
     );

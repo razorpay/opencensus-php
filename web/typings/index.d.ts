@@ -3,7 +3,9 @@ interface Window {
   analytics: any;
   session_id: string;
   rzpQ: any;
+  RZP: Record<string, unknown>;
   __VERSION__: string;
+  rzpAnalytics: () => void;
   razorpayAnalytics: any;
   rzpTicketSystem: any;
   LUMBERJACK_API_URL: string;

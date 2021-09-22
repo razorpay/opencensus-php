@@ -3,7 +3,6 @@ import Modal from 'react-modal';
 import { connect } from 'react-redux';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import { classList } from 'common/utils/rzp-utils';
 
 Object.assign(Modal.defaultStyles.overlay, {
   backgroundColor: 'rgba(58, 63, 81, 0.8)',
@@ -24,7 +23,7 @@ Modal.defaultStyles.content = {
 @connect((state) => ({ ...state.modal, org: state.session.org }), ModalActions)
 export default class ModalDialog extends Component {
   render() {
-    let props = this.props;
+    const props = this.props;
 
     // to apply the styles passed as props
     Object.assign(Modal.defaultStyles.overlay, props.overlayStyles);
@@ -36,7 +35,7 @@ export default class ModalDialog extends Component {
           onRequestClose={props.disableClose ? null : props.closeModal}
           closeTimeoutMS={300}
           shouldCloseOnOverlayClick={false}
-          class={`${props.org.custom_code} Modal ${props.size ? `Modal--${props.size}` : ''}${
+          class={`${props.org?.custom_code} Modal ${props.size ? `Modal--${props.size}` : ''}${
             props.className ? ` ${props.className}` : ''
           }`}
           contentLabel="Modal"

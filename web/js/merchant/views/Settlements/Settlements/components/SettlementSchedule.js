@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import moment from 'moment';
 import ModalHeader from 'common/ui/ModalHeader';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
