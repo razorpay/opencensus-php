@@ -696,6 +696,10 @@ export default class User {
     return this.getExpStatus('transaction_limit_update_self_serve');
   }
 
+  get isAdditionalDomainWhitelistSelfServeOn() {
+    return this.getExpStatus('additional_domain_whitelist_self_serve');
+  }
+
   get isCreditPullEnabled() {
     return this.isFeatureEnabled('show_credit_score');
   }

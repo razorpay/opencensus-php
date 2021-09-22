@@ -9,8 +9,10 @@ import Input from 'common/new-ui/Input';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import FileUpload from 'merchant/components/File/Upload';
+import { FLOWS } from './Constants';
 
-function WebsiteFields() {
+function WebsiteFields({ flowType, handleFileChange, onBiggerFileSize, onCloseClick, file }) {
   return (
     <>
       <Input required label="About us" name="about_us" />
@@ -19,11 +21,28 @@ function WebsiteFields() {
 
       <Input required label="Pricing details" name="pricing_details" />
 
-      <Input required label="Terms and conditions" name="terms_conditions" />
+      <Input required label="Terms and conditions" name="tnc" />
 
       <Input required label="Privacy policy" name="privacy_policy" />
 
       <Input required label="Refund policy" name="refund_policy" />
+
+      {flowType === FLOWS.ADDITIONAL_WEBSITE && (
+        <div class="upload-invoice">
+          <label>Upload invoice</label>
+          <FileUpload
+            accept={['jpg', 'png', 'pdf']}
+            maxSize={1048576} // 1 MB
+            showCloseBtn
+            showFileSize={false}
+            showAcceptInfo={false}
+            onBiggerFileSize={onBiggerFileSize}
+            onFileChange={handleFileChange}
+            onCloseClick={onCloseClick}
+          />
+          {file?.message ? <label class="notify-error">{file.message}</label> : null}
+        </div>
+      )}
     </>
   );
 }
@@ -31,38 +50,37 @@ function WebsiteFields() {
 function UpdateWebsiteDetails(props) {
   const [type, settype] = useState('website');
   const [doesNeedCreds, setdoesNeedCreds] = useState(true);
+  const [file, setfile] = useState(null);
+  const [isReasonValid, setisReasonValid] = useState(null); // Validity => minimum 100 words
+  const [isLinkValid, setisLinkValid] = useState(true); // Validity => should not be an already existing one
 
-  const save = async (e) => {
-    e.preventDefault();
-    const formData = Array.from(e.target.elements).reduce((acc, ele) => {
-      acc[ele.name] = ele.value;
-      return acc;
-    }, {});
-
+  const submitBusinessDetails = async (formFieldValues) => {
     const payload = {};
     let urlDetails = {};
 
     if (type === 'website') {
-      payload.business_website_main_page = formData.website_url;
-      payload.business_website_about_us = formData.about_us;
-      payload.business_website_contact_us = formData.contact_us;
-      payload.business_website_pricing_details = formData.pricing_details;
-      payload.business_website_privacy_policy = formData.privacy_policy;
-      payload.business_website_tnc = formData.terms_conditions;
-      payload.business_website_refund_policy = formData.refund_policy;
-      urlDetails = { ...payload };
+      // Gather all field values into payload
+      Object.keys(formFieldValues).forEach((key) => {
+        payload[`business_website_${key}`] = formFieldValues[key];
+      });
 
-      if (doesNeedCreds) {
-        payload.business_website_username = formData.username;
-        payload.business_website_password = formData.passwd;
+      // If creds are not checked, removing these keys
+      if (!doesNeedCreds) {
+        delete payload.business_website_username;
+        delete payload.business_website_password;
       }
+
+      urlDetails = { ...payload };
+      // Removing creds from analytics
+      delete urlDetails.business_website_username;
+      delete urlDetails.business_website_password;
     } else {
-      payload.business_app_url = formData.app_url;
+      payload.business_app_url = formFieldValues.app_url;
       urlDetails = { ...payload };
 
       if (doesNeedCreds) {
-        payload.business_app_username = formData.username;
-        payload.business_app_password = formData.passwd;
+        payload.business_app_username = formFieldValues.username;
+        payload.business_app_password = formFieldValues.password;
       }
     }
 
@@ -129,9 +147,83 @@ function UpdateWebsiteDetails(props) {
     }
   };
 
+  const submitAdditionalDomainDetails = async (formFieldValues) => {
+    const formData = new FormData();
+
+    if (type === 'website') {
+      Object.keys(formFieldValues).forEach((key) => {
+        if (key === 'username' || key === 'password')
+          formData.append(`additional_website_test_${key}`, formFieldValues[key]);
+        else formData.append(`additional_website_${key}`, formFieldValues[key]);
+      });
+
+      // If creds are not checked, removing these keys
+      if (!doesNeedCreds) {
+        formData.delete('additional_website_test_username');
+        formData.delete('additional_website_test_password');
+      }
+
+      if (file instanceof File) formData.append('additional_website_proof_url', file);
+    } else {
+      formData.append('additional_app_url', formFieldValues.app_url);
+      formData.append('additional_app_reason', formFieldValues.reason);
+
+      if (doesNeedCreds) {
+        formData.append('additional_app_test_username', formFieldValues.username);
+        formData.append('additional_app_test_password', formFieldValues.password);
+      }
+    }
+
+    try {
+      const response = await merchantFetch({
+        url: `merchant/additional_website/${type}`,
+        method: 'POST',
+        data: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response) {
+        props.showNotification({
+          type: 'success',
+          message: `${type} submitted successfully`,
+        });
+
+        props.getAdditionalWebsiteWorkflowStatus();
+        props.closeModal();
+      }
+    } catch ({ errors }) {
+      props.showNotification({
+        type: 'error',
+        message: errors,
+      });
+    }
+  };
+
+  const save = (e) => {
+    e.preventDefault();
+
+    const formFieldValues = Array.from(e.target.elements).reduce((acc, ele) => {
+      acc[ele.name] = ele.value;
+      return acc;
+    }, {});
+
+    delete formFieldValues.website;
+    delete formFieldValues.app;
+    delete formFieldValues[''];
+
+    if (props.flowType === FLOWS.BUSINESS_WEBSITE) {
+      submitBusinessDetails(formFieldValues);
+    } else {
+      submitAdditionalDomainDetails(formFieldValues);
+    }
+  };
+
   const onTypeCheckboxClick = (typeValue) => {
     settype(typeValue);
     setdoesNeedCreds(true);
+    setfile(null);
 
     let analyticsObject;
     const { user } = props;
@@ -166,6 +258,42 @@ function UpdateWebsiteDetails(props) {
   };
 
   const onNeedsCredsClick = (value) => setdoesNeedCreds(value);
+
+  const handleFileChange = (uploadedFile, _) => setfile(uploadedFile);
+
+  const onCloseClick = () => setfile(null);
+
+  const onBiggerFileSize = () => {
+    const err = new Error('Document too large. Max limit 1MB', { cause: 'FILE_SIZE_EXCEEDED' });
+    setfile(err);
+  };
+
+  const onTextInputBlur = (e) => {
+    const input = e.target.value;
+    const tokens = input.split(' ');
+
+    if (tokens.length >= 50) setisReasonValid(true);
+    else setisReasonValid(false);
+  };
+
+  const validateWebsiteNAppLink = (input) => {
+    if (props.flowType === FLOWS.ADDITIONAL_WEBSITE) {
+      const { user } = props;
+
+      // if additional website doesn't exits => Normal flow
+      if (!user.additional_websites) return '';
+      else {
+        // Additional websites exists, check if new website already exists
+        if (user.additional_websites.includes(input)) {
+          setisLinkValid(false);
+          return 'You have already added this website';
+        }
+        setisLinkValid(true);
+        return '';
+      }
+    }
+    return '';
+  };
 
   return (
     <div>
@@ -210,17 +338,41 @@ function UpdateWebsiteDetails(props) {
               label={type === 'website' ? 'Website url' : 'App url'}
               autoFocus
               required
-              name={type === 'website' ? 'website_url' : 'app_url'}
+              name={type === 'website' ? 'main_page' : 'app_url'}
+              validator={validateWebsiteNAppLink}
             />
 
             <hr />
 
-            {type === 'website' && <WebsiteFields />}
+            {type === 'website' && (
+              <WebsiteFields
+                handleFileChange={handleFileChange}
+                onCloseClick={onCloseClick}
+                flowType={props.flowType}
+                onBiggerFileSize={onBiggerFileSize}
+                file={file}
+              />
+            )}
+
+            {props.flowType === FLOWS.ADDITIONAL_WEBSITE && (
+              <>
+                <Input.Textarea
+                  placeholder="Min 50 Words"
+                  label="Reason"
+                  required
+                  name="reason"
+                  onBlur={onTextInputBlur}
+                />
+                {isReasonValid === false && (
+                  <label style={{ color: '#f05050' }}>Minimum 50 words required</label>
+                )}
+              </>
+            )}
           </div>
 
           <div class="form-group">
             <span>
-              <strong>Test Account credentials </strong>
+              <strong>Test Account credentials</strong>
               <small class="help-content">
                 <i class="i i-info-circle" />
                 <Popover align="top" theme="dark">
@@ -264,7 +416,7 @@ function UpdateWebsiteDetails(props) {
 
             <Input placeholder="Username/email" name="username" />
 
-            <Input placeholder="Password" type="password" name="passwd" />
+            <Input placeholder="Password" type="password" name="password" />
 
             {type === 'app' && (
               <div class="note">
@@ -275,7 +427,11 @@ function UpdateWebsiteDetails(props) {
           </div>
 
           <div class="Modal__actions">
-            <button type="submit" class="btn btn-primary btn-block" text="">
+            <button
+              type="submit"
+              class="btn btn-primary btn-block"
+              disabled={isReasonValid === false || isLinkValid === false}
+            >
               Submit {type} for review
             </button>
           </div>

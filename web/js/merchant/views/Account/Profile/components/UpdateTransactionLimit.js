@@ -15,6 +15,7 @@ import { TRANSACTION_LIMIT_CONSTANTS } from 'merchant/helpers/data';
 function UpdateTransactionLimit(props) {
   const [file, setfile] = useState(null);
   const [isReasonValid, setisReasonValid] = useState(null); // Validity => minimum 100 words
+  const [isLimitValid, setisLimitValid] = useState(true); // Validity => value below allowed limit
 
   const save = async (e) => {
     e.preventDefault();
@@ -137,11 +138,13 @@ function UpdateTransactionLimit(props) {
       : maxAllowedValues[1];
 
     if (+inputValue > limitAllowedForBusinessType) {
+      setisLimitValid(false);
       if (businessCategory)
         return `Amount entered is greater then the limit allowed for ${businessCategory} business category`;
       else return `Amount entered is greater then the limit allowed for business category`;
     }
 
+    setisLimitValid(true);
     return '';
   };
 
@@ -202,7 +205,7 @@ function UpdateTransactionLimit(props) {
             <button
               type="submit"
               class="btn btn-primary btn-block"
-              disabled={isReasonValid === false}
+              disabled={isReasonValid === false || isLimitValid === false}
             >
               Submit Details
             </button>

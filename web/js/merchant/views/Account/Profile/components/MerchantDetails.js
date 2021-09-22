@@ -25,11 +25,12 @@ import TextHighlighter from 'common/ui/TextHighlighter';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 import InitiateWebsiteChange from './WebsiteSelfServe/InitiateWebsiteChange';
+import { FLOWS } from './WebsiteSelfServe/Constants';
 import UpdateTransactionLimit from './UpdateTransactionLimit';
 import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
 
 function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
-  const businessWebsite = (
+  return (
     <div>
       {user.business_website ? (
         <span className="text-primary m-r">
@@ -45,24 +46,53 @@ function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
         user.role === 'owner' &&
         user.isAccepted &&
         user.isWebsiteSelfServeOn && (
-          <Button.Transparent onClick={handleEditWebsite}>
+          <Button.Transparent
+            onClick={() => {
+              handleEditWebsite(FLOWS.BUSINESS_WEBSITE);
+            }}
+          >
             <i class="i i-edit p-l" />
           </Button.Transparent>
         )}
     </div>
   );
+}
+
+function renderAdditionalWebsites(user, handleEditWebsite, isAdditionalWebsiteInWorkflow) {
+  const hasAdditionalWebsites = isPresent(user.additional_websites);
+  const isLimitReached = hasAdditionalWebsites ? user.additional_websites.length === 5 : false;
 
   return (
-    <div>
-      {businessWebsite}
-      {isPresent(user.additional_websites) &&
-        user.additional_websites.map((website, idx) => (
-          <div key={`${website}_${idx}`}>
-            <a href={website} target="_blank" rel="noopener noreferrer">
-              {website}
-            </a>
+    <div class="website-self-serve__listItem additional-websites__listcontainer">
+      <div>
+        {hasAdditionalWebsites ? (
+          user.additional_websites.map((website, idx) => (
+            <div key={`${website}_${idx}`}>
+              <a href={website} target="_blank" rel="noopener noreferrer">
+                {website}
+                {idx === user.additional_websites.length - 1 ? '' : ','}
+              </a>
+            </div>
+          ))
+        ) : (
+          <span class="additional-websites__listcontainer">--</span>
+        )}
+      </div>
+      {user.business_website &&
+        user.isAdditionalDomainWhitelistSelfServeOn &&
+        isAdditionalWebsiteInWorkflow === false &&
+        (user.role === 'owner' || user.role === 'admin') &&
+        !isLimitReached && (
+          <div>
+            <Button.Transparent
+              onClick={() => {
+                handleEditWebsite(FLOWS.ADDITIONAL_WEBSITE);
+              }}
+            >
+              <i class="i i-edit p-l" />
+            </Button.Transparent>
           </div>
-        ))}
+        )}
     </div>
   );
 }
@@ -78,6 +108,7 @@ const MerchantDetails = ({
 }) => {
   const [isWebsiteInWorkflow, setisWebsiteInWorkflow] = useState(false);
   const [transactionLimitWorkflowStatus, settransactionLimitWorkflowStatus] = useState(false);
+  const [isAdditionalWebsiteInWorkflow, setisAdditionalWebsiteInWorkflow] = useState(false);
 
   const getWebsiteWorkflowStatus = async () => {
     try {
@@ -117,14 +148,41 @@ const MerchantDetails = ({
     }
   };
 
+  const getAdditionalWebsiteWorkflowStatus = async () => {
+    try {
+      const response = await merchantFetch({
+        url: `merchant/additional_website_status`,
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response) {
+        setisAdditionalWebsiteInWorkflow(response.data.status);
+      }
+    } catch ({ errors }) {
+      showNotification({
+        type: 'error',
+        message: errors,
+      });
+    }
+  };
+
   useEffect(() => {
     // Only fetch request if user is owner, other users shouldn't see the error
     if (user.role === 'owner') getWebsiteWorkflowStatus();
   }, []);
 
   useEffect(() => {
+    getAdditionalWebsiteWorkflowStatus();
     // Only fetch request if user is owner, other users shouldn't see the error
     if (user.role === 'owner') getTransactionLimitWorkflowStatus();
+  }, []);
+
+  useEffect(() => {
+    // Only fetch request if user is owner, other users shouldn't see the error
+    if (user.role === 'owner' || user.role === 'admin') getAdditionalWebsiteWorkflowStatus();
   }, []);
 
   let activationName = 'KYC';
@@ -138,7 +196,7 @@ const MerchantDetails = ({
     trackerName = 'act.form_fill';
   }
 
-  const handleEditWebsite = () => {
+  const handleEditWebsite = (flowType) => {
     const hasWebsite = user.has_key_access; // If true => edit website flow; otherwise add flow
 
     if (hasWebsite) {
@@ -149,7 +207,9 @@ const MerchantDetails = ({
             user={user}
             openModal={openModal}
             closeModal={closeModal}
+            flowType={flowType}
             getWebsiteWorkflowStatus={getWebsiteWorkflowStatus}
+            getAdditionalWebsiteWorkflowStatus={getAdditionalWebsiteWorkflowStatus}
           />
         ),
       });
@@ -161,6 +221,9 @@ const MerchantDetails = ({
         ),
       });
     }
+
+    // Avoid tracking for additional website flow
+    if (flowType === FLOWS.ADDITIONAL_WEBSITE) return;
 
     let analyticsObject;
 
@@ -247,7 +310,7 @@ const MerchantDetails = ({
   const showTransactionLimitEdit =
     user.role === 'owner' &&
     user.isOrgRZP &&
-    user.isTransactionLimitUpdateSelfServeOn &&
+    !user.isTransactionLimitUpdateSelfServeOn &&
     (transactionLimitWorkflowStatus.workflow_exists === false ||
       !['open', 'approved'].includes(transactionLimitWorkflowStatus.workflow_status)) &&
     isMerchantAllowedToEditLimit();
@@ -470,6 +533,34 @@ const MerchantDetails = ({
               </div>
             )}
             value={() => renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow)}
+          />
+
+          <DetailRow
+            label={() => (
+              <div class="website-self-serve__listItem">
+                <span>Additional Business Website/App</span>
+                <small class="help-content">
+                  <i class="i i-info-outline" />
+                  <Popover align="top" theme="dark">
+                    <PopoverBody>
+                      <div>
+                        <div>
+                          You can add second website/app to use Razorpay on that website/app
+                        </div>
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </small>
+                {isAdditionalWebsiteInWorkflow === true && (
+                  <div class="website-self-serve__change-info">
+                    Your request to add the website is under review.
+                  </div>
+                )}
+              </div>
+            )}
+            value={() =>
+              renderAdditionalWebsites(user, handleEditWebsite, isAdditionalWebsiteInWorkflow)
+            }
           />
         </React.Fragment>
       )}

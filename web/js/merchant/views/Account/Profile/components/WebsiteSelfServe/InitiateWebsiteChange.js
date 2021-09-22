@@ -4,6 +4,7 @@ import UpdateWebsiteDetails from './UpdateWebsiteDetails';
 import TwoFactorVerificaionContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { FLOWS } from './Constants';
 
 function InitiateWebsiteChange(props) {
   const context = useContext(TwoFactorVerificaionContext);
@@ -13,8 +14,17 @@ function InitiateWebsiteChange(props) {
 
     props.openModal({
       size: 'small',
-      component: <UpdateWebsiteDetails getWebsiteWorkflowStatus={props.getWebsiteWorkflowStatus} />,
+      component: (
+        <UpdateWebsiteDetails
+          flowType={props.flowType}
+          getWebsiteWorkflowStatus={props.getWebsiteWorkflowStatus}
+          getAdditionalWebsiteWorkflowStatus={props.getAdditionalWebsiteWorkflowStatus}
+        />
+      ),
     });
+
+    // Avoid tracking for additional website flow
+    if (props.flowType === FLOWS.ADDITIONAL_WEBSITE) return;
 
     analyticsTrack({
       objectName: `Website 2fa result`,
@@ -51,6 +61,9 @@ function InitiateWebsiteChange(props) {
         });
       },
     });
+
+    // Avoid tracking for additional website flow
+    if (props.flowType === FLOWS.ADDITIONAL_WEBSITE) return;
 
     // Edit flow
     if (user.has_key_access) {
