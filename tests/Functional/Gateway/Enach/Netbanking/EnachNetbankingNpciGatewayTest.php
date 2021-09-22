@@ -210,8 +210,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             }
         }
 
-        $this->assertEquals(32, $debtcount);
-        $this->assertEquals(39, $netcount);
+        $this->assertEquals(33, $debtcount);
+        $this->assertEquals(44, $netcount);
 
     }
 
