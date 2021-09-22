@@ -14,6 +14,8 @@ class Constants
 
     const MERCHANT_SAVE_BUSINESS_WEBSITE        =   'merchant_save_business_website';
 
+    const MERCHANT_ACTIVATION_UPDATE_WEBSITE    =  'merchant_activation_update_website';
+
     const INCREASE_TRANSACTION_LIMIT_SELF_SERVE =   'increase_transaction_limit_self_serve';
 
     const APPROVED_TRANSACTION_LIMIT            =   'approved_transaction_limit';
@@ -32,10 +34,11 @@ class Constants
 
         self::MERCHANT_ACTIVATION_STATUS            => MerchantActivationStatusObserver::class,
 
-        self::MERCHANT_SAVE_BUSINESS_WEBSITE        => BusinessWebsiteSelfServeObserver::class,
+        self::MERCHANT_SAVE_BUSINESS_WEBSITE        => MerchantSelfServeObserver::class,
 
-        self::INCREASE_TRANSACTION_LIMIT_SELF_SERVE => TransactionLimitSelfServeObserver::class
+        self::INCREASE_TRANSACTION_LIMIT_SELF_SERVE => MerchantSelfServeObserver::class,
 
+        self::MERCHANT_ACTIVATION_UPDATE_WEBSITE    => MerchantSelfServeObserver::class,
     ];
 
     const ROUTE_VS_RAZORX_EXPERIMENT = [

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Mail;
 use RZP\Mail\Merchant as MerchantMail;
 use RZP\Models\Workflow\Action\Differ\Entity;
 
-class TransactionLimitSelfServeObserver implements WorkflowObserverInterface
+class MerchantSelfServeObserver implements WorkflowObserverInterface
 {
     protected $entityId;
 

@@ -22,11 +22,6 @@ class Validator extends Base\Validator
         Constants::REJECTION_REASON . '.' . Constants::MESSAGE_BODY        => 'sometimes|string',
     ];
 
-    protected $routeValidatorMapping = [
-        Constants::MERCHANT_SAVE_BUSINESS_WEBSITE        => 'rejection_reason_data',
-        Constants::INCREASE_TRANSACTION_LIMIT_SELF_SERVE => 'approved_transaction_limit',
-    ];
-
     protected static $approvedTransactionLimitRules = [
         FDConstants::TICKET_ID                                             => 'sometimes|integer',
         FDConstants::FD_INSTANCE                                           => 'sometimes|string',
@@ -34,6 +29,12 @@ class Validator extends Base\Validator
         Constants::REJECTION_REASON                                        => 'sometimes|array|size:2',
         Constants::REJECTION_REASON . '.' . Constants::MESSAGE_SUBJECT     => 'sometimes|string',
         Constants::REJECTION_REASON . '.' . Constants::MESSAGE_BODY        => 'sometimes|string',
+    ];
+
+    protected $routeValidatorMapping = [
+        Constants::MERCHANT_SAVE_BUSINESS_WEBSITE        => 'rejection_reason_data',
+        Constants::MERCHANT_ACTIVATION_UPDATE_WEBSITE    => 'rejection_reason_data',
+        Constants::INCREASE_TRANSACTION_LIMIT_SELF_SERVE => 'approved_transaction_limit',
     ];
 
     public function validateWorkflowObserverData($differEntity, array $input)
@@ -47,4 +48,5 @@ class Validator extends Base\Validator
 
         $this->validateInput($validatorRules , $input);
     }
+
 }
