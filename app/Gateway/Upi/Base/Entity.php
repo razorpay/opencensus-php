@@ -4,6 +4,7 @@ namespace RZP\Gateway\Upi\Base;
 
 use RZP\Gateway\Base;
 use RZP\Models\Payment\Gateway;
+use RZP\Reconciliator\Base\Reconciliate;
 
 class Entity extends Base\Entity
 {
@@ -106,6 +107,7 @@ class Entity extends Base\Entity
     protected static $generators = [
         self::PROVIDER,
         self::BANK,
+        self::RECONCILED_AT,
     ];
 
     public function setAcquirer($acquirer)
@@ -272,6 +274,17 @@ class Entity extends Base\Entity
         $bank = ProviderCode::getBankCode($provider);
 
         $this->setAttribute(self::BANK, $bank);
+    }
+
+    protected function generateReconciledAt($input)
+    {
+        // Setting reconciled_At flag for recon flow
+        //To handle cases when reconciliation fails after creating unexpected payments
+        if (Reconciliate::$isReconRunning === true)
+        {
+            $this->setAttribute(self::RECONCILED_AT, $this->freshTimestamp());
+        }
+
     }
 
     public function setGatewayData($value)

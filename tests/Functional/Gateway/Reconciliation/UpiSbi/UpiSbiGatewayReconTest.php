@@ -95,6 +95,10 @@ class UpiSbiGatewayReconTest extends TestCase
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
         $this->makeUpiSbiPaymentsSince(1, $createdAt);
+        // fetch Upi Entity to assert the reconciled_at field is null,after normal payment creation flow
+        $upiEntity = $this->getLastEntity('upi', true);
+        // assert if reconciled_at is null
+        $this->assertNull($upiEntity['reconciled_at']);
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)
