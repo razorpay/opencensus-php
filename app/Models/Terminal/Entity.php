@@ -1002,9 +1002,11 @@ class Entity extends Base\PublicEntity
 
     protected function setGatewayTerminalPasswordAttribute($password)
     {
-        if ($password === null)
+        if ((empty($password) === true) or (trim($password) === ''))
         {
-            $password = '';
+            $this->attributes[self::GATEWAY_TERMINAL_PASSWORD] = null;
+
+            return;
         }
 
         $this->attributes[self::GATEWAY_TERMINAL_PASSWORD] = Crypt::encrypt($password, true, $this);
@@ -1012,9 +1014,11 @@ class Entity extends Base\PublicEntity
 
     protected function setGatewayTerminalPassword2Attribute($password)
     {
-        if ($password === null)
+        if ((empty($password) === true) or (trim($password) === ''))
         {
-            $password = '';
+            $this->attributes[self::GATEWAY_TERMINAL_PASSWORD2] = null;
+
+            return;
         }
 
         $this->attributes[self::GATEWAY_TERMINAL_PASSWORD2] = Crypt::encrypt($password, true, $this);
@@ -1022,9 +1026,11 @@ class Entity extends Base\PublicEntity
 
     protected function setGatewaySecureSecretAttribute($secret)
     {
-        if ($secret === null)
+        if ((empty($secret) === true) or (trim($secret) === ''))
         {
-            $secret = '';
+            $this->attributes[self::GATEWAY_SECURE_SECRET] = null;
+
+            return;
         }
 
         $this->attributes[self::GATEWAY_SECURE_SECRET] = Crypt::encrypt($secret, true, $this);
@@ -1032,9 +1038,11 @@ class Entity extends Base\PublicEntity
 
     protected function setGatewaySecureSecret2Attribute($secret)
     {
-        if ($secret === null)
+        if ((empty($secret) === true) or (trim($secret) === ''))
         {
-            $secret = '';
+            $this->attributes[self::GATEWAY_SECURE_SECRET2] = null;
+
+            return;
         }
 
         $this->attributes[self::GATEWAY_SECURE_SECRET2] = Crypt::encrypt($secret, true, $this);
@@ -1042,9 +1050,10 @@ class Entity extends Base\PublicEntity
 
     protected function setGatewayReconPasswordAttribute($reconPassword)
     {
-        if ($reconPassword === null)
+        if ((empty($reconPassword) === true) or (trim($reconPassword) === ''))
         {
-            // Default value is set to null anyway.
+            $this->attributes[self::GATEWAY_RECON_PASSWORD]  = null;
+
             return;
         }
 
