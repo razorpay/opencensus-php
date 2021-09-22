@@ -355,7 +355,7 @@ class CardMandateTest extends TestCase
     {
         $this->testCreateCardMandatePayment();
 
-        $this->mockCreatePreDebitNotification(true, true);
+        $this->mockCreatePreDebitNotification(false, true);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -383,9 +383,8 @@ class CardMandateTest extends TestCase
         $this->assertEquals('created', $payment->getStatus());
 
         $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
-        $this->assertEquals('notified', $cardMandateNotification->getStatus());
+        $this->assertEquals('failed', $cardMandateNotification->getStatus());
         $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandateNotification->notification_id);
-        $this->assertNotEmpty($cardMandateNotification->notified_at);
 
         $this->mockPostDebitNotification();
 
@@ -394,7 +393,8 @@ class CardMandateTest extends TestCase
         $this->startTest();
 
         $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
-        $this->assertEquals('notified', $cardMandateNotification->getStatus());
+        $this->assertEquals('failed', $cardMandateNotification->getStatus());
+        $this->assertEquals('approved', $cardMandateNotification->getAfaStatus());
 
         $payment = $this->getDbLastEntity('payment');
         $this->assertEquals('captured', $payment->getStatus());

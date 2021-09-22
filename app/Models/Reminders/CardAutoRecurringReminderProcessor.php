@@ -19,7 +19,8 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
 
         $gatewayInput = $this->getGatewayInputForPayment($payment);
 
-        if ($notification->getStatus() !== CardMandateNotification\Status::NOTIFIED ||
+        if ((!$notification->isAfaRequired() and $notification->getStatus() !== CardMandateNotification\Status::NOTIFIED) ||
+            ($notification->isAfaRequired() and $notification->getAfaStatus() !== CardMandateNotification\AfaStatus::APPROVED) ||
             $notification->cardMandate->isActive() === false)
         {
             $processor->failNotificationVerifyFailedCardAutoRecurringPayment($payment);
