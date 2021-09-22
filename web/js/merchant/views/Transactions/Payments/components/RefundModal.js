@@ -41,7 +41,7 @@ export const amountValidation = (props) => {
     return 'Amount is required';
   }
 
-  if (value < 1) {
+  if (value < 1 && props.payment.currency === 'INR') {
     return `Amount can't be less than 1`;
   }
 
