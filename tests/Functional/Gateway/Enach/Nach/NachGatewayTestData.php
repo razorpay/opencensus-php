@@ -89,7 +89,7 @@ return [
                         'recipients'          => [
                             ''
                         ],
-                        'status'              => 'acknowledged',
+                        'status'              => 'file_generated',
                         'scheduled'           => true,
                         'partially_processed' => false,
                         'attempts'            => 1,
@@ -97,7 +97,6 @@ return [
                         'target'              => 'paper_nach_citi',
                         'entity'              => 'gateway_file',
                         'admin'               => true,
-                        'comments'            => 'No data present for gateway file processing in the given time period'
                     ],
                 ],
             ]

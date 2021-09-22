@@ -291,7 +291,11 @@ class NachGatewayTest extends TestCase
 
         Carbon::setTestNow($fixedTime);
 
-        $this->createDummyRegisterToken();
+        $response = $this->createDummyRegisterToken();
+
+        $this->fixtures->edit('payment', $response['id'], [
+            'created_at' => Carbon::today(Timezone::IST)->addHours(5)->timestamp
+        ]);
 
         $this->ba->cronAuth();
 
