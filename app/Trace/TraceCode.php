@@ -2371,6 +2371,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_EMAIL_VERIFY_WITH_OTP                            = 'USER_EMAIL_VERIFY_WITH_OTP';
     const USER_2FA_LOCKED                                       = 'USER_2FA_LOCKED';
     const USER_INVALIDATE_MERCHANT_ERROR                        = 'USER_INVALIDATE_MERCHANT_ERROR';
+    const USER_INVALIDATE_DEBUG                                 = 'USER_INVALIDATE_DEBUG';
+    const USER_INVALIDATE_SKIPPED                               = 'USER_INVALIDATE_SKIPPED';
     const USER_CONFIRM_INVALIDATE_INFO                          = 'USER_CONFIRM_INVALIDATE_INFO';
 
     // Trace code for Invitation

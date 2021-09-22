@@ -49,8 +49,9 @@ class MerchantSupportingEntitiesCreateJob extends Job
         {
             $merchant = $this->repoManager->merchant->findOrFailPublic($this->merchantId);
             $partner  = $this->repoManager->merchant->findOrFailPublic($this->partnerId);
-            (new Merchant\Core())->addMerchantSupportingEntitiesAsync($merchant, $partner);
-
+            $merchantCore =  (new Merchant\Core());
+            $merchantCore->addMerchantSupportingEntitiesAsync($merchant, $partner);
+            $merchantCore->addSubmerchantOnboardingV2Feature($merchant);
             $this->delete();
         }
         catch (\Throwable $e)

@@ -13,6 +13,7 @@ use RZP\Mail\User as UserMail;
 use \RZP\Models\BankingAccount;
 use RZP\Listeners\ApiEventSubscriber;
 use Razorpay\OAuth\Application as OAuthApp;
+use RZP\Constants\Entity as EntityConstants;
 
 use RZP\Exception;
 use RZP\Models\Emi;
@@ -2611,6 +2612,17 @@ class Core extends Base\Core
         }
 
         $this->appendTag($account, $refTag);
+    }
+
+    public function addSubmerchantOnboardingV2Feature($submerchant)
+    {
+        $featureParams = [
+            Feature\Entity::ENTITY_ID   => $submerchant->getId(),
+            Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Feature\Entity::NAME        => Feature\Constants::CREATE_SOURCE_V2,
+        ];
+
+        (new Feature\Core)->create($featureParams, true);
     }
 
     /**

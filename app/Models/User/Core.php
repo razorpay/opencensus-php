@@ -1169,6 +1169,8 @@ class Core extends Base\Core
     {
         try
         {
+            $this->trace->info(TraceCode::USER_INVALIDATE_DEBUG, ['flow' => 'started']);
+
             $this->invalidateUserContactInfo($user);
 
             $merchant = $user->getMerchantEntity();
@@ -1180,9 +1182,25 @@ class Core extends Base\Core
                 return;
             }
 
+            $features = $this->repo->feature->findMerchantWithFeatures($merchant->getId(), [FeatureConstant::CREATE_SOURCE_V2]);
+
+            $this->trace->info(TraceCode::USER_INVALIDATE_DEBUG, ['user_id' => $user->getId(), 'features' => $features ]);
+
+            if (count($features) > 0)
+            {
+                $this->trace->info(TraceCode::USER_INVALIDATE_DEBUG, ['user_id' => $user->getId(), 'flow' => 'skipped']);
+                $this->trace->info(TraceCode::USER_INVALIDATE_SKIPPED, ['user_id' => $user->getId()]);
+                return;
+            }
+
             $this->invalidateMerchantContactInfo($merchant);
 
             $this->invalidateMerchantDetailInfo($merchant);
+
+            $this->repo->saveOrFail($user);
+
+            $this->trace->info(TraceCode::USER_INVALIDATE_DEBUG, ['user_id' => $user->getId(), 'flow' => 'executed']);
+
         }
         catch (\Throwable $e)
         {
@@ -1195,7 +1213,6 @@ class Core extends Base\Core
     {
         $user->setName('');
         $user->setContactMobileNull();
-        $this->repo->saveOrFail($user);
     }
 
     protected function invalidateMerchantContactInfo($merchant)

@@ -221,5 +221,7 @@ class AccountV2Test extends TestCase
         Account\Entity::verifyIdAndSilentlyStripSign($merchantId);
         $tags = (new Service())->getTags($merchantId);
         $this->assertTrue(in_array($tagName, $tags));
+        $features = $this->getDbEntities('feature', ['entity_id' => $merchantId, 'name' => 'create_source_v2'], 'live');
+        $this->assertTrue(count($features) === 1);
     }
 }

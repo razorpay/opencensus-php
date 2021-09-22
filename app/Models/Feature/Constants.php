@@ -268,6 +268,11 @@ class Constants
     const SUBMERCHANT_ONBOARDING_V2 = 'submerchant_onboarding_v2';
 
     /**
+     * This feature will be assinged to all submerchants onboarded via V2 onboarding APIs
+     */
+    const CREATE_SOURCE_V2 = 'create_source_v2';
+
+    /**
      * Flag to decide whether razorpay can send communication mails to partner's submerchants
      */
     const NO_COMM_WITH_SUBMERCHANTS       = 'no_comm_with_submerchants';
@@ -1216,6 +1221,7 @@ class Constants
         self::ENABLE_SIFT_JS                  => true,
         self::API_BULK_APPROVALS              => true,
         self::NETWORK_TOKENIZATION            => true,
+        self::CREATE_SOURCE_V2     => true,
     ];
     // Entity type constants
     const ACCOUNT                       = 'account';
