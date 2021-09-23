@@ -1,3 +1,4 @@
+import React from 'react';
 import { classList } from 'common/utils/rzp-utils';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
@@ -11,11 +12,11 @@ export class ModalMask extends React.PureComponent {
   state = {};
 
   componentWillMount() {
-    this.props.isBlur && this.toggleBlur(true);
+    if (this.props.isBlur) this.toggleBlur(true);
   }
 
   componentWillUnmount() {
-    this.props.isBlur && this.toggleBlur(false);
+    if (this.props.isBlur) this.toggleBlur(false);
     document.body.classList.remove('noscroll');
   }
 
@@ -54,8 +55,8 @@ export class ModalMask extends React.PureComponent {
   render() {
     const { children, maskClosable = false, allowScroll, ...rest } = this.props;
 
-    let classArray = rest.className
-      ? rest.className.split(' ').map((cls) => 'Modal-mask--' + cls)
+    const classArray = rest.className
+      ? rest.className.split(' ').map((cls) => `Modal-mask--${cls}`)
       : '';
 
     return (
@@ -101,18 +102,23 @@ export class Modal extends React.PureComponent {
       onCloseCB,
       allowScroll,
       fadedCloseButton = false,
+      canDisableCloseBtn = false,
       ...rest
     } = this.props;
 
-    let classArray = className ? className.split(' ').map((cls) => 'Modal-container--' + cls) : '';
+    const classArray = className
+      ? className.split(' ').map((cls) => `Modal-container--${cls}`)
+      : '';
 
     return (
       <div class={classList('Modal-container', classArray)} {...rest}>
         {showCloseBtn && (
           <span
-            className={`Modal-close ${fadedCloseButton ? 'Modal-close-faded' : ''}`}
+            className={`Modal-close ${fadedCloseButton ? 'Modal-close-faded' : ''} ${
+              canDisableCloseBtn ? 'Modal-close-disable' : ''
+            }`}
             onClick={(e) => {
-              onCloseCB && onCloseCB(e);
+              if (onCloseCB) onCloseCB(e);
               document.body.classList.remove('noscroll');
 
               onClose(e);

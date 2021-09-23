@@ -37,6 +37,7 @@ export default class ActivationContainer extends Component {
       aovRange: null,
       clarificationReasons: null,
       gstinDetails: null,
+      isActivationFormLoading: false,
     };
 
     this.fetchActivationDetails = this.fetchActivationDetails.bind(this);
@@ -245,6 +246,10 @@ export default class ActivationContainer extends Component {
     this.props.tracking.trackEvent(event);
   };
 
+  setActivationFormLoadingState = () => {
+    this.setState({ isActivationFormLoading: !this.state.isActivationFormLoading });
+  };
+
   render() {
     const {
       data,
@@ -253,6 +258,7 @@ export default class ActivationContainer extends Component {
       aovRange,
       clarificationReasons,
       gstinDetails,
+      isActivationFormLoading,
     } = this.state;
     const { user } = this.props;
     const commonProps = {
@@ -266,6 +272,8 @@ export default class ActivationContainer extends Component {
       rpc: this.rpc,
       aovRange,
       gstinDetails,
+      setActivationFormLoadingState: this.setActivationFormLoadingState,
+      isActivationFormLoading,
     };
     const isLoading = !data;
     // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
@@ -290,6 +298,7 @@ export default class ActivationContainer extends Component {
           onNewData={this.handleNewData}
           setAdditionalModalClass={this.setAdditionalModalClass}
           sendEventsForSubMerchantView={this.sendEventsForSubMerchantView}
+          isModalView={isModal}
         />
       );
       trackerIntent = 'kyc.form_fill';
@@ -305,6 +314,7 @@ export default class ActivationContainer extends Component {
           class={classList(...modalClasses)}
           onClose={this.props.onClose}
           onCloseCB={this.handleCloseActivationForm}
+          canDisableCloseBtn={isActivationFormLoading}
         >
           <ModalContent>{content || spinner}</ModalContent>
         </Modal>

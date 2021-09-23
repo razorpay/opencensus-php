@@ -102,6 +102,9 @@ export const kycModalContent = (args = {}) => {
     }
     case 'poi_verified':
     case 'L1_instantly_activated': {
+      if (args.activationData?.isAutoPLEnabled) {
+        return null;
+      }
       return {
         title: 'Payments have been enabled',
         subtitle: 'Ready to accept payments',
@@ -418,6 +421,6 @@ export const kycModalContent = (args = {}) => {
     }
 
     default:
-      break;
+      return null;
   }
 };

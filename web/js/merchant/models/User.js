@@ -1235,6 +1235,10 @@ export default class User {
     return this.getExpStatus('loans_collections_dashboard');
   }
 
+  get isAutoPLEnabled() {
+    return this.getExpStatus('auto_pl') && !!this.isOrgRZP;
+  }
+
   get isGstinAutoPopulate() {
     return this.getExpStatus('bvs_get_gst_details');
   }

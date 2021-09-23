@@ -6,7 +6,11 @@ import { Field } from 'redux-form';
 import HeaderAction from 'common/ui/HeaderAction';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
-import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import {
+  getKeysSeparatedByPipe,
+  getCommonAnalyticsProperties,
+  getURLQueryParams,
+} from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 
 import { fetchPaymentLinks } from 'merchant/reducers/paymentlinks/list';
@@ -25,232 +29,15 @@ import ListContainer from 'merchant/containers/ListContainer';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 import { trackSearchFilterForInternational } from './ga';
 
-@withRouter
-@connect((state) => ({ ...state.paymentlinks, ...state.session }), {
-  fetchPaymentLinks,
-  fetchReminders,
-})
-@RTracking(() => window.rzpQ.component('PaymentLinksContainer'))
-export default class PaymentLinksContainer extends ListContainer {
-  constructor(props) {
-    super(props);
-
-    this.state = { ...this.state, date: { from: '', to: '' } };
-  }
-
-  componentDidMount() {
-    this.props.fetchReminders();
-  }
-
-  fetchEntityList(params) {
-    params.types = ['link', 'ecod'];
-    return this.props.fetchPaymentLinks(params);
-  }
-
-  // Temporary fn. for handling code of merchant/models/Invoice.js for handling notes in deserialize fn.
-  deserializeNotes(value) {
-    let notes = [],
-      index = 0;
-
-    for (var key in value) {
-      if (value.hasOwnProperty(key)) {
-        notes[index] = { key: key, value: value[key] };
-
-        index++;
-      }
-    }
-
-    return notes;
-  }
-
-  onSearchAnalytics = (params) => {
-    const label = getKeysSeparatedByPipe(params);
-
-    if (label && label.length > 0) {
-      window.rzpAnalytics({
-        eventCategory: 'Dashboard - Payment Links',
-        eventAction: 'Search - Payment Links',
-        eventLabel: label,
-      });
-    }
-
-    Object.keys(params).forEach((param) => {
-      this.props.tracking.trackEvent(
-        window.rzpQ.paymentLinks().interaction('pl.search.status', {
-          origin: 'dashboard',
-          modified: this.searchFilters[param] !== params[param],
-        }),
-      );
-    });
-  };
-
-  onClearAnalytics = () => {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Payment Links',
-      eventAction: 'Clear Search Params - Payment Links',
-    });
-
-    this.props.tracking.trackEvent(
-      window.rzpQ.paymentLinks().interaction('pl.search.clear', {
-        origin: 'dashboard',
-      }),
-    );
-  };
-
-  onCopy = ({ invoiceId, text }) => {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Payment Links',
-      eventAction: 'Copy - Payment Link',
-      eventLabel: `payment_link_id=${invoiceId}`,
-    });
-  };
-
-  onDuplicate = (invoiceId) => {
-    this.props.history.push(`/paymentlinks/new?duplicate_id=${invoiceId}`);
-  };
-
-  onAlertCloseClick = () => {
-    this.props.tracking.trackEvent(
-      window.rzpQ.paymentLinks().interaction('pl.search.error', {
-        origin: 'dashboard',
-        response: this.state.status.message[1],
-      }),
-    );
-  };
-
-  onDatesChange = (from, to) => {
-    const date = {
-      from: from.unix(),
-      to: to.unix(),
-    };
-
-    this.setState({
-      date,
-    });
-  };
-
-  render() {
-    let { loading, paymentlinks, user, mode, tracking } = this.props;
-    let status = this.state.status;
-
-    const docsLinkProps = {
-      url: 'https://razorpay.com/docs/payment-links/',
-    };
-
-    if (user.isPaymentlinksV2Enabled) {
-      docsLinkProps.url = 'https://razorpay.com/docs/payment-links/api/new/';
-      docsLinkProps.title = (
-        <span>
-          Documentation <span class="badge bg-success m-r">new</span>
-          <Popover theme="dark" parentQuerySelector=".tether-element">
-            <PopoverBody>
-              New API Contract is applicable for your <br /> merchant profile
-            </PopoverBody>
-          </Popover>
-        </span>
-      );
-    }
-
-    return (
-      <div class="content-wrapper">
-        <HeaderAction>
-          <div class="btn-toolbar pull-right">
-            <span class="btn btn-link">
-              <span class="badge bg-success m-r">new</span>
-
-              <Link to="/reminders">Reminder Settings</Link>
-            </span>
-            <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
-              <TakeATourButton feature={RZPFeatures.PL} />
-            </ShowWhen>
-
-            <DocsLink {...docsLinkProps} />
-            <ShowWhen
-              additionalCondition={(user) =>
-                (mode !== 'live' || !user.isRejected) && user.isAllowedEdit('payment_links')
-              }
-            >
-              <NavLink class="btn btn-primary" to="/paymentlinks/new">
-                <i class="i i-plus" />
-                <span
-                  onClick={() => {
-                    tracking.trackEvent(
-                      window.rzpQ.onbr().success('dash.pl_action', {
-                        action: 'Initiate_PL_Creation',
-                      }),
-                    );
-                    analyticsTrack({
-                      objectName: 'create payment link',
-                      actionName: 'clicked',
-                      screen: 'create payment link',
-                      properties: {
-                        ...getCommonAnalyticsProperties(window.rzp_user),
-                      },
-                    });
-                  }}
-                >
-                  Create Payment Link
-                </span>
-              </NavLink>
-            </ShowWhen>
-          </div>
-        </HeaderAction>
-
-        <ListFilter
-          form="InvoiceListFilter"
-          type="link"
-          count={this.state.count}
-          date={this.state.date}
-          onSubmit={this.search}
-          onSearchAnalytics={this.onSearchAnalytics}
-          onClearAnalytics={this.onClearAnalytics}
-          isInttCurrenciesEnabled={user.isInttCurrenciesEnabled}
-          trackSearchFilterForInternational={trackSearchFilterForInternational}
-          isPaymentlinksV2Enabled={user.isPaymentlinksV2Enabled}
-          extraFields={getExtraFields(user, this.props.tracking, this.onDatesChange)}
-        />
-
-        <Alert type={status.type} message={status.message} onCloseClick={this.onAlertCloseClick} />
-
-        <List
-          invoices={paymentlinks}
-          isLoading={loading}
-          type="link"
-          onCopy={this.onCopy}
-          onDuplicate={this.onDuplicate}
-          EmptyList={EmptyComponent}
-          isPaymentlinksV2Enabled={user.isPaymentlinksV2Enabled}
-        />
-
-        <Pager
-          count={this.state.count}
-          skip={this.state.skip}
-          length={paymentlinks.length}
-          onClick={(params, type) => {
-            this.props.tracking.trackEvent(
-              window.rzpQ.paymentLinks().interaction(`pl.browse.${type}`, {
-                origin: 'dashboard',
-                page: params.skip % params.count,
-              }),
-            );
-
-            this.paginate(params);
-          }}
-        />
-      </div>
-    );
-  }
-}
-
 // TODO: Update colSpan if no of columns are changes
 const EmptyComponent = () => (
   <EmptyListWithTableRow
     colSpan={8}
     description={
-      <React.Fragment>
+      <>
         <div>There are no payment links yet!!</div>
         <div>Start creating new links now.</div>
-      </React.Fragment>
+      </>
     }
   />
 );
@@ -301,3 +88,229 @@ const getExtraFields = (user, tracking, onDatesChange) => {
 
   return fields;
 };
+@withRouter
+@connect((state) => ({ ...state.paymentlinks, ...state.session }), {
+  fetchPaymentLinks,
+  fetchReminders,
+})
+@RTracking(() => window.rzpQ.component('PaymentLinksContainer'))
+export default class PaymentLinksContainer extends ListContainer {
+  constructor(props) {
+    super(props);
+
+    this.state = { ...this.state, date: { from: '', to: '' } };
+  }
+
+  componentWillMount() {
+    const params = getURLQueryParams(this.props.location.search);
+    setTimeout(() => {
+      if (params?.link_type) {
+        this.props.history.push(`/paymentlinks/new?link_type=${params.link_type}`);
+        this.props.tracking.trackEvent(window.rzpQ.onbr().initiated('payment_link_popup_loaded'));
+      }
+    }, 1200);
+  }
+
+  componentDidMount() {
+    this.props.fetchReminders();
+  }
+
+  fetchEntityList(params) {
+    params.types = ['link', 'ecod'];
+    return this.props.fetchPaymentLinks(params);
+  }
+
+  // Temporary fn. for handling code of merchant/models/Invoice.js for handling notes in deserialize fn.
+  deserializeNotes(value) {
+    const notes = [];
+    let index = 0;
+
+    for (const key in value) {
+      if (value.hasOwnProperty(key)) {
+        notes[index] = { key, value: value[key] };
+
+        index++;
+      }
+    }
+
+    return notes;
+  }
+
+  onSearchAnalytics = (params) => {
+    const label = getKeysSeparatedByPipe(params);
+
+    if (label && label.length > 0) {
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Payment Links',
+        eventAction: 'Search - Payment Links',
+        eventLabel: label,
+      });
+    }
+
+    Object.keys(params).forEach((param) => {
+      this.props.tracking.trackEvent(
+        window.rzpQ.paymentLinks().interaction('pl.search.status', {
+          origin: 'dashboard',
+          modified: this.searchFilters[param] !== params[param],
+        }),
+      );
+    });
+  };
+
+  onClearAnalytics = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payment Links',
+      eventAction: 'Clear Search Params - Payment Links',
+    });
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.paymentLinks().interaction('pl.search.clear', {
+        origin: 'dashboard',
+      }),
+    );
+  };
+
+  onCopy = ({ invoiceId, _text }) => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payment Links',
+      eventAction: 'Copy - Payment Link',
+      eventLabel: `payment_link_id=${invoiceId}`,
+    });
+  };
+
+  onDuplicate = (invoiceId) => {
+    this.props.history.push(`/paymentlinks/new?duplicate_id=${invoiceId}`);
+  };
+
+  onAlertCloseClick = () => {
+    this.props.tracking.trackEvent(
+      window.rzpQ.paymentLinks().interaction('pl.search.error', {
+        origin: 'dashboard',
+        response: this.state.status.message[1],
+      }),
+    );
+  };
+
+  onDatesChange = (from, to) => {
+    const date = {
+      from: from.unix(),
+      to: to.unix(),
+    };
+
+    this.setState({
+      date,
+    });
+  };
+
+  render() {
+    const { loading, paymentlinks, user: users, mode, tracking } = this.props;
+    const status = this.state.status;
+
+    const docsLinkProps = {
+      url: 'https://razorpay.com/docs/payment-links/',
+    };
+
+    if (users.isPaymentlinksV2Enabled) {
+      docsLinkProps.url = 'https://razorpay.com/docs/payment-links/api/new/';
+      docsLinkProps.title = (
+        <span>
+          Documentation <span class="badge bg-success m-r">new</span>
+          <Popover theme="dark" parentQuerySelector=".tether-element">
+            <PopoverBody>
+              New API Contract is applicable for your <br /> merchant profile
+            </PopoverBody>
+          </Popover>
+        </span>
+      );
+    }
+
+    return (
+      <div class="content-wrapper">
+        <HeaderAction>
+          <div class="btn-toolbar pull-right">
+            <span class="btn btn-link">
+              <span class="badge bg-success m-r">new</span>
+
+              <Link to="/reminders">Reminder Settings</Link>
+            </span>
+            <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
+              <TakeATourButton feature={RZPFeatures.PL} />
+            </ShowWhen>
+
+            <DocsLink {...docsLinkProps} />
+            <ShowWhen
+              additionalCondition={(user) =>
+                (mode !== 'live' || !user.isRejected) && user.isAllowedEdit('payment_links')
+              }
+            >
+              <NavLink className="btn btn-primary btn-shine" to="/paymentlinks/new">
+                <i class="i i-plus" />
+                <span
+                  onClick={() => {
+                    tracking.trackEvent(
+                      window.rzpQ.onbr().success('dash.pl_action', {
+                        action: 'Initiate_PL_Creation',
+                      }),
+                    );
+                    analyticsTrack({
+                      objectName: 'create payment link',
+                      actionName: 'clicked',
+                      screen: 'create payment link',
+                      properties: {
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                  }}
+                >
+                  Create Payment Link
+                </span>
+              </NavLink>
+            </ShowWhen>
+          </div>
+        </HeaderAction>
+
+        <ListFilter
+          form="InvoiceListFilter"
+          type="link"
+          count={this.state.count}
+          date={this.state.date}
+          onSubmit={this.search}
+          onSearchAnalytics={this.onSearchAnalytics}
+          onClearAnalytics={this.onClearAnalytics}
+          isInttCurrenciesEnabled={users.isInttCurrenciesEnabled}
+          trackSearchFilterForInternational={trackSearchFilterForInternational}
+          isPaymentlinksV2Enabled={users.isPaymentlinksV2Enabled}
+          extraFields={getExtraFields(users, this.props.tracking, this.onDatesChange)}
+        />
+
+        <Alert type={status.type} message={status.message} onCloseClick={this.onAlertCloseClick} />
+
+        <List
+          invoices={paymentlinks}
+          isLoading={loading}
+          type="link"
+          onCopy={this.onCopy}
+          onDuplicate={this.onDuplicate}
+          EmptyList={EmptyComponent}
+          isPaymentlinksV2Enabled={users.isPaymentlinksV2Enabled}
+        />
+
+        <Pager
+          count={this.state.count}
+          skip={this.state.skip}
+          length={paymentlinks.length}
+          onClick={(params, type) => {
+            this.props.tracking.trackEvent(
+              window.rzpQ.paymentLinks().interaction(`pl.browse.${type}`, {
+                origin: 'dashboard',
+                page: params.skip % params.count,
+              }),
+            );
+
+            this.paginate(params);
+          }}
+        />
+      </div>
+    );
+  }
+}

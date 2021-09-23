@@ -48,6 +48,7 @@ export const ModalAsideNav = (_) => {
               class={classList(
                 isActiveClass,
                 isTabValid && 'text-success',
+                isPanVerifactionFailed && isBusinessDetailsTab && i === 2 && 'text-danger',
                 isDisabled && 'disabled',
               )}
               key={i}
@@ -60,17 +61,15 @@ export const ModalAsideNav = (_) => {
               {isPanVerifactionFailed && isBusinessDetailsTab && i === 2 && (
                 <i className="i i-error text-danger" />
               )}
-              {do {
-                if (typeof t === 'object') {
-                  <span class="li--broad">
-                    {t.title}
-                    <div class="description large">{t.desc}</div>
-                  </span>;
-                } else {
-                  t;
-                }
-              }}
-              {i === activeTab && <i class={'i i-chevron-right'} />}
+              {typeof t === 'object' ? (
+                <span class="li--broad">
+                  {t.title}
+                  <div class="description large">{t.desc}</div>
+                </span>
+              ) : (
+                t
+              )}
+              {i === activeTab && <i className="i i-chevron-right" />}
             </li>
           );
         })}

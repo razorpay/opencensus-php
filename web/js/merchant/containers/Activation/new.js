@@ -1,8 +1,9 @@
 /* eslint-disable */
-
+import React from 'react';
 import { connect } from 'react-redux';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
 import { LinkCard } from 'common/new-ui/Cards';
 import ActivationWizard from 'merchant/components/Activation';
@@ -45,6 +46,8 @@ const successImg = '/img/activation/submit-success.svg';
     updateSession,
     showKYCStatusModal,
     showTnC,
+    openModal,
+    closeModal,
   },
 )
 export default class ActivationContainer extends React.Component {
@@ -275,22 +278,84 @@ export default class ActivationContainer extends React.Component {
           const isTestMode =
             localStorage.getItem(`rzp_mode--${this.props.user.current}`) === 'test';
 
-          if (response?.data?.activated && isTestMode) {
-            localStorage.setItem(`rzp_mode--${this.props.user.current}`, 'live');
-            this.props.updateSession({ mode: 'live' });
-            this.props.showNotification({
-              type: 'success',
-              message: 'You have switched to live mode, transact now!',
-              hidePrevious: true,
-            });
-          }
           //if recommand product payment gateway and business_website avilable
           if (response?.data?.business_website) {
             localStorage.setItem('merchant_landing_page', 'payment_gateway');
           }
 
+          //render loader if poi status is initiated and post 20sec fetch data to check poi status.
+          //if poi status verified open instant activation modal otherwise reload the page.
+          if (
+            !this.props.accountId &&
+            response?.data?.activation_form_milestone === 'L1' &&
+            response?.data?.poi_verification_status === 'initiated' &&
+            ['11', '2'].includes(response?.data?.business_type) &&
+            response?.data?.activation_flow !== 'greylist' &&
+            this.props.user.isAutoPLEnabled
+          ) {
+            if (!this.props.isModalView) {
+              this.props.openModal({
+                size: 'small',
+                component: (
+                  <InstantActivationLoadingState contactName={response.data.contact_name} />
+                ),
+                className: 'instantActivation-loading--Modal',
+              });
+            } else {
+              this.props.setActivationFormLoadingState(); //true lodaing state
+            }
+            setTimeout(() => {
+              this.fetchMerchantDetails().then((res) => {
+                if (res?.data && res?.data?.poi_verification_status === 'verified') {
+                  if (res?.data?.activated && isTestMode) {
+                    localStorage.setItem(`rzp_mode--${this.props.user.current}`, 'live');
+                    this.props.updateSession({ mode: 'live' });
+                  }
+                  this.updateSession(res.data);
+                  this.props.setActivationFormLoadingState(); //false lodaing state
+                  this.setState({ showSuccessScreen: true });
+                } else if (
+                  res?.data &&
+                  ['incorrect_details', 'not_matched', 'failed'].includes(
+                    res.data?.poi_verification_status,
+                  )
+                ) {
+                  this.updateSession(res.data);
+                  this.props.setActivationFormLoadingState(); //false lodaing state
+                  this.setState({ showSuccessScreen: true });
+                } else {
+                  this.updateSession(res.data);
+                  this.props.setActivationFormLoadingState(); //false lodaing state
+                  // if poi status not changed reload the page
+                  this.props.history.replace(`/`);
+                }
+                analyticsTrack({
+                  objectName: 'poi verification status',
+                  actionName: 'load',
+                  screen: 'home page',
+                  properties: {
+                    poi_status: res?.data?.poi_verification_status,
+                    ...getCommonSegmentProperties(),
+                  },
+                });
+              });
+            }, 9000);
+          } else {
+            if (response?.data?.activated && isTestMode) {
+              localStorage.setItem(`rzp_mode--${this.props.user.current}`, 'live');
+              this.props.updateSession({ mode: 'live' });
+              if(!this.props.user.isAutoPLEnabled) {
+                this.props.showNotification({
+                  type: 'success',
+                  message: 'You have switched to live mode, transact now!',
+                  hidePrevious: true,
+                });
+              }
+            }
+            this.postSubmitStep(response);
+          }
+
           this.updateSession(response.data);
-          this.postSubmitStep(response);
 
           return response;
         })
@@ -572,7 +637,15 @@ export default class ActivationContainer extends React.Component {
   render() {
     const accountId = this.props.accountId; // If accountId present, then Welcome screen and Success screen are not required.
 
-    let { data, categories, aovRange, clarificationReasons, gstinDetails } = this.props;
+    let {
+      data,
+      categories,
+      aovRange,
+      clarificationReasons,
+      gstinDetails,
+      isModalView,
+      isActivationFormLoading,
+    } = this.props;
     let content, modalClass;
 
     if (!accountId && this.state.showSuccessScreen) {
@@ -614,6 +687,7 @@ export default class ActivationContainer extends React.Component {
           trackEvent={this.props.tracking.trackEvent}
           fetchMerchantDetails={this.fetchMerchantDetails}
           gstinDetails={gstinDetails}
+          isModalView={isModalView && isActivationFormLoading}
         />
       );
     }
@@ -710,6 +784,17 @@ function isFormTouched(data) {
 
   return isDirty;
 }
+
+const InstantActivationLoadingState = ({ contactName }) => {
+  return (
+    <div className="activation-loader">
+      <div className="spin-btn extra-large extra-width visible activation-spinner"></div>
+      <div className="text">
+        Hey {contactName}, we are verifying your entered details, this may take a minute.
+      </div>
+    </div>
+  );
+};
 
 const defaultKeysInForm = ['contact_name', 'contact_email', 'contact_mobile'];
 const excludedFieldsInForm = [

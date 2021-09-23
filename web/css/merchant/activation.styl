@@ -951,3 +951,23 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
 
     >div:first-child
       padding-bottom: 5px;
+
+.poi-initiated-loader
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+  text-align: center;
+  z-index: 1;
+  color: #000;
+  width: 30%;
+  .activation-spinner
+    left: 50%;
+    z-index: 1;
+  .text
+    left: 50%;
+    margin-top: 14px;
+
+.activation-container
+  opacity: 0.3;
+  pointer-events: none;

@@ -26,7 +26,9 @@ const RecommendationWidget = ({
 }) => {
   const [isApiKeyGenerated, setIsApiKeyGenerated] = useState(false);
   const [showGenerateKeyLoader, setShowGenerateKeyLoader] = useState(false);
-  const landingProduct = localStorage.getItem('merchant_landing_page');
+  const landingProduct =
+    localStorage.getItem('merchant_landing_page') || localStorage.getItem('default_product_page');
+
   const recommendedProduct = getRecommendedProduct(landingProduct);
 
   useEffect(() => {
@@ -55,6 +57,7 @@ const RecommendationWidget = ({
 
   if (payment > 0) {
     localStorage.removeItem('merchant_landing_page');
+    localStorage.removeItem('default_product_page');
   }
 
   const exploreProducts = () => {

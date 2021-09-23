@@ -267,3 +267,39 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
   .btn-primary
     margin-left: 0 !important;
     width: 100% !important;
+
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    animation: shine 10s forwards ease-in-out;
+    content: "";
+    position: absolute;
+    top: 115%;
+    left: -225%;
+    width: 335%;
+    height: 85%;
+    opacity: 0;
+    transform: rotate(145deg);
+    background: rgba(255, 255, 255, 0.13);
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.7) 77%, rgba(255, 255, 255, 0.7) 92%, rgba(255, 255, 255, 0.0) 100% );
+    animation-iteration-count: 1;
+  }
+  @keyframes shine{
+    10% {
+      opacity: 1;
+      top: -30%;
+      left: -30%;
+      transition-property: left, top, opacity;
+      transition-duration: 0.8s, 0.8s, 0.15s;
+      transition-timing-function: ease;
+    }
+    100% {
+      opacity: 0;
+      top: -30%;
+      left: -30%;
+      transition-property: left, top, opacity;
+    }
+  }
+}

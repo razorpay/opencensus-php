@@ -1756,6 +1756,7 @@ class Service extends Base\Service
             'optimizer_emi_duration',
             'rx_ca_portal',
             'pp_success_page',
+            'auto_pl',
             'remove_presignup_functionality',
             'bvs_get_gst_details',
             'route_transfer_state',

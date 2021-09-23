@@ -1,5 +1,4 @@
-import { classList } from 'common/utils/rzp-utils';
-
+import React from 'react';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import FormWizard from '../components/FormWizard';
 import {
@@ -13,13 +12,27 @@ import {
   LinkExpiry,
   Notes,
 } from '../components/Fields';
+import { analyticsTrack } from 'common/utils/analytics';
+import { classList, getURLQueryParams, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 // TODO: Feels like, can be written in better.
 export default class StandardForm extends React.Component {
   onSubmit = () => {
     return this.props.onSubmit();
   };
-
+  componentDidMount() {
+    const params = getURLQueryParams(location.search);
+    if (params?.link_type === 'standard') {
+      analyticsTrack({
+        objectName: 'Payment Link PopUp',
+        actionName: 'Loaded',
+        screen: 'payment link page',
+        properties: {
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    }
+  }
   render() {
     const { props } = this;
     const { formData } = props;

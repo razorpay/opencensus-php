@@ -13,6 +13,7 @@
     "axios": "0.21.1",
     "bezier-easing": "2.1.0",
     "bootstrap-styl": "5.0.9",
+    "canvas-confetti": "1.4.0",
     "chart.js": "2.9.4",
     "core-js": "3.6.5",
     "css-loader": "3.5.0",

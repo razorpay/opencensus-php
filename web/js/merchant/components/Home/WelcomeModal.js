@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import LocalStorageService from 'common/utils/localStorage';
+import * as LocalStorageService from 'common/utils/localStorage';
 
 const RECOMMANDED_PRODUCT_LIST = [
   'payment_gateway',
@@ -24,7 +24,9 @@ const WelcomeModal = ({
   isOnboardingV2Enabled,
   isProductRecommendationEnabled,
 }) => {
-  const getLandingProduct = LocalStorageService.getItem('merchant_landing_page');
+  const getLandingProduct =
+    LocalStorageService.getItem('merchant_landing_page') ||
+    LocalStorageService.getItem('default_product_page');
 
   const isRecommendProduct =
     RECOMMANDED_PRODUCT_LIST.includes(getLandingProduct) && isProductRecommendationEnabled;
@@ -186,6 +188,6 @@ const WelcomeModal = ({
   );
 };
 
-export default RTracking(() => {
+export default rTracking(() => {
   window.rzpQ.component('WelcomeModal');
 })(WelcomeModal);

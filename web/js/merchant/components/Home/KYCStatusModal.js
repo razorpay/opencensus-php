@@ -3,7 +3,7 @@ import { ModalMask, Modal } from 'common/new-ui/Modal';
 import { compose } from 'redux';
 import { activationDuration as predefinedActivationDuration } from 'merchant/helpers/data';
 import { kycModalContent } from './KycStatusModalContent';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
@@ -12,6 +12,7 @@ import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
 import ProductsModal from 'merchant/components/Home/ProductsModal';
 import { trackProductsModal } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 import { isDedupe, getActivationState } from 'merchant/components/Activation/ActivationUtils';
+import InstantActivationModal from './InstantActivationModal';
 
 const MODAL_CONTENT = {
   KYC_CLARIFICATION_SUBMIT_MODAL: {
@@ -38,23 +39,24 @@ const MODAL_CONTENT = {
 
 const KYCStatusModal = ({
   onClose,
-  closeModal,
-  openModal,
+  closeModal: closeModals,
+  openModal: openModals,
   onGoToDashboard,
   user,
   modalType,
   activationDuration,
   tracking,
   history,
-  showProductsModal,
-  hideProductsModal,
+  showProductsModal: showProductsModals,
+  hideProductsModal: hideProductsModals,
   showProducts,
 }) => {
+  const activationState = getActivationState(user, user.isUnregisteredBusiness);
   const generatePage = () => {
     onClose();
     openModal({
       size: 'small',
-      component: <GenerateTnCPage onCloseModal={closeModal} openModal={openModal} />,
+      component: <GenerateTnCPage onCloseModal={closeModals} openModal={openModals} />,
     });
   };
 
@@ -64,15 +66,16 @@ const KYCStatusModal = ({
   };
 
   const openPaymentAcceptModal = () => {
-    showProductsModal();
+    showProductsModals();
   };
 
   const onCloseModal = () => {
-    const activationState = getActivationState(user, user.isUnregisteredBusiness);
     const shouldShowModal =
       isDedupe(user) === 'blocked' ||
       activationState === 'needs_clarification_mcc_pending' ||
       activationState === 'needs_clarification' ||
+      activationState === 'poi_verified' ||
+      activationState === 'L1_instantly_activated' ||
       activationState === 'rejected';
     if (!shouldShowModal) {
       onGoToDashboard();
@@ -81,23 +84,32 @@ const KYCStatusModal = ({
     }
   };
 
+  const instantActivationModal = () => {
+    if (['poi_verified', 'L1_instantly_activated'].includes(activationState)) {
+      return (
+        <InstantActivationModal openPaymentAcceptModal={openPaymentAcceptModal} onClose={onClose} />
+      );
+    }
+    return null;
+  };
+
   const args = {
     isWhitelistFlow: user.instantActivation.isWhitelistFlow,
     isUnregisteredBusiness: user.isUnregisteredBusiness,
-    onGoToDashboard: onGoToDashboard,
+    onGoToDashboard,
     isActivated: user.isActivated,
-    activationDuration: activationDuration,
+    activationDuration,
     activationData: user,
-    generatePage: generatePage,
-    goToActivationForm: goToActivationForm,
-    tracking: tracking,
-    openPaymentAcceptModal: openPaymentAcceptModal,
-    onClose: onClose,
+    generatePage,
+    goToActivationForm,
+    tracking,
+    openPaymentAcceptModal,
+    onClose,
   };
 
   const content =
     modalType === 'KYC_CLARIFICATION_SUBMIT_MODAL'
-      ? MODAL_CONTENT['KYC_CLARIFICATION_SUBMIT_MODAL']
+      ? MODAL_CONTENT.KYC_CLARIFICATION_SUBMIT_MODAL
       : kycModalContent(args);
 
   return (
@@ -111,13 +123,15 @@ const KYCStatusModal = ({
             </div>
             <div className="modal-body">
               <div className="modal-description">{content.body}</div>
-              <>{content.button}</>
+              {content.button}
             </div>
           </Modal>
         </ModalMask>
-      ) : null}
+      ) : (
+        instantActivationModal()
+      )}
       {showProducts ? (
-        <ProductsModal onClose={hideProductsModal} track={trackProductsModal} />
+        <ProductsModal onClose={hideProductsModals} track={trackProductsModal} />
       ) : null}
     </>
   );
@@ -131,5 +145,5 @@ export default compose(
     }),
     { openModal, closeModal, showProductsModal, hideProductsModal },
   ),
-  RTracking(() => window.rzpQ.component('KYCStatusModal')),
+  rTracking(() => window.rzpQ.component('KYCStatusModal')),
 )(KYCStatusModal);

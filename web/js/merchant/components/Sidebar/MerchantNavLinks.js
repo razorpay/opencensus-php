@@ -21,7 +21,9 @@ function MerchantNavLinks(props) {
   const showMyAccountCutomBadge = !LocalStorageService.getItem('rtb_page_visited');
   const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
   const [settlementExists, setSettlementExists] = useState(true);
-  const getLandingProduct = LocalStorageService.getItem('merchant_landing_page');
+  const getLandingProduct =
+    LocalStorageService.getItem('merchant_landing_page') ||
+    LocalStorageService.getItem('default_product_page');
 
   const isRecommendProduct =
     RECOMMANDED_PRODUCT_LIST.includes(getLandingProduct) &&
@@ -34,7 +36,6 @@ function MerchantNavLinks(props) {
       settlementStatus === 'disableAnimation' || settlementStatus === 'disableAnimationOnReload';
     setSettlementExists(isDisabled ? false : settlementStatus);
   };
-
   useEffect(() => {
     checkIfFirstEverSettlement();
   }, []);
@@ -50,7 +51,7 @@ function MerchantNavLinks(props) {
       typeof props.payment === 'object'
     ) {
       //set default payment link as a recommend product.
-      LocalStorageService.setItem('merchant_landing_page', 'payment_link');
+      LocalStorageService.setItem('default_product_page', 'payment_link');
     }
   }, []);
 

@@ -2437,54 +2437,58 @@ $stepIndicatorSize = 36px;
 .Modal-container--instant-activations-success {
 
   width: 90%;
-  max-width: 382px;
+  max-width: 400px;
 
-  .Modal-close, modal-header {
-
-    color: #fff !important;
-  }
-
-  modal-header, modal-body {
-
-    display: block;
+  .modal-header, .modal-body {
     text-align: center;
   }
 
-  modal-header {
+  .Modal-close, .modal-header {
+    color: #fff !important;
+  }
 
-    padding: 34px;
-    background: rgb(31, 53, 181) url('assets/instant_activations/success_modal_bg.png') top left no-repeat;
-    background-size: cover;
+  .modal-header {
+    background: #03036a;
+    height: 230px;
+  }
 
-    > h1, p {
+  .modal-body {
+    padding: 24px;
 
-      margin: 0;
+    .modal-description {
+      margin-bottom: 30px;
+      text-align: center;
+
+      .title {
+        color: #162f56de;
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 16px;
+      }
+      > p {
+        margin-bottom: 12px;
+        color: #162f568a;
+      }
     }
-
-    > h1 {
-
-      font-weight: 900;
-      font-size: 18px;
-      line-height: 22px;
+    .redirect-counter {
+      color: #162f568a;
+      margin-top: 16px;
     }
   }
 
-  modal-body {
+  .redirect-progress {
+    margin: 0;
+    height: 4px;
+  }
 
-    padding: 24px;
-
-    > p {
-
-      margin-bottom: 20px;
-    }
-
-    .ias__complete_kyc {
-      margin-right: 20px;
-
-      @media (max-width $screen-sm-min) {
-        display: block;
-        margin: auto;
-        margin-bottom: 20px;
+  .progress-bar-animation {
+    animation: progress 9s forwards ease-in-out;
+    @keyframes progress{
+      0% {
+        width: 0%;
+      }
+      100% {
+        width: 100%;
       }
     }
   }
