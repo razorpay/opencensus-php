@@ -96,14 +96,14 @@ function FeeBearerSelfserver(props) {
                   onChange={() => handleToggle('platform')}
                 />
               </h4>
-              <p>We charge you the fee for the payment and settle the remaining amount to you.</p>
+              <p>You pay the fee for the use of payment infrastructure.</p>
               <br />
             </div>
           </div>
           <div class="col-sm-6 p5">
             <div class={`fee-bearer-panel-col ${feeBearer === 'customer' ? 'active' : null}`}>
               <h4>
-                <b>Customer pays the fee</b>
+                <b>Convenience Fee Model</b>
                 <input
                   type="radio"
                   class="radio-pointer"
@@ -112,8 +112,8 @@ function FeeBearerSelfserver(props) {
                 />
               </h4>
               <p>
-                We charge the cutomer the fees over the price of product and settle the amount of
-                the product.
+                You charge a convenience fee to your customer for the use of technology
+                infrastructure.
               </p>
               <br />
             </div>
