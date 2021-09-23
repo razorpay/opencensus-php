@@ -8,6 +8,10 @@ use RZP\Mail\Base\Constants;
 
 class GenericVendorPaymentEmail extends Mailable
 {
+    const ATTACHMENT_FILE_URL = 'attachment_file_url';
+    const FILE_NAME = 'file_name';
+    const MIME_TYPE = 'mime_type';
+
     protected $data;
 
     protected $templateName;
@@ -29,6 +33,23 @@ class GenericVendorPaymentEmail extends Mailable
         $this->merchantEmail = $merchantEmail;
     }
 
+    protected function addAttachments()
+    {
+        if ((isset($this->data[self::ATTACHMENT_FILE_URL]) === true) and
+            (isset($this->data[self::FILE_NAME]) === true) and
+            (isset($this->data[self::MIME_TYPE]) === true)) {
+
+            $this->attach($this->data[self::ATTACHMENT_FILE_URL],
+                [
+                    'as' => $this->data[self::FILE_NAME],
+                    'mime' => $this->data[self::MIME_TYPE]
+                ]
+            );
+        }
+
+        return $this;
+    }
+
     protected function addRecipients()
     {
         $this->to($this->merchantEmail);
@@ -46,7 +67,7 @@ class GenericVendorPaymentEmail extends Mailable
     protected function addSender()
     {
         return $this->from(Constants::MAIL_ADDRESSES[Constants::NOREPLY],
-                           Constants::HEADERS[Constants::NOREPLY]);
+            Constants::HEADERS[Constants::NOREPLY]);
     }
 
     protected function addHtmlView()

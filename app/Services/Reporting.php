@@ -353,7 +353,7 @@ class Reporting implements ExternalService
             $input = $this->buildCaTransactionRawQueryParams($input);
         }
 
-            $this->validateInput($input);
+        $this->validateInput($input);
 
         return $this->createAndSendRequest(Requests::POST, $path, $input);
     }

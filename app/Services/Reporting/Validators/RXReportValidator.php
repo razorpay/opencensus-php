@@ -14,8 +14,15 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
  */
 class RXReportValidator extends BaseValidator
 {
+    //Allowed Report-ids (fetched for prod and hard coded) to skip email validation
+    const ALLOWED_REPORT_CONFIG_IDS_TO_SKIP_VALIDATION = ["config_EeJ5H48IDnU0DE", "config_EWkl7gyPYK5ET2", "config_H14EVTdd8PfHKv"];
+
     protected function validateEmails(array $emails)
     {
+        if (in_array(array_get($this->input,'config_id',''), self::ALLOWED_REPORT_CONFIG_IDS_TO_SKIP_VALIDATION) === true) {
+            return;
+        }
+
         $merchant = $this->merchantService->getMerchantDetails();
 
         $users = $this->merchantService->getUsers();

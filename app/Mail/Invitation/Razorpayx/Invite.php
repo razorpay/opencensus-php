@@ -22,6 +22,10 @@ class Invite extends Mailable
 
     const CA_PORTAL_INVITE_TEMPLATE_PATH      = 'emails.invitation.razorpayx.ca-invitation';
 
+    const CA_PORTAL_INVITE_EXISTING_X_USER_TEMPLATE_PATH      = 'emails.invitation.razorpayx/ca-invitation-existing-x-user';
+
+    const CA_PORTAL_INVITE_EXISTING_USER_TEMPLATE_PATH      = 'emails.invitation.razorpayx/ca-invitation-existing-user';
+
     const INVITE_LINK_FORMAT = '%s/auth?invitation=%s';
 
     protected $invitation;
@@ -99,7 +103,7 @@ class Invite extends Mailable
             [
                 'business_name' => $this->getBusinessName(),
                 'sender_name'   => $this->senderName,
-                'role'          => $invitation->getRole(),
+                'role'          => $this->getLabel($invitation->getRole() != null ? $invitation->getRole() : ''),
                 'invite_link'   => $inviteLink,
                 'support_url'   => self::SUPPORT_URL,
             ]
@@ -115,6 +119,11 @@ class Invite extends Mailable
         return $invitation->merchant
                           ->merchantDetail
                           ->getBusinessName();
+    }
+
+    public static function getLabel(string $role)
+    {
+       return ucwords(str_replace('_', ' ', $role));
     }
 
     protected function getInvitation()
@@ -134,8 +143,22 @@ class Invite extends Mailable
         /*
          * If the invitation is for CA role, then send in new invite template
          */
-        if(empty($this->role) === false && $this->role == Role::CHARTERED_ACCOUNTANT){
-            $this->view(self::CA_PORTAL_INVITE_TEMPLATE_PATH);
+        if (empty($this->role) === false && $this->role == Role::CHARTERED_ACCOUNTANT) {
+
+            if ($this->isAnExistingUserOnX($this->allMerchantsForInvitedUser))
+            {
+                $this->view(self::CA_PORTAL_INVITE_EXISTING_X_USER_TEMPLATE_PATH);
+            }
+
+            else if ($this->invitedUserExists)
+            {
+                $this->view(self::CA_PORTAL_INVITE_EXISTING_USER_TEMPLATE_PATH);
+            }
+
+            else
+            {
+                $this->view(self::CA_PORTAL_INVITE_TEMPLATE_PATH);
+            }
         }
         /*
          * Case where invited user is already registered on X

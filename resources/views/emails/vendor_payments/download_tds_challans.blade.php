@@ -62,13 +62,8 @@
             </div>
             <div class="download" style="border-top: 1px solid rgba(0,0,0,0.2);display: table; width: 100%; table-layout: fixed;">
                 <p style="display: table-cell; color: rgba(0,0,0,0.54); line-height: 17px; padding: 20px 0;">
-                    Click here to download your TDS Challans
+                    Please find the TDS Challan ZIP attached to this email
                 </p>
-                <div style="display: table-cell; width: 50%; padding: 20px 0;" >
-                    <a href="{{$dashboard_url}}" style="display: block; color:#FFFFFF; text-decoration: none; width: 160px; margin: 0 auto; border-radius: 2px; padding: 10px; background-color: #528FF0; text-align: center;">
-                        Download the TDS Challans
-                    </a>
-                </div>
             </div>
         </div>
     </div>

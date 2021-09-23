@@ -3,12 +3,14 @@
 
 namespace Unit\Mail;
 
+use RZP\Models\User\BankingRole;
+use RZP\Models\User\Role;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Mail\Base\SendQueuedMailable;
 use RZP\Mail\BankingAccount as BankingAccountMail;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
-
+use RZP\Mail\Invitation\Razorpayx\Invite;
 /*
  *  TODO test this automatically for all Mailables and Queueables
  */
@@ -94,6 +96,21 @@ class BankingAccountMailTest extends TestCase
         $mailableObj = new SendQueuedMailable(new BankingAccountMail\XProActivation($bankingAccount));
 
         $this->assertStatusChangeMailableSQSPayloadSize($mailableObj);
+    }
+
+    public function testgetLabel()
+    {
+        $inputs = [BankingRole::VIEW_ONLY,BankingRole::CHARTERED_ACCOUNTANT,BankingRole::ADMIN,BankingRole::OWNER,
+            BankingRole::OPERATIONS, BankingRole::FINANCE_L1, ''];
+        $expectedLabelOutputs = ['View Only','Chartered Accountant','Admin','Owner','Operations','Finance L1',''];
+        $actualLabelOutputs = [];
+
+        foreach ($inputs as $value){
+            $label = Invite::getLabel($value);
+            array_push($actualLabelOutputs,$label);
+        }
+
+        self::assertArraySelectiveEquals($expectedLabelOutputs,$actualLabelOutputs);
     }
 
     public function testStatementMailableSQSPayloadSize()
