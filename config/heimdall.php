@@ -432,6 +432,10 @@ return [
                 'description' => 'create payout links in bulk',
                 'assignable'  => true,
             ],
+            Permission::TALLY_PAYOUT_BULK_CREATE => [
+                'description' => 'create tally payouts in bulk',
+                'assignable'  => true,
+            ],
             Permission::CAPTURE_SETTING_BATCH_UPLOAD        => [
                 'description' => 'Permission to add capture settings in batch',
                 'assignable'  => true

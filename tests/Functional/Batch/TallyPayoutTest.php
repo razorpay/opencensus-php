@@ -1,7 +1,10 @@
 <?php
 namespace RZP\Tests\Functional\Batch;
 
+use Carbon\Carbon;
+use Hash;
 use RZP\Models\Admin;
+use RZP\Models\Admin\Permission\Name as AdminPermission;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Validator;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -304,5 +307,96 @@ class TallyPayoutTest extends TestCase
                 $this->assertEquals($exceptionExpected, $exceptionOccurred);
             }
         }
+    }
+
+    public function testCreateAdminBatchWithoutRequiredPermission()
+    {
+        $org = $this->fixtures->create('org', [
+            'email'         => 'random@rzp.com',
+            'email_domains' => 'rzp.com',
+            'auth_type'     => 'password',
+        ]);
+
+        $admin = $this->fixtures->create('admin', [
+            'org_id' => $org->getId(),
+            'username' => 'auth admin',
+            'password' => 'Heimdall!234',
+        ]);
+
+        $role = $this->fixtures->create('role', [
+            'org_id' => $org->getId(),
+            'name'   => 'Test Role',
+        ]);
+
+        $permissionEntity = $this->fixtures->create('permission',[
+            'name'   => AdminPermission::ADMIN_BATCH_CREATE,
+        ]);
+
+        $role->permissions()->attach($permissionEntity->getId());
+
+        $admin->roles()->attach($role);
+
+        $authToken = $this->getAuthTokenForAdmin($admin);
+
+        $this->ba->adminAuth('test', $authToken, $org->getPublicId());
+
+        $this->startTest();
+    }
+
+    public function testCreateAdminBatchWithPermission()
+    {
+
+        $org = $this->fixtures->create('org', [
+            'email'         => 'random@rzp.com',
+            'email_domains' => 'rzp.com',
+            'auth_type'     => 'password',
+        ]);
+
+        $admin = $this->fixtures->create('admin', [
+            'org_id' => $org->getId(),
+            'username' => 'auth admin',
+            'password' => 'Heimdall!234',
+        ]);
+
+        $role = $this->fixtures->create('role', [
+            'org_id' => $org->getId(),
+            'name'   => 'Test Role',
+        ]);
+
+        $adminBatchPerm = $this->fixtures->create('permission',[
+            'name'   => AdminPermission::ADMIN_BATCH_CREATE,
+        ]);
+
+        $plBatchPerm = $this->fixtures->create('permission',[
+            'name'   => AdminPermission::TALLY_PAYOUT_BULK_CREATE,
+        ]);
+
+        $role->permissions()->attach($adminBatchPerm->getId());
+
+        $role->permissions()->attach($plBatchPerm->getId());
+
+        $admin->roles()->attach($role);
+
+        $authToken = $this->getAuthTokenForAdmin($admin);
+
+        $this->ba->adminAuth('test', $authToken, $org->getPublicId());
+
+        $this->startTest();
+    }
+
+    protected function getAuthTokenForAdmin($admin)
+    {
+        $now = Carbon::now();
+
+        $bearerToken = 'ThisIsATokenFORAdmin';
+
+        $adminToken = $this->fixtures->create('admin_token', [
+            'admin_id' => $admin->getId(),
+            'token' => Hash::make($bearerToken),
+            'created_at' => $now->timestamp,
+            'expires_at' => $now->addDays(2)->timestamp,
+        ]);
+
+        return $bearerToken . $adminToken->getId();
     }
 }

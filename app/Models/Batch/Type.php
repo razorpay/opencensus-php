@@ -496,6 +496,7 @@ class Type
         self::UPI_TERMINAL_ONBOARDING       => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
         self::INTERNAL_INSTRUMENT_REQUEST   => Name::INTERNAL_INSTRUMENT_CREATE_BULK,
         self::PAYOUT_LINK_BULK              => Name::PAYOUT_LINKS_ADMIN_BULK_CREATE,
+        self::TALLY_PAYOUT                  => Name::TALLY_PAYOUT_BULK_CREATE,
         self::CAPTURE_SETTING               => Name::CAPTURE_SETTING_BATCH_UPLOAD,
         self::WEBSITE_CHECKER               => Name::WEBSITE_CHECKER,
         self::IIN_HITACHI_VISA              => Name::IIN_BATCH_UPLOAD,

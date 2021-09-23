@@ -528,6 +528,7 @@ class Name
     const UPDATE_MERCHANT_2FA_SETTING         = 'update_merchant_2fa_setting';
     const MERCHANT_SEND_ACTIVATION_MAIL       = 'merchant_send_activation_mail';
     const PAYOUT_LINKS_ADMIN_BULK_CREATE      = 'payout_links_admin_bulk_create';
+    const TALLY_PAYOUT_BULK_CREATE            = 'tally_payout_bulk_create';
 
     // merchant preferences
     const UPDATE_MERCHANT_PREFERENCE          = 'update_merchant_preference';
