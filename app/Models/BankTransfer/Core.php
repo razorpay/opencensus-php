@@ -575,8 +575,8 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::BANK_TRANSFER_PAYER_BANK_ACCOUNT_EDITED,
             [
-                'bank_account' => $payerBankAccount->toArrayPublic(),
-                'input'        => $input,
+                'bank_account_id' => $bankTransfer->getId(),
+                'input'           => $this->removePiiForLogging($input,[BankAccount\Entity::ACCOUNT_NUMBER])
             ]);
 
         return $bankTransfer;
