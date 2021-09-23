@@ -247,11 +247,18 @@ class Service extends Base\Service
                         break;
                 }
 
+                if($this->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::REDIRECT_TO_EARLYSALARY))
+                {
+                    $input['callbackUrl'] = $this->getCallbackUrl();
+                }
+
                 // merchant id is required to fetch details from cache
                 $input['merchant_id']      = $this->merchant['id'];
                 $input['merchant_website'] = $this->merchant['website'];
                 $input['merchant_mcc']     = $this->merchant['category'];
                 $input['merchant_name']    = $this->merchant['name'];
+                $input['merchant_features'] = $this->merchant->getEnabledFeatures();
+
 
                 $retData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
 
@@ -259,7 +266,8 @@ class Service extends Base\Service
                 unset($input['merchant_website']);
                 unset($input['merchant_mcc']);
                 unset($input['merchant_name']);
-
+                unset($input['callbackUrl']);
+                unset($input['merchant_features']);
 
                 if ($retData != null)
                 {

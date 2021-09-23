@@ -2673,6 +2673,22 @@ class Gateway
             (in_array(CardlessEmi::getProviderForBank($provider), Payment\Gateway::$checkAccountSkipProvider, true) === true));
     }
 
+    public static function isCardlessEmiPlanValidationApplicable($input, $payment)
+    {
+        if (Payment\Gateway::isCardlessEmiSkipCheckAccountProvider($input[Payment\Entity::PROVIDER]))
+        {
+            return false;
+        }
+
+        if (($input[Payment\Entity::PROVIDER] === CardlessEmi::EARLYSALARY) and
+            ($payment->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::REDIRECT_TO_EARLYSALARY)))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public static function getAcquirerName(string $acquirer)
     {
         $code = self::$acquirerToCodeMap[$acquirer];

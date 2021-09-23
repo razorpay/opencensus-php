@@ -897,6 +897,10 @@ return [
             'test_hash_secret' => env('CARDLESS_EMI_TEST_HASH_SECRET'),
             'live_hash_secret' => env('CARDLESS_EMI_LIVE_HASH_SECRET')
         ],
+        'earlysalary' => [
+            'test_hash_secret' => env('CARDLESS_EMI_EARLYSALARY_TEST_HASH_SECRET'),
+            'live_hash_secret' => env('CARDLESS_EMI_EARLYSALARY_LIVE_HASH_SECRET')
+        ],
 
         'live_earlysalary_terminal_password' => env('GATEWAY_TERMINAL_PASSWORD_CARDLESSEMI_EARLYSALARY'),
         'live_zestmoney_terminal_password'   => env('GATEWAY_TERMINAL_PASSWORD_CARDLESSEMI_ZESTMONEY'),

@@ -36,6 +36,11 @@ class Server extends Base\Mock\Server
             'redirection_url'  => 'dummy_redirect_url',
             'extra'            => 'lender_brand',
         ];
+        if(isset($jsonRequest['redirect_url']))
+        {
+            $content[ResponseFields::REDIRECT_URL_EARLYSALARY]='dummy_redirect_url'."?callback_url=".$jsonRequest['redirect_url']."&rzp_payment_id=".$jsonRequest['rzp_payment_id']."&amount=".$jsonRequest['amount']."&currency=INR";
+        }
+
 
         if (isset($jsonRequest[RequestFields::TRANSACTION_TYPE]) and $jsonRequest[RequestFields::TRANSACTION_TYPE] === 'PAY_LATER')
         {

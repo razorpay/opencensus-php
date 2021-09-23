@@ -2282,6 +2282,9 @@ class ErrorCode
     const SERVER_ERROR_PSPX_SERVICE_UNAVAILABLE                                     = 'SERVER_ERROR_PSPX_SERVICE_UNAVAILABLE';
     const SERVER_ERROR_PSPX_SERVICE_ERROR                                           = 'SERVER_ERROR_PSPX_SERVICE_ERROR';
 
+
+    const GATEWAY_ERROR_PAYMENT_FLOW_MISMATCH                                       = 'GATEWAY_ERROR_PAYMENT_FLOW_MISMATCH';
+
     // Payouts Batch API
     const BAD_REQUEST_PAYOUTS_BATCH_NOT_ALLOWED   = 'BAD_REQUEST_PAYOUTS_BATCH_NOT_ALLOWED';
 

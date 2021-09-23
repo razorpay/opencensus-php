@@ -1591,6 +1591,12 @@ trait Authorize
             return;
         }
 
+        if(($input[Payment\Entity::PROVIDER] === CardlessEmi::EARLYSALARY) and
+            ($payment->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::REDIRECT_TO_EARLYSALARY)))
+        {
+            return;
+        }
+
         $this->validateContactAndProviderFromToken($payment, $input);
     }
 
@@ -3848,7 +3854,7 @@ trait Authorize
         {
             $input = Customer\Validator::validateAndParseContactInInput($input);
 
-            if(Payment\Gateway::isCardlessEmiSkipCheckAccountProvider($input[Payment\Entity::PROVIDER]) === false)
+            if (Payment\Gateway::isCardlessEmiPlanValidationApplicable($input, $payment) === true)
             {
                 $gatewayInput['gateway'] = [
                     'emi_duration' => $input['emi_duration']

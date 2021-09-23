@@ -32,6 +32,33 @@ return [
         'otp_attempts'      => null
     ],
 
+    'testPaymentEarlysalary'               => [
+        'merchant_id'       => '10000000000000',
+        'amount'            => 50000,
+        'method'            => 'cardless_emi',
+        'status'            => 'authorized',
+        'two_factor_auth'   => null,
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'bank'              => null,
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+919918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'cardless_emi',
+        'terminal_id'       => '1CrdlesEmiTrml',
+        'signed'            => false,
+        'verified'          => null,
+        'entity'            => 'payment',
+        'otp_attempts'      => null
+    ],
+
     'testPaymentForSubMerchant' => [
         'amount'            => 50000,
         'method'            => 'cardless_emi',
@@ -272,6 +299,54 @@ return [
         'exception' => [
             'class'               => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+        ],
+    ],
+
+    'testFailedPaymentEarlysalary'  => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => "Payment was unsuccessful due to an error at gateway's end. Try using another payment method",
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_FLOW_MISMATCH
+        ],
+    ],
+
+    'testChecksumFailedEarlysalary'  => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Failed checksum verification',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testPaymentAmountErrorEarlysalary'  => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED
         ],
     ],
 

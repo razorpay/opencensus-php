@@ -71,6 +71,37 @@ trait PaymentCardlessEmiTrait
         }
         else
         {
+
+
+            if($response->getStatusCode()===302)
+            {
+                $parts = parse_url($response->getTargetUrl());
+
+                parse_str($parts["query"],$outputContent);
+
+                $dt=[
+                    'url' => $response->getTargetUrl(),
+                    'content' => $outputContent,
+                    'method' => "POST",
+                ];
+
+                $resp = $this->sendRequest($dt);
+
+                $request = [
+                    'url' => $outputContent["callback_url"],
+                    'content' => (array)json_decode(($resp->getContent())),
+                    'method' =>  'POST',
+                ];
+
+                $resp = $this->sendRequest($request);
+
+                $data = $this->getPaymentJsonFromCallback($resp->getContent());
+
+                $resp->setContent($data);
+
+                return $resp;
+            }
+
             $dt = $this->getFormRequestFromResponse($response->getContent(), $url);
 
             $resp = $this->sendRequest($dt);

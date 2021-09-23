@@ -980,11 +980,23 @@ class Processor
 
         try
         {
+            if ($payment->hasOrder() === true)
+            {
+                $input['order'] = $payment->order->toArray();
+            }
+
+            if($merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::REDIRECT_TO_EARLYSALARY))
+            {
+                $input['callbackUrl']   = $this->getCallbackUrl();
+            }
+
             // merchant id is required to fetch details from cache
             $input['merchant_id']      = $merchant[Merchant\Entity::ID];
             $input['merchant_website'] = $merchant[Merchant\Entity::WEBSITE];
             $input['merchant_mcc']     = $merchant[Merchant\Entity::CATEGORY];
             $input['merchant_name']    = $merchant[Merchant\Entity::NAME];
+            $input['merchant_features'] = $merchant->getEnabledFeatures();
+
 
             $checkAccountData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminals[0]);
 
@@ -992,6 +1004,9 @@ class Processor
             unset($input['merchant_website']);
             unset($input['merchant_mcc']);
             unset($input['merchant_name']);
+            unset($input['callbackUrl']);
+            unset($input['merchant_features']);
+            unset($input['order']);
 
         }
         catch (Exception\GatewayErrorException $exception)
@@ -1047,6 +1062,11 @@ class Processor
                 $input['provider'] => $checkAccountData['emi_plans']
             ];
             $coproto['lender_branding_url'] = $checkAccountData['lender_branding_url'];
+        }
+        elseif (($input['provider'] === CardlessEmi::EARLYSALARY) and
+                (in_array(\RZP\Models\Feature\Constants::REDIRECT_TO_EARLYSALARY,$merchant->getEnabledFeatures())))
+        {
+            return null;
         }
         else
         {

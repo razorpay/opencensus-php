@@ -135,6 +135,20 @@ class Gateway extends Base\Gateway
 
             return;
         }
+        elseif (($this->gateway === Payment\Gateway::CARDLESS_EMI) and
+                (strtolower($this->provider) === CardlessEmi::EARLYSALARY) and
+                (in_array(\RZP\Models\Feature\Constants::REDIRECT_TO_EARLYSALARY , $input['merchant_features'])))
+        {
+            if(isset($responseArray[ResponseFields::REDIRECT_URL_EARLYSALARY]) === false)
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_PAYMENT_FLOW_MISMATCH);
+            }
+
+            $this->addCacheData($input, $responseArray);
+
+            return;
+        }
 
         $this->checkEmiPlansExists($responseArray);
 
@@ -193,6 +207,14 @@ class Gateway extends Base\Gateway
 
             $this->createCacheData($brandingCacheKey, $brandingUrl);
         }
+        elseif (($this->gateway === Payment\Gateway::CARDLESS_EMI) and
+                (strtolower($this->provider) === CardlessEmi::EARLYSALARY) and
+                (in_array(\RZP\Models\Feature\Constants::REDIRECT_TO_EARLYSALARY,$input['merchant_features']) === true))
+        {
+            $url = $responseArray[ResponseFields::REDIRECT_URL_EARLYSALARY];
+
+            $key = sprintf(self::REDIRECT_URL_CACHE_KEY, $cacheKey);
+        }
         else
         {
             $url = isset($responseArray[ResponseFields::LOAN_URL]) ? $responseArray[ResponseFields::LOAN_URL] : null;
@@ -226,6 +248,18 @@ class Gateway extends Base\Gateway
 
         //TODO: Handle case when we already have the token for a customer. Will be implementing this in a later version.
         $this->provider = strtoupper($input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_ACQUIRER]);
+
+        if ((strtolower($this->provider) === CardlessEmi::EARLYSALARY) and
+            ($input['merchant']->isFeatureEnabled(\RZP\Models\Feature\Constants::REDIRECT_TO_EARLYSALARY)))
+        {
+            $content = [];
+
+            $this->createGatewayPaymentEntity($content);
+
+            $request = $this->getStandardRequestArray([],"get");
+
+            return $this->getRedirectRequestData($input, $request);
+        }
 
         $token = null;
 
@@ -287,7 +321,14 @@ class Gateway extends Base\Gateway
     {
         $contact = $input['payment']['contact'];
 
-        $cacheKey = $this->provider . '_' . $contact . '_' . $input['payment']['merchant_id'];
+        if(strtolower($this->provider) === CardlessEmi::EARLYSALARY)
+        {
+            $cacheKey = $this->provider . '_' . $contact . '_' . $input['payment']['merchant_id']. '_' .$input['payment']['public_id'];
+        }
+        else
+        {
+            $cacheKey = $this->provider . '_' . $contact . '_' . $input['payment']['merchant_id'];
+        }
 
         $redirectUrlKey = sprintf(self::REDIRECT_URL_CACHE_KEY, $cacheKey);
 
@@ -471,6 +512,23 @@ class Gateway extends Base\Gateway
                 $content[RequestFields::MERCHANT_NAME] = $input['merchant_name'] ?? '';
                 $content[RequestFields::MERCHANT_WEBSITE] = $input['merchant_website'] ?? '';
                 $content[RequestFields::MERCHANT_MCC] = $input['merchant_mcc'] ?? '';
+
+                if (in_array(\RZP\Models\Feature\Constants::REDIRECT_TO_EARLYSALARY,$input['merchant_features']))
+                {
+                    $content[RequestFields::REDIRECT_URL] = $input['callbackUrl'];
+
+                    $content[RequestFields::PAYMENT_ID] = explode("_",$input['payment_id'])[1];
+
+                    $receipt = null;
+
+                    if (isset($input['order']['receipt']))
+                    {
+                        $receipt = $input['order']['receipt'];
+                    }
+
+                    $content[RequestFields::RECEIPT] = $receipt;
+                }
+
                 break;
             case CardlessEmi::ZESTMONEY:
                 $content[RequestFields::MOBILE_NUMBER] = $input['contact'];

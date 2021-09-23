@@ -841,6 +841,11 @@ class Constants
 
     const AXIS_WHATSAPP_ENABLE = 'axis_whatsapp_enable';
     /**
+     * Feature flag to redirect user to the Gateway
+     */
+    const REDIRECT_TO_EARLYSALARY = 'redirect_to_earlysalary';
+
+    /**
      * Feature flag to send Compliance changes in a request
      */
     const SEND_DCC_COMPLIANCE = 'send_dcc_compliance';
@@ -1110,6 +1115,7 @@ class Constants
         self::UPI_OTM                         => true,
         self::CHARGE_ACCOUNT                  => true,
         self::TRANSACTION_ON_HOLD             => true,
+        self::REDIRECT_TO_EARLYSALARY         => true,
         self::LOAN                            => true,
         self::LOC                             => true,
         self::LOS                             => true,

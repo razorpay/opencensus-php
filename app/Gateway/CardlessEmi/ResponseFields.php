@@ -27,4 +27,5 @@ class ResponseFields
 
     const EPAYLATER_ERROR_CODE          = 'errorCode';
     const EPAYLATER_ERROR_DESCRIPTION   = 'errorDescription';
+    const REDIRECT_URL_EARLYSALARY      = 'redirect_url';
 }

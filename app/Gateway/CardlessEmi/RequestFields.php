@@ -26,4 +26,6 @@ class RequestFields
     const CHECKSUM               = 'checksum';
     const TRANSACTION_TYPE       = 'txn_type';
     const BANK_CODE              = 'bank_code';
+    const REDIRECT_URL           = 'redirect_url';
+    const RECEIPT                = 'receipt';
 }
