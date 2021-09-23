@@ -4643,6 +4643,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STUCK_PAYOUTS_NOTIFY_EMAIL_FAILURE                      = 'STUCK_PAYOUTS_NOTIFY_EMAIL_FAILURE';
 
     const DRUID_REQUEST_FAILURE                                   = 'DRUID_REQUEST_FAILURE';
+    const DATALAKE_PRESTO_QUERY                                   = 'DATALAKE_PRESTO_QUERY';
+    const DATALAKE_PRESTO_REQUEST_FAILURE                         = 'DATALAKE_PRESTO_REQUEST_FAILURE';
 
     // Request Log
     const REQUEST_LOG_HANDLER_INITIATED                           = 'REQUEST_LOG_HANDLER_INITIATED';

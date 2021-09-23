@@ -357,6 +357,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new DruidService();
         });
 
+        $this->app->singleton('datalake.presto', function ($app)
+        {
+            $dataLakePrestoServiceMock = $app['config']->get('services.presto.mock');
+
+            if ($dataLakePrestoServiceMock === true)
+            {
+                return new RZP\Services\Mock\DataLakePresto();
+            }
+
+            return new DataLakePresto();
+        });
+
         $this->app->singleton('merchantRiskClient', function ($app)
         {
             return new MerchantRiskClient();

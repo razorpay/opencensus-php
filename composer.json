@@ -75,7 +75,8 @@
         "laravel/helpers": "^1.4",
         "lcobucci/jwt": "3.3.*",
         "segmentio/analytics-php": "^1.8",
-        "teakowa/cryptomute": "^1.4"
+        "teakowa/cryptomute": "^1.4",
+        "clouding/presto-client-php": "^1.1"
     },
     "repositories": [
         {

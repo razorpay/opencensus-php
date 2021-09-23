@@ -147,4 +147,12 @@ return [
             'secret' => env('DRUID_CLIENT_SECRET'),
         ],
     ],
+
+    'presto' => [
+        'host'   => env('DATALAKE_PRESTO_HOST'),
+        'port'   => env('DATALAKE_PRESTO_PORT'),
+        'scheme' => env('DATALAKE_PRESTO_SCHEME', 'https'),
+        'user'   => env('DATALAKE_PRESTO_USER'),
+        'mock'   => env('DATALAKE_PRESTO_MOCK', true),
+    ],
 ];
