@@ -24,6 +24,7 @@ function _track() {
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
         ...properties,
+        ...config,
       },
     });
   }
@@ -39,6 +40,16 @@ function _track() {
     publishPaymentPage: (label, is_new_page, clone) => {
       sendToLumberjack('publish_page', { is_new_page, clone });
       sendToSegment(label, 'clicked');
+    },
+    publishPaymentPageSuccess: (payment_page_id, isNew) => {
+      setConfig({ payment_page_id });
+
+      sendToLumberjack('publish_page.success', { isNew });
+      sendToSegment('publish page', 'success', { isNew });
+    },
+    publishPaymentPageFail: (isNew) => {
+      sendToLumberjack('publish_page.fail', { isNew });
+      sendToSegment('publish page', 'fail', { isNew });
     },
 
     plugins: {

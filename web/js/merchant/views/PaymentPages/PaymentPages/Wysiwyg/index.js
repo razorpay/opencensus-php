@@ -603,6 +603,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         if (resp.data) {
           const entityId = resp.data.id;
 
+          track.publishPaymentPageSuccess(entityId, !isEditExistingId);
+
           this.saveReceiptSettings(entityId, receipt)
             .then(() => {
               window.rzpQ.paymentPages().interaction('pp.receipt.configured', {
@@ -643,6 +645,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           type: 'error',
           message: err,
         });
+
+        track.publishPaymentPageFail(!isEditExistingId);
       });
   };
 
