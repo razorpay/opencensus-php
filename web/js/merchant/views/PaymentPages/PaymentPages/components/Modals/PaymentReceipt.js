@@ -170,7 +170,7 @@ export default class PaymentReceipt extends React.Component {
     if (trackingDetails.isPaymentPage) {
       track.receipt.clickSendingOption(event.target.value === '0' ? 'automated' : 'manual');
     } else {
-      trackPB.lj.trackReceiptsType(
+      trackPB.receiptsType(
         trackingDetails.via,
         event.target.value === '0' ? 'automated' : 'manual',
       );
@@ -183,7 +183,7 @@ export default class PaymentReceipt extends React.Component {
     if (trackingDetails.isPaymentPage) {
       track.receipt.checkInputFields();
     } else {
-      trackPB.lj.trackInputFieldCheckbox(trackingDetails.via, e.target.checked);
+      trackPB.inputFieldCheckbox(trackingDetails.via, e.target.checked);
     }
 
     this.setState({
@@ -197,7 +197,7 @@ export default class PaymentReceipt extends React.Component {
     if (trackingDetails.isPaymentPage) {
       track.receipt.check80GDetails(e.target.checked ? '80g_on' : '80g_off');
     } else {
-      trackPB.lj.track80gDetailsCheckbox(trackingDetails.via, e.target.checked);
+      trackPB.details80gCheckbox(trackingDetails.via, e.target.checked);
     }
 
     this.setState({

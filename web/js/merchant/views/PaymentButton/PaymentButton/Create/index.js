@@ -166,10 +166,7 @@ export default class PaymentButtonCreate extends React.Component {
     };
 
     track.init(tracking.trackEvent, config);
-    track_details.lj.init({
-      track: tracking.trackEvent,
-      button_id: paymentButtonId,
-    });
+    track_details.init(tracking.trackEvent, paymentButtonId);
   };
 
   /*
@@ -239,7 +236,7 @@ export default class PaymentButtonCreate extends React.Component {
 
   handleTogglePageReceiptModal = () => {
     if (!this.state.isPageReceiptModalOpened) {
-      track_details.lj.trackPaymentReceiptsOpen();
+      track_details.paymentReceiptsOpen();
     }
     this.setState((prevState) => ({
       isPageReceiptModalOpened: !prevState.isPageReceiptModalOpened,
@@ -535,7 +532,7 @@ export default class PaymentButtonCreate extends React.Component {
   };
 
   openSettingsModal = () => {
-    track_details.lj.trackOptionsOpenSettings('create');
+    track_details.optionsOpenSettings('create');
 
     const paymentButtonEntity = this.props.payment_button.paymentButtonEntity;
 
@@ -547,12 +544,12 @@ export default class PaymentButtonCreate extends React.Component {
           paymentSuccessRedirectUrl={paymentButtonEntity.settings.payment_success_redirect_url}
           editPaymentButton={this.handleSaveSettings}
           track={{
-            customMessage: track_details.lj.trackSettingsCustomMessage.bind(null, 'create'),
-            closeModal: track_details.lj.trackSettingsCancel,
-            save: track_details.lj.trackSettingsSave,
-            saveFail: track_details.lj.trackSettingsSaveFail,
-            customMessageCheckbox: track_details.lj.trackCustomMessageCheckbox.bind(null, 'create'),
-            redirectURLCheckbox: track_details.lj.trackRedirectURLCheckbox.bind(null, 'create'),
+            customMessage: track_details.settingsCustomMessage.bind(null, 'create'),
+            closeModal: track_details.settingsCancel,
+            save: track_details.settingsSave,
+            saveFail: track_details.settingsSaveFail,
+            customMessageCheckbox: track_details.customMessageCheckbox.bind(null, 'create'),
+            redirectURLCheckbox: track_details.redirectURLCheckbox.bind(null, 'create'),
           }}
         />
       ),

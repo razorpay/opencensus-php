@@ -13,13 +13,13 @@ import track from '../Details/track';
 const pluginsList = [
   {
     title: 'Wordpress Plugin',
-    handleClick: track.lj.trackPluginClick.bind(null, 'wordpress'),
+    handleClick: track.pluginClick.bind(null, 'wordpress'),
     docLink: 'wordpress',
     icon: 'wordpress.svg',
   },
   {
     title: 'Elementor Plugin',
-    handleClick: track.lj.trackPluginClick.bind(null, 'elementor'),
+    handleClick: track.pluginClick.bind(null, 'elementor'),
     docLink: 'wordpress/elementor',
     icon: 'elementor.svg',
   },
@@ -28,31 +28,31 @@ const pluginsList = [
 const integrationsList = [
   {
     title: 'Go Daddy',
-    handleClick: track.lj.trackPluginClick.bind(null, 'godaddy'),
+    handleClick: track.pluginClick.bind(null, 'godaddy'),
     docLink: '#godaddy',
     icon: 'goDaddy.svg',
   },
   {
     title: 'Weebly',
-    handleClick: track.lj.trackPluginClick.bind(null, 'weebly'),
+    handleClick: track.pluginClick.bind(null, 'weebly'),
     docLink: '#weebly',
     icon: 'weebly.svg',
   },
   {
     title: 'Wix',
-    handleClick: track.lj.trackPluginClick.bind(null, 'wix'),
+    handleClick: track.pluginClick.bind(null, 'wix'),
     docLink: '#wix',
     icon: 'wix.svg',
   },
   {
     title: 'Google Sites',
-    handleClick: track.lj.trackPluginClick.bind(null, 'google_sites'),
+    handleClick: track.pluginClick.bind(null, 'google_sites'),
     docLink: '#google-sites',
     icon: 'googleSites.svg',
   },
   {
     title: 'Blogger',
-    handleClick: track.lj.trackPluginClick.bind(null, 'blogger'),
+    handleClick: track.pluginClick.bind(null, 'blogger'),
     docLink: '#blogger',
     icon: 'blogger.svg',
   },
@@ -69,7 +69,7 @@ export default class SuccessModal extends React.Component {
       mode: this.props.mode,
     });
 
-    track.lj.trackCopyCode();
+    track.copyCode();
   };
 
   onClickTextArea = () => {
@@ -82,7 +82,7 @@ export default class SuccessModal extends React.Component {
       document.execCommand('copy');
     }
 
-    track.lj.trackCopyCode();
+    track.copyCode();
   };
 
   onClickButtonSettings = () => {
@@ -106,10 +106,6 @@ export default class SuccessModal extends React.Component {
 
     return paymentBtnCode;
   }
-
-  trackTestButton = () => {
-    track.lj.trackTestButton();
-  };
 
   render() {
     return (
@@ -163,7 +159,7 @@ export default class SuccessModal extends React.Component {
                       href="https://cdn.razorpay.com/static/widget/test-payment-button.html"
                       target="_blank"
                       class="Button Button--primary--invert try-now-btn"
-                      onClick={this.trackTestButton}
+                      onClick={track.testButton}
                       rel="noreferrer"
                     >
                       <i class="i i-play-arrow m-r" /> TEST

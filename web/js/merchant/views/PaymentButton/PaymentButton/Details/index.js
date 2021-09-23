@@ -1,9 +1,12 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
+import PropTypes from 'prop-types';
 
 import { keysToSentence } from 'common/utils/rzp-utils';
 import { updateItem } from 'common/utils/immutable';
+/* global moment */
 
 import {
   fetchPaymentPageEntity as fetchPaymentButtonEntity,
@@ -50,12 +53,9 @@ export default class PaymentButtonDetails extends React.Component {
 
   componentDidMount() {
     // @avinash Should be payment_button_id. To be same as Create/index.js
-    track.lj.init({
-      track: this.props.tracking.trackEvent,
-      button_id: this.entityId,
-    });
+    track.init(this.props.tracking.trackEvent, this.entityId);
 
-    track.lj.trackDetailsStart();
+    track.detailsStart();
   }
 
   componentWillMount() {
@@ -74,12 +74,11 @@ export default class PaymentButtonDetails extends React.Component {
   sanitizePaymentButtonEntity = (data) => {
     const paymentButtonEntity = data;
 
-    let formItems;
     const udfSchema = JSON.parse(paymentButtonEntity.settings.udf_schema);
 
-    formItems = [].concat(udfSchema).concat(paymentButtonEntity.payment_page_items);
+    const formItems = [].concat(udfSchema).concat(paymentButtonEntity.payment_page_items);
 
-    formItems.sort(function(a, b) {
+    formItems.sort((a, b) => {
       const positionA = a.settings.position;
       const positionB = b.settings.position;
 
@@ -200,7 +199,7 @@ export default class PaymentButtonDetails extends React.Component {
                     message: `${this.state.paymentButtonEntity.id} is now Active`,
                   });
                 } else {
-                  throw 'Some network error has occurred';
+                  throw new Error('Some network error has occurred');
                 }
 
                 return resp;
@@ -211,12 +210,13 @@ export default class PaymentButtonDetails extends React.Component {
                 if (Array.isArray(err)) {
                   err = [];
 
-                  errors.length &&
+                  if (errors.length) {
                     errors.forEach((e) => {
                       if (e && e.toLowerCase().indexOf('status code') === -1) {
                         err.push(e);
                       }
                     });
+                  }
 
                   err = err.length ? err : null;
                 }
@@ -257,7 +257,7 @@ export default class PaymentButtonDetails extends React.Component {
 
           let newPaymentButtonEntity;
           if (isEntityPaymentButtonItem) {
-            let paymentPageItems = this.state.paymentButtonEntity.payment_page_items;
+            const paymentPageItems = this.state.paymentButtonEntity.payment_page_items;
             let itemIndexInArray;
 
             paymentPageItems.find((pi, ix) => {
@@ -271,10 +271,10 @@ export default class PaymentButtonDetails extends React.Component {
               newPaymentButtonEntity.payment_page_items = updateItem(
                 paymentPageItems,
                 itemIndexInArray,
-                resp.data
+                resp.data,
               );
             } else {
-              throw 'Please Reload the page'; // index must index, so this Shouldn't happen though
+              throw new Error('Please Reload the page'); // index must index, so this Shouldn't happen though
             }
           } else {
             const paymentButtonEntity = resp.data;
@@ -299,7 +299,7 @@ export default class PaymentButtonDetails extends React.Component {
 
           return resp;
         } else {
-          throw 'Some network issue occured';
+          throw new Error('Some network issue occured');
         }
       })
       .catch(({ errors }) => {
@@ -308,12 +308,13 @@ export default class PaymentButtonDetails extends React.Component {
         if (Array.isArray(err)) {
           err = [];
 
-          errors.length &&
+          if (errors.length) {
             errors.forEach((e) => {
               if (e && e.toLowerCase().indexOf('status code') === -1) {
                 err.push(e);
               }
             });
+          }
 
           err = err.length ? err : null;
         }
@@ -330,11 +331,13 @@ export default class PaymentButtonDetails extends React.Component {
   };
 
   updatePaymentButtonEntity = (newChanges) => {
-    this.setState({
-      paymentButtonEntity: {
-        ...this.state.paymentButtonEntity,
-        ...newChanges,
-      },
+    this.setState((prevState) => {
+      return {
+        paymentButtonEntity: {
+          ...prevState.paymentButtonEntity,
+          ...newChanges,
+        },
+      };
     });
   };
 
@@ -402,12 +405,13 @@ export default class PaymentButtonDetails extends React.Component {
             if (Array.isArray(err)) {
               err = [];
 
-              errors.length &&
+              if (errors.length) {
                 errors.forEach((e) => {
                   if (e && e.toLowerCase().indexOf('status code') === -1) {
                     err.push(e);
                   }
                 });
+              }
 
               err = err.length ? err : null;
             }
@@ -426,7 +430,7 @@ export default class PaymentButtonDetails extends React.Component {
   };
 
   render() {
-    let { paymentButtonEntity, loading } = this.state;
+    const { paymentButtonEntity, loading } = this.state;
 
     if (loading) {
       return (

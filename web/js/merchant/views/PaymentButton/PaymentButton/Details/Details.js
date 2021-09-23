@@ -161,7 +161,7 @@ export default class PaymentButtonEntity extends React.Component {
   };
 
   openGetCodeModal = () => {
-    track.lj.trackOpenGetCodeModal();
+    track.openGetCodeModal();
 
     this.props.openModal({
       size: 'medium',
@@ -173,17 +173,17 @@ export default class PaymentButtonEntity extends React.Component {
           closeModal={() => {
             this.props.closeModal();
 
-            track.lj.trackCloseGetCodeModal();
+            track.closeGetCodeModal();
           }}
-          onCodeCopy={track.lj.trackCopyCode}
-          onClickSeeDocumentation={track.lj.trackSeeDocumentation}
+          onCodeCopy={track.copyCode}
+          onClickSeeDocumentation={track.seeDocumentation}
         />
       ),
     });
   };
 
   openSettingsModal = () => {
-    track.lj.trackOptionsOpenSettings('details');
+    track.optionsOpenSettings('details');
 
     this.props.openModal({
       size: 'medium',
@@ -195,12 +195,12 @@ export default class PaymentButtonEntity extends React.Component {
           }
           editPaymentButton={this.props.editPaymentButton}
           track={{
-            customMessage: track.lj.trackSettingsCustomMessage.bind(null, 'details'),
-            closeModal: track.lj.trackSettingsCancel,
-            save: track.lj.trackSettingsSave,
-            saveFail: track.lj.trackSettingsSaveFail,
-            customMessageCheckbox: track.lj.trackCustomMessageCheckbox.bind(null, 'details'),
-            redirectURLCheckbox: track.lj.trackRedirectURLCheckbox.bind(null, 'details'),
+            customMessage: track.settingsCustomMessage.bind(null, 'details'),
+            closeModal: track.settingsCancel,
+            save: track.settingsSave,
+            saveFail: track.settingsSaveFail,
+            customMessageCheckbox: track.customMessageCheckbox.bind(null, 'details'),
+            redirectURLCheckbox: track.redirectURLCheckbox.bind(null, 'details'),
           }}
         />
       ),
@@ -209,7 +209,7 @@ export default class PaymentButtonEntity extends React.Component {
 
   togglePageReceiptModal = () => {
     if (this.state.isPageReceiptModalOpened) {
-      track.lj.trackSettingsReceiptConfigure();
+      track.settingsReceiptConfigure();
     }
 
     this.setState((prevState) => ({
@@ -242,7 +242,7 @@ export default class PaymentButtonEntity extends React.Component {
       this.props.updateHighlightButtonSettings(null);
     }
 
-    track.lj.trackOptionsOpen();
+    track.optionsOpen();
   };
 
   render() {
@@ -284,7 +284,7 @@ export default class PaymentButtonEntity extends React.Component {
                 <Link
                   class="Button Button--primary--invert"
                   to={`/paymentbuttons/${paymentButtonEntity.id}/edit`}
-                  onClick={track.lj.trackOptionsOpenEdit}
+                  onClick={track.optionsOpenEdit}
                 >
                   <i class="i i-edit-outline" />
                 </Link>
@@ -292,7 +292,7 @@ export default class PaymentButtonEntity extends React.Component {
                 <Link
                   class="Button Button--primary--invert"
                   to={`/paymentbuttons/new?duplicate_id=${paymentButtonEntity.id}`}
-                  onClick={track.lj.trackOptionsOpenDuplicate}
+                  onClick={track.optionsOpenDuplicate}
                 >
                   <i class="i i-copy" />
                 </Link>
