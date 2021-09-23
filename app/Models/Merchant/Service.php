@@ -6314,6 +6314,7 @@ class Service extends Base\Service
             "partner_bank_account" => isset($merchantSettleToPartner[$mid]) ? $merchantSettleToPartner[$mid] : null,
             "pan_details"          => ($merchant->merchantDetail !== null) ? $merchant->merchantDetail->getPan() : null,
             "purpose_code"         => $merchant->getPurposeCode(),
+            "business_address"     => ($merchant->merchantDetail !== null) ? $merchant->merchantDetail->getBusinessRegisteredAddressAsText(', ') : null,
         ];
     }
 
