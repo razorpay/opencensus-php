@@ -3,6 +3,7 @@
 namespace RZP\Models\Admin\Org;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Action;
 use RZP\Models\Admin\Permission;
 
@@ -55,6 +56,11 @@ class Core extends Base\Core
         $this->repo->transactionOnLiveAndTest(function() use($org, $input)
         {
             $this->repo->saveOrFail($org);
+
+            $this->trace->info(TraceCode::ORG_LEVEL_2FA_CHANGES, [
+                Entity::ORG_ID => $org->getId(),
+                'input'        => $input
+            ]);
 
             if (isset($input[Entity::PERMISSIONS]) === true)
             {

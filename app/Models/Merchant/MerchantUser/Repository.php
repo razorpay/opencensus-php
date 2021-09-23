@@ -106,6 +106,14 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function isOwnerForUserId(string $userId): bool
+    {
+        return $this->newQuery()
+            ->where(Entity::USER_ID, $userId)
+            ->whereNotIn(Entity::ROLE, [ROLE::OWNER])
+            ->count() === 0;
+    }
+
     public function isOwnerRoleExistForUserIdAndProduct(string $userId, $product)
     {
         return $this->newQuery()

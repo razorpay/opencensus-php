@@ -1610,6 +1610,60 @@ return [
         ],
     ],
 
+    'testFailedUserEnable2faOrg2faEnforced' => [
+        'request' => [
+            'url'     => '/users/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_ORG_2FA_ENFORCED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ORG_2FA_ENFORCED,
+        ],
+    ],
+
+    'testFailedUserEnable2faOrg2faNotEnforced' => [
+        'request' => [
+            'url'     => '/users/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'second_factor_auth' => true
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFailedUserEnable2faOneOfMultipleOrgs2faEnforced' => [
+        'request' => [
+            'url'     => '/users/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_ORG_2FA_ENFORCED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ORG_2FA_ENFORCED,
+        ],
+    ],
+
     'testFailedUserEnable2faMobNotVerified' => [
         'request' => [
             'url'     => '/users/2fa',
@@ -3165,6 +3219,13 @@ return [
     'testGetUserAndCheckEnabledMethods'   => [
         'response'      => [
                 'content'     => [],
+        ],
+    ],
+
+    'testOrg2faEnforced'   => [
+        'response'      => [
+            'content'     => [
+            ],
         ],
     ],
 

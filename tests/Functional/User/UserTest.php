@@ -11,12 +11,11 @@ use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant\Attribute\Type;
 use Illuminate\Database\Eloquent\Factory;
 
-use RZP\Http\RequestHeader;
 use RZP\Mail\User\Otp;
+use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
 use RZP\Models\User\Entity;
-use RZP\Error\PublicErrorCode;
 use RZP\Models\User\Constants;
 use RZP\Services\Mock\Raven;
 use RZP\Services\RazorXClient;
@@ -25,13 +24,13 @@ use RZP\Mail\User\PasswordReset;
 use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Redis;
-use RZP\Error\PublicErrorDescription;
+use RZP\Mail\User\AccountVerification;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Tests\Functional\Partner\PartnerTrait;
-use RZP\Mail\User\AccountVerification;
 use RZP\Models\User\Constants as UserConstants;
 use RZP\Models\BankingAccountStatement\Details;
 use RZP\Tests\Traits\TestsStorkServiceRequests;
@@ -1933,6 +1932,118 @@ class UserTest extends TestCase
         $this->assertFalse($user->isSecondFactorAuth());
     }
 
+    public function testFailedUserEnable2faOrg2faEnforced()
+    {
+        $this->enableRazorXTreatmentForRazorXForOrgLevel2Fa();
+
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+                UserEntity::CONTACT_MOBILE          => '9999999999',
+                UserEntity::SECOND_FACTOR_AUTH      => 0,
+                UserEntity::PASSWORD                => 'hello123',
+            ]);
+
+        $this->fixtures->edit('org', '100000razorpay', [OrgEntity::MERCHANT_SECOND_FACTOR_AUTH => 1]);
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            MerchantEntity::ORG_ID => '100000razorpay',
+            MerchantEntity::SECOND_FACTOR_AUTH => 0
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content =  [
+            UserEntity::SECOND_FACTOR_AUTH => true,
+            UserEntity::PASSWORD           => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $this->assertFalse($user->isSecondFactorAuth());
+    }
+
+    public function testFailedUserEnable2faOrg2faNotEnforced()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+                UserEntity::CONTACT_MOBILE          => '9999999999',
+                UserEntity::SECOND_FACTOR_AUTH      => 0,
+                UserEntity::PASSWORD                => 'hello123',
+            ]);
+
+        $this->fixtures->edit('org', '100000razorpay', [OrgEntity::MERCHANT_SECOND_FACTOR_AUTH => 0]);
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            MerchantEntity::ORG_ID => '100000razorpay',
+            MerchantEntity::SECOND_FACTOR_AUTH => 0
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content =  [
+            UserEntity::SECOND_FACTOR_AUTH => true,
+            UserEntity::PASSWORD           => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFailedUserEnable2faOneOfMultipleOrgs2faEnforced()
+    {
+        $this->enableRazorXTreatmentForRazorXForOrgLevel2Fa();
+
+        $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+                UserEntity::CONTACT_MOBILE          => '9999999999',
+                UserEntity::SECOND_FACTOR_AUTH      => 0,
+                UserEntity::PASSWORD                => 'hello123',
+            ]);
+
+        $merchant2 = $this->fixtures->create('merchant');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant2['id'],
+            'role'        => 'owner',
+        ]);
+
+        $this->fixtures->create('org', [
+            OrgEntity::ID                          => '100000tazorpay',
+            OrgEntity::MERCHANT_SECOND_FACTOR_AUTH => 1
+        ]);
+
+        $this->fixtures->edit('merchant', $merchant2['id'], [
+            MerchantEntity::ORG_ID => '100000tazorpay',
+            MerchantEntity::SECOND_FACTOR_AUTH => 0
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content =  [
+            UserEntity::SECOND_FACTOR_AUTH => true,
+            UserEntity::PASSWORD           => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testFailedUserEnable2faMobNotVerified()
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
@@ -3444,6 +3555,28 @@ class UserTest extends TestCase
                           ->willReturn('on');
     }
 
+    public function enableRazorXTreatmentForRazorXForOrgLevel2Fa()
+    {
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) {
+                    if ($feature === 'org_level_2fa_enforced_functionality')
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
+    }
+
     public function testEditContactMobileByUser()
     {
         $user = $this->fixtures->create('user');
@@ -4074,6 +4207,53 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+
+    public function testOrg2faEnforced()
+    {
+        $this->enableRazorXTreatmentForRazorXForOrgLevel2Fa();
+
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+                UserEntity::CONTACT_MOBILE          => '9999999999',
+                UserEntity::SECOND_FACTOR_AUTH      => 0,
+                UserEntity::PASSWORD                => 'hello123',
+            ]);
+
+        $this->fixtures->edit('org', '100000razorpay', [OrgEntity::MERCHANT_SECOND_FACTOR_AUTH => 1]);
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            MerchantEntity::ORG_ID => '100000razorpay',
+            MerchantEntity::SECOND_FACTOR_AUTH => 0
+        ]);
+
+        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request = [
+            'method'    => 'GET',
+            'url'       => '/users/' . $user->getId(),
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+            ],
+        ];
+
+        $content = [
+            'id' => UserFixture::MERCHANT_USER_ID
+        ];
+
+        $testData['request'] = $request;
+
+        $testData['response']['content'] = $content;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $this->assertTrue($user->isOrgEnforcedSecondFactorAuth());
+ }
+
     // for nonrzp orgs, on "logging-in as merchant" from admin dashboard -> 'merchant_dashboard' app calls
     // user_admin_fetch in admin-auth. Test asserts that the requests succeeds
     public function testGetUserForAdminFromMerchantDashboardApp()
@@ -4164,7 +4344,7 @@ class UserTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $request =[
+         $request =[
             'method'    => 'GET',
             'url'       => '/users/access',
             'content'   => [
@@ -4183,6 +4363,74 @@ class UserTest extends TestCase
         $this->startTest();
 
         $this->assertEquals('primary', $this->app['basicauth']->getRequestOriginProduct());
+    }
+
+    public function testResetPasswordUnlocksAccountForOwner()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $resetAttributes = [
+            'email'                 => 'resetpass@razorpay.com',
+            'password_reset_token'  => str_random(50),
+            'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
+            'password'              => 'hello123',
+            'account_locked'        => true,
+            'second_factor_auth'    => true,
+        ];
+
+        $user = $this->fixtures->create('user', $resetAttributes);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->doTestPasswordResetByToken($user);
+
+        $user = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertFalse($user->isAccountLocked());
+
+        $this->assertEquals(0, $user->getWrong2faAttempts());
+    }
+
+    public function testResetPasswordNotUnlocksAccountForNonOwner()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $resetAttributes = [
+            'email'                 => 'resetpass@razorpay.com',
+            'password_reset_token'  => str_random(50),
+            'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
+            'password'              => 'hello123',
+            'account_locked'        => true,
+            'second_factor_auth'    => true,
+        ];
+
+        $user = $this->fixtures->create('user', $resetAttributes);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'manager',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->doTestPasswordResetByToken($user);
+
+        $user = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertTrue($user->isAccountLocked());
     }
 
     public function testUserPurposeCodeDetails()

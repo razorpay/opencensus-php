@@ -21,6 +21,7 @@ final class Metric
     const USER_2FA_NOT_SETUP                  = 'user_2fa_not_setup';
     const USER_2FA_LOCKED                     = 'user_2fa_locked';
     const USER_ACCESS_CRITICAL_ROUTE          = 'user_access_critical_route';
+    const LOGIN_ORG_ENFORCED_2FA_SUCCESS      = 'login_org_enforced_2fa_success';
     const USER_LOGIN_COUNT                    = 'user_login_count';
     const USER_EMAIL_ALREADY_VERIFIED         = 'user_email_already_verified';
     const USER_EMAIL_NOT_VERIFIED             = 'user_email_not_verified';
@@ -36,6 +37,6 @@ final class Metric
     const VERIFY_LOGIN_INCORRECT_OTP          = 'verify_login_incorrect_otp';
     const USER_NOT_AUTHENTICATED              = 'user_not_authenticated';
 
-    const DASHBOARD_SWITCH_SUCCESS_TOTAL = 'dashboard_switch_success_total';
-    const DASHBOARD_SWITCH_FAILURE_TOTAL = 'dashboard_switch_failure_total';
+    const DASHBOARD_SWITCH_SUCCESS_TOTAL      = 'dashboard_switch_success_total';
+    const DASHBOARD_SWITCH_FAILURE_TOTAL      = 'dashboard_switch_failure_total';
 }

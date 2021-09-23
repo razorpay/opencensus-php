@@ -116,4 +116,17 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function hasAnyOrgEnforced2Fa(array $orgIds): bool
+    {
+        if (empty($orgIds) === true)
+        {
+            return true;
+        }
+
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $orgIds)
+                    ->where(Entity::MERCHANT_SECOND_FACTOR_AUTH, '=', true)
+                    ->limit(1)
+                    ->count() > 0;
+    }
 }

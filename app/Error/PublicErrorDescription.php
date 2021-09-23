@@ -829,6 +829,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_ID_TOKEN                                          = 'Invalid ID token';
     const BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION                     = 'Restricted user cannot perform action';
     const BAD_REQUEST_USER_2FA_VALIDATION_REQUIRED                              = 'User\'s 2FA validation is required for this action';
+    const BAD_REQUEST_ORG_2FA_ENFORCED                                          = 'Second factor authentication is mandated by one (or more) organization(s)';
 
     const BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS                             = 'User with given role already exists';
     const BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER                          = 'Action not allowed for self user';

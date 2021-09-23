@@ -245,9 +245,13 @@ class Core extends Base\Core
     {
         $this->checkUserAccountNotLockedOrThrowException($user);
 
-        $smsOtpAuthPayload = $this->getSmsOtpAuthBasePayload($user);
+        $input = [
+            Entity::MEDIUM => $this->get2FaAuthMode(),
+            Entity::ACTION => Entity::SECOND_FACTOR_AUTH,
+            Entity::TOKEN => $user->getId()
+        ];
 
-        $this->app['module']->secondFactorAuth::make(AuthConstants::SMS_OTP_AUTH)->sendOtp($smsOtpAuthPayload);
+        $this->sendOtp($input, null, $user);
     }
 
     private function checkUserAccountNotLockedOrThrowException(Entity $user)
@@ -266,6 +270,7 @@ class Core extends Base\Core
                         'restricted'     => $user->restricted,
                         'account_locked' => true,
                         'user_id'        => $user->getId(),
+                        'is_owner'       => $user->isOwner()
                         ],
                     ]);
         }
@@ -1089,6 +1094,13 @@ class Core extends Base\Core
             $this->sendOtpForSecondFactorAuthOnLogin($user);
         }
 
+        if ($user->isOrgEnforcedSecondFactorAuth() === true)
+        {
+            $this->trace->info(TraceCode::LOGIN_ORG_ENFORCED_2FA_SUCCESS, ['user_id' => $user->getId()]);
+
+            $this->trace->count(Metric::LOGIN_ORG_ENFORCED_2FA_SUCCESS);
+        }
+
         $this->trace->count(Metric::LOGIN_2FA_SUCCESS);
     }
 
@@ -1237,12 +1249,7 @@ class Core extends Base\Core
     // if the otp is correct. Else if the otp is not there it will throw an exception.
     private function verifyOtpForSecondFactorAuthOnLogin(Entity $user, array $input)
     {
-        $smsOtpAuth = $this->app['module']->secondFactorAuth::make(AuthConstants::SMS_OTP_AUTH);
-
-        $smsOtpAuthPayload = $this->getSmsOtpAuthBasePayload($user);
-        $smsOtpAuthPayload[Entity::OTP] = $input[Entity::OTP];
-
-        if ($smsOtpAuth->is2faCredentialValid($smsOtpAuthPayload) === true)
+        if ($this->isCorrectOtpForSecondFactorAuthOnLogin($user, $input) === true)
         {
             $this->trace->count(Metric::LOGIN_2FA_CORRECT_OTP);
 
@@ -1270,16 +1277,69 @@ class Core extends Base\Core
         }
     }
 
+    public function get2FaAuthMode()
+    {
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        $org = $this->repo->org->findByPublicId($orgId);
+
+        return $org->get2FaAuthMode();
+   }
+
+    private function isCorrectOtpForSecondFactorAuthOnLogin($user, $input)
+    {
+        $data = [
+            Entity::MEDIUM => $this->get2FaAuthMode(),
+            Entity::ACTION => Entity::SECOND_FACTOR_AUTH,
+            Entity::TOKEN  => $user->getId(),
+            Entity::OTP    => $input[Entity::OTP],
+        ];
+
+        try
+        {
+            $response = $this->verifyOtp($data, null, $user);
+
+            if((isset($response['success']) === false) or
+                ($response['success'] !== true))
+            {
+                $success = false;
+            }
+            else
+            {
+                $success = true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->info(TraceCode::VERIFY_2FA_OTP_SMS_FOR_ACTION_FAILED, [
+                'exception' => $e->getMessage(),
+                'action'    => 'second_factor_auth',
+            ]);
+
+            $success = false;
+        }
+
+        return $success;
+    }
+
     public function send2faOtp(Entity $user)
     {
         $this->checkUserAccountNotLockedOrThrowException($user);
 
-        $this->check2faSetupDoneOrThrowException($user);
+        $medium = $this->get2FaAuthMode();
 
-        $smsOtpAuth = $this->app['module']
-            ->secondFactorAuth::make(AuthConstants::SMS_OTP_AUTH);
+        if ($medium !== Org\Constants::EMAIL)
+        {
+            $this->check2faSetupDoneOrThrowException($user);
+        }
 
-        $smsOtpAuth->sendOtp($this->getSmsOtpAuthBasePayload($user));
+        $input = [
+            Entity::MEDIUM => $medium,
+            Entity::ACTION => Entity::SECOND_FACTOR_AUTH,
+            Entity::TOKEN => $user->getId()
+        ];
+
+        $this->sendOtp($input, null, $user);
 
         $this->trace->info(TraceCode::USER_2FA_OTP_SENT, ['user_id' => $user->getId()]);
 
@@ -1327,6 +1387,12 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::USER_LOGIN_2FA_WRONG_OTP, ['user_id' => $user->getId()]);
 
         $maxWrongTries = $this->config->get('applications.user_2fa.max_incorrect_tries');
+
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        $org = $this->repo->org->findByPublicId($orgId);
+
+        $maxWrongTries = min($maxWrongTries, $org->getMerchantMaxWrong2FaAttempts());
 
         if ($wrongTries >= $maxWrongTries)
         {
@@ -1473,6 +1539,11 @@ class Core extends Base\Core
      */
     public function change2faSetting(Entity $user, array $input): array
     {
+        if ($user->isOrgEnforcedSecondFactorAuth() === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORG_2FA_ENFORCED);
+        }
+
         if ($user->isSecondFactorAuthEnforced() === true)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_2FA_ENFORCED);
@@ -1989,7 +2060,7 @@ class Core extends Base\Core
      *
      * @return array
      */
-    public function sendOtp(array $input, Merchant\Entity $merchant, Entity $user): array
+    public function sendOtp(array $input, $merchant, Entity $user): array
     {
         $this->trace->info(TraceCode::USERS_SEND_OTP_FOR_ACTION, compact('input'));
 
@@ -1998,7 +2069,7 @@ class Core extends Base\Core
         return $this->$func($input, $merchant, $user);
     }
 
-    public function sendOtpViaSmsAndEmail(array $input, Merchant\Entity $merchant, Entity $user): array
+    public function sendOtpViaSmsAndEmail(array $input, $merchant, Entity $user): array
     {
         $otp = $this->generateOtpFromRaven($input, $merchant, $user);
 
@@ -2040,7 +2111,7 @@ class Core extends Base\Core
      * @param  array|null      $otp
      * @return array
      */
-    public function sendOtpViaSms(array $input, Merchant\Entity $merchant, Entity $user, array $otp = null): array
+    public function sendOtpViaSms(array $input, $merchant, Entity $user, array $otp = null): array
     {
         if ((isset($input[Entity::MEDIUM]) === false) and
             ($input[Entity::ACTION] !== 'verify_contact') and
@@ -2117,7 +2188,7 @@ class Core extends Base\Core
      *
      * @return array
      */
-    public function sendOtpViaEmail(array $input, Merchant\Entity $merchant, Entity $user, array $otp = null): array
+    public function sendOtpViaEmail(array $input, $merchant, Entity $user, array $otp = null): array
     {
         $otp = $otp ?: $this->generateOtpFromRaven($input, $merchant, $user);
 
@@ -2179,7 +2250,7 @@ class Core extends Base\Core
      * @param bool $mock
      * @return array
      */
-    public function verifyOtp(array $input, Merchant\Entity $merchant, Entity $user, bool $mock = false)
+    public function verifyOtp(array $input, $merchant, Entity $user, bool $mock = false)
     {
         $otp = $input['otp'];
         unset($input['otp']);
@@ -2218,7 +2289,7 @@ class Core extends Base\Core
      * @param bool $mockInTestMode
      * @return array
      */
-    protected function generateOtpFromRaven(array $input, Merchant\Entity $merchant, Entity $user, $mockInTestMode = true): array
+    protected function generateOtpFromRaven(array $input, $merchant, Entity $user, $mockInTestMode = true): array
     {
         $payload = $this->getTokenAndRavenOtpReqParams($input, $merchant, $user);
 
@@ -2237,11 +2308,18 @@ class Core extends Base\Core
      * @param  Entity          $user
      * @return array
      */
-    protected function getTokenAndRavenOtpReqParams(array $input, Merchant\Entity $merchant, Entity $user): array
+    protected function getTokenAndRavenOtpReqParams(array $input, $merchant, Entity $user): array
     {
         $token = $input['token'] ?? Entity::generateUniqueId();
 
-        $context = sprintf('%s:%s:%s:%s', $merchant->getId(), $user->getId(), $input[Entity::ACTION], $token);
+        if (isset($merchant) === true)
+        {
+            $context = sprintf('%s:%s:%s:%s', $merchant->getId(), $user->getId(), $input[Entity::ACTION], $token);
+        }
+        else
+        {
+            $context = sprintf('%s:%s:%s', $user->getId(), $input[Entity::ACTION], $token);
+        }
 
         // Should have used api.user.{action} similar to post sms request to Raven. But in Raven otp.source is 10 char.
         $source = 'api';
@@ -2259,7 +2337,8 @@ class Core extends Base\Core
                 'source',
                 'expires_at');
         }
-        else if ($input[Entity::ACTION] === 'user_auth')
+        else if (($input[Entity::ACTION] === 'user_auth') or
+                 ((isset($input['medium']) === true) and ($input['medium'] === 'email')))
         {
             $receiver = $user->getEmail();
 
@@ -2299,7 +2378,7 @@ class Core extends Base\Core
      * @param  Merchant\Entity $merchant
      * @return
      */
-    protected function getExtraRavenSmsPayload(array $input, Merchant\Entity $merchant)
+    protected function getExtraRavenSmsPayload(array $input, $merchant)
     {
         $payload = [];
 

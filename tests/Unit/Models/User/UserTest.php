@@ -167,6 +167,7 @@ class UserTest extends TestCase
             'contact_mobile_verified' => false,
             'second_factor_auth_enforced' => false,
             'second_factor_auth_setup' => false,
+            'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
         ];
@@ -204,6 +205,7 @@ class UserTest extends TestCase
             'contact_mobile_verified' => false,
             'second_factor_auth_enforced' => false,
             'second_factor_auth_setup' => false,
+            'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
         ];
@@ -253,6 +255,7 @@ class UserTest extends TestCase
             'contact_mobile_verified' => false,
             'second_factor_auth_enforced' => false,
             'second_factor_auth_setup' => false,
+            'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
         ];
@@ -376,6 +379,7 @@ class UserTest extends TestCase
             'contact_mobile_verified' => false,
             'second_factor_auth_enforced' => false,
             'second_factor_auth_setup' => false,
+            'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
         ];
@@ -428,6 +432,7 @@ class UserTest extends TestCase
             'contact_mobile_verified' => false,
             'second_factor_auth_enforced' => false,
             'second_factor_auth_setup' => false,
+            'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
         ];
@@ -699,6 +704,8 @@ class UserTest extends TestCase
 
         $this->userEntityMock->shouldReceive('isSecondFactorAuthEnforced')->andReturn(false);
 
+        $this->userEntityMock->shouldReceive('isOrgEnforcedSecondFactorAuth')->andReturn(false);
+
         $this->userEntityMock->shouldReceive('getEmail')->andReturn('dummy@example.com');
 
         $this->merchantEntityMock->shouldReceive('getId')->andReturn('1cXSLlUU8V9sXl');
@@ -839,6 +846,7 @@ class UserTest extends TestCase
             'contact_mobile_verified' => false,
             'second_factor_auth_enforced' => false,
             'second_factor_auth_setup' => false,
+            'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
         ];
@@ -1048,6 +1056,8 @@ class UserTest extends TestCase
         $this->userEntityMock->shouldReceive('isSecondFactorAuthEnforced')->andReturn(false);
 
         $this->userEntityMock->shouldReceive('isSecondFactorAuthSetup')->andReturn(true);
+
+        $this->userEntityMock->shouldReceive('isOrgEnforcedSecondFactorAuth')->andReturn(false);
 
         $input = [
             'second_factor_auth' => true,
@@ -1546,6 +1556,8 @@ class UserTest extends TestCase
 
         $this->userEntityMock->shouldReceive('isSecondFactorAuthEnforced')->andReturn(false);
 
+        $this->userEntityMock->shouldReceive('isOrgEnforcedSecondFactorAuth')->andReturn(false);
+
         $this->userEntityMock->shouldReceive('getEmail')->andReturn('dummy@example.com');
 
         $this->merchantEntityMock->shouldReceive('getId')->andReturn('1cXSLlUU8V9sXl');
@@ -1616,15 +1628,15 @@ class UserTest extends TestCase
 
         $module->shouldReceive('sendOtp')->andReturn([]);
 
-        $secondFactor = Mockery::mock('\RZP\Mail\Merchant\SecondFactorAuth');
+        $orgMock = Mockery::mock('RZP\Models\Admin\Org\Repository');
 
-        $sms = Mockery::mock('\RZP\Modules\SecondFactorAuth\SmsOtpAuth');
+        $this->repoMock->shouldReceive('driver')->with('org')->andReturn($orgMock);
 
-        $sms->shouldReceive('sendOtp')->andReturn(true);
+        $orgMock->shouldReceive('findByPublicId')->withAnyArgs()->andReturn($orgMock);
 
-        $secondFactor->shouldReceive('make')->andReturn($sms);
+        $orgMock->shouldReceive('get2FaAuthMode')->withAnyArgs()->andReturn('sms');
 
-        $module->shouldReceive('driver')->with('secondFactorAuth')->andReturn($secondFactor);
+        $this->merchantEntityMock->shouldReceive('getId')->andReturn('1cXSLlUU8V9sXl');
 
         $this->app->instance('module', $module);
 
@@ -1643,15 +1655,15 @@ class UserTest extends TestCase
 
         $module->shouldReceive('sendOtp')->andReturn([]);
 
-        $secondFactor = Mockery::mock('\RZP\Mail\Merchant\SecondFactorAuth');
+        $orgMock = Mockery::mock('RZP\Models\Admin\Org\Repository');
 
-        $sms = Mockery::mock('\RZP\Modules\SecondFactorAuth\SmsOtpAuth');
+        $this->repoMock->shouldReceive('driver')->with('org')->andReturn($orgMock);
 
-        $sms->shouldReceive('sendOtp')->andReturn(true);
+        $orgMock->shouldReceive('findByPublicId')->withAnyArgs()->andReturn($orgMock);
 
-        $secondFactor->shouldReceive('make')->andReturn($sms);
+        $orgMock->shouldReceive('get2FaAuthMode')->withAnyArgs()->andReturn('sms');
 
-        $module->shouldReceive('driver')->with('secondFactorAuth')->andReturn($secondFactor);
+        $this->merchantEntityMock->shouldReceive('getId')->andReturn('1cXSLlUU8V9sXl');
 
         $this->app->instance('module', $module);
 
@@ -1694,6 +1706,7 @@ class UserTest extends TestCase
             'contact_mobile_verified' => false,
             'second_factor_auth_enforced' => false,
             'second_factor_auth_setup' => false,
+            'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => true,
         ];
@@ -1808,6 +1821,7 @@ class UserTest extends TestCase
             'contact_mobile_verified' => false,
             'second_factor_auth_enforced' => false,
             'second_factor_auth_setup' => false,
+            'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
         ];
@@ -2024,6 +2038,8 @@ class UserTest extends TestCase
 
         $this->userEntityMock->shouldReceive('getRestrictedAttribute')->withAnyArgs()->andReturn(true);
 
+        $this->userEntityMock->shouldReceive('isOwner')->withAnyArgs()->andReturn(true);
+
         $this->userService->verifyUserSecondFactorAuth($input);
     }
 
@@ -2071,6 +2087,14 @@ class UserTest extends TestCase
 
         $this->userEntityMock->shouldReceive('getEmail')->andReturn('dummy@example.com');
 
+        $orgMock = Mockery::mock('RZP\Models\Admin\Org\Repository');
+
+        $this->repoMock->shouldReceive('driver')->with('org')->andReturn($orgMock);
+
+        $orgMock->shouldReceive('findByPublicId')->withAnyArgs()->andReturn($orgMock);
+
+        $orgMock->shouldReceive('get2FaAuthMode')->withAnyArgs()->andReturn('sms');
+
         $response = $this->userService->verifyUserSecondFactorAuth($input);
 
         $this->assertEquals($expected, $response);
@@ -2097,6 +2121,16 @@ class UserTest extends TestCase
         $sms->shouldReceive('is2faCredentialValid')->withAnyArgs()->andReturn(false);
 
         $secondFactor->shouldReceive('make')->andReturn($sms);
+
+        $orgMock = Mockery::mock('RZP\Models\Admin\Org\Repository');
+
+        $this->repoMock->shouldReceive('driver')->with('org')->andReturn($orgMock);
+
+        $orgMock->shouldReceive('findByPublicId')->withAnyArgs()->andReturn($orgMock);
+
+        $orgMock->shouldReceive('get2FaAuthMode')->withAnyArgs()->andReturn('sms');
+
+        $orgMock->shouldReceive('getMerchantMaxWrong2FaAttempts')->withAnyArgs()->andReturn(9);
 
         $module->shouldReceive('driver')->with('secondFactorAuth')->andReturn($secondFactor);
 

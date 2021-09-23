@@ -14,26 +14,31 @@ class Entity extends Base\Entity
     use SoftDeletes;
     use RevisionableTrait;
 
-    const AUTH_TYPE               = 'auth_type';
-    const BUSINESS_NAME           = 'business_name';
-    const DISPLAY_NAME            = 'display_name';
-    const EMAIL                   = 'email';
-    const EMAIL_DOMAINS           = 'email_domains';
-    const ALLOW_SIGN_UP           = 'allow_sign_up';
-    const LOGIN_LOGO_URL          = 'login_logo_url';
-    const MAIN_LOGO_URL           = 'main_logo_url';
-    const INVOICE_LOGO_URL        = 'invoice_logo_url';
-    const CHECKOUT_LOGO_URL       = 'checkout_logo_url';
-    const EMAIL_LOGO_URL          = 'email_logo_url';
-    const DELETED_AT              = 'deleted_at';
-    const CUSTOM_CODE             = 'custom_code';
-    const ADMIN                   = 'admin';
-    const FROM_EMAIL              = 'from_email';
-    const SIGNATURE_EMAIL         = 'signature_email';
-    const CROSS_ORG_ACCESS        = 'cross_org_access';
-    const DEFAULT_PRICING_PLAN_ID = 'default_pricing_plan_id';
-    const BACKGROUND_IMAGE_URL    = 'background_image_url';
-    const MERCHANT_STYLES         = 'merchant_styles';
+    const AUTH_TYPE                       = 'auth_type';
+    const BUSINESS_NAME                   = 'business_name';
+    const DISPLAY_NAME                    = 'display_name';
+    const EMAIL                           = 'email';
+    const EMAIL_DOMAINS                   = 'email_domains';
+    const ALLOW_SIGN_UP                   = 'allow_sign_up';
+    const LOGIN_LOGO_URL                  = 'login_logo_url';
+    const MAIN_LOGO_URL                   = 'main_logo_url';
+    const INVOICE_LOGO_URL                = 'invoice_logo_url';
+    const CHECKOUT_LOGO_URL               = 'checkout_logo_url';
+    const EMAIL_LOGO_URL                  = 'email_logo_url';
+    const DELETED_AT                      = 'deleted_at';
+    const CUSTOM_CODE                     = 'custom_code';
+    const ADMIN                           = 'admin';
+    const FROM_EMAIL                      = 'from_email';
+    const SIGNATURE_EMAIL                 = 'signature_email';
+    const CROSS_ORG_ACCESS                = 'cross_org_access';
+    const DEFAULT_PRICING_PLAN_ID         = 'default_pricing_plan_id';
+    const BACKGROUND_IMAGE_URL            = 'background_image_url';
+    const MERCHANT_STYLES                 = 'merchant_styles';
+    const MERCHANT_SECOND_FACTOR_AUTH     = 'merchant_second_factor_auth';
+    const MERCHANT_MAX_WRONG_2FA_ATTEMPTS = 'merchant_max_wrong_2fa_attempts';
+    const ADMIN_SECOND_FACTOR_AUTH        = 'admin_second_factor_auth';
+    const ADMIN_MAX_WRONG_2FA_ATTEMPTS    = 'admin_max_wrong_2fa_attempts';
+    const SECOND_FACTOR_AUTH_MODE         = 'second_factor_auth_mode';
 
     /**
      * Org level features
@@ -136,6 +141,11 @@ class Entity extends Base\Entity
         self::FEATURES,
         self::BACKGROUND_IMAGE_URL,
         self::MERCHANT_STYLES,
+        self::MERCHANT_SECOND_FACTOR_AUTH,
+        self::MERCHANT_MAX_WRONG_2FA_ATTEMPTS,
+        self::ADMIN_SECOND_FACTOR_AUTH,
+        self::ADMIN_MAX_WRONG_2FA_ATTEMPTS,
+        self::SECOND_FACTOR_AUTH_MODE,
     ];
 
     protected $visible = [
@@ -163,6 +173,11 @@ class Entity extends Base\Entity
         self::TYPE,
         self::BACKGROUND_IMAGE_URL,
         self::MERCHANT_STYLES,
+        self::MERCHANT_SECOND_FACTOR_AUTH,
+        self::MERCHANT_MAX_WRONG_2FA_ATTEMPTS,
+        self::ADMIN_SECOND_FACTOR_AUTH,
+        self::ADMIN_MAX_WRONG_2FA_ATTEMPTS,
+        self::SECOND_FACTOR_AUTH_MODE,
     ];
 
     protected $public = [
@@ -188,6 +203,11 @@ class Entity extends Base\Entity
         self::DEFAULT_PRICING_PLAN_ID,
         self::BACKGROUND_IMAGE_URL,
         self::MERCHANT_STYLES,
+        self::MERCHANT_SECOND_FACTOR_AUTH,
+        self::MERCHANT_MAX_WRONG_2FA_ATTEMPTS,
+        self::ADMIN_SECOND_FACTOR_AUTH,
+        self::ADMIN_MAX_WRONG_2FA_ATTEMPTS,
+        self::SECOND_FACTOR_AUTH_MODE,
     ];
 
     protected $guarded = [
@@ -201,13 +221,23 @@ class Entity extends Base\Entity
     ];
 
     protected $defaults = [
-        self::CROSS_ORG_ACCESS        => false,
-        self::DEFAULT_PRICING_PLAN_ID => null,
-        self::TYPE                    => null,
+        self::CROSS_ORG_ACCESS                => false,
+        self::DEFAULT_PRICING_PLAN_ID         => null,
+        self::TYPE                            => null,
+        self::MERCHANT_SECOND_FACTOR_AUTH     => false,
+        self::MERCHANT_MAX_WRONG_2FA_ATTEMPTS => Constants::DEFAULT_MAX_WRONG_2FA_ATTEMPTS,
+        self::ADMIN_SECOND_FACTOR_AUTH        => false,
+        self::ADMIN_MAX_WRONG_2FA_ATTEMPTS    => Constants::DEFAULT_MAX_WRONG_2FA_ATTEMPTS,
+        self::SECOND_FACTOR_AUTH_MODE         => Constants::SMS
     ];
 
     protected $publicSetters = [
-        self::ID
+        self::ID,
+        self::MERCHANT_SECOND_FACTOR_AUTH,
+        self::MERCHANT_MAX_WRONG_2FA_ATTEMPTS,
+        self::ADMIN_SECOND_FACTOR_AUTH,
+        self::ADMIN_MAX_WRONG_2FA_ATTEMPTS,
+        self::SECOND_FACTOR_AUTH_MODE,
     ];
 
     protected $diff = [
@@ -430,6 +460,81 @@ class Entity extends Base\Entity
     public function getBackgroundImage()
     {
         return $this->attributes[self::BACKGROUND_IMAGE_URL];
+    }
+
+    public function isMerchant2FaEnabled(): bool
+    {
+        return $this->getAttribute(self::MERCHANT_SECOND_FACTOR_AUTH) === true;
+    }
+
+    public function getMerchantMaxWrong2FaAttempts()
+    {
+        return $this->getAttribute(self::MERCHANT_MAX_WRONG_2FA_ATTEMPTS);
+    }
+
+    public function isAdmin2FaEnabled(): bool
+    {
+        return (bool) $this->getAttribute(self::ADMIN_SECOND_FACTOR_AUTH);
+    }
+
+    public function getAdminMaxWrong2FaAttempts()
+    {
+        return $this->getAttribute(self::ADMIN_MAX_WRONG_2FA_ATTEMPTS);
+    }
+
+    public function get2FaAuthMode()
+    {
+        return $this->getAttribute(self::SECOND_FACTOR_AUTH_MODE);
+    }
+
+    public function setPublicMerchantSecondFactorAuthAttribute($array)
+    {
+        if (isset($array[self::MERCHANT_SECOND_FACTOR_AUTH]) === true)
+        {
+            $merchant2Fa = (bool) $array[self::MERCHANT_SECOND_FACTOR_AUTH];
+
+            $this->attributes[self::MERCHANT_SECOND_FACTOR_AUTH] = $merchant2Fa;
+        }
+    }
+
+    public function setPublicMerchantMaxWrong2faAttemptsAttribute($array)
+    {
+        if (isset($array[self::MERCHANT_MAX_WRONG_2FA_ATTEMPTS]) === true)
+        {
+            $merchantMaxWrong2FaAttempts = $array[self::MERCHANT_MAX_WRONG_2FA_ATTEMPTS];
+
+            $this->attributes[self::MERCHANT_MAX_WRONG_2FA_ATTEMPTS] = $merchantMaxWrong2FaAttempts;
+        }
+    }
+
+    public function setPublicAdminSecondFactorAuthAttribute($array)
+    {
+        if (isset($array[self::ADMIN_SECOND_FACTOR_AUTH]) === true)
+        {
+            $admin2Fa = (bool) $array[self::ADMIN_SECOND_FACTOR_AUTH];
+
+            $this->attributes[self::ADMIN_SECOND_FACTOR_AUTH] = $admin2Fa;
+        }
+    }
+
+    public function setPublicAdminMaxWrong2faAttemptsAttribute($array)
+    {
+        if (isset($array[self::ADMIN_MAX_WRONG_2FA_ATTEMPTS]) === true)
+        {
+            $adminMaxWrong2FaAttempts = $array[self::ADMIN_MAX_WRONG_2FA_ATTEMPTS];
+
+            $this->attributes[self::ADMIN_MAX_WRONG_2FA_ATTEMPTS] = $adminMaxWrong2FaAttempts;
+        }
+    }
+
+    public function setPublicSecondFactorAuthModeAttribute($array)
+    {
+        if (isset($array[self::SECOND_FACTOR_AUTH_MODE]) === true)
+        {
+            $secondFactorAuthMode = $array[self::SECOND_FACTOR_AUTH_MODE];
+
+            $this->attributes[self::SECOND_FACTOR_AUTH_MODE] = $secondFactorAuthMode;
+        }
     }
 
     public function getMerchantStyles()

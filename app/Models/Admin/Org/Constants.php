@@ -14,4 +14,10 @@ class Constants
         self::RZP
     ];
 
+    // list of possible 2FA auth modes
+    const EMAIL         = 'email';
+    const SMS           = 'sms';
+    const SMS_AND_EMAIL = 'sms_and_email';
+
+    const DEFAULT_MAX_WRONG_2FA_ATTEMPTS = 9;
 }

@@ -51,6 +51,57 @@ class OrgTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditOrgMerchant2FaAuth()
+    {
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        $this->ba->adminAuth('test', $authToken);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testEditOrgAdmin2FaAuth()
+    {
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        $this->ba->adminAuth('test', $authToken);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testEditOrg2FaAuthMode()
+    {
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        $this->ba->adminAuth('test', $authToken);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
+
+        $this->startTest();
+    }
+
     public function testEditOrgWithPermissions()
     {
         $org = $this->fixtures->create('org');

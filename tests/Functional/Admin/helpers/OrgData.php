@@ -84,6 +84,109 @@ return [
         ],
     ],
 
+    'testEditOrgMerchant2FaAuth' => [
+        'request'  => [
+            'url'     => '/orgs',
+            'method'  => 'put',
+            'content' => [
+                'email_domains' => ['fbapi.com'],
+                'hostname'      => 'test1.com, test2.com',
+                'email'         => 'test@hdfc.com',
+                'allow_sign_up' => true,
+                'display_name'  => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
+                'merchant_second_factor_auth' => true,
+                'merchant_max_wrong_2fa_attempts' => 5
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'email_domains' => [
+                    'fbapi.com'
+                ],
+                'allow_sign_up' => true,
+                'email'         => 'test@hdfc.com',
+                'display_name'  => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
+                'merchant_second_factor_auth' => 1,
+                'merchant_max_wrong_2fa_attempts' => 5
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testEditOrgAdmin2FaAuth' => [
+        'request'  => [
+            'url'     => '/orgs',
+            'method'  => 'put',
+            'content' => [
+                'email_domains' => ['fbapi.com'],
+                'hostname'      => 'test1.com, test2.com',
+                'email'         => 'test@hdfc.com',
+                'allow_sign_up' => true,
+                'display_name'  => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
+                'admin_second_factor_auth' => true,
+                'admin_max_wrong_2fa_attempts' => 7
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'email_domains' => [
+                    'fbapi.com'
+                ],
+                'allow_sign_up' => true,
+                'email'         => 'test@hdfc.com',
+                'display_name'  => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
+                'admin_second_factor_auth' => 1,
+                'admin_max_wrong_2fa_attempts' => 7
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testEditOrg2FaAuthMode' => [
+        'request'  => [
+            'url'     => '/orgs',
+            'method'  => 'put',
+            'content' => [
+                'email_domains' => ['fbapi.com'],
+                'hostname'      => 'test1.com, test2.com',
+                'email'         => 'test@hdfc.com',
+                'allow_sign_up' => true,
+                'display_name'  => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
+                'second_factor_auth_mode' => 'sms_and_email'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'email_domains' => [
+                    'fbapi.com'
+                ],
+                'allow_sign_up' => true,
+                'email'         => 'test@hdfc.com',
+                'display_name'  => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
+                'second_factor_auth_mode' => 'sms_and_email'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testCreateWithoutPassword' => [
         'request' => [
             'url' => '/orgs',

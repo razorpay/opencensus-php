@@ -4,10 +4,11 @@
 namespace RZP\Models\Terminal;
 
 use RZP\Exception;
-use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\Collection;
+use RZP\Models\Base\PublicCollection;
 
 trait Migrate
 {

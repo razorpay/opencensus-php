@@ -1,6 +1,7 @@
 <?php
 
 use RZP\Constants\Table;
+use RZP\Models\Admin\Org\Constants;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Models\Merchant\Entity as Merchant;
 
@@ -74,6 +75,21 @@ class CreateOrgs extends Migration
 
             $table->char(Org::DEFAULT_PRICING_PLAN_ID, Org::ID_LENGTH)
                   ->nullable();
+
+            $table->boolean(Org::MERCHANT_SECOND_FACTOR_AUTH)
+                  ->default(0);
+
+            $table->integer(Org::MERCHANT_MAX_WRONG_2FA_ATTEMPTS)
+                  ->default(9);
+
+            $table->boolean(Org::ADMIN_SECOND_FACTOR_AUTH)
+                  ->default(0);
+
+            $table->integer(Org::ADMIN_MAX_WRONG_2FA_ATTEMPTS)
+                  ->default(9);
+
+            $table->string(Org::SECOND_FACTOR_AUTH_MODE)
+                  ->default(Constants::SMS);
 
             // Adds created_at and updated_at columns to the table
             $table->integer(Org::CREATED_AT);

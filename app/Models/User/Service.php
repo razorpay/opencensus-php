@@ -27,6 +27,7 @@ use RZP\Services\HubspotClient;
 use RZP\Models\Admin\AdminLead;
 use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstant;
 
@@ -960,7 +961,27 @@ class Service extends Base\Service
             }
         }
 
-      return ['success' => true, 'user_id' => $user->getId()];
+        $isOrg2FaEnforcedEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
+            $user->getId(),
+            RazorxTreatment::ORG_LEVEL_2FA_ENFORCED_FUNCTIONALITY);
+
+        if (($isOrg2FaEnforcedEnabled === true) and
+            ($user->isOwner() === true) and
+            ($user->isAccountLocked() === true))
+        {
+            $this->trace->info(TraceCode::USER_ACCOUNT_LOCK_UNLOCK_ACTION, [
+                Entity::USER_ID => $user->getId(),
+                Entity::ACTION  => Constants::UNLOCK
+            ]);
+
+            $user->setWrong2faAttempts(0);
+
+            $user->setAccountLocked(false);
+
+            $this->repo->saveOrFail($user);
+        }
+
+        return ['success' => true, 'user_id' => $user->getId()];
     }
 
     /**

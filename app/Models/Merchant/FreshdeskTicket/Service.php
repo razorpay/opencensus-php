@@ -1368,6 +1368,7 @@ class Service extends Base\Service
         return $input;
     }
 
+
     public function postTicketOnMerchantBehalf($input, $merchantId)
     {
         if (empty($this->merchant) === true)

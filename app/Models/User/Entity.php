@@ -4,12 +4,14 @@ namespace RZP\Models\User;
 
 use Hash;
 use RZP\Models\Base;
+use RZP\Models\Admin;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Role;
 use RZP\Models\Invitation;
 use RZP\Models\Merchant\MerchantUser;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class Entity extends Base\PublicEntity
 {
@@ -39,6 +41,9 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_LOCKED                = 'account_locked';
     const CAPTCHA                       = 'captcha';
     const CAPTCHA_DISABLE               = 'captcha_disable';
+
+    //added for org level enforcing of 2fa
+    const ORG_ENFORCED_SECOND_FACTOR_AUTH = 'org_enforced_second_factor_auth';
 
     const TOKEN                         = 'token';
     const EXPIRY_TIME                   = 'expiryTime';
@@ -101,6 +106,7 @@ class Entity extends Base\PublicEntity
         self::OAUTH_PROVIDER,
         self::PASSWORD_RESET_TOKEN,
         self::PASSWORD_RESET_EXPIRY,
+        self::ORG_ENFORCED_SECOND_FACTOR_AUTH,
     ];
 
     protected $public = [
@@ -112,6 +118,7 @@ class Entity extends Base\PublicEntity
         self::SECOND_FACTOR_AUTH,
         self::SECOND_FACTOR_AUTH_ENFORCED,
         self::SECOND_FACTOR_AUTH_SETUP,
+        self::ORG_ENFORCED_SECOND_FACTOR_AUTH,
         self::RESTRICTED,
         self::CONFIRMED,
         self::ACCOUNT_LOCKED,
@@ -154,6 +161,7 @@ class Entity extends Base\PublicEntity
         self::SECOND_FACTOR_AUTH_ENFORCED,
         self::SECOND_FACTOR_AUTH_SETUP,
         self::RESTRICTED,
+        self::ORG_ENFORCED_SECOND_FACTOR_AUTH,
     ];
 
     // --------------------- Modifiers ---------------------------------------------
@@ -378,6 +386,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::RESTRICTED) === true);
     }
 
+    public function isOrgEnforcedSecondFactorAuth(): bool
+    {
+        return ($this->getAttribute(self::ORG_ENFORCED_SECOND_FACTOR_AUTH) === true);
+    }
+
     public function isSecondFactorAuthSetup(): bool
     {
         return ($this->getAttribute(self::SECOND_FACTOR_AUTH_SETUP) === true);
@@ -390,16 +403,39 @@ class Entity extends Base\PublicEntity
 
     protected function getSecondFactorAuthEnforcedAttribute(): bool
     {
-        return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
-                    ->where(Merchant\Entity::SECOND_FACTOR_AUTH, '=', true)
-                    ->limit(1)
-                    ->count() > 0;
+        return ($this->getOrgEnforcedSecondFactorAuthAttribute() === true) or
+            ($this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+                ->where(Merchant\Entity::SECOND_FACTOR_AUTH, '=', true)
+                ->limit(1)
+                ->count() > 0);
     }
 
     protected function getSecondFactorAuthSetupAttribute(): bool
     {
         return (($this->getContactMobile() !== null) and
                 ($this->isContactMobileVerified() === true));
+    }
+
+    protected function getOrgEnforcedSecondFactorAuthAttribute(): bool
+    {
+        if ((new Merchant\Core())->isRazorxExperimentEnable($this->getId(),
+            RazorxTreatment::ORG_LEVEL_2FA_ENFORCED_FUNCTIONALITY) === false)
+        {
+            return false;
+        }
+
+        $merchants = $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+                          ->get();
+
+        $orgIdList = [];
+
+        foreach ($merchants as $merchant)
+        {
+            $orgIdList[] = $merchant[Merchant\Entity::ORG_ID];
+        }
+
+        return (new Admin\Org\Repository)
+                    ->hasAnyOrgEnforced2Fa($orgIdList);
     }
 
     public function getMaskedContactMobile()
@@ -472,5 +508,10 @@ class Entity extends Base\PublicEntity
     public function getUserId()
     {
         return $this->getAttribute(self::ID);
+    }
+
+    public function isOwner(): bool
+    {
+        return (new MerchantUser\Repository())->isOwnerForUserId($this->getId()) === true;
     }
 }

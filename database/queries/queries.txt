@@ -6207,6 +6207,13 @@ ALTER TABLE stakeholders
 ALTER TABLE bvs_validation
     ADD COLUMN rule_execution_list JSON DEFAULT NULL;
 
+ALTER TABLE orgs
+    ADD COLUMN merchant_second_factor_auth BOOLEAN DEFAULT 0 NOT NULL,
+    ADD COLUMN merchant_max_wrong_2fa_attempts INTEGER DEFAULT 9 NOT NULL,
+    ADD COLUMN admin_second_factor_auth BOOLEAN DEFAULT 0 NOT NULL,
+    ADD COLUMN admin_max_wrong_2fa_attempts INTEGER DEFAULT 9 NOT NULL,
+    ADD COLUMN second_factor_auth_mode VARCHAR(255) DEFAULT 'sms' NOT NULL;
+
 ALTER table banking_account_statement
     modify column entity_id char(14) null,
     modify column transaction_id char(14) null,

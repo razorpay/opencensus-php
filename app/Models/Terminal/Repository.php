@@ -1045,7 +1045,7 @@ class Repository extends Base\Repository
         $apiTerminals = $query->get();
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
+        
         $variantFlag = $this->app->razorx->getTreatment($gateway, "ROUTE_PROXY_TS_5", $mode);
 
         if ($variantFlag === 'proxy')
