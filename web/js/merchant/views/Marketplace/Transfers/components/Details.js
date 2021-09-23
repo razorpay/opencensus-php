@@ -90,13 +90,11 @@ const SettlementTextV2 = ({ data, transfer, onEdit }) => {
   const isSettlementOnHoldUntil = transfer.settlement_status === 'on_hold' && data.holdUntil;
   const isSettlementPending = transfer.settlement_status === 'pending';
 
-  if (isSettlementOnHoldUntil) {
+  if (isSettlementOnHoldUntil || isSettlementPending) {
     showBusinessHolidaysInfo = true;
     showChangeButton = true;
   } else if (isSettlementOnHold) {
     showChangeButton = true;
-  } else if (isSettlementPending) {
-    showBusinessHolidaysInfo = true;
   }
 
   if (isSettlementOnHoldUntil) {
