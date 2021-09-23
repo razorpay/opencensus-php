@@ -67,7 +67,7 @@ class AnalyticsMobile extends Component {
     const balance = current_balance.data.balance;
     const settlableAmount = ondemand_restrictions && ondemand_restrictions.data.settlable_amount;
 
-    openModal({
+    this.props.openModal({
       component: (
         <OndemandModal
           animatedSettlemnetBtn={!this.state.settlementExists && esOndemandSettlementEnabled}

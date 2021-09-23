@@ -314,7 +314,7 @@ export default class HomeContainer extends Component {
       settlements_count_limit,
     } = this.props.ondemand_restrictions.data;
 
-    if (this.settlementRestricted) {
+    if (this.isOnDemandDisabled) {
       const restrictedItem = this.restrictedFeatures
         .filter((feat) => this.props.user.isFeatureEnabled(feat))
         .map((feat) => this.featureName[feat]);
@@ -361,7 +361,9 @@ export default class HomeContainer extends Component {
         max_amount_limit,
         true,
       )} for the day.`;
-    } else return '';
+      /* eslint-disable */
+    } else return;
+      /* eslint-enable */
   }
 
   fetchRestrictionsIfAny() {
@@ -625,7 +627,9 @@ export default class HomeContainer extends Component {
   };
 
   triggerTimerToUpdateMode = () => {
-    const { user, mode } = this.props;
+    /* eslint-disable */
+    const { user, mode, updateSession } = this.props;
+    /* eslint-enable */
 
     if (
       user.isAutoRefreshExperimentEnabled &&
@@ -661,8 +665,8 @@ export default class HomeContainer extends Component {
               business_type,
             });
 
-            localStorage.setItem(`rzp_mode--${user.current}`, 'live');
-            localStorage.setItem(`is_activated--${user.current}`, 'true');
+            setItem(`rzp_mode--${user.current}`, 'live');
+            setItem(`is_activated--${user.current}`, 'true');
             updateSession({ user: userData, mode: 'live' });
             this.props.showNotification({
               type: 'success',

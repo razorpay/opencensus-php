@@ -63,7 +63,7 @@ class InstantSettlements extends ListContainer {
       max_amount_limit,
       settlements_count_limit,
     } = this.props.ondemand_restrictions.data;
-    if (this.settlementRestricted) {
+    if (this.isOnDemandDisabled) {
       const restrictedItem = this.restrictedFeatures
         .filter((feat) => this.props.user.isFeatureEnabled(feat))
         .map((feat) => this.featureName[feat]);
@@ -111,7 +111,9 @@ class InstantSettlements extends ListContainer {
         max_amount_limit,
         true,
       )} for the day.`;
-    } else return '';
+      /* eslint-disable */
+    } else return;
+      /* eslint-enable */
   }
 
   componentDidMount() {
