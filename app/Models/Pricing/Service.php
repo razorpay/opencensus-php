@@ -315,9 +315,24 @@ class Service extends Base\Service
                 $value = isset($value) ? explode(",",$value) : null;
             }
 
+            if (in_array($key, [Entity::FIXED_RATE, Entity::PERCENT_RATE]))
+            {
+                $value = (int)($value*100);
+            }
+
+            if ($key === Entity::INTERNATIONAL and is_null($value))
+            {
+                $value = '0';
+            }
+
             if ($key === Entity::AMOUNT_RANGE_MAX and $value === '0')
             {
                 $value = null;
+            }
+
+            if ($key === Entity::AMOUNT_RANGE_ACTIVE)
+            {
+                $value = '1';
             }
 
         });

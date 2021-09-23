@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Pricing;
 
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 
 class BuyPricing
@@ -12,12 +13,30 @@ class BuyPricing
     const YESB                  = 'yesb';
     const ICICI                 = 'icici';
     const AXIS_MIGS             = 'axis_migs';
+    const AXIS_GENIUS           = 'axis_genius';
     const FIRST_DATA            = 'first_data';
-    const CARD_FSS_SBI          = 'card_fss_sbin_acquirer';
-    const CARD_FSS_BARB         = 'card_fss_barb_acquirer';
+    const FULCRUM               = 'fulcrum';
+    const KOTAK                 = 'kotak';
+    const SHARP                 = 'sharp';
+    const CARD_FSS              = 'card_fss';
+    const ISG                   = 'isg';
+    const EBS                   = 'ebs';
     const AMEX                  = 'amex';
+    const PAYU                  = 'payu';
+    const MPGS                  = 'mpgs';
+    const PAYTM                 = 'paytm';
+    const PAYSECURE             = 'paysecure';
+    const MANDATEHQ             = 'mandate_hq';
+    const WORLDLINE             = 'worldline';
+    const CASHFREE              = 'cashfree';
+    const ZAAKPAY               = 'zaakpay';
+    const CCAVENUE              = 'ccavenue';
+    const MPI_BLADE             = 'mpi_blade';
+    const MPI_ENSTAGE           = 'mpi_enstage';
     const CYBERSOURCE           = 'cybersource';
+    const CHECKOUTDOTCOM        = 'checkout_dot_com';
     const CRED                  = 'cred';
+    const TWID                  = 'twid';
     const NETBANKING_HDFC       = 'netbanking_hdfc';
     const SBIN                  = 'SBIN';
     const NETBANKING_CIUB       = 'netbanking_ciub';
@@ -28,6 +47,7 @@ class BuyPricing
     const NETBANKING_AIRTEL     = 'netbanking_airtel';
     const NETBANKING_ALLAHABAD  = 'netbanking_allahabad';
     const NETBANKING_BOB        = 'netbanking_bob';
+    const NETBANKING_BOB_V2     = 'netbanking_bob_v2';
     const NETBANKING_CANARA     = 'netbanking_canara';
     const NETBANKING_CSB        = 'netbanking_csb';
     const NETBANKING_CBI        = 'netbanking_cbi';
@@ -49,12 +69,29 @@ class BuyPricing
     const NETBANKING_SIB        = 'netbanking_sib';
     const NETBANKING_YESB       = 'netbanking_yesb';
     const NETBANKING_SCB        = 'netbanking_scb';
+    const NETBANKING_JKB        = 'netbanking_jkb';
+    const NETBANKING_IOB        = 'netbanking_iob';
+    const NETBANKING_FSB        = 'netbanking_fsb';
+    const NETBANKING_AUSF       = 'netbanking_ausf';
+    const NETBANKING_NSDL       = 'netbanking_nsdl';
+    const NETBANKING_DLB        = 'netbanking_dlb';
+    const NETBANKING_BDBL       = 'netbanking_bdbl';
+    const NETBANKING_UBI        = 'netbanking_ubi';
     const ATOM                  = 'atom';
     const BILLDESK              = 'billdesk';
+    const BILLDESK_SIHUB        = 'billdesk_sihub';
     const UPI                   = 'upi';
     const UPI_MINDGATE          = 'upi_mindgate';
     const UPI_AXIS              = 'upi_axis';
     const UPI_ICICI             = 'upi_icici';
+    const UPI_HULK              = 'upi_hulk';
+    const UPI_RBL               = 'upi_rbl';
+    const UPI_YESB              = 'upi_yesbank';
+    const UPI_AIRTEL            = 'upi_airtel';
+    const UPI_CITI              = 'upi_citi';
+    const UPI_JUSPAY            = 'upi_juspay';
+    const P2P_UPI_AXIS          = 'p2p_upi_axis';
+    const P2P_UPI_SHARP         = 'p2p_upi_sharp';
     const UPI_SBI               = 'upi_sbi';
     const GOOGLEPAY             = 'google_pay';
     const HDFC_DEBIT_EMI        = 'hdfc_debit_emi';
@@ -62,6 +99,7 @@ class BuyPricing
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
     const WALLET_AMAZONPAY      = 'wallet_amazonpay';
     const WALLET_FREECHARGE     = 'wallet_freecharge';
+    const FREECHARGE            = 'freecharge';
     const WALLET_JOIMONEY       = 'wallet_jiomoney';
     const WALLET_SBIBUDDY       = 'wallet_sbibuddy';
     const WALLET_MPESA          = 'wallet_mpesa';
@@ -69,31 +107,51 @@ class BuyPricing
     const WALLET_PHONEPE        = 'wallet_phonepe';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
     const WALLET_PAYUMONEY      = 'wallet_payumoney';
+    const PAYUMONEY             = 'payumoney';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_PHONEPESWITCH  = 'wallet_phonepeswitch';
+    const WALLET_OPENWALLET     = 'wallet_openwallet';
+    const WALLET_PAYPAL         = 'wallet_paypal';
+    const CARDLESS_EMI          = 'cardless_emi';
+    const WALNUT369             = 'walnut369';
     const ZESTMONEY             = 'zestmoney';
     const FLEXMONEY             = 'flexmoney';
     const EARLYSALARY           = 'earlysalary';
     const EPAYLATER             = 'epaylater';
     const GETSIMPL              = 'getsimpl';
     const NACH_ICICI            = 'nach_icici';
+    const NACH_CITI             = 'nach_citi';
 
     const NETBANKING_CORPORATION        = 'netbanking_corporation';
-    const NETBANKING_ICICI_CORPORATE    = 'netbanking_icici_corporate';
-    const NETBANKING_AXIS_CORPORATE     = 'netbanking_axis_corporate';
-    const NETBANKING_KOTAK_CORPORATE    = 'netbanking_kotak_corporate';
     const ENACH_NPCI_NETBANKING         = 'enach_npci_netbanking';
-    const EPAYLATER_ACQUIRER            = 'paylater_epaylater_acquirer';
-    const GETSIMPL_ACQUIRER             = 'paylater_getsimpl_acquirer';
+    const ENACH_RBL                     = 'enach_rbl';
+    const PAYLATER                      = 'paylater';
+    const PAYLATER_ICICI                = 'paylater_icici';
 
     protected static $cardIssuers = [
         self::HDFC,
         self::AXIS_MIGS,
         self::FIRST_DATA,
-        self::CARD_FSS_SBI,
-        self::CARD_FSS_BARB,
+        self::CARD_FSS,
+        self::ISG,
         self::AMEX,
+        self::PAYU,
+        self::CASHFREE,
         self::CYBERSOURCE,
+        self::CCAVENUE,
+        self::AXIS_GENIUS,
+        self::MPI_BLADE,
+        self::MPI_ENSTAGE,
+        self::CHECKOUTDOTCOM,
+        self::FULCRUM,
+        self::PAYTM,
+        self::PAYSECURE,
+        self::WORLDLINE,
+        self::BILLDESK_SIHUB,
+        self::MANDATEHQ,
+        self::MPGS,
+        self::KOTAK,
+        self::SHARP,
     ];
 
     protected static $netbankingIssuers = [
@@ -129,27 +187,50 @@ class BuyPricing
         self::NETBANKING_CORPORATION,
         self::NETBANKING_YESB,
         self::NETBANKING_SCB,
-        self::NETBANKING_ICICI_CORPORATE,
-        self::NETBANKING_AXIS_CORPORATE,
-        self::NETBANKING_KOTAK_CORPORATE,
         self::BILLDESK,
         self::ATOM,
+        self::PAYU,
+        self::CASHFREE,
+        self::ZAAKPAY,
+        self::CCAVENUE,
+        self::EBS,
+        self::PAYTM,
+        self::NETBANKING_JKB,
+        self::NETBANKING_IOB,
+        self::NETBANKING_FSB,
+        self::NETBANKING_AUSF,
+        self::NETBANKING_NSDL,
+        self::NETBANKING_DLB,
+        self::NETBANKING_BDBL,
+        self::NETBANKING_UBI,
+        self::NETBANKING_BOB_V2,
+        self::SHARP,
     ];
 
     protected static $emiIssuers = [
+        self::AMEX,
+        self::AXIS_MIGS,
+        self::FIRST_DATA,
+        self::HDFC,
         self::HDFC_DEBIT_EMI,
         self::BAJAJ_FINSERV,
+        self::SHARP,
     ];
 
     protected static $cardlessEmiIssuers = [
         self::ZESTMONEY,
         self::FLEXMONEY,
         self::EARLYSALARY,
+        self::EPAYLATER,
+        self::WALNUT369,
+        self::CARDLESS_EMI,
+        self::SHARP,
     ];
 
     protected static $paylaterIssuers = [
-        self::EPAYLATER_ACQUIRER,
-        self::GETSIMPL_ACQUIRER,
+        self::PAYLATER,
+        self::PAYLATER_ICICI,
+        self::SHARP,
     ];
 
     public static $cardlessEmiNetworksNames = [
@@ -164,6 +245,15 @@ class BuyPricing
     ];
 
     protected static $walletIssuers = [
+        self::PAYU,
+        self::CCAVENUE,
+        self::MOBIKWIK,
+        self::PAYTM,
+        self::FREECHARGE,
+        self::PAYUMONEY,
+        self::SHARP,
+        self::WALLET_PAYPAL,
+        self::WALLET_OPENWALLET,
         self::WALLET_PHONEPE,
         self::WALLET_AIRTELMONEY,
         self::WALLET_PHONEPESWITCH,
@@ -179,11 +269,23 @@ class BuyPricing
     ];
 
     protected static $upiIssuers = [
+        self::PAYU,
+        self::CASHFREE,
+        self::PAYTM,
+        self::UPI_HULK,
+        self::UPI_RBL,
+        self::UPI_YESB,
+        self::UPI_AIRTEL,
+        self::UPI_CITI,
+        self::UPI_JUSPAY,
         self::UPI_MINDGATE,
         self::UPI_AXIS,
         self::UPI_SBI,
         self::UPI_ICICI,
         self::GOOGLEPAY,
+        self::P2P_UPI_AXIS,
+        self::P2P_UPI_SHARP,
+        self::SHARP,
     ];
 
     protected static $emandateIssuers = [
@@ -191,15 +293,20 @@ class BuyPricing
         self::NETBANKING_AXIS,
         self::NETBANKING_ICICI,
         self::NETBANKING_SBI,
+        self::ENACH_RBL,
         self::ENACH_NPCI_NETBANKING,
+        self::SHARP,
     ];
 
     protected static $nachIssuers = [
         self::NACH_ICICI,
+        self::NACH_CITI,
+        self::SHARP,
     ];
 
     protected static $appIssuers = [
         self::CRED,
+        self::TWID,
     ];
 
     public static $upiNetworksNames = [

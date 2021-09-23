@@ -3369,6 +3369,10 @@ class AdminFetch
                     Fetch::LABEL  => 'Emi',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
+                'plan_id' => [
+                    Fetch::LABEL  => 'Plan Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
             ],
 
             Entity::TRANSACTION => [

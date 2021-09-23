@@ -1567,7 +1567,6 @@ class PricingTest extends TestCase
                 'percent_rate'          => '10',
                 'international'         => '0',
                 'emi_duration'          => '',
-                'amount_range_active'   => '1',
                 'amount_range_min'      => '0',
                 'amount_range_max'      => '',
                 'fixed_rate'            => '5',

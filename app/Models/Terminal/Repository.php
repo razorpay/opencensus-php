@@ -53,6 +53,7 @@ class Repository extends Base\Repository
         Entity::RUPAY_MPAN              => 'sometimes|string|size:16',
         Entity::STATUS                  => 'sometimes|string|custom',
         Entity::VPA                     => 'sometimes|string|max:255',
+        Entity::PLAN_ID                 => 'sometimes|alpha_num|size:14',
     );
 
     protected function validateStatus($attribute, $value)
