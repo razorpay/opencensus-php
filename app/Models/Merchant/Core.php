@@ -266,7 +266,7 @@ class Core extends Base\Core
         $legalEntity           = null;
         $externalLegalEntityId = null;
 
-        $input['email'] = $input['email'] ?? $aggregatorMerchant->getEmail();
+        $input['email'] = empty($input['email']) ? $aggregatorMerchant->getEmail() : $input['email'];
 
         if ($accountEntity === true)
         {
