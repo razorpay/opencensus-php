@@ -301,8 +301,6 @@ class HdfcGatewayAuthTest extends TestCase
         $this->assertArrayHasKey('reason', $content['error']);
 
         $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals('IBAZR020', $payment['reference13']);
     }
 
     public function startTest($testDataToReplace = [])

@@ -1,9 +1,0 @@
-internal_error_code,error_description,reason,failure_type,source,next_best_action,step,recoverable
-BAD_REQUEST_NACH_UNKNOWN_FILE_TYPE,The file type of the image is not supported,unknown_file_type,Business,Customer,Upload an image that is in either of .jpeg or .jpg or .png formats,form_upload,Y
-BAD_REQUEST_NACH_FILE_SIZE_EXCEEDS_LIMIT,The file size exceeds the permissible limits,file_size_exceeds_limit,Business,Customer,Upload an image of smaller size,form_upload,Y
-BAD_REQUEST_NACH_IMAGE_NOT_CLEAR,The uploaded image is not clear. This can either be due to poor resolution or because part of the image is cropped,image_not_clear,Business,Customer,Upload an image with better quality without any cropping of the form,form_upload,Y
-BAD_REQUEST_NACH_FORM_MISMATCH,The ID of the uploaded form does not match with that in our records,form_mismatch,Business,Customer,Check that the form is uploaded against the correct order ID,form_upload,Y
-BAD_REQUEST_NACH_FORM_SIGNATURE_IS_MISSING,The signature of the customer is either missing or could not be detected,form_signature_missing,Business,Customer,Check that the customer has signed in the appropriate box and that the image uploaded is clear. For current account a company stamp may also be required,form_upload,Y
-BAD_REQUEST_NACH_FORM_DATA_MISMATCH,One or more of the fields on the NACH form do not match with that in our records,form_data_mismatch,Business,Customer,Check that the image is clear and that the data has not been tampered with before uploading again,form_upload,Y
-BAD_REQUEST_NACH_FORM_STATUS_PENDING,A form against this order is pending action on the destination bank. A new form cannot be submitted till a status is received,form_status_pending,Business,Customer,Wait for an update from the destination bank on the approval/rejection of the mandate,form_upload,Y
-BAD_REQUEST_NACH_REGISTRATION_FAILED,Nach registration failed,payment_failed,,gateway,,payment_authentication,

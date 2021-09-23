@@ -1102,54 +1102,20 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::ERROR_CODE, $errorCode);
         $this->setAttribute(self::ERROR_DESCRIPTION, $errorDesc);
         $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
-        $this->setDetailedError($internalErrorCode, $this->getMethod());
+
+        if ($internalErrorCode !== null)
+        {
+            $this->setDetailedError($internalErrorCode, $this->getMethod());
+        }
     }
 
     public function setDetailedError($code, $method)
     {
-        if (isset($method) === false)
-        {
-            return;
-        }
-
-        $errorCodeMap = array();
-
         $error = new Error($this->getAttribute(self::INTERNAL_ERROR_CODE));
 
-        $error->readMappingFromFile($method, $errorCodeMap);
+        $error->setDetailedError($code, $method);
 
-        $this->setErrorParamsIfApplicable($errorCodeMap, $code);
-    }
-
-    protected function setErrorParamsIfApplicable($errorCodeMap, $code)
-    {
-        $app = \App::getFacadeRoot();
-
-        try
-        {
-            if (array_key_exists($code, $errorCodeMap))
-            {
-                $source = strtolower($errorCodeMap[$code][3] ?: "NA");
-
-                $step = strtolower($errorCodeMap[$code][5] ?: "NA");
-
-                $reason = strtolower($errorCodeMap[$code][1]);
-
-                $sourceFieldMap = array_flip(DetailedError::$sourceFieldMap);
-
-                $stepFieldMap = array_flip(DetailedError::$stepFieldMap);
-
-                $reasonFieldMap = array_flip(DetailedError::$reasonFieldMap);
-
-                $reference13 =  ($sourceFieldMap[$source] ?? 'NA').($stepFieldMap[$step] ?? 'NA').($reasonFieldMap[$reason] ?? 'NA');
-
-                $this->setAttribute(self::REFERENCE13, $reference13);
-            }
-        }
-        catch (\Exception $exception)
-        {
-            $app['trace']->info(TraceCode::ERROR_RESPONSE_MAPPING_READ_FAILED, $errorCodeMap[$code]);
-        }
+        $this->setAttribute(self::ERROR_DESCRIPTION,$error->getEnglishDescription());
     }
 
     public function setInternalErrorCode($internalErrorCode)

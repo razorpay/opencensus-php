@@ -200,7 +200,6 @@ class GooglePayCardTest extends TestCase
         );
 
         $payment = $this->repo->reload($payment);
-        $this->assertEquals('GWAZR009', $payment['reference13']);
     }
 
 

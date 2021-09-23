@@ -67,7 +67,6 @@ class Error extends Support\Fluent
     const BASE_URL              = 'base_url';
     const ERROR_FILE_PATH       = 'error_file_path';
 
-    const ERROR_CODE_FILE_PATH          = 'files/errorcodes/error_reason_%s.csv';
     const BANKING_ERROR_CODE_FILE_PATH  = 'files/errorcodes/error_reason_%s.json';
 
     const ERROR_CODE_VERIFIABLE_FILE_PATH  = 'files/errorcodes/error_verifiable_%s.csv';
@@ -336,18 +335,6 @@ class Error extends Support\Fluent
         $this->setDescForLocale();
     }
 
-    protected function setErrorDetailsFromCsv($code, $method)
-    {
-        if (isset($method) === true)
-        {
-            $errorCodeMap = array();
-
-            $this->readMappingFromFile($method, $errorCodeMap);
-
-            $this->setErrorParamsIfApplicable($errorCodeMap, $code, $method);
-        }
-    }
-
     protected function setErrorDetailsFromCentralRepo($code, $method = '')
     {
         list($errorCodeJson, $this->errorFolder) = $this->errorMapper->getErrorMapping($code,$method);
@@ -360,8 +347,6 @@ class Error extends Support\Fluent
                     'internal_error_code'  => $code,
                 ]
             );
-
-            $this->setErrorDetailsFromCsv($code, $method);
         }
 
         $this->setErrorParams($errorCodeJson, $code, $method);
@@ -418,44 +403,6 @@ class Error extends Support\Fluent
         $this->setAttribute(self::ENGLISH_DESCRIPTION, $desc);
     }
 
-    public function readMappingFromFile($method, & $errorCodeMap)
-    {
-        $filePath = storage_path(sprintf(self::ERROR_CODE_FILE_PATH, $method));
-
-        if (file_exists($filePath) === false)
-        {
-            return;
-        }
-
-        $handle = fopen($filePath,"r");
-
-        if ($handle === false)
-        {
-            return;
-        }
-
-        try
-        {
-            $header = fgetcsv($handle);
-
-            while ($row = fgetcsv($handle))
-            {
-                $key = array_shift($row);
-
-                $errorCodeMap[$key] = $row;
-            }
-        }
-        catch (\Exception $exception)
-        {
-            $this->trace->traceException($exception, null, TraceCode::ERROR_RESPONSE_FILE_READING_FAILED,
-                ['payment_method'  => $method]);
-        }
-        finally
-        {
-            fclose($handle);
-        }
-    }
-
     public function readVerifiableErrorMappingFromFile(string $method, & $errorCodeMap)
     {
         $filePath = storage_path(sprintf(self::ERROR_CODE_VERIFIABLE_FILE_PATH, $method));
@@ -491,54 +438,6 @@ class Error extends Support\Fluent
         finally
         {
             fclose($handle);
-        }
-    }
-
-    protected function setErrorParamsIfApplicable($errorCodeMap, $code, $method)
-    {
-        try
-        {
-            if (array_key_exists($code, $errorCodeMap))
-            {
-                //$this->setDesc($errorCodeMap[$code][0]);
-
-                $reason = $errorCodeMap[$code][1] ?: 'NA';
-                $source = $errorCodeMap[$code][3] ?: 'NA';
-                $step   = $errorCodeMap[$code][5] ?: 'NA';
-
-                $this->setReason($reason);
-
-                $this->setFailureType($errorCodeMap[$code][2]);
-
-                $this->setSource($source);
-
-                $this->setNextBestAction($errorCodeMap[$code][4]);
-
-                $this->setStep($step);
-
-                $this->setRecoverable($errorCodeMap[$code][6]);
-
-                $this->setReasonCode($source, $step, $reason);
-            }
-            else
-            {
-                $metadata = $this->getAttribute(self::METADATA);
-
-                if ($metadata !== null)
-                {
-                    $this->trace->info(TraceCode::ERROR_RESPONSE_MAPPING_NOT_FOUND,
-                        [
-                            'payment_method'       => $method,
-                            'internal_error_code'  => $code,
-                            'description'          => $this->getDescription()
-                        ]
-                    );
-                }
-            }
-        }
-        catch (\Exception $exception)
-        {
-            $this->trace->info(TraceCode::ERROR_RESPONSE_MAPPING_READ_FAILED, $errorCodeMap[$code]);
         }
     }
 
