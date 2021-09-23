@@ -234,7 +234,7 @@ class TerminalsService
         }
 
         // For merchant dashboard requests : RaaS
-        if (strpos($path, "/mid/provider") !== false)
+        if ((strpos($path, "/mid/provider") !== false) || ((strpos($path, "optimizer/merchant/mid/methods") !== false)))
         {
             $mid = $this->app['basicauth']->getMerchant()->getId();
 

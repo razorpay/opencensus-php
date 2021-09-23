@@ -454,6 +454,7 @@ class Route
         'terminals_proxy_add_optimizer_provider'            =>  ['post',    'terminals/proxy/optimizer/mid/provider',                'TerminalController@proxyV2TerminalService'             ],
         'terminals_proxy_update_optimizer_provider'         =>  ['put',     'terminals/proxy/optimizer/mid/provider',                'TerminalController@proxyV2TerminalService'             ],
         'terminals_proxy_get_merchant_optimizer_provider'   =>  ['get',     'terminals/proxy/optimizer/list/mid/provider',           'TerminalController@proxyV2TerminalService'             ],
+        'terminals_proxy_get_optimizer_merchant_methods'    =>  ['get',     'terminals/proxy/optimizer/merchant/mid/methods',                 'TerminalController@proxyV2TerminalService'             ],
 
         // Automatic terminal testing
         'execute_terminal_test_run'                => ['post',     'terminals/proxy/terminal_test_run',                              'TerminalController@proxyV2TerminalService'                         ],
@@ -4283,6 +4284,7 @@ class Route
         'terminals_proxy_add_optimizer_provider',
         'terminals_proxy_update_optimizer_provider',
         'terminals_proxy_get_merchant_optimizer_provider',
+        'terminals_proxy_get_optimizer_merchant_methods',
 
         'payout_links_merchant_settings_post',
         'payout_links_merchant_settings_get',
@@ -7246,6 +7248,7 @@ class Route
             'terminals_proxy_add_optimizer_provider',
             'terminals_proxy_update_optimizer_provider',
             'terminals_proxy_get_merchant_optimizer_provider',
+            'terminals_proxy_get_optimizer_merchant_methods',
             'inspector_view_get',
             'invitation_create',
             'invitation_delete',
