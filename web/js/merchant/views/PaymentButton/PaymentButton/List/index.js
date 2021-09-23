@@ -8,12 +8,11 @@ import { buttonTitle, itemName, unitsSold, createdAt } from 'common/ui/item/pair
 import Amount from 'common/ui/Amount';
 import DataTable from 'common/ui/Table/DataTable';
 import HeaderAction from 'common/ui/HeaderAction';
-import DocsLink from 'merchant/components/DocsLink';
+import DocsLink, { DocLink } from 'merchant/components/DocsLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ListContainer from 'merchant/containers/ListContainer';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
-import { DocLink } from 'merchant/components/DocsLink';
 
 import ListFilter from './ListFilter';
 import GetCodeModal from '../components/GetCodeModal'; // SuccessModal
@@ -45,6 +44,22 @@ export const status = {
   value: (item) => <PaymentPagesStatusLabel status={item.status} />,
 };
 
+const EmptyComponent = () => (
+  <div class="PaymentButton-empty-list">
+    <img src="/dist/css/assets/payment_button/empty-list.svg" width="280px" />
+
+    <div class="description">
+      <h4>It’s Lonely Here!</h4>
+      <div>Create a Payment Button to get Started</div>
+      <br />
+      Not sure where to start? See our getting{' '}
+      <DocLink target="_blank" href="https://razorpay.com/docs/payment-button/">
+        started guide <i class="i i-external-link" />
+      </DocLink>
+    </div>
+  </div>
+);
+
 @withRouter
 @connect(
   (state) => ({
@@ -60,13 +75,11 @@ export default class PaymentButtonsList extends ListContainer {
   };
 
   componentDidMount() {
-    track.lj.init({
-      track: this.props.tracking.trackEvent,
-    });
+    track.init(this.props.tracking.trackEvent);
   }
 
   openGetCodeModal = (paymentButtonEntity) => {
-    track.lj.trackGetCode(paymentButtonEntity.id);
+    track.getCode(paymentButtonEntity.id);
 
     this.props.openModal({
       size: 'medium',
@@ -78,11 +91,10 @@ export default class PaymentButtonsList extends ListContainer {
           closeModal={() => {
             this.props.closeModal();
 
-            track.lj.trackGetCodeModalClosed(paymentButtonEntity.id);
+            track.getCodeModalClosed(paymentButtonEntity.id);
           }}
-          onClickCopy={() => track.lj.trackCopyCode(paymentButtonEntity.id)}
-          onCodeCopy={() => track.lj.trackCodeCopy(paymentButtonEntity.id)}
-          onClickSeeDocumentation={() => track.lj.trackOpenDocs(paymentButtonEntity.id)}
+          onCodeCopy={() => track.codeCopy(paymentButtonEntity.id)}
+          onClickSeeDocumentation={() => track.openDocs(paymentButtonEntity.id)}
         />
       ),
     });
@@ -110,7 +122,7 @@ export default class PaymentButtonsList extends ListContainer {
   };
 
   openPaymentButtonsNewPage = () => {
-    track.lj.trackCreateEnter();
+    track.createEnter();
 
     this.setState(
       {
@@ -130,7 +142,7 @@ export default class PaymentButtonsList extends ListContainer {
       <div class="PaymentButtons--ListingPage content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
+            <ShowWhen additionalCondition={() => !user.isOrgAxis}>
               <TakeATourButton feature={RZPFeatures.PB} onSuccess={this.resetCopyPasteCodeStatus} />
             </ShowWhen>
 
@@ -148,7 +160,7 @@ export default class PaymentButtonsList extends ListContainer {
         <ListFilter
           form="paymentButtonListFilter"
           count={this.state.count}
-          onClearAnalytics={track.lj.trackSearchClear}
+          onClearAnalytics={track.searchClear}
           onSubmit={this.search}
         />
 
@@ -164,7 +176,7 @@ export default class PaymentButtonsList extends ListContainer {
             getActions(this.openGetCodeModal),
           ]}
           paginate={(params, type) => {
-            track.lj.trackPaginate(params, type);
+            track.paginate(params, type);
 
             this.paginate(params, type);
           }}
@@ -173,26 +185,10 @@ export default class PaymentButtonsList extends ListContainer {
           skip={this.state.skip}
           EmptyComponent={EmptyComponent}
           onErrorCloseClick={() => {
-            track.lj.trackErrorCloseClick(this.state.status.message);
+            track.errorCloseClick(this.state.status.message);
           }}
         />
       </div>
     );
   }
 }
-
-const EmptyComponent = () => (
-  <div class="PaymentButton-empty-list">
-    <img src="/dist/css/assets/payment_button/empty-list.svg" width="280px" />
-
-    <div class="description">
-      <h4>It’s Lonely Here!</h4>
-      <div>Create a Payment Button to get Started</div>
-      <br />
-      Not sure where to start? See our getting{' '}
-      <DocLink target="_blank" href="https://razorpay.com/docs/payment-button/">
-        started guide <i class="i i-external-link" />
-      </DocLink>
-    </div>
-  </div>
-);
