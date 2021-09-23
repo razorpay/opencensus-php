@@ -185,6 +185,12 @@ class Tracing
             'pages_view',
             'pages_view_by_slug',
             'payment_page_view_get',
+            'payment_page_update',
+            'payment_page_notify',
+            'payment_page_expire_cron',
+            'payment_page_deactivate',
+            'payment_page_activate',
+            'payment_page_slug_exists'
     ]);
     }
 

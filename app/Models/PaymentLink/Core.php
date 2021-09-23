@@ -222,37 +222,55 @@ class Core extends Base\Core
                 Entity::INPUT => $input,
             ]);
 
-        $this->repo->transaction(function() use ($paymentLink, $input)
+        Tracer::inSpan(['name' => 'payment_page.update'], function() use($paymentLink, $input)
         {
-            $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
+            $this->repo->transaction(function () use ($paymentLink, $input) {
 
-            $settings = $input[Entity::SETTINGS] ?? [];
+                Tracer::inSpan(['name' => 'payment_page.update.lock_and_reload'], function() use($paymentLink)
+                {
+                    $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
+                });
 
-            if (isset($input[Entity::PAYMENT_PAGE_ITEMS]) === true)
+                $settings = $input[Entity::SETTINGS] ?? [];
+
+                if (isset($input[Entity::PAYMENT_PAGE_ITEMS]) === true)
+                {
+                    Tracer::inSpan(['name' => 'payment_page.update.item_as_put'], function() use($input, $paymentLink)
+                    {
+                        (new PaymentPageItem\Core)->updatePaymentPageItemsAsPut(
+                            $input[Entity::PAYMENT_PAGE_ITEMS],
+                            $this->merchant,
+                            $paymentLink
+                        );
+                    });
+
+                    $settings[Entity::VERSION] = Version::V2;
+                }
+
+                $paymentLink->edit($input);
+
+                $this->changeStatusAfterUpdateIfApplicable($paymentLink);
+
+                Tracer::inSpan(['name' => 'payment_page.update.upsert_settings'], function() use($paymentLink, $settings)
+                {
+                    $this->upsertSettings($paymentLink, $settings);
+                });
+
+                Tracer::inSpan(['name' => 'payment_page.update.save_or_fail'], function() use($paymentLink)
+                {
+                    $this->repo->saveOrFail($paymentLink);
+                });
+            });
+
+            $this->updateShortUrlIfApplicable($paymentLink, $input);
+
+            Tracer::inSpan(['name' => 'payment_page.update.load_relations'], function() use($paymentLink)
             {
-                (new PaymentPageItem\Core)->updatePaymentPageItemsAsPut(
-                    $input[Entity::PAYMENT_PAGE_ITEMS],
-                    $this->merchant,
-                    $paymentLink
-                );
+                $this->repo->loadRelations($paymentLink);
+            });
 
-                $settings[Entity::VERSION] = Version::V2;
-            }
-
-            $paymentLink->edit($input);
-
-            $this->changeStatusAfterUpdateIfApplicable($paymentLink);
-
-            $this->upsertSettings($paymentLink, $settings);
-
-            $this->repo->saveOrFail($paymentLink);
+            $this->trace->info(TraceCode::PAYMENT_LINK_UPDATED, $paymentLink->toArrayPublic());
         });
-
-        $this->updateShortUrlIfApplicable($paymentLink, $input);
-
-        $this->repo->loadRelations($paymentLink);
-
-        $this->trace->info(TraceCode::PAYMENT_LINK_UPDATED, $paymentLink->toArrayPublic());
 
         return $paymentLink;
     }
@@ -274,9 +292,15 @@ class Core extends Base\Core
             ($slug !== $paymentLink->getSlugFromShortUrl()) and
             ($this->isTestMode() === false))
         {
-            $this->createAndSetShortUrl($paymentLink, $slug);
+            Tracer::inSpan(['name' => 'payment_page.create_and_set_short_url'], function() use($paymentLink, $slug)
+            {
+                $this->createAndSetShortUrl($paymentLink, $slug);
+            });
 
-            $this->repo->saveOrFail($paymentLink);
+            Tracer::inSpan(['name' => 'payment_page.update_url.save_or_fail'], function() use($paymentLink)
+            {
+                $this->repo->saveOrFail($paymentLink);
+            });
         }
     }
 
@@ -288,15 +312,29 @@ class Core extends Base\Core
                 Entity::ID => $paymentLink->getPublicId(),
             ]);
 
-        $this->repo->transaction(function() use ($paymentLink)
+        Tracer::inSpan(['name' => 'payment_page.deactivate.transaction'], function() use($paymentLink)
         {
-            $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
+            $this->repo->transaction(function () use ($paymentLink) {
 
-            $paymentLink->getValidator()->validateDeactivateOperation();
+                Tracer::inSpan(['name' => 'payment_page.deactivate.lock_and_reload'], function() use($paymentLink)
+                {
+                    $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
+                });
 
-            $this->changeStatus($paymentLink, Status::INACTIVE, StatusReason::DEACTIVATED);
+                Tracer::inSpan(['name' => 'payment_page.deactivate.validate'], function() use($paymentLink)
+                {
+                    $paymentLink->getValidator()->validateDeactivateOperation();
+                });
 
-            $this->repo->saveOrFail($paymentLink);
+                Tracer::inSpan(['name' => 'payment_page.deactivate.change_status'], function() use($paymentLink)
+                {
+                    $this->changeStatus($paymentLink, Status::INACTIVE, StatusReason::DEACTIVATED);
+                });
+
+                Tracer::inSpan(['name' => 'payment_page.deactivate.save_or_fail'], function() use($paymentLink) {
+                    return $this->repo->saveOrFail($paymentLink);
+                });
+            });
         });
 
         $this->trace->info(TraceCode::PAYMENT_LINK_DEACTIVATED, $paymentLink->toArrayPublic());
@@ -313,19 +351,37 @@ class Core extends Base\Core
                 Entity::INPUT => $input,
             ]);
 
-        $this->repo->transaction(function() use ($paymentLink, $input)
+        Tracer::inSpan(['name' => 'payment_page.activate.transaction'], function() use($paymentLink, $input)
         {
-            $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
+            $this->repo->transaction(function () use ($paymentLink, $input) {
 
-            $paymentLink->getValidator()->validateActivateOperation();
+                Tracer::inSpan(['name' => 'payment_page.activate.lock_and_reload'], function() use($paymentLink)
+                {
+                    $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
+                });
 
-            $paymentLink->edit($input);
+                Tracer::inSpan(['name' => 'payment_page.activate.validate'], function() use($paymentLink)
+                {
+                    $paymentLink->getValidator()->validateActivateOperation();
+                });
 
-            $paymentLink->getValidator()->validateShouldActivationBeAllowed();
+                $paymentLink->edit($input);
 
-            $this->changeStatus($paymentLink, Status::ACTIVE, null);
+                Tracer::inSpan(['name' => 'payment_page.activate.validate'], function() use($paymentLink)
+                {
+                    $paymentLink->getValidator()->validateShouldActivationBeAllowed();
+                });
 
-            $this->repo->saveOrFail($paymentLink);
+                Tracer::inSpan(['name' => 'payment_page.activate.change_status'], function() use($paymentLink)
+                {
+                    $this->changeStatus($paymentLink, Status::ACTIVE, null);
+                });
+
+                Tracer::inSpan(['name' => 'payment_page.activate.save_or_fail'], function() use($paymentLink)
+                {
+                    $this->repo->saveOrFail($paymentLink);
+                });
+            });
         });
 
         $this->trace->info(TraceCode::PAYMENT_LINK_ACTIVATED, $paymentLink->toArrayPublic());
@@ -348,9 +404,15 @@ class Core extends Base\Core
                 Entity::INPUT => $input,
             ]);
 
-        $paymentLink->getValidator()->validateSendNotification($input);
+        Tracer::inSpan(['name' => 'payment_page.send_notification.validate'], function() use($input, $paymentLink)
+        {
+            $paymentLink->getValidator()->validateSendNotification($input);
+        });
 
-        (new Notifier)->notifyByEmailAndSms($paymentLink, $input);
+        Tracer::inSpan(['name' => 'payment_page.send_notification.notify_by_email_and_sms'], function() use($paymentLink, $input)
+        {
+            (new Notifier)->notifyByEmailAndSms($paymentLink, $input);
+        });
     }
 
     /**
@@ -1206,7 +1268,10 @@ class Core extends Base\Core
     {
         $timeStarted = microtime(true);
 
-        $paymentLinks = $this->repo->payment_link->getActiveAndPastExpireByPaymentLinks();
+        $paymentLinks = Tracer::inSpan(['name' => 'payment_page.expire.get_active_and_past_expire_by_payment_link'], function()
+        {
+            return $this->repo->payment_link->getActiveAndPastExpireByPaymentLinks();
+        });
 
         $summary = [
             'total_count' => $paymentLinks->count(),
@@ -1217,7 +1282,10 @@ class Core extends Base\Core
         {
             try
             {
-                $this->expirePaymentLink($paymentLink);
+                Tracer::inSpan(['name' => 'payment_page.expire.payment_link.core'], function() use($paymentLink)
+                {
+                    $this->expirePaymentLink($paymentLink);
+                });
             }
             catch (\Throwable $e)
             {

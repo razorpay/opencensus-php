@@ -5,7 +5,6 @@ namespace RZP\Models\PaymentLink;
 use Request;
 use RZP\Trace\Tracer;
 use Illuminate\Http\Request  as CurrentRequest;
-
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -87,9 +86,15 @@ class Service extends Base\Service
 
     public function sendNotification(string $id, array $input)
     {
-        $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
+        $paymentLink = Tracer::inSpan(['name' => 'payment_page.send_notification.find_payment_link'], function() use($id)
+        {
+            return $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
+        });
 
-        $this->core->sendNotification($paymentLink, $input);
+        Tracer::inSpan(['name' => 'payment_page.send_notification.core'], function() use($paymentLink, $input)
+        {
+            $this->core->sendNotification($paymentLink, $input);
+        });
     }
 
     public function expirePaymentLinks(): array
@@ -99,7 +104,10 @@ class Service extends Base\Service
 
     public function deactivate(string $id): array
     {
-        $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
+        $paymentLink = Tracer::inSpan(['name' => 'payment_page.deactivate.find_payment_link'], function() use($id)
+        {
+            return $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
+        });
 
         $paymentLink = $this->core->deactivate($paymentLink);
 
@@ -108,7 +116,10 @@ class Service extends Base\Service
 
     public function activate(string $id, array $input): array
     {
-        $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
+        $paymentLink = Tracer::inSpan(['name' => 'payment_page.activate.find_payment_link'], function() use($id)
+        {
+            return $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
+        });
 
         $paymentLink = $this->core->activate($paymentLink, $input);
 
@@ -286,11 +297,11 @@ class Service extends Base\Service
 
     public function setReceiptDetails(string $id, array $input)
     {
-        $paymentLink = Tracer::inSpan(['name' => 'payment_page.recipts.entity.find'], function() use ($id) {
+        $paymentLink = Tracer::inSpan(['name' => 'payment_page.receipts.entity.find'], function() use ($id) {
             return $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
         });
 
-        return Tracer::inSpan(['name' => 'payment_page.recipts.create'], function() use ($paymentLink, $input) {
+        return Tracer::inSpan(['name' => 'payment_page.receipts.create'], function() use ($paymentLink, $input) {
             return $this->core->setReceiptDetails($paymentLink, $input);
         });
     }

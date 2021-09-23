@@ -5,6 +5,7 @@ namespace RZP\Models\PaymentLink\PaymentPageItem;
 use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\Merchant;
+use RZP\Trace\Tracer;
 use RZP\Models\PaymentLink;
 use RZP\Models\Currency\Currency;
 
@@ -180,13 +181,19 @@ class Core extends Base\Core
     {
         (new Validator)->validateUpdatePaymentPageItems($paymentPageItemsDetails);
 
-        $this->deletePaymentPageItemsViaUpdate($paymentLink, $paymentPageItemsDetails);
+        Tracer::inSpan(['name' => 'payment_page.delete.ppi_via_update'], function() use($paymentLink, $paymentPageItemsDetails)
+        {
+            $this->deletePaymentPageItemsViaUpdate($paymentLink, $paymentPageItemsDetails);
+        });
 
-        $this->createOrUpdatePaymentPageItemsViaUpdate(
-            $paymentPageItemsDetails,
-            $paymentLink,
-            $merchant
-        );
+        Tracer::inSpan(['name' => 'payment_page.create_or_update_ppi_via_update'], function() use($paymentPageItemsDetails, $paymentLink, $merchant)
+        {
+            $this->createOrUpdatePaymentPageItemsViaUpdate(
+                $paymentPageItemsDetails,
+                $paymentLink,
+                $merchant
+            );
+        });
     }
 
     public function delete(Entity $paymentPageItem)

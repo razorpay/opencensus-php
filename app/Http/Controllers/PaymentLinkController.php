@@ -38,28 +38,39 @@ class PaymentLinkController extends Controller
 
     public function sendNotification(string $id)
     {
-        $this->service()->sendNotification($id, $this->input);
-
+        Tracer::inSpan(['name' => 'payment_page.send_notification'], function() use($id)
+        {
+            $this->service()->sendNotification($id, $this->input);
+        });
         return ApiResponse::json([]);
     }
 
     public function expirePaymentLinks()
     {
-        $summary = $this->service()->expirePaymentLinks();
+        $summary = Tracer::inSpan(['name' => 'payment_page.expire'], function()
+        {
+            return $this->service()->expirePaymentLinks();
+        });
 
         return ApiResponse::json($summary);
     }
 
     public function deactivate(string $id)
     {
-        $response = $this->service()->deactivate($id);
+        $response = Tracer::inSpan(['name' => 'payment_page.deactivate'], function() use($id)
+        {
+            return $this->service()->deactivate($id);
+        });
 
         return ApiResponse::json($response);
     }
 
     public function activate(string $id)
     {
-        $response = $this->service()->activate($id, $this->input);
+        $response = Tracer::inSpan(['name' => 'payment_page.activate'], function() use($id)
+        {
+            return $this->service()->activate($id, $this->input);
+        });
 
         return ApiResponse::json($response);
     }
@@ -72,7 +83,11 @@ class PaymentLinkController extends Controller
     public function slugExists(string $slug)
     {
         $gimli  = $this->app['elfin']->driver('gimli');
-        $exists = ($gimli->expand($slug) !== null);
+
+        $exists = Tracer::inSpan(['name' => 'payment_page.slug.exists.gimli_expand'], function() use($gimli, $slug)
+        {
+            return ($gimli->expand($slug) !== null);
+        });
 
         return ApiResponse::json(compact('exists'));
     }
