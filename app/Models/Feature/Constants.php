@@ -778,6 +778,11 @@ class Constants
     const ORG_HDFC_VAS_CARDS_SURCHARGE  =   'hdfc_vas_cards_surcharge';
 
     /**
+     * Merchant level feature flag for HDFC 2.0 Checkout
+     */
+    const HDFC_CHECKOUT_2   = 'hdfc_checkout_2';
+    
+    /**
      * Org level feature flag for sub merchant activation with MCC Pending status.
      */
     const ORG_SUB_MERCHANT_MCC_PENDING  =   'sub_merchant_mcc_pending';
@@ -1196,6 +1201,7 @@ class Constants
         self::PAYPAL_CC                       => true,
         self::ORG_HIDE_ACTIVATION_FORM        => true,
         self::ORG_HDFC_VAS_CARDS_SURCHARGE    => true,
+        self::HDFC_CHECKOUT_2                 => true,
         self::SHOW_OLD_ERROR_DESC             => true,
         self::PAYOUT_SYNC_FTS_TRANSFER        => true,
         self::SKIP_SUBM_ONBOARDING_COMM       => true,

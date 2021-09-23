@@ -6,6 +6,7 @@ use View, Request, ApiResponse;
 use Illuminate\Support\Facades\DB;
 
 use RZP\Exception;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
 use RZP\Services\EsClient;
@@ -138,11 +139,36 @@ class PublicController extends Controller
     }
 
     public function getEmbeddedCommon($meta) {
+        $script = $this->config->get('url.cdn.production') . '/static/hosted/embedded-entry.js';
+
+        $merchant = $this->ba->authCreds->getMerchant();
+
+        $app = \App::getFacadeRoot();
+
+        if( (isset($meta['type']) === true) and
+            ($meta['type'] === 'hdfcvas') and
+            ($merchant->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2) === true) )
+        {
+            $experimentResult = $app['razorx']->getTreatment($merchant->getOrgId(),
+                'hdfc_checkout_2', $app['rzp.mode']);
+
+            if($experimentResult === 'on')
+            {
+                $script = $this->config->get('url.cdn.production') . '/static/hosted/standard-vas.js';
+            }
+
+            $app['trace']->debug(TraceCode::HDFC_CHECKOUT_2, [
+                'razorXResult'  => $experimentResult,
+                'featurePresent'=> $merchant->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2),
+                'script'        => $script
+            ]);
+        }
+
         $options = [
             'key'          => $this->ba->getPublicKey(),
             'options'      => json_encode(Request::all(), JSON_FORCE_OBJECT),
             'meta'         => json_encode($meta, JSON_FORCE_OBJECT),
-            'script'       => $this->config->get('url.cdn.production') . '/static/hosted/embedded-entry.js',
+            'script'       => $script,
             'urls'         => "{}"
         ];
 
