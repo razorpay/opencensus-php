@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use BaconQrCode\Renderer;
 use RZP\Gateway\Upi\Base;
+use RZP\Models\BankAccount;
 use RZP\Models\BharatQr\Tags;
 use RZP\Models\QrCode\Entity;
 use RZP\Models\Payment\Gateway;
@@ -440,4 +441,24 @@ class Generator extends QrCode\Generator
         }
     }
 
+    public function getMerchantAccountIdentifier($qrCode)
+    {
+        if ((new Merchant\Methods\Service())->isMethodEnabledForMerchant(Payment\Method::BANK_TRANSFER, $qrCode->merchant) === false)
+        {
+            return parent::getMerchantAccountIdentifier($qrCode);
+        }
+
+        $variant = $this->app->razorx->getTreatment($qrCode->merchant->getId(), Merchant\RazorxTreatment::QR_CODE_BANK_TRANSFER, $this->mode);
+
+        if ($variant !== 'on')
+        {
+            return parent::getMerchantAccountIdentifier($qrCode);
+        }
+
+        $bankAccount = (new BankAccount\Generator($qrCode->merchant, ['name' => $qrCode->merchant->getName()]))->generate($qrCode);
+
+        $value = $bankAccount->getIfscCode() . $bankAccount->getAccountNumber();
+
+        return Tags::MERCHANT_ACCOUNT . $this->getLengthAndValue($value);
+    }
 }

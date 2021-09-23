@@ -10,6 +10,8 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
+use RZP\Error\PublicErrorDescription;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrV2Entity;
 
 class Generator extends Base\Core
 {
@@ -56,27 +58,27 @@ class Generator extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    protected function buildBankAccountEntity(VirtualAccount\Entity $virtualAccount): Entity
+    protected function buildBankAccountEntity(Base\PublicEntity $entity): Entity
     {
         $bankAccount = new Entity();
 
         $bankAccount->merchant()->associate($this->merchant);
 
-        $bankAccount->source()->associate($virtualAccount);
+        $bankAccount->source()->associate($entity);
 
         return $bankAccount;
     }
 
     protected function updateBankAccountEntity(
         Entity $bankAccount,
-        VirtualAccount\Entity $virtualAccount,
+        Base\PublicEntity $entity,
         Terminal\Entity $terminal): Entity
     {
         $accountNumber = $this->generateBankAccountNumber($terminal);
 
         $providerBank = $this->getProviderBank($terminal);
 
-        $bankAccountInput = $this->getBankAccountInput($accountNumber, $virtualAccount, $providerBank);
+        $bankAccountInput = $this->getBankAccountInput($accountNumber, $entity, $providerBank);
 
         $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
 
@@ -102,12 +104,15 @@ class Generator extends Base\Core
         return $terminal;
     }
 
-    public function generate(VirtualAccount\Entity $virtualAccount): Entity
+    public function generate(Base\PublicEntity $entity): Entity
     {
-        // Sets this option at this stage because in __construct the balance relation doesn't exist
-        $this->options[self::BANKING] = $virtualAccount->isBalanceTypeBanking();
+        if ($entity instanceof VirtualAccount\Entity)
+        {
+            // Sets this option at this stage because in __construct the balance relation doesn't exist
+            $this->options[self::BANKING] = $entity->isBalanceTypeBanking();
+        }
 
-        $bankAccount = $this->buildBankAccountEntity($virtualAccount);
+        $bankAccount = $this->buildBankAccountEntity($entity);
 
         $terminal = $this->getTerminalForBankAccount($bankAccount);
 
@@ -115,7 +120,7 @@ class Generator extends Base\Core
 
         while ($attempts <= self::MAX_ACCOUNT_GENERATION_ATTEMPTS)
         {
-            $bankAccount = $this->updateBankAccountEntity($bankAccount, $virtualAccount, $terminal);
+            $bankAccount = $this->updateBankAccountEntity($bankAccount, $entity, $terminal);
 
             $savedBankAccount = $this->lockAndSaveBankAccount($bankAccount);
 
@@ -144,18 +149,32 @@ class Generator extends Base\Core
             $attempts++;
         }
 
-        $this->trace->critical(
-            TraceCode::VIRTUAL_ACCOUNT_UNAVAILABLE,
-            [
-                'method'        => Method::BANK_TRANSFER,
-                'options'       => $this->options,
-                'terminal'      => $terminal->getId(),
-                'merchant_id'   => $this->merchant->getId(),
-            ]);
+        if ($entity instanceof QrV2Entity)
+        {
+            $this->trace->critical(TraceCode::QR_CODE_UNAVAILABLE,
+                                   [
+                                       'method'      => Method::BANK_TRANSFER,
+                                       'options'     => $this->options,
+                                       'terminal'    => $terminal->getId(),
+                                       'merchant_id' => $this->merchant->getId(),
+                                   ]);
+
+            throw new Exception\LogicException(
+                PublicErrorDescription::SERVER_ERROR_QR_CODE_GENERATION_FAILURE,
+                ErrorCode::SERVER_ERROR_QR_CODE_GENERATION_FAILURE
+            );
+        }
+
+        $this->trace->critical(ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE,
+                               [
+                                   'method'      => Method::BANK_TRANSFER,
+                                   'options'     => $this->options,
+                                   'terminal'    => $terminal->getId(),
+                                   'merchant_id' => $this->merchant->getId(),
+                               ]);
 
         // This should never happen
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE);
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE);
     }
 
     /**
@@ -201,14 +220,14 @@ class Generator extends Base\Core
 
     protected function getBankAccountInput(
         string $accountNumber,
-        VirtualAccount\Entity $virtualAccount,
+        Base\PublicEntity $entity,
         string $provider): array
     {
         $bankAccountInput = VirtualAccount\Provider::DEFAULT_DETAILS[$provider];
 
         $merchantDetails = [
             Entity::ACCOUNT_NUMBER     => $accountNumber,
-            Entity::BENEFICIARY_NAME   => $this->options[Entity::NAME] ?? $virtualAccount->getName(),
+            Entity::BENEFICIARY_NAME   => $this->options[Entity::NAME] ?? $entity->getName(),
         ];
 
         return array_merge($bankAccountInput, $merchantDetails);

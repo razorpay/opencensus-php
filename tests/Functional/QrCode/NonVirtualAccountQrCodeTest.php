@@ -4,8 +4,10 @@ namespace Functional\QrCode;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Payment\Gateway;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Exception\BadRequestException;
@@ -54,6 +56,10 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->fixtures->on('test')->create('terminal:bharat_qr_terminal');
 
         $this->fixtures->on('test')->create('terminal:bharat_qr_terminal_upi');
+
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal');
 
         $this->fixtures->create('terminal:vpa_shared_terminal_icici');
 
@@ -128,6 +134,45 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertTrue($response['fixed_amount']);
 
         $this->runEntityAssertions($response);
+    }
+
+    public function testBqrGenerationWithBankAccount()
+    {
+        $this->enableRazorXTreatmentForQrBankTransfer();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->merchant->addFeatures(['qr_image_content']);
+
+        $qrCode = $this->createQrCode();
+
+        $qrBankAccount = $this->getDbLastEntity('bank_account');
+
+        $this->assertEquals('qr_' . $qrBankAccount['entity_id'], $qrCode['id']);
+        $this->assertEquals('qr_code', $qrBankAccount['type']);
+
+        $accountNumberPos = strpos($qrCode['image_content'], '0827');
+        $accountNumber    = substr($qrCode['image_content'], $accountNumberPos + 15, 16);
+        $ifsc             = substr($qrCode['image_content'], $accountNumberPos + 4, 11);
+
+        $this->assertEquals($accountNumber, $qrBankAccount['account_number']);
+        $this->assertEquals($ifsc, $qrBankAccount['ifsc_code']);
+    }
+
+    public function testBqrGenerationWithRecoveryBankAccount()
+    {
+        $this->enableRazorXTreatmentForQrBankTransfer();
+
+        $this->fixtures->merchant->addFeatures(['qr_image_content']);
+
+        $qrCode = $this->createQrCode();
+
+        $accountNumberPos = strpos($qrCode['image_content'], '0827');
+        $accountNumber    = substr($qrCode['image_content'], $accountNumberPos + 15, 16);
+        $ifsc             = substr($qrCode['image_content'], $accountNumberPos + 4, 11);
+
+        $this->assertEquals($accountNumber, '2223330048827001');
+        $this->assertEquals($ifsc, 'YESB0CMSNOC');
     }
 
     public function testCreateQrCodeShortCloseBy()
@@ -620,5 +665,22 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    protected function enableRazorXTreatmentForQrBankTransfer()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+               ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+               {
+                   if ($featureFlag === (RazorxTreatment::QR_CODE_BANK_TRANSFER))
+                   {
+                       return 'on';
+                   }
+                   return 'control';
+               });
     }
 }

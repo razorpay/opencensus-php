@@ -867,6 +867,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID                                 = 'Es debug method is not valid';
     const SERVER_ERROR_NO_ES_PRICING_FOR_POSTPAID_MERCHANT                      = 'ES scheduled default pricing cannot be assigned to postpaid Merchant';
     const SERVER_ERROR_INVALID_ES_PRICING                                       = 'Invalid ES pricing was assigned to this merchant';
+    const SERVER_ERROR_QR_CODE_GENERATION_FAILURE                               = 'QR Code creation failed because of internal server error';
 
     const BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING                                 = 'Incomplete data for force authorization';
 

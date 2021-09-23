@@ -163,6 +163,8 @@ final class RazorxTreatment
 
     const PG_ROUTER_ORDER_SHOULD_DISPATCH_TO_QUEUE = 'pg_router_order_should_dispatch_to_queue';
 
+    const QR_CODE_BANK_TRANSFER = 'qr_code_bank_transfer';
+
     // experiment for merchant when trim migration in progress
     const TRIM_MIGRATION_IN_PROGRESS = 'trim_migration_in_progress';
 

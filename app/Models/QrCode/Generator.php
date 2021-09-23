@@ -196,7 +196,7 @@ class Generator extends Base\Core
             $this->getIdentifierTlv(Tags::VISA, Terminal\Entity::VISA_MPAN, $merchantIdentifiers),
             $this->getIdentifierTlv(Tags::MASTERCARD, Terminal\Entity::MC_MPAN, $merchantIdentifiers),
             $this->getIdentifierTlv(Tags::RUPAY, Terminal\Entity::RUPAY_MPAN, $merchantIdentifiers),
-            $this->getMerchantAccountIdentifier(),
+            $this->getMerchantAccountIdentifier($qrCode),
             $this->getBharatQrUpiTlv($qrCode, $merchantIdentifiers),
             $this->getBharatQrDynamicUpiTlv($qrCode, $merchantIdentifiers),
             Tags::MERCHANT_CATEGORY . $this->getLengthAndValue($merchantDetails[Constants::MERCHANT_CATEGORY]),
@@ -269,7 +269,7 @@ class Generator extends Base\Core
         return null;
     }
 
-    protected function getMerchantAccountIdentifier()
+    protected function getMerchantAccountIdentifier($qrCode)
     {
         $value = BQRConstants::IFSC_CODE . BQRConstants::ACCOUNT_NUMBER;
 
