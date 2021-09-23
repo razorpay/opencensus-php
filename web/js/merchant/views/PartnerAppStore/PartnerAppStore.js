@@ -87,43 +87,41 @@ function NewAppBanner(props) {
 // Sub-components START
 function BecomePartner(props) {
   return (
-    <>
-      <div className="become-partner-container">
-        <div className="become-partner-content">
-          <h2>Publish your App on the App Store</h2>
-          <p>
-            Join our developer community and start building and publishing your App on the Razorpay
-            App Store{' '}
-          </p>
+    <div className="become-partner-container">
+      <div className="become-partner-content">
+        <h2>Publish your App on the App Store</h2>
+        <p>
+          Join our developer community and start building and publishing your App on the Razorpay
+          App Store{' '}
+        </p>
 
-          <div className="partner-links">
-            <a
-              onClick={() => trackMerchant('partnerships.appstore.developer', props)}
-              className="btn btn-primary"
-              href="https://razorpay.com/app-store/developer-guide"
-            >
-              View Developer Guide <i className="i i-arrow-forward" />
-            </a>
-          </div>
+        <div className="partner-links">
+          <a
+            onClick={() => trackMerchant('partnerships.appstore.developer', props)}
+            className="btn btn-primary"
+            href="https://razorpay.com/app-store/developer-guide"
+          >
+            View Developer Guide <i className="i i-arrow-forward" />
+          </a>
         </div>
-        <div className="become-partner-content">
-          <h2>Join the Razorpay Partner Program</h2>
-          <p>Extend the finest Payment Experience to your customers and grow your business</p>
-
-          <div className="partner-links">
-            <button className="btn btn-primary" onClick={() => showPartnerIntent(props)}>
-              Become a Partner <i className="i i-arrow-forward" />
-            </button>
-          </div>
-        </div>
-
-        <img
-          className="footer-pc-illustration"
-          src="/dist/css/assets/app-store/footer-pc-illustration.svg"
-          alt="PC illustration"
-        />
       </div>
-    </>
+      <div className="become-partner-content">
+        <h2>Join the Razorpay Partner Program</h2>
+        <p>Extend the finest Payment Experience to your customers and grow your business</p>
+
+        <div className="partner-links">
+          <button className="btn btn-primary" onClick={() => showPartnerIntent(props)}>
+            Become a Partner <i className="i i-arrow-forward" />
+          </button>
+        </div>
+      </div>
+
+      <img
+        className="footer-pc-illustration"
+        src="/dist/css/assets/app-store/footer-pc-illustration.svg"
+        alt="PC illustration"
+      />
+    </div>
   );
 }
 
