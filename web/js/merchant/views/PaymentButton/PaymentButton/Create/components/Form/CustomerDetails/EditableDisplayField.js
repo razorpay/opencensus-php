@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import Input from 'common/new-ui/Input';
@@ -32,8 +33,10 @@ export default class EditableDisplayField extends React.Component {
   fieldTypeOptions = getFieldTypes(true);
 
   handleToggleEditMode = () => {
-    this.setState({
-      isEditModeOpened: !this.state.isEditModeOpened,
+    this.setState((prevState) => {
+      return {
+        isEditModeOpened: !prevState.isEditModeOpened,
+      };
     });
   };
 
@@ -41,7 +44,7 @@ export default class EditableDisplayField extends React.Component {
     const newFieldSchema = constructFieldSchema(fieldData);
 
     if (!newFieldSchema || (newFieldSchema.enum && (!fieldData.enum || !fieldData.enum.length))) {
-      throw 'Invalid field data';
+      throw new Error('Invalid field data');
     }
 
     if (newFieldSchema.enum) {
@@ -62,7 +65,7 @@ export default class EditableDisplayField extends React.Component {
 
     this.markReviewUnDone();
 
-    track.lj.trackCustomerScreenFieldSaveSuccess();
+    track.customerScreenFieldSaveSuccess();
   };
 
   handleDeleteField = () => {
@@ -70,7 +73,7 @@ export default class EditableDisplayField extends React.Component {
 
     this.markReviewUnDone();
 
-    track.lj.trackCustomerScreenDeleteField();
+    track.customerScreenDeleteField();
   };
 
   get isCheckoutOption() {

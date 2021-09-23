@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { Link } from 'react-router-dom';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import { classList } from 'common/utils/rzp-utils';
@@ -5,7 +7,7 @@ import META from './meta';
 import track from '../../track';
 
 export default class TemplateSelection extends React.PureComponent {
-  selectTemplate = templateKey => () => {
+  selectTemplate = (templateKey) => () => {
     this.props.selectTemplate(templateKey);
     this.props.onClose();
   };
@@ -14,11 +16,7 @@ export default class TemplateSelection extends React.PureComponent {
     return (
       <ModalMask
         maskClosable={false}
-        class={classList(
-          'payment-pages-v2-templates',
-          'view-1',
-          'PaymentButton--Templates'
-        )}
+        class={classList('payment-pages-v2-templates', 'view-1', 'PaymentButton--Templates')}
         isBlur={true}
       >
         <Link class="back-btn" to="/paymentbuttons">
@@ -30,8 +28,8 @@ export default class TemplateSelection extends React.PureComponent {
             <div class="slide-in">
               <div class="heading">Pick a Button Type</div>
               <p>
-                Pick a button which meets your requirements and get a head start
-                on collecting payments or you could build your own
+                Pick a button which meets your requirements and get a head start on collecting
+                payments or you could build your own
               </p>
             </div>
 
@@ -45,12 +43,11 @@ export default class TemplateSelection extends React.PureComponent {
                       description={META[m].card.description}
                       img={META[m].card.img}
                       selectTemplate={this.selectTemplate(META[m].key)}
-                      onMouseEnter={() =>
-                        track.lj.trackTemplateHover(META[m].card.title)
-                      }
+                      onMouseEnter={() => track.templateHover(META[m].card.title)}
                     />
                   );
                 }
+                return '';
               })}
             </div>
           </ModalContent>
@@ -61,30 +58,12 @@ export default class TemplateSelection extends React.PureComponent {
 }
 
 class TemplateCard extends React.PureComponent {
-  state = {};
-
-  componentDidMount() {
-    this.setState({
-      isLoaded: true,
-    });
-  }
-
   render() {
-    const {
-      title,
-      description,
-      img,
-      selectTemplate,
-      onMouseEnter,
-    } = this.props;
+    const { title, description, img, selectTemplate, onMouseEnter } = this.props;
 
     return (
-      <div
-        class="TemplateCard"
-        onClick={selectTemplate}
-        onMouseEnter={onMouseEnter}
-      >
-        <img src={this.state.isLoaded ? img : null} />
+      <div class="TemplateCard" onClick={selectTemplate} onMouseEnter={onMouseEnter}>
+        <img src={img} />
         <div class="TemplateCard-details">
           <div class="TemplateCard-title">{title}</div>
           <div class="TemplateCard-desc">{description}</div>

@@ -1,3 +1,5 @@
+import React from 'react';
+
 import Button from 'common/new-ui/Button';
 import ButtonDetailsPreview from '../Preview/Types/ButtonDetailsPreview';
 import AmountDetailsPreview from '../Preview/Types/AmountDetailsPreview';
@@ -39,7 +41,7 @@ export default class ReviewAndCreate extends React.Component {
   };
 
   render() {
-    const { isEditExistingId, paymentButtonEntity, udfFields, amountFields } = this.props;
+    const { isEditExistingId } = this.props;
     const { isInProgress } = this.state;
 
     return (
@@ -58,7 +60,7 @@ export default class ReviewAndCreate extends React.Component {
             onClick={() => {
               this.props.goBack();
 
-              track.lj.trackReviewScreenBackSuccess();
+              track.reviewScreenBackSuccess();
             }}
           >
             Back
@@ -66,8 +68,12 @@ export default class ReviewAndCreate extends React.Component {
 
           <Button.Primary onClick={this.handleCreate} disabled={isInProgress}>
             {isEditExistingId
-              ? isInProgress ? 'Updating...' : 'Update Button'
-              : isInProgress ? 'Creating...' : 'Create Button'}
+              ? isInProgress
+                ? 'Updating...'
+                : 'Update Button'
+              : isInProgress
+              ? 'Creating...'
+              : 'Create Button'}
           </Button.Primary>
         </div>
       </div>

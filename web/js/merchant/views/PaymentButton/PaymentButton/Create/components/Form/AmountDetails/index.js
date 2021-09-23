@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import Button from 'common/new-ui/Button';
@@ -21,20 +22,13 @@ export default class AmountDetails extends React.Component {
     this.maxItemsLimit = 5;
 
     const { paymentButtonEntity } = props;
-    const templateType =
-      paymentButtonEntity.settings.payment_button_template_type;
+    const templateType = paymentButtonEntity.settings.payment_button_template_type;
     let allowedAmountTypesList;
 
     if (templateType === templateTypes.buyNow.key) {
-      allowedAmountTypesList = [
-        FIELD_TYPES.fixed_price,
-        FIELD_TYPES.multiple_purchase,
-      ];
+      allowedAmountTypesList = [FIELD_TYPES.fixed_price, FIELD_TYPES.multiple_purchase];
     } else if (templateType === templateTypes.donation.key) {
-      allowedAmountTypesList = [
-        FIELD_TYPES.fixed_price,
-        FIELD_TYPES.dynamic_price,
-      ];
+      allowedAmountTypesList = [FIELD_TYPES.fixed_price, FIELD_TYPES.dynamic_price];
     } else {
       allowedAmountTypesList = [
         FIELD_TYPES.fixed_price,
@@ -47,7 +41,7 @@ export default class AmountDetails extends React.Component {
   }
 
   validateSameTitleExists = (title, indexInOrder) => {
-    const allFieldsTitles = this.props.amountFields.map(field => {
+    const allFieldsTitles = this.props.amountFields.map((field) => {
       return field.item.name.toLowerCase();
     });
 
@@ -56,6 +50,8 @@ export default class AmountDetails extends React.Component {
     if (sameTitleIndex > -1 && sameTitleIndex !== indexInOrder) {
       return true;
     }
+
+    return false;
   };
 
   goNext = () => {
@@ -63,7 +59,7 @@ export default class AmountDetails extends React.Component {
 
     this.markReviewDone();
 
-    track.lj.trackAmountScreenNextSuccess();
+    track.amountScreenNextSuccess();
   };
 
   markReviewDone = () => {
@@ -103,17 +99,13 @@ export default class AmountDetails extends React.Component {
             onClick={() => {
               this.props.goBack();
 
-              track.lj.trackAmountScreenBackSuccess();
+              track.amountScreenBackSuccess();
             }}
           >
             Back
           </Button.Transparent>
 
-          <Button.Primary
-            type="button"
-            disabled={!amountFields.length}
-            onClick={this.goNext}
-          >
+          <Button.Primary type="button" disabled={!amountFields.length} onClick={this.goNext}>
             Next <i class="i i-chevron-right" />
           </Button.Primary>
         </div>
@@ -129,7 +121,7 @@ class AddAmountFieldButton extends React.Component {
     isEditModeOpened: false,
   };
 
-  onSelectAmountType = amountOption => {
+  onSelectAmountType = (amountOption) => {
     const newAmountFieldType = amountOption.key;
     const newAmountField = getBaseFieldForAmountFieldType(newAmountFieldType);
 
@@ -165,10 +157,7 @@ class AddAmountFieldButton extends React.Component {
           type="amount"
           options={allowedAmountTypesList}
           trigger={
-            <Button
-              class="Button--primary--invert addFieldBtn"
-              onClick={track.lj.trackOnClickAmountField}
-            >
+            <Button class="Button--primary--invert addFieldBtn" onClick={track.onClickAmountField}>
               <b>+ Add Amount Field</b>
             </Button>
           }

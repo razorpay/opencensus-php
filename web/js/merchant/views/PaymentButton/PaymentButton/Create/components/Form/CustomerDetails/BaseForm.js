@@ -1,3 +1,5 @@
+import React from 'react';
+
 import Alert from 'common/new-ui/Alert';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
@@ -17,7 +19,7 @@ import track from '../../../track';
 
 const udfFieldTypeOptionComponent = ({ option }) => (
   <div>
-    <i class={classList('i', option.icon && 'i-' + option.icon)} />
+    <i class={classList('i', option.icon && `i-${option.icon}`)} />
     <span>{option.label}</span>
     <i class="i i-check" />
   </div>
@@ -73,22 +75,26 @@ export default class BaseForm extends React.Component {
 
   handleToggleMakeOptional = () => {
     this.setState(
-      {
-        isRequired: !this.state.isRequired,
+      (prevState) => {
+        return {
+          isRequired: !prevState.isRequired,
+        };
       },
       () => {
-        track.lj.trackCustomerScreenToggleMakeOptional(this.state.isRequired);
+        track.customerScreenToggleMakeOptional(this.state.isRequired);
       },
     );
   };
 
   handleToggleAddDescription = () => {
     this.setState(
-      {
-        hasDescription: !this.state.hasDescription,
+      (prevState) => {
+        return {
+          hasDescription: !prevState.hasDescription,
+        };
       },
       () => {
-        track.lj.trackCustomerScreenDescriptionField(this.state.hasDescription);
+        track.customerScreenDescriptionField(this.state.hasDescription);
       },
     );
   };
@@ -99,7 +105,7 @@ export default class BaseForm extends React.Component {
       enumOptions: option.schema.hasOwnProperty('enum') ? [] : null,
     });
 
-    track.lj.trackCustomerScreenFieldType(option);
+    track.customerScreenFieldType(option);
   };
 
   onChangeEnumList = (enumList = []) => {
@@ -132,7 +138,7 @@ export default class BaseForm extends React.Component {
     return (
       <FieldOptionsDropdown
         trigger={
-          <Button.Transparent onClick={track.lj.trackCustomerScreenInputFieldMoreOptions}>
+          <Button.Transparent onClick={track.customerScreenInputFieldMoreOptions}>
             <i class="i i-ellipsis-v" />
           </Button.Transparent>
         }
@@ -176,7 +182,7 @@ export default class BaseForm extends React.Component {
           onClick={() => {
             this.props.handleClose();
 
-            track.lj.trackCustomerScreenCancelFieldChanges();
+            track.customerScreenCancelFieldChanges();
           }}
         >
           <span>&times;</span>
@@ -219,7 +225,7 @@ export default class BaseForm extends React.Component {
 
           {/* TODO: These 2 hidden fields can be removed and relied upon through state */}
           <input name="field_type" value={this.indexInUDFDropdown} hidden readOnly />
-          <input name="required" value={isRequired | 0} hidden readOnly />
+          <input name="required" value={Number(isRequired)} hidden readOnly />
 
           <Input.Group label="Field Label" class="Input--vTop" required>
             <Input
@@ -246,6 +252,7 @@ export default class BaseForm extends React.Component {
                 if (this.props.validateSameTitleExists(val, this.props.indexInOrder)) {
                   return 'Field label cannot be same as other field';
                 }
+                return '';
               }}
             />
 
@@ -259,6 +266,7 @@ export default class BaseForm extends React.Component {
                   if (val && val.length > 128) {
                     return 'Field description cannot be more than 128 characters';
                   }
+                  return '';
                 }}
               />
             )}

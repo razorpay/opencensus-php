@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import Input from 'common/new-ui/Input';
@@ -7,10 +8,7 @@ import { DynamicAmount, FixedAmount, FixedAmountWithQuantity } from './FieldType
 import { classList } from 'common/utils/rzp-utils';
 import { getCurrency } from 'common/ui/Amount';
 import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
-import {
-  isMandatoryToBool,
-  mapFieldToAmountFieldType,
-} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
+import { mapFieldToAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import {
   updateAmountField,
   deleteAmountField,
@@ -37,6 +35,7 @@ export default class EditableDisplayField extends React.Component {
     // This scenario is for while adding new amount field
     if (this.props.hasOwnProperty('isEditModeOpened')) {
       if (prevProps.isEditModeOpened !== this.props.isEditModeOpened) {
+        // eslint-disable-next-line react/no-did-update-set-state
         this.setState({
           isEditModeOpened: this.props.isEditModeOpened,
         });
@@ -86,15 +85,19 @@ export default class EditableDisplayField extends React.Component {
             {this.getDummyAmountInputField()}
           </FixedAmountWithQuantity>
         );
+      default:
+        return '';
     }
   }
 
   handleToggleEditMode = () => {
-    this.setState({
-      isEditModeOpened: !this.state.isEditModeOpened,
+    this.setState((prevState) => {
+      return {
+        isEditModeOpened: !prevState.isEditModeOpened,
+      };
     });
 
-    this.props.onClose && this.props.onClose();
+    if (this.props.onClose) this.props.onClose();
   };
 
   onSubmitBaseForm = (fieldData, currency) => {
@@ -107,7 +110,7 @@ export default class EditableDisplayField extends React.Component {
 
     this.markReviewUnDone();
 
-    track.lj.trackAmountFieldSaveSuccess();
+    track.amountFieldSaveSuccess();
   };
 
   handleDeleteField = () => {
@@ -115,7 +118,7 @@ export default class EditableDisplayField extends React.Component {
 
     this.markReviewUnDone();
 
-    track.lj.trackAmountFormDeleteField();
+    track.amountFormDeleteField();
   };
 
   markReviewUnDone = () => {
@@ -172,8 +175,4 @@ export default class EditableDisplayField extends React.Component {
       </div>
     );
   }
-}
-
-function getPaddingClassForCurrencyLength(currencySymbol) {
-  return `Input--CurrencyPadding-${currencySymbol.length > 4 ? 'long' : currencySymbol.length}`;
 }

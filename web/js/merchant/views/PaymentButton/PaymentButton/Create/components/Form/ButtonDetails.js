@@ -1,11 +1,12 @@
+import React from 'react';
 import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 
 import Form from 'common/new-ui/Form';
-import Input, { Label, Description } from 'common/new-ui/Input';
+import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
 import InputCurrencyAmount from './components/InputCurrencyAmount';
 import InputDropdown from './components/InputDropdown';
-import { PowerSelect } from 'react-power-select';
 
 import {
   buttonThemesList,
@@ -92,7 +93,7 @@ export default class ButtonDetails extends React.Component {
 
     this.markReviewDone(true);
 
-    track.lj.trackButtonScreenNextSuccess();
+    track.buttonScreenNextSuccess();
   };
 
   get isQuickPayTemplate() {
@@ -127,7 +128,7 @@ export default class ButtonDetails extends React.Component {
       return;
     }
 
-    track.lj.trackButtonTypeChange();
+    track.buttonTypeChange();
 
     this.context.confirm({
       header: 'Change Button Type?',
@@ -141,10 +142,10 @@ export default class ButtonDetails extends React.Component {
       action: () => {
         this.props.onChangeButtonTemplate(option.value);
 
-        track.lj.trackButtonTypeDiscardYes(option.value);
+        track.buttonTypeDiscardYes(option.value);
       },
       abort: () => {
-        track.lj.trackButtonTypeDiscardNo();
+        track.buttonTypeDiscardNo();
       },
     });
   };
@@ -166,7 +167,7 @@ export default class ButtonDetails extends React.Component {
 
     this.markReviewDone(false);
 
-    track.lj.trackButtonTheme(option);
+    track.buttonTheme(option?.value);
   };
 
   updateButtonTheme(themeValue) {
@@ -189,7 +190,7 @@ export default class ButtonDetails extends React.Component {
 
     setTimeout(() => {
       const form = this.formEl;
-      let disableSubmit = form && !!form.querySelectorAll('.is-invalid').length;
+      const disableSubmit = form && !!form.querySelectorAll('.is-invalid').length;
 
       if (this.state.disableSubmit !== disableSubmit) {
         this.setState({ disableSubmit });
@@ -208,8 +209,8 @@ export default class ButtonDetails extends React.Component {
   render() {
     const { user, paymentButtonId, paymentButtonEntity, isEditExistingId } = this.props;
 
-    const templateType = paymentButtonEntity.settings.payment_button_template_type,
-      currency = paymentButtonEntity.currency;
+    const templateType = paymentButtonEntity.settings.payment_button_template_type;
+    const currency = paymentButtonEntity.currency;
 
     return (
       <Form
@@ -235,6 +236,7 @@ export default class ButtonDetails extends React.Component {
               } else if (val.length > 40) {
                 return 'Title cannot be more than 40 characters';
               }
+              return '';
             }}
             autoFocus={!paymentButtonId}
             required
@@ -265,7 +267,7 @@ export default class ButtonDetails extends React.Component {
               defaultValueAmount={this.amountFieldForQuickPayTemplate.item.amount || ''}
               required
               disabledCurrency={isEditExistingId}
-              onBlur={track.lj.trackButtonAmount}
+              onBlur={track.buttonAmount}
             />
           )}
 
@@ -285,8 +287,9 @@ export default class ButtonDetails extends React.Component {
               if (val.length > maxLengthForButtonLabel) {
                 return `Maximum ${maxLengthForButtonLabel} characters are allowed`;
               }
+              return '';
             }}
-            onBlur={track.lj.trackButtonLabel}
+            onBlur={track.buttonLabel}
           />
 
           {!user.isOrgAxis && (

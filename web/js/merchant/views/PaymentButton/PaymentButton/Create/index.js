@@ -165,7 +165,7 @@ export default class PaymentButtonCreate extends React.Component {
       is_intent_duplicate: !!searchQuery.duplicate_id,
     };
 
-    track.lj.init(tracking.trackEvent, config);
+    track.init(tracking.trackEvent, config);
     track_details.lj.init({
       track: tracking.trackEvent,
       button_id: paymentButtonId,
@@ -462,7 +462,7 @@ export default class PaymentButtonCreate extends React.Component {
             this.onSaveSuccessActions(resp, isEditExistingId);
           }
 
-          track.lj.trackCreateOrEditSuccess();
+          track.createOrEditSuccess(entityId);
         } else {
           throw new Error(resp.errors);
         }
@@ -488,7 +488,7 @@ export default class PaymentButtonCreate extends React.Component {
           err = `Some network error has occured`;
         }
 
-        track.lj.trackCreateOrEditFail(err);
+        track.createOrEditFail(err);
 
         this.props.showNotification({
           type: 'error',
@@ -651,7 +651,7 @@ export default class PaymentButtonCreate extends React.Component {
         selectTemplate={(templateKey) => {
           this.props.updateTemplateType(null, templateKey);
 
-          track.lj.trackTemplateSelect(templateKey);
+          track.templateSelect(templateKey);
         }}
       />
     );
@@ -704,12 +704,8 @@ export default class PaymentButtonCreate extends React.Component {
                   openSettingsModal={this.openSettingsModal}
                   openPageReceiptModal={this.handleTogglePageReceiptModal}
                   updateHighlightButtonSettings={this.props.updateHighlightButtonSettings}
-                  onCodeCopy={() => track.lj.trackCodeCopy(payment_button.paymentButtonEntity.id)}
-                  onClickSeeDocumentation={() =>
-                    track.lj.trackOpenDocs(payment_button.paymentButtonEntity.id)
-                  }
                   onClickButtonSettings={() => {
-                    track.lj.trackOnClickButtonSettings();
+                    track.onClickButtonSettings();
                   }}
                 />
               ) : (

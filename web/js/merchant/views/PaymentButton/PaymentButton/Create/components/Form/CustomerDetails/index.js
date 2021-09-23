@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import Button from 'common/new-ui/Button';
@@ -38,6 +39,8 @@ export default class CustomerDetails extends React.Component {
     if (sameTitleIndex > -1 && sameTitleIndex !== indexInOrder) {
       return true;
     }
+
+    return false;
   };
 
   goNext = () => {
@@ -45,7 +48,7 @@ export default class CustomerDetails extends React.Component {
 
     this.markReviewDone();
 
-    track.lj.trackCustomerScreenNextSuccess();
+    track.customerScreenNextSuccess();
   };
 
   markReviewDone = () => {
@@ -77,7 +80,7 @@ export default class CustomerDetails extends React.Component {
             >
               <Button
                 class="Button--primary--invert addFieldBtn"
-                onClick={track.lj.trackCustomerScreenInputField}
+                onClick={track.customerScreenInputField}
               >
                 <b>+ Add Another Input Field</b>
               </Button>
@@ -91,7 +94,7 @@ export default class CustomerDetails extends React.Component {
             onClick={() => {
               this.props.goBack();
 
-              track.lj.trackCustomerScreenBackSuccess();
+              track.customerScreenBackSuccess();
             }}
           >
             Back
