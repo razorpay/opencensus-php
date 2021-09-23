@@ -203,7 +203,10 @@ class PaymentLinkController extends Controller
 
     public function createOrder(string $id)
     {
-        $response = $this->service()->createOrder($id, $this->input);
+        $response = Tracer::inSpan(['name' => 'payment_page.order.create'], function() use($id)
+        {
+            return $this->service()->createOrder($id, $this->input);
+        });
 
         return ApiResponse::json($response);
     }
@@ -237,7 +240,10 @@ class PaymentLinkController extends Controller
 
     public function updatePaymentPageItem(string $paymentPageItemId)
     {
-        $response = $this->service()->updatePaymentPageItem($paymentPageItemId, $this->input);
+        $response = Tracer::inSpan(['name' => 'payment_page.ppi.update'], function() use($paymentPageItemId)
+        {
+            return $this->service()->updatePaymentPageItem($paymentPageItemId, $this->input);
+        });
 
         return ApiResponse::json($response);
     }
@@ -246,14 +252,20 @@ class PaymentLinkController extends Controller
     {
         $input = Request::all();
 
-        $response =  $this->service()->setMerchantDetails($input);
+        $response =  Tracer::inSpan(['name' => 'payment_page.merchant_details.set'], function() use($input)
+        {
+            return $this->service()->setMerchantDetails($input);
+        });
 
         return ApiResponse::json($response);
     }
 
     public function fetchMerchantDetails(string $merchantId)
     {
-        $response = $this->service()->fetchMerchantDetails();
+        $response = Tracer::inSpan(['name' => 'payment_page.merchant_details.fetch'], function()
+        {
+            return $this->service()->fetchMerchantDetails();
+        });
 
         return ApiResponse::json($response);
     }
@@ -269,7 +281,10 @@ class PaymentLinkController extends Controller
 
     public function getInvoiceDetails(string $paymentId)
     {
-        $response = $this->service()->getInvoiceDetails($paymentId);
+        $response = Tracer::inSpan(['name' => 'payment_page.invoice.get'], function() use($paymentId)
+        {
+            return $this->service()->getInvoiceDetails($paymentId);
+        });
 
         return ApiResponse::json($response);
     }
@@ -278,7 +293,10 @@ class PaymentLinkController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->sendReceipt($paymentId, $input);
+        $response = Tracer::inSpan(['name' => 'payment_page.receipt.send'], function() use($paymentId, $input)
+        {
+            return $this->service()->sendReceipt($paymentId, $input);
+        });
 
         return ApiResponse::json($response);
     }
@@ -287,7 +305,10 @@ class PaymentLinkController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->saveReceiptForPayment($paymentId, $input);
+        $response = Tracer::inSpan(['name' => 'payment_page.receipt.save'], function() use($paymentId, $input)
+        {
+            return $this->service()->saveReceiptForPayment($paymentId, $input);
+        });
 
         return ApiResponse::json($response);
     }

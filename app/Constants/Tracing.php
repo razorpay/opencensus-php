@@ -190,7 +190,15 @@ class Tracing
             'payment_page_expire_cron',
             'payment_page_deactivate',
             'payment_page_activate',
-            'payment_page_slug_exists'
+            'payment_page_slug_exists',
+            'payment_page_item_update',
+            'payment_page_create_order',
+            'payment_page_create_order_option',
+            'payment_page_set_merchant_details',
+            'payment_page_fetch_merchant_details',
+            'payment_page_get_invoice_details',
+            'payment_page_send_receipt',
+            'payment_page_save_receipt_for_payment'
     ]);
     }
 

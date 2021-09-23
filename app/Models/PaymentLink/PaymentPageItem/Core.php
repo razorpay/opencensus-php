@@ -4,8 +4,8 @@ namespace RZP\Models\PaymentLink\PaymentPageItem;
 
 use RZP\Models\Base;
 use RZP\Models\Item;
-use RZP\Models\Merchant;
 use RZP\Trace\Tracer;
+use RZP\Models\Merchant;
 use RZP\Models\PaymentLink;
 use RZP\Models\Currency\Currency;
 
@@ -154,20 +154,29 @@ class Core extends Base\Core
 
     public function update(Entity $paymentPageItem, array $input)
     {
-        $paymentPageItem->getValidator()->validateInputForUpdate($input);
+        Tracer::inSpan(['name' => 'payment_page.ppi.update.validate'], function() use($input, $paymentPageItem)
+        {
+            $paymentPageItem->getValidator()->validateInputForUpdate($input);
+        });
 
         if (isset($input[Entity::ITEM]) === true)
         {
-            (new Item\Core)->update(
-                $paymentPageItem->item,
-                $input[Entity::ITEM],
-                $this->merchant
-            );
+            Tracer::inSpan(['name' => 'payment_page.ppi.update.item'], function() use($paymentPageItem,$input)
+            {
+                (new Item\Core)->update(
+                    $paymentPageItem->item,
+                    $input[Entity::ITEM],
+                    $this->merchant
+                );
+            });
         }
 
         $paymentPageItem->edit($input);
 
-        $this->upsertSettings($paymentPageItem, $input[Entity::SETTINGS] ?? []);
+        Tracer::inSpan(['name' => 'payment_page.ppi.update.upsert'], function() use($paymentPageItem)
+        {
+            $this->upsertSettings($paymentPageItem, $input[Entity::SETTINGS] ?? []);
+        });
 
         $this->repo->saveOrFail($paymentPageItem);
 

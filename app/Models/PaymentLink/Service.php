@@ -260,9 +260,15 @@ class Service extends Base\Service
 
     public function createOrder(string $id, array $input)
     {
-        $paymentLink = $this->getPaymentLinkAndSetModeAndMerchant($id);
+        $paymentLink = Tracer::inSpan(['name' => 'payment_page.order.create.get_payment_link'], function() use($id)
+        {
+            return $this->getPaymentLinkAndSetModeAndMerchant($id);
+        });
 
-        $data = (new Core)->createOrder($paymentLink, $input);
+        $data = Tracer::inSpan(['name' =>  'payment_page.order.create.core'], function() use($paymentLink, $input)
+        {
+            return (new Core)->createOrder($paymentLink, $input);
+        });
 
         for($i = 0; $i < count($data[Entity::LINE_ITEMS]); $i++)
         {
@@ -278,9 +284,15 @@ class Service extends Base\Service
 
     public function updatePaymentPageItem(string $paymentPageItemId, array $input)
     {
-        $paymentPageItem = $this->repo->payment_page_item->findByPublicIdAndMerchant($paymentPageItemId, $this->merchant);
+        $paymentPageItem = Tracer::inSpan(['name' => 'payment_page.ppi.update.find_entity'], function() use($paymentPageItemId)
+        {
+            return $this->repo->payment_page_item->findByPublicIdAndMerchant($paymentPageItemId, $this->merchant);
+        });
 
-        $paymentPageItem = $this->core->updatePaymentPageItem($paymentPageItem, $input);
+        $paymentPageItem = Tracer::inSpan(['name' => 'payment_page.ppi.update.updating'], function() use($paymentPageItem, $input)
+        {
+            return $this->core->updatePaymentPageItem($paymentPageItem, $input);
+        });
 
         return $paymentPageItem->toArrayPublic();
     }

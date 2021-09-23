@@ -641,27 +641,42 @@ class Core extends Base\Core
 
     public function createOrder(Entity $paymentLink, array $input)
     {
-        $paymentLink->getValidator()->validatePaymentLinkToCreateOrder();
+        Tracer::inSpan(['name' => 'payment_page.order.create.validate_payment_link'], function() use($paymentLink)
+        {
+            $paymentLink->getValidator()->validatePaymentLinkToCreateOrder();
+        });
 
-        $paymentLink->getValidator()->validateInput('create_order', $input);
+        Tracer::inSpan(['name' => 'payment_page.order.create.validate'], function() use($paymentLink, $input)
+        {
+            $paymentLink->getValidator()->validateInput('create_order', $input);
+        });
 
-        $input = $this->modifyAndValidateInputToCreateLineItems($input, $paymentLink);
+        $input = Tracer::inSpan(['name' => 'payment_page.order.create.modify_and_validate_input'], function() use($paymentLink, $input)
+        {
+            return $this->modifyAndValidateInputToCreateLineItems($input, $paymentLink);
+        });
 
         $totalAmount = $this->getTotalAmountForOrder($input[Entity::LINE_ITEMS]);
 
-        $order = (new Order\Core)->create(
-            [
-                Order\Entity::AMOUNT            => $totalAmount,
-                Order\Entity::CURRENCY          => $paymentLink->getCurrency(),
-                Order\Entity::PAYMENT_CAPTURE   => true,
-                Order\Entity::NOTES             => $input[Order\Entity::NOTES] ?? [],
-                Order\Entity::PRODUCT_TYPE      => $paymentLink->getProductType(),
-                Order\Entity::PRODUCT_ID        => $paymentLink->getId(),
-            ],
-            $paymentLink->merchant
-        );
+        $order = Tracer::inSpan(['name' => 'payment_page.order.create.create_order'], function() use($totalAmount, $paymentLink)
+        {
+            return (new Order\Core)->create(
+                [
+                    Order\Entity::AMOUNT => $totalAmount,
+                    Order\Entity::CURRENCY => $paymentLink->getCurrency(),
+                    Order\Entity::PAYMENT_CAPTURE => true,
+                    Order\Entity::NOTES => $input[Order\Entity::NOTES] ?? [],
+                    Order\Entity::PRODUCT_TYPE => $paymentLink->getProductType(),
+                    Order\Entity::PRODUCT_ID => $paymentLink->getId(),
+                ],
+                $paymentLink->merchant
+            );
+        });
 
-        (new LineItem\Core)->createMany($input[Entity::LINE_ITEMS], $this->merchant, $order);
+        Tracer::inSpan(['name' => 'payment_page.order.create.create_line_item'], function() use($order, $input)
+        {
+            (new LineItem\Core)->createMany($input[Entity::LINE_ITEMS], $this->merchant, $order);
+        });
 
         $lineItems = $order->lineItems()->get();
 
@@ -677,9 +692,12 @@ class Core extends Base\Core
 
         $merchant = $this->merchant;
 
-        Settings\Accessor::for($merchant, Settings\Module::PAYMENT_LINK)
-            ->upsert($settings)
-            ->save();
+        Tracer::inSpan(['name' => 'payment_page.merchant_details.upsert_and_save'], function() use($merchant, $settings)
+        {
+            Settings\Accessor::for($merchant, Settings\Module::PAYMENT_LINK)
+                ->upsert($settings)
+                ->save();
+        });
 
         return Settings\Accessor::for($merchant, Settings\Module::PAYMENT_LINK)
             ->all();
@@ -715,7 +733,10 @@ class Core extends Base\Core
 
     public function getInvoiceDetails(string $paymentId)
     {
-        $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+        $payment = Tracer::inSpan(['name' => 'payment_page.invoice.find_entity'], function() use($paymentId)
+        {
+            return $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+        });
 
         $order = $payment->order;
 
@@ -750,7 +771,10 @@ class Core extends Base\Core
 
         $invoiceCore = new Invoice\Core();
 
-        $pdf = $invoiceCore->getFreshInvoicePdf($invoice);
+        $pdf = Tracer::inSpan(['name' => 'payment_page.invoice.get_fresh_invoice'], function() use($invoiceCore, $invoice)
+        {
+            return $invoiceCore->getFreshInvoicePdf($invoice);
+        });
 
         if ($pdf === null)
         {
@@ -759,7 +783,10 @@ class Core extends Base\Core
 
         $downloadAs = $invoice->getPdfDisplayName();
 
-        $pdfUrl = (new FileStore\Accessor)->getSignedUrlOfFile($pdf, $downloadAs);
+        $pdfUrl = Tracer::inSpan(['name' => 'payment_page.invoice.get_signed_url'], function() use($pdf, $downloadAs)
+        {
+            return (new FileStore\Accessor)->getSignedUrlOfFile($pdf, $downloadAs);
+        });
 
         $response['receipt_download_url'] = $pdfUrl;
 
@@ -768,7 +795,10 @@ class Core extends Base\Core
 
     public function sendReceipt(string $paymentId, array $input)
     {
-        $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+        $payment = Tracer::inSpan(['name' => 'payment_page.receipt.send.find_payment'], function() use($paymentId)
+        {
+            return $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+        });
 
         $order = $payment->order;
 
@@ -783,28 +813,43 @@ class Core extends Base\Core
             'Receipt is not generated for this payment');
         }
 
-        (new Validator)->validateInput('save_receipt_if_present', $input);
+        Tracer::inSpan(['name' => 'payment_page.receipt.send.validate_input'], function() use($input)
+        {
+            (new Validator)->validateInput('save_receipt_if_present', $input);
+        });
 
         if(isset($input[Invoice\Entity::RECEIPT]) === true)
         {
             $receipt = $input[Invoice\Entity::RECEIPT];
 
-            $invoice->setAttribute(Invoice\Entity::RECEIPT, $receipt);
+            Tracer::inSpan(['name' => 'payment_page.receipt.send.set_attribute'], function() use($invoice, $receipt)
+            {
+                $invoice->setAttribute(Invoice\Entity::RECEIPT, $receipt);
+            });
 
-            $this->repo->invoice->save($invoice);
+            Tracer::inSpan(['name' => 'payment_page.receipt.send.save'], function() use($invoice)
+            {
+                $this->repo->invoice->save($invoice);
+            });
         }
 
         $invoiceCore = new Invoice\Core();
 
         $invoice->setRelation('entity', $invoice->entity);
 
-        return $invoiceCore->sendNotification($invoice, Invoice\NotifyMedium::EMAIL, true);
+        return Tracer::inSpan(['name' => 'payment_page.receipt.send.send_notification'], function() use($invoiceCore, $invoice)
+        {
+            return $invoiceCore->sendNotification($invoice, Invoice\NotifyMedium::EMAIL, true);
+        });
 
     }
 
     public function saveReceiptForPaymentAndGeneratePdf(string $paymentId, array $input)
     {
-        $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+        $payment = Tracer::inSpan(['name' => 'payment_page.receipt.save.find_payment'], function() use($paymentId)
+        {
+            return $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+        });
 
         $order = $payment->order;
 
@@ -819,22 +864,34 @@ class Core extends Base\Core
                 'Receipt is not generated for this payment');
         }
 
-        (new Validator)->validateInput('save_receipt', $input);
+        Tracer::inSpan(['name' => 'payment_page.receipt.save.validate'], function() use($input)
+        {
+            (new Validator)->validateInput('save_receipt', $input);
+        });
 
         if(isset($input[Invoice\Entity::RECEIPT]) === true)
         {
             $receipt = $input[Invoice\Entity::RECEIPT];
 
-            $invoice->setAttribute(Invoice\Entity::RECEIPT, $receipt);
+            Tracer::inSpan(['name' => 'payment_page.receipt.save.set_attribute'], function() use($invoice, $receipt)
+            {
+                $invoice->setAttribute(Invoice\Entity::RECEIPT, $receipt);
+            });
 
-            $this->repo->invoice->save($invoice);
+            Tracer::inSpan(['name' => 'payment_page.receipt.save.save'], function() use($invoice)
+            {
+                $this->repo->invoice->save($invoice);
+            });
         }
 
         $invoiceCore = new Invoice\Core();
 
         $invoice->setRelation('entity', $invoice->entity);
 
-        return $invoiceCore->createInvoicePdf($invoice);
+        return Tracer::inSpan(['name' => 'payment_page.receipt.save.create_invoice_pdf'], function() use($invoice, $invoiceCore)
+        {
+            return $invoiceCore->createInvoicePdf($invoice);
+        });
     }
 
     protected function addAdditionalDataToSettings(array & $settings, Entity $paymentLink)
@@ -1422,27 +1479,44 @@ class Core extends Base\Core
 
     public function updatePaymentPageItem(PaymentPageItem\Entity $paymentPageItem, array $input)
     {
-        $paymentPageItem = $this->repo->transaction(
-            function() use ($paymentPageItem, $input)
-            {
-                $paymentLink = $paymentPageItem->paymentLink;
+        $paymentPageItem = Tracer::inSpan(['name' => 'payment_page.ppi.update.transaction'], function() use($paymentPageItem, $input)
+        {
+            return $this->repo->transaction(
 
-                $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
+                function () use ($paymentPageItem, $input) {
 
-                $this->repo->payment_page_item->reload($paymentPageItem);
+                    $paymentLink = $paymentPageItem->paymentLink;
 
-                $paymentPageItem = (new PaymentPageItem\Core)->update($paymentPageItem, $input);
+                    Tracer::inSpan(['name' => 'payment_page.ppi.update.lock_and_reload'], function() use($paymentLink)
+                    {
+                        $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
+                    });
 
-                $paymentPageItems = $paymentPageItem->paymentLink->paymentPageItems()->get();
+                    $this->repo->payment_page_item->reload($paymentPageItem);
 
-                $this->changeStatusAfterUpdateIfApplicable($paymentLink);
+                    $paymentPageItem = Tracer::inSpan(['name' => 'payment_page.ppi.update.core'], function() use($paymentPageItem, $input)
+                    {
+                        return (new PaymentPageItem\Core)->update($paymentPageItem, $input);
+                    });
 
-                $paymentLink->saveOrFail();
+                    $paymentPageItems = Tracer::inSpan(['name' => 'payment_page.ppi.update.get_payment_page_items'], function() use($paymentPageItem)
+                    {
+                        return $paymentPageItem->paymentLink->paymentPageItems()->get();
+                    });
 
-                return $paymentPageItem;
-            }
-        );
+                    Tracer::inSpan(['name' => 'payment_pages.ppi.update.change_status'], function() use($paymentLink)
+                    {
+                        $this->changeStatusAfterUpdateIfApplicable($paymentLink);
+                    });
 
+                    Tracer::inSpan(['name' => 'payment_pages.ppi.update.save_or_fail'], function() use($paymentLink) {
+                        $paymentLink->saveOrFail();
+                    });
+
+                    return $paymentPageItem;
+                }
+            );
+        });
         return $paymentPageItem;
     }
 
