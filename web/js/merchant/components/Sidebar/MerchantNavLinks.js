@@ -177,9 +177,6 @@ function MerchantNavLinks(props) {
         }
         to={routes.qrCodes}
         isNew={user.isQRCodeProductEnabled && !isRecommendProduct}
-        isComingSoon={
-          user.isQRCodeComingSoonExpEnabled && !user.isQRCodeProductEnabled && !isRecommendProduct
-        }
       />
 
       <MainNavLink

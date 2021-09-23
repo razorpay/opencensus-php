@@ -1,6 +1,6 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { Switch, NavLink } from 'react-router-dom';
-import React from 'react';
 
 import {
   handleProductQuickGuide,
@@ -11,7 +11,6 @@ import TestModeBanner from 'merchant/components/TestModeBanner';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import { bindActionCreators } from 'redux';
 
-import ComingSoon from './ComingSoon';
 import QRCodesList from './QRCodes/List';
 import PaymentsList from './Payments/List';
 import QuickGuide, { getQRCodeQuickGuideIsClosed } from './QuickGuide';
@@ -68,13 +67,12 @@ class QRCodeContainer extends React.Component {
   render() {
     const { isTestMode, user, productOnBoarding, mode } = this.props;
 
-    if (user.isQRCodeComingSoonExpEnabled && !user.isQRCodeComingSoonEnabled(mode)) {
-      return <ComingSoon onInterestClicked={() => this.forceUpdate()} />;
-    }
-
     const { showOnboarding, isQuickGuideOpen } = productOnBoarding;
 
-    if (showOnboarding) {
+    if (
+      showOnboarding ||
+      (user.isQRCodeComingSoonExpEnabled && !user.isQRCodeComingSoonEnabled(mode))
+    ) {
       return <OnBoarding />;
     }
 
@@ -96,10 +94,10 @@ class QRCodeContainer extends React.Component {
             <ShowWhenRoute
               path="/qr_codes/payments"
               component={PaymentsList}
-              additionalCondition={(userCurrent) => userCurrent.isAllowedView('qr_codes')}
+              additionalCondition={(currentUser) => currentUser.isAllowedView('qr_codes')}
             />
             <ShowWhenRoute
-              additionalCondition={(userCurrent) => userCurrent.isAllowedView('qr_codes')}
+              additionalCondition={(currentUser) => currentUser.isAllowedView('qr_codes')}
               path="/qr_codes"
               component={QRCodesList}
             />
