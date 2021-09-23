@@ -128,11 +128,11 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
         right 0px
         .arrow-head-top
           position absolute
-          right 0px
+          right 20px
           top -50px
         .arrow-head-bottom
           position absolute
-          right 0px
+          right 20px
           top 0px
     /* Product Tiles Section */
     .partner-products-container
@@ -145,6 +145,32 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
         display: inline-block;
         width: 33%;
         min-height: 190px;
+        position relative
+
+        .new-offer-ribbon
+          padding: 5px 15px;
+          background-color: #53DB8A;
+          font-style: normal;
+          font-weight: bold;
+          z-index: 2;
+          position: absolute;
+          right: 6px;
+          font-size: 12px;
+          line-height: 17px;
+          color: #fff;
+          width: fit-content;
+          top: 40px;
+          margin-bottom: 15px;
+          margin-top: -7px;
+          &::before
+            content: '';
+            position: absolute;
+            height: 0;
+            border-top: 0 solid transparent;
+            border-left: 10px solid #53DB8A;
+            border-bottom: 8px solid transparent;
+            right: 0;
+            bottom: -8px;
 
         a.product-wrapper
           display: inline-block;
@@ -340,6 +366,8 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
 
           .more-details-container
             opacity: 1;
+          .new-offer-ribbon
+            right: 14px
       .new-app-banner
         margin 28px 0px 0px
         background none

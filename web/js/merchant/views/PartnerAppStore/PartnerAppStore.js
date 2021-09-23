@@ -132,6 +132,7 @@ function PartnerAppCard(props) {
   const [cardHoverBgColor, setCardHoverBgColor] = useState(``);
   return (
     <div className="product-col">
+      {product.isNew ? <div className="new-offer-ribbon">NEW!</div> : null}
       <Link
         onClick={() => appTileClickHandler(props, product.slug)}
         className="product-wrapper"

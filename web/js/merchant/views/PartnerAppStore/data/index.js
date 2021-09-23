@@ -10,6 +10,28 @@ export const partnerProducts = {
     brandColor: '#51BC6E',
     isNew: true,
   },
+  raven: {
+    slug: 'raven',
+    title: 'Raven',
+    url: 'https://console.ravenapp.dev/register',
+    category: 'Customer Communications',
+    description:
+      'Customise your SMS and Email notifications on payment links and other transactional updates',
+    logo: 'raven.png', // relative to web/css/assets/app-store/partner-logo/
+    brandColor: '#4C5AFD',
+    isNew: true,
+  },
+  callerdesk: {
+    slug: 'callerdesk',
+    title: 'CallerDesk',
+    url: 'https://callerdesk.io/',
+    category: 'Customer Communications',
+    description:
+      'Trigger VoIP calls to notify your customers on new invoice or payment links through automated VoIP calls ',
+    logo: 'callerdesk.png', // relative to web/css/assets/app-store/partner-logo/
+    brandColor: '#F84C61',
+    isNew: true,
+  },
   'whatsapp-bot-payment-link': {
     title: 'Payment Links Bot',
     detailsPageTitle: 'Whatsapp Bot for Payment Links',
