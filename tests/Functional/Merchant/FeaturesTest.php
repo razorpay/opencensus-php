@@ -30,6 +30,7 @@ use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Base\QueryCache\Constants as CacheConstants;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
+
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class FeaturesTest extends OAuthTestCase
@@ -106,9 +107,17 @@ class FeaturesTest extends OAuthTestCase
 
     public function testApplicationFeatures()
     {
+        $merchantId='10000000000000';
+
         $appId = '1000000DemoApp';
 
         $dummy = 'dummy';
+
+        $this->createMerchantApplication(
+            $merchantId,
+            'referred',
+            $appId
+        );
 
         $this->addFeatures(
             Mode::TEST,
@@ -238,6 +247,53 @@ class FeaturesTest extends OAuthTestCase
             [
                 'entity_id' => '10000000000003',
                 'name'      => 'dummy'
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testMultiRemoveFeatureApplicationId()
+    {
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'application',
+                'entity_id' => '10000000000001',
+                'name' => 'dummy'
+            ]);
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'application',
+                'entity_id' => '10000000000002',
+                'name' => 'dummy'
+            ]);
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'application',
+                'entity_id' => '10000000000003',
+                'name' => 'dummy'
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testMultiRemoveFeatureApplicationIdFailure()
+    {
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'application',
+                'entity_id' => '10000000000001',
+                'name' => 'dummy'
+            ]);
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'application',
+                'entity_id' => '10000000000003',
+                'name' => 'dummy'
             ]);
 
         $this->startTest();

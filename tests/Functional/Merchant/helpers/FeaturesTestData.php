@@ -190,6 +190,35 @@ return [
     'testMultiRemoveFeature' => [
         'request'  => [
             'content' => [
+                'entity_type' => 'merchant',
+                'name'       => 'dummy',
+                'entity_ids' => ['10000000000001', '10000000000002', '10000000000003']
+            ],
+            'url'     => '/features/remove',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'successful' => [
+                    'dummy' => [
+                        '10000000000001',
+                        '10000000000002',
+                        '10000000000003'
+                    ],
+                ],
+                'failed'     => [],
+            ]
+        ]
+    ],
+
+    'testMultiRemoveFeatureApplicationId' => [
+        'request'  => [
+            'content' => [
+                'entity_type' => 'application',
                 'name'       => 'dummy',
                 'entity_ids' => ['10000000000001', '10000000000002', '10000000000003']
             ],
@@ -217,6 +246,34 @@ return [
     'testMultiRemoveFeatureFailure' => [
         'request'  => [
             'content' => [
+                'entity_type' => 'merchant',
+                'name'       => 'dummy',
+                'entity_ids' => ['10000000000001', '10000000000002', '10000000000003']
+            ],
+            'url'     => '/features/remove',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'successful' => [
+                    'dummy' => [
+                        '10000000000001',
+                        '10000000000003'
+                    ],
+                ],
+                'failed'     => [
+                    'dummy' => [
+                        '10000000000002'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testMultiRemoveFeatureApplicationIdFailure' => [
+        'request'  => [
+            'content' => [
+                'entity_type' => 'application',
                 'name'       => 'dummy',
                 'entity_ids' => ['10000000000001', '10000000000002', '10000000000003']
             ],

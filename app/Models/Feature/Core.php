@@ -24,6 +24,7 @@ use RZP\Models\Merchant\SlackActions;
 use RZP\Mail\Loc\CashAdvanceEligible;
 use RZP\Jobs\SkipOnboardingCommFromHubSpot;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Request as MerchantRequest;
@@ -74,7 +75,20 @@ class Core extends Base\Core
         // Features for other entity types which are external to api, aren't checked
         // for existence.
         //
-        else {
+        else
+        {
+            if ($entityType === Constants::APPLICATION)
+            {
+                $merchantApplication = $this->repo->merchant_application
+                    ->fetchMerchantApplication($entityId, MerchantApplications\Entity::APPLICATION_ID);
+
+                if ($merchantApplication->count() === 0)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_INVALID_APPLICATION_ID, null);
+                }
+            }
+
             $feature->setEntityId($entityId);
 
             $feature->setEntityType($entityType);

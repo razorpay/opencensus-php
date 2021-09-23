@@ -258,6 +258,8 @@ class Service extends Base\Service
 
         $entityIds = $input[Constants::ENTITY_IDS];
 
+        $entityType = $input[Entity::ENTITY_TYPE];
+
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
         $names = $input[Entity::NAME];
