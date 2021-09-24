@@ -678,4 +678,13 @@ class SettlementController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function updateBeneName()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateBeneName($input);
+
+        return ApiResponse::json($data);
+    }
 }

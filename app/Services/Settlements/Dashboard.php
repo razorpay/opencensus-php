@@ -21,6 +21,7 @@ class Dashboard extends Base
     const BANK_ACCOUNT_GET             = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Get';
     const BANK_ACCOUNT_UPDATE          = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Update';
     const BANK_ACCOUNT_DELETE          = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Delete';
+    const BENE_NAME_UPDATE             = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/UpdateBeneficiaryName';
 
     const EXECUTION_REGISTER           = '/twirp/rzp.settlements.execution.v1.ExecutionService/Register';
     const EXECUTION_TRIGGER_MULTIPLE   = '/twirp/rzp.settlements.execution.v1.ExecutionService/TriggerMultiple';
@@ -420,5 +421,17 @@ class Dashboard extends Base
         $input['include_deleted'] = (isset($input['include_deleted']) === true) ? ($input['include_deleted'] == '1') : false;
 
         return $this->makeRequest(self::FETCH_ENTITY_FILE, $input, self::SERVICE_DASHBOARD);
+    }
+
+    /**
+     * Bank Account Service Update
+     * @param array  $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function updateBeneName(array $input) : array
+    {
+        return $this->makeRequest(self::BENE_NAME_UPDATE, $input, self::SERVICE_DASHBOARD);
     }
 }

@@ -1395,4 +1395,9 @@ class Service extends Base\Service
 
         app('settlements_api')->ledgeCronExecutionUpdate($cronExecutionUpdateInput);
     }
+
+    public function updateBeneName($input)
+    {
+        return app('settlements_dashboard')->updateBeneName($input);
+    }
 }
