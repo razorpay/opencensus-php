@@ -3527,6 +3527,65 @@ class BankingAccountTest extends TestCase
         $this->assertNull($bankingAccount);
     }
 
+    public function testBankingAccountFetchFilterArchivedOnProxyAuth()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $merchant_id = $merchantDetail->merchant['id'];
+
+        $xBalance1 = $this->fixtures->create('balance',
+                                             [
+                                                 'merchant_id'       => $merchant_id,
+                                                 'type'              => 'banking',
+                                                 'account_type'      => 'shared',
+                                                 'account_number'    => '2224440041626905',
+                                                 'balance'           => 200,
+                                             ]);
+
+        $xBalance2 = $this->fixtures->create('balance',
+                                             [
+                                                 'merchant_id'       => $merchant_id,
+                                                 'type'              => 'banking',
+                                                 'account_type'      => 'shared',
+                                                 'account_number'    => '1234567808',
+                                                 'balance'           => 100000,
+                                             ]);
+
+        $ba1 = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => $merchant_id,
+            'channel'               => 'yesbank',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $ba2 = $this->createBankingAccount();
+
+        $this->fixtures->edit('banking_account', $ba1->getId(), [
+            'account_number' => '2224440041626905',
+            'balance_id'     => $xBalance1->getId(),
+        ]);
+
+        $this->fixtures->edit('banking_account', $ba2['id'], [
+            'account_number' => '1234567808',
+            'balance_id'     => $xBalance2->getId(),
+        ]);
+
+        $this->assertUpdateBankingAccountStatusFromTo(RZP\Models\BankingAccount\Status::CREATED, RZP\Models\BankingAccount\Status::ARCHIVED,
+                                                      null, null, null, null, $ba2);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->startTest();
+    }
+
     public function testBankingAccountFetchCheckFieldLastFetchedAtInBalance()
     {
         $attribute = ['activation_status' => 'activated'];

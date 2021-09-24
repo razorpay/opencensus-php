@@ -309,6 +309,8 @@ class Service extends Base\Service
     {
         $bankingAccounts = $this->merchant->bankingAccounts;
 
+        $bankingAccounts = $bankingAccounts->where(Entity::STATUS, '!=' , Status::ARCHIVED);
+
         $bankingAccounts = (new BankingAccountService\Service())->fetchAccountDetailsFromBas($this->merchant->getMerchantId(), $bankingAccounts);
 
         return $bankingAccounts->load(Entity::BALANCE)->toArrayPublic();
