@@ -22,12 +22,13 @@ import { getNeedsClarificationTabsData } from './Components/NeedsClarificationsM
 import useActivation from './Hooks/useActivation';
 import NeedsClarification from './Components/NeedsClarifications';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { showKYCStatusModal } from 'merchant/reducers/home';
+import { showPartnerKYCStatusModal, hidePartnerKYCStatusModal } from 'merchant/reducers/home';
 import Button from 'common/new-ui/Button';
 import NoticeMessage from './Components/NoticeMessage';
 import { Modal, ModalContent, ModalMask } from 'common/new-ui/Modal';
 import { addDropShield, removeDropShield } from 'merchant/components/File/Upload';
 import { withRouter } from 'react-router-dom';
+import KYCStatusModal from './Components/KYCStatus/KYCStatusModal';
 
 const Activation = (props) => {
   const [activeTab, setActiveTab] = useState(0);
@@ -105,7 +106,9 @@ const Activation = (props) => {
     });
     setIsFormLocked(
       activationData.partner_activation?.locked ||
-        activationData.partner_activation?.activation_status === 'needs_clarification',
+        ['needs_clarification', 'under_review'].includes(
+          activationData.partner_activation?.activation_status,
+        ),
     );
     setIsFormSubmitted(activationData.partner_activation?.submitted);
     setCanSubmitFormAPI(activationData.partner_activation?.can_submit);
@@ -116,6 +119,15 @@ const Activation = (props) => {
       const activationData = await fetchPartnerActivationDetails();
       if (activationData.success) {
         updateActivationState(activationData.data);
+
+        if (
+          activationData.data.activation_status === 'needs_clarification' &&
+          !activationData.partner_activation?.submitted
+        ) {
+          props.showPartnerKYCStatusModal({
+            modalType: 'PARTNER_KYC_BLOCKED_MODAL',
+          });
+        }
 
         if (activationData.data.partner_activation?.activation_status === 'needs_clarification') {
           const clarification_reasons = await merchantFetch(
@@ -357,7 +369,7 @@ const Activation = (props) => {
       });
 
       if (response.success) {
-        props.showKYCStatusModal({
+        props.showPartnerKYCStatusModal({
           modalType: 'KYC_CLARIFICATION_SUBMIT_MODAL',
           activationDuration: '3 days',
         });
@@ -383,6 +395,19 @@ const Activation = (props) => {
 
   return (
     <ModalMask>
+      {props.showKYCStatus && (
+        <KYCStatusModal
+          onClose={() => {
+            props.hidePartnerKYCStatusModal();
+          }}
+          onGoToDashboard={() => {
+            props.history.push('/partners');
+          }}
+          activationStatus={data?.partner_activation?.activation_status}
+          modalType={props.kycStatusModalType}
+          activationDuration={props.kycStatusActivationDuration}
+        />
+      )}
       <div>
         <Modal
           class="animate-down Activation--wizard"
@@ -466,6 +491,7 @@ const Activation = (props) => {
                         setCommentlist={setCommentlist}
                         ncFormResponse={ncFormResponse}
                         setNCFormResponse={setNCFormResponse}
+                        commonLockedFields={data?.lock_common_fields}
                       />
                     }
                   </div>
@@ -502,4 +528,13 @@ const RenderActivationFrom = (props) => {
   }
 };
 
-export default connect(null, { showNotification, showKYCStatusModal })(withRouter(Activation));
+export default connect(
+  (state) => {
+    return {
+      showKYCStatus: state.home.partnerActivations.showKYCStatus,
+      kycStatusModalType: state.home.partnerActivations.kycStatusModalType,
+      kycStatusActivationDuration: state.home.partnerActivations.kycStatusActivationDuration,
+    };
+  },
+  { showNotification, showPartnerKYCStatusModal, hidePartnerKYCStatusModal },
+)(withRouter(Activation));

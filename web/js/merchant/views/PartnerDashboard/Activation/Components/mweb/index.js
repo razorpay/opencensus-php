@@ -17,6 +17,9 @@ import useActivation from '../../Hooks/useActivation';
 import { useActivationFormState } from '../../Hooks/store';
 import { SnackbarProvider } from 'common/components/SnackBar/SnackbarContext';
 import { withRouter } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { showPartnerKYCStatusModal, hidePartnerKYCStatusModal } from 'merchant/reducers/home';
+import KYCStatusModal from '../KYCStatus/KYCStatusModal';
 
 const RenderMwebActivationForm = (props) => {
   const [isSaveAndExitModalOpen, setIsSaveAndExitModalOpen] = useState(false);
@@ -37,6 +40,11 @@ const RenderMwebActivationForm = (props) => {
     data?.partner_activation?.activation_status === 'needs_clarification';
 
   useEffect(() => {
+    if (data?.activation_status === 'needs_clarification' && !data?.partner_activation?.submitted) {
+      props.showPartnerKYCStatusModal({
+        modalType: 'PARTNER_KYC_BLOCKED_MODAL',
+      });
+    }
     if (data?.partner_activation?.activation_status === 'needs_clarification') {
       // since the route is modal route, it goes into infinite loops as tries to render the background route as well.
       if (props.location.pathname !== '/partners/activation') {
@@ -210,6 +218,19 @@ const RenderMwebActivationForm = (props) => {
           closeModal={() => setIsModalOpen(false)}
           activationData={data}
         />
+        {props.showKYCStatus && (
+          <KYCStatusModal
+            onClose={() => {
+              props.hidePartnerKYCStatusModal();
+            }}
+            onGoToDashboard={() => {
+              props.history.push('/partners');
+            }}
+            activationStatus={data?.partner_activation?.activation_status}
+            modalType={props.kycStatusModalType}
+            activationDuration={props.kycStatusActivationDuration}
+          />
+        )}
         <SaveAndExitModal
           isOpen={isSaveAndExitModalOpen}
           onClose={() => setIsSaveAndExitModalOpen(false)}
@@ -219,4 +240,13 @@ const RenderMwebActivationForm = (props) => {
   );
 };
 
-export default withRouter(RenderMwebActivationForm);
+export default connect(
+  (state) => {
+    return {
+      showKYCStatus: state.home.partnerActivations.showKYCStatus,
+      kycStatusModalType: state.home.partnerActivations.kycStatusModalType,
+      kycStatusActivationDuration: state.home.partnerActivations.kycStatusActivationDuration,
+    };
+  },
+  { showPartnerKYCStatusModal, hidePartnerKYCStatusModal },
+)(withRouter(RenderMwebActivationForm));

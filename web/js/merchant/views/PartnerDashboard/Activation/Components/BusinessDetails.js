@@ -18,7 +18,13 @@ import {
   PROPRIETORSHIP,
 } from '../utils/ActivationUtils';
 
-const BusinessDetails = ({ businessDetails, isFormLocked, formState, onFormChange }) => {
+const BusinessDetails = ({
+  businessDetails,
+  isFormLocked,
+  formState,
+  onFormChange,
+  commonLockedFields = [],
+}) => {
   const [currentBusinessType, setCurrentBusinessType] = useState(businessDetails.business_type);
   const [isUnregistered, setIsUnregistered] = useState();
   const [shouldShowGSTin, setShouldShowGSTin] = useState(false);
@@ -45,7 +51,7 @@ const BusinessDetails = ({ businessDetails, isFormLocked, formState, onFormChang
 
   const reBankAccountValidator = (value) => {
     if (!value) {
-      return;
+      return '';
     }
     const bankAccountNo = formState.bank_account_number || businessDetails.bank_account_number;
 
@@ -53,6 +59,7 @@ const BusinessDetails = ({ businessDetails, isFormLocked, formState, onFormChang
       // Something changed in main 'bank account' field
       return 'Account no. does not match';
     }
+    return '';
   };
 
   const gstinValidator = (value) => {
@@ -73,7 +80,7 @@ const BusinessDetails = ({ businessDetails, isFormLocked, formState, onFormChang
     const isMatching = bankAccountNumber == accountNo;
 
     if (!!bankAccountNumber && (!accountNo || !isMatching)) {
-      return reBankAccountEl.current?.focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
+      reBankAccountEl.current?.focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
     }
   };
 
@@ -89,6 +96,7 @@ const BusinessDetails = ({ businessDetails, isFormLocked, formState, onFormChang
       }
       return 'You can add your GST details later once you are registered';
     }
+    return '';
   };
 
   const getBenificiaryNameInfo = () => {
@@ -102,7 +110,7 @@ const BusinessDetails = ({ businessDetails, isFormLocked, formState, onFormChang
         name="business_type"
         label="Business Type"
         defaultValue={businessDetails.business_type}
-        disabled={isFormLocked}
+        disabled={isFormLocked || commonLockedFields.includes('business_type')}
         size="small"
         options={BusinessTypeOptions}
         required
@@ -116,7 +124,7 @@ const BusinessDetails = ({ businessDetails, isFormLocked, formState, onFormChang
           name="business_name"
           label="Business Name"
           defaultValue={businessDetails.business_name}
-          disabled={isFormLocked}
+          disabled={isFormLocked || commonLockedFields.includes('business_name')}
           size="small"
           required
           info={getBusinessNameInfo(currentBusinessType)}
@@ -129,7 +137,7 @@ const BusinessDetails = ({ businessDetails, isFormLocked, formState, onFormChang
           name="company_pan"
           label="Business PAN"
           defaultValue={businessDetails.company_pan}
-          disabled={isFormLocked}
+          disabled={isFormLocked || commonLockedFields.includes('company_pan')}
           size="small"
           required
           info="Mandatory for Companies. PAN details should be of the mentioned business only."
@@ -143,7 +151,7 @@ const BusinessDetails = ({ businessDetails, isFormLocked, formState, onFormChang
             name="promoter_pan"
             label="PAN"
             defaultValue={businessDetails.promoter_pan}
-            disabled={isFormLocked}
+            disabled={isFormLocked || commonLockedFields.includes('promoter_pan')}
             size="small"
             required
             info="Mandatory for Companies. PAN details should be of the mentioned business only."
@@ -154,7 +162,7 @@ const BusinessDetails = ({ businessDetails, isFormLocked, formState, onFormChang
             name="promoter_pan_name"
             label="PAN Owner’s Name"
             defaultValue={businessDetails.promoter_pan_name}
-            disabled={isFormLocked}
+            disabled={isFormLocked || commonLockedFields.includes('promoter_pan_name')}
             size="small"
             required
             info="We verify the details with the central PAN database. Please ensure you enter the correct PAN details"
@@ -169,7 +177,7 @@ const BusinessDetails = ({ businessDetails, isFormLocked, formState, onFormChang
         maxLength={120}
         minLength={4}
         defaultValue={businessDetails.bank_account_name}
-        disabled={isFormLocked}
+        disabled={isFormLocked || commonLockedFields.includes('bank_account_name')}
         size="small"
         required
         info={getBenificiaryNameInfo()}
@@ -178,7 +186,7 @@ const BusinessDetails = ({ businessDetails, isFormLocked, formState, onFormChang
         name="bank_account_number"
         label="Account Number"
         defaultValue={businessDetails.bank_account_number}
-        disabled={isFormLocked}
+        disabled={isFormLocked || commonLockedFields.includes('bank_account_number')}
         size="small"
         required
         info={getAccountNumberInfo(currentBusinessType)}
@@ -190,7 +198,7 @@ const BusinessDetails = ({ businessDetails, isFormLocked, formState, onFormChang
         name="account_no"
         label="Re-Enter Account Number"
         defaultValue={businessDetails.bank_account_number}
-        disabled={isFormLocked}
+        disabled={isFormLocked || commonLockedFields.includes('bank_account_number')}
         size="small"
         required
         info="Please re-enter the bank account number."
@@ -203,7 +211,7 @@ const BusinessDetails = ({ businessDetails, isFormLocked, formState, onFormChang
         name="bank_branch_ifsc"
         label="Branch IFSC Code"
         defaultValue={businessDetails.bank_branch_ifsc}
-        disabled={isFormLocked}
+        disabled={isFormLocked || commonLockedFields.includes('bank_branch_ifsc')}
         size="small"
         required
         info={(e) => {
@@ -221,7 +229,7 @@ const BusinessDetails = ({ businessDetails, isFormLocked, formState, onFormChang
           label="GSTIN"
           className="Input--vTop Input--capitalize"
           defaultValue={businessDetails.has_gstin}
-          disabled={isFormLocked}
+          disabled={isFormLocked || commonLockedFields.includes('gstin')}
           size="small"
           required
           description={getGSTinDescription}
@@ -233,7 +241,7 @@ const BusinessDetails = ({ businessDetails, isFormLocked, formState, onFormChang
           label="GST Identification Number (GSTIN)"
           placeholder="Enter GSTIN"
           defaultValue={businessDetails.gstin}
-          disabled={isFormLocked}
+          disabled={isFormLocked || commonLockedFields.includes('gstin')}
           size="small"
           required
           info="Enter GSTIN & get reviewed faster. Should match your business address."

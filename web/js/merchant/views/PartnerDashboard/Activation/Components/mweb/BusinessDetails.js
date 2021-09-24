@@ -79,6 +79,7 @@ const BusinessDetails = ({ isFormLocked, isFormSubmitted }) => {
   const [branchIfscInfo, setBranchIfscInfo] = useState('');
   const [currentBusinessType, setCurrentBusinessType] = useState(businessType);
   const businessDetails = data.business_details;
+  const commonLockedFields = data?.lock_common_fields || [];
 
   const hasGSTIN = useActivationFormState((state) => state.has_gstin);
   const setHasGSTIN = useActivationFormState((state) => state.setHasGSTIN);
@@ -182,7 +183,7 @@ const BusinessDetails = ({ isFormLocked, isFormSubmitted }) => {
                   formikProps.setFieldValue('business_type', value);
                   setIsBlurCalled(true);
                 }}
-                disabled={isFormLocked}
+                disabled={isFormLocked || commonLockedFields.includes('business_type')}
               />
               {showUnregisteredText()}
             </Field>
@@ -201,7 +202,7 @@ const BusinessDetails = ({ isFormLocked, isFormSubmitted }) => {
                   formikProps.values.company_pan && formikProps.values.company_pan.toUpperCase()
                 }
                 errorText={formikProps.touched.company_pan && formikProps.errors.company_pan}
-                disabled={isFormLocked}
+                disabled={isFormLocked || commonLockedFields.includes('company_pan')}
                 autoCapitalize="characters"
               />
             </Field>
@@ -213,7 +214,7 @@ const BusinessDetails = ({ isFormLocked, isFormSubmitted }) => {
                 helpText="As mentioned in the PAN"
                 value={formikProps.values.business_name}
                 errorText={formikProps.touched.business_name && formikProps.errors.business_name}
-                disabled={isFormLocked}
+                disabled={isFormLocked || commonLockedFields.includes('business_name')}
               />
             </Field>
             <Field visible={!displayCompanyPAN(currentBusinessType)}>
@@ -225,7 +226,7 @@ const BusinessDetails = ({ isFormLocked, isFormSubmitted }) => {
                   formikProps.values.promoter_pan && formikProps.values.promoter_pan.toUpperCase()
                 }
                 errorText={formikProps.touched.promoter_pan && formikProps.errors.promoter_pan}
-                disabled={isFormLocked}
+                disabled={isFormLocked || commonLockedFields.includes('promoter_pan')}
                 autoCapitalize="characters"
               />
             </Field>
@@ -239,7 +240,7 @@ const BusinessDetails = ({ isFormLocked, isFormSubmitted }) => {
                 errorText={
                   formikProps.touched.promoter_pan_name && formikProps.errors.promoter_pan_name
                 }
-                disabled={isFormLocked}
+                disabled={isFormLocked || commonLockedFields.includes('promoter_pan_name')}
               />
             </Field>
           </FormSection>
@@ -253,7 +254,7 @@ const BusinessDetails = ({ isFormLocked, isFormSubmitted }) => {
                 errorText={
                   formikProps.touched.bank_account_name && formikProps.errors.bank_account_name
                 }
-                disabled={isFormLocked}
+                disabled={isFormLocked || commonLockedFields.includes('bank_account_name')}
               />
             </Field>
             <Field>
@@ -265,7 +266,7 @@ const BusinessDetails = ({ isFormLocked, isFormSubmitted }) => {
                 errorText={
                   formikProps.touched.bank_account_number && formikProps.errors.bank_account_number
                 }
-                disabled={isFormLocked}
+                disabled={isFormLocked || commonLockedFields.includes('bank_account_number')}
               />
             </Field>
             {!isFormSubmitted ? (
@@ -279,7 +280,7 @@ const BusinessDetails = ({ isFormLocked, isFormSubmitted }) => {
                     formikProps.touched.re_enter_bank_account_number &&
                     formikProps.errors.re_enter_bank_account_number
                   }
-                  disabled={isFormLocked}
+                  disabled={isFormLocked || commonLockedFields.includes('bank_account_number')}
                 />
               </Field>
             ) : null}
@@ -301,12 +302,16 @@ const BusinessDetails = ({ isFormLocked, isFormSubmitted }) => {
                 errorText={
                   formikProps.touched.bank_branch_ifsc && formikProps.errors.bank_branch_ifsc
                 }
-                disabled={isFormLocked}
+                disabled={isFormLocked || commonLockedFields.includes('bank_branch_ifsc')}
               />
             </Field>
           </FormSection>
           {!isUnregisteredBusiness(currentBusinessType) && (
-            <FormSection title="Company Details" last disabled={isFormLocked}>
+            <FormSection
+              title="Company Details"
+              last
+              disabled={isFormLocked || commonLockedFields.includes('gstin')}
+            >
               <Field last>
                 <TextInput
                   width="auto"

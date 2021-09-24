@@ -34,6 +34,7 @@ const ContactDetails = ({ isFormLocked }) => {
   const setContactDetailsCompleted = useActivationFormState(
     (state) => state.setContactDetailsCompleted,
   );
+  const commonLockedFields = data?.lock_common_fields || [];
 
   const handleBlur = (e, formikProps) => {
     formikProps.handleBlur(e);
@@ -75,7 +76,7 @@ const ContactDetails = ({ isFormLocked }) => {
                 label="Contact Name"
                 value={formikProps.values.contact_name}
                 errorText={formikProps.touched.contact_name && formikProps.errors.contact_name}
-                disabled={isFormLocked}
+                disabled={isFormLocked || commonLockedFields.includes('contact_name')}
               />
             </Field>
             <Field>
@@ -86,7 +87,7 @@ const ContactDetails = ({ isFormLocked }) => {
                 helpText="We will reach out at this email id in case of any account related issue"
                 value={formikProps.values.contact_email}
                 errorText={formikProps.touched.contact_email && formikProps.errors.contact_email}
-                disabled={isFormLocked}
+                disabled={isFormLocked || commonLockedFields.includes('contact_email')}
               />
             </Field>
             <Field last>
@@ -97,7 +98,7 @@ const ContactDetails = ({ isFormLocked }) => {
                 label="Contact Number"
                 value={formikProps.values.contact_mobile}
                 errorText={formikProps.touched.contact_mobile && formikProps.errors.contact_mobile}
-                disabled={isFormLocked}
+                disabled={isFormLocked || commonLockedFields.includes('contact_mobile')}
               />
             </Field>
           </FormSection>

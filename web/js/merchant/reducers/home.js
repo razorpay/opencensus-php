@@ -1,6 +1,6 @@
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { set, merge } from 'common/utils/immutable';
-import { createLineData } from 'common/utils/chart/index.js';
+import { createLineData } from 'common/utils/chart/index';
 import { paiseToRupees } from 'common/utils/rzp-utils';
 
 // graph data
@@ -32,8 +32,10 @@ const HIDE_FRAUD_DETECTION_MODAL = 'HIDE_FRAUD_DETECTION_MODAL';
 const SHOW_TNC_MODAL = 'SHOW_TNC_MODAL';
 const HIDE_TNC_MODAL = 'HIDE_TNC_MODAL';
 const ESCALATIONS_FETCH = 'ESCALATIONS_FETCH';
+const SHOW_PARTNER_KYC_STATUS_MODAL = 'SHOW_PARTNER_KYC_STATUS_MODAL';
+const HIDE_PARTNER_KYC_STATUS_MODAL = 'HIDE_PARTNER_KYC_STATUS_MODAL';
 
-let initialState = {
+const initialState = {
   analytics: {
     loading: true,
     data: [],
@@ -88,6 +90,11 @@ let initialState = {
     limit: null,
     escaltionsLastUpdatedAt: null,
   },
+  partnerActivations: {
+    kycStatusModalType: '',
+    kycStatusActivationDuration: '1-2 working days',
+    showKYCStatus: false,
+  },
 };
 
 const getTransactionCountData = (data, mode) => {
@@ -124,8 +131,8 @@ export const fetchAnalytics = (params) => {
         to: params.to,
       },
     }).then((response) => {
-      let transaction_count = null,
-        transaction_amount = null;
+      let transaction_count = null;
+      let transaction_amount = null;
       if (response.data) {
         transaction_count = getTransactionCountData(response.data, params.mode);
         transaction_amount = getTransactionAmountData(response.data, params.mode);
@@ -185,6 +192,22 @@ export const showKYCStatusModal = ({ modalType = '', activationDuration = '1-2 w
 export const hideKYCStatusModal = () => {
   return {
     type: HIDE_KYC_STATUS_MODAL,
+  };
+};
+
+export const showPartnerKYCStatusModal = ({
+  modalType = '',
+  activationDuration = '1-2 working days',
+}) => {
+  return {
+    type: SHOW_PARTNER_KYC_STATUS_MODAL,
+    payload: { modalType, activationDuration },
+  };
+};
+
+export const hidePartnerKYCStatusModal = () => {
+  return {
+    type: HIDE_PARTNER_KYC_STATUS_MODAL,
   };
 };
 
@@ -265,7 +288,7 @@ export const hideTnC = () => ({
   type: HIDE_TNC_MODAL,
 });
 
-export default function (state = initialState, action) {
+export default function homeReducer(state = initialState, action) {
   switch (action.type) {
     case `${ANALYTICS_FETCH}::PENDING`:
       return set(state, 'analytics', initialState.analytics);
@@ -417,6 +440,27 @@ export default function (state = initialState, action) {
           showKYCStatus: false,
         },
         kycStatusModalType: '',
+      };
+
+    case SHOW_PARTNER_KYC_STATUS_MODAL:
+      return {
+        ...state,
+        partnerActivations: {
+          ...state.partnerActivations,
+          showKYCStatus: true,
+          kycStatusModalType: action.payload.modalType,
+          kycStatusActivationDuration: action.payload.activationDuration,
+        },
+      };
+
+    case HIDE_PARTNER_KYC_STATUS_MODAL:
+      return {
+        ...state,
+        partnerActivations: {
+          ...state.partnerActivations,
+          showKYCStatus: false,
+          kycStatusModalType: '',
+        },
       };
 
     case `SHOW_KYC_DETAILS`:
