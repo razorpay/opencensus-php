@@ -1464,14 +1464,12 @@ class Core extends Base\Core
 
             $ufhService = $this->app['ufh.service'];
 
-            $file = Tracer::inSpan(['name' => 'payment_page.upload.upload_file_and_get_url'], function() use($ufhService, $image, $uploadFilename, $merchant) {
-                return $ufhService->uploadFileAndGetUrl(
-                    $image,
-                    $uploadFilename,
-                    Constants::PAYMENT_LINK_DESCRIPTION,
-                    $merchant,
-                    ['Content-Disposition' => 'inline']);
-                });
+            $file = $ufhService->uploadFileAndGetUrl(
+                $image,
+                $uploadFilename,
+                Constants::PAYMENT_LINK_DESCRIPTION,
+                $merchant,
+                ['Content-Disposition' => 'inline']);
 
             $urls[] = $cdn . '/' . $file[Constants::RELATIVE_LOCATION];
         }

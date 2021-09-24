@@ -24,20 +24,14 @@ class PaymentLinkController extends Controller
      */
     public function get(string $id)
     {
-        $response = Tracer::inSpan(['name' => 'payment_page.get'], function() use($id)
-        {
-            return $this->service()->fetch($id, $this->input);
-        });
+        $response = $this->service()->fetch($id, $this->input);
 
         return ApiResponse::json($response);
     }
 
     public function getWithDetailsForDashboard(string $id)
     {
-        $response = Tracer::inSpan(['name' => 'payment_page.get_details'], function() use($id)
-        {
-            return $this->service()->fetchWithDetailsForDashboard($id, $this->input);
-        });
+        $response = $this->service()->fetchWithDetailsForDashboard($id, $this->input);
 
         return ApiResponse::json($response);
     }
@@ -202,10 +196,7 @@ class PaymentLinkController extends Controller
      */
     public function upload()
     {
-        $data = Tracer::inSpan(['name' => 'payment_page.upload'], function()
-        {
-            return $this->service()->upload($this->input);
-        });
+        $data = $this->service()->upload($this->input);
 
         return ApiResponse::json($data);
     }
@@ -326,10 +317,7 @@ class PaymentLinkController extends Controller
     {
         $input = Request::all();
 
-        $response = Tracer::inSpan(['name' => 'payment_page.payments.get'], function() use($id, $input)
-        {
-            return $this->service()->getPayments($id, $input);
-        });
+        $response = $this->service()->getPayments($id, $input);
 
         return ApiResponse::json($response);
     }
