@@ -37,8 +37,8 @@ class ViewSerializer extends Base\Core
      * @var Merchant\Entity
      */
     protected $merchant;
+    const RAZORX_FOOTER_EXPERIMENT = 'pp_hostedpage_new_footer';
 
-    const RAZORX_BRANDING_EXPERIMENT = 'pp_hostedpage_minimalbranding';
 
     const RAZORX_ASTERIX_EXPERIMENT = 'pp_hostedpage_asterisk';
 
@@ -113,9 +113,9 @@ class ViewSerializer extends Base\Core
     {
         $mode = $this->mode ?? Mode::LIVE;
 
-        $brandingVariant = $this->app->razorx->getTreatment(
+        $footerVariant = $this->app->razorx->getTreatment(
             $this->merchant->getId(),
-            self::RAZORX_BRANDING_EXPERIMENT,
+            self::RAZORX_FOOTER_EXPERIMENT,
             $mode
         );
 
@@ -137,7 +137,8 @@ class ViewSerializer extends Base\Core
             'image'            => $this->merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE),
             'brand_color'      => get_rgb_value($this->merchant->getBrandColorOrOrgPreference()),
             'brand_text_color' => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
-            'branding_variant' => $brandingVariant,
+            'branding_variant' => 'control',
+            'footer_variant'   => $footerVariant,
             'asterix_variant'  => $asterixVariant,
             'contact_optional' => $contactOptional,
             'email_optional'   => $emailOptional,
