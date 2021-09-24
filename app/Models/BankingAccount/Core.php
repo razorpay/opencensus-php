@@ -675,7 +675,9 @@ class Core extends Base\Core
     {
         if (isset($activationDetailInput[ActivationDetail\Entity::DECLARATION_STEP]) === true)
         {
-            if ($activationDetailInput[ActivationDetail\Entity::DECLARATION_STEP] === 1)
+            $declaration_step = ($bankingAccount->bankingAccountActivationDetails)->declaration_step;
+
+            if ($activationDetailInput[ActivationDetail\Entity::DECLARATION_STEP] === 1 and $declaration_step !== 1)
             {
                 $this->notifyOpsAboutProActivation($bankingAccount);
             }

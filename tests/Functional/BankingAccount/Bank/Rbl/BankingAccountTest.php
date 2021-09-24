@@ -379,6 +379,48 @@ class BankingAccountTest extends TestCase
         Mail::assertQueued(XProActivation::class);
     }
 
+    public function testCreateBankingAccountAndSubmitAgain()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $bankingAccount = $this->createBankingAccountFromDashboard();
+
+        $bankingAccountId = $bankingAccount['id'];
+
+        Mail::fake();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_dashboard/' . $bankingAccountId,
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
+
+        $this->assertEquals(null, $bankingAccount['last_statement_attempt_at']);
+
+        $activationDetailEntity = $this->getDbEntity('banking_account_activation_detail', [
+            'banking_account_id' => $bankingAccount->getId()
+        ]);
+
+        $this->assertNotNull($activationDetailEntity);
+
+        Mail::assertQueued(XProActivation::class);
+
+        $this->startTest($dataToReplace);
+
+        Mail::assertQueued(XProActivation::class, 1);
+    }
+
     public function testCreateBankingAccountWithUnserviceableBusinessCategoryFormDashboard()
     {
         $attribute = ['activation_status' => 'activated'];

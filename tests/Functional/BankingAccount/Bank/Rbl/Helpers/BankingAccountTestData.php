@@ -242,6 +242,42 @@ return [
         ],
     ],
 
+    'testCreateBankingAccountAndSubmitAgain' => [
+        'request'  => [
+            'url'     => '/banking_accounts_dashboard',
+            'method'  => 'PATCH',
+            'server' => [
+                'X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'content' => [
+                'activation_detail' => [
+                    'merchant_poc_name' => 'Sample Name',
+                    'merchant_poc_designation' => 'Financial Consultant',
+                    'merchant_poc_email' => 'sample@sample.com',
+                    'merchant_poc_phone_number' => '9876556789',
+                    'merchant_documents_address' => 'x, y, z',
+                    'initial_cheque_value' => 100,
+                    'account_type' => 'insignia',
+                    'merchant_city' => 'Bangalore',
+                    'business_type' => 'ecommerce',
+                    'is_documents_walkthrough_complete' => true,
+                    'merchant_region' => 'South',
+                    'expected_monthly_gmv' => 10000,
+                    'average_monthly_balance' => 0,
+                    'business_category' => 'partnership',
+                    'sales_team' => 'self_serve',
+                    'declaration_step' => 1
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'     => 'rbl',
+                'status'      => 'created'
+            ],
+        ],
+    ],
+
     'testCreateBankingAccountWithUnserviceableBusinessCategoryFormDashboard' => [
         'request'  => [
             'url'     => '/banking_accounts_dashboard',
