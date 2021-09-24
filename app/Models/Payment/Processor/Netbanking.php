@@ -182,6 +182,7 @@ class Netbanking
         IFSC::DLXB,
         self::PUNB_R,
         IFSC::BDBL,
+        IFSC::CNRB,
     ];
 
     protected static $defaultGatewayDisabledBanks = [
@@ -825,7 +826,11 @@ class Netbanking
             'retail' => [
                 IFSC::CNRB,
                 IFSC::SYNB,
-            ]
+            ],
+            'tpv'   => [
+                IFSC::CNRB,
+                IFSC::SYNB,
+            ],
         ],
         Gateway::NETBANKING_EQUITAS => [
             'retail' => [

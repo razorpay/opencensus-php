@@ -1027,6 +1027,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                 => 'required|in:netbanking_canara',
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
         Entity::TYPE                    => 'sometimes|array',
+        Entity::TPV                     => 'sometimes|in:0,1,2',
         Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
