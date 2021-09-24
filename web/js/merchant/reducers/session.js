@@ -1,5 +1,4 @@
-import ajax from 'merchant/utils/ajax';
-import { merchantFetch } from 'merchant/utils/ajax';
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import User from 'merchant/models/User';
 import { set, merge } from 'common/utils/immutable';
 import { titleCase } from 'common/utils/rzp-utils';
@@ -23,7 +22,7 @@ export const updateSession = (payload) => {
 };
 
 export const fetchUser = () => {
-  let user = new User();
+  const user = new User();
 
   return {
     type: USER_FETCH,
@@ -98,21 +97,25 @@ export const showOrHideHighlightMode = (value) => {
   };
 };
 
-let initialState = {
+const initialState = {
   user: new User(),
   org: {},
   mode: 'test',
+  partnerMode: 'test',
   modeFormatted: 'Test',
+  partnerModeFormatted: 'Test',
   highlightMode: true,
   isTourVisible: false,
+  isUsingPartnerMode: false,
 };
 
-export default function (state = initialState, action) {
+export default function sessionReducer(state = initialState, action) {
   switch (action.type) {
     case UPDATE_SESSION:
       return merge(state, {
         ...action.payload,
         modeFormatted: titleCase(action.payload.mode),
+        partnerModeFormatted: titleCase(action.payload.partnerMode || state.partnerMode),
       });
 
     // when action involves async API call

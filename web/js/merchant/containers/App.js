@@ -45,6 +45,7 @@ import LogoutDialog from 'merchant/components/LogoutDialog';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { fetchInstantSettlements } from 'merchant/reducers/collection';
 import { bindActionCreators, compose } from 'redux';
+import PartnerActivationRequiredModal from 'merchant/views/PartnerDashboard/Activation/Components/ActivationRequiredModal'
 
 @RTracking()
 class App extends Component {
@@ -71,12 +72,15 @@ class App extends Component {
 
     if (window.rzp_user) {
       this.modeToken = `${oldModeToken}--${window.rzp_user.current}`;
+      this.partnerModeToken = `rzp_partner_mode`;
     }
     this.logoutPopupShown = false;
     this.state = {
       isLoading: true,
       goLiveNPSSurveyPopup: false,
       nonGoLiveNPSSurveyPopup: false,
+      isPartnerModeEnabled: this.props.location.pathname.startsWith('/partners/') && this.props?.user?.isIndependentPartnerKYCEnabled,
+      isPartnerKYCActivated: false,
     };
 
     this.handleResize = debounce(this.handleResize.bind(this), 200);
@@ -106,6 +110,14 @@ class App extends Component {
         user.activation_status === 'activated_mcc_pending') &&
       currentMode === 'test' &&
       !isActivated
+    );
+  };
+
+  canPartnerMoveToLiveMode = (currentMode, isPartnerKYCActivated, isAlreadyActivated) => {
+    return (
+      isPartnerKYCActivated &&
+      currentMode === 'test' &&
+      !isAlreadyActivated
     );
   };
 
@@ -169,6 +181,9 @@ class App extends Component {
     let currentMode = LocalStorageService.getItem(this.modeToken);
     let isActivated = LocalStorageService.getItem(`is_activated--${user?.current}`);
     const isUnregBiz = ['2', '11'].indexOf(user?.business_type) !== -1;
+
+    let currentPartnerMode = LocalStorageService.getItem(this.partnerModeToken);
+    let isPartnerKYCActivated = LocalStorageService.getItem(`is_partner_activated--${user?.current}`);
 
     if (
       user &&
@@ -250,6 +265,32 @@ class App extends Component {
             removeSplashLoader();
             this.setState({ isLoading: false });
           });
+
+        // use partner mode if merchant kyc is not activated and it's enabled
+        if (!user.isActivated && this.state.isPartnerModeEnabled) {
+          this.fetchPartnerActivationStatus().then(({data}) =>{
+            const isCurrentPartnerKYCActivated = data?.partner_activation?.activation_status === 'activated';
+            if (user && isCurrentPartnerKYCActivated) {
+              LocalStorageService.setItem(`is_partner_activated--${user.current}`, 'true');
+              isPartnerKYCActivated = 'true';
+            }
+            this.setState({
+              isPartnerKYCActivated: isCurrentPartnerKYCActivated,
+              partnerActivationStatus: data?.partner_activation?.activation_status,
+            });
+            if (!currentPartnerMode) {
+              currentPartnerMode = isPartnerKYCActivated ? 'live' : 'test';
+            } else if (this.canPartnerMoveToLiveMode(currentMode, isCurrentPartnerKYCActivated, isPartnerKYCActivated)) {
+              currentPartnerMode = 'live';
+            } else if (!isPartnerKYCActivated) {
+              currentPartnerMode = 'test';
+            }
+    
+            this.props.updateSession({ 
+              partnerMode: currentPartnerMode, isUsingPartnerMode: this.state.isPartnerModeEnabled 
+            });
+          })
+        }
       })
       .catch(() => {
         removeSplashLoader();
@@ -377,6 +418,13 @@ class App extends Component {
           ['2020-08-01', '2020-08-30'],
         ]);
         this.setState({ nonGoLiveNPSSurveyPopup: takeNonGoLiveNPSSurvey });
+      }
+      
+      const newIsPartnerModeEnabled = location.pathname.startsWith('/partners/') && user.isIndependentPartnerKYCEnabled;
+      if (this.state.isPartnerModeEnabled !== newIsPartnerModeEnabled) {
+        this.setState({
+          isPartnerModeEnabled: newIsPartnerModeEnabled
+        });
       }
     }
   }
@@ -603,6 +651,10 @@ class App extends Component {
     }
   }
 
+  fetchPartnerActivationStatus = () => {
+    return merchantFetch({ url: 'partner/activation', mode: 'live' })
+  }
+
   switchMode = (mode, callback = () => {}) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Header',
@@ -619,6 +671,9 @@ class App extends Component {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+    if (this.state.isPartnerModeEnabled) {
+      return this.handlePartnerModeSwitch(mode);   
+    }
     const user = this.props.user;
     if (mode === 'live' && !user.isActivated) {
       this.props.openModal({
@@ -630,16 +685,47 @@ class App extends Component {
     } else {
       callback();
       LocalStorageService.setItem(this.modeToken, mode);
-      location.reload();
-
       window.trackHubs({
         name: 'update_property',
         data: {
           is_live: true,
         },
       });
+      location.reload();
     }
   };
+
+  handlePartnerModeSwitch = (mode) => {
+    if (mode === 'live' && this.state.isPartnerModeEnabled) {
+      analyticsTrack({
+        objectName: 'partner KYC',
+        actionName: 'open',
+        screen: 'partner dashboard',
+        toLumberjack: true,
+        properties: {
+          partnerID: this.props.user?.merchant.id,
+          source: 'Live mode',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    }
+    const user = this.props.user;
+    if (mode === 'live' && !user.isActivated) {
+      if (this.state.isPartnerKYCActivated) {
+        LocalStorageService.setItem(this.partnerModeToken, mode);
+        location.reload();
+      } else {
+        this.props.openModal({
+          size: 'small',
+          component: (
+            <PartnerActivationRequiredModal partnerActivationStatus={this.state.partnerActivationStatus} onCloseClick={this.props.closeModal} />
+          ),
+        });
+      }
+    } else {
+      LocalStorageService.setItem(this.partnerModeToken, mode);
+    }
+  }
 
   switchMerchant = (merchant) => {
     analyticsTrack({
@@ -744,9 +830,12 @@ class App extends Component {
   };
 
   render() {
-    const { user, config, org, mode, modeFormatted, merchant_gst } = this.props;
+    const { user, config, org, mode, modeFormatted, partnerModeFormatted, merchant_gst, partnerMode } = this.props;
 
     const hasGSTIN = this.props.merchant_gst.p_gstin || this.props.merchant_gst.gstin;
+    const isPartnerModeEnabled = this.state.isPartnerModeEnabled;
+    const currentMode = isPartnerModeEnabled ? partnerMode : mode;
+    const currentModeFormatted = isPartnerModeEnabled ? partnerModeFormatted : modeFormatted;
 
     if (this.state.isLoading || !user.isAuthenticated) {
       return null;
@@ -767,8 +856,8 @@ class App extends Component {
               <React.Fragment>
                 <HeaderNav
                   user={user}
-                  mode={mode}
-                  modeFormatted={modeFormatted}
+                  mode={currentMode}
+                  modeFormatted={currentModeFormatted}
                   showGSTModal={hasGSTIN ? undefined : this.showGSTModal}
                   onSwitchMode={this.switchMode}
                   onSwitchMerchant={this.switchMerchant}
@@ -787,7 +876,7 @@ class App extends Component {
 
             <Content
               user={user}
-              modeFormatted={modeFormatted}
+              modeFormatted={currentModeFormatted}
               fullPageView={this.renderFullPageView}
             />
 
@@ -800,7 +889,7 @@ class App extends Component {
             <Notifications />
           </TwoFactorVerificationProvider>
         </div>
-        {mode === 'test' && !isMobileDevice() && (
+        {currentMode === 'test' && !isMobileDevice() && (
           <div style={{ position: 'relative' }}>
             <HighlightTestMode onSwitchMode={this.switchMode} />
           </div>

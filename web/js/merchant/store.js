@@ -11,6 +11,9 @@ export const storeWithInitialState = (initialState) =>
 export default store;
 
 export function getMode() {
+  if (store.getState().session.isUsingPartnerMode) {
+    return getPartnerMode();
+  }
   return store.getState().session.mode;
 }
 
@@ -20,4 +23,8 @@ export function getOrg() {
 
 export function getUser() {
   return store.getState().session.user;
+}
+
+export function getPartnerMode() {
+  return store.getState().session.partnerMode;
 }
