@@ -344,7 +344,7 @@ class Core extends Detail\Core
     public function submitPartnerActivationForm(Merchant\Entity $merchant, Entity $merchantDetails,
                                                 Activation\Entity $partnerActivation, string $source = Constants::PARTNER): array
     {
-        $activationStatus = $this->getApplicablePartnerActivationStatus($merchantDetails);
+        $activationStatus = $this->getApplicablePartnerActivationStatus($merchantDetails, $partnerActivation);
 
         $this->markPartnerKycSubmittedAndLock($partnerActivation);
 
@@ -616,11 +616,13 @@ class Core extends Detail\Core
      * @param Entity $merchantDetails
      * @return string
      */
-    public function getApplicablePartnerActivationStatus(Entity $merchantDetails): string
+    public function getApplicablePartnerActivationStatus(Entity $merchantDetails, Activation\Entity $partnerActivation): string
     {
         $isAutoKycDone = $this->isPartnerKycDone($merchantDetails);
 
-        if ($isAutoKycDone === true)
+        $partnerActivationStatus = $partnerActivation->getActivationStatus();
+
+        if (($isAutoKycDone === true) and (empty($partnerActivationStatus) or ($partnerActivationStatus === Detail\Status::UNDER_REVIEW)))
         {
             return Activation\Constants::ACTIVATED;
         }

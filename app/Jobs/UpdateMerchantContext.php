@@ -208,7 +208,7 @@ class UpdateMerchantContext extends Job
         {
             $clarificationCore = new Core();
 
-            $newActivationStatus = (new PartnerCore())->getApplicablePartnerActivationStatus($merchant->merchantDetail);
+            $newActivationStatus = (new PartnerCore())->getApplicablePartnerActivationStatus($merchant->merchantDetail, $partnerActivation);
 
             $isSystemBasedNeedsClarificationEnabledForPartner = (new Merchant\Core())->isRazorxExperimentEnable(
                 $merchant->getId(),

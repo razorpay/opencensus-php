@@ -223,7 +223,7 @@ final class RazorxTreatment
 
     //
     const ORG_LEVEL_2FA_ENFORCED_FUNCTIONALITY = 'org_level_2fa_enforced_functionality';
-    
+
     // experiment to enable ipAddress-clientId dedupe functionality
     const DEDUPE_FUNCTIONALITY_FOR_CLIENT_IP_ID = 'DEDUPE_FUNCTIONALITY_FOR_CLIENT_IP_ID';
 
@@ -249,6 +249,8 @@ final class RazorxTreatment
     const SYSTEM_BASED_NEEDS_CLARIFICATION = 'system_based_needs_clarification';
 
     const SYSTEM_BASED_NEEDS_CLARIFICATION_FOR_PARTNER = 'system_based_needs_clarification_for_partner';
+
+    const PARTNER_KYC_COMMUNICATION = 'partner_kyc_communication';
 
     // experiment to enable self serving of auto kyc registered merchants
     const SELF_SERVE_AUTO_KYC = 'self_serve_auto_kyc';

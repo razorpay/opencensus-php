@@ -13,6 +13,7 @@ use RZP\Models\State\Reason;
 use RZP\Models\Partner\Metric;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Partner\Activation;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Workflow\Action\Core as ActionCore;
 use RZP\Mail\Merchant\PartnerActivationRejection as RejectionMail;
 use RZP\Mail\Merchant\PartnerActivationConfirmation as ActivationMail;
@@ -526,6 +527,14 @@ class Core extends Base\Core
 
     private function sendRejectionEmail(Merchant\Entity $merchant)
     {
+        $partnerKycCommEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
+            RazorxTreatment::PARTNER_KYC_COMMUNICATION);
+
+        if ($partnerKycCommEnabled !== true)
+        {
+            return;
+        }
+
         $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
         $data = [
@@ -547,6 +556,14 @@ class Core extends Base\Core
      */
     private function sendNeedsClarificationEmail(Merchant\Entity $merchant, Entity $partnerActivation)
     {
+        $partnerKycCommEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
+            RazorxTreatment::PARTNER_KYC_COMMUNICATION);
+
+        if ($partnerKycCommEnabled !== true)
+        {
+            return;
+        }
+
         $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
         $clarificationCore = new Detail\NeedsClarification\Core();
@@ -566,6 +583,14 @@ class Core extends Base\Core
      */
     private function sendPartnerActivationEvents(Merchant\Entity $merchant)
     {
+        $partnerKycCommEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
+            RazorxTreatment::PARTNER_KYC_COMMUNICATION);
+
+        if ($partnerKycCommEnabled !== true)
+        {
+            return;
+        }
+
         $email = new ActivationMail($merchant->getId());
 
         Mail::queue($email);
