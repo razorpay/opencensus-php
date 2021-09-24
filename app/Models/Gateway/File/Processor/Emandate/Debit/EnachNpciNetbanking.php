@@ -214,12 +214,12 @@ class EnachNpciNetbanking extends Base
     public function fetchEntities(): PublicCollection
     {
         $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)
-            ->addHours(9)
-            ->getTimestamp();
+                         ->addHours(9)
+                         ->getTimestamp();
 
         $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)
-            ->addHours(9)
-            ->getTimestamp();
+                       ->addHours(9)
+                       ->getTimestamp();
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
 
@@ -244,6 +244,13 @@ class EnachNpciNetbanking extends Base
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
+        foreach ($tokens as $key => $token)
+        {
+            if ($token->merchant->isEarlyMandatePresentmentEnabled() === true)
+            {
+                unset($tokens[$key]);
+            }
+        }
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();
 
@@ -254,6 +261,7 @@ class EnachNpciNetbanking extends Base
                 'entity_ids'      => $paymentIds,
                 'begin'           => $begin,
                 'end'             => $end,
+                'count'           => count($paymentIds),
             ]);
 
         return $tokens;

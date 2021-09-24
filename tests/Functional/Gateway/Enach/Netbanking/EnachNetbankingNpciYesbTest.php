@@ -6,11 +6,10 @@ use Excel;
 use Queue;
 Use Carbon\Carbon;
 
-use RZP\Jobs\BeamJob;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Constants\Timezone;
-use RZP\Models\Customer\Token;
 use RZP\Excel\Export as ExcelExport;
 use RZP\Excel\ExportSheet as ExcelSheetExport;
 use Illuminate\Http\Testing\File as TestingFile;
@@ -55,6 +54,47 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'csv',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertArraySelectiveEquals(
+            [
+                'payment_id' => $paymentId,
+                'action'     => 'authorize',
+                'bank'       => 'UTIB',
+                'status'     => null,
+            ],
+            $enach
+        );
+    }
+
+    public function testDebitFileGenerationForEarlyDebitPresentment()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::EARLY_MANDATE_PRESENTMENT]);
+
+        $response = $this->makeDebitPayment();
+
+        $paymentId = $this->updateCreatedAtOfPayment($response['razorpay_payment_id']);
+
+        $this->ba->adminAuth();
+
+        Queue::fake();
+
+        $content = $this->startTest($this->testData['testDebitFileGenerationYesbEarlyDebit']);
+
+        $content = $content['items'][0];
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'enach_npci_nb_debit',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'csv',
+            'name'        => 'Npci/Enach/Netbanking/yesbank/nach/input_file/NACH_DR_07032020_shared_utility_code_RAZORPAY_MUT001'
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);

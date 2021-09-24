@@ -63,8 +63,9 @@ class Constants
     const BDBL             = 'bdbl';
     const ICICI_EMI        = 'icici_emi';
 
-    const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
-    const ENACH_NB_ICICI        = 'enach_nb_icici';  // deprecated
+    const ENACH_NPCI_NETBANKING             = 'enach_npci_netbanking';
+    const ENACH_NPCI_NETBANKING_EARLY_DEBIT = 'enach_npci_netbanking_early_debit';
+    const ENACH_NB_ICICI                    = 'enach_nb_icici';  // deprecated
 
     const PAPER_NACH_CITI       = 'paper_nach_citi';
     const PAPER_NACH_ICICI      = 'paper_nach_icici';
@@ -160,6 +161,7 @@ class Constants
             self::ENACH_RBL,
             self::SBI,
             self::ENACH_NPCI_NETBANKING,
+            self::ENACH_NPCI_NETBANKING_EARLY_DEBIT,
             //self::ENACH_NB_ICICI,  deprecated
         ],
         Type::NACH_DEBIT => [

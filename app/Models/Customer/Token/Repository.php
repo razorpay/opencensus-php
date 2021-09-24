@@ -316,6 +316,9 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * @throws ServerErrorException
+     */
     public function fetchPendingEMandateDebitWithGatewayAcquirer(string $gateway, $from, $to, $acquirer)
     {
         $paymentRecurringTypeColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING_TYPE);
