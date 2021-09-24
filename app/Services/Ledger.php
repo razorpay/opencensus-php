@@ -38,6 +38,10 @@ class Ledger
 
     const AccountDetailBaseURL = '/twirp/rzp.ledger.account_detail.v1.AccountDetailAPI';
 
+    const JournalBaseURL = '/twirp/rzp.ledger.journal.v1.JournalAPI';
+
+    const LedgerConfigBaseURL = '/twirp/rzp.ledger.ledger_config.v1.LedgerConfigAPI';
+
     const GovernorURL = '/twirp/rzp.ledger.governor.v1.GovernorAPI';
 
     const CommonDashboardURL = '/twirp/rzp.common.dashboard.v1.Dashboard';
@@ -45,17 +49,22 @@ class Ledger
     const DashboardURL = '/twirp/rzp.ledger.dashboard.v1.DashboardAPI';
 
     const URLS = [
-        'create'                       => 'Create',
-        'createInBulk'                 => 'CreateInBulk',
-        'activate'                     => 'Activate',
-        'deactivate'                   => 'Deactivate',
-        'archive'                      => 'Archive',
-        'update'                       => 'Update',
-        'request'                      => 'Request',
-        'fetch'                        => 'Fetch',
-        'fetchMultiple'                => 'FetchMultiple',
-        'fetchFilter'                  => 'FetchFilter',
-        'fetchAdminFormFieldOptions'   => 'FetchAdminFormFieldOptions',
+        'create'                            => 'Create',
+        'createInBulk'                      => 'CreateInBulk',
+        'activate'                          => 'Activate',
+        'deactivate'                        => 'Deactivate',
+        'archive'                           => 'Archive',
+        'update'                            => 'Update',
+        'delete'                            => 'Delete',
+        'request'                           => 'Request',
+        'fetch'                             => 'Fetch',
+        'fetchMultiple'                     => 'FetchMultiple',
+        'fetchFilter'                       => 'FetchFilter',
+        'fetchAccountFormFieldOptions'      => 'FetchAccountFormFieldOptions',
+        'fetchJournalFormFieldOptions'      => 'FetchJournalFormFieldOptions',
+        'fetchLedgerConfigFormFieldOptions' => 'FetchLedgerConfigFormFieldOptions',
+        'fetchAccountTypes'                 => 'FetchAccountTypes',
+        'fetchFundAccountTypes'             => 'FetchFundAccountTypes',
     ];
 
     // Headers
@@ -207,6 +216,62 @@ class Ledger
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
+    public function createJournal($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::JournalBaseURL . '/' . self::URLS['create'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function createLedgerConfig($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::LedgerConfigBaseURL . '/' . self::URLS['create'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function updateLedgerConfig($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::LedgerConfigBaseURL . '/' . self::URLS['update'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function deleteLedgerConfig($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::LedgerConfigBaseURL . '/' . self::URLS['delete'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
     public function requestGovernor($input, bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::GovernorURL . '/' . self::URLS['request'],
@@ -259,9 +324,61 @@ class Ledger
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function fetchAdminFormFieldOptions($input, bool $throwExceptionOnFailure = false): array
+    public function fetchAccountFormFieldOptions($input, bool $throwExceptionOnFailure = false): array
     {
-        return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchAdminFormFieldOptions'],
+        return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchAccountFormFieldOptions'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param $input
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchJournalFormFieldOptions($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchJournalFormFieldOptions'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param $input
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchLedgerConfigFormFieldOptions($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchLedgerConfigFormFieldOptions'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param $input
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchAccountTypes($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchAccountTypes'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param $input
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchFundAccountTypes($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchFundAccountTypes'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 

@@ -213,6 +213,217 @@ class Ledger extends BaseLedger
      *
      * @return array
      */
+    public function createJournal($input, bool $throwExceptionOnFailure = false): array
+    {
+        $response =  [
+            "id"                => "HNjsypA96SgJKJ",
+            "created_at"        => "1623848289",
+            "updated_at"        => "1632368730",
+            "amount"            => "130.000000",
+            "base_amount"       => "130.000000",
+            "currency"          => "INR",
+            "tenant"            => "X",
+            "transactor_id"     => "pout_SamplePayoutId4",
+            "transactor_type"   => "fund_loading_processed",
+            "transaction_date"  => "1611132045",
+            "ledger_entry" => [
+                [
+                    "id"          => "HNjsypHNXdSiei",
+                    "created_at"  => "1623848289",
+                    "updated_at"  => "1623848289",
+                    "merchant_id" => "HN59oOIDACOXt3",
+                    "journal_id"  => "HNjsypA96SgJKJ",
+                    "account_id"  => "GoRNyEuu9Hl0OZ",
+                    "amount"      => "130.000000",
+                    "base_amount" => "130.000000",
+                    "type"        => "debit",
+                    "currency"    => "INR",
+                    "balance"     => ""
+                ],
+                [
+                    "id"          => "HNjsypHPOUlxDR",
+                    "created_at"  => "1623848289",
+                    "updated_at"  => "1623848289",
+                    "merchant_id" => "HN59oOIDACOXt3",
+                    "journal_id"  => "HNjsypA96SgJKJ",
+                    "account_id"  => "HN5AGgmKu0ki13",
+                    "amount"      => "130.000000",
+                    "base_amount" => "130.000000",
+                    "type"        => "credit",
+                    "currency"    => "INR",
+                    "balance"     => ""
+                ]
+            ]
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function createLedgerConfig($input, bool $throwExceptionOnFailure = false): array
+    {
+        $response =  [
+            "id"                    => "I0u53VkCM4wMMs",
+            "tenant"                => "X",
+            "transactor_event_name" => "XPositiveAdjustmentProcessed",
+            "rule" => [
+            "transactor_type"       => "positive_adjustment_processed"
+            ],
+            "config" => [
+            "ledger_entries" => [
+                    [
+                        "account_discovery_config" => [
+                                "account_category"  => "expense",
+                                "account_type"      => "cash",
+                                "fund_account_type" => "adjustment",
+                                "identifiers"       => [],
+                            ],
+                        "direction" => "debit",
+                        "formula"   => "amount",
+                    ],
+                    [
+                        "account_discovery_config" => [
+                                "account_category"  => "liability",
+                                "account_type"      => "payable",
+                                "fund_account_type" => "merchant_va",
+                                "identifiers" => [
+                                    "banking_account_id" => "$"."banking_account_id"
+                                ]
+                        ],
+                        "direction" => "credit",
+                        "formula"   => "amount",
+                    ]
+                ]
+            ],
+            "created_at" => "1632399455",
+            "updated_at" => "1632399455",
+            "status"     => ""
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function updateLedgerConfig($input, bool $throwExceptionOnFailure = false): array
+    {
+        $response =  [
+            "id"                    => "I0u53VkCM4wMMs",
+            "tenant"                => "X",
+            "transactor_event_name" => "XPositiveAdjustmentProcessed2",
+            "rule" => [
+                "transactor_type"       => "positive_adjustment_processed2"
+            ],
+            "config" => [
+                "ledger_entries" => [
+                    [
+                        "account_discovery_config" => [
+                            "account_category"  => "expense",
+                            "account_type"      => "cash",
+                            "fund_account_type" => "adjustment",
+                            "identifiers"       => [],
+                        ],
+                        "direction" => "debit",
+                        "formula"   => "amount",
+                    ],
+                    [
+                        "account_discovery_config" => [
+                            "account_category"  => "liability",
+                            "account_type"      => "payable",
+                            "fund_account_type" => "merchant_va",
+                            "identifiers" => [
+                                "banking_account_id" => "$"."banking_account_id"
+                            ]
+                        ],
+                        "direction" => "credit",
+                        "formula"   => "amount",
+                    ]
+                ]
+            ],
+            "created_at" => "1632399455",
+            "updated_at" => "1632399455",
+            "status"     => ""
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function deleteLedgerConfig($input, bool $throwExceptionOnFailure = false): array
+    {
+        $response =  [
+            "id"                    => "I0u53VkCM4wMMs",
+            "tenant"                => "X",
+            "transactor_event_name" => "XPositiveAdjustmentProcessed3",
+            "rule" => [
+                "transactor_type"       => "positive_adjustment_processed3"
+            ],
+            "config" => [
+                "ledger_entries" => [
+                    [
+                        "account_discovery_config" => [
+                            "account_category"  => "expense",
+                            "account_type"      => "cash",
+                            "fund_account_type" => "adjustment",
+                            "identifiers"       => [],
+                        ],
+                        "direction" => "debit",
+                        "formula"   => "amount",
+                    ],
+                    [
+                        "account_discovery_config" => [
+                            "account_category"  => "liability",
+                            "account_type"      => "payable",
+                            "fund_account_type" => "merchant_va",
+                            "identifiers" => [
+                                "banking_account_id" => "$"."banking_account_id"
+                            ]
+                        ],
+                        "direction" => "credit",
+                        "formula"   => "amount",
+                    ]
+                ]
+            ],
+            "created_at" => "1632399455",
+            "updated_at" => "1632399455",
+            "status"     => ""
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     */
     public function requestGovernor($input, bool $throwExceptionOnFailure = false): array
     {
         $response = [
@@ -418,7 +629,7 @@ class Ledger extends BaseLedger
         ];
     }
 
-    public function fetchAdminFormFieldOptions($input, bool $throwExceptionOnFailure = false): array
+    public function fetchAccountFormFieldOptions($input, bool $throwExceptionOnFailure = false): array
     {
         $response = [
             "parent_account" => [
@@ -606,6 +817,246 @@ class Ledger extends BaseLedger
                         [
                             "name" => "X"
                         ]
+                    ]
+                ]
+            ],
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function fetchAccountTypes($input, bool $throwExceptionOnFailure = false): array
+    {
+        $response = [
+            "account_types" => [
+                "values" => [
+                    [
+                        "name" => "payable"
+                    ]
+                ]
+            ]
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function fetchFundAccountTypes($input, bool $throwExceptionOnFailure = false): array
+    {
+        $response = [
+            "fund_account_types" => [
+                "values" => [
+                    [
+                        "name" => "merchant_va_vendor"
+                    ],
+                    [
+                        "name" => "merchant_va"
+                    ],
+                    [
+                        "name" => "va_gst"
+                    ],
+                    [
+                        "name" => "reward"
+                    ],
+                    [
+                        "name" => "nodal"
+                    ],
+                    [
+                        "name" => "current"
+                    ],
+                    [
+                        "name" => "adjustment"
+                    ],
+                    [
+                        "name" => "m2p"
+                    ],
+                    [
+                        "name" => "amazonpay"
+                    ]
+                ]
+            ]
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
+    public function fetchJournalFormFieldOptions($input, bool $throwExceptionOnFailure = false): array
+    {
+        $response = [
+            "tenant" => [
+                "info" => "A BU is considered as a Tenant in the context of Razorpay. For ex - X, PG, Capital etc.",
+                "label" => "Tenant",
+                "type" => "array",
+                "values" => [
+                    [
+                        "name" => "X"
+                    ]
+                ]
+            ],
+            "currency" => [
+                "info" => "Currency in which the transaction on this account is recorded. Currently only 'INR' is defined.",
+                "label" => "Currency",
+                "type" => "array",
+                "values" => [
+                    [
+                        "name" => "INR"
+                    ],
+                ]
+            ],
+            "transactor_types" => [
+                "label" => "Transactor Type",
+                "type" => "array",
+                "values" => [
+                    [
+                        "name" => "fund_loading_processed"
+                    ],
+                    [
+                        "name" => "fund_loading_expired"
+                    ],
+                    [
+                        "name" => "payout_initiated"
+                    ],
+                    [
+                        "name" => "payout_processed"
+                    ],
+                    [
+                        "name" => "payout_failed"
+                    ],
+                    [
+                        "name" => "payout_reversed"
+                    ],
+                    [
+                        "name" => "fav_initiated"
+                    ],
+                    [
+                        "name" => "fav_processed"
+                    ],
+                    [
+                        "name" => "fav_reversed"
+                    ],
+                    [
+                        "name" => "fav_failed"
+                    ],
+                    [
+                        "name" => "positive_adjustment_processed"
+                    ],
+                    [
+                        "name" => "negative_adjustment_processed"
+                    ],
+                ]
+            ]
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
+    public function fetchLedgerConfigFormFieldOptions($input, bool $throwExceptionOnFailure = false): array
+    {
+        $response = [
+            "tenant" => [
+                "info" => "A BU is considered as a Tenant in the context of Razorpay. For ex - X, PG, Capital etc.",
+                "label" => "Tenant",
+                "type" => "array",
+                "values" => [
+                    [
+                        "name" => "X"
+                    ]
+                ]
+            ],
+            "rule" => [
+                "label" => "Rule",
+                "type" => "array",
+                "values" => [
+                    [
+                        "name" => "transactor_type"
+                    ],
+                    [
+                        "name" => "fee_accounting"
+                    ],
+                ]
+            ],
+            "account_category" => [
+                "info" => "The categories into which transactions are classified are called account categories.",
+                "label" => "Account Category",
+                "type" => "array",
+                "values" => [
+                    [
+                        "name" => "asset"
+                    ],
+                    [
+                        "name" => "liability"
+                    ],
+                    [
+                        "name" => "revenue"
+                    ],
+                    [
+                        "name" => "equity"
+                    ],
+                    [
+                        "name" => "gain"
+                    ],
+                    [
+                        "name" => "loss"
+                    ],
+                    [
+                        "name" => "expense"
+                    ],
+                ]
+            ],
+            "identifiers" => [
+                "info" => "Identifiers are the set of entities which can be used to identify the sub accounts.",
+                "label" => "Identifiers",
+                "type" => "array",
+                "values" => [
+                    [
+                        "name" => "fts_fund_account_id"
+                    ],
+                    [
+                        "name" => "fts_account_type"
+                    ],
+                    [
+                        "name" => "terminal_id"
+                    ],
+                    [
+                        "name" => "terminal_account_type"
+                    ],
+                    [
+                        "name" => "banking_account_id"
+                    ]
+                ]
+            ],
+            "direction" => [
+                "label" => "Direction",
+                "type" => "array",
+                "values" => [
+                    [
+                        "name" => "credit"
+                    ],
+                    [
+                        "name" => "debit"
                     ]
                 ]
             ],

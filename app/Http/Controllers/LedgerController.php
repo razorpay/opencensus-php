@@ -57,6 +57,34 @@ class LedgerController extends Controller
         return ApiResponse::json($response['body'], $response['code']);
     }
 
+    public function createJournal()
+    {
+        $response = $this->app['ledger']->createJournal($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
+    public function createLedgerConfig()
+    {
+        $response = $this->app['ledger']->createLedgerConfig($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
+    public function UpdateLedgerConfig()
+    {
+        $response = $this->app['ledger']->updateLedgerConfig($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
+    public function DeleteLedgerConfig()
+    {
+        $response = $this->app['ledger']->deleteLedgerConfig($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
     public function requestGovernor()
     {
         $response = $this->app['ledger']->requestGovernor($this->input);
@@ -85,9 +113,37 @@ class LedgerController extends Controller
         return ApiResponse::json($response['body'], $response['code']);
     }
 
-    public function fetchAdminFormFieldOptions()
+    public function fetchAccountFormFieldOptions()
     {
-        $response = $this->app['ledger']->fetchAdminFormFieldOptions($this->input);
+        $response = $this->app['ledger']->fetchAccountFormFieldOptions($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
+    public function fetchJournalFormFieldOptions()
+    {
+        $response = $this->app['ledger']->fetchJournalFormFieldOptions($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
+    public function fetchLedgerConfigFormFieldOptions()
+    {
+        $response = $this->app['ledger']->fetchLedgerConfigFormFieldOptions($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
+    public function fetchAccountTypes()
+    {
+        $response = $this->app['ledger']->fetchAccountTypes($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
+    public function fetchFundAccountTypes()
+    {
+        $response = $this->app['ledger']->fetchFundAccountTypes($this->input);
 
         return ApiResponse::json($response['body'], $response['code']);
     }
