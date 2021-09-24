@@ -104,7 +104,7 @@ class PaymentProductsBaseService extends Base\Service
         {
             $this->validationFields = $this->merchantDetailCore->getValidationFields($merchantDetails, true);
 
-            $requirements = $this->getRequirements($merchant, $merchantDetails);
+            $requirements = $this->getRequirements($merchant, $merchantDetails, $merchantProduct);
 
             $requirements = $this->updateResolutionUrl($merchantDetails, $merchantProduct, $requirements);
 
@@ -176,11 +176,12 @@ class PaymentProductsBaseService extends Base\Service
      *
      * @param Merchant\Entity $merchant
      * @param Detail\Entity   $merchantDetails
+     * @param Entity          $merchantProduct
      *
      * @return array
      * @throws \RZP\Exception\LogicException
      */
-    public function getRequirements(Merchant\Entity $merchant, Detail\Entity $merchantDetails): array
+    public function getRequirements(Merchant\Entity $merchant, Detail\Entity $merchantDetails, Product\Entity $merchantProduct): array
     {
         $requirements = [];
 
@@ -236,6 +237,14 @@ class PaymentProductsBaseService extends Base\Service
                 $requirements = array_merge($requirements, $documentFieldRequirements, $fieldRequirements);
             }
         }
+
+        $this->trace->info(TraceCode::MERCHANT_PRODUCT_ALL_REQUIREMENTS,
+                           [
+                               'merchant_id'           => $merchant->getId(),
+                               'requirements'          => $requirements,
+                               'merchant_product_id'   => $merchantProduct->getId(),
+                               'merchant_product_name' => $merchantProduct->getProduct(),
+                           ]);
 
         return $requirements;
     }
@@ -375,6 +384,7 @@ class PaymentProductsBaseService extends Base\Service
         }
 
         $this->trace->info(TraceCode::MERCHANT_DOCUMENT_REQUIREMENTS, [
+            'merchant_id' => $merchant->getId(),
             'missing_document_requirements'         => $missingDocumentRequirements,
             'requirements_from_submitted_documents' => $documentRequirementsFromSubmittedDocuments
         ]);

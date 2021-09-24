@@ -261,7 +261,7 @@ class Core extends Base\Core
             {
                 $requirementService = Requirements\Factory::getInstance($productName);
 
-                $requirements = $requirementService->getRequirements($subMerchant, $merchantDetails);
+                $requirements = $requirementService->getRequirements($subMerchant, $merchantDetails, $merchantProduct);
 
                 if (count($requirements) === 0)
                 {
