@@ -4400,6 +4400,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TYPEFORM_PARSED_DATA                                  = 'TYPEFORM_PARSED_DATA';
     const TYPEFORM_WORKFLOW_TRIGGERED                           = 'TYPEFORM_WORKFLOW_TRIGGERED';
     const TYPEFORM_RAW_DATA                                     = 'TYPEFORM_RAW_DATA';
+    const TYPEFORM_COMPLETE_RESPONSES                           = 'TYPEFORM_COMPLETE_RESPONSES';
+    const TYPEFORM_INCOMPLETE_RESPONSES                         = 'TYPEFORM_INCOMPLETE_RESPONSES';
+    const TYPEFORM_FORM_DATA_FETCH                              = 'TYPEFORM_FORM_DATA_FETCH';
+    const TYPEFORM_FORM_ID_INPUT_EMPTY                          = 'TYPEFORM_FORM_ID_INPUT_EMPTY';
+    const TYPEFORM_INCORRECT_FORM_ID                            = 'TYPEFORM_INCORRECT_FORM_ID';
     const PRODUCT_INTERNATIONAL_REQUESTED                       = 'PRODUCT_INTERNATIONAL_REQUESTED';
     const PRODUCT_INTERNATIONAL_TRIGGERED                       = 'PRODUCT_INTERNATIONAL_TRIGGERED';
     const PRODUCT_INTERNATIONAL_APPROVED                        = 'PRODUCT_INTERNATIONAL_APPROVED';

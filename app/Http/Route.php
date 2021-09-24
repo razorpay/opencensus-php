@@ -2669,6 +2669,9 @@ class Route
         'update_survey_tracker'                   => ['patch',   'survey/tracker/{id}',                                     'NPSSurveyController@editSurveyTracker'                        ],
         'consume_survey_typeform_webhook'         => ['post',    'survey/typeform/nps/webhook',                             'NPSSurveyController@consumeTypeformWebhook'                   ],
 
+         // Typeform survey response to datalake routes
+        'push_to_datalake'                        => ['post',    'survey/push_to_datalake',                                 'NPSSurveyController@pushTypeFormResponsesToDataLake'          ],
+
         // merchant risk alerts
         'merchant_risk_alerts_foh_workflow' => [
             'post',
@@ -3803,7 +3806,8 @@ class Route
         'refresh_payments_resolved_downtimes_cron',
         'refresh_payments_scheduled_downtimes_cron',
 
-        'feature_get_merchants_internal'
+        'feature_get_merchants_internal',
+        'push_to_datalake',
 ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -10037,6 +10041,7 @@ class Route
             'refresh_payments_ongoing_downtimes_cron',
             'refresh_payments_resolved_downtimes_cron',
             'refresh_payments_scheduled_downtimes_cron',
+            'push_to_datalake',
             'rbl_in_progress_lead_to_sales_force',
         ],
 

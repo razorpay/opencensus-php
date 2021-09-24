@@ -12,4 +12,10 @@ interface DataParserInterface
 {
     // contain the function to parse data
     public function parseWebhookData();
+
+    public function typeformQuestionToQuestionId();
+
+    public function parseTypeformCompleteResponses($formData);
+
+    public function parseTypeformIncompleteResponses($formData);
 }

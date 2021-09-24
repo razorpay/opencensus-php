@@ -79,6 +79,8 @@ class DetailServiceTest extends TestCase
     {
         $this->getAdminAndPublicAuthMock();
 
+        $this->getInternalAppMock();
+
         $this->getDriverAsMerchantMock();
 
         $this->getFindOrFailPublic();
@@ -484,6 +486,11 @@ class DetailServiceTest extends TestCase
         $this->basicAuthMock->shouldReceive('isAdminAuth')->andReturn(false);
 
         $this->basicAuthMock->shouldReceive('isPublicAuth')->andReturn(false);
+    }
+
+    public function getInternalAppMock()
+    {
+        $this->basicAuthMock->shouldReceive('isInternalApp')->andReturn(false);;
     }
 
     public function getMerchantDetailAttributeMock()

@@ -99,7 +99,7 @@ class UfhService
 
         $this->app             = $app;
 
-        if (($this->ba->isAdminAuth() === true))
+        if (($this->ba->isAdminAuth() === true) || ($this->ba->isInternalApp() === true))
         {
             $this->merchantId = $merchantId ?? $this->repo->merchant->getSharedAccount()->getId();
         }
