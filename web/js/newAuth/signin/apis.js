@@ -1,4 +1,4 @@
-import ajax from '../../merchant/utils/ajax';
+import ajax from 'common/utils/ajax';
 
 const ENDPOINTS = {
   ORG: '/org',
@@ -13,7 +13,6 @@ const OTP_AUTH_MODE = {
 export const fetchOrg = () => {
   return ajax({
     url: ENDPOINTS.ORG,
-    appendModeInURL: false,
   });
 };
 

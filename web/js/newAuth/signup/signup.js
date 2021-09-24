@@ -9,8 +9,24 @@ import { ContentContainer } from '../commonStyles';
 import { AbsoluteView, RelativeView, Container } from './styles';
 import Header from './components/Header';
 import InfoContainer from './components/InfoContainer';
-import { getURLQueryParams } from 'common/utils/rzp-utils';
 import { setCookie } from 'common/utils/cookies';
+
+export const getURLQueryParams = (url = document.location.hash) => {
+  const search = url.split('?')[1];
+  let params = {};
+
+  if (search) {
+    /* split using '&' as separator
+      and get the key value pairs for query params. */
+    params = search.split('&').reduce((prev, curr) => {
+      const [key, value] = curr.split('=');
+      prev[key] = value;
+      return prev;
+    }, {});
+  }
+
+  return params;
+};
 
 const SignUp = () => {
   const [oneTapInfo, setOneTapInfo] = useState({
