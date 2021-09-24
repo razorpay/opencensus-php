@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Illuminate\Database\Eloquent\Factory;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\Fixtures\Entity\Feature;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -150,6 +151,79 @@ class PaymentCreateDCCTest extends TestCase
 
         $this->assertEquals($dccMarkupAmount, $paymentEntity['dcc_markup_amount']);
     }
+
+    public function testPaymentValidateAndRedirectDCCS2S()
+    {
+        $payment = $this->payment;
+        $this->fixtures->merchant->addFeatures(['s2s','s2s_json']);
+        $this->fixtures->merchant->addFeatures(['enable_dcc_s2s']);
+
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
+        $this->assertArrayHasKey('next', $responseContent);
+        $this->assertArrayHasKey('action', $responseContent['next'][0]);
+        $this->assertArrayHasKey('url', $responseContent['next'][0]);
+
+        $redirectContent = $responseContent['next'][0];
+
+        $this->assertTrue($this->isRedirectToDCCInfoUrl($redirectContent['url']));
+
+        $id = getTextBetweenStrings($redirectContent['url'], '/payments/', '/dcc_info');
+
+        $this->redirectToDCCInfo = true;
+
+        $url = $this->getPaymentRedirectToDCCInfoUrl($id);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url'   => $url,
+            'method' => 'get',
+            'content' => [],
+        ];
+
+        $infoResponse = $this->makeRequestParent($request);
+        $this->ba->publicAuth();
+
+        $content = $infoResponse->getContent();
+        $this->redirectToUpdateAndAuthorize = true;
+
+        list($url, $method, $content) = $this->getFormDataFromResponse($content, 'http://localhost');
+
+        $firstRequest = [
+            'content'=>['currency_request_id'=>$content['currency_request_id'],'dcc_currency'=>$content['dcc_currency']],
+            'method'=>$method,
+            'url'=>$url
+        ];
+        $firstResponse=$this->sendRequest($firstRequest);
+
+        $paymentEntity = $this->getEntityById('payment', $id,true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals($paymentEntity['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals('USD', $paymentMeta['gateway_currency']);
+        $this->assertEquals(true, $paymentEntity['dcc']);
+        $this->assertEquals($paymentMeta['forex_rate'], $paymentEntity['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $paymentEntity['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $paymentEntity['dcc_mark_up_percent']);
+
+        $SecondRequest = [
+            'content'=>['currency_request_id'=>$content['currency_request_id'],'dcc_currency'=>$content['dcc_currency']],
+            'method'=>$method,
+            'url'=>$url
+        ];
+
+        try {
+            $SecondResponse=$this->sendRequest($SecondRequest);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestException::class);
+            $this->assertEquals("Duplicate request. This request has already been processed.", $e->getMessage());
+        }
+    }
+
 
     public function testPaymentCreateWithDCC()
     {

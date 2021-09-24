@@ -83,6 +83,7 @@ use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Gateway\Enach\Npci\Netbanking\Gateway as enachNpciGateway;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 use RZP\Models\Order as Order;
+use RZP\Models\Payment\PaymentMeta;
 
 trait Authorize
 {
@@ -3544,6 +3545,13 @@ trait Authorize
 
             $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
         }
+    }
+
+    public function checkDccMetaRecord($id): bool
+    {
+        $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($id);
+
+        return empty($paymentMeta);
     }
 
     protected function preProcessHdfcVasSurcharge(Payment\Entity $payment)
@@ -8806,6 +8814,21 @@ trait Authorize
         return null;
     }
 
+    public function ValidateAndProcessDccInput(Payment\Entity $payment, $input=[])
+    {
+        //checking for route as dcc is only processed in this redirect route for now
+        if (($this->route->getCurrentRouteName() === 'payment_update_and_redirect') and
+            (isset($input['dcc_currency']) === true) and
+            (isset($input['currency_request_id']) === true))
+        {
+            if ($this->checkDccMetaRecord($payment->getId()) === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS);
+            }
+            $this->preProcessDCCInputs($input, $payment);
+        }
+    }
+
     public function processRedirectToAuthorize(Payment\Entity $payment, string $trackId, $input=[])
     {
         $this->setPayment($payment);
@@ -8834,7 +8857,7 @@ trait Authorize
                 }
 
                 //DCC S2S Flow. Doing this inside mutex to avoid duplicate processing
-                $this->preProcessDCCInputs($input, $payment);
+                $this->ValidateAndProcessDccInput($payment,$input);
 
                 $key = $payment->getCacheRedirectInputKey();
 
