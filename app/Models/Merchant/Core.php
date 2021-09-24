@@ -1142,6 +1142,12 @@ class Core extends Base\Core
             $this->repo->saveOrFail($merchant);
         });
 
+        if (isset($riskAttributes[BulkActionConstants::TRIGGER_COMMUNICATION]) === true
+            and (int)$riskAttributes[BulkActionConstants::TRIGGER_COMMUNICATION] === 1)
+        {
+            (new MerchantActionNotification())->sendMerchantRiskActionNotifications($merchant, $action);
+        }
+
         $fundsHoldToggleActions = [
             Merchant\Action::HOLD_FUNDS,
             Merchant\Action::RELEASE_FUNDS,
@@ -1178,7 +1184,10 @@ class Core extends Base\Core
         }
 
         //need to remove notification if added through bulk update
-        (new MerchantActionNotification())->removeNotificationTag($merchant, $action);
+        if (isset($riskAttributes[BulkActionConstants::TRIGGER_COMMUNICATION]) === false)
+        {
+            (new MerchantActionNotification())->removeNotificationTag($merchant, $action);
+        }
 
         return $merchant;
     }

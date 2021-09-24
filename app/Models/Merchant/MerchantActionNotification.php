@@ -3,12 +3,16 @@
 namespace RZP\Models\Merchant;
 
 use App;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Base\RepositoryManager;
+use View;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Services\Stork;
+use RZP\Models\Dispute;
 use RZP\Trace\TraceCode;
+use RZP\lib\TemplateEngine;
+use RZP\Base\RepositoryManager;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
 
 class MerchantActionNotification
 {
@@ -32,6 +36,8 @@ class MerchantActionNotification
      */
     private $core;
 
+    private $freshdeskConfig;
+
     public function __construct()
     {
         $this->app   = App::getFacadeRoot();
@@ -39,6 +45,7 @@ class MerchantActionNotification
         $this->core  = new Core();
         $this->mode  = ($this->mode ?? $this->app['rzp.mode']) ?? Mode::LIVE;
         $this->trace = $this->app['trace'];
+        $this->freshdeskConfig = $this->app['config']->get('applications.freshdesk');
     }
 
     public function updateNotificationTag($merchantId, array $input)
@@ -147,6 +154,114 @@ class MerchantActionNotification
         }
 
         $this->trace->info(TraceCode::MERCHANT_RISK_ACTIONS_NOTIFICATIONS_CRON_END);
+    }
+
+    private function sendEmail(Merchant\Entity $merchant, $viewTemplate, $subject, $data)
+    {
+        try
+        {
+            $merchantEmail = $merchant->merchantDetail->getContactEmail();
+
+            $ccEmails = (new Dispute\Service)->getDefaultDisputeEmails($merchant->getId());
+
+            $mailSubject = (new TemplateEngine)->render($subject, $data);
+
+            $mailBody = View::make($viewTemplate, $data)->render();
+
+            $fdOutboundEmailRequest = [
+                'subject'         => $mailSubject,
+                'description'     => $mailBody,
+                'status'          => 6,
+                'type'            => 'Question',
+                'tags'            => ['bulk_workflow_email'],
+                'priority'        => 1,
+                'email'           => $merchantEmail,
+                'group_id'        => (int) $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                'email_config_id' => (int) $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
+                'custom_fields'  => [
+                    'cf_ticket_queue' => 'Merchant',
+                    'cf_category'     => 'Risk Report_Merchant',
+                    'cf_subcategory'  => Constants::FD_SUB_CATEGORY_FUNDS_ON_HOLD,
+                    'cf_product'      => 'Payment Gateway',
+                ],
+            ];
+
+            if (empty($ccEmails) === false)
+            {
+                $fdOutboundEmailRequest['cc_emails'] = $ccEmails;
+            }
+
+            $response = $this->app['freshdesk_client']->sendOutboundEmail(
+                $fdOutboundEmailRequest, FreshdeskConstants::URLIND);
+
+            $fdTicketId = $response['id'] ?? null;
+
+            $this->app['trace']->info(
+                TraceCode::MERCHANT_RISK_ACTIONS_NOTIFICATIONS_EMAIL_SENT,
+                [
+                    'merchant_id'        => $merchant->getId(),
+                ]);
+
+            return $fdTicketId;
+        }
+        catch (\Throwable $e)
+        {
+            $this->app['trace']->traceException($e,
+                                                Trace::CRITICAL,
+                                                TraceCode::MERCHANT_RISK_ACTIONS_NOTIFICATIONS_EMAIL_FAILED,
+                                                [
+                                                    'merchant_id'        => $merchant->getId(),
+                                                ]
+            );
+        }
+    }
+
+    public function sendMerchantRiskActionNotifications(Entity $merchant, String $action)
+    {
+        try
+        {
+
+            $merchantId = $merchant->getId();
+
+            $merchantDetail = $merchant->merchantDetail;
+
+            $this->app['trace']->info(
+                TraceCode::MERCHANT_RISK_ACTIONS_SEND_NOTIFICATIONS,
+                [
+                    'merchantId' => $merchantId,
+                    'action'     => $action,
+                ]
+            );
+
+            $params = [
+                'merchant_id'   => $merchantId,
+                'business_name' => $merchantDetail->getBusinessName(),
+                'merchant_name' => $merchant->getName(),
+                'merchantName'  => $merchant->getName()
+            ];
+
+            $templates = Constants::MERCHANT_RISK_ACTIONS_TEMPLATE_MAP[$action];
+
+            $this->sendEmail($merchant, $templates[Constants::EMAIL_TEMPLATE], $templates[Constants::EMAIL_SUBJECT], $params);
+
+            $this->sendSms($merchant, $templates[Constants::SMS_TEMPLATE], $params);
+
+            $this->sendWhatsappMessage($merchant, $templates[Constants::WHATSAPP_TEMPLATE_NAME],
+                                       $templates[Constants::WHATSAPP_TEMPLATE], $params);
+
+            $this->sendDashboardNotification($merchant, $templates[Constants::DASHBOARD_TEMPLATE_TAG]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::MERCHANT_RISK_ACTIONS_SEND_NOTIFICATIONS_FAILED,
+                [
+                    'merchantId' => $merchantId,
+                    'action'     => $action,
+                ]);
+        }
     }
 
     public function sendMerchantActionNotifications(Entity $merchant, String $cronTag)

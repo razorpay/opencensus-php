@@ -537,6 +537,8 @@ final class Constants
 
     // merchant risk actions communication
     const SMS_TEMPLATE           = 'sms_template';
+    const EMAIL_TEMPLATE         = 'email_template';
+    const EMAIL_SUBJECT          = 'email_subject';
     const SMS_SOURCE             = 'api.bulk.risk.actions';
     const WHATSAPP_TEMPLATE_NAME = 'whatsapp_template_name';
     const WHATSAPP_TEMPLATE      = 'whatsapp_template';
@@ -554,6 +556,8 @@ final class Constants
     const FOH_WHATSAPP_TEMPLATE_NAME = 'whatsapp.merchant_risk_actions.funds_on_hold';
     const FOH_WHATSAPP_TEMPLATE      = 'Hi {merchantName}, we regret to inform you that your settlements are under review due to risk alert for non-compliance with regulatory guidelines as set by our partner banks. Please check your email ID registered with Razorpay and help us with clarification to re-enable settlements';
     const FOH_DASHBOARD_TEMPLATE_TAG = 'mra_foh';
+    const FOH_EMAIL_TEMPLATE         = 'emails.merchant.risk.generic.funds_on_hold.confirmation';
+    const FOH_EMAIL_SUBJECT          = 'Razorpay Account Review: {merchant_name} | {merchant_id} | Funds under Review';
 
     //Suspend Notification templates
     const SUSPEND_ACCOUNT_SMS_TEMPLATE           = 'sms.merchant_risk_actions.suspend';
@@ -562,6 +566,8 @@ final class Constants
 
     //Disable Live Notification templates
     const DISABLE_LIVE_SMS_TEMPLATE           = 'sms.merchant_risk_actions.disable_live';
+    const DISABLE_LIVE_EMAIL_TEMPLATE         = 'emails.merchant.risk.generic.disable_live.confirmation';
+    const DISABLE_LIVE_EMAIL_SUBJECT          = 'Razorpay Account disabled: {merchant_name} | {merchant_id}';
     const DISABLE_LIVE_WHATSAPP_TEMPLATE_NAME = 'whatsapp.merchant_risk_actions.disable_live';
     const DISABLE_LIVE_WHATSAPP_TEMPLATE      = 'We have disabled your account as we observed suspicious account activity on your account - {merchant_id} in the name of M/s. {business_name} held with Razorpay.  Please check your registered email for an email with subject Razorpay Account disabled: {merchant_name} | {merchant_id} for more details';
     const DISABLE_LIVE_DASHBOARD_TEMPLATE_TAG = 'mra_disabled';
@@ -583,6 +589,36 @@ final class Constants
         Action::LIVE_ENABLE   => self::DISABLE_LIVE_DASHBOARD_TEMPLATE_TAG,
     ];
 
+    const MERCHANT_RISK_ACTIONS_TEMPLATE_MAP = [
+        Action::SUSPEND => [
+            self::SMS_TEMPLATE              => self::SUSPEND_ACCOUNT_SMS_TEMPLATE,
+            self::EMAIL_TEMPLATE            => self::DISABLE_LIVE_EMAIL_TEMPLATE,
+            self::EMAIL_SUBJECT             => self::DISABLE_LIVE_EMAIL_SUBJECT,
+            self::WHATSAPP_TEMPLATE_NAME    => self::SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE_NAME,
+            self::WHATSAPP_TEMPLATE         => self::SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE,
+            self::DASHBOARD_TEMPLATE_TAG    => '',
+        ],
+
+        Action::HOLD_FUNDS => [
+            self::SMS_TEMPLATE               => self::FOH_SMS_TEMPLATE,
+            self::EMAIL_TEMPLATE             => self::FOH_EMAIL_TEMPLATE,
+            self::EMAIL_SUBJECT              => self::FOH_EMAIL_SUBJECT,
+            self::WHATSAPP_TEMPLATE_NAME     => self::FOH_WHATSAPP_TEMPLATE_NAME,
+            self::WHATSAPP_TEMPLATE          => self::FOH_WHATSAPP_TEMPLATE,
+            self::DASHBOARD_TEMPLATE_TAG     => self::FOH_DASHBOARD_TEMPLATE_TAG,
+        ],
+
+        Action::LIVE_DISABLE => [
+            self::SMS_TEMPLATE               => self::DISABLE_LIVE_SMS_TEMPLATE,
+            self::EMAIL_TEMPLATE             => self::DISABLE_LIVE_EMAIL_TEMPLATE,
+            self::EMAIL_SUBJECT              => self::DISABLE_LIVE_EMAIL_SUBJECT,
+            self::WHATSAPP_TEMPLATE_NAME     => self::DISABLE_LIVE_WHATSAPP_TEMPLATE_NAME,
+            self::WHATSAPP_TEMPLATE          => self::DISABLE_LIVE_WHATSAPP_TEMPLATE,
+            self::DASHBOARD_TEMPLATE_TAG     => self::DISABLE_LIVE_DASHBOARD_TEMPLATE_TAG,
+        ],
+    ];
+
+    // similar constants kept for backward compatibility. Cron to be removed later after 100% feature rollout
     const MERCHANT_RISK_ACTIONS_CRON_TAG_TEMPLATE_MAP = [
         self::MERCHANT_RISK_SUSPEND_CRON_TAG => [
             self::SMS_TEMPLATE           => self::SUSPEND_ACCOUNT_SMS_TEMPLATE,
@@ -605,6 +641,8 @@ final class Constants
            self::DASHBOARD_TEMPLATE_TAG => self::DISABLE_LIVE_DASHBOARD_TEMPLATE_TAG,
         ],
     ];
+
+    const FD_SUB_CATEGORY_FUNDS_ON_HOLD      = 'Funds on hold';
 
     const BULK_RISK_ACTIONS = [
         Action::SUSPEND,
