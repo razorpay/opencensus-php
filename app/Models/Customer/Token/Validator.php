@@ -64,6 +64,7 @@ class Validator extends Base\Validator
 
     protected static $createNetworkTokenRules = [
         Entity::CARD                 => 'required|array',
+        Entity::CUSTOMER_ID          => 'sometimes|public_id',
         Entity::METHOD               => 'required|in:card',
         Entity::AUTHENTICATION_DATA  => 'sometimes',
     ];

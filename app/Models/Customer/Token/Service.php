@@ -533,12 +533,16 @@ class Service extends Base\Service
     }
     public function generateMockResponseForCryptoGram($token)
     {
+        $cardToken = $token->card->getVaultToken();
+
+        $cardNumber = (new Card\CardVault)->getCardNumber($cardToken);
+
         $response['provider'] = [
                 'type'  => 'network',
                 'name'  => $token->card->getNetwork(),
                 'data'  => [
-                    'token_reference_number' => $token->card->getIin() . (str_shuffle('81500100002')),
-                    'card_reference_number'  => ($token->card->getNetwork() === 'Visa') ? '' . rand(11, 99) : str_shuffle('11223344556677889900112233445566778899'),
+                    'token_number'           => $token->card->getIin() .  strrev(substr($cardNumber, 7, strlen($cardNumber))),
+                    'cryptogram_value'       => str_shuffle('1122334AWEQOELASRESAasdblqwer83446778899'),
                     'expiry_month'           => $token->card->getExpiryMonth(),
                     'expiry_year'            => $token->card->getExpiryYear(),
             ]];
@@ -558,6 +562,11 @@ class Service extends Base\Service
         foreach (Card\Entity::$networkTokenCardUnsetAttributes as $attribute)
         {
             unset($response['card'][$attribute]);
+        }
+
+        if (empty($token->getCustomerId()) === false)
+        {
+            $response[Token\Entity::CUSTOMER_ID] = $token->customer->getPublicId();
         }
 
         $response['card']['token_iin']       = $token->card->getIin();

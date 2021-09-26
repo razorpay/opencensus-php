@@ -1121,12 +1121,20 @@ class Core extends Base\Core
 
     public function createNetworkToken($input)
     {
+        $customer = null;
+
         (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN, $input);
 
         if (empty($input[Token\Entity::AUTHENTICATION_DATA]) === false)
         {
             (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA, $input[Token\Entity::AUTHENTICATION_DATA]);
         }
+
+        if (empty($input[Token\Entity::CUSTOMER_ID]) === false)
+        {
+            $customer = $this->repo->customer->findOrFailByPublicIdAndMerchant($input[Token\Entity::CUSTOMER_ID], $this->merchant);
+        }
+
 
         $input['card'][Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
 
@@ -1150,6 +1158,11 @@ class Core extends Base\Core
         $token->setExpiredAt($card->getExpiryTimestamp());
 
         $token->merchant()->associate($this->merchant);
+
+        if (empty($customer) === false)
+        {
+            $token->customer()->associate($customer);
+        }
 
         $existingToken = $this->validateExistingNetworkToken($token);
 

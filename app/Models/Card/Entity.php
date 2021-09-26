@@ -204,8 +204,9 @@ class Entity extends Base\PublicEntity
     public static $networkTokenCardUnsetAttributes = [
         self::EXPIRY_MONTH,
         self::EXPIRY_YEAR,
-        self::SUBTYPE,
         self::FLOWS,
+        self::ENTITY,
+        self::NAME,
     ];
 
     public function buildCpsCard(array $input = [], string $operation = 'create')

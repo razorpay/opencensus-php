@@ -63,6 +63,15 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findOrFailByPublicIdAndMerchant(string $id, Merchant\Entity $merchant)
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        return $this->newQuery()
+                    ->merchantId($merchant->getId())
+                    ->find($id);
+    }
+
     public function fetchByMerchantId($merchantId)
     {
         return $this->newQuery()

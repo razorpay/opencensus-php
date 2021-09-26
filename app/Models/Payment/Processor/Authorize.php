@@ -4495,6 +4495,22 @@ trait Authorize
                 ]);
         }
 
+        if (($this->app['rzp.mode'] === 'test') and
+            (empty($input[Payment\Entity::TOKEN]) === false) and
+            ($payment->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION) === true))
+        {
+            $token = $this->repo->token->getByPublicIdAndMerchant($input[Payment\Entity::TOKEN], $this->merchant);
+
+            if ($token != null)
+            {
+                $payment->localToken()->associate($token);
+
+                $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input);
+
+                return;
+            }
+        }
+
         // No card saving, normal simple flow
         if ($payment->isMethodCardOrEmi() and
             ($payment->isGooglePayCard() === false))
@@ -4507,7 +4523,7 @@ trait Authorize
 
             // dummy code to test network tokenization for merchants in test mode
             if (($this->app['rzp.mode'] === 'test') and
-                ($payment->getSave() === true))
+                ($payment->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION) === true))
             {
                 $payment->setSave(true);
 
@@ -4518,7 +4534,7 @@ trait Authorize
 
                 $token = (new Token\Core)->createNetworkToken($createInput);
 
-                $this->payment->localToken()->associate($token);
+                $payment->localToken()->associate($token);
             }
             else
             {

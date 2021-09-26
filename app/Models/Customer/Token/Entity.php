@@ -287,6 +287,7 @@ class Entity extends Base\PublicEntity
         self::MRN,
         self::DCC_ENABLED,
         self::BILLING_ADDRESS,
+        self::USED_AT,
     ];
 
     public function customer()

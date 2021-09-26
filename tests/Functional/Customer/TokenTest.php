@@ -34,6 +34,8 @@ class TokenTest extends TestCase
 
         $this->assertNotNull($response['service_providers']);
 
+        $this->assertArrayNotHasKey('customer_id', $response);
+
         $response2 = $this->startTest();
 
         $this->assertEquals($response['id'], $response2['id']);
@@ -62,6 +64,28 @@ class TokenTest extends TestCase
 
         $this->assertEquals('2024', $fetchResponse['expiry_year']);
     }
+
+     public function testCreateTokenWithCustmerId()
+    {
+        $this->ba->privateAuth();
+
+        $createPayload = $this->testData['testCreateToken'];
+
+        $createPayload['request']['content']['customer_id'] = 'cust_100000customer';
+
+        $response = $this->startTest($createPayload);
+
+        $this->assertNotNull($response['customer_id']);
+
+        $this->assertEquals('card', $response['method']);
+
+        $this->assertEquals('12', $response['expiry_month']);
+
+        $this->assertEquals('2023', $response['expiry_year']);
+
+        $this->assertNotNull($response['service_providers']);
+    }
+
 
     public function testFetchToken()
     {
@@ -99,6 +123,10 @@ class TokenTest extends TestCase
         $fetchPayload['request']['content'] = ['id' => $response['id']];
 
         $response = $this->startTest($fetchPayload);
+
+        $this->assertNotNull($response['provider']['data']['token_number']);
+
+        $this->assertNotNull($response['provider']['data']['cryptogram_value']);
 
         $this->assertEquals('12', $response['provider']['data']['expiry_month']);
 
