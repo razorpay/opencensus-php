@@ -6,10 +6,13 @@ import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 export default function SocialShareGroup({ referralUrl, tracking, product, partnerID }) {
-  const trackUserEvent = (eventName) => {
-    tracking.trackEvent(window.rzpQ.onbr().clicked(eventName), {
-      partnerID,
-    });
+  const trackUserEvent = (eventName, properties = {}) => {
+    tracking.trackEvent(
+      window.rzpQ.onbr().clicked(eventName, {
+        partnerID,
+        ...properties,
+      }),
+    );
   };
 
   const shareReferralOn = (platform) => {
@@ -22,9 +25,17 @@ export default function SocialShareGroup({ referralUrl, tracking, product, partn
     });
     if (product === PRODUCT_TYPE.X) {
       trackUserEvent('partnerships.submerchant.referral.x.social');
+      trackUserEvent('partnerships.submerchant.referral.product_group.social', {
+        productGroup: 'X',
+        socialMedia: platform,
+      });
     }
     if (product === PRODUCT_TYPE.PG) {
       trackUserEvent('partnerships.submerchant.referral.social');
+      trackUserEvent('partnerships.submerchant.referral.product_group.social', {
+        productGroup: 'Payments',
+        socialMedia: platform,
+      });
     }
   };
 
@@ -36,9 +47,15 @@ export default function SocialShareGroup({ referralUrl, tracking, product, partn
       });
       trackReferral();
       trackUserEvent('partnerships.submerchant.referral.copy');
+      trackUserEvent('partnerships.submerchant.referral.product_group.copy', {
+        productGroup: 'Payments',
+      });
     }
     if (product === PRODUCT_TYPE.X) {
       trackUserEvent('partnerships.submerchant.referral.x.copy');
+      trackUserEvent('partnerships.submerchant.referral.product_group.copy', {
+        productGroup: 'X',
+      });
     }
   };
 

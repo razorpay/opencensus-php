@@ -41,10 +41,9 @@ const gaEvents = setGaTrack('Dashboard - Partner Submerchant - BU');
 })
 @RTracking(() => window.rzpQ.component('AddMerchant'))
 export default class AddMerchant extends Component {
-
   constructor(props) {
     super(props);
-    let state = {
+    const state = {
       file_id: '',
       bulkMode: false,
       bulkContactsCount: 0,
@@ -53,11 +52,11 @@ export default class AddMerchant extends Component {
       merchantEmail: '',
       merchantName: '',
       referralData: '',
-      isFormValid: false
+      isFormValid: false,
     };
-    if(!props.user.isPartnershipForXEnabled) {
+    if (!props.user.isPartnershipForXEnabled) {
       state.step = 2;
-      state.merchantType = PRODUCT_TYPE.PG
+      state.merchantType = PRODUCT_TYPE.PG;
     }
     this.state = state;
   }
@@ -82,7 +81,7 @@ export default class AddMerchant extends Component {
   };
 
   fetchReferralURL = () => {
-    if(this.state.referralData === '') {
+    if (this.state.referralData === '') {
       merchantFetch({
         url: 'merchant/referral',
         mode: 'live',
@@ -96,9 +95,12 @@ export default class AddMerchant extends Component {
         })
         .catch(() => {});
     }
-  }
+  };
 
   addNewMerchant = (params) => {
+    this.trackUserEvent('partnerships.submerchant.add.product_group.single.action', {
+      action: 'Send Invite',
+    });
     const { user } = this.props;
     this.fetchReferralURL();
     return this.props
@@ -121,6 +123,10 @@ export default class AddMerchant extends Component {
         trackAddNewMerchantEvents('Submit Form');
       })
       .catch(({ errors }) => {
+        this.trackUserEvent('partnerships.submerchant.add.product_group.single.action', {
+          action: 'Send Invite',
+          error: errors && errors[0],
+        });
         this.props.tracking.trackEvent(
           window.rzpQ.onbr().interaction('partnerships.submerchant.add.error', {
             partnerID: user.id,
@@ -150,7 +156,14 @@ export default class AddMerchant extends Component {
           product: this.state.merchantType,
         },
       })
-      .then((response) => {
+      .then((_response) => {
+        this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.upload', {
+          Action: 'Invite',
+          success: this.state.bulkContactsCount,
+        });
+        this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.invite', {
+          success: this.state.bulkContactsCount,
+        });
         this.props.showNotification({
           type: 'success',
           message:
@@ -159,6 +172,13 @@ export default class AddMerchant extends Component {
         this.props.closeModal();
       })
       .catch((error) => {
+        this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.upload', {
+          Action: 'Invite',
+          error: error && error[0],
+        });
+        this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.invite', {
+          error: error && error[0],
+        });
         this.props.showNotification({
           type: 'error',
           message: 'Failed to invite.',
@@ -166,7 +186,7 @@ export default class AddMerchant extends Component {
       });
   };
 
-  onValidation = (response, name) => {
+  onValidation = (response, _name) => {
     const { user } = this.props;
     if (response && response.file_id) {
       this.setState({
@@ -181,6 +201,9 @@ export default class AddMerchant extends Component {
       );
     } else {
       this.setState({ file_id: '' });
+      this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.upload', {
+        Action: 'Cancel the uploaded file',
+      });
     }
   };
 
@@ -197,6 +220,7 @@ export default class AddMerchant extends Component {
   handleModeChange = (mode) => {
     const { user } = this.props;
     if (mode === 'bulk') {
+      this.trackUserEvent('partnerships.submerchant.add.product_group.multiple');
       this.props.tracking.trackEvent(
         window.rzpQ.onbr().interaction('partnerships.submerchant.add.multiple', {
           partnerID: user.id,
@@ -208,79 +232,181 @@ export default class AddMerchant extends Component {
     }
   };
 
+  getCurrentProduct = () => {
+    const { merchantType } = this.state;
+    if (merchantType === PRODUCT_TYPE.PG) {
+      return 'Payments';
+    }
+    if (merchantType === PRODUCT_TYPE.X) {
+      return 'X';
+    }
+    return '';
+  };
+
+  trackUserEvent = (eventName, properties = {}) => {
+    const { user, tracking } = this.props;
+    const productGroup = this.getCurrentProduct();
+    tracking.trackEvent(
+      window.rzpQ.onbr().interaction(eventName, {
+        partnerID: user.id,
+        productGroup,
+        ...properties,
+      }),
+    );
+  };
+
+  eventAddNewMerchant = () => {
+    this.trackUserEvent('partnerships.submerchant.add.product_group.single');
+  };
+
   handleNextClick = () => {
-    this.setState({ step: this.state.step + 1 });
+    this.setState((prevState) => ({ step: prevState.step + 1 }));
+
+    const { step } = this.state;
+    if (step === 1) {
+      this.trackUserEvent('partnerships.submerchant.add.product_group.next');
+      this.eventAddNewMerchant();
+    }
   };
 
   handleBackClick = () => {
-    this.setState({ step: this.state.step - 1 });
+    this.setState((prevState) => ({ step: prevState.step - 1 }));
   };
 
   handleFormChange = (e) => {
-    let {merchantName, merchantEmail} = this.state;
-    const {name, value} = e.target;
-    switch(name) {
+    let { merchantName, merchantEmail } = this.state;
+    const { name: FieldName, value } = e.target;
+    switch (FieldName) {
       case 'name':
         this.setState({
-          merchantName: value
+          merchantName: value,
         });
         merchantName = value;
         break;
       case 'email':
         this.setState({
-          merchantEmail: value
+          merchantEmail: value,
         });
         merchantEmail = value;
+        break;
+      default:
+        console.warn('incorrect field name');
     }
     let isEmailValid;
-    if(isEmailMandatory(this.props.user)) {
-      isEmailValid = merchantEmail && isEmail(merchantEmail)
+    if (isEmailMandatory(this.props.user)) {
+      isEmailValid = merchantEmail && isEmail(merchantEmail);
     } else {
       isEmailValid = true;
     }
     const isFormValid = merchantName && isEmailValid;
     this.setState({
-      isFormValid
-    })
-  }
+      isFormValid,
+    });
+  };
+
+  handleFormFocus = (e) => {
+    const { name } = e.target;
+    if (this.state.step === 2) {
+      this.trackUserEvent('partnerships.submerchant.add.product_group.single.action', {
+        action: name,
+      });
+    }
+  };
+
+  handleFormFocus = (e) => {
+    const { name } = e.target;
+    this.trackUserEvent('partnerships.submerchant.add.product_group.single.action', {
+      action: name,
+    });
+  };
 
   componentDidMount() {
     trackAddNewMerchantEvents('Open Form');
+    if (!this.props.user.isPartnershipForXEnabled) {
+      this.eventAddNewMerchant();
+    }
   }
+
+  sampleFileDownloadAnalytics = () => {
+    this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.action', {
+      action: 'Download Sample file',
+    });
+  };
+
+  clickToUploadAnalytics = () => {
+    this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.action', {
+      action: 'Click to upload',
+    });
+  };
+
+  modalCloseClick = () => {
+    this.props.closeModal();
+    const { step, bulkMode } = this.state;
+    if (step === 1) {
+      this.trackUserEvent('partnerships.submerchant.add.product_group', {
+        action: 'cancel',
+      });
+    }
+    if (step === 2) {
+      if (!bulkMode) {
+        // Add a Account Tab
+        this.trackUserEvent('partnerships.submerchant.add.product_group.single.action', {
+          action: 'cancel',
+        });
+      } else {
+        // Add Multiple Account Tab
+        this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.action', {
+          action: 'cancel',
+        });
+      }
+    }
+    if (step === 3) {
+      // merchant added successfully
+      this.trackUserEvent('partnerships.submerchant.add.product_group.social.cancel');
+    }
+  };
 
   render() {
     const { handleSubmit, user } = this.props;
     const emailMandatory = isEmailMandatory(user);
     const emailValidators = emailMandatory ? [required(), email()] : [];
-    const referralUrl = this.state.referralData ? this.state.referralData[this.state.merchantType]?.url : '';
+    const referralUrl = this.state.referralData
+      ? this.state.referralData[this.state.merchantType]?.url
+      : '';
 
     return (
       <div class="partner-submerchant-modal">
-        <ModalHeader title={this.getModalHeaderText()} onCloseClick={this.props.closeModal} />
+        <ModalHeader title={this.getModalHeaderText()} onCloseClick={this.modalCloseClick} />
         <div class="modal-body">
           <ShowWhen additionalCondition={() => this.state.step === 1}>
             <div className="step">
               <SelectBox
-                label={'Razorpay Payments'}
-                description={
-                  'Refer merchants to Razorpay Payment gateway and other products to receive payments'
-                }
-                onClick={() => this.setState({ merchantType: PRODUCT_TYPE.PG })}
+                label="Razorpay Payments"
+                description="Refer merchants to Razorpay Payment gateway and other products to receive payments"
+                onClick={() => {
+                  this.setState({ merchantType: PRODUCT_TYPE.PG });
+                  this.trackUserEvent('partnerships.submerchant.add.product_group', {
+                    productGroup: 'Payments',
+                  });
+                }}
                 checked={this.state.merchantType === PRODUCT_TYPE.PG}
               />
               <SelectBox
-                label={'RazorpayX'}
-                description={
-                  'Refer merchants to RazorpayX products like Current account to process payouts'
-                }
-                onClick={() => this.setState({ merchantType: PRODUCT_TYPE.X })}
+                label="RazorpayX"
+                description="Refer merchants to RazorpayX products like Current account to process payouts"
+                onClick={() => {
+                  this.setState({ merchantType: PRODUCT_TYPE.X });
+                  this.trackUserEvent('partnerships.submerchant.add.product_group', {
+                    productGroup: 'X',
+                  });
+                }}
                 checked={this.state.merchantType === PRODUCT_TYPE.X}
               />
               <div style={{ textAlign: 'right', marginTop: '25px' }}>
                 <Button.Primary
                   onClick={this.handleNextClick}
                   disabled={this.state.merchantType === ''}
-                  iconAfter={'arrow-forward'}
+                  iconAfter="arrow-forward"
                 >
                   Next
                 </Button.Primary>
@@ -304,16 +430,18 @@ export default class AddMerchant extends Component {
               <ShowWhen additionalCondition={() => this.state.bulkMode}>
                 <div>
                   <BatchValidate
+                    sampleFileDownloadAnalytics={this.sampleFileDownloadAnalytics}
+                    clickToUploadAnalytics={this.clickToUploadAnalytics}
                     onValidation={this.onValidation}
-                    batchType={'partner_submerchant_invite'}
-                    batchTypeText={'text'}
+                    batchType="partner_submerchant_invite"
+                    batchTypeText="text"
                     sampleUrl={this.sampleUrl}
                     gaEvents={gaEvents}
                     validateBatch={this.props.validateBatch}
                     maxRows={500}
                     maxFileSize={52428800}
                     onFileRemove={this.onValidation}
-                    batchClass={'batch-upload-modal'}
+                    batchClass="batch-upload-modal"
                     onValidationFail={this.onValidationFail}
                   />
                   {this.state.file_id ? (
@@ -330,7 +458,7 @@ export default class AddMerchant extends Component {
                       <div style={{ textAlign: 'right' }}>
                         <AsyncButton
                           type="button"
-                          class={`btn btn-primary`}
+                          class="btn btn-primary"
                           text={`Invite ${this.state.bulkContactsCount} contacts`}
                           pendingText={`Inviting ${this.state.bulkContactsCount} contacts...`}
                           onClick={this.handleBatchCreate}
@@ -353,6 +481,7 @@ export default class AddMerchant extends Component {
                       autoFocus
                       validate={required()}
                       onChange={this.handleFormChange}
+                      onFocus={this.handleFormFocus}
                     />
                   </div>
 
@@ -366,6 +495,7 @@ export default class AddMerchant extends Component {
                       placeholder={emailMandatory ? '' : 'Optional'}
                       class="form-control"
                       onChange={this.handleFormChange}
+                      onFocus={this.handleFormFocus}
                     />
                     <span class="help-block">
                       The Razorpay sign-up link will be sent to this email.
@@ -380,7 +510,9 @@ export default class AddMerchant extends Component {
                   </div>
 
                   <div class="Modal__Actions clearfix" style={{ textAlign: 'right' }}>
-                    <ShowWhen additionalCondition={(user) => user.isPartnershipForXEnabled}>
+                    <ShowWhen
+                      additionalCondition={(currentUser) => currentUser.isPartnershipForXEnabled}
+                    >
                       <Button.Transparent
                         onClick={this.handleBackClick}
                         style={{ marginRight: '14px' }}

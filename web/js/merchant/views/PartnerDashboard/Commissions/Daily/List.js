@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import moment from 'moment';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchAggregate } from 'merchant/reducers/commission';
@@ -15,20 +16,20 @@ import ListFilter from './ListFilter';
 
 const volume = {
   title: 'Transaction Amount',
-  value: item => <Amount value={item.transactionVolume} currency={'INR'} />,
+  value: (item) => <Amount value={item.transactionVolume} currency="INR" />,
 };
 
 const activeMerchants = {
   title: 'No. of Active Accounts',
-  value: item => item.activeMerchants,
+  value: (item) => item.activeMerchants,
 };
 
 const transactions = {
   title: 'No. of Transactions',
-  value: item => item.transactions,
+  value: (item) => item.transactions,
 };
 
-@connect(state => ({ ...state.commissionsAggregate }), {
+@connect((state) => ({ ...state.commissionsAggregate }), {
   fetchAggregate,
   openModal,
   closeModal,
@@ -39,10 +40,8 @@ export default class CommissionsDailyList extends ListContainer {
 
     this.dateColumn = {
       title: 'Date',
-      value: item => (
-        <Link
-          to={`/partners/${props.dailyEntityRoute}/daily/${item.timestamp}`}
-        >
+      value: (item) => (
+        <Link to={`/partners/${props.dailyEntityRoute}/daily/${item.timestamp}`}>
           {moment(item.timestamp, 'X').format('ll')}
         </Link>
       ),
@@ -56,13 +55,8 @@ export default class CommissionsDailyList extends ListContainer {
   fetchEntityList(params) {
     if (!params.from && !params.to) {
       const currDate = moment();
-      (params.to = Number(currDate.format('X'))),
-        (params.from = Number(
-          currDate
-            .startOf('day')
-            .subtract(30, 'days')
-            .format('X')
-        ));
+      params.to = Number(currDate.format('X'));
+      params.from = Number(currDate.startOf('day').subtract(30, 'days').format('X'));
     }
     params.queryType = this.props.queryType;
     return this.props.fetchAggregate(without(params, ['skip', 'count']));
@@ -70,7 +64,7 @@ export default class CommissionsDailyList extends ListContainer {
 
   handleAddMerchant = () => {
     this.props.openModal({
-      size: 'small',
+      size: 'med-large',
       component: <AddMerchant closeModal={this.props.closeModal} />,
     });
   };
@@ -79,8 +73,8 @@ export default class CommissionsDailyList extends ListContainer {
     <div class="empty-table-message">
       <h3>Unlock your earnings view</h3>
       <p class="m-t">
-        Add more accounts (>{this.props.items.limit}) to unlock the details view
-        of processed earnings
+        Add more accounts (>{this.props.items.limit}) to unlock the details view of processed
+        earnings
       </p>
       <p>
         <button class="btn btn-link" onClick={this.handleAddMerchant}>
@@ -103,9 +97,7 @@ export default class CommissionsDailyList extends ListContainer {
             transactions,
           ]}
           title="Data"
-          EmptyComponent={
-            this.props.items.limit && this.renderLessThanRequiredMerchants
-          }
+          EmptyComponent={this.props.items.limit && this.renderLessThanRequiredMerchants}
           {...this.props}
         />
       </div>

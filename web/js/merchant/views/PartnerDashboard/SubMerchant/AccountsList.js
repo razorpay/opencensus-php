@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import QueryString from 'query-string';
 
 import ListContainer from 'merchant/containers/ListContainer';
 
@@ -12,7 +13,7 @@ import { downloadSubmerchants } from 'merchant/reducers/submerchant';
 import RTracking from 'react-tracking';
 
 import DataTable from 'common/ui/Table/DataTable';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import { getTime } from 'common/ui/item';
@@ -38,20 +39,6 @@ import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import Loader from 'common/ui/Loader';
 
-const name = (isPurePlatform) => ({
-  ...submerchantColumn,
-  ...(isPurePlatform && {
-    value: (item) => (
-      <Link to={`/partners/submerchants/${item.id}/${item.application.id}`}>{item.name}</Link>
-    ),
-  }),
-});
-
-const xName = () => ({
-  ...submerchantColumn,
-  value: (item) => <Link to={`/partners/submerchants/x/${item.id}`}>{item.name}</Link>,
-});
-
 const email = {
   title: 'Registered Email',
   value: emailColumn.value,
@@ -69,9 +56,9 @@ const activationStatus = {
       <span>
         <i class="i i-info-circle" />
         &nbsp;
-        <Popover align="top" theme="dark">
+        <PopoverComponent align="top" theme="dark">
           <PopoverBody>Current status of merchant's activation request</PopoverBody>
-        </Popover>
+        </PopoverComponent>
       </span>
     </Fragment>
   ),
@@ -83,12 +70,12 @@ const activationStatus = {
           <>
             &nbsp;
             <i class="i i-info-circle" />
-            <Popover align="right" theme="dark">
+            <PopoverComponent align="right" theme="dark">
               <PopoverBody>
                 The merchant can accept live payments but settlements will be on hold until KYC
                 completion.
               </PopoverBody>
-            </Popover>
+            </PopoverComponent>
           </>
         )}
       </>
@@ -104,11 +91,11 @@ const settlementStatus = {
       <span>
         <i class="i i-info-circle" />
         &nbsp;
-        <Popover align="top" theme="dark">
+        <PopoverComponent align="top" theme="dark">
           <PopoverBody>
             Current status of whether the merchant can receive the settlement
           </PopoverBody>
-        </Popover>
+        </PopoverComponent>
       </span>
     </Fragment>
   ),
@@ -132,9 +119,9 @@ const xVirtualAccountStatus = {
       <span>
         <i class="i i-info-circle" />
         &nbsp;
-        <Popover align="top" theme="dark">
+        <PopoverComponent align="top" theme="dark">
           <PopoverBody>Current status of merchant's virtual account</PopoverBody>
-        </Popover>
+        </PopoverComponent>
       </span>
     </Fragment>
   ),
@@ -156,9 +143,9 @@ const xCurrentAccountStatus = {
       <span>
         <i class="i i-info-circle" />
         &nbsp;
-        <Popover align="top" theme="dark">
+        <PopoverComponent align="top" theme="dark">
           <PopoverBody>Current status of merchant's current account</PopoverBody>
-        </Popover>
+        </PopoverComponent>
       </span>
     </Fragment>
   ),
@@ -199,17 +186,95 @@ const appId = {
 class ProductSubMerchantsList extends ListContainer {
   state = {};
 
-  constructor(props) {
-    super(props);
-  }
+  searchAnalytics = () => {
+    const searchQuery = QueryString.parse(this.props.location.search);
+    const { count, email: emailId, id: accountId, name: accountName } = searchQuery;
+    const result = this.props.items?.length;
+    this.trackUserEvent('partnerships.dashboard.affiliate_account.search', {
+      searchRequestParams: {
+        count,
+        emailId,
+        accountId,
+        accountName,
+      },
+      result,
+    });
+  };
 
-  handleAddMerchant = () => {
-    const { user } = this.props;
-    this.props.tracking.trackEvent(
-      window.rzpQ.onbr().interaction('partnerships.submerchant.add', {
+  getCurrentProduct = () => {
+    const { product } = this.props;
+    if (product === PRODUCT_TYPE.PG) {
+      return 'Payments';
+    }
+    if (product === PRODUCT_TYPE.X) {
+      return 'X';
+    }
+    return '';
+  };
+
+  trackUserEvent = (eventName, properties = {}) => {
+    const { user, tracking } = this.props;
+    const productGroup = this.getCurrentProduct();
+    tracking.trackEvent(
+      window.rzpQ.onbr().interaction(eventName, {
         partnerID: user.id,
+        productGroup,
+        ...properties,
       }),
     );
+  };
+
+  name = (isPurePlatform) => ({
+    ...submerchantColumn,
+    value: (item) => (
+      <Link
+        to={`/partners/submerchants/${item.id}`}
+        onClick={() =>
+          this.trackUserEvent('partnerships.dashboard.affiliate_account.account_selected', {
+            submerchantId: item.id,
+          })
+        }
+      >
+        {item.name}
+      </Link>
+    ),
+    ...(isPurePlatform && {
+      value: (item) => (
+        <Link
+          to={`/partners/submerchants/${item.id}/${item.application.id}`}
+          onClick={() =>
+            this.trackUserEvent('partnerships.dashboard.affiliate_account.account_selected', {
+              submerchantId: item.id,
+              applicationId: item.application.id,
+            })
+          }
+        >
+          {item.name}
+        </Link>
+      ),
+    }),
+  });
+
+  xName = () => ({
+    ...submerchantColumn,
+    value: (item) => (
+      <Link
+        to={`/partners/submerchants/x/${item.id}`}
+        onClick={() =>
+          this.trackUserEvent('partnerships.dashboard.affiliate_account.account_selected', {
+            submerchantId: item.id,
+          })
+        }
+      >
+        {item.name}
+      </Link>
+    ),
+  });
+
+  handleAddMerchant = () => {
+    this.trackUserEvent('partnerships.submerchant.add', {
+      source: 'welcome screen',
+    });
     this.props.openModal({
       size: 'med-large',
       component: <AddMerchant closeModal={this.props.closeModal} />,
@@ -231,6 +296,7 @@ class ProductSubMerchantsList extends ListContainer {
   };
 
   onDownload = () => {
+    this.trackUserEvent('partnerships.dashboard.affiliate_account.export');
     const { user } = this.props;
     this.props.showNotification({
       type: 'info',
@@ -267,25 +333,44 @@ class ProductSubMerchantsList extends ListContainer {
       description:
         "Start using a wide range of Razorpay's payment solutions and unlock growth for your business with just a few clicks. Go live in less than 10 minutes.",
     });
+    const productGroup = this.getCurrentProduct();
     if (this.props.product === PRODUCT_TYPE.X) {
       this.props.tracking.trackEvent(
-        window.rzpQ.onbr().clicked('partnerships.submerchant.referral.x.social'),
-        {
+        window.rzpQ.onbr().clicked('partnerships.submerchant.referral.x.social', {
           partnerID: this.props.user.id,
-        },
+        }),
+      );
+
+      // new event
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().clicked('partnerships.submerchant.referral.product_group.social', {
+          productGroup,
+          partnerID: this.props.user.id,
+          socialMedia: platform,
+          source: 'welcome screen',
+        }),
       );
     }
     if (this.props.product === PRODUCT_TYPE.PG) {
       this.props.tracking.trackEvent(
-        window.rzpQ.onbr().clicked('partnerships.submerchant.referral.social'),
-        {
+        window.rzpQ.onbr().clicked('partnerships.submerchant.referral.social', {
           partnerID: this.props.user.id,
-        },
+        }),
+      );
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().clicked('partnerships.submerchant.referral.product_group.social', {
+          productGroup,
+          partnerID: this.props.user.id,
+          socialMedia: platform,
+          source: 'welcome screen',
+        }),
       );
     }
   }
 
   handleCopyReferralLink = () => {
+    const productGroup = this.getCurrentProduct();
+
     if (this.props.product === PRODUCT_TYPE.PG) {
       fireAnalyticsEvents({
         fbData: 'partner_copy_link',
@@ -293,18 +378,31 @@ class ProductSubMerchantsList extends ListContainer {
       });
       trackReferral();
       this.props.tracking.trackEvent(
-        window.rzpQ.onbr().clicked('partnerships.submerchant.referral.copy'),
-        {
+        window.rzpQ.onbr().clicked('partnerships.submerchant.referral.copy', {
           partnerID: this.props.user.id,
-        },
+        }),
+      );
+      // new event
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().clicked('partnerships.submerchant.referral.product_group.copy', {
+          productGroup,
+          partnerID: this.props.user.id,
+          source: 'welcome screen',
+        }),
       );
     }
     if (this.props.product === PRODUCT_TYPE.X) {
       this.props.tracking.trackEvent(
-        window.rzpQ.onbr().clicked('partnerships.submerchant.referral.x.copy'),
-        {
+        window.rzpQ.onbr().clicked('partnerships.submerchant.referral.x.copy', {
           partnerID: this.props.user.id,
-        },
+        }),
+      );
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().clicked('partnerships.submerchant.referral.product_group.copy', {
+          productGroup,
+          partnerID: this.props.user.id,
+          source: 'welcome screen',
+        }),
       );
     }
   };
@@ -392,7 +490,7 @@ class ProductSubMerchantsList extends ListContainer {
                   skip={this.state.skip}
                   paginate={this.paginate}
                   columns={[
-                    name(user.isPartner('pure_platform')),
+                    this.name(user.isPartner('pure_platform')),
                     id,
                     email,
                     ...appIdColumn,
@@ -411,7 +509,7 @@ class ProductSubMerchantsList extends ListContainer {
                   skip={this.state.skip}
                   paginate={this.paginate}
                   columns={[
-                    xName(),
+                    this.xName(),
                     id,
                     email,
                     ...appIdColumn,
@@ -450,8 +548,8 @@ class ProductSubMerchantsList extends ListContainer {
                         </div>
                       </div>
                       <ShowWhen
-                        additionalCondition={(user) =>
-                          user.isPartner() && user.isPartner('reseller')
+                        additionalCondition={(currentUser) =>
+                          currentUser.isPartner() && currentUser.isPartner('reseller')
                         }
                       >
                         <div>

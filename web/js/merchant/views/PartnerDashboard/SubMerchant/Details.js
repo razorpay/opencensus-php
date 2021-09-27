@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 
 import { fetchSubmerchantWithProduct, resendInvite } from 'merchant/reducers/submerchant';
 import { switchMerchant } from 'merchant/reducers/session';
@@ -15,7 +16,8 @@ import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
+    user: state.session.user,
     ...state.submerchant,
   }),
   {
@@ -24,14 +26,15 @@ import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
     switchMerchant,
     openModal,
     showNotification,
-  }
+  },
 )
+@RTracking(() => window.rzpQ.component('SubmerchantDetailsContainer '))
 export default class SubmerchantDetailsContainer extends Component {
-  state={}
+  state = {};
 
   componentWillMount() {
     let product = PRODUCT_TYPE.PG;
-    if(this.props.history.location.pathname.startsWith('/partners/submerchants/x')) {
+    if (this.props.history.location.pathname.startsWith('/partners/submerchants/x')) {
       product = PRODUCT_TYPE.X;
     }
     this.props.fetchSubmerchantWithProduct(this.props.id, this.props.appId, product);
@@ -45,19 +48,41 @@ export default class SubmerchantDetailsContainer extends Component {
 
   componentWillReceiveProps(nextProps) {
     let product = PRODUCT_TYPE.PG;
-    if(this.props.history.location.pathname.startsWith('/partners/submerchants/x')) {
+    if (this.props.history.location.pathname.startsWith('/partners/submerchants/x')) {
       product = PRODUCT_TYPE.X;
     }
     this.setState({
-      product
-    })
-    if (
-      nextProps.id !== this.props.id ||
-      nextProps.appId !== this.props.appId
-    ) {
-      this.props.fetchSubmerchantWithProduct(nextProps.id, nextProps.appId, product)
+      product,
+    });
+    if (nextProps.id !== this.props.id || nextProps.appId !== this.props.appId) {
+      this.props.fetchSubmerchantWithProduct(nextProps.id, nextProps.appId, product);
     }
   }
+
+  componentWillUnmount() {
+    this.trackUserEvent('partnerships.dashboard.affiliate_account.account_selected', {
+      action: 'cancel',
+    });
+  }
+
+  getCurrentProduct = () => {
+    if (this.props.history.location.pathname.startsWith('/partners/submerchants/x')) {
+      return 'X';
+    }
+    return 'Payments';
+  };
+
+  trackUserEvent = (eventName, properties = {}) => {
+    const { user, tracking } = this.props;
+    const productGroup = this.getCurrentProduct();
+    tracking.trackEvent(
+      window.rzpQ.onbr().interaction(eventName, {
+        partnerID: user.id,
+        productGroup,
+        ...properties,
+      }),
+    );
+  };
 
   handleInviteClick = () => {
     this.props.openModal({
@@ -69,8 +94,12 @@ export default class SubmerchantDetailsContainer extends Component {
   handleResendInvite = () => {
     return this.props
       .resendInvite(this.props.id)
-      .then(response => {
+      .then((response) => {
         if (response.success) {
+          this.trackUserEvent('partnerships.dashboard.affiliate_account.account_selected', {
+            action: 'Resend Invite',
+            message: 'success',
+          });
           this.props.showNotification({
             type: 'success',
             message: 'Merchant invited to manage dashboard successfully',
@@ -78,6 +107,11 @@ export default class SubmerchantDetailsContainer extends Component {
         }
       })
       .catch(({ errors }) => {
+        this.trackUserEvent('partnerships.dashboard.affiliate_account.account_selected', {
+          action: 'Resend Invite',
+          message: 'error',
+          error: errors && errors[0],
+        });
         this.props.showNotification({
           type: 'error',
           message: errors,
@@ -86,14 +120,15 @@ export default class SubmerchantDetailsContainer extends Component {
   };
 
   render() {
-    const { item: submerchant, loading, error, switchMerchant } = this.props;
+    const { item: submerchant, loading, error, switchMerchant: _switchMerchant } = this.props;
     return (
       <div>
         <Details
+          trackUserEvent={this.trackUserEvent}
           isLoading={loading}
           submerchant={submerchant}
           error={error}
-          switchMerchant={switchMerchant}
+          switchMerchant={_switchMerchant}
           onInviteMerchant={this.handleInviteClick}
           onResendInvite={this.handleResendInvite}
           product={this.state.product}

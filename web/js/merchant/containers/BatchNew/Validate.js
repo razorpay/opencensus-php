@@ -88,6 +88,19 @@ class BatchValidate extends Component {
     this.changeBatchState();
   };
 
+  onSampleFileDownload = () => {
+    this.props.gaEvents.trackSampleFileDownload('From New Modal');
+    if (this.props.sampleFileDownloadAnalytics) {
+      this.props.sampleFileDownloadAnalytics();
+    }
+  };
+
+  onClickUpload = () => {
+    if (this.props.clickToUploadAnalytics) {
+      this.props.clickToUploadAnalytics();
+    }
+  };
+
   render() {
     return (
       <BatchValidateModal
@@ -95,8 +108,9 @@ class BatchValidate extends Component {
         onFileChange={this.handleBatchValidation}
         onBiggerFileSize={this.handleBiggerFileSize}
         onCloseClick={this.handleCloseClick}
-        onSampleFileDownload={this.props.gaEvents.trackSampleFileDownload('From New Modal')}
+        onSampleFileDownload={this.onSampleFileDownload}
         onErrorReportDownload={this.handleErrorReportDownload}
+        onClickUpload={this.onClickUpload}
         {...this.state}
         {...this.props}
       />

@@ -1,3 +1,5 @@
+/* eslint-disable react/no-unused-state */
+// state : status is not used in this file, only in inherited component
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { getURLQueryParams } from 'common/utils/rzp-utils';
@@ -29,8 +31,8 @@ export default class ListContainer extends Component {
   }
 
   removeBlacklistedParams(params, props = this.props) {
-    const { blacklistQueryParams = [] } = props,
-      hasBlacklistQueryParams = blacklistQueryParams.length > 0;
+    const { blacklistQueryParams = [] } = props;
+    const hasBlacklistQueryParams = blacklistQueryParams.length > 0;
 
     if (!hasBlacklistQueryParams) {
       return params;
@@ -90,7 +92,7 @@ export default class ListContainer extends Component {
       params.id = encodeURIComponent(params.id); // Encoding just id. Rest are query params, which is encoded while making axios request
     }
 
-    for (let k in params) {
+    for (const k in params) {
       if (params.hasOwnProperty(k)) {
         params[k] = decodeURI(params[k]);
       }
@@ -124,6 +126,7 @@ export default class ListContainer extends Component {
 
       return promise;
     }
+    return ''; // added to solve lint error
   };
 
   search = (params) => {
@@ -131,11 +134,16 @@ export default class ListContainer extends Component {
     return this.fetchAll({
       ...this.getDefaultPageParams(),
       ...this.searchFilters,
+    }).then(() => {
+      if (this.searchAnalytics) {
+        // available from inherited component
+        this.searchAnalytics();
+      }
     });
   };
 
   paginate = (params) => {
-    let filters = {
+    const filters = {
       ...this.searchFilters,
       ...params,
     };

@@ -11,6 +11,14 @@ import { bindActionCreators } from 'redux';
 const DEFAULT_MAX_FILE_SIZE = 1048576; // 1MB in bytes.
 
 class BatchValidateModal extends Component {
+  uploadFileModalClick = (e) => {
+    const { onClickUpload } = this.props;
+    if (e.target.nodeName === 'LABEL') {
+      if (onClickUpload) {
+        onClickUpload();
+      }
+    }
+  };
   render() {
     const {
       status,
@@ -43,7 +51,7 @@ class BatchValidateModal extends Component {
     return (
       <div class={batchClass ? batchClass : 'modal-body'}>
         {!batchClass ? <h4 class="modal-heading">UPLOAD FILE</h4> : null}
-        <div class="modal-file">
+        <div class="modal-file" onClick={this.uploadFileModalClick}>
           <FileUpload
             accept={['csv', 'xlsx']}
             acceptFileInfo={acceptFileInfo}

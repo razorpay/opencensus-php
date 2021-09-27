@@ -2,7 +2,6 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink, withRouter } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { isMobileDevice } from 'merchant/components/Home/data';
 import { setActivePageName, toggleMobileMenu } from 'merchant/reducers/app';
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -11,6 +10,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 @connect(
   (state) => {
     return {
+      user: state.session.user,
       baseLocation: state.app.baseLocation,
       isMobileResolution: state.app.isMobileResolution,
       activePageName: state.app.activePageName,
@@ -32,11 +32,21 @@ export default class MainNavLink extends Component {
    * Method that sends analytics regarding navigation.
    */
   sendAnalytics = () => {
-    this.props.label &&
+    if (this.props.label) {
       window.rzpAnalytics({
         eventCategory: 'Dashboard - Side Nav',
         eventAction: `Go To - ${this.props.label}`,
       });
+    }
+
+    const { user, label, tracking } = this.props;
+    if (label === 'Affiliate Accounts') {
+      tracking.trackEvent(
+        window.rzpQ.onbr().interaction('partnerships.dashboard.affiliate_account', {
+          partnerID: user.id,
+        }),
+      );
+    }
   };
 
   handleClick() {
@@ -105,7 +115,7 @@ export default class MainNavLink extends Component {
   }
 
   render() {
-    let {
+    const {
       myRole,
       notMyRole,
       featureEnabled,
@@ -121,10 +131,8 @@ export default class MainNavLink extends Component {
       isPending,
       baseLocation,
       isCurrent,
-      setActivePageName,
       staticContext,
       isMobileResolution,
-      toggleMobileMenu,
       isSettlementEnabled,
       isComingSoon,
       ...linkProps
