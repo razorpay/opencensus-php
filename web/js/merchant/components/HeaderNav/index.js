@@ -18,10 +18,12 @@ import ProfileDropdown from './ProfileDropdown';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 const analyticsAction = (action) => {
-  window.rzpAnalytics({
-    eventCategory: 'Dashboard - Header',
-    eventAction: action,
-  });
+  if (window.rzpAnalytics) {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Header',
+      eventAction: action,
+    });
+  }
 };
 
 function toggleDropdown() {
