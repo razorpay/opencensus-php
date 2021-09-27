@@ -2,25 +2,16 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink, withRouter } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { setActivePageName, toggleMobileMenu } from 'merchant/reducers/app';
+import {
+  setActivePageName as fnsetActivePageName,
+  toggleMobileMenu as fntoggleMobileMenu,
+} from 'merchant/reducers/app';
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { compose, bindActionCreators } from 'redux';
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      baseLocation: state.app.baseLocation,
-      isMobileResolution: state.app.isMobileResolution,
-      activePageName: state.app.activePageName,
-    };
-  },
-  { setActivePageName, toggleMobileMenu },
-)
-@withRouter
-@RTracking(() => window.rzpQ.component('MainNavLink'))
-export default class MainNavLink extends Component {
+class MainNavLink extends Component {
   constructor(props) {
     super(props);
 
@@ -83,7 +74,12 @@ export default class MainNavLink extends Component {
       },
     });
 
-    if (this.props.label === 'App Store' && window.rzpQ && window.rzpQ.onbr().clicked) {
+    if (
+      this.props.label === 'App Store' &&
+      window.rzpQ &&
+      window.rzpQ.onbr().clicked &&
+      window.rzp_user.merchant
+    ) {
       tracking.trackEvent(
         window.rzpQ.onbr().clicked('partnerships.appstore', {
           merchantId: window.rzp_user.merchant.id,
@@ -190,3 +186,24 @@ export default class MainNavLink extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    baseLocation: state.app.baseLocation,
+    isMobileResolution: state.app.isMobileResolution,
+    activePageName: state.app.activePageName,
+  };
+};
+
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    { setActivePageName: fnsetActivePageName, toggleMobileMenu: fntoggleMobileMenu },
+    dispatch,
+  );
+
+export default compose(
+  withRouter,
+  connect(mapStateToProps, mapDispatchToProps),
+  // eslint-disable-next-line babel/new-cap
+  RTracking(() => window.rzpQ.component('MainNavLink')),
+)(MainNavLink);
