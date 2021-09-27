@@ -723,8 +723,6 @@ class Core extends Base\Core
 
         $cacheKey = $this->getBankAccountUpdatePennyTestingCacheKey($merchant);
 
-        $this->app['cache']->delete($cacheKey);
-
         $status = (new BankAccountStatusUpdater($merchant, $validation))->getDocumentValidationStatus($validation);
 
         switch ($validation->getValidationStatus())
@@ -735,6 +733,8 @@ class Core extends Base\Core
             default:
                 $this->handleBankAccountUpdateCallbackFailure($merchant, $data, $status);
         }
+
+        $this->app['cache']->delete($cacheKey);
     }
 
     protected function handleBankAccountUpdateCallbackSuccess($merchant, $data, $status)

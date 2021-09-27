@@ -10,7 +10,7 @@ class Constants
     const BANK_ACCOUNT_UPDATE_POST_PENNY_TESTING_CONTROLLER = 'RZP\Http\Controllers\MerchantController@putBankAccountUpdatePostPennyTestingWorkflow';
     const BANK_ACCOUNT_UPDATE_INPUT                         = 'input';
 
-    const BANK_ACCOUNT_UPDATE_PENNY_TESTING_TTL       = 180 * 60; // in seconds
+    const BANK_ACCOUNT_UPDATE_PENNY_TESTING_TTL       = 360 * 60; // in seconds
     const BANK_ACCOUNT_UPDATE_PENNY_TESTING_CACHE_KEY = 'bank_account_update_penny_testing_%s';
     const BANK_ACCOUNT_UPDATE_MUTEX_RESOURCE          = 'bank_account_update_mutex_resource_%s';
 
