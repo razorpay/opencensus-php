@@ -61,6 +61,7 @@ use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Merchant\BusinessDetail\Service;
 use RZP\Models\Comment\Entity as CommentEntity;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
+use RZP\Mail\Merchant\MerchantBusinessWebsiteAdd;
 use RZP\Models\Base\PublicEntity as PublicEntity;
 use RZP\Mail\Merchant\Rejection as RejectionEmail;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -2388,6 +2389,16 @@ class Core extends Base\Core
             $this->checkAndMarkHasKeyAccess($merchantDetails, $merchant);
 
             $this->repo->saveOrFail($merchant);
+
+            if ((empty($this->merchant->primaryOwner()) === false) and
+                ($merchantDetails->getActivationStatus() === Status::ACTIVATED))
+            {
+                $merchantPrimaryOwner = $this->merchant->primaryOwner()->toArrayPublic();
+
+                $mailClassInstance = (new MerchantBusinessWebsiteAdd($this->merchant->toArrayPublic(), $merchantPrimaryOwner));
+
+                Mail::queue($mailClassInstance);
+            }
 
             $response = $merchantDetails->toArrayPublic();
 

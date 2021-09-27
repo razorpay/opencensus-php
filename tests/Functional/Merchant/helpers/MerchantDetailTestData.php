@@ -743,6 +743,22 @@ return [
         ],
     ],
 
+    'testAddMerchantActivationWebsiteDetailsWorkflowApprove' => [
+        'request'  => [
+            'content' => [
+                'business_website' => 'https://www.example.com',
+            ],
+            'url'     => '/merchant/activation/update_website_details',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content'     => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testMerchantUpdateWebsiteDetailsIpv6' => [
         'request'  => [
             'content' => [

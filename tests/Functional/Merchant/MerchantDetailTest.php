@@ -831,6 +831,38 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertEquals($merchant->getHasKeyAccess() , true);
     }
 
+    public function testAddMerchantActivationWebsiteDetailsWorkflowApprove()
+    {
+        Mail::fake();
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails([], ['activation_status' => 'activated']);
+
+        $this->setupWorkflow("update_website", PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId);
+
+        $this->startTest();
+
+        [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId);
+
+        $this->validateBusinessWebsiteWorkflowApprove($merchantId, $workflowActionId);
+
+        $user = $this->getDbLastEntity('user');
+
+        Mail::assertQueued(MerchantBusinessWebsiteAdd::class, function ($mail) use($user)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('https://www.example.com', $data['updated_business_website']);
+
+            $this->assertEquals('emails.merchant.merchant_business_website_add', $mail->view);
+
+            $mail->hasTo($user['email']);
+
+            return true;
+        });
+    }
+
     public function testMerchantDetailsFetchWithCustomText()
     {
         $request = [
