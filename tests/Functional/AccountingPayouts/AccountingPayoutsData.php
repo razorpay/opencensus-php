@@ -194,4 +194,24 @@ return [
              'content' => []
          ]
      ],
+
+     'testGetOrganisationsInfoServiceMethod'  => [
+         'request'  => [
+             'method' => 'GET',
+             'url'    => '/accounting-integration/organizations/zoho',
+         ],
+         'response' => [
+             'content' => []
+         ]
+     ],
+
+    'testSetOrganisationsInfoServiceMethod'  => [
+         'request'  => [
+             'method' => 'POST',
+             'url'    => '/accounting-integration/organizations/zoho',
+         ],
+         'response' => [
+             'content' => []
+         ]
+    ]
 ];

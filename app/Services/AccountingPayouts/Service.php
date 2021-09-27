@@ -39,7 +39,10 @@ class Service
     const ACKNOWLEDGE_TALLY_PAYMENT = 'AcknowledgeTallyPayment';
     const INTEGRATE_TALLY           = 'IntegrateTally';
     const DELETE_INTEGRATION_TALLY  = 'DeleteTallyIntegration';
-
+    const GET_DOMAIN                = 'GetAccountingAppDomains';
+    const SET_DOMAIN                = 'SetAccountingAppDomain';
+    const GET_ORGANISATION_INFO     = 'GetOrganisationsAccountingApp';
+    const SET_ORGANISATION_INFO     = 'SetOrganisationInfoAccountingApp';
 
     protected $app;
 
@@ -275,6 +278,20 @@ class Service
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::DELETE_INTEGRATION_TALLY);
 
         return $this->makeRequest($merchant, $url, $input, null, [], 'POST', MODE::LIVE);
+    }
+
+    public function getOrganisationsInfo(MerchantEntity $merchant, string $app)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_ORGANISATION_INFO);
+
+        return $this->makeRequest($merchant, $url, [], $app, [], 'POST', MODE::LIVE);
+    }
+
+    public function setOrganisationInfo(MerchantEntity $merchant, string $app, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::SET_ORGANISATION_INFO);
+
+        return $this->makeRequest($merchant, $url, $input, $app, [], 'POST', MODE::LIVE);
     }
 
     protected function makeRequest(MerchantEntity $merchant = null,

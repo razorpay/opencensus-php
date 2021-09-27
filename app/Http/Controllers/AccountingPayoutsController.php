@@ -104,4 +104,13 @@ class AccountingPayoutsController extends Controller
         return $this->service->deleteIntegrationTally($this->ba->getMerchant(), $this->input);
     }
 
+    public function getOrganisationsInfo(string $app)
+    {
+        return $this->service->getOrganisationsInfo($this->ba->getMerchant(), $app);
+    }
+
+    public function setOrganisationInfo(string $app)
+    {
+        return $this->service->setOrganisationInfo($this->ba->getMerchant(), $app, $this->input);
+    }
 }

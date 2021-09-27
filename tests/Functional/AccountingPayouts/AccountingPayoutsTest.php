@@ -374,4 +374,34 @@ class AccountingPayoutsTest extends TestCase
 
         $apMock->shouldHaveReceived('deleteIntegrationTally');
     }
+
+    public function testGetOrganisationsInfoServiceMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('getOrganisationsInfo')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('getOrganisationsInfo');
+    }
+
+    public function testSetOrganisationsInfoServiceMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('setOrganisationInfo')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('setOrganisationInfo');
+    }
 }
