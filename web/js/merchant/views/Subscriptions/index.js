@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { Switch, NavLink, Route } from 'react-router-dom';
 
@@ -34,6 +35,7 @@ import SubscriptionSettings from 'merchant/views/Subscriptions/Settings';
 import SubscriptionOffersLaunchBanner from 'merchant/components/Announcements/SubscriptionOffers';
 import EmandateBanner from 'merchant/components/Announcements/EmandateSubscription';
 import CardPaymentsBlockedBanner from './components/CardPaymentsBlocked/Banner';
+import { CardsGoLiveBanner } from './components/banners/';
 
 @connect(
   (state) => ({
@@ -135,7 +137,7 @@ class SubscriptionsController extends React.Component {
   };
 
   render() {
-    const { subscriptionProductOnBoarding, user } = this.props;
+    const { subscriptionProductOnBoarding, user: userInfo } = this.props;
 
     if (subscriptionProductOnBoarding.showOnboarding) {
       return <OnBoarding />;
@@ -143,10 +145,14 @@ class SubscriptionsController extends React.Component {
 
     return (
       <div class={classList('Subscriptions-Container')}>
-        {!this.props.user.isChargeAtWillEnabled && <SubscriptionOffersLaunchBanner />}
-        {user.isEmandateOnSubscriptionEnabled && <EmandateBanner />}
-        {user.isCardRecurringPaymentsBlocked && (
-          <CardPaymentsBlockedBanner isCAW={user.isChargeAtWillEnabled} />
+        {userInfo.isChargeAtWillEnabled ? (
+          <CardsGoLiveBanner />
+        ) : (
+          <SubscriptionOffersLaunchBanner />
+        )}
+        {userInfo.isEmandateOnSubscriptionEnabled && <EmandateBanner />}
+        {userInfo.isCardRecurringPaymentsBlocked && (
+          <CardPaymentsBlockedBanner isCAW={userInfo.isChargeAtWillEnabled} />
         )}
 
         <tabbed-container>
@@ -235,8 +241,8 @@ class SubscriptionsController extends React.Component {
   }
 }
 
-const ClonedPlanList = (props) => (
-  <PlansList docUrl="https://razorpay.com/docs/subscriptions/" {...props} />
-);
+function ClonedPlanList(props) {
+  return <PlansList docUrl="https://razorpay.com/docs/subscriptions/" {...props} />;
+}
 
 export default SubscriptionsController;
