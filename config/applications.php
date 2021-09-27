@@ -951,7 +951,6 @@ return [
 
     'typeform' => [
         'typeform_webhook_secret'  => env('TYPEFORM_WEBHOOK_SECRET'),
-        'typeform_api_key'         => env('TYPEFORM_API_KEY'),
     ],
 
     'workflows' => [

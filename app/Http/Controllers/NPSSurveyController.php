@@ -99,15 +99,6 @@ class NPSSurveyController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function pushTypeFormResponsesToDataLake()
-    {
-        $input = Request::all();
-
-        $data = $this->surveyResponseService->pushTypeFormResponsesToDataLake($input);
-
-        return ApiResponse::json($data);
-    }
-
     private function setMode()
     {
         $this->ba->setModeAndDbConnection(Mode::LIVE);

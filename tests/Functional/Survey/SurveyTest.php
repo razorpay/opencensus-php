@@ -7,12 +7,10 @@ use Mail;
 use Hash;
 use Queue;
 use Config;
-use Mockery;
 use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Survey\Response\Service;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -42,23 +40,13 @@ class SurveyTest extends TestCase
 
     private $user2;
 
-    protected $surveyResponseCoreMock;
-
-    protected $surveyResponseService;
-
-    private $unitTestCase;
-
     protected function setUp(): void
     {
-        $this->unitTestCase = new \Tests\Unit\TestCase();
-
         $this->testDataFilePath = __DIR__ . '/SurveyTestData.php';
 
         parent::setUp();
 
         $this->liveSetUp();
-
-        $this->setupTypeformResponsesMock();
 
 //        $this->fixtures->org->createRazorpayOrgLive();
 
@@ -1242,47 +1230,5 @@ class SurveyTest extends TestCase
         $surveyTrackerEntity = $this->getDbEntity('survey_tracker',['survey_id' => 'GLuIMZYR32kZiB'] , 'live' );
 
         $this->assertEquals('beneficiary@test.com', $surveyTrackerEntity['survey_email']);
-    }
-
-    private function setupTypeformResponsesMock()
-    {
-        $this->app['rzp.mode']= 'test';
-
-        $this->surveyResponseService = new Service();
-
-        $this->surveyResponseCoreMock = Mockery::mock('RZP\Models\Survey\Response\Core', [$this->app])->makePartial();
-
-        $this->surveyResponseCoreMock->shouldAllowMockingProtectedMethods();
-
-        $this->unitTestCase->setPrivateProperty($this->surveyResponseService, 'core', $this->surveyResponseCoreMock);
-    }
-
-    public function testPushTypeformResponsesToDatalake()
-    {
-        $this->ba->cronAuth('live');
-
-        $this->setupGetTypeformResponse();
-
-        $ufhServiceClientMock = Mockery::mock('RZP\Services\UfhService');
-
-        $this->app->instance('ufh_service', $ufhServiceClientMock);
-
-        $ufhServiceClientMock->shouldReceive('uploadFileAndGetUrl')
-            ->with(Mockery::type('Symfony\Component\HttpFoundation\File\UploadedFile'), 'nps_response_IWuWQPm5', 'file', Mockery::type(null));
-
-        $request = $this->testData[__FUNCTION__]['request']['content'];
-
-        $this->surveyResponseService->pushTypeFormResponsesToDataLake($request);
-    }
-
-    private function setupGetTypeformResponse()
-    {
-        $this->surveyResponseCoreMock
-            ->shouldReceive('getTypeformResponses')
-            ->times(1)
-            ->andReturnUsing(function ()
-            {
-                return $this->testData['typeformResponsesTemplate'];
-            });
     }
 }
