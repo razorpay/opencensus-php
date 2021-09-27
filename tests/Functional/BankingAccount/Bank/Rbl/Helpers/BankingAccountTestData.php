@@ -2209,28 +2209,6 @@ return [
         ],
     ],
 
-    'testBankingAccountFetchFilterArchivedOnProxyAuth' => [
-        'request'  => [
-            'url'     => '/banking_accounts',
-            'method'  => 'GET',
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => [
-                    [
-                        'account_number'    => '2224440041626905',
-                        'status'            => 'created',
-                        'balance'           => [
-                            'balance'       => 200,
-                            'currency'      => 'INR',
-                        ]
-                    ],
-                ],
-            ],
-        ],
-    ],
 
     'testBankingAccountFetchCheckFieldLastFetchedAtInBalance' => [
         'request'  => [
