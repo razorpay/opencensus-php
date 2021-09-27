@@ -284,16 +284,6 @@ class InternationalEnablementTest extends TestCase
 
         $testData = $this->testData['testSubmitWithValidationError'];
 
-        $withoutLogisticsContent = $testData['use_cases']['without_logistics'];
-
-        $testData['response'] = $withoutLogisticsContent['response'];
-
-        $testData['exception'] = $withoutLogisticsContent['exception'];
-
-        $this->startTest($testData);
-
-        $testData = $this->testData['testSubmitWithValidationError'];
-
         $withoutIntlTxnDocuments = $testData['use_cases']['without_intl_txn_documents'];
 
         $testData['request']['content'] = array_replace(

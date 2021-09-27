@@ -115,6 +115,18 @@ class Core extends Base\Core
             Detail\Entity::PRODUCTS,
             Detail\Entity::IMPORT_EXPORT_CODE,
             Detail\Entity::SOCIAL_MEDIA_PAGE_LINK,
+            Detail\Entity::ALLOWED_CURRENCIES,
+            Detail\Entity::MONTHLY_SALES_INTL_CARDS_MIN,
+            Detail\Entity::MONTHLY_SALES_INTL_CARDS_MAX,
+            Detail\Entity::LOGISTIC_PARTNERS,
+            Detail\Entity::CONTACT_US_LINK,
+            Detail\Entity::TERMS_AND_CONDITIONS_LINK,
+            Detail\Entity::PRIVACY_POLICY_LINK,
+            Detail\Entity::REFUND_AND_CANCELLATION_POLICY_LINK,
+            Detail\Entity::SHIPPING_POLICY_LINK,
+            Detail\Entity::SOCIAL_MEDIA_PAGE_LINK,
+            Detail\Entity::CUSTOMER_INFO_COLLECTED,
+            Detail\Entity::PARTNER_DETAILS_PLUGINS,
         ];
 
         $goodsType = $requiredAttributesForCalculation[Detail\Entity::GOODS_TYPE] ?? '';

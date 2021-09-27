@@ -710,7 +710,7 @@ return [
             'status_code' => 200,
             'content'     => [
                 'enablement_progress'   => 'in_progress',
-                'percentage_completion' => 90,
+                'percentage_completion' => 77,
                 'new_flow'              => true,
             ],
         ],
