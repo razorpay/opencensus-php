@@ -20,6 +20,7 @@ use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Transaction\CreditType;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\BankingAccount\Channel as BankingAccountChannel;
 
 /**
  * NOTE: Before making any changes here, check Payout\Core
@@ -252,7 +253,7 @@ class Payout extends Base
 
         if (($balanceType === Type::BANKING) and
             ($accountType === AccountType::DIRECT) and
-            ($this->merchantBalance->getChannel() === Channel::RBL))
+            (in_array($this->merchantBalance->getChannel(), BankingAccountChannel::$directTypeChannels, true) === true))
         {
             return ;
         }
