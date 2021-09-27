@@ -93,6 +93,10 @@ class Core extends Base\Core
         }
 
         $newDocuments = array_filter($newDocuments, function($docList){
+            if (is_array($docList) === false) {
+                return false;
+            }
+
             return (is_sequential_array($docList) === false) || (count($docList) > 0);
         });
 
