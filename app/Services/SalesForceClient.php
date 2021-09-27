@@ -324,6 +324,52 @@ class SalesForceClient
         return $this->makeRequestAndGetResponse($request);
     }
 
+    public function getSalesForceTeamNameForMerchantID(array $MerchantIds)
+    {
+        $TeamNameArray=array();
+
+        foreach ($MerchantIds as $merchantId )
+        {
+            $TeamNameArray[$merchantId]="nil";
+        }
+
+        $accessToken = $this->fetchAccessToken();
+
+        $MerchantIdsInClause = implode("','", $MerchantIds);
+
+        $merchantDetailQuery = "select Merchant_ID__c,
+                                Name,
+                                Owner_Role__c,
+                                Owner.name
+                                from Account
+                                where Merchant_ID__c != null
+                                and Owner_Role__c != null
+                                and Transacting__c = true
+                                and Merchant_ID__c in ('$MerchantIdsInClause')";
+
+          $queryURL= $this->baseUrl . '/services/data/v34.0/query?q='. $merchantDetailQuery;
+          $request = [
+              'url'     => $queryURL,
+              'method'  => self::GET,
+              'content' => [],
+              'options' => ['timeout' => 120],
+              'headers' => [
+                  RequestHeader::CONTENT_TYPE  => 'application/json',
+                  RequestHeader::AUTHORIZATION => RequestHeader::BEARER . ' ' . $accessToken
+              ]
+          ];
+
+          $response=$this->makeRequestAndGetResponse($request);
+
+         foreach ($response["records"] as $entity )
+         {
+             $TeamNameArray[$entity["Merchant_ID__c"]]=$entity["Owner"]["Name"];
+         }
+
+         return $TeamNameArray;
+
+    }
+
     protected function parseAccessToken($response)
     {
         if (isset($response[self::ACCESS_TOKEN]) === true)
