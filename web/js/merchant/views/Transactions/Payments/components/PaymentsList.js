@@ -1,5 +1,9 @@
 import React from 'react';
-import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import {
+  getKeysSeparatedByPipe,
+  getCommonAnalyticsProperties,
+  getURLQueryParams,
+} from 'common/utils/rzp-utils';
 import HeaderAction from 'common/ui/HeaderAction';
 import DocsLink from 'merchant/components/DocsLink';
 import EmptyList from 'merchant/components/EmptyList';
@@ -7,8 +11,8 @@ import PaymentsTable from 'merchant/views/Transactions/Payments/components/Payme
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import PaymentsListFilter from 'merchant/views/Transactions/Payments/components/PaymentsListFilter';
 import { analyticsTrack } from 'common/utils/analytics';
-
 import ListContainer from 'merchant/containers/ListContainer';
+import PaymentFailureAnalysis from './PaymentFailureAnalysis';
 
 const EmptyRoutesComponent = () => (
   <EmptyList
@@ -29,6 +33,7 @@ const EmptyComponent = () => {
 
 export default class PaymentsListContainer extends ListContainer {
   componentDidMount() {
+    const { user } = this.props;
     const { pathname } = this.props.location;
     if (pathname && pathname.indexOf('route') < 0) {
       // Currently not tracking events from Route.
@@ -36,6 +41,9 @@ export default class PaymentsListContainer extends ListContainer {
         eventCategory: 'Dashboard - Payments',
         eventAction: 'Go To - Payments',
       });
+    }
+    if (user.isFAEnabled) {
+      this.fetchFailureAnalysisData();
     }
   }
 
@@ -78,8 +86,48 @@ export default class PaymentsListContainer extends ListContainer {
     }
   };
 
+  getDefaultQueryParams = () => {
+    const queryString = this.props?.location?.search;
+    let params = null;
+    if (queryString) {
+      params = getURLQueryParams(queryString);
+      params = this.removeBlacklistedParams(params);
+    }
+    return params;
+  };
+
+  fetchFailureAnalysisData = (args) => {
+    if (!args) {
+      args = this.getDefaultQueryParams();
+    }
+    const faTextExp = this.props.user?.faTextVariant;
+    this.analizeFailure(args)?.then((response) => {
+      if (response?.status_code === 200) {
+        const { data } = response;
+        analyticsTrack({
+          objectName: 'Failure Analysis displayed',
+          actionName: 'displayed',
+          screen: 'transactions',
+          properties: {
+            totalPayments: data.summary.number_of_total_payments,
+            successfulPayments: data.summary.number_of_successful_payments,
+            customerDropOffs: data.failure_details.customer_dropp_off,
+            bankFailures: data.failure_details.bank_failure,
+            otherFailures: data.failure_details.other_failure,
+            businessFailures: data.failure_details.business_failure,
+            experimentName: faTextExp,
+            startDate: args?.from,
+            endDate: args?.to,
+            paymentStatus: args?.status,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+      }
+    });
+  };
+
   render() {
-    const { docUrl, quickTourFeature, isRoute } = this.props;
+    const { docUrl, quickTourFeature, isRoute, user, failureAnalysisData } = this.props;
 
     return (
       <div class="content-wrapper">
@@ -95,6 +143,9 @@ export default class PaymentsListContainer extends ListContainer {
           form="paymentListFilter"
           count={this.state.count}
           onSubmit={(args) => {
+            if (user.isFAEnabled) {
+              this.fetchFailureAnalysisData(args);
+            }
             this.search(args)
               .then(() => {
                 analyticsTrack({
@@ -135,6 +186,9 @@ export default class PaymentsListContainer extends ListContainer {
           onSearchAnalytics={this.onSearchAnalytics}
           onClearAnalytics={this.onClearAnalytics}
         />
+        {user.isFAEnabled && failureAnalysisData?.data && (
+          <PaymentFailureAnalysis data={failureAnalysisData?.data} user={user} />
+        )}
 
         <PaymentsTable
           count={this.state.count}

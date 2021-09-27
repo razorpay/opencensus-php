@@ -1,0 +1,35 @@
+.failure-analysis-container{
+    background-color #FBFBFB
+    margin 0 -24px 12px
+    &.add-gap{
+        margin-bottom 24px
+    }
+    @media(max-width: 992px) {
+        display none
+    }
+    .content{
+        max-width 1440px
+        display flex
+        .overall-data{
+            width 35%
+            border-left 4px solid #336CD5
+        }
+        .data-devider{
+            width 1px
+            margin 10px 0
+            border 1px solid #c4c4c4
+            border-radius 100px
+        }
+        .each-failure-data{
+            width 65%
+        }
+        .overall-data, .each-failure-data{
+            display flex
+            justify-content space-around
+        }
+    }
+}
+.failure-analysis-mismatch-desc{
+    font-size 12px
+    margin-bottom 12px
+}

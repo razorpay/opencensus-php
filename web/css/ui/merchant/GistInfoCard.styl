@@ -1,0 +1,52 @@
+.gitst-info-card{
+    padding 8px 20px
+    font-weight 600
+    display inline-block
+    &-title{
+        font-size 14px
+        line-height 20px
+        margin 5px 0
+        .info{
+            margin-left: 3px
+            position: relative;
+            top: -1px;
+            .info-content{
+                width 260px
+                font-style: normal; 
+                position absolute
+                top: 29px
+                left: -34px
+                padding 10px
+                background-color #515461
+                color #FFFFFF
+                font-size 12px
+                line-height 16px
+                border-radius 4px
+                animation fadein 1s
+                &::after{
+                    content ''
+                    position absolute
+                    width 0
+                    height 0
+                    border-left 15px solid transparent
+                    border-right 15px solid transparent
+                    border-bottom 15px solid #515461
+                    top -10px
+                    left 25px
+                }
+                &.right-align{
+                    left unset
+                    right -34px
+                    &::after{
+                        left unset
+                        right 25px
+                    }
+                }
+            }
+        }
+    }
+    &-value{
+        font-size 18px
+        line-height 36px
+    }
+}

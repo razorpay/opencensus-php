@@ -31,7 +31,11 @@ export function merchantFetch(params) {
 
   delete params.accountId;
 
-  params.url = `/merchant/api/${mode}/${params.url}`;
+  params.url = params.absUrl ? params.absUrl : `/merchant/api/${mode}/${params.url}`;
+
+  if (params.absUrl) {
+    delete params.absUrl;
+  }
 
   return ajax(params);
 }

@@ -451,6 +451,21 @@ export default class User {
     return getSplitzExperimentVariant('edx_app_integration_banner')?.variables?.result === 'on';
   }
 
+  /* Method to get the Failure Analysis Text Variant */
+  get faTextVariant() {
+    return getSplitzExperimentVariant('failure_analysis_text_exp')?.variables?.result;
+  }
+
+  /* Method to get the Failure Analysis Payments Count Experiment */
+  get showFAPaymantCount() {
+    return getSplitzExperimentVariant('failure_analysis_payment_count_exp')?.variables?.result;
+  }
+
+  /* Method to get the weather to show Failure Analysis or not */
+  get isFAEnabled() {
+    return getSplitzExperimentVariant('failure_analysis_rollout_exp')?.variables?.result === 'on';
+  }
+
   get isChargeAtWillEnabled() {
     return this.findTag('Charge_at_will');
   }

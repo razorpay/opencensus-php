@@ -1,8 +1,6 @@
-/* eslint-disable react/no-unused-state */
-// state : status is not used in this file, only in inherited component
 import { Component } from 'react';
 import PropTypes from 'prop-types';
-import { getURLQueryParams } from 'common/utils/rzp-utils';
+import { getURLQueryParams, stringifyQueryParams } from 'common/utils/rzp-utils';
 import { trimDeep } from 'common/utils/validators';
 import moment from 'moment';
 
@@ -26,6 +24,11 @@ export default class ListContainer extends Component {
     }
 
     this.state = {
+      /* 
+      As this is a common class which is extended in many places so other inherted components
+      might be using this status state so ignoring this eslint Error
+      */
+      // eslint-disable-next-line react/no-unused-state
       status: {},
     };
   }
@@ -71,7 +74,7 @@ export default class ListContainer extends Component {
     }
   }
 
-  fetchAll = (params = {}) => {
+  fetchAll = (params = {}, fetchFA) => {
     params = { ...this.getDefaultPageParams(), ...params };
     params = this.removeBlacklistedParams(params);
 
@@ -98,6 +101,21 @@ export default class ListContainer extends Component {
       }
     }
 
+    // check if Failure Analysis call is getting made then call it directly
+    if (fetchFA) {
+      // modifying params and also validating if the days > 90 so don't call the FA api at all as api will not respond
+      if (params) {
+        delete params?.count; // api don't support this params
+        delete params?.skip; // api don't support this params
+        const fromDate = moment(parseInt(params.from, 10) * 1000);
+        const toDate = moment(parseInt(params.to, 10) * 1000);
+        const dateDiff = toDate.diff(fromDate, 'days');
+        if (dateDiff <= 90) {
+          return this.fetchFA(params);
+        }
+      }
+      return null;
+    }
     // props.fetchAll is available only when model is implemented. Addons doesn't have model hence calling 'fetchList' class fn.
     if (!this.props.fetchAll && this.fetchList) {
       this.fetchList(params);
@@ -108,6 +126,11 @@ export default class ListContainer extends Component {
         promise
           .then(() => {
             this.setState({
+              /* 
+              As this is a common class which is extended in many places so other inherted components
+              might be using this status state so ignoring this eslint Error
+              */
+              // eslint-disable-next-line react/no-unused-state
               status: {
                 type: 'success',
                 message: null,
@@ -116,6 +139,11 @@ export default class ListContainer extends Component {
           })
           .catch((err) => {
             this.setState({
+              /* 
+              As this is a common class which is extended in many places so other inherted components
+              might be using this status state so ignoring this eslint Error
+              */
+              // eslint-disable-next-line react/no-unused-state
               status: {
                 type: 'error',
                 message: err.errors || err,
@@ -126,7 +154,8 @@ export default class ListContainer extends Component {
 
       return promise;
     }
-    return ''; // added to solve lint error
+    // if all the above if conditions are violated we can return null
+    return null;
   };
 
   search = (params) => {
@@ -140,6 +169,16 @@ export default class ListContainer extends Component {
         this.searchAnalytics();
       }
     });
+  };
+
+  analizeFailure = (params) => {
+    const failureAnalysisFilter = trimDeep(params);
+    return this.fetchAll(
+      {
+        ...failureAnalysisFilter,
+      },
+      true,
+    );
   };
 
   paginate = (params) => {
@@ -163,5 +202,11 @@ export default class ListContainer extends Component {
 
   fetchEntityList(params) {
     return this.props.fetchAll(params);
+  }
+
+  fetchFA(params) {
+    return this.props.fetchFA({
+      url: `merchants/payments/failure_analysis${stringifyQueryParams(params)}`,
+    });
   }
 }

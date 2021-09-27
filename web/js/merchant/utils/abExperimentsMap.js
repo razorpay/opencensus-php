@@ -103,13 +103,30 @@ export default {
     'HYimXrRKRI0V7y', // Prod
     'HYiqGXEBQX3oo8', // Beta
   ],
-
   nitro_form_ab_experiment: [
     //prod
     'Hc1t1p85dJkRkp',
 
     // beta
     'Hb3p41OFV4RKzs',
+  ],
+  failure_analysis_text_exp: [
+    // beta experiment ids
+    'Hpid886p3sNk45',
+    // prod experiment ids
+    'I2OvzhA8n5WXzK',
+  ],
+  failure_analysis_payment_count_exp: [
+    // beta experiment ids
+    'I1CIVtHf67KXes',
+    // prod experiment ids
+    'I2OxeN2XVfI7iO',
+  ],
+  failure_analysis_rollout_exp: [
+    // beta experiment ids
+    'I1CKVFPEVTwGYe',
+    // prod experiment ids
+    'I2Oz7zUyWdMdju',
   ],
 
   growth_service_rollout_experiment: [

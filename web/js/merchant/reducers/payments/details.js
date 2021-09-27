@@ -11,13 +11,13 @@ const PAYMENT_FETCH_UPI_TRANSFER = 'PAYMENT_FETCH_UPI_TRANSFER';
 const PAYMENT_CAPTURE = 'PAYMENT_CAPTURE';
 const PAYMENT_REFUND = 'PAYMENT_REFUND';
 const PAYMENT_RESET = 'PAYMENT_RESET';
-const PAYMENT_TRANSFER = 'PAYMENT_TRANSFER';
 const CURRENT_BALANCE_FETCH = 'CURRENT_BALANCE_FETCH';
 const FETCH_REFUND_FEE = 'FETCH_REFUND_FEE';
 const MERCHANT_MANUAL_PAYMENT_ACTION = 'MERCHANT_MANUAL_PAYMENT_ACTION';
+const FETCH_FAILURE_ANALYSIS = 'FETCH_FAILURE_ANALYSIS';
 
 export const fetchItem = (id) => {
-  let payment = new Payment();
+  const payment = new Payment();
 
   return {
     type: PAYMENT_FETCH,
@@ -115,6 +115,13 @@ export const fetchRefundFee = (payment, amount) => {
   };
 };
 
+export const fetchFA = (data) => {
+  return {
+    type: FETCH_FAILURE_ANALYSIS,
+    payload: merchantFetch(data),
+  };
+};
+
 export const fetchMerchantManualAction = (payment_id) => {
   return {
     type: MERCHANT_MANUAL_PAYMENT_ACTION,
@@ -122,7 +129,7 @@ export const fetchMerchantManualAction = (payment_id) => {
   };
 };
 
-let initialState = {
+const initialState = {
   loading: true,
   payment: {
     notes: {},
@@ -167,10 +174,15 @@ let initialState = {
     details: {},
     error: null,
   },
+  failureAnalysisData: {
+    loading: true,
+    data: null,
+    error: null,
+  },
   error: null,
 };
 
-export default function (state = initialState, action) {
+export default (state = initialState, action) => {
   switch (action.type) {
     case `${PAYMENT_FETCH}::PENDING`:
     case `${PAYMENT_CAPTURE}::PENDING`:
@@ -353,10 +365,31 @@ export default function (state = initialState, action) {
         error: action.payload.errors,
       });
 
+    case `${FETCH_FAILURE_ANALYSIS}::PENDING`:
+      return set(state, 'failureAnalysisData', {
+        loading: true,
+        data: null,
+        error: null,
+      });
+
+    case `${FETCH_FAILURE_ANALYSIS}::SUCCESS`:
+      return set(state, 'failureAnalysisData', {
+        data: action.payload.data,
+        loading: false,
+        error: null,
+      });
+
+    case `${FETCH_FAILURE_ANALYSIS}::ERROR`:
+      return set(state, 'failureAnalysisData', {
+        loading: false,
+        error: action.payload.errors,
+        data: null,
+      });
+
     case `${PAYMENT_RESET}`:
       return initialState;
 
     default:
       return state;
   }
-}
+};
