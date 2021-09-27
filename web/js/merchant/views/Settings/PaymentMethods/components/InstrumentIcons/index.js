@@ -56,6 +56,8 @@ function getIconFn(iconName) {
       return 'paycash';
     case 'citibankrewards':
       return 'citibankrewards';
+    case 'sezzle':
+      return 'sezzle';
     default:
       return '';
   }

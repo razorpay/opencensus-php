@@ -657,6 +657,13 @@ const initialState = {
               slug: 'cardless_emi.instacred',
               icon: 'instacred',
             },
+            {
+              name: 'Sezzle',
+              description: '',
+              status: 'Request',
+              slug: 'cardless_emi.sezzle',
+              icon: 'sezzle',
+            },
           ],
         },
       ],

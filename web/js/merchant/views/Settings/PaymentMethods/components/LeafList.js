@@ -65,9 +65,7 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
       if (leafItem.slug === 'internationalcards') return <International />;
       else if (leafItem.slug === 'paypal') return <Paypal instrument={leafItem} />;
       else if (
-        (leafItem.slug === 'itzcash' ||
-          leafItem.slug === 'paycash' ||
-          leafItem.slug === 'citibankrewards') &&
+        ['itzcash', 'paycash', 'citibankrewards', 'cardless_emi.sezzle'].includes(leafItem.slug) &&
         leafItem.status !== 'activated'
       ) {
         return null;
