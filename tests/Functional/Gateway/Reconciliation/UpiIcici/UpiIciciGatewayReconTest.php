@@ -624,7 +624,7 @@ class UpiIciciGatewayReconTest extends TestCase
             'created_at'            => $createdAt,
             'internal_error_code'   => 'SERVER_ERROR_AMOUNT_TAMPERED',
             'error_code'            => 'SERVER_ERROR',
-            'error_description'     => 'The server encountered an error. The incident has been reported to admins.'
+            'error_description'     => 'We are facing some trouble completing your request at the moment. Please try again shortly.'
         ];
         // We will create four payment IDs where first two will be allowed and next two will not be
         $payments[$this->doUpiIciciPayment($override)] = [amount_format_IN($amount - $diff),      1];

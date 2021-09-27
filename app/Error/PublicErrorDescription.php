@@ -164,7 +164,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE                         = 'Payment processing failed due to insufficient balance';
     const BAD_REQUEST_PAYMENT_CARD_DECLINED                                     = 'Card declined by bank';
     const BAD_REQUEST_PAYMENT_CARD_EXPIRED                                      = 'Card is expired';
-    const BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE                          = 'Expiry date is not valid';
+    const BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE                          = 'Your payment was not successful as you have an invalid expiry date.To pay successfully try adding the right details';
     const BAD_REQUEST_PAYMENT_CARD_DETAILS_INVALID                              = 'Card details entered by the user are invalid.';
     const BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_PREVENTED_AUTHORIZATION         = 'Payment processing declined. The card issuing bank has prevented the payment from being authorized.';
     const BAD_REQUEST_PAYMENT_CARD_NUMBER_NOT_LEGITIMATE                        = 'The card number provided is not a legitimate one.';
@@ -1469,9 +1469,9 @@ class PublicErrorDescription
     const BAD_REQUEST_INTERNATIONAL_ENABLEMENT_VALIDATION_FAILURE                   = 'International enablement details couldn\'t be captured due to validation failure.';
 
     // Upi Payment Service
-    const SERVER_ERROR_UPI_PAYMENT_SERVICE_REQUEST_ERROR                            = 'The server encountered an error. The incident has been reported to admins.';
-    const SERVER_ERROR_UPI_PAYMENT_SERVICE_REQUEST_TIMEOUT                          = 'The server encountered an error. The incident has been reported to admins.';
-    const SERVER_ERROR_UPI_PAYMENT_SERVICE_CONNECTION_FAILED                        = 'The server encountered an error. The incident has been reported to admins.';
+    const SERVER_ERROR_UPI_PAYMENT_SERVICE_REQUEST_ERROR                            = 'We are facing some trouble completing your request at the moment. Please try again shortly.';
+    const SERVER_ERROR_UPI_PAYMENT_SERVICE_REQUEST_TIMEOUT                          = 'We are facing some trouble completing your request at the moment. Please try again shortly.';
+    const SERVER_ERROR_UPI_PAYMENT_SERVICE_CONNECTION_FAILED                        = 'We are facing some trouble completing your request at the moment. Please try again shortly.';
 
     const BAD_REQUEST_ENCRYPTED_COMMENT_NOT_FOUND                                   = 'No Credentials found';
 

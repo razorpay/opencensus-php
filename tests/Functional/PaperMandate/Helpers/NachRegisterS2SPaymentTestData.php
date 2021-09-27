@@ -149,7 +149,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::SERVER_ERROR,
-                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                    'description' => 'We are facing some trouble completing your request at the moment. Please try again shortly.',
                 ],
             ],
             'status_code' => 500,
