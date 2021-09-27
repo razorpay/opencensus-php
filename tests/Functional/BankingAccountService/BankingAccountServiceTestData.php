@@ -431,6 +431,20 @@ return [
         ],
     ],
 
+    'testSendRblCreatedLeadsFilledNotSubmittedWithin24hrs' => [
+        'request'  => [
+            'url'     => '/cron/rbl/lead_to_salesforce',
+            'method'  => 'POST',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
     'testSendRblApplicationLeadsToSalesForce' => [
         'request'  => [
             'url'     => '/cron/rbl/lead_to_salesforce',

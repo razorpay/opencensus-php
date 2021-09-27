@@ -398,7 +398,9 @@ class Core extends Base\Core
 
         $salesTeam = BankingAccount\Activation\Detail\Validator::SELF_SERVE;
 
-        $bankingAccountActivationDetail = (new BankingAccount\Activation\Detail\Repository())->fetchRblApplicationsBySalesTeamCreatedAtNotSubmitted($salesTeam, $timestamp);
+        $last24hrs = Carbon::now()->subDay()->getTimestamp();
+
+        $bankingAccountActivationDetail = (new BankingAccount\Activation\Detail\Repository())->fetchRblApplicationsBySalesTeamCreatedAtNotSubmitted($salesTeam, $timestamp, $last24hrs);
 
         foreach ($bankingAccountActivationDetail as $detail)
         {

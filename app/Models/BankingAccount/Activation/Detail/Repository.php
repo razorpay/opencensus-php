@@ -18,11 +18,12 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function fetchRblApplicationsBySalesTeamCreatedAtNotSubmitted($salesTeam, $timestamp)
+    public function fetchRblApplicationsBySalesTeamCreatedAtNotSubmitted($salesTeam, $timestamp, $last24hrs)
     {
         return $this->newQuery()
                     ->where(Entity::SALES_TEAM, '=', $salesTeam)
                     ->where(Entity::CREATED_AT, '>', $timestamp)
+                    ->where(Entity::CREATED_AT, '<', $last24hrs)
                     ->where(function ($query)
                         {
                              $query->where(Entity::DECLARATION_STEP, '=', 0)
