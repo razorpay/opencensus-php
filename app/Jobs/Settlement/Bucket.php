@@ -5,6 +5,7 @@ namespace RZP\Jobs\Settlement;
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
+use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use Jitendra\Lqext\TransactionAware;
 use RZP\Models\Settlement\Bucket\Core;
@@ -14,6 +15,8 @@ class Bucket extends Job
     use TransactionAware;
 
     const MAX_ATTEMPTS = 5;
+
+    const TRANSACTION_SETTLED_AT_ERROR_MESSAGE = 'transactions without settled_at value can not be consumed by new settlement service';
 
     /**
      * @var string
@@ -76,7 +79,16 @@ class Bucket extends Job
                 'credit'         => $txn->getCredit(),
                 'debit'          => $txn->getDebit(),
                 'settled_at'     => $txn->getSettledAt(),
+                // this is to check to which connection the query is going
+                'connection'     => $txn->getConnection()->getName(),
             ]);
+
+            // this is added to ensure that if the authorised transactions are created earlier
+            // then after capture dirty reads should not happen and we always get the updated transaction
+            if ($txn->getSettledAt() == null)
+            {
+                throw new LogicException(self::TRANSACTION_SETTLED_AT_ERROR_MESSAGE);
+            }
 
             $core = new Core;
 
