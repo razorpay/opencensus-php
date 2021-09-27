@@ -246,6 +246,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchPaymentsFailureAnalysisData($from, $to, $merchantId)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
+            ->selectRaw(Entity::STATUS . ', '. Entity::INTERNAL_ERROR_CODE . ', ' . Entity::METHOD . ', COUNT(*) as count')
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->groupBy(Entity::STATUS, Entity::INTERNAL_ERROR_CODE, Entity::METHOD)
+            ->get();
+    }
+
     public function fetchCreatedPaymentsWithStatus($from, $to, $gateway, $status)
     {
         return $this->newQuery()

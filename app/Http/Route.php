@@ -303,6 +303,7 @@ class Route
         'merchant_edit_email_create_user'          => ['post',     'merchants/email/update/create_user',             'MerchantController@putCreateNewUserAndTransferOwnerShip'           ],
         'merchant_billing_label_suggestions'       => ['get',      'merchants/billing_label/suggestions',            'MerchantController@getBillingLabelSuggestions'                     ],
         'merchant_billing_label_update'            => ['patch',    'merchants/billing_label/update',                 'MerchantController@patchMerchantBillingLabelAndDba'                ],
+        'merchant_fetch_payment_failure_analysis'  => ['get',      'merchants/payments/failure_analysis',            'MerchantController@getPaymentFailureAnalysis'                      ],
         // TODO : Remove this route after permanent fix is deployed.
         'correct_merchant_owners_products'         => ['put',      'merchants/{id}/correct_owner'   ,                'MerchantController@correctMerchantOwnerForBanking'                 ],
         // Razorpay App Store APIs
@@ -4007,6 +4008,7 @@ class Route
         'merchant_delete_config_logo',
         'merchant_fetch_config',
         'merchant_fetch_config_internal',
+        'merchant_fetch_payment_failure_analysis',
         'merchant_sub_create',
         'merchant_sub_send_password_link',
         'merchant_fetch_referrals',
@@ -7380,6 +7382,7 @@ class Route
             'merchant_fetch_methods',
             'merchant_fetch_referrals',
             'merchant_fetch_schedule_tasks',
+            'merchant_fetch_payment_failure_analysis',
             'merchant_fetch_tpvs',
             'merchant_fetch_users',
             'merchant_get_apps_on_appstore',

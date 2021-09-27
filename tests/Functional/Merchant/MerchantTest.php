@@ -5508,6 +5508,22 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetMerchantPaymentFailureAnalysis()
+    {
+        $this->createPaymentsForFailureAnalysis();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetMerchantPaymentFailureAnalysisInvalidRangeFail()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testPutPaytmCardNetworkAndEMIMethodWithUpdateObserverData()
     {
         $this->app->razorx->method('getTreatment')
@@ -6339,6 +6355,69 @@ class MerchantTest extends TestCase
         );
 
         $content = $this->makeRequestAndGetContent($request);
+    }
+
+    protected function createPaymentsForFailureAnalysis()
+    {
+        // for error source : internal
+        $this->fixtures->times(1)->create('payment:netbanking_created', [
+            'merchant_id'         => '10000000000000',
+            'method'              => 'card',
+            'status'              => 'failed',
+            'internal_error_code' => 'GATEWAY_ERROR_DUPLICATE_TRANSACTION',
+            'created_at'          => 1632361753,
+        ]);
+
+        // for error source : issuer_bank
+        $this->fixtures->times(2)->create('payment:netbanking_created', [
+            'merchant_id'         => '10000000000000',
+            'method'              => 'card',
+            'status'              => 'failed',
+            'internal_error_code' => 'BAD_REQUEST_CARD_DISABLED_FOR_ONLINE_PAYMENTS',
+            'created_at'          => 1632361754,
+        ]);
+
+        // for error source : customer
+        $this->fixtures->times(3)->create('payment:netbanking_created', [
+            'merchant_id'         => '10000000000000',
+            'method'              => 'card',
+            'status'              => 'failed',
+            'internal_error_code' => 'BAD_REQUEST_CARD_FROZEN',
+            'created_at'          => 1632361755,
+        ]);
+
+        // for error source : business
+        $this->fixtures->times(4)->create('payment:netbanking_created', [
+            'merchant_id'         => '10000000000000',
+            'method'              => 'card',
+            'status'              => 'failed',
+            'internal_error_code' => 'GATEWAY_ERROR_CARD_RUPAY_MAESTRO_NOT_ENABLED',
+            'created_at'          => 1632361756,
+        ]);
+
+        // for non failed payment : authorized
+        $this->fixtures->times(5)->create('payment:netbanking_created', [
+            'merchant_id' => '10000000000000',
+            'method'      => 'card',
+            'status'      => 'authorized',
+            'created_at'  => 1632361757,
+        ]);
+
+        // for non failed payment : captured
+        $this->fixtures->times(6)->create('payment:netbanking_created', [
+            'merchant_id' => '10000000000000',
+            'method'      => 'card',
+            'status'      => 'captured',
+            'created_at'  => 1632361757,
+        ]);
+
+        // for non failed payment : refunded
+        $this->fixtures->times(7)->create('payment:netbanking_created', [
+            'merchant_id' => '10000000000000',
+            'method'      => 'card',
+            'status'      => 'refunded',
+            'created_at'  => 1632361757,
+        ]);
     }
 
     protected function startTest($testDataToReplace = [])

@@ -705,4 +705,45 @@ final class Constants
     ];
 
     const USE_WORKFLOWS = 'use_workflows';
+
+    // Merchant Payments failure analysis related constants
+    const CUSTOMER        = 'customer';
+    const GATEWAY         = 'gateway';
+    const INTERNAL        = 'internal';
+    const BUSINESS        = 'business';
+    const ISSUER_BANK     = 'issuer_bank';
+    const NETWORK         = 'network';
+    const ISSUER           = 'issuer';
+    const CUSTOMER_PSP     = 'customer_psp';
+    const BENEFICIARY_BANK = 'beneficiary_bank';
+    const PROVIDER        = 'provider';
+
+    const CUSTOMER_DROP_OFF   = 'customer_dropp_off';
+    const BANK_FAILURE        = 'bank_failure';
+    const BUSINESS_FAILURE    = 'business_failure';
+    const OTHER_FAILURE       = 'other_failure';
+    const FAILURE_DETAILS     = 'failure_details';
+    const SUMMARY             = 'summary';
+
+    const NUMBER_OF_TOTAL_PAYMENTS      = 'number_of_total_payments';
+    const NUMBER_OF_SUCCESSFUL_PAYMENTS = 'number_of_successful_payments';
+
+    const QUERY_EXECUTION_TIME           = 'query_execution_time';
+    const FAILURE_ANALYSIS_FOR_TIME_RANGE = 'failure_analysis_for_time_range';
+
+    // Mapping from payment error source to failure category
+    const ERROR_SOURCE_CATEGORY = [
+        self::GATEWAY          => self::BANK_FAILURE,
+        self::BANK             => self::BANK_FAILURE,
+        self::ISSUER_BANK      => self::BANK_FAILURE,
+        self::NETWORK          => self::BANK_FAILURE,
+        self::CUSTOMER_PSP     => self::BANK_FAILURE,
+        self::ISSUER           => self::BANK_FAILURE,
+        self::BENEFICIARY_BANK => self::BANK_FAILURE,
+        self::CUSTOMER         => self::CUSTOMER_DROP_OFF,
+        self::BUSINESS         => self::BUSINESS_FAILURE,
+        self::MERCHANT         => self::BUSINESS_FAILURE,
+        self::PROVIDER         => self::OTHER_FAILURE,
+        self::INTERNAL         => self::OTHER_FAILURE,
+    ];
 }

@@ -4673,6 +4673,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GSTIN_UPDATE_SELF_SERVE_VALIDATION_CREATED          = 'GSTIN_UPDATE_SELF_SERVE_VALIDATION_CREATED';
     const GSTIN_SELF_SERVE_BVS_CALLBACK_RECEIVED              = 'GSTIN_SELF_SERVE_BVS_CALLBACK_RECEIVED';
 
+    // merchant failure Analysis trace
+    const MERCHANT_FAILURE_ANALYSIS_QUERY_TIME                = 'MERCHANT_FAILURE_ANALYSIS_QUERY_TIME';
+
     //
     // BVS related trace codes
     //

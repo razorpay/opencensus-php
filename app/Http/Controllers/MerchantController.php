@@ -214,6 +214,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getPaymentFailureAnalysis()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getPaymentFailureAnalysis($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postMerchantEmail2fa()
     {
         $input = Request::all();

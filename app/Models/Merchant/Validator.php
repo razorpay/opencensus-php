@@ -264,6 +264,11 @@ class Validator extends Base\Validator
         'data'           => 'required|array'
     ];
 
+    protected static $getPaymentFailureAnalysisRules = [
+        'from'          => 'required|filled|epoch',
+        'to'            => 'required|filled|epoch'
+    ];
+
     protected static $instrumentStatusUpdateMerchantMailRules = [
         'contact_name'      => 'required|string',
         'contact_email'     => 'required|string',
@@ -2094,6 +2099,17 @@ class Validator extends Base\Validator
         if ((empty($product) === false) and (in_array($product, $validProducts, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_INVALID_PRODUCT_NAME);
+        }
+    }
+
+    public function validateRangeForFailureAnalysis(array $input)
+    {
+        // max range of query can be 90 days (7776000 seconds)
+        if (($input['to'] < $input['from']) or
+            (($input['to'] - $input['from']) >= 7776000))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The date range is invalid', null, null );
         }
     }
 

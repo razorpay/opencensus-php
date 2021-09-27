@@ -174,6 +174,7 @@ class Service extends Base\Service
         [User\Constants::UTM_CAMPAIGN => 'Facebook_RZPx_CA_Conv_NewAcquisItion_India_Entrepreneurship_2555_M_All_07092021', User\Constants::UTM_SOURCE => 'Facebook', User\Constants::UTM_MEDIUM => 'CPC'],
     ];
 
+
     /**
      * Creates a merchant and saves in database
      *
@@ -1086,6 +1087,74 @@ class Service extends Base\Service
         $response += (new CheckoutView())->addOrgInformationInResponse($this->merchant);
 
         return $response;
+    }
+
+    public function getPaymentFailureAnalysis($input)
+    {
+        (new Validator())->validateInput('get_payment_failure_analysis', $input);
+
+        (new Validator())->validateRangeForFailureAnalysis($input);
+
+        $merchant = app('basicauth')->getMerchant();
+
+        $startTime = microtime(true);
+        $failureAnalysisData = $this->repo->payment->fetchPaymentsFailureAnalysisData($input['from'], $input['to'], $merchant->getId());
+
+        $this->trace->info(TraceCode::MERCHANT_FAILURE_ANALYSIS_QUERY_TIME, [
+            MerchantConstants::QUERY_EXECUTION_TIME            => (microtime(true) - $startTime),
+            MerchantConstants::FAILURE_ANALYSIS_FOR_TIME_RANGE => $input['to'] - $input['from'],
+        ]);
+
+        $response = [
+            MerchantConstants::SUMMARY => [
+                MerchantConstants::NUMBER_OF_TOTAL_PAYMENTS      => 0,
+                MerchantConstants::NUMBER_OF_SUCCESSFUL_PAYMENTS => 0,
+            ],
+            MerchantConstants::FAILURE_DETAILS => [
+                MerchantConstants::CUSTOMER_DROP_OFF => 0,
+                MerchantConstants::BANK_FAILURE      => 0,
+                MerchantConstants::BUSINESS_FAILURE  => 0,
+                MerchantConstants::OTHER_FAILURE     => 0,
+            ],
+        ];
+
+        foreach ($failureAnalysisData as $data)
+        {
+            $this->addPaymentCountInResponseForFailureAnalysis($response, $data);
+        }
+
+        return $response;
+    }
+
+    protected function addPaymentCountInResponseForFailureAnalysis(&$response, $data)
+    {
+        $response[MerchantConstants::SUMMARY][MerchantConstants::NUMBER_OF_TOTAL_PAYMENTS] += $data->count;
+
+        $status = $data->status;
+
+        if (in_array($status, [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED, Payment\Status::REFUNDED]) === true)
+        {
+            $response[MerchantConstants::SUMMARY][MerchantConstants::NUMBER_OF_SUCCESSFUL_PAYMENTS] += $data->count;
+        }
+        elseif ($status === Payment\Status::FAILED)
+        {
+            $errorSourceCategory = $this->getErrorSourceCategoryForFailureAnalysis($data->internal_error_code, $data->method);
+
+            $response[MerchantConstants::FAILURE_DETAILS][$errorSourceCategory] += $data->count;
+        }
+    }
+
+    protected function getErrorSourceCategoryForFailureAnalysis($errorCode, $method)
+    {
+        list($errorCodeJson,) = $this->app['error_mapper']->getErrorMapping($errorCode, $method);
+
+        if ((isset($errorCodeJson['source']) === true) and
+            (key_exists($errorCodeJson['source'], MerchantConstants::ERROR_SOURCE_CATEGORY) === true))
+        {
+            return MerchantConstants::ERROR_SOURCE_CATEGORY[$errorCodeJson['source']];
+        }
+
+        return MerchantConstants::OTHER_FAILURE;
     }
 
     public function shouldShowSettlementUxRevamp(): bool

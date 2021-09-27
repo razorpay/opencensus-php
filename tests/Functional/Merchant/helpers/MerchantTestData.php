@@ -4685,6 +4685,47 @@ return [
         ]
     ],
 
+    'testGetMerchantPaymentFailureAnalysis'=> [
+        'request' => [
+            'url' => '/merchants/payments/failure_analysis?from=1632361752&to=1632361757',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'failure_details' => [
+                    'other_failure'      => 1,
+                    'bank_failure'       => 2,
+                    'customer_dropp_off' => 3,
+                    'business_failure'   => 4,
+                ],
+                'summary'         => [
+                    'number_of_successful_payments' => 18,
+                    'number_of_total_payments'      => 28,
+                ],
+            ]
+        ]
+    ],
+
+    'testGetMerchantPaymentFailureAnalysisInvalidRangeFail'=> [
+        'request' => [
+            'url' => '/merchants/payments/failure_analysis?from=1632361752&to=1640224152',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The date range is invalid',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testPutPaytmCardNetworkAndEMIMethodWithUpdateObserverData'=> [
         'request' => [
             'url' => '/merchants/10000000000000/methods',
