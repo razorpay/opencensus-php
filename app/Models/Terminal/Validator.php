@@ -248,6 +248,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required',
         Entity::GATEWAY_TERMINAL_PASSWORD2 => 'required',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::NOTES                      => 'sometimes|string',
+        Entity::NETBANKING                 => 'sometimes|boolean|in:0,1',
+        Entity::CARD                       => 'sometimes|boolean|in:0,1',
     ];
 
     protected static $payuTerminalRules = [
@@ -563,6 +567,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $atomEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
@@ -572,10 +577,13 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::GATEWAY_SECURE_SECRET2      => 'sometimes|string',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
-        Entity::STATUS                     =>  'sometimes|in:deactivated,pending,activated',
+        Entity::STATUS                      => 'sometimes|in:deactivated,pending,activated',
+        Entity::NOTES                       => 'sometimes|string',
         Entity::TPV                         => 'sometimes|in:0,1,2',
         Entity::TYPE                        => 'sometimes|array',
         Entity::TYPE . '.non_recurring'     => 'sometimes|in:1',
+        Entity::NETBANKING                  => 'sometimes|boolean|in:0,1',
+        Entity::CARD                        => 'sometimes|boolean|in:0,1',
     ];
 
     protected static $bajajfinservEditTerminalRules = [
