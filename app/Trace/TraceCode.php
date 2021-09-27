@@ -5315,6 +5315,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const ADD_ADDITIONAL_WEBSITE_WORKFLOW_ACTION_NOT_FOUND    = 'ADD_ADDITIONAL_WEBSITE_WORKFLOW_ACTION_NOT_FOUND';
 
+    // Save Transaction App Urls
+    const TXN_APP_URL_NOT_SAVED                               = 'TXN_APP_URL_NOT_SAVED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

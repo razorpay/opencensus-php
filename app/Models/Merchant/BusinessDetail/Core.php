@@ -45,6 +45,18 @@ class Core extends Base\Core
                         $input[BusinessDetailEntity::APP_URLS] = $this->mergeJson($businessDetail->getAppUrls(), $input[BusinessDetailEntity::APP_URLS]);
                     }
 
+                    if (isset($input[Constants::TXN_URL]) === true)
+                    {
+                        $appUrls = $this->updatedAppUrlsWithTxnPlaystoreUrls($input[Constants::TXN_URL], $businessDetail);
+
+                        if ($appUrls !== null)
+                        {
+                            $input[BusinessDetailEntity::APP_URLS] = $appUrls;
+                        }
+
+                        unset($input[Constants::TXN_URL]);
+                    }
+
                     $businessDetail->edit($input, MerchantConstants::EDIT);
 
                     $this->repo->merchant_business_detail->saveOrFail($businessDetail);
@@ -105,6 +117,15 @@ class Core extends Base\Core
                         $input[BusinessDetailEntity::APP_URLS] = $this->mergeJson(BusinessDetailEntity::getDefaultAppUrls(), $input[BusinessDetailEntity::APP_URLS]);
                     }
 
+                    if (isset($input[Constants::TXN_URL]) === true)
+                    {
+                        $input[BusinessDetailEntity::APP_URLS] = [
+                            Constants::TXN_PLAYSTORE_URLS   => [$input[Constants::TXN_URL]],
+                        ];
+
+                        unset($input[Constants::TXN_URL]);
+                    }
+
                     $businessDetail->build($input);
 
                     $this->repo->merchant_business_detail->saveOrFail($businessDetail);
@@ -130,5 +151,48 @@ class Core extends Base\Core
         }
 
         return $existingDetails;
+    }
+
+    // moves the current url to most recently used if the current url exists in the list
+    protected function moveToMRU(& $txnUrls, $currentUrl)
+    {
+        $currentUrlPos = array_search($currentUrl, $txnUrls);
+
+        if ($currentUrlPos !== false)
+        {
+            array_splice($txnUrls, $currentUrlPos, 1);
+        }
+
+        array_push($txnUrls, $currentUrl);
+    }
+
+    protected function updatedAppUrlsWithTxnPlaystoreUrls($currentUrl, $businessDetail)
+    {
+        $appUrls = $businessDetail->getAppUrls();
+
+        if (isset($appUrls) === false
+            or isset($appUrls[Constants::PLAYSTORE_URL]) === true)
+        {
+            return null;
+        }
+
+        $txnUrls = [];
+
+        if (isset($appUrls[Constants::TXN_PLAYSTORE_URLS]) === true)
+        {
+            $txnUrls = $appUrls[Constants::TXN_PLAYSTORE_URLS];
+        }
+
+        $this->moveToMRU($txnUrls, $currentUrl);
+
+        if (sizeof($txnUrls) > Constants::TXN_PLAYSTORE_URL_COUNT_LIMIT)
+        {
+            // remove the least recent url
+            array_shift($txnUrls);
+        }
+
+        $appUrls[Constants::TXN_PLAYSTORE_URLS] = $txnUrls;
+
+        return $appUrls;
     }
 }

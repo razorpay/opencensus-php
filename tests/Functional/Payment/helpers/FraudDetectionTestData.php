@@ -68,6 +68,21 @@ return [
         ],
     ],
 
+    'runFraudDetectionForAppUrl' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 200,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,
+        ],
+    ],
+
     'testFraudDetectionFailedByShieldDetectedByMaxMind' => [
         'response'  => [
             'content'     => [

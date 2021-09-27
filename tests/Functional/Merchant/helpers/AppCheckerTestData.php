@@ -71,6 +71,17 @@ return [
             ]
         ],
     ],
+    'testPeriodicCronLiveWithTxnUrls' => [
+        'request'  => [
+            'url'     => '/merchant/app/checker/cron',
+            'method'  => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
     'testPeriodicCronLive' => [
         'request'  => [
             'url'     => '/merchant/app/checker/cron',

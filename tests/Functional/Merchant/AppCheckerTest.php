@@ -143,6 +143,39 @@ class AppCheckerTest extends TestCase
         $this->assertNull($redisKey);
     }
 
+    public function testPeriodicCronLiveWithTxnUrls()
+    {
+        $this->ba->cronAuth();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'hold_funds' => false,
+            'activated'  => true,
+            'activated_at' => now()->timestamp - 24*60*60,
+        ]);
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => $merchant->getId(),
+            'app_urls' => [
+                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+                'txn_playstore_urls' => [
+                    'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+                ],
+            ]
+        ]);
+
+        $this->fixtures->create('payment', [
+            'merchant_id' => $merchant->getId(),
+        ]);
+
+        $this->startTest();
+
+        $redisMap = Constants::eventAndCheckerTypeRedisMap(Constants::PERIODIC_CHECKER_EVENT, Constants::APP_CHECKER);
+
+        $redisKey = $this->app['cache']->connection()->hget($redisMap, $merchant->getId());
+
+        $this->assertNull($redisKey);
+    }
+
     public function testPeriodicCronNotLive()
     {
         $this->ba->cronAuth();

@@ -20,4 +20,10 @@ class Constants
     //app_urls
     const PLAYSTORE_URL    = 'playstore_url';
     const APPSTORE_URL     = 'appstore_url';
+
+    // transaction app url constants
+    const TXN_URL = 'txn_url';
+    const PLAYSTORE_URL_PREFIX = 'https://play.google.com/store/apps/details?id=';
+    const TXN_PLAYSTORE_URL_COUNT_LIMIT = 10;
+    const TXN_PLAYSTORE_URLS = 'txn_playstore_urls';
 }

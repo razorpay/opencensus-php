@@ -61,6 +61,8 @@ class Shield
 
             $riskData = $this->parseShieldResponse($response);
 
+            $riskData[ShieldConstants::EVALUATION_PAYLOAD] = $shieldPayload;
+
             $this->trace->info(
                 TraceCode::FRAUD_DETECTION_DONE,
                 [

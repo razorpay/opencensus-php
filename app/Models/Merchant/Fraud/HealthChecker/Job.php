@@ -217,7 +217,7 @@ class Job extends Base\Core
     private function getAppUrls(Merchant\Entity $merchant): array
     {
         $businessApp = $merchant->merchantBusinessDetail->getAppUrls();
-        return $businessApp;
+        return array_flatten($businessApp);
     }
 
     private function getUrlsForChekerType($merchant, $checkerType): array

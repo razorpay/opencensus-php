@@ -74,11 +74,11 @@ class ShieldTest extends TestCase
         return $merchant;
     }
 
-    private function setPopulateMerchantDetailsMethod()
+    private function setMethod($methodName)
     {
         $class = new ReflectionClass(Shield::class);
 
-        $populateMerchantDetailsMethod = $class->getMethod('populateMerchantDetails');
+        $populateMerchantDetailsMethod = $class->getMethod($methodName);
 
         $populateMerchantDetailsMethod->setAccessible(true);
 
@@ -87,7 +87,7 @@ class ShieldTest extends TestCase
 
     public function testMerchantBusinessDetailNotPresent()
     {
-        $populateMerchantDetailsMethod = $this->setPopulateMerchantDetailsMethod();
+        $populateMerchantDetailsMethod = $this->setMethod('populateMerchantDetails');
 
         $merchant = $this->createCommonDataForBusinessDetail();
 
@@ -100,7 +100,7 @@ class ShieldTest extends TestCase
 
     public function testMerchantBusinessDetailPresentWithoutAppUrl()
     {
-        $populateMerchantDetailsMethod = $this->setPopulateMerchantDetailsMethod();
+        $populateMerchantDetailsMethod = $this->setMethod('populateMerchantDetails');
 
         $merchant = $this->createCommonDataForBusinessDetail();
 
@@ -117,7 +117,7 @@ class ShieldTest extends TestCase
 
     public function testMerchantBusinessDetailPresentWithAppUrl()
     {
-        $populateMerchantDetailsMethod = $this->setPopulateMerchantDetailsMethod();
+        $populateMerchantDetailsMethod = $this->setMethod('populateMerchantDetails');
 
         $merchant = $this->createCommonDataForBusinessDetail();
 

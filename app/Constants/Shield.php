@@ -124,4 +124,8 @@ final class Shield
         self::ACTION_REVIEW,
         self::ACTION_BLOCK,
     ];
+
+    const EVALUATION_PAYLOAD    = 'evaluation_payload';
+    const MOBILE_SDK = 'mobile_sdk';
+    const ANDROID = 'android';
 }

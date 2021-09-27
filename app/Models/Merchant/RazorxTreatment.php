@@ -337,6 +337,9 @@ final class RazorxTreatment
     // Experiment to send merchant downtimes to checkout and in fetch api
     const SEND_MERCHANT_DOWNTIMES           = 'send_merchant_downtimes';
 
+    // Experiment to save transaction app urls in merchant business detail
+    const SAVE_TXN_APP_URLS = 'save_txn_app_urls';
+
     // Experiment to update linked account schedules when parent merchant schedule is updated
     const UPDATE_LINKED_ACCOUNT_SCHEDULES_FEATURE = 'UPDATE_LINKED_ACCOUNT_SCHEDULES_FEATURE';
 
