@@ -145,6 +145,123 @@ class IciciGatewayTest extends TestCase
         });
     }
 
+    public function testGatewayFileRegisterSequenceIssue()
+    {
+        Mail::fake();
+
+        $payment1 = $this->createDummyRegisterToken();
+        $this->fixtures->stripSign($payment1['id']);
+
+        $this->createDummyRegisterToken();
+
+        $this->createDummyRegisterToken();
+
+        $payment4 = $this->createDummyRegisterToken();
+        $this->fixtures->stripSign($payment4['id']);
+
+        $this->ba->cronAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $files = $this->getEntities('file_store', [], true);
+
+        $zipFile1 = $files['items'][1];
+
+        $zipFile2 = $files['items'][0];
+
+        $expectedFileContentZip = [
+            'type'        => 'icici_nach_register',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'zip',
+        ];
+
+        $zipArchive = new ZipArchive();
+
+        //zip 1
+        $zipFilePath1 = storage_path('files/filestore') . '/' . $zipFile1['location'];
+
+        $zipArchive->open($zipFilePath1);
+
+        $zipArchive->extractTo(dirname($zipFilePath1) . '/extracted');
+
+        //zip 2
+        $zipFilePath2 = storage_path('files/filestore') . '/' . $zipFile2['location'];
+
+        $zipArchive->open($zipFilePath2);
+
+        $zipArchive->extractTo(dirname($zipFilePath2) . '/extracted2');
+
+        $zipArchive->close();
+
+        $fileName = 'MMS-CREATE-ICIC-ICIC406434-{$date}-{$count}';
+
+        $date = Carbon::now(Timezone::IST)->format('dmY');
+
+        $fileName1 = strtr($fileName, ['{$date}' => $date, '{$count}' => '000001']);
+        $fileName2 = strtr($fileName, ['{$date}' => $date, '{$count}' => '000002']);
+        $fileName3 = strtr($fileName, ['{$date}' => $date, '{$count}' => '000003']);
+        $fileName4 = strtr($fileName, ['{$date}' => $date, '{$count}' => '000004']);
+
+        $extractedFileList1 = scandir(dirname($zipFilePath1) . '/extracted');
+        $extractedFileList2 = scandir(dirname($zipFilePath2) . '/extracted2');
+
+        $expectedExtractedFiles1 = [
+            $fileName1 . '-INP.xml',
+            $fileName1 . '_detailfront.jpg',
+            $fileName1 . '_front.tiff',
+            $fileName2 . '-INP.xml',
+            $fileName2 . '_detailfront.jpg',
+            $fileName2 . '_front.tiff',
+            $fileName3 . '-INP.xml',
+            $fileName3 . '_detailfront.jpg',
+            $fileName3 . '_front.tiff',
+        ];
+
+        $expectedExtractedFiles2 = [
+            $fileName4 . '-INP.xml',
+            $fileName4 . '_detailfront.jpg',
+            $fileName4 . '_front.tiff',
+        ];
+
+        $this->assertEquals(['.', '..'], array_diff($extractedFileList1, $expectedExtractedFiles1));
+        $this->assertEquals(['.', '..'], array_diff($extractedFileList2, $expectedExtractedFiles2));
+
+        $this->assertArraySelectiveEquals($expectedFileContentZip, $zipFile1);
+
+        $this->validateRegisterXml(dirname($zipFilePath1) . '/extracted/' . $fileName1 . '-INP.xml', $payment1['id']);
+        $this->validateRegisterXml(dirname($zipFilePath2) . '/extracted2/' . $fileName4 . '-INP.xml', $payment4['id']);
+
+        Mail::assertQueued(NachMail::class, function ($mail) use ($fileName, $date)
+        {
+            //file 1
+            $fileName1 = strtr($fileName, ['{$date}' => $date, '{$count}' => '000001']);
+
+            $fileName1 = $fileName1 . '-INP.zip';
+
+            $this->assertEquals($fileName1, (array_keys($mail->viewData['mailData']))[0]);
+
+            $mailData = $mail->viewData['mailData'];
+
+            $this->assertEquals(3, $mailData[$fileName1]['count']);
+
+            //file 2
+            $fileName2 = strtr($fileName, ['{$date}' => $date, '{$count}' => '000002']);
+
+            $fileName2 = $fileName2 . '-INP.zip';
+
+            $this->assertEquals($fileName2, (array_keys($mail->viewData['mailData']))[1]);
+
+            $mailData = $mail->viewData['mailData'];
+
+            $this->assertEquals(1, $mailData[$fileName2]['count']);
+
+            return true;
+        });
+    }
+
     public function testGatewayFileRegisterOnNonWorkingDay()
     {
         $fixedTime = (new Carbon())->timestamp(self::FIXED_NON_WORKING_DAY_TIME);

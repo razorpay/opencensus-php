@@ -44,7 +44,6 @@ class PaperNachIcici extends Base
     const FILE_TYPE              = FileStore\Type::ICICI_NACH_REGISTER;
     const GATEWAY                = Payment\Gateway::NACH_ICICI;
     const BASE_STORAGE_DIRECTORY = 'Icici/Nach/Register/';
-    const ZIP_FILE_SIZE          = 50;
 
     const IMAGE_SIZE_LIMIT = 99000;
 
@@ -54,6 +53,8 @@ class PaperNachIcici extends Base
 
     protected $mailData;
 
+    protected $zipFileSize = 50;
+
     public function __construct()
     {
         parent::__construct();
@@ -61,6 +62,11 @@ class PaperNachIcici extends Base
         $this->mailData = [];
 
         $this->fileStore = [];
+
+        if ($this->isTestMode() === true)
+        {
+            $this->zipFileSize = 3;
+        }
     }
 
     protected function increaseAllowedSystemLimits()
@@ -144,12 +150,12 @@ class PaperNachIcici extends Base
             }
 
             // For the last set of files that need to be zipped
-            if ((($count - 1) % self::ZIP_FILE_SIZE) !== (self::ZIP_FILE_SIZE - 1))
+            if ((($count - 1) % $this->zipFileSize) !== ($this->zipFileSize - 1))
             {
                 $this->generateZipFile($dirName);
                 $this->deleteGeneratedFiles($dirName);
                 $fileNameForMail = basename($dirName) . '.' . self::EXTENSION;
-                $this->mailData[$fileNameForMail]['count'] = $count;
+                $this->mailData[$fileNameForMail]['count'] = $count % $this->zipFileSize;
             }
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
@@ -266,9 +272,9 @@ class PaperNachIcici extends Base
 
     protected function prepareFilesForToken($token, $count): string
     {
-        $fileNo = ($count % self::ZIP_FILE_SIZE) + 1;
+        $fileNo = $count + 1;
 
-        $dirNo = ((int) floor($count / self::ZIP_FILE_SIZE)) + 1;
+        $dirNo = ((int) floor($count / $this->zipFileSize)) + 1;
 
         $fileCode = $this->getPaddedValue($fileNo, 6, '0', STR_PAD_LEFT);
 
@@ -289,12 +295,12 @@ class PaperNachIcici extends Base
         $this->generateXml($token, $dirName, $baseFileName);
 
         // zip file can contain max 150 files (50 registrations - 1 xml, 2 images)
-        if (($count % self::ZIP_FILE_SIZE) === (self::ZIP_FILE_SIZE - 1))
+        if (($count % $this->zipFileSize) === ($this->zipFileSize - 1))
         {
             $this->generateZipFile($dirName);
             $this->deleteGeneratedFiles($dirName);
             $fileNameForMail = basename($dirName) . '.' . self::EXTENSION;
-            $this->mailData[$fileNameForMail]['count'] = self::ZIP_FILE_SIZE;
+            $this->mailData[$fileNameForMail]['count'] = $this->zipFileSize;
         }
 
         return $dirName;

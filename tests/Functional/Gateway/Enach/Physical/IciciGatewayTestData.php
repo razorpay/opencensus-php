@@ -37,6 +37,39 @@ return [
         ],
     ],
 
+    'testGatewayFileRegisterSequenceIssue' => [
+        'request' => [
+            'content' => [
+                'type'    => 'nach_register',
+                'targets' => ['paper_nach_icici'],
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'recipients'          => [
+                            ''
+                        ],
+                        'status'              => 'file_generated',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'type'                => 'nach_register',
+                        'target'              => 'paper_nach_icici',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ],
+            ]
+        ],
+    ],
+
     'testGatewayFileRegisterOnNonWorkingDay' => [
         'request' => [
             'content' => [
