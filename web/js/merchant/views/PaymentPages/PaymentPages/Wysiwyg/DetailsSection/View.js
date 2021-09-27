@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { updateData } from 'merchant/reducers/wysiwyg';
 import Title from './Title';
@@ -7,22 +8,22 @@ import Support from './Support';
 import Terms from './Terms';
 
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
     paymentPageEntity: state.wysiwyg.paymentPageEntity,
     isPageDirty: state.wysiwyg.isPageDirty,
   }),
   {
     updateData,
-  }
+  },
 )
 export default class View extends React.PureComponent {
   updateData({ target }) {
-    let { name, value } = target;
-    // console.log('NAME...', name);
+    const { name } = target;
+    let { value } = target;
 
     if (target.type === 'checkbox') {
-      value = target.checked | 0; // Convert to 1 / 0
+      value = Number(target.checked); // Convert to 1 / 0
     }
 
     const dataToUpdate = {
@@ -41,16 +42,12 @@ export default class View extends React.PureComponent {
 
   render() {
     const { paymentPageEntity, isPageDirty, user } = this.props;
-    const self = this;
 
     if (!paymentPageEntity) {
       return null;
     }
 
-    if (
-      paymentPageEntity.id &&
-      typeof paymentPageEntity.title === 'undefined'
-    ) {
+    if (paymentPageEntity.id && typeof paymentPageEntity.title === 'undefined') {
       return (
         <div class="spinner-container">
           <div class="spin-btn large visible" />
@@ -65,27 +62,18 @@ export default class View extends React.PureComponent {
         <div id="description-details">
           <Title
             title={paymentPageEntity.title}
-            key={
-              paymentPageEntity.id ? paymentPageEntity.id + '-title' : 'title'
-            }
+            key={paymentPageEntity.id ? `${paymentPageEntity.id}-title` : 'title'}
             updateData={this.updateData}
           />
           <Description
             description={paymentPageEntity.description}
             isPageDirty={isPageDirty}
-            key={
-              paymentPageEntity.id
-                ? paymentPageEntity.id + '-description'
-                : 'description'
-            }
+            key={paymentPageEntity.id ? `${paymentPageEntity.id}-description` : 'description'}
             updateData={this.updateData}
           />
         </div>
 
-        <Share
-          allowSocialShare={settings.allow_social_share}
-          updateData={this.updateData}
-        />
+        <Share allowSocialShare={settings.allow_social_share} updateData={this.updateData} />
 
         <Support
           support_contact={paymentPageEntity.support_contact}
@@ -96,7 +84,11 @@ export default class View extends React.PureComponent {
           user={user}
         />
 
-        <Terms terms={paymentPageEntity.terms} updateData={this.updateData} />
+        <Terms
+          terms={paymentPageEntity.terms}
+          updateData={this.updateData}
+          isPPNewFooterUX={user.isPPNewFooterUX}
+        />
       </React.Fragment>
     );
   }

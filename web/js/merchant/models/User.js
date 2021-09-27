@@ -537,6 +537,10 @@ export default class User {
     return this.getExpStatus('pp_success_page');
   }
 
+  get isPPNewFooterUX() {
+    return this.getExpStatus('pp_hostedpage_new_footer');
+  }
+
   /* Check case-insensitive tag check existence */
   findTag(tag) {
     return this.tags.some((t) => t.toLowerCase() === tag.toLowerCase());

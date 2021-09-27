@@ -1760,7 +1760,8 @@ class Service extends Base\Service
             'remove_presignup_functionality',
             'bvs_get_gst_details',
             'route_transfer_state',
-            'optimizer_wallets'
+            'optimizer_wallets',
+            'pp_hostedpage_new_footer',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

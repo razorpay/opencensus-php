@@ -215,7 +215,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   componentDidMount() {
     this.props.initDefaultFormItems();
 
-    track.init(this.props.tracking.trackEvent, { payment_page_id: this.props.id });
+    track.init(this.props.tracking.trackEvent, {
+      payment_page_id: this.props.id,
+    });
 
     // Load color.js
     let script = document.createElement('script');
@@ -237,8 +239,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       });
     };
 
-    script.src = 'https://cdn.razorpay.com/static/hosted/wysiwyg.js';
-    // script.src = 'https://betacdn.razorpay.com/static/hosted/wysiwyg.js'; // For Beta testing
+    script.src = `${window.cdnBaseUrl}/static/hosted/wysiwyg.js`;
     document.head.appendChild(script);
 
     document.getElementById('paymentpage-container').classList.add('theme-desktop');
@@ -726,6 +727,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       brand_color:
         this.props.config.brand_color || this.props.org.merchant_styles?.checkout_theme_color,
       image: this.props.user.logo_url,
+      footer_variant: this.props.user.isPPNewFooterUX ? 'on' : 'control',
     };
 
     if (paymentPageEntity) {
