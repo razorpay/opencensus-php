@@ -177,4 +177,11 @@ export default {
     // prod experiment ids
     'HpmhmqFPLZ3TTw',
   ],
+  pp_zapier_announcement: [
+    // beta
+    'I2TybjEbDlkjqM',
+
+    // prod
+    'I2MzbJTVYRFauc',
+  ],
 };

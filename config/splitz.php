@@ -100,5 +100,8 @@ return [
         // EDX experiments
         'ZAPIER_ANNOUNCEMENT_SPLITZ' => env('ZAPIER_ANNOUNCEMENT_SPLITZ', ''),
         'EDX_APP_INTEGRATION_BANNER_SPLITZ' => env('EDX_APP_INTEGRATION_BANNER_SPLITZ', ''),
+
+        // PP Zapier Banner
+        'PP_ZAPIER_BANNER_SPLITZ' => env('PP_ZAPIER_BANNER_SPLITZ', ''),
     ]
 ];

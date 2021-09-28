@@ -1017,6 +1017,10 @@ export default class User {
     );
   }
 
+  get isPaymentPageZapierBannerEnabled() {
+    return getSplitzExperimentVariant('pp_zapier_announcement')?.variables?.result === 'on';
+  }
+
   // This is for new payment links microservice.
   // If enabled, then all the apis before sending data, and after fetching/receiving data must transform its data, as FE operate on old structure until 100% rollout.
   get isPaymentlinksV2Enabled() {

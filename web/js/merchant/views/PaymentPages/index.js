@@ -9,8 +9,11 @@ import { getCurrentProductOnBoardingDetails } from 'merchant/reducers/onboarding
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import OnBoarding from './OnBoarding';
 import QuickGuide from './QuickGuide';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
+
+import PaymentPageZapierBanner from '../../components/Announcements/PaymentPageZapier';
 
 @connect((state) => {
   return {
@@ -29,6 +32,13 @@ export default class PaymentPagesContainer extends Component {
 
     return (
       <>
+        <ShowWhen
+          additionalCondition={(currentUser) => currentUser.isPaymentPageZapierBannerEnabled}
+        >
+          <div className="banner-container">
+            <PaymentPageZapierBanner bannerKey={`payment-pages-zapier-${user.current}`} />
+          </div>
+        </ShowWhen>
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}
 
