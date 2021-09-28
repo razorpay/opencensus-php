@@ -387,7 +387,10 @@ class Service extends Base\Service
             TraceCode::BANK_TRANSFER_MANUAL_PROCESS_REQUEST,
             [
                 'provider' => $provider,
-                'input'    => $input,
+                'input'    => $this->core->removePiiForLogging($input, [
+                                                                        Entity::PAYEE_ACCOUNT,
+                                                                        Entity::PAYER_ACCOUNT,
+                                                                        Entity::PAYER_NAME]),
             ]
         );
 
