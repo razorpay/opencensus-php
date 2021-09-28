@@ -1,4 +1,14 @@
 export const partnerProducts = {
+  zapier: {
+    slug: 'zapier',
+    title: 'Zapier',
+    url: 'https://zapier.com/apps/razorpay-1/integrations',
+    category: 'Workflow Automation',
+    description: 'Integrate with Razorpay triggers in Zapier to automate your workflows',
+    logo: 'zapier.png', // relative to web/css/assets/app-store/partner-logo/
+    brandColor: '#FF743B',
+    isNew: true,
+  },
   aisensy: {
     slug: 'aisensy',
     title: 'AiSensy',
