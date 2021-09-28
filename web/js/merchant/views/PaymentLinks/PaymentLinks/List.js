@@ -101,18 +101,15 @@ export default class PaymentLinksContainer extends ListContainer {
     this.state = { ...this.state, date: { from: '', to: '' } };
   }
 
-  componentWillMount() {
-    const params = getURLQueryParams(this.props.location.search);
-    setTimeout(() => {
-      if (params?.link_type) {
-        this.props.history.push(`/paymentlinks/new?link_type=${params.link_type}`);
-        this.props.tracking.trackEvent(window.rzpQ.onbr().initiated('payment_link_popup_loaded'));
-      }
-    }, 1200);
-  }
-
   componentDidMount() {
     this.props.fetchReminders();
+    const params = getURLQueryParams(this.props.location.search);
+    if (params?.link_type) {
+      setTimeout(() => {
+        this.props.history.push(`/paymentlinks/new?link_type=${params.link_type}`);
+        this.props.tracking.trackEvent(window.rzpQ.onbr().initiated('payment_link_popup_loaded'));
+      }, 1200);
+    }
   }
 
   fetchEntityList(params) {
