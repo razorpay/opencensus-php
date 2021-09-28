@@ -706,6 +706,12 @@ final class Constants
 
     const USE_WORKFLOWS = 'use_workflows';
 
+    const MERCHANT_TYPE_DIRECT_SALES      = 'Direct Sales';
+
+    const MERCHANT_TYPE_KAM               = 'KAM';
+
+    const PRESTO_QUERY_FIND_MERCHANT_TYPE = "select owner_role__c from hive.batch_sheets.poc_mapping_sheet where merchant_id__c = '%s'";
+
     // Merchant Payments failure analysis related constants
     const CUSTOMER        = 'customer';
     const GATEWAY         = 'gateway';

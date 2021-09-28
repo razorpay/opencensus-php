@@ -2168,7 +2168,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateIncreaseTransactionLimitConditions(Entity $merchant, array $input, bool $isBusinessRegistered)
+    public function validateIncreaseTransactionLimitConditions(Entity $merchant, array $input, bool $isBusinessRegistered, bool $isMerchantKamOrDirectSales = false)
     {
         $oldLimit = $merchant->getMaxPaymentAmount();
 
@@ -2184,11 +2184,14 @@ class Validator extends Base\Validator
 
         $this->validateRequestNotRaisedInLastThirtyDays($merchant);
 
-        $this->validateNotExceedingMaximumLimit($merchant, $input, $isBusinessRegistered, $businessCategory);
+        if ($isMerchantKamOrDirectSales === false)
+        {
+            $this->validateNotExceedingMaximumLimit($merchant, $input, $isBusinessRegistered, $businessCategory);
 
-        $this->validateNotUnregiesteredGamingOrGovernmentBusinessCategory($businessCategory, $isBusinessRegistered);
+            $this->validateNotUnregiesteredGamingOrGovernmentBusinessCategory($businessCategory, $isBusinessRegistered);
 
-        $this->validateCtsOrFtsLessThanFive($merchant);
+            $this->validateCtsOrFtsLessThanFive($merchant);
+        }
     }
 
     protected function validateTransactionLimitNotSameAsCurrent(array $input, int $oldLimit)

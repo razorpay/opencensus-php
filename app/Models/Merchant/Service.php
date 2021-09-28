@@ -7386,7 +7386,11 @@ class Service extends Base\Service
 
         $isBusinessRegistered = in_array($businessType, [Merchant\Detail\BusinessType::INDIVIDUAL, Merchant\Detail\BusinessType::NOT_YET_REGISTERED]) ? false : true;
 
-        (new Validator)->validateIncreaseTransactionLimitConditions($merchant, $input, $isBusinessRegistered);
+        $merchantInfo = $this->app['datalake.presto']->getDataFromDataLake(sprintf(Constants::PRESTO_QUERY_FIND_MERCHANT_TYPE, $merchant->getId()));
+
+        $isMerchantKamOrDirectSales = $this->isMerchantKamOrDirectSales($merchantInfo);
+
+        (new Validator)->validateIncreaseTransactionLimitConditions($merchant, $input, $isBusinessRegistered, $isMerchantKamOrDirectSales);
 
         if ((isset($input[Constants::TRANSACTION_LIMIT_INCREASE_INVOICE_URL]) === true) and
             (is_object($input[Constants::TRANSACTION_LIMIT_INCREASE_INVOICE_URL]) === true))
@@ -7512,5 +7516,17 @@ class Service extends Base\Service
             [Constants::MERCHANT_WORKFLOWS[$workflowType][Constants::PERMISSION]]);
 
         return (new WorkflowService)->getWorkflowDetailsWithRejectionMessage($action);
+    }
+
+    private function isMerchantKamOrDirectSales($merchantInfo): bool
+    {
+        if ((isset($merchantInfo) === true) and
+            (isset($merchantInfo[0]['owner_role__c']) === true) and
+            (in_array($merchantInfo[0]['owner_role__c'], [Constants::MERCHANT_TYPE_KAM , Constants::MERCHANT_TYPE_DIRECT_SALES])) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -12517,6 +12517,80 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testKAMMerchantIncreaseTransactionLimitWorkflowApprove()
+    {
+        $predefinedMerchant = [
+            'activated'          => 1,
+            'max_payment_amount' => 10000
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_type'      => 4,
+            'business_category'  => Merchant\Detail\BusinessCategory::OTHERS
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $prestoService = $this->getMockBuilder(Mock\DataLakePresto::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods([ 'getDataFromDataLake'])
+            ->getMock();
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $prestoServiceData = [
+            [
+                'owner_role__c' => MerchantConstants::MERCHANT_TYPE_KAM,
+            ]
+        ];
+
+        $prestoService->method( 'getDataFromDataLake')
+            ->willReturn($prestoServiceData);
+
+        $this->setupWorkflow('increase_transaction_limit', PermissionName::INCREASE_TRANSACTION_LIMIT, 'test');
+
+        $testData = $this->testData['testUnregisteredIncreaseTransactionLimitWorkflowApprove'];
+
+        $content = [
+            'new_transaction_limit_by_merchant' => 999999999999,
+            'transaction_limit_increase_reason' => 'comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason'
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
+
+        $this->startTest();
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->assertNotEmpty($workflowAction);
+
+        $workflowActionId = $workflowAction['id'];
+
+        $this->esClient->indices()->refresh();
+
+        $observerData = ['approved_transaction_limit' => '100000000'];
+
+        $this->updateObserverData($workflowActionId, $observerData);
+
+        $insertedObserverData = $this->getWorkflowData();
+
+        $this->assertNotEmpty($insertedObserverData);
+
+        $insertedObserverData = $insertedObserverData['workflow_observer_data'];
+
+        $this->assertArraySelectiveEquals($insertedObserverData, $observerData);
+
+        $this->performWorkflowAction($workflowActionId, true);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertEquals(100000000 , $merchant->getMaxPaymentAmount());
+    }
+
     protected function testRejectionReasonNotificationForMerchantWorkflowType(string $merchantId, string $workflowType)
     {
         Mail::fake();
