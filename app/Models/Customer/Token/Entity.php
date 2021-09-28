@@ -842,8 +842,7 @@ class Entity extends Base\PublicEntity
 
         $publicArray[self::DCC_ENABLED] = $this->isDCCEnabled();
 
-        $billingAddress = $this->getBillingAddress();
-        $publicArray[self::BILLING_ADDRESS] = $billingAddress!==null?$billingAddress->getBillingAddress():null;
+        $this->setBillingAddressInTokenReponse($publicArray);
 
         // For upi recurring tokens, we are not storing max amount, end time in token entity. These are being
         // stored in mandate entity. So, fetching these details from mandate entity.
@@ -884,5 +883,21 @@ class Entity extends Base\PublicEntity
         });
 
         return new PublicCollection($mappedTokens);
+    }
+
+    // Billing address would be set as part of token object only for the preferences API.
+
+    protected function setBillingAddressInTokenReponse(& $publicArray)
+    {
+        $app = App::getFacadeRoot();
+
+        $routeName = $app['api.route']->getCurrentRouteName();
+ 
+         if($routeName == 'merchant_checkout_preferences')
+         {
+             $billingAddress = $this->getBillingAddress();
+ 
+             $publicArray[self::BILLING_ADDRESS] = $billingAddress!==null?$billingAddress->getBillingAddress():null;
+         }
     }
 }
