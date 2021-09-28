@@ -61,4 +61,9 @@ class Constants
     const REMINDER_ENTITY_NAME  = 'qr_code';
 
     const UTC_INDIA_OFFSET = '+05:30';
+
+    const QR_V2_VERSION         = '01';
+    const QR_V2_MODE_STATIC     = '01';
+    const QR_V2_MODE_DYNAMIC    = '15';
+    const QR_V2_QR_MEDIUM       = '04';
 }

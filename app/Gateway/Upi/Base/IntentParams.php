@@ -16,7 +16,9 @@ class IntentParams
 
     // Extended Params 2.0
 
+    const VERSION       = 'ver';
     const MODE          = 'mode';
+    const QR_MEDIUM     = 'qrMedium';
     const PURPOSE       = 'purpose';
     const ORG_ID        = 'orgid';
     const SIGN          = 'sign';

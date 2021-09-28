@@ -17,6 +17,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Status;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\UsageType;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\CloseReason;
 use RZP\Tests\Functional\Helpers\QrCode\NonVirtualAccountQrCodeTrait;
 
@@ -114,6 +115,26 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
         $this->runEntityAssertions($response);
+    }
+
+    public function testCreateUpiQrCodeVerionModeTags()
+    {
+        $input = [
+            'type'  => 'upi_qr',
+            'usage' => 'single_use'
+        ];
+
+        $this->fixtures->merchant->addFeatures(['qr_image_content']);
+
+        $response = $this->createQrCode($input);
+
+        $this->runUpiQrV2Assertion($response, 'single_use');
+
+        $input['usage'] = 'multiple_use';
+
+        $response = $this->createQrCode($input);
+
+        $this->runUpiQrV2Assertion($response, 'multiple_use');
     }
 
     public function testCreateUpiQrCodeFixedAmount()
@@ -682,5 +703,20 @@ class NonVirtualAccountQrCodeTest extends TestCase
                    }
                    return 'control';
                });
+    }
+
+    private function runUpiQrV2Assertion($response, string $usageType)
+    {
+        $this->assertStringContainsString('ver=01', $response['image_content']);
+        $this->assertStringContainsString('qrMedium=04', $response['image_content']);
+
+        if ($usageType === UsageType::MULTIPLE_USE)
+        {
+            $this->assertStringContainsString('mode=01', $response['image_content']);
+        }
+        else
+        {
+            $this->assertStringContainsString('mode=15', $response['image_content']);
+        }
     }
 }
