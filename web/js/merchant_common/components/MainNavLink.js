@@ -23,7 +23,7 @@ class MainNavLink extends Component {
    * Method that sends analytics regarding navigation.
    */
   sendAnalytics = () => {
-    if (this.props.label) {
+    if (this.props.label && window.rzpAnalytics) {
       window.rzpAnalytics({
         eventCategory: 'Dashboard - Side Nav',
         eventAction: `Go To - ${this.props.label}`,
