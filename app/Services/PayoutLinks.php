@@ -93,6 +93,7 @@ class PayoutLinks
     const BATCH_PL_INITIATED                       = 'batch_payout_links_initiated';
     const BATCH_PL_COUNT                           = 'batch_payout_links_count';
     const BATCH_REQUEST_ROWS                       = 'batch_request_rows';
+    const FUND_ACCOUNT                             = 'fund_account';
     const FUND_ACCOUNT_ID                          = 'fund_account_id';
     const ACCOUNT_NUMBER                           = 'account_number';
     const CANCELLED_AT                             = 'cancelled_at';
@@ -1032,10 +1033,18 @@ class PayoutLinks
 
         $isUserInExpandArray = false;
 
+        $isFundAccountInExpandArray = false;
+
+        // existing expands: payouts, user, payouts.fund_account
+        // new expands: payouts, user, payouts.fund_account and fund_account
         foreach ($expandArray as $key => $value) {
             if(strpos($value, self::PAYOUTS) !== false)
             {
                 $isPayoutInExpandArray = true;
+            }
+            else if(strpos($value, self::FUND_ACCOUNT) !== false)
+            {
+                $isFundAccountInExpandArray = true;
             }
             if(strpos($value, self::USER) !== false)
             {
@@ -1065,6 +1074,16 @@ class PayoutLinks
         if ($isUserInExpandArray === false)
         {
             unset($payoutLink[self::USER]);
+        }
+
+        if ($isFundAccountInExpandArray === true && sizeof($payoutLink[self::FUND_ACCOUNT]) === 0)
+        {
+            $payoutLink[self::FUND_ACCOUNT] = null;
+        }
+
+        if ($isFundAccountInExpandArray === false)
+        {
+            unset($payoutLink[self::FUND_ACCOUNT]);
         }
 
         $payoutLink[self::USER_ID] = array_pull($payoutLink, self::USER_ID, null);

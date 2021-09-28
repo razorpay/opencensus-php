@@ -1051,5 +1051,272 @@ class PayoutLinkMicroserviceTest extends TestCase
         return $response;
     }
 
+    public function testProcessParametersForPayoutsExpandPayoutsMissingInResponse()
+    {
+        $mockedMSResponse = $this->getDefaultPayoutLinkEntityArray();
+
+        // emptying the payouts in response
+        $mockedMSResponse['payouts'] = [];
+
+        $this->app->instance('rzp.mode', 'live');
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($mockedMSResponse);
+
+        $input = [
+            'expand' => [
+                '0' => 'payouts'
+            ]
+        ];
+
+        $response = $mock->fetch('poutlk_link-id', $input, '10000000000000');
+
+        // response should now contain payouts collection 3 items...entity, count, items
+        $this->assertArrayHasKey('payouts', $response);
+        $this->assertEquals(3, sizeof($response['payouts']));
+
+        // entity -> 'collection', 'count' -> 0,  sizeof('items') -> 0
+        $this->assertEquals('collection', $response['payouts']['entity']);
+        $this->assertEquals(0, $response['payouts']['count']);
+        $this->assertEquals(0, sizeof($response['payouts']['items']));
+    }
+
+    public function testProcessParametersForPayoutsExpandPayoutsPresentInResponse()
+    {
+        $mockedMSResponse = $this->getDefaultPayoutLinkEntityArray();
+
+        $this->app->instance('rzp.mode', 'live');
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($mockedMSResponse);
+
+        $input = [
+            'expand' => [
+                '0' => 'payouts'
+            ]
+        ];
+
+        $response = $mock->fetch('poutlk_link-id', $input, '10000000000000');
+
+        // response should now contain payouts collection 3 items...entity, count, items
+        $this->assertArrayHasKey('payouts', $response);
+        $this->assertEquals(3, sizeof($response['payouts']));
+
+        // entity -> 'collection', non-empty 'count', non-empty  'items'
+        $this->assertEquals('collection', $response['payouts']['entity']);
+        $this->assertNotEmpty($response['payouts']['count']);
+        $this->assertNotEmpty(sizeof($response['payouts']['items']));
+
+        // only payouts in expand. so fund_account and user should not be present in response
+        $this->assertArrayNotHasKey('fund_account', $response);
+        $this->assertArrayNotHasKey('user', $response);
+    }
+
+    public function testProcessParametersForFundAccountExpandFundAccountMissingInResponse()
+    {
+        $mockedMSResponse = $this->getDefaultPayoutLinkEntityArray();
+
+        // emptying the fund-account in response
+        $mockedMSResponse['fund_account'] = [];
+
+        $this->app->instance('rzp.mode', 'live');
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($mockedMSResponse);
+
+        $input = [
+            'expand' => [
+                '0' => 'fund_account'
+            ]
+        ];
+
+        $response = $mock->fetch('poutlk_link-id', $input, '10000000000000');
+
+        // response should now contain fund-account with value as null
+        $this->assertArrayHasKey('fund_account', $response);
+        $this->assertEquals(null, $response['fund_account']);
+
+        // only fund_account in expand. so payouts and user should not be present in response
+        $this->assertArrayNotHasKey('user', $response);
+        $this->assertArrayNotHasKey('payouts', $response);
+    }
+
+    public function testProcessParametersForFundAccountExpandFundAccountPresentInResponse()
+    {
+        $mockedMSResponse = $this->getDefaultPayoutLinkEntityArray();
+
+        $this->app->instance('rzp.mode', 'live');
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($mockedMSResponse);
+
+        $input = [
+            'expand' => [
+                '0' => 'fund_account'
+            ]
+        ];
+
+        $response = $mock->fetch('poutlk_link-id', $input, '10000000000000');
+
+        // response should now contain fund-account with value as null
+        $this->assertArrayHasKey('fund_account', $response);
+        $this->assertNotEmpty($response['fund_account']);
+
+        // only fund_account in expand. so payouts and user should not be present in response
+        $this->assertArrayNotHasKey('user', $response);
+        $this->assertArrayNotHasKey('payouts', $response);
+    }
+
+    public function testProcessParametersForUserExpandUserMissingInResponse()
+    {
+        $mockedMSResponse = $this->getDefaultPayoutLinkEntityArray();
+
+        // emptying the user in response
+        $mockedMSResponse['user'] = [];
+
+        $this->app->instance('rzp.mode', 'live');
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($mockedMSResponse);
+
+        $input = [
+            'expand' => [
+                '0' => 'user'
+            ]
+        ];
+
+        $response = $mock->fetch('poutlk_link-id', $input, '10000000000000');
+
+        // response should now contain user with nuull value
+        $this->assertArrayHasKey('user', $response);
+        $this->assertEquals(null, $response['user']);
+
+        // only user in expand. so payouts and fund_account should not be present in response
+        $this->assertArrayNotHasKey('payouts', $response);
+        $this->assertArrayNotHasKey('fund_account', $response);
+    }
+
+    public function testProcessParametersForUserExpandUserPresentInResponse()
+    {
+        $mockedMSResponse = $this->getDefaultPayoutLinkEntityArray();
+
+        $this->app->instance('rzp.mode', 'live');
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($mockedMSResponse);
+
+        $input = [
+            'expand' => [
+                '0' => 'user'
+            ]
+        ];
+
+        $response = $mock->fetch('poutlk_link-id', $input, '10000000000000');
+
+        // response should now contain fund-account with value as null
+        $this->assertArrayHasKey('user', $response);
+        $this->assertNotEmpty($response['user']);
+
+        // only user in expand. so payouts and fund_account should not be present in response
+        $this->assertArrayNotHasKey('payouts', $response);
+        $this->assertArrayNotHasKey('fund_account', $response);
+    }
+
+    protected function getDefaultPayoutLinkEntityArray()
+    {
+        return [
+            'id' => 'poutlk_link-id',
+            'entity' => 'payout_link',
+            'contact' => [
+                'name' => 'Test Contact',
+                'contact' => '0000000000',
+                'email' => 'test-contact@gmail.com'
+            ],
+            'status' => 'processed',
+            'amount' => 1000,
+            'attempt_count' => 1,
+            'fund_account_id' => 'fa_fa-id-2',
+            'currency' => 'INR',
+            'description' => 'Test  Description',
+            'account_number' => '878780080316316',
+            'merchant_id' => '10000000000000',
+            'short_url' => 'https://sample/short/url',
+            'contact_id' => 'cont_contact-id',
+            'send_sms' => 'true',
+            'send_email' => 'true',
+            'receipt' => 'Receipt',
+            'user_id' => 'user-id',
+            'payouts' => [
+                'count' => 2,
+                'entity' => 'collection',
+                'items' => [
+                    [
+                        'id' => 'pout_payout-id-1',
+                        'amount' => 1000,
+                        'fund_account_id' => 'fa_fa-id-1',
+                        'status' => 'failed',
+                        'purpose' => 'purpose',
+                        'mode' => 'IMPS',
+                        'entity' => 'payout',
+                        'failure_reason' => 'some failure reason'
+                    ],
+                    [
+                        'id' => 'pout_payout-id-2',
+                        'amount' => 1000,
+                        'fund_account_id' => 'fa_fa-id-2',
+                        'status' => 'processed',
+                        'purpose' => 'purpose',
+                        'mode' => 'IMPS',
+                        'entity' => 'payout',
+                    ]
+                ]
+            ],
+            'fund_account' => [
+                'account_type' => 'vpa',
+                'active' => true,
+                'contact_id' => 'cont_contact-id',
+                'entity' => 'fund-account',
+                'id' => 'fa_fa-id-2',
+                'vpa' => [
+                    'address' => 'test@upi'
+                ]
+            ],
+            'user' => [
+                'account_locked' => false,
+                'confirmed' => true,
+                'contact_mobile' => '9999999999',
+                'contact_mobile_verified' => true,
+                'email' => 'test@gmail.com',
+                'id' => 'user-id',
+                'name' => 'Test Contact',
+                'restricted' => false
+            ]
+        ];
+    }
+
 }
 
