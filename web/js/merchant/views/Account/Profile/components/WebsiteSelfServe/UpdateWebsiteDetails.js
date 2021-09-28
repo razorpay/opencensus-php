@@ -12,20 +12,69 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import FileUpload from 'merchant/components/File/Upload';
 import { FLOWS } from './Constants';
 
-function WebsiteFields({ flowType, handleFileChange, onBiggerFileSize, onCloseClick, file }) {
+function WebsiteFields({
+  flowType,
+  handleFileChange,
+  onBiggerFileSize,
+  onCloseClick,
+  file,
+  validator,
+}) {
   return (
     <>
-      <Input required label="About us" name="about_us" />
+      <Input
+        required
+        label="About us"
+        name="about_us"
+        validator={(input) => {
+          return validator('about_us', input);
+        }}
+      />
 
-      <Input required label="Contact us" name="contact_us" />
+      <Input
+        required
+        label="Contact us"
+        name="contact_us"
+        validator={(input) => {
+          return validator('contact_us', input);
+        }}
+      />
 
-      <Input required label="Pricing details" name="pricing_details" />
+      <Input
+        required
+        label="Pricing details"
+        name="pricing_details"
+        validator={(input) => {
+          return validator('pricing_details', input);
+        }}
+      />
 
-      <Input required label="Terms and conditions" name="tnc" />
+      <Input
+        required
+        label="Terms and conditions"
+        name="tnc"
+        validator={(input) => {
+          return validator('tnc', input);
+        }}
+      />
 
-      <Input required label="Privacy policy" name="privacy_policy" />
+      <Input
+        required
+        label="Privacy policy"
+        name="privacy_policy"
+        validator={(input) => {
+          return validator('privacy_policy', input);
+        }}
+      />
 
-      <Input required label="Refund policy" name="refund_policy" />
+      <Input
+        required
+        label="Refund policy"
+        name="refund_policy"
+        validator={(input) => {
+          return validator('refund_policy', input);
+        }}
+      />
 
       {flowType === FLOWS.ADDITIONAL_WEBSITE && (
         <div class="upload-invoice">
@@ -53,6 +102,14 @@ function UpdateWebsiteDetails(props) {
   const [file, setfile] = useState(null);
   const [isReasonValid, setisReasonValid] = useState(null); // Validity => minimum 100 words
   const [isLinkValid, setisLinkValid] = useState(true); // Validity => should not be an already existing one
+  const [areMetaUrlsValid, setareMetaUrlsValid] = useState({
+    about_us: true,
+    contact_us: true,
+    tnc: true,
+    pricing_details: true,
+    privacy_policy: true,
+    refund_policy: true,
+  });
 
   const submitBusinessDetails = async (formFieldValues) => {
     const payload = {};
@@ -276,7 +333,25 @@ function UpdateWebsiteDetails(props) {
     else setisReasonValid(false);
   };
 
+  const isUrlValid = (url) => {
+    url = url || '';
+
+    // references: web/js/common/utils/validators.js => isUrlLenient()
+    // disabled on purpose because I don't want to break the regex & I have no clue why it's complicated
+    // eslint-disable-next-line no-useless-escape
+    const urlRegExp = /^(https?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
+    return urlRegExp.test(url);
+  };
+
   const validateWebsiteNAppLink = (input) => {
+    const value = isUrlValid(input);
+    if (!value) {
+      setisLinkValid(false);
+      return 'Please enter valid url';
+    } else {
+      setisLinkValid(true);
+    }
+
     if (props.flowType === FLOWS.ADDITIONAL_WEBSITE) {
       const { user } = props;
 
@@ -292,7 +367,34 @@ function UpdateWebsiteDetails(props) {
         return '';
       }
     }
+
     return '';
+  };
+
+  const validateMetaUrls = (fieldName, input) => {
+    const value = isUrlValid(input);
+    if (!value) {
+      const _obj = { ...areMetaUrlsValid };
+      _obj[fieldName] = false;
+      setareMetaUrlsValid(_obj);
+      return 'Please enter valid url';
+    } else {
+      const _obj = { ...areMetaUrlsValid };
+      _obj[fieldName] = true;
+      setareMetaUrlsValid(_obj);
+    }
+
+    return '';
+  };
+
+  const areAllMetaLinksValid = () => {
+    let areAllValid = true;
+    Object.keys(areMetaUrlsValid).forEach((key) => {
+      const value = areMetaUrlsValid[key];
+      if (!value) areAllValid = false;
+    });
+
+    return areAllValid;
   };
 
   return (
@@ -351,6 +453,7 @@ function UpdateWebsiteDetails(props) {
                 flowType={props.flowType}
                 onBiggerFileSize={onBiggerFileSize}
                 file={file}
+                validator={validateMetaUrls}
               />
             )}
 
@@ -371,8 +474,8 @@ function UpdateWebsiteDetails(props) {
           </div>
 
           <div class="form-group">
-            <span>
-              <strong>Test Account credentials</strong>
+            <span class="info-container">
+              <strong>Test account credentials</strong>
               <small class="help-content">
                 <i class="i i-info-circle" />
                 <Popover align="top" theme="dark">
@@ -390,11 +493,10 @@ function UpdateWebsiteDetails(props) {
               <span>
                 <Input.Check
                   fieldLabel="My website doesn’t require login to transact"
-                  defaultValue={doesNeedCreds}
-                  value={doesNeedCreds}
+                  value={!doesNeedCreds}
                   onChange={(e) => {
                     const value = e.target.value === '1';
-                    onNeedsCredsClick(value);
+                    onNeedsCredsClick(!value);
                   }}
                 />
               </span>
@@ -404,19 +506,21 @@ function UpdateWebsiteDetails(props) {
               <span>
                 <Input.Check
                   fieldLabel="My app doesn’t require login to transact"
-                  defaultValue={doesNeedCreds}
-                  value={doesNeedCreds}
+                  value={!doesNeedCreds}
                   onChange={(e) => {
                     const value = e.target.value === '1';
-                    onNeedsCredsClick(value);
+                    onNeedsCredsClick(!value);
                   }}
                 />
               </span>
             )}
 
-            <Input placeholder="Username/email" name="username" />
-
-            <Input placeholder="Password" type="password" name="password" />
+            {doesNeedCreds && (
+              <>
+                <Input placeholder="Username/email" name="username" required />
+                <Input placeholder="Password" type="password" name="password" required />
+              </>
+            )}
 
             {type === 'app' && (
               <div class="note">
@@ -430,7 +534,9 @@ function UpdateWebsiteDetails(props) {
             <button
               type="submit"
               class="btn btn-primary btn-block"
-              disabled={isReasonValid === false || isLinkValid === false}
+              disabled={
+                isReasonValid === false || isLinkValid === false || areAllMetaLinksValid() === false
+              }
             >
               Submit {type} for review
             </button>
