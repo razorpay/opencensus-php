@@ -4,23 +4,12 @@ import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'common/ui/Forms/InputField';
 import { required, email } from 'common/utils/validators';
-import { without } from 'common/utils/rzp-utils';
 import { sendInvitation, fetchTeamDetails } from 'merchantLA/reducers/team';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
+// eslint-disable-next-line no-unused-vars
 const selector = formValueSelector('newInvitation');
-@connect(
-  state => {
-    return {
-      ...state.session,
-    };
-  },
-  {
-    sendInvitation,
-    fetchTeamDetails,
-    ...NotificationsActions,
-  }
-)
+
 @reduxForm({
   form: 'newInvitation',
   initialValues: {
@@ -28,9 +17,9 @@ const selector = formValueSelector('newInvitation');
     role: 'linked_account_admin',
   },
 })
-export default class NewInvitation extends Component {
-  save = props => {
-    let user = this.props.user.user;
+class NewInvitation extends Component {
+  save = (props) => {
+    const user = this.props.user.user;
 
     return this.props
       .sendInvitation({ ...props, sender_name: user.name })
@@ -41,7 +30,7 @@ export default class NewInvitation extends Component {
           message: `Invitation has been successfully sent to ${props.email}`,
         });
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -66,10 +55,12 @@ export default class NewInvitation extends Component {
                 validate={[
                   required(),
                   email('Invalid Email'),
-                  value => {
+                  (value) => {
                     if (value === this.props.user.user.email) {
                       return "You can't invite yourself";
                     }
+
+                    return null;
                   },
                 ]}
               />
@@ -90,11 +81,22 @@ export default class NewInvitation extends Component {
 
         <div class="form-group">
           <div class="alert alert-info text-center">
-            Allows access to all views except access for Bank Details and Team
-            Management
+            Allows access to all views except access for Bank Details and Team Management
           </div>
         </div>
       </form>
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    ...state.session,
+  };
+};
+
+export default connect(mapStateToProps, {
+  sendInvitation,
+  fetchTeamDetails,
+  ...NotificationsActions,
+})(NewInvitation);

@@ -31,7 +31,7 @@ const throwAnalyticsException = (errorMessage) => {
   const error = new Error(errorMessage);
 
   if (window.Sentry) {
-    Sentry.captureException(error, (scope) => {
+    window.Sentry.captureException(error, (scope) => {
       scope.setTag('section', 'analytics');
       return scope;
     });
@@ -42,11 +42,12 @@ const throwAnalyticsException = (errorMessage) => {
 
 export const initAnalytics = () => {
   return new Promise((resolve) => {
-    var analytics = (window.analytics = window.analytics || []);
+    window.analytics = window.analytics || [];
+    const analytics = window.analytics;
     if (!analytics.initialize)
-      if (analytics.invoked)
-        window.console && console.error && console.error('Segment snippet included twice.');
-      else {
+      if (analytics.invoked) {
+        if (window.console && console.error) console.error('Segment snippet included twice.');
+      } else {
         analytics.invoked = !0;
         analytics.methods = [
           'trackSubmit',
@@ -70,25 +71,25 @@ export const initAnalytics = () => {
           'setAnonymousId',
           'addDestinationMiddleware',
         ];
-        analytics.factory = function (t) {
-          return function () {
-            var e = Array.prototype.slice.call(arguments);
+        analytics.factory = function factory(t) {
+          return function fn(...args) {
+            const e = Array.prototype.slice.call(args);
             e.unshift(t);
             analytics.push(e);
             return analytics;
           };
         };
-        for (var t = 0; t < analytics.methods.length; t++) {
-          var e = analytics.methods[t];
+        for (let t = 0; t < analytics.methods.length; t++) {
+          const e = analytics.methods[t];
           analytics[e] = analytics.factory(e);
         }
-        analytics.load = function (t, e) {
-          var n = document.createElement('script');
+        analytics.load = function load(t, e) {
+          const n = document.createElement('script');
           n.type = 'text/javascript';
           n.async = !0;
-          n.src = 'https://cdn.segment.com/analytics.js/v1/' + t + '/analytics.min.js';
+          n.src = `https://cdn.segment.com/analytics.js/v1/${t}/analytics.min.js`;
           n.onload = resolve;
-          var a = document.getElementsByTagName('script')[0];
+          const a = document.getElementsByTagName('script')[0];
           a.parentNode.insertBefore(n, a);
           analytics._loadOptions = e;
         };
@@ -107,7 +108,7 @@ export const analyticsTrack = ({
   actionName,
   screen,
   properties = {},
-  toLumberjack = false,
+  toLumberjack = true, // Send all events to LJ by default
 }) => {
   if (!objectName) {
     throw new Error('[analytics]: objectName cannot be empty');

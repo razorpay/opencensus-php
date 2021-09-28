@@ -6,28 +6,15 @@ import AsyncButton from 'react-async-button';
 import InputField from 'common/ui/Forms/InputField';
 
 import { required, email, phone } from 'common/utils/validators';
-import { roles, agentRole, RBLRoles } from 'merchant/helpers/data';
+import { roles, agentRole, RBLRoles, RegistrationLinkRoles } from 'merchant/helpers/data';
 import { without, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { closeModal } from 'merchant_common/reducers/modals';
 import rolesList from 'merchant/helpers/permissions/roles-list';
-import { RegistrationLinkRoles } from '../../../../helpers/data';
 import { analyticsTrack } from 'common/utils/analytics';
 
 const selector = formValueSelector('newInvitation');
-@connect(
-  (state) => {
-    return {
-      selectedRole: selector(state, 'role'),
-      ...state.session,
-    };
-  },
-  {
-    showNotification,
-    closeModal,
-  },
-)
 @reduxForm({
   form: 'newInvitation',
   initialValues: {
@@ -35,7 +22,7 @@ const selector = formValueSelector('newInvitation');
     role: rolesList.MANAGER,
   },
 })
-export default class NewInvitation extends Component {
+class NewInvitation extends Component {
   static defaultProps = {
     ctaText: 'Submit',
   };
@@ -57,11 +44,11 @@ export default class NewInvitation extends Component {
       properties: {
         action: 'send invitation',
         location: 'manage team',
-        ...body,
+        test: 'test',
+        role: body?.role,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-    let user = this.props.user.user;
     const { successMsg } = this.props;
     return this.props
       .onFormSubmit(body)
@@ -73,6 +60,7 @@ export default class NewInvitation extends Component {
           properties: {
             location: 'manage team',
             status: 'success',
+            role: body?.role,
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
@@ -91,6 +79,7 @@ export default class NewInvitation extends Component {
             location: 'manage team',
             status: 'failure',
             failureReason: err?.errors[0],
+            role: body?.role,
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
@@ -118,12 +107,10 @@ export default class NewInvitation extends Component {
 
     if (user.isAgentRole) {
       ROLES = { ...ROLES, ...agentRole };
-    } else {
-      if (user.role === rolesList.RBL_SUPERVISOR) {
-        ROLES = { rbl_agent: RBLRoles.rbl_agent }; // RBL Supervisor can only invite rbl_agent
-      } else if (user.isRBLRoleEnabled) {
-        ROLES = { ...ROLES, ...RBLRoles }; // Allowed only for roles with edit access as per permissions map
-      }
+    } else if (user.role === rolesList.RBL_SUPERVISOR) {
+      ROLES = { rbl_agent: RBLRoles.rbl_agent }; // RBL Supervisor can only invite rbl_agent
+    } else if (user.isRBLRoleEnabled) {
+      ROLES = { ...ROLES, ...RBLRoles }; // Allowed only for roles with edit access as per permissions map
     }
 
     if (user.isRegistrationLinkRoleEnabled) {
@@ -150,6 +137,8 @@ export default class NewInvitation extends Component {
                       if (value === this.props.user.user.email) {
                         return "You can't invite yourself";
                       }
+
+                      return null;
                     },
                   ]}
                 />
@@ -169,6 +158,8 @@ export default class NewInvitation extends Component {
                       if (value === this.props.user.user.contact_mobile) {
                         return "You can't invite yourself";
                       }
+
+                      return null;
                     },
                   ]}
                 />
@@ -210,3 +201,15 @@ export default class NewInvitation extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    selectedRole: selector(state, 'role'),
+    ...state.session,
+  };
+};
+
+export default connect(mapStateToProps, {
+  showNotification,
+  closeModal,
+})(NewInvitation);

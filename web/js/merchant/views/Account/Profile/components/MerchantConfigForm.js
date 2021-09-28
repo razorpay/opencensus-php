@@ -5,26 +5,23 @@ import ModalHeader from 'common/ui/ModalHeader';
 import { reduxForm, Field } from 'redux-form';
 import { required } from 'common/utils/validators';
 import InputField from 'common/ui/Forms/InputField';
-
+import { compose } from 'redux';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 
-@connect(null, { closeModal, showNotification })
-@reduxForm({
-  form: 'updateMerchantConfigForm',
-})
-export default class MerchantConfigForm extends PureComponent {
+class MerchantConfigForm extends PureComponent {
   constructor(props) {
     super(props);
 
     this.props.initialize({
       [props.attribute]: props.value,
     });
-  }
 
-  resetValue = this.resetValue.bind(this);
+    this.resetValue = this.resetValue.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
 
   resetValue() {
     analyticsTrack({
@@ -37,6 +34,19 @@ export default class MerchantConfigForm extends PureComponent {
       },
     });
     this.props.change(this.props.attribute, this.props.value);
+  }
+
+  handleSubmit(e) {
+    analyticsTrack({
+      objectName: 'display name edit popup',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        action: 'update',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+    this.props.handleSubmit(this.props.updateMerchantConfig)(e);
   }
 
   render() {
@@ -57,7 +67,7 @@ export default class MerchantConfigForm extends PureComponent {
         }}
       >
         <ModalHeader
-          title={'Edit ' + this.props.label}
+          title={`Edit ${this.props.label}`}
           onCloseClick={(args) => {
             analyticsTrack({
               objectName: 'display name edit popup',
@@ -97,7 +107,7 @@ export default class MerchantConfigForm extends PureComponent {
               class="btn btn-primary btn-block"
               text="Update"
               pendingText="Updating..."
-              onClick={handleSubmit(this.props.updateMerchantConfig)}
+              onClick={this.handleSubmit}
             />
           </div>
         </div>
@@ -105,3 +115,10 @@ export default class MerchantConfigForm extends PureComponent {
     );
   }
 }
+
+export default compose(
+  connect(null, { closeModal, showNotification }),
+  reduxForm({
+    form: 'updateMerchantConfigForm',
+  }),
+)(MerchantConfigForm);

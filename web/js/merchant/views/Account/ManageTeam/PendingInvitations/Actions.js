@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import PropTypes from 'prop-types';
 
-import { cancelInvitation, updateInvitation, resendInvitation } from 'merchant/reducers/invitation';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import * as InvitationActions from 'merchant/reducers/invitation';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { pickProps, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -14,31 +14,31 @@ import ModalHeader from 'common/ui/ModalHeader';
 import NewInvitation from '../components/NewInvitation';
 import { analyticsTrack } from 'common/utils/analytics';
 
-@connect(null, {
-  cancelInvitation,
-  updateInvitation,
-  resendInvitation,
-  showNotification,
-  openModal,
-  closeModal,
-})
-export default class InvitationsActions extends Component {
+class InvitationsActions extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
 
   update = () => {
+    const {
+      invitation,
+      updateInvitation,
+      closeModal,
+      pendingInvitationLength,
+      ...props
+    } = this.props;
+
     analyticsTrack({
       objectName: 'invitation update',
       actionName: 'clicked',
       screen: 'my account',
       properties: {
         location: 'manage team',
-        // pending invitations left
+        role: invitation.role,
+        pendingInvitations: pendingInvitationLength,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-    const { invitation, updateInvitation, closeModal, ...props } = this.props;
     const visibleFields = {
       role: true,
     };
@@ -68,12 +68,13 @@ export default class InvitationsActions extends Component {
                       properties: {
                         location: 'manage team',
                         status: 'success',
+                        role: e?.[0]?.role,
                         ...getCommonAnalyticsProperties(window.rzp_user),
                       },
                     });
                     return Promise.resolve();
                   })
-                  .catch((e) => {
+                  .catch((error) => {
                     analyticsTrack({
                       objectName: 'invitation update',
                       actionName: 'status',
@@ -81,7 +82,8 @@ export default class InvitationsActions extends Component {
                       properties: {
                         location: 'manage team',
                         status: 'failure',
-                        failureReason: e.errors[0],
+                        failureReason: error.errors[0],
+                        role: e?.[0]?.role,
                         ...getCommonAnalyticsProperties(window.rzp_user),
                       },
                     });
@@ -96,16 +98,19 @@ export default class InvitationsActions extends Component {
   };
 
   cancel = () => {
+    const { invitation, cancelInvitation, pendingInvitationLength } = this.props;
+
     analyticsTrack({
       objectName: 'invitation cancel',
       actionName: 'clicked',
       screen: 'my account',
       properties: {
         location: 'manage team',
+        role: invitation.role,
+        pendingInvitations: pendingInvitationLength,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-    const { invitation, cancelInvitation } = this.props;
     this.context.confirm({
       header: 'Cancel Invitation',
       message: (
@@ -149,6 +154,7 @@ export default class InvitationsActions extends Component {
                 properties: {
                   location: 'manage team',
                   status: 'success',
+                  role: invitation.role,
                   ...getCommonAnalyticsProperties(window.rzp_user),
                 },
               });
@@ -167,6 +173,7 @@ export default class InvitationsActions extends Component {
                 location: 'manage team',
                 status: 'failure',
                 failureReason: errors[0],
+                role: invitation.role,
                 ...getCommonAnalyticsProperties(window.rzp_user),
               },
             });
@@ -180,13 +187,15 @@ export default class InvitationsActions extends Component {
   };
 
   resend = () => {
-    const { invitation, loggedInUserName } = this.props;
+    const { invitation, loggedInUserName, pendingInvitationLength } = this.props;
     analyticsTrack({
       objectName: 'invitation resend',
       actionName: 'clicked',
       screen: 'my account',
       properties: {
         location: 'manage team',
+        role: invitation.role,
+        pendingInvitations: pendingInvitationLength,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
@@ -204,6 +213,7 @@ export default class InvitationsActions extends Component {
             properties: {
               status: 'success',
               location: 'manage team',
+              role: invitation.role,
               ...getCommonAnalyticsProperties(window.rzp_user),
             },
           });
@@ -222,6 +232,7 @@ export default class InvitationsActions extends Component {
             location: 'manage team',
             status: 'failure',
             failureReason: errors[0],
+            role: invitation.role,
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
@@ -255,3 +266,9 @@ export default class InvitationsActions extends Component {
     );
   }
 }
+
+export default connect(null, {
+  ...InvitationActions,
+  showNotification,
+  ...ModalActions,
+})(InvitationsActions);

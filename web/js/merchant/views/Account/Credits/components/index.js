@@ -7,7 +7,7 @@ import CreditDetailsNew from './CreditDetailsNew';
 import DocsLink from 'merchant/components/DocsLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import ManageCreditAlerts from './ManageCreditAlerts';
-import { CLICK_ON_MANAGE_ALERTS } from '../ga';
+import { CLICK_ON_MANAGE_ALERTS, OPEN_DOCUMENTATION } from '../ga';
 import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
 import { connect } from 'react-redux';
 
@@ -15,7 +15,7 @@ function CreditsList(props) {
   const { creditsData, balanceData, loading, showDocumentation = true, user } = props;
   const creditItems = groupBy(creditsData.items, 'type');
 
-  const [status, setStatus] = useState({});
+  const [, setStatus] = useState({});
 
   useEffect(() => {
     analyticsTrack({
@@ -46,7 +46,10 @@ function CreditsList(props) {
       {showDocumentation && (
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <DocsLink url="https://razorpay.com/docs/payment-gateway/dashboard-guide/credits/" />
+            <DocsLink
+              url="https://razorpay.com/docs/payment-gateway/dashboard-guide/credits/"
+              onClick={() => analyticsTrack(OPEN_DOCUMENTATION)}
+            />
           </div>
         </HeaderAction>
       )}
@@ -61,6 +64,7 @@ function CreditsList(props) {
               <span>Note: Standard TDR charges applies on adding funds</span>
               <span style={{ color: '#528ff0' }} onClick={handleManageAlert}>
                 Manage Alerts
+                {}
                 <i class="i i-bell-outline" />
               </span>
             </div>

@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-
+import React from 'react';
 import HeaderAction from 'common/ui/HeaderAction';
 import ModalHeader from 'common/ui/ModalHeader';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -18,13 +18,7 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-@connect(
-  (state) => ({
-    user: state.session.user.user,
-  }),
-  { sendInvitation, openModal, closeModal },
-)
-export default class ManageTeamContainer extends React.Component {
+class ManageTeamContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -61,12 +55,24 @@ export default class ManageTeamContainer extends React.Component {
               defaults={defaults}
               onSuccess={this.props.closeModal}
               onFormSubmit={this.props.sendInvitation}
-              successMsg={(data) => 'Invitation has been successfully sent to ' + data.email}
+              successMsg={(data) => `Invitation has been successfully sent to ${data.email}`}
               ctaText="Send Invitation"
             />
           </div>
         </>
       ),
+    });
+  };
+
+  onDocumentationClick = () => {
+    analyticsTrack({
+      objectName: 'documentation',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        location: 'manage team',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
     });
   };
 
@@ -82,7 +88,7 @@ export default class ManageTeamContainer extends React.Component {
     });
   }
   render() {
-    let { user } = this.props;
+    const { user } = this.props;
 
     return (
       <div class="content-wrapper content-sm" id="settings-content">
@@ -93,8 +99,11 @@ export default class ManageTeamContainer extends React.Component {
         )}
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <DocsLink url="https://razorpay.com/docs/team-support/" />
-            <ShowWhen additionalCondition={(user) => user.isAllowedEdit('team')}>
+            <DocsLink
+              url="https://razorpay.com/docs/team-support/"
+              onClick={this.onDocumentationClick}
+            />
+            <ShowWhen additionalCondition={(userCurrent) => userCurrent.isAllowedEdit('team')}>
               <button class="btn btn-primary" onClick={this.inviteNewMember}>
                 Invite New Member
               </button>
@@ -102,7 +111,7 @@ export default class ManageTeamContainer extends React.Component {
           </div>
         </HeaderAction>
         <div class="ManageTeam--list">
-          <ShowWhen additionalCondition={(user) => user.isAllowedView('invitations')}>
+          <ShowWhen additionalCondition={(userCurrent) => userCurrent.isAllowedView('invitations')}>
             <PendingInvitationsList {...this.props} />
           </ShowWhen>
 
@@ -114,3 +123,11 @@ export default class ManageTeamContainer extends React.Component {
     );
   }
 }
+
+const mapStateToProps = (state) => ({
+  user: state.session.user.user,
+});
+
+export default connect(mapStateToProps, { sendInvitation, openModal, closeModal })(
+  ManageTeamContainer,
+);

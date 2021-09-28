@@ -5,33 +5,17 @@ import PropTypes from 'prop-types';
 import DataTable from 'common/ui/Table/DataTable';
 import { role } from 'common/ui/item/pair';
 import ListContainer from 'merchant/containers/ListContainer';
-
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { fetchTeam as fetchAll } from 'merchant/reducers/team';
-import { unlockMember, unverifyContact } from 'merchant/reducers/team';
-
+import * as NotificationActions from 'merchant_common/reducers/notifications';
+import {
+  fetchTeam as fetchAll,
+  unlockMember as unlockMemberReducer,
+  unverifyContact as unverifyContactReducer,
+} from 'merchant/reducers/team';
+import { analyticsTrack } from 'common/utils/analytics';
 import Actions from './Actions';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-const actions = {
-  title: '',
-  columnClass: 'text-right',
-  value: (member) => <Actions member={member} />,
-};
-
-@connect(
-  (state) => ({
-    user: state.session.user,
-    currentUser: state.session.user.user,
-    ...state.team,
-  }),
-  {
-    fetchAll,
-    unlockMember,
-    unverifyContact,
-    showNotification,
-  },
-)
-export default class MembersListContainer extends ListContainer {
+class MembersListContainer extends ListContainer {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -143,17 +127,54 @@ function RaiseContactMobileLost({
   memberEmail,
   unverifyContact,
   showNotification,
+  memberRole,
+  noOfTeamMembers,
   confirm,
 }) {
   const unverify = () => {
+    analyticsTrack({
+      objectName: 'Invalidate 2fa popup',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        action: 'confirm',
+        location: 'manage team',
+        role: memberRole,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+
     return unverifyContact(memberId)
       .then(() => {
+        analyticsTrack({
+          objectName: 'invalidate 2fa',
+          actionName: 'status',
+          screen: 'my account',
+          properties: {
+            status: 'success',
+            location: 'manage team',
+            role: memberRole,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         showNotification({
           type: 'success',
           message: '2FA is successfully invalidated for user account',
         });
       })
       .catch(({ errors }) => {
+        analyticsTrack({
+          objectName: 'invalidate 2fa',
+          actionName: 'status',
+          screen: 'my account',
+          properties: {
+            status: 'failure',
+            failureReason: errors.errors[0],
+            location: 'manage team',
+            role: memberRole,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         showNotification({
           type: 'error',
           message: (errors || [])[0],
@@ -162,11 +183,36 @@ function RaiseContactMobileLost({
   };
 
   const unverifyAfterConfirm = () => {
+    analyticsTrack({
+      objectName: 'Invalidate 2fa',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        status: 'success',
+        role: memberRole,
+        noOfTeamMembers,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     confirm({
       header: 'Invalidate 2FA',
       affirmativeLabel: 'Confirm',
       message: <>This will invalidate 2FA for the user {memberEmail}. Click confirm to continue</>,
       action: unverify,
+
+      abort: () => {
+        analyticsTrack({
+          objectName: 'Invalidate 2fa popup',
+          actionName: 'clicked',
+          screen: 'my account',
+          properties: {
+            action: 'cancel',
+            location: 'manage team',
+            role: memberRole,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+      },
     });
   };
 
@@ -182,3 +228,16 @@ function RaiseContactMobileLost({
     </span>
   );
 }
+
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+  currentUser: state.session.user.user,
+  ...state.team,
+});
+
+export default connect(mapStateToProps, {
+  fetchAll,
+  unlockMember: unlockMemberReducer,
+  unverifyContact: unverifyContactReducer,
+  ...NotificationActions,
+})(MembersListContainer);

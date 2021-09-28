@@ -91,7 +91,7 @@ class AddFundsContainer extends Component {
       });
   };
 
-  analyticsHandler = () => {
+  analyticsHandler = (amount) => {
     analyticsTrack({
       objectName: 'add funds',
       actionName: 'result',
@@ -99,6 +99,7 @@ class AddFundsContainer extends Component {
       properties: {
         status: 'success',
         location: 'balances',
+        amount,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
@@ -119,6 +120,7 @@ class AddFundsContainer extends Component {
           type={type}
           addHandler={this.addFunds}
           statusHandler={this.statusHandler}
+          currentBalance={this.props.account_balance.data?.balance || 0}
           analyticsHandler={this.analyticsHandler}
           user={this.props.user}
         />
@@ -126,7 +128,13 @@ class AddFundsContainer extends Component {
     });
 
     if (type === 'current') {
-      analyticsTrack(CLICK_ADD_FUNDS_ON_CURRENT_BALANCE);
+      analyticsTrack({
+        ...CLICK_ADD_FUNDS_ON_CURRENT_BALANCE,
+        properties: {
+          ...CLICK_ADD_FUNDS_ON_CURRENT_BALANCE.properties,
+          currentBalance: this.props.account_balance.data?.balance || 0,
+        },
+      });
     } else {
       analyticsTrack(CLICK_ADD_FUNDS_ON_RESERVE_BALANCE);
     }
@@ -184,8 +192,8 @@ class AddFundsContainer extends Component {
   };
 
   render() {
-    const current_balance = this.props.account_balance.data.balance || 0;
-    const items = this.props.reserve_balance.data.items;
+    const current_balance = this.props.account_balance.data?.balance || 0;
+    const items = this.props.reserve_balance.data?.items;
     const reserveBalance = this.getReserveBalanceAmount(items);
     const { user } = this.props;
     const { data: ticketStatusData, loading: ticketStatusLoading } = this.props.ticket_status;

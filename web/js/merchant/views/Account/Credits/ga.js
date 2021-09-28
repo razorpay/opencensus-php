@@ -100,3 +100,13 @@ export const REFUND_CREDITS_FAILED = {
     ...getCommonAnalyticsProperties(window.rzp_user),
   },
 };
+
+export const OPEN_DOCUMENTATION = {
+  screen: 'Dashboard - My Account (Credits)',
+  objectName: 'documentation',
+  actionName: 'clicked',
+  properties: {
+    location: 'credits',
+    ...getCommonAnalyticsProperties(window.rzp_user),
+  },
+};

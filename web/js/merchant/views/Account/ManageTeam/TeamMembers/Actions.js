@@ -4,47 +4,40 @@ import AsyncButton from 'react-async-button';
 import PropTypes from 'prop-types';
 
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
-import { removeMember, updateMember, updateOwner } from 'merchant/reducers/team';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import { showNotification as showNotificationReducer } from 'merchant_common/reducers/notifications';
 import { pickProps, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import rolesList from 'merchant/helpers/permissions/roles-list';
-
 import ModalHeader from 'common/ui/ModalHeader';
 import NewInvitation from '../components/NewInvitation';
 import { analyticsTrack } from 'common/utils/analytics';
 import ChangeOwner from 'merchant/views/Settings/EmailSelfServe/components/SameTeam/ChangeOwner';
 import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
+import {
+  removeMember as removeMemberReducer,
+  updateMember as updateMemberReducer,
+  updateOwner as updateOwnerReducer,
+} from 'merchant/reducers/team';
 
-@connect(
-  (state) => {
-    return { user: state.session.user };
-  },
-  {
-    removeMember,
-    updateMember,
-    updateOwner,
-    openModal,
-    closeModal,
-    showNotification,
-  },
-)
-export default class MembersActions extends Component {
+class MembersActions extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
 
   update = () => {
+    const { member, items } = this.props;
+
     analyticsTrack({
       objectName: 'team member update',
       actionName: 'clicked',
       screen: 'my account',
       properties: {
         location: 'manage team',
+        noOfTeamMembers: items.length,
+        role: member.role,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-    const member = this.props.member;
 
     const visibleFields = {
       role: showWhenUtil({
@@ -62,7 +55,7 @@ export default class MembersActions extends Component {
       const { role } = e[0];
       if (role === rolesList.OWNER) {
         return this.props
-          .updateOwner(member.email,true)
+          .updateOwner(member.email, true)
           .then(() => {
             analyticsTrack({
               objectName: 'team member update',
@@ -71,12 +64,13 @@ export default class MembersActions extends Component {
               properties: {
                 location: 'manage team',
                 status: 'success',
+                role: member.role,
                 ...getCommonAnalyticsProperties(window.rzp_user),
               },
             });
             return Promise.resolve();
           })
-          .catch((e) => {
+          .catch((error) => {
             analyticsTrack({
               objectName: 'team member update',
               actionName: 'status',
@@ -84,7 +78,8 @@ export default class MembersActions extends Component {
               properties: {
                 location: 'manage team',
                 status: 'failure',
-                failureReason: e.errors[0],
+                failureReason: error.errors[0],
+                role: member.role,
                 ...getCommonAnalyticsProperties(window.rzp_user),
               },
             });
@@ -101,12 +96,13 @@ export default class MembersActions extends Component {
             properties: {
               location: 'manage team',
               status: 'success',
+              role: member.role,
               ...getCommonAnalyticsProperties(window.rzp_user),
             },
           });
           return Promise.resolve();
         })
-        .catch((e) => {
+        .catch((error) => {
           analyticsTrack({
             objectName: 'team member update',
             actionName: 'status',
@@ -114,7 +110,8 @@ export default class MembersActions extends Component {
             properties: {
               location: 'manage team',
               status: 'failure',
-              failureReason: e.errors[0],
+              failureReason: error.errors[0],
+              role: member.role,
               ...getCommonAnalyticsProperties(window.rzp_user),
             },
           });
@@ -142,15 +139,19 @@ export default class MembersActions extends Component {
   };
 
   remove = () => {
+    const { member, removeMember, showNotification, items } = this.props;
+
     analyticsTrack({
       objectName: 'team member remove',
       actionName: 'clicked',
       screen: 'my account',
       properties: {
+        location: 'manage team',
+        noOfTeamMembers: items.length,
+        role: member.role,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-    const { member, removeMember, showNotification } = this.props;
     this.context.confirm({
       header: 'Remove User?',
       message: (
@@ -164,12 +165,26 @@ export default class MembersActions extends Component {
       affirmativePendingLabel: 'Removing...',
 
       abortLabel: "No, Don't Remove",
+
+      abort: () => {
+        analyticsTrack({
+          objectName: 'team member remove popup',
+          actionName: 'clicked',
+          screen: 'my account',
+          properties: {
+            location: 'manage team',
+            action: 'No',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+      },
       action: () => {
         analyticsTrack({
           objectName: 'team member remove popup',
           actionName: 'clicked',
           screen: 'my account',
           properties: {
+            location: 'manage team',
             action: 'Yes',
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
@@ -182,7 +197,9 @@ export default class MembersActions extends Component {
                 actionName: 'status',
                 screen: 'my account',
                 properties: {
+                  location: 'manage team',
                   status: 'success',
+                  role: member.role,
                   ...getCommonAnalyticsProperties(window.rzp_user),
                 },
               });
@@ -198,13 +215,15 @@ export default class MembersActions extends Component {
               actionName: 'status',
               screen: 'my account',
               properties: {
+                location: 'manage team',
                 status: 'failure',
                 failureReason: errors[0],
+                role: member.role,
                 ...getCommonAnalyticsProperties(window.rzp_user),
               },
             });
             showNotification({
-              type: error,
+              type: 'error',
               message: errors,
             });
           });
@@ -247,7 +266,7 @@ export default class MembersActions extends Component {
           Update
         </button>
 
-        <ShowWhen additionalCondition={(user) => user.isAllowedEdit('team')}>
+        <ShowWhen additionalCondition={(userCurrent) => userCurrent.isAllowedEdit('team')}>
           <AsyncButton
             class="btn btn-default"
             text="Remove"
@@ -276,3 +295,16 @@ function getToBePickedUpFields(visibleFields, alwaysPickedUpFields) {
 
   return toBePickedFields;
 }
+
+const mapStateToProps = (state) => {
+  return { user: state.session.user };
+};
+
+export default connect(mapStateToProps, {
+  removeMember: removeMemberReducer,
+  updateMember: updateMemberReducer,
+  updateOwner: updateOwnerReducer,
+  openModal,
+  closeModal,
+  showNotification: showNotificationReducer,
+})(MembersActions);

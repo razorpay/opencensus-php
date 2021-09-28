@@ -13,7 +13,15 @@ import { bindActionCreators, compose } from 'redux';
 
 class AddFundsForm extends Component {
   addFunds = (fieldProps) => {
-    const { closeModal, type, user, statusHandler, addHandler, analyticsHandler } = this.props;
+    const {
+      closeModal,
+      type,
+      user,
+      statusHandler,
+      addHandler,
+      analyticsHandler,
+      currentBalance,
+    } = this.props;
     const typeValue = type.charAt(0).toUpperCase() + type.slice(1);
 
     analyticsTrack({
@@ -24,6 +32,7 @@ class AddFundsForm extends Component {
       objectName: type === ('reserve' || 'current') ? 'Add funds' : `Add ${typeValue} credits`,
       actionName: this.getAction(type),
       properties: {
+        currentBalance,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });

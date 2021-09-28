@@ -1,21 +1,14 @@
 import { connect } from 'react-redux';
-
+import React from 'react';
 import TwoFactorVerificaionContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
-
-import { toggleMerchant2FaEnforcement } from 'merchant/reducers/team';
+import { toggleMerchant2FaEnforcement as toggleMerchant2FaEnforcementReducer } from 'merchant/reducers/team';
 import { updateSession } from 'merchant/reducers/session';
-
 import User from 'merchant/models/User';
-
 import Toggle2FA from '../../components/TwoFAVerification/Toggle2FA';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-@connect((state) => ({ user: state.session.user }), {
-  toggleMerchant2FaEnforcement,
-  updateSession,
-})
-export default class Merchant2FASettings extends React.PureComponent {
+class Merchant2FASettings extends React.PureComponent {
   static contextType = TwoFactorVerificaionContext;
 
   onToggleComplete = (twoFaEnabled) => {
@@ -35,6 +28,7 @@ export default class Merchant2FASettings extends React.PureComponent {
       properties: {
         type: flag ? 'enable' : 'disable',
         location: 'my screen',
+        twoFactorVerified: window.rzp_user?.user?.two_fa_verified,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
@@ -65,10 +59,10 @@ export default class Merchant2FASettings extends React.PureComponent {
         twoFaEnabled={twoFaEnabled}
         onToggleComplete={this.onToggleComplete}
         getToggle2FaSuccessMsg={getToggle2FaSuccessMsg}
-        eventPrefix={'2fa team'}
+        eventPrefix="2fa team"
         confirmDisableMessage="Are you sure you want to disable 2-step verification to all your team members?"
         confirmEnableMessage="Are you sure you want to enable 2-step verification to all your team members?"
-        location={'manage team'}
+        location="manage team"
         onToggleChange={this.handleTwoFactorVerificationOnLoginToggle}
       />
     );
@@ -100,3 +94,12 @@ function Merchant2FADescription() {
 function getToggle2FaSuccessMsg(twoFaStatus) {
   return `2-step verification successfully turned ${twoFaStatus} for all your team members`;
 }
+
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+});
+
+export default connect(mapStateToProps, {
+  toggleMerchant2FaEnforcement: toggleMerchant2FaEnforcementReducer,
+  updateSession,
+})(Merchant2FASettings);

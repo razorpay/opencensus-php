@@ -1,23 +1,17 @@
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-
+import React from 'react';
 import TwoFactorVerificaionContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-import { toggleUser2FaEnforcement } from 'merchant/reducers/team';
+import * as TeamActions from 'merchant/reducers/team';
 import { updateSession } from 'merchant/reducers/session';
-
 import User from 'merchant/models/User';
 import ShowWhen from 'merchant/components/ShowWhen';
-
 import Toggle2FA from '../../components/TwoFAVerification/Toggle2FA';
 
-@connect((state) => ({ user: state.session.user }), {
-  toggleUser2FaEnforcement,
-  updateSession,
-})
-export default class User2FASettings extends React.PureComponent {
+class User2FASettings extends React.PureComponent {
   static contextType = TwoFactorVerificaionContext;
 
   onToggleComplete = (twoFaEnabled) => {
@@ -87,7 +81,7 @@ export default class User2FASettings extends React.PureComponent {
         twoFaEnabled={user.second_factor_auth}
         onToggleComplete={this.onToggleComplete}
         getToggle2FaSuccessMsg={getToggle2FaSuccessMsg}
-        location={'profile'}
+        location="profile"
         confirmEnableMessage="Are you sure you want to enable 2-step verification for your user account?"
         confirmDisableMessage="Are you sure you want to disable 2-step verification for your user account?"
         onToggleChange={this.handleTwoFactorVerificationOnLoginToggle}
@@ -124,3 +118,10 @@ function DescriptionForUser2Fa() {
 function getToggle2FaSuccessMsg(twoFaStatus) {
   return `2-step verification successfully turned ${twoFaStatus} for your account`;
 }
+
+const mapStateToProps = (state) => ({ user: state.session.user });
+
+export default connect(mapStateToProps, {
+  ...TeamActions,
+  updateSession,
+})(User2FASettings);
