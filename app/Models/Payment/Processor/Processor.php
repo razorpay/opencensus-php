@@ -2567,9 +2567,10 @@ class Processor
 
                 $this->repo->reload($this->payment);
 
-                // return if payment is already gateway captured or status refunded
+                // return if payment is already gateway captured or (status is refunded and captured_at is null)
                 if (($this->payment->isGatewayCaptured() === true) or
-                    ($this->payment->getStatus() === Payment\Status::REFUNDED))
+                    (($this->payment->getStatus() === Payment\Status::REFUNDED) and
+                     ($this->payment->hasBeenCaptured() === false)))
                 {
                     return;
                 }
