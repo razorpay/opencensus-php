@@ -319,7 +319,8 @@ class Service extends Base\Service
             'status'       => 'success',
             'merchant_id'  => $output['id'] ?? null,
             'partner_id'   => $merchant->getId(),
-            'source'       => $source
+            'source'       => $source,
+            'product_group'=> $input[Entity::PRODUCT] ?? Product::PRIMARY
         ];
 
         $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,

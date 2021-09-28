@@ -1149,7 +1149,8 @@ class Service extends Base\Service
                 'status'       => 'success',
                 'merchant_id'  => $subMerchant->getId(),
                 'partner_id'   => $partnerId,
-                'source'       => PartnerConstants::REFERRAL
+                'source'       => PartnerConstants::REFERRAL,
+                'product_group'=> $referralProduct,
             ];
 
             $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,

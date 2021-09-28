@@ -316,7 +316,8 @@ class Core extends Base\Core
                 'status'       => 'success',
                 'merchant_id'  => $merchant->getId(),
                 'partner_id'   => $partner->getId(),
-                'source'       => PartnerConstants::COUPON
+                'source'       => PartnerConstants::COUPON,
+                'product_group'=> $promotion->getProduct() ?? Product::PRIMARY
             ];
 
             $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
