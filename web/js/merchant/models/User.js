@@ -1273,6 +1273,10 @@ export default class User {
     return this.getExpStatus('bvs_get_gst_details');
   }
 
+  get showL1FormOnLogin() {
+    return this.getExpStatus('show_L1_Form_on_login') && !!this.isOrgRZP;
+  }
+
   get autoOpenL1Form() {
     return this.getExpStatus('auto-open-L1-form') && !!this.isOrgRZP;
   }

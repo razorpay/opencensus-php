@@ -720,6 +720,7 @@ export default class HomeContainer extends Component {
     });
 
     const signUpFormStatus = getItem('sign_up_exp_status');
+
     if (
       signUpFormStatus &&
       signUpFormStatus === 'sign_up_completed' &&

@@ -8,6 +8,7 @@ import { withRouter } from 'react-router-dom';
 
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import * as LocalStorageService from 'common/utils/localStorage';
 import Spinner from 'common/ui/Spinner';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -38,6 +39,7 @@ export default class ActivationContainer extends Component {
       clarificationReasons: null,
       gstinDetails: null,
       isActivationFormLoading: false,
+      showWelcomeBanner: false,
     };
 
     this.fetchActivationDetails = this.fetchActivationDetails.bind(this);
@@ -228,6 +230,26 @@ export default class ActivationContainer extends Component {
     this.sendEventsForSubMerchantView(
       window.rzpQ.routeActions().interaction('route.linked_account.activate_account.started'),
     );
+    const signUpFormStatus = LocalStorageService.getItem('sign_up_exp_status');
+    if (
+      signUpFormStatus &&
+      signUpFormStatus === 'sign_up_completed' &&
+      this.props.user.showL1FormOnLogin
+    ) {
+      analyticsTrack({
+        objectName: 'Show Activation form on login',
+        actionName: 'redirect',
+        screen: 'home page',
+        properties: {
+          loginL1Experiment: 'redirect to activation page',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+      LocalStorageService.setItem('sign_up_exp_status', 'kyc_form_fill_started');
+      this.setState({
+        showWelcomeBanner: true,
+      });
+    }
   }
 
   setOnCloseCb(cb) {
@@ -259,6 +281,7 @@ export default class ActivationContainer extends Component {
       clarificationReasons,
       gstinDetails,
       isActivationFormLoading,
+      showWelcomeBanner,
     } = this.state;
     const { user } = this.props;
     const commonProps = {
@@ -320,7 +343,19 @@ export default class ActivationContainer extends Component {
         </Modal>
       </div>
     ) : (
-      <div className="ActivationContainer kyc">{content || spinner}</div>
+      <div>
+        <div className="ActivationContainer kyc">
+          {showWelcomeBanner && (
+            <div className="welcome-header">
+              <div>Welcome {user.contact_name}</div>
+              <div className="description">
+                Activate your account to start accepting payments 🎉
+              </div>
+            </div>
+          )}
+          {content || spinner}
+        </div>
+      </div>
     );
   }
 }
