@@ -26,6 +26,7 @@ use RZP\Models\VirtualAccount\Metric;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Jobs\BankTransferCreateProcess;
+use RZP\Models\BankTransfer\Processor as BankTransferProcessor;
 
 class Service extends Base\Service
 {
@@ -57,6 +58,38 @@ class Service extends Base\Service
         $this->ip = $this->app['request']->ip();
 
         $this->mutex = $this->app['api.mutex'];
+    }
+
+    public function processPendingBankTransfer(array $input)
+    {
+        (new Validator)->validateInput('pending_bank_transfer', $input);
+
+        $bankTransferRequestId = $input[BankTransferRequest\Entity::BANK_TRANSFER_REQUEST_ID];
+
+        try
+        {
+            /** @var BankTransferRequest\Entity $bankTransferRequest */
+            $bankTransferRequest = $this->repo->bank_transfer_request->findOrFailPublic($bankTransferRequestId);
+
+            // $input as first parameter is not required. $bankTransferRequest is sufficient to process the request
+            // This is because: Following call has been deprecated $this->process($input, $provider, $checkForIfsc);
+            // in validateAndProcessRequest
+            return $this->validateAndProcessRequest([], $bankTransferRequest, Provider::ICICI, true, true);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::BANK_TRANSFER_PROCESS_REQUEST_NOT_FOUND,
+                [
+                    'message'   =>  'Bank Transfer Request not found',
+                    BankTransferRequest\Entity::BANK_TRANSFER_REQUEST_ID => $bankTransferRequestId,
+                ]
+            );
+
+            throw $ex;
+        }
     }
 
     public function saveRequestAndProcess(
@@ -100,13 +133,26 @@ class Service extends Base\Service
                                          ]);
         }
 
+        return $this->validateAndProcessRequest($input, $bankTransferRequest, $provider, $checkForIfsc);
+    }
+
+    protected function validateAndProcessRequest(
+        array $input,
+        BankTransferRequest\Entity $bankTransferRequest,
+        string $provider = null,
+        bool $checkForIfsc = false,
+        bool $skipPayeeAccountLengthValidation = false)
+    {
         if ($bankTransferRequest !== null and $bankTransferRequest->getPayeeAccount() !== null)
         {
-            $response = $this->validateProviderSpecificFields($bankTransferRequest);
-
-            if (empty($response) === false)
+            if ($skipPayeeAccountLengthValidation === false)
             {
-                return $response;
+                $response = $this->validateProviderSpecificFields($bankTransferRequest);
+
+                if (empty($response) === false)
+                {
+                    return $response;
+                }
             }
 
             $dispatchToQueue = $this->isRequestValidForQueueProcessing($provider ?? $this->provider);
@@ -641,9 +687,16 @@ class Service extends Base\Service
         $routeName = $this->app['api.route']->getCurrentRouteName();
 
         // Validation for ICICI (We are keeping this based on the route).
-        if ($routeName === 'bank_transfer_process_icici_internal')
+        if (($routeName === 'bank_transfer_process_icici_internal') or
+            ($routeName === 'bank_transfer_process_icici'))
         {
-            if (strlen(trim($bankTransferRequest->getPayeeAccount())) <= 6)
+            $payeeAccount = trim($bankTransferRequest->getPayeeAccount());
+
+            $processor = new BankTransferProcessor();
+
+            $isBankingType = $processor->getTransferTypeBasedOnPayeeAccount($payeeAccount);
+
+            if ($isBankingType and strlen($payeeAccount) !== 16)
             {
                 $this->trace->info(TraceCode::BANK_TRANSFER_REQUEST_ICICI_INCORRECT_PAYEE_ACCOUNT_NUMBER,
                                    [

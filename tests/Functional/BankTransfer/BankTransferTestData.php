@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\BankTransfer;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\BankTransfer\Service;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'createVirtualAccount' => [
@@ -1170,7 +1171,7 @@ return [
             'url'     => '/ecollect/validate/icici/internal',
             'method'  => 'post',
             'content' => [
-                'payee_account'  => 1234,
+                'payee_account'  => '1234',
                 'payee_ifsc'     => null,
                 'payer_name'     => 'Name of account holder',
                 'payer_account'  => '9876543210123456789',
@@ -1186,6 +1187,46 @@ return [
                 'valid'   => false,
                 'message' => Service::BANK_TRANSFER_REQUEST_ICICI_INCORRECT_PAYEE_ACCOUNT_NUMBER,
             ],
+        ],
+    ],
+
+    'testPendingBankTransfer' => [
+        'request'  => [
+            'url'     => '/admin/process_pending_bank_transfer',
+            'method'  => 'post',
+            'content' => [
+                'bank_transfer_request_id'  => null,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'valid'          => true,
+                'transaction_id' => 'RANDOMUTR012345',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPendingBankTransferWithInvalidID' => [
+        'request'  => [
+            'url'     => '/admin/process_pending_bank_transfer',
+            'method'  => 'post',
+            'content' => [
+                'bank_transfer_request_id'  => null,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID
         ],
     ],
 

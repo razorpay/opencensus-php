@@ -684,7 +684,7 @@ abstract class Processor extends Base\Core
         return $this->createOrFetchSharedVirtualAccount();
     }
 
-    protected function getTransferTypeBasedOnPayeeAccount(string $payeeAccount)
+    public function getTransferTypeBasedOnPayeeAccount(string $payeeAccount)
     {
         $firstFourDigitsOfAccountNumber = substr($payeeAccount, 0, 4);
         $firstSixDigitsOfAccountNumber = substr($payeeAccount, 0, 6);

@@ -1337,6 +1337,9 @@ return [
             Permission::ADMIN_SUB_VIRTUAL_ACCOUNT => [
                 'assignable' => true,
             ],
+            Permission::ADMIN_PROCESS_PENDING_BANK_TRANSFER => [
+                'assignable' => true,
+            ],
             Permission::MANUALLY_LINK_RBL_ACCOUNT_STATEMENT => [
                 'assignable' => true,
             ],

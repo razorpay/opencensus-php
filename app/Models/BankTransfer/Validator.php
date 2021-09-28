@@ -75,6 +75,10 @@ class Validator extends Base\Validator
         Entity::PAYER_IFSC,
     ];
 
+    protected static $pendingBankTransferRules = [
+        \RZP\Models\BankTransferRequest\Entity::BANK_TRANSFER_REQUEST_ID   => 'required|string',
+    ];
+
     protected function validateMode($attribute, $mode)
     {
         if (Mode::isValid($mode) === false)

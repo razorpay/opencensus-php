@@ -65,6 +65,17 @@ class BankTransferController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function processPendingBankTransfer()
+    {
+        $input = Request::all();
+
+        $this->trace->info(TraceCode::PROCESS_PENDING_BANK_TRANSFER_INPUT, $input);
+
+        $response = $this->service()->processPendingBankTransfer($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function processRblBankTransferTest()
     {
         $this->app['basicauth']->setModeAndDbConnection(Mode::TEST);

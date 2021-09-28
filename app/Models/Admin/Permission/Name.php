@@ -351,6 +351,8 @@ class Name
     const MERCHANT_FETCH_SUB_VIRTUAL_ACCOUNT    = 'merchant_fetch_sub_virtual_account';
     const MERCHANT_SUB_VIRTUAL_ACCOUNT_TRANSFER = 'merchant_sub_virtual_account_transfer';
 
+    const ADMIN_PROCESS_PENDING_BANK_TRANSFER    = 'admin_process_pending_bank_transfer';
+
     // Permission to create auto-kyc soft limit breached workflow
     const AUTO_KYC_SOFT_LIMIT_BREACH          = 'auto_kyc_soft_limit_breach';
     const AUTO_KYC_SOFT_LIMIT_BREACH_UNREGISTERED = 'auto_kyc_soft_limit_breach_unregistered';

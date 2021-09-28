@@ -4424,6 +4424,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // ICICI Integration
     const ICICI_VA_CALLBACK                                     = 'ICICI_VA_CALLBACK';
 
+    const PROCESS_PENDING_BANK_TRANSFER_INPUT                   = 'PROCESS_PENDING_BANK_TRANSFER_INPUT';
+
     // HDFC eCMS integration
     const HDFC_ECMS_VA_CALLBACK                                 = 'HDFC_ECMS_VA_CALLBACK';
 

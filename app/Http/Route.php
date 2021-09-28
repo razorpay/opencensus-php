@@ -477,6 +477,7 @@ class Route
         'bank_transfer_process'                    => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_process_icici'              => ['post',     'ecollect/validate/icici',                        'BankTransferController@processIciciBankTransferCallback'           ],
         'bank_transfer_process_icici_internal'     => ['post',     'ecollect/validate/icici/internal',               'BankTransferController@processIciciBankTransfer'                   ],
+        'process_pending_bank_transfer'            => ['post',     'admin/process_pending_bank_transfer',            'BankTransferController@processPendingBankTransfer'                 ],
         'bank_transfer_process_hdfc_ecms'          => ['post',     'ecollect/validate/hdfc/ecms',                    'BankTransferController@processHdfcEcmsBankTransfer'                ],
         'bank_transfer_process_file'               => ['post',     'ecollect/validate/file',                         'BankTransferController@processBankTransferFile'                    ],
         'bank_transfer_process_file_rbl'           => ['post',     'ecollect/validate/file/rbl',                     'BankTransferController@processBankTransferFileRbl'                 ],
@@ -5418,6 +5419,7 @@ class Route
         // Payout service
         'retry_payouts_on_service',
 
+        'process_pending_bank_transfer',
         // Merchant Risk Notes
         'merchant_risk_notes_get',
         'merchant_risk_notes_create',
@@ -5738,6 +5740,7 @@ class Route
         'sub_virtual_account_list_admin'           => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
         'sub_virtual_account_enable_disable'       => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
 
+        'process_pending_bank_transfer'            => Permission::ADMIN_PROCESS_PENDING_BANK_TRANSFER,
         'batch_process_by_id'                      => Permission::RETRY_BATCH,
         'merchant_get_tags'                        => Permission::VIEW_MERCHANT_TAGS,
         'merchant_tags_bulk'                       => Permission::MANAGE_BULK_MERCHANT_TAGGING,
@@ -9163,6 +9166,7 @@ class Route
             'pricing_supported_networks',
             'pricing_update_plan_rule',
             'buy_pricing_update_plan_rule',
+            'process_pending_bank_transfer',
             'promotion_create',
             'promotion_create_for_event',
             'promotion_deactivate',

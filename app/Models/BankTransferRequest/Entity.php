@@ -43,6 +43,8 @@ class Entity extends Base\PublicEntity
     const PRODUCT_ID                    = 'product_id';
     const MERCHANT_NAME                 = 'merchant_name';
 
+    const BANK_TRANSFER_REQUEST_ID      = 'bank_transfer_request_id';
+
     // Input keys
     const FIRST_TIME_ON_TEST_MODE = 'first_time_on_test_mode';
 
