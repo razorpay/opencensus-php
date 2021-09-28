@@ -6,7 +6,7 @@ import { paymentMethodsColumns } from 'merchant/containers/Home/PaymentMethods/d
 
 import { trackTreemapClick } from '../ga';
 
-var defaults = {
+const defaults = {
   margin: { top: 0, right: 0, bottom: 0, left: 0 },
   rootname: 'TOP',
   format: ',.2f',
@@ -15,6 +15,7 @@ var defaults = {
   height: 300 - 24, //leaving 24px at the bottom
 };
 
+// eslint-disable-next-line max-params
 function main(
   node,
   o,
@@ -26,46 +27,45 @@ function main(
   onHideTooltip,
   groupTitleMap,
 ) {
-  var root,
-    opts = { ...defaults, ...o },
-    formatNumber = isCurrency
-      ? (value) => humanReadableIndianCurrency(paiseToRupees(value))
-      : humanReadableIndian,
-    rname = opts.rootname,
-    margin = opts.margin;
+  let root, transitioning, g1;
+  const opts = { ...defaults, ...o };
+  const formatNumber = isCurrency
+    ? (value) => humanReadableIndianCurrency(paiseToRupees(value))
+    : humanReadableIndian;
+  const rname = opts.rootname;
+  const margin = opts.margin;
 
-  node.style.width = opts.width + 'px';
-  node.style.height = opts.height + 'px';
+  node.style.width = `${opts.width}px`;
+  node.style.height = `${opts.height}px`;
   node.style.position = 'realtive';
 
-  var width = opts.width - margin.left - margin.right,
-    height = opts.height - margin.top - margin.bottom,
-    transitioning;
+  const width = opts.width - margin.left - margin.right;
+  const height = opts.height - margin.top - margin.bottom;
 
-  var x = d3.scale.linear().domain([0, width]).range([0, width]);
+  const x = d3.scale.linear().domain([0, width]).range([0, width]);
 
-  var y = d3.scale.linear().domain([0, height]).range([0, height]);
+  const y = d3.scale.linear().domain([0, height]).range([0, height]);
 
-  var treemap = d3.layout
+  const treemap = d3.layout
     .treemap()
-    .children(function (d, depth) {
+    .children(function fn(d, depth) {
       return depth ? null : d._children;
     })
-    .sort(function (a, b) {
+    .sort(function fn(a, b) {
       return a.value - b.value;
     })
     .size([1, 1])
     .round(false);
 
-  var svg = d3
+  const svg = d3
     .select(node)
     .append('svg')
     .attr('width', width + margin.left + margin.right)
     .attr('height', height + margin.bottom + margin.top)
-    .style('margin-left', -margin.left + 'px')
-    .style('margin.right', -margin.right + 'px')
+    .style('margin-left', `${-margin.left}px`)
+    .style('margin.right', `${-margin.right}px`)
     .append('g')
-    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+    .attr('transform', `translate(${margin.left},${margin.top})`)
     .style('shape-rendering', 'crispEdges');
 
   if (data instanceof Array) {
@@ -74,10 +74,8 @@ function main(
     root = data;
   }
 
-  var g1;
-
-  var colors = {},
-    aliases = { emi: 'card' };
+  const colors = {};
+  const aliases = { emi: 'card' };
 
   initialize(root);
   accumulate(root);
@@ -91,7 +89,7 @@ function main(
     .sort((item1, item2) => {
       return item2.value - item1.value;
     })
-    .forEach(({ key }, index) => {
+    .forEach(({ key }) => {
       colors[key] = getPaymentMethodColor(titleCase(key));
     });
 
@@ -101,33 +99,34 @@ function main(
 
   layout(root);
 
-  var transitionSubscriber = null,
-    maxFontSize = 24;
+  let transitionSubscriber = null;
+  const maxFontSize = 24;
 
-  var globalTransition = display(root).transition;
+  const globalTransition = display(root).transition;
 
   if (typeof onTransition === 'function') {
     onTransition(root, true);
   }
 
-  function initialize(root) {
-    root.x = root.y = 0;
-    root.dx = width;
-    root.dy = height;
-    root.depth = 0;
+  function initialize(rootCurrent) {
+    rootCurrent.x = 0;
+    rootCurrent.y = 0;
+    rootCurrent.dx = width;
+    rootCurrent.dy = height;
+    rootCurrent.depth = 0;
   }
 
-  function rollup(node, color) {
-    node.color = color || colors[node.method] || 'black';
+  function rollup(nodeCurrent, color) {
+    nodeCurrent.color = color || colors[nodeCurrent.method] || 'black';
 
-    if (node.depth === 1 && node.parent) {
-      if (!node.percent) {
-        const sum = node.parent._children.reduce((result, child) => result + child.value, 0);
+    if (nodeCurrent.depth === 1 && nodeCurrent.parent) {
+      if (!nodeCurrent.percent) {
+        const sum = nodeCurrent.parent._children.reduce((result, child) => result + child.value, 0);
 
-        node.percent = ((node.value / sum) * 100).toFixed(2);
+        nodeCurrent.percent = ((nodeCurrent.value / sum) * 100).toFixed(2);
       }
 
-      rollup(node.parent, node.color);
+      rollup(nodeCurrent.parent, nodeCurrent.color);
     }
   }
 
@@ -145,8 +144,9 @@ function main(
           : groupTitleMap[d.key] || titleCase(d.key);
     }
 
+    // eslint-disable-next-line no-cond-assign
     return (d._children = d.values)
-      ? (d.value = d.values.reduce(function (p, v) {
+      ? (d.value = d.values.reduce(function fn(p, v) {
           return p + accumulate(v);
         }, 0))
       : d.value;
@@ -162,7 +162,7 @@ function main(
   function layout(d) {
     if (d._children) {
       treemap.nodes({ _children: d._children });
-      d._children.forEach(function (c) {
+      d._children.forEach(function fn(c) {
         c.x = d.x + c.x * d.dx;
         c.y = d.y + c.y * d.dy;
         c.dx *= d.dx;
@@ -179,52 +179,54 @@ function main(
     return d._children?.length > 0 && typeof d._children[0].key !== 'undefined';
   }
 
-  function display(d, isTransitioning) {
+  function display(d) {
     g1 = svg.append('g').datum(d).attr('class', 'depth');
 
-    var g = g1.selectAll('g').data(d._children).enter().append('g');
+    const g = g1.selectAll('g').data(d._children).enter().append('g');
 
-    g.filter(function (d) {
-      return d.key && d._children;
+    g.filter(function fn(datum) {
+      return datum.key && datum._children;
     })
       .classed('children', true)
-      .style('cursor', function (d) {
-        return canBeZoomed(d) ? 'pointer' : 'default';
+      .style('cursor', function fn(datum) {
+        return canBeZoomed(datum) ? 'pointer' : 'default';
       })
-      .style('font-size', (d) => {
-        return Math.min((y(d.y + d.dy) - y(d.y)) * 0.2, maxFontSize) + 'px';
+      .style('font-size', (datum) => {
+        return `${Math.min((y(datum.y + datum.dy) - y(datum.y)) * 0.2, maxFontSize)}px`;
       })
-      .on('mouseenter', function (d) {
-        var hasZoom = canBeZoomed(d);
+      .on('mouseenter', function fn(datum) {
+        const hasZoom = canBeZoomed(datum);
 
         onShowTooltip({
-          amount: d.value,
-          percent: d.percent,
-          label: d.displayText,
+          amount: datum.value,
+          percent: datum.percent,
+          label: datum.displayText,
           canBeZoomed: hasZoom,
         });
 
         if (hasZoom) {
+          // eslint-disable-next-line babel/no-invalid-this
           d3.select(this).selectAll('rect.parent').style('fill-opacity', 0.1);
         }
       })
-      .on('mouseleave', function (d) {
-        if (canBeZoomed(d)) {
+      .on('mouseleave', function fn(datum) {
+        if (canBeZoomed(datum)) {
+          // eslint-disable-next-line babel/no-invalid-this
           d3.select(this).selectAll('rect.parent').style('fill-opacity', 0);
         }
       })
-      .on('click', function (d) {
-        trackTreemapClick(d);
+      .on('click', function fn(datum) {
+        trackTreemapClick(datum);
 
-        if (canBeZoomed(d) && typeof onTransition === 'function') {
-          onTransition(d);
+        if (canBeZoomed(datum) && typeof onTransition === 'function') {
+          onTransition(datum);
         }
       });
 
-    var children = g
+    const children = g
       .selectAll('.child')
-      .data(function (d) {
-        return d._children || [d];
+      .data(function fn(datum) {
+        return datum._children || [datum];
       })
       .enter()
       .append('g');
@@ -233,7 +235,7 @@ function main(
 
     g.append('rect').attr('class', 'parent').call(rect);
 
-    var t = g
+    const t = g
       .append('text')
       .attr('dx', '1em')
       .attr('dy', '0.75em')
@@ -244,8 +246,8 @@ function main(
       .attr('class', 'amount method-text')
       .style('font-size', '1em')
       .attr('dx', '1em')
-      .text(function (d) {
-        return formatNumber(d.value);
+      .text(function fn(datum) {
+        return formatNumber(datum.value);
       })
       .append('tspan')
       .attr('class', 'amount-percent')
@@ -253,8 +255,8 @@ function main(
       .style('font-size', '0.6em')
       .style('fill', '#ffffff')
       .style('fill-opacity', 0.6)
-      .text(function (d) {
-        return `(${d.percent}%)`;
+      .text(function fn(datum) {
+        return `(${datum.percent}%)`;
       });
 
     t.append('tspan')
@@ -262,41 +264,39 @@ function main(
       .attr('dx', '1.67em') // inverse of 0.6
       .attr('dy', '1.5em')
       .attr('class', 'group-name method-text')
-      .text(function (d) {
-        return d.displayText;
+      .text(function fn(datum) {
+        return datum.displayText;
       });
 
     t.call(text);
 
-    g.selectAll('rect.child').style('fill', function (d) {
-      return d.color;
+    g.selectAll('rect.child').style('fill', function fn(datum) {
+      return datum.color;
     });
 
-    function transition(d, inboundElements) {
-      if (transitioning || !d) {
-        transitionSubscriber = () => transition(d);
+    function transition(datum) {
+      if (transitioning || !datum) {
+        transitionSubscriber = () => transition(datum);
         return;
       }
 
       transitioning = true;
 
-      let oldElements = svg.selectAll('g');
+      const oldG1 = g1;
 
-      var oldG1 = g1;
-
-      var g2 = display(d).g,
-        t1 = oldG1.transition().duration(100).ease('expOut'),
-        t2 = g2.transition().duration(100).ease('expOut');
+      const g2 = display(datum).g;
+      const t1 = oldG1.transition().duration(100).ease('expOut');
+      const t2 = g2.transition().duration(100).ease('expOut');
 
       // Update the domain only after entering new elements.
-      x.domain([d.x, d.x + d.dx]);
-      y.domain([d.y, d.y + d.dy]);
+      x.domain([datum.x, datum.x + datum.dx]);
+      y.domain([datum.y, datum.y + datum.dy]);
 
       // Enable anti-aliasing during the transition.
       svg.style('shape-rendering', null);
 
       // Draw child nodes on top of parent nodes.
-      svg.selectAll('.depth').sort(function (a, b) {
+      svg.selectAll('.depth').sort(function fn(a, b) {
         return a.depth - b.depth;
       });
 
@@ -306,10 +306,14 @@ function main(
       // Transition to the new view.
       t1.selectAll('.ptext').call(text).style('fill-opacity', 0);
 
-      t2.each('end', function (d) {
+      t2.each('end', function fn() {
+        // eslint-disable-next-line babel/no-invalid-this
         d3.select(this)
-          .style('font-size', (d) => {
-            return Math.min((y(d.y + d.dy) - y(d.y)) * 0.2, 24) + 'px';
+          .style('font-size', (datumCurrent) => {
+            return `${Math.min(
+              (y(datumCurrent.y + datumCurrent.dy) - y(datumCurrent.y)) * 0.2,
+              24,
+            )}px`;
           })
           .selectAll('.ptext')
           .call(text)
@@ -320,7 +324,7 @@ function main(
       t2.selectAll('rect').call(rect);
 
       // Remove the old node when the transition is finished.
-      t1.remove().each('end', function () {
+      t1.remove().each('end', function fn() {
         svg.style('shape-rendering', 'crispEdges');
         transitioning = false;
 
@@ -332,46 +336,50 @@ function main(
       });
     }
 
-    return { g: g, transition: transition };
+    return { g, transition };
   }
 
-  function text(text) {
-    text
-      .attr('x', function (d) {
+  function text(textCurrent) {
+    textCurrent
+      .attr('x', function fn(d) {
         return x(d.x);
       })
-      .attr('y', function (d) {
-        return y(d.y) + this.getBoundingClientRect().height / 2 + 'px';
+      .attr('y', function fn(d) {
+        // eslint-disable-next-line babel/no-invalid-this
+        return `${y(d.y) + this.getBoundingClientRect().height / 2}px`;
       })
       .style('fill', '#ffffff')
       .selectAll('tspan.method-text')
-      .attr('x', function (d) {
+      .attr('x', function fn(d) {
         return x(d.x);
       });
 
-    text.style('opacity', function (d) {
-      var fontSize = Number(this.parentNode.style.fontSize.replace('px', ''));
+    textCurrent.style('opacity', function fn(d) {
+      // eslint-disable-next-line babel/no-invalid-this
+      const fontSize = Number(this.parentNode.style.fontSize.replace('px', ''));
 
       return fontSize < 10 ||
+        // eslint-disable-next-line babel/no-invalid-this
         this.getComputedTextLength() > x(d.x + d.dx) - x(d.x) ||
+        // eslint-disable-next-line babel/no-invalid-this
         this.getBoundingClientRect().height > y(d.y + d.dy) - y(d.y)
         ? 0
         : 1;
     });
   }
 
-  function rect(rect) {
-    rect
-      .attr('x', function (d) {
+  function rect(rectCurrent) {
+    rectCurrent
+      .attr('x', function fn(d) {
         return x(d.x);
       })
-      .attr('y', function (d) {
+      .attr('y', function fn(d) {
         return y(d.y);
       })
-      .attr('width', function (d) {
+      .attr('width', function fn(d) {
         return x(d.x + d.dx) - x(d.x);
       })
-      .attr('height', function (d) {
+      .attr('height', function fn(d) {
         return y(d.y + d.dy) - y(d.y);
       });
   }
@@ -384,7 +392,7 @@ function main(
 }
 
 const getBankName = (name, bankNames) => {
-  return (bankNames[name] || name || 'Unknown') + '__bank';
+  return `${bankNames[name] || name || 'Unknown'}__bank`;
 };
 
 const getGroupingFactor = (groupKey, bankNames) => {
@@ -401,15 +409,14 @@ const getGroupingFactor = (groupKey, bankNames) => {
 };
 
 const makeCSVData = (data, bankNames, groupTitleMap) => {
-  const csvHeader = [].concat(paymentMethodsColumns.map(titleCase)).concat(['Amount', '%Share']),
-    csvBody = [];
+  const csvHeader = [].concat(paymentMethodsColumns.map(titleCase)).concat(['Amount', '%Share']);
 
   let total = 0;
 
-  let rows =
+  const rows =
     data instanceof Array
-      ? data.map((record, index) => {
-          let body = paymentMethodsColumns.map((columnName) => {
+      ? data.map((record) => {
+          const body = paymentMethodsColumns.map((columnName) => {
             let value = record[columnName];
 
             if (columnName === 'bank' || columnName === 'issuer') {
@@ -444,6 +451,7 @@ const makeCSVData = (data, bankNames, groupTitleMap) => {
   return arrayToCsvDataUrl(rows);
 };
 
+// eslint-disable-next-line max-params
 export default function renderTreemap(
   node,
   res,
@@ -455,7 +463,7 @@ export default function renderTreemap(
   groupTitleMap,
   bankNames,
 ) {
-  if (!d3 || !bankNames || !node) {
+  if (!d3 || !bankNames || !node || !res) {
     return {};
   }
 
@@ -466,8 +474,8 @@ export default function renderTreemap(
   res = d3.nest().key(getGroupingFactor('method')).entries(res);
 
   res.forEach((item) => {
-    const key = item.key,
-      nester = d3.nest();
+    const key = item.key;
+    const nester = d3.nest();
 
     let grouper = null;
 
