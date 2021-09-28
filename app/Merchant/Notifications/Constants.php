@@ -691,44 +691,6 @@ class Constants
             ],
         ],
         [
-            'id'          => 'whats-new-MAY21-CA-GROWTH',
-            'title'       => 'Approved for Cash Advance!',
-            'description' => 'Withdraw additional cash for business needs in seconds 24x7. You are pre-approved for a FREE line of credit from Razorpay.',
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/cash_advance_icon.svg',
-            'image_url'   => 'https://cdn.razorpay.com/static/assets/whats-new/cash-advance/cash-advance-showcase.gif',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Enable now',
-                    'id'    => 'cash-advance-cta-1',
-                    'url'   => '/capital/cash-advance',
-                ],
-                [
-                    'type'  => 'primary-inverted',
-                    'label' => 'Know more',
-                    'id'    => 'announcement-details-l2',
-                    'url'   => '/announcements/whats-new-MAY21-CA-GROWTH/'
-                ],
-            ],
-            'start_ts'    => 1626912000,
-            'end_ts'      => 1634860800,
-            'filters'     => [
-                'features' => ['loc'],
-                'not_features' => ['withdraw_loc'],
-            ],
-            'l2_content'  => [
-                'content'     => "<div><div>Don’t run out of cash and don’t stop growing by getting additional money for urgent business needs at any time or day. Withdraw instantly, repay easily and borrow again when needed.</div><div class='paragraph'><b>Instant cash anytime even on holidays: </b>Get backup for unexpected cash needs without a fresh application process every time</div> <div class='image' style='padding: 10px 0;'><img src='https://cdn.razorpay.com/static/assets/whats-new/cash-advance/cash-advance-dashboard.gif'></div><div class='paragraph'><b>Customer payments in advance: </b>Borrow expected revenue amount and repay from future settlements with actual customer payments</div><div><b>No interest until you use it: </b>Pay interest only when you withdraw the amount and only for the days used before repaying</div><div class='paragraph'><b>Easy but safe and reliable: </b>We have made Cash Advance not just easy to use but also safe and responsible in terms of repayment and risk to you.</div> </div>",
-                'buttons'     => [
-                    [
-                        'type'  => 'button',
-                        'label' => 'Get it now!',
-                        'url'   => '/capital/cash-advance',
-                        'id'    => 'cash-advance-cta-1',
-                    ],
-                ],
-            ],
-        ],
-        [
             'id'          => 'whats-new-may21-reten2-dashboard',
             'title'       => 'Win Rs. 40000 worth free credits',
             'description' => 'Accept payments from your customers between 24th - 30th May and win Rs.40,000* worth Razorpay Credits. *T&Cs Apply',
@@ -1126,6 +1088,42 @@ class Constants
             'end_ts'      => 1627948800,
             'filters'     => [
                 'splitz_experiments'  => ['ZAPIER_ANNOUNCEMENT_SPLITZ'],
+            ],
+        ],
+        [
+            'id'          => 'SEP21-ULTRALOC-ANNCMNT',
+            'title'       => 'Credit Line to Grow your Business',
+            'description' => 'Borrow collateral-free money that goes to your bank account within seconds. Withdraw 24/7 and Repay in easy instalments.',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/cash_advance_icon.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Enable now',
+                    'id'    => 'ultra-p2-cash-advance-cta-1',
+                    'url'   => '/capital/cash-advance',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Learn more',
+                    'id'    => 'announcement-details-l2',
+                    'url'   => '/announcements/SEP21-ULTRALOC-ANNCMNT/'
+                ],
+            ],
+            'start_ts'    => 1632476392,
+            'end_ts'      => 1637746792,
+            'filters'     => [
+                'splitz_experiments' => ['ULTRA_P2_CASH_ADVANCE_ANNOUNCEMENT_SPLITZ'],
+            ],
+            'l2_content'  => [
+                'content'     => "<div><div>Never run out of money with Cash Advance - a line of credit facility available to you at zero joining fee. Pay interest only on the amount withdrawn - No annual fee or maintenance fee.</div> <div class='image' style='padding: 20px 0 10px 0;'><img src='https://cdn.razorpay.com/static/assets/whats-new/cash-advance/cash-advance-p2-hero.png'></div><div class='paragraph'><b>Easy withdrawal and repayments: </b>Withdraw cash up to your credit limit, repay when customers pay and borrow again when you need cash.</div><div><b>Instant additional cash: </b>Borrow collateral-free money that goes directly into your bank account within seconds.</div><div class='paragraph'><b>No unnecessary approvals: </b>Once enabled, you don't need to apply for approval every time. Just log in to the dashboard and withdraw funds within seconds.</div></div>",
+                'buttons'     => [
+                    [
+                        'type'  => 'button',
+                        'label' => 'Apply Now',
+                        'url'   => '/capital/cash-advance',
+                        'id'    => 'ultra-p2-cash-advance-cta-1',
+                    ],
+                ],
             ],
         ],
     ];

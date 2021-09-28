@@ -226,6 +226,10 @@ class WhatsNewOld extends Component {
         event = 'ultra-campaign';
         break;
       }
+      case 'ultra-p2-cash-advance-cta-1': {
+        event = 'ultra-campaign-p2-cash-advance';
+        break;
+      }
       default: {
         return;
       }
@@ -258,6 +262,7 @@ class WhatsNewOld extends Component {
         break;
       case 'cash-advance-cta-1':
       case 'ultra-campaign-announcement-cta-1':
+      case 'ultra-p2-cash-advance-cta-1':
         this.createSalesforceOpportunity(id, url);
         break;
       case 'announcement-May21-PLMApp-GTM':
@@ -481,8 +486,7 @@ class WhatsNewOld extends Component {
           addOwnRef={(ref, position) => {
             this.notificationsRefsList.push({ ref, position });
           }}
-          pushSlider={this.props.pushSlider}
-          emptySliderStack={this.props.emptySliderStack}
+          hideSlider={this.hideSlider}
         />
       </div>
     ));
@@ -572,6 +576,7 @@ const NotificationCard = ({
   history,
   tracking,
   addOwnRef,
+  hideSlider,
   ...notification
 }) => {
   const isUnread = _isUnreadNotification(start_ts, end_ts, lastReadTS);
@@ -623,7 +628,7 @@ const NotificationCard = ({
     } else addOwnRef(ref, index + 1);
   }, []);
 
-  const handleCTAClick = (e, btn, urlPath) => {
+  const handleCTAClick = (e, btn, urlPath, isExternal) => {
     analyticsTrack({
       objectName: 'announcements',
       actionName: 'clicked',
@@ -643,6 +648,7 @@ const NotificationCard = ({
       `CTA Click - ${btn.label} - ${isUnread ? 'unread' : 'read'}`,
     );
     trackEvents(btn.label, urlPath, btn.type, id, notification);
+    if (!(isExternal || btn.id === 'announcement-details-l2')) hideSlider();
     // distinguish between links and buttons that open modals
     if (btn.id === 'announcement-details-l2') {
       e.preventDefault();
@@ -736,7 +742,7 @@ const NotificationCard = ({
               <a
                 key={idx}
                 class={classList('btn', getButtonClass(btn.type))}
-                onClick={(e) => handleCTAClick(e, btn, urlPath)}
+                onClick={(e) => handleCTAClick(e, btn, urlPath, isExternal)}
                 href={urlPath}
                 target={isExternal ? '_blank' : ''}
                 rel="noreferrer"

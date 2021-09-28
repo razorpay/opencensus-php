@@ -5,12 +5,12 @@ const payload = {
   event_properties: {},
 };
 
-export const sendDataToSalesForce = (data, user = { }, mode = 'live') => {
+export const sendDataToSalesForce = (data, user = {}, mode = 'live') => {
   const userDetails = {
-    merchant_id: user.current,
-    name: user.name,
-    email: user.contact_email,
-    contact_mobile: user.contact_mobile,
+    merchant_id: user?.current,
+    name: user?.name,
+    email: user?.contact_email,
+    contact_mobile: user?.contact_mobile,
   };
 
   const eventPropertiesMap = {
@@ -26,9 +26,14 @@ export const sendDataToSalesForce = (data, user = { }, mode = 'live') => {
       Campaign_ID: 'Ultra-CC',
       product_name: 'Cards',
     },
+    'ultra-campaign-p2-cash-advance': {
+      Campaign_ID: 'Ultra-LOC',
+      product_name: 'LOC',
+    },
   };
 
-  if (typeof data === 'string') payload.event_properties = { ...userDetails, ...eventPropertiesMap[data], } || {};
+  if (typeof data === 'string')
+    payload.event_properties = { ...userDetails, ...(eventPropertiesMap[data] || []) } || {};
   else if (typeof data === 'object' && data !== null) payload.event_properties = data;
 
   return merchantFetch({

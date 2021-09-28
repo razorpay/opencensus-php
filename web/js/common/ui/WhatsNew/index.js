@@ -172,6 +172,10 @@ class WhatsNew extends Component {
         event = 'ultra-campaign';
         break;
       }
+      case 'ultra-p2-cash-advance-cta-1': {
+        event = 'ultra-campaign-p2-cash-advance';
+        break;
+      }
       default: {
         return;
       }
@@ -205,6 +209,7 @@ class WhatsNew extends Component {
       case 'cash-advance-cta-1':
       case 'whats-new-JUN21-RXCC-GROWTH-cta1':
       case 'ultra-campaign-announcement-cta-1':
+      case 'ultra-p2-cash-advance-cta-1':
         this.createSalesforceOpportunity(id, url);
         break;
       case 'announcement-May21-PLMApp-GTM':

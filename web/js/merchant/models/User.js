@@ -443,6 +443,13 @@ export default class User {
     );
   }
 
+  get isUltraP2CashAdvanceCampaignBannerEnabled() {
+    return (
+      getSplitzExperimentVariant('ultra_p2_cash_advance_banner_experiment')?.variables?.result ===
+      'on'
+    );
+  }
+
   get isNitroFormFillEnabled() {
     return getSplitzExperimentVariant('nitro_form_ab_experiment')?.variables?.result === 'on';
   }

@@ -1,6 +1,9 @@
 import React from 'react';
 import RTracking from 'react-tracking';
-import { popSlider, emptySliderStack } from 'merchant_common/reducers/multiSlider';
+import {
+  popSlider as popSliderAsProp,
+  emptySliderStack,
+} from 'merchant_common/reducers/multiSlider';
 import { withRouter, Link } from 'react-router-dom';
 import { classList } from 'common/utils/rzp-utils';
 import debounce from 'common/utils/debounce';
@@ -30,7 +33,7 @@ const isWhatsNewSection = (id) => {
     user: state.session.user,
     ...state.growthService.announcements,
   }),
-  { popSlider, emptySliderStack },
+  { popSlider: popSliderAsProp, emptySliderStack },
 )
 @RTracking(() => window.rzpQ.component('AnnouncementDetails'))
 export default class AnnouncementDetails extends React.Component {
@@ -42,7 +45,9 @@ export default class AnnouncementDetails extends React.Component {
 
   getCommonNotificationTrackingProperties() {
     const notification =
-      this.props.announcements?.find((notification) => notification.id === this.props.id) || {};
+      this.props.announcements?.find(
+        (notificationEntry) => notificationEntry.id === this.props.id,
+      ) || {};
 
     return {
       id: notification.id,
@@ -85,6 +90,13 @@ export default class AnnouncementDetails extends React.Component {
         event = 'ultra-campaign';
         break;
       }
+      case 'ultra-p2-cash-advance-cta-1': {
+        event = 'ultra-campaign-p2-cash-advance';
+        break;
+      }
+      default: {
+        break;
+      }
     }
 
     sendDataToSalesForce(event, this.props.user);
@@ -96,7 +108,10 @@ export default class AnnouncementDetails extends React.Component {
       case 'cash-advance-cta-1':
       case 'whats-new-JUN21-RXCC-GROWTH-cta1':
       case 'ultra-campaign-announcement-cta-1':
+      case 'ultra-p2-cash-advance-cta-1':
         this.createSalesforceOpportunity(id, url);
+        break;
+      default:
         break;
     }
   };
@@ -179,14 +194,16 @@ export default class AnnouncementDetails extends React.Component {
             this.handleBackButtonClick();
             popSlider();
           }}
-        ></i>
+        />
       );
     else if (closeUrl)
       return (
         <Link to={closeUrl} onClick={this.handleBackButtonClick}>
-          <i className="i i-chevron-left"></i>
+          <i className="i i-chevron-left" />
         </Link>
       );
+
+    return null;
   };
 
   render() {
