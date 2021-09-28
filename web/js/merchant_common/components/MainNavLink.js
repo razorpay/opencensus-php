@@ -192,6 +192,7 @@ const mapStateToProps = (state) => {
     baseLocation: state.app.baseLocation,
     isMobileResolution: state.app.isMobileResolution,
     activePageName: state.app.activePageName,
+    user: state.session.user,
   };
 };
 
