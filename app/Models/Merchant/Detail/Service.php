@@ -1855,6 +1855,35 @@ class Service extends Base\Service
         return $this->core()->getDecryptedWebsiteCommentForWebsiteSelfServe($comments);
     }
 
+    public function isMidBelongsToMswipe(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $pattern = "/mswipe.com/i";
+
+        //to check if website/additonal_website contains "mswipe.com"
+        $website = $merchantDetails->getWebsite();
+
+        if (preg_match($pattern, $website))
+        {
+            return true;
+        }
+
+        $additionalWebsites = $merchantDetails->getAdditionalWebsites();
+
+        foreach ($additionalWebsites as $additionalWebsite)
+        {
+            if (preg_match($pattern, $additionalWebsite))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+  
     public function postAddAdditionalWebsiteSelfServe($urlType, $input)
     {
         $this->trace->info(

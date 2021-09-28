@@ -704,4 +704,91 @@ class DetailServiceTest extends TestCase
 
         $this->repoMock->shouldReceive('transaction')->andReturn($returnResp);
     }
+
+    public function testMidBelongsToMswipe()
+    {
+        $testcases = $this->createTestforMidBelongsToMswipe();
+
+        $this->getDriverAsMerchantMock();
+
+        $this->getFindOrFailPublic();
+
+        $this->merchantEntityMock->shouldReceive('toArrayEvent')->andReturn([]);
+
+        $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
+
+        /*
+         * to return different values on every subsequent call to the method, we have to provide the sequence of return values
+         * $mock->shouldReceive('name_of_method')->andReturn($value1, $value2, ...)
+         * The first call to 'name_of_method' will return $value1 and the second call will return $value2.
+         * https://docs.mockery.io/en/latest/reference/expectations.html
+         */
+        $this->merchantDetailEntityMock->shouldReceive('getWebsite')->andReturn($testcases[0]['business_website'], $testcases[1]['business_website'],
+                                                                                $testcases[2]['business_website'], $testcases[3]['business_website']
+        );
+
+        /*
+         * for additional_websites only 2nd and 3rd testcase are used because
+         * 'getAdditionalWebsites' will not be called in 0th and 1st testcase (i.e when 'business_website' already have "mswipe.com")
+         */
+        $this->merchantDetailEntityMock->shouldReceive('getAdditionalWebsites')->andReturn($testcases[2]['additional_websites'],
+                                                                                           $testcases[3]['additional_websites']);
+
+        foreach ($testcases as $testcase)
+        {
+            $output = $this->merchantService->isMidBelongsToMswipe("12234546");
+
+            $expected_output = $testcase['business_website_has_mswipe.com'] || $testcase['additional_websites_have_mswipe.com'];
+
+            self::assertEquals($expected_output, $output);
+        }
+    }
+
+    private function createTestforMidBelongsToMswipe()
+    {
+        $testcases = [
+            [
+                'business_website_has_mswipe.com'     => true,
+                'additional_websites_have_mswipe.com' => false,
+                'business_website'                    => 'https://www.mswipe.com',
+                'additional_websites'                 => [
+                    'https://www.website11.com',
+                    'https://www.website21.com',
+                    'https://www.website31.com',
+                ]
+            ],
+            [
+                'business_website_has_mswipe.com'     => true,
+                'additional_websites_have_mswipe.com' => true,
+                'business_website'                    => 'https://www.mswipe.com',
+                'additional_websites'                 => [
+                    'https://www.website12.com',
+                    'https://www.mswipe.com',
+                    'https://www.website32.com',
+                ]
+            ],
+            [
+                'business_website_has_mswipe.com'     => false,
+                'additional_websites_have_mswipe.com' => true,
+                'business_website'                    => 'https://www.website43.com',
+                'additional_websites'                 => [
+                    'https://www.website13.com',
+                    'https://www.mswipe.com',
+                    'https://www.website33.com',
+                ]
+            ],
+            [
+                'business_website_has_mswipe.com'     => false,
+                'additional_websites_have_mswipe.com' => false,
+                'business_website'                    => 'https://www.website44.com',
+                'additional_websites'                 => [
+                    'https://www.website14.com',
+                    'https://www.website24.com',
+                    'https://www.website34.com',
+                ]
+            ],
+        ];
+
+        return $testcases;
+    }
 }
