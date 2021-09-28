@@ -273,9 +273,42 @@ class Service extends Base\Service
 
         (new Terminal\Core)->validateExistingTerminal($terminal);
 
-        $terminal->restore();
 
-        return $terminal->toArrayAdmin();
+        $r = $this->repo->transaction(function () use ($id, $terminal) {
+
+            $shouldSync = true;
+
+            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+            $variantFlag = $this->app->razorx->getTreatment($id, "TERMINAL_RESTORE_PROXY", $mode);
+
+            $terminal->restore();
+
+            $tsTerminal = null;
+
+            if ($variantFlag === "restore_terminal")
+            {
+                $shouldSync = false;
+
+                $path = "/terminal/" . $id . "/restore";
+
+                $res = $this->app['terminals_service']->proxyTerminalService('', "PUT", $path);
+
+                $tsTerminal = self::getEntityFromTerminalServiceResponse($res);
+
+                $terminal->setSyncStatus(SyncStatus::SYNC_SUCCESS);
+            }
+            else
+            {
+                $tsTerminal = $terminal;
+            }
+
+            $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync]);
+
+            return $tsTerminal;
+        });
+
+        return $r->toArrayAdmin();
     }
 
     public function removeMerchantFromTerminal(string $id, string $merchantId)

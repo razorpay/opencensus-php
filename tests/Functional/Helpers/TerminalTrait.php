@@ -183,6 +183,33 @@ trait TerminalTrait
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR, null, [], "Terminal doesn't exist with this Id");
     }
 
+    protected function getProxyRestoreTerminalServiceResponse() : \Requests_Response
+    {
+
+        $data = ["id" => "123456789asdfg", "gateway" => "payu", 'merchant_id' => '10000000000000'];
+
+        $response =  new \Requests_Response;
+
+        $responseData = ['data' => $data];
+
+        $response->body = json_encode($responseData);
+
+        return $response;
+    }
+
+    protected function getProxyReassignTerminalServiceResponse() : \Requests_Response
+    {
+
+        $data = ["id" => "123456789asdfg", "gateway" => "payu", 'merchant_id' => '100000Razorpay'];
+
+        $response =  new \Requests_Response;
+
+        $responseData = ['data' => $data];
+
+        $response->body = json_encode($responseData);
+
+        return $response;
+    }
 
     protected function getProxyCreateGatewayCredentialTerminalServiceResponse() : \Requests_Response
     {

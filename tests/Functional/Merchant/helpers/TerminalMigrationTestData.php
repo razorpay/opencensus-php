@@ -419,6 +419,7 @@ return [
             ],
         ],
     ],
+
     'testEditTerminalOnTerminalServiceBadRequest' => [
         'request' => [
             'method'  => 'PUT',
@@ -439,6 +440,74 @@ return [
         ],
     ],
 
+
+    'testRestoreTerminalWithTerminalService' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/terminals/AqdfGh5460opVt/restore',
+        ],
+        'response' => [
+            'content' => [
+                'id' => "term_123456789asdfg",
+                'gateway' => "payu"
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testRestoreTerminalOnTerminalServiceBadRequest' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/terminals/AqdfGh5460opVt/restore',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'Terminal doesn\'t exist with this Id',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => 'BAD_REQUEST_TERMINALS_SERVICE_ERROR',
+        ],
+    ],
+
+    'testReassignTerminalWithTerminalService' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/terminals/AqdfGh5460opVt/reassign',
+            'content' => [ "merchant_id" => '100000Razorpay']
+        ],
+        'response' => [
+            'content' => [
+                'id' => "term_123456789asdfg",
+                'merchant_id' => "100000Razorpay"
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testReassignTerminalOnTerminalServiceBadRequest' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/terminals/AqdfGh5460opVt/reassign',
+            'content' => [ "merchant_id" => '100000Razorpay']
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'Terminal doesn\'t exist with this Id',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => 'BAD_REQUEST_TERMINALS_SERVICE_ERROR',
+        ],
+    ],
     'testToggleTerminalFromTerminalService' => [
         'request' => [
             'method'  => 'PUT',

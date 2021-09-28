@@ -205,9 +205,41 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_SHARED_TERMINAL_MERCHANT_CANNOT_BE_CHANGED);
         }
 
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $variantFlag = $this->app->razorx->getTreatment($terminal->getId(), "TERMINAL_REASSIGN_MERCHANT_PROXY", $mode);
+
+        $shouldSync = true;
+
+        $tsTerminal = $terminal;
+
+        if ($variantFlag === "reassign_merchant")
+        {
+            $shouldSync = false;
+
+            $terminalId = $terminal->getId();
+
+            $merchantId = $merchant->getId();
+
+            $input = ["merchant_id" => $merchantId];
+
+            $path = "/terminal/" . $terminalId . "/reassign_merchant";
+
+            $res = $this->app['terminals_service']->proxyTerminalService($input, "PATCH", $path);
+
+            $tsTerminal = Terminal\Service::getEntityFromTerminalServiceResponse($res);
+
+            $terminal->setSyncStatus(SyncStatus::SYNC_SUCCESS);
+        }
+
         $terminal->merchant()->associate($merchant);
 
-        $this->repo->saveOrFail($terminal);
+        $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync]);
+
+        if ($variantFlag === "reassign_merchant")
+        {
+            return $tsTerminal;
+        }
 
         return $terminal;
     }

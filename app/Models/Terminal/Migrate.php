@@ -590,6 +590,11 @@ trait Migrate
             $content["org_id"] = $terminalData["org_id"];
         }
 
+        if (empty($terminalData["enabled"]) === false)
+        {
+            $content["enabled"] = $terminalData["enabled"];
+        }
+
         $identifiers = [];
 
         if (array_key_exists('gateway_merchant_id', $terminalData) === true)

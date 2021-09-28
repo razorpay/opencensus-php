@@ -231,7 +231,7 @@ class Repository extends Base\Repository
 
         if ($variantFlag === 'on' and $fromTerminalsService === true)
         {
-            $data = ["function" => "getById", "terminal_id" => $id];
+            $data = ["function" => "getById", "terminal_id" => $id, "with_trashed" => $withTrashed];
 
             try
             {

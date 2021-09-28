@@ -1993,6 +1993,122 @@ class TerminalMigrationTest extends TestCase
         $this->startTest();
     }
 
+    public function testRestoreTerminalWithTerminalService()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'payu',
+                'gateway_merchant_id' => '250000002',
+                'gateway_secure_secret' => "1231424",
+                'mode' => 3,
+                'type' => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ]);
+
+        $t = $this->deleteTerminal2('AqdfGh5460opVt');
+
+        $this->assertNotNull($t['deleted_at']);
+
+        $this->razorxValue = 'restore_terminal';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+
+            return $this->getProxyRestoreTerminalServiceResponse();
+
+        }, 1);
+
+        $this->startTest();
+    }
+
+    public function testRestoreTerminalOnTerminalServiceBadRequest()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'payu',
+                'gateway_merchant_id' => '250000002',
+                'gateway_secure_secret' => "1231424",
+                'mode' => 3,
+                'type' => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ]);
+
+        $t = $this->deleteTerminal2('AqdfGh5460opVt');
+
+        $this->assertNotNull($t['deleted_at']);
+
+        $this->razorxValue = 'restore_terminal';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+
+            return $this->getProxyEditTerminalServiceResponseBadRequest();
+
+        }, 1);
+
+        $this->startTest();
+    }
+
+    public function testReassignTerminalWithTerminalService()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'payu',
+                'gateway_merchant_id' => '250000002',
+                'gateway_secure_secret' => "1231424",
+                'mode' => 3,
+                'type' => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ]);
+
+        $this->razorxValue = 'reassign_merchant';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+
+            return $this->getProxyReassignTerminalServiceResponse();
+
+        }, 1);
+
+        $this->startTest();
+    }
+
+    public function testReassignTerminalOnTerminalServiceBadRequest()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'payu',
+                'gateway_merchant_id' => '250000002',
+                'gateway_secure_secret' => "1231424",
+                'mode' => 3,
+                'type' => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ]);
+
+        $this->razorxValue = 'reassign_merchant';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+
+            return $this->getProxyEditTerminalServiceResponseBadRequest();
+
+        }, 1);
+
+        $this->startTest();
+    }
+
     public function testToggleTerminalFromTerminalService()
     {
         $terminal = $this->fixtures->create(
