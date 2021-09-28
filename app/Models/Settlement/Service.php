@@ -629,14 +629,13 @@ class Service extends Base\Service
 
         $partners = (new Merchant\Core())->fetchAffiliatedPartners($entityMerchantId);
 
-        //submerchant can belong to only one aggregator or fully managed at a time
-        $partner = $partners->filter(function(Merchant\Entity $partner)
+        //check if the auth merchant is one of the affiliated partners of the submerchant.
+        $applicablePartners = $partners->filter(function(Merchant\Entity $partner)
         {
-            return (($partner->isAggregatorPartner() === true) or ($partner->isFullyManagedPartner() === true));
-        })->first();
+            return ((($partner->isAggregatorPartner() === true) or ($partner->isFullyManagedPartner() === true)) and ($partner->getId() === $this->merchant->getId()));
+        });
 
-        if (($partner === null) or
-            ($partner->getId() !== $this->merchant->getId()))
+        if ( $applicablePartners->isEmpty() === true )
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_ID, null, null);
