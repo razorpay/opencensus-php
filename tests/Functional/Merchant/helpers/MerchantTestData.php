@@ -2934,7 +2934,7 @@ return [
             'method' => 'get',
             'content' => [
                 'currency' => 'INR',
-                'amount'   => '89900'
+                'amount'   => '9899'
             ]
         ],
         'response' => [

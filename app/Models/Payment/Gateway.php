@@ -2800,7 +2800,7 @@ class Gateway
             PayLater::HDFC => '100000'
         ],
         Payment\Method::CARDLESS_EMI => [
-            CardlessEmi::WALNUT369 => '90000',
+            CardlessEmi::WALNUT369 => '9900',
             CardlessEmi::HCIN => '50000',
         ],
     ];
