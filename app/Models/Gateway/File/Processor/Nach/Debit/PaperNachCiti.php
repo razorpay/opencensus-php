@@ -522,7 +522,7 @@ class PaperNachCiti extends Debit\Base
             if ($token->merchant->isEarlyMandatePresentmentEnabled() === true)
             {
                 $end = Carbon::createFromTimestamp($begin, Timezone::IST)
-                               ->addHours(7)
+                               ->addHours(6)
                                ->getTimestamp();
 
                 $createdAt = $token['payment_created_at'];

@@ -32,20 +32,13 @@ class CombinedNachCitiEarlyDebit extends PaperNachCiti
 
     public function fetchEntities(): PublicCollection
     {
-        if (Holidays::isWorkingDay(Carbon::now(Timezone::IST)) === false)
-        {
-            return new PublicCollection();
-        }
-
         $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)
-                            ->addHours(9)
-                            ->getTimestamp();
+                         ->addHours(9)
+                         ->getTimestamp();
 
-        $begin = Carbon::createFromTimestamp($begin)->addDay()->timestamp;
-
-        $end = Carbon::createFromTimestamp($begin, Timezone::IST)
-                        ->addHours(7)
-                        ->getTimestamp();
+        $end = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)
+                       ->addHours(15)
+                       ->getTimestamp();
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
 
@@ -81,7 +74,7 @@ class CombinedNachCitiEarlyDebit extends PaperNachCiti
         $paymentIds = $tokens->pluck('payment_id')->toArray();
 
         $this->trace->info(
-            TraceCode::NACH_DEBIT_REQUEST,
+            TraceCode::NACH_EARLY_DEBIT_REQUEST,
             [
                 'gateway_file_id' => $this->gatewayFile->getId(),
                 'begin'           => $begin,

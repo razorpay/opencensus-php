@@ -211,10 +211,8 @@ class NachCitiGatewayTest extends NachGatewayTest
 
         $this->fixtures->stripSign($response['razorpay_payment_id']);
 
-        $fixedTime = (new Carbon())->timestamp(self::FIXED_WORKING_DAY_AFTER_WORKING_DAY_TIME)->timestamp;
-
         $this->fixtures->edit('payment', $response['razorpay_payment_id'], [
-            'created_at' => Carbon::createFromTimestamp($fixedTime, Timezone::IST)->addHours(4)->timestamp
+            'created_at' => Carbon::yesterday( Timezone::IST)->addHours(10)->timestamp
         ]);
 
         $this->ba->cronAuth();
