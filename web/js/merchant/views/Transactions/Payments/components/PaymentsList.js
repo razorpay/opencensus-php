@@ -33,7 +33,7 @@ const EmptyComponent = () => {
 
 export default class PaymentsListContainer extends ListContainer {
   componentDidMount() {
-    const { user } = this.props;
+    const { user, isRoute } = this.props;
     const { pathname } = this.props.location;
     if (pathname && pathname.indexOf('route') < 0) {
       // Currently not tracking events from Route.
@@ -42,7 +42,12 @@ export default class PaymentsListContainer extends ListContainer {
         eventAction: 'Go To - Payments',
       });
     }
-    if (user.isFAEnabled) {
+    /*
+     As we are only Showing the Failure Analysis on the Trasaction Tab
+     and this Component is comonly used Between Routes and Trasaction
+     so added this check with the isRoute Prop as this is only true for the route Tab
+    */
+    if (!isRoute && user?.isFAEnabled) {
       this.fetchFailureAnalysisData();
     }
   }
@@ -143,7 +148,8 @@ export default class PaymentsListContainer extends ListContainer {
           form="paymentListFilter"
           count={this.state.count}
           onSubmit={(args) => {
-            if (user.isFAEnabled) {
+            // Only Needed to show FA on Trasaction Tab not in Routes Tab
+            if (!isRoute && user?.isFAEnabled) {
               this.fetchFailureAnalysisData(args);
             }
             this.search(args)
@@ -186,7 +192,8 @@ export default class PaymentsListContainer extends ListContainer {
           onSearchAnalytics={this.onSearchAnalytics}
           onClearAnalytics={this.onClearAnalytics}
         />
-        {user.isFAEnabled && failureAnalysisData?.data && (
+        {/* Only Needed to show FA on Trasaction Tab not in Routes Tab */}
+        {!isRoute && user?.isFAEnabled && failureAnalysisData?.data && (
           <PaymentFailureAnalysis data={failureAnalysisData?.data} user={user} />
         )}
 
