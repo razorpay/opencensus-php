@@ -137,18 +137,30 @@ class App extends Component {
         const kycStatus = user.activated ? 'activated' : 'not activated';
         const activatedAt = user.activated_at;
 
-        analytics.identify(user.user.id, {
-          id: user.user.id,
-          userId: user.user.id,
-          emailId: user.email,
-          activatedAt,
-          mode,
-          userRole: user.role,
-          kycStatus,
-          merchantId: user.current,
-          businessCategory: user.businessCategory,
-          phone: '+91' + user.contact_mobile,
-        });
+        const segmentIdentiyCall = (props) =>
+          analytics.identify(user.user.id, {
+            id: user.user.id,
+            userId: user.user.id,
+            emailId: user.email,
+            activatedAt,
+            mode,
+            userRole: user.role,
+            kycStatus,
+            merchantId: user.current,
+            businessCategory: user.businessCategory,
+            phone: '+91' + user.contact_mobile,
+            ...props,
+          });
+
+        let dataFromAPI = {};
+        return merchantFetch('merchant/data_for_segment')
+          .then((res) => {
+            if (res.data) {
+              dataFromAPI = res.data;
+            }
+            segmentIdentiyCall(dataFromAPI);
+          })
+          .catch(() => segmentIdentiyCall(dataFromAPI));
       }
     });
 
