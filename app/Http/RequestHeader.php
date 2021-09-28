@@ -96,4 +96,6 @@ class RequestHeader
     const X_REQUEST_TRACE_ID            = 'X-Request-TraceId';
 
     const X_AMAZON_TRACE_ID             = 'X-Amzn-Trace-Id';
+
+    const X_AMAZON_TLS_VERSION          = 'x-amzn-tls-version';
 }

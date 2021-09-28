@@ -119,6 +119,8 @@ class ApiTraceProcessor
 
         $this->addAwsTraceId($record);
 
+        $this->addAwsTlsVersion($record);
+
         $this->addRouteNameForExceptions($record);
 
         $this->scrubCardNumberViaCcPay($record);
@@ -428,5 +430,12 @@ class ApiTraceProcessor
         $traceId = $this->app->request->headers->get(RequestHeader::X_AMAZON_TRACE_ID);
 
         $record['request']['aws_trace_id'] = $traceId;
+    }
+
+    private function addAwsTlsVersion(array &$record)
+    {
+        $tlsVersion = $this->app->request->headers->get(RequestHeader::X_AMAZON_TLS_VERSION);
+
+        $record['request']['x-amzn-tls-version'] = $tlsVersion;
     }
 }
