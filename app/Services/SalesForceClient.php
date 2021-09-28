@@ -324,18 +324,19 @@ class SalesForceClient
         return $this->makeRequestAndGetResponse($request);
     }
 
-    public function getSalesForceTeamNameForMerchantID(array $MerchantIds)
-    {
-        $TeamNameArray=array();
 
-        foreach ($MerchantIds as $merchantId )
+    public function getSalesForceTeamNameForMerchantID(array $merchantIds)
+    {
+        $teamNameArray = array();
+
+        foreach ($merchantIds as $merchantId )
         {
-            $TeamNameArray[$merchantId]="nil";
+            $teamNameArray[$merchantId] = null;
         }
 
         $accessToken = $this->fetchAccessToken();
 
-        $MerchantIdsInClause = implode("','", $MerchantIds);
+        $merchantIdsInClause = implode("','", $merchantIds);
 
         $merchantDetailQuery = "select Merchant_ID__c,
                                 Name,
@@ -345,10 +346,10 @@ class SalesForceClient
                                 where Merchant_ID__c != null
                                 and Owner_Role__c != null
                                 and Transacting__c = true
-                                and Merchant_ID__c in ('$MerchantIdsInClause')";
+                                and Merchant_ID__c in ('$merchantIdsInClause')";
 
-          $queryURL= $this->baseUrl . '/services/data/v34.0/query?q='. $merchantDetailQuery;
-          $request = [
+         $queryURL = $this->baseUrl . '/services/data/v34.0/query?q='. $merchantDetailQuery;
+         $request = [
               'url'     => $queryURL,
               'method'  => self::GET,
               'content' => [],
@@ -359,14 +360,14 @@ class SalesForceClient
               ]
           ];
 
-          $response=$this->makeRequestAndGetResponse($request);
+         $response = $this->makeRequestAndGetResponse($request);
 
          foreach ($response["records"] as $entity )
          {
-             $TeamNameArray[$entity["Merchant_ID__c"]]=$entity["Owner"]["Name"];
+             $teamNameArray[$entity["Merchant_ID__c"]] = $entity["Owner"]["Name"];
          }
 
-         return $TeamNameArray;
+         return $teamNameArray;
 
     }
 
