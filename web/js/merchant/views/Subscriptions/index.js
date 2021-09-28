@@ -36,6 +36,7 @@ import SubscriptionOffersLaunchBanner from 'merchant/components/Announcements/Su
 import EmandateBanner from 'merchant/components/Announcements/EmandateSubscription';
 import CardPaymentsBlockedBanner from './components/CardPaymentsBlocked/Banner';
 import { CardsGoLiveBanner } from './components/banners/';
+import { CAW_CARDS_BANNER, SUBSCRIPTION_CARDS_BANNER } from './constants';
 
 @connect(
   (state) => ({
@@ -138,6 +139,9 @@ class SubscriptionsController extends React.Component {
 
   render() {
     const { subscriptionProductOnBoarding, user: userInfo } = this.props;
+    const cardsGoLiveBannerUrl = userInfo.isChargeAtWillEnabled
+      ? CAW_CARDS_BANNER
+      : SUBSCRIPTION_CARDS_BANNER;
 
     if (subscriptionProductOnBoarding.showOnboarding) {
       return <OnBoarding />;
@@ -145,11 +149,8 @@ class SubscriptionsController extends React.Component {
 
     return (
       <div class={classList('Subscriptions-Container')}>
-        {userInfo.isChargeAtWillEnabled ? (
-          <CardsGoLiveBanner />
-        ) : (
-          <SubscriptionOffersLaunchBanner />
-        )}
+        {!userInfo.isChargeAtWillEnabled && <SubscriptionOffersLaunchBanner />}
+        <CardsGoLiveBanner url={cardsGoLiveBannerUrl} />
         {userInfo.isEmandateOnSubscriptionEnabled && <EmandateBanner />}
         {userInfo.isCardRecurringPaymentsBlocked && (
           <CardPaymentsBlockedBanner isCAW={userInfo.isChargeAtWillEnabled} />
