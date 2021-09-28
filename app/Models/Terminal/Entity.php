@@ -1233,6 +1233,27 @@ class Entity extends Base\PublicEntity
      */
     public function generate($input)
     {
+        $this->setForemostAttributes($input);
+
+        parent::generate($input);
+    }
+
+    public function buildFromTerminalServiceResponse(array $input = array())
+    {
+        $this->setForemostAttributes($input);
+
+        $this->modify($input);
+
+        $this->fill($input);
+
+        $this->generateDefaultAttributes($input);
+
+        return $this;
+    }
+
+    // See test testGetEntityFromTerminalServiceResponseShouldUseOrgKeyForEncryption
+    public function setForemostAttributes(array $input = array())
+    {
         if (isset($input[Entity::MERCHANT_ID]) === true)
         {
             $this->setAttribute(Entity::MERCHANT_ID, $input[Entity::MERCHANT_ID]);
@@ -1242,20 +1263,8 @@ class Entity extends Base\PublicEntity
         {
             $this->setAttribute(Entity::ORG_ID, $input[Entity::ORG_ID]);
         }
-
-        parent::generate($input);
     }
 
-    public function buildFromTerminalServiceResponse(array $input = array())
-    {
-        $this->modify($input);
-
-        $this->fill($input);
-
-        $this->generateDefaultAttributes($input);
-
-        return $this;
-    }
     /**
      * Used to query by type, which is a bitwise column.
      *

@@ -115,9 +115,17 @@ class Facade extends BaseFacade
 
         if ($shouldCallRazorx === true)
         {
+            $orgId = self::getOrgIdForCrypt($entity);
+
+            if ((empty($orgId) === true) or
+                ($orgId === Org\Entity::RAZORPAY_ORG_ID))
+            {
+                return false;
+            }
+
             $variantFlag = $app->razorx->getTreatment($razorxMid, "BYOK_USE_ORG_KEY_FOR_ENCRYPTION_API", $mode);
 
-            self::traceInfo(TraceCode::BYOK_RAZORX_VARIANT,  ['variant' => $variantFlag]);
+            self::traceInfo(TraceCode::BYOK_RAZORX_VARIANT,  ['variant' => $variantFlag, 'mid' => $razorxMid]);
 
             if ($variantFlag === 'on')
             {

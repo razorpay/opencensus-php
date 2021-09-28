@@ -15,8 +15,10 @@ use RZP\Tests\Functional\Helpers\MocksMetricTrait;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Encryption\Encrypter;
 use RZP\Exception\IntegrationException;
 use Symfony\Component\HttpFoundation\Response;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
 
@@ -353,6 +355,51 @@ class TerminalMigrationTest extends TestCase
 
         $this->assertTrue($isEqual);
     }
+
+    public function enableRazorxMockOn()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+        ->setConstructorArgs([$this->app])
+        ->setMethods(['getTreatment'])
+        ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+        ->will($this->returnCallback(
+            function ($actionId, $feature, $mode)
+            {
+                return 'on';
+            }) );
+    }
+
+    public function testGetEntityFromTerminalServiceResponseShouldUseOrgKeyForEncryption()
+    {
+        // Enabling razorx mock on so that BYOK encryption of attributes when we get terminal from TS also gets tested in this test only.
+        // Basically to test that buildFromTerminalServiceResponse don't cause issues
+        $this->enableRazorxMockOn();
+
+        $terminal = $this->fixtures->create('terminal:direct_hitachi_terminal', ["international"=> false]);
+
+        $terminalArray = $terminal->toArray();
+
+        $terminalArray['enabled'] = "true";
+        $terminalArray['status'] = "activated";
+
+        $terminalArray['org_id'] = MerchantEntity::AXIS_ORG_ID; // axis orgId
+        $terminalArray['gateway_terminal_password'] = 'password1234';
+
+        $newTerminaEntity = Terminal\Service::getEntityFromTerminalServiceResponse($terminalArray);
+
+        $encryptedPassword = $newTerminaEntity->getOriginal()['gateway_terminal_password'];
+
+        // assert that password got encrypted using axis key
+        $orgKey = '5dlTd5lQhN56CkSrnyrRBtRMsXS9exWS'; // ENCRYPTION_KEY_AXIS
+        $newEncrypter = new Encrypter($orgKey, 'AES-256-CBC');
+        $decryptedSecret = $newEncrypter->decrypt($encryptedPassword, true);
+        $this->assertEquals('password1234', $decryptedSecret);
+    }
+
 
     public function testPaytmTerminalCompareFunction()
     {
