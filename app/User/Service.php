@@ -1762,6 +1762,7 @@ class Service extends Base\Service
             'route_transfer_state',
             'optimizer_wallets',
             'pp_hostedpage_new_footer',
+            'auto-open-L1-form'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

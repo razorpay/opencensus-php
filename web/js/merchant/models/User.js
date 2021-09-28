@@ -1272,6 +1272,10 @@ export default class User {
   get isGstinAutoPopulate() {
     return this.getExpStatus('bvs_get_gst_details');
   }
+
+  get autoOpenL1Form() {
+    return this.getExpStatus('auto-open-L1-form') && !!this.isOrgRZP;
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

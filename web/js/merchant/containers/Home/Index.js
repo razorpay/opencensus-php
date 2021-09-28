@@ -150,6 +150,7 @@ export default class HomeContainer extends Component {
 
     this.couponCode = 'UNLOCKFEST';
     this.isFestive = getCookie(`coupon_code--${user.current}`) === this.couponCode;
+    this.autoOpenL1FormModal = true;
 
     /*
      * Earlier , the tokens apply at browser level, if old tokens are present
@@ -363,7 +364,7 @@ export default class HomeContainer extends Component {
       )} for the day.`;
       /* eslint-disable */
     } else return;
-      /* eslint-enable */
+    /* eslint-enable */
   }
 
   fetchRestrictionsIfAny() {
@@ -602,6 +603,7 @@ export default class HomeContainer extends Component {
   componentWillUnmount() {
     document.body.className = document.body.className.replace(bodyClass, '');
     window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('click', () => {});
   }
 
   setScrollAmountToStickHeader() {
@@ -710,6 +712,35 @@ export default class HomeContainer extends Component {
       }, 0);
     }
     this.triggerTimerToUpdateMode();
+
+    window.addEventListener('click', () => {
+      if (this.autoOpenL1FormModal) {
+        this.autoOpenL1FormModal = false;
+      }
+    });
+
+    const signUpFormStatus = getItem('sign_up_exp_status');
+    if (
+      signUpFormStatus &&
+      signUpFormStatus === 'sign_up_completed' &&
+      this.props.user.autoOpenL1Form
+    ) {
+      setTimeout(() => {
+        if (this.autoOpenL1FormModal) {
+          analyticsTrack({
+            objectName: 'Auto Open Activation form on login',
+            actionName: 'open',
+            screen: 'home page',
+            properties: {
+              loginL1Experiment: 'auto open activation form modal',
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
+          this.props.history.push('/activation');
+        }
+      }, 7000);
+    }
+    setItem('sign_up_exp_status', 'kyc_form_fill_started');
   }
 
   closeOnboardingStep() {
