@@ -6,6 +6,83 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testValidateUtf8EncodingInBatchFundAccountsCSV' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'fund_account',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 3,
+                'parsed_entries' => [
+                    [
+                        Batch\Header::FUND_ACCOUNT_TYPE => 'bank_account',
+                        Batch\Header::FUND_ACCOUNT_NAME => 'Sagnik Saha',
+                        Batch\Header::FUND_ACCOUNT_IFSC => 'SBIN0007679',
+                        Batch\Header::FUND_ACCOUNT_NUMBER => '200200200200',
+                        Batch\Header::FUND_ACCOUNT_VPA => '',
+                        Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                        Batch\Header::FUND_ACCOUNT_PROVIDER     => '',
+                        Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                        Batch\Header::CONTACT_ID                => '',
+                        Batch\Header::CONTACT_TYPE              => 'vendor',
+                        Batch\Header::CONTACT_NAME_2            => "Sagnik Saha",
+                        Batch\Header::CONTACT_EMAIL_2           => "sagnik3012@gmail.com",
+                        Batch\Header::CONTACT_MOBILE_2          => '9876543210',
+                        Batch\Header::CONTACT_REFERENCE_ID      => '',
+                        Batch\Header::NOTES_CODE                => 'test',
+                        Batch\Header::NOTES_PLACE               => 'Kolkata'
+                    ],
+                ],
+            ],
+        ],
+    ],
+    'testValidateUtf8EncodingInBatchPayoutsCSV' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 3,
+                'parsed_entries'    => [
+                    [
+                        Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                        Batch\Header::PAYOUT_AMOUNT_RUPEES      => '40',
+                        Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                        Batch\Header::PAYOUT_MODE               => 'NEFT',
+                        Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                        Batch\Header::PAYOUT_NARRATION          => 'NarrationTest',
+                        Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                        Batch\Header::FUND_ACCOUNT_ID           => '',
+                        Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                        Batch\Header::FUND_ACCOUNT_NAME         => 'Sagnik Saha',
+                        Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                        Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                        Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                        Batch\Header::CONTACT_TYPE              => 'employee',
+                        Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                        Batch\Header::CONTACT_NAME_2            => 'Sagnik Saha',
+                        Batch\Header::CONTACT_EMAIL_2           => 'sagnik.saha@razorpay.com',
+                        Batch\Header::CONTACT_MOBILE_2          => '',
+                        Batch\Header::CONTACT_REFERENCE_ID      => '',
+                        Batch\Header::NOTES_CODE                => 'test',
+                        Batch\Header::NOTES_PLACE               => 'Kolkata'
+                    ],
+                ],
+            ],
+        ],
+
+    ],
     'testValidateBatchPayoutsCSV' => [
         'request'  => [
             'url'     => '/batches/validate',

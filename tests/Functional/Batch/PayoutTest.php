@@ -51,6 +51,285 @@ class PayoutTest extends TestCase
         $this->merchant = $this->getDbEntityById('merchant', '10000000000000');
     }
 
+    /**
+     * This test function validates that Contact Name and Contact Email attributes are
+     * UTF-8 encoded while importing bulk contacts.
+     */
+    public function testValidateUtf8EncodingInBatchFundAccountsCSV()
+    {
+
+        $entries = [
+            [
+                // this entry has non utf-8 character in CONTACT_NAME_2 field
+                // and won't be parsed successfully.
+                Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                Batch\Header::FUND_ACCOUNT_NAME         => 'Sagnik Saha',
+                Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0007679',
+                Batch\Header::FUND_ACCOUNT_NUMBER       => '200200200200',
+                Batch\Header::FUND_ACCOUNT_VPA          => '',
+                Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                Batch\Header::FUND_ACCOUNT_PROVIDER     => '',
+                Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                Batch\Header::CONTACT_ID                => '',
+                Batch\Header::CONTACT_TYPE              => 'vendor',
+                Batch\Header::CONTACT_NAME_2            => "Sagnik \xff Saha",
+                Batch\Header::CONTACT_EMAIL_2           => "sagnik3012@gmail.com",
+                Batch\Header::CONTACT_MOBILE_2          => '9876543210',
+                Batch\Header::CONTACT_REFERENCE_ID      => '',
+                Batch\Header::NOTES_CODE                => 'test',
+                Batch\Header::NOTES_PLACE               => 'Kolkata'
+            ],
+            [
+                // this entry has non utf-8 character in CONTACT_EMAIL_2 field
+                // and won't be parsed successfully.
+                Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                Batch\Header::FUND_ACCOUNT_NAME         => 'Sagnik Saha',
+                Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0007679',
+                Batch\Header::FUND_ACCOUNT_NUMBER       => '200200200200',
+                Batch\Header::FUND_ACCOUNT_VPA          => '',
+                Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                Batch\Header::FUND_ACCOUNT_PROVIDER     => '',
+                Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                Batch\Header::CONTACT_ID                => '',
+                Batch\Header::CONTACT_TYPE              => 'vendor',
+                Batch\Header::CONTACT_NAME_2            => "Sagnik Saha",
+                Batch\Header::CONTACT_EMAIL_2           => "sagnik\xf83012@gmail.com",
+                Batch\Header::CONTACT_MOBILE_2          => '9876543210',
+                Batch\Header::CONTACT_REFERENCE_ID      => '',
+                Batch\Header::NOTES_CODE                => 'test',
+                Batch\Header::NOTES_PLACE               => 'Kolkata'
+            ],
+            [
+                // this entry has invalid utf-8 character in both CONTACT_NAME_2 field and CONTACT_EMAIL_2 field
+                // and won't be parsed successfully.
+                Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                Batch\Header::FUND_ACCOUNT_NAME         => 'Sagnik Saha',
+                Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0007679',
+                Batch\Header::FUND_ACCOUNT_NUMBER       => '200200200200',
+                Batch\Header::FUND_ACCOUNT_VPA          => '',
+                Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                Batch\Header::FUND_ACCOUNT_PROVIDER     => '',
+                Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                Batch\Header::CONTACT_ID                => '',
+                Batch\Header::CONTACT_TYPE              => 'vendor',
+                Batch\Header::CONTACT_NAME_2            => "Sagnik \xff Saha",
+                Batch\Header::CONTACT_EMAIL_2           => "sagnik\xf83012@gmail.com",
+                Batch\Header::CONTACT_MOBILE_2          => '9876543210',
+                Batch\Header::CONTACT_REFERENCE_ID      => '',
+                Batch\Header::NOTES_CODE                => 'test',
+                Batch\Header::NOTES_PLACE               => 'Kolkata'
+            ],
+            [
+                // this entry has valid utf-8 characters in both CONTACT_NAME_2 field and CONTACT_EMAIL_2 field
+                // So this entry WILL be parsed successfully.
+                Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                Batch\Header::FUND_ACCOUNT_NAME         => 'Sagnik Saha',
+                Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0007679',
+                Batch\Header::FUND_ACCOUNT_NUMBER       => '200200200200',
+                Batch\Header::FUND_ACCOUNT_VPA          => '',
+                Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                Batch\Header::FUND_ACCOUNT_PROVIDER     => '',
+                Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                Batch\Header::CONTACT_ID                => '',
+                Batch\Header::CONTACT_TYPE              => 'vendor',
+                Batch\Header::CONTACT_NAME_2            => "Sagnik Saha",
+                Batch\Header::CONTACT_EMAIL_2           => "sagnik3012@gmail.com",
+                Batch\Header::CONTACT_MOBILE_2          => '9876543210',
+                Batch\Header::CONTACT_REFERENCE_ID      => '',
+                Batch\Header::NOTES_CODE                => 'test',
+                Batch\Header::NOTES_PLACE               => 'Kolkata'
+            ],
+        ];
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $fileContent = file($response['signed_url']);
+
+        $expectedHeaderRow = "Fund Account Type,Fund Account Name,Fund Account Ifsc,Fund Account Number,".
+            "Fund Account Vpa,Fund Account Provider,Fund Account Phone Number,Fund Account Email,Contact Id,".
+            "Contact Type,Contact Name,Contact Email,Contact Mobile,Contact Reference Id,notes[code],notes[place],".
+            "Error Code,Error Description";
+        $expectedDataRow = [
+            "bank_account,Sagnik Saha,SBIN0007679,200200200200,,,,,,vendor,Sagnik \xff Saha,".
+            "sagnik3012@gmail.com,9876543210,,test,Kolkata,BAD_REQUEST_ERROR,".
+            "Invalid encoding of Contact Name. Non UTF-8 character(s) found.",
+            "bank_account,Sagnik Saha,SBIN0007679,200200200200,,,,,,vendor,Sagnik Saha,".
+            "sagnik\xf83012@gmail.com,9876543210,,test,Kolkata,BAD_REQUEST_ERROR,".
+            "Invalid encoding of Contact Email. Non UTF-8 character(s) found.",
+            // Error Description in the last data row should state error in Contact Name only.
+            "bank_account,Sagnik Saha,SBIN0007679,200200200200,,,,,,vendor,Sagnik \xff Saha,".
+            "sagnik\xf83012@gmail.com,9876543210,,test,Kolkata,BAD_REQUEST_ERROR,".
+            "Invalid encoding of Contact Name. Non UTF-8 character(s) found.",
+            // No error for the last dat entry.
+            "bank_account,Sagnik Saha,SBIN0007679,200200200200,,,,,,vendor,Sagnik Saha,sagnik3012@gmail.com,".
+            "9876543210,,test,Kolkata,,"
+        ];
+
+        $this->assertEquals($expectedHeaderRow, trim($fileContent[0]));
+        $this->assertEquals($expectedDataRow[0], trim($fileContent[1]));
+        $this->assertEquals($expectedDataRow[1], trim($fileContent[2]));
+
+        // this asserts error in CONTACT_NAME_2 even though there is non utf-8 character in CONTACT_EMAIL_2
+        $this->assertEquals($expectedDataRow[2], trim($fileContent[3]));
+        $this->assertEquals($expectedDataRow[3], trim($fileContent[4]));
+
+    }
+
+    /**
+     * This test function validates that Contact Name and Contact Email attributes are
+     * UTF-8 encoded while issuing bulk payouts.
+     */
+    public function testValidateUtf8EncodingInBatchPayoutsCSV()
+    {
+        $entries = [
+            [
+                // This entry has non utf-8 character in CONTACT_NAME_2 field
+                // and won't be parsed successfully.
+                Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                Batch\Header::PAYOUT_AMOUNT_RUPEES      => 10,
+                Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                Batch\Header::PAYOUT_MODE               => 'NEFT',
+                Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                Batch\Header::FUND_ACCOUNT_ID           => '',
+                Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                Batch\Header::FUND_ACCOUNT_NAME         => 'Sagnik Saha',
+                Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                Batch\Header::FUND_ACCOUNT_VPA          => '',
+                Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                Batch\Header::CONTACT_NAME_2            => "Sagnik \xf8 Saha",
+                Batch\Header::PAYOUT_NARRATION          => 'NarrationTest',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
+                Batch\Header::CONTACT_EMAIL_2           => "sagnik.saha@razorpay.com",
+                Batch\Header::CONTACT_MOBILE_2          => '',
+                Batch\Header::CONTACT_REFERENCE_ID      => '',
+                Batch\Header::NOTES_CODE                => 'test',
+                Batch\Header::NOTES_PLACE               => 'Kolkata'
+            ],
+            [
+                // This entry has non utf-8 character in CONTACT_EMAIL_2 field
+                // and won't be parsed successfully.
+                Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                Batch\Header::PAYOUT_AMOUNT_RUPEES      => 20,
+                Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                Batch\Header::PAYOUT_MODE               => 'NEFT',
+                Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                Batch\Header::FUND_ACCOUNT_ID           => '',
+                Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                Batch\Header::FUND_ACCOUNT_NAME         => 'Sagnik Saha',
+                Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                Batch\Header::FUND_ACCOUNT_VPA          => '',
+                Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                Batch\Header::CONTACT_NAME_2            => "Sagnik Saha",
+                Batch\Header::PAYOUT_NARRATION          => 'NarrationTest',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
+                Batch\Header::CONTACT_EMAIL_2           => "sagnik\xffsaha@razorpay.com",
+                Batch\Header::CONTACT_MOBILE_2          => '',
+                Batch\Header::CONTACT_REFERENCE_ID      => '',
+                Batch\Header::NOTES_CODE                => 'test',
+                Batch\Header::NOTES_PLACE               => 'Kolkata'
+            ],
+            [
+                // This entry has invalid utf-8 character in both CONTACT_NAME_2 field and CONTACT_EMAIL_2 field
+                // and won't be parsed successfully.
+                Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                Batch\Header::PAYOUT_AMOUNT_RUPEES      => 30,
+                Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                Batch\Header::PAYOUT_MODE               => 'NEFT',
+                Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                Batch\Header::FUND_ACCOUNT_ID           => '',
+                Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                Batch\Header::FUND_ACCOUNT_NAME         => 'Sagnik Saha',
+                Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                Batch\Header::FUND_ACCOUNT_VPA          => '',
+                Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                Batch\Header::CONTACT_NAME_2            => "Sagnik \xf8 Saha",
+                Batch\Header::PAYOUT_NARRATION          => 'NarrationTest',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
+                Batch\Header::CONTACT_EMAIL_2           => "sagnik\xffsaha@razorpay.com",
+                Batch\Header::CONTACT_MOBILE_2          => '',
+                Batch\Header::CONTACT_REFERENCE_ID      => '',
+                Batch\Header::NOTES_CODE                => 'test',
+                Batch\Header::NOTES_PLACE               => 'Kolkata'
+            ],
+            [
+                // This entry has valid utf-8 character in both CONTACT_NAME_2 field and CONTACT_EMAIL_2 field.
+                // So this entry WILL be parsed successfully.
+                Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                Batch\Header::PAYOUT_AMOUNT_RUPEES      => 40,
+                Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                Batch\Header::PAYOUT_MODE               => 'NEFT',
+                Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                Batch\Header::FUND_ACCOUNT_ID           => '',
+                Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                Batch\Header::FUND_ACCOUNT_NAME         => 'Sagnik Saha',
+                Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                Batch\Header::FUND_ACCOUNT_VPA          => '',
+                Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                Batch\Header::CONTACT_NAME_2            => "Sagnik Saha",
+                Batch\Header::PAYOUT_NARRATION          => 'NarrationTest',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
+                Batch\Header::CONTACT_EMAIL_2           => "sagnik.saha@razorpay.com",
+                Batch\Header::CONTACT_MOBILE_2          => '',
+                Batch\Header::CONTACT_REFERENCE_ID      => '',
+                Batch\Header::NOTES_CODE                => 'test',
+                Batch\Header::NOTES_PLACE               => 'Kolkata'
+            ],
+        ];
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $fileContent = file($response['signed_url']);
+
+        $this->assertEquals(10000, $response['total_payout_amount']);
+
+        $expectedHeaderRow = 'Error Description,RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,'.
+            'Payout Mode,Payout Purpose,Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc,'.
+            'Fund Account Number,Fund Account Vpa,Fund Account Phone Number,Contact Name,Payout Narration,'.
+            'Payout Reference Id,Fund Account Email,Contact Type,Contact Email,Contact Mobile,Contact Reference Id,'.
+            'notes[code],notes[place]';
+
+        $expectedDataRow = [
+            "Invalid encoding of Contact Name. Non UTF-8 character(s) found.,2323230041626905,10,INR,".
+            "NEFT,refund,,bank_account,Sagnik Saha,SBIN0010720,100200300400,," .
+            ",Sagnik \xf8 Saha,NarrationTest,,,employee,sagnik.saha@razorpay.com,,,test,Kolkata",
+            "Invalid encoding of Contact Email. Non UTF-8 character(s) found.,2323230041626905,20,INR,".
+            "NEFT,refund,,bank_account,Sagnik Saha,SBIN0010720,100200300400,," .
+            ",Sagnik Saha,NarrationTest,,,employee,sagnik\xffsaha@razorpay.com,,,test,Kolkata",
+            // Error Description in the third data row should state error in Contact Name only.
+            "Invalid encoding of Contact Name. Non UTF-8 character(s) found.,2323230041626905,30,INR,".
+            "NEFT,refund,,bank_account,Sagnik Saha,SBIN0010720,100200300400,," .
+            ",Sagnik \xf8 Saha,NarrationTest,,,employee,sagnik\xffsaha@razorpay.com,,,test,Kolkata",
+            // No error in the last data row
+            ",2323230041626905,40,INR,NEFT,refund,,bank_account,Sagnik Saha,SBIN0010720,100200300400,,,Sagnik Saha,".
+            "NarrationTest,,,employee,sagnik.saha@razorpay.com,,,test,Kolkata"
+        ];
+
+        $this->assertEquals($expectedHeaderRow, trim($fileContent[0]));
+        $this->assertEquals($expectedDataRow[0], trim($fileContent[1]));
+        $this->assertEquals($expectedDataRow[1], trim($fileContent[2]));
+        // This asserts error in CONTACT_NAME_2 even though there is non utf-8 character in CONTACT_EMAIL_2
+        $this->assertEquals($expectedDataRow[2], trim($fileContent[3]));
+        $this->assertEquals($expectedDataRow[3], trim($fileContent[4]));
+    }
+
     // Upload a CSV file and it gets successfully validated.
     // We shall also add assertions to the `batch/validated` file since that is the file that gets sent to Batch Service
     public function testValidateBatchPayoutsCSV()

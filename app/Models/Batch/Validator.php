@@ -17,6 +17,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\User\Role;
 use RZP\Models\Batch;
+use Razorpay\Trace\Logger;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
 use RZP\Models\Pricing;
@@ -521,8 +522,8 @@ class Validator extends Base\Validator
         Header::FUND_ACCOUNT_PROVIDER     => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',wallet|nullable|string|in:amazonpay',
         Header::CONTACT_ID                => 'sometimes|nullable|public_id|size:19',
         Header::CONTACT_TYPE              => 'required_without:'.Header::CONTACT_ID.'|nullable|string',
-        Header::CONTACT_NAME_2            => 'required_without:'.Header::CONTACT_ID.'|nullable|string',
-        Header::CONTACT_EMAIL_2           => 'sometimes|nullable|string',
+        Header::CONTACT_NAME_2            => 'required_without:'.Header::CONTACT_ID.'|nullable|string|custom',
+        Header::CONTACT_EMAIL_2           => 'sometimes|nullable|string|custom',
         Header::CONTACT_MOBILE_2          => 'sometimes|nullable|string',
         Header::CONTACT_REFERENCE_ID      => 'sometimes|nullable|string',
         Header::NOTES                     => 'sometimes|nullable|notes',
@@ -544,10 +545,10 @@ class Validator extends Base\Validator
         Header::FUND_ACCOUNT_NUMBER         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
         Header::FUND_ACCOUNT_VPA            => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',vpa|nullable|string',
         Header::FUND_ACCOUNT_PHONE_NUMBER   => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',wallet|string|nullable',
-        Header::CONTACT_NAME_2              => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string',
+        Header::CONTACT_NAME_2              => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string|custom',
         Header::FUND_ACCOUNT_EMAIL          => 'sometimes|nullable|string|email',
         Header::CONTACT_TYPE                => 'sometimes|nullable|string',
-        Header::CONTACT_EMAIL_2             => 'sometimes|nullable|string',
+        Header::CONTACT_EMAIL_2             => 'sometimes|nullable|string|custom',
         Header::CONTACT_MOBILE_2            => 'sometimes|nullable|string',
         Header::CONTACT_REFERENCE_ID        => 'sometimes|nullable|string',
         Header::NOTES                       => 'sometimes|nullable|notes',
@@ -595,10 +596,10 @@ class Validator extends Base\Validator
         Header::FUND_ACCOUNT_NUMBER         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
         Header::FUND_ACCOUNT_VPA            => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',vpa|nullable|string',
         Header::FUND_ACCOUNT_PHONE_NUMBER   => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',wallet|string|nullable',
-        Header::CONTACT_NAME_2              => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string',
+        Header::CONTACT_NAME_2              => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string|custom',
         Header::FUND_ACCOUNT_EMAIL          => 'sometimes|nullable|string|email',
         Header::CONTACT_TYPE                => 'sometimes|nullable|string',
-        Header::CONTACT_EMAIL_2             => 'sometimes|nullable|string',
+        Header::CONTACT_EMAIL_2             => 'sometimes|nullable|string|custom',
         Header::CONTACT_MOBILE_2            => 'sometimes|nullable|string',
         Header::CONTACT_REFERENCE_ID        => 'sometimes|nullable|string',
         Header::NOTES                       => 'sometimes|nullable|notes',
@@ -874,6 +875,34 @@ class Validator extends Base\Validator
         if (!$d || $d->format($expectedFormat) != $value)
         {
             throw new BadRequestValidationFailureException('Invalid Payout Date format, should be d/m/Y');
+        }
+    }
+
+    protected function validateContactName($attribute , $value)
+    {
+        $this->validateUtf8Encoding($attribute, $value);
+    }
+
+    protected function validateContactEmail($attribute , $value)
+    {
+        $this->validateUtf8Encoding($attribute, $value);
+    }
+
+   protected function validateUtf8Encoding($attribute, $value)
+    {
+        if (is_valid_utf8($value) === false)
+        {
+            $exception = new BadRequestValidationFailureException(
+                "Invalid encoding of $attribute. Non UTF-8 character(s) found.",
+                null,
+                $value
+            );
+            $this->getTrace()->traceException($exception , Logger::ERROR, TraceCode::FAILED_TO_VALIDATE_UTF_8_ENCODING,
+                [
+                    'attribute' => $attribute,
+                ]
+            );
+            throw $exception;
         }
     }
 
@@ -1733,6 +1762,7 @@ class Validator extends Base\Validator
     {
         // Indexed errors map against row number.
         $errors = [];
+        $erroneousRows = [];
 
         foreach ($entries as $seq => $entry)
         {
@@ -1749,9 +1779,19 @@ class Validator extends Base\Validator
                 $error[Header::ERROR_DESCRIPTION] = $e->getError()->getDescription();
 
                 $errors[$seq] = $error;
+                array_push($erroneousRows , $seq+1);
             }
 
             $entries[$seq] += $error;
+        }
+
+        if (count($erroneousRows) > 0)
+        {
+            $this->getTrace()->info(TraceCode::VALIDATION_ERROR_IN_BATCH_FILE_ROW,
+                [
+                    'row_numbers' => $erroneousRows,
+                ]
+            );
         }
 
         $errorsCount = count($errors);

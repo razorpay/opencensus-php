@@ -280,6 +280,16 @@ class Base extends BaseModel\Core
             $response += $this->getFileIdAndSignedUrl($validatedUfhFile);
         }
 
+        if ($response[Batch\Constants::ERROR_COUNT] > 0)
+        {
+            $this->trace->info(TraceCode::ERROR_IN_VALIDATING_BATCH_FILE,
+                [
+                    self::FILE_ID                => $response[self::FILE_ID],
+                    Batch\Constants::ERROR_COUNT => $response[Batch\Constants::ERROR_COUNT],
+                ]
+            );
+        }
+
         $this->deleteLocalFiles();
 
         return $response;
