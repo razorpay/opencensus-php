@@ -22,6 +22,7 @@ return [
                 'wallet' => [
 //                    'paytm' => false,
                 ],
+                'cod' => false,
             ],
         ],
     ],
@@ -58,6 +59,7 @@ return [
                         'MAES' => '1',
                         'RUPAY'=> '0'
                     ],
+                    'cod' => true,
                 ],
             ],
         ],

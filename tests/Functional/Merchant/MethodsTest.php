@@ -104,6 +104,7 @@ class MethodsTest extends TestCase
 
         $this->assertEquals($content['netbanking'], true);
         $this->assertEquals($content['mobikwik'], true);
+        $this->assertTrue($content['cod']);
 
         $this->assertEquals($content['card_networks']['DICL'], false);
         $this->assertEquals($content['card_networks']['MAES'], true);

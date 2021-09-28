@@ -6374,3 +6374,6 @@ ALTER TABLE iins
 
 ALTER TABLE emi_plans
     ADD COLUMN cobranding_partner VARCHAR(20);
+
+ALTER TABLE merchant_banks
+    ADD COLUMN cod TINYINT(1) DEFAULT 0;

@@ -210,6 +210,7 @@ class Core extends Base\Core
         $data[Payment\Method::APP]   = $methods->getApps();
         $data[Entity::DEBIT_EMI_PROVIDERS] = $methods->getDebitEmiProviders();
         $data[Entity::EMI_TYPES] = $methods->getEmiTypes();
+        $data[Entity::COD] = $methods->isCodEnabled();
 
 
         if ($netbankingEnabled === true)

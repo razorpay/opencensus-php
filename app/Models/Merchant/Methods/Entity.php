@@ -56,6 +56,7 @@ class Entity extends Base\PublicEntity
     const GPAY              = 'gpay';
     const APPS              = 'apps';
     const HDFC_DEBIT_EMI    = 'hdfc_debit_emi';
+    const COD               = 'cod';
 
     const DEBIT_EMI_PROVIDERS = 'debit_emi_providers';
     const EMI_TYPES           = 'emi_types';
@@ -116,6 +117,7 @@ class Entity extends Base\PublicEntity
         self::APPS,
         self::DEBIT_EMI_PROVIDERS,
         self::ADDITIONAL_WALLETS,
+        self::COD,
     ];
 
     protected $visible = [
@@ -160,6 +162,7 @@ class Entity extends Base\PublicEntity
         self::AMEXEASYCLICK,
         self::PAYCASH,
         self::CITIBANKREWARDS,
+        self::COD,
     ];
 
     protected $public = [
@@ -205,6 +208,7 @@ class Entity extends Base\PublicEntity
         self::AMEXEASYCLICK,
         self::PAYCASH,
         self::CITIBANKREWARDS,
+        self::COD,
     ];
 
     protected $appends = [
@@ -257,6 +261,7 @@ class Entity extends Base\PublicEntity
         self::APPS           => AppMethod::DEFAULT_APPS,
         self::DEBIT_EMI_PROVIDERS => DebitProvider::DEFAULT_DEBIT_EMI_PROVIDERS,
         self::ADDITIONAL_WALLETS => [],
+        self::COD            => false,
     );
 
     public static $defaultPaymentMethodsForSubmerchantByPartner = array(
@@ -291,6 +296,7 @@ class Entity extends Base\PublicEntity
         self::PHONEPE_SWITCH => false,
         self::PAYPAL         => false,
         self::ADDITIONAL_WALLETS => [],
+        self::COD            => false,
     );
 
     protected $wallets = array(
@@ -348,6 +354,7 @@ class Entity extends Base\PublicEntity
         self::PHONEPE_SWITCH,
         self::PAYPAL,
         self::APPS,
+        self::COD,
     ];
 
     // Casts the attributes to native types
@@ -380,6 +387,7 @@ class Entity extends Base\PublicEntity
         self::PHONEPE       => 'bool',
         self::PHONEPE_SWITCH=> 'bool',
         self::PAYPAL        => 'bool',
+        self::COD           => 'bool',
     ];
 
     public function merchant()
@@ -648,6 +656,11 @@ class Entity extends Base\PublicEntity
     public function isCardlessEmiEnabled()
     {
         return $this->getAttribute(self::CARDLESS_EMI);
+    }
+
+    public function isCodEnabled()
+    {
+        return $this->getAttribute(self::COD);
     }
 
     public function isCredEnabled()
