@@ -837,6 +837,8 @@ class Constants
 
     const AXIS_PAYPAL_ENABLE = 'axis_paypal_enable';
 
+    // To enable workflow payouts creation via payouts service
+    const WORKFLOW_VIA_PAYOUTS_MS = 'workflow_via_payouts_ms';
     const ORG_AXIS_WHATSAPP = 'axis_whatsapp';
 
     const AXIS_WHATSAPP_ENABLE = 'axis_whatsapp_enable';
@@ -1226,6 +1228,7 @@ class Constants
         self::ORG_AXIS_WHATSAPP               => true,
         self::AXIS_WHATSAPP_ENABLE            => true,
         self::AVS                             => true,
+        self::WORKFLOW_VIA_PAYOUTS_MS         => true,
         self::MFN                             => true,
         self::SEND_DCC_COMPLIANCE             => true,
         self::ORG_SUB_MERCHANT_MCC_PENDING    => true,

@@ -520,4 +520,100 @@ return [
             ],
         ],
     ],
+
+    'testCreateWorkflowPayoutEntry' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/create_workflow_for_payout',
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ],
+            'content' => [
+                "id"                   => "Gg7sgBZgvYjlSB",
+                "mode"                 => "IMPS",
+                "currency"             => "INR",
+                "purpose"              => "refund",
+                "fund_account_id"      => "fa_100000000000fa",
+                "balance_id"           => "GhidjxhfiCL7WT",
+                "channel"              => "",
+                "amount"               => 54321,
+                "type"                 => "",
+                "reference_id"         => null,
+                "narration"            => "test Merchant Fund Transfer",
+                "fee_type"             => "",
+                "queue_if_low_balance" => false,
+                "notes"                => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'is_workflow_activated'  => true,
+                'error'                  => null,
+            ],
+        ],
+    ],
+
+    'testCreateWorkflowPayoutEntryDuplicateRequest' =>   [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/create_workflow_for_payout',
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ],
+            'content' => [
+                "id"                   => "Gg7sgBZgvYjlSB",
+                "mode"                 => "IMPS",
+                "currency"             => "INR",
+                "purpose"              => "refund",
+                "fund_account_id"      => "fa_100000000000fa",
+                "balance_id"           => "GhidjxhfiCL7WT",
+                "channel"              => "",
+                "amount"               => 54321,
+                "type"                 => "",
+                "reference_id"         => null,
+                "narration"            => "test Merchant Fund Transfer",
+                "fee_type"             => "",
+                "queue_if_low_balance" => false,
+                "notes"                => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'is_workflow_activated'  => true,
+                'error'                  => null,
+            ],
+        ],
+    ],
+
+    'testCreateWorkflowPayoutEntryForNonWorkflowPayout' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/create_workflow_for_payout',
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ],
+            'content' => [
+                "id"                   => "Gg7sgBZgvYjlSB",
+                "mode"                 => "IMPS",
+                "currency"             => "INR",
+                "purpose"              => "refund",
+                "fund_account_id"      => "fa_100000000000fa",
+                "balance_id"           => "GhidjxhfiCL7WT",
+                "channel"              => "",
+                "amount"               => 54321,
+                "type"                 => "",
+                "reference_id"         => null,
+                "narration"            => "test Merchant Fund Transfer",
+                "fee_type"             => "",
+                "queue_if_low_balance" => false,
+                "notes"                => []
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'is_workflow_activated'  => false,
+                'error'                  => null,
+            ],
+        ],
+    ]
 ];

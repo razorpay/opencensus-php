@@ -2774,6 +2774,7 @@ class Route
         'create_payout_entry'                     => ['post',     'payouts_service/create',                                 'PayoutController@createPayoutEntry'                           ],
         'create_FTA_payout_service'               => ['post',     'payouts_service/create_fta/{payout_id}',                 'PayoutController@createFTAForPayoutService'                   ],
         'create_ledger_payout_service'            => ['post',     'payouts_service/create_ledger',                          'PayoutController@createPayoutServiceTransaction'              ],
+        'create_workflow_for_payout'              => ['post',     'payouts_service/create_workflow_for_payout',              'PayoutController@createWorkflowForPayout'                   ],
         'create_reversal_entry'                   => ['post',     'payouts_service/reversal/create',                        'ReversalController@createReversalEntryForPayoutService'       ],
         'payout_service_process_scheduled_payout' => ['post',     'payouts_service/scheduled/process',                      'PayoutController@processSchedulePayoutOnPayoutService'        ],
         'retry_payouts_on_service'                => ['post',     'payouts_service/retry',                                  'PayoutController@retryPayoutsOnPayoutService'                 ],
@@ -3777,6 +3778,7 @@ class Route
         'banking_account_fetch_by_account_number',
         'create_FTA_payout_service',
         'create_ledger_payout_service',
+        'create_workflow_for_payout',
         'payout_purpose_get_internal',
         'create_payment_payout_service_axis_cc',
 
@@ -10547,6 +10549,8 @@ class Route
             'create_ledger_payout_service',
             'internal_merchant_fetch',
             'payout_purpose_get_internal',
+            'create_workflow_for_payout',
+
             'payment_fetch_by_id_internal',
             'create_payment_payout_service_axis_cc',
         ],

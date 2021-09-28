@@ -88,6 +88,11 @@ class Service extends Base\Service
         return $this->core->createPayoutEntry($input);
     }
 
+    public function createWorkflowForPayout($input)
+    {
+        return $this->core->createWorkflowForPayout($input);
+    }
+
     public function createFTAForPayoutService(string $payoutId)
     {
         return $this->core->createFTAForPayoutService($payoutId);

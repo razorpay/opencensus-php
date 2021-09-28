@@ -78,10 +78,10 @@ class Validator extends Base\Validator
     const PAYOUT_BULK_STATUS_UPDATE_MANUAL = 'payout_bulk_status_update_manual';
 
     // Payout Service Validations
-    const PAYOUT_SERVICE_CREATE             = 'payout_service_create';
-    const PAYOUT_SERVICE_TRANSACTION_CREATE = 'payout_service_transaction_create';
-    const PAYOUT_SERVICE_FTS_CREATE         = 'payout_service_fts_create';
-    const RETRY_PAYOUTS_ON_SERVICE          = 'retry_payouts_on_service';
+    const PAYOUT_SERVICE_CREATE                     = 'payout_service_create';
+    const PAYOUT_SERVICE_TRANSACTION_CREATE         = 'payout_service_transaction_create';
+    const PAYOUT_SERVICE_FTS_CREATE                 = 'payout_service_fts_create';
+    const RETRY_PAYOUTS_ON_SERVICE                  = 'retry_payouts_on_service';
 
     //
     // This is required for build. Currently, build does not
@@ -184,6 +184,7 @@ class Validator extends Base\Validator
         Entity::ID                   => 'required|string|size:14',
         Entity::MERCHANT_ID          => 'required|string|size:14'
     ];
+
 
     protected static $beforeCreateFundAccountPayoutWithOtpRules = [
         Entity::ORIGIN => 'sometimes|filled|in:' . Entity::DASHBOARD,

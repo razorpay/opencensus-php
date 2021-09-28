@@ -1727,6 +1727,26 @@ class Base extends BaseCore
         $this->workflowActivated = true;
     }
 
+    // We don't want to save payout entity in API first and then at Payout
+    // MS.
+    protected function handleEarlyWorkflowResponseForPayoutService(
+        Payout\Entity $payout,
+        PayoutAmountRules\Entity $payoutAmountRuleBeforeWorkflow = null): array
+    {
+        if ($payoutAmountRuleBeforeWorkflow !== null)
+        {
+            $this->trace->info(TraceCode::PAYOUT_WORKFLOW_TRIGGERED, ['payout' => $payout->toArray()]);
+
+            $this->verifyPayoutAmountRuleBeforeProcessing($payout, $payoutAmountRuleBeforeWorkflow);
+        }
+
+        return [
+            Entity::IS_WORKFLOW_ACTIVATED  => true,
+            Entity::ERROR                  => null,
+        ];
+    }
+
+
     protected function checkIfPLServiceIsDown()
     {
         // todo temp fix https://jira.corp.razorpay.com/browse/RX-3668
@@ -2032,6 +2052,33 @@ class Base extends BaseCore
         }
     }
 
+    protected function getInputForPayoutEntity(array $params)
+    {
+        $input = [
+            Payout\Entity::FEE_TYPE        => $params[Payout\Entity::FEE_TYPE] ?? null,
+            Payout\Entity::AMOUNT          => $params[Payout\Entity::AMOUNT] ?? null,
+            Payout\Entity::PURPOSE         => $params[Payout\Entity::PURPOSE] ?? null,
+            Payout\Entity::CURRENCY        => $params[Payout\Entity::CURRENCY] ?? null,
+            Payout\Entity::BALANCE_ID      => $params[Payout\Entity::BALANCE_ID] ?? null,
+            Payout\Entity::FUND_ACCOUNT_ID => $params[Payout\Entity::FUND_ACCOUNT_ID] ?? null,
+            Payout\Entity::MODE            => $params[Payout\Entity::MODE] ?? null,
+            Payout\Entity::REFERENCE_ID    => $params[Payout\Entity::REFERENCE_ID] ?? null,
+            Payout\Entity::NARRATION       => $params[Payout\Entity::NARRATION] ?? null,
+            Payout\Entity::NOTES           => $params[Payout\Entity::NOTES] ?? [],
+        ];
+
+        if (empty($params[Payout\Entity::SOURCE_DETAILS]) === false)
+        {
+            $input[Payout\Entity::SOURCE_DETAILS] = $params[Payout\Entity::SOURCE_DETAILS];
+        }
+
+        if (empty($params[Payout\Entity::SCHEDULED_AT]) === false)
+        {
+            $input[Payout\Entity::SCHEDULED_AT] = $params[Payout\Entity::SCHEDULED_AT];
+        }
+
+        return $input;
+    }
     /**
      * Function is called from payout Microservice to create payout in api.
      *
@@ -2055,29 +2102,7 @@ class Base extends BaseCore
             {
                 $this->setPayoutBalance($params);
 
-                $input = [
-                    Payout\Entity::FEE_TYPE              => $params[Payout\Entity::FEE_TYPE] ?? null,
-                    Payout\Entity::AMOUNT                => $params[Payout\Entity::AMOUNT] ?? null,
-                    Payout\Entity::PURPOSE               => $params[Payout\Entity::PURPOSE] ?? null,
-                    Payout\Entity::CURRENCY              => $params[Payout\Entity::CURRENCY] ?? null,
-                    Payout\Entity::BALANCE_ID            => $params[Payout\Entity::BALANCE_ID] ?? null,
-                    Payout\Entity::FUND_ACCOUNT_ID       => $params[Payout\Entity::FUND_ACCOUNT_ID] ?? null,
-                    Payout\Entity::MODE                  => $params[Payout\Entity::MODE] ?? null,
-                    Payout\Entity::REFERENCE_ID          => $params[Payout\Entity::REFERENCE_ID] ?? null,
-                    Payout\Entity::NARRATION             => $params[Payout\Entity::NARRATION] ?? null,
-                    Payout\Entity::NOTES                 => $params[Payout\Entity::NOTES] ?? [],
-                    Payout\Entity::QUEUE_IF_LOW_BALANCE  => (boolean) ($input[Payout\Entity::QUEUE_IF_LOW_BALANCE] ?? false),
-                ];
-
-                if (empty($params[Payout\Entity::SOURCE_DETAILS]) === false)
-                {
-                    $input[Payout\Entity::SOURCE_DETAILS] = $params[Payout\Entity::SOURCE_DETAILS];
-                }
-
-                if (empty($params[Payout\Entity::SCHEDULED_AT]) === false)
-                {
-                    $input[Payout\Entity::SCHEDULED_AT] = $params[Payout\Entity::SCHEDULED_AT];
-                }
+                $input = $this->getInputForPayoutEntity($params);
 
                 $status = $params[Payout\Entity::STATUS];
 
@@ -2141,6 +2166,82 @@ class Base extends BaseCore
         }
 
         $this->trace->info(TraceCode::PAYOUT_RESPONSE_FOR_MICROSERVICE,
+            [
+                'response' => $response
+            ]);
+
+        return $response;
+    }
+
+    public function createWorkflowPayoutEntry(array $params)
+    {
+        $this->trace->info(TraceCode::WORKFLOW_FOR_PAYOUT_CREATE_REQUEST_FROM_MICROSERVICE,
+            [
+                'input' => $params,
+            ]);
+
+        $this->setPayoutBalance($params);
+
+        $input = $this->getInputForPayoutEntity($params);
+
+        try
+        {
+            $payout = $this->createPayoutEntity($input);
+
+            $payoutAmountRuleBeforeWorkflow = (new PayoutAmountRules\Core)->fetchPayoutAmountRuleForMerchantIfDefined(
+                                                                            $params[Entity::AMOUNT],
+                                                                            $this->merchant);
+
+
+            $payout->setId($params[Entity::ID]);
+            //
+            // Initiate the workflow process. If a workflow is triggered successfully,
+            // this function will thrown an EarlyWorkflowResponse exception.
+            //
+            // This method also checks if a given payout already has a workflow action
+            // created against it
+            $this->app['workflow']
+                ->setEntityAndId(Entity::PAYOUT, $params[Entity::ID])
+                ->setPermission(Permission\Name::CREATE_PAYOUT)
+                ->handle((new \stdClass), $payout);
+
+            $response = [
+                Entity::ERROR                    => null,
+                Entity::IS_WORKFLOW_ACTIVATED    => false,
+            ];
+        }
+        catch (Exception\EarlyWorkflowResponse $ex)
+        {
+            // If flow reaches this catch block then workflow got activated.
+           $response = $this->handleEarlyWorkflowResponseForPayoutService($payout, $payoutAmountRuleBeforeWorkflow);
+        }
+        catch (\Throwable $t)
+        {
+            $this->trace->traceException(
+                $t,
+                Trace::ERROR,
+                TraceCode::WORKFLOW_FOR_PAYOUT_CREATE_FAILED_FOR_MICROSERVICE,
+                [
+                    'input' => $input,
+                ]);
+
+            if ($t->getCode() == ErrorCode::BAD_REQUEST_WORKFLOW_ANOTHER_ACTION_IN_PROGRESS)
+            {
+                $response = [
+                    Entity::ERROR                    => null,
+                    Entity::IS_WORKFLOW_ACTIVATED    => true,
+                ];
+            }
+            else
+            {
+                $response = [
+                    Entity::ERROR                    => $t->getMessage(),
+                    Entity::IS_WORKFLOW_ACTIVATED    => false,
+                ];
+            }
+        }
+
+        $this->trace->info(TraceCode::WORKFLOW_FOR_PAYOUT_CREATE_RESPONSE_FROM_MICROSERVICE,
             [
                 'response' => $response
             ]);
@@ -2330,6 +2431,12 @@ class Base extends BaseCore
                 // workflow payout skip
                 if ($this->isWorkflowEnabled === true)
                 {
+                    $isEnabled = $this->merchant->isFeatureEnabled(Feature::WORKFLOW_VIA_PAYOUTS_MS);
+
+                    if ($isEnabled === true)
+                    {
+                        return true;
+                    }
                     return false;
                 }
 

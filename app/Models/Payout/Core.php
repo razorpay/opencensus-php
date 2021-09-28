@@ -52,6 +52,7 @@ use RZP\Mail\Payout\PendingApprovals;
 use RZP\Jobs\ScheduledPayoutsProcess;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
+use RZP\Models\Workflow\PayoutAmountRules;
 use RZP\Models\Workflow\Service\EntityMap;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Settlement\SlackNotification;
@@ -3336,6 +3337,16 @@ class Core extends Base\Core
         }
 
        return $processor->createPayoutEntry($input);
+    }
+
+    public function createWorkflowForPayout(array $input)
+    {
+        // Find merchant using merchant id and set merchant in get processor
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        return $this->getProcessor('fund_account_payout')
+                    ->setMerchant($merchant)
+                    ->createWorkflowPayoutEntry($input);
     }
 
     public function createFTAForPayoutService(string $payoutId)

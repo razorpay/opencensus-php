@@ -789,6 +789,13 @@ class Core extends Base\Core
     {
         $orgId = $orgId ?: $this->app['basicauth']->getOrgId();
 
+        if ($orgId == null)
+        {
+            $maker = $this->app['workflow']->getWorkflowMaker();
+
+            $orgId = $maker->getOrgId();
+        }
+
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
         $permissionIdList = $this->repo

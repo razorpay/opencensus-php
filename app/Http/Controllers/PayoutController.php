@@ -22,6 +22,15 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function createWorkflowForPayout()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createWorkflowForPayout($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function createFTAForPayoutService(string $payoutId)
     {
         $data = $this->service()->createFTAForPayoutService($payoutId);

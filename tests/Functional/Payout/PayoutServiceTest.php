@@ -1312,4 +1312,69 @@ class PayoutServiceTest extends TestCase
 
         $this->assertEquals(null, $response['transaction_id']);
     }
+
+    public function testCreateWorkflowPayoutEntry()
+    {
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number'   => '2224440041626905',
+            ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->appAuthLive();
+
+        $this->disableWorkflowMocks();
+
+        $this->startTest();
+
+        $workFlowActionAfter = $this->getDbLastEntity('workflow_action', 'live');
+
+        $this->assertNotNull($workFlowActionAfter);
+
+        $this->assertEquals($workFlowActionAfter['entity_id'],$this->testData[__FUNCTION__]['request']['content']['id']);
+
+        $this->assertEquals('open', $workFlowActionAfter['state']);
+
+        $this->assertEquals(0, $workFlowActionAfter['approved']);
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertNull($payout);
+    }
+
+    public function testCreateWorkflowPayoutEntryForNonWorkflowPayout()
+    {
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number'   => '2224440041626905',
+            ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertNull($payout);
+    }
+
+    // making a create workflow payout call twice and getting error
+    // the 2nd time as there is already a wf action.
+    public function testCreateWorkflowPayoutEntryDuplicateRequest()
+    {
+        $this->testCreateWorkflowPayoutEntry();
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number'   => '2224440041626905',
+            ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+
+        $this->startTest();
+    }
 }

@@ -112,6 +112,7 @@ class Entity extends Base\PublicEntity
     const ORIGIN                                = 'origin';
     const SOURCE_DETAILS                        = 'source_details';
     const IS_PAYOUT_SERVICE                     = 'is_payout_service';
+    const IS_WORKFLOW_ACTIVATED                 = 'is_workflow_activated';
     const META                                  = 'meta';
     const REGISTERED_NAME                       = 'registered_name';
     const CANCELLATION_USER_ID                  = 'cancellation_user_id';
