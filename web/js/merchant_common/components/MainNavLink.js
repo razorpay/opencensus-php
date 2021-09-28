@@ -32,9 +32,10 @@ class MainNavLink extends Component {
 
     const { user, label, tracking } = this.props;
     if (label === 'Affiliate Accounts') {
+      const userId = user.id ? user.id : '';
       tracking.trackEvent(
         window.rzpQ.onbr().interaction('partnerships.dashboard.affiliate_account', {
-          partnerID: user.id,
+          partnerID: userId,
         }),
       );
     }
