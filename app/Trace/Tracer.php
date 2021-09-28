@@ -12,15 +12,7 @@ class Tracer
 {
     public static function inSpan(array $spanOptions, callable $callable, array $arguments = [])
     {
-        try
-        {
-            return OpenCensusTracer::inSpan($spanOptions, $callable, $arguments);
-        }
-        catch (\Error $e)
-        {
-            app('trace')->warning(TraceCode::OPENCENSUS_ERROR,
-                ['inSpan',  $e->getMessage()]);
-        }
+        return OpenCensusTracer::inSpan($spanOptions, $callable, $arguments);
     }
 
     public static function startSpan(array $spanOptions = [])
