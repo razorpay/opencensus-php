@@ -397,24 +397,6 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
                     </main>
                     <footer>
                       <div class="left">
-                        <Button.Primary
-                          type="button"
-                          onClick={() => {
-                            analyticsTrack({
-                              objectName: 'intl enablement form',
-                              actionName: 'save as draft',
-                              screen: SCREEN,
-                              properties: {
-                                timestamp: Date.now(),
-                                ...getCommonAnalyticsProperties(window.rzp_user),
-                              },
-                            });
-                            saveFormData(formikProps);
-                          }}
-                          disabled={!formikProps.dirty || isDisabled}
-                        >
-                          Save
-                        </Button.Primary>
                         {isSavingForm !== null ? <Loader isSaving={isSavingForm} /> : ''}
                       </div>
                       {activeTab > 0 && (
@@ -441,7 +423,7 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
                           onClick={() => handleNext(formikProps)}
                           iconAfter="chevron-right"
                         >
-                          Save & Next
+                          Next
                         </Button.Primary>
                       )}
                     </footer>

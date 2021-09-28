@@ -127,6 +127,10 @@ const SupportingDocuments = ({ disabled, saveFormData, showNotification }) => {
     }
   };
 
+  const handleChange = () => {
+    saveFormData(formikProps);
+  };
+
   const formikDocuments = formikProps.values.documents;
   return (
     <div class="supporting-documents">
@@ -135,7 +139,7 @@ const SupportingDocuments = ({ disabled, saveFormData, showNotification }) => {
         required
         name="accepts_intl_txns"
         label="Currently Accept International Transactions"
-        onBlur={formikProps.handleBlur}
+        onBlur={handleChange}
         options={[
           { value: 'true', label: 'Yes' },
           { value: 'false', label: 'No' },
@@ -152,7 +156,7 @@ const SupportingDocuments = ({ disabled, saveFormData, showNotification }) => {
         placeholder="Enter I/E code here"
         info="Example: U67190TN20"
         disabled={disabled}
-        onBlur={formikProps.handleBlur}
+        onBlur={handleChange}
         value={formikProps.values.import_export_code}
         mature={formikProps.touched.import_export_code}
         propagatedError={getError('import_export_code')}

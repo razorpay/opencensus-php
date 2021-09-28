@@ -1,10 +1,9 @@
 import React from 'react';
 import Input from 'common/new-ui/Input';
 import { useFormikContext } from 'formik';
-import CurrencyMultiSelect from './CurrencyMultiSelect';
 import { getProductValue } from './utils';
 
-const BusinessDetails = ({ disabled, triggerSource }) => {
+const BusinessDetails = ({ disabled, triggerSource, saveFormData }) => {
   const formikProps = useFormikContext();
 
   const getError = (name) =>
@@ -25,6 +24,10 @@ const BusinessDetails = ({ disabled, triggerSource }) => {
       (opts) => opts.value.toString() === getProductValue(triggerSource),
     );
 
+  const handleChange = () => {
+    saveFormData(formikProps);
+  };
+
   return (
     <div class="business-details">
       <div class="main-title">BUSINESS DETAILS</div>
@@ -37,7 +40,7 @@ const BusinessDetails = ({ disabled, triggerSource }) => {
         required
         name="products"
         label="Enable international payments on"
-        onBlur={formikProps.handleBlur}
+        onBlur={handleChange}
         options={productOptions}
         defaultValue={formikProps.values.products.toString()}
         disabled={disabled}
@@ -57,7 +60,7 @@ const BusinessDetails = ({ disabled, triggerSource }) => {
           { label: 'Both', name: 'both' },
         ]}
         disabled={disabled}
-        onBlur={formikProps.handleBlur}
+        onBlur={handleChange}
         mature={formikProps.touched.goods_type}
         propagatedError={getError('goods_type')}
       />
@@ -70,40 +73,10 @@ const BusinessDetails = ({ disabled, triggerSource }) => {
         value={formikProps.values.business_use_case}
         placeholder="Why do you need international payments (Min 50 Chars)"
         info={`Ex: "We sell apparels, unisex. Most of our customers are from abroad, so we need to enable international card acceptance for that reason"`}
-        onBlur={formikProps.handleBlur}
+        onBlur={handleChange}
         mature={formikProps.touched.business_use_case}
         propagatedError={getError('business_use_case')}
         showCharacterLength={(val) => (val?.length ? val.length : null)}
-      />
-
-      <CurrencyMultiSelect
-        label="Currencies to focus"
-        placeholder="--Select Multiple--"
-        name="allowed_currencies"
-        required
-        disabled={disabled}
-        className="currency-select"
-        error={getError('allowed_currencies')}
-      />
-
-      <Input.Select
-        required
-        disabled={disabled}
-        label="Expected Monthly Sales from International Cards"
-        name="monthly_sales_intl_cards"
-        value={formikProps.values.monthly_sales_intl_cards}
-        options={[
-          { label: '--Select in INR--', name: '' },
-          { label: '<20,000', name: '0=20000' },
-          { label: '20,000 - 50,0000', name: '20000=50000' },
-          { label: '50,000 - 1,00,000', name: '50000=100000' },
-          { label: '1,00,000 - 5,00,000', name: '100000=500000' },
-          { label: '5,00,000 - 10,00,000', name: '500000=1000000' },
-          { label: '>10,00,000', name: '1000000=-1' },
-        ]}
-        onBlur={formikProps.handleBlur}
-        mature={formikProps.touched.monthly_sales_intl_cards}
-        propagatedError={getError('monthly_sales_intl_cards')}
       />
 
       <Input.Select
@@ -121,24 +94,29 @@ const BusinessDetails = ({ disabled, triggerSource }) => {
           { label: '50,000 - 1,00,000', name: '50000=100000' },
           { label: '>1,00,000 ', name: '100000=-1' },
         ]}
-        onBlur={formikProps.handleBlur}
+        onBlur={handleChange}
         mature={formikProps.touched.business_txn_size}
         info="This will put a upper cap on your transaction size. You can later change it by contacting support"
         propagatedError={getError('business_txn_size')}
       />
-      {['physical_goods', 'both'].includes(formikProps.values.goods_type) && (
-        <Input.Textarea
-          name="logistic_partners"
-          label="Logistic Partners"
-          disabled={disabled}
-          onBlur={formikProps.handleBlur}
-          value={formikProps.values.logistic_partners}
-          placeholder="Name logistic companies you use, to transfer goods to customers"
-          mature={formikProps.touched.logistic_partners}
-          propagatedError={getError('logistic_partners')}
-          info="Your application might rejected if your logistic partners don’t serve to the coutries you are focussing on"
-        />
-      )}
+
+      <Input
+        required
+        name="about_us_link"
+        label="Website / App Link"
+        disabled={disabled}
+        value={formikProps.values.about_us_link}
+        mature={formikProps.touched.about_us_link}
+        placeholder="Enter Website / App Link"
+        info={{
+          'Sample Website url': 'https://www.google.com',
+          App:
+            'Please provide Google play store URL; In case your app is not hosted on google play store, share any other app store URL',
+          'Sample App url': 'https://play.google.com/store/apps/details?id=com.whatsapp',
+        }}
+        onBlur={handleChange}
+        propagatedError={getError('about_us_link')}
+      />
     </div>
   );
 };
