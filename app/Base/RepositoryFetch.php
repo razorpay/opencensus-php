@@ -252,6 +252,14 @@ trait RepositoryFetch
 
                 return $this->getSlaveConnection();
 
+            case ConnectionType::DATA_WAREHOUSE_ADMIN_REPLICA:
+                if ($this->isExperimentEnabled(self::REARCH_TIDB_EXPERIMENT) === true)
+                {
+                    return $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+                }
+
+                return $this->getMasterReplicaConnection();
+
         }
 
         return null;

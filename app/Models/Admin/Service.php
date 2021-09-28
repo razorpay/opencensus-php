@@ -307,9 +307,9 @@ class Service extends Base\Service
 
         Entity::validateEntityOrFailPublic($entity);
 
-        if ( ($entity === Entity::PAYMENT OR $entity === Entity::ORDER ) AND $this->isExperimentEnabled(Repository::REARCH_TIDB_EXPERIMENT) === true)
+        if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER )
         {
-            $entities = $this->repo->$entity->fetch($input, null, ConnectionType::DATA_WAREHOUSE_ADMIN);
+            $entities = $this->repo->$entity->fetch($input, null, ConnectionType::DATA_WAREHOUSE_ADMIN_REPLICA);
         }
         else
         {
