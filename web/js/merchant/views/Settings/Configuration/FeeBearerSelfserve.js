@@ -78,8 +78,8 @@ function FeeBearerSelfserver(props) {
         </span>
 
         <p class="subtitle">
-          For every payment done on Razorpay, we charge a small transaction fee. Choose who would
-          pay this fee
+          For every payment done on Razorpay, we levy a nominal platform fee. Choose your preferred
+          mode of payment from the below options -
         </p>
       </div>
 
@@ -96,14 +96,14 @@ function FeeBearerSelfserver(props) {
                   onChange={() => handleToggle('platform')}
                 />
               </h4>
-              <p>You pay the fee for the use of payment infrastructure.</p>
+              <p>Razorpay platform fee would be borne by you. </p>
               <br />
             </div>
           </div>
           <div class="col-sm-6 p5">
             <div class={`fee-bearer-panel-col ${feeBearer === 'customer' ? 'active' : null}`}>
               <h4>
-                <b>Convenience Fee Model</b>
+                <b>Convenience fee model</b>
                 <input
                   type="radio"
                   class="radio-pointer"
@@ -111,10 +111,7 @@ function FeeBearerSelfserver(props) {
                   onChange={() => handleToggle('customer')}
                 />
               </h4>
-              <p>
-                You charge a convenience fee to your customer for the use of technology
-                infrastructure.
-              </p>
+              <p>You charge a convenience fee to your customer.</p>
               <br />
             </div>
           </div>
