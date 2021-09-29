@@ -806,7 +806,7 @@ class UpiAxisGatewayTest extends TestCase
         $payment->reload();
 
         $this->assertEquals('GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST', $payment['internal_error_code']);
-        $this->assertEquals('Payment processing failed due to error at bank or wallet gateway',
+        $this->assertEquals('Payment was unsuccessful due to a temporary issue. Any amount deducted will be refunded within 5-7 working days.',
             $payment['error_description']);
     }
 

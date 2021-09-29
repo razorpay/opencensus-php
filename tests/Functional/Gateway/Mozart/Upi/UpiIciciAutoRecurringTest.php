@@ -650,7 +650,7 @@ class UpiIciciAutoRecurringTest extends TestCase
             'status'                => 'failed',
             'error_code'            => 'GATEWAY_ERROR',
             'internal_error_code'   => 'GATEWAY_ERROR_SYSTEM_UNAVAILABLE',
-            'error_description'     => 'Payment processing failed due to error at bank or wallet gateway'
+            'error_description'     => 'Payment was unsuccessful due to a temporary issue. Any amount deducted will be refunded within 5-7 working days.'
         ], false);
 
         // Assert internal status in metadata is still reminder_in_progress_for_authorize

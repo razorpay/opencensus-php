@@ -126,7 +126,7 @@ return [
           'content'   => [
               'error' => [
                   'code'        => PublicErrorCode::GATEWAY_ERROR,
-                  'description' => PublicErrorDescription::GATEWAY_ERROR_VALIDATION_ERROR,
+                  'description' => 'Payment was unsuccessful due to a temporary issue. Any amount deducted will be refunded within 5-7 working days.',
               ],
           ],
           'status_code' => 502,

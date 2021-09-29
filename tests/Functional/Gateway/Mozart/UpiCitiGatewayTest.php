@@ -111,7 +111,7 @@ class UpiCitiGatewayTest extends TestCase
 
         $this->assertTrue($payment->isFailed());
         $this->assertSame('BAD_REQUEST_ERROR', $payment->getErrorCode());
-        $this->assertSame('Payment rejected by customer', $payment->getErrorDescription());
+        $this->assertSame('You may have declined the payment request on the UPI app. Please retry when you are ready.', $payment->getErrorDescription());
     }
 
     public function testVerifyPayment()

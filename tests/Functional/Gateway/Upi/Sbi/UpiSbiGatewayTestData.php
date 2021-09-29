@@ -11,7 +11,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    'description' => 'Payment was unsuccessful due to a temporary issue. If amount got deducted, it will be refunded within 5-7 working days.',
                 ],
             ],
             'status_code' => 400,
@@ -59,7 +59,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_TIMED_OUT,
+                    'description' => 'Payment was unsuccessful as you could not complete it in time.',
                 ],
             ],
             'status_code' => 400,

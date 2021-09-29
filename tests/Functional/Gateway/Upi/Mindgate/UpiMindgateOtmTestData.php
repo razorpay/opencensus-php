@@ -9,7 +9,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::GATEWAY_ERROR,
-                    'description' => 'Payment processing failed due to error at bank or wallet gateway'
+                    'description' => 'Payment was unsuccessful due to a temporary issue. Any amount deducted will be refunded within 5-7 working days.'
                 ],
             ],
             'status_code' => 502,

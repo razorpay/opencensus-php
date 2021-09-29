@@ -120,7 +120,7 @@ class UpiJuspayGatewayTest extends TestCase
             Entity::STATUS              => 'failed',
             Entity::ERROR_CODE          => 'BAD_REQUEST_ERROR',
             Entity::INTERNAL_ERROR_CODE => 'BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED',
-            Entity::ERROR_DESCRIPTION   => 'Payment failed because UPI request expired',
+            Entity::ERROR_DESCRIPTION   => 'Payment was unsuccessful as you could not pay with the UPI app within time.',
         ], $payment->toArray());
 
         return $payment;
