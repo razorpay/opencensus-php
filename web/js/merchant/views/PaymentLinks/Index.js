@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 import React from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
@@ -20,7 +21,7 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { MobilePopup, UseAppFooter } from 'merchant/components/MobilePopup';
 import { getMobileOperatingSystem } from 'common/utils/rzp-utils';
-import LocalStorageService from 'common/utils/localStorage';
+import { getItem, setItem } from 'common/utils/localStorage';
 
 import OnBoarding, {
   getIsPaymentLinksEnabled,
@@ -28,7 +29,7 @@ import OnBoarding, {
 } from './OnBoarding';
 
 import QuickGuide, { getPaymentLinksQuickGuideIsClosed } from './QuickGuide';
-import AppStoreIntentBanner from 'merchant/components/Announcements/CSATSurveyBanner/AppStoreIntentBanner';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
 let url = 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app';
 if (getMobileOperatingSystem() == 'iOS') {
@@ -56,7 +57,7 @@ class PaymentLinksContainer extends React.Component {
   }
 
   componentDidMount() {
-    const mwebPopupLS = !!LocalStorageService.getItem('payment links_mweb_popup'); // Check if popup is already shown to user once.
+    const mwebPopupLS = !!getItem('payment links_mweb_popup'); // Check if popup is already shown to user once.
     const mwebPopupSS = !!window.sessionStorage.getItem('transactions_mweb_popup'); // Check if popup is shown in session on another scrren.
     let showPopup = isMobileDevice();
     if (mwebPopupLS) {
@@ -64,6 +65,7 @@ class PaymentLinksContainer extends React.Component {
     } else if (mwebPopupSS) {
       showPopup = false;
     }
+    // eslint-disable-next-line react/no-did-mount-set-state
     this.setState({ showPopup });
   }
 
@@ -159,7 +161,41 @@ class PaymentLinksContainer extends React.Component {
         <div className="banner-container">
           <ShowWhen
             additionalCondition={(user) =>
-              !user.isPLSwitchEnabled && !user.isPartOfAppIntegrationBannerExperiment
+              user.isPartOfAiSensyBannerExperiment &&
+              !getItem(`payment-links-on-whatsapp-banner-${user.current}`)
+            }
+          >
+            <AnnouncementBanner
+              title="Payment links on Whatsapp"
+              theme="primary"
+              card_id="payment-links-on-whatsapp-banner"
+              canBeClosed={true}
+              onClose={() => {
+                setItem(`payment-links-on-whatsapp-banner-${user.current}`, 1);
+              }}
+            >
+              Now automatically send payment links from your Whatsapp handle with our partner app -
+              AiSensy{' '}
+              <a
+                href="https://m.aisensy.com/razorpay-whatsapp-integration/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="Button--primary Button scheduled-btn-act btn-border"
+              >
+                Get Started
+              </a>{' '}
+              <a
+                href="https://www.youtube.com/watch?v=cuNLNF6Pi8I"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Watch video
+              </a>
+            </AnnouncementBanner>
+          </ShowWhen>
+          <ShowWhen
+            additionalCondition={(user) =>
+              !user.isPLSwitchEnabled && !user.isPartOfAiSensyBannerExperiment
             }
           >
             <PaymentButtonLaunchBanner productName="PaymentLinks" />
@@ -167,15 +203,6 @@ class PaymentLinksContainer extends React.Component {
 
           <ShowWhen additionalCondition={(user) => user.isPLSwitchEnabled}>
             <SwitchToPaymentLinksV2 source="payment-links-list" />
-          </ShowWhen>
-
-          <ShowWhen additionalCondition={(user) => user.isPartOfAppIntegrationBannerExperiment}>
-            <AppStoreIntentBanner
-              title="New plugins alert!"
-              cardId="Aug25-AppStore-Intent-PL-banner"
-              content="Want to find new ways to share your payment link like Whatsapp or custom SMS etc.?"
-              surveyUrl="APOXKJtG"
-            />
           </ShowWhen>
         </div>
 

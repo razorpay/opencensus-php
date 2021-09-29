@@ -176,18 +176,18 @@ export default {
     // prod experiment ids
     'HmbfCtIa68aQcC',
   ],
-  edx_app_integration_banner: [
-    // beta experiment ids
-    'HpQN5BGbQ793ir',
-
-    // prod experiment ids
-    'HpmhmqFPLZ3TTw',
-  ],
   pp_zapier_announcement: [
     // beta
     'I2TybjEbDlkjqM',
 
     // prod
     'I2MzbJTVYRFauc',
+  ],
+  ai_sensy_banner: [
+    // beta experiment ids
+    'I2oTdpAJb8iQbE',
+
+    // prod experiment ids
+    'I2n2kDaDSfPfyx',
   ],
 };

@@ -454,8 +454,8 @@ export default class User {
     return getSplitzExperimentVariant('nitro_form_ab_experiment')?.variables?.result === 'on';
   }
 
-  get isPartOfAppIntegrationBannerExperiment() {
-    return getSplitzExperimentVariant('edx_app_integration_banner')?.variables?.result === 'on';
+  get isPartOfAiSensyBannerExperiment() {
+    return getSplitzExperimentVariant('ai_sensy_banner')?.variables?.result === 'on';
   }
 
   /* Method to get the Failure Analysis Text Variant */
