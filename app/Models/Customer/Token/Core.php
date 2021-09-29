@@ -1008,6 +1008,139 @@ class Core extends Base\Core
         $this->notifyAppsTokenStatus($token, RecurringStatus::PAUSED);
     }
 
+    public function pauseCardToken($tokenId)
+    {
+        $this->trace->info(
+            TraceCode::CUSTOMER_TOKEN_PAUSE,
+            [
+                'token_id'    => $tokenId,
+            ]);
+
+
+        $token = $this->repo->transaction(function () use ($tokenId)
+        {
+            $token = $this->repo->token->lockForUpdate($tokenId);
+
+            $currentStatus = $token->getRecurringStatus();
+
+            if ($currentStatus !== RecurringStatus::CONFIRMED) {
+                throw new Exception\BadRequestValidationFailureException(
+                    'token is not in appropriate state to pause', null, [
+                        'token_id' => $token->getId(),
+                ]);
+            }
+
+            $token->setRecurringStatus(RecurringStatus::PAUSED);
+
+            $token->saveOrFail();
+
+            return $token;
+        });
+
+        $this->eventCardRecurringTokenStatus($token, RecurringStatus::CONFIRMED);
+    }
+
+    public function resumeCardToken($tokenId)
+    {
+        $this->trace->info(
+            TraceCode::CUSTOMER_TOKEN_RESUME,
+            [
+                'token_id'    => $tokenId,
+            ]);
+
+        $token = $this->repo->transaction(function () use ($tokenId)
+        {
+            $token = $this->repo->token->lockForUpdate($tokenId);
+
+            $currentStatus = $token->getRecurringStatus();
+
+            if ($currentStatus !== RecurringStatus::PAUSED) {
+                throw new Exception\BadRequestValidationFailureException(
+                    'token is not in appropriate state to resume', null, [
+                    'token_id' => $token->getId(),
+                ]);
+            }
+
+            $token->setRecurringStatus(RecurringStatus::CONFIRMED);
+
+            $token->saveOrFail();
+
+            return $token;
+        });
+
+        $this->eventCardRecurringTokenStatus($token, RecurringStatus::PAUSED);
+    }
+
+    public function cancelCardToken($tokenId)
+    {
+        $this->trace->info(
+            TraceCode::CUSTOMER_TOKEN_CANCEL,
+            [
+                'token_id'    => $tokenId,
+            ]);
+
+        $previousStatus = null;
+
+        $token = $this->repo->transaction(function () use ($tokenId, &$previousStatus)
+        {
+            $token = $this->repo->token->lockForUpdate($tokenId);
+
+            $previousStatus = $token->getRecurringStatus();
+
+            if (($previousStatus !== RecurringStatus::CONFIRMED) and
+                ($previousStatus !== RecurringStatus::PAUSED)) {
+                throw new Exception\BadRequestValidationFailureException(
+                    'token is not in appropriate state to cancel', null, [
+                    'token_id' => $token->getId(),
+                ]);
+            }
+
+            $token->setRecurringStatus(RecurringStatus::CANCELLED);
+
+            $token->saveOrFail();
+
+            return $token;
+        });
+
+        $this->eventCardRecurringTokenStatus($token, $previousStatus);
+    }
+
+    public function completeCardToken($tokenId, $completedAt)
+    {
+        $this->trace->info(
+            TraceCode::CUSTOMER_TOKEN_COMPLETE,
+            [
+                'token_id'    => $tokenId,
+            ]);
+
+        $previousStatus = null;
+
+        $token = $this->repo->transaction(function () use ($tokenId, $completedAt, &$previousStatus)
+        {
+            $token = $this->repo->token->lockForUpdate($tokenId);
+
+            $previousStatus = $token->getRecurringStatus();
+
+            if (($previousStatus !== RecurringStatus::CONFIRMED) and
+                ($previousStatus !== RecurringStatus::PAUSED)) {
+                throw new Exception\BadRequestValidationFailureException(
+                    'token is not in appropriate state to complete', null, [
+                    'token_id' => $token->getId(),
+                ]);
+            }
+
+            $token->setRecurringStatus(RecurringStatus::CANCELLED);
+
+            $token->setExpiredAt($completedAt);
+
+            $token->saveOrFail();
+
+            return $token;
+        });
+
+        $this->eventCardRecurringTokenStatus($token, $previousStatus);
+    }
+
     /**
      * Handle Token Resume Event
      */
@@ -1065,6 +1198,26 @@ class Core extends Base\Core
     }
 
     protected function eventUpiRecurringTokenStatus(Token\Entity $token, string $oldRecurringStatus = null)
+    {
+        $currentRecurringStatus = $token->getRecurringStatus();
+
+        // Ideally the old recurring status should not be the same as the new recurring status. But, in some cases,
+        // such as in cases where we did not get callback for token getting paused, these statuses might be same.
+        // We dont want to send multiple webhooks for the same final status in this case.
+        if (($oldRecurringStatus !== $currentRecurringStatus) and
+            (Token\RecurringStatus::isWebhookStatus($currentRecurringStatus) === true))
+        {
+            $event = 'api.token.' . $currentRecurringStatus;
+
+            $eventPayload = [
+                ApiEventSubscriber::MAIN => $token,
+            ];
+
+            $this->app['events']->dispatch($event, $eventPayload);
+        }
+    }
+
+    protected function eventCardRecurringTokenStatus(Token\Entity $token, string $oldRecurringStatus = null)
     {
         $currentRecurringStatus = $token->getRecurringStatus();
 

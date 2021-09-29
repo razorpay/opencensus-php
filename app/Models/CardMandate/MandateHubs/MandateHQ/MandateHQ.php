@@ -29,6 +29,13 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         $this->route = $this->app['api.route'];
     }
 
+    public function CancelMandate(CardMandate\Entity $cardMandate): Mandate
+    {
+        $response = $this->app->mandateHQ->cancelMandate($cardMandate->getMandateId());
+
+        return self::getMandateFromMandateHqResponse($response);
+    }
+
     public function RegisterMandate(Payment\Entity $payment): Mandate
     {
         $mandateHqInput = $this->getRegisterInput($payment);

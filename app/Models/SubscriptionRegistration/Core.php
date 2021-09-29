@@ -18,6 +18,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\UpiMandate;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
+use RZP\Models\CardMandate;
 use RZP\Models\PaperMandate;
 use RZP\Constants\Entity as E;
 use RZP\Models\Customer\Token;
@@ -1055,6 +1056,11 @@ class Core extends Base\Core
         );
 
         $token = $this->repo->token->findByPublicIdAndMerchant($id, $merchant);
+
+        if ($token->hasCardMandate() === true)
+        {
+            (new CardMandate\Core)->cancelMandateBeforeTokenDeletion($token->cardMandate);
+        }
 
         $token = $this->repo->token->deleteOrFail($token);
 

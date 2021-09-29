@@ -46,4 +46,13 @@ class TokenController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function pauseNotSupportedCardTokens()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->pauseNotSupportedCardTokens($input);
+
+        return ApiResponse::json($data);
+    }
 }

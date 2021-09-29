@@ -2,12 +2,14 @@
 
 namespace RZP\Models\CardMandate;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Customer\Token;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
 use RZP\Models\CardMandate\MandateHubs\Mandate;
@@ -203,15 +205,48 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
         }
 
-        $this->repo->transaction(
+        $previousStatus = $this->repo->transaction(
             function () use ($cardMandate, $mandate)
             {
                 $this->repo->card_mandate->lockForUpdateAndReload($cardMandate);
 
+                $previousStatus = $cardMandate->getStatus();
+
                 $cardMandate->setStatus($this->getCardMandateStatusFromMandateStatus($mandate->getStatus()));
 
                 $cardMandate->saveOrFail();
+
+                return $previousStatus;
             });
+
+        $tokenCore = (new Token\Core);
+        $tokenId = $cardMandate->token->getId();
+
+        if ($previousStatus != $cardMandate->getStatus())
+        {
+            switch ($cardMandate->getStatus())
+            {
+                case Status::ACTIVE:
+                    $tokenCore->resumeCardToken($tokenId);
+                    break;
+                case Status::PAUSED:
+                    $tokenCore->pauseCardToken($tokenId);
+                    break;
+                case Status::CANCELLED:
+                    $tokenCore->cancelCardToken($tokenId);
+                    break;
+                case Status::COMPLETED:
+                    $tokenCore->completeCardToken($tokenId, Carbon::now()->unix());
+                    break;
+                default:
+                    throw new Exception\ServerErrorException('should not have reached here',
+                        ErrorCode::SERVER_ERROR,
+                        [
+                            'id'     => $cardMandate->getId(),
+                            'status' => $cardMandate->getStatus(),
+                        ]);
+            }
+        }
 
         return $cardMandate;
     }
@@ -281,6 +316,28 @@ class Core extends Base\Core
         $mandateHub = (new MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
 
         return $mandateHub->reportSubsequentPayment($cardMandate, $payment);
+    }
+
+    public function cancelMandateBeforeTokenDeletion(Entity $cardMandate)
+    {
+        if ($cardMandate->getStatus() === Status::CANCELLED)
+        {
+            return;
+        }
+
+        $this->repo->transaction(
+            function () use ($cardMandate)
+            {
+                $this->repo->card_mandate->lockForUpdateAndReload($cardMandate);
+
+                $cardMandate->setStatus(Status::CANCELLED);
+
+                $cardMandate->saveOrFail();
+            });
+
+        $mandateHub = (new MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
+
+        $mandateHub->cancelMandate($cardMandate);
     }
 
     /**

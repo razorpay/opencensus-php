@@ -2848,6 +2848,8 @@ class Route
         'token_fetch'                             => ['post',        'tokens/fetch',                                             'TokenController@fetch'                                    ],
         'token_fetch_cryptogram'                  => ['post',        'tokens/cryptogram',                                        'TokenController@fetchCryptoGram'                          ],
         'token_delete'                            => ['post',        'tokens/delete',                                            'TokenController@delete'                                   ],
+
+       'token_pause_not_supported_card_tokens'    => ['post',        'tokens/pause_not_supported/card',                          'TokenController@pauseNotSupportedCardTokens'                                                         ],
     ];
 
     public static $public = [
@@ -3556,6 +3558,7 @@ class Route
         'banking_account_send_notification_to_spoc_cron',
         'banking_account_statement_channel_fetch',
         'subscription_registration_auto_charge',
+        'token_pause_not_supported_card_tokens',
         'partner_submerchant_map',
         'fund_transfer_attempts_process_fts',
         'cps_sync_gateway_entities_cron',
@@ -10015,6 +10018,7 @@ class Route
             'downtime_detection_cron',
             'phonepe_downtime_detection_cron',
             'subscription_registration_auto_charge',
+            'token_pause_not_supported_card_tokens',
             'fund_transfer_attempts_process_fts',
             'cps_sync_gateway_entities_cron',
             'reconciliate',

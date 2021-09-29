@@ -255,6 +255,47 @@ class Service extends Base\Service
         return null;
     }
 
+    public function pauseNotSupportedCardTokens($input)
+    {
+        $count = 1000;
+        if (empty($input['count']) === false)
+        {
+            $count = $input['count'];
+        }
+
+        $tokens = $this->repo->token->getDomesticTokensWithoutCardMandateToPause($count);
+
+        $succeeded = [];
+        $failed = [];
+
+        foreach ($tokens as $token)
+        {
+            try {
+                $this->core->pauseCardToken($token->getId());
+
+                $succeeded[] = $token->getId();
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::NOT_SUPPORTED_CARD_TOKEN_PAUSE_FAILED, [
+                    'token_id' => $token->getId(),
+                ]);
+
+                $failed[] = $token->getId();
+            }
+        }
+
+        $this->trace->info(TraceCode::CARD_TOKEN_PAUSE_PROCESSED, [
+            'failed'    => $failed,
+            'succeeded' => $succeeded
+        ]);
+
+        return [
+            'failed'    => $failed,
+            'succeeded' => $succeeded,
+        ];
+    }
+
     public function migrateToGatewayTokens(array $input = [])
     {
         $failureCount = $total = $successCount = 0;

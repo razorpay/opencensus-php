@@ -15,7 +15,8 @@ class MandateHQ
         'register_mandate'              => 'v1/mandates/register',
         'create_pre_debit_notification' => 'v1/mandates/%s/notifications',
         'report_payment'                => 'v1/mandates/%s/payments',
-        'check_bin'                     => 'v1/iins/%s'
+        'check_bin'                     => 'v1/iins/%s',
+        'cancel_mandate'                => 'v1/mandates/%s/cancel',
     ];
 
     protected $app;
@@ -75,6 +76,13 @@ class MandateHQ
         $url = sprintf(self::MANDATE_HQ_URLS['report_payment'], $mandateId);
 
         return $this->sendRequest($url, 'post', $input);
+    }
+
+    public function cancelMandate($mandateId)
+    {
+        $url = sprintf(self::MANDATE_HQ_URLS['cancel_mandate'], $mandateId);
+
+        return $this->sendRequest($url, 'put', []);
     }
 
     /**

@@ -4,7 +4,12 @@ namespace RZP\Models\CardMandate;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Customer\Token;
 
+/**
+ * @property Merchant\Entity $merchant
+ * @property Token\Entity    $token
+ */
 class Entity extends Base\PublicEntity
 {
     const MANDATE_ID                 = 'mandate_id';
@@ -222,5 +227,10 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function token()
+    {
+        return $this->hasOne(Token\Entity::class);
     }
 }

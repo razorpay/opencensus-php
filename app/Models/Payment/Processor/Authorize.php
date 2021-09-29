@@ -2182,6 +2182,8 @@ trait Authorize
         {
             $this->validateTokenExpiredAt($token);
 
+            $this->validateTokenRecurringStatus($token, $payment);
+
             if ($token->hasCardMandate() === true and $payment->isRecurringTypeAuto() === true)
             {
                 (new CardMandate\Core)->validateAutoPaymentCreation($token->cardMandate, $payment);

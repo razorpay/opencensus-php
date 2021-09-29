@@ -909,6 +909,21 @@ return [
         ],
     ],
 
+    'testPauseNotSupportedCardTokens' => [
+        'request' => [
+            'url' => '/tokens/pause_not_supported/card',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'failed' => [],
+                'succeeded' => [],
+            ],
+        ],
+    ],
+
     'testGetTokenWithBankDetails' => [
         'request' => [
             'url' => '/customers/cust_100000customer/tokens/10001emantoken',

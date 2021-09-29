@@ -5,10 +5,12 @@ namespace RZP\Models\Customer\Token;
 use DB;
 
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Constants\Table;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
 use RZP\Exception\ServerErrorException;
@@ -549,5 +551,24 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->withTrashed()
                     ->findOrFailPublic($tokenId);
+    }
+
+    public function getDomesticTokensWithoutCardMandateToPause($count = 100)
+    {
+        $tokenCardId = $this->repo->token->dbColumn(Token\Entity::CARD_ID);
+        $cardId = $this->repo->card->dbColumn(Card\Entity::ID);
+        $cardCountry = $this->repo->card->dbColumn(Card\Entity::COUNTRY);
+        $tokenCreatedAt = $this->repo->token->dbColumn(Token\Entity::CREATED_AT);
+        $tokenId = $this->repo->token->dbColumn(Token\Entity::ID);
+
+        return $this->newQuery()
+                    ->where(Token\Entity::METHOD, '=', Payment\Method::CARD)
+                    ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::CONFIRMED)
+                    ->whereNull(Token\Entity::CARD_MANDATE_ID)
+                    ->join(Table::CARD, $cardId, '=', $tokenCardId)
+                    ->where($cardCountry, '=', Card\IIN\Country::IN)
+                    ->orderBy($tokenCreatedAt)
+                    ->limit($count)
+                    ->get($tokenId);
     }
 }

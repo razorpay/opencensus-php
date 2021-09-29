@@ -22,6 +22,93 @@ return [
         ]
     ],
 
+    'testCardRecurringAutoPaymentIfTokenIsPaused' => [
+        'request' => [
+            'content' => [
+                "amount"      => 10000,
+                "currency"    => "INR",
+                "customer_id" => "cust_id",
+                "recurring"   => true,
+                "contact"     => "9483159238",
+                "email"       => "r@g.c",
+                "token"       => 'token_id',
+            ],
+            'method'    => 'POST',
+            'url'       => '/payments/create/recurring',
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING,
+        ],
+    ],
+
+    'testCardRecurringAutoPaymentIfTokenIsCancelled' => [
+        'request' => [
+            'content' => [
+                "amount"      => 10000,
+                "currency"    => "INR",
+                "customer_id" => "cust_id",
+                "recurring"   => true,
+                "contact"     => "9483159238",
+                "email"       => "r@g.c",
+                "token"       => 'token_id',
+            ],
+            'method'    => 'POST',
+            'url'       => '/payments/create/recurring',
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING,
+        ],
+    ],
+
+    'testCardRecurringAutoPaymentIfTokenIsExpired' => [
+        'request' => [
+            'content' => [
+                "amount"      => 10000,
+                "currency"    => "INR",
+                "customer_id" => "cust_id",
+                "recurring"   => true,
+                "contact"     => "9483159238",
+                "email"       => "r@g.c",
+                "token"       => 'token_id',
+            ],
+            'method'    => 'POST',
+            'url'       => '/payments/create/recurring',
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_RECURRING_TOKEN_EXPIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_RECURRING_TOKEN_EXPIRED,
+        ],
+    ],
+
     'testRecurringInternationalPaymentWhenNotAllowed' => [
         'response' => [
             'content' => [

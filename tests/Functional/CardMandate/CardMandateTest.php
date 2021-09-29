@@ -4,21 +4,27 @@ namespace RZP\Tests\Functional\CardMandate;
 
 use Mockery;
 
+use Queue;
 use Carbon\Carbon;
+use RZP\Constants\Entity;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Entity as E;
-use RZP\Models\CardMandate\Status;
 use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\CardMandate\Status;
 use RZP\Exception\BadRequestException;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class CardMandateTest extends TestCase
 {
+    use WebhookTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use TestsWebhookEvents;
 
     /**
      * @var array
@@ -98,6 +104,152 @@ class CardMandateTest extends TestCase
         $this->assertNotEmpty($cardMandate->getMandateSummaryUrl());
         $this->assertEquals('active', $cardMandate->getStatus());
         $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
+    }
+
+    public function testMandateHQCallbackMandatePaused()
+    {
+        $this->testCreateCardMandatePayment();
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+
+        $this->testData[__FUNCTION__]['request']['content']['payload']['mandate']['entity']['id'] = $cardMandate->getMandateId();
+
+        $this->mockStorkService();
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use (&$webhookPayload)
+            {
+                $webhookPayload = $payload;
+
+                return new \Requests_Response();
+            })->times(1);
+
+        $this->startTest();
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+
+        $this->assertEquals('paused', $cardMandate->getStatus());
+
+        $token = $this->getDbLastEntity(E::TOKEN);
+
+        $this->assertEquals('paused', $token->getRecurringStatus());
+
+        $this->assertEquals('token.paused', $webhookPayload['event']['name']);
+
+        $payload = json_decode($webhookPayload['event']['payload'], true);
+
+        $this->assertEquals($token->getPublicId(), $payload['payload']['token']['entity']['id']);
+    }
+
+    public function testMandateHQCallbackMandateResumed()
+    {
+        $this->testMandateHQCallbackMandatePaused();
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+
+        $this->testData[__FUNCTION__]['request']['content']['payload']['mandate']['entity']['id'] = $cardMandate->getMandateId();
+
+        $this->mockStorkService();
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use (&$webhookPayload)
+            {
+                $webhookPayload = $payload;
+
+                return new \Requests_Response();
+            })->times(1);
+
+        $this->startTest();
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+
+        $this->assertEquals('active', $cardMandate->getStatus());
+
+        $token = $this->getDbLastEntity(E::TOKEN);
+
+        $this->assertEquals('confirmed', $token->getRecurringStatus());
+
+        $this->assertEquals('token.confirmed', $webhookPayload['event']['name']);
+
+        $payload = json_decode($webhookPayload['event']['payload'], true);
+
+        $this->assertEquals($token->getPublicId(), $payload['payload']['token']['entity']['id']);
+    }
+
+    public function testMandateHQCallbackMandateCancelled()
+    {
+        $this->testCreateCardMandatePayment();
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+
+        $this->testData[__FUNCTION__]['request']['content']['payload']['mandate']['entity']['id'] = $cardMandate->getMandateId();
+
+        $webhookPayload = [];
+
+        $this->mockStorkService();
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use (&$webhookPayload)
+            {
+                $webhookPayload = $payload;
+
+                return new \Requests_Response();
+            })->times(1);
+
+        $this->startTest();
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+
+        $this->assertEquals('cancelled', $cardMandate->getStatus());
+
+        $token = $this->getDbLastEntity(E::TOKEN);
+
+        $this->assertEquals('cancelled', $token->getRecurringStatus());
+
+        $this->assertEquals('token.cancelled', $webhookPayload['event']['name']);
+
+        $payload = json_decode($webhookPayload['event']['payload'], true);
+
+        $this->assertEquals($token->getPublicId(), $payload['payload']['token']['entity']['id']);
+    }
+
+    public function testMandateHQCallbackMandateCompleted()
+    {
+        $this->testCreateCardMandatePayment();
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+
+        $this->testData[__FUNCTION__]['request']['content']['payload']['mandate']['entity']['id'] = $cardMandate->getMandateId();
+
+        $this->mockStorkService();
+
+        $webhookPayload = [];
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use (&$webhookPayload)
+            {
+                $webhookPayload = $payload;
+
+                return new \Requests_Response();
+            })->times(1);
+
+        $this->startTest();
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+
+        $this->assertEquals('completed', $cardMandate->getStatus());
+
+        $token = $this->getDbLastEntity(E::TOKEN);
+
+        $this->assertEquals('cancelled', $token->getRecurringStatus());
+
+        $this->assertNotEmpty($token->getExpiredAt());
+
+        $this->assertEquals('token.cancelled', $webhookPayload['event']['name']);
+
+        $payload = json_decode($webhookPayload['event']['payload'], true);
+
+        $this->assertEquals($token->getPublicId(), $payload['payload']['token']['entity']['id']);
     }
 
     public function testCreateCardMandatePaymentViaPaymentCheckoutApi()
@@ -297,6 +449,26 @@ class CardMandateTest extends TestCase
         $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
         $this->assertNotEmpty($cardMandate);
         $this->assertEquals('mandate_cancelled', $cardMandate->getStatus());
+    }
+
+    public function testCardMandateTokenDelete()
+    {
+        $this->testCreateCardMandatePayment();
+
+        $token = $this->getDbLastEntity(Entity::TOKEN);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, $token->getPublicId());
+
+        $this->ba->proxyAuth();
+
+        $this->mockCancelMandate();
+
+        $this->startTest();
+
+        $cardMandate = $this->getDbLastEntity(Entity::CARD_MANDATE);
+
+        $this->assertEquals('cancelled', $cardMandate->getStatus());
     }
 
     public function testCreateCardMandateAutoPayment()
@@ -651,6 +823,19 @@ class CardMandateTest extends TestCase
         };
 
         return $this->mockMandateHQ($callable);
+    }
+
+    protected function mockCancelMandate()
+    {
+        $callable = function ()
+        {
+            return [
+                'id' => "ratn_PP3VC146gmBVGG",
+                "status" => "cancelled",
+            ];
+        };
+
+        return $this->mockMandateHQ($callable, 'cancelMandate');
     }
 
     protected function mockReportPayment()

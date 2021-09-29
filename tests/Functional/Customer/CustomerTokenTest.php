@@ -458,6 +458,29 @@ class CustomerTokenTest extends TestCase
         $this->assertNull($token[Token\Entity::MRN]);
     }
 
+    public function testPauseNotSupportedCardTokens()
+    {
+        $card = $this->fixtures->create('card', ['country' => 'IN']);
+
+        $token = $this->fixtures->create(
+            'token',
+            [
+                'method' => 'card',
+                'recurring' => true,
+                'recurring_status' => 'confirmed',
+                'card_id' => $card->getId(),
+            ]);
+
+        $this->ba->cronAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEmpty($response['failed']);
+
+        $this->assertEquals(1, sizeof($response['succeeded']));
+
+        $this->assertEquals($token->getId(), $response['succeeded'][0]);
+    }
 
     public function testAddCustomerTokenCardCardVault()
     {

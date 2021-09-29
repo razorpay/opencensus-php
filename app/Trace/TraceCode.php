@@ -641,6 +641,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CUSTOMER_TOKEN_PAUSE                                  = 'CUSTOMER_TOKEN_PAUSE';
     const CUSTOMER_TOKEN_RESUME                                 = 'CUSTOMER_TOKEN_RESUME';
     const CUSTOMER_TOKEN_CANCEL                                 = 'CUSTOMER_TOKEN_CANCEL';
+    const CUSTOMER_TOKEN_COMPLETE                               = 'CUSTOMER_TOKEN_COMPLETE';
     const CUSTOMER_TOKEN_ACTION_ASYNC                           = 'CUSTOMER_TOKEN_ACTION_ASYNC';
     const CUSTOMER_TOKEN_EDIT                                   = 'CUSTOMER_TOKEN_EDIT';
     const CUSTOMER_TOKEN_STATUS_MISMATCH                        = 'CUSTOMER_TOKEN_STATUS_MISMATCH';
@@ -1929,6 +1930,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_BATCH_TXN_FILE_DATA_EMPTY                       = 'RECON_BATCH_TXN_FILE_DATA_EMPTY';
     const RECON_OUTPUT_FILE_CREATION_FAILED                     = 'RECON_OUTPUT_FILE_CREATION_FAILED';
     const RECON_INVALID_REQUEST                                 = 'RECON_INVALID_REQUEST';
+
+    const NOT_SUPPORTED_CARD_TOKEN_PAUSE_FAILED                 = 'NOT_SUPPORTED_CARD_TOKEN_PAUSE_FAILED';
+    const CARD_TOKEN_PAUSE_PROCESSED                            = 'CARD_TOKEN_PAUSE_PROCESSED';
 
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH                   = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';

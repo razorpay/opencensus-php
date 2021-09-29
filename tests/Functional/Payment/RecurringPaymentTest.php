@@ -58,6 +58,54 @@ class RecurringPaymentTest extends TestCase
         $this->assertEquals('initial', $payment['recurring_type']);
     }
 
+    public function testCardRecurringAutoPaymentIfTokenIsPaused()
+    {
+        $this->testRecurringFirstPaymentCreatePublicAuth();
+
+        $token = $this->getDbLastEntity(E::TOKEN);
+        $token->setRecurringStatus('paused');
+        $token->saveOrFail();
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $token->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['customer_id'] = 'cust_' . $token->getCustomerId();
+
+        $this->startTest();
+    }
+
+    public function testCardRecurringAutoPaymentIfTokenIsCancelled()
+    {
+        $this->testRecurringFirstPaymentCreatePublicAuth();
+
+        $token = $this->getDbLastEntity(E::TOKEN);
+        $token->setRecurringStatus('cancelled');
+        $token->saveOrFail();
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $token->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['customer_id'] = 'cust_' . $token->getCustomerId();
+
+        $this->startTest();
+    }
+
+    public function testCardRecurringAutoPaymentIfTokenIsExpired()
+    {
+        $this->testRecurringFirstPaymentCreatePublicAuth();
+
+        $token = $this->getDbLastEntity(E::TOKEN);
+        $token->setExpiredAt(1632826568);
+        $token->saveOrFail();
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $token->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['customer_id'] = 'cust_' . $token->getCustomerId();
+
+        $this->startTest();
+    }
+
     public function testRecurringFirstPaymentCreatePrivateAuth()
     {
         $this->ba->privateAuth();
@@ -961,6 +1009,7 @@ class RecurringPaymentTest extends TestCase
             [
                 'recurring'   => true,
                 'terminal_id' => '1000CybrsTrmnl',
+                'recurring_status' => 'confirmed',
             ]);
 
         $this->fixtures->create('gateway_token',
