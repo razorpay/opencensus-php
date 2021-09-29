@@ -4514,8 +4514,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             (empty($token) === false) and
             (empty($token->getCardMandateId()) === true) and
             ($this->card->iinRelation !== null) and
-            ($this->card->iinRelation->isCardMandateApplicable($this->merchant) === true) and
-            ($this->hasSubscription() === false))
+            ($this->card->iinRelation->isCardMandateApplicable($this->merchant) === true))
         {
             return true;
         }
@@ -4574,8 +4573,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if (($this->isCardRecurring() === true) and
             ($card !== null) and
             ($card->iinRelation !== null) and
-            ($card->iinRelation->isCardMandateApplicable($this->merchant) === true) and
-            ($this->hasSubscription() === false))
+            ($card->iinRelation->isCardMandateApplicable($this->merchant) === true))
         {
             return true;
         }

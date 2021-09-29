@@ -368,6 +368,7 @@ class ApiEventSubscriber extends Base\Core
             $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
             $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
+
         }
 
         if ($payment->isCardMandateRecurringInitialPayment() === true)
@@ -1633,6 +1634,17 @@ class ApiEventSubscriber extends Base\Core
                 'discounted_amount' => $discountAmount,
                 'offer_details'     => $paidOfferSubscriptionDetails,
             ];
+        }
+
+        $token = $payment->localToken;
+        if (empty($token) === false)
+        {
+            $cardMandateId = $token->getCardMandateId();
+
+            if ($cardMandateId !== null)
+            {
+                $payload['card_mandate_id'] = $cardMandateId;
+            }
         }
 
         return $payload;
