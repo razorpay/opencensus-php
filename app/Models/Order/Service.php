@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants;
 use RZP\Models\BankAccount;
 use RZP\Base\ConnectionType;
 use RZP\Models\Bank\BankCodes;
@@ -332,6 +333,31 @@ class Service extends Base\Service
 
         $payments = $this->repo->payment->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
+        $isPrivateAuth = $this->app['basicauth']->isPrivateAuth();
+
+        if ($isPrivateAuth === true)
+        {
+            $tidbPaymentIds = $payments->pluck(Payment\Entity::ID);
+
+            $apiPayments = $this->repo->payment->fetchPaymentsGivenIds($tidbPaymentIds->toArray(), $tidbPaymentIds->count());
+
+            $apiPaymentIds = $apiPayments->pluck(Payment\Entity::ID);
+
+            $diffPaymentIds = array_diff($tidbPaymentIds->toArray(), $apiPaymentIds->toArray());
+
+            foreach ($diffPaymentIds as $paymentId)
+            {
+                $payment = $this->app['pg_router']->fetch(Constants\Entity::PAYMENT, $paymentId, null, null);
+
+                if ($payment !== null)
+                {
+                    $apiPayments->push($payment);
+                }
+            }
+
+            return $apiPayments->toArrayPublic();
+
+        }
         return $payments->toArrayPublic();
     }
 
