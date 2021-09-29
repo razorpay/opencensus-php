@@ -254,7 +254,6 @@ class Entity extends Base\PublicEntity
         self::MRN,
         self::BANK_DETAILS,
         // TODO: Remove this after deciding on how to expose
-        self::RECURRING_DETAILS,
         self::MAX_AMOUNT,
         self::EXPIRED_AT,
         self::START_TIME,
@@ -775,13 +774,6 @@ class Entity extends Base\PublicEntity
         return Crypt::decrypt($aadhaarVid, true, $this);
     }
 
-    public function setPublicRecurringDetailsAttribute(array & $array)
-    {
-        if ($this->getMethod() === Payment\Method::CARD)
-        {
-            unset($array[self::RECURRING_DETAILS]);
-        }
-    }
 
     protected function generateToken($input)
     {
@@ -893,11 +885,11 @@ class Entity extends Base\PublicEntity
         $app = App::getFacadeRoot();
 
         $routeName = $app['api.route']->getCurrentRouteName();
- 
+
          if($routeName == 'merchant_checkout_preferences')
          {
              $billingAddress = $this->getBillingAddress();
- 
+
              $publicArray[self::BILLING_ADDRESS] = $billingAddress!==null?$billingAddress->getBillingAddress():null;
          }
     }

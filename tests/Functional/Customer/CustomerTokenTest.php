@@ -223,12 +223,11 @@ class CustomerTokenTest extends TestCase
         $token = $this->getTokenById('token_' . $token['id']);
 
         $this->assertTrue($token[Token\Entity::RECURRING]);
+        $this->assertArrayHasKey(Token\Entity::RECURRING_STATUS_SHORT, $token[Token\Entity::RECURRING_DETAILS]);
+        $this->assertArrayHasKey(Token\Entity::RECURRING_FAILURE_REASON_SHORT,$token[Token\Entity::RECURRING_DETAILS]);
 
-        // We never display the keys below to the public
-        $this->assertArrayNotHasKey(Token\Entity::RECURRING_STATUS, $token);
-        $this->assertArrayNotHasKey(Token\Entity::RECURRING_FAILURE_REASON, $token);
+        $this->assertArrayHasKey(Token\Entity::RECURRING_DETAILS, $token);
 
-        $this->assertArrayNotHasKey(Token\Entity::RECURRING_DETAILS, $token);
     }
 
     public function testFetchTokenCardWithFlows()
@@ -259,7 +258,7 @@ class CustomerTokenTest extends TestCase
         self::assertArrayNotHasKey(Token\Entity::RECURRING_STATUS, $token);
         self::assertArrayNotHasKey(Token\Entity::RECURRING_FAILURE_REASON, $token);
 
-        self::assertArrayNotHasKey(Token\Entity::RECURRING_DETAILS, $token);
+        self::assertArrayHasKey(Token\Entity::RECURRING_DETAILS, $token);
     }
 
 
@@ -277,11 +276,10 @@ class CustomerTokenTest extends TestCase
 
         $this->assertTrue($token[Token\Entity::RECURRING]);
 
-        // We never display the keys below to the public
-        $this->assertArrayNotHasKey(Token\Entity::RECURRING_STATUS, $token);
-        $this->assertArrayNotHasKey(Token\Entity::RECURRING_FAILURE_REASON, $token);
+        $this->assertArrayHasKey(Token\Entity::RECURRING_STATUS_SHORT, $token[Token\Entity::RECURRING_DETAILS]);
+        $this->assertArrayHasKey(Token\Entity::RECURRING_FAILURE_REASON_SHORT,$token[Token\Entity::RECURRING_DETAILS]);
 
-        $this->assertArrayNotHasKey(Token\Entity::RECURRING_DETAILS, $token);
+        $this->assertArrayHasKey(Token\Entity::RECURRING_DETAILS, $token);
     }
 
     public function testFetchTokenCardNotRecurring()
@@ -292,11 +290,10 @@ class CustomerTokenTest extends TestCase
 
         $this->assertFalse($token[Token\Entity::RECURRING]);
 
-        // We never display the keys below to the public
-        $this->assertArrayNotHasKey(Token\Entity::RECURRING_STATUS, $token);
-        $this->assertArrayNotHasKey(Token\Entity::RECURRING_FAILURE_REASON, $token);
+        $this->assertArrayHasKey(Token\Entity::RECURRING_STATUS_SHORT, $token[Token\Entity::RECURRING_DETAILS]);
+        $this->assertArrayHasKey(Token\Entity::RECURRING_FAILURE_REASON_SHORT,$token[Token\Entity::RECURRING_DETAILS]);
 
-        $this->assertArrayNotHasKey(Token\Entity::RECURRING_DETAILS, $token);
+        $this->assertArrayHasKey(Token\Entity::RECURRING_DETAILS, $token);
     }
 
     public function testFetchTokenNbRecurringConfirmed()
