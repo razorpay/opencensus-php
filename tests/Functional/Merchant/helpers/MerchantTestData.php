@@ -8143,6 +8143,47 @@ return [
 
     ],
 
+    'testGetCheckoutPersonalisationForNonLoggedInUserWithInternationalContact' => [
+        'request' => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id'  => 'null',
+                'contact' => '+118888888888',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'preferred_methods' => [
+                    '+118888888888' => [
+                        'instruments' => [
+                            [
+                                'instrument' => 'paypal',
+                                'method'     => 'wallet',
+                            ],
+                            [
+                                'instrument' => 'paytm',
+                                'method'     => 'wallet',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'netbanking',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
+                            ],
+                        ],
+                    ],
+                ]
+            ],
+        ],
+
+    ],
+
     'testGetCheckoutPersonalisationForContact' => [
         'request' => [
             'url'     => '/personalisation',

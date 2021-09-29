@@ -1475,6 +1475,8 @@ class Checkout
                     $pos = $pos + 1;
                 }
 
+                $preferences = $this->enrichPznRespForInternational($preferences, $contact);
+
                 $contact = $contact ?: 'default';
 
                 $data['preferred_methods'][$contact] = [
@@ -1494,6 +1496,38 @@ class Checkout
                 ]
             );
         }
+    }
+
+    /**
+     * Function to enrich personalisation preferred method response,
+     * if contact dialing code is non indian add paypal in preferred methods
+     * @param $preferences
+     * @param $contact
+     * @return mixed
+     */
+    private function enrichPznRespForInternational(& $preferences, $contact)
+    {
+        if ((empty($contact) === true) or
+            (strpos($contact,'+') !== 0) or
+            (strpos($contact,'+91') === 0)){
+            return $preferences;
+        }
+
+        $result  = array_first($preferences, function ($preference) use (&$value){
+           return ($preference["method"] === Payment\Method::WALLET) and
+               ($preference["instrument"] === Merchant\Methods\Entity::PAYPAL);
+        });
+
+        //check for if paypal already added in response, skip adding it again
+        if (empty($result) === true){
+            $paypalPreference = [
+                "method"    => Payment\Method::WALLET,
+                "instrument"=> Merchant\Methods\Entity::PAYPAL,
+            ];
+            array_unshift($preferences, $paypalPreference);
+        }
+
+        return $preferences;
     }
 
     protected function sortByScore(array $preferences) : array
