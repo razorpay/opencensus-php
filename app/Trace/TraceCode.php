@@ -83,6 +83,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PRODUCT_SWITCH                                        = 'PRODUCT_SWITCH';
     const UTM_PARAMS                                            = 'UTM_PARAMS';
+    const RZP_UTM                                               = 'RZP_UTM';
     // payout links
     const PAYOUT_LINK_NOTIFICATION_JOB_RELEASED                 = 'PAYOUT_LINK_NOTIFICATION_JOB_RELEASED';
     const PAYOUT_LINK_CREATE_REQUEST                            = 'PAYOUT_LINK_CREATE_REQUEST';

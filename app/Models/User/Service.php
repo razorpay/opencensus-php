@@ -1007,6 +1007,7 @@ class Service extends Base\Service
         {
             // For some reason, the cookie has extra double quotes at the
             // beginning and end, so trimming that. If not removed, json_decode fails.
+            $this->trace->info(TraceCode::RZP_UTM, ['rzp_utm_cookie' => \Cookie::get('rzp_utm')]);
             $cookieValue = trim(\Cookie::get('rzp_utm'), '"');
             $utmParams = json_decode($cookieValue, true);
             $data[Constants::CTA]       = $utmParams[Constants::CTA] ?? '';
