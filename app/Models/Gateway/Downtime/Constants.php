@@ -20,6 +20,65 @@ class Constants
     // In ratio to total payments
     const MAX_SINGLE_MERCHANT_CONTRIBUTION = 0.5;
 
+    // Payment Methods
+    const CARD = 'card';
+
+    const UPI = 'upi';
+
+    const NETBANKING = 'netbanking';
+
+    // Card Types
+    const CREDIT = 'credit';
+
+    const DEBIT = 'debit';
+
+    // UPI Flows
+
+    const COLLECT = 'collect';
+
+    const INTENT = 'intent';
+
+    // Looker dashboard constants
+    const LOOKER_NOTIFICATIONS_RAZORX_KEY = 'LOOKER_NOTIFICATIONS_RAZORX_KEY';
+
+    const LOOKER_URL = 'https://looker.razorpay.com/dashboards/';
+
+    const CARD_LOOKER_DASHBOARD = 3372;
+
+    const UPI_LOOKER_DASHBOARD = 3374;
+
+    const NETBANKING_LOOKER_DASHBOARD = 3377;
+
+    const DEFAULT_LOOKER_DASHBOARD = 3372;
+
+    const CREDIT_CARD_FILTER = 'Credit Card';
+
+    const DEBIT_CARD_FILTER = 'Debit Card';
+
+    const UPI_COLLECT_FILTER = 'UPI Collect';
+
+    const UPI_INTENT_FILTER = 'UPI Intent';
+
+    const FROM_10_20_MINUTES = 'FROM=10 20minutes';
+
+    protected static $lookerDashboardForMethod = [
+        Constants::CARD           => Constants::CARD_LOOKER_DASHBOARD,
+        Constants::UPI            => Constants::UPI_LOOKER_DASHBOARD,
+        Constants::NETBANKING     => Constants::NETBANKING_LOOKER_DASHBOARD,
+    ];
+
+    protected static $lookerCardFilters = [
+        Constants::CREDIT           => Constants::CREDIT_CARD_FILTER,
+        Constants::DEBIT            => Constants::DEBIT_CARD_FILTER,
+        Constants::CARD             => Constants::CREDIT_CARD_FILTER . "," . Constants::DEBIT_CARD_FILTER,
+    ];
+
+    protected static $lookerUpiFilters = [
+        Constants::COLLECT           => Constants::UPI_COLLECT_FILTER,
+        Constants::INTENT            => Constants::UPI_INTENT_FILTER,
+        Constants::CARD              => Constants::UPI_COLLECT_FILTER . "," . Constants::UPI_INTENT_FILTER,
+    ];
+
     protected static $allJobTypes = [
         [
             'type' => DowntimeDetection::SUCCESS_RATE,
@@ -301,5 +360,20 @@ class Constants
     public static function getAllJobTypes()
     {
         return self::$allJobTypes;
+    }
+
+    public static function getLookerDashboardForMethod()
+    {
+        return self::$lookerDashboardForMethod;
+    }
+
+    public static function getLookerCardFilters()
+    {
+        return self::$lookerCardFilters;
+    }
+
+    public static function getLookerUpiFilters()
+    {
+        return self::$lookerUpiFilters;
     }
 }

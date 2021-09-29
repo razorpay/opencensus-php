@@ -345,4 +345,8 @@ final class RazorxTreatment
 
     // Experiment for transfers state machine.
     const ROUTE_TRANSFER_STATE = 'route_transfer_state';
+
+
+    // Experiment to send looker link with downtimes notifications to slack
+    const DOWNTIMES_LOOKER_TO_SLACK = 'downtime_looker_to_slack';
 }

@@ -8,7 +8,10 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Redis;
 use RZP\Constants\Timezone;
 use RZP\Http\Request\Requests;
+use RZP\Models\Gateway\Downtime\Constants;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use RZP\Models\Gateway\Downtime\Core;
 
 class DowntimeSlackNotification
 {
@@ -25,9 +28,15 @@ class DowntimeSlackNotification
 
     protected $redis;
 
+    protected $razorx;
+
     private $DOWNTIME_BASE_TEMPLATE = '`[$severity]  $heading` '."\n".'```Method : $method'."\n".'Start Time : $startTime'."\n".'$additionalFields```';
 
     private $MERCHANT_DETAILS_TEMPLATE = 'Merchant Name: $merchantName'."\n".'Merchant Id : $merchantId';
+
+    private $DOWNTIME_BASE_TEMPLATE_WITH_LOOKER_LINK = '`[$severity]  $heading` '."\n".'```Method : $method'."\n".'Start Time : $startTime'."\n".'$additionalFields```'."\n".'<$lookerLink|Looker Dashboard>';
+
+    private $MERCHANT_DETAILS_TEMPLATE_WITH_LOOKER_LINK = 'Merchant Name: $merchantName'."\n".'Merchant Id : $merchantId'."\n".'<$lookerLink|Looker Dashboard>';
 
     private $RESOLUTION_TEMPLATE = 'End Time: $endTime'."\n".'Duration : $duration minutes';
 
@@ -35,6 +44,7 @@ class DowntimeSlackNotification
     {
         $this->trace = $app['trace'];
         $this->config = $app['config']->get('applications.gateway_downtime.slack');
+        $this->razorx = $app['razorx'];
 
         $this->slackChannelConfig = [
             [
@@ -252,8 +262,21 @@ class DowntimeSlackNotification
 
         $method = $this->getMethod($downtime);
 
-         return strtr($this->DOWNTIME_BASE_TEMPLATE, ['$severity' => $severity,
-             '$heading' => $heading, '$method'=>$method, '$startTime' => $startTime, '$additionalFields' => $additionalDetails ]);
+        $variant = $this->razorx->getTreatment(
+            Constants::LOOKER_NOTIFICATIONS_RAZORX_KEY,
+            Merchant\RazorxTreatment::DOWNTIMES_LOOKER_TO_SLACK,
+            Core::getMode()
+        );
+
+        $lookerLink = $this->getLookerLink($downtime);
+
+        if (strtolower($variant) === 'on') {
+            return strtr($this->DOWNTIME_BASE_TEMPLATE_WITH_LOOKER_LINK, ['$severity' => $severity,
+                '$heading' => $heading, '$method' => $method, '$startTime' => $startTime, '$additionalFields' => $additionalDetails, '$lookerLink' => $lookerLink]);
+        }
+
+        return strtr($this->DOWNTIME_BASE_TEMPLATE, ['$severity' => $severity,
+            '$heading' => $heading, '$method' => $method, '$startTime' => $startTime, '$additionalFields' => $additionalDetails]);
     }
 
     /**
@@ -358,6 +381,87 @@ class DowntimeSlackNotification
         return $method;
     }
 
+    private function getLookerLink($downtime): string
+    {
+        $method = $downtime['method'];
+
+        $lookerLink = Constants::LOOKER_URL
+            . $this->getDashboardForMethod($method)
+            . '?METHOD='
+            . $this->getMethodFilter($downtime);
+
+        if(empty($downtime['network']) === false)
+        {
+            $lookerLink .= "&NETWORK=" . ucwords($downtime['network']);
+        }
+
+        if(empty($downtime['issuer']) === false)
+        {
+            $lookerLink .= "&ISSUER=" . ucwords($downtime['issuer']);
+        }
+
+        if(empty($downtime['merchant_id']) === false)
+        {
+            $lookerLink .= "&MERCHANT_ID=" . $downtime['merchant_id'];
+        }
+
+        $lookerLink .= "&" . Constants::FROM_10_20_MINUTES;
+
+        $this->trace->info(
+            TraceCode::LOOKER_DASHBOARD_LINK,
+            [
+                'Link' => $lookerLink
+            ]
+        );
+
+        return $lookerLink;
+    }
+
+    private function getDashboardForMethod($method): int
+    {
+        if(isset(Constants::getLookerDashboardForMethod()[$method]) === true)
+        {
+            return Constants::getLookerDashboardForMethod()[$method];
+        }
+
+        return Constants::DEFAULT_LOOKER_DASHBOARD;
+    }
+
+    private function getMethodFilter($downtime): string
+    {
+        $method = $downtime['method'];
+
+        switch ($method)
+        {
+            case Constants::CARD:
+                return $this->getCardMethodFilter($downtime);
+            case Constants::UPI:
+                return $this->getUpiMethodFilter($downtime);
+            default:
+                return $method;
+        }
+    }
+
+    private function getCardMethodFilter($downtime): string
+    {
+        if(empty($downtime['cardType']) === false)
+        {
+            return Constants::getLookerCardFilters()[$downtime['cardType']];
+        }
+
+        return Constants::getLookerCardFilters()[Constants::CARD];
+    }
+
+    private function getUpiMethodFilter($downtime): string
+    {
+        if(empty($downtime['flow']) === false)
+        {
+            return Constants::getLookerUpiFilters()[$downtime['flow']];
+        }
+
+        return Constants::getLookerUpiFilters()[Constants::UPI];
+    }
+
     /**
      * @param array $responses
      * @param $channelThreadKey
@@ -445,6 +549,22 @@ class DowntimeSlackNotification
     {
         $id = $downtime['merchantId'];
         $name = $this->getMerchantName($downtime);
+
+        $variant = $this->razorx->getTreatment(
+            Constants::LOOKER_NOTIFICATIONS_RAZORX_KEY,
+            Merchant\RazorxTreatment::DOWNTIMES_LOOKER_TO_SLACK,
+            Core::getMode()
+        );
+
+        $lookerLink = $this->getLookerLink($downtime);
+
+        if (strtolower($variant) === 'on') {
+            return strtr($this->MERCHANT_DETAILS_TEMPLATE_WITH_LOOKER_LINK, [
+                '$merchantId' => $id,
+                '$merchantName' => $name,
+                '$lookerLink' => $lookerLink
+            ]);
+        }
 
         return strtr($this->MERCHANT_DETAILS_TEMPLATE, [
             '$merchantId' => $id,
