@@ -785,7 +785,7 @@ class EventCode
         'name'  => 'payment_config.updation.initiated'
     ];
 
-   const EMAIL_ATTEMPTED = [
+    const EMAIL_ATTEMPTED = [
         'group' => 'email',
         'name'  => 'email.attempted',
     ];
@@ -889,6 +889,41 @@ class EventCode
     const REWARD_COUPON_COUNT_THRESHOLD = [
         'group' => 'reward_coupon',
         'name'  => 'reward.coupon_count_threshold'
+    ];
+
+    const TRUSTED_BADGE_CRON_INITIATED = [
+        'group' => 'trusted_badge',
+        'name'  => 'trusted_badge.cron.initiated'
+    ];
+
+    const TRUSTED_BADGE_CRON_RESULT = [
+        'group' => 'trusted_badge',
+        'name'  => 'trusted_badge.cron.result'
+    ];
+
+    const TRUSTED_BADGE_CRON_FAILURE = [
+        'group' => 'trusted_badge',
+        'name'  => 'trusted_badge.cron.failure'
+    ];
+
+    public const TRUSTED_BADGE_MAIL_CTA = [
+        'group' => 'trusted_badge',
+        'name'  => 'trusted_badge.email.cta'
+    ];
+
+    public const TRUSTED_BADGE_WELCOME_MAIL_INITIATED = [
+        'group' => 'trusted_badge',
+        'name'  => 'trusted_badge.email.welcome.initiated',
+    ];
+
+    public const TRUSTED_BADGE_OPTOUT_NOTIFY_MAIL_INITIATED = [
+        'group' => 'trusted_badge',
+        'name'  => 'trusted_badge.email.optout_notify.initiated',
+    ];
+
+    public const TRUSTED_BADGE_OPTIN_REQUEST_MAIL_INITIATED = [
+        'group' => 'trusted_badge',
+        'name'  => 'trusted_badge.email.optin_request.initiated',
     ];
 
     const PAYMENT_ELIGIBILITY_CHECK_INITIATED = [

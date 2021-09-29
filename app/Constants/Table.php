@@ -349,6 +349,10 @@ class Table
     const MERCHANT_REWARD  = 'merchant_rewards';
     const REWARD_COUPON    = 'reward_coupons';
 
+    //Razorpay Trusted Badge
+    const TRUSTED_BADGE          = 'trusted_badge';
+    const TRUSTED_BADGE_HISTORY  = 'trusted_badge_history';
+
     // this table doesn't exist in api db. this constant is required for transaction queries
     const CREDIT_REPAYMENT = 'credit_repayment';
 

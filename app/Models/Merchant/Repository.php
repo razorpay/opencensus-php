@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
+use Carbon\Carbon;
 use DB;
 use Closure;
 
@@ -25,6 +26,7 @@ use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
+use RZP\Models\Terminal\Category;
 
 class Repository extends Base\Repository
 {
@@ -1299,5 +1301,33 @@ class Repository extends Base\Repository
             ->whereNotNull(BusinessDetail\Entity::APP_URLS)
             ->whereRaw('DATEDIFF(current_date(), from_unixtime(activated_at)) % 30 = 1');
         return $query->get();
+    }
+
+    public function getMerchantListEligibleForRTB($blacklistedMIDs)
+    {
+        $merchantId = $this->dbColumn(Entity::ID);
+        $orgId = $this->dbColumn(Entity::ORG_ID);
+        $activatedAt = $this->dbColumn(Entity::ACTIVATED_AT);
+        $category2 = $this->dbColumn(Entity::CATEGORY2);
+
+        $merchantDetailRepo = $this->repo->merchant_detail;
+        $activationStatus = $merchantDetailRepo->dbColumn(Detail\Entity::ACTIVATION_STATUS);
+        $businessType = $merchantDetailRepo->dbColumn(Detail\Entity::BUSINESS_TYPE);
+
+        $excludedCategoryList = [Category::LENDING, Category::GOVERNMENT, Category::GOVT_EDUCATION];
+        $excludedBusinessTypeList =  Detail\BusinessType::getIndexForUnregisteredBusiness();
+        $fourMonthsAgoTimestamp = Carbon::today()->subDays(120)->getTimestamp();
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->join(Table::MERCHANT_DETAIL, Entity::ID, Detail\Entity::MERCHANT_ID)
+            ->select($merchantId)
+            ->where($orgId, '=', Org\Entity::RAZORPAY_ORG_ID)
+            ->where($activatedAt, '<', $fourMonthsAgoTimestamp)
+            ->where($activationStatus, '=', Detail\Status::ACTIVATED)
+            ->whereNotIn($category2, $excludedCategoryList)
+            ->whereNotIn($businessType, $excludedBusinessTypeList)
+            ->whereNotIn($merchantId, $blacklistedMIDs);
+
+        return $query->pluck($merchantId);
     }
 }

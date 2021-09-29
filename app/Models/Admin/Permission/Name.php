@@ -743,6 +743,9 @@ class Name
     const NACH_BATCH_UPLOAD     = 'nach_batch_upload';
     const EMANDATE_BATCH_UPLOAD = 'emandate_batch_upload';
 
+    // Razorpay Trusted Badge
+    const TRUSTED_BADGE_BLACKLIST       = 'trusted_badge_blacklist';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

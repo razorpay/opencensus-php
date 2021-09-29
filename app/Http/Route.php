@@ -2641,6 +2641,12 @@ class Route
         'reward_redirect_url'                     => ['get',     'rewards/redirect/{reward_id}/{payment_id}',               'RewardController@rewardRedirectUrl'                           ],
         'rewards_batch_email'                     => ['post',    'rewards/batch_email',                                     'RewardController@sendRewardMailToMerchants'                   ],
 
+        //Razorpay Trusted Badge
+        'trusted_badge_eligibility_cron'          => ['post',     'trusted_badge/eligibility_cron',                         'TrustedBadgeController@eligibilityCron'                       ],
+        'fetch_trusted_badge_status'              => ['get',      'trusted_badge',                                          'TrustedBadgeController@fetch'                                 ],
+        'trusted_badge_merchant_status'           => ['put',      'trusted_badge/merchant_status',                          'TrustedBadgeController@updateMerchantStatus'                  ],
+        'trusted_badge_blacklist'                 => ['post',     'trusted_badge/blacklist',                                'TrustedBadgeController@blacklistMerchants'                    ],
+        'trusted_badge_redirect'                  => ['get',      'trusted_badge/redirect',                                 'TrustedBadgeController@redirectUrl'                           ],
 
         //Routes related to app framework
         'app_mapping_create'                      => ['post',    'app/mapping',                                             'ApplicationFrameworkController@createAppMapping'              ],
@@ -3702,6 +3708,7 @@ class Route
         'user_details_unified',
 
         'reward_expire_cron',
+        'trusted_badge_eligibility_cron',
         'gateway_downtime_for_payment',
         'partner_config_bulk_upsert',
         //Accounting Payouts
@@ -4440,6 +4447,8 @@ class Route
         'transfer_create_reversal_batch',
         'reward_activate_or_deactivate',
         'reward_fetch',
+        'fetch_trusted_badge_status',
+        'trusted_badge_merchant_status',
         // merchant notification config
         'create_merchant_notification_config',
         'update_merchant_notification_config',
@@ -5431,6 +5440,9 @@ class Route
         'w-actions_merchant_risk_audit_get',
 
         'decrypt_merchant_website_comment',
+
+        // razorpay trusted badge
+        'trusted_badge_blacklist',
     ];
 
     public static $routePermission = [
@@ -6457,7 +6469,8 @@ class Route
         // Risk Audit Workflow Actions
         'w-actions_merchant_risk_audit_get'               => Permission::VIEW_ALL_WORKFLOW,
 
-        'decrypt_merchant_website_comment'                => Permission::DECRYPT_MERCHANT_WEBSITE
+        'decrypt_merchant_website_comment'                => Permission::DECRYPT_MERCHANT_WEBSITE,
+        'trusted_badge_blacklist'                         => Permission::TRUSTED_BADGE_BLACKLIST,
     ];
 
     public static $bankingRoutePermissions = [
@@ -6877,6 +6890,7 @@ class Route
         'reward_terms',
         'reward_metrics',
         'reward_redirect_url',
+        'trusted_badge_redirect',
 
         // Mandate HQ Webhook Callback
         'mandate_hq_callback',
@@ -7742,6 +7756,8 @@ class Route
             'reward_fetch',
             'reward_terms',
             'reward_metrics',
+            'fetch_trusted_badge_status',
+            'trusted_badge_merchant_status',
             'salesforce_event',
             'salesforce_opportunity_details',
             'send_email_for_pl_service',
@@ -9573,6 +9589,7 @@ class Route
             'transfer_settlements_update',
             'transparent_redirect_get',
             'transparent_redirect_post',
+            'trusted_badge_blacklist',
             'ufh_admin_upload_file',
             'ufh_get_file_signed_url',
             'ufh_get_file_signed_url_admin',
@@ -10042,6 +10059,7 @@ class Route
             'dispute_refund_initiate',
             'dispute_initiate_risk_assessment',
             'reward_expire_cron',
+            'trusted_badge_eligibility_cron',
             'nps_survey_process_scheduled',
             'freshchat_extract_report_cron',
             'freshchat_retrieve_report_cron',
@@ -11567,6 +11585,7 @@ class Route
         'reminder_next_run'                                 => HeartbeatLagChecker::SLAVE,
         'user_fetch_for_merchant'                           => HeartbeatLagChecker::SLAVE,
         'reward_expire_cron'                                => HeartbeatLagChecker::MASTER,
+        'trusted_badge_eligibility_cron'                    => HeartbeatLagChecker::SLAVE,
         'get_merchant_data_for_segment'                     => HeartbeatLagChecker::SLAVE,
         'user_access'                                       => HeartbeatLagChecker::MASTER,
         'user_fetch_entity'                                 => HeartbeatLagChecker::SLAVE,

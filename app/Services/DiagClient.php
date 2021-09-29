@@ -22,6 +22,7 @@ class DiagClient extends EventTrackerClient
     use Traits\PaymentConfigEvent;
     use Traits\DisputeEvent;
     use Traits\RewardEvent;
+    use Traits\TrustedBadgeEvent;
     use Traits\IINEvent;
 
     public function trackEvent(string $eventType, string $eventVersion, array $event,

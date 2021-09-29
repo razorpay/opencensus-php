@@ -239,6 +239,13 @@ class MailTags
 
     const WEBSITE_SELF_SERVE_REJECTION_REASON           = 'website_self_serve_rejection_reason';
 
+    /**
+     * Razorpay Trusted Business/Badge Constants
+     */
+    public const RTB_OPTIN_REQUEST = 'rtb_optin_request';
+    public const RTB_OPTOUT_NOTIFY = 'rtb_optout_notify';
+    public const RTB_WELCOME       = 'rtb_welcome';
+
     const INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE    = 'increase_transaction_limit_request_approve';
     /**
      * Email tags that should respond to the mailgun failure webhook

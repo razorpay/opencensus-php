@@ -3224,6 +3224,20 @@ class AdminFetch
                 ]
             ],
 
+            Entity::TRUSTED_BADGE => [
+                'merchant_id' => [
+                    Fetch::LABEL  => 'Merchant Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ]
+            ],
+
+            Entity::TRUSTED_BADGE_HISTORY => [
+                'merchant_id' => [
+                    Fetch::LABEL  => 'Merchant Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ]
+            ],
+
             Entity::REPORT => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'type' => [

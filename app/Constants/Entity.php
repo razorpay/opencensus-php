@@ -563,6 +563,10 @@ class Entity
 
     const MERCHANT_RISK_NOTE = 'merchant_risk_note';
 
+    // Razorpay Trusted Badge
+    const TRUSTED_BADGE         = 'trusted_badge';
+    const TRUSTED_BADGE_HISTORY = 'trusted_badge_history';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -1000,6 +1004,9 @@ class Entity
         self::REWARD            => \RZP\Models\Reward::class,
         self::MERCHANT_REWARD   => \RZP\Models\Reward\MerchantReward::class,
         self::REWARD_COUPON     => \RZP\Models\Reward\RewardCoupon::class,
+
+        self::TRUSTED_BADGE          => \RZP\Models\TrustedBadge::class,
+        self::TRUSTED_BADGE_HISTORY  => \RZP\Models\TrustedBadge\TrustedBadgeHistory::class,
 
         self::APP_STORE         => \RZP\Models\AppStore::class,
         self::GUP_SHUP          => \RZP\Models\GupShup::class,

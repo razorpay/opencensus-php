@@ -333,4 +333,18 @@ class Repository extends Base\Repository
             $query->where($dbColumn, 'not like', 'DISPUTE%');
         }
     }
+
+    public function getLostOrClosedDisputeMerchantIdsInLast4Months()
+    {
+        $fourMonthAgo = Carbon::now()->subDays(120);
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select(Entity::MERCHANT_ID)
+            ->distinct()
+            ->whereIn(Entity::STATUS, Status::getMerchantAcceptedStatuses())
+            ->where(Entity::CREATED_AT, ">=", $fourMonthAgo->getTimestamp())
+            ->get();
+
+        return $query->pluck(Entity::MERCHANT_ID)->toArray();
+    }
 }

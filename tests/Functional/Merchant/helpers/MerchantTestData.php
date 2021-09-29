@@ -8263,6 +8263,30 @@ return [
         ],
     ],
 
+    'testPreferencesRTBWithOptoutStatus' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'rtb' => false,
+            ],
+        ],
+    ],
+
+    'testPreferencesRTBWithIneligibleStatus' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'rtb' => false,
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithoutRTB' => [
         'request' => [
             'url'     => '/preferences',
@@ -8270,6 +8294,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'rtb' => false,
             ],
         ],
     ],

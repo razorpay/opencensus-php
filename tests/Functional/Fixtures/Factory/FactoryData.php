@@ -1732,6 +1732,20 @@ final class FactoryData
             'status'         => 'available'
         ]);
 
+        $factory(\RZP\Models\TrustedBadge\Entity::class, [
+            'merchant_id'       => '10000000000000',
+            'status'            => 'eligible',
+            'merchant_status'   => 'optout',
+        ]);
+
+        $factory(\RZP\Models\TrustedBadge\TrustedBadgeHistory\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'merchant_id'       => '10000000000000',
+            'status'            => 'eligible',
+            'merchant_status'   => 'optout',
+            'created_at'        => 1632550775,
+        ]);
+
         $factory(\RZP\Models\Survey\Entity::class, [
             'id'                  => 'GAX5zcOdI0Y664',
             'name'                => 'test survey',

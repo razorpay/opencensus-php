@@ -671,6 +671,10 @@ return [
                 'description' => 'Upload Banks Refund File',
                 'assignable' => true,
             ],
+            Permission::TRUSTED_BADGE_BLACKLIST => [
+                'description' => 'Blacklist trusted badge for merchant',
+                'assignable'  => true
+            ],
         ],
 
         PermissionCategory::SETTLEMENT => [

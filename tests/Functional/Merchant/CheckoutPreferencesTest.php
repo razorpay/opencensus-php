@@ -9,6 +9,7 @@ use Event;
 use Redis;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Models\TrustedBadge\Entity as TrustedBadge;
 use RZP\Services\Mock;
 use RZP\Models\Base\EsDao;
 use RZP\Services\UfhService;
@@ -1676,26 +1677,55 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertArrayNotHasKey('preferred_methods', $response);
     }
 
-    public function testGetCheckoutPreferencesWithRTB()
+    public function testGetCheckoutPreferencesWithRTB(): void
     {
-        $this->setupRedisMockWithOptions();
-
         $this->ba->publicAuth();
 
-        $merchant = $this->getDbEntityById('merchant', '10000000000000');
-
-        $this->fixtures->merchant->addFeatures(['rzp_trusted_badge']);
+        $this->fixtures->create('trusted_badge', [
+            TrustedBadge::STATUS          => TrustedBadge::ELIGIBLE,
+            TrustedBadge::MERCHANT_STATUS => TrustedBadge::WAITLIST,
+        ]);
 
         $testData = $this->testData[__FUNCTION__];
 
         $response = $this->runRequestResponseFlow($testData);
-
-        $this->assertArrayHasKey('rtb', $response);
 
         $this->assertEquals(true, $response['rtb']);
     }
 
-    public function testGetCheckoutPreferencesWithoutRTB()
+    public function testPreferencesRTBWithOptoutStatus(): void
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('trusted_badge', [
+            TrustedBadge::STATUS          => TrustedBadge::ELIGIBLE,
+            TrustedBadge::MERCHANT_STATUS => TrustedBadge::OPTOUT,
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals(false, $response['rtb']);
+    }
+
+    public function testPreferencesRTBWithIneligibleStatus(): void
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('trusted_badge', [
+            TrustedBadge::STATUS          => TrustedBadge::INELIGIBLE,
+            TrustedBadge::MERCHANT_STATUS => TrustedBadge::WAITLIST,
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals(false, $response['rtb']);
+    }
+
+    public function testGetCheckoutPreferencesWithoutRTB(): void
     {
         $this->ba->publicAuth();
 
@@ -1703,7 +1733,7 @@ class CheckoutPreferencesTest extends TestCase
 
         $response = $this->runRequestResponseFlow($testData);
 
-        $this->assertArrayNotHasKey('rtb', $response);
+        $this->assertFalse($response['rtb']);
     }
 
     public function testGetCheckoutPersonalisationWithNullPreferences()

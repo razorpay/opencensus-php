@@ -38,6 +38,7 @@ use RZP\Services\DE\PersonalisationService;
 use RZP\Services\Mock\DE\PersonalisationService as MockPersonalisationService;
 use RZP\Models\SubscriptionRegistration\Validator as SubscriptionRegistrationValidator;
 use RZP\Models\Key;
+use RZP\Models\TrustedBadge;
 
 class Checkout
 {
@@ -141,11 +142,9 @@ class Checkout
         return $data;
     }
 
-    protected function fillRTBDetails(Entity $merchant, array & $data)
+    protected function fillRTBDetails(Entity $merchant, array & $data): void
     {
-        if ($merchant->isFeatureEnabled(Feature\Constants::RZP_TRUSTED_BADGE) === true) {
-            $data['rtb'] = true;
-        }
+        $data['rtb'] = (new TrustedBadge\Core())->isTrustedBadgeLiveForMerchant($merchant->getId());
     }
 
     protected function fillCovidReliefDetails(Entity $merchant, array & $data, $mode)

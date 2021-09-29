@@ -696,4 +696,8 @@ return [
     E::MERCHANT_RISK_NOTE => [],
 
     E::PAYOUTS_BATCH => [],
+
+    E::TRUSTED_BADGE => [],
+
+    E::TRUSTED_BADGE_HISTORY => [],
 ];
