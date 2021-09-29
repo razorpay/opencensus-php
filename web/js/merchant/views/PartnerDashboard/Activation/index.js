@@ -29,6 +29,8 @@ import { Modal, ModalContent, ModalMask } from 'common/new-ui/Modal';
 import { addDropShield, removeDropShield } from 'merchant/components/File/Upload';
 import { withRouter } from 'react-router-dom';
 import KYCStatusModal from './Components/KYCStatus/KYCStatusModal';
+import { compose } from 'redux';
+import rTracking from 'react-tracking';
 
 const Activation = (props) => {
   const [activeTab, setActiveTab] = useState(0);
@@ -56,7 +58,6 @@ const Activation = (props) => {
 
   const handleTabChange = ({ target }) => {
     const currentTab = Number(target.dataset.index);
-
     setActiveTab(currentTab);
   };
 
@@ -269,6 +270,12 @@ const Activation = (props) => {
       updateActivationState(activationData.data);
     }
     setIsSaving(false);
+    props.tracking.trackEvent(
+      window.rzpQ.onbr().interaction('partnerships.partner_KYC.save', {
+        partnerID: props.user?.merchant.id,
+        section: tabs[activeTab],
+      }),
+    );
   };
 
   const next = async () => {
@@ -290,8 +297,22 @@ const Activation = (props) => {
     if (activationData.success) {
       updateActivationState(activationData.data);
     }
+    props.tracking.trackEvent(
+      window.rzpQ.onbr().interaction('partnerships.partner_KYC.submit&verify', {
+        partnerID: props.user?.merchant.id,
+      }),
+    );
     setIsSaving(false);
   };
+
+  useEffect(() => {
+    props.tracking.trackEvent(
+      window.rzpQ.onbr().interaction('partnerships.partner_KYC.form_open', {
+        partnerID: props.user?.merchant.id,
+        section: tabs[activeTab],
+      }),
+    );
+  }, [activeTab]);
 
   const isOnKYCTab = () => {
     return activeTab === 2;
@@ -357,6 +378,13 @@ const Activation = (props) => {
         delete reqData[key];
       }
     });
+
+    props.tracking.trackEvent(
+      window.rzpQ.onbr().interaction('partnerships.partner_KYC.save', {
+        partnerID: props.user?.merchant.id,
+        section: tabs[activeTab],
+      }),
+    );
 
     try {
       setIsSaving(true);
@@ -528,13 +556,18 @@ const RenderActivationFrom = (props) => {
   }
 };
 
-export default connect(
-  (state) => {
-    return {
-      showKYCStatus: state.home.partnerActivations.showKYCStatus,
-      kycStatusModalType: state.home.partnerActivations.kycStatusModalType,
-      kycStatusActivationDuration: state.home.partnerActivations.kycStatusActivationDuration,
-    };
-  },
-  { showNotification, showPartnerKYCStatusModal, hidePartnerKYCStatusModal },
-)(withRouter(Activation));
+export default compose(
+  withRouter,
+  connect(
+    (state) => {
+      return {
+        showKYCStatus: state.home.partnerActivations.showKYCStatus,
+        kycStatusModalType: state.home.partnerActivations.kycStatusModalType,
+        kycStatusActivationDuration: state.home.partnerActivations.kycStatusActivationDuration,
+        user: state.session.user,
+      };
+    },
+    { showNotification, showPartnerKYCStatusModal, hidePartnerKYCStatusModal },
+  ),
+  rTracking(() => window.rzpQ.component('PartnerKYCFormDesktop')),
+)(Activation);

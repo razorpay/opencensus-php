@@ -20,6 +20,8 @@ import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { showPartnerKYCStatusModal, hidePartnerKYCStatusModal } from 'merchant/reducers/home';
 import KYCStatusModal from '../KYCStatus/KYCStatusModal';
+import { compose } from 'redux';
+import rTracking from 'react-tracking';
 
 const RenderMwebActivationForm = (props) => {
   const [isSaveAndExitModalOpen, setIsSaveAndExitModalOpen] = useState(false);
@@ -84,7 +86,11 @@ const RenderMwebActivationForm = (props) => {
         tabId="contact_details"
         completed={isContactDetailsCompleted}
       >
-        <ContactDetails isFormLocked={isFormLocked} />
+        <ContactDetails
+          isFormLocked={isFormLocked}
+          tracking={props.tracking}
+          partnerID={props.user?.merchant.id}
+        />
       </Tab>,
       <Tab
         key="business_details"
@@ -92,7 +98,11 @@ const RenderMwebActivationForm = (props) => {
         tabId="business_details"
         completed={isBusinessDetailsCompleted}
       >
-        <BusinessDetails isFormLocked={isFormLocked} />
+        <BusinessDetails
+          isFormLocked={isFormLocked}
+          tracking={props.tracking}
+          partnerID={props.user?.merchant.id}
+        />
       </Tab>,
     ];
     return tabs;
@@ -103,6 +113,11 @@ const RenderMwebActivationForm = (props) => {
       submit: 1,
     };
     postData(reqData);
+    props.tracking.trackEvent(
+      window.rzpQ.onbr().interaction('partnerships.partner_KYC.submit&verify', {
+        partnerID: props.user?.merchant.id,
+      }),
+    );
   };
 
   const handleNextClick = () => {
@@ -240,13 +255,18 @@ const RenderMwebActivationForm = (props) => {
   );
 };
 
-export default connect(
-  (state) => {
-    return {
-      showKYCStatus: state.home.partnerActivations.showKYCStatus,
-      kycStatusModalType: state.home.partnerActivations.kycStatusModalType,
-      kycStatusActivationDuration: state.home.partnerActivations.kycStatusActivationDuration,
-    };
-  },
-  { showPartnerKYCStatusModal, hidePartnerKYCStatusModal },
-)(withRouter(RenderMwebActivationForm));
+export default compose(
+  withRouter,
+  connect(
+    (state) => {
+      return {
+        showKYCStatus: state.home.partnerActivations.showKYCStatus,
+        kycStatusModalType: state.home.partnerActivations.kycStatusModalType,
+        kycStatusActivationDuration: state.home.partnerActivations.kycStatusActivationDuration,
+        user: state.session.user,
+      };
+    },
+    { showPartnerKYCStatusModal, hidePartnerKYCStatusModal },
+  ),
+  rTracking(() => window.rzpQ.component('PartnerKYCFormMweb')),
+)(RenderMwebActivationForm);

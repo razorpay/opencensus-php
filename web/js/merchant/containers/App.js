@@ -709,20 +709,20 @@ class App extends Component {
 
   handlePartnerModeSwitch = (mode) => {
     if (mode === 'live' && this.state.isPartnerModeEnabled) {
-      analyticsTrack({
-        objectName: 'partner KYC',
-        actionName: 'open',
-        screen: 'partner dashboard',
-        toLumberjack: true,
-        properties: {
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().interaction('partnerships.partner_KYC.open', {
           partnerID: this.props.user?.merchant.id,
           source: 'Live mode',
-          ...getCommonAnalyticsProperties(window.rzp_user),
-        },
-      });
+        }),
+      );
     }
     const user = this.props.user;
     if (mode === 'live' && !user.isActivated) {
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().interaction('partnerships.partner_KYC.pop_up', {
+          partnerID: this.props.user?.merchant.id,
+        }),
+      );
       if (this.state.isPartnerKYCActivated) {
         LocalStorageService.setItem(this.partnerModeToken, mode);
         location.reload();

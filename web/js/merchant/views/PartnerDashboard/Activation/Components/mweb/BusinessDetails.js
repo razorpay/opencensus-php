@@ -72,7 +72,7 @@ const businessDetailsSchema = ({ hasGSTIN }) =>
     bank_branch_ifsc: Yup.string().required('IFSC is a required field').nullable(),
   });
 
-const BusinessDetails = ({ isFormLocked, isFormSubmitted }) => {
+const BusinessDetails = ({ isFormLocked, isFormSubmitted, tracking, partnerID }) => {
   const { data, postData } = useActivation();
   const { business_type: businessType } = data;
   const [isBlurCalled, setIsBlurCalled] = useState(false);
@@ -114,6 +114,12 @@ const BusinessDetails = ({ isFormLocked, isFormSubmitted }) => {
   };
 
   useEffect(() => {
+    tracking.trackEvent(
+      window.rzpQ.onbr().interaction('partnerships.partner_KYC.form_open', {
+        partnerID,
+        section: 'Business Details',
+      }),
+    );
     fetchDefaultIfscInfo();
   }, []);
 

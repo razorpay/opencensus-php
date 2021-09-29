@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
@@ -27,7 +27,7 @@ const contactDetailsSchema = Yup.object().shape({
     .nullable(),
 });
 
-const ContactDetails = ({ isFormLocked }) => {
+const ContactDetails = ({ isFormLocked, tracking, partnerID }) => {
   const { data, postData } = useActivation();
   const contactDetails = data.contact_details;
   const [isBlurCalled, setIsBlurCalled] = useState(false);
@@ -52,6 +52,15 @@ const ContactDetails = ({ isFormLocked }) => {
       postData(reqData);
     }
   };
+
+  useEffect(() => {
+    tracking.trackEvent(
+      window.rzpQ.onbr().interaction('partnerships.partner_KYC.form_open', {
+        partnerID,
+        section: 'Contact Details',
+      }),
+    );
+  }, []);
 
   return (
     <Formik
