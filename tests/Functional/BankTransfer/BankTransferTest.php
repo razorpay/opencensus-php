@@ -3815,6 +3815,174 @@ class BankTransferTest extends TestCase
         );
     }
 
+    /**
+     * We are checking banktransfer to Virtual Account of merchant which is not live.
+     * in such a case, refund will be processed .
+     */
+
+    public function testBankTransferToVirtualAccountMerchantNotLiveVa()
+    {
+        Mail::fake();
+
+        $this->setupForIciciXFundLoading();
+
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc     = $this->bankAccount['ifsc'];
+
+        $this->fixtures->edit('merchant', 10000000000000, ['live' => 0]);
+
+        // This makes sure that the refunds for failed fund loadings on X happen via X
+        (new Service)->setConfigKeys([ConfigKey::RX_FUND_LOADING_REFUNDS_VIA_X => true]);
+
+        $this->fixtures->on('live')->create('banking_account_tpv',
+            [
+                'balance_id' => $this->bankingBalance->getId(),
+                'status'     => 'approved',
+                'is_active'  => 0,
+            ]);
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading,
+            $countOfPayoutsBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        $request['content']['payee_account'] = $accountNumber;
+
+        $request['content']['payee_ifsc'] = $ifsc;
+
+        $request['content']['transaction_id'] = $utr;
+
+        $commonMerchantBankingBalance = $this->getDbEntity('balance',
+            [
+                'merchant_id' => '100000Razorpay',
+                'type'        => 'banking'
+            ], 'live');
+
+        // Making pricing zero for this specific payout amount, mode etc. so that
+        $this->fixtures->on('live')->edit('pricing', 'Bbg7e4oKCgaubd',
+            [
+                'fixed_rate' => 0
+            ]);
+
+        $this->ba->batchAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading,
+            $countOfPayoutsAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        // Assert that no payments were created during this request
+        $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfPayoutsBeforeFundLoading + 1, $countOfPayoutsAfterFundLoading);
+
+        // Assert that two transactions were created. One for Bank transfer and one for payout.
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 2, $countOfTransactionsAfterFundLoading);
+
+        $creditTransaction = $this->getDbEntity('transaction',
+            [
+                'balance_id' => $commonMerchantBankingBalance->getId(),
+                'type'       => 'bank_transfer'
+            ], 'live');
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+        $expectedAmount = $request['content']['amount'] . '00';
+
+        $sharedVirtualAccount = $this->getDbEntity('virtual_account',
+            ['id' => VirtualAccount\Entity::SHARED_ID_BANKING],
+            'live');
+
+        // Assertions on credit transaction entity created//
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $creditTransaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $creditTransaction->getAmount());
+        $this->assertEquals($expectedAmount, $creditTransaction->getCredit());
+        $this->assertEquals(0, $creditTransaction->getDebit());
+
+        //Assertions on bank transfer entity created (Internal linking)
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $bankTransfer->getMerchantId());
+        $this->assertEquals($sharedVirtualAccount->getId(), $bankTransfer->getVirtualAccountId());
+        $this->assertEquals('icici', $bankTransfer->getGateway());
+        $this->assertEquals(null, $bankTransfer->getPaymentId());
+
+        $this->assertEquals(false, $bankTransfer->isExpected());
+        $this->assertEquals('VIRTUAL_ACCOUNT_MERCHANT_NOT_LIVE',
+            $bankTransfer->getUnexpectedReason());
+
+        // Assertions on payer bank account for bank transfer
+        $this->assertNotNull($bankTransfer->getPayerBankAccountId());
+
+        $payerBankAccount = $bankTransfer->payerBankAccount;
+
+        $this->assertEquals($request['content']['payer_account'], $payerBankAccount->getAccountNumber());
+        $this->assertEquals($request['content']['payer_ifsc'], $payerBankAccount->getIfscCode());
+        $this->assertEquals($request['content']['payer_name'], $payerBankAccount->getBeneficiaryName());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
+        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
+        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
+        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
+        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        // Since approved and active TPV account was not found, we shall send the Fund Loading failed email
+        Mail::assertNotQueued(FundLoadingFailed::class);
+
+        // Assertions for the Payout created during refund flow
+        $refundPayout = $this->getDbLastEntity('payout', 'live');
+
+        $debitTransaction = $this->getDbEntity('transaction',
+            [
+                'balance_id' => $commonMerchantBankingBalance->getId(),
+                'type'       => 'payout'
+            ], 'live');
+
+        $payoutSource = $this->getDbLastEntity('payout_source', 'live');
+
+        $updatedCommonMerchantBankingBalance = $this->getDbEntity('balance',
+            [
+                'merchant_id' => '100000Razorpay',
+                'type'        => 'banking'
+            ], 'live');
+
+        // Assertions on payout created
+        $this->assertEquals($bankTransfer->getMerchantId(), $refundPayout->getMerchantId());
+        $this->assertEquals($bankTransfer->getAmount(), $refundPayout->getAmount());
+        $this->assertEquals($bankTransfer->getPayerAccount(),
+            $refundPayout->fundAccount->account->getAccountNumber());
+        $this->assertEquals($bankTransfer->getUtr(), $refundPayout->getReferenceId());
+
+        // Assertions on payout sources entity
+        $this->assertEquals($bankTransfer->getPublicId(), $payoutSource['source_id']);
+        $this->assertEquals('bank_transfer', $payoutSource['source_type']);
+        $this->assertEquals($refundPayout->getId(), $payoutSource['payout_id']);
+
+        // Assertions on the debit transaction entity
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $debitTransaction->getMerchantId());
+        $this->assertEquals($refundPayout->getAmount() + $refundPayout->getFees(), $debitTransaction->getAmount());
+        $this->assertEquals(0, $debitTransaction->getCredit());
+        $this->assertEquals($refundPayout->getAmount() + $refundPayout->getFees(), $debitTransaction->getDebit());
+
+        // Assertions on balance.
+        // The balance should not change because we'll have a credit and a debit of the exact same amount
+        $this->assertEquals($commonMerchantBankingBalance['balance'], $updatedCommonMerchantBankingBalance['balance']);
+
+    }
     public function testBankTransferForCustomerFeeBearerWithPercentRate()
     {
         $pricingPlanId = $this->fixtures->create('pricing:bank_transfer_percent_pricing_plan', ['fee_bearer' => 'customer']);
