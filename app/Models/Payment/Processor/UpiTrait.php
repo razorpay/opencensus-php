@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Method;
+use RZP\Models\Payment\UpiMetadata\Flow;
 use RZP\Models\Payment\UpiMetadata\Type;
 use RZP\Models\Payment\UpiMetadata\Entity;
 use RZP\Models\Payment\UpiMetadata\Contants;
@@ -56,7 +57,7 @@ trait UpiTrait
     {
         return ((isset($input[Method::UPI]) === true) and
                 (isset($input[Payment\Entity::RECURRING]) === true) and
-                ((bool)$input[Payment\Entity::RECURRING] === true));
+                ((bool) $input[Payment\Entity::RECURRING] === true));
     }
 
     public function getUpiExpiryTime($input)
@@ -104,7 +105,9 @@ trait UpiTrait
         {
             $startDate = Carbon::createFromTimestamp($input[Payment\Method::UPI][Entity::START_TIME]);
 
-            $input[Payment\Method::UPI][Entity::END_TIME] = $startDate->addSeconds(Entity::DEFAULT_OTM_EXECUTION_RANGE)->getTimestamp();
+            $endTime = $startDate->addSeconds(Entity::DEFAULT_OTM_EXECUTION_RANGE)->getTimestamp();
+
+            $input[Payment\Method::UPI][Entity::END_TIME] = $endTime;
         }
     }
 
@@ -292,15 +295,36 @@ trait UpiTrait
                                                 string $action,
                                                 array $gatewayData)
     {
-        $metadata = $payment->getUpiMetadata()->toArray();
-
-        // TODO : revisit in case of actions other than authorize.
-        if (isset($gatewayData['upi']) === true)
+        // set metadata in gatewayData array for authorize action.
+        if ($action === Payment\Action::AUTHORIZE)
         {
-            // TODO : Revist the merging logic in future
-            $gatewayData['upi'] = array_merge($metadata, $gatewayData['upi']);
+            $this->setMetadataForUpsAuthorize($payment, $gatewayData);
         }
 
         return $this->app['upi.payments']->action($action, $gatewayData);
+    }
+
+    /**
+     * Set UPS input metadata for authorize action
+     *
+     * @param Payment\Entity $payment
+     * @param array $gatewayData
+     *
+     * @return void
+     * */
+    protected function setMetadataForUpsAuthorize(Payment\Entity $payment, array &$gatewayData)
+    {
+        $upiMetadata = $payment->getUpiMetadata()->toArray();
+
+        // check Metadata details at
+        // https://github.com/razorpay/proto/blob/master/paymentsupi/common/v1/fields/fields.proto
+        $metadata = [
+            Entity::FLOW        => $upiMetadata[Entity::FLOW],
+            Entity::TYPE        => $upiMetadata[Entity::TYPE],
+            Entity::MODE        => $upiMetadata[Entity::MODE],
+            Entity::EXPIRY_TIME => $upiMetadata[Entity::EXPIRY_TIME] ?? null,
+        ];
+
+        $gatewayData['metadata'] = $metadata;
     }
 }

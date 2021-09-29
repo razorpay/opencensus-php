@@ -217,7 +217,7 @@ class Service
 
         $content = [
             Entity::PAYMENT     => $input[Entity::PAYMENT] ?? null,
-            self::METADATA      => $input[Entity::UPI] ?? null,
+            self::METADATA      => $input[self::METADATA] ?? null,
             Entity::TERMINAL    => $input[Entity::TERMINAL] ?? null,
             Entity::MERCHANT    => $input[Entity::MERCHANT] ?? null,
             Base\Entity::ACTION => Payment\Action::AUTHORIZE,
@@ -256,8 +256,6 @@ class Service
      */
     protected function processResponse($response, $code): array
     {
-        // TODO : trace response, check for errors, process
-        // action wise response
         $this->traceResponse($response);
 
         $this->checkForErrors($response, $code);
@@ -265,8 +263,15 @@ class Service
         switch ($this->action)
         {
             case Payment\Action::AUTHORIZE:
-                return $response;
+                if (isset($response[Response::DATA]) === false)
+                {
+                    throw new Exception\LogicException(
+                        'data should be present in successful authorize response.',
+                        null,
+                        ['response' => $response]);
+                }
 
+                return $response;
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',
@@ -284,13 +289,29 @@ class Service
      */
     protected function checkForErrors(array $response, int $code)
     {
-        // TODO: Handle 200 failed responses, Ex: Failed Mozart Response
         if ($code === 200)
         {
-            return;
-        }
+            if (isset($response['error']) === false)
+            {
+                return;
+            }
 
-        if ($code >= 400 and $code < 500)
+            // Add processing for Mozart Gateway failures
+            $error = $response['error']['internal']['metadata'];
+
+            $internalErrorCode = $error['internal_error_code'];
+            $gatewayErrorCode = $error['gateway_error_code'];
+            $gatewayErrorDesc = $error['gateway_error_description'];
+
+            throw new Exception\GatewayErrorException(
+                $internalErrorCode,
+                $gatewayErrorCode,
+                $gatewayErrorDesc,
+                [],
+                null,
+                $this->action);
+        }
+        else if ($code >= 400 and $code < 500)
         {
             $error = $response['details'][0];
 
@@ -300,8 +321,7 @@ class Service
                 $error,
                 $error['internal']['description']);
         }
-
-        if ($code >= 500)
+        else if ($code >= 500)
         {
             throw new Exception\ServerErrorException(
                 $response['error'],
@@ -413,14 +433,12 @@ class Service
                 Payment\Entity::CPS_ROUTE => $content[Entity::PAYMENT][Payment\Entity::CPS_ROUTE] ?? null,
                 Payment\Entity::VPA       => $content[Entity::PAYMENT][Payment\Entity::VPA] ?? null,
             ],
-            Entity::UPI   => [
-                UpiMetadata\Entity::FLOW      => $content[self::METADATA][UpiMetadata\Entity::FLOW] ?? null,
-                UpiMetadata\Entity::TYPE      => $content[self::METADATA][UpiMetadata\Entity::TYPE] ?? null,
-            ],
             Entity::MERCHANT   => [
                 Merchant\Entity::BILLING_LABEL  => $content[Entity::MERCHANT][Merchant\Entity::BILLING_LABEL] ?? null,
             ],
         ];
+
+        $data[self::METADATA] = $content[self::METADATA] ?? [];
 
         return $data;
     }

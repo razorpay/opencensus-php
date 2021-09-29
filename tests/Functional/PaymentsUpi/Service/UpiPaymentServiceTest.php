@@ -40,7 +40,7 @@ class UpiPaymentServiceTest extends TestCase
     }
 
     /**
-     * Test Successful Payment Creation
+     * Test Successful Collect Payment Creation
      *
      * @return void
      */
@@ -53,6 +53,47 @@ class UpiPaymentServiceTest extends TestCase
         $response = $this->doAuthPaymentViaAjaxRoute($payment);
 
         $this->assertEquals('async', $response['type']);
+
+        $this->assertArrayHasKey('vpa', $response['data']);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset(
+            [
+            Entity::STATUS          => 'created',
+            Entity::GATEWAY         => 'upi_airtel',
+            Entity::TERMINAL_ID     => $this->terminal->getId(),
+            Entity::REFUND_AT       => null,
+            Entity::CPS_ROUTE       => Entity::UPI_PAYMENT_SERVICE,
+            ], $payment->toArray()
+        );
+
+        $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
+
+        $this->assertNull($upiEntity);
+    }
+
+    /**
+     * Test Successful Intent Payment Creation
+     *
+     * @return void
+     */
+    public function testIntentPaymentCreateSuccess()
+    {
+        $this->terminal = $this->fixtures->create('terminal:shared_upi_airtel_intent_terminal');
+
+        $payment = $this->payment;
+
+        $payment['description'] = 'create_intent_success';
+
+        unset($payment['vpa']);
+        $payment['upi']['flow'] = 'intent';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertEquals('intent', $response['type']);
+
+        $this->assertArrayHasKey('intent_url', $response['data']);
 
         $payment = $this->getDbLastPayment();
 
@@ -136,5 +177,38 @@ class UpiPaymentServiceTest extends TestCase
             Entity::ERROR_CODE          => 'SERVER_ERROR',
             Entity::INTERNAL_ERROR_CODE => 'SERVER_ERROR_UPI_PAYMENT_SERVICE_FAILURE'
             ], $payment->toArray());
+    }
+
+    /**
+     * Test Mozart failure for collect payment
+     *
+     * @return void
+     */
+    public function testMozartFailure()
+    {
+        $payment = $this->payment;
+
+        $payment['description'] = 'mozart_failure';
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            },
+            Exception\GatewayErrorException::class);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset(
+            [
+            Entity::STATUS              => 'failed',
+            Entity::GATEWAY             => 'upi_airtel',
+            Entity::TERMINAL_ID         => $this->terminal->getId(),
+            Entity::REFUND_AT           => null,
+            Entity::CPS_ROUTE           => Entity::UPI_PAYMENT_SERVICE,
+            Entity::ERROR_CODE          => 'GATEWAY_ERROR',
+            Entity::INTERNAL_ERROR_CODE => 'GATEWAY_ERROR_ENCRYPTION_ERROR'
+            ], $payment->toArray()
+        );
     }
 }
