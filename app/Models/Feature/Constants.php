@@ -483,6 +483,16 @@ class Constants
      */
     const ALLOW_NETBANKING_FETCH = 'allow_netbanking_fetch';
 
+    /**
+     * Gives access to NON-FLDG Loan Products
+     */
+    const ALLOW_NON_FLDG_LOANS = "allow_non_fldg_loans";
+
+    /**
+     * Gives access to ES-AMAZON Loan Product
+     */
+    const ALLOW_ES_AMAZON = "es_amazon";
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
@@ -1125,6 +1135,8 @@ class Constants
         self::USE_SETTLEMENT_ONDEMAND         => true,
         self::SHOW_ON_DEMAND_DEDUCTION        => true,
         self::ALLOW_NETBANKING_FETCH          => true,
+        self::ALLOW_NON_FLDG_LOANS            => true,
+        self::ALLOW_ES_AMAZON                 => true,
         self::IVR_DISABLE                     => true,
         self::WITHDRAW_LOC                    => true,
         self::LOC_ESIGN                       => true,
@@ -1525,6 +1537,16 @@ class Constants
         self::ALLOW_NETBANKING_FETCH => [
             'feature'       => self::ALLOW_NETBANKING_FETCH,
             'display_name'  => 'Flag to allow fetching bank statement via netbanking flow',
+            'documentation' => '',
+        ],
+        self::ALLOW_NON_FLDG_LOANS => [
+            'feature'       => self::ALLOW_NON_FLDG_LOANS,
+            'display_name'  => 'Flag to allow non-fldg loans',
+            'documentation' => '',
+        ],
+        self::ALLOW_ES_AMAZON => [
+            'feature'       => self::ALLOW_ES_AMAZON,
+            'display_name'  => 'Flag to allow es amazon loans',
             'documentation' => '',
         ],
         self::NPS_SURVEY_OTHER_PRODUCTS  => [
