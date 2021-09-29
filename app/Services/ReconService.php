@@ -22,9 +22,23 @@ class ReconService
 
     const FILE = 'file';
 
+    const NAME = 'name';
+
     const ART_UFH_FILE_TYPE = 'art_input';
 
+    const ART_UFH_BULK_RULE = 'art_bulk_rule';
+
+    const ART_UFH_SAMPLE_FILE = 'art_sample_file';
+
     const ADMIN_DASHBOARD_UPLOAD = 'admin_dashboard/upload';
+
+    const BULK_RULE_URL = 'bulk_rule';
+
+    const FILE_TYPE_URL = 'file_types';
+
+    const POST = 'POST';
+
+    const PATCH = 'PATCH';
 
 
     public function __construct($app)
@@ -49,8 +63,35 @@ class ReconService
 
     }
 
-    public function sendAnyRequest($url, $method, $data)
+    public function sendAnyRequest($url, $method, $input)
     {
+        if (array_key_exists("body", $input))
+        {
+            $data = json_decode($input['body'], true);
+        }
+        else
+        {
+            $data = [];
+        }
+        $allowed_methods = [self::POST, self::PATCH];
+
+        if ($url == self::BULK_RULE_URL and in_array($method, $allowed_methods))
+        {
+            $data['rule_file_path'] = $this->uploadBulkRuleFile($input);
+            unset($input[self::FILE]);
+        }
+
+        if ($url == self::FILE_TYPE_URL and in_array($method, $allowed_methods))
+        {
+            $data['sample_file_path'] = $this->uploadSampleFile($input);
+            unset($input[self::FILE]);
+        }
+
+        if ($data)
+        {
+            $data = json_encode($data);
+        }
+
         return $this->sendRequest($url, $method, $data);
     }
 
@@ -73,6 +114,60 @@ class ReconService
        unset($input[self::FILE]);
 
         return $this->sendRequest('file', 'POST', $input);
+    }
+
+    protected function uploadBulkRuleFile($input)
+    {
+        if (array_key_exists("body", $input))
+        {
+            $data = json_decode($input['body'], true);
+        }
+        else
+        {
+            $data = [];
+        }
+
+        $date = date('Y-m-d');
+
+        $merchant_id = $data[self::MERCHANT_ID];
+
+        $workspace_id = $data[self::WORKSPACE_ID];
+
+        $file = $input[self::FILE];
+
+        $fileName = $file->getClientOriginalName();
+
+        $storageFileName = self::ADMIN_DASHBOARD_UPLOAD . '/' . $merchant_id . '/' . $workspace_id . '/bulk_rule/' . $date . '/' . $fileName;
+
+        return $this->uploadFileToUfh($file, $storageFileName, self::ART_UFH_BULK_RULE);
+    }
+
+    protected function uploadSampleFile($input)
+    {
+        if (array_key_exists("body", $input))
+        {
+            $data = json_decode($input['body'], true);
+        }
+        else
+        {
+            $data = [];
+        }
+
+        $date = date('Y-m-d');
+
+        $merchant_id = $data[self::MERCHANT_ID];
+
+        $workspace_id = $data[self::WORKSPACE_ID];
+
+        $name = $data[self::NAME];
+
+        $file = $input[self::FILE];
+
+        $fileName = $file->getClientOriginalName();
+
+        $storageFileName = self::ADMIN_DASHBOARD_UPLOAD . '/' . $merchant_id . '/' . $workspace_id . '/' . $date . '/' . $name .  '/sample/' . $fileName;
+
+        return $this->uploadFileToUfh($file, $storageFileName, self::ART_UFH_SAMPLE_FILE);
     }
 
     protected function uploadFileToUfh($file, $storageFileName, $type)

@@ -148,9 +148,7 @@ class ReconServiceController extends Controller
             throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
 
-        $data = $input['body'] ?? [];
-
-        $response = $this->reconService()->sendAnyRequest($path, $method, $data);
+        $response = $this->reconService()->sendAnyRequest($path, $method, $input);
 
         return ApiResponse::json($response);
     }
