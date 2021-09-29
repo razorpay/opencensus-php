@@ -427,5 +427,17 @@
       "source": "business",
       "reason": "insufficient_funds"
     }
+  },
+  "PBANK_VALIDATION_ERROR_PENDING": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Payout pending at partner bank. Status will be updated after 30 min."
+    },
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at partner bank. Please retry after 30 min."
+    }
   }
 }
