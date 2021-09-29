@@ -6,8 +6,9 @@ import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
 export default connect(
   (state) => {
     return {
-      ...state.payments,
       ...state.payment,
+      // need to make sure that the payments reducer is imported below to override loading state
+      ...state.payments,
       user: state.session.user,
     };
   },
