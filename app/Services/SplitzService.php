@@ -17,7 +17,7 @@ class SplitzService extends Base\Service
 
     const EVALUATE_URL              = 'twirp/rzp.splitz.evaluate.v1.EvaluateAPI/Evaluate';
     const CREATE_SEGMENT_URL        = '/twirp/rzp.splitz.segment.v1.SegmentAPI/Create';
-    const UPDATE_SEGMENT_URL        = '/twirp/rzp.splitz.segment.v1.SegmentAPI/Update';
+    const UPDATE_SEGMENT_URL        = '/twirp/rzp.splitz.segment.v1.SegmentAPI/Replace';
     const GET_SEGMENT_FROM_NAME_URL = 'twirp/rzp.splitz.segment.v1.SegmentAPI/GetByName';
     const FALSE_POSITIVITY_RATE     = "0.00001";
     const EVALUATE_BULK_URL         = 'twirp/rzp.splitz.evaluate.v1.EvaluateAPI/EvaluateBulk';
