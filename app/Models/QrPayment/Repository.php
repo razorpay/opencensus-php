@@ -10,11 +10,12 @@ class Repository extends Base\Repository
 {
     protected $entity = 'qr_payment';
 
-    public function findByProviderReferenceIdAndGateway(string $providerReferenceId, string $gateway)
+    public function findByProviderReferenceIdAndGatewayAndAmount(string $providerReferenceId, string $gateway,int $amount)
     {
         return $this->newQuery()
                     ->where(Entity::PROVIDER_REFERENCE_ID, '=', $providerReferenceId)
                     ->where(Entity::GATEWAY, '=', $gateway)
+                    ->where(Entity::AMOUNT, '=' , $amount)
                     ->first();
     }
 

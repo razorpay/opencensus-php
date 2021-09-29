@@ -338,8 +338,9 @@ class Processor extends Base\Core
     {
         $providerReferenceId = $this->gatewayInput[Entity::PROVIDER_REFERENCE_ID];
 
-        $qrPaymentEntity = $this->repo->qr_payment->findByProviderReferenceIdAndGateway($providerReferenceId,
-                                                                                        $qrPayment->getGateway());
+        $qrPaymentEntity = $this->repo->qr_payment->findByProviderReferenceIdAndGatewayAndAmount($providerReferenceId,
+                                                                                                $qrPayment->getGateway(),
+                                                                                                $qrPayment->getAmount());
 
         if ($qrPaymentEntity === null)
         {

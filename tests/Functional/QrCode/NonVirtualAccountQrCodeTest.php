@@ -307,6 +307,41 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals($rrn, $payment['reference16']);
     }
 
+    protected function processIciciQrPaymentWithDifferentAmountUtil($amount, $expectedStatus = true)
+    {
+        $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer']);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['PayerAmount'] = $amount;
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId .'qrv2';
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getDbLastEntityToArray('qr_payment');
+        $payment   = $this->getDbLastEntityToArray('payment');
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals($amount * 100, $payment['amount']);
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+    }
+
+    public function testProcessIciciQrPaymentWithDifferentAmounts()
+    {
+        $this->processIciciQrPaymentWithDifferentAmountUtil(100);
+        $this->processIciciQrPaymentWithDifferentAmountUtil(200);
+    }
+
     public function testProcessIciciQrPaymentForQrNotFound()
     {
         $request = $this->testData['testProcessIciciQrPayment'];
