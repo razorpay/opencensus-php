@@ -125,6 +125,16 @@ class Processor extends Base\Core
         {
             $balance = $this->repo->balance->findByIdAndMerchantId($balanceId, $this->merchantId);
 
+            $this->trace->info(
+                TraceCode::IRN_NOT_GENERATED_DEBUG_LOGGING,
+                [
+                    'merchant'    => $this->merchantId,
+                    'month'       => $this->month,
+                    'year'        => $this->year,
+                    'balance'     => $balance,
+                    'details'     => $details
+                ]);
+
             if (($balance->isTypeBanking() === true) and ($this->checkEligibleLineItems($details) === true))
             {
               try

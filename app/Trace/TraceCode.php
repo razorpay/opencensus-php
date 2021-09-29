@@ -5020,6 +5020,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_KAFKA_PUSH_SUCCESS                            = 'PAYMENT_KAFKA_PUSH_SUCCESS';
     const PAYMENT_KAFKA_PUSH_FAILED                             = 'PAYMENT_KAFKA_PUSH_FAILED';
 
+    const IRN_NOT_GENERATED_DEBUG_LOGGING                       = 'IRN_NOT_GENERATED_DEBUG_LOGGING';
+
     //Banking account service trace codes
     const BANKING_ACCOUNT_SERVICE_REQUEST                                                    = 'BANKING_ACCOUNT_SERVICE_REQUEST';
     const BANKING_ACCOUNT_SERVICE_RESPONSE                                                   = 'BANKING_ACCOUNT_SERVICE_RESPONSE';
