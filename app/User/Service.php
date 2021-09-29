@@ -1762,7 +1762,8 @@ class Service extends Base\Service
             'route_transfer_state',
             'pp_hostedpage_new_footer',
             'show_L1_Form_on_login',
-            'auto-open-L1-form'
+            'auto-open-L1-form',
+            'auto-open-L2-form'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

@@ -1280,6 +1280,10 @@ export default class User {
   get autoOpenL1Form() {
     return this.getExpStatus('auto-open-L1-form') && !!this.isOrgRZP;
   }
+
+  get autoOpenL2Form() {
+    return this.getExpStatus('auto-open-L2-form') && !!this.isOrgRZP;
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

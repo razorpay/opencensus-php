@@ -73,6 +73,7 @@ export default class ActivationContainer extends React.Component {
     this.state = {
       isFormTouched: someDetailsFilled,
       rxCaCheckboxSelect: false, // local checkbox state
+      showL2Form: false,
     };
 
     this.activationFormName = user.showInstantActivation ? 'KYC Form' : 'Activation Form';
@@ -341,10 +342,32 @@ export default class ActivationContainer extends React.Component {
               });
             }, 9000);
           } else {
+            if (
+              this.props.user.autoOpenL2Form &&
+              !this.props.accountId &&
+              response?.data &&
+              !response.data.activated
+            ) {
+              analyticsTrack({
+                objectName: 'Auto Open L2 form on not instantly activated',
+                actionName: 'displayed',
+                screen: 'home page',
+                properties: {
+                  loginL1Experiment: 'auto open L2 form on not instantly activated',
+                  ...getCommonSegmentProperties(),
+                },
+              });
+              this.updateSession(response.data);
+              this.setState({
+                showL2Form: true,
+              });
+              return response;
+            }
+
             if (response?.data?.activated && isTestMode) {
               localStorage.setItem(`rzp_mode--${this.props.user.current}`, 'live');
               this.props.updateSession({ mode: 'live' });
-              if(!this.props.user.isAutoPLEnabled) {
+              if (!this.props.user.isAutoPLEnabled) {
                 this.props.showNotification({
                   type: 'success',
                   message: 'You have switched to live mode, transact now!',
@@ -688,6 +711,7 @@ export default class ActivationContainer extends React.Component {
           fetchMerchantDetails={this.fetchMerchantDetails}
           gstinDetails={gstinDetails}
           isModalView={isModalView && isActivationFormLoading}
+          showL2Form={this.state.showL2Form}
         />
       );
     }

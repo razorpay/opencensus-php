@@ -185,6 +185,7 @@ export default class ActivationWizard extends React.Component {
       !this.props.data.stakeholder ||
       (this.props.data.stakeholder && !!this.props.data.stakeholder.aadhaar_linked),
     ischeck: !this.props.user.isSyncExperimentEnabled,
+    showInfoHeader: false,
   };
 
   constructor(props) {
@@ -406,7 +407,13 @@ export default class ActivationWizard extends React.Component {
     });
   };
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps) {
+    if (prevProps.showL2Form !== this.props.showL2Form && this.props.showL2Form === true) {
+      this.prepareTabs(this.props);
+      this.setState({
+        showInfoHeader: true,
+      });
+    }
     return this.props.handleUIUpdate && this.props.handleUIUpdate();
   }
 
@@ -1969,6 +1976,11 @@ export default class ActivationWizard extends React.Component {
               isFormLocked && 'main--full',
             )}
           >
+            {this.state.showInfoHeader && (
+              <div class="activation-info-container">
+                For your business type, we need a few more details for activation
+              </div>
+            )}
             {/* Active tab title */}
             <main-title class="main-title">
               {activeTab != 0 && (
