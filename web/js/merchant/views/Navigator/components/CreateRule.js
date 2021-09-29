@@ -138,7 +138,11 @@ export default class CreateRule extends React.Component {
       terminalProviders.forEach((provider) => {
         if (provider.Gateway_details.wallet_metadata) {
           const wallets = provider.Gateway_details.wallet_metadata?.wallets || [];
-          data.push(...wallets);
+          wallets.forEach((w) => {
+            if (!data.includes(w)) {
+              data.push(w);
+            }
+          });
           let key = `${provider.Gateway}_${provider.Terminal_id}`;
           if (rzpGateways.includes(provider.Gateway)) {
             key = provider.Gateway;

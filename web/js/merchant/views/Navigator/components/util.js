@@ -167,84 +167,82 @@ const customIdentifierParameter = [
   },
 ];
 
-const walletPrameter = getExpStatus('optimizer_wallets')
-  ? [
+const walletPrameter = [
+  {
+    name: 'Wallets',
+    value: '$payment.optimizer_wallet',
+    description: 'Freecharge, olamoney, mobikwik',
+    id: 14,
+    values: [
       {
-        name: 'Wallets',
-        value: '$payment.optimizer_wallet',
-        description: 'Freecharge, olamoney, mobikwik',
-        id: 14,
-        values: [
-          {
-            value: 'airtelmoney',
-          },
-          {
-            value: 'amazonpay',
-          },
-          {
-            value: 'citrus',
-          },
-          {
-            value: 'freecharge',
-          },
-          {
-            value: 'jiomoney',
-          },
-          {
-            value: 'mobikwik',
-          },
-          {
-            value: 'olamoney',
-          },
-          {
-            value: 'paypal',
-          },
-          {
-            value: 'paytm',
-          },
-          {
-            value: 'payumoney',
-          },
-          {
-            value: 'payzapp',
-          },
-          {
-            value: 'phonepe',
-          },
-          {
-            value: 'sbibuddy',
-          },
-          {
-            value: 'zeta',
-          },
-          {
-            value: 'citibankrewards',
-          },
-          {
-            value: 'itzcash',
-          },
-          {
-            value: 'paycash',
-          },
-        ],
-        operators: {
-          '==': {
-            multiple: false,
-            type: 'dropdown',
-          },
-          in: {
-            multiple: true,
-            type: 'dropdown',
-          },
-          '!=': {
-            multiple: false,
-            type: 'dropdown',
-          },
-        },
-        type: 'string',
+        value: 'airtelmoney',
       },
-    ]
-  : [];
+      {
+        value: 'amazonpay',
+      },
+      {
+        value: 'citrus',
+      },
+      {
+        value: 'freecharge',
+      },
+      {
+        value: 'jiomoney',
+      },
+      {
+        value: 'mobikwik',
+      },
+      {
+        value: 'olamoney',
+      },
+      {
+        value: 'paypal',
+      },
+      {
+        value: 'paytm',
+      },
+      {
+        value: 'payumoney',
+      },
+      {
+        value: 'payzapp',
+      },
+      {
+        value: 'phonepe',
+      },
+      {
+        value: 'sbibuddy',
+      },
+      {
+        value: 'zeta',
+      },
+      {
+        value: 'citibankrewards',
+      },
+      {
+        value: 'itzcash',
+      },
+      {
+        value: 'paycash',
+      },
+    ],
+    operators: {
+      '==': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      in: {
+        multiple: true,
+        type: 'dropdown',
+      },
+      '!=': {
+        multiple: false,
+        type: 'dropdown',
+      },
+    },
+    type: 'string',
+  },
+];
 
 const emiDurationParameter = getExpStatus('optimizer_emi_duration')
   ? [
@@ -306,7 +304,6 @@ const emiDurationParameter = getExpStatus('optimizer_emi_duration')
     ]
   : [];
 
-const walletMethod = getExpStatus('optimizer_wallets') ? [{ value: 'wallet' }] : [];
 const emiMethod = getExpStatus('optimizer_emi_duration') ? [{ value: 'emi' }] : [];
 
 export const parameters = [
@@ -360,7 +357,9 @@ export const parameters = [
       {
         value: 'upi_collect',
       },
-      ...walletMethod,
+      {
+        value: 'wallet',
+      },
       ...emiMethod,
     ],
     operators: {
