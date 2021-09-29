@@ -7,7 +7,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 
 class Constants {
 
-    const MTU_COUPON            = 'OFFERMTU';
+    const MTU_COUPON            = 'OFFERMTU2';
 
     const EXPERIMENT_NAME       = 'experiment_name';
     const SUCCESS_EVENT_CODE    = 'success_event_code';
