@@ -1,213 +1,232 @@
 .trusted-badge-container
-  span
-    cursor: default;
+  font-family: Lato;
+  font-style: normal;
+  padding: 68px 43px;
+  background: linear-gradient(180deg, #FFFFFF 70%, #E3EDFF 124.61%);
+
+  .image-center img
+    max-height: 385px;
+    width: 100%;
+
+  .mt-1
+    margin-top: 7px;
+  .mt-2
+    margin-top: 14px;
+  .mt-6
+    margin-top: 42px;
+
+  .link-color
+    color: rgba(70, 125, 231, 0.9);
+
+  .opt-out
+    cursor pointer;
+    font-size: 16px;
+    line-height: 140%;
+    color: rgba(70, 125, 231, 0.9);
+
+  .section-head
+    position: relative;
+    margin-bottom: 32px;
+    &:after
+      content: ' ';
+      width: 24px;
+      height: 4px;
+      background: #467de7;
+      display: block;
+      margin-top: 18px;
+    &.green:after {
+     background-color: #49D9B4;
+    }
+    .title
+      font-weight: 900;
+      font-size: 28px;
+      line-height: 36px;
+      color: #0D2462;
+    .subtitle
+      font-weight: 600;
+      font-size: 18px;
+      margin-top: 8px;
+      line-height: 23px;
+      color: #777B89;
+
+  .section-list
+    padding-bottom: 12px;
+    .list-item
+      display: flex;
+      position: relative;
+      align-items: flex-start;
+      font-size: 16px;
+      line-height: 140%;
+      margin-bottom: 18px;
+      padding-left: 20px;
+      color: rgba(81, 89, 120, 0.9);
+      &:last-child {
+        margin-bottom: 0;
+      }
+      &:before
+        position: absolute;
+        content: ' ';
+        display: block;
+        left:0;
+        top: 8px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(13, 36, 98, 0.8);
+      strong
+        color: #515978E5;
+
+  .helper-text
+    font-style: italic;
+    font-weight: 300;
+    font-size: 11px;
+    line-height: 140%;
+    color: rgba(81, 89, 120, 0.9);
+    margin-top: 8px;
+  .action-item
+    margin-top: 20px;
+
+// Begin RTB Feature
+  .rtb-feature-container
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 35px;
+    flex-wrap: wrap;
+  .rtb-feature
+    margin-bottom: 35px;
+    width: calc(100% / 3 - 30px);
+    min-width 315px;
+    display: flex;
+    flex-direction: column;
+    mix-blend-mode: normal;
+    min-height: 165px;
+    box-shadow: 0 3px 6px 0 rgba(48,52,62,0.1);
+    margin-right: 40px;
+    padding: 16px;
+    position: relative;
+    background: #FFFFFF;
+    overflow: hidden;
+    border-radius: 4px;
+    &:before, &:after
+      content: '';
+      position: absolute;
+      z-index: 2;
+      background: #f1f6fd;
+      width: 122%;
+      height: 150%;
+      left: -25%;
+      top: -86%;
+      transform: rotate(-26deg);
+    &:after
+      background: #f7fafe;
+      right: -25%;
+      left: 0;
+      top: -30%;
+      transform: rotate(30deg);
+      z-index: 1;
+    &:last-child
+      margin-right: 0px;
+
+    & > div:after
+      content: '';
+      background: #fff;
+      position: absolute;
+      left: -20px;
+      bottom: -20px;
+      transform: rotate(25deg);
+      z-index: 3;
+      display: block;
+      height: 48px;
+      width: 130px;
+      opacity: 0.5;
+
+    .rtb-feature-title
+      font-weight: bold;
+      margin-top: 6px;
+      margin-bottom: 5px;
+      position: relative;
+      z-index: 4;
+      font-size: 16px;
+      line-height: 24px;
+      color: #0D2366;
+      
+    .rtb-feature-icon
+      width: 46px;
+      position: relative;
+      z-index: 4;
+
+    .rtb-feature-desc
+      position: relative;
+      z-index: 4;
+      font-size: 14px;
+      line-height: 20px;
+      color: #515978;
+
+// END of RTB Feature
+
+  .sub-text
+    font-size: 14px;
+    line-height: 140%;
+    color: rgba(81, 89, 120, 0.9);
+    margin-top: 8px;
+  .sub-text-link
+    display: inline-block;
+    margin: 4px 0;
+    font-size: 14px;
+    line-height: 140%;
+    color: rgba(70, 125, 231, 0.9);
+
+  .text-icon
+    margin: 20px 0 14px;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 140%;
+    color: #0D2462;
+    display: flex;
+    align-items: center;
+    img
+      margin-right: 8px;
+  
+  .rtb-divider
+    display: inline-block;
+    margin: 20px 0 6px;
+    background: #E2E2E2;
+    height: 2px;
+    width: 100%;
+
+  .detail-section
+    margin-bottom: 31px !important;
+    display: inline-block;
+  .growth-section
+    margin-top: 35px !important;
 
   .row
     margin: 0px;
 
-  .tb-title
-    color: #0D2462;
-    font-size: 28px;
-    font-weight: 900;
-    line-height: 34px;
-    margin-bottom: 7px;
-    margin-top: 45px;
-
-  .col-sm-12
-    .tb-title
-      margin-top: 70px;
-      margin-bottom: 18px;
-
-  .tb-subtitle
-    color: #777B89;
-    font-weight: 600;
-    font-size: 18px;
-    line-height: 22px;
-    margin-bottom: 18px;
-
-  .small-separator
-    height: 4px;
-    width: 24px;
-    margin-bottom: 30px;
-    background-color: #467DE7;
-
-  .small-separator.green-colored
-    background-color: #49D9B4;
-    margin-top: 18px;
-
-  .details-lines
-    .detail-done-icon
-      width: 5.5%;
-      position: relative;
-      float: left;
-    .detail-span
-      width: 94.5%;
-      position: relative;
-      float: left;
-      margin-bottom: 18px;
-      .trial-end-date
-        color: #467DE7;
-        font-weight: bold;
-        font-size: 20px;
-    .i.i-done
-      color: #15B11B;
-      vertical-align: bottom;
-    .increase-icon-line
-      line-height: 2.2;
-    span
-      color: rgba(81, 89, 120, 0.9);
-      font-size: 16px;
-
-  .joined-button
-    background-color: #15B11B;
-    color: #fff;
-    font-weight: bold;
-    font-size: 14px;
-    line-height: 20px;
-    margin-top: 14px;
-    padding: 9px 20px;
-    cursor: default;
-    .i.i-tick
-      font-size: 11px;
-      vertical-align: middle;
-      margin-left: 8px;
-  .joined-button.Button
-    &:hover
-      background-color: #15B11B;
-    &:active
-      background-color: #15B11B;
-      color: #fff;
-
-  .Button.Button--primary
-    margin-top: 14px;
-    background-color: #2B83EA;
-    font-size: 14px;
-    font-weight: bold;
-    line-height: 20px;
-    .spin-btn.white
-      border-top-color: #2B83EA;
-      opacity: 1;
-
-  .opt-out-block
-    font-size: 13px;
-    &--before
-      span
-        &:first-child
-          color: rgba(81, 89, 120, 0.9);
-      span
-        &:last-child
-          color: #467de7;
-          cursor: pointer;
-    &--after
-      span
-        &:first-child
-          color: rgba(209, 45, 45, 0.54);
-          font-weight: bold;
-          font-size: 16px;
-      span
-        &:last-child
-          display: block;
-          color: rgba(81, 89, 120, 0.9);
-          font-weight: 300;
-          font-size: 11px;
-
-  .info-cta
-    color: rgba(81, 89, 120, 0.9);
-    font-weight: 300;
-    font-size: 11px;
-    font-style: italic;
-    margin-top: 5px;
-
-  .image-center
-    text-align: center;
-    .intro-image
-      height: 385px;
-
-  &--Features
+  .new-window-icon
+    background-image: url("https://cdn.razorpay.com/static/assets/trustedbadge/new-window.svg");
+    background-repeat: repeat repeat;
+    background-position: center center;
+    background-size: contain;
+    height: 10px;
+    width: 10px;
+    cursor pointer;
+    display: inline-block;
+  .rtb-modal-action
+    margin-top: 26px;
     display: flex;
-    margin-top: 56px;
-    .Feature
-      width: calc(100% / 3 - 30px);
-      box-shadow: 0 3px 6px 0 rgba(48,52,62,0.1);
-      padding: 16px;
-      margin-right: 40px;
-      border-radius: 4px;
-      text-align: left;
-      position: relative;
-      z-index: 1;
-      overflow: hidden;
-      background: #fff;
-      &:before, &:after
-        content: '';
-        position: absolute;
-        z-index: 2;
-        background: #f1f6fd;
-        width: 122%;
-        height: 150%;
-        left: -25%;
-        top: -75%;
-        transform: rotate(-19deg);
-      &:after
-        background: #f7fafe;
-        right: -25%;
-        left: 0;
-        top: -30%;
-        transform: rotate(30deg);
-        z-index: 1;
-      &:last-child
-        margin-right: 0px;
+    flex-wrap: nowrap;
+    & > button 
+      width: 100%;
+      &:last-child 
+        margin: 0;
 
-    .Feature-icon
-      width: 46px;
-      position: relative;
-      z-index: 3;
-    .Feature-title
-      margin-top: 8px;
-      margin-bottom: 5px;
-      color: #0d2366;
-      position: relative;
-      z-index: 3;
-    .Feature-desc
-      position: relative;
-      z-index: 3;
-
-  .qualification-row
-    background: linear-gradient(180deg, #FFFFFF 0%, #E3EDFF 124.61%);
-    margin-top: 82px;
-    margin-left: -24px;
-    margin-right: -24px;
-    margin-bottom: -24px;
-    padding: 0px 24px;
-    .tb-title
-      margin-top: 15px;
-    .image-center
-      .qualification-image
-        height: 345px;
-        margin-bottom: 40px;
-
-.rtb-confirm-opt-out
-  p
-    &:last-child
-      margin: 8px 0px;
-
-@media (max-width: 1245px) {
-  .trusted-badge-container {
-    .image-center {
-      .intro-image {
-        height: 375px;
-      }
-    }
+  
+@media (max-width: 767px) {
+  .rtb-feature {
+    min-width: 100%;
   }
 }
 
-@media (max-width: 1280px) {
-  .trusted-badge-container {
-    .qualification-row {
-      .image-center {
-        .qualification-image {
-          height: 315px;
-        }
-      }
-    }
-  }
-}
+.Modal-rtb--small
+  width: 352px;

@@ -1637,6 +1637,11 @@ div.feature-activation-banner {
 
   .rtb-user-dropdown {
     background: linear-gradient(90deg, #2d62d2, #3472e2);
+
+    @media (max-width 768px) {
+      background: transparent;
+    }
+
     span {
       color: #fff;
       font-size: 14px;
@@ -1650,6 +1655,16 @@ div.feature-activation-banner {
         left: 0;
         height: 52px;
         margin-right: 0px;
+      }
+
+      .rtb-nav-icon {
+        display: inline-block;
+        height: 19px;
+        width: 17px;
+        background-size: cover;
+        top: 4px;
+        margin-right: 4px;
+        background-image: url("https://cdn.razorpay.com/static/assets/trustedbadge/rtb-user.svg");
       }
 
       img {

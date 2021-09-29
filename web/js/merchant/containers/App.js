@@ -41,6 +41,7 @@ import RTracking from 'react-tracking';
 import qs from 'query-string';
 import Wrapper from 'common/components/Bootstrap/Wrapper';
 import { fetchActiveTickets } from 'merchant/reducers/config.js';
+import { fetchTrustedBadgeStatus } from 'merchant/reducers/trustedBadge.js';
 import LogoutDialog from 'merchant/components/LogoutDialog';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { fetchInstantSettlements } from 'merchant/reducers/collection';
@@ -215,6 +216,7 @@ class App extends Component {
     this.props.fetchGST();
     this.props.fetchConfig();
     this.props.fetchRefundPricing();
+    this.props.fetchTrustedBadgeStatus();
 
     Promise.all([
       this.fetchUser().then(({ data }) => {
@@ -943,6 +945,7 @@ const mapDispatchToProps = (dispatch) =>
       openModal,
       closeModal,
       fetchInstantSettlements,
+      fetchTrustedBadgeStatus,
     },
     dispatch,
   );

@@ -1,135 +1,137 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import React from 'react';
+import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 
-import Feature from 'merchant/components/Feature';
-import Details from 'merchant/views/Account/TrustedBadge/components/Details';
-import { RTB } from './constants/data';
-import LocalStorageService from 'common/utils/localStorage';
+import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 
-@connect((state) => {
-  return {
-    user: state.session.user,
-  };
-})
-@RTracking(() => window.rzpQ.component('Trusted Badge'))
-class TrustedBadge extends Component {
-  static contextTypes = {
-    confirm: PropTypes.func,
-  };
+import Spinner from 'common/ui/Spinner';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-  constructor() {
-    super();
-    this.state = {
-      isJoinedWaitlist: !!LocalStorageService.getItem('rtb_join_waitlist'),
-      isOptedOut: !!LocalStorageService.getItem('rtb_opt_out'),
-    };
-  }
+import { pageData, STATUS } from 'merchant/views/Account/TrustedBadge/constants/data';
+import RenderTrustedBadgePage from 'merchant/views/Account/TrustedBadge/components/RenderTrustedBadgePage';
+import { updateRTBMerchantStatus } from 'merchant/reducers/trustedBadge';
 
-  componentDidMount() {
-    LocalStorageService.setItem('rtb_page_visited', 1);
-    this.props.tracking.trackEvent(
-      window.rzpQ &&
-        window.rzpQ.merchantActions().initiated('merchant_dashboard_RTB_page', {
-          opted_in: this.props.user.isRTBProgramEnabled,
-        }),
-    );
-  }
+const TrustedBadge = ({
+  trustedBadge,
+  tracking,
+  updateRTBMerchantStatus: updateStatus,
+  showNotification: triggerNotification,
+}) => {
+  const {
+    loading,
+    status,
+    updatePending: updateInProgress,
+    updateError,
+    updateAction,
+  } = trustedBadge;
 
-  joinTheWaitlist = () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        LocalStorageService.removeItem('rtb_opt_out');
-        LocalStorageService.setItem('rtb_join_waitlist', 1);
+  const trackEvent = React.useCallback(
+    (...args) => {
+      try {
+        if (tracking && args.length) {
+          const { badgeStatus = STATUS.NOT_ELIGIBLE_YES_WAITLISTED_DELISTED, original } =
+            status || {};
+          if (!original) {
+            const badgeVersion = pageData[badgeStatus]?.version;
+            const commonData = {
+              pageVersion: badgeVersion,
+              RTBStatus: badgeStatus,
+              RTBEligible: original.status === 'eligible',
+              RTBLiveMerchants: badgeVersion === 1,
+              RTBOptedOut: badgeVersion === 2,
+              RTbActivated: badgeVersion === 1,
+              RTBDelisted: original.is_delisted_atleast_once === 1,
+              RTBBlacklisted: original.status === 'blacklist',
+              RTBWaitlisted: original.merchant_status === 'waitlist',
+            };
+            if (args.length === 1) {
+              args[1] = {};
+            }
+            args[1] = { ...commonData, ...args[1] };
+          }
+          tracking.trackEvent(window.rzpQ && window.rzpQ.merchantActions().interaction(...args));
+        }
+      } catch (e) {
+        // e
+      }
+    },
+    [tracking, status],
+  );
 
-        this.props.tracking.trackEvent(
-          window.rzpQ &&
-            window.rzpQ.merchantActions().success('merchant_dashboard_RTB_page_opt_in', {
-              opted_in: this.props.user.isRTBProgramEnabled,
-            }),
-        );
-        resolve('Success');
+  React.useEffect(() => {
+    if (updateError) {
+      triggerNotification({
+        type: 'error',
+        message: 'Something went wrong',
+        hidePrevious: true,
+      });
+    }
+  }, [triggerNotification, updateError]);
 
-        this.setState({ isJoinedWaitlist: true });
-      }, 1000);
-    });
-  };
+  React.useEffect(() => {
+    trackEvent('RTBProductDashboardPageVisited');
+  }, [trackEvent]);
 
-  optOutConfirmation = () => {
-    this.context.confirm({
-      header: 'Are you sure you want to opt out?',
-      message: () => (
-        <div class="text-semi-muted rtb-confirm-opt-out">
-          <p>
-            On opt out we shall process your request and the trusted badge will be removed from
-            checkout in a few days.
-          </p>
-          <p>
-            You will need to join the waitlist again if you wish to show the badge again and stand a
-            chance of increasing conversion by 5%.
-          </p>
-        </div>
-      ),
-      affirmativeLabel: 'Yes, opt out',
-      affirmativePendingLabel: 'Opting out...',
-      abortLabel: 'No, don’t',
-      action: () => {
-        LocalStorageService.removeItem('rtb_join_waitlist');
-        LocalStorageService.setItem('rtb_opt_out', 1);
-        this.props.tracking.trackEvent(
-          window.rzpQ &&
-            window.rzpQ.merchantActions().success('merchant_dashboard_RTB_page_opt_out', {
-              opted_in: this.props.user.isRTBProgramEnabled,
-            }),
-        );
-        this.setState({ isJoinedWaitlist: false, isOptedOut: true });
-      },
-    });
-  };
+  React.useEffect(() => {
+    // OPT OUT CTA rendered
+    if (status.badgeStatus === STATUS.YES_ELIGIBLE_LIVE) {
+      trackEvent('RTBOptOutOptionRendered');
+    }
+    // Activate Badge Button rendered
+    if (status.badgeStatus === STATUS.YES_ELIGIBLE_OPTED_OUT) {
+      trackEvent('RTBActivateNowRendered');
+    }
+  }, [status, trackEvent]);
 
-  render() {
-    const { isJoinedWaitlist, isOptedOut } = this.state;
-    const isRTBProgramEnabled = this.props.user.isRTBProgramEnabled;
-    const details = isRTBProgramEnabled ? RTB.introAfterOptIn : RTB.introBeforeOptIn;
-    const qulificationDetails = isRTBProgramEnabled
-      ? RTB.qualificationAfterOptIn
-      : RTB.qualificationBeforeOptIn;
-    const features = isRTBProgramEnabled ? RTB.featuresAfterOptIn : RTB.featuresBeforeOptIn;
+  const getContent = React.useCallback(() => {
+    const { badgeStatus = STATUS.NOT_ELIGIBLE_YES_WAITLISTED_DELISTED } = status || {};
     return (
-      <div className="content-wrapper trusted-badge-container">
-        <Details
-          {...details}
-          content="introduction"
-          isRTBProgramEnabled={isRTBProgramEnabled}
-          isJoinedWaitlist={isJoinedWaitlist}
-          isOptedOut={isOptedOut}
-          joinTheWaitlist={this.joinTheWaitlist}
-          optOutConfirmation={this.optOutConfirmation}
-        />
-
-        <div className="row">
-          <div className="col-sm-12">
-            <div className="tb-title">How will it help your business grow?</div>
-            <div className="small-separator green-colored" />
-            <div className="trusted-badge-container--Features">
-              {features && features.map((feat) => <Feature {...feat} />)}
-            </div>
-          </div>
-        </div>
-
-        <Details
-          {...qulificationDetails}
-          content="qualification"
-          isRTBProgramEnabled={isRTBProgramEnabled}
-          isJoinedWaitlist={isJoinedWaitlist}
-          isOptedOut={isOptedOut}
-          joinTheWaitlist={this.joinTheWaitlist}
-          optOutConfirmation={this.optOutConfirmation}
-        />
-      </div>
+      <RenderTrustedBadgePage
+        updateStatus={updateStatus}
+        trackEvent={trackEvent}
+        status={badgeStatus}
+        data={pageData}
+        loading={updateInProgress}
+        updateAction={updateAction}
+      />
     );
-  }
-}
+  }, [status, trackEvent, updateStatus, updateInProgress, updateAction]);
 
-export default TrustedBadge;
+  return (
+    <div className="content-wrapper trusted-badge-container">
+      {loading ? <Spinner /> : getContent()}
+    </div>
+  );
+};
+
+TrustedBadge.propTypes = {
+  trustedBadge: PropTypes.shape({
+    status: PropTypes.shape({
+      status: PropTypes.string.isRequired,
+      original: PropTypes.any,
+    }),
+    loading: PropTypes.bool,
+    updatePending: PropTypes.bool,
+    updateError: PropTypes.bool,
+    updateAction: PropTypes.string,
+  }),
+  updateRTBMerchantStatus: PropTypes.func.isRequired,
+  showNotification: PropTypes.func.isRequired,
+};
+
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      updateRTBMerchantStatus,
+      showNotification,
+    },
+    dispatch,
+  );
+
+export default connect((state) => {
+  return {
+    trustedBadge: state.trustedBadge,
+  };
+  // eslint-disable-next-line babel/new-cap
+}, mapDispatchToProps)(RTracking(() => window.rzpQ.component('Trusted Badge'))(TrustedBadge));

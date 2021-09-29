@@ -18,6 +18,7 @@ import subscriptionButtonCreateReducer from 'merchant/reducers/subscriptionButto
 import qrCodesReducer from 'merchant/reducers/qrCodes/list';
 import invoiceDetailsReducer from 'merchant/reducers/invoices/details';
 import profileReducer from 'merchant/reducers/profile';
+import trustedBadgeReducer from 'merchant/reducers/trustedBadge';
 import customersReducer from 'merchant/reducers/customers';
 import itemsReducer from 'merchant/reducers/items';
 import orderReducer from 'merchant/reducers/orders/details';
@@ -124,6 +125,7 @@ export default combineReducers({
   subscriptions: subscriptionsReducer,
   subscription: subscriptionReducer,
   plans: plansReducer,
+  trustedBadge: trustedBadgeReducer,
   plan: planReducer,
   growthService: growthServiceReducer,
   addons: addOnsReducer,

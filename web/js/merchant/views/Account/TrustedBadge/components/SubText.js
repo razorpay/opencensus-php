@@ -1,0 +1,76 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+
+const SubText = (props) => {
+  let text = props.text;
+  if (props.optOut) {
+    text += ` <span class="opt-out" id="rtbOptOut">Opt-out</span>`;
+  }
+
+  React.useEffect(() => {
+    if (props.trackEvent && (props.showKnowMore || props.showDocTnCLink)) {
+      props.trackEvent('RTBKnowMoreRendered');
+    }
+  }, [props]);
+
+  return (
+    <>
+      <div
+        onClick={props.handleOptOut}
+        className={`sub-text ${props.className || ''}`}
+        dangerouslySetInnerHTML={{ __html: text }}
+      />
+      {props.showDocTnCLink && (
+        <div className="sub-text-link">
+          <a
+            href="https://razorpay.com/docs/payment-gateway/dashboard-guide/trusted-badge/"
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => {
+              props.trackEvent('RTBKnowMoreClicked');
+            }}
+          >
+            Know More
+          </a>{' '}
+          |{' '}
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href="https://razorpay.com/trusted-badge/merchant-terms/"
+            onClick={() => {
+              props.trackEvent('RTBTermsClicked');
+            }}
+          >
+            View T&amp;C
+          </a>
+        </div>
+      )}
+      {!props.showDocTnCLink && props.showKnowMore && (
+        <div className="sub-text-link">
+          <a
+            href="https://razorpay.com/docs/payment-gateway/dashboard-guide/trusted-badge/"
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => {
+              props.trackEvent('RTBKnowMoreClicked');
+            }}
+          >
+            Know More
+          </a>
+        </div>
+      )}
+    </>
+  );
+};
+
+SubText.propTypes = {
+  text: PropTypes.string.isRequired,
+  optOut: PropTypes.bool,
+  showDocTnCLink: PropTypes.bool,
+  showKnowMore: PropTypes.bool,
+  className: PropTypes.string,
+  handleOptOut: PropTypes.func.isRequired,
+  trackEvent: PropTypes.func.isRequired,
+};
+
+export default SubText;

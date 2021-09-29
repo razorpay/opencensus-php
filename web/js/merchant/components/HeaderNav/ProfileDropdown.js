@@ -1,9 +1,9 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
 
+import { STATUS } from 'merchant/views/Account/TrustedBadge/constants/data';
 import ShowWhen from 'merchant/components/ShowWhen';
-import LocalStorageService from 'common/utils/localStorage';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
@@ -11,13 +11,8 @@ import Image from 'common/ui/Image';
 import ModalHeader from 'common/ui/ModalHeader';
 import Group, { GroupItem } from 'common/ui/Group';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import debounce from 'common/utils/debounce';
-import { updateSession } from 'merchant/reducers/session';
-import User from 'merchant/models/User';
-import { logout } from 'merchant/reducers/session';
-import SwitchMerchant, {
-  SwitchMerchantTypeahead,
-} from 'merchant/components/HeaderNav/SwitchMerchant';
+import { logout, updateSession } from 'merchant/reducers/session';
+import { SwitchMerchantTypeahead } from 'merchant/components/HeaderNav/SwitchMerchant';
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import logoutGoogleAccount from '../../../common/utils/logoutGoogle';
@@ -33,6 +28,7 @@ import RTracking from 'react-tracking';
       ...state.config.config,
       user: state.session.user,
       isMobileResolution: state.app.isMobileResolution,
+      trustedBadge: state.trustedBadge.status,
     };
   },
   { logout, closeModal, openModal, updateSession },
@@ -51,6 +47,18 @@ export default class ProfileDropdown extends Component {
   };
 
   handleShow = () => {
+    const { trustedBadge, tracking, user } = this.props;
+    const { badgeStatus } = trustedBadge || {};
+    const isRTBEnabled = badgeStatus === STATUS.YES_ELIGIBLE_LIVE;
+    if (user && isRTBEnabled) {
+      tracking.trackEvent(
+        window.rzpQ &&
+          window.rzpQ.merchantActions().interaction('RTBDashboardHomePageTagDisplayed', {
+            merchantId: user?.merchant?.id,
+            clickSource: 'merchant_dashboard',
+          }),
+      );
+    }
     setTimeout(() => {
       this.setState({ showRazorpayxToolTip: true });
     }, 500);
@@ -67,7 +75,7 @@ export default class ProfileDropdown extends Component {
       },
     });
     logoutGoogleAccount();
-    this.props.analytics && this.props.analytics('Log Out');
+    if (this.props.analytics) this.props.analytics('Log Out');
     return this.props
       .logout()
       .catch((e) => {
@@ -123,7 +131,7 @@ export default class ProfileDropdown extends Component {
   };
 
   openTicketModal = () => {
-    window.rzpTicketSystem && window.rzpTicketSystem.openModal('#ticket', this.props.analytics);
+    if (window.rzpTicketSystem) window.rzpTicketSystem.openModal('#ticket', this.props.analytics);
   };
 
   openSwitchMerchantModal = () => {
@@ -142,9 +150,37 @@ export default class ProfileDropdown extends Component {
     });
   };
 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const { trustedBadge, tracking, user } = nextProps;
+    const { badgeStatus } = trustedBadge || {};
+    const isRTBEnabled = badgeStatus === STATUS.YES_ELIGIBLE_LIVE;
+    if (user && !prevState.isRTBEnabled && isRTBEnabled) {
+      tracking.trackEvent(
+        window.rzpQ &&
+          window.rzpQ.merchantActions().interaction('RTBDashboardHomePageIconDisplayed', {
+            merchantId: user?.merchant?.id,
+            clickSource: 'merchant_dashboard',
+          }),
+      );
+      return {
+        isRTBEnabled: true,
+      };
+    }
+    return null;
+  }
+
   render() {
-    let { user, mode, showMobileNav, showGSTModal, analytics = () => {} } = this.props;
-    let merchant = user.merchants[user.current];
+    const {
+      user,
+      showMobileNav,
+      showGSTModal,
+      analytics = () => {},
+      trustedBadge,
+      tracking,
+    } = this.props;
+    const { badgeStatus } = trustedBadge || {};
+    const isRTBEnabled = badgeStatus === STATUS.YES_ELIGIBLE_LIVE;
+    const merchant = user.merchants[user.current];
     const { showRazorpayxToolTip } = this.state;
 
     return (
@@ -154,26 +190,43 @@ export default class ProfileDropdown extends Component {
             !user.isAnnouncementTextEnabled && !user.isWhatsNewTextEnabled
               ? ' dropdown-toggle--large-icon'
               : ''
-          }${user.isRTBProgramEnabled ? ' rtb-user-dropdown' : ''}`}
+          }${isRTBEnabled ? ' rtb-user-dropdown' : ''}`}
         >
-          {user.isRTBProgramEnabled ? (
+          {isRTBEnabled ? (
             <>
-              <span>
-                <img
-                  src="https://cdn.razorpay.com/static/assets/trustedbadge/rtb_user_icon_bg.svg"
-                  className="rtb-user-bg-img"
-                />
-                <img src="https://cdn.razorpay.com/static/assets/trustedbadge/rtb-user-icon.svg" />
-                Hey, Trusted Merchant
+              <span className="visible-xs">
+                <i className="rtb-nav-icon" />
               </span>
-              <Popover align="bottom" theme="dark">
-                <PopoverBody>
-                  <div>
-                    You are a trusted merchant and the Razorpay Trusted Badge is now being displayed
-                    on checkout for customers to see
-                  </div>
-                </PopoverBody>
-              </Popover>
+              <span className="hidden-xs">
+                <span
+                  onClick={() => {
+                    tracking.trackEvent(
+                      window.rzpQ &&
+                        window.rzpQ
+                          .merchantActions()
+                          .interaction('RTBDashboardHomePageIconClicked', {
+                            merchantId: this.props?.user?.merchant?.id,
+                            clickSource: 'merchant_dashboard',
+                          }),
+                    );
+                  }}
+                >
+                  <img
+                    src="https://cdn.razorpay.com/static/assets/trustedbadge/rtb_user_icon_bg.svg"
+                    className="rtb-user-bg-img"
+                  />
+                  <i className="rtb-nav-icon" />
+                  Hey, Trusted Business
+                </span>
+                <Popover align="bottom" theme="dark">
+                  <PopoverBody>
+                    <div>
+                      You are a trusted business and the Razorpay trusted business badge is now
+                      being displayed on checkout for customers to see
+                    </div>
+                  </PopoverBody>
+                </Popover>
+              </span>
             </>
           ) : (
             <i className="i i-profile" />
@@ -192,6 +245,25 @@ export default class ProfileDropdown extends Component {
                 </div>
                 <div class="media-body merchant-details-container">
                   <div class="merchantname">{merchant.name}</div>
+                  {isRTBEnabled && (
+                    <Link
+                      onClick={() => {
+                        tracking.trackEvent(
+                          window.rzpQ &&
+                            window.rzpQ
+                              .merchantActions()
+                              .interaction('RTBDashboardHomePageTagClicked', {
+                                merchantId: user?.merchant?.id,
+                                clickSource: 'merchant_dashboard',
+                              }),
+                        );
+                      }}
+                      to="/trustedbadge"
+                      className="rtb-text"
+                    >
+                      Razorpay Trusted Business
+                    </Link>
+                  )}
                   <Group>
                     <GroupItem>
                       <small>{merchant.id}</small>
@@ -229,8 +301,8 @@ export default class ProfileDropdown extends Component {
                   </div>
                 )}
                 <ShowWhen
-                  additionalCondition={(user) =>
-                    !!showGSTModal && user.isAllowedView('profile_gst')
+                  additionalCondition={(userData) =>
+                    !!showGSTModal && userData.isAllowedView('profile_gst')
                   }
                 >
                   <div className="media media-action" onClick={showGSTModal}>
@@ -238,12 +310,15 @@ export default class ProfileDropdown extends Component {
                   </div>
                 </ShowWhen>
                 <ShowWhen
-                  additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
+                  additionalCondition={(userData) =>
+                    userData.isOrgAllowedFunctionality('external_links')
+                  }
                 >
                   <div class="media media-action">
                     <div class="media-body">
                       <a
                         target="_blank"
+                        rel="noreferrer"
                         onClick={() => {
                           analyticsTrack({
                             objectName: 'documentation',
@@ -278,7 +353,7 @@ export default class ProfileDropdown extends Component {
                     </div>
                   </div>
                   <div class="media-body">
-                    <a href="https://x.razorpay.com" target="_blank">
+                    <a rel="noreferrer" href="https://x.razorpay.com" target="_blank">
                       Go to RazorpayX
                     </a>
                   </div>

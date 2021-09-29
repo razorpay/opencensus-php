@@ -1,117 +1,39 @@
-import React, { useState } from 'react';
-import moment from 'moment';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
-import LocalStorageService from 'common/utils/localStorage';
+import React from 'react';
+import PropTypes from 'prop-types';
 
-export default function Details({
-  title,
-  subtitle,
-  details,
-  imgSrc,
-  content,
-  isRTBProgramEnabled,
-  isJoinedWaitlist,
-  isOptedOut,
-  joinTheWaitlist,
-  optOutConfirmation,
-}) {
-  const [isPending, setPending] = useState(false);
-  const trialPeriodEnd = '31-10-2021';
-
-  const joinWaitlist = () => {
-    setPending(true);
-    joinTheWaitlist().then((res) => {
-      if (res === 'Success') {
-        setPending(false);
-      }
-    });
-  };
-
-  const optOutClicked = () => {
-    optOutConfirmation();
-  };
-
-  if (isRTBProgramEnabled && content !== 'qualification') {
-    imgSrc = 'https://cdn.razorpay.com/static/assets/trustedbadge/rtb_introduction_enabled.svg';
-  } else if (isJoinedWaitlist && content !== 'qualification') {
-    imgSrc = 'https://cdn.razorpay.com/static/assets/trustedbadge/rtb_introduction_waiting.svg';
-  }
-
+const Details = (props) => {
   return (
-    <div className={`row ${content === 'qualification' ? 'qualification-row' : ''}`}>
+    <div class={`row detail-section${props.className ? ` ${props.className}` : ''}`}>
       <div className="col-lg-6">
-        <div className="tb-title">{title}</div>
-        {subtitle && <div className="tb-subtitle">{subtitle}</div>}
-
-        <div className={`small-separator ${content === 'qualification' ? 'green-colored' : ''}`} />
-
-        {details &&
-          details.map((item, index) => {
-            let children = item;
-            let increaseLineHeight = false;
-            if (item.indexOf('{end-date}') != -1) {
-              increaseLineHeight = true;
-              const endDate = moment(trialPeriodEnd, 'DD-MM-YYYY').format('DD MMM YYYY');
-              const diff = moment(trialPeriodEnd, 'DD-MM-YYYY').diff(moment(), 'days');
-              children = (
-                <>
-                  {item.replace('{end-date}', '')} <span className="trial-end-date">{endDate}</span>
-                  {` (in ${diff} days)`}
-                </>
-              );
-            }
-            return (
-              <div key={index} className="details-lines">
-                <div className="detail-done-icon">
-                  <i className={`i i-done ${increaseLineHeight ? 'increase-icon-line' : ''}`} />
-                </div>
-                <div className="detail-span">
-                  <span>{children}</span>
-                </div>
-              </div>
-            );
-          })}
-
-        {isRTBProgramEnabled ? (
-          content !== 'qualification' && (
-            <div className="opt-out-block">
-              {isOptedOut ? (
-                <div className="opt-out-block--after">
-                  <span>We are processing your opt-out request</span>
-                  <span>We will soon remove the badge from checkout</span>
-                </div>
-              ) : (
-                <div className="opt-out-block--before">
-                  <span>Not interested? </span>
-                  <span onClick={optOutClicked}>Opt-out</span>
-                </div>
-              )}
+        <div className={`section-head ${props.headClass ? ` ${props.headClass}` : ''}`}>
+          <div className="title">{props.title}</div>
+          {props.subtitle && <div className="subtitle">{props.subtitle}</div>}
+        </div>
+        <div className="section-list">
+          {props.details.map((listItem, index) => (
+            <div key={index} className="list-item">
+              <span dangerouslySetInnerHTML={{ __html: listItem }} />
             </div>
-          )
-        ) : (
-          <>
-            {isJoinedWaitlist ? (
-              <Button className="joined-button">
-                Joined the waitlist
-                <i className="i i-tick" />
-              </Button>
-            ) : (
-              <AsyncBtn.Primary onClick={joinWaitlist} showLoader={true}>
-                Join the waitlist
-                {isPending && <span className="spin-btn white" />}
-              </AsyncBtn.Primary>
-            )}
-            <div className="info-cta">Be a part of our trusted merchant community</div>
-          </>
-        )}
+          ))}
+        </div>
+        {props.subComponent &&
+          props.subComponent.map((component) => props.handleSubComponent(component))}
       </div>
-
       <div className="col-lg-6 image-center">
-        <img
-          src={imgSrc}
-          className={`${content === 'qualification' ? 'qualification-image' : 'intro-image'}`}
-        />
+        <img src={props.imgSrc} className="intro-image" />
       </div>
     </div>
   );
-}
+};
+
+Details.protoTypes = {
+  headClass: PropTypes.string,
+  title: PropTypes.string.isRequired,
+  subtitle: PropTypes.string,
+  details: PropTypes.arrayOf(PropTypes.string).isRequired,
+  imgSrc: PropTypes.string.isRequired,
+  subComponent: PropTypes.arrayOf(PropTypes.string),
+  className: PropTypes.string,
+};
+
+export default Details;
