@@ -22,7 +22,9 @@ class PdfGenerator extends Base\Core
     const TEMPLATE_FILE_NAME = 'merchant.invoice.invoice';
     const HEADER_FILE_NAME   = 'resources/views/merchant/invoice/components/header';
 
-    const DATE_FORMAT        = 'd/m/Y h:i A';
+    const DATE_FORMAT                       = 'd/m/Y h:i A';
+    const INVOICE_NUMBER_ISSUE_DATE_FORMAT  = 'd/m/Y';
+
     const DATA               = 'data';
 
     const TEMP_PATH = '/tmp/';
@@ -89,6 +91,23 @@ class PdfGenerator extends Base\Core
 
         $pdf = new Pdf($options);
 
+        $invoiceDate = $data[BankingInvoiceReport::INVOICE_DATE];
+
+        $dateArray = explode('/', $invoiceDate);
+
+        $month = (int)$dateArray[1];
+
+        $year  = (int)$dateArray[2];
+
+        if(($month >= 9 and $year >= 2021) or $year >= 2022)
+        {
+            $newInvoiceDate = Carbon::createFromFormat(self::INVOICE_NUMBER_ISSUE_DATE_FORMAT, $invoiceDate, Timezone::IST)
+                ->subDay()
+                ->format(self::INVOICE_NUMBER_ISSUE_DATE_FORMAT);
+
+            $data[BankingInvoiceReport::INVOICE_DATE] = $newInvoiceDate;
+        }
+
         foreach($data[BankingInvoiceReport::ROWS] as $page => $rows)
         {
             $html = View::make(self::TEMPLATE_FILE_NAME)
@@ -103,6 +122,24 @@ class PdfGenerator extends Base\Core
 
             if(isset($data[BankingInvoiceReport::E_INVOICE_DETAILS][$page]))
             {
+                $invoiceIssueDate = $data[BankingInvoiceReport::E_INVOICE_DETAILS][$page]['InvoiceNumberIssueDate'];
+
+                $dateArray = explode('/', $invoiceIssueDate);
+
+                $month = (int)$dateArray[1];
+
+                $year  = (int)$dateArray[2];
+
+                if(($month >= 9 and $year >= 2021) or $year >= 2022)
+                {
+                    $newInvoiceIssueDate = Carbon::createFromFormat(self::INVOICE_NUMBER_ISSUE_DATE_FORMAT,
+                        $invoiceIssueDate, Timezone::IST)
+                        ->subDay()
+                        ->format(self::INVOICE_NUMBER_ISSUE_DATE_FORMAT);
+
+                    $data[BankingInvoiceReport::E_INVOICE_DETAILS][$page]['InvoiceNumberIssueDate'] = $newInvoiceIssueDate;
+                }
+
                 $html = $html->with(self::E_INVOICE_DETAILS, $data[BankingInvoiceReport::E_INVOICE_DETAILS][$page]);
             }
 

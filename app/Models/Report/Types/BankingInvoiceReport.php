@@ -365,6 +365,6 @@ class BankingInvoiceReport extends BaseReport
     protected function getInvoiceDate($timestamp)
     {
         return Carbon::createFromTimestamp($timestamp, Timezone::IST)
-                     ->format(self::DATE_FORMAT);
+                        ->format(self::DATE_FORMAT);
     }
 }

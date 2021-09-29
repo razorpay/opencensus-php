@@ -22,6 +22,59 @@ return [
             'amount' => 500,
             'tax'    => 90,
         ],
+        'expectedContent' => [
+            'access_token' => 'a78e74508f285f5cd120716b81d8e91f2af96326',
+            'user_gstin' => '29AAGCR4375J1ZU',
+            'transaction_details' => [
+                'supply_type' => 'B2B'
+            ],
+            'document_details' => [
+                'document_type' => 'INV',
+                'document_number' => '10000000000-0721',
+                'document_date' => '20/07/2021',
+            ],
+            'seller_details' => [
+                'gstin' => '29AAGCR4375J1ZU',
+                'legal_name' => 'Razorpay Software Private Limited',
+                'location' => 'Bangalore',
+                'pincode' => 560030,
+                'state_code' => '29',
+                'address1' => 'First Floor SJR Cyber 22 laskar hosur road Adugodi',
+            ],
+            'buyer_details' => [
+                'gstin' => '29kjsngjk213922',
+                'legal_name' => 'abcd',
+                'location' => 'abcdef',
+                'pincode' => 123456,
+                'place_of_supply' => '29',
+                'state_code' => '29',
+                'address1' => 'abc street',
+            ],
+            'value_details' => [
+                'total_assessable_value' => '5.00',
+                'total_invoice_value' => '5.90',
+                'total_igst_value' => '0.00',
+                'total_sgst_value' => '0.45',
+                'total_cgst_value' => '0.45',
+            ],
+            'item_list' => [
+                [
+                    'item_serial_number' => 1,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '5.00',
+                    'total_amount' => '5.00',
+                    'assessable_value' => '5.00',
+                    'gst_rate' => 18,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '0.45',
+                    'cgst_amount' => '0.45',
+                    'total_item_value' => '5.90',
+                ],
+            ],
+        ]
     ],
     'testBankingInvoiceEntityCreateWithEInvoiceForFebruaryMonth' => [
         'rx_transactions' => [

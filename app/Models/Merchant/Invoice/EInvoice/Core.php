@@ -400,9 +400,24 @@ class Core extends Base\Core
     {
         $invoiceEntity = $this->repo->merchant_e_invoice->fetchByInvoiceNumberAndDocumentType($eInvoiceEntity->getMerchantId(),
             $eInvoiceEntity->getInvoiceNumber(), DocumentTypes::INV);
+
         $referenceInvoiceDate = Carbon::createFromTimestamp($invoiceEntity->getCreatedAt(), Timezone::IST)
             ->format('d/m/Y');
+
+        $dateArray = explode('/', $referenceInvoiceDate);
+
+        $month = (int)$dateArray[1];
+        $year  = (int)$dateArray[2];
+
+        if(($month >= 9 and $year >= 2021) or $year >= 2022)
+        {
+            $referenceInvoiceDate = Carbon::createFromTimestamp($invoiceEntity->getCreatedAt(), Timezone::IST)
+                ->subDay()
+                ->format('d/m/Y');
+        }
+
         $invoiceDate = Carbon::createFromTimestamp($eInvoiceEntity->getCreatedAt(), Timezone::IST)
+            ->subDay()
             ->format('d/m/Y');
         $precedingDocumentDetails = [
             Constants::REFERENCE_OF_ORIGINAL_INVOICE     => $eInvoiceEntity->getInvoiceNumber(),

@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use Carbon\Carbon;
 
 use Mockery;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Invoice;
 use RZP\Models\Admin\Permission;
@@ -479,11 +480,26 @@ class MerchantBankingInvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function setupEInvoiceClientResponse()
+    public function setupEInvoiceClientResponse($expectedContent)
     {
         $this->eInvoiceClientMock
             ->shouldReceive('getEInvoice')
             ->times(1)
+            ->with(Mockery::on(function (string $mode)  use ($expectedContent)
+            {
+                if($mode !== Mode::TEST)
+                {
+                    return false;
+                }
+
+                return true;
+
+            }), Mockery::on(function(array $input) use ($expectedContent)
+            {
+                $this->assertArraySelectiveEquals($input, $expectedContent);
+
+                return true;
+            }))
             ->andReturnUsing(function () {
                 return [
                     'status'            => '200',
@@ -572,7 +588,9 @@ class MerchantBankingInvoiceTest extends TestCase
             'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
         ];
 
-        $this->setupEInvoiceClientResponse();
+        $expectedContent = $this->testData[__FUNCTION__]['expectedContent'];
+
+        $this->setupEInvoiceClientResponse($expectedContent);
 
         $this->makeRequestAndGetContent($request);
 
