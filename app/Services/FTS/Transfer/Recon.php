@@ -76,7 +76,12 @@ trait Recon
             return;
         }
 
-        $this->fta->setFTSTransferId($input[Constants::FUND_TRANSFER_ID]);
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        if ($routeName !== 'update_payout_status_batch')
+        {
+            $this->fta->setFTSTransferId($input[Constants::FUND_TRANSFER_ID]);
+        }
 
         if (empty($input[ResponseFields::UTR]) === false)
         {

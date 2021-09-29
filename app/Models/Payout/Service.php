@@ -36,6 +36,7 @@ use RZP\Models\Application\ApplicationMerchantMaps;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
 use RZP\Models\FundAccount\Service as FundAccountService;
 use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
+use RZP\Models\FundAccount\Validation as FundAccountValidation;
 use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
 
 class Service extends Base\Service
@@ -1717,6 +1718,13 @@ class Service extends Base\Service
 
     public function updatePayoutStatusManuallyInBatch(array $input)
     {
+        if ($input[Entity::STATUS] === 'fav_failed')
+        {
+            $FAVService = new FundAccountValidation\Service;
+
+            return $FAVService->manualUpdateFavToFailedState($input[Entity::PAYOUT_IDS]);
+        }
+
         (new Validator)->validateInput(Validator::PAYOUT_BULK_STATUS_UPDATE_MANUAL, $input);
 
         $payouts = $this->repo->payout->findMany($input[Entity::PAYOUT_IDS]);

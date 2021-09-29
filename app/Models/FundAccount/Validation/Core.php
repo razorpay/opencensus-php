@@ -836,6 +836,59 @@ class Core extends Base\Core
         }
     }
 
+    public function manualUpdateFavToFailedState($favId)
+    {
+        try
+        {
+            $extraInfo = [
+                Attempt\Constants::BENEFICIARY_NAME => '',
+                Attempt\Entity::CMS_REF_NO => '',
+                Attempt\Constants::INTERNAL_ERROR => true,
+                'ponum' => '',
+            ];
+
+            $mapping = [
+                           Entity::STATUS                    => Status::FAILED,
+                           Entity::UTR                       => null,
+                           FtsConstants::BANK_STATUS_CODE    => FtsConstants::STATUS_FAILED,
+                           Entity::ID                        => $favId,
+                           Entity::FTS_TRANSFER_ID           => null,
+                           Attempt\Entity::BANK_ACCOUNT_TYPE => 'CURRENT',
+                           Attempt\Entity::SOURCE_ACCOUNT_ID => 51833651,
+                       ] + $extraInfo;
+
+            $this->trace->info(
+                TraceCode::FAV_UPDATE_FROM_FTS_WEBHOOK_CORE_HANDLER_INIT,
+                [
+                    'mapping'     => (new Redaction())->redactData($mapping)
+                ]);
+
+            $this->updateFav($mapping);
+
+            $this->trace->info(
+                TraceCode::FAV_UPDATE_FROM_FTS_WEBHOOK_CORE_HANDLER_SUCCESSFUL,
+                [
+                    'input'     => (new Redaction())->redactData($mapping)
+                ]);
+
+            return [
+                'message' => 'FAV source updated successfully',
+            ];
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FAV_UPDATE_FROM_FTS_WEBHOOK_FAILED,
+                [
+                    'error' => $e->getMessage()
+                ]);
+
+            throw $e;
+        }
+    }
+
     protected function updateFav(array $mapping)
     {
         $this->trace->info(

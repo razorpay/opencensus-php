@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Base\Traits;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Redaction;
 use RZP\Services\FTS\Transfer\Client as FtsClient;
 
@@ -85,6 +86,68 @@ class Service extends Base\Service
         ]);
 
         return $response;
+    }
+
+    public function manualUpdateFavToFailedState(array $favIds)
+    {
+        $count = 0;
+
+        foreach ($favIds as $favId)
+        {
+            $this->trace->info(
+                TraceCode::FAV_MANUAL_UPDATE_FROM_FTS_WEBHOOK_SERVICE_INIT,
+                [
+                    'fav_id'     => $favId
+                ]);
+
+            $fta = $this->repo
+                ->fund_transfer_attempt
+                ->getFTSAttemptBySourceId(
+                    $favId,
+                    'fund_account_validation',
+                    true);
+
+            if ($fta->getFTSTransferId() !== null)
+            {
+                continue;
+            }
+
+            $response = $this->core->manualUpdateFavToFailedState($favId);
+
+            $this->trace->info(
+                TraceCode::FAV_MANUAL_UPDATE_FROM_FTS_WEBHOOK_CORE_HANDLER_SUCCESSFUL,
+                [
+                    'response'     => $response,
+                    'fav_id' => $favId
+                ]);
+
+            $extraInfo = [
+                Attempt\Constants::BENEFICIARY_NAME => '',
+                Attempt\Entity::CMS_REF_NO          => '',
+                Attempt\Constants::INTERNAL_ERROR   => true,
+                'ponum'                             => '',
+            ];
+
+            $input = [
+                Attempt\Entity::SOURCE_ID        => $favId,
+                Attempt\Entity::SOURCE_TYPE      => 'fund_account_validation',
+                Attempt\Entity::BANK_STATUS_CODE => Status::FAILED,
+                Attempt\Entity::REMARKS          => 'Failed manually',
+                'extra_info'                     => $extraInfo,
+            ];
+
+            (new FtsClient($this->app))->doRecon($input);
+
+            $this->trace->info(
+                TraceCode::FAV_FTA_MANUAL_UPDATE_SUCCESSFUL,
+                [
+                    'fav_id' => $favId
+                ]);
+
+            $count++;
+        }
+
+        return ['success' => $count];
     }
 
     public function updateFavWithFtsWebhook(array $input) : array
