@@ -2158,6 +2158,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GENERATING_TRANSFERS_REPORT                           = 'GENERATING_TRANSFERS_REPORT';
     const ROUTE_TRANSFER_STATE_RAZORX_REQUEST                   = 'ROUTE_TRANSFER_STATE_RAZORX_REQUEST';
 
+    // Trace codes for transfers state machine data backfill
+    const TRANSFER_BACKFILL_JOB_ENQUEUED                        = 'TRANSFER_BACKFILL_JOB_ENQUEUED';
+    const TRANSFER_BACKFILL_JOB_RECEIVED                        = 'TRANSFER_BACKFILL_JOB_RECEIVED';
+    const TRANSFER_BACKFILL_JOB_COMPLETED                       = 'TRANSFER_BACKFILL_JOB_COMPLETED';
+    const TRANSFER_BACKFILL_DONE_FOR_CHUNK                      = 'TRANSFER_BACKFILL_DONE_FOR_CHUNK';
+
     // Trace codes for settlement_status in transfers
     const SETTLEMENT_STATUS_UPDATE_IN_TRANSFERS_REQUEST         = 'SETTLEMENT_STATUS_UPDATE_IN_TRANSFERS_REQUEST';
     const TRANSFER_IDS_FETCHED_FOR_SETTLEMENT_STATUS_UPDATE     = 'TRANSFER_IDS_FETCHED_FOR_SETTLEMENT_STATUS_UPDATE';

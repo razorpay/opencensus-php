@@ -269,4 +269,18 @@ class Repository extends Base\Repository
 
         return $query->pluck(Entity::ID)->toArray();
     }
+
+    public function getByMerchantId(string $merchantId, int $startDate, int $skip, int $chunk = 1000)
+    {
+        return $this->newQuery()
+                    ->select(Entity::ID)
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->whereIn(Entity::SOURCE_TYPE, [Constant::PAYMENT, Constant::ORDER])
+                    ->whereIn(Entity::STATUS, [Status::PROCESSED, Status::REVERSED, Status::PARTIALLY_REVERSED, Status::FAILED])
+                    ->where(Entity::CREATED_AT, '>=', $startDate)
+                    ->skip($skip)
+                    ->take($chunk)
+                    ->pluck(Entity::ID)
+                    ->toArray();
+    }
 }

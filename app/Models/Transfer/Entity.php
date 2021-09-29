@@ -401,6 +401,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SETTLEMENT_STATUS);
     }
 
+    public function getMessage()
+    {
+        return $this->getAttribute(self::MESSAGE);
+    }
+
     // -------------------- End Getters ---------------------------
 
     // -------------------- Setters ---------------------------

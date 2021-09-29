@@ -228,4 +228,17 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_TYPE, Type::PAYOUT)
                     ->first();
     }
+
+    public function getLatestReversalIdForTransfer(string $transferId, string $merchantId)
+    {
+        return $this->newQuery()
+                    ->select(Entity::ID)
+                    ->where(Entity::ENTITY_TYPE, 'transfer')
+                    ->where(Entity::ENTITY_ID, $transferId)
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->limit(1)
+                    ->pluck(Entity::ID)
+                    ->pop();
+    }
 }

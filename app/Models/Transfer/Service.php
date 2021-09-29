@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Transfer;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Error\Error;
 use RZP\Jobs;
 use RZP\Exception;
@@ -17,6 +19,7 @@ use RZP\Base\ConnectionType;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\Transfers\TransferRecon;
 use RZP\Constants\Entity as EntityConstant;
+use RZP\Jobs\Transfers\TransferBackfillJob;
 use RZP\Models\Settlement\Entity as Settlement;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
@@ -1036,5 +1039,157 @@ class Service extends Base\Service
                 'dispatched_txns_count' => $count,
             ]
         );
+    }
+
+    public function dispatchBackfillJob(array $input)
+    {
+        foreach ($input['merchant_ids'] as $merchantId)
+        {
+            // Cannot push a single job, might get timed out. Will have to push several jobs.
+            TransferBackfillJob::dispatch($this->mode, $merchantId);
+
+            $this->trace->info(
+                TraceCode::TRANSFER_BACKFILL_JOB_ENQUEUED,
+                [
+                    'merchant_id' => $merchantId,
+                ]
+            );
+        }
+    }
+
+    public function updateSettlementStatusAndErrorCode(string $merchantId)
+    {
+        $startDate = Carbon::createFromDate(2021, 6, 16, Timezone::IST)->getTimestamp();
+
+        $totalCount = 0;
+        $chunk = 1000;
+
+        for ($skip = 0; true; $skip = $skip + $chunk)
+        {
+            $transferIds = $this->repo->transfer->getByMerchantId($merchantId, $startDate, $skip, $chunk);
+
+            $count = count($transferIds);
+
+            $totalCount += $count;
+
+            foreach ($transferIds as $transferId)
+            {
+                $transfer = $this->repo->transfer->find($transferId);
+
+                if ($transfer->isDirectTransfer() === true)
+                {
+                    continue;
+                }
+
+                $this->updateSettlementStatus($transfer);
+
+                $this->updateErrorCodeIfApplicable($transfer);
+
+                $this->repo->saveOrFail($transfer);
+            }
+
+            $this->trace->info(
+                TraceCode::TRANSFER_BACKFILL_DONE_FOR_CHUNK,
+                [
+                    'merchant_id'   => $merchantId,
+                    'chunk_count'   => $count,
+                ]
+            );
+
+            if ($count < $chunk)
+            {
+                break;
+            }
+        }
+
+        return $totalCount;
+    }
+
+    protected function updateSettlementStatus(Entity $transfer)
+    {
+        if ($transfer->getSettlementStatus() !== null)
+        {
+            return;
+        }
+
+        $recipientSettlementId = $transfer->getRecipientSettlementId();
+
+        if ($recipientSettlementId === null)
+        {
+            if (($transfer->getOnHold() === true) and
+                (in_array($transfer->getStatus(), [Status::PROCESSED, Status::REVERSED, Status::PARTIALLY_REVERSED]) === true))
+            {
+                $transfer->setSettlementStatus(SettlementStatus::ON_HOLD);
+
+                return;
+            }
+            else if (($transfer->getOnHold() === false) and
+                    (in_array($transfer->getStatus(), [Status::PROCESSED, Status::REVERSED, Status::PARTIALLY_REVERSED]) === true))
+            {
+                $transfer->setSettlementStatus(SettlementStatus::PENDING);
+
+                return;
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        $settlement = $this->repo->settlement->find($recipientSettlementId);
+
+        if ($settlement->isStatusProcessed() === true)
+        {
+            if (in_array($transfer->getStatus(), [Status::PROCESSED, Status::PARTIALLY_REVERSED]) === true)
+            {
+                $transfer->setSettlementStatus(SettlementStatus::SETTLED);
+
+                return;
+            }
+            else if ($transfer->getStatus() === Status::REVERSED)
+            {
+                // If transfer was reversed before getting settled then `pending`, else `settled`.
+//                $transferSettlementId = $this->repo->transaction->getSettlementIdForTransfer($transfer->getId(), $transfer->getToId()); // Same as $recipientSettlementId.
+
+                $reversalId = $this->repo->reversal->getLatestReversalIdForTransfer($transfer->getId(), $transfer->getMerchantId());
+
+                $reversalSettlementId = $this->repo->transaction->getSettlementIdForReversal($reversalId, $transfer->getToId());
+
+                if ($recipientSettlementId === $reversalSettlementId)
+                {
+                    $transfer->setSettlementStatus(SettlementStatus::PENDING);
+                }
+                else
+                {
+                    $transfer->setSettlementStatus(SettlementStatus::SETTLED);
+                }
+
+                return;
+            }
+            else
+            {
+                return;
+            }
+        }
+    }
+
+    protected function updateErrorCodeIfApplicable(Entity $transfer)
+    {
+        if ($transfer->getErrorCode() !== null)
+        {
+            return;
+        }
+
+        if ($transfer->isFailed() === false)
+        {
+            return;
+        }
+
+        $message = $transfer->getMessage();
+
+        if ($message !== null)
+        {
+            $transfer->setErrorCode(ErrorCodeMapping::getErrorCodeFromDescription($message));
+        }
     }
 }
