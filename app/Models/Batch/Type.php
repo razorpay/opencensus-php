@@ -130,6 +130,8 @@ class Type
 
     const SETTLEMENT_ONDEMAND_FEATURE_CONFIG = 'settlement_ondemand_feature_config';
 
+    const CAPITAL_MERCHANT_ELIGIBILITY_CONFIG = 'capital_merchant_eligibility_config';
+
     const ECOLLECT_ICICI        = 'ecollect_icici';
 
     const ECOLLECT_RBL          = 'ecollect_rbl';
@@ -212,6 +214,7 @@ class Type
         self::ENTITY_UPDATE_ACTION,
         self::ADJUSTMENT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
+        self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::BANK_TRANSFER_EDIT,
@@ -315,6 +318,7 @@ class Type
         self::ADMIN_BATCH,
         self::ADJUSTMENT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
+        self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
         self::CREDIT,
         self::UPI_TERMINAL_ONBOARDING,
     ];
@@ -409,6 +413,7 @@ class Type
         self::MPAN,
         self::ADJUSTMENT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
+        self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
         self::PARTNER_SUBMERCHANT_INVITE,
         self::REFUND,
         self::LINKED_ACCOUNT_CREATE,
@@ -439,6 +444,7 @@ class Type
         self::ENTITY_UPDATE_ACTION,
         self::ADJUSTMENT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
+        self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
         self::PAYMENT_LINK_V2,
         self::RECURRING_CHARGE_BSE,
         self::ECOLLECT_ICICI,

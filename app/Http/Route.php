@@ -2039,6 +2039,8 @@ class Route
         'feature_get_status'                       => ['get',      'feature/{entityType}/{entityId}/{featureName}',  'FeatureController@getFeatureStatus'                                ],
         'feature_bulk_assign'                      => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                      => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
+        'internal_feature_bulk_assign'             => ['post',     'internal/features/assign',                       'FeatureController@multiAssignFeature'                              ],
+        'internal_feature_bulk_remove'             => ['post',     'internal/features/remove',                       'FeatureController@multiRemoveFeature'                              ],
         'feature_delete_entity'                    => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
         'feature_delete_entity_internal'           => ['delete',   'internal/{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                    ],
         'feature_get_merchants_internal'           => ['post',     'internal/feature/merchants',                     'FeatureController@getMerchantIdsHavingFeatures'                    ],
@@ -3322,6 +3324,8 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'internal_feature_bulk_assign',
+        'internal_feature_bulk_remove',
         'merchant_risk_alerts_foh_workflow_trigger_nc',
         'buy_pricing_assign_bulk',
         'external_bvs_validation_request',
@@ -10197,6 +10201,8 @@ class Route
             'los_d2c_bureau_report_fetch',
             'internal_merchant_fetch',
             'user_fetch_entity',
+            'internal_feature_bulk_assign',
+            'internal_feature_bulk_remove',
         ],
         'capital_cards_m2p' =>[
             'capital_cards_m2p_webhook',

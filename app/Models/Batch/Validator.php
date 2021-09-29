@@ -351,6 +351,14 @@ class Validator extends Base\Validator
         Entity::SCHEDULE     => 'sometimes|numeric',
     ];
 
+    protected static $capitalMerchantEligibilityConfigCreateRules = [
+        Entity::TYPE         => 'required|in:capital_merchant_eligibility_config',
+        Entity::FILE         => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID      => 'required_without:file',
+        Entity::NAME         => 'filled|string|max:255',
+        Entity::SCHEDULE     => 'sometimes|numeric',
+    ];
+
     protected static $iinNpciRupayCreateRules = [
         Entity::TYPE                 => 'required|custom',
         Entity::NAME                 => 'filled|string|max:255',
@@ -641,6 +649,13 @@ class Validator extends Base\Validator
         Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_SETTLEMENTS_COUNT_LIMIT     => 'required|integer',
         Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PRICING_PERCENT             => 'required|integer',
         Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_FULL_ACCESS                 => 'required|in:yes,no'
+    ];
+
+    protected static $capitalMerchantEligibilityConfigTypeRowRules = [
+        Header::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG_MERCHANT_ID   => 'required|string|size:14',
+        Header::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG_PRODUCT_ID    => 'required|string|size:14',
+        Header::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG_SEGMENT       => 'required|string',
+        Header::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG_ELIGIBLE      => 'required|in:yes,no'
     ];
 
     protected static $terminalNetbankingHdfcRules = [
@@ -1744,6 +1759,15 @@ class Validator extends Base\Validator
             $this->validateInput('settlementOndemandFeatureConfigTypeRow', $entry);
         });
     }
+
+    public function validateCapitalMerchantEligibilityConfigEntries(array & $entries, array $params, ME $merchant)
+    {
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+        {
+            $this->validateInput('capitalMerchantEligibilityConfigTypeRow', $entry);
+        });
+    }
+
     private function checkValidBalanceTypeForAdjustment(string $balanceType, string $referenceId)
     {
         $validBalanceTypes = [
