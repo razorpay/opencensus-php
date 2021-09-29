@@ -1,0 +1,335 @@
+.status-details {
+    &.status-details--active {
+        .status-details-slide-toggle {
+            color: #2B83EA
+            &:after {
+                background: rgba(11, 112, 231, 0.05)
+            }
+        }
+    }
+}
+  
+.status-details-slide-toggle {
+    display: inline-block
+    color: inherit
+    cursor: pointer
+    padding: 15px 15px 12px
+}
+
+.status-back {
+    cursor: pointer    
+}
+
+.status-heading {
+    font-size: 18px
+    line-height: 20px
+    color: #404F6B 
+    margin-left: 10px
+    font-weight: bold 
+}
+
+.status-heading-time {
+    font-size: 14px
+    margin-left: 10px
+    line-height: 18px
+    color: #647596    
+}
+
+.status-refresh-icon {
+    cursor: pointer
+    margin-left: 5px    
+}
+
+.status-refresh-icon-disabled {
+    margin-left: 5px    
+}
+    
+.main-info {
+    margin: 50px 50px 50px 50px  
+
+    .main-tick {
+        margin: 0px 145px 16px 
+    } 
+
+    .main-status-text {
+        font-size: 20px
+        line-height: 30px
+        text-align: center
+        color: #404F6B 
+        font-style: normal
+        font-weight: bold
+    }
+
+    .date-and-time {
+        font-size: 14px
+        color: #647596
+        text-align: center
+        margin: 6px
+
+        .time-left-popover {
+            padding: 0
+        }
+    }
+}
+
+.details {
+    width: 430px
+    margin: 16px
+    background: #FFFFFF
+    border: 1px solid #EDF0F5
+    box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.05)
+    border-radius: 3px
+    position: relative
+
+    .payment-method {
+        height: 65px   
+        display: flex
+        align-items: center
+        padding: 0px 30px 0px 20px   
+
+        .payment-method-title {
+            font-weight: bold
+            font-size: 16px
+            line-height: 24px
+            color: rgba(22, 47, 86, 0.87) 
+            margin-left: 12px
+        } 
+
+        .payment-method-title-not-operational {
+            font-weight: bold
+            font-size: 18px
+            line-height: 24px
+            color: rgba(22, 47, 86, 0.87)  
+        }
+    }
+
+    .payment-method.with-bottom-border {
+        height: 65px   
+        display: flex
+        align-items: center
+        padding: 0px 30px 0px 20px  
+        border-bottom: solid 1px #EDF0F5
+    }
+
+    .status-view-button {
+        margin-left: 10px
+        position: absolute
+        right: 45px
+        font-size: 12px
+        color: #2B83EA
+    }
+
+    .status-view-arrow {
+        margin-left: 5px  
+        position: absolute
+        right: 30px  
+        cursor: pointer
+    }
+
+    .instrument-details {
+        background: #FAFCFF
+        border: 1px solid #F3F8FE
+        box-sizing: border-box
+        border-radius: 4px
+        margin: 0px 10px 10px 10px 
+
+        .instrument-title {
+            height: 42px
+            background: #EDF0F5
+            border-radius: 4px 4px 0px 0px  
+            color: rgba(22, 47, 86, 0.54)  
+            font-size: 15px
+            display: flex
+            align-items: center
+            justify-content: flex-start
+            padding-left: 12px
+        }
+
+        .downtime-container {
+            padding: 12px
+
+            .downtime-heading {
+                font-weight: bold
+                font-size: 14px
+                line-height: 18px
+                color: rgba(22, 47, 86, 0.87)
+                margin-left: 10px
+            }    
+
+            .downtime-details {
+                margin-left: 26px
+                font-size: 14px
+            }
+        }
+    }
+}
+
+.status-disclaimer {
+    margin: 36px 30px 36px 30px
+    font-size: 12px
+    text-align: center
+    color: rgba(22, 47, 86, 0.38)
+}
+
+.status-info {
+    margin: 20px 24px 36px 24px 
+
+    .status-method-summary {      
+        background: #FFFFFF
+        border: 1px solid #EDF0F5
+        box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.05)
+        border-radius: 3px
+
+        .upcoming-title {
+            height: 52px
+            background: #EDF0F5
+            font-size: 15px
+            line-height: 20px
+            font-weight: bold
+            display: flex
+            align-items: center
+            margin-top: 25px
+            justify-content: flex-start
+            text-align: center
+            color: rgba(22, 47, 86, 0.87)
+            padding-left: 25px
+
+            .maintenance-icon {
+                margin-right: 10px    
+            }
+        }
+
+        .no-maintenance {
+            display: flex
+            text-align: center
+            justify-content: center
+            height: 50px
+            color: rgba(22,47,86,0.87)
+            font-size: 15px
+            padding: 20px
+        }
+
+        .scheduled-downtime {
+            padding: 16px 24px 16px 24px
+
+            .scheduled-downtime-heading {
+                font-weight: bold
+                font-size: 15px
+                line-height: 20px
+                color: rgba(22, 47, 86, 0.87)  
+                text-transform: capitalize
+            }
+
+            .scheduled-downtime-details {
+                font-size: 14px
+                color: rgba(22, 47, 86, 0.54)
+                margin-top: 6px
+
+                .scheduled-downtime-icon {
+                    margin: 0px 10px 0px 10px    
+                }
+
+                .scheduled-downtime-severity {
+                    text-transform: capitalize
+                    font-size: 14px !important 
+                }
+            }    
+        }
+
+         .historical-downtime {
+            padding: 16px 24px 16px 24px
+
+            .historical-downtime-heading {
+                font-weight: bold
+                font-size: 15px
+                line-height: 20px
+                color: rgba(22, 47, 86, 0.87)  
+                text-transform: capitalize
+            }
+
+            .historical-downtime-details {
+                font-size: 14px
+                color: rgba(22, 47, 86, 0.54)
+                margin-top: 6px
+
+                .historical-downtime-icon {
+                    margin: 0px 10px 0px 10px    
+                }
+
+                .historical-downtime-severity {
+                    text-transform: capitalize
+                    font-size: 14px !important 
+                }
+            }    
+        }
+
+        .status-instrument-details {
+           padding: 0px 12px 12px 12px 
+
+            .status-details-warning {
+                margin: 10px
+
+                .status-warning-asterix {
+                    color: red !important
+                    font-size: 14px  !important         
+                }    
+            }
+
+           .status-method-instrument {
+                font-size: 15px
+                color: rgba(22, 47, 86, 0.54)    
+                margin: 16px 0px 16px 4px
+
+                .status-method-instrument-asterix {
+                    color: red
+                    font-size: 14px
+                }
+            }
+
+            .status-method-instrument-info {
+                background: #FAFCFF
+                border: 1px solid #F3F8FE
+                box-sizing: border-box
+                border-radius: 4px
+                padding: 12px
+
+                .downtime-container {
+                    margin-bottom: 10px
+
+                .downtime-heading {
+                    font-weight: bold
+                    font-size: 15px
+                    line-height: 18px
+                    color: rgba(22, 47, 86, 0.87)
+                    margin-left: 10px
+                }    
+
+                .downtime-details {
+                    margin-left: 26px
+                    margin-top: 5px
+
+                    span {
+                        font-size: 14px !important
+                    }
+                }
+            }
+
+                .status-item {
+                    margin-left: 10px 
+                    font-size: 15px
+                    color: rgba(22, 47, 86, 0.87)  !important
+                } 
+
+                .status-list {
+                    margin-left: 28px 
+                    margin-top: 5px
+
+                    .status-list-text {
+                        font-size: 14px 
+                        color: rgba(22, 47, 86, 0.87) 
+                    }
+                }
+            }
+        }
+    }
+}

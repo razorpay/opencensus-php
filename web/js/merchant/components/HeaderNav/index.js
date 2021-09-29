@@ -15,6 +15,7 @@ import NavFragment from './NavFragment';
 import ModesDropdown from './SwitchMode';
 import AppSwitcher from './AppSwitcher';
 import ProfileDropdown from './ProfileDropdown';
+import StatusDetails from './StatusDetails';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 const analyticsAction = (action) => {
@@ -167,6 +168,11 @@ export default class HeaderNav extends Component {
                     <AppSwitcher analytics={analytics} {...commonProps} />
                   </li>
                 </ShowWhen>
+                {this.props.user.isOrgRZP && this.props.user.isInternalStatusPageEnabled && (
+                  <li id="status-details">
+                    <StatusDetails />
+                  </li>
+                )}
                 <li id="profile-dropdown">
                   <ProfileDropdown
                     analytics={analytics}

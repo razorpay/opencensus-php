@@ -1760,6 +1760,7 @@ class Service extends Base\Service
             'remove_presignup_functionality',
             'bvs_get_gst_details',
             'route_transfer_state',
+            'status_page_enable',
             'pp_hostedpage_new_footer',
             'show_L1_Form_on_login',
             'auto-open-L1-form',

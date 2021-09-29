@@ -874,6 +874,7 @@ class App extends Component {
                   onSwitchMode={this.switchMode}
                   onSwitchMerchant={this.switchMerchant}
                   showMobileNav={this.props.windowWidth < 950}
+                  org={this.props.org}
                 />
                 <Sidebar
                   user={user}

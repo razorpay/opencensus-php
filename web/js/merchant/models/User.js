@@ -1007,6 +1007,10 @@ export default class User {
     return this.getExpStatus('webhook_stats');
   }
 
+  get isInternalStatusPageEnabled() {
+    return this.getExpStatus('status_page_enable');
+  }
+
   // TODO: Remove from razorX bcoz it's rolled out 100%
   get isPaymentPageReceiptsEnabled() {
     return true;
