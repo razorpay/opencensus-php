@@ -69,11 +69,17 @@ export default (props) => {
                   {/* Status of Settlement */}
                   <EntityDetailRow label="Settlement Status">
                     <SubmerchantSettlementLabel
-                      status={submerchant.hold_funds ? 'inactive' : 'active'}
+                      status={
+                        submerchant.details &&
+                        submerchant.details.activation_status === 'activated' &&
+                        submerchant.hold_funds === false
+                          ? 'active'
+                          : 'inactive'
+                      }
                     />
                   </EntityDetailRow>
                 </ShowWhen>
-                
+
                 <ShowWhen additionalCondition={() => product === PRODUCT_TYPE.X}>
                   <EntityDetailRow label="Virtual Account Status">
                     <XSubmerchantVAStatusLabel
