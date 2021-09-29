@@ -199,6 +199,8 @@ class Core extends Base\Core
     {
         try
         {
+            $this->trace->error(TraceCode::FAILED_TO_FETCH_ONGOING_DOWNTIMES_FROM_CACHE);
+
             return $this->fetchOngoingDowntimesFromCache();
         }
         catch (\Exception $e)

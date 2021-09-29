@@ -80,7 +80,7 @@ class BaseProcessor extends Base\Core
 
             (new Core)->refreshOngoingDowntimesCache($downtime);
 
-            (new Core)->refreshHistoricalDowntimeCache();
+            (new Core)->refreshHistoricalDowntimeCache(3);
 
             (new Service())->emailDowntime(Constants::RESOLVED, $downtime);
 
