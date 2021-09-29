@@ -2,16 +2,14 @@
 
 namespace RZP\Services\AccountingPayouts;
 
-use http\Client\Response;
-
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Http\Request\Requests;
-use RZP\Trace\TraceCode;
-use RZP\Models\User\Entity;
-use RZP\Http\Response\StatusCode;
 use RZP\Exception\BadRequestException;
+use RZP\Http\Request\Requests;
+use RZP\Http\Response\StatusCode;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\User\Entity;
+use RZP\Trace\TraceCode;
 
 /**
  * This class will be the main file that will talk to
@@ -21,28 +19,30 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
  */
 class Service
 {
-    const BASE_PATH                 = 'twirp/accountingpayouts.Accountingpayouts';
-    const GET_INTEGRATION_URL       = 'GetIntegrateURL';
-    const INTEGRATION_APP_INITIATE  = 'IntegrationAppInitiate';
-    const INTEGRATION_STATUS        = 'IntegrationStatus';
-    const INTEGRATION_STATUS_APP    = 'IntegrationStatusApp';
-    const DELETE_INTEGRATION        = 'DeleteIntegration';
-    const APP_CREDENTIALS           = 'AppCredentials';
-    const SYNC_STATUS_APP           = 'SyncStatusApp';
-    const SYNC                      = 'Sync';
-    const WAITLIST                  = 'Waitlist';
-    const X_APP_MODE                = 'X-App-Mode';
-    const CREATE_INVOICE_FROM_TALLY = 'CreateInvoiceFromTally';
-    const FETCH_TALLY_INVOICE       = 'FetchTallyInvoice';
-    const CANCEL_TALLY_INVOICE      = 'CancelTallyInvoice';
-    const FETCH_TALLY_PAYMENTS      = 'FetchTallyPayments';
-    const ACKNOWLEDGE_TALLY_PAYMENT = 'AcknowledgeTallyPayment';
-    const INTEGRATE_TALLY           = 'IntegrateTally';
-    const DELETE_INTEGRATION_TALLY  = 'DeleteTallyIntegration';
-    const GET_DOMAIN                = 'GetAccountingAppDomains';
-    const SET_DOMAIN                = 'SetAccountingAppDomain';
-    const GET_ORGANISATION_INFO     = 'GetOrganisationsAccountingApp';
-    const SET_ORGANISATION_INFO     = 'SetOrganisationInfoAccountingApp';
+    const BASE_PATH                   = 'twirp/accountingpayouts.Accountingpayouts';
+    const GET_INTEGRATION_URL         = 'GetIntegrateURL';
+    const CASHFLOW_LIST_BANK_ACCOUNTS = 'ListCashFlowBankAccounts';
+    const UPDATE_BANK_ACC_MAPPING     = 'UpdateBankAccountMapping';
+    const INTEGRATION_APP_INITIATE    = 'IntegrationAppInitiate';
+    const INTEGRATION_STATUS          = 'IntegrationStatus';
+    const INTEGRATION_STATUS_APP      = 'IntegrationStatusApp';
+    const DELETE_INTEGRATION          = 'DeleteIntegration';
+    const APP_CREDENTIALS             = 'AppCredentials';
+    const SYNC_STATUS_APP             = 'SyncStatusApp';
+    const SYNC                        = 'Sync';
+    const WAITLIST                    = 'Waitlist';
+    const X_APP_MODE                  = 'X-App-Mode';
+    const CREATE_INVOICE_FROM_TALLY   = 'CreateInvoiceFromTally';
+    const FETCH_TALLY_INVOICE         = 'FetchTallyInvoice';
+    const CANCEL_TALLY_INVOICE        = 'CancelTallyInvoice';
+    const FETCH_TALLY_PAYMENTS        = 'FetchTallyPayments';
+    const ACKNOWLEDGE_TALLY_PAYMENT   = 'AcknowledgeTallyPayment';
+    const INTEGRATE_TALLY             = 'IntegrateTally';
+    const DELETE_INTEGRATION_TALLY    = 'DeleteTallyIntegration';
+    const GET_DOMAIN                  = 'GetAccountingAppDomains';
+    const SET_DOMAIN                  = 'SetAccountingAppDomain';
+    const GET_ORGANISATION_INFO       = 'GetOrganisationsAccountingApp';
+    const SET_ORGANISATION_INFO       = 'SetOrganisationInfoAccountingApp';
 
     protected $app;
 
@@ -61,6 +61,24 @@ class Service
         $this->config = $app['config']['applications.vendor_payments'];
 
         $this->repo = $app['repo'];
+    }
+
+    public function updateBAMapping(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UPDATE_BANK_ACC_MAPPING);
+
+        $app = array_pull($input, 'app', '');
+
+        return $this->makeRequest($merchant, $url, $input, $app);
+    }
+
+    public function listCashFlowBA(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CASHFLOW_LIST_BANK_ACCOUNTS);
+
+        $app = array_pull($input, 'app', '');
+
+        return $this->makeRequest($merchant, $url, $input, $app);
     }
 
     public function getIntegrationURL(MerchantEntity $merchant, array $input, string $app, Entity $user = null)
@@ -257,7 +275,7 @@ class Service
         return $this->makeRequest($merchant, $url, $input, null, [], 'POST', MODE::LIVE);
     }
 
-    public function acknowledgeTallyPayment(MerchantEntity $merchant,string $id, array $input)
+    public function acknowledgeTallyPayment(MerchantEntity $merchant, string $id, array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ACKNOWLEDGE_TALLY_PAYMENT);
 

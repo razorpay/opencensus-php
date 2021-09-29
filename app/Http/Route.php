@@ -1401,9 +1401,13 @@ class Route
         'accounting_payouts_sync_internal'                      => ['post',    'accounting-payouts/internal/sync/{app}',         'AccountingPayoutsController@syncInternal'              ],
         'accounting_payouts_waitlist'                           => ['post',    'accounting-payouts/waitlist/{app}',              'AccountingPayoutsController@waitlist'                  ],
 
+        'accounting_payouts_cash_flow_list_ba'                  => ['get',     'accounting-integration/cashflow/bank-accounts',      'AccountingPayoutsController@listCashFlowBA'            ],
+        'accounting_payouts_cash_flow_update_ba_mapping'        => ['post',    'accounting-integration/cashflow/update-bank-mapping','AccountingPayoutsController@updateBAMapping'           ],
+
         'accounting_integration_get_domain'                     => ['get',      'accounting-integration/domain/{app}',                 'AccountingPayoutsController@getDomains'               ],
         'accounting_integration_get_organization'               => ['get',      'accounting-integration/organizations/{app}',          'AccountingPayoutsController@getOrganisationsInfo'     ],
         'accounting_integration_set_organization'               => ['post',     'accounting-integration/organizations/{app}',          'AccountingPayoutsController@setOrganisationInfo'      ],
+
 
         'accounting_integration_tally_invoices'                 => ['post',     'accounting-integration/tally/invoices',                    'AccountingPayoutsController@createTallyInvoice'        ],
         'accounting_integration_tally_fetch_invoice'            => ['get',      'accounting-integration/tally/invoices',                    'AccountingPayoutsController@fetchTallyInvoice'         ],
@@ -4357,6 +4361,8 @@ class Route
 
         // Accounting Payouts
         'accounting_payouts_integration_status',
+        'accounting_payouts_cash_flow_list_ba',
+        'accounting_payouts_cash_flow_update_ba_mapping',
         'accounting_payouts_integration_app_get_url',
         'accounting_payouts_integration_app_initiate',
         'accounting_payouts_integration_status_app',
@@ -6481,6 +6487,8 @@ class Route
         'merchant_fire_hubspot_event'                  => '*',
         'merchant_create_lead_to_salesforce'           => '*',
         'accounting_payouts_integration_status'        => Permission::VIEW_ACCOUNTING_INTEGRATION,
+        'accounting_payouts_cash_flow_list_ba'         => Permission::SYNC_ACCOUNTING_INTEGRATION,
+        'accounting_payouts_cash_flow_update_ba_mapping'=>Permission::SYNC_ACCOUNTING_INTEGRATION,
         'accounting_payouts_integration_app_get_url'   => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_payouts_integration_app_initiate'  => Permission::CREATE_ACCOUNTING_INTEGRATION,
         'accounting_payouts_integration_status_app'    => Permission::VIEW_ACCOUNTING_INTEGRATION,
@@ -7038,6 +7046,8 @@ class Route
             'accounting_payouts_integration_app_get_url',
             'accounting_payouts_integration_app_initiate',
             'accounting_payouts_integration_status',
+            'accounting_payouts_cash_flow_list_ba',
+            'accounting_payouts_cash_flow_update_ba_mapping',
             'accounting_payouts_integration_status_app',
             'accounting_payouts_sync',
             'accounting_payouts_sync_status',
@@ -11124,6 +11134,8 @@ class Route
 
         // Accounting Payouts
         'accounting_payouts_integration_status',
+        'accounting_payouts_cash_flow_list_ba',
+        'accounting_payouts_cash_flow_update_ba_mapping',
         'accounting_payouts_integration_app_get_url',
         'accounting_payouts_integration_app_initiate',
         'accounting_payouts_integration_status_app',

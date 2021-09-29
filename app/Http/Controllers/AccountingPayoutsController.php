@@ -2,8 +2,8 @@
 
 namespace RZP\Http\Controllers;
 
-use Mail;
 use ApiResponse;
+use Mail;
 
 class AccountingPayoutsController extends Controller
 {
@@ -12,6 +12,16 @@ class AccountingPayoutsController extends Controller
         parent::__construct();
 
         $this->service = $this->app['accounting-payouts'];
+    }
+
+    public function updateBAMapping()
+    {
+        return $this->service->updateBAMapping($this->ba->getMerchant(), $this->input);
+    }
+
+    public function listCashFlowBA()
+    {
+        return $this->service->listCashFlowBA($this->ba->getMerchant(), $this->input);
     }
 
     public function integrationAppGetURL(string $app)

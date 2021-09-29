@@ -404,4 +404,34 @@ class AccountingPayoutsTest extends TestCase
 
         $apMock->shouldHaveReceived('setOrganisationInfo');
     }
+
+    public function testUpdateBankAccountMappingCallsServiceMethods()
+    {
+        $this->ba->proxyAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('updateBAMapping')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('updateBAMapping');
+    }
+
+    public function testListCashFlowBankAccountCallsServiceMethods()
+    {
+        $this->ba->proxyAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('listCashFlowBA')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('listCashFlowBA');
+    }
 }
