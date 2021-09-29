@@ -83,8 +83,8 @@ export default class Sidebar extends Component {
   }
 
   initializeRoutes(location) {
-    let pathname = location.pathname;
-    let routes = this.routes;
+    const pathname = location.pathname;
+    const routes = this.routes;
     const user = this.props.user;
 
     // Selecting next route if default route is not available
@@ -93,7 +93,7 @@ export default class Sidebar extends Component {
     }
 
     if (user.isOrgAxis) {
-      routes['account'] = '/profile';
+      routes.account = '/profile';
     }
 
     if (location.state && location.state.was404) {
@@ -139,8 +139,8 @@ export default class Sidebar extends Component {
   }
 
   onSidebarBannerClick = () => {
-    const { user } = this.props,
-      { showInstantActivation } = user;
+    const { user } = this.props;
+    const { showInstantActivation } = user;
     let isAcceptPaymentsShown = false;
 
     if (this.props.showMobileMenu) {
@@ -189,8 +189,8 @@ export default class Sidebar extends Component {
   }
 
   render() {
-    let { user, config, logoURL, showMobileMenu } = this.props;
-    let routes = this.routes;
+    const { user, config, logoURL, showMobileMenu } = this.props;
+    const routes = this.routes;
     const isMerchant = !!user.current;
 
     const merchantNavLinkProps = {
@@ -228,6 +228,7 @@ export default class Sidebar extends Component {
                     label="App Store"
                     icon="i i-app-store text-primary"
                     to="/app-store"
+                    customBadge="NEW"
                   />
                 </div>
               </div>
@@ -272,9 +273,11 @@ class PartnerSidebar extends Component {
 
   toggle = (type) => () => {
     this.setState(
-      {
-        [type]: !this.state[type],
-        [this.getCounterType(type)]: this.state[type],
+      (prevState) => {
+        return {
+          [type]: !prevState[type],
+          [this.getCounterType(type)]: prevState[type],
+        };
       },
       () => {
         setTimeout(() => {
