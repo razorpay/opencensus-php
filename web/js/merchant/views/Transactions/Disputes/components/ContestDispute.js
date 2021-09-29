@@ -63,6 +63,7 @@ const ContestDispute = (props) => {
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
+        closeModal();
         dispatch(fetchOpen());
         dispatch(fetchDisputes({ skip: 0, count: 25 }));
       })
@@ -120,21 +121,19 @@ const ContestDispute = (props) => {
             dispute={dispute}
             title="Are you sure you want to contest this chargeback?"
             description={
-              <>
-                {amount !== dispute.amount ? (
-                  <>
-                    <Amount value={amount} currency={dispute.currency} /> will be deducted from your
-                    Razorpay account balance. The documents submitted will be represented with the
-                    bank to contest the remaining{' '}
-                    <Amount value={dispute.amount - amount} currency={dispute.currency} /> of the
-                    dispute
-                  </>
-                ) : (
-                  <>
-                    The documents submitted will be represented with the bank to contest the dispute
-                  </>
-                )}
-              </>
+              amount !== dispute.amount ? (
+                <>
+                  <Amount value={amount} currency={dispute.currency} /> will be deducted from your
+                  Razorpay account balance. The documents submitted will be represented with the
+                  bank to contest the remaining{' '}
+                  <Amount value={dispute.amount - amount} currency={dispute.currency} /> of the
+                  dispute
+                </>
+              ) : (
+                <>
+                  The documents submitted will be represented with the bank to contest the dispute
+                </>
+              )
             }
             onConfirm={() => submitEvidence(data)}
             showNotification={showNotification}
