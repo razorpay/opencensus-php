@@ -303,7 +303,7 @@ export default class ActivationContainer extends React.Component {
                 className: 'instantActivation-loading--Modal',
               });
             } else {
-              this.props.setActivationFormLoadingState(); //true lodaing state
+              this.props.setActivationFormLoadingState(); //true loading state
             }
             setTimeout(() => {
               this.fetchMerchantDetails().then((res) => {
@@ -313,7 +313,7 @@ export default class ActivationContainer extends React.Component {
                     this.props.updateSession({ mode: 'live' });
                   }
                   this.updateSession(res.data);
-                  this.props.setActivationFormLoadingState(); //false lodaing state
+                  this.props.setActivationFormLoadingState(); //false loading state
                   this.setState({ showSuccessScreen: true });
                 } else if (
                   res?.data &&
@@ -322,8 +322,24 @@ export default class ActivationContainer extends React.Component {
                   )
                 ) {
                   this.updateSession(res.data);
-                  this.props.setActivationFormLoadingState(); //false lodaing state
-                  this.setState({ showSuccessScreen: true });
+                  this.props.setActivationFormLoadingState(); //false loading state
+                  if (this.props.user.autoOpenL2Form && res?.data && !res.data.activated) {
+                    analyticsTrack({
+                      objectName: 'Auto Open L2 form on not instantly activated',
+                      actionName: 'displayed',
+                      screen: 'home page',
+                      properties: {
+                        loginL1Experiment: 'auto open L2 form on not instantly activated',
+                        ...getCommonSegmentProperties(),
+                      },
+                    });
+                    this.setState({
+                      showL2Form: true,
+                    });
+                    return res;
+                  } else {
+                    this.setState({ showSuccessScreen: true });
+                  }
                 } else {
                   this.updateSession(res.data);
                   this.props.setActivationFormLoadingState(); //false lodaing state

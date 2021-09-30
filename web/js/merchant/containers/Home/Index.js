@@ -724,7 +724,8 @@ export default class HomeContainer extends Component {
     if (
       signUpFormStatus &&
       signUpFormStatus === 'sign_up_completed' &&
-      this.props.user.autoOpenL1Form
+      this.props.user.autoOpenL1Form &&
+      !this.props.user.activation_form_milestone
     ) {
       setTimeout(() => {
         if (this.autoOpenL1FormModal) {
@@ -737,9 +738,16 @@ export default class HomeContainer extends Component {
               ...getCommonAnalyticsProperties(window.rzp_user),
             },
           });
+          this.setState({
+            showOnboardingBannerFirstStep: false,
+            showOnboardingBanner: false,
+          });
+          this.onFirstStepClose();
+          this.hideWelcomeModalCTAs = false;
           this.props.history.push('/activation');
         }
       }, 7000);
+      this.hideWelcomeModalCTAs = true;
     }
     setItem('sign_up_exp_status', 'kyc_form_fill_started');
   }
@@ -1089,6 +1097,7 @@ export default class HomeContainer extends Component {
                     isFestive={this.isFestive}
                     isOnboardingV2Enabled={user.isOnboardingV2Enabled}
                     isProductRecommendationEnabled={user.isProductRecommendationEnabled}
+                    hideCTAs={this.hideWelcomeModalCTAs}
                   />
                 </ModalContent>
               </Modal>

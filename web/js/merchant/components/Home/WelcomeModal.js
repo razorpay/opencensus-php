@@ -23,6 +23,7 @@ const WelcomeModal = ({
   isFestive,
   isOnboardingV2Enabled,
   isProductRecommendationEnabled,
+  hideCTAs,
 }) => {
   const getLandingProduct =
     LocalStorageService.getItem('merchant_landing_page') ||
@@ -172,18 +173,25 @@ const WelcomeModal = ({
           <p>Activate your account to start accepting payments from customers.</p>
         </React.Fragment>
       )}
-      <div className="welcome-modal-actions">
-        <Link
-          to={isOnboardingV2Enabled && isMobileDevice() ? '/onboarding/steps' : '/activation'}
-          onClick={handleActivationClick}
-          className="btn btn-primary"
-        >
-          Activate your account
-        </Link>
-        <span className="btn-link m-l cursor-pointer" onClick={handleTryOutClick}>
-          Try out the Dashboard
-        </span>
-      </div>
+      {hideCTAs ? (
+        <React.Fragment>
+          <br />
+          <p class="welcome-para">Opening activation form in a moment.</p>
+        </React.Fragment>
+      ) : (
+        <div className="welcome-modal-actions">
+          <Link
+            to={isOnboardingV2Enabled && isMobileDevice() ? '/onboarding/steps' : '/activation'}
+            onClick={handleActivationClick}
+            className="btn btn-primary"
+          >
+            Activate your account
+          </Link>
+          <span className="btn-link m-l cursor-pointer" onClick={handleTryOutClick}>
+            Try out the Dashboard
+          </span>
+        </div>
+      )}
     </div>
   );
 };
