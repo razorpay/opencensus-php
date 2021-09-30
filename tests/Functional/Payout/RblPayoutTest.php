@@ -988,6 +988,74 @@ class RblPayoutTest extends TestCase
         $this->assertEquals(100, $basDetailsAfterCronRuns->getGatewayBalance());
     }
 
+    public function testBalanceFetch()
+    {
+        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
+
+        $response = $this->setupRblDispatchGatewayBalanceUpdateForMerchants();
+
+        /** @var Details\Entity $basDetails */
+        $basDetails = $this->getDbEntity('banking_account_statement_details',
+                                                       ['account_number' => 2224440041626905]);
+
+        $this->assertArrayHasKey(BankingAccount\Core::MADE_PAYOUT_RULE, $response);
+        $this->assertArrayHasKey(BankingAccount\Core::BALANCE_CHANGE_RULE, $response);
+        $this->assertArrayHasKey(BankingAccount\Core::MANDATORY_UPDATE_RULE, $response);
+
+        $this->assertEmpty($response[BankingAccount\Core::MADE_PAYOUT_RULE]);
+        $this->assertEmpty($response[BankingAccount\Core::BALANCE_CHANGE_RULE]);
+        $this->assertEquals([$basDetails->getMerchantId()], $response[BankingAccount\Core::MANDATORY_UPDATE_RULE]);
+    }
+
+    public function testBalanceFetchWhenMerchantDoesPayout()
+    {
+        $this->testCreatePayoutWithFetchAndUpdateBalanceFromGatewayAndBalanceMoreThanPayoutAmount();
+
+        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
+
+        $response = $this->setupRblDispatchGatewayBalanceUpdateForMerchants();
+
+        /** @var Details\Entity $basDetails */
+        $basDetails = $this->getDbEntity('banking_account_statement_details',
+                                         ['account_number' => 2224440041626905]);
+
+        $this->assertArrayHasKey(BankingAccount\Core::MADE_PAYOUT_RULE, $response);
+        $this->assertArrayHasKey(BankingAccount\Core::BALANCE_CHANGE_RULE, $response);
+        $this->assertArrayHasKey(BankingAccount\Core::MANDATORY_UPDATE_RULE, $response);
+
+        $this->assertEquals([$basDetails->getMerchantId()], $response[BankingAccount\Core::MADE_PAYOUT_RULE]);
+        $this->assertEmpty($response[BankingAccount\Core::BALANCE_CHANGE_RULE]);
+        $this->assertEmpty($response[BankingAccount\Core::MANDATORY_UPDATE_RULE]);
+    }
+
+    public function testBalanceFetchWhenMerchantGatewayBalanceChanges()
+    {
+        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
+
+        /** @var Details\Entity $basDetails */
+        $basDetails = $this->getDbEntity('banking_account_statement_details',
+                                         ['account_number' => 2224440041626905]);
+
+        $this->fixtures->edit('banking_account_statement_details', $basDetails->getId(),
+                              [Details\Entity::GATEWAY_BALANCE_CHANGE_AT => Carbon::now()->subMinute()->getTimestamp()]);
+
+        $response = $this->setupRblDispatchGatewayBalanceUpdateForMerchants();
+
+        $this->assertArrayHasKey(BankingAccount\Core::MADE_PAYOUT_RULE, $response);
+        $this->assertArrayHasKey(BankingAccount\Core::BALANCE_CHANGE_RULE, $response);
+        $this->assertArrayHasKey(BankingAccount\Core::MANDATORY_UPDATE_RULE, $response);
+
+        $this->assertEmpty($response[BankingAccount\Core::MADE_PAYOUT_RULE]);
+        $this->assertEquals([$basDetails->getMerchantId()], $response[BankingAccount\Core::BALANCE_CHANGE_RULE]);
+        $this->assertEmpty($response[BankingAccount\Core::MANDATORY_UPDATE_RULE]);
+    }
+
     protected function getMozartServiceSuccessResponse(int $amount = 1)
     {
         $response = [

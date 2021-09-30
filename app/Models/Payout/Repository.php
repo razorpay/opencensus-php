@@ -386,6 +386,31 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    // get list of merchant ids who have done payouts in given time period.
+    public function getCAMerchantIdsWithAtleastOnePayout(string $channel, int $startTime, int $endTime)
+    {
+        $balanceIdColumn          = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $balanceTypeColumn        = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+        $balanceAccountTypeColumn = $this->repo->balance->dbColumn(Balance\Entity::ACCOUNT_TYPE);
+        $balanceChannelColumn     = $this->repo->balance->dbColumn(Balance\Entity::CHANNEL);
+
+        $payoutInitiatedAtColumn = $this->dbColumn(Entity::INITIATED_AT);
+        $payoutsBalanceIdColumn  = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+        $payoutMerchantIdColumn  = $this->dbColumn(Entity::MERCHANT_ID);
+
+        return $this->newQuery()
+                    ->select($payoutMerchantIdColumn)
+                    ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
+                    ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+                    ->where($balanceAccountTypeColumn, '=', Balance\AccountType::DIRECT)
+                    ->where($balanceChannelColumn, '=', $channel)
+                    ->whereBetween($payoutInitiatedAtColumn, [$startTime, $endTime])
+                    ->distinct()
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+    }
+
     public function getOnHoldPayoutsWithBeneBankUp(array $beneBanksDownList = [])
     {
         $payoutStatus = $this->dbColumn(Entity::STATUS);

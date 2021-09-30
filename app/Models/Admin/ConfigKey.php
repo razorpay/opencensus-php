@@ -127,6 +127,8 @@ class ConfigKey
     // special attempt limit for merchants transacting more.
     const RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT = self::PREFIX . 'rbl_statement_fetch_special_attempt_limit';
 
+    const RBL_CA_BALANCE_UPDATE_LIMITS = self::PREFIX . 'rbl_ca_balance_update_limits';
+
     const RBL_STATEMENT_FETCH_RETRY_LIMIT           = self::PREFIX . 'rbl_statement_fetch_retry_limit';
 
     const ICICI_STATEMENT_FETCH_RETRY_LIMIT           = self::PREFIX . 'icici_statement_fetch_retry_limit';
@@ -368,6 +370,7 @@ class ConfigKey
         self::PAYMENT_SHOW_DCC_MARKUP,
         self::RBL_STATEMENT_FETCH_V2_API_MAX_RECORDS,
         self::PAYER_ACCOUNT_NUMBER_INVALID_REGEXES,
+        self::RBL_CA_BALANCE_UPDATE_LIMITS,
     ];
 
     const REDIS_CONFIG_MAP = [

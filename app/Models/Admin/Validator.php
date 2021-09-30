@@ -134,6 +134,7 @@ class Validator extends Base\Validator
         ConfigKey::RBL_ENABLE_RATE_LIMIT_FLOW                     => 'filled|integer',
         ConfigKey::ICICI_ENABLE_RATE_LIMIT_FLOW                   => 'filled|integer',
         ConfigKey::RBL_STATEMENT_FETCH_V2_API_MAX_RECORDS         => 'filled|integer',
+        ConfigKey::RBL_CA_BALANCE_UPDATE_LIMITS                   => 'filled|array',
 
 
         ConfigKey::CREDIT_CARD_REGEX_FOR_REDACTING    => 'filled|string',

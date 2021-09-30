@@ -453,6 +453,7 @@ trait TestsBusinessBanking
                           ->willReturn(strtolower($webhookViaStork));
     }
 
+    // sets razorx mock based on input array of key value pair of features and their expected values
     protected function setMockRazorxTreatment(array $razorxTreatment, string $defaultBehaviour = 'off')
     {
         // Mock Razorx

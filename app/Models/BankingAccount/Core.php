@@ -56,6 +56,22 @@ class Core extends Base\Core
 
     const DEFAULT_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT = 1000;
 
+    // Limits for gateway balance update for CA.
+    const CA_BALANCE_UPDATE_TIME_LIMIT           = 'ca_balance_update_time_limit';
+    const CA_BALANCE_UPDATE_RATE_LIMIT           = 'ca_balance_update_rate_limit';
+    const CA_MANDATORY_BALANCE_UPDATE_RATE_LIMIT = 'ca_mandatory_balance_update_rate_limit';
+
+    const DEFAULT_CA_BALANCE_UPDATE_LIMITS = [
+        self::CA_BALANCE_UPDATE_TIME_LIMIT           => 1800,
+        self::CA_BALANCE_UPDATE_RATE_LIMIT           => 100,
+        self::CA_MANDATORY_BALANCE_UPDATE_RATE_LIMIT => 150
+    ];
+
+    // Different rules used in gateway balance update for CA.
+    const MADE_PAYOUT_RULE = 'made_payout';
+    const BALANCE_CHANGE_RULE = 'balance_change';
+    const MANDATORY_UPDATE_RULE = 'mandatory_update_rule';
+
     // Values for default Fee Recovery Schedule
     const DEFAULT_SCHEDULE_PERIOD   = Period::DAILY;
     const DEFAULT_SCHEDULE_INTERVAL = 7;
@@ -1453,6 +1469,20 @@ class Core extends Base\Core
 
         $validator->validateInput(Validator::DISPATCH_GATEWAY_BALANCE, [Entity::CHANNEL => $channel]);
 
+        $variant = $this->app->razorx->getTreatment($channel,
+                                                    Merchant\RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,
+                                                    $this->app['rzp.mode']);
+
+        if (strtolower($variant) === 'on')
+        {
+            return $this->dispatchGatewayBalanceUpdateForMerchantsV2($channel);
+        }
+
+        return $this->dispatchGatewayBalanceUpdateForMerchantsV1($channel);
+    }
+
+    public function dispatchGatewayBalanceUpdateForMerchantsV1(string $channel)
+    {
         // different limit for each channel
         $limit = $this->getGatewayBalanceUpdateRateLimit($channel);
 
@@ -1472,6 +1502,85 @@ class Core extends Base\Core
             ]);
 
         return $merchantIds;
+    }
+
+    // tech spec for this dispatch logic: https://docs.google.com/document/d/1rqTkDsnoYamSFDsEnnmgG_0aNf6jA8Y9Bglu6c_1tXM/edit#heading=h.lc0fi15c803g
+    protected function dispatchGatewayBalanceUpdateForMerchantsV2(string $channel)
+    {
+        switch ($channel)
+        {
+            case Channel::RBL:
+                $balanceUpdateLimits = (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_CA_BALANCE_UPDATE_LIMITS]);
+                break;
+
+            default:
+                $balanceUpdateLimits = [];
+        }
+
+        if (empty($balanceUpdateLimits) === true)
+        {
+            $balanceUpdateLimits = self::DEFAULT_CA_BALANCE_UPDATE_LIMITS;
+        }
+
+        // time period to be used in made_payout rule and balance_change rule.
+        $timePeriod                  = $balanceUpdateLimits[self::CA_BALANCE_UPDATE_TIME_LIMIT];
+        // maximum number of merchants to select under balanced change rule.
+        $limitForBalanceChangeRule   = $balanceUpdateLimits[self::CA_BALANCE_UPDATE_RATE_LIMIT];
+        // maximum number of merchants to select under mandatory update rule.
+        // This number should be set such that gateway balance is fetched at-least once for all merchants in 10 minutes.
+        $limitForMandatoryUpdateRule = $balanceUpdateLimits[self::CA_MANDATORY_BALANCE_UPDATE_RATE_LIMIT];
+
+        // initializing to empty array as further code will depend on count of these arrays.
+        $merchantIdsToDispatch[self::MADE_PAYOUT_RULE]      = [];
+        $merchantIdsToDispatch[self::BALANCE_CHANGE_RULE]   = [];
+        $merchantIdsToDispatch[self::MANDATORY_UPDATE_RULE] = [];
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        // get list of distinct merchant ids who have done payouts in last $timePeriod seconds.
+        $merchantIdsToDispatch[self::MADE_PAYOUT_RULE] = $this->repo->payout->getCAMerchantIdsWithAtleastOnePayout($channel, $currentTime - $timePeriod, $currentTime);
+
+        $basDetails = $this->repo->banking_account_statement_details->fetchByChannelOrderByBalanceLastFetchedAt($channel);
+
+        /** @var BASDetails\Entity $basDetailsEntity */
+        foreach ($basDetails as $basDetailsEntity)
+        {
+            if (in_array($basDetailsEntity->getMerchantId(), $merchantIdsToDispatch[self::MADE_PAYOUT_RULE]) === false)
+            {
+                // merchants whose gateway balance changed in last $timePeriod seconds will be selected under this rule.
+                if (($basDetailsEntity->getGatewayBalanceChangeAt() > $currentTime - $timePeriod) and
+                    (count($merchantIdsToDispatch[self::BALANCE_CHANGE_RULE]) < $limitForBalanceChangeRule))
+                {
+                    $merchantIdsToDispatch[self::BALANCE_CHANGE_RULE][] = $basDetailsEntity->getMerchantId();
+                }
+                else if (count($merchantIdsToDispatch[self::MANDATORY_UPDATE_RULE]) < $limitForMandatoryUpdateRule)
+                {
+                    // merchants who didn't fall in other selection rules will be selected under this rule.
+                    // This is to ensure that we fetch gateway balance for all merchants in say 10 minutes.
+                    $merchantIdsToDispatch[self::MANDATORY_UPDATE_RULE][]= $basDetailsEntity->getMerchantId();
+                }
+            }
+
+            // greater than condition will never be used. Kept it for safe side.
+            if ((count($merchantIdsToDispatch[self::BALANCE_CHANGE_RULE]) >= $limitForMandatoryUpdateRule) and
+                (count($merchantIdsToDispatch[self::MANDATORY_UPDATE_RULE]) >= $limitForBalanceChangeRule))
+            {
+                break;
+            }
+        }
+
+        foreach ($merchantIdsToDispatch as $rule => $merchantIds)
+        {
+            foreach ($merchantIds as $merchantId)
+            {
+                $this->dispatchGatewayBalanceUpdateJob($channel, $merchantId, $rule);
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_DISPATCHED_V2, $merchantIdsToDispatch);
+
+        return $merchantIdsToDispatch;
     }
 
     protected function getGatewayBalanceUpdateRateLimit(string $channel)
@@ -1507,13 +1616,14 @@ class Core extends Base\Core
         return $limit;
     }
 
-    protected function dispatchGatewayBalanceUpdateJob(string $channel, $merchantId)
+    protected function dispatchGatewayBalanceUpdateJob(string $channel, $merchantId, string $rule = 'default')
     {
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_REQUEST,
             [
                 Entity::CHANNEL     => $channel,
                 Entity::MERCHANT_ID => $merchantId,
+                'rule'              => $rule,
             ]);
 
         // different queue for each channel

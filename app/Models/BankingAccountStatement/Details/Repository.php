@@ -42,6 +42,22 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchByChannelOrderByBalanceLastFetchedAt(string $channel)
+    {
+        $channelColumn = $this->dbColumn(Entity::CHANNEL);
+
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+
+        $basDetailsAttr = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($basDetailsAttr)
+                    ->where($channelColumn, '=', $channel)
+                    ->where($statusColumn, '=', Status::ACTIVE)
+                    ->oldest(Entity::BALANCE_LAST_FETCHED_AT)
+                    ->get();
+    }
+
     public function getMerchantIdsByChannel($channel, $limit)
     {
         $basDetailsBalanceIdColumn     = $this->dbColumn(Entity::BALANCE_ID);

@@ -332,6 +332,8 @@ final class RazorxTreatment
 
     const IGNORE_INDEX_IN_TRANSACTIONS_FETCH = 'ignore_index_in_transactions_fetch_2';
 
+    const GATEWAY_BALANCE_FETCH_V2 = 'gateway_balance_fetch_v2';
+
     const BAS_FETCH_RE_ARCH = 'bas_fetch_re_arch';
 
     // Experiment to send merchant downtimes to checkout and in fetch api
