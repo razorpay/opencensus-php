@@ -2537,7 +2537,7 @@ trait Refund
             }
         }
 
-        $bankAccountInput = $this->getBankAccountInput($payment, $refund, $input);
+        $bankAccountInput = $this->getBankAccountInput($payment, $input);
 
         if (empty($bankAccountInput) === false)
         {
@@ -2551,6 +2551,32 @@ trait Refund
         if (empty($vpaInput) === false)
         {
             $scroogeData['fta_data']['vpa'] = $vpaInput;
+        }
+    }
+
+    public function loadFTADataWithoutRefundEntity(
+        array &$scroogeData, Payment\Entity $payment)
+    {
+
+        $bankAccountInput = $this->getBankAccountInput($payment);
+
+        if (empty($bankAccountInput) === false)
+        {
+            $scroogeData[RefundConstants::BANK_ACCOUNT] = $bankAccountInput;
+
+            return;
+        }
+
+        if ($this->refundToUpiViaFta($payment) === true)
+        {
+            $vpaInput = $payment->getVpa();
+
+            if (empty($vpaInput) === false)
+            {
+                $scroogeData[RefundConstants::VPA] = $vpaInput;
+
+                return;
+            }
         }
     }
 
@@ -3015,7 +3041,7 @@ trait Refund
                                                           array $data,
                                                           array $fundTransferAttemptInput): FundTransferAttempt\Entity
     {
-        $bankAccountInput = $this->getBankAccountInput($payment, $refund, $data);
+        $bankAccountInput = $this->getBankAccountInput($payment, $data);
 
         if ((isset($bankAccountInput[BankAccount\Entity::TRANSFER_MODE]) === true) and
             (trim($bankAccountInput[BankAccount\Entity::TRANSFER_MODE]) !== ''))
@@ -3390,11 +3416,11 @@ trait Refund
         return $input;
     }
 
-    protected function getBankAccountInput(Payment\Entity $payment, RefundEntity $refund, array $data = [])
+    protected function getBankAccountInput(Payment\Entity $payment, array $data = [])
     {
         $input = [];
 
-        if ($refund->isDirectSettlementRefund() === true)
+        if ($payment->isDirectSettlementRefund() === true)
         {
             // Not allowing Fund Transfers on direct settlement with refund terminals
             return [];

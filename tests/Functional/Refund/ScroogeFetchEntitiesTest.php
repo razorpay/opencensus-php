@@ -1060,64 +1060,6 @@ class ScroogeFetchEntitiesTest extends TestCase
         return [$input, $expectedOutput];
     }
 
-    //TODO:implement FTA data support
-    public function scroogeFetchEntitiesV2SubTest99($subTestArgs): array
-    {
-        $paymentId = substr($subTestArgs['payment']['id'], 4);
-
-        $paymentEntity = $this->getDbEntityById('payment', $paymentId);
-
-        // set back from previous test edit
-        $this->fixtures->card->edit($paymentEntity['card_id'], [
-            'iin' => '401200'
-        ]);
-
-        $this->fixtures->payment->edit($paymentId, [
-            'method' => 'upi',
-            'gateway' => 'upi_mindgate',
-            'recurring' => TRUE,
-            'vpa' => 'abc@rzp'
-        ]);
-
-        $input = [
-            'payment_ids' => [
-                $paymentId
-            ],
-            'entities' => [
-                'payment'
-            ],
-            'extra_data' => [
-                'fta_data'
-            ]
-        ];
-
-        $expectedOutput = [
-            $paymentId => [
-                'entities' => [
-                    'payment' => [
-                        'data' => [
-                            'method' => 'upi',
-                        ],
-                        'error' => NULL
-
-                    ],
-                ],
-                'extra_data' => [
-                    'fta_data' => [
-                        'data' => [
-                            'vpa' => [
-                                'address' => 'abc@rzp'
-                            ],
-                        'error' => NULL,
-                    ]
-                ],
-            ],
-        ]
-    ];
-
-        return [$input, $expectedOutput];
-    }
-
     // test extra_data merchant features
     public function scroogeFetchEntitiesV2SubTest10($subTestArgs): array
     {
@@ -1282,8 +1224,64 @@ class ScroogeFetchEntitiesTest extends TestCase
         return [$input, $expectedOutput];
     }
 
-    // test various extra data fetch on bank_transfer entity
+    // test fta_data fetch
     public function scroogeFetchEntitiesV2SubTest14($subTestArgs): array
+    {
+        $paymentId = substr($subTestArgs['payment']['id'], 4);
+
+        $paymentEntity = $this->getDbEntityById('payment', $paymentId);
+
+        // set back from previous test edit
+        $this->fixtures->card->edit($paymentEntity['card_id'], [
+            'iin' => '401200'
+        ]);
+
+        $this->fixtures->payment->edit($paymentId, [
+            'method' => 'upi',
+            'gateway' => 'upi_mindgate',
+            'recurring' => TRUE,
+            'vpa' => 'abc@rzp',
+            'card_id' => NULL,
+        ]);
+
+        $input = [
+            'payment_ids' => [
+                $paymentId
+            ],
+            'entities' => [
+                'payment'
+            ],
+            'extra_data' => [
+                'fta_data'
+            ]
+        ];
+
+        $expectedOutput = [
+            $paymentId => [
+                'entities' => [
+                    'payment' => [
+                        'data' => [
+                            'method' => 'upi',
+                        ],
+                        'error' => NULL
+                    ],
+                ],
+                'extra_data' => [
+                    'fta_data' => [
+                         'data' => [
+                                    'vpa' => 'abc@rzp'
+                         ],
+                        'error' => NULL
+                    ],
+                ],
+            ]
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+    // test various extra data fetch on bank_transfer entity
+    public function scroogeFetchEntitiesV2SubTest15($subTestArgs): array
     {
         $paymentId = substr($subTestArgs['payment']['id'], 4);
 

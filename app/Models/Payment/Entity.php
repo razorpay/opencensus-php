@@ -4486,7 +4486,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         // is null check handles deleted terminal cases
         if (($this->hasTerminal() === true) and
             (is_null($this->terminal) === false) and
-            ($this->terminal->isDirectSettlementWithRefund() === true))
+            ($this->terminal->isDirectSettlementWithRefund() === true) and
+            ($this->getTerminalId() !== 'B2K2t8JD9z98vh'))
+            // This terminal was deleted due to Yesbank moratorium
+            // This particular terminal is not a direct settlement terminal
+            // Will be removing this check once the terminal is fixed.
+            //
+            // Slack thread for reference:
+            // https://razorpay.slack.com/archives/CA66F3ACS/p1584100168218900?thread_ts=1584090894.210900&cid=CA66F3ACS
+            //
         {
             return true;
         }

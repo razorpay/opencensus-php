@@ -1162,6 +1162,17 @@ class Service extends Base\Service
         return in_array($cardIssuer, TransferMode::getSupportedIssuers());
     }
 
+    protected function getPaymentExtraDataFtaData(Payment\Entity $payment) : array
+    {
+        $ftaData=[];
+
+        if ($payment->isDirectSettlementRefund() !== true)
+        {
+                $this->getNewProcessor($payment->merchant)->loadFTADataWithoutRefundEntity($ftaData, $payment);
+        }
+
+        return $ftaData;
+    }
 
     protected function getPaymentExtraDataPaymentUtr(Payment\Entity $payment)
     {
