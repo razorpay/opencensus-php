@@ -6,6 +6,8 @@ use Config;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\UpiMandate;
+use RZP\Models\SubscriptionRegistration\Method;
 
 class ViewDataSerializer extends Base\Core
 {
@@ -36,8 +38,16 @@ class ViewDataSerializer extends Base\Core
         if ($subscriptionRegistration !== null)
         {
             $tokenData[Constants\Entity::SUBSCRIPTION_REGISTRATION] = $subscriptionRegistration->toArrayPublic();
-        }
 
+            if($subscriptionRegistration->getMethod() === Method::UPI)
+            {
+                $upimandate = $this->repo->upi_mandate->findByTokenId($this->token->getId());
+
+                $tokenData
+                [Constants\Entity::SUBSCRIPTION_REGISTRATION]
+                [UpiMandate\Entity::FREQUENCY] = $upimandate->getFrequency();
+            }
+        }
         return $tokenData;
     }
 

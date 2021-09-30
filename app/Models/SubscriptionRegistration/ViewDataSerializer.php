@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
+use RZP\Models\UpiMandate;
 
 class ViewDataSerializer extends Base\Core
 {
@@ -53,6 +54,15 @@ class ViewDataSerializer extends Base\Core
             [Constants\Entity::SUBSCRIPTION_REGISTRATION]
             [Constants\Entity::BANK_ACCOUNT]
             [BankAccount\Entity::BANK_NAME] = $order->getBank();
+        }
+
+        if($subscriptionRegistration->getMethod() === Method::UPI)
+        {
+            $upimandate = $order->upiMandate;
+
+            $invoiceData
+            [Constants\Entity::SUBSCRIPTION_REGISTRATION]
+            [UpiMandate\Entity::FREQUENCY] = $upimandate->getFrequency();
         }
 
         return $invoiceData;

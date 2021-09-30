@@ -159,6 +159,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Dispute\Evidence\Document\Repository           $dispute_evidence_document;
  * @property Models\Merchant\RiskNotes\Repository                  $merchant_risk_note;
  * @property Models\Payout\Batch\Repository                        $payouts_batch;
+ * @property Models\UpiMandate\Repository                          $upi_mandate;
  * @property Models\DeviceDetail\Repository                        $user_device_detail
  */
 
