@@ -46,13 +46,12 @@ const InstantActivationModal = ({
   const [animationStart, setAnimationStart] = useState(false);
   const recommendProductName = RECOMMANDED_PRODUCT_LIST[getLandingProduct]?.name || '';
   const trackEvent = tracking.trackEvent;
+  const commonProperty = { auto_pl_product: getLandingProduct };
 
   const currentButton = () => {
     const completKYCBtn = (
       <Button.Secondary
         onClick={() => {
-          onClose();
-          history.push('/activation');
           analyticsTrack({
             objectName: 'L2 Start',
             actionName: 'form fill initiated',
@@ -60,6 +59,7 @@ const InstantActivationModal = ({
             properties: {
               clickSource: 'form submission popup',
               milestone: 'L2 Start',
+              ...commonProperty,
               ...getCommonAnalyticsProperties(window.rzp_user),
             },
           });
@@ -68,6 +68,8 @@ const InstantActivationModal = ({
               clickSource: 'instant activation modal',
             }),
           );
+          onClose();
+          history.push('/activation');
         }}
         children="Complete KYC"
       />
@@ -76,17 +78,30 @@ const InstantActivationModal = ({
       return (
         <Button.Primary
           onClick={() => {
-            onClose();
-            history.push('/paymentlinks?link_type=standard');
             analyticsTrack({
               objectName: 'Create PL Button',
               actionName: 'clicked',
               screen: 'home page',
               properties: {
+                ...commonProperty,
                 ...getCommonAnalyticsProperties(window.rzp_user),
               },
             });
-            trackEvent(window.rzpQ.onbr().clicked('create_pl_button'));
+            analyticsTrack({
+              objectName: 'Auto PL Pop Up Redirection',
+              actionName: 'Initiated',
+              screen: 'home page',
+              properties: {
+                ...commonProperty,
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
+            trackEvent(window.rzpQ.onbr().clicked('create_pl_button'), { ...commonProperty });
+            trackEvent(window.rzpQ.onbr().initiated('auto_pl_pop_up_redirection'), {
+              ...commonProperty,
+            });
+            onClose();
+            history.push('/paymentlinks?link_type=standard');
           }}
           children="Create Payment Link"
         />
@@ -97,13 +112,12 @@ const InstantActivationModal = ({
           {completKYCBtn}
           <Button.Primary
             onClick={() => {
-              onClose();
-              history.push(RECOMMANDED_PRODUCT_LIST[getLandingProduct]?.link);
               analyticsTrack({
                 objectName: `Create ${recommendProductName} Button`,
                 actionName: 'clicked',
                 screen: 'home page',
                 properties: {
+                  ...commonProperty,
                   ...getCommonAnalyticsProperties(window.rzp_user),
                 },
               });
@@ -113,7 +127,10 @@ const InstantActivationModal = ({
                   .clicked(
                     `create_${recommendProductName.split(' ').join('_').toLowerCase()}_button`,
                   ),
+                { ...commonProperty },
               );
+              onClose();
+              history.push(RECOMMANDED_PRODUCT_LIST[getLandingProduct]?.link);
             }}
             children={`Create ${recommendProductName}`}
           />
@@ -170,6 +187,18 @@ const InstantActivationModal = ({
         showOnboarding: false,
       });
       setTimeout(() => {
+        analyticsTrack({
+          objectName: 'Auto PL Pop Up Redirection',
+          actionName: 'Initiated',
+          screen: 'home page',
+          properties: {
+            ...commonProperty,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+        trackEvent(window.rzpQ.onbr().initiated('auto_pl_pop_up_redirection'), {
+          ...commonProperty,
+        });
         onClose();
         history.push('/paymentlinks?link_type=standard');
       }, 500);
@@ -220,11 +249,14 @@ const InstantActivationModal = ({
       actionName: 'Shown',
       screen: 'home page',
       properties: {
+        ...commonProperty,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
 
-    trackEvent(window.rzpQ.onbr().initiated('payment_animation_shown'));
+    trackEvent(window.rzpQ.onbr().initiated('payment_animation_shown'), {
+      ...commonProperty,
+    });
     triggerHotjarRecording('instant_activation_popup_shown');
   }, []);
 

@@ -14,6 +14,7 @@ import {
 } from '../components/Fields';
 import { analyticsTrack } from 'common/utils/analytics';
 import { classList, getURLQueryParams, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import * as LocalStorageService from 'common/utils/localStorage';
 
 // TODO: Feels like, can be written in better.
 export default class StandardForm extends React.Component {
@@ -21,13 +22,15 @@ export default class StandardForm extends React.Component {
     return this.props.onSubmit();
   };
   componentDidMount() {
+    const getLandingProduct = LocalStorageService.getItem('merchant_landing_page');
     const params = getURLQueryParams(location.search);
-    if (params?.link_type === 'standard') {
+    if (params?.link_type === 'standard' && getLandingProduct === 'payment_link') {
       analyticsTrack({
         objectName: 'Payment Link PopUp',
         actionName: 'Loaded',
         screen: 'payment link page',
         properties: {
+          auto_pl_product: 'payment_link',
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
       });
