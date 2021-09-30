@@ -688,11 +688,13 @@ class Core extends Base\Core
 
     public function setMerchantDetails(array $settings)
     {
-        (new Validator())->validateSetMerchantDetails($settings);
+        Tracer::inSpan(['name' => 'payment_page.merchant_details.set.validate'], function() use($settings) {
+            (new Validator())->validateSetMerchantDetails($settings);
+        });
 
         $merchant = $this->merchant;
 
-        Tracer::inSpan(['name' => 'payment_page.merchant_details.upsert_and_save'], function() use($merchant, $settings)
+        Tracer::inSpan(['name' => 'payment_page.merchant_details.set.upsert_and_save'], function() use($merchant, $settings)
         {
             Settings\Accessor::for($merchant, Settings\Module::PAYMENT_LINK)
                 ->upsert($settings)

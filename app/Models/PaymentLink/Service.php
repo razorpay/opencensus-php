@@ -35,7 +35,10 @@ class Service extends Base\Service
      */
     public function fetch(string $id, array $input): array
     {
-        $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
+        $entity = Tracer::inSpan(['name' => 'payment_page.get.find_entity'], function() use($id, $input)
+        {
+            return $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
+        });
 
         return $entity->toArrayPublic();
     }
@@ -44,8 +47,10 @@ class Service extends Base\Service
     {
         $this->modifyInputForFetch($input);
 
-        $entities = $this->entityRepo
-            ->fetch($input, $this->merchant->getId());
+        $entities = Tracer::inSpan(['name' => 'payment_page.fetch_pages'], function() use($input)
+        {
+            return $this->entityRepo->fetch($input, $this->merchant->getId());
+        });
 
         return $entities->toArrayPublic();
     }
@@ -60,17 +65,32 @@ class Service extends Base\Service
 
     public function fetchWithDetailsForDashboard(string $id, array $input)
     {
-        $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
+        $entity = Tracer::inSpan(['name' => 'payment_page.get_details.find_entity'], function() use($id, $input)
+        {
+            return $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
+        });
 
         $data = $entity->toArrayPublic();
 
-        $this->fetchSettingForPPI($data);
+        Tracer::inSpan(['name' => 'payment_pages.get_details.fetch_setting_for_ppi'], function() use(&$data)
+        {
+            $this->fetchSettingForPPI($data);
+        });
 
-        $extra[Entity::SLUG] = $entity->getSlugFromShortUrl();
+        $extra[Entity::SLUG] = Tracer::inSpan(['name' => 'payment_page.get_details.get_slug_from_short_url'], function() use($entity)
+        {
+            return $entity->getSlugFromShortUrl();
+        });
 
-        $extra[Entity::CAPTURED_PAYMENTS_COUNT] = $this->repo->payment->getCapturedPaymentsForPaymentPage($entity);
+        $extra[Entity::CAPTURED_PAYMENTS_COUNT] = Tracer::inSpan(['name' => 'payment_page.get_details.get_captured_payments'], function() use($entity)
+        {
+            return $this->repo->payment->getCapturedPaymentsForPaymentPage($entity);
+        });
 
-        $extra[Entity::SETTINGS] = (new ViewSerializer($entity))->serializeSettingsWithDefaults();
+        $extra[Entity::SETTINGS] = Tracer::inSpan(['name' => 'payment_page.get_details.serialize'], function() use($entity)
+        {
+            return (new ViewSerializer($entity))->serializeSettingsWithDefaults();
+        });
 
         return $data + $extra;
     }
@@ -236,7 +256,10 @@ class Service extends Base\Service
      */
     public function upload(array $input): array
     {
-        (new Validator)->validateInput('uploadImages', $input);
+        Tracer::inSpan(['name' => 'payment_page.upload.validate'], function() use($input)
+        {
+            (new Validator)->validateInput('uploadImages', $input);
+        });
 
         return $this->core->upload($input, $this->merchant);
     }
@@ -337,7 +360,10 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
-        $paymentPage = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant);
+        $paymentPage = Tracer::inSpan(['name' => 'payment_page.payments.get.find_payment_page'], function() use($id)
+        {
+            return $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant);
+        });
 
         $payload = $paymentPage->toArrayPublic();
 
@@ -345,7 +371,10 @@ class Service extends Base\Service
 
         $input[Payment\Entity::PAYMENT_LINK_ID] = $paymentPage->getPublicId();
 
-        $payments = $this->repo->payment->fetch($input, $merchant->getId());
+        $payments = Tracer::inSpan(['name' => 'payment_page.payments.get.fetch_payments'], function() use($input, $merchant)
+        {
+            return $this->repo->payment->fetch($input, $merchant->getId());
+        });
 
         foreach ($payments as $payment)
         {
@@ -398,7 +427,10 @@ class Service extends Base\Service
         {
             $paymentPageItem = $paymentLink[Entity::PAYMENT_PAGE_ITEMS][$i];
 
-            $paymentPageItem = $PPICore->fetch($paymentPageItem[PaymentPageItem\Entity::ID], $this->merchant);
+            $paymentPageItem = Tracer::inSpan(['name' => 'payment_page.fetch_payment_page_item'], function() use($PPICore, $paymentPageItem)
+            {
+                return $PPICore->fetch($paymentPageItem[PaymentPageItem\Entity::ID], $this->merchant);
+            });
 
             $paymentPageItem->settings = $paymentPageItem->getSettings();
 

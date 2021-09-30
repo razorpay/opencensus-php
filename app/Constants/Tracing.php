@@ -198,8 +198,13 @@ class Tracing
             'payment_page_fetch_merchant_details',
             'payment_page_get_invoice_details',
             'payment_page_send_receipt',
-            'payment_page_save_receipt_for_payment'
-    ]);
+            'payment_page_save_receipt_for_payment',
+            'payment_page_images',
+            'payment_page_get',
+            'payment_page_get_details',
+            'payment_page_get_payments',
+            'payment_page_list'
+        ]);
     }
 
     public static function getServiceName($app): string
