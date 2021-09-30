@@ -1778,7 +1778,8 @@ class Service extends Base\Service
             'pp_hostedpage_new_footer',
             'show_L1_Form_on_login',
             'auto-open-L1-form',
-            'auto-open-L2-form'
+            'auto-open-L2-form',
+            'mob_welcome_ca_card'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
