@@ -2,7 +2,6 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
-import { isAmount } from 'common/utils/validators';
 import { rupeesToPaise } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -14,6 +13,8 @@ import { AsyncBtn } from 'common/new-ui/Button';
 
 import { chargeToken } from 'merchant/reducers/token';
 import { AmountTooltip } from 'common/ui/Amount';
+
+const CARD_MAX_DEFAULT_AMOUN = 500000;
 
 @withRouter
 @connect(null, { chargeToken, showNotification })
@@ -34,7 +35,7 @@ export default class ChargeToken extends Component {
         if (response) {
           this.props.showNotification({
             type: 'success',
-            message: 'Token is charged successfully',
+            message: 'Charge for token has been initiated',
           });
         } else {
           this.props.showNotification({
@@ -61,12 +62,24 @@ export default class ChargeToken extends Component {
 
   render() {
     const token = this.props.token;
+    const isCard = token.method === 'card';
+    let isDomesticCard = null;
+    let maxAmount = null;
+    if (isCard) {
+      isDomesticCard = !token.card.international;
+      maxAmount = token?.subscription_registration?.max_amount || CARD_MAX_DEFAULT_AMOUN;
+    }
+    const amount = rupeesToPaise(this.state.amount);
+    let isTwoFactorNeeded = true;
+    if (maxAmount && amount <= maxAmount) {
+      isTwoFactorNeeded = false;
+    }
     const currency = token.subscription_registration
       ? token.subscription_registration.currency
       : 'INR';
     return (
       <div>
-        <ModalHeader title={'Charge ' + token.id} onCloseClick={this.props.closeModal} />
+        <ModalHeader title={`Charge  ${token.id}`} onCloseClick={this.props.closeModal} />
         <div class="modal-body">
           <Form onSubmit={this.chargeToken} onChange={this.handleChange}>
             <main class="form-container">
@@ -77,7 +90,15 @@ export default class ChargeToken extends Component {
                 required
                 class="Input--Amount Input--vTop"
               />
-
+              {amount && isDomesticCard ? (
+                <span>
+                  {isTwoFactorNeeded
+                    ? 'This amount will be debited once the customer completes OTP verification.'
+                    : 'This amount will be auto-debited after 24 hours'}
+                </span>
+              ) : (
+                ''
+              )}
               <Input name="receipt" label="Receipt No." class="Input--vTop" />
 
               <Input.Textarea name="description" label="Description" class="Input--vTop" />

@@ -98,11 +98,19 @@
 
     .Input-el
       padding-left: 32px
+  
+  &.long-label
+    .Input-label
+      text-align: start;
+      width: 193px;
+      margin-left: -13px;
 
   &.Input--half
     .Input-elWrapper, .Input--checkbox // Half of normal size
       width: 170px
-
+  &.Input--big
+    .Input-elWrapper, .Input--checkbox // double the half
+      width: 250px
   &.Input--half_small // Smaller than half size
     .Input-elWrapper, .Input--checkbox
       width: 148px
@@ -630,6 +638,12 @@ textarea.Input-el
 
   &-list
     padding-left: 16px
+
+&.sub-text
+  font-weight: normal;
+  text-align: end;
+  padding-right: 5px;
+  margin: 0px;
 
 .Input-error
   display: none

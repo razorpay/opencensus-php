@@ -1,3 +1,5 @@
+import React from 'react';
+import moment from 'moment';
 import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
 import { getFormattedAmount, rupeesToPaise } from 'common/utils/rzp-utils';
 import Input from 'common/new-ui/Input';
@@ -7,13 +9,58 @@ import { AmountTooltip } from 'common/ui/Amount';
 import { checkIfAmount, checkIfAmountForFirstCharge } from './PaymentDetails/utils';
 
 const MAX_TOKEN_AMOUNT = 100000000;
-
+const CARD_MAX_ALLOWED_AMOUNT = 5000; //Rs
 const MAX_TOKEN_AMOUNT_NACH = 1000000000;
+
+const OptionLabel = ({ title, desc }) => (
+  <div className="label-container">
+    <span className="token-radio-label">{title}</span>
+    <div className="text-fade">{desc}</div>
+  </div>
+);
+
+const BILLING_FREQUENCY_OPTIONS = [
+  {
+    label: () => <OptionLabel title="Monthly" desc="You can charge the customer once in a month" />,
+    value: 'monthly',
+  },
+  {
+    label: () => (
+      <OptionLabel title="As and When Presented" desc="You can charge the customer any time" />
+    ),
+    value: 'as_presented',
+  },
+];
+const maxAmountValidator = (methodAmount, maxAmount) => (value) => {
+  const isAmountCheckFiled = checkIfAmount(value);
+
+  if (isAmountCheckFiled) {
+    return isAmountCheckFiled;
+  }
+
+  const amount = rupeesToPaise(Number(value));
+
+  if (amount > maxAmount) {
+    return `Max amount should not be greater than ${getFormattedAmount(maxAmount)}`;
+  } else if (amount < rupeesToPaise(Number(methodAmount))) {
+    return 'Max amount should be greater then amount set for this payment method';
+  }
+  return null;
+};
+
+const cardMaxAmountValidator = (maxAllowedAmount) => (value) => {
+  if (value > maxAllowedAmount) {
+    return `Please enter an amount below ₹${maxAllowedAmount}`;
+  }
+  return null;
+};
 
 export default ({
   amount,
+  frequency,
   isNACHPayment,
   isUPIPayment,
+  isCardPayment,
   isFirstAmountHidden,
   defaultMandateMaxAmount,
   defaultFirstChargeAmount,
@@ -32,7 +79,8 @@ export default ({
   if (isUPIPayment) {
     maxAmountProps.placeholder = `Max ${getFormattedAmount(UPI_AVL_LIMIT)}`;
     maxAmountProps.validator = maxAmountValidator(amount, UPI_AVL_LIMIT);
-    maxAmountProps.description = `Max Amount for Mandate`;
+    maxAmountProps.description =
+      'This is the maximum you can charge the customer per billing cycle';
   }
 
   if (isNACHPayment) {
@@ -41,76 +89,149 @@ export default ({
       MAX_TOKEN_AMOUNT_NACH,
     )})`;
   }
+  if (isCardPayment) {
+    maxAmountProps.validator = cardMaxAmountValidator(CARD_MAX_ALLOWED_AMOUNT);
+    let maxAmount = 5000;
+    if (mandateMaxAmount <= 5000) {
+      maxAmount = mandateMaxAmount;
+    }
+    maxAmountProps.description = () => (
+      <>
+        You can <strong>automatically</strong> charge the customer upto ₹{maxAmount} for each
+        recurring payment. Payments above ₹{maxAmount} will ask for OTP verification from the
+        customer.
+      </>
+    );
+  }
 
   return (
     <React.Fragment>
       {isUPIPayment && (
-        <div class="Input payment-frequency">
-          <div class="Input-label">Payment Frequency</div>
-          <div class="Input-content">
-            <div class="Input-elWrapper">
-              <div class="Input-el"> Monthly </div>
-            </div>
-          </div>
+        <div class="Input billing-frequency ">
+          <Input.Group label="Billing Frequency" class="InputGroup--vTop">
+            <Input.Radio
+              class="Input--vTop"
+              name="frequency"
+              data-name="billing_frequency"
+              options={BILLING_FREQUENCY_OPTIONS}
+              defaultValue={frequency}
+            />
+          </Input.Group>
         </div>
       )}
+      {!isCardPayment && (
+        <>
+          <Input.Group label="Expiry of Token" class="InputGroup--vTop">
+            <Input.Check
+              fieldLabel="Until cancelled"
+              name="tokenHasNoExpiry"
+              defaultValue="1"
+              data-name="token_until_cancelled"
+              onBlur={onBlurElement}
+              checked={tokenHasNoExpiry}
+            />
 
-      <Input.Group label="Token Expiry" class="InputGroup--vTop">
-        <Input.Check
-          fieldLabel="Until cancelled"
-          name="tokenHasNoExpiry"
-          defaultValue="1"
-          data-name="token_until_cancelled"
-          onBlur={onBlurElement}
-          checked={tokenHasNoExpiry}
-        />
-
-        <Input.ToCalendar
-          disablePastDates
-          name="mandateExpireAt"
-          placeholder="Expiry (DD-MM-YYYY)"
-          placement="topLeft"
-          size="half_big"
-          addonAfter={<i class="i i-date-range" />}
-          description="Expiry of Token"
-          onChange={handleDateChange('mandateExpireAt')}
-          disabled={!!Number(tokenHasNoExpiry)}
-          data-name="token_expiry_date"
-          onBlur={onBlurElement}
-          defaultValue={mandateExpireAt ? moment(mandateExpireAt, 'X') : null}
-        />
-      </Input.Group>
-
-      <Input
-        type="number"
-        required={isUPIPayment}
-        name="mandateMaxAmount"
-        placeholder={defaultMandateMaxAmount}
-        label="Token Max Amount"
-        data-name="token_max_amount"
-        onBlur={onBlurElement}
-        addonBefore={<AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />}
-        size="half_big"
-        validator={checkIfAmount}
-        class="Input--Amount"
-        value={mandateMaxAmount}
-        {...maxAmountProps}
-      />
-
-      {!isFirstAmountHidden && !isUPIPayment && (
+            <Input.ToCalendar
+              disablePastDates
+              name="mandateExpireAt"
+              placeholder="Expiry (DD-MM-YYYY)"
+              placement="topLeft"
+              size="half_big"
+              addonAfter={<i class="i i-date-range" />}
+              description="Expiry of Token"
+              onChange={handleDateChange('mandateExpireAt')}
+              disabled={!!Number(tokenHasNoExpiry)}
+              data-name="token_expiry_date"
+              onBlur={onBlurElement}
+              defaultValue={mandateExpireAt ? moment(mandateExpireAt, 'X') : null}
+            />
+          </Input.Group>
+          {/* TODO: Q3 Input.Amount */}
+          <Input
+            type="number"
+            name="mandateMaxAmount"
+            placeholder={defaultMandateMaxAmount}
+            label="Maximum Billing Amount"
+            data-name="token_max_amount"
+            onBlur={onBlurElement}
+            addonBefore={<AmountTooltip currency="INR" parentQuerySelector=".Modal" />}
+            size="half_big"
+            validator={checkIfAmount}
+            class="Input--Amount"
+            value={mandateMaxAmount}
+            {...maxAmountProps}
+          />
+          {!isFirstAmountHidden && !isUPIPayment && (
+            <Input
+              name="firstPaymentAmount"
+              type="number"
+              placeholder={defaultFirstChargeAmount}
+              size="half_big"
+              label="Amount"
+              class="Input--Amount"
+              description="Amount of First Charge"
+              data-name="first_payment_amount"
+              onBlur={onBlurElement}
+              value={firstPaymentAmount}
+              validator={firstPaymentAmountValidator(mandateMaxAmount)}
+              addonBefore={<AmountTooltip currency="INR" parentQuerySelector=".Modal" />}
+            />
+          )}
+        </>
+      )}
+      {isCardPayment && (
+        <Input.Group label="Expiry of Token" class="InputGroup--vTop">
+          <Input.Check
+            fieldLabel="Same as expiry of customer’s card"
+            name="tokenHasNoExpiry"
+            defaultValue="1"
+            data-name="token_until_cancelled"
+            onBlur={onBlurElement}
+            checked={tokenHasNoExpiry}
+          />
+          <Input.ToCalendar
+            disablePastDates
+            name="mandateExpireAt"
+            placeholder="Expiry (DD-MM-YYYY)"
+            placement="topLeft"
+            size="half_big"
+            addonAfter={<i class="i i-date-range" />}
+            onChange={handleDateChange('mandateExpireAt')}
+            disabled={!!Number(tokenHasNoExpiry)}
+            data-name="token_expiry_date"
+            onBlur={onBlurElement}
+            defaultValue={mandateExpireAt ? moment(mandateExpireAt, 'X') : null}
+          />
+          {!tokenHasNoExpiry && (
+            <div class="Input Input--half_big disable-past-year Input--Calendar">
+              <div class="Input-content Input-desc">
+                If the chosen date is beyond the expiry date of the customer’s card, then it will be
+                reset to the card expiry date
+              </div>
+            </div>
+          )}
+        </Input.Group>
+      )}
+      {isCardPayment && (
         <Input
-          name="firstPaymentAmount"
           type="number"
-          placeholder={defaultFirstChargeAmount}
-          size="half_big"
-          label="Amount"
-          class="Input--Amount"
-          description="Amount of First Charge"
-          data-name="first_payment_amount"
+          size="big"
+          class="Input--Amount long-label"
+          name="mandateMaxAmount"
+          data-name="token_max_amount"
+          label={() => (
+            <>
+              Maximum Auto-debit Amount
+              <div className="Input-desc sub-text">(For domestic cards only)</div>
+            </>
+          )}
+          placeholder="Max 5000"
           onBlur={onBlurElement}
-          value={firstPaymentAmount}
-          validator={firstPaymentAmountValidator(mandateMaxAmount)}
-          addonBefore={<AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />}
+          required={isUPIPayment}
+          value={mandateMaxAmount}
+          validator={checkIfAmount}
+          addonBefore={<AmountTooltip currency="INR" parentQuerySelector=".Modal" />}
+          {...maxAmountProps}
         />
       )}
     </React.Fragment>
@@ -120,19 +241,3 @@ export default ({
 function firstPaymentAmountValidator(mandateMaxAmount) {
   return (value) => checkIfAmountForFirstCharge(Number(mandateMaxAmount) || 100000, value);
 }
-
-const maxAmountValidator = (methodAmount, maxAmount) => (value) => {
-  const isAmountCheckFiled = checkIfAmount(value);
-
-  if (isAmountCheckFiled) {
-    return isAmountCheckFiled;
-  }
-
-  const amount = rupeesToPaise(Number(value));
-
-  if (amount > maxAmount) {
-    return `Max amount should not be greater than ${getFormattedAmount(maxAmount)}`;
-  } else if (amount < rupeesToPaise(Number(methodAmount))) {
-    return 'Max amount should bet greater then amount set for this payment method';
-  }
-};

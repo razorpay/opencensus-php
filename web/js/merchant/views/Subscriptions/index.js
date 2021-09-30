@@ -32,7 +32,7 @@ import QuickGuide, {
   getSubscriptionQuickGuideIsClosed,
 } from 'merchant/views/Subscriptions/QuickGuide';
 import SubscriptionSettings from 'merchant/views/Subscriptions/Settings';
-// import EmandateBanner from 'merchant/components/Announcements/EmandateSubscription';
+import Announcement from 'merchant/components/Announcements';
 import { CardsGoLiveBanner } from './components/banners/';
 import { CAW_CARDS_BANNER, SUBSCRIPTION_CARDS_BANNER } from './constants';
 
@@ -147,7 +147,16 @@ class SubscriptionsController extends React.Component {
 
     return (
       <div class={classList('Subscriptions-Container')}>
-        {/* {userInfo.isEmandateOnSubscriptionEnabled && <EmandateBanner />} */}
+        {userInfo.isChargeAtWillEnabled && (
+          <Announcement
+            title="UPI Mandate Update"
+            canBeClosed={true}
+            theme="primary"
+            key={`as-presented-${userInfo.current}`}
+            id="as-presnted-banner"
+            message="You can now charge customers on UPI Autopay any time as per your business requirement and not just monthly basis"
+          />
+        )}
         <CardsGoLiveBanner url={cardsGoLiveBannerUrl} />
 
         <tabbed-container>

@@ -1,6 +1,8 @@
+import React from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
+import PropTypes from 'prop-types';
 
 import Spinner from 'common/ui/Spinner';
 import Alert from 'common/ui/Forms/Alert';
@@ -111,7 +113,7 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
   };
 
   onResendLinkSubmit = (notifyProps) => {
-    let promises = [];
+    const promises = [];
 
     if (notifyProps.email) {
       promises.push(this.props.notifyCustomer(this.props.id, 'email'));
@@ -212,13 +214,13 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
   };
 
   render() {
-    const { loading: isLoading, entity, error } = this.props,
-      { subscription_registration = {} } = entity;
+    const { loading: isLoading, entity, error } = this.props;
+    const { subscription_registration = {} } = entity;
 
-    const isSmsOrEmailSent = entity.sms_status === 'sent' || entity.email_status === 'sent',
-      isIssued = entity.status === 'issued',
-      isCancelled = entity.status === 'cancelled',
-      isSubscriptionRegistrationCreated = subscription_registration.status === 'created';
+    const isSmsOrEmailSent = entity.sms_status === 'sent' || entity.email_status === 'sent';
+    const isIssued = entity.status === 'issued';
+    const isCancelled = entity.status === 'cancelled';
+    const isSubscriptionRegistrationCreated = subscription_registration.status === 'created';
 
     const isResendAndCancelledAllowed = isSubscriptionRegistrationCreated && isIssued;
 
@@ -318,7 +320,7 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
                       <Time value={entity.created_at} format="LL, hh:mm A" />
                     </EntityDetailRow>
 
-                    <EntityDetailRow label="Expires By">
+                    <EntityDetailRow label="Expiry">
                       <Time value={entity.expire_by} />
                     </EntityDetailRow>
 

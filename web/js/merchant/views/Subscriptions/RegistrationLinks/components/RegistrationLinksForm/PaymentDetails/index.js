@@ -66,7 +66,12 @@ export default (props) => {
       )}
 
       {isCardPayment && (
-        <AmountScreen amount={amount} onBlurElement={onBlurElement} placeholder="0.00" />
+        <AmountScreen
+          amount={amount}
+          onBlurElement={onBlurElement}
+          placeholder="Minimum 1"
+          amountValidator={amountValidator}
+        />
       )}
 
       {isUPIPayment && (
@@ -116,9 +121,9 @@ export default (props) => {
 };
 
 function getDocLinkForSelectedPayment(method) {
-  if (!method || method === 'nach') return;
+  if (!method || method === 'nach') return null;
   const { title, href } = DOCUMENTATION_LINKS[method];
-  if (!title || !href) return;
+  if (!title || !href) return null;
   return <DocsLink url={href} title={title} style={{ padding: '4px 0px' }} />;
 }
 
@@ -204,4 +209,5 @@ function amountValidator(value) {
   if (value > 200000) {
     return 'Amount should not be greater than 200000';
   }
+  return null;
 }

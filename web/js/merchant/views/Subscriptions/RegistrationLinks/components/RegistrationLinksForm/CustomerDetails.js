@@ -1,8 +1,10 @@
+import React from 'react';
+import moment from 'moment';
 import { isEmail, isPhone } from 'common/utils/validators';
 
 import Input from 'common/new-ui/Input';
 
-export default props => {
+export default (props) => {
   const {
     expireAt,
     isCustomerNameRequired,
@@ -36,7 +38,6 @@ export default props => {
         label="Customer Name"
         data-name="customer_name"
         value={customerName}
-        description="Name of Customer"
         onBlur={onBlurElement}
       />
 
@@ -97,7 +98,7 @@ export default props => {
         onBlur={onBlurElement}
       />
 
-      <Input.Group label="Expiry" class="InputGroup--vTop">
+      <Input.Group label="Registration Link Expiry" class="InputGroup--vTop">
         <Input.Check
           fieldLabel="No Expiry"
           name="hasNoExpiry"
@@ -116,7 +117,6 @@ export default props => {
           disabled={hasNoExpiry}
           defaultValue={!hasNoExpiry && expireAt ? moment(expireAt, 'X') : null}
           onChange={handleDateChange('expireAt')}
-          description="Expiry of Registration Link"
           data-name="expiry-date"
           onBlur={() => onBlurElement(null, 'expiry-date')}
         />

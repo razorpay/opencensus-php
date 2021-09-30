@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
@@ -10,6 +10,9 @@ import Alert from 'common/ui/Forms/Alert';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import Time from 'common/ui/Time';
 import Definition from 'common/ui/Definition';
+import Amount from 'common/ui/Amount';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { getFormattedAmount } from 'common/utils/rzp-utils';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NACHDetails from 'merchant/views/Subscriptions/components/UploadNACHForm/Details';
@@ -34,6 +37,8 @@ import {
   trackClickViewNACHForm,
 } from './ga';
 
+const CARD_MAX_AMOUNT = 500000;
+
 @withRouter
 @connect((state) => ({ ...state.token, user: state.session.user }), {
   fetchToken,
@@ -55,6 +60,10 @@ export default class TokenDetailsContainer extends Component {
 
   get isNACHMethod() {
     return this.props.entity.method === 'nach';
+  }
+
+  get isCardMethod() {
+    return this.props.entity.method === 'card';
   }
 
   get isUPIMethod() {
@@ -191,10 +200,10 @@ export default class TokenDetailsContainer extends Component {
 
   trackClickDownloadNACHForm = () => {
     const { failure_reason } = this.props.entity.recurring_details;
+    const status = failure_reason.includes('nach') ? 'Rejected' : 'Approved';
+    trackClickDownloadNACHForm(status);
 
-    trackClickDownloadNACHForm(failure_reason.includes('nach') ? 'Rejected' : 'Approved');
-
-    this.trackTokenDetailsView('nach.download.error', { response: err.errors });
+    this.trackTokenDetailsView('nach.download.error', { response: status });
   };
 
   render() {
@@ -207,9 +216,12 @@ export default class TokenDetailsContainer extends Component {
       ['rejected', 'initiated'].indexOf((entity.recurring_details || {}).status) === -1;
 
     let expireAt = entity.subscription_registration && entity.subscription_registration.expire_at;
-
+    let maxAmount = null;
+    let isDomesticCard = null;
     if (entity.method === 'card') {
       expireAt = entity.expired_at;
+      isDomesticCard = !entity.card.international;
+      maxAmount = entity?.subscription_registration?.max_amount || CARD_MAX_AMOUNT;
     }
 
     return (
@@ -238,16 +250,12 @@ export default class TokenDetailsContainer extends Component {
                     <EntityDetailRow label="Status">
                       <TokenStatusLabel class="m-r" status={getTokenStatus(entity)} />
                     </EntityDetailRow>
-
-                    <EntityDetailRow label="Failure Reason">
-                      <ErrorMessage
-                        id={entity.id}
-                        isNACHMethod={this.isNACHMethod}
-                        recurringDetails={entity.recurring_details}
-                        trackTokenDetailsView={this.trackTokenDetailsView}
-                      />
-                    </EntityDetailRow>
-
+                    <ErrorMessage
+                      id={entity.id}
+                      isNACHMethod={this.isNACHMethod}
+                      recurringDetails={entity.recurring_details}
+                      trackTokenDetailsView={this.trackTokenDetailsView}
+                    />
                     <EntityDetailRow label="Payment Method">
                       <MandatePaymentMethod mandate={entity} />
                     </EntityDetailRow>
@@ -277,10 +285,28 @@ export default class TokenDetailsContainer extends Component {
                       <TimeStamps token={entity} />
                     </EntityDetailRow>
 
-                    <EntityDetailRow label="Expires By">
+                    <EntityDetailRow label="Expiry">
                       {expireAt ? <Time value={expireAt} /> : 'Until Cancelled'}
                     </EntityDetailRow>
-
+                    {this.isCardMethod && maxAmount && isDomesticCard && (
+                      <EntityDetailRow label="Max Auto-debit Amount">
+                        <Amount value={maxAmount} currency={'INR'} />{' '}
+                        <span>
+                          <i class="i i-info-circle" />
+                          <Popover theme="dark">
+                            <PopoverBody>
+                              {`You can automatically charge the customer upto
+                                ₹${getFormattedAmount(
+                                  maxAmount,
+                                )} for each recurring payment. Payments above
+                                ₹${getFormattedAmount(
+                                  maxAmount,
+                                )} will ask for OTP verification from customer.`}
+                            </PopoverBody>
+                          </Popover>
+                        </span>
+                      </EntityDetailRow>
+                    )}
                     <NestedEntityDetailRow label="Notes" value={entity.notes} />
 
                     <EntityDetailRow label="Actions" class="pair-group-item actions">
@@ -375,7 +401,7 @@ class ErrorMessage extends React.PureComponent {
 
     if (isNACHMethod && failure_reason) {
       return (
-        <React.Fragment>
+        <EntityDetailRow label="Failure Reason">
           <Alert type="error" message={failure_reason} showDismiss={false} />
 
           <AsyncBtn.Primary
@@ -385,10 +411,9 @@ class ErrorMessage extends React.PureComponent {
           >
             Resubmit
           </AsyncBtn.Primary>
-        </React.Fragment>
+        </EntityDetailRow>
       );
     }
-
-    return failure_reason || '--';
+    return null;
   }
 }

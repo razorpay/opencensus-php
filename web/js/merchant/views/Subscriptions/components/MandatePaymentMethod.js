@@ -3,6 +3,22 @@ import { titleCase } from 'common/utils/rzp-utils';
 import Definition from 'common/ui/Definition';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
+import moment from 'moment';
+
+const CARD_EXPIRY_DATE_FORMAT = 'MMM YYYY';
+const CARD_EXPIRY_INPUTE_DATE_FORMAT = 'MM YYYY';
+const CARD_MAX_AMOUNT = 500000;
+
+const getCardExpiry = ({ expiry_month, expiry_year }) => {
+  return moment(`${expiry_month} ${expiry_year}`, CARD_EXPIRY_INPUTE_DATE_FORMAT).format(
+    CARD_EXPIRY_DATE_FORMAT,
+  );
+};
+
+const BILLING_FREQUENCY = {
+  monthly: 'Monthly',
+  as_presented: 'As and When Presented',
+};
 
 export default function MandatePaymentMethod({ mandate }) {
   const { method, bank_account, card, bank: issuer } = mandate;
@@ -10,7 +26,7 @@ export default function MandatePaymentMethod({ mandate }) {
     return (
       <Definition>
         <strong>
-          {bank_account && bank_account.bank_name && bank_account.bank_name + ' - '}
+          {bank_account && bank_account.bank_name && `${bank_account.bank_name} - `}
           Emandate
         </strong>
 
@@ -36,19 +52,30 @@ export default function MandatePaymentMethod({ mandate }) {
       </Definition>
     );
   }
-
+  // TODO CAW
   if (method === 'card') {
     return card ? (
       <Definition>
         <strong>Card</strong>
         <>
-          {!!card.issuer && card.issuer + ', '}
+          {!!card.issuer && `${card.issuer}, `}
           {card.network} ending in {card.last4}
         </>
         <>Name on card - {card.name}</>
+        <>Card Expiry - {getCardExpiry(card)}</>
       </Definition>
     ) : (
-      'Card'
+      <Definition>
+        <strong>Card</strong>
+        <>
+          Token Expiry:{' '}
+          {mandate?.expire_at ? <Time value={mandate.expire_at} /> : 'Same as card expiry'}
+        </>
+        <>
+          Max Auto-debit Amount:{' '}
+          <Amount value={mandate.max_amount || CARD_MAX_AMOUNT} currency={'INR'} />{' '}
+        </>
+      </Definition>
     );
   }
 
@@ -56,7 +83,11 @@ export default function MandatePaymentMethod({ mandate }) {
     return (
       <Definition>
         <strong>UPI</strong>
-        Payment Frequency: Monthly {/* Frequency is hard coded to monthly now */}
+        <>{bank_account && bank_account.bank_name && bank_account.bank_name}</>
+        <>Billing Frequency: {BILLING_FREQUENCY[mandate.frequency] || 'Monthly'} </>
+        <>
+          Max Billing Amount: <Amount value={mandate.max_amount} currency={'INR'} />
+        </>
       </Definition>
     );
   }

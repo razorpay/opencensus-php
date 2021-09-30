@@ -1,8 +1,9 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
-import { rupeesToPaise, titleCase } from 'common/utils/rzp-utils';
+import { rupeesToPaise } from 'common/utils/rzp-utils';
 import fetchPaymentMethods from 'merchant/utils/fetchPaymentMethods';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
@@ -68,19 +69,28 @@ const PAYMENT_METHODS = {
   CARD: 'card',
 };
 
-const CardMandatoryFields = [{ name: 'amount', validator: isAmount }];
+let DEFAULT_MAX_AMOUNT = 99999;
+const DEFAULT_FIRST_CHARGE = 0;
+const CARD_MAX_AMOUNT = 5000;
+const GATEWAY_MAX_LIMIT = 200000;
+
+const CardMandatoryFields = [
+  {
+    name: 'amount',
+    validator: (value) => {
+      return isAmount(value) && value <= GATEWAY_MAX_LIMIT && value >= 1;
+    },
+  },
+];
 
 const UPIMandatoryFields = [
   {
     name: 'amount',
     validator: (value) => {
-      return isAmount(value) && value <= 200000 && value >= 1;
+      return isAmount(value) && value <= GATEWAY_MAX_LIMIT && value >= 1;
     },
   },
 ];
-
-let DEFAULT_MAX_AMOUNT = 99999;
-let DEFAULT_FIRST_CHARGE = 0;
 
 @withRouter
 @connect((state) => ({ user: state.session.user }), {
@@ -122,6 +132,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         accountType: '',
         formReference1: '',
         formReference2: '',
+        frequency: 'monthly',
       },
       validTabs: [false, false, false],
     };
@@ -162,7 +173,9 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   }
 
   get Tabs() {
-    return getTabs(this.isEmandatePayment || this.isNACHPayment || this.isUPIPayment);
+    return getTabs(
+      this.isEmandatePayment || this.isNACHPayment || this.isUPIPayment || this.isCardPayment,
+    );
   }
 
   componentWillMount() {
@@ -210,9 +223,9 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   };
 
   handleTPV = () => {
-    this.setState({
-      isTPVEnabled: !this.state.isTPVEnabled,
-    });
+    this.setState((preState) => ({
+      isTPVEnabled: !preState.isTPVEnabled,
+    }));
   };
 
   onBlurElement = (event, dataName) => {
@@ -244,20 +257,22 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   };
 
   changeTab = (step) => () => {
-    const currentTab = this.state.currentTab + step;
-
-    const validTabs = [...this.state.validTabs];
-    validTabs[this.state.currentTab] = true;
-
-    this.setState({ currentTab, validTabs }, () => {
-      if (currentTab == 1) {
-        trackClickNext('Customer details');
-      }
-
-      if (currentTab == 2) {
-        trackClickNext('Payment details');
-      }
-    });
+    this.setState(
+      (prevState) => {
+        const currentTab = prevState.currentTab + step;
+        const validTabs = [...prevState.validTabs];
+        validTabs[prevState.currentTab] = true;
+        return { currentTab, validTabs };
+      },
+      () => {
+        if (this.state.currentTab == 1) {
+          trackClickNext('Customer details');
+        }
+        if (this.state.currentTab == 2) {
+          trackClickNext('Payment details');
+        }
+      },
+    );
   };
 
   handleTabChange = ({ target }) => {
@@ -293,13 +308,10 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
           }));
         }
 
-        const mandateMethod = avlblMethods.length < 2 ? avlblMethods[0] : null;
-
         this.setState({
           loading: false,
           emandateBanks,
           avlblMethods,
-          mandateMethod,
         });
       }
     });
@@ -311,8 +323,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     this.Tabs.forEach((tab, idx) => {
       if (!this.isFormValid(idx)) {
         isAllFieldsPresent = false;
-
-        return false;
       }
     });
 
@@ -320,11 +330,11 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   };
 
   prepareDataForRequest = () => {
-    const data = { ...this.state.formFields },
-      notes = data.notes.reduce(
-        (otherNotes, { key, value }) => ({ ...otherNotes, [key]: value }),
-        {},
-      );
+    const data = { ...this.state.formFields };
+    const notes = data.notes.reduce(
+      (otherNotes, { key, value }) => ({ ...otherNotes, [key]: value }),
+      {},
+    );
 
     const payload = {
       type: 'link',
@@ -396,17 +406,22 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     }
 
     if (this.isUPIPayment) {
-      // Currently frequency is hard coded
-      payload.subscription_registration.frequency = 'monthly';
+      // Frequency now support 'monthly' and 'as_presented'
+      payload.subscription_registration.frequency = data.frequency;
 
       let max_amount = rupeesToPaise(DEFAULT_MAX_AMOUNT);
 
       if (data.mandateMaxAmount) {
         max_amount = rupeesToPaise(data.mandateMaxAmount);
       }
-
       payload.subscription_registration.max_amount = max_amount;
       payload.subscription_registration.bank_account = bankAccountDetails;
+    }
+
+    if (this.isCardPayment) {
+      payload.subscription_registration.frequency = 'as_presented';
+      const max_amount = rupeesToPaise(data.mandateMaxAmount || CARD_MAX_AMOUNT);
+      payload.subscription_registration.max_amount = max_amount;
     }
 
     return payload;
@@ -438,12 +453,13 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
 
           this.onClose();
         } else {
-          const redirectUrl = '/registration_links/' + entityId;
+          const redirectUrl = `/registration_links/${entityId}`;
 
           this.props.history.push(redirectUrl);
         }
 
         this.trackRegistrationLinkCreation('success');
+        return null;
       })
       .catch(({ errors }) => {
         this.props.showNotification({
@@ -452,6 +468,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         });
 
         this.trackRegistrationLinkCreation('fail');
+        return null;
       });
   };
 
@@ -518,9 +535,17 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             return false;
           }
         }
-
+        if (this.isCardPayment) {
+          const maxAmount = this.state.formFields.mandateMaxAmount;
+          if (maxAmount > CARD_MAX_AMOUNT) {
+            return false;
+          }
+        }
         return true;
       }
+
+      default:
+        return true;
     }
   };
 
@@ -588,8 +613,10 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
           <TokenDetailsForm
             isNACHPayment={this.isNACHPayment}
             isUPIPayment={this.isUPIPayment}
+            isCardPayment={this.isCardPayment}
             isFirstAmountHidden={this.props.user.isFirstAmountHidden}
             amount={formFields.amount}
+            frequency={formFields.frequency}
             mandateExpireAt={formFields.mandateExpireAt}
             tokenHasNoExpiry={formFields.tokenHasNoExpiry}
             mandateMaxAmount={formFields.mandateMaxAmount}
@@ -601,13 +628,16 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
           />
         );
       }
+      default: {
+        return null;
+      }
     }
   }
 
   renderWizard = () => {
-    const { currentTab, validTabs, loading } = this.state,
-      tabs = this.Tabs,
-      isLastTab = currentTab === tabs.length - 1;
+    const { currentTab, validTabs, loading } = this.state;
+    const tabs = this.Tabs;
+    const isLastTab = currentTab === tabs.length - 1;
 
     return (
       <div class="ModalSingleForm RegistrationLinks--New Wizard">

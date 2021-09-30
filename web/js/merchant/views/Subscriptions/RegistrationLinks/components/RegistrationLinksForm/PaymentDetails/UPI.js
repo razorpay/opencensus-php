@@ -8,7 +8,6 @@ export default function UPI(props) {
   return (
     <>
       <AmountScreen
-        disableCurrencySelect
         amount={props.amount}
         onBlurElement={props.onBlurElement}
         placeholder="Max 200000"
