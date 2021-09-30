@@ -873,6 +873,11 @@ class Constants
      */
     const NETWORK_TOKENIZATION = 'network_tokenization';
 
+    /**
+     * Feature flag to allow network tokens in response
+     */
+    const ALLOW_NETWORK_TOKENS = 'allow_network_tokens';
+
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -1248,7 +1253,8 @@ class Constants
         self::ENABLE_SIFT_JS                  => true,
         self::API_BULK_APPROVALS              => true,
         self::NETWORK_TOKENIZATION            => true,
-        self::CREATE_SOURCE_V2     => true,
+        self::CREATE_SOURCE_V2                => true,
+        self::ALLOW_NETWORK_TOKENS            => true,
     ];
     // Entity type constants
     const ACCOUNT                       = 'account';

@@ -4499,6 +4499,7 @@ trait Authorize
 
         if (($this->app['rzp.mode'] === 'test') and
             (empty($input[Payment\Entity::TOKEN]) === false) and
+            ($this->app['basicauth']->isPrivateAuth() === true) and
             ($payment->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION) === true))
         {
             $token = $this->repo->token->getByPublicIdAndMerchant($input[Payment\Entity::TOKEN], $this->merchant);
@@ -4525,6 +4526,7 @@ trait Authorize
 
             // dummy code to test network tokenization for merchants in test mode
             if (($this->app['rzp.mode'] === 'test') and
+                ($this->app['basicauth']->isPrivateAuth() === true) and
                 ($payment->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION) === true))
             {
                 $payment->setSave(true);
@@ -4533,6 +4535,11 @@ trait Authorize
                     'method' => 'card',
                     'card' => $input['card']
                 ];
+
+                if (empty($input['card']['cvv']) === true)
+                {
+                    $input['card']['cvv'] = 123;
+                }
 
                 $token = (new Token\Core)->createNetworkToken($createInput);
 

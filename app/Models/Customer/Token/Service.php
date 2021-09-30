@@ -9,6 +9,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
 use RZP\Models\Customer\GatewayToken;
+use RZP\Models\Feature;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Payment;
@@ -618,7 +619,9 @@ class Service extends Base\Service
 
         $response['status'] = ($token->isExpired() === true) ? 'deactivated' : 'activated';
 
-        $response['service_providers'] = [[
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NETWORK_TOKENS) === true)
+        {
+            $response['service_providers'] = [[
                 'type'  => 'network',
                 'name'  => $token->card->getNetwork(),
                 'data'  => [
@@ -627,6 +630,8 @@ class Service extends Base\Service
                     'interoperable'          => true,
                 ],
             ]];
+
+        }
 
         return $response;
     }

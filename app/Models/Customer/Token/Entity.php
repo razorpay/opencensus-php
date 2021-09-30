@@ -288,6 +288,7 @@ class Entity extends Base\PublicEntity
         self::DCC_ENABLED,
         self::BILLING_ADDRESS,
         self::USED_AT,
+        self::RECURRING_DETAILS,
     ];
 
     public function customer()

@@ -17,7 +17,7 @@ class TokenTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->merchant->addFeatures(['network_tokenization']);
+        $this->fixtures->merchant->addFeatures(['network_tokenization', 'allow_network_tokens']);
     }
 
     public function testCreateToken()
@@ -44,7 +44,11 @@ class TokenTest extends TestCase
 
         $payment['save'] = 1;
 
-        $this->doAuthAndCapturePayment($payment);
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $this->ba->privateAuth();
+
+        $this->doS2SPrivateAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 
