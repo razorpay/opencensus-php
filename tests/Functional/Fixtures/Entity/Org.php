@@ -146,31 +146,51 @@ class Org extends Base
         return $org;
     }
 
-    public function createAxisOrg()
+    public function createAxisOrg($customInput = [])
     {
+        $input = [];
         $permissions = (new PermissionEntity)->getAllPermissions();
 
         // Default organisation to be used for tests
+        if (isset($customInput['org']) && is_array($customInput['org']))
+        {
+            $input = $customInput['org'];
+        }
+
         $org = $this->fixtures->create('org', [
             'id'                      => self::AXIS_ORG_ID,
             'email'                   => 'admin@axis.com',
             'from_email'              => 'noreplay@axis.com',
             'cross_org_access'        => true,
-        ]);
+
+        ] + $input);
+        $input = [];
 
         $org->permissions()->attach($permissions);
+
+        if (isset($customInput['org_hostname']) && is_array($customInput['org_hostname']))
+        {
+            $input = $customInput['org_hostname'];
+        }
 
         $this->fixtures->create('org_hostname', [
             'org_id'    => self::AXIS_ORG_ID,
             'hostname'  => 'axis.com'
-        ]);
+        ] + $input);
+        $input = [];
+
+        if (isset($customInput['group']) && is_array($customInput['group']))
+        {
+            $input = $customInput['group'];
+        }
 
         $this->fixtures->create('group', [
             'id'     => '1AxisbankGrpId',
             'name'   => 'axis_group',
             'org_id' => self::AXIS_ORG_ID,
-        ]);
-
+        ] + $input);
+        $input = [];
+        
         $adminRole = $this->fixtures->create('role', [
             'id'     => 'AxiAdminRoleId',
             'org_id' => self::AXIS_ORG_ID,

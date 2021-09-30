@@ -14,6 +14,8 @@ use RZP\Models\Currency\Currency;
 
 class ViewSerializer extends Base\Core
 {
+    const AXIS_BRANDING_LOGO = 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.png';
+
     /**
      * @var array
      */
@@ -182,14 +184,9 @@ class ViewSerializer extends Base\Core
 
     protected function serializePaymentPageItems(array & $paymentLink)
     {
-        if (isset($paymentLink[Entity::PAYMENT_PAGE_ITEMS]) === false)
-        {
-            return;
-        }
-
         $PPICore = new PaymentPageItem\Core;
 
-        for ($i = 0; $i < count($paymentLink[Entity::PAYMENT_PAGE_ITEMS]); $i++)
+        for ($i = 0; $i < count(array_get($paymentLink, Entity::PAYMENT_PAGE_ITEMS, [])); $i++)
         {
             $paymentPageItem = $paymentLink[Entity::PAYMENT_PAGE_ITEMS][$i];
 
@@ -263,7 +260,7 @@ class ViewSerializer extends Base\Core
 
                     $branding['show_rzp_logo'] = false;
 
-                    $branding['branding_logo'] = 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.png';
+                    $branding['branding_logo'] = self::AXIS_BRANDING_LOGO;
 
                     break;
             }

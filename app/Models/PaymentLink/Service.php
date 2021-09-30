@@ -392,14 +392,9 @@ class Service extends Base\Service
 
     protected function fetchSettingForPPI(array & $paymentLink)
     {
-        if (isset($paymentLink[Entity::PAYMENT_PAGE_ITEMS]) === false)
-        {
-            return;
-        }
-
         $PPICore = new PaymentPageItem\Core;
 
-        for ($i = 0; $i < count($paymentLink[Entity::PAYMENT_PAGE_ITEMS]); $i++)
+        for ($i = 0; $i < count(array_get($paymentLink, Entity::PAYMENT_PAGE_ITEMS, [])); $i++)
         {
             $paymentPageItem = $paymentLink[Entity::PAYMENT_PAGE_ITEMS][$i];
 

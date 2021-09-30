@@ -27,7 +27,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
-use RZP\Tests\Functional\Fixtures\Entity\User;
+use RZP\Tests\Traits\PaymentLinkTestTrait;
 use RZP\Models\PaymentLink as PaymentLinkModel;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -38,6 +38,7 @@ class PaymentLinkTest extends TestCase
     use PaymentTrait;
     use TestsWebhookEvents;
     use DbEntityFetchTrait;
+    use PaymentLinkTestTrait;
 
     const TEST_PL_ID    = '100000000000pl';
     const TEST_PL_ID_2  = '100000000001pl';
@@ -1509,84 +1510,6 @@ class PaymentLinkTest extends TestCase
     }
 
     // -------------------- Protected methods --------------------
-
-    protected function createPaymentLink(string $id = self::TEST_PL_ID, array $attributes = []): PaymentLinkModel\Entity
-    {
-        $attributes[PaymentLinkModel\Entity::ID]      = $id;
-        $attributes[PaymentLinkModel\Entity::USER_ID] = User::MERCHANT_USER_ID;
-
-        return $this->fixtures->create('payment_link', $attributes);
-    }
-
-    protected function createPaymentLinkWithMultipleItem(string $id = self::TEST_PL_ID, array $attributes = []): PaymentLinkModel\Entity
-    {
-        $defaultPaymentLinkAttribute = [
-            PaymentLink\Entity::ID     => self::TEST_PL_ID,
-            PaymentLink\Entity::AMOUNT => null,
-            PaymentLink\Entity::PAYMENT_PAGE_ITEMS => [
-                [
-                    PaymentLink\PaymentPageItem\Entity::ID   => PublicEntity::generateUniqueId(),
-                    PaymentLink\PaymentPageItem\Entity::ITEM => [
-                        Item\Entity::AMOUNT => 5000,
-                    ]
-                ],
-                [
-                    PaymentLink\PaymentPageItem\Entity::ID   => PublicEntity::generateUniqueId(),
-                    PaymentLink\PaymentPageItem\Entity::ITEM => [
-                        Item\Entity::AMOUNT => 10000,
-                    ]
-                ]
-            ]
-        ];
-
-        $paymentLinkAttribute = array_merge($defaultPaymentLinkAttribute, $attributes);
-
-        $paymentPageItemsAttribute = array_pull($paymentLinkAttribute, PaymentLink\Entity::PAYMENT_PAGE_ITEMS, []);
-
-        $paymentLink = $this->createPaymentLink($id, $paymentLinkAttribute);
-
-        $this->createPaymentPageItems(
-            $paymentPageItemsAttribute[PaymentLink\Entity::ID] ?? self::TEST_PL_ID,
-            $paymentPageItemsAttribute);
-
-        return $paymentLink;
-    }
-
-    protected function createPaymentPageItem(string $id = self::TEST_PPI_ID, string $paymentLinkId = self::TEST_PL_ID, array $attributes = []): PaymentLinkModel\PaymentPageItem\Entity
-    {
-        $attributes[PaymentLink\PaymentPageItem\Entity::ID]              = $id;
-        $attributes[PaymentLink\PaymentPageItem\Entity::PAYMENT_LINK_ID] = $paymentLinkId;
-
-        $defaultItem = [
-            Item\Entity::ID     => $id,
-            Item\Entity::TYPE   => Item\Type::PAYMENT_PAGE,
-            Item\Entity::NAME   => 'amount',
-            Item\Entity::AMOUNT => null
-        ];
-
-        $defaultItem = array_merge($defaultItem, array_pull($attributes, PaymentLink\PaymentPageItem\Entity::ITEM, []));
-
-        $item = $this->fixtures->create('item', $defaultItem);
-
-        $attributes[PaymentLink\PaymentPageItem\Entity::ITEM_ID] = $item->getId();
-
-        return $this->fixtures->create('payment_page_item', $attributes);
-    }
-
-    protected function createPaymentPageItems(string $paymentLinkId = self::TEST_PL_ID, array $paymentPageItems = [])
-    {
-        $data = [];
-
-        foreach ($paymentPageItems as $paymentPageItem)
-        {
-            $data[] = $this->createPaymentPageItem(
-                $paymentPageItem['id'] ?? UniqueIdEntity::generateUniqueId(),
-                $paymentLinkId,
-                $paymentPageItem);
-        }
-
-        return $data;
-    }
 
     protected function createPaymentLinkAndOrderForThat(array $paymentLinkAttribute = [], array $orderAttribute = [])
     {
