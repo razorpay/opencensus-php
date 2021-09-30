@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\Fulcrum\SubReconciliator;
 
 use RZP\Reconciliator\Base;
+use RZP\Models\Base\UniqueIdEntity;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
@@ -25,7 +26,20 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
      */
     protected function getRefundId($row)
     {
-        return $row[self::COLUMN_REFUND_ID];
+        $refundId = $row[self::COLUMN_REFUND_ID];
+
+        if (empty($refundId) === false)
+        {
+            if (UniqueIdEntity::verifyUniqueId($refundId, false) === false)
+            {
+                return substr($row[self::COLUMN_REFUND_ID], 1, 14);
+
+                return $refundId;
+            }
+            return $refundId;
+        }
+
+        return null;
     }
 
     protected function getArn(array $row)

@@ -2462,7 +2462,7 @@ class ReconciliationFileTest extends TestCase
         $facade['message_type'] = '0220';
         $facade['transaction_type'] = '20';
 
-        return $facade;
+        return array_merge($facade, $forceOverride);
     }
 
     private function overrideHitachiRefundUnnormalized(array $payment, array $forceOverride = [])
@@ -2837,29 +2837,10 @@ class ReconciliationFileTest extends TestCase
                 'cps_route' => 2
             ]);
 
-        $entries[] = $this->overrideFulcrumRefund($gatewayPayment1);
+        $entries[] = $this->overrideFulcrumRefund($gatewayPayment1,
+            ['invoice_number' => PublicEntity::stripDefaultSign($refund1['id'])]);
 
         $file = $this->writeToExcelFile($entries, 'Fulcrum');
-
-        $scroogeResponse = [
-            'body' => [
-                'data' => [
-                    $entries[0][FulcrumPaymentRecon::COLUMN_RRN] => [
-                        'payment_id'     => $gatewayPayment1['payment_id'],
-                        'refund_id'      => PublicEntity::stripDefaultSign($refund1['id'])
-                    ]
-                ]
-            ]
-        ];
-
-        $scroogeMock = $this->getMockBuilder(Scrooge::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getRefundsFromPaymentIdAndGatewayId'])
-            ->getMock();
-
-        $this->app->instance('scrooge', $scroogeMock);
-
-        $this->app->scrooge->method('getRefundsFromPaymentIdAndGatewayId')->willReturn($scroogeResponse);
 
         $cpsResponse = [
             $entries[0][FulcrumPaymentRecon::COLUMN_RRN] => [

@@ -90,47 +90,13 @@ class Reconciliate extends Base\Reconciliate
 
         foreach ($fileContents as &$row)
         {
-            if ((isset($row[PaymentReconciliate::COLUMN_RRN]) === true) and
+            if (($this->getReconTypeForRow($row) === Base\Reconciliate::PAYMENT) and
+                (isset($row[PaymentReconciliate::COLUMN_RRN]) === true) and
                 (empty($row[PaymentReconciliate::COLUMN_RRN]) === false))
             {
                 $rrn = $row[PaymentReconciliate::COLUMN_RRN];
 
                 $row[PaymentReconciliate::COLUMN_PAYMENT_ID] = $responseFromCps[$rrn]['authorization']['payment_id'];
-            }
-        }
-
-        $refundsArray = [];
-
-
-        foreach ($fileContents as &$row)
-        {
-            // Sometime we may get empty response from cps for any rrn
-            if (($this->getReconTypeForRow($row) === Base\Reconciliate::REFUND) and
-                (empty($row[PaymentReconciliate::COLUMN_RRN]) === false) and
-                ($row[PaymentReconciliate::COLUMN_PAYMENT_ID] !== 00))
-            {
-                $rrn = $row[PaymentReconciliate::COLUMN_RRN];
-                $refundsArray[$rrn] = $row[PaymentReconciliate::COLUMN_PAYMENT_ID];
-            }
-        }
-
-        $requestForScrooge = $this->buildRequestForScrooge($refundsArray);
-
-        if (count($requestForScrooge) > 0)
-        {
-            $responseFC = $this->getRefundIdFromScrooge($requestForScrooge, Gateway::FULCRUM);
-
-            foreach ($fileContents as &$row)
-            {
-                if (($this->getReconTypeForRow($row) === Base\Reconciliate::REFUND))
-                {
-                    $rrn = $row[PaymentReconciliate::COLUMN_RRN];
-
-                    if (empty($responseFC[$rrn]) === false)
-                    {
-                        $row[PaymentReconciliate::COLUMN_PAYMENT_ID] = $responseFC[$rrn]['refund_id'];
-                    }
-                }
             }
         }
     }
