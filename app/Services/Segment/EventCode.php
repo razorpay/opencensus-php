@@ -26,6 +26,9 @@ class EventCode
 
     const SIGNUP_EMAIL_SEND_VERIFICATION_SUCCESS = 'Signup Email Send Verification Success';
 
+    const WEBSITE_SELF_SERVE_WORKFLOW            = 'Edit website workflow status';
+
+    const TRANSACTION_LIMIT_SELF_SERVE_WORKFLOW  = 'Transaction limit workflow status';
 
     const EVENT_LABELS = [
         self::L1_SUBMISSION                             => "L1 Form Submit",

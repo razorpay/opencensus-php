@@ -163,6 +163,7 @@ class Core extends Base\Core
             Entity::WORKFLOW_OBSERVER_DATA  => $esObject[Entity::WORKFLOW_OBSERVER_DATA] ?? [],
             Entity::ENTITY_ID               => $esObject[Entity::ENTITY_ID] ?? '',
             Entity::ENTITY_NAME             => $esObject[Entity::ENTITY_NAME] ?? '',
+            Entity::PERMISSION              => $esObject[Entity::PERMISSION] ?? '',
         ];
     }
 

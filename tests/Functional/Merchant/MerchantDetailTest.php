@@ -24,6 +24,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\Document\Source;
+use RZP\Services\Segment\SegmentAnalyticsClient;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
@@ -3686,6 +3687,17 @@ class MerchantDetailTest extends OAuthTestCase
     public function testUpdateBusinessWebsiteWorkflowApprove()
     {
         Mail::fake();
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+            ->method('pushIdentifyAndTrackEvent')
+            ->willReturn(true);
 
         $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated'], PermissionName::UPDATE_MERCHANT_WEBSITE);
 
