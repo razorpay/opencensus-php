@@ -653,7 +653,7 @@ class Validator extends Base\Validator
 
     protected static $capitalMerchantEligibilityConfigTypeRowRules = [
         Header::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG_MERCHANT_ID   => 'required|string|size:14',
-        Header::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG_PRODUCT_ID    => 'required|string|size:14',
+        Header::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG_PRODUCT_NAME  => 'required|string',
         Header::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG_SEGMENT       => 'required|string',
         Header::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG_ELIGIBLE      => 'required|in:yes,no'
     ];
