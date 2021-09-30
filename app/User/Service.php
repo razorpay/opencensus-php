@@ -365,6 +365,20 @@ class Service extends Base\Service
     }
 
     /**
+     * @return array
+     */
+    public function demoLogin()
+    {
+        $input = array(
+            "email"    => Constants::BANKING_DEMO_USER_EMAIL,
+            "password" => $this->app['config']['app.banking_demo_user_password'],
+            "captcha"  => Constants::FAKE_CAPTCHA        //captcha cannot be empty even if email is whitelisted
+        );
+
+        return $this->login($input);
+    }
+
+    /**
      * @param  array  $input [description]
      *
      * @return array

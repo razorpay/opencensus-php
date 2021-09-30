@@ -98,5 +98,7 @@ class Constants
         "annapurna.pal+008@razorpay.com"
     ];
 
+    const BANKING_DEMO_USER_EMAIL = "acmecorporation2021@gmail.com";
 
+    const FAKE_CAPTCHA = "FAKE_CAPTCHA";
 }

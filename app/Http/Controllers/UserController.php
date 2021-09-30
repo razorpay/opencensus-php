@@ -323,6 +323,20 @@ class UserController extends Controller
     }
 
     /**
+     * Handle demoLogin for X Demo Account
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function postDemoSignin()
+    {
+        list($error, $data) = (new User\Service)->demoLogin();
+
+        $result = AppResponse::jsonResponse($error, $data);
+
+        return $result;
+    }
+
+    /**
      * Handle the authentication request from the user for OTP logins and send OTP.
      *
      * @return \Illuminate\Http\Response
