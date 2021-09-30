@@ -18,7 +18,7 @@
   @include('partials/common')
 @endif
 
-@if ($newAuthRoute === 'signup')
+@if ($newAuthFlow === true and $newAuthRoute === 'signup')
   <title>Create your Razorpay Account - Razorpay</title>
   <meta name="description" content="Welcome to Razorpay! Create your free Razorpay account today. Sign up for free to join the millions of users that trust us with their payments, banking & working capital." />
 @else
