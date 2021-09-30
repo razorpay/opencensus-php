@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Redis;
 use RZP\Constants\Timezone;
 use RZP\Http\Request\Requests;
 use RZP\Models\Gateway\Downtime\Constants;
+use RZP\Models\Gateway\Downtime\Entity;
+use RZP\Models\Gateway\Downtime\Webhook\Constants\DowntimeService;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Gateway\Downtime\Core;
@@ -383,29 +385,29 @@ class DowntimeSlackNotification
 
     private function getLookerLink($downtime): string
     {
-        $method = $downtime['method'];
+        $method = $downtime[Entity::METHOD];
 
         $lookerLink = Constants::LOOKER_URL
             . $this->getDashboardForMethod($method)
-            . '?METHOD='
+            . '?' . Constants::METHOD_FILTER . '='
             . $this->getMethodFilter($downtime);
 
-        if(empty($downtime['network']) === false)
+        if(empty($downtime[Entity::NETWORK]) === false)
         {
-            $lookerLink .= "&NETWORK=" . ucwords($downtime['network']);
+            $lookerLink .= "&" . Constants::NETWORK_FILTER . "=" . $downtime[Entity::NETWORK];
         }
 
-        if(empty($downtime['issuer']) === false)
+        if(empty($downtime[Entity::ISSUER]) === false)
         {
-            $lookerLink .= "&ISSUER=" . ucwords($downtime['issuer']);
+            $lookerLink .= "&" . Constants::ISSUER_FILTER. "=" . $downtime[Entity::ISSUER];
         }
 
-        if(empty($downtime['merchant_id']) === false)
+        if(empty($downtime[DowntimeService::MERCHANT_ID]) === false)
         {
-            $lookerLink .= "&MERCHANT_ID=" . $downtime['merchant_id'];
+            $lookerLink .= "&" . Constants::MERCHANT_ID_FILTER . "=" . $downtime[DowntimeService::MERCHANT_ID];
         }
 
-        $lookerLink .= "&" . Constants::FROM_10_20_MINUTES;
+        $lookerLink .= "&" . Constants::FROM_10_MINUTES_FILTER;
 
         $this->trace->info(
             TraceCode::LOOKER_DASHBOARD_LINK,
@@ -429,7 +431,7 @@ class DowntimeSlackNotification
 
     private function getMethodFilter($downtime): string
     {
-        $method = $downtime['method'];
+        $method = $downtime[Entity::METHOD];
 
         switch ($method)
         {

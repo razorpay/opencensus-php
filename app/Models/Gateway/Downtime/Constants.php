@@ -51,6 +51,14 @@ class Constants
 
     const DEFAULT_LOOKER_DASHBOARD = 3372;
 
+    const METHOD_FILTER = 'METHOD';
+
+    const ISSUER_FILTER = 'ISSUER';
+
+    const NETWORK_FILTER = 'NETWORK';
+
+    const MERCHANT_ID_FILTER = 'MERCHANT_ID';
+
     const CREDIT_CARD_FILTER = 'Credit Card';
 
     const DEBIT_CARD_FILTER = 'Debit Card';
@@ -59,7 +67,7 @@ class Constants
 
     const UPI_INTENT_FILTER = 'UPI Intent';
 
-    const FROM_10_20_MINUTES = 'FROM=10 20minutes';
+    const FROM_10_MINUTES_FILTER = 'FROM=10 minutes';
 
     protected static $lookerDashboardForMethod = [
         Constants::CARD           => Constants::CARD_LOOKER_DASHBOARD,
@@ -76,7 +84,7 @@ class Constants
     protected static $lookerUpiFilters = [
         Constants::COLLECT           => Constants::UPI_COLLECT_FILTER,
         Constants::INTENT            => Constants::UPI_INTENT_FILTER,
-        Constants::CARD              => Constants::UPI_COLLECT_FILTER . "," . Constants::UPI_INTENT_FILTER,
+        Constants::UPI              => Constants::UPI_COLLECT_FILTER . "," . Constants::UPI_INTENT_FILTER,
     ];
 
     protected static $allJobTypes = [
