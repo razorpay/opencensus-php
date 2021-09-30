@@ -2184,6 +2184,16 @@ class BankingAccountTest extends TestCase
             Status::MERCHANT_NOT_AVAILABLE);
     }
 
+    public function testUpdateBankingAccountStatusWithBlockedSubstatusMapping()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED,
+            Status::ARCHIVED,
+            Status::READY_TO_SEND_TO_BANK);
+    }
+
     public function testUpdateBankingAccountStatusWithNoneSubStatus()
     {
         $this->assertUpdateBankingAccountStatusFromTo(

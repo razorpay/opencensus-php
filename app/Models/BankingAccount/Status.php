@@ -108,6 +108,17 @@ class Status
 
     /**
      * @var array
+     * This contains a substatus map that needs to be blocked
+        on special requests
+     */
+    protected static $blockedSubStatusMap = [
+        self::READY_TO_SEND_TO_BANK => [
+            self::ARCHIVED,
+        ],
+    ];
+
+    /**
+     * @var array
      * This contains a status map that keeps mapping of a status
      * to next possible statuses. This is to ensure the status
      * change on Banking Account Entity happens in an order.
@@ -130,7 +141,7 @@ class Status
             self::UNSERVICEABLE,
             self::CANCELLED,
             self::PROCESSED,
-            self::ARCHIVED
+            self::ARCHIVED,
         ],
         self::INITIATED => [
             self::PROCESSING,
@@ -461,11 +472,23 @@ class Status
         return array_flip($externalToInternalMap)[$subStatus];
     }
 
-    public static function validatePreviousToCurrentMapping(string $previousStatus, string $currentStatus)
+    public static function validatePreviousToCurrentMapping(string $previousStatus, string $currentStatus, string $subStatus=null)
     {
+        $blocked = false;
+
+        if ($subStatus !== null)
+        {
+            if (isset(self::$blockedSubStatusMap[$subStatus])) {
+                $blockedStatusList = self::$blockedSubStatusMap[$subStatus];
+
+                if (in_array($currentStatus, $blockedStatusList, true))
+                    $blocked = true;
+            }
+        }
+
         $nextStatusList = self::$fromToStatusMap[$previousStatus];
 
-        if (in_array($currentStatus, $nextStatusList, true) === false)
+        if (in_array($currentStatus, $nextStatusList, true) === false || $blocked)
         {
             throw new BadRequestValidationFailureException(
                 sprintf('Status change from %s to %s not permitted',
