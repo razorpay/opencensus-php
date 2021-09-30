@@ -869,6 +869,43 @@ class Constants
             ],
         ],
         [
+            'title'       => 'Razorpay Trusted Business badge is now Live!',
+            'description' => 'Congratulations, you are now a Razorpay Trusted Business! 🚀',
+            'start_ts'    => 1632421145,
+            'end_ts'      => 1640283542,
+            'icon'        => "https://cdn.razorpay.com/static/assets/notifs/rtb-icon.svg",
+            'id'          => 'RTB_Trusted_Badge',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'See Details',
+                    'url'   => '/trustedbadge',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Read More',
+                    'id'    => 'announcement-details-l2',
+                    'url'   => '/announcements/RTB_Trusted_Badge/'
+                ],
+            ],
+            'l2_content'  => [
+            'content'     => "<div class='paragraph'> <b>About the Razorpay Trusted Business badge</b><p>It can be challenging to build trust with customers in the digital world. A lack of trust often has businesses experience upto 20% cart abandonments with new v/s repeat users.</p><p class='paragraph'> To help bridge this gap in trust, we recently launched the 'Razorpay Trusted Business' badge. This badge acts as a seal of approval from a trusted payments service provider (Razorpay) and assures customers that they can safely transact with your brand. </p><div class='image'> <img src='https://cdn.razorpay.com/static/assets/whats-new/rtb-announcement.svg' /></div><p>Razorpay Trusted Business badge is an exclusive offering available only to our most trusted partners and promises to increase conversion rates and reduce dependency on 'cash on delivery'.</p></div><div class='paragraph'><b>Earning the Razorpay Trusted Business badge</b><p>Given your excellent track record with Razorpay, your Razorpay payment checkout page has already been upgraded to reflect that you are a Razorpay Trusted Business.</p></div><div class='paragraph'><b>What will your customers see?</b><ol><li>User arrives on your website, app, link or page to make a purchase </li><li>User sees the Razorpay Trusted Business badge on your Razorpay checkout page, reassuring the user that they can safely transact from your brand.</li><li>User selects their preferred payment method and completes the payment as usual</li></ol><p>Razorpay Trusted Business badge works across all our standard checkout products - core Payment Gateway, Payment Pages, Payment Buttons, Payment Links etc.</p></div><div class='paragraph'><b>Benefits of Razorpay Trusted Business badge</b><ol><li>Win your customers’ Trust 🚀</li><li>Boost your conversion rates 📈</li><li>Flaunt the badge and stand out from competition 😎</li></ol></div><div class='paragraph'><b>Will I be charged anything?</b><p>No, showcasing the Razorpay Trusted Badge on the payment checkout page is completely FREE with No hidden charges.</p></div>",
+                'buttons'     => [
+                    [
+                        'type'  => 'button',
+                        'label' => 'See Details',
+                        'url'   => '/trustedbadge',
+                    ],
+                    [
+                        'type'  => 'primary-inverted',
+                        'label' => 'Read More',
+                        'url'   => 'https://razorpay.com/docs/payment-gateway/dashboard-guide/trusted-badge/',
+                    ],
+                ],
+            ],
+            'filters'     => ['splitz_experiments' => ['RTB_ANNOUNCEMENT']],
+        ],
+        [
             'title'       => 'Avail Reduced Transaction Fee!',
             'description' => 'Reduce transaction fee to 1.65% & get a corporate card by switching to Razorpay Current Accounts!',
             'start_ts'    => 1626159840,

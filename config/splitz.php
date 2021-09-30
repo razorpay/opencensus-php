@@ -101,6 +101,9 @@ return [
         // EDX experiments
         'ZAPIER_ANNOUNCEMENT_SPLITZ' => env('ZAPIER_ANNOUNCEMENT_SPLITZ', ''),
         'AI_SENSY_BANNER_SPLITZ' => env('AI_SENSY_BANNER_SPLITZ', ''),
+        
+         //Razorpay Trusted Badge (RTB)
+        'RTB_ANNOUNCEMENT' => env('RTB_ANNOUNCEMENT', ''),
 
         // Ultra phase 2
         'ULTRA_P2_CASH_ADVANCE_ANNOUNCEMENT_SPLITZ' => env('ULTRA_P2_CASH_ADVANCE_ANNOUNCEMENT_SPLITZ', ''),
@@ -108,5 +111,6 @@ return [
 
         // PP Zapier Banner
         'PP_ZAPIER_BANNER_SPLITZ' => env('PP_ZAPIER_BANNER_SPLITZ', ''),
+
     ]
 ];
