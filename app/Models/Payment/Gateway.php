@@ -2022,6 +2022,8 @@ class Gateway
         IFSC::CNRB,
         IFSC::HSBC,
         IFSC::ESFB,
+        IFSC::CIUB,
+        IFSC::KVBL,
     ];
 
     public static $directDebitCardNetworks = [
