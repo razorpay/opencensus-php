@@ -1,8 +1,9 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { classList, findBy } from 'common/utils/rzp-utils';
 
-import DocsLink from 'merchant/components/DocsLink';
+import DocsLink, { DocLink } from 'merchant/components/DocsLink';
 import Amount from 'common/ui/Amount';
 import Banner from 'common/ui/Banner';
 import HeaderAction from 'common/ui/HeaderAction';
@@ -18,6 +19,14 @@ const PAYMENT_METHODS = {
   UPI: 'upi',
   CARD: 'card',
   EMANDATE: 'emandate',
+};
+
+const GATEWAY_MAX_LIMIT = 200000000;
+const EMANDATE_MAX_LIMIT = 1000000000;
+
+const isEnabled = (methodName) => (settings) => {
+  const paymentMethod = findBy(settings.items, 'name', methodName) || {};
+  return paymentMethod.setting_enabled === '1';
 };
 
 @connect(
@@ -70,7 +79,7 @@ export default class SubscriptionsSettings extends React.Component {
   };
 
   render() {
-    const { settings, user, org } = this.props;
+    const { settings, user } = this.props;
 
     if (settings.loading) {
       return (
@@ -113,7 +122,6 @@ export default class SubscriptionsSettings extends React.Component {
                     )}
                   >
                     <ToggleCard
-                      checked
                       title={
                         <>
                           <i class="i i-card m-r" /> Card
@@ -121,13 +129,31 @@ export default class SubscriptionsSettings extends React.Component {
                       }
                       onToggleChange={this.onToggleChange(PAYMENT_METHODS.CARD)}
                       checked={isEnabled(PAYMENT_METHODS.CARD)(settings)}
-                      description="Accept recurring payments via cards for your subscriptions in any of our supported international currencies."
-                      info={
+                      description={() => (
                         <>
-                          Cards currently support recurring payments upto <Amount value={500000} />.
-                          Charges of higher value would automatically fail for domestic cards.
+                          Accept recurring payments via debit & credit cards for your subscriptions
+                          in any of our{' '}
+                          <DocLink
+                            className="inline-doc"
+                            href="https://razorpay.com/docs/payments/payments/international-payments/#supported-currencies"
+                          >
+                            supported international currencies.
+                          </DocLink>
                         </>
-                      }
+                      )}
+                      info={<Info />}
+                      note={() => (
+                        <>
+                          <strong>Note:</strong> Only limited cards are supported due to new payment
+                          regulations by RBI.{' '}
+                          <DocLink
+                            className="inline-doc"
+                            href="https://razorpay.com/docs/subscriptions/bank-options/#card-networks"
+                          >
+                            View supported cards
+                          </DocLink>
+                        </>
+                      )}
                     />
                   </div>
 
@@ -146,35 +172,31 @@ export default class SubscriptionsSettings extends React.Component {
                       checked={isEnabled(PAYMENT_METHODS.UPI)(settings)}
                       description={
                         <>
-                          Accept UPI payments on subscriptions when recurring charge is less than{' '}
-                          <b>₹ 200000</b>. Only supports Indian currency.
+                          Accept recurring payments via UPI apps like Paytm & Phonepe for your
+                          subscriptions. Only supports Indian currency.
                         </>
                       }
-                      info={
-                        <>
-                          UPI only supports recurring payments upto <Amount value={20000000} />.
-                          Subscription of higher values will not have UPI as a payment method during
-                          checkout.
-                        </>
-                      }
+                      info={<Info />}
                     />
                   </div>
 
                   {user.isEmandateOnSubscriptionEnabled && (
                     <div class="col-md-4">
                       <ToggleCard
-                        isNew
                         title={
                           <>
-                            <i class="i i-upi m-r" /> Emandate
+                            <i class="i i-bank m-r" /> eMandate
                           </>
                         }
                         onToggleChange={this.onToggleChange(PAYMENT_METHODS.EMANDATE)}
                         checked={isEnabled(PAYMENT_METHODS.EMANDATE)(settings)}
-                        description={
+                        description="Accept recurring payments directly via bank accounts for your subscriptions. Only supports Indian currency."
+                        info={
                           <>
-                            Accept recurring payments via bank accounts (NetBanking) for your
-                            subscriptions. Only supports Indian currency.
+                            Accept payments upto:{' '}
+                            <strong>
+                              <Amount value={EMANDATE_MAX_LIMIT} />
+                            </strong>
                           </>
                         }
                       />
@@ -190,12 +212,23 @@ export default class SubscriptionsSettings extends React.Component {
   }
 }
 
-const ToggleCard = ({ isNew, title, checked, info = null, description, onToggleChange }) => {
+const Info = () => (
+  <>
+    Accept payments upto
+    <strong>
+      {' '}
+      <Amount value={GATEWAY_MAX_LIMIT} />
+    </strong>
+    <br />
+    Payments above ₹ 5000 will ask the customer for OTP verification as well.
+  </>
+);
+
+const ToggleCard = ({ title, checked, info = null, description, onToggleChange, note }) => {
   return (
     <div class="panel panel-default ToggleCard">
       <div class="panel-heading">
         <span class="title">{title}</span>
-        {isNew && <span class="badge bg-success m-l">new</span>}
 
         <span class="pull-right toggler-btn">
           <SwitchField checked={checked} onChange={onToggleChange} type="prime" />
@@ -206,22 +239,19 @@ const ToggleCard = ({ isNew, title, checked, info = null, description, onToggleC
       </div>
 
       <div class="panel-body">
-        <div class="description">{description}</div>
+        <div class="description">
+          {typeof description === 'function' ? description() : description}
+        </div>
         {info !== null && (
           <div class="m-t">
-            <Banner>
-              <i class="i i-info-outline m-r" />
+            <Banner className="settings-banner">
+              <i class="i-info-outline m-r" />
               <div>{info}</div>
             </Banner>
           </div>
         )}
+        {note && <div>{typeof note === 'function' ? note() : note}</div>}
       </div>
     </div>
   );
-};
-
-const isEnabled = (methodName) => (settings) => {
-  const paymentMethod = findBy(settings.items, 'name', methodName) || {};
-
-  return paymentMethod.setting_enabled === '1';
 };
