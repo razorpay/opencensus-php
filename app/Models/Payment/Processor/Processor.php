@@ -767,6 +767,13 @@ class Processor
 
             $subscriptionPaymentRecurringType = $this->subscription->getRecurringType();
 
+            if((isset($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE]) === true) and
+                ($input[Payment\Entity::METHOD] === Payment\Method::UPI) and
+                $subscriptionPaymentRecurringType === 'card_change')
+            {
+                $subscriptionPaymentRecurringType = 'initial';
+            }
+
             $payment->setRecurringType($subscriptionPaymentRecurringType);
 
             $this->addOrderIdToInputForExternalSubscription($input);
@@ -782,12 +789,29 @@ class Processor
         // using default auth amount as card change amount)
         if (($this->subscription->isActive() === true) or
             ($this->subscription->isHalted() === true) or
-            ($this->subscription->isAuthenticated() === true))
+            ($this->subscription->isAuthenticated() === true) or
+            ($this->subscription->isPending() === true))
         {
             $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
 
             if ($cardChange === true)
             {
+                // Adding this to support UPI card change
+                if($input['method'] === Constants::UPI)
+                {
+                    $orderPayLoad = [
+                        Order\Entity::AMOUNT          => $input['amount'],
+                        Order\Entity::CURRENCY        => $input['currency'],
+                        Order\Entity::PAYMENT_CAPTURE => true,
+                        Order\Entity::PRODUCT_ID      => $this->subscription->getId(),
+                        Order\Entity::PRODUCT_TYPE    => Constants::SUBSCRIPTION
+                    ];
+
+                    $order = (new Order\Core)->create($orderPayLoad, $this->merchant);
+
+                    $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($order->getId());
+                }
+
                 return;
             }
         }
@@ -3347,7 +3371,8 @@ class Processor
     protected function addOrderIdToInputForSubscriptionIfApplicable(array & $input, Payment\Entity $payment)
     {
         if (($this->subscription !== null) and
-            ($this->subscription->isCreated() === true) and
+            (($this->subscription->isCreated() === true) or
+             ((boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false)) === true))  and
             ($payment->getMethod() === Payment\Method::UPI))
         {
             $upitoken = [
