@@ -84,7 +84,10 @@ export default function MandatePaymentMethod({ mandate }) {
       <Definition>
         <strong>UPI</strong>
         <>{bank_account && bank_account.bank_name && bank_account.bank_name}</>
-        <>Billing Frequency: {BILLING_FREQUENCY[mandate.frequency] || 'Monthly'} </>
+        <>
+          Billing Frequency:{' '}
+          {BILLING_FREQUENCY[mandate?.subscription_registration?.frequency] || 'Monthly'}{' '}
+        </>
         <>
           Max Billing Amount: <Amount value={mandate.max_amount} currency={'INR'} />
         </>
