@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
@@ -307,7 +308,8 @@ export default class HomeContainer extends Component {
   }
 
   get settleNowRestrictionMsg() {
-    if (!this.settlementRestricted) return false;
+    return 'Due to a technical issue, On-demand Settlements is not available. Please check back in some time.';
+    /* if (!this.settlementRestricted) return false;
     const {
       attempts_left,
       settlable_amount,
@@ -362,7 +364,7 @@ export default class HomeContainer extends Component {
         max_amount_limit,
         true,
       )} for the day.`;
-      /* eslint-disable */
+      /* eslint-disable 
     } else return;
     /* eslint-enable */
   }

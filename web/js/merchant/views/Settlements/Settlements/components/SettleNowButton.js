@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { lazy, Suspense, useState } from 'react';
 import Button from 'common/new-ui/Button';
 import { getItem } from 'common/utils/localStorage';
@@ -26,7 +27,7 @@ const DefaultSettlementBtn = ({ onClick, disabled }) => {
 };
 
 const SettleNowButton = ({
-  disabled,
+  // disabled,
   merchantId,
   fromWhere,
   settlementExists,
@@ -34,6 +35,7 @@ const SettleNowButton = ({
   showOndemandSettlementForm,
   checkIfFirstEverSettlement,
 }) => {
+  const disabled = true;
   const [hoverOnSettleButton, setHoverOnSettleButton] = useState(false);
 
   const handleMouseActivityOverSettleBtn = (type) => {
@@ -80,7 +82,7 @@ const SettleNowButton = ({
 };
 
 SettleNowButton.propTypes = {
-  disabled: PropTypes.bool,
+  // disabled: PropTypes.bool,
   merchantId: PropTypes.string,
   fromWhere: PropTypes.string,
   settlementExists: PropTypes.bool,

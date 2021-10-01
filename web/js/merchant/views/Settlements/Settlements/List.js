@@ -1,4 +1,4 @@
-/* eslint-disable consistent-return */
+/* eslint-disable */
 import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -71,7 +71,9 @@ class SettlementsListContainer extends ListContainer {
   }
 
   get settleNowRestrictionMsg() {
-    if (!this.settlementRestricted) return;
+    return 'Due to a technical issue, On-demand Settlements is not available. Please check back in some time.';
+
+    /* if (!this.settlementRestricted) return;
 
     const {
       attempts_left,
@@ -126,7 +128,7 @@ class SettlementsListContainer extends ListContainer {
         max_amount_limit,
         true,
       )} for the day.`;
-      /* eslint-disable */
+      /* eslint-disable 
       } else return;
       /* eslint-enable */
   }
