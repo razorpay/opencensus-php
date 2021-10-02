@@ -21,8 +21,9 @@ const PAYMENT_METHODS = {
   EMANDATE: 'emandate',
 };
 
-const GATEWAY_MAX_LIMIT = 200000000;
-const EMANDATE_MAX_LIMIT = 1000000000;
+const GATEWAY_MAX_LIMIT = 20000000;
+const UPI_MAX_LIMIT = 10000000;
+const EMANDATE_MAX_LIMIT = 100000000;
 
 const isEnabled = (methodName) => (settings) => {
   const paymentMethod = findBy(settings.items, 'name', methodName) || {};
@@ -135,19 +136,31 @@ export default class SubscriptionsSettings extends React.Component {
                           in any of our{' '}
                           <DocLink
                             className="inline-doc"
+                            target="_blank"
                             href="https://razorpay.com/docs/payments/payments/international-payments/#supported-currencies"
                           >
                             supported international currencies.
                           </DocLink>
                         </>
                       )}
-                      info={<Info />}
+                      info={() => (
+                        <>
+                          Accept payments upto
+                          <strong>
+                            {' '}
+                            <Amount value={GATEWAY_MAX_LIMIT} />
+                          </strong>
+                          <br />
+                          Payments above ₹ 5000 will ask the customer for OTP verification as well.
+                        </>
+                      )}
                       note={() => (
                         <>
                           <strong>Note:</strong> Only limited cards are supported due to new payment
                           regulations by RBI.{' '}
                           <DocLink
                             className="inline-doc"
+                            target="_blank"
                             href="https://razorpay.com/docs/subscriptions/bank-options/#card-networks"
                           >
                             View supported cards
@@ -172,11 +185,23 @@ export default class SubscriptionsSettings extends React.Component {
                       checked={isEnabled(PAYMENT_METHODS.UPI)(settings)}
                       description={
                         <>
-                          Accept recurring payments via UPI apps like Paytm & Phonepe for your
+                          Accept recurring payments via UPI apps like PhonePe, Paytm & BHIM for your
                           subscriptions. Only supports Indian currency.
                         </>
                       }
-                      info={<Info />}
+                      info={() => (
+                        <>
+                          Accept payments upto
+                          <strong>
+                            {' '}
+                            <Amount value={UPI_MAX_LIMIT} />
+                          </strong>{' '}
+                          (For BFSI: <Amount value={GATEWAY_MAX_LIMIT} />)
+                          <br />
+                          Payments above ₹ 5000 will ask the customer for UPI PIN verification as
+                          well.
+                        </>
+                      )}
                     />
                   </div>
 
@@ -212,18 +237,6 @@ export default class SubscriptionsSettings extends React.Component {
   }
 }
 
-const Info = () => (
-  <>
-    Accept payments upto
-    <strong>
-      {' '}
-      <Amount value={GATEWAY_MAX_LIMIT} />
-    </strong>
-    <br />
-    Payments above ₹ 5000 will ask the customer for OTP verification as well.
-  </>
-);
-
 const ToggleCard = ({ title, checked, info = null, description, onToggleChange, note }) => {
   return (
     <div class="panel panel-default ToggleCard">
@@ -246,7 +259,7 @@ const ToggleCard = ({ title, checked, info = null, description, onToggleChange, 
           <div class="m-t">
             <Banner className="settings-banner">
               <i class="i-info-outline m-r" />
-              <div>{info}</div>
+              <div>{typeof info === 'function' ? info() : info}</div>
             </Banner>
           </div>
         )}
