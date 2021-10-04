@@ -2,7 +2,6 @@ import api from './api';
 import {
   COLLECTIONS_PAYMENT_MODE,
   COLLECTIONS_PAYMENT_REFERENCE_TYPE,
-  COLLECTIONS_PRODUCT_TYPE,
   INSTALLMENT_STATUS,
   PAYMENT_STATUS,
   PLAN_STATUS,
@@ -35,16 +34,14 @@ export function fetchRepayments(product_entity_reference_id) {
   return fetchAllRepayments();
 }
 
+//eslint-disable-next-line
 export async function fetchPlanAndInstallment() {
   const response = {};
   return api
     .getPlans()
     .then(({ data: { plans = [] } }) => {
       const loanPlan = plans.length
-        ? plans.find(
-            ({ product_type, status }) =>
-              product_type === COLLECTIONS_PRODUCT_TYPE.LOANS && status === PLAN_STATUS.CREATED,
-          ) || plans[plans.length - 1]
+        ? plans.find(({ status }) => status === PLAN_STATUS.CREATED) || plans[plans.length - 1]
         : null;
       if (!loanPlan) return Promise.reject('No plan');
 
@@ -59,6 +56,7 @@ export async function fetchPlanAndInstallment() {
     .catch(() => Promise.reject('Failed to fetch plan and installment'));
 }
 
+//eslint-disable-next-line
 export async function fetchLoanData() {
   const response = {};
   return fetchPlanAndInstallment()

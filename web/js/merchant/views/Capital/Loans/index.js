@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Redirect, withRouter } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
 import ApplicationOverviewLoadingSkeleton from '../components/ApplicationOverviewLoadingSkeleton';
 import { isCashAdvanceProduct, isLoanProduct } from '../utils';
@@ -9,12 +9,12 @@ import ApplicationOnboardingForm from './Forms/ApplicationOnboardingForm';
 import ApplicationStatusOverview from './ApplicationStatusOverview';
 import LoanEntity from './LoanEntity';
 import {
-  CAPITAL_LINKS,
   CAPITAL_PRODUCT_NAME_CODE_MAP,
   HOTJAR_TRIGGERS,
-  TOOLTIP_DESCRIPTIONS,
   GA_CATEGORY_BY_PRODUCT,
   APPLICATION_STATES,
+  LOANS_BASE_URL,
+  LOANS_SECTIONS,
 } from './constants';
 import EditPanModal from './EditPanModal';
 import CircularProgress from 'common/new-ui/CircularProgress';
@@ -33,7 +33,14 @@ import {
 import DataList from 'merchant/components/OnBoarding/Slides/DataList';
 import { OnBoardingWrapper } from 'merchant/components/OnBoarding';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
-import { LOANS_BASE_URL, LOANS_SECTIONS } from '../Loans/constants';
+import api from './LoansCollections/api';
+import { PLAN_STATUS } from './LoansCollections/constants';
+
+const REDIRECTABLE_APPLICATION_STATES = [
+  APPLICATION_STATES.CREDIT_DISBURSED,
+  APPLICATION_STATES.RZP_REJECTED,
+  APPLICATION_STATES.CLOSED,
+];
 
 export const PROS = [
   <React.Fragment key={1}>
@@ -124,7 +131,7 @@ export default class LoanApplicationOverview extends React.Component {
     if (searchParams) {
       const params = new URLSearchParams(searchParams);
       const action = params.get('action');
-      this.onLoadHandlers.push((activeApplication) => {
+      this.onLoadHandlers.push(() => {
         if (action === 'open') {
           this.openLoanEntity();
         }
@@ -150,6 +157,7 @@ export default class LoanApplicationOverview extends React.Component {
     if (!productCode || !allowedProducts.includes(productCode)) this.redirectToHome();
   };
 
+  //eslint-disable-next-line
   validateFeatureAccess = () => {
     const { history, user } = this.props;
 
@@ -192,45 +200,55 @@ export default class LoanApplicationOverview extends React.Component {
 
     if (!productDetails) this.redirectToHome();
 
+    let latestApplication = null;
     this.props
       .getApplications({
         owner_type: 'MERCHANT',
         owner_id: this.props.user.current,
         product_id: productDetails.id,
       })
-      .then((res) => {
-        if (res && !res.errors && res.data.applications) {
-          this.setState({
-            applications: res.data.applications,
-          });
-
-          const activeApplications = res.data.applications;
-          if (activeApplications.length > 0 && activeApplications[0].id) {
-            this.fetchApplicationDetails(activeApplications[0].id).then(
-              ({ data: { application: { status = '' } = {} } = {} }) => {
-                this.onLoadHandlers.forEach((callback) => {
-                  callback(activeApplications[0]);
-                });
-                if (
-                  isLoanProduct(this.getProductCode()) &&
-                  status === APPLICATION_STATES.CREDIT_DISBURSED
-                ) {
-                  return this.redirectLoansOverview();
-                }
-              },
-            );
-          } else {
-            this.props.registerNewLoanApplication();
-          }
-        } else {
-          this.props.registerNewLoanApplication();
+      .then(({ data: { applications = [] } = {} } = {}) => {
+        if (!applications.length) return Promise.reject();
+        this.setState({ applications });
+        latestApplication = applications[0];
+        const requests = [this.fetchApplicationDetails(latestApplication.id)];
+        if (isLoanProduct(this.getProductCode())) {
+          requests.push(api.getPlans());
         }
+        return Promise.all(requests);
       })
-      .catch((_) => {
+      .then(
+        ([
+          { data: { application: { status = '' } = {} } = {} },
+          { data: { plans = [] } = {} } = {},
+        ]) => {
+          this.onLoadHandlers.forEach((callback) => {
+            callback(latestApplication);
+          });
+          const isRedirectable = REDIRECTABLE_APPLICATION_STATES.includes(status);
+          const isPlanActive = plans.length
+            ? plans.find((p) => p.status === PLAN_STATUS.CREATED)
+            : null;
+          const isPlanClosed = plans.length
+            ? plans.find((p) => p.status === PLAN_STATUS.COMPLETED)
+            : null;
+
+          if (isRedirectable) {
+            if (isPlanActive) {
+              this.redirectLoansOverview();
+            }
+            if (isPlanClosed) {
+              this.props.registerNewLoanApplication();
+            }
+          }
+        },
+      )
+      .catch(() => {
         this.props.registerNewLoanApplication();
       });
   };
 
+  //eslint-disable-next-line
   fetchApplicationDetails = (id) => {
     if (id && id !== 'new') {
       return this.props.fetchLoanApplicationMeta(id);
@@ -433,6 +451,7 @@ export default class LoanApplicationOverview extends React.Component {
     }
   }
 
+  //eslint-disable-next-line
   isLoanApplicationDisabled = (loanApplicationDetails) => {
     if (!loanApplicationDetails.meta.data.application) return false;
     const { status } = parseApplicationMetaData(loanApplicationDetails);
@@ -441,7 +460,7 @@ export default class LoanApplicationOverview extends React.Component {
   };
 
   render() {
-    const { loanApplicationDetails, user } = this.props;
+    const { loanApplicationDetails } = this.props;
 
     if (loanApplicationDetails.products.loading || loanApplicationDetails.meta.loading)
       return (
