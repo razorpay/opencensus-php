@@ -20,6 +20,8 @@ use RZP\Mail\PayoutLink\FailedInternal;
 use RZP\Mail\PayoutLink\SuccessInternal;
 use RZP\Mail\PayoutLink\SendLinkInternal;
 use RZP\Mail\PayoutLink\CustomerOtpInternal;
+use RZP\Mail\PayoutLink\SendReminderInternal;
+use RZP\Mail\PayoutLink\SendProcessingExpiredInternal;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 
@@ -276,6 +278,16 @@ class Service extends Base\Service
                 $response = $this->sendFailurePayoutLinkEmailInternal($input);
                 return $response;
             }
+            else if($emailType === 'reminder')
+            {
+                $response = $this->sendReminderForPayoutLinkEmailInternal($input);
+                return $response;
+            }
+            else if($emailType === 'processing_expired')
+            {
+                $response = $this->sendProcessingExpiredPayoutLinkEmailInternal($input);
+                return $response;
+            }
             else
             {
                 throw new BadRequestException(
@@ -354,6 +366,37 @@ class Service extends Base\Service
         );
 
         Mail::queue($sendLinkEmail);
+
+        return [Entity::SUCCESS => Entity::OK];
+    }
+
+    public function sendReminderForPayoutLinkEmailInternal($input)
+    {
+        (new Validator())->validateInput(Validator::SEND_REMINDER_EMAIL_INTERNAL_RULE, $input);
+
+        $sendReminderEmail = new SendReminderInternal(
+            $input['payout_link_details'],
+            $input[Entity::MERCHANT_ID],
+            $input[Entity::TO_EMAIL]
+        );
+
+        Mail::queue($sendReminderEmail);
+
+        return [Entity::SUCCESS => Entity::OK];
+    }
+
+    public function sendProcessingExpiredPayoutLinkEmailInternal($input)
+    {
+        (new Validator())->validateInput(Validator::SEND_PROCESSING_EXPIRED_EMAIL_INTERNAL_RULE, $input);
+
+        $sendReminderEmail = new SendProcessingExpiredInternal(
+            $input['payout_link_details'],
+            $input['settings'],
+            $input[Entity::MERCHANT_ID],
+            $input[Entity::TO_EMAIL]
+        );
+
+        Mail::queue($sendReminderEmail);
 
         return [Entity::SUCCESS => Entity::OK];
     }

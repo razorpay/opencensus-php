@@ -56,11 +56,19 @@ class PayoutLinks
     const PAYOUT_LINK_ID                           = 'payout_link_id';
     const STATUS_PROCESSED                         = 'processed';
     const STATUS_CANCELLED                         = 'cancelled';
+    const EXPIRE_BY                                = 'expire_by';
+    const EXPIRED_AT                               = 'expired_at';
     const INTEGRATION_INFO                         = 'integration_info';
     const SOURCE_IDENTIFIER                        = 'source_identifier';
+    const IS_EXPIRY_ENABLED                        = 'is_expiry_enabled';
+    const REMINDER_ENTITY_ID                       = 'reminder_entity_id';
     const IS_CORRECT_MERCHANT                      = 'is_correct_merchant';
+    const IS_DASHBOARD_REQUEST                     = 'is_dashboard_request';
     const IS_INTEGRATION_SUCCESS                   = 'is_integration_success';
     const INTEGRATE_APP_PATH                       = 'twirp/payoutlinks.Payoutlinks/IntegrateApp';
+    const EXPIRE_CALLBACK_PATH                     = 'twirp/payoutlinks.Payoutlinks/ExpireCallback';
+    const UPDATE_PAYOUT_LINK_PATH                  = 'twirp/payoutlinks.Payoutlinks/UpdatePayoutLink';
+    const SEND_REMINDER_CALLBACK_PATH              = 'twirp/payoutlinks.Payoutlinks/SendReminderCallback';
     const SHOPIFY_INSTALL_PATH                     = 'twirp/payoutlinks.Payoutlinks/GetShopifyAppInstallRedirectURI';
     const SHOPIFY_UNINSTALL_PATH                   = 'twirp/payoutlinks.Payoutlinks/UninstallShopifyApp';
     const SHOPIFY_GET_ORDER_DETAILS_PATH           = 'twirp/payoutlinks.Payoutlinks/GetShopifyOrderDetails';
@@ -86,11 +94,13 @@ class PayoutLinks
     const RESEND_NOTIFICATION                      = 'twirp/payoutlinks.Payoutlinks/ResendNotification';
     const ON_BOARDING_STATUS                       = 'twirp/payoutlinks.Payoutlinks/OnboardingStatus';
     const CREATE_BATCH                             = 'twirp/payoutlinks.Payoutlinks/CreateBatchPayoutLinks';
+    const EXPIRE_FIX_CRON_JOB                      = 'twirp/payoutlinks.Payoutlinks/ExpireFixCronJob';
     const BATCH_SUMMARY                            = 'twirp/payoutlinks.Payoutlinks/GetBatchSummary';
     const SUMMARY                                  = 'twirp/payoutlinks.Payoutlinks/Summary';
     const ADMIN_ACTIONS                            = 'twirp/payoutlinks.Payoutlinks/AdminActions';
     const BATCH_PL_PROCESSED                       = 'batch_payout_links_processed';
     const BATCH_PL_INITIATED                       = 'batch_payout_links_initiated';
+    const BATCH_PL_EXPIRED                         = 'batch_payout_links_expired';
     const BATCH_PL_COUNT                           = 'batch_payout_links_count';
     const BATCH_REQUEST_ROWS                       = 'batch_request_rows';
     const FUND_ACCOUNT                             = 'fund_account';
@@ -99,6 +109,7 @@ class PayoutLinks
     const CANCELLED_AT                             = 'cancelled_at';
     const REDIRECT_URI                             = 'redirect_uri';
     const UPDATED_AT                               = 'updated_at';
+    const REMINDERS                                = 'reminders';
     const SEND_SMS                                 = 'send_sms';
     const SEND_EMAIL                               = 'send_email';
     const ATTEMPT_COUNT                            = 'attempt_count';
@@ -277,6 +288,10 @@ class PayoutLinks
 
         $input[self::PAYOUT_LINK_ID] = $this->appendPublicSignForPayoutLink($payoutLinkId);
 
+        $isDashboardRequest = $this->app['basicauth']->isDashboardApp();
+
+        $input[self::IS_DASHBOARD_REQUEST] = $isDashboardRequest;
+
         if($merchantId != "")
         {
             $forAdminResponse = false;
@@ -289,7 +304,9 @@ class PayoutLinks
 
         $response = $this->makeRequest($url, $input);
 
-        $this->processParameters($response, $forAdminResponse, $expandArray);
+        $this->processParameters($response, $forAdminResponse, $expandArray, $isDashboardRequest);
+
+        $this->processReminderTimelineParameter($response, $isDashboardRequest);
 
         return $response;
     }
@@ -637,6 +654,8 @@ class PayoutLinks
 
         $response[self::BATCH_PL_PROCESSED] = array_pull($response, self::BATCH_PL_PROCESSED, 0);
 
+        $response[self::BATCH_PL_EXPIRED] = array_pull($response, self::BATCH_PL_EXPIRED, 0);
+
         return $response;
     }
 
@@ -746,7 +765,7 @@ class PayoutLinks
         $plValidator->validateInput(Validator::BATCH_CREATE, $input);
 
         // only creating payout_link_bulk type batch
-        if($input['type'] === BatchType::PAYOUT_LINK_BULK)
+        if($input['type'] === BatchType::PAYOUT_LINK_BULK or $input['type'] === BatchType::PAYOUT_LINK_BULK_V2)
         {
             $batch = (new BatchCore)->create($input, $merchant, $user);
 
@@ -763,6 +782,73 @@ class PayoutLinks
                 ]
             );
         }
+    }
+
+    public function sendReminderCallback(string $reminderEntityId)
+    {
+        $url = $this->getConstructedUrl(self::SEND_REMINDER_CALLBACK_PATH);
+
+        $input = [
+            self::REMINDER_ENTITY_ID => $reminderEntityId
+        ];
+
+        $response = $this->makeRequest($url, $input);
+
+        return $this->reminderResponseHandler($response);
+    }
+
+    public function expireCallback(string $reminderEntityId)
+    {
+        $url = $this->getConstructedUrl(self::EXPIRE_CALLBACK_PATH);
+
+        $input = [
+            self::REMINDER_ENTITY_ID => $reminderEntityId
+        ];
+
+        $responseBody = $this->makeRequest($url, $input);
+
+        return $this->reminderResponseHandler($responseBody);
+    }
+
+    public function updatePayoutLink(string $payoutLinkId, array $input, MerchantEntity $merchant)
+    {
+        $url = $this->getConstructedUrl(self::UPDATE_PAYOUT_LINK_PATH);
+
+        $input[self::MERCHANT_ID] = $merchant->getId();
+
+        $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
+
+        return $this->makeRequest($url, $input);
+    }
+
+    public function expireCronjob()
+    {
+        $url = $this->getConstructedUrl(self::EXPIRE_FIX_CRON_JOB);
+
+        $this->makeRequest($url, []);
+    }
+
+    protected function reminderResponseHandler($httpResponseBody)
+    {
+        $finalStatusCode = 200;
+
+        // response-body will be having 3 keys i.e. status_code, success_response and error_response
+        // status_code is the final response code of API, and body will be success_response or error_response
+        if (isset($httpResponseBody['status_code']))
+        {
+            $finalStatusCode = $httpResponseBody['status_code'];
+        }
+
+        if ($finalStatusCode != 200)
+        {
+            $finalResponseBody['error'] = $httpResponseBody['error_response'];
+        }
+        else
+        {
+            $finalResponseBody = $httpResponseBody['success_response'];
+        }
+
+        return ['status_code' => $finalStatusCode, 'response_body' => $finalResponseBody];
     }
 
     /**
@@ -977,7 +1063,6 @@ class PayoutLinks
                 'status_code' => $response->status_code
             ]);
 
-
         if ($response->status_code !== StatusCode::SUCCESS)
         {
             $this->trace->info(TraceCode::PAYOUT_LINKS_MS_ERROR_RESPONSE,
@@ -1021,7 +1106,7 @@ class PayoutLinks
      * @param string $operation
      * @param array $expandArray format : ["0":"payouts","1":"user"...]
      */
-    protected function processParameters(array &$payoutLink, bool $forAdminResponse = false, array $expandArray = [])
+    protected function processParameters(array &$payoutLink, bool $forAdminResponse = false, array $expandArray = [], bool $isDashboardRequest = false)
     {
         $payoutLink[self::FUND_ACCOUNT_ID] = array_pull($payoutLink, self::FUND_ACCOUNT_ID, null);
 
@@ -1121,6 +1206,28 @@ class PayoutLinks
             $payoutLink[Entity::ADMIN] = true;
         }
 
+        // expire_by and expired_at should be present in cases
+        // 1. expiry-feature is enabled for the merchant
+        // 2. expiry-feature is disabled, but the payout-link has some expiry and request is from dashboard
+        $isExpiryEnabled = array_pull($payoutLink, self::IS_EXPIRY_ENABLED, false);
+
+        if($isExpiryEnabled === true or
+            ($isDashboardRequest === true and array_key_exists(self::EXPIRE_BY, $payoutLink)))
+        {
+            $expireBy = array_pull($payoutLink, self::EXPIRE_BY, 0);
+
+            $payoutLink[self::EXPIRE_BY] = $expireBy;
+
+            $expiredAt = array_pull($payoutLink, self::EXPIRED_AT, 0);
+
+            $payoutLink[self::EXPIRED_AT] = $expiredAt;
+        }
+        else
+        {
+            unset($payoutLink[self::EXPIRE_BY]);
+
+            unset($payoutLink[self::EXPIRED_AT]);
+        }
     }
 
     protected function processSettingsParameters(array &$settings)
@@ -1136,6 +1243,24 @@ class PayoutLinks
         $amazonPayValue = array_pull($settings, Entity::AMAZON_PAY, "true");
 
         $settings[Entity::AMAZON_PAY] = boolval($amazonPayValue);
+    }
+
+    protected function processReminderTimelineParameter(array &$payoutLink, bool $isDashboardRequest)
+    {
+        // reminders info should be present if the request is from dashboard and $payoutLink has expire_by key
+        if($isDashboardRequest === true)
+        {
+            if (array_key_exists(self::EXPIRE_BY, $payoutLink))
+            {
+                $remindersInfo = array_pull($payoutLink, self::REMINDERS, []);
+
+                $payoutLink[self::REMINDERS] = $remindersInfo;
+            }
+        }
+        else
+        {
+            unset($payoutLink[self::REMINDERS]);
+        }
     }
 
     protected function appendPublicSignForPayoutLink(string $payoutlinkid) : string

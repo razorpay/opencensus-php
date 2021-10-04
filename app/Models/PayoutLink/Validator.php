@@ -29,6 +29,8 @@ class Validator extends Base\Validator
     const SEND_DEMO_LINK_EMAIL_INTERNAL_RULE  = 'send_demo_link_email_internal';
     const SEND_SUCCESS_EMAIL_INTERNAL_RULE    = 'send_success_email_internal';
     const SEND_FAILURE_EMAIL_INTERNAL_RULE    = 'send_failure_email_internal';
+    const SEND_REMINDER_EMAIL_INTERNAL_RULE   = 'send_reminder_email_internal';
+    const SEND_PROCESSING_EXPIRED_EMAIL_INTERNAL_RULE   = 'send_processing_expired_email_internal';
     const MAX_IMPS_AMOUNT                  = 20000000;
     const MAX_UPI_AMOUNT                   = 10000000;
     const MAX_AMAZON_PAY_AMOUNT            = 1000000;
@@ -160,6 +162,19 @@ class Validator extends Base\Validator
 
     protected static $createDemoPayoutLinkRules = [
         'g-recaptcha-response' => 'required|custom'
+    ];
+
+    protected static $sendReminderEmailInternalRules = [
+        Entity::MERCHANT_ID   => 'required|string',
+        Entity::TO_EMAIL      => 'required|email',
+        'payout_link_details' => 'required|array',
+    ];
+
+    protected static $sendProcessingExpiredEmailInternalRules = [
+        Entity::MERCHANT_ID   => 'required|string',
+        Entity::TO_EMAIL      => 'required|email',
+        'payout_link_details' => 'required|array',
+        'settings'            => 'required|array',
     ];
 
     protected function validateResendNotificationParams(array $input)

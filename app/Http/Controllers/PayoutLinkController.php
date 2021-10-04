@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use Request;
 use Redirect;
 use ApiResponse;
 use RZP\Trace\TraceCode;
@@ -9,11 +10,6 @@ use RZP\Trace\TraceCode;
 class PayoutLinkController extends Controller
 {
     use Traits\HasCrudMethods;
-
-    public function update(string $id)
-    {
-        return ApiResponse::json('Not Supported');
-    }
 
     public function delete(string $id)
     {
@@ -358,6 +354,40 @@ class PayoutLinkController extends Controller
         $this->addCorsHeadersFE($response);
 
         return $response;
+    }
+
+    public function sendReminderCallback(string $reminderEntityId)
+    {
+        $response = $this->app['payout-links']->sendReminderCallback($reminderEntityId);
+
+        // $response will be containing 2 keys i.e. status_code and response_body
+        return ApiResponse::json($response['response_body'], $response['status_code']);
+    }
+
+    public function expireCallback(string $reminderEntityId)
+    {
+        $response = $this->app['payout-links']->expireCallback($reminderEntityId);
+
+        // $response will be containing 2 keys i.e. status_code and response_body
+        return ApiResponse::json($response['response_body'], $response['status_code']);
+    }
+
+    public function update(string $payoutLinkId)
+    {
+        $input = Request::all();
+
+        $response = $this->app['payout-links']->updatePayoutLink($payoutLinkId, $input, $this->ba->getMerchant());
+
+        return ApiResponse::json($response);
+    }
+
+    public function expireCronjob()
+    {
+        $input = Request::all();
+
+        $response = $this->app['payout-links']->expireCronjob();
+
+        return ApiResponse::json($response);
     }
 
     private function addCorsHeadersFE(& $response)

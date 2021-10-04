@@ -1187,6 +1187,8 @@ class Header
     const PAYOUT_LINK_BULK_REFERENCE_ID        = 'Reference ID(optional)';
     const PAYOUT_LINK_BULK_NOTES_TITLE         = 'Internal notes(optional): Title';
     const PAYOUT_LINK_BULK_NOTES_DESC          = 'Internal notes(optional): Description';
+    const PAYOUT_LINK_BULK_EXPIRY_DATE         = 'Expiry Date(optional)';
+    const PAYOUT_LINK_BULK_EXPIRY_TIME         = 'Expiry Time(optional)';
 
     // Website Checker
     const WEBSITE_CHECKER_URL    = 'url';
@@ -3972,6 +3974,45 @@ class Header
             ]
         ],
 
+        Type::PAYOUT_LINK_BULK_V2 => [
+            self::INPUT => [
+                self::PAYOUT_LINK_BULK_CONTACT_NAME,
+                self::PAYOUT_LINK_BULK_CONTACT_NUMBER,
+                self::PAYOUT_LINK_BULK_CONTACT_EMAIL,
+                self::PAYOUT_LINK_BULK_PAYOUT_DESC,
+                self::CONTACT_TYPE,
+                self::PAYOUT_LINK_BULK_AMOUNT,
+                self::PAYOUT_LINK_BULK_SEND_SMS,
+                self::PAYOUT_LINK_BULK_SEND_EMAIL,
+                self::PAYOUT_PURPOSE,
+                self::PAYOUT_LINK_BULK_REFERENCE_ID,
+                self::PAYOUT_LINK_BULK_NOTES_TITLE,
+                self::PAYOUT_LINK_BULK_NOTES_DESC,
+                self::PAYOUT_LINK_BULK_EXPIRY_DATE,
+                self::PAYOUT_LINK_BULK_EXPIRY_TIME,
+            ],
+            self::OUTPUT => [
+                self::PAYOUT_LINK_BULK_CONTACT_NAME,
+                self::PAYOUT_LINK_BULK_CONTACT_NUMBER,
+                self::PAYOUT_LINK_BULK_CONTACT_EMAIL,
+                self::PAYOUT_LINK_BULK_PAYOUT_DESC,
+                self::CONTACT_TYPE,
+                self::PAYOUT_LINK_BULK_AMOUNT,
+                self::PAYOUT_LINK_BULK_SEND_SMS,
+                self::PAYOUT_LINK_BULK_SEND_EMAIL,
+                self::PAYOUT_PURPOSE,
+                self::PAYOUT_LINK_BULK_REFERENCE_ID,
+                self::PAYOUT_LINK_BULK_NOTES_TITLE,
+                self::PAYOUT_LINK_BULK_NOTES_DESC,
+                self::PAYOUT_LINK_BULK_EXPIRY_DATE,
+                self::PAYOUT_LINK_BULK_EXPIRY_TIME,
+                self::PAYOUT_LINK_BULK_PAYOUT_LINK_ID,
+                self::CONTACT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
+
         Type::WEBSITE_CHECKER => [
             self::INPUT => [
                 self::WEBSITE_CHECKER_URL,
@@ -4117,7 +4158,7 @@ class Header
             return;
         }
         // For Payout Links, some of the headers are optional.
-        elseif ($type === Type::PAYOUT_LINK_BULK)
+        elseif ($type === Type::PAYOUT_LINK_BULK or $type === Type::PAYOUT_LINK_BULK_V2)
         {
             self::validatePayoutLinkBulkHeaders($expectedHeaders, $actualHeaders);
 

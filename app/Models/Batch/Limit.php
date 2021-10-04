@@ -74,6 +74,7 @@ class Limit
         Type::PAYMENT_TRANSFER                      => 50000,
         Type::TRANSFER_REVERSAL                     => 50000,
         Type::PAYOUT_LINK_BULK                      => 50000,
+        Type::PAYOUT_LINK_BULK_V2                   => 50000,
         Type::SETTLEMENT_ONDEMAND_FEATURE_CONFIG    => 50000,
     ];
 

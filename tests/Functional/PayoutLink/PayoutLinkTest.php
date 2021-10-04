@@ -30,6 +30,7 @@ use RZP\Models\PayoutLink\TokenService;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Mail\PayoutLink\SuccessInternal;
 use RZP\Mail\PayoutLink\SendLinkInternal;
+use RZP\Mail\PayoutLink\SendReminderInternal;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Models\PayoutLink\Entity as PayoutLink;
@@ -37,6 +38,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Mail\PayoutLink\SendProcessingExpiredInternal;
 
 class PayoutLinkTest extends TestCase
 {
@@ -2712,5 +2714,439 @@ class PayoutLinkTest extends TestCase
         ]);
 
         return $bearerToken . $adminToken->getId();
+    }
+
+    public function testSendReminderCallbackForCancellingReminder()
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks')->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $plMock->shouldReceive('makeRequest')->andReturn($this->mockedCancelReminderResponse());
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testSendReminderCallbackForContinueReminder()
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks')->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $plMock->shouldReceive('makeRequest')->andReturn($this->mockedContinueReminderResponse());
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testExpireCallbackForCancellingReminder()
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks')->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $plMock->shouldReceive('makeRequest')->andReturn($this->mockedCancelReminderResponse());
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testExpireCallbackForContinueReminder()
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks')->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $plMock->shouldReceive('makeRequest')->andReturn($this->mockedContinueReminderResponse());
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePayoutLink()
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('updatePayoutLink')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    private function mockedCancelReminderResponse()
+    {
+        return [
+            'status_code' => 400,
+            'error_response' => [
+                '_internal' => [
+                    'error_code' => 'BAD_REQUEST_REMINDER_NOT_APPLICABLE',
+                ]
+            ],
+        ];
+    }
+
+    private function mockedContinueReminderResponse()
+    {
+        return [
+            'status_code' => 200,
+            'success_response' => [
+                'success' => true,
+            ],
+        ];
+    }
+
+    public function testSendReminderMail()
+    {
+        Mail::fake();
+
+        $this->ba->payoutLinksAppAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(SendReminderInternal::class, function ($mail)
+        {
+            $data = $mail->viewData;
+
+            $this->assertArrayHasKey('expire_by_date', $data);
+
+            $this->assertArrayHasKey('expire_by_time', $data);
+
+            $this->assertEquals('20-Jul-2021', $data['expire_by_date']);
+
+            $this->assertEquals('10:10:10', $data['expire_by_time']);
+
+            return true;
+        });
+    }
+
+    public function testSendProcessingExpiredMail()
+    {
+        Mail::fake();
+
+        $this->ba->payoutLinksAppAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(SendProcessingExpiredInternal::class, function ($mail)
+        {
+            $data = $mail->viewData;
+
+            $this->assertArrayHasKey('expire_by_date', $data);
+
+            $this->assertArrayHasKey('expire_by_time', $data);
+
+            $this->assertArrayHasKey('support_contact', $data);
+
+            $this->assertArrayHasKey('support_email', $data);
+
+            $this->assertArrayHasKey('support_url', $data);
+
+            $this->assertEquals('20-Jul-2021', $data['expire_by_date']);
+
+            $this->assertEquals('10:10:10', $data['expire_by_time']);
+
+            return true;
+        });
+    }
+
+    public function testExpiryCronJob()
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('expireCronjob');
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'method' => 'POST',
+            'url'    => '/payout-links/expire-cron-job',
+        ];
+
+        $response = $this->sendRequest($request);
+
+        $this->assertResponseOk($response);
+    }
+
+    /*
+     * In case of Private Auth, expiry keys will be there in the response iff expiry settings is enabled,
+     * even if the payout-link has some expiry
+     */
+    public function testPrivateAuthFetchPlForExpiryEnabledMerchantNoExpiryDataInPlMSResponse()
+    {
+        $response = [
+            'id' => 'poutlk_link-id',
+            'amount' => 1000,
+            'send_sms' => false,
+            'send_email' => false,
+            'contact' => [
+                'name' => 'test',
+                'email' => 'test@gmail.com',
+            ],
+            'is_expiry_enabled' => true,
+        ];
+
+        $plMock = $this->mockPLServiceMakeRequestMethod($response);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $request = [
+            'method' => 'GET',
+            'url'    => '/payout-links/poutlk_link-id'
+        ];
+
+        $response = $this->sendRequest($request);
+
+        $this->assertResponseOk($response);
+
+        $responseData = json_decode(json_encode($response->getData()), true);
+
+        // is_expiry_enabled key should not be there
+        $this->assertArrayNotHasKey('is_expiry_enabled', $responseData);
+
+        // expire_by and expired_at keys should be there with values 0
+        $this->assertArrayHasKey('expire_by', $responseData);
+        $this->assertEquals(0, $responseData['expire_by']);
+
+        $this->assertArrayHasKey('expired_at', $responseData);
+        $this->assertEquals(0, $responseData['expired_at']);
+
+        // reminders key should not be there
+        $this->assertArrayNotHasKey('reminders', $responseData);
+    }
+
+    public function testPrivateAuthFetchPlForExpiryEnabledMerchantExpiryDataPresentInPlMSResponse()
+    {
+        $response = [
+            'id' => 'poutlk_link-id',
+            'amount' => 1000,
+            'send_sms' => false,
+            'send_email' => false,
+            'contact' => [
+                'name' => 'test',
+                'email' => 'test@gmail.com',
+            ],
+            'expire_by' => Carbon::now()->getTimestamp(),
+            'is_expiry_enabled' => true,
+        ];
+
+        $plMock = $this->mockPLServiceMakeRequestMethod($response);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $request = [
+            'method' => 'GET',
+            'url'    => '/payout-links/poutlk_link-id'
+        ];
+
+        $response = $this->sendRequest($request);
+
+        $this->assertResponseOk($response);
+
+        $responseData = json_decode(json_encode($response->getData()), true);
+
+        // is_expiry_enabled key should not be there
+        $this->assertArrayNotHasKey('is_expiry_enabled', $responseData);
+
+        // expire_by and expired_at keys should be there
+        $this->assertArrayHasKey('expire_by', $responseData);
+
+        $this->assertArrayHasKey('expired_at', $responseData);
+
+        // reminders key should not be there
+        $this->assertArrayNotHasKey('reminders', $responseData);
+    }
+
+    public function testPrivateAuthFetchPlForExpiryDisabledMerchantExpiryDataPresentInPlMSResponse()
+    {
+        // in case expiry is disabled, the boolean flag is_expiry_enabled won't be in PL-MS response
+        $response = [
+            'id' => 'poutlk_link-id',
+            'amount' => 1000,
+            'send_sms' => false,
+            'send_email' => false,
+            'contact' => [
+                'name' => 'test',
+                'email' => 'test@gmail.com',
+            ],
+            'expire_by' => Carbon::now()->getTimestamp(),
+        ];
+
+        $plMock = $this->mockPLServiceMakeRequestMethod($response);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $request = [
+            'method' => 'GET',
+            'url'    => '/payout-links/poutlk_link-id'
+        ];
+
+        $response = $this->sendRequest($request);
+
+        $this->assertResponseOk($response);
+
+        $responseData = json_decode(json_encode($response->getData()), true);
+
+        // is_expiry_enabled key should not be there
+        $this->assertArrayNotHasKey('is_expiry_enabled', $responseData);
+
+        // expire_by and expired_at keys should not be there
+        $this->assertArrayNotHasKey('expire_by', $responseData);
+
+        $this->assertArrayNotHasKey('expired_at', $responseData);
+
+        // reminders key should not be there
+        $this->assertArrayNotHasKey('reminders', $responseData);
+    }
+
+    /*
+     * In case of Proxy Auth, expiry keys will be there in the response even if expiry settings is disabled
+     */
+    public function testProxyAuthFetchPlForExpiryEnabledMerchantNoExpiryDataInPlMSResponse()
+    {
+        $response = [
+            'id' => 'poutlk_link-id',
+            'amount' => 1000,
+            'send_sms' => false,
+            'send_email' => false,
+            'contact' => [
+                'name' => 'test',
+                'email' => 'test@gmail.com',
+            ],
+            'is_expiry_enabled' => true,
+        ];
+
+        $plMock = $this->mockPLServiceMakeRequestMethod($response);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $request = [
+            'method' => 'GET',
+            'url'    => '/payout-links/poutlk_link-id'
+        ];
+
+        $response = $this->sendRequest($request);
+
+        $this->assertResponseOk($response);
+
+        $responseData = json_decode(json_encode($response->getData()), true);
+
+        // is_expiry_enabled key should not be there
+        $this->assertArrayNotHasKey('is_expiry_enabled', $responseData);
+
+        // expire_by and expired_at keys should be there with values 0
+        $this->assertArrayHasKey('expire_by', $responseData);
+        $this->assertEquals(0, $responseData['expire_by']);
+
+        $this->assertArrayHasKey('expired_at', $responseData);
+        $this->assertEquals(0, $responseData['expired_at']);
+
+        // reminders key should be there
+        $this->assertArrayHasKey('reminders', $responseData);
+    }
+
+    public function testProxyAuthFetchPlForExpiryEnabledMerchantExpiryDataPresentInPlMSResponse()
+    {
+        $response = [
+            'id' => 'poutlk_link-id',
+            'amount' => 1000,
+            'send_sms' => false,
+            'send_email' => false,
+            'contact' => [
+                'name' => 'test',
+                'email' => 'test@gmail.com',
+            ],
+            'expire_by' => Carbon::now()->getTimestamp(),
+            'is_expiry_enabled' => true,
+        ];
+
+        $plMock = $this->mockPLServiceMakeRequestMethod($response);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $request = [
+            'method' => 'GET',
+            'url'    => '/payout-links/poutlk_link-id'
+        ];
+
+        $response = $this->sendRequest($request);
+
+        $this->assertResponseOk($response);
+
+        $responseData = json_decode(json_encode($response->getData()), true);
+
+        // is_expiry_enabled key should not be there
+        $this->assertArrayNotHasKey('is_expiry_enabled', $responseData);
+
+        // expire_by and expired_at keys should be there
+        $this->assertArrayHasKey('expire_by', $responseData);
+
+        $this->assertArrayHasKey('expired_at', $responseData);
+
+        // reminders key should be there
+        $this->assertArrayHasKey('reminders', $responseData);
+    }
+
+    public function testProxyAuthFetchPlForExpiryDisabledMerchantExpiryDataPresentInPlMSResponse()
+    {
+        // in case expiry is disabled, the boolean flag is_expiry_enabled won't be in PL-MS response
+        $response = [
+            'id' => 'poutlk_link-id',
+            'amount' => 1000,
+            'send_sms' => false,
+            'send_email' => false,
+            'contact' => [
+                'name' => 'test',
+                'email' => 'test@gmail.com',
+            ],
+            'expire_by' => Carbon::now()->getTimestamp(),
+        ];
+
+        $plMock = $this->mockPLServiceMakeRequestMethod($response);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $request = [
+            'method' => 'GET',
+            'url'    => '/payout-links/poutlk_link-id'
+        ];
+
+        $response = $this->sendRequest($request);
+
+        $this->assertResponseOk($response);
+
+        $responseData = json_decode(json_encode($response->getData()), true);
+
+        // is_expiry_enabled key should not be there
+        $this->assertArrayNotHasKey('is_expiry_enabled', $responseData);
+
+        // expire_by and expired_at keys should not be there
+        $this->assertArrayHasKey('expire_by', $responseData);
+
+        $this->assertArrayHasKey('expired_at', $responseData);
+
+        // reminders key should be there
+        $this->assertArrayHasKey('reminders', $responseData);
     }
 }

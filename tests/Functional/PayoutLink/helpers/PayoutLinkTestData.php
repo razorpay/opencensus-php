@@ -2246,5 +2246,134 @@ return [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
-    ]
+    ],
+
+    'testSendReminderCallbackForCancellingReminder' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/send-reminder-callback/1234',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    '_internal' => [
+                        'error_code' => 'BAD_REQUEST_REMINDER_NOT_APPLICABLE',
+                    ]
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testSendReminderCallbackForContinueReminder' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/send-reminder-callback/1234',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testExpireCallbackForCancellingReminder' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/expire-callback/1234',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    '_internal' => [
+                        'error_code' => 'BAD_REQUEST_REMINDER_NOT_APPLICABLE',
+                    ]
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testExpireCallbackForContinueReminder' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/expire-callback/1234',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpdatePayoutLink' => [
+        'request'  => [
+            'method' => 'PATCH',
+            'url'    => '/payout-links/1234',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testSendReminderMail' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/send-email',
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'payout_link_details' => [
+                    'purpose' => 'refund',
+                    'short_url' => 'https://552a05fe.ngrok.io/i/aYlKRm5',
+                    'amount' => '1000',
+                    'description' => 'testing',
+                    'contact_name' => 'test',
+                    'contact_email' => 'mail.testing@razorpay.com',
+                    'contact_phone_number' => '9876543210',
+                    'expire_by' => 1626756010,
+                ],
+                'to_email' => 'test@razorpay.com',
+                'email_type' => 'reminder'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success'  => 'OK'
+            ],
+        ]
+    ],
+
+    'testSendProcessingExpiredMail' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/send-email',
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'payout_link_details' => [
+                    'purpose' => 'refund',
+                    'short_url' => 'https://552a05fe.ngrok.io/i/aYlKRm5',
+                    'amount' => '1000',
+                    'description' => 'testing',
+                    'contact_name' => 'test',
+                    'contact_email' => 'mail.testing@razorpay.com',
+                    'contact_phone_number' => '9876543210',
+                    'expire_by' => 1626756010,
+                ],
+                'settings' => [
+                    'support_contact' => '9876543210',
+                    'support_email' => 'test@support.com',
+                    'support_url' => 'support-url',
+                ],
+                'to_email' => 'test@razorpay.com',
+                'email_type' => 'processing_expired'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success'  => 'OK'
+            ],
+        ]
+    ],
 ];

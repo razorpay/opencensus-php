@@ -823,7 +823,7 @@ class Validator extends Base\Validator
     protected static $payoutLinkBulkTypeRowRules = [
         Header::PAYOUT_LINK_BULK_CONTACT_NAME      => 'required|string',
         Header::PAYOUT_LINK_BULK_CONTACT_NUMBER    => 'required_if:'.Header::PAYOUT_LINK_BULK_SEND_SMS.',Yes|string',
-        Header::PAYOUT_LINK_BULK_CONTACT_EMAIL     => 'required_if:'.Header::PAYOUT_LINK_BULK_SEND_EMAIL.',Yes|string',
+        Header::PAYOUT_LINK_BULK_CONTACT_EMAIL     => 'required_if:'.Header::PAYOUT_LINK_BULK_SEND_EMAIL.',Yes|string|email',
         Header::PAYOUT_LINK_BULK_PAYOUT_DESC       => 'required|string',
         Header::CONTACT_TYPE                       => 'required|string',
         Header::PAYOUT_LINK_BULK_AMOUNT            => 'required|regex:/^-?\d+(\.\d{1,2})?$/',
@@ -837,6 +837,40 @@ class Validator extends Base\Validator
 
     protected static $payoutLinkBulkCreateRules = [
         Entity::TYPE        => 'required|in:payout_link_bulk',
+        Entity::NAME        => 'filled|string|max:255',
+        Entity::FILE        => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
+        Entity::FILE_ID     => 'required_without:file|public_id',
+        Entity::OTP         => 'required|filled|min:4',
+        Entity::TOKEN       => 'required|unsigned_id',
+        Entity::CONFIG      => 'filled|array',
+    ];
+
+    protected static $payoutLinkBulkV2ValidateRules = [
+        Entity::TYPE        => 'required|in:payout_link_bulk_v2',
+        Entity::NAME        => 'filled|string|max:255',
+        Entity::FILE        => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
+        Entity::FILE_ID     => 'required_without:file|public_id',
+    ];
+
+    protected static $payoutLinkBulkV2TypeRowRules = [
+        Header::PAYOUT_LINK_BULK_CONTACT_NAME      => 'required|string',
+        Header::PAYOUT_LINK_BULK_CONTACT_NUMBER    => 'required_if:'.Header::PAYOUT_LINK_BULK_SEND_SMS.',Yes|string',
+        Header::PAYOUT_LINK_BULK_CONTACT_EMAIL     => 'required_if:'.Header::PAYOUT_LINK_BULK_SEND_EMAIL.',Yes|string|email',
+        Header::PAYOUT_LINK_BULK_PAYOUT_DESC       => 'required|string',
+        Header::CONTACT_TYPE                       => 'required|string',
+        Header::PAYOUT_LINK_BULK_AMOUNT            => 'required|regex:/^-?\d+(\.\d{1,2})?$/',
+        Header::PAYOUT_LINK_BULK_SEND_SMS          => 'required|string|in:Yes,No',
+        Header::PAYOUT_LINK_BULK_SEND_EMAIL        => 'required|string|in:Yes,No',
+        Header::PAYOUT_PURPOSE                     => 'required|string',
+        Header::PAYOUT_LINK_BULK_REFERENCE_ID      => 'sometimes|string',
+        Header::PAYOUT_LINK_BULK_NOTES_TITLE       => 'sometimes|string',
+        Header::PAYOUT_LINK_BULK_NOTES_DESC        => 'sometimes|string',
+        Header::PAYOUT_LINK_BULK_EXPIRY_DATE       => 'sometimes|string',
+        Header::PAYOUT_LINK_BULK_EXPIRY_TIME       => 'sometimes|string',
+    ];
+
+    protected static $payoutLinkBulkV2CreateRules = [
+        Entity::TYPE        => 'required|in:payout_link_bulk_v2',
         Entity::NAME        => 'filled|string|max:255',
         Entity::FILE        => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
         Entity::FILE_ID     => 'required_without:file|public_id',
@@ -1506,36 +1540,108 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validatePayoutLinkBulkRowContactInfo($rowData)
+    {
+        if(empty($rowData[Header::PAYOUT_LINK_BULK_CONTACT_NUMBER]) === true
+            && empty($rowData[Header::PAYOUT_LINK_BULK_CONTACT_EMAIL]) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Both contact number and contact email cannot be empty',
+                Entity::FILE);
+        }
+    }
+
+    protected function validatePayoutLinkBulkRowNotesData($rowData)
+    {
+        // If Notes Title field's value is present, Notes Description should also be there
+        if(empty($rowData[Header::PAYOUT_LINK_BULK_NOTES_TITLE]) === true
+            && empty($rowData[Header::PAYOUT_LINK_BULK_NOTES_DESC]) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Notes title missing',
+                Entity::FILE);
+        }
+
+        // vice versa of above
+        if(empty($rowData[Header::PAYOUT_LINK_BULK_NOTES_TITLE]) === false
+            && empty($rowData[Header::PAYOUT_LINK_BULK_NOTES_DESC]) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Notes description missing',
+                Entity::FILE);
+        }
+    }
+
+    protected function validatePayoutLinkBulkRowExpiryData($rowData)
+    {
+        // If Expiry Time field's value is present, Expiry Date should also be there.
+        // If Expiry Date is present, default expiry time will be 11:59 PM
+        if(empty($rowData[Header::PAYOUT_LINK_BULK_EXPIRY_TIME]) === false
+            && empty($rowData[Header::PAYOUT_LINK_BULK_EXPIRY_DATE]) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Expiry Date missing but Expiry Time present',
+                Entity::FILE);
+        }
+    }
+
+    protected function validatePayoutLinkExpiryDateFormat($value)
+    {
+        $expectedFormat = 'd/m/Y';
+
+        $d = DateTime::createFromFormat($expectedFormat, $value);
+
+        if (!$d || $d->format($expectedFormat) != $value)
+        {
+            throw new BadRequestValidationFailureException('Invalid Expiry Date format should be DD/MM/YYYY');
+        }
+    }
+
+    protected function validatePayoutLinkExpiryTimeFormat($value)
+    {
+        $expectedFormat = 'H:i';
+
+        $d = DateTime::createFromFormat($expectedFormat, $value);
+
+        if (!$d || $d->format($expectedFormat) != $value)
+        {
+            throw new BadRequestValidationFailureException('Invalid Expiry Time format should be HH:MM');
+        }
+    }
+
     protected function validatePayoutLinkBulkEntries(array & $entries, array $params, ME $merchant)
     {
         $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
         {
             $this->validateInput('payoutLinkBulkTypeRow', $entry);
 
-            if(empty($entry[Header::PAYOUT_LINK_BULK_CONTACT_NUMBER]) === true
-                && empty($entry[Header::PAYOUT_LINK_BULK_CONTACT_EMAIL]) === true)
+            $this->validatePayoutLinkBulkRowContactInfo($entry);
+
+            $this->validatePayoutLinkBulkRowNotesData($entry);
+        });
+    }
+
+    protected function validatePayoutLinkBulkV2Entries(array & $entries, array $params, ME $merchant)
+    {
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+        {
+            $this->validateInput('payoutLinkBulkV2TypeRow', $entry);
+
+            $this->validatePayoutLinkBulkRowContactInfo($entry);
+
+            $this->validatePayoutLinkBulkRowNotesData($entry);
+
+            $this->validatePayoutLinkBulkRowExpiryData($entry);
+
+            if(empty($entry[Header::PAYOUT_LINK_BULK_EXPIRY_DATE]) === false)
             {
-                throw new BadRequestValidationFailureException(
-                    'Both contact number and contact email cannot be empty',
-                    Entity::FILE);
+                $this->validatePayoutLinkExpiryDateFormat($entry[Header::PAYOUT_LINK_BULK_EXPIRY_DATE]);
             }
 
-            if(empty($entry[Header::PAYOUT_LINK_BULK_NOTES_TITLE]) === true
-                && empty($entry[Header::PAYOUT_LINK_BULK_NOTES_DESC]) === false)
+            if(empty($entry[Header::PAYOUT_LINK_BULK_EXPIRY_TIME]) === false)
             {
-                throw new BadRequestValidationFailureException(
-                    'Notes title missing',
-                    Entity::FILE);
+                $this->validatePayoutLinkExpiryTimeFormat($entry[Header::PAYOUT_LINK_BULK_EXPIRY_TIME]);
             }
-
-            if(empty($entry[Header::PAYOUT_LINK_BULK_NOTES_TITLE]) === false
-                && empty($entry[Header::PAYOUT_LINK_BULK_NOTES_DESC]) === true)
-            {
-                throw new BadRequestValidationFailureException(
-                    'Notes description missing',
-                    Entity::FILE);
-            }
-
         });
     }
 
@@ -1859,6 +1965,8 @@ class Validator extends Base\Validator
             //TODO: Doing this for now as a temporary fix (as changes in raven is also required to support this),
             // Will change to create_bulk_payout_link_batch (the default behaviour) once done with raven side changes
             case 'payout_link_bulk':
+            // Doing this, as we expect payout_link_bulk and payout_link_bulk_v2 to behave the same way
+            case 'payout_link_bulk_v2':
                 $action = 'create_bulk_payout_link';
                 break;
 

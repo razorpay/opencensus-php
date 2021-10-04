@@ -1454,11 +1454,15 @@ class Route
 
 
         // Payout Links
+        'payout_links_reminder_callback'           => ['post',      'payout-links/send-reminder-callback/{id}',      'PayoutLinkController@sendReminderCallback'                         ],
+        'payout_links_expire_callback'             => ['post',      'payout-links/expire-callback/{id}',             'PayoutLinkController@expireCallback'                               ],
         'payout_links_admin_auth_api'              => ['post',      'payout-links/admin',                            'PayoutLinkController@adminActions'                                 ],
         'payout_links_fetch_multiple'              => ['get',       'payout-links',                                  'PayoutLinkController@list'                                         ],
         'payout_links_fetch_by_id'                 => ['get',       'payout-links/{id}',                             'PayoutLinkController@get'                                          ],
+        'payout_links_update'                      => ['patch',     'payout-links/{id}',                             'PayoutLinkController@update'                                          ],
         'payout_links_create'                      => ['post',      'payout-links',                                  'PayoutLinkController@create'                                       ],
         'payout_links_batch_process'               => ['post',      'payout-links/batch',                            'PayoutLinkController@processBatch'                                 ],
+        'payout_links_expire_cron'                 => ['post',      'payout-links/expire-cron-job',                  'PayoutLinkController@expireCronjob'                                 ],
         'payout_links_batch_create'                => ['post',      'payout-links/batch-create',                     'PayoutLinkController@createBatch'                                  ],
         'payout_links_generate_end_user_otp'       => ['post',      'payout-links/{x_entity_id}'
                                                                      . '/generate-customer-otp',                     'PayoutLinkController@generateAndSendCustomerOtp'                   ],
@@ -3023,6 +3027,7 @@ class Route
         'payout_links_fetch_multiple',
         'payout_links_fetch_by_id',
         'payout_links_create',
+        'payout_links_update',
         'payout_links_cancel',
         'payment_create_private',
         'payment_create_private_old',
@@ -3829,8 +3834,15 @@ class Route
         'refresh_payments_resolved_downtimes_cron',
         'refresh_payments_scheduled_downtimes_cron',
 
-        'feature_get_merchants_internal'
-];
+        'feature_get_merchants_internal',
+
+        // Payout-Links route
+        'payout_links_reminder_callback',
+        'payout_links_expire_callback',
+
+        // Payout-Links Expire Cron Job
+        'payout_links_expire_cron',
+    ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
     // User context is taken from the provided header.
@@ -6572,6 +6584,7 @@ class Route
         'payout_links_fetch_multiple'                  => Permission::VIEW_PAYOUT_LINKS,
         'payout_links_fetch_by_id'                     => Permission::VIEW_PAYOUT_LINKS,
         'payout_links_create'                          => Permission::CREATE_PAYOUT_LINKS,
+        'payout_links_update'                          => Permission::CREATE_PAYOUT_LINKS,
         'payout_links_cancel'                          => Permission::CANCEL_PAYOUT_LINKS,
         'payout_links_merchant_on_boarding_status'     => Permission::VIEW_PAYOUT_LINKS,
         'payout_links_merchant_summary'                => Permission::VIEW_PAYOUT_LINKS,
@@ -7679,6 +7692,7 @@ class Route
             'payout_links_batch_summary',
             'payout_links_cancel',
             'payout_links_create',
+            'payout_links_update',
             'payout_links_customer_hosted_page',
             'payout_links_fetch_by_id',
             'payout_links_fetch_multiple',
@@ -9137,6 +9151,7 @@ class Route
             'payout_links_batch_summary',
             'payout_links_cancel',
             'payout_links_create',
+            'payout_links_update',
             'payout_links_customer_hosted_page',
             'payout_links_fetch_by_id',
             'payout_links_fetch_multiple',
@@ -10067,6 +10082,7 @@ class Route
             'qr_code_mpans_tokenize_existing',
             'setl_service_migration',
             'vendor_payment_upcoming_mail_cron',
+            'payout_links_expire_cron',
             'tax_payments_add_penalty_cron',
             'bulk_create_fund_accounts',
             'add_ondemand_pricing_if_absent',
@@ -10363,6 +10379,8 @@ class Route
             'reminder_send',
             'p2p_reminder_send',
             'tax_payments_reminders_callback',
+            'payout_links_reminder_callback',
+            'payout_links_expire_callback',
         ],
 
         'batch' => [
@@ -11040,6 +11058,7 @@ class Route
 
         //payout_links related routes
         'payout_links_create',
+        'payout_links_update',
         'payout_links_fetch_multiple',
         'payout_links_fetch_by_id',
         'payout_links_cancel',
@@ -11091,6 +11110,7 @@ class Route
         'payout_links_fetch_multiple',
         'payout_links_fetch_by_id',
         'payout_links_create',
+        'payout_links_update',
         'payout_links_generate_end_user_otp',
         'payout_links_generate_end_user_otp_cors',
         'payout_links_verify_customer_otp',

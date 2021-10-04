@@ -161,6 +161,8 @@ class Type
 
     const PAYOUT_LINK_BULK            = 'payout_link_bulk';
 
+    const PAYOUT_LINK_BULK_V2         = 'payout_link_bulk_v2';
+
     const UPI_TERMINAL_ONBOARDING     = 'upi_terminal_onboarding';
 
     const EMANDATE_DEBIT_HDFC         = 'emandate_debit_hdfc';
@@ -283,6 +285,7 @@ class Type
      */
     public static $queueGroup = [
         self::PAYOUT_LINK_BULK,
+        self::PAYOUT_LINK_BULK_V2,
         self::PAYMENT_LINK,
         self::LINKED_ACCOUNT,
         self::VIRTUAL_BANK_ACCOUNT,
@@ -383,6 +386,7 @@ class Type
      */
     public static $batchTypeMigrating = [
         self::PAYOUT_LINK_BULK,
+        self::PAYOUT_LINK_BULK_V2,
         self::PAYMENT_LINK,
         self::PAYOUT,
         self::TALLY_PAYOUT,
@@ -433,6 +437,7 @@ class Type
     public static $batchTypeMigrationCompleted = [
         self::TALLY_PAYOUT,
         self::PAYOUT_LINK_BULK,
+        self::PAYOUT_LINK_BULK_V2,
         self::PAYMENT_LINK,
         self::PAYOUT,
         self::FUND_ACCOUNT,
