@@ -1,6 +1,4 @@
 import { Component } from 'react';
-import Banner from 'common/ui/Banner';
-
 import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { trackSupportOptions } from 'merchant/components/Support/ga';
@@ -86,7 +84,7 @@ class SupportBody extends Component {
     CreateTicketEmitter.on('create-ticket', (id, pcb, lcb) => {
       this.createTicket(id, pcb, lcb);
     });
-    let params = {
+    const params = {
       url: 'merchants/chat/timings_config',
       headers: {
         'Content-Type': 'application/json',
@@ -100,7 +98,6 @@ class SupportBody extends Component {
   }
 
   handleClick = (id) => {
-    const user = this.props.user;
     const { onToggle, onChat, notifyCount } = this.props;
     const rzpTicketSystem = window.rzpTicketSystem;
     if (rzpTicketSystem) {
@@ -112,6 +109,7 @@ class SupportBody extends Component {
       }
 
       if (id === 'schedule-call') {
+        // eslint-disable-next-line consistent-return
         return rzpTicketSystem.openModal(`#schedule-call`);
       }
 
@@ -180,7 +178,7 @@ class SupportBody extends Component {
   render() {
     const { notifyCount, isOpened, onToggle, isCallEnabled, scheduleCallConfig } = this.props;
     const { handleClick, openDashboardGuide } = this;
-    let shouldDisable = !isWorkingDay();
+    const shouldDisable = !isWorkingDay();
     let scheduleCallbackReason =
       scheduleCallConfig && scheduleCallConfig.is_eligible === false && scheduleCallConfig.reason
         ? scheduleCallConfig.reason
@@ -220,17 +218,15 @@ class SupportBody extends Component {
     return (
       <div class={classList('support-body', isOpened && 'active')}>
         <header>
-          <i class="i i-headset m-r" />
-          Help and Support
+          <i class="i i-headset m-r" /> Help and Support{' '}
           <i class="i i-close pull-right mob-close" onClick={onToggle} />
         </header>
         <ul class="support-list">
-          <ShowWhen
-            additionalCondition={(user) => !user.isNewGrievanceFlowEnabled}
-          >
+          <ShowWhen additionalCondition={(user) => !user.isNewGrievanceFlowEnabled}>
             <li
-              class={`support-item p-all ticket ${!this.props.supportFlags.loaded ? 'disabled' : ''
-                }`}
+              class={`support-item p-all ticket ${
+                !this.props.supportFlags.loaded ? 'disabled' : ''
+              }`}
               onClick={() => {
                 analyticsTrack({
                   objectName: 'have a query',
@@ -248,12 +244,11 @@ class SupportBody extends Component {
               <small class="help-block">For integration, account and payment issues</small>
             </li>
           </ShowWhen>
-          <ShowWhen
-            additionalCondition={(user) => user.isNewGrievanceFlowEnabled}
-          >
+          <ShowWhen additionalCondition={(user) => user.isNewGrievanceFlowEnabled}>
             <li
-              class={`support-item p-all ticket ${!this.props.supportFlags.loaded ? 'disabled' : ''
-                }`}
+              class={`support-item p-all ticket ${
+                !this.props.supportFlags.loaded ? 'disabled' : ''
+              }`}
               onClick={() => {
                 analyticsTrack({
                   objectName: 'have a query',
@@ -267,8 +262,7 @@ class SupportBody extends Component {
                 handleClick('tickets');
               }}
             >
-              Have a query?
-              <small class="help-block">Check existing query/raise a new one</small>
+              Have a query? <small class="help-block">Check existing query/raise a new one</small>
             </li>
           </ShowWhen>
           <ShowWhen
@@ -282,8 +276,9 @@ class SupportBody extends Component {
             }
           >
             <li
-              class={`support-item p-all callback ${!scheduleCallConfig.is_eligible ? 'disabled' : ''
-                }`}
+              class={`support-item p-all callback ${
+                !scheduleCallConfig.is_eligible ? 'disabled' : ''
+              }`}
               onClick={() => {
                 analyticsTrack({
                   objectName: 'request a call',
@@ -315,8 +310,7 @@ class SupportBody extends Component {
                   });
                 }}
               >
-                Track Tickets
-                <small class="help-block">View all tickets raised by you</small>
+                Track Tickets <small class="help-block">View all tickets raised by you</small>
               </Link>
             </li>
           </ShowWhen>
@@ -325,8 +319,9 @@ class SupportBody extends Component {
               window.rzp_user.activation_status,
             ) > -1 && this.props.supportFlags.show_chat ? (
               <li
-                class={`support-item p-all chat ${!this.props.supportFlags.show_chat && notifyCount < 1 ? 'disabled' : ''
-                  }`}
+                class={`support-item p-all chat ${
+                  !this.props.supportFlags.show_chat && notifyCount < 1 ? 'disabled' : ''
+                }`}
                 onClick={() => {
                   analyticsTrack({
                     objectName: 'chat with us',
@@ -379,12 +374,10 @@ class SupportBody extends Component {
 
         <div class="support-feedback">
           <button class="btn btn-default pull-left" onClick={this.handleFeedback}>
-            <i class="i i-voice-record m-r" />
-            Share Feedback
+            <i class="i i-voice-record m-r" /> Share Feedback
           </button>
           <button class="btn btn-default pull-right" onClick={this.handleFaqs}>
-            <i class="i i-help  m-r" />
-            FAQs
+            <i class="i i-help  m-r" /> FAQs
           </button>
         </div>
       </div>

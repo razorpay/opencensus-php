@@ -2,6 +2,20 @@ import moment from 'moment';
 import { statuses } from './components/data';
 import { getAttachmentExpiryTime } from 'common/utils/rzp-utils';
 import * as EventEmitter from 'eventemitter3';
+const monthsMap = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
 export function getEscalationType(ticket) {
   const STATUS = statuses[ticket.status] && statuses[ticket.status].name;
@@ -61,21 +75,6 @@ export const getFormattedDate = (d) => {
   const year = d.getFullYear() % 2000;
   return `${date} ${monthsMap[month]}' ${year}`;
 };
-
-const monthsMap = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
 
 export const raiseTicket = () => {
   window.rzpAnalytics({

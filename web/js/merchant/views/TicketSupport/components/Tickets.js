@@ -1,16 +1,13 @@
+import React from 'react';
 import { connect } from 'react-redux';
-import { Fragment } from 'react';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { statuses, MAX_PAGE_SIZE } from './data.js';
-import Field from 'common/new-ui/Input/index.js';
-import * as axios from 'axios';
-import { fetchSupportTickets } from 'merchant/reducers/config.js';
+import { statuses, MAX_PAGE_SIZE } from './data';
+import { fetchSupportTickets } from 'merchant/reducers/config';
 import Spinner from 'common/ui/Spinner';
-import TicketBrief from './TicketBrief.js';
-import TicketBriefRevamped from './TicketBriefRevamped.js';
-import HeaderAction from 'common/ui/HeaderAction';
-import { raiseTicket } from '../utils.js';
+import TicketBrief from './TicketBrief';
+import TicketBriefRevamped from './TicketBriefRevamped';
+import { raiseTicket } from '../utils';
 import FailedScreen from './FailedScreen';
 @connect(
   (state) => {
@@ -22,7 +19,7 @@ import FailedScreen from './FailedScreen';
     };
   },
   {
-    fetchSupportTickets: fetchSupportTickets,
+    fetchSupportTickets,
   },
 )
 export default class Tickets extends React.Component {
@@ -33,7 +30,6 @@ export default class Tickets extends React.Component {
   state = {
     size: MAX_PAGE_SIZE,
     current_page: 1,
-    loading: false,
   };
 
   raiseTicket = () => {
@@ -68,7 +64,7 @@ export default class Tickets extends React.Component {
       !(this.props.support_tickets.data[page] && this.props.support_tickets.data[page].length) ||
       bypass
     ) {
-      const params = { page: page, per_page: this.state.size };
+      const params = { page, per_page: this.state.size };
       this.props.fetchSupportTickets(params).then(() => {
         window.rzpAnalytics({
           eventCategory: 'Ticket Dashboard',
@@ -84,7 +80,6 @@ export default class Tickets extends React.Component {
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
-        this.setState({ loading: false });
       });
     }
   };
@@ -97,16 +92,24 @@ export default class Tickets extends React.Component {
     const NO_TICKETS_PRESENT = !this.props.support_tickets.loading && totalTickets.length === 0;
 
     if (NO_TICKETS_PRESENT) {
-      return <div class="no-tickets-present-container">
-        <h2 class="no-tickets-f">There are no queries yet!</h2>
-        <p class="text-center view-raised-queries">You can view your raised queries here and track its status.</p>
-      </div>;
+      return (
+        <div class="no-tickets-present-container">
+          <h2 class="no-tickets-f">There are no queries yet!</h2>
+          <p class="text-center view-raised-queries">
+            You can view your raised queries here and track its status.
+          </p>
+        </div>
+      );
     }
 
     if (this.props.support_tickets.error) {
-      return <FailedScreen tryAgain={() => {
-        this.goNext(1, true);
-      }} />
+      return (
+        <FailedScreen
+          tryAgain={() => {
+            this.goNext(1, true);
+          }}
+        />
+      );
     }
 
     const CLOSED_TICKETS = [];
@@ -126,55 +129,66 @@ export default class Tickets extends React.Component {
     return (
       <div>
         {OPEN_TICKETS.length !== 0 && (
-          <h1 className="tickets-section-title">Open queries ({OPEN_TICKETS.length})
-            <button onClick={createTicket} className="btn btn-outline pull-right raise-new-query-btn">
-              <i className="i i-plus"></i> Raise New Query
+          <h1 className="tickets-section-title">
+            Open queries ({OPEN_TICKETS.length})
+            <button
+              onClick={createTicket}
+              className="btn btn-outline pull-right raise-new-query-btn"
+            >
+              <i className="i i-plus" /> Raise New Query
             </button>
           </h1>
         )}
         <div>
           {OPEN_TICKETS.map((ticket, index) => {
-            return user.isTicketRevampFlowEnabled ?
+            return user.isTicketRevampFlowEnabled ? (
               <TicketBriefRevamped
                 user={user}
                 last={index == currentPageTickets.length - 1}
                 ticket={ticket}
                 key={index}
               />
-              : <TicketBrief
+            ) : (
+              <TicketBrief
                 user={user}
                 last={index == currentPageTickets.length - 1}
                 ticket={ticket}
                 key={index}
               />
+            );
           })}
         </div>
         {OPEN_TICKETS.length !== 0 && CLOSED_TICKETS.length !== 0 && (
-          <div className="tickets-section-separator"></div>
+          <div className="tickets-section-separator" />
         )}
         {CLOSED_TICKETS.length !== 0 && (
           <h1 className="tickets-section-title">
             <span>Closed queries ({CLOSED_TICKETS.length})</span>
             <i class="i i-chevron-up section-collapse" />
-            {OPEN_TICKETS.length === 0 ? <button onClick={createTicket} className="btn btn-outline pull-right">
-              <i className="i i-plus"></i> Raise New Query
-            </button> : null}
-
+            {OPEN_TICKETS.length === 0 ? (
+              <button onClick={createTicket} className="btn btn-outline pull-right">
+                <i className="i i-plus" /> Raise New Query
+              </button>
+            ) : null}
           </h1>
         )}
         <div>
           {CLOSED_TICKETS.map((ticket, index) => {
-            return user.isTicketRevampFlowEnabled ? <TicketBriefRevamped
-              user={user}
-              last={index == currentPageTickets.length - 1}
-              ticket={ticket}
-              key={index}
-            /> : <TicketBrief
-              user={user}
-              last={index == currentPageTickets.length - 1}
-              ticket={ticket}
-              key={index}
-            />
+            return user.isTicketRevampFlowEnabled ? (
+              <TicketBriefRevamped
+                user={user}
+                last={index == currentPageTickets.length - 1}
+                ticket={ticket}
+                key={index}
+              />
+            ) : (
+              <TicketBrief
+                user={user}
+                last={index == currentPageTickets.length - 1}
+                ticket={ticket}
+                key={index}
+              />
+            );
           })}
         </div>
       </div>
@@ -183,29 +197,27 @@ export default class Tickets extends React.Component {
 
   render() {
     let tickets = [];
-    let total_tickets = [];
+    const total_tickets = [];
     Object.keys(this.props.support_tickets.data).forEach((k) => {
       total_tickets.push(...this.props.support_tickets.data[k]);
     });
     tickets = this.props.support_tickets.data[this.state.current_page] || [];
     const createTicket = raiseTicket;
     return (
-      <Fragment>
-        <div class="content-wrapper content-sm ticket-support">
-          <div className="row">
-            <div className="col-xs-12">
-              <div className="tickets-container">
-                {this.props.support_tickets.loading ? (
-                  <div className="ticket-cont-spinner">
-                    <Spinner />
-                  </div>
-                ) : null}
-                {this.showTickets(total_tickets, tickets, this.props.user, createTicket)}
-              </div>
+      <div class="content-wrapper content-sm ticket-support">
+        <div className="row">
+          <div className="col-xs-12">
+            <div className="tickets-container">
+              {this.props.support_tickets.loading ? (
+                <div className="ticket-cont-spinner">
+                  <Spinner />
+                </div>
+              ) : null}
+              {this.showTickets(total_tickets, tickets, this.props.user, createTicket)}
             </div>
           </div>
         </div>
-      </Fragment>
+      </div>
     );
   }
 }

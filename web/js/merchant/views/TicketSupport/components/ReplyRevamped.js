@@ -1,5 +1,5 @@
+import React from 'react';
 import { connect } from 'react-redux';
-import { Fragment } from 'react';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
@@ -26,8 +26,6 @@ export default class Reply extends React.Component {
   }
   state = {
     attachments: [],
-    file: null,
-    cc: null,
     loading: false,
     body: '',
   };
@@ -63,11 +61,6 @@ export default class Reply extends React.Component {
   reply = () => {
     this.track('send reply clicked', 'Tickets');
 
-    const body = {
-      body: this.state.body,
-      user_id: this.props.ticket.requester_id,
-    };
-
     const bodyFormData = new FormData();
     bodyFormData.append('body', this.state.body);
     bodyFormData.append('user_id', this.props.ticket.requester_id);
@@ -83,7 +76,7 @@ export default class Reply extends React.Component {
       .replyToConversation(this.props.ticketID, bodyFormData)
       .then((response) => {
         this.setState({ loading: false, body: null });
-        
+
         this.replyRef.current.value = null;
         this.setState({
           attachments: [],
@@ -96,8 +89,9 @@ export default class Reply extends React.Component {
           } else {
             this.props.showNotification({
               type: 'error',
-              message: `Failed to reply, please try later! Status CODE: ${response.data ? response.data.code : 'UNKNOWN'
-                }`,
+              message: `Failed to reply, please try later! Status CODE: ${
+                response.data ? response.data.code : 'UNKNOWN'
+              }`,
             });
 
             this.track('reply undelivered', 'Tickets | Status: Failed');
@@ -121,49 +115,51 @@ export default class Reply extends React.Component {
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        let attachments = this.state.attachments;
+        this.setState((prevState) => {
+          const attachments = prevState.attachments;
 
-        // Check if file already present
-        let alreadyExist = attachments.find((attachment) => attachment.name === file.name);
+          // Check if file already present
+          const alreadyExist = attachments.find((attachment) => attachment.name === file.name);
 
-        if (alreadyExist) {
-          this.props.showNotification({
-            type: 'error',
-            message: `File already added!`,
+          if (alreadyExist) {
+            this.props.showNotification({
+              type: 'error',
+              message: `File already added!`,
+            });
+
+            return {};
+          }
+
+          // Check if crossing the limit
+          const total = attachments.reduce((prev, FILE) => {
+            return prev + FILE.length;
+          }, 0);
+
+          if (total > MAX_SIZE_LIMIT) {
+            this.onBiggerFileSize();
+            return {};
+          }
+
+          // Filename should have format
+          if (file.name.indexOf('.') === -1) {
+            this.props.showNotification({
+              type: 'error',
+              message: `File name should have file format!`,
+            });
+            return {};
+          }
+
+          attachments.push({
+            id: file.name,
+            name: file.name,
+            file: e.target.result,
+            rawFile: file,
+            size: file.size,
           });
 
-          return;
-        }
-
-        // Check if crossing the limit
-        const total = attachments.reduce((prev, file) => {
-          return prev + file.length;
-        }, 0);
-
-        if (total > MAX_SIZE_LIMIT) {
-          this.onBiggerFileSize();
-          return;
-        }
-
-        // Filename should have format
-        if (file.name.indexOf('.') === -1) {
-          this.props.showNotification({
-            type: 'error',
-            message: `File name should have file format!`,
-          });
-          return;
-        }
-
-        attachments.push({
-          id: file.name,
-          name: file.name,
-          file: e.target.result,
-          rawFile: file,
-          size: file.size,
-        });
-
-        this.setState({
-          attachments,
+          return {
+            attachments,
+          };
         });
       };
 
@@ -172,10 +168,11 @@ export default class Reply extends React.Component {
   };
 
   removeFile = (removeFileName) => {
-    let attachments = this.state.attachments;
-
-    attachments = attachments.filter((attachment) => attachment.name !== removeFileName);
-    this.setState({ attachments });
+    this.setState((prevState) => {
+      let attachments = prevState.attachments;
+      attachments = attachments.filter((attachment) => attachment.name !== removeFileName);
+      return { attachments };
+    });
   };
 
   getRemainingUploadSize = () => {
@@ -188,7 +185,7 @@ export default class Reply extends React.Component {
     const REMAINING_SIZE = this.getRemainingUploadSize();
     const { onClose, ticket } = this.props;
 
-    let img = this.props.logo_url ? (
+    const img = this.props.logo_url ? (
       <div class="revamped-user-image">
         <img class="img-round revamped-user-image" src={this.props.logo_url} />
       </div>
@@ -198,96 +195,84 @@ export default class Reply extends React.Component {
       </div>
     );
     return (
-      <Fragment>
-        <div className="message m-20 mt-30">
-          <div
-            className="panel ticket-row-panel reply-ticket-panel"
-          >
-            {
-              ticket?.status === 5 && (
-                <i 
-                  className="i i-close close-icon"
-                  onClick={onClose}
-                  role="button"
-                />
-              )
-            }
-            <div className="panel-body mt-0 pl-0 pt-0">
-              <div className="row">
-                <div className="col-xs-2 w-auto">{img}</div>
-                <div className="col-xs-10 reply-textarea">
-                  <h5 className="mb-0">
-                    <div className="row">
-                      <div 
-                        className="col-xs-5 message-owner row-container"
-                      >
-                        <b>{this.props.user.name}</b>
-                        <p className="to-account">To: Razorpay Account</p>
-                      </div>
-                      <div className="col-xs-7 text-right"></div>
+      <div className="message m-20 mt-30">
+        <div className="panel ticket-row-panel reply-ticket-panel">
+          {ticket?.status === 5 && (
+            <i className="i i-close close-icon" onClick={onClose} role="button" />
+          )}
+          <div className="panel-body mt-0 pl-0 pt-0">
+            <div className="row">
+              <div className="col-xs-2 w-auto">{img}</div>
+              <div className="col-xs-10 reply-textarea">
+                <h5 className="mb-0">
+                  <div className="row">
+                    <div className="col-xs-5 message-owner row-container">
+                      <b>{this.props.user.name}</b>
+                      <p className="to-account">To: Razorpay Account</p>
                     </div>
-                  </h5>
-                  <div class="reply-quill">
-                    <textarea
-                      value={this.state.body}
-                      onChange={(e) => this.setState({ body: e.target.value })}
-                      cols="30"
-                      rows="3"
-                      className="form-control reply-text"
-                      placeholder="Write your message..."
-                      ref={this.replyRef}
-                    />
+                    <div className="col-xs-7 text-right" />
                   </div>
-                  <div>
-                    {this.state.attachments &&
-                      this.state.attachments.length !== 0 &&
-                      this.state.attachments.map((attachment) => {
-                        return (
-                          <FileUpload
-                            size="large"
-                            key={attachment.name}
-                            files={[attachment]}
-                            isDocPreUploaded={true}
-                            onCloseClick={() => {
-                              this.removeFile(attachment.name);
-                            }}
-                            removeFileButtonLabel="REMOVE"
-                            showFileSize={true}
-                            maxSize={MAX_SIZE_LIMIT}
-                          />
-                        );
-                      })}
-                    <FileUpload
-                      maxSize={REMAINING_SIZE} // In bytes
-                      onBiggerFileSize={this.onBiggerFileSize}
-                      defaultValue={null}
-                      files={[]}
-                      uploadButtonLabel="Add Attachment"
-                      onFileChange={this.addFile}
-                      showFileSize={true}
-                    />
-                    
-                    <button
-                      onClick={this.reply}
-                      disabled={this.state.loading || !this.state.body}
-                      className="btn btn-primary ticket-reply-btn"
-                    >
-                      {this.state.loading ? (
-                        'Sending'
-                      ) : (
-                        <span>
-                          <span>{this.props.ticket?.status === 5 ? 'Re-open Query' : 'Send'}</span>
-                          <i class="i i-send reply-icon" />
-                        </span>
-                      )}
-                    </button>
-                  </div>
+                </h5>
+                <div class="reply-quill">
+                  <textarea
+                    value={this.state.body}
+                    onChange={(e) => this.setState({ body: e.target.value })}
+                    cols="30"
+                    rows="3"
+                    className="form-control reply-text"
+                    placeholder="Write your message..."
+                    ref={this.replyRef}
+                  />
+                </div>
+                <div>
+                  {this.state.attachments &&
+                    this.state.attachments.length !== 0 &&
+                    this.state.attachments.map((attachment) => {
+                      return (
+                        <FileUpload
+                          size="large"
+                          key={attachment.name}
+                          files={[attachment]}
+                          isDocPreUploaded={true}
+                          onCloseClick={() => {
+                            this.removeFile(attachment.name);
+                          }}
+                          removeFileButtonLabel="REMOVE"
+                          showFileSize={true}
+                          maxSize={MAX_SIZE_LIMIT}
+                        />
+                      );
+                    })}
+                  <FileUpload
+                    maxSize={REMAINING_SIZE} // In bytes
+                    onBiggerFileSize={this.onBiggerFileSize}
+                    defaultValue={null}
+                    files={[]}
+                    uploadButtonLabel="Add Attachment"
+                    onFileChange={this.addFile}
+                    showFileSize={true}
+                  />
+
+                  <button
+                    onClick={this.reply}
+                    disabled={this.state.loading || !this.state.body}
+                    className="btn btn-primary ticket-reply-btn"
+                  >
+                    {this.state.loading ? (
+                      'Sending'
+                    ) : (
+                      <span>
+                        <span>{this.props.ticket?.status === 5 ? 'Re-open Query' : 'Send'}</span>
+                        <i class="i i-send reply-icon" />
+                      </span>
+                    )}
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </Fragment>
+      </div>
     );
   }
 }

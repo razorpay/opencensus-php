@@ -2,8 +2,8 @@
 const FRESHCHAT_TOKEN = '5f1b4ead-651e-472b-afa8-a94d7fa3873f'; //live
 const FRESHCHAT_HOST = 'https://wchat.in.freshchat.com';
 
-const initFreshchat = data => {
-  let role = data.userRole;
+const initFreshchat = (data) => {
+  const role = data.userRole;
 
   if (typeof window.fcWidget !== 'undefined') {
     window.fcWidget.init({
@@ -25,8 +25,7 @@ const initFreshchat = data => {
       userEmail: data.user.email,
       mid: data.id,
       activationStatus: data.activation_status,
-      dashboardLink:
-        location.origin + '/admin#/app/merchants/' + data.id + '/detail',
+      dashboardLink: `${location.origin}/admin#/app/merchants/${data.id}/detail`,
     });
   }
 };

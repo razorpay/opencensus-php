@@ -1,11 +1,10 @@
-import react,{useEffect} from 'react';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
-import { withRouter, RouteComponentProps } from 'react-router-dom';
+import { useEffect } from 'react';
+import { withRouter } from 'react-router-dom';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 function WriteToUsPopup({ businessName, supportFlags, closeModal, rzpTicketSystem, id, history }) {
-  let data = {
+  const data = {
     cta_list: supportFlags.cta_list,
     message_body: supportFlags.message_body,
   };
@@ -16,7 +15,7 @@ function WriteToUsPopup({ businessName, supportFlags, closeModal, rzpTicketSyste
       actionName: 'Clicked',
       screen: 'homepage',
       properties: {
-        cta:'Continue With Ticket',
+        cta: 'Continue With Ticket',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
@@ -29,7 +28,7 @@ function WriteToUsPopup({ businessName, supportFlags, closeModal, rzpTicketSyste
       actionName: 'Clicked',
       screen: 'homepage',
       properties: {
-        cta:'Bworse Faqs',
+        cta: 'Bworse Faqs',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
@@ -42,11 +41,11 @@ function WriteToUsPopup({ businessName, supportFlags, closeModal, rzpTicketSyste
       actionName: 'viewed',
       screen: 'homepage',
       properties: {
-        ctas:supportFlags.cta_list,
+        ctas: supportFlags.cta_list,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-  }, []);
+  }, [supportFlags.cta_list]);
 
   const MAP = {
     continue_with_ticket: (
@@ -64,7 +63,7 @@ function WriteToUsPopup({ businessName, supportFlags, closeModal, rzpTicketSyste
             actionName: 'Clicked',
             screen: 'homepage',
             properties: {
-              cta:'Complete KYC',
+              cta: 'Complete KYC',
               ...getCommonAnalyticsProperties(window.rzp_user),
             },
           });
@@ -85,7 +84,7 @@ function WriteToUsPopup({ businessName, supportFlags, closeModal, rzpTicketSyste
             actionName: 'Clicked',
             screen: 'homepage',
             properties: {
-              cta:'Complete KYC',
+              cta: 'Complete KYC',
               ...getCommonAnalyticsProperties(window.rzp_user),
             },
           });
@@ -106,7 +105,7 @@ function WriteToUsPopup({ businessName, supportFlags, closeModal, rzpTicketSyste
             actionName: 'Clicked',
             screen: 'homepage',
             properties: {
-              cta:'Complete KYC',
+              cta: 'Complete KYC',
               ...getCommonAnalyticsProperties(window.rzp_user),
             },
           });

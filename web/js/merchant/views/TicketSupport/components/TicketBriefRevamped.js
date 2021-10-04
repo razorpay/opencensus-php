@@ -1,8 +1,9 @@
+import React, { Fragment } from 'react';
+import moment from 'moment';
 import { Link } from 'react-router-dom';
-import TicketStatus from './TicketStatus.js';
+import TicketStatus from './TicketStatus';
 import TicketBriefMessage from './TicketBriefMessage';
-import { Fragment } from 'react';
-import { STATUSES } from '../utils.js';
+import { STATUSES } from '../utils';
 export default class TicketBriefRevamped extends React.Component {
   componentDidMount() {
     window.rzpAnalytics({
@@ -34,16 +35,23 @@ export default class TicketBriefRevamped extends React.Component {
                   <div className="panel-body">
                     <div className="row">
                       <div className="col-xs-10">
-                        {!this.props.user.isTicketRevampFlowEnabled ? <p className="ticket-subject">{subject}</p> : <p className="ticket-subject">
-                          {ticket.custom_fields.cf_requestor_subcategory}
-                          {ticket.custom_fields.cf_requester_item ? <Fragment>
-                            <span className="ticket-detail-separator">•</span>
-                            {ticket.custom_fields.cf_requester_item}
-                          </Fragment> : null}
-                        </p>
-                        }
+                        {!this.props.user.isTicketRevampFlowEnabled ? (
+                          <p className="ticket-subject">{subject}</p>
+                        ) : (
+                          <p className="ticket-subject">
+                            {ticket.custom_fields.cf_requestor_subcategory}
+                            {ticket.custom_fields.cf_requester_item ? (
+                              <Fragment>
+                                <span className="ticket-detail-separator">•</span>
+                                {ticket.custom_fields.cf_requester_item}
+                              </Fragment>
+                            ) : null}
+                          </p>
+                        )}
 
-                        <Link to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/conversation`}>
+                        <Link
+                          to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/conversation`}
+                        >
                           <p className="ticket-short-details">
                             <span>Ticket # {ticket.ticket_id}</span>
                             <span className="ticket-detail-separator">•</span>
@@ -56,12 +64,11 @@ export default class TicketBriefRevamped extends React.Component {
                       </div>
                       <div className="col-xs-12">
                         <div class="ticket-brief-desc-text">{ticket.description_text}</div>
-
                       </div>
                     </div>
                   </div>
-                  {ticketStatus !== 'CLOSED' ? <Fragment>
-                    {isScheduleCallbackEnabled && ticket.tags.includes('callback') ? (
+                  {ticketStatus !== 'CLOSED' ? (
+                    isScheduleCallbackEnabled && ticket.tags.includes('callback') ? (
                       <p class="call-requested">
                         <img
                           class="schedule-call-icon"
@@ -71,22 +78,23 @@ export default class TicketBriefRevamped extends React.Component {
                         Call is requested on this query.{' '}
                         <b
                           onClick={() => {
-                            window.rzpTicketSystem &&
+                            if (window.rzpTicketSystem) {
                               window.rzpTicketSystem.openModal(`#call-details`, {
                                 id: ticket.custom_fields.cf_callback_id,
                               });
+                            }
                           }}
                           class="pointer"
                         >
                           View Details
                         </b>
                       </p>
-                    ) : <div class="Ticket-Status-Desc">
-                      <TicketBriefMessage ticket={ticket} />
-                    </div>
-                    }
-                  </Fragment> : null}
-
+                    ) : (
+                      <div class="Ticket-Status-Desc">
+                        <TicketBriefMessage ticket={ticket} />
+                      </div>
+                    )
+                  ) : null}
                 </div>
               </div>
             </div>

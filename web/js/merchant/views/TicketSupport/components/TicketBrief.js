@@ -1,8 +1,10 @@
+import React from 'react';
+import moment from 'moment';
 import { Link } from 'react-router-dom';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
-import { statuses } from './data.js';
-import TicketStatus from './TicketStatus.js';
+import { statuses } from './data';
+import TicketStatus from './TicketStatus';
 
 export default class TicketBrief extends React.Component {
   componentDidMount() {
@@ -83,10 +85,11 @@ export default class TicketBrief extends React.Component {
                     Call is requested on this query.{' '}
                     <b
                       onClick={() => {
-                        window.rzpTicketSystem &&
+                        if (window.rzpTicketSystem) {
                           window.rzpTicketSystem.openModal(`#call-details`, {
                             id: ticket.custom_fields.cf_callback_id,
                           });
+                        }
                       }}
                       class="pointer"
                     >

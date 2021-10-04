@@ -24,6 +24,7 @@ export default class SupportHeader extends Component {
       prevProps.closeOnboardingStep !== this.props.closeOnboardingStep &&
       this.props.closeOnboardingStep
     ) {
+      // eslint-disable-next-line react/no-did-update-set-state
       this.setState({
         showHelpTooltip: true,
       });
@@ -34,6 +35,7 @@ export default class SupportHeader extends Component {
       prevProps.isOpened !== this.props.isOpened &&
       this.props.isOpened
     ) {
+      // eslint-disable-next-line react/no-did-update-set-state
       this.setState({
         showHelpTooltip: false,
       });
@@ -78,7 +80,7 @@ export default class SupportHeader extends Component {
               ...getCommonAnalyticsProperties(window.rzp_user),
             },
           });
-          onToggle(...e)
+          onToggle(...e);
         }}
       >
         <span className="help-content">

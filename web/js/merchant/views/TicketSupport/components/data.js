@@ -44,7 +44,7 @@ export const statuses = {
 export const param_to_qs = (params) => {
   const esc = encodeURIComponent;
   return Object.keys(params)
-    .map((k) => esc(k) + '=' + esc(params[k]))
+    .map((k) => `${esc(k)}=${esc(params[k])}`)
     .join('&');
 };
 

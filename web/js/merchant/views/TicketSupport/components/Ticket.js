@@ -1,5 +1,6 @@
+import React from 'react';
+import moment from 'moment';
 import { connect } from 'react-redux';
-import { Fragment } from 'react';
 import TicketStatus from './TicketStatus';
 import Attachment from './Attachment';
 import Banner from './Banner';
@@ -21,8 +22,6 @@ export default class Ticket extends React.Component {
   }
 
   componentDidMount() {
-    const { ticket } = this.props;
-
     window.rzpAnalytics({
       eventCategory: 'Ticket Dashboard',
       eventAction: 'ticket details fetched | Status: Success',
@@ -37,7 +36,7 @@ export default class Ticket extends React.Component {
   render() {
     const { ticket, user } = this.props;
     const { ticketID } = this.props;
-    let img = this.props.logo_url ? (
+    const img = this.props.logo_url ? (
       <img height="56px" class="img-round user-image" src={this.props.logo_url} />
     ) : (
       <i className="i i-user-circle reply-user-circle" />
@@ -47,66 +46,64 @@ export default class Ticket extends React.Component {
     const subjectComponent = subject && <b>| Category: {subject}</b>;
 
     return (
-      <Fragment>
-        <div className="message mb-0">
-          <div className="ticket-conv-body">
-            <div className="row ticket-title-section">
-              <div className="col-xs-2">{img}</div>
-              <div className="col-xs-10" style={{ paddingLeft: 0 }}>
-                <h5 style={{ marginBottom: 0 }}>
-                  <div className="row" style={{ paddingRight: '10px' }}>
-                    <div className="col-xs-8 message-owner">
-                      <b>Ticket ID #{ticket && ticket.ticket_id ? ticket.ticket_id : ticketID} </b>
-                      {subjectComponent}
-                    </div>
-                    <div className="col-xs-4 text-right" style={{ height: '20px' }}>
-                      <TicketStatus ticket={ticket} />
-                    </div>
+      <div className="message mb-0">
+        <div className="ticket-conv-body">
+          <div className="row ticket-title-section">
+            <div className="col-xs-2">{img}</div>
+            <div className="col-xs-10" style={{ paddingLeft: 0 }}>
+              <h5 style={{ marginBottom: 0 }}>
+                <div className="row" style={{ paddingRight: '10px' }}>
+                  <div className="col-xs-8 message-owner">
+                    <b>Ticket ID #{ticket && ticket.ticket_id ? ticket.ticket_id : ticketID} </b>
+                    {subjectComponent}
                   </div>
-                </h5>
-                <p class="message-to">
-                  Raised {moment(ticket.created_at).fromNow()}
-                  {this.state.detailsVisible ? (
-                    <span className="ticket-details-caption text-uppercase">
-                      ({moment(ticket.created_at).format('ddd, MMM D, YYYY, hh:mm A')})
-                    </span>
-                  ) : (
-                    <a className="ticket-details-caption" onClick={this.showDetails}>
-                      Show details
-                    </a>
-                  )}
-                </p>
-                {this.state.detailsVisible && ticket.cc_emails.length !== 0 ? (
-                  <p class="message-to" style={{ marginTop: '3px' }}>
-                    CC: {ticket.cc_emails.join(', ')}
-                  </p>
-                ) : null}
-              </div>
-            </div>
-            <div className="ticket-title-divider"></div>
-            <div className="row">
-              <div className="col-xs-2"></div>
-              <div className="col-xs-10" style={{ paddingLeft: 0 }}>
-                <div
-                  className="message-body body"
-                  dangerouslySetInnerHTML={{
-                    __html: ticket.description,
-                  }}
-                />
-
-                {ticket.attachments && ticket.attachments.length !== 0 && (
-                  <div className="message-body body">
-                    {ticket.attachments.map((file, index) => (
-                      <Attachment key={file.id} file={file} />
-                    ))}
+                  <div className="col-xs-4 text-right" style={{ height: '20px' }}>
+                    <TicketStatus ticket={ticket} />
                   </div>
+                </div>
+              </h5>
+              <p class="message-to">
+                Raised {moment(ticket.created_at).fromNow()}
+                {this.state.detailsVisible ? (
+                  <span className="ticket-details-caption text-uppercase">
+                    ({moment(ticket.created_at).format('ddd, MMM D, YYYY, hh:mm A')})
+                  </span>
+                ) : (
+                  <a className="ticket-details-caption" onClick={this.showDetails}>
+                    Show details
+                  </a>
                 )}
-              </div>
+              </p>
+              {this.state.detailsVisible && ticket.cc_emails.length !== 0 ? (
+                <p class="message-to" style={{ marginTop: '3px' }}>
+                  CC: {ticket.cc_emails.join(', ')}
+                </p>
+              ) : null}
             </div>
-            {user.isNewGrievanceFlowEnabled && <Banner ticket={ticket} />}
           </div>
+          <div className="ticket-title-divider" />
+          <div className="row">
+            <div className="col-xs-2" />
+            <div className="col-xs-10" style={{ paddingLeft: 0 }}>
+              <div
+                className="message-body body"
+                dangerouslySetInnerHTML={{
+                  __html: ticket.description,
+                }}
+              />
+
+              {ticket.attachments && ticket.attachments.length !== 0 && (
+                <div className="message-body body">
+                  {ticket.attachments.map((file) => (
+                    <Attachment key={file.id} file={file} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          {user.isNewGrievanceFlowEnabled && <Banner ticket={ticket} />}
         </div>
-      </Fragment>
+      </div>
     );
   }
 }

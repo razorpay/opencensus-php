@@ -3,7 +3,7 @@ import { Component } from 'react';
 import { trackSupportButton } from './ga';
 import { withRouter } from 'react-router-dom';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, classList } from 'common/utils/rzp-utils';
 
 import {
   checkCallEligibility,
@@ -13,7 +13,6 @@ import {
 import SupportHeader from 'merchant/components/Support/components/SupportHeader';
 import SupportBody from 'merchant/components/Support/components/SupportBody';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { classList } from 'common/utils/rzp-utils';
 
 import { COMDEL_URL } from './constants';
 
@@ -113,6 +112,8 @@ export default class Support extends Component {
     this.setState({
       isOpened: !isOpened,
     });
+
+    return null;
   };
 
   handleVisibility = (shouldHide) => {
