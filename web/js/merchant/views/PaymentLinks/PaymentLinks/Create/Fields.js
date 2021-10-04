@@ -4,10 +4,11 @@ import Input from 'common/new-ui/Input';
 
 import { isAmount, isEmail, isPhone, maxLength } from 'common/utils/validators';
 
-import { AmountTooltip } from 'common/ui/Amount';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import Popover from 'common/ui/Popover';
 
-import { trackHelpClick, trackSelectCurrency } from '../ga';
+import DocsLink from 'merchant/components/DocsLink';
+
+import { trackSelectCurrency } from '../ga';
 
 import {
   MIN_AMOUNT_TEXT,
@@ -15,17 +16,14 @@ import {
   validateMinAmount,
 } from '../components/Edit/EditMinimumAmount';
 
-const CustomInput = props => {
+const CustomInput = (props) => {
   return (
     <div class="Input--custom">
       <div class="Input-label">
         {MIN_AMOUNT_TEXT} (Optional)
         <small className="help-content">
           <i class="i i-info-outline" style={{ marginLeft: 4 }} />
-          <Popover
-            align="top"
-            parentQuerySelector={`.Modal-body .PaymentLinks--Create`}
-          >
+          <Popover align="top" parentQuerySelector=".Modal-body .PaymentLinks--Create">
             {PopoverBodyText}
           </Popover>
         </small>
@@ -56,8 +54,10 @@ export default [
       {
         name: 'currency',
         _cmp: Input.CurrencySelect,
-        onChange: currency => {
-          currency && trackSelectCurrency(currency.name);
+        onChange: (currency) => {
+          if (currency) {
+            trackSelectCurrency(currency.name);
+          }
           // track 'Dashboard - International - Payment links'	'select currency'
         },
         parentQuerySelector: '.Modal-body',
@@ -68,7 +68,7 @@ export default [
         placeholder: '0.00',
         required: true,
         autoFocus: true,
-        validator: val => {
+        validator: (val) => {
           if (!isAmount(val)) {
             const decimal = val && val.split('.');
 
@@ -78,6 +78,7 @@ export default [
               return 'Invalid Amount';
             }
           }
+          return undefined;
         },
       },
     ],
@@ -95,23 +96,21 @@ export default [
       size: 'half_big',
       _autoRenderImpure: true,
       _cmp: CustomInput,
-      validator: function(val) {
+      validator: function validator(val) {
         return validateMinAmount(val, this.state.dirty.amount);
       },
-      _when: function(form) {
+      _when: function _when(form) {
         return (
-          form.state.dirty.partial_payment == '1' &&
-          form.props.user.isMinimumFirstPaymentEnabled
+          form.state.dirty.partial_payment == '1' && form.props.user.isMinimumFirstPaymentEnabled
         );
       },
     },
   ],
   {
     name: 'description',
-    label: form => getPaymentLinkFormLabel('description', form.props.user),
-    placeholder: form =>
-      getPaymentLinkFormPlaceholder('description', form.props.user),
-    required: function(ctx) {
+    label: (form) => getPaymentLinkFormLabel('description', form.props.user),
+    placeholder: (form) => getPaymentLinkFormPlaceholder('description', form.props.user),
+    required: function required(ctx) {
       return !ctx.props.user.isPaymentlinksV2Enabled; // In new PL micro service, it's not mandatory
     },
     description: 'This will be visible to the customer',
@@ -125,10 +124,11 @@ export default [
         type: 'tel',
         placeholder: 'Mobile',
         size: 'half_big',
-        validator: val => {
+        validator: (val) => {
           if (!isPhone(val)) {
             return 'Invalid phone';
           }
+          return undefined;
         },
       },
       {
@@ -136,10 +136,11 @@ export default [
         type: 'email',
         placeholder: 'Email',
         size: 'half_big',
-        validator: val => {
+        validator: (val) => {
           if (!isEmail(val)) {
             return 'Invalid email';
           }
+          return undefined;
         },
       },
     ],
@@ -151,10 +152,17 @@ export default [
       {
         name: 'sms_notify',
         fieldLabel: 'via SMS',
+        description: () => (
+          <DocsLink
+            title="More ways to notify"
+            url="https://razorpay.com/app-store/"
+            style={{ paddingLeft: '0' }}
+          />
+        ),
         size: 'half_big',
         _cmp: Input.Check,
         _autoRenderImpure: true,
-        onChange: e => {
+        onChange: (e) => {
           if (e.target.value == '1') {
             document.getElementsByName('contact')[0].focus();
           }
@@ -166,7 +174,7 @@ export default [
         size: 'half_big',
         _cmp: Input.Check,
         _autoRenderImpure: true,
-        onChange: e => {
+        onChange: (e) => {
           if (e.target.value == '1') {
             document.getElementsByName('email')[0].focus();
           }
@@ -179,11 +187,11 @@ export default [
     type: 'text',
     placeholder: 'Customer Name',
     label: 'Customer Name',
-    _when: form => form.props.user.isPaymentLinkCustomerNameFieldEnabled,
+    _when: (form) => form.props.user.isPaymentLinkCustomerNameFieldEnabled,
   },
   {
     name: 'receipt',
-    label: form => getPaymentLinkFormLabel('receipt', form.props.user),
+    label: (form) => getPaymentLinkFormLabel('receipt', form.props.user),
     validator: maxLength(40),
     size: 'half_big',
   },
@@ -192,12 +200,12 @@ export default [
     label: 'Expire On',
     fieldLabel: 'No Expiry',
     _cmp: Input.Check,
-    _when: function(ctx) {
+    _when: function _when(ctx) {
       return !ctx.props.user.isExpireByRequired;
     },
     _autoRenderImpure: true,
     className: 'Input--vTop',
-    onChange: e => {
+    onChange: (e) => {
       if (e.target.value == '0') {
         // 0 => unselected
         setTimeout(() => {
@@ -208,13 +216,13 @@ export default [
     },
   },
   {
-    className: function(ctx) {
+    className: function className(ctx) {
       return ctx.props.user.isExpireByRequired ? null : 'InputGroup--near';
     },
-    label: function(ctx) {
+    label: function label(ctx) {
       return ctx.props.user.isExpireByRequired ? 'Expire On' : null;
     },
-    required: function(ctx) {
+    required: function required(ctx) {
       return ctx.props.user.isExpireByRequired;
     },
     inlineFields: [
@@ -222,7 +230,7 @@ export default [
         _name: 'expire_by_date',
         placeholder: 'DD-MM-YYYY',
         size: 'half_big',
-        _disabledWhen: form => form.state._name.hasNoExpiry === '1',
+        _disabledWhen: (form) => form.state._name.hasNoExpiry === '1',
         addonAfter: <i class="i i-date-range" />,
 
         _cmp: Input.ToCalendar,
@@ -230,7 +238,7 @@ export default [
         disablePastDates: true,
         placement: 'topLeft',
         readOnly: true,
-        required: function(ctx) {
+        required: function required(ctx) {
           return ctx.props.user.isExpireByRequired;
         },
       },
@@ -238,14 +246,14 @@ export default [
         name: 'expire_by',
         placeholder: '11:59PM',
         size: 'half_big',
-        _when: form => !!form.state._name.expire_by_date,
-        _disabledWhen: form => form.state._name.hasNoExpiry === '1',
+        _when: (form) => !!form.state._name.expire_by_date,
+        _disabledWhen: (form) => form.state._name.hasNoExpiry === '1',
         addonAfter: <i class="i i-time" />,
 
         // defaultValue: moment().endOf().unix(), // Epoch of timestamp today end. Don't set. Has to be in sync with Date(expire_by_date).
         _cmp: Input.TimePicker,
         readOnly: true,
-        required: function(ctx) {
+        required: function required(ctx) {
           return ctx.props.user.isExpireByRequired;
         },
       },
@@ -258,12 +266,12 @@ export default [
     description: ({ props, state }) => {
       return getRemindersOptionDescription(
         props.paymentLinksRemindersSettings.count,
-        Number(state._name.hasNoExpiry)
+        Number(state._name.hasNoExpiry),
       );
     },
     _cmp: Input.Check,
     label: 'Reminders',
-    _when: function(form) {
+    _when: function _when(form) {
       return form.props.paymentLinksRemindersSettings.isEnabled;
     },
     _autoRenderImpure: true,
@@ -271,10 +279,9 @@ export default [
   {
     label: 'Reminders',
     _cmp: () => <ReminderNotEnabled />,
-    _when: function(form) {
+    _when: function _when(form) {
       return (
-        !form.props.paymentLinksRemindersSettings.isEnabled &&
-        form.state._name.hasNoExpiry === '0'
+        !form.props.paymentLinksRemindersSettings.isEnabled && form.state._name.hasNoExpiry === '0'
       );
     },
   },
@@ -283,10 +290,9 @@ export default [
     _cmp: () => {
       return <ReminderNotEnabled type="no" />;
     },
-    _when: function(form) {
+    _when: function _when(form) {
       return (
-        !form.props.paymentLinksRemindersSettings.isEnabled &&
-        form.state._name.hasNoExpiry === '1'
+        !form.props.paymentLinksRemindersSettings.isEnabled && form.state._name.hasNoExpiry === '1'
       );
     },
   },
@@ -295,26 +301,20 @@ export default [
     label: 'Internal Notes',
     className: 'Input--vTop',
     _cmp: Input.PairList,
-    _when: function(form) {
+    _when: function _when(form) {
       return !form.props.user.isCustomNotesDropdownEnabled;
     },
   },
   {
     name: 'notes',
-    label: function(ctx) {
-      return (
-        ctx.props.user.isCustomNotesDropdownEnabled &&
-        getCustomNotesOptions().type
-      );
+    label: function label(ctx) {
+      return ctx.props.user.isCustomNotesDropdownEnabled && getCustomNotesOptions().type;
     },
     _cmp: Input.Select,
-    options: function(ctx) {
-      return (
-        ctx.props.user.isCustomNotesDropdownEnabled &&
-        getCustomNotesOptions().options
-      );
+    options: function options(ctx) {
+      return ctx.props.user.isCustomNotesDropdownEnabled && getCustomNotesOptions().options;
     },
-    _when: function(form) {
+    _when: function _when(form) {
       return form.props.user.isCustomNotesDropdownEnabled;
     },
   },
@@ -334,13 +334,13 @@ const ReminderNotEnabled = ({ type = '' }) => (
   </div>
 );
 
-const getRemindersOptionDescription = (count, hasNoExpiry) => {
+function getRemindersOptionDescription(count, hasNoExpiry) {
   const totalReminders = hasNoExpiry
     ? count.withOutExpireRemindersCount
     : count.withExpireRemindersCount;
 
   return `${totalReminders} auto reminders will be sent to this customer based on the reminder settings`;
-};
+}
 
 export function getCustomNotesOptions() {
   const { type, options } = window.custom_notes;

@@ -1,4 +1,6 @@
+import React from 'react';
 import Input from 'common/new-ui/Input';
+import DocsLink from 'merchant/components/DocsLink';
 import track from '../../track';
 
 export default class Notify extends React.Component {
@@ -45,6 +47,11 @@ export default class Notify extends React.Component {
             defaultValue={props.defaultContactValue}
           />
         </div>
+        <DocsLink
+          title="More ways to notify"
+          url="https://razorpay.com/app-store/"
+          style={{ paddingLeft: '0' }}
+        />
       </Input.Group>
     );
   }

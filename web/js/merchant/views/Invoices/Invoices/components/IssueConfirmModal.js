@@ -6,9 +6,10 @@ import ModalHeader from 'common/ui/ModalHeader';
 import Clipboard from 'common/ui/Clipboard';
 import { titleCase } from 'common/utils/rzp-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
+import DocsLink from 'merchant/components/DocsLink';
 
 const selector = formValueSelector('issueInvoice');
-@connect(state => {
+@connect((state) => {
   return {
     session: state.session,
     sms_notify: selector(state, 'sms_notify'),
@@ -23,15 +24,15 @@ export default class IssueInvoiceConfirmModal extends Component {
     onFieldChange: () => {},
   };
 
-  constructor() {
-    super(...arguments);
+  constructor(...args) {
+    super(...args);
     this.state = {
       paymentLink: '',
     };
   }
 
   componentWillMount() {
-    let customer = this.props.customer;
+    const customer = this.props.customer;
     if (customer) {
       this.props.initialize({
         sms_notify: !!customer.contact,
@@ -41,17 +42,21 @@ export default class IssueInvoiceConfirmModal extends Component {
   }
 
   componentDidMount() {
-    this.props.onMount && this.props.onMount();
+    if (this.props.onMount) {
+      this.props.onMount();
+    }
   }
 
   componentWillUnmount() {
-    this.props.onUnmount && this.props.onUnmount();
+    if (this.props.onUnmount) {
+      this.props.onUnmount();
+    }
   }
 
-  onIssueClick = props => {
+  onIssueClick = (props) => {
     return this.props
       .onIssue(props)
-      .then(invoice => {
+      .then((invoice) => {
         if (props.sms_notify || props.email_notify) {
           this.props.closeModal();
         } else {
@@ -68,7 +73,9 @@ export default class IssueInvoiceConfirmModal extends Component {
   closeModal = () => {
     this.props.closeModal();
 
-    this.props.onCloseClick && this.props.onCloseClick();
+    if (this.props.onCloseClick) {
+      this.props.onCloseClick();
+    }
   };
 
   render() {
@@ -84,19 +91,14 @@ export default class IssueInvoiceConfirmModal extends Component {
 
     const isTestMode = this.props.session.mode === 'test';
     const paymentLink = this.state.paymentLink;
-    let entityName = isPaymentLink ? 'payment link' : 'invoice';
-    let disabled =
-      (disableIssueOnEmptySelection || isPaymentLink) &&
-      !(sms_notify || email_notify);
+    const entityName = isPaymentLink ? 'payment link' : 'invoice';
+    const disabled =
+      (disableIssueOnEmptySelection || isPaymentLink) && !(sms_notify || email_notify);
 
     return (
       <div class="issue-invoice-modal">
         <ModalHeader
-          title={
-            isPaymentLink
-              ? 'Send Link'
-              : paymentLink ? 'Issued' : 'Issue Invoice'
-          }
+          title={isPaymentLink ? 'Send Link' : paymentLink ? 'Issued' : 'Issue Invoice'}
           onCloseClick={this.closeModal}
         />
 
@@ -105,8 +107,7 @@ export default class IssueInvoiceConfirmModal extends Component {
             {paymentLink ? (
               <div>
                 <p class="help-block">
-                  Share the following link with the customer manually to receive
-                  the payment
+                  Share the following link with the customer manually to receive the payment
                 </p>
                 <Clipboard value={paymentLink} />
 
@@ -121,9 +122,7 @@ export default class IssueInvoiceConfirmModal extends Component {
               </div>
             ) : (
               <div>
-                <p>
-                  Send {titleCase(entityName)} and payment instructions to...
-                </p>
+                <p>Send {titleCase(entityName)} and payment instructions to...</p>
                 {customer.contact && (
                   <div class="rzpCheckbox">
                     <Field
@@ -154,6 +153,14 @@ export default class IssueInvoiceConfirmModal extends Component {
                   </div>
                 )}
 
+                {(customer.contact || customer.email) && (
+                  <DocsLink
+                    title="More ways to notify"
+                    url="https://razorpay.com/app-store/"
+                    style={{ paddingLeft: '0' }}
+                  />
+                )}
+
                 {!isPaymentLink && (
                   <div>
                     A <b>payment link</b> will also be created.
@@ -166,10 +173,8 @@ export default class IssueInvoiceConfirmModal extends Component {
 
                 {isTestMode && (
                   <div class="alert alert-sm alert-warning">
-                    The {entityName} is created in <b>Test Mode</b>
-                    . So, only test payments can be made for this {entityName}
-                    .
-                    {/* Also, SMS will not be sent in test mode.*/}
+                    The {entityName} is created in <b>Test Mode</b>. So, only test payments can be
+                    made for this {entityName}.{/* Also, SMS will not be sent in test mode.*/}
                   </div>
                 )}
 
