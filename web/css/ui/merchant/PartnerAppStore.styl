@@ -615,6 +615,13 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
                 flex: 1;
                 padding: 0px 20px 0px 0px
 
+              .img-col
+                display: flex;
+                flex-direction: column 
+
+                & > *:not(:first-child)
+                  margin-top: 10px;
+
           & > li div.list-counter
             position: relative
 

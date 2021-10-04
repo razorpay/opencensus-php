@@ -94,7 +94,8 @@ export const partnerProducts = {
     title: 'Wix',
     url: 'https://www.wix.com/',
     category: 'Website Builder',
-    description: 'Design and build your own high-quality websites',
+    description:
+      'Leading cloud-based development platform to run, manage and grow a successful business online',
     logo: 'wix.png',
     brandColor: '#3251B5',
   },
@@ -181,12 +182,13 @@ export const partnerProducts = {
   },
   busy: {
     slug: 'busy',
-    title: 'Busy',
+    title: 'BUSY',
     cta: 'Enable Patch',
     url: 'https://razorpay.typeform.com/to/NZPYQzpY',
     category: 'Business Accounting Software',
     description: 'Integrated business accounting and management software for MSMEs',
-    logo: 'busy.jpeg',
+    logo: 'busy.jpg',
+    logoPadding: 0,
     brandColor: '#1682D4',
   },
   uengage: {

@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { partnerProducts } from './data/index';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import RTracking from 'react-tracking';
+import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
+import rTracking from 'react-tracking';
 
 function installHandler(appid, setIsAppInstalled, showNotification) {
   merchantFetch({
@@ -36,7 +36,7 @@ function installHandler(appid, setIsAppInstalled, showNotification) {
   });
 }
 
-async function checkIfAppIsInstalled(merchantId, appid, showNotification) {
+function checkIfAppIsInstalled(merchantId, appid, _showNotification) {
   return merchantFetch({
     url: `merchants/${merchantId}/app_store/apps`,
     mode: 'live',
@@ -53,6 +53,7 @@ async function checkIfAppIsInstalled(merchantId, appid, showNotification) {
       // failed to fetch
       console.log('could not fetch app installation state');
       console.log(res);
+      return false;
     }
   });
 }
@@ -61,7 +62,7 @@ function trackBannerButtonClick(tracking, user, appName) {
   tracking.trackEvent(
     window.rzpQ.onbr().clicked('partnerships.appstore.getstarted', {
       merchantId: user.merchant.id,
-      appName: appName,
+      appName,
     }),
   );
 }
@@ -85,9 +86,10 @@ function BannerButton({
         className="btn get-started-button"
         target="_blank"
         href={partnerDetails.url}
+        rel="noreferrer"
       >
         {partnerDetails.cta ? partnerDetails.cta : 'Get Started'} &nbsp;{' '}
-        <i className="fa fa-angle-right"></i>
+        <i className="fa fa-angle-right" />
       </a>
     );
   }
@@ -143,7 +145,7 @@ function PartnerPage(props) {
   useEffect(() => {
     // Read the respective content from ./data/content/<app-name>.js file
     (async () => {
-      const contentData = (await import('./data/content/' + partnerSlug)).default(brandColor);
+      const contentData = (await import(`./data/content/${partnerSlug}`)).default(brandColor);
       setPartnerContent(contentData);
     })();
 
@@ -161,22 +163,27 @@ function PartnerPage(props) {
     })();
   }, []);
 
+  const { logoPadding } = partnerDetails;
+
   return (
     <div className="PartnerPage appstore-shared-styles">
       <section className="appstore-card">
         <div className="partnerpage-colored-top" style={{ backgroundColor: brandColor }}>
           <header>
             <Link to="/app-store">
-              <i className="i i-arrow-back"></i> Back To Apps
+              <i className="i i-arrow-back" /> Back To Apps
             </Link>
           </header>
 
           <div className="top-heading">
             <div className="product-logo-container inline-block">
-              <div className="product-image-background">
+              <div
+                className="product-image-background"
+                style={{ ...(logoPadding !== undefined && { padding: `${logoPadding}px` }) }}
+              >
                 <img
-                  alt={'Logo of ' + partnerDetails.title}
-                  src={'/dist/css/assets/app-store/partner-logos/' + partnerDetails.logo}
+                  alt={`Logo of ${partnerDetails.title}`}
+                  src={`/dist/css/assets/app-store/partner-logos/${partnerDetails.logo}`}
                 />
               </div>
             </div>
@@ -211,9 +218,9 @@ export default connect(
   (state) => ({
     user: state.session.user,
   }),
-  { showNotification },
+  { showNotification: fnShowNotification },
 )(
-  RTracking(() => {
+  rTracking(() => {
     window.rzpQ.component('PartnerPage');
   })(PartnerPage),
 );

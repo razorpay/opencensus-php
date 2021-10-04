@@ -1,7 +1,7 @@
-import PadImage from '../PadImage.js';
+import padImage from '../PadImage';
 
 function Data(brandColor) {
-  const PaddedImage = PadImage(brandColor);
+  const PaddedImage = padImage(brandColor);
   const brandStyles = {
     listBg: { backgroundColor: brandColor },
     brandBorderLeft: { borderLeft: `8px solid ${brandColor}` },
@@ -11,17 +11,26 @@ function Data(brandColor) {
     <main>
       <div className="description">
         <p>
-          Busy Accounting Software offers accounting and inventory management with features like
-          Comprehensive GST Module, Operations Management, Configurable Invoicing and more. The Busy
-          App helps you make informed decisions by staying connected with your data and transactions
-          anywhere, anytime
+          BUSY Accounting Software offers accounting and inventory management with features like
+          Comprehensive GST Module, Operations Management, Configurable Invoicing and more.
+        </p>
+        <p>
+          The Razorpay patch on BUSY is Easy to set up for online collection of payments with
+          Instant reconciliation. With{' '}
+          <a href="https://razorpay.com/payment-links/" target="_blank" rel="noreferrer">
+            Razorpay Payment Links
+          </a>{' '}
+          , give your customers the convenience to pay you immediately via email, SMS, etc. You can
+          accept payments via credit card, debit card, Net Banking, UPI and more with giving offers
+          and discounts to your customers from time to time.
         </p>
       </div>
 
       <div className="how-to-use-razorpay">
         <article>
           <h2 className="how-to-use-heading" style={brandStyles.brandBorderLeft}>
-            How to Integrate Razorpay in Busy's Dashboard
+            Integrate Razorpay on BUSY’s dashboard to send payment links to your customers in just 6
+            simple steps:
           </h2>
           {/* <p style={brandStyles.brandBorderLeft}>
             To enable Razorpay Payment Links with your Whatsapp account
@@ -39,10 +48,7 @@ function Data(brandColor) {
                     Go to <b>Add On → Collection Engine → Registration</b> to begin.
                   </div>
                 </p>
-                <PaddedImage
-                  alt="Screenshot from whatsapp chat where Razorpay bot sent App Successfully Installed message"
-                  src="/dist/css/assets/app-store/content-assets/busy/1.png"
-                />
+                <PaddedImage alt="" src="/dist/css/assets/app-store/content-assets/busy/1.png" />
               </div>
             </li>
 
@@ -53,10 +59,7 @@ function Data(brandColor) {
                   <div className="list-counter" style={brandStyles.listBg} />
                   <span>Register with Razorpay to get your Merchant ID.</span>
                 </p>
-                <PaddedImage
-                  alt="Screenshot from whatsapp chat where Razorpay bot sent App Successfully Installed message"
-                  src="/dist/css/assets/app-store/content-assets/busy/2.png"
-                />
+                <PaddedImage alt="" src="/dist/css/assets/app-store/content-assets/busy/2.png" />
               </div>
             </li>
             {/* step 3 */}
@@ -69,10 +72,7 @@ function Data(brandColor) {
                     to install the add-on in your dashboard.
                   </span>
                 </p>
-                <PaddedImage
-                  alt="User sent Create 100"
-                  src="/dist/css/assets/app-store/content-assets/busy/3.png"
-                />
+                <PaddedImage alt="" src="/dist/css/assets/app-store/content-assets/busy/3.png" />
               </div>
             </li>
             {/* step 4 */}
@@ -85,13 +85,10 @@ function Data(brandColor) {
                     <b>Reports</b> to send payment reminders’.
                   </span>
                 </p>
-                <PaddedImage
-                  alt="Razorpay bot replied with Link creation success message and the payment link"
-                  src="/dist/css/assets/app-store/content-assets/busy/4.png"
-                />
+                <PaddedImage alt="" src="/dist/css/assets/app-store/content-assets/busy/4.png" />
               </div>
             </li>
-            {/* step 5 */}
+            {/* step 5 -1*/}
             <li>
               <div className="list-flex">
                 <p>
@@ -104,16 +101,17 @@ function Data(brandColor) {
                     <b>
                       → OK → Do you want to send Payment Link? → ‘Yes’→ Sending Payment Link → Sent
                     </b>
-                    .
-                    <br />
-                    <br />
-                    Wait to see <b>Link sent successfully</b>
+                    {''}.
                   </div>
                 </p>
-                <PaddedImage
-                  alt="Razorpay bot replied with Link creation success message and the payment link"
-                  src="/dist/css/assets/app-store/content-assets/busy/4.png"
-                />
+                <PaddedImage alt="" src="/dist/css/assets/app-store/content-assets/busy/5-1.png" />
+              </div>
+            </li>
+            {/* step 5 -2*/}
+            <li className="number-label-top">
+              <div className="list-flex">
+                Wait to see &nbsp;<b> Link sent successfully</b>
+                <PaddedImage alt="" src="/dist/css/assets/app-store/content-assets/busy/5-2.png" />
               </div>
             </li>
             {/* step 6 */}
@@ -129,10 +127,7 @@ function Data(brandColor) {
                     to send receipts to your customers after receiving payments
                   </span>
                 </p>
-                <PaddedImage
-                  alt="Razorpay bot replied with Link creation success message and the payment link"
-                  src="/dist/css/assets/app-store/content-assets/busy/4.png"
-                />
+                <PaddedImage alt="" src="/dist/css/assets/app-store/content-assets/busy/6.png" />
               </div>
             </li>
           </ol>
