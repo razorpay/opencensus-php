@@ -1038,6 +1038,8 @@ class Core extends Base\Core
         });
 
         $this->eventCardRecurringTokenStatus($token, RecurringStatus::CONFIRMED);
+
+        $this->notifyAppsTokenStatus($token, RecurringStatus::PAUSED);
     }
 
     public function resumeCardToken($tokenId)
@@ -1069,6 +1071,8 @@ class Core extends Base\Core
         });
 
         $this->eventCardRecurringTokenStatus($token, RecurringStatus::PAUSED);
+
+        $this->notifyAppsTokenStatus($token, RecurringStatus::CONFIRMED);
     }
 
     public function cancelCardToken($tokenId)
@@ -1103,6 +1107,8 @@ class Core extends Base\Core
         });
 
         $this->eventCardRecurringTokenStatus($token, $previousStatus);
+
+        $this->notifyAppsTokenStatus($token, RecurringStatus::CANCELLED);
     }
 
     public function completeCardToken($tokenId, $completedAt)
@@ -1139,6 +1145,8 @@ class Core extends Base\Core
         });
 
         $this->eventCardRecurringTokenStatus($token, $previousStatus);
+
+        $this->notifyAppsTokenStatus($token, RecurringStatus::CANCELLED);
     }
 
     /**
@@ -1269,6 +1277,26 @@ class Core extends Base\Core
 
                 TokenActionsHandler::dispatch($tokenData, $this->mode);
             }
+        } elseif ($token->getMethod() === Method::CARD and $token->getEntityType() === 'subscription')
+        {
+            $subscriptionId = $token->getEntityId();
+
+            $tokenData = [
+                'isTokenAction'   => true,
+                'token_id'        => $token->getId(),
+                'subscription_id' => $subscriptionId,
+                'token_status'    => $status,
+                'mode'            => $this->mode
+            ];
+
+            $this->trace->info(
+                TraceCode::CUSTOMER_TOKEN_ACTION_ASYNC,
+                [
+                    'payload'   => $tokenData,
+                    'mode'      => $this->mode,
+                ]);
+
+            TokenActionsHandler::dispatch($tokenData, $this->mode);
         }
     }
 

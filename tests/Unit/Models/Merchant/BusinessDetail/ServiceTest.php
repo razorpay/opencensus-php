@@ -15,6 +15,7 @@ class ServiceTest extends TestCase
     {
         $this->markTestSkipped('until skipped');
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+        $this->markTestSkipped('until skipped');
 
         $saveInput = [
             BusinessDetailEntity::WEBSITE_DETAILS => [
