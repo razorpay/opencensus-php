@@ -397,7 +397,7 @@ class Name
     const UPDATE_MERCHANT_WEBSITE             = 'update_merchant_website';
 
     // Permission to see decrypted merchant website.
-    const DECRYPT_MERCHANT_WEBSITE            = 'decrypt_merchant_website';
+    const DECRYPT_MERCHANT_WEBSITE_COMMENT    = 'decrypt_merchant_website_comment';
 
     // Permission to add business website.
     const EDIT_MERCHANT_WEBSITE_DETAIL        = 'edit_merchant_website_detail';

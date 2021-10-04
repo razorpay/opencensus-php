@@ -234,7 +234,7 @@ return [
                 'workflow'    => true,
             ],
 
-            Permission::DECRYPT_MERCHANT_WEBSITE            => [
+            Permission::DECRYPT_MERCHANT_WEBSITE_COMMENT   => [
                 'assignable'  => true,
                 'workflow'    => false,
             ],

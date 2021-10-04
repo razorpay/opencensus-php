@@ -6482,7 +6482,7 @@ class Route
         // Risk Audit Workflow Actions
         'w-actions_merchant_risk_audit_get'               => Permission::VIEW_ALL_WORKFLOW,
 
-        'decrypt_merchant_website_comment'                => Permission::DECRYPT_MERCHANT_WEBSITE,
+        'decrypt_merchant_website_comment'                => Permission::DECRYPT_MERCHANT_WEBSITE_COMMENT,
         'trusted_badge_blacklist'                         => Permission::TRUSTED_BADGE_BLACKLIST,
     ];
 
