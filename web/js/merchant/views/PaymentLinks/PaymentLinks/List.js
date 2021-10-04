@@ -27,6 +27,7 @@ import DateRangePicker from 'common/ui/DateRangePicker';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
+import track from './track';
 import { trackSearchFilterForInternational } from './ga';
 
 // TODO: Update colSpan if no of columns are changes
@@ -199,6 +200,14 @@ export default class PaymentLinksContainer extends ListContainer {
     });
   };
 
+  trackTourClick = () => {
+    track.onNeedHelp(RZPFeatures.PL);
+  };
+
+  trackDocumentClick = () => {
+    track.onDocumentClick(RZPFeatures.PL);
+  };
+
   render() {
     const { loading, paymentlinks, user: users, mode, tracking } = this.props;
     const status = this.state.status;
@@ -234,7 +243,7 @@ export default class PaymentLinksContainer extends ListContainer {
               <TakeATourButton feature={RZPFeatures.PL} />
             </ShowWhen>
 
-            <DocsLink {...docsLinkProps} />
+            <DocsLink {...docsLinkProps} onClick={this.trackDocumentClick} />
             <ShowWhen
               additionalCondition={(user) =>
                 (mode !== 'live' || !user.isRejected) && user.isAllowedEdit('payment_links')

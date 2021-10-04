@@ -2,8 +2,8 @@ import React from 'react';
 import ShowWhen from './ShowWhen';
 import { getUser } from 'merchant/store';
 
-export default function DocsLink({ url, title = 'Documentation', style = {}, onClick, child }) {
-  if (typeof title === 'String') {
+export default function DocsLink({ url, title = 'Documentation', style = {}, onClick }) {
+  if (typeof title === 'string') {
     title = `${title}`;
   }
 
@@ -16,6 +16,7 @@ export default function DocsLink({ url, title = 'Documentation', style = {}, onC
         target="_blank"
         style={style}
         onClick={onClick}
+        rel="noreferrer"
       >
         {title} &nbsp;
         <i className="i i-external-link" />
@@ -45,10 +46,7 @@ export function getCustomURL(url) {
 }
 
 export const DocLink = (props) => (
-  <a
-    {...props}
-    href={getCustomURL(props.href)}
-  >
+  <a {...props} href={getCustomURL(props.href)}>
     {props.children}
   </a>
 );

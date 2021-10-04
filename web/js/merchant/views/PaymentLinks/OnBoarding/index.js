@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import { RZPFeatures } from 'merchant/helpers/data';
@@ -20,24 +21,21 @@ import OnBoarding, {
 } from 'merchant/components/OnBoarding';
 
 import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
-
+import track from '../track';
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
 
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
-    paymentLinksProductOnBoarding: getCurrentProductOnBoardingDetails(
-      state,
-      RZPFeatures.PL
-    ),
+    paymentLinksProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PL),
   }),
-  { handleProductQuickGuide }
+  { handleProductQuickGuide },
 )
 @OnBoarding({
   feature: RZPFeatures.PL,
 })
 export default class PaymentPagesOnBoarding extends React.Component {
-  getNextBtnProp = sliderProps => () => {
+  getNextBtnProp = (sliderProps) => () => {
     return (
       <FeatureEnableSliderButton
         isLocalEnabler
@@ -48,11 +46,12 @@ export default class PaymentPagesOnBoarding extends React.Component {
     );
   };
 
+  componentDidMount() {
+    track.onBoardingSuccess();
+  }
+
   closeOnboarding = () => {
-    if (
-      this.props.user.isPaymentLinksEnabled &&
-      !this.props.paymentLinksProductOnBoarding.isTour
-    ) {
+    if (this.props.user.isPaymentLinksEnabled && !this.props.paymentLinksProductOnBoarding.isTour) {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.PL, false);
     }
 
@@ -71,7 +70,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
             closeOnboarding: this.closeOnboarding,
           })}
         >
-          {sliderProps => (
+          {(sliderProps) => (
             <Landing
               {...sliderProps}
               title="Payment Links"
@@ -81,7 +80,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
             />
           )}
 
-          {sliderProps => (
+          {(sliderProps) => (
             <Features
               {...sliderProps}
               title="What makes Payment Links great?"
@@ -97,11 +96,8 @@ export default class PaymentPagesOnBoarding extends React.Component {
   }
 }
 
-function getOnBoardingSliderDots({
-  closeOnboarding,
-  paymentLinksProductOnBoarding,
-}) {
-  return sliderProps => (
+function getOnBoardingSliderDots({ closeOnboarding, paymentLinksProductOnBoarding }) {
+  return (sliderProps) => (
     <SliderDots {...sliderProps}>
       <SkipAndGetStartedButton
         isLocalEnabler

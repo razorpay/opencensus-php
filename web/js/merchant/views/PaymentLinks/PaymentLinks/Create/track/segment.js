@@ -2,11 +2,11 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 function _segmentTrack() {
-  function send(objectName, actionName, screen, properties = {}) {
+  function send(objectName, actionName, properties = {}) {
     analyticsTrack({
       objectName,
       actionName,
-      screen,
+      screen: 'Create Payment Link',
       properties: {
         ...properties,
         ...getCommonAnalyticsProperties(window.rzp_user),
@@ -32,22 +32,19 @@ function _segmentTrack() {
         objectName = 'reminder enable';
         actionName = 'changed';
       }
-      return send(objectName, actionName, 'Create Payment Link', { duplicate: duplicate });
+      return send(objectName, actionName, { duplicate });
     },
 
     // Form
     form: {
-      close: (actionName) =>
-        send('payment link', 'closed', 'Create Payment Link', { actionName: actionName }),
+      close: (actionName) => send('payment link', 'closed', { actionName }),
       success: (resp, duplicate) => {
         const properties = {
           customerDetailsFilled: !!resp.data.customer_details,
-          emailFilled:
-            resp.data.customer_details && resp.data.customer_details.customer_email ? true : false,
-          phoneNumberFilled:
+          emailFilled: !!(resp.data.customer_details && resp.data.customer_details.customer_email),
+          phoneNumberFilled: !!(
             resp.data.customer_details && resp.data.customer_details.customer_contact
-              ? true
-              : false,
+          ),
           paymentLinksNotes: resp.data.notes,
           paymentLinkId: resp.data.id,
           paymentAmount: resp.data.amount,
@@ -59,7 +56,7 @@ function _segmentTrack() {
           duplicateLink: duplicate,
           status: 'Success',
         };
-        return send('payment link', 'issued', 'Create Payment Link', properties);
+        return send('payment link', 'issued', properties);
       },
       fail: (errors, duplicate) => {
         const properties = {
@@ -67,8 +64,66 @@ function _segmentTrack() {
           status: 'Failure',
           failureReason: errors[0],
         };
-        return send('payment link', 'issued', 'Create Payment Link', properties);
+        return send('payment link', 'issued', properties);
       },
+    },
+
+    paymentLinkCreate: () => {
+      const properties = {
+        origin: 'dashboard',
+      };
+      return send('create paymentlink', 'click', properties);
+    },
+
+    paymentLinkIssue: (clone) => {
+      const properties = {
+        origin: 'dashboard',
+        clone,
+      };
+      return send('create payment link again', 'click', properties);
+    },
+
+    paymentLinkCancel: (clone) => {
+      const properties = {
+        origin: 'dashboard',
+        clone,
+      };
+      return send('payment link cancel', 'click', properties);
+    },
+
+    paymentLinkFail: (clone, response) => {
+      const properties = {
+        origin: 'dashboard',
+        clone,
+        response,
+      };
+      return send('payment link fail', 'click', properties);
+    },
+    successToast: (clone, close) => {
+      const properties = {
+        origin: 'dashboard',
+        clone,
+        close,
+      };
+      return send('payment link success toast close', 'click', properties);
+    },
+    cloneStart: () => {
+      const properties = {
+        origin: 'dashboard',
+      };
+      return send('payment link clone start', 'click', properties);
+    },
+    cloneClose: () => {
+      const properties = {
+        origin: 'dashboard',
+      };
+      return send('payment link clone close', 'click', properties);
+    },
+    cloneComplete: () => {
+      const properties = {
+        origin: 'dashboard',
+      };
+      return send('payment link clone complete', 'click', properties);
     },
   };
 }

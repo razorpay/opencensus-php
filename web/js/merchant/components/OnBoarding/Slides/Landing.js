@@ -1,27 +1,18 @@
+import React from 'react';
 import Button from 'common/new-ui/Button';
 import DataList from './DataList';
 import RTracking from 'react-tracking';
+import track from '../track';
 
-@RTracking(props =>
-  window.rzpQ.component(`${props.feature}_onboarding_landing_page`)
-)
+@RTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_landing_page`))
 export default class OnBoardingLanding extends React.PureComponent {
   componentDidMount() {
-    this.props.tracking.trackEvent(
-      window.rzpQ
-        .productOnboarding()
-        .success(`${this.props.feature}.onboarding.start`)
-    );
+    track.onBoardingSuccess(this.props.feature);
   }
 
   handleNexButton = () => {
     return this.props.next(() => {
-      this.props.tracking.trackEvent(
-        window.rzpQ
-          .productOnboarding()
-          .success(`${this.props.feature}.onboarding.introduction_next`)
-      );
-
+      track.introductionNextSuccess(this.props.feature);
       window.rzpAnalytics({
         eventCategory: `Onboarding Card (${this.props.feature})`,
         eventAction: `Page ${this.props.active} - Next CTA`,
@@ -30,7 +21,7 @@ export default class OnBoardingLanding extends React.PureComponent {
   };
 
   render() {
-    const { title, desc, pros, imageUrl, callout, className="" } = this.props;
+    const { title, desc, pros, imageUrl, callout, className = '' } = this.props;
 
     return (
       <div
@@ -55,11 +46,7 @@ export default class OnBoardingLanding extends React.PureComponent {
           <div class="callout">{callout}</div>
 
           <div class="Button-Container">
-            <Button
-              class="Forward-Button"
-              iconAfter="arrow-forward"
-              onClick={this.handleNexButton}
-            >
+            <Button class="Forward-Button" iconAfter="arrow-forward" onClick={this.handleNexButton}>
               Read More
             </Button>
           </div>

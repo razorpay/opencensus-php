@@ -17,15 +17,13 @@ import Details from './Details';
 import IssueConfirmModal from 'merchant/views/Invoices/Invoices/components/IssueConfirmModal';
 import { editPaymentLink } from 'merchant/views/PaymentLinks/PaymentLinks/model';
 import { keysToSentence, findBy } from 'common/utils/rzp-utils';
-import {
-  fetchReminders,
-  fetchRemindersMerchantConfigs,
-} from 'merchant/reducers/reminders';
+import { fetchReminders, fetchRemindersMerchantConfigs } from 'merchant/reducers/reminders';
 
+import track from './track';
 import { MIN_AMOUNT_TEXT } from '../components/Edit/EditMinimumAmount';
 
 @connect(
-  state => ({
+  (state) => ({
     ...state.paymentlink,
     ...state.session,
     reminders: state.reminders,
@@ -39,7 +37,7 @@ import { MIN_AMOUNT_TEXT } from '../components/Edit/EditMinimumAmount';
     cancelPaymentLink,
     fetchReminders,
     fetchRemindersMerchantConfigs,
-  }
+  },
 )
 @RTracking(() => window.rzpQ.component('InvoiceDetailContainer'))
 export default class PaymentLinkDetails extends Component {
@@ -47,8 +45,8 @@ export default class PaymentLinkDetails extends Component {
     confirm: PropTypes.func,
   };
 
-  constructor(props) {
-    super(...arguments);
+  constructor() {
+    super();
     this.state = {
       statusMsg: {},
       isAutoRemindersUpdating: true,
@@ -82,7 +80,7 @@ export default class PaymentLinkDetails extends Component {
       window.rzpQ.paymentLinks().interaction(event, {
         ...options,
         origin: 'dashboard',
-      })
+      }),
     );
   };
 
@@ -102,14 +100,13 @@ export default class PaymentLinkDetails extends Component {
 
     promiseList.push(fetchPLRemindersList(id));
 
-    Promise.all(promiseList).then(respList => {
+    Promise.all(promiseList).then((respList) => {
       const namespace = this.props.user.isPaymentlinksV2Enabled
         ? 'payment_link_v2'
         : 'payment_link';
 
       const paymentLinksRemindersSettings =
-        findBy(this.props.reminders.reminders.items, 'namespace', namespace) ||
-        {};
+        findBy(this.props.reminders.reminders.items, 'namespace', namespace) || {};
 
       this.setState({
         isPaymentLinksRemindersEnabled: paymentLinksRemindersSettings.active,
@@ -119,14 +116,14 @@ export default class PaymentLinkDetails extends Component {
     });
   };
 
-  onChangeSendAutoReminder = event => {
+  onChangeSendAutoReminder = (event) => {
     this.setState({
       isAutoRemindersUpdating: true,
     });
 
     this.editPaymentLink({
       reminder_enable: event.target.value === '1',
-    }).then(resp => {
+    }).then((resp) => {
       this.fetchPLRemindersList();
 
       return resp;
@@ -134,7 +131,7 @@ export default class PaymentLinkDetails extends Component {
   };
 
   notifyCustomer = (props, notifyProps) => {
-    let promises = [];
+    const promises = [];
 
     if (notifyProps.email_notify) {
       promises.push(this.props.notifyCustomer(props, 'email'));
@@ -144,41 +141,22 @@ export default class PaymentLinkDetails extends Component {
     }
 
     return Promise.all(promises)
-      .then(([emailStatus, smsStatus]) => {
-        this.props.tracking.trackEvent(
-          window.rzpQ.paymentLinks().interaction('pl.resend.issue', {
-            origin: 'dashboard',
-          })
-        );
-
+      .then(() => {
+        track.resendIssue();
         this.props.showNotification({
           type: 'success',
           message: 'Link sent successfully!',
           onCloseClick: () => {
-            this.props.tracking.trackEvent(
-              window.rzpQ
-                .paymentLinks()
-                .interaction('pl.resend.issue.success', {
-                  origin: 'dashboard',
-                  close: 1,
-                })
-            );
+            track.resendSuccess(1);
           },
           onTimeOutClose: () => {
-            this.props.tracking.trackEvent(
-              window.rzpQ
-                .paymentLinks()
-                .interaction('pl.resend.issue.success', {
-                  origin: 'dashboard',
-                  close: 0,
-                })
-            );
+            track.resendSuccess(0);
           },
         });
       })
-      .catch(error => {
+      .catch((error) => {
         this.setState({
-          status: {
+          statusMsg: {
             type: 'error',
             message: error.errors,
           },
@@ -187,7 +165,7 @@ export default class PaymentLinkDetails extends Component {
   };
 
   showNotifyCustomerModal = () => {
-    let customer = this.props.paymentlink.customer_details;
+    const customer = this.props.paymentlink.customer_details;
     if (!customer.customer_contact && !customer.customer_email) {
       this.props.showNotification({
         type: 'error',
@@ -196,11 +174,7 @@ export default class PaymentLinkDetails extends Component {
       return;
     }
 
-    this.props.tracking.trackEvent(
-      window.rzpQ.paymentLinks().interaction('pl.resend.start', {
-        origin: 'dashboard',
-      })
-    );
+    track.resendStart();
 
     this.props.openModal({
       size: 'small',
@@ -208,7 +182,7 @@ export default class PaymentLinkDetails extends Component {
         <IssueConfirmModal
           isPaymentLink
           customer={this.props.paymentlink.customer_details}
-          onIssue={notifyProps => {
+          onIssue={(notifyProps) => {
             window.rzpAnalytics({
               eventCategory: 'Dashboard - Payment Links',
               eventAction: 'Send - Payment Link',
@@ -231,19 +205,13 @@ export default class PaymentLinkDetails extends Component {
             });
           }}
           onCloseClick={() => {
-            this.props.tracking.trackEvent(
-              window.rzpQ.paymentLinks().interaction('pl.resend.close', {
-                origin: 'dashboard',
-              })
-            );
+            track.resendClose();
           }}
-          onFieldChange={event => {
+          onFieldChange={(event) => {
             this.props.tracking.trackEvent(
-              window.rzpQ
-                .paymentLinks()
-                .interaction(`pl.resend.${event.target.name}`, {
-                  origin: 'dashboard',
-                })
+              window.rzpQ.paymentLinks().interaction(`pl.resend.${event.target.name}`, {
+                origin: 'dashboard',
+              }),
             );
           }}
         />
@@ -252,7 +220,7 @@ export default class PaymentLinkDetails extends Component {
   };
 
   cancelPaymentLink = () => {
-    let paymentlink = this.props.paymentlink;
+    const paymentlink = this.props.paymentlink;
 
     this.trackPaymentLinkDetailsView('pl.update.deactivate');
 
@@ -260,10 +228,7 @@ export default class PaymentLinkDetails extends Component {
       header: 'Cancel Link?',
       message: () => (
         <div class="text-semi-muted">
-          <p>
-            The Link will be cancelled and the customer will not be able to pay
-            for it.
-          </p>
+          <p>The Link will be cancelled and the customer will not be able to pay for it.</p>
         </div>
       ),
       affirmativeLabel: 'Yes, Cancel',
@@ -272,19 +237,19 @@ export default class PaymentLinkDetails extends Component {
       action: () => {
         return this.props
           .cancelPaymentLink(paymentlink)
-          .then(paymentlink => {
-            this.props.updatePLInReduxList({ data: paymentlink }, false);
+          .then((paymentlinkStatus) => {
+            this.props.updatePLInReduxList({ data: paymentlinkStatus }, false);
 
             window.rzpAnalytics({
               eventCategory: 'Dashboard - Payment Links',
               eventAction: 'Submit Form - Cancel Payment Link',
-              eventLabel: `payment_link_id=${paymentlink.id}`,
+              eventLabel: `payment_link_id=${paymentlinkStatus.id}`,
             });
 
             window.rzpAnalytics({
               eventCategory: 'Dashboard - Payment Links',
               eventAction: 'Close Form - Cancel Payment Link',
-              eventLabel: `payment_link_id=${paymentlink.id}`,
+              eventLabel: `payment_link_id=${paymentlinkStatus.id}`,
             });
 
             this.props.showNotification({
@@ -305,11 +270,7 @@ export default class PaymentLinkDetails extends Component {
             this.trackPaymentLinkDetailsView('pl.update.deactivate_confirm');
           })
           .catch(({ errors }) => {
-            if (
-              !errors ||
-              (errors instanceof Array === true &&
-                (!errors.length || !errors[0]))
-            ) {
+            if (!errors || (errors instanceof Array === true && (!errors.length || !errors[0]))) {
               errors = 'Some network error has occurred';
             }
 
@@ -343,7 +304,7 @@ export default class PaymentLinkDetails extends Component {
 
     this.trackPaymentLinkDetailsView(
       `pl.update.${changeType ? 'receipt_abort' : 'receipt_confirm'}`,
-      { modified }
+      { modified },
     );
   };
 
@@ -377,23 +338,21 @@ export default class PaymentLinkDetails extends Component {
     }
   };
 
-  editPaymentLink = data => {
+  editPaymentLink = (data) => {
     if (data.partial_payment) {
       this.trackPaymentLinkDetailsView('pl.update.partial');
     }
 
     return editPaymentLink(this.props.paymentlink.id, data)
-      .then(resp => {
+      .then((resp) => {
         if (resp.data) {
           this.props.updatePLInReduxList(resp, false);
 
-          let successMsgKey,
-            d = data;
+          let d = data;
           if (d.hasOwnProperty('first_payment_min_amount')) {
             d = { ...data };
 
-            d[MIN_AMOUNT_TEXT.split(' ').join('_')] =
-              d.first_payment_min_amount;
+            d[MIN_AMOUNT_TEXT.split(' ').join('_')] = d.first_payment_min_amount;
             delete d.first_payment_min_amount;
           }
 
@@ -404,20 +363,14 @@ export default class PaymentLinkDetails extends Component {
                 d.reminder_enable ? 'enabled' : 'disabled'
               } successfully`,
               onCloseClick: () => {
-                this.trackPaymentLinkDetailsView(
-                  `pl.update.reminder_enable.success`,
-                  {
-                    close: 1,
-                  }
-                );
+                this.trackPaymentLinkDetailsView(`pl.update.reminder_enable.success`, {
+                  close: 1,
+                });
               },
               onTimeOutClose: () => {
-                this.trackPaymentLinkDetailsView(
-                  `pl.update.reminder_enable.success`,
-                  {
-                    close: 0,
-                  }
-                );
+                this.trackPaymentLinkDetailsView(`pl.update.reminder_enable.success`, {
+                  close: 0,
+                });
               },
             });
 
@@ -427,14 +380,14 @@ export default class PaymentLinkDetails extends Component {
               type: 'success',
               message: `${keysToSentence(d)} updated successfully`,
               onCloseClick: () => {
-                Object.keys(data).forEach(key => {
+                Object.keys(data).forEach((key) => {
                   this.trackPaymentLinkDetailsView(`pl.update.${key}.success`, {
                     close: 1,
                   });
                 });
               },
               onTimeOutClose: () => {
-                Object.keys(data).forEach(key => {
+                Object.keys(data).forEach((key) => {
                   this.trackPaymentLinkDetailsView(`pl.update.${key}.success`, {
                     close: 0,
                   });
@@ -449,7 +402,7 @@ export default class PaymentLinkDetails extends Component {
 
           return resp;
         } else {
-          throw 'Some Network error occured';
+          throw new Error('Some Network error occured');
         }
       })
       .catch(({ errors }) => {
@@ -458,12 +411,11 @@ export default class PaymentLinkDetails extends Component {
         if (Array.isArray(err)) {
           err = [];
 
-          errors.length &&
-            errors.forEach(e => {
-              if (e && e.toLowerCase().indexOf('status code') === -1) {
-                err.push(e);
-              }
-            });
+          errors.forEach((e) => {
+            if (e && e.toLowerCase().indexOf('status code') === -1) {
+              err.push(e);
+            }
+          });
 
           err = err.length ? err : null;
         }
@@ -480,8 +432,8 @@ export default class PaymentLinkDetails extends Component {
   };
 
   render() {
-    let { loading, paymentlink, user } = this.props;
-    let statusMsg = this.state.statusMsg;
+    const { loading, paymentlink, user } = this.props;
+    const statusMsg = this.state.statusMsg;
 
     return (
       <Details
@@ -497,9 +449,7 @@ export default class PaymentLinkDetails extends Component {
         onChangeSendAutoReminder={this.onChangeSendAutoReminder}
         isAutoRemindersUpdating={this.state.isAutoRemindersUpdating}
         isMinimumFirstPaymentEnabled={user.isMinimumFirstPaymentEnabled}
-        isPaymentLinksRemindersEnabled={
-          this.state.isPaymentLinksRemindersEnabled
-        }
+        isPaymentLinksRemindersEnabled={this.state.isPaymentLinksRemindersEnabled}
         trackEditReceipt={this.trackEditReceipt}
         trackEditExpiry={this.trackEditExpiry}
         trackEditNotes={this.trackEditNotes}

@@ -1,8 +1,10 @@
+import React from 'react';
 import RTracking from 'react-tracking';
 import { getCustomURL } from 'merchant/components/DocsLink';
 
 import Button from 'common/new-ui/Button';
 import FeatureCard from 'merchant/components/Feature';
+import track from '../track';
 
 @RTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_feature_page`))
 export default class OnBoardingFeatures extends React.PureComponent {
@@ -13,22 +15,12 @@ export default class OnBoardingFeatures extends React.PureComponent {
         eventAction: `Page ${this.props.active} - Back CTA`,
       });
 
-      this.props.tracking.trackEvent(
-        window.rzpQ.productOnboarding().success(`${this.props.feature}.onboarding.features_back`),
-      );
+      track.onFeatureBack(this.props.feature);
     });
   };
 
   render() {
-    const {
-      title,
-      nextBtn: NextButton,
-      prev,
-      active,
-      feature,
-      features,
-      featureLinks,
-    } = this.props;
+    const { title, nextBtn: NextButton, active, feature, features, featureLinks } = this.props;
 
     return (
       <div class="OnBoarding--Slide OnBoarding--Features" key="FeatureSlide">
@@ -72,18 +64,16 @@ export default class OnBoardingFeatures extends React.PureComponent {
 @RTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_feature_page`))
 class FeatureLink extends React.PureComponent {
   handleFeatureLink = () => {
-    const { ga, url, page, label, feature } = this.props;
+    const { ga, url, page, feature, onClick } = this.props;
 
     window.rzpAnalytics({
       eventCategory: `Onboarding Card (${feature})`,
       eventAction: `Page ${page} - ${ga}`,
     });
 
-    this.props.tracking.trackEvent(
-      window.rzpQ.productOnboarding().success(`${feature}.onboarding.features_hyperlink`),
-    );
+    track.featuresHyperlink(this.props.feature);
 
-    this.props.onClick && this.props.onClick();
+    if (onClick) onClick();
 
     window.open(getCustomURL(url));
   };

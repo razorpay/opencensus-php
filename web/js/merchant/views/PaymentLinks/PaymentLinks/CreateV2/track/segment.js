@@ -46,12 +46,10 @@ function _segmentTrack() {
       success: (resp, duplicate) => {
         const properties = {
           customerDetailsFilled: !!resp.data.customer_details,
-          emailFilled:
-            resp.data.customer_details && resp.data.customer_details.customer_email ? true : false,
-          phoneNumberFilled:
+          emailFilled: !!(resp.data.customer_details && resp.data.customer_details.customer_email),
+          phoneNumberFilled: !!(
             resp.data.customer_details && resp.data.customer_details.customer_contact
-              ? true
-              : false,
+          ),
           paymentLinksNotes: resp.data.notes,
           paymentLinkId: resp.data.id,
           paymentAmount: resp.data.amount,

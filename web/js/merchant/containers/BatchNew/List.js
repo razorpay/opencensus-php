@@ -5,7 +5,7 @@ import { compose, bindActionCreators } from 'redux';
 import DataTable from 'common/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
-import { EmptyComponent } from 'merchant/components/BatchNew/ListAddons';
+import { EmptyComponent as emptyComponent } from 'merchant/components/BatchNew/ListAddons';
 import { batchIdLink, totalCount, batchName, status } from 'common/ui/item/pair';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import { luminateRow } from 'merchant/reducers/app';
@@ -14,6 +14,7 @@ import { batchDownload } from 'merchant/reducers/batches';
 import PopoverComponent, { PopoverBody, PopoverTitle } from 'common/ui/Popover';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { DocLink } from 'merchant/components/DocsLink';
+import track from './track';
 
 const batchStatus = {
   ...status,
@@ -57,6 +58,7 @@ class BatchList extends ListContainer {
     }),
   )
   openUploadModal = (renderUploadModal) => () => {
+    track.batchUpload(this.props.batchType);
     const { openModal } = this.props;
     openModal({
       size: 'large',
@@ -68,6 +70,15 @@ class BatchList extends ListContainer {
     this.props.gaEvents.trackGoToLinks('Batch Uploads');
   }
 
+  downloadSampleFile = () => {
+    this.props.gaEvents.trackSampleFileDownload('From List View');
+    track.downloadSample(this.props.batchType);
+  };
+
+  trackViewDocumentation = () => {
+    track.viewDocumentation(this.props.batchType);
+  };
+
   render() {
     const { docUrl, uploadUrl, sampleUrl, extraColumns, session } = this.props;
     const { user } = session;
@@ -76,19 +87,19 @@ class BatchList extends ListContainer {
       <div class="content-wrapper batch-upload-wrapper">
         <div class="btn-toolbar pull-right header-btns">
           {sampleUrl && (
-            <a
-              class="btn btn-link hidden-xs"
-              href={sampleUrl}
-              onClick={this.props.gaEvents.trackSampleFileDownload('From List View')}
-            >
+            <a class="btn btn-link hidden-xs" href={sampleUrl} onClick={this.downloadSampleFile}>
               Download Sample File
             </a>
           )}
           <ShowWhen additionalCondition={(usr) => usr.isOrgAllowedFunctionality('external_links')}>
             {docUrl && (
-              <DocLink class="btn btn-link hidden-xs" href={docUrl} target="_blank">
-                Documentation &nbsp;
-                <i class="i i-external-link" />
+              <DocLink
+                class="btn btn-link hidden-xs"
+                href={docUrl}
+                target="_blank"
+                onClick={this.trackViewDocumentation}
+              >
+                Documentation &nbsp; <i class="i i-external-link" />
               </DocLink>
             )}
           </ShowWhen>
@@ -137,7 +148,7 @@ class BatchList extends ListContainer {
           skip={this.state.skip}
           paginate={this.paginate}
           onSubmit={this.search}
-          EmptyComponent={EmptyComponent(
+          EmptyComponent={emptyComponent(
             uploadUrl,
             !this.props.multiBatch ? this.openUploadModal(this.props.renderUploadModal) : undefined,
             this.props.emptyResultsDescription,

@@ -8,7 +8,7 @@ import { updateFeatures } from 'merchant/reducers/config';
 import { saveOnboarding, handleProductQuickGuide } from 'merchant/reducers/onboarding';
 import { fetchUser } from 'merchant/reducers/session';
 import { setOnBoardingDataInLocalState } from './utils';
-import { bindActionCreators, compose } from 'redux';
+import track from './track';
 
 @connect(
   (state) => {
@@ -71,30 +71,26 @@ class FeatureEnableButton extends Component {
       });
     }
 
-    return saveOnboardingPromise
-      .then((res) => {
+    saveOnboardingPromise
+      .then(() => {
         if (this.props.tracking) {
-          this.props.tracking.trackEvent(
-            window.rzpQ.productOnboarding().success(`${this.props.feature}.onboarding.get_started`),
-          );
+          track.onBoardingGetSuccess(this.props.feature);
         }
-
         return this.props.fetchUser();
       })
       .then((res) => {
         this.setState({
           isSuccess: true,
         });
-
-        this.props.onClick && this.props.onClick(res);
+        return this.props.onClick && this.props.onClick(res);
       })
       .catch((err) => {
-        window.rzpQ.productOnboarding().failed(`${this.props.feature}.onboarding.get_started`);
-
         this.props.showNotification({
           type: 'error',
           message: err.errors,
         });
+
+        track.onBoardingGetFailed(this.props.feature);
       });
   };
 
