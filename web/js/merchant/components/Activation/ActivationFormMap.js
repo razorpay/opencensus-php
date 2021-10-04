@@ -499,7 +499,12 @@ const businessDetails = [
           }
         }
       },
-      _disabledWhen: isCompanyPANVerified,
+      _disabledWhen: (activation) => {
+        if (activation?.props?.user?.submitted) {
+          return false;
+        }
+        return isCompanyPANVerified(activation);
+      },
     },
     {
       label: 'Business Name',
@@ -517,6 +522,9 @@ const businessDetails = [
       },
       _when: excludeFor_Indiv,
       _disabledWhen: (activation) => {
+        if (activation?.props?.user?.submitted) {
+          return false;
+        }
         if (displayCompanyPAN(activation) && activation.props.user.isSyncExperimentEnabled) {
           return isCompanyPANVerified(activation);
         } else {
@@ -644,7 +652,12 @@ const businessDetails = [
         }
         return error;
       },
-      _disabledWhen: isPANVerified,
+      _disabledWhen: (activation) => {
+        if (activation?.props?.user?.submitted) {
+          return false;
+        }
+        return isPANVerified(activation);
+      },
       onBlur: function onBlur() {
         if (!this.isOnKYCTab()) {
           const { user } = this.props;
@@ -701,7 +714,12 @@ const businessDetails = [
           errMsg,
         );
       },
-      _disabledWhen: isPANVerified,
+      _disabledWhen: (activation) => {
+        if (activation?.props?.user?.submitted) {
+          return false;
+        }
+        return isPANVerified(activation);
+      },
       onBlur: function onBlur() {
         if (!this.isOnKYCTab()) {
           const { user } = this.props;
