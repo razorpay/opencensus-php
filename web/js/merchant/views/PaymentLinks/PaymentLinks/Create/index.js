@@ -1,10 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
-import { classList, getURLQueryParams, paiseToRupees, findBy } from 'common/utils/rzp-utils';
 import RTracking from 'react-tracking';
-
+import PropTypes from 'prop-types';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Alert from 'common/new-ui/Alert';
 import Form from 'common/new-ui/Form';
@@ -31,6 +29,7 @@ import { luminateRow } from 'merchant/reducers/app';
 
 import Spinner from 'common/ui/Spinner';
 
+import { getURLQueryParams, paiseToRupees, findBy, classList } from 'common/utils/rzp-utils';
 import { trackOpenCreateForm, closePaymentLinkForm, trackSaveDuplicatePaymentLink } from '../ga';
 import { generateField } from './Utils';
 import track from './track';
@@ -44,6 +43,114 @@ const FORM_FIELDS = {
   content: [...PaymentLinkFormFields],
   onCreate: createPaymentLink,
 };
+
+// this func causing issue if we move to constructor , need to rewrite this whole
+// eslint-disable-next-line consistent-return
+function defaultFieldProps(f) {
+  // eslint-disable-next-line babel/no-invalid-this
+  const self = this;
+
+  if (Array.isArray(f)) {
+    return f.forEach(defaultFieldProps.bind(self));
+  } else if (f.hasOwnProperty('inlineFields') && Array.isArray(f.inlineFields)) {
+    return f.inlineFields.forEach(defaultFieldProps.bind(self));
+  }
+
+  if (!f._cmp) {
+    f._cmp = Input;
+  }
+
+  if (f.name === 'notes') {
+    f.onChange = self.onChangeNotes;
+    f.onAddNew = self.onAddNewNote;
+  }
+
+  if (f.name === 'first_payment_min_amount') {
+    f.validator = f.validator.bind(self);
+  }
+
+  if (f._name === 'expire_by_date') {
+    f.onChange = self.onDateChange.bind(self);
+  }
+  if (f.name === 'expire_by') {
+    f.onChange = self.onTimeChange.bind(self);
+  }
+  if (f.name === 'receipt') {
+    f.required = self.props.user.isInvoiceReceiptMandatory;
+  }
+}
+
+function WizardFields(field) {
+  const {
+    _cmp: Component,
+    _name,
+    _when,
+    _featureEnabled,
+    _autoRenderImpure,
+    _disabledWhen,
+    required,
+    ...rest
+  } = field;
+
+  if (_when && !_when(this)) {
+    return null;
+  }
+
+  let defaultValue, key, isComponentDisabled;
+
+  if (rest.name) {
+    key = rest.name;
+    // eslint-disable-next-line react/no-this-in-sfc
+    defaultValue = this.state.dirty[key]; // Form state is stored in dirty
+
+    // eslint-disable-next-line babel/no-unused-expressions
+    key === 'expire_by' && defaultValue;
+  } else if (_name) {
+    // eslint-disable-next-line react/no-this-in-sfc
+    defaultValue = this.state._name[_name];
+    key = _name;
+  }
+
+  key += field.label;
+
+  if (rest.description && typeof rest.description === 'function') {
+    rest.description = rest.description(this);
+  }
+
+  // eslint-disable-next-line react/no-this-in-sfc
+  if (this.state.parentFormLock || (_disabledWhen && _disabledWhen(this))) {
+    isComponentDisabled = true;
+  }
+
+  let isRequired = required;
+  if (typeof isRequired === 'function') {
+    isRequired = isRequired(this);
+  }
+
+  let component = (
+    <Component
+      key={key}
+      data-name={_name}
+      defaultValue={defaultValue}
+      autoRender={_autoRenderImpure}
+      disabled={isComponentDisabled}
+      required={isRequired}
+      // eslint-disable-next-line react/no-this-in-sfc
+      onBlur={this.onBlur}
+      {...rest}
+    />
+  );
+
+  if (_featureEnabled) {
+    component = (
+      <ShowWhen key={key} featureEnabled={_featureEnabled}>
+        {component}
+      </ShowWhen>
+    );
+  }
+
+  return component;
+}
 
 @withRouter
 @connect(
@@ -104,40 +211,7 @@ export default class CreateNewContainer extends React.Component {
 
     this.UUID = `payment_link_creation_${timestamp}`;
 
-    function defaultFieldProps(f) {
-      if (Array.isArray(f)) {
-        return f.forEach(defaultFieldProps.bind(self));
-      } else if (f.hasOwnProperty('inlineFields') && Array.isArray(f.inlineFields)) {
-        return f.inlineFields.forEach(defaultFieldProps.bind(self));
-      }
-
-      if (!f._cmp) {
-        f._cmp = Input;
-      }
-
-      if (f.name === 'notes') {
-        f.onChange = self.onChangeNotes;
-        f.onAddNew = self.onAddNewNote;
-      }
-
-      if (f.name === 'first_payment_min_amount') {
-        f.validator = f.validator.bind(self);
-      }
-
-      if (f._name === 'expire_by_date') {
-        f.onChange = self.onDateChange.bind(self);
-      }
-      if (f.name === 'expire_by') {
-        f.onChange = self.onTimeChange.bind(self);
-      }
-      if (f.name === 'receipt') {
-        f.required = self.props.user.isInvoiceReceiptMandatory;
-      }
-      console.log(f);
-      return null;
-    }
-
-    defaultFieldProps.call(FORM_FIELDS.content); // Set the default props for fields of all tabs in Wizard
+    defaultFieldProps.call(this, FORM_FIELDS.content); // Set the default props for fields of all tabs in Wizard
 
     this.state = {
       dirty: {
@@ -248,6 +322,7 @@ export default class CreateNewContainer extends React.Component {
     this.toggleDisableState();
 
     this.trackPaymentLinkCreation('pl.create.initiate');
+
     if (this.isIntentDuplicate) {
       this.props.tracking.trackEvent(
         window.rzpQ.paymentLinks().interaction('pl.clone.start', {
@@ -310,7 +385,8 @@ export default class CreateNewContainer extends React.Component {
       this.setState({ disableSubmit });
     }
   }
-
+  // we can return a null explicitly but want to know BU logic here before
+  // eslint-disable-next-line consistent-return
   onChange = ({ target }) => {
     const stateName = target.getAttribute('data-name');
     const fieldValue = target.value;
@@ -362,7 +438,6 @@ export default class CreateNewContainer extends React.Component {
         },
       }));
     }
-    return null;
   };
 
   onBlur = (event) => {
@@ -375,6 +450,7 @@ export default class CreateNewContainer extends React.Component {
     this.trackPaymentLinkCreation(`pl.create.${fieldName}`, {
       modified: this.isIntentDuplicate ? 1 : 0,
     });
+
     track.segment.fields(fieldName, !!this.isIntentDuplicate);
   };
 
@@ -419,6 +495,7 @@ export default class CreateNewContainer extends React.Component {
     }
 
     const notes = onChangeNotes(pairs);
+
     this.setState((prevState) => ({
       dirty: {
         ...prevState.dirty,
@@ -503,7 +580,6 @@ export default class CreateNewContainer extends React.Component {
 
     this.trackPaymentLinkCreation('pl.create.issue');
     track.segment.paymentLinkIssue(clone);
-
     return FORM_FIELDS.onCreate(reqPayload)
       .then((resp) => {
         this.setState({
@@ -511,6 +587,7 @@ export default class CreateNewContainer extends React.Component {
         });
 
         if (resp.data) {
+          track.segment.paymentLinkCreate();
           this.props.showNotification({
             type: 'success',
             message: notificationMSG,
@@ -571,16 +648,18 @@ export default class CreateNewContainer extends React.Component {
         let err = errors;
         if (Array.isArray(err)) {
           err = [];
-          const checkError = (errorData) => {
-            if (errorData && errorData.toLowerCase().indexOf('status code') === -1) {
-              err.push(errorData);
+
+          errors.forEach((e) => {
+            if (e && e.toLowerCase().indexOf('status code') === -1) {
+              err.push(e);
+
+              this.trackPaymentLinkCreation('pl.create.fail', {
+                response: e,
+              });
+              track.segment.paymentLinkFail(clone, e);
             }
-            this.trackPaymentLinkCreation('pl.create.fail', {
-              response: errorData,
-            });
-            track.segment.paymentLinkFail(clone, errorData);
-          };
-          errors.forEach(checkError);
+          });
+
           err = err.length ? err : null;
         }
 
@@ -601,81 +680,12 @@ export default class CreateNewContainer extends React.Component {
       });
   };
 
-  wizardFields = (field) => {
-    const {
-      _cmp: Component,
-      _name,
-      _when,
-      _featureEnabled,
-      _autoRenderImpure,
-      _disabledWhen,
-      required,
-      ...rest
-    } = field;
-
-    if (_when && !_when(this)) {
-      return null;
-    }
-
-    let defaultValue, key;
-
-    if (rest.name) {
-      key = rest.name;
-      defaultValue = this.state.dirty[key]; // Form state is stored in dirty
-
-      // eslint-disable-next-line babel/no-unused-expressions
-      key === 'expire_by' && defaultValue;
-    } else if (_name) {
-      defaultValue = this.state._name[_name];
-      key = _name;
-    }
-
-    key += field.label;
-
-    if (rest.description && typeof rest.description === 'function') {
-      rest.description = rest.description(this);
-    }
-
-    let isComponentDisabled = false;
-    if (this.state.parentFormLock || (_disabledWhen && _disabledWhen(this))) {
-      isComponentDisabled = true;
-    }
-
-    let isRequired = required;
-    if (typeof isRequired === 'function') {
-      isRequired = isRequired(this);
-    }
-
-    let component = (
-      <Component
-        key={key}
-        data-name={_name}
-        defaultValue={defaultValue}
-        autoRender={_autoRenderImpure}
-        disabled={isComponentDisabled}
-        required={isRequired}
-        onBlur={this.onBlur}
-        {...rest}
-      />
-    );
-
-    if (_featureEnabled) {
-      component = (
-        <ShowWhen key={key} featureEnabled={_featureEnabled}>
-          {component}
-        </ShowWhen>
-      );
-    }
-
-    return component;
-  };
-
   getFormFields(fields = FORM_FIELDS.content) {
     const formFields = fields.map((f, i) => {
       if (Array.isArray(f)) {
         return (
           <Input.Group key={i} disabled={this.state.parentFormLock}>
-            {f.map(this.wizardFields)}
+            {f.map(WizardFields, this)}
           </Input.Group>
         );
       } else if (f.hasOwnProperty('inlineFields') && Array.isArray(f.inlineFields)) {
@@ -702,7 +712,7 @@ export default class CreateNewContainer extends React.Component {
             disabled={this.state.parentFormLock}
             required={!!isRequired}
           >
-            <div class="Input-content">{f.inlineFields.map(this.wizardFields)}</div>
+            <div class="Input-content">{f.inlineFields.map(WizardFields, this)}</div>
           </Input.Group>
         );
       }
@@ -722,14 +732,14 @@ export default class CreateNewContainer extends React.Component {
         f.placeholder = f.placeholder(this);
       }
 
-      return this.wizardFields(f);
+      return WizardFields.call(this, f);
     });
 
     if (this.props.user.paymentLinkCreationFormExtraFields.length) {
       const extraFields = this.props.user.paymentLinkCreationFormExtraFields.map((meta) => {
         const newField = generateField(meta);
 
-        return this.wizardFields(newField);
+        return WizardFields.call(this, newField);
       });
 
       formFields.push(extraFields);
@@ -739,6 +749,7 @@ export default class CreateNewContainer extends React.Component {
   }
 
   onFormAbruptClose = () => {
+    const clone = this.isIntentDuplicate ? 1 : 0;
     const curDirty = this.state.dirty;
     const dirtyFields = Object.keys(curDirty);
 
@@ -759,9 +770,7 @@ export default class CreateNewContainer extends React.Component {
       return count > 2 ? closeConfirmationCheck() : null;
     };
     dirtyFields.forEach(dirtyFieldCheck);
-
     this.trackPaymentLinkCreation('pl.create.cancel');
-    const clone = this.isIntentDuplicate ? 1 : 0;
     track.segment.paymentLinkCancel(clone);
     if (this.isIntentDuplicate) {
       this.props.tracking.trackEvent(
