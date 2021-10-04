@@ -26,6 +26,7 @@ function MerchantNavLinks(props) {
   const getLandingProduct =
     LocalStorageService.getItem('merchant_landing_page') ||
     LocalStorageService.getItem('default_product_page');
+  const allowNonFldgLoans = user.isFeatureEnabled('allow_non_fldg_loans');
 
   const isRecommendProduct =
     RECOMMANDED_PRODUCT_LIST.includes(getLandingProduct) &&
@@ -255,10 +256,10 @@ function MerchantNavLinks(props) {
       />
 
       <MainNavLink
-        label="Loans"
+        label={allowNonFldgLoans ? 'Working Capital Loans' : 'Loans'}
         icon="i fa fa-inr text-warm"
         to="/capital/loans/apply"
-        isNew={!isRecommendProduct}
+        isNew={allowNonFldgLoans ? false : !isRecommendProduct}
         additionalCondition={(currentUser) =>
           currentUser.isAllowedView('loans') && currentUser.isLoansEnabled
         }
