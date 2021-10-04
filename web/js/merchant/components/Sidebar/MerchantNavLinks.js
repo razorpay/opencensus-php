@@ -5,6 +5,8 @@ import MainNavLink from 'merchant_common/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import * as LocalStorageService from 'common/utils/localStorage';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const RECOMMANDED_PRODUCT_LIST = [
   'payment_gateway',
@@ -54,6 +56,20 @@ function MerchantNavLinks(props) {
       LocalStorageService.setItem('default_product_page', 'payment_link');
     }
   }, []);
+
+  useEffect(() => {
+    if (getLandingProduct && isRecommendProduct) {
+      analyticsTrack({
+        objectName: 'Try Tag',
+        actionName: 'displayed',
+        screen: 'home page',
+        properties: {
+          product_name: getLandingProduct,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    }
+  }, [getLandingProduct, isRecommendProduct]);
 
   return (
     <>

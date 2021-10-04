@@ -1763,6 +1763,7 @@ class Service extends Base\Service
             'auto_open_mtu_coupon',
             'dispute_presentment',
             'product_recommendation',
+            "switch_onboarding_card",
             'auto_refresh_experiment',
             'csm_experince_survey',
             'inv_create_flow_ux',

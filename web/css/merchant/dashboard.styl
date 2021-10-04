@@ -2973,7 +2973,6 @@ p.small-txt{
 }
 
 .recommendation-widget {
-  margin: 0 22px 22px;
   display: flex;
   background-color: #fff;
   padding-bottom: 24px;
@@ -2987,19 +2986,20 @@ p.small-txt{
     padding: 25px 0 0 40px;
 
     .title {
-      color: rgba(22, 47, 86, 0.87);
+      color: rgba(22, 47, 86, 0.74);
       font-weight: 700;
-      font-size: 20px;
+      font-size: 18px;
     }
 
     .active-product {
       background: linear-gradient(to bottom right, #f3f8fe 46%, #fbfcff 45%);
       max-width: 510px;
       display: flex;
-      margin-top: 14px;
+      margin-top: 15px;
       border-radius: 4px;
       box-shadow: 0px 2px 12px -8px;
       padding: 25px 42px 30px 40px;
+      cursor: pointer;
 
       &__container {
         margin-left: 18px;
@@ -3030,6 +3030,9 @@ p.small-txt{
       > img {
         height: 50px;
       }
+      &:hover {
+        background: linear-gradient(to bottom right, #E7F1FD 46%, #F0F6FF 45%);
+      }
     }
   }
 
@@ -3048,9 +3051,11 @@ p.small-txt{
 
     .product-container {
       width: 55%;
+      margin-top: 35px;
       .prd-one, .prd-two {
         display: flex;
         margin-top: 25px;
+        cursor: pointer;
 
         .container {
           margin-left: 18px;
@@ -3074,7 +3079,7 @@ p.small-txt{
         }
       }
       .prd-two {
-        margin-top: 14px;
+        margin-top: 20px;
       }
     }
   }
@@ -3083,6 +3088,12 @@ p.small-txt{
     position: relative;
     right: 6px;
   }
+}
+.post-l1 {
+  margin: 22px 22px 0;
+}
+.pre-l1 {
+  margin: 0 22px 22px;
 }
 
 .recommendation-shimmer {

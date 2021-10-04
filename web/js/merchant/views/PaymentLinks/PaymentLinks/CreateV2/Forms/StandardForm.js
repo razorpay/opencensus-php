@@ -25,6 +25,7 @@ export default class StandardForm extends React.Component {
     const getLandingProduct = LocalStorageService.getItem('merchant_landing_page');
     const params = getURLQueryParams(location.search);
     if (params?.link_type === 'standard' && getLandingProduct === 'payment_link') {
+      LocalStorageService.removeItem('merchant_landing_page');
       analyticsTrack({
         objectName: 'Payment Link PopUp',
         actionName: 'Loaded',

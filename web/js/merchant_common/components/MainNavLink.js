@@ -10,6 +10,7 @@ import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { compose, bindActionCreators } from 'redux';
+import * as LocalStorageService from 'common/utils/localStorage';
 
 class MainNavLink extends Component {
   constructor(props) {
@@ -44,6 +45,9 @@ class MainNavLink extends Component {
   handleClick() {
     this.sendAnalytics();
     this.props.setActivePageName(this.props.label);
+    const getRecommendedProduct =
+      LocalStorageService.getItem('merchant_landing_page') ||
+      LocalStorageService.getItem('default_product_page');
 
     const trackingRequired = ['Transactions', 'Settlements', 'Payment Pages'];
     const tracking = this.props.tracking;
@@ -70,6 +74,7 @@ class MainNavLink extends Component {
       properties: {
         clickedElement: this.props.label,
         clickType: this.props.type,
+        product_name: getRecommendedProduct,
         location: 'sidebar',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },

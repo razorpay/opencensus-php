@@ -209,6 +209,7 @@ const InstantActivationModal = ({
   }, [counter]);
 
   useEffect(() => {
+    triggerHotjarRecording('instant_activation_popup_shown', ['instant_activation_popup_shown']);
     const end = Date.now() + 1 * 1000;
     const colors = [
       '#bb0000',
@@ -257,7 +258,6 @@ const InstantActivationModal = ({
     trackEvent(window.rzpQ.onbr().initiated('payment_animation_shown'), {
       ...commonProperty,
     });
-    triggerHotjarRecording('instant_activation_popup_shown');
   }, []);
 
   if (isPaymentLinkRecommendedProduct) {

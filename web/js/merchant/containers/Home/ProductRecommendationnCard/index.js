@@ -6,7 +6,7 @@ import { fetchAmount } from 'merchant/reducers/fetchTransaction';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import NewKey from 'merchant/views/Settings/Keys/components/NewKey';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getRecommendedProduct } from './productMap';
 import ProductShimmer from './shimmer';
@@ -37,7 +37,9 @@ const RecommendationWidget = ({
     if (landingProduct && recommendedProduct && typeof payment === 'object') {
       fetchTransactionAmount(user.created_at);
     }
+  }, []);
 
+  useEffect(() => {
     if (landingProduct && recommendedProduct && payment === 0) {
       analyticsTrack({
         objectName: 'Product recommendation widget',
@@ -49,7 +51,7 @@ const RecommendationWidget = ({
         },
       });
     }
-  }, [landingProduct]);
+  }, [payment]);
 
   if (!landingProduct || !recommendedProduct) {
     return null;
@@ -139,7 +141,7 @@ const RecommendationWidget = ({
   };
 
   const openPaymentOtions = () => {
-    history.push('/paymentlinks/new');
+    history.push('/paymentlinks/new?link_type=standard');
   };
 
   const { primaryCardCta, onCardCtaClicked } = (() => {
@@ -165,7 +167,7 @@ const RecommendationWidget = ({
 
     if (landingProduct === 'payment_link') {
       return {
-        primaryCardCta: '+ Accept Payments',
+        primaryCardCta: '+ Create A Payment Link',
         onCardCtaClicked: openPaymentOtions,
       };
     }
@@ -179,14 +181,24 @@ const RecommendationWidget = ({
   return (
     <div>
       {payment === 0 ? (
-        <div className="recommendation-widget">
+        <div
+          className={`recommendation-widget ${
+            user.activation_form_milestone && user.activated && user.canSwitchOnboardingCard
+              ? 'post-l1'
+              : 'pre-l1'
+          }`}
+        >
           <div className="recommend-product">
-            <div className="title">Get started with Razorpay product suite</div>
-            <div className="active-product">
+            <div className="title">
+              {user.activation_form_milestone && user.activated
+                ? `Congratulations ${titleCase(user?.user?.name)}! You can start accepting payments`
+                : `Hello ${titleCase(user?.user?.name)}, explore the right product for your needs`}
+            </div>
+            <div className="active-product" onClick={onCardCtaClicked}>
               <img src={recommendedProduct[0].imageCdn} />
               <div className="active-product__container">
                 <div className="name">
-                  <span onClick={exploreProducts}>{recommendedProduct[0].name}</span>
+                  <span>{recommendedProduct[0].name}</span>
                 </div>
                 <div className="desc">{recommendedProduct[0].description}</div>
                 <div className="explore">
@@ -195,9 +207,7 @@ const RecommendationWidget = ({
                       <span className="spin-btn visible" />
                     </span>
                   )}
-                  <span className="card-cta" onClick={onCardCtaClicked}>
-                    {primaryCardCta}
-                  </span>
+                  <span className="card-cta">{primaryCardCta}</span>
                   {!user.activated && <i class="i i-arrow-forward text-primary" />}
                 </div>
               </div>
@@ -206,52 +216,48 @@ const RecommendationWidget = ({
           <div className="more-product">
             <div className="more-product__title">Explore more products</div>
             <div className="product-container">
-              <div className="prd-one">
+              <div
+                className="prd-one"
+                onClick={() => {
+                  history.push(recommendedProduct[1].redirectUrl);
+                  analyticsTrack({
+                    objectName: recommendedProduct[1].segmentEventName,
+                    actionName: 'clicked',
+                    screen: 'home page',
+                    properties: {
+                      display_tag: 'Try for Side nav CTAs',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+              >
                 <img src={recommendedProduct[1].imageCdn} />
                 <div className="container">
                   <div className="name">
-                    <span
-                      onClick={() => {
-                        history.push(recommendedProduct[1].redirectUrl);
-                        analyticsTrack({
-                          objectName: recommendedProduct[1].segmentEventName,
-                          actionName: 'clicked',
-                          screen: 'home page',
-                          properties: {
-                            display_tag: 'Try for Side nav CTAs',
-                            ...getCommonAnalyticsProperties(window.rzp_user),
-                          },
-                        });
-                      }}
-                    >
-                      {recommendedProduct[1].name}
-                    </span>{' '}
-                    &gt;
+                    <span>{recommendedProduct[1].name}</span> &gt;
                   </div>
                   <span className="desc">{recommendedProduct[1].shortDescription}</span>
                 </div>
               </div>
-              <div className="prd-two">
+              <div
+                className="prd-two"
+                onClick={() => {
+                  history.push(recommendedProduct[2].redirectUrl);
+                  analyticsTrack({
+                    objectName: recommendedProduct[2].segmentEventName,
+                    actionName: 'clicked',
+                    screen: 'home page',
+                    properties: {
+                      display_tag: 'Try for Side nav CTAs',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+              >
                 <img src={recommendedProduct[2].imageCdn} />
                 <div className="container">
                   <div className="name">
-                    <span
-                      onClick={() => {
-                        history.push(recommendedProduct[2].redirectUrl);
-                        analyticsTrack({
-                          objectName: recommendedProduct[2].segmentEventName,
-                          actionName: 'clicked',
-                          screen: 'home page',
-                          properties: {
-                            display_tag: 'Try for Side nav CTAs',
-                            ...getCommonAnalyticsProperties(window.rzp_user),
-                          },
-                        });
-                      }}
-                    >
-                      {recommendedProduct[2].name}
-                    </span>{' '}
-                    &gt;
+                    <span>{recommendedProduct[2].name}</span> &gt;
                   </div>
                   <span className="desc">{recommendedProduct[2].shortDescription}</span>
                 </div>

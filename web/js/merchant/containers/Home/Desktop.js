@@ -238,6 +238,44 @@ class AnalyticsDesktop extends Component {
     }
   };
 
+  renderOnboardingAndRecommendationWidget = () => {
+    const {
+      user,
+      showOnboardingBannerFirstStep,
+      expandOnboardingBanner,
+      payments,
+      showOnboardingBanner,
+      showInstantActivation,
+      onHideOnboardingBanner,
+      onFirstStepClose,
+      limitBreach,
+    } = this.props;
+
+    const onboardingCard = (
+      <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
+        {showOnboardingBanner && (
+          <NewUserOnboardingCard
+            payments={payments}
+            onClose={onHideOnboardingBanner}
+            onFirstStepClose={onFirstStepClose}
+            isFirstStep={showOnboardingBannerFirstStep}
+            showInstantActivation={showInstantActivation}
+            limitBreach={limitBreach}
+          />
+        )}
+      </div>
+    );
+    /* Recommended product widget */
+    const ProductRecommendationWidget = user.isProductRecommendationEnabled && (
+      <ProductRecommendationnCard user={user} />
+    );
+
+    if (user.activation_form_milestone && user.activated) {
+      return [ProductRecommendationWidget, onboardingCard];
+    }
+    return [onboardingCard, ProductRecommendationWidget];
+  };
+
   render() {
     const { settlementExists, shouldShowTnCBannerForAxis } = this.state;
     const {
@@ -484,21 +522,28 @@ class AnalyticsDesktop extends Component {
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
           {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}
-          <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
-            {showOnboardingBanner && (
-              <NewUserOnboardingCard
-                payments={payments}
-                onClose={onHideOnboardingBanner}
-                onFirstStepClose={onFirstStepClose}
-                isFirstStep={showOnboardingBannerFirstStep}
-                showInstantActivation={showInstantActivation}
-                limitBreach={limitBreach}
-              />
-            )}
-          </div>
 
-          {/* Recommended product widget */}
-          {user.isProductRecommendationEnabled && <ProductRecommendationnCard user={user} />}
+          {user.canSwitchOnboardingCard ? (
+            this.renderOnboardingAndRecommendationWidget()
+          ) : (
+            <>
+              <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
+                {showOnboardingBanner && (
+                  <NewUserOnboardingCard
+                    payments={payments}
+                    onClose={onHideOnboardingBanner}
+                    onFirstStepClose={onFirstStepClose}
+                    isFirstStep={showOnboardingBannerFirstStep}
+                    showInstantActivation={showInstantActivation}
+                    limitBreach={limitBreach}
+                  />
+                )}
+              </div>
+
+              {/* Recommended product widget */}
+              {user.isProductRecommendationEnabled && <ProductRecommendationnCard user={user} />}
+            </>
+          )}
 
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">
