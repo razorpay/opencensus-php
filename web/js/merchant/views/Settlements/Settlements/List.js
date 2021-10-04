@@ -71,9 +71,7 @@ class SettlementsListContainer extends ListContainer {
   }
 
   get settleNowRestrictionMsg() {
-    return 'Due to a technical issue, On-demand Settlements is not available. Please check back in some time.';
-
-    /* if (!this.settlementRestricted) return;
+    if (!this.settlementRestricted) return;
 
     const {
       attempts_left,
@@ -128,9 +126,9 @@ class SettlementsListContainer extends ListContainer {
         max_amount_limit,
         true,
       )} for the day.`;
-      /* eslint-disable 
-      } else return;
-      /* eslint-enable */
+      /* eslint-disable */
+    } else return;
+    /* eslint-enable */
   }
 
   componentWillReceiveProps(nextProps) {
