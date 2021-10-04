@@ -2104,9 +2104,9 @@ class Validator extends Base\Validator
 
     public function validateRangeForFailureAnalysis(array $input)
     {
-        // max range of query can be 90 days (7776000 seconds)
+        // max range of query can be 91 days (7862400 seconds)
         if (($input['to'] < $input['from']) or
-            (($input['to'] - $input['from']) >= 7776000))
+            (($input['to'] - $input['from']) >= 7862400))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The date range is invalid', null, null );

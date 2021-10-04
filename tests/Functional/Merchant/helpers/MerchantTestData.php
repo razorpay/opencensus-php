@@ -4708,7 +4708,7 @@ return [
 
     'testGetMerchantPaymentFailureAnalysisInvalidRangeFail'=> [
         'request' => [
-            'url' => '/merchants/payments/failure_analysis?from=1632361752&to=1640224152',
+            'url' => '/merchants/payments/failure_analysis?from=1632361752&to=1640310552',
             'method' => 'get',
         ],
         'response' => [
