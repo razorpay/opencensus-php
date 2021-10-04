@@ -289,7 +289,7 @@ class Entity extends Base\PublicEntity
 
             case Method::CARD:
             case null:
-                return null;
+                return self::CARD_MANDATE_DEFAULT_MAX_AMOUNT;
 
             default:
                 return self::DEFAULT_MAX_AMOUNT;

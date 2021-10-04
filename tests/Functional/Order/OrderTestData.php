@@ -709,6 +709,68 @@ return [
         ],
     ],
 
+    'testCreateCardWithNoMaxAmount' => [
+        'request' => [
+            'content' => [
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'receipt'         => 'rcptid42',
+                'method'          => 'card',
+                'customer_id'     => 'cust_100000customer',
+                'payment_capture' => 1,
+                'token'           => [
+                    'expire_at'    => 1880118306,
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'card',
+                'token'          =>   [
+                    'max_amount'   => 500000,
+                    'expire_at'    => 1880118306,
+                ]
+            ],
+        ],
+    ],
+
+    'testCreateCardWithMaxAmountMoreThan5000' => [
+        'request' => [
+            'content' => [
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'receipt'         => 'rcptid42',
+                'method'          => 'card',
+                'customer_id'     => 'cust_100000customer',
+                'payment_capture' => 1,
+                'token'           => [
+                    'max_amount'   => 600000,
+                    'expire_at'    => 1880118306,
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The max amount may not be greater than 500000.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
     'testCreateTPVOrderWhenMethodNull' => [
         'request' => [
             'content' => [
@@ -762,7 +824,7 @@ return [
                 'receipt'        => 'rcptid42',
                 'method'         => 'card',
                 'token'          =>   [
-                    'max_amount'   => null,
+                    'max_amount'   => 500000,
                     'expire_at'    => 1880118306,
                 ]
             ],

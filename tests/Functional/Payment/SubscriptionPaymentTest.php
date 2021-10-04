@@ -513,21 +513,14 @@ class SubscriptionPaymentTest extends TestCase
 
         $this->assertEquals($this->subscription->getId(), $payment->getSubscriptionId());
         $this->assertTrue($payment->isAuthorized());
-        $this->assertFalse(empty($payment->getGlobalTokenId()));
         $this->assertFalse(empty($payment->getCardId()));
-        $this->assertFalse(empty($payment->customer_id));
-        $this->assertEquals('10000gcustomer', $payment->getGlobalCustomerId());
         $this->assertTrue($payment->isRecurringTypeInitial());
 
         $token = $this->getDbLastEntity(Entity::TOKEN);
 
-        $this->assertEquals($payment->getGlobalTokenId(), $token->getId());
         $this->assertTrue($token->isCard());
-        $this->assertEquals('10000gcustomer', $token->customer_id);
-        $this->assertEquals('100000Razorpay', $token->merchant_id);
         $this->assertEquals($this->subscription->getId(), $token->getEntityId());
         $this->assertEquals(Entity::SUBSCRIPTION, $token->getEntityType());
-        $this->assertEquals($payment->card->globalCard->getId(), $token->getCardId());
         $this->assertEquals(Token\RecurringStatus::CONFIRMED, $token->getRecurringStatus());
         $this->assertTrue($token->isRecurring());
     }
@@ -574,21 +567,15 @@ class SubscriptionPaymentTest extends TestCase
 
         $this->assertEquals($this->subscription->getId(), $payment->getSubscriptionId());
         $this->assertTrue($payment->isAuthorized());
-        $this->assertFalse(empty($payment->getGlobalTokenId()));
         $this->assertFalse(empty($payment->getCardId()));
         $this->assertFalse(empty($payment->customer_id));
-        $this->assertEquals('10000gcustomer', $payment->getGlobalCustomerId());
         $this->assertTrue($payment->isRecurringTypeInitial());
 
         $cardChangeToken = $this->getDbLastEntity(Entity::TOKEN);
 
-        $this->assertEquals($payment->getGlobalTokenId(), $cardChangeToken->getId());
         $this->assertTrue($token->isCard());
-        $this->assertEquals('10000gcustomer', $cardChangeToken->customer_id);
-        $this->assertEquals('100000Razorpay', $cardChangeToken->merchant_id);
         $this->assertEquals($this->subscription->getId(), $cardChangeToken->getEntityId());
         $this->assertEquals(Entity::SUBSCRIPTION, $cardChangeToken->getEntityType());
-        $this->assertEquals($payment->card->globalCard->getId(), $cardChangeToken->getCardId());
         $this->assertEquals(Token\RecurringStatus::CONFIRMED, $cardChangeToken->getRecurringStatus());
         $this->assertTrue($cardChangeToken->isRecurring());
 

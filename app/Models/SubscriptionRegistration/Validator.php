@@ -131,17 +131,20 @@ class Validator extends Base\Validator
             {
                 $maxAmountLimit = PaperMandate\Validator::MAX_AMOUNT_LIMIT;
             }
-
-            if (($authType === Payment\AuthType::AADHAAR) or
+            elseif (($authType === Payment\AuthType::AADHAAR) or
                 ($authType === Payment\AuthType::AADHAAR_FP))
             {
                 $maxAmountLimit = Token\Entity::AADHAAR_EMANDATE_MAX_AMOUNT_LIMIT;
+            }
+            elseif ($method === Payment\Method::CARD or $method === null)
+            {
+                $maxAmountLimit = Token\Entity::CARD_MAX_AMOUNT_LIMIT;
             }
 
             if ($maxAmount > $maxAmountLimit)
             {
                 throw new BadRequestValidationFailureException(
-                    'The amount may not be greater than ' . $maxAmountLimit . '.',
+                    'The max amount may not be greater than ' . $maxAmountLimit . '.',
                     Entity::MAX_AMOUNT
                 );
             }

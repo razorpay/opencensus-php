@@ -1307,6 +1307,16 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateCardWithMaxAmountMoreThan5000()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateCardWithNoMaxAmount()
+    {
+        $this->startTest();
+    }
+
     public function testCreateOrderWithOffersAndOfferID()
     {
         $offer = $this->fixtures->create('offer:live_card', ['iins' => ["401200"]]);

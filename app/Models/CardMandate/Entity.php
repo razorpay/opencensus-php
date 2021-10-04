@@ -170,7 +170,7 @@ class Entity extends Base\PublicEntity
 
     public function getMaxAmount()
     {
-        return Constants::MANDATE_HUB_MAX_AMOUNT_DEFAULT;
+        return $this->getAttribute(self::MAX_AMOUNT);
     }
 
     public function getMandateSummaryUrl()

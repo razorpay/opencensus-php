@@ -106,6 +106,51 @@ class CardMandateTest extends TestCase
         $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
     }
 
+    public function testCreateCardMandatePaymentWithAuthLink()
+    {
+        $this->ba->proxyAuth();
+        $this->startTest();
+
+        $order = $this->getDbLastEntity('order');
+
+        $this->mockCheckBin();
+
+        $this->mockRegisterMandate();
+
+        $this->mockReportPayment();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->paymentInput,
+        ];
+
+        $request['content']['order_id'] = $order->getPublicId();
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['razorpay_payment_id'] ?? null);
+
+        $payment = $this->getDbLastEntity(E::PAYMENT);
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('initial', $payment->getRecurringType());
+        $this->assertNotNull($payment->getTokenId());
+
+        $token = $payment->localToken;
+        $this->assertNotEmpty($token);
+        $this->assertEquals('confirmed', $token->getRecurringStatus());
+        $this->assertEquals(123400, $token->getMaxAmount());
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+        $this->assertNotEmpty($cardMandate);
+        $this->assertNotEmpty($cardMandate->getMandateSummaryUrl());
+        $this->assertEquals('active', $cardMandate->getStatus());
+        $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
+        $this->assertEquals(123400, $cardMandate->getMaxAmount());
+    }
+
     public function testMandateHQCallbackMandatePaused()
     {
         $this->testCreateCardMandatePayment();
@@ -813,12 +858,13 @@ class CardMandateTest extends TestCase
 
     protected function mockRegisterMandate()
     {
-        $callable = function ()
+        $callable = function ($input)
         {
             return [
                 'redirect_url' => "https://mandate-manager.stage.razorpay.in/issuer/hdfc_GX3VC146gmBVNe/hostedpage",
                 'id' => "ratn_PP3VC146gmBVGG",
-                "status" => "created",
+                'status' => "created",
+                'max_amount' => $input['max_amount'],
             ];
         };
 

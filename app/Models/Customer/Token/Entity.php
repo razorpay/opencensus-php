@@ -104,6 +104,7 @@ class Entity extends Base\PublicEntity
      * ₹ 10,00,000 for emandate with Netbanking and DebitCard authtype
      */
     const AADHAAR_EMANDATE_MAX_AMOUNT_LIMIT = 10000000;
+    const CARD_MAX_AMOUNT_LIMIT             = 500000;
     const EMANDATE_MAX_AMOUNT_LIMIT         = 100000000;
     const DEFAULT_MAX_AMOUNT                = 9999900;
 

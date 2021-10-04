@@ -3833,7 +3833,8 @@ trait Authorize
                     $localCustomer = $this->subscription->customer;
                 }
             }
-            if($input['method'] === PaymentConstants::UPI and ($this->subscription!==null))
+            if(($payment->getMethod() === PaymentConstants::UPI or $payment->getMethod() === PaymentConstants::CARD)
+                and ($this->subscription !== null))
             {
                 $this->createUpiMandateForSubscriptionIfApplicable($localCustomer, $input, $payment);
 
