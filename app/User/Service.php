@@ -1777,6 +1777,7 @@ class Service extends Base\Service
             'route_transfer_state',
             'status_page_enable',
             'pp_hostedpage_new_footer',
+            'rx_gst_payments',
             'show_L1_Form_on_login',
             'auto-open-L1-form',
             'auto-open-L2-form',
