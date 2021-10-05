@@ -217,7 +217,9 @@ export default class PaymentLinksContainer extends ListContainer {
     };
 
     if (users.isPaymentlinksV2Enabled) {
-      docsLinkProps.url = 'https://razorpay.com/docs/payment-links/api/new/';
+      docsLinkProps.url = users.isPaymentlinksV2CompatEnabled
+        ? 'https://razorpay.com/docs/api/payment-links/v1/'
+        : 'https://razorpay.com/docs/payment-links/api/new/';
       docsLinkProps.title = (
         <span>
           Documentation <span class="badge bg-success m-r">new</span>
