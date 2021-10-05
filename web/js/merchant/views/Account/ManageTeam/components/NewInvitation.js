@@ -97,6 +97,9 @@ class NewInvitation extends Component {
       rolesToRemove.push(rolesList.SELLERAPP_PLUS);
     }
 
+    // owner role cannot be assigned to anyone
+    rolesToRemove.push(rolesList.OWNER);
+
     return without(roles, rolesToRemove);
   };
 
