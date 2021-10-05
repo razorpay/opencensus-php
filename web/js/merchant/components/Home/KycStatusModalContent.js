@@ -106,15 +106,16 @@ export const kycModalContent = (args = {}) => {
         return null;
       }
       return {
-        title: 'Payments have been enabled',
-        subtitle: 'Ready to accept payments',
+        title: 'Congratulations!',
+        subtitle: 'You are ready to accept payments now',
         body: (
           <div>
-            You can now accept payments by integrating with our payment products upto <b>₹15000.</b>
+            You are now all set and can start receiving payments from your customers up to INR
+            15,000. Complete your KYC Details to enable benefits like settlements and to extend this
+            limit further!
             <br />
             <br />
-            To extend the limit and to get your payments settled, please provide us a few more KYC
-            details.
+            We have switched you to live mode, go ahead and accept your first payment!
           </div>
         ),
         background: 'success',

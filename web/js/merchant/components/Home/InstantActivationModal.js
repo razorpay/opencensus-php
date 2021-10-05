@@ -289,24 +289,16 @@ const InstantActivationModal = ({
             <div className="title">
               Congratulations! <br /> You are ready to accept payments now
             </div>
-            {isPaymentLinkRecommendedProduct ? (
-              <p>We have switched you to live mode so you can start accepting payments instantly</p>
-            ) : (
-              <>
-                <p>
-                  You can now accept payments upto ₹15000 by integrating with a website/app or using
-                  other products.
-                </p>
-                <p>
-                  To extend the limit and to get your payments settled, please provide us a few more
-                  KYC details.
-                </p>
-              </>
-            )}
+            <p>
+              You are now all set and can start receiving payments from your customers up to INR
+              15,000. Complete your KYC Details to enable benefits like settlements and to extend
+              this limit further!
+            </p>
+            <p>We have switched you to live mode, go ahead and accept your first payment!</p>
           </div>
           {currentButton()}
           {isPaymentLinkRecommendedProduct && (
-            <p className="redirect-counter">Redirecting you to payment links in {counter}</p>
+            <p className="redirect-counter">Redirecting you to payment links in {counter}.</p>
           )}
         </div>
         {isPaymentLinkRecommendedProduct && (

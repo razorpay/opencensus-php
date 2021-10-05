@@ -28,7 +28,7 @@ export type ModalTypeT =
   | '';
 
 const InlineText = styled(View)`
-  color: #162f568a;
+  color: ${({ color }) => color};
   margin-top: 20px;
 `;
 
@@ -88,7 +88,7 @@ export const getModalContent = (
         : Message.DEDUPE.description;
       additionalDesc =
         activationData?.activation_form_milestone === 'L2' ? (
-          <InlineText>{Message.DEDUPE.L2_description}</InlineText>
+          <InlineText color="#162f568a">{Message.DEDUPE.L2_description}</InlineText>
         ) : (
           <span />
         );
@@ -114,6 +114,9 @@ export const getModalContent = (
       title = Message.PAYMENT_ENABLE.title;
       image = <img src={PaymentEnable} />;
       description = Message.PAYMENT_ENABLE.description;
+      additionalDesc = (
+        <InlineText color="inherit">{Message.PAYMENT_ENABLE.sub_description}</InlineText>
+      );
       button = (
         <>
           <Button onClick={() => (location.href = '/')} block>
@@ -137,7 +140,7 @@ export const getModalContent = (
           </Space>
         </>
       );
-      return { title, description, image, button };
+      return { title, description, image, button, additionalDesc };
 
     case 'payment_disable':
       title = Message.PAYMENT_DISABLE.title;

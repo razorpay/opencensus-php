@@ -391,10 +391,9 @@ export default class ActivationContainer extends React.Component {
                 });
               }
             }
+            this.updateSession(response.data);
             this.postSubmitStep(response);
           }
-
-          this.updateSession(response.data);
 
           return response;
         })

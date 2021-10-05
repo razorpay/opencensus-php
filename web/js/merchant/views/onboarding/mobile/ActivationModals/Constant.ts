@@ -18,9 +18,10 @@ export const POI_INITIATED = {
 };
 
 export const PAYMENT_ENABLE = {
-  title: 'Congrats! You can start accepting payments',
+  title: 'Congratulations! You are ready to accept payments now.',
   description:
-    'You can accept payments by integrating with our payment products upto ₹15000. However to extend the limit and enable settlements you will need to submit a few more KYC details',
+    'You are now all set and can start receiving payments from your customers up to INR 15,000. Complete your KYC Details to enable benefits like settlements and to extend this limit further!',
+  sub_description: 'We have switched you to live mode, go ahead and accept your first payment!',
   buttonText: 'Start Accepting Payments',
   secondryButtonText: 'Complete KYC',
 };
