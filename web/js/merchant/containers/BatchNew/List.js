@@ -58,12 +58,12 @@ class BatchList extends ListContainer {
     }),
   )
   openUploadModal = (renderUploadModal) => () => {
-    track.batchUpload(this.props.batchType);
     const { openModal } = this.props;
     openModal({
       size: 'large',
       component: renderUploadModal(),
     });
+    track.batchUpload(this.props.batchType);
   };
 
   componentDidMount() {

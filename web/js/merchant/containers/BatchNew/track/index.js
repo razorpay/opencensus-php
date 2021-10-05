@@ -13,16 +13,16 @@ function _track() {
       },
     });
   }
-
+  // TODO: batch type missing in few products. Check and add those batch type align with products
   return {
     downloadSample: (feature) => {
-      sendToSegment('download sample file', 'click', titleCase(feature));
+      sendToSegment('download sample file', 'click', feature ? titleCase(feature) : 'dashboard');
     },
     viewDocumentation: (feature) => {
-      sendToSegment('view documentation', 'click', titleCase(feature));
+      sendToSegment('view documentation', 'click', feature ? titleCase(feature) : 'dashboard');
     },
     batchUpload: (feature) => {
-      sendToSegment('batch upload', 'click', titleCase(feature));
+      sendToSegment('batch upload', 'click', feature ? titleCase(feature) : 'dashboard');
     },
   };
 }

@@ -111,15 +111,15 @@ export const analyticsTrack = ({
   toLumberjack = true, // Send all events to LJ by default
 }) => {
   if (!objectName) {
-    throw new Error('[analytics]: objectName cannot be empty');
+    throwAnalyticsException('[analytics]: objectName cannot be empty');
   }
 
   if (!actionName) {
-    throw new Error('[analytics]: actionName cannot be empty');
+    throwAnalyticsException('[analytics]: actionName cannot be empty');
   }
 
   if (!screen) {
-    throw new Error('[analytics]: screen cannot be empty');
+    throwAnalyticsException('[analytics]: screen cannot be empty');
   }
 
   if (/_/g.test(objectName)) {
