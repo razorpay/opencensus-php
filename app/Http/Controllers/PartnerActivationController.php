@@ -52,4 +52,13 @@ class PartnerActivationController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function bulkAssignReviewer()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkAssignReviewer($input);
+
+        return ApiResponse::json($response);
+    }
 }

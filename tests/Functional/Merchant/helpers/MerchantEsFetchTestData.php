@@ -268,4 +268,37 @@ return [
             ],
         ],
     ],
+
+    'testGetPartnerActivationFromEsByActivationStatus' => [
+        'request' => [
+            'url'     => '/admins/partner/activation',
+            'method'  => 'GET',
+            'content' => [
+                'activation_status' => 'under_review',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'items' => [
+                    [
+                        'merchant_id'       => '10000000000014',
+                        'activation_status' => 'under_review',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetPartnerActivationFromEsByQ' => [
+        'request' => [
+            'url'     => '/admins/partner/activation',
+            'method'  => 'GET',
+            'content' => [
+                'q' => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
 ];

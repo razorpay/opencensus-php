@@ -609,6 +609,21 @@ class Service extends Base\Service
         return array_pluck($items, Merchant\Entity::REFERRER, Merchant\Entity::ID);
     }
 
+    public function getPartnerActivationFromEs(array $input) : array
+    {
+        if ((isset($input[Merchant\Detail\Entity::REVIEWER_ID]) === true) and
+            ($input[Merchant\Detail\Entity::REVIEWER_ID] !== 'none'))
+        {
+            Entity::verifyIdAndStripSign($input[Merchant\Detail\Entity::REVIEWER_ID]);
+        }
+
+        $input[Base\EsRepository::SEARCH_HITS] = 1;
+
+        $partnerActivation = $this->repo->partner_activation->fetch($input);
+
+        return $partnerActivation->toArrayAdmin();
+    }
+
     public function lockUnusedAccounts()
     {
         $timestamp = Carbon::now()->subDays(30)->getTimestamp();

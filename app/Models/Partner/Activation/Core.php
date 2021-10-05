@@ -14,6 +14,7 @@ use RZP\Models\Partner\Metric;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Partner\Activation;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Workflow\Action\Core as ActionCore;
 use RZP\Mail\Merchant\PartnerActivationRejection as RejectionMail;
 use RZP\Mail\Merchant\PartnerActivationConfirmation as ActivationMail;
@@ -131,6 +132,71 @@ class Core extends Base\Core
         }
 
         return $partnerActivation;
+    }
+
+    /**
+     * @param string $reviewerId
+     * @param array  $merchants
+     *
+     * @return array
+     */
+    public function bulkAssignReviewer(string $reviewerId, array $merchants): array
+    {
+        $success     = 0;
+
+        $failedItems = [];
+
+        try
+        {
+            AdminEntity::verifyIdAndStripSign($reviewerId);
+
+            $reviewer = $this->repo->admin->findOrFailPublic($reviewerId);
+        }
+        catch (\Exception $e)
+        {
+            $response = [
+                'success' => 0,
+                'failed'  => count($merchants),
+                'error'   => $e->getMessage(),
+            ];
+
+            return $response;
+        }
+
+        foreach ($merchants as $merchantId)
+        {
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                (new Merchant\Validator())->validateIsPartner($merchant);
+
+                $partnerActivation = $this->createOrFetchPartnerActivationForMerchant($merchant, false);
+
+                $partnerActivation->edit([Entity::REVIEWER_ID => $reviewerId]);
+
+                $partnerActivation->reviewer()->associate($reviewer);
+
+                $this->repo->partner_activation->saveOrFail($partnerActivation);
+
+                $success = $success + 1;
+            }
+            catch (\Exception $e)
+            {
+                $failedItems[] = [
+                    Entity::MERCHANT_ID => $merchantId,
+                    'error'             => $e->getMessage()
+                ];
+            }
+        }
+
+        $response = [
+            'success'     => $success,
+            'failed'      => count($failedItems),
+            'failedItems' => $failedItems,
+        ];
+
+        return $response;
     }
 
     /**

@@ -6369,6 +6369,9 @@ ALTER TABLE card_mandate_notifications
 ALTER TABLE virtual_account_tpv
     ADD COLUMN deleted_at INTEGER DEFAULT NULL;
 
+ALTER TABLE partner_activation
+    ADD COLUMN reviewer_id char(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL;
+
 ALTER TABLE iins
     ADD COLUMN cobranding_partner VARCHAR(20);
 

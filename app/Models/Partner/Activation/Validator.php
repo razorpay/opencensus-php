@@ -18,6 +18,7 @@ class Validator extends Detail\Validator
         Entity::SUBMITTED_AT              => 'sometimes|int',
         Entity::LOCKED                    => 'sometimes|boolean',
         Entity::KYC_CLARIFICATION_REASONS => 'sometimes|array|custom',
+        Entity::REVIEWER_ID               => 'sometimes|alpha_num|size:14',
     ];
 
     protected static $createRules = [

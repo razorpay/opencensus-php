@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
     const REJECTION_REASONS         = 'rejection_reasons';
     const CLARIFICATION_REASONS     = 'clarification_reasons';
     const ADDITIONAL_DETAILS        = 'additional_details';
+    const REVIEWER_ID               = 'reviewer_id';
 
     const ALLOWED_NEXT_ACTIVATION_STATUSES = 'allowed_next_activation_statuses';
 
@@ -39,8 +40,10 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::SUBMITTED_AT,
         self::KYC_CLARIFICATION_REASONS,
-        self::ALLOWED_NEXT_ACTIVATION_STATUSES
+        self::ALLOWED_NEXT_ACTIVATION_STATUSES,
+        self::REVIEWER_ID
     ];
 
     protected $fillable = [
@@ -55,6 +58,11 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::ALLOWED_NEXT_ACTIVATION_STATUSES,
+        self::REVIEWER_ID,
+    ];
+
+    protected $adminOnlyPublic = [
+        self::REVIEWER_ID,
     ];
 
     protected $casts = [
@@ -69,6 +77,11 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS   => false,
     ];
 
+    public function getId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     public function getMerchantId(): string
     {
         return $this->getAttribute(self::MERCHANT_ID);
@@ -82,6 +95,11 @@ class Entity extends Base\PublicEntity
     public function merchantDetail()
     {
         return $this->belongsTo(Merchant\Detail\Entity::class, self::MERCHANT_ID, self::MERCHANT_ID);
+    }
+
+    public function reviewer()
+    {
+        return $this->belongsTo(\RZP\Models\Admin\Admin\Entity::class);
     }
 
     public function getActivationStatus()
@@ -183,5 +201,11 @@ class Entity extends Base\PublicEntity
         $array[self::ALLOWED_NEXT_ACTIVATION_STATUSES] = $allowedNextActivationStatuses;
     }
 
+    public function setPublicReviewerIdAttribute(array &$attributes)
+    {
+        $adminId = $this->getAttribute(self::REVIEWER_ID);
+
+        $attributes[self::REVIEWER_ID] = \RZP\Models\Admin\Admin\Entity::getSignedIdOrNull($adminId);
+    }
 }
 

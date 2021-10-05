@@ -1217,6 +1217,7 @@ class Route
         'admin_edit'                               => ['put',      'admin/{id}',                                     'OrganizationController@editAdmin'                                  ],
         'admin_fetch_merchant_ids_new'             => ['get',      'admins/merchant_ids',                            'OrganizationController@getMerchantIdsFromEs'                       ],
         'admin_fetch_merchants_new'                => ['get',      'admins/merchants',                               'OrganizationController@getMerchantsFromEs'                         ],
+        'admin_fetch_partner_activation'           => ['get',      'admins/partner/activation',                      'OrganizationController@getPartnerActivationFromEs'                 ],
         'admin_delete'                             => ['delete',   'admin/{id}',                                     'OrganizationController@deleteAdmin'                                ],
         'admin_lead_create'                        => ['post',     'admin-lead',                                     'OrganizationController@postAdminLead'                              ],
         'admin_lead_get_multiple'                  => ['get',      'admin-lead-multiple',                            'OrganizationController@getAdminLeadMultiple'                       ],
@@ -2085,6 +2086,7 @@ class Route
         'partner_activation_save'                  => ['post',     'partner/activation',                             'PartnerActivationController@savePartnerActivationDetails'          ],
         'partner_activation_migrate'               => ['post',     'partner/activation/migrate',                     'MerchantController@createPartnerActivationForPartners'             ],
         'partner_actions'                          => ['put',      'partner/{id}/action',                            'PartnerActivationController@performAction'                         ],
+        'partner_activation_bulk_assign_reviewer'  => ['post',     'partner/activation/bulk_assign_reviewer',        'PartnerActivationController@bulkAssignReviewer'                    ],
 
 
 
@@ -4598,6 +4600,7 @@ class Route
         'org_get_multiple',
         'admin_fetch_merchant_ids_new',
         'admin_fetch_merchants_new',
+        'admin_fetch_partner_activation',
         'admin_create',
         'group_get',
         'group_get_multiple',
@@ -4953,6 +4956,7 @@ class Route
         'partner_activation_status',
         'partner_activation_update',
         'partner_actions',
+        'partner_activation_bulk_assign_reviewer',
 
         //  Uploading bank refund file
         'gateway_file_bank_refunds_upload',
@@ -5573,6 +5577,7 @@ class Route
         'schedule_assign'                          => Permission::SCHEDULE_ASSIGN,
         'admin_fetch_merchant_ids_new'             => Permission::ADMIN_FETCH_MERCHANTS,
         'admin_fetch_merchants_new'                => Permission::ADMIN_FETCH_MERCHANTS,
+        'admin_fetch_partner_activation'           => Permission::ADMIN_FETCH_MERCHANTS,
         'permission_create'                        => Permission::CREATE_PERMISSION,
         'permission_edit'                          => Permission::EDIT_PERMISSION,
         'permission_get'                           => Permission::GET_PERMISSION,
@@ -6449,6 +6454,8 @@ class Route
         'partner_activation_update'                => Permission::EDIT_PARTNERS,
         'partner_activation_status'                => Permission::EDIT_ACTIVATE_PARTNER,
         'partner_actions'                          => Permission::PARTNER_ACTIONS,
+        'partner_activation_bulk_assign_reviewer'  => Permission::ASSIGN_PARTNER_ACTIVATION_REVIEWER,
+
 
         // Ledger Service Routes
         'create_ledger_account'                           => Permission::LEDGER_SERVICE_ACTIONS,
@@ -8125,6 +8132,7 @@ class Route
             'admin_fetch_fund_account_validate',
             'admin_fetch_merchant_ids_new',
             'admin_fetch_merchants_new',
+            'admin_fetch_partner_activation',
             'admin_fetch_report',
             'admin_fetch_report_types',
             'admin_fetch_terminal_by_id',
@@ -9008,6 +9016,7 @@ class Route
             'partner_referral_fetch',
             'partner_activation_migrate',
             'partner_actions',
+            'partner_activation_bulk_assign_reviewer',
             'patch_internal_instrument_request_by_id',
             'patch_internal_instrument_requests',
             'bulk_cancel_internal_instrument_requests',

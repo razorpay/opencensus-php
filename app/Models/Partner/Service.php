@@ -117,4 +117,15 @@ class Service extends Base\Service
 
         return $this->activationCore->performAction($partnerActivation, $input);
     }
+
+    public function bulkAssignReviewer(array $input): array
+    {
+        (new Detail\Validator())->validateInput('bulk_assign_reviewer', $input);
+
+        $merchants  = $input[Detail\Entity::MERCHANTS];
+
+        $reviewerId = $input[Detail\Entity::REVIEWER_ID];
+
+        return $this->activationCore->bulkAssignReviewer($reviewerId, $merchants);
+    }
 }

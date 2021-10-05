@@ -42,6 +42,9 @@ class CreatePartnerActivationTable extends Migration
             $table->json(PartnerActivationEntity::KYC_CLARIFICATION_REASONS)
                   ->nullable();
 
+            $table->char(PartnerActivationEntity::REVIEWER_ID, PartnerActivationEntity::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(PartnerActivationEntity::CREATED_AT);
 
             $table->integer(PartnerActivationEntity::UPDATED_AT);
@@ -52,6 +55,8 @@ class CreatePartnerActivationTable extends Migration
             $table->index(PartnerActivationEntity::ACTIVATION_STATUS);
 
             $table->index(PartnerActivationEntity::MERCHANT_ID);
+
+            $table->index(PartnerActivationEntity::REVIEWER_ID);
 
             $table->index(PartnerActivationEntity::CREATED_AT);
 

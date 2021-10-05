@@ -701,6 +701,7 @@ class Name
     //partner KYC permissions
     const EDIT_ACTIVATE_PARTNER               = 'edit_activate_partner';
     const PARTNER_ACTIONS                     = 'partner_actions';
+    const ASSIGN_PARTNER_ACTIVATION_REVIEWER  = 'assign_partner_activation_reviewer';
 
     // Perform general purpose read operations e.g. query cache stats, elasticsearch meta etc.
     const DEVELOPERS_READ                              = 'developers_read';

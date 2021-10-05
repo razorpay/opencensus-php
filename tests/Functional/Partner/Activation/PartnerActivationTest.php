@@ -5,6 +5,8 @@ namespace Functional\Partner\Activation;
 use DB;
 use Mail;
 use RZP\Services\RazorXClient;
+use Illuminate\Support\Facades\Artisan;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -56,6 +58,36 @@ class PartnerActivationTest extends OAuthTestCase
         $this->fillAllRequirements(self::MERCHANT_ID, false);
 
         $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerActivationFromEs()
+    {
+        Artisan::call('rzp:index', ['mode' => 'live', 'entity' => 'partner_activation', '--primary_key' => 'merchant_id']);
+        Artisan::call('rzp:index', ['mode' => 'test', 'entity' => 'partner_activation', '--primary_key' => 'merchant_id']);
+
+        $this->createMerchant(self::MERCHANT_ID, false, 'activated');
+
+        $this->fillAllRequirements(self::MERCHANT_ID, false);
+
+        $testData = $this->testData['testFetchPartnerActivationForNonRegisteredBusiness'];
+
+        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->roles()->sync([Org::ADMIN_ROLE]);
+
+        $roleOfAdmin = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'admin_fetch_merchants']);
+
+        $roleOfAdmin->permissions()->attach($perm->getId());
 
         $this->startTest();
     }
@@ -237,6 +269,30 @@ class PartnerActivationTest extends OAuthTestCase
         $workflowAction = $this->getDbEntity('workflow_action');
         $this->assertEquals('partner_activation', $workflowAction['entity_name']);
         $this->assertEquals(self::MERCHANT_ID, $workflowAction['entity_id']);
+    }
+
+    public function testBulkAssignReviewer()
+    {
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('assign_partner_activation_reviewer');
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'reseller']);
+
+        $this->startTest();
+    }
+
+    protected function addPermissionToBaAdmin(string $permissionName): void
+    {
+        $admin = $this->ba->getAdmin();
+
+        $roleOfAdmin = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => $permissionName]);
+
+        $roleOfAdmin->permissions()->attach($perm->getId());
     }
 
     public function testPartnerRejected()

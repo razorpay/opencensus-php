@@ -238,6 +238,42 @@ class MerchantEsFetchTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetPartnerActivationFromEsByActivationStatus()
+    {
+        $this->fixtures->merchant->edit('10000000000014', ['partner_type' => 'reseller']);
+
+        $this->fixtures->create('partner_activation', ['merchant_id' => '10000000000014', 'activation_status' => 'under_review']);
+
+        Artisan::call('rzp:index', ['mode' => 'live', 'entity' => 'partner_activation', '--primary_key' => 'merchant_id']);
+        Artisan::call('rzp:index', ['mode' => 'test', 'entity' => 'partner_activation', '--primary_key' => 'merchant_id']);
+
+        $requestToken = $this->getAdminRequestToken('10000000000011');
+
+        $this->ba->adminAuth('test', $requestToken);
+
+        $this->setAdminPermission('admin_fetch_merchants');
+
+        $this->startTest();
+    }
+
+    public function testGetPartnerActivationFromEsByQ()
+    {
+        $this->fixtures->merchant->edit('10000000000014', ['partner_type' => 'reseller']);
+
+        $this->fixtures->create('partner_activation', ['merchant_id' => '10000000000014']);
+
+        Artisan::call('rzp:index', ['mode' => 'live', 'entity' => 'partner_activation', '--primary_key' => 'merchant_id']);
+        Artisan::call('rzp:index', ['mode' => 'test', 'entity' => 'partner_activation', '--primary_key' => 'merchant_id']);
+
+        $requestToken = $this->getAdminRequestToken('10000000000011');
+
+        $this->ba->adminAuth('test', $requestToken);
+
+        $this->setAdminPermission('admin_fetch_merchants');
+
+        $this->startTest();
+    }
+
     public function testGetMerchantsFromEsByActivationSource()
     {
         $this->fixtures->merchant->edit('10000000000014', ['activation_source' => 'banking']);

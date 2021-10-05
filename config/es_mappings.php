@@ -539,9 +539,6 @@ return [
             'receipt' => [
                 'type'  => 'keyword',
             ],
-            'view_type' => [
-                'type'  => 'keyword',
-            ],
             'title' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
@@ -777,6 +774,39 @@ return [
             'created_at' => [
                 'type'   => 'date',
                 'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+        ],
+    ],
+
+    'partner_activation_mapping' => [
+        'properties' => [
+            'merchant_id' => [
+                'type'  => 'keyword',
+            ],
+            'activation_status' => [
+                'type' => 'keyword',
+            ],
+            'reviewer_id' => [
+                'type' => 'keyword',
+            ],
+            'merchant' => [
+                'properties' => [
+                    'id' => [
+                        'type' => 'keyword',
+                    ],
+                    'name' => [
+                        'type'            => 'text',
+                        'analyzer'        => 'edge_ngram_analyzer',
+                        'search_analyzer' => 'standard_custom',
+                        'index_options'   => 'offsets',
+                    ],
+                    'email' => [
+                        'type'            => 'text',
+                        'analyzer'        => 'edge_ngram_analyzer',
+                        'search_analyzer' => 'standard_custom',
+                        'index_options'   => 'offsets',
+                    ],
+                ],
             ],
         ],
     ],

@@ -159,6 +159,9 @@ return [
                 'assignable'  => true,
                 'workflow'    => true,
             ],
+            Permission::ASSIGN_PARTNER_ACTIVATION_REVIEWER => [
+                'description' => 'Assign Reviews for Partner Activation Forms',
+            ],
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [

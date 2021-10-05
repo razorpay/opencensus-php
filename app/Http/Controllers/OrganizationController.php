@@ -474,6 +474,15 @@ class OrganizationController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getPartnerActivationFromEs(Admin\Admin\Service $service)
+    {
+        $input = Request::all();
+
+        $response = $service->getPartnerActivationFromEs($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postLockBulkAccounts()
     {
         $response = $this->service(E::ADMIN)->lockUnusedAccounts();

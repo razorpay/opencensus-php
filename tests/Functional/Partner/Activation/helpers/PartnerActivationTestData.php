@@ -1,6 +1,7 @@
 <?php
 
 use RZP\Error\ErrorCode;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 
 return [
     'testFetchPartnerActivationForNonRegisteredBusiness' => [
@@ -31,6 +32,27 @@ return [
                     'promoter_pan',
                     'promoter_pan_name',
                     'gstin'
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerActivationFromEs' => [
+        'request' => [
+            'url'     => '/admins/partner/activation',
+            'method'  => 'GET',
+            'content' => [
+                'activation_status' => 'activated',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'items' => [
+                    [
+                        'merchant_id'       => '1cXSLlUU8V9sXl',
+                        'activation_status' => 'activated',
+                        'reviewer_id'       => null,
+                    ]
                 ],
             ],
         ],
@@ -549,5 +571,25 @@ return [
             'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_COMMISSIONS_ALREADY_RELEASED,
         ],
-    ]
+    ],
+
+    'testBulkAssignReviewer' => [
+        'request' => [
+            'content' => [
+                'reviewer_id' => Org::SUPER_ADMIN_SIGNED,
+                'merchants'   => [
+                    '10000000000000'
+                ],
+            ],
+            'url'     => '/partner/activation/bulk_assign_reviewer',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success'     => 1,
+                'failed'      => 0,
+                'failedItems' => [],
+            ],
+        ],
+    ],
 ];

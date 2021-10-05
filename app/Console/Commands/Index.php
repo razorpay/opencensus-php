@@ -21,6 +21,7 @@ class Index extends Command
                             {mode            : Database & application mode the command will run in (test|live)}
                             {entity          : Entity name (eg. item|merchant) }
 
+                            {--primary_key=  : Primary key of the entity }
                             {--slave=0       : Whether to use slave or master db connection? (0|1)}
                             {--index_prefix= : ES new index prefix (eg. 20171201_beta_api_) }
                             {--after_id=     : Skip until specified row id }
@@ -32,6 +33,7 @@ class Index extends Command
 
     protected $mode;
     protected $entity;
+    protected $primaryKey;
     protected $slave;
     protected $indexPrefix;
     protected $afterId;
@@ -56,7 +58,7 @@ class Index extends Command
     {
         $this->mode        = $this->argument('mode');
         $this->entity      = $this->argument('entity');
-
+        $this->primaryKey  = $this->option('primary_key');
         $this->slave       = (int) $this->option('slave');
         $this->indexPrefix = $this->option('index_prefix');
         $this->afterId     = trim($this->option('after_id'));
@@ -100,6 +102,9 @@ class Index extends Command
             throw new LogicException('EsSync: Es repo not found.');
         }
 
+        // set primary key as 'id' if not provided in the options
+        $this->primaryKey = ($this->primaryKey) ?? 'id';
+
         //
         // 3. If index prefix is passed in option, will use that. Useful in
         //    cases of re-indexing with mapping changes. We create the new index,
@@ -138,7 +143,7 @@ class Index extends Command
                 break;
             }
 
-            $afterId = end($documents)['id'];
+            $afterId = end($documents)[$this->primaryKey];
 
             $this->info('Filtering..');
 
