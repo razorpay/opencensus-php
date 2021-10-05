@@ -478,7 +478,7 @@ export default class User {
   }
 
   get isCallbackCategoryExpEnabled() {
-    return this.isFeatureEnabled('schedule_callback_category');
+    return this.getExpStatus('schedule_callback_category');
   }
 
   get isEsignEnabled() {
