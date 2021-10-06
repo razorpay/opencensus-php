@@ -178,6 +178,9 @@ class NetbankingErrorCodes
     const R481 = '481';
     const R486 = '486';
     const R487 = '487';
+    const R606 = '606';
+    const R607 = '607';
+    const R608 = '608';
 
     const AP01 = 'AP01';
     const AP02 = 'AP02';
@@ -396,6 +399,9 @@ class NetbankingErrorCodes
         self::R481 => 'DEST_SPNBANK_NOT_CERT',
         self::R486 => 'No Variant is eligible for Selection',
         self::R487 => 'No Variant is eligible for Selection',
+        self::R606 => 'Duplicate Request',
+        self::R607 => 'Previous Request in Progress',
+        self::R608 => 'Bank Restricts Duplicate request',
 
         self::AP01 => 'Account blocked',
         self::AP02 => 'Account closed',
@@ -559,6 +565,9 @@ class NetbankingErrorCodes
         self::R481 => ErrorCode::BAD_REQUEST_INVALID_BANK_FOR_EMANDATE,
         self::R486 => ErrorCode:: GATEWAY_ERROR_INVALID_PARAMETERS,
         self::R487 => ErrorCode:: GATEWAY_ERROR_INVALID_PARAMETERS,
+        self::R606 => ErrorCode::BAD_REQUEST_EMANDATE_REGISTRATION_DUPLICATE_REQUEST,
+        self::R607 => ErrorCode::BAD_REQUEST_EMANDATE_REGISTRATION_ALREADY_IN_PROGRESS,
+        self::R608 => ErrorCode::BAD_REQUEST_EMANDATE_REGISTRATION_ALREADY_DECLINED_BY_BANK,
 
         self::AP01 => ErrorCode::BAD_REQUEST_ACCOUNT_BLOCKED,
         self::AP02 => ErrorCode::BAD_REQUEST_ACCOUNT_CLOSED,
