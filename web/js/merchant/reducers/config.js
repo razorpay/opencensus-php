@@ -491,10 +491,17 @@ const configReducer = (state = initialState, action) => {
         return set(state, 'scheduleCallConfig', payload);
       } else {
         payload = payload.category_vs_eligibility;
-        const key = Object.keys(payload)[0];
-        window.scheduleCallConfigCategory = key;
-        set(state, 'scheduleCallConfigCategory', key);
-        return set(state, 'scheduleCallConfig', payload[key]);
+        if (Array.isArray(payload) && payload.length === 0) {
+          return set(state, 'scheduleCallConfig', {
+            is_eligible: false,
+            reason: 'NOT_APPLICABLE',
+          });
+        } else {
+          const key = Object.keys(payload)[0];
+          window.scheduleCallConfigCategory = key;
+          set(state, 'scheduleCallConfigCategory', key);
+          return set(state, 'scheduleCallConfig', payload[key]);
+        }
       }
     }
 
