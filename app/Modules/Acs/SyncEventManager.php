@@ -179,6 +179,8 @@ class SyncEventManager
     {
         $this->liveAccountIds = [];
         $this->testAccountIds = [];
+
+        $this->stats = ['total' => ['count' => 0]];
     }
 
     public function publishOutboxJob(string $accountId, string $mode, array $metadata)
