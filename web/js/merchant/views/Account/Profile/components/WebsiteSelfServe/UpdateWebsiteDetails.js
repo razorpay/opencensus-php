@@ -8,7 +8,7 @@ import { bindActionCreators } from 'redux';
 import Input from 'common/new-ui/Input';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, autoPrefixUrls } from 'common/utils/rzp-utils';
 import FileUpload from 'merchant/components/File/Upload';
 import { FLOWS } from './Constants';
 
@@ -211,7 +211,11 @@ function UpdateWebsiteDetails(props) {
       Object.keys(formFieldValues).forEach((key) => {
         if (key === 'username' || key === 'password')
           formData.append(`additional_website_test_${key}`, formFieldValues[key]);
-        else formData.append(`additional_website_${key}`, formFieldValues[key]);
+        else
+          formData.append(
+            `additional_website_${key}`,
+            key === 'reason' ? formFieldValues[key] : autoPrefixUrls(formFieldValues[key]),
+          );
       });
 
       // If creds are not checked, removing these keys
@@ -222,7 +226,7 @@ function UpdateWebsiteDetails(props) {
 
       if (file instanceof File) formData.append('additional_website_proof_url', file);
     } else {
-      formData.append('additional_app_url', formFieldValues.app_url);
+      formData.append('additional_app_url', autoPrefixUrls(formFieldValues.app_url));
       formData.append('additional_app_reason', formFieldValues.reason);
 
       if (doesNeedCreds) {
