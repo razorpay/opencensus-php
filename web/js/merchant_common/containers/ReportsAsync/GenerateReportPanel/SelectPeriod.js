@@ -1,4 +1,6 @@
 import moment from 'moment';
+import React from 'react';
+
 import { analyticsTrack } from 'common/utils/analytics';
 
 import Input from 'common/new-ui/Input';
@@ -7,8 +9,8 @@ import { isNone, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { getTimeUnix, getStartAndEndUnixTimeStampsForDaysFrom } from '../utils';
 
 const DEFAULT_SELECTED_DATE = moment().subtract(1, 'day').startOf('day');
-const DEFAULT_SELECTED_END_AT = moment().subtract(1, 'day').endOf('day');
-const DEFAULT_SELECTED_START_AT = moment().subtract(2, 'day').startOf('day');
+const DEFAULT_SELECTED_END_AT = moment().subtract(1, 'day').endOf('day').startOf('minute');
+const DEFAULT_SELECTED_START_AT = moment().subtract(2, 'day').startOf('day').startOf('minute');
 const DEFAULT_SELECTED_MONTH = moment().subtract(1, 'month').startOf('month');
 const DEFAULT_PERIOD = 'yesterday';
 
@@ -45,12 +47,12 @@ export default class SelectPeriod extends React.Component {
     });
 
     this.setState(
-      {
+      (prevState) => ({
         values: {
-          ...this.state.values,
+          ...prevState.values,
           [name]: !isNone(checked) ? checked : value,
         },
-      },
+      }),
       () => {
         if (valuesRelatedToDateRange(name, value)) {
           const { selectedStartAt, selectedEndAt } = this.state.values;
@@ -85,7 +87,6 @@ export default class SelectPeriod extends React.Component {
 
   getDateRange = () => {
     const { selectedPeriod, ...values } = this.state.values;
-    let startTime, endTime;
     switch (selectedPeriod) {
       case 'today':
         return getStartAndEndUnixTimeStampsForDaysFrom(0, moment());
@@ -104,7 +105,7 @@ export default class SelectPeriod extends React.Component {
       case 'monthly':
         return getStartAndEndUnixTimeStampsForMonth(values.selectedMonth);
 
-      case 'dateRange':
+      case 'dateRange': {
         let { selectedStartAt, selectedEndAt } = values;
         if (!values.withTime) {
           selectedStartAt = selectedStartAt.clone().startOf('day');
@@ -113,6 +114,10 @@ export default class SelectPeriod extends React.Component {
         const startTimeUnix = selectedStartAt.format('X');
         const endTimeUnix = selectedEndAt.format('X');
         return [Number(startTimeUnix), Number(endTimeUnix)];
+      }
+
+      default:
+        return {};
     }
   };
 
@@ -233,11 +238,11 @@ function SelectInterval({ selectedPeriod, onDateChange, onDateTimeChange, withTi
           selectedEndAt={defaults.selectedEndAt}
         />
       );
+    default:
+      return null;
   }
-  return null;
 }
 
-const now = moment();
 const currentMonth = moment().month();
 const currentYear = moment().year();
 
@@ -286,7 +291,7 @@ function SelectDate({ withTime, onDateChange, ...props }) {
       {withTime && (
         <div class="m-t">
           <Input.TimePicker
-            name={props.name + 'Time'}
+            name={`${props.name}Time`}
             placeholder="HH:MM A"
             addonAfter={<i class="i i-time" />}
             defaultValue={props.defaultValue}
@@ -330,19 +335,20 @@ function PredefinedPeriodDurations({ selectedPeriod }) {
       fromDate = today.clone().subtract(1, 'day').format(DATE_DISPLAY_FORMAT);
       break;
 
-    case 'last_7_days':
+    case 'last_7_days': {
       const previousDay = today.clone().subtract(1, 'day');
       toDate = previousDay.format(DATE_DISPLAY_FORMAT);
 
       // calculating last 7th day from today which last 6th day from yesterday
       fromDate = previousDay.subtract(6, 'day').format(DATE_DISPLAY_FORMAT);
       break;
-
-    case 'last_month':
+    }
+    case 'last_month': {
       const lastDayOfLastMonth = today.clone().startOf('month').subtract(1, 'day');
       toDate = lastDayOfLastMonth.format(DATE_DISPLAY_FORMAT);
       fromDate = lastDayOfLastMonth.startOf('month').format(DATE_DISPLAY_FORMAT);
       break;
+    }
 
     default:
       return null;
