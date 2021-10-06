@@ -10,6 +10,7 @@ use RZP\Gateway\Upi\Base;
 use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Models\UpiMandate\Entity;
+use RZP\Exception\LogicException;
 use RZP\Models\UpiMandate\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Mozart\Mock\Server;
@@ -763,6 +764,80 @@ class UpiInitialRecurringTestCase extends TestCase
         $this->assertNotNull($payment[Payment\Entity::REFERENCE16]);
     }
 
+    /**
+     * This is a tabular test that checks ALL active / whitelisted handles and few inactive handles for upi recurring.
+     * @dataProvider provideVpasWithThrowables
+     * @param $vpa - VPA E.g. "shalem@okicici" etc.
+     * @param array|null $throwable
+     */
+    public function testVpaWhitelistingForAutopay($vpa, ?array $throwable)
+    {
+        $this->payment['vpa'] = $vpa; // override the vpa to test this scenario in TEST env
+
+        $this->goWithTheFlow(
+            $throwable,
+            function () {
+                $this->testRecurringMandateCreate();
+            }
+        );
+    }
+
+    /**
+     * This function provides the testcases for the @testVpaWhitelistingForAutopay function
+     * Each testcase must consist of a
+     * VPA (string)
+     * throwable (associative array)
+     * throwable contains the exception class and the error message if applicable
+     * @return array of testcases
+     */
+    public function provideVpasWithThrowables(): array
+    {
+        $cases = [];
+
+        /*
+            Pattern followed to add / update testcase
+
+            $cases[ <psp>_<handle>_<allow/reject> ] = [
+                string: <handle>,
+                array: [
+                    'class'     => <Exception class>
+                    'message'   => string
+                ]
+            ]
+
+        */
+
+        $throwables = [
+            'whitelisted'       => null,
+            'not_whitelisted'   => [
+                'class'     => BadRequestException::class,
+                'message'   => 'App not Supported for Upi AutoPay'
+            ],
+            'invalid_vpa'       => [
+                'class'     => BadRequestException::class,
+                'message'   => 'Invalid VPA. Please enter a valid Virtual Payment Address'
+            ]
+        ];
+
+        $cases['invalid_vpa']                   = ['razorpay_upi.com', $throwables['invalid_vpa']];
+
+        $cases['bhim_upi_allow']                = ['razorpay@upi', $throwables['whitelisted']];
+        $cases['paytm_paytm_allow']             = ['razorpay@paytm', $throwables['whitelisted']];
+        $cases['phonepe_ibl_allow']             = ['razorpay@ibl', $throwables['whitelisted']];
+        $cases['phonepe_ybl_allow']             = ['razorpay@ybl', $throwables['whitelisted']];
+        $cases['phonepe_axl_allow']             = ['razorpay@axl', $throwables['whitelisted']];
+        $cases['gpay_okhdfcbank_allow']         = ['razorpay@okhdfcbank', $throwables['whitelisted']];
+        $cases['amazonpay_apl_allow']           = ['razorpay@apl', $throwables['whitelisted']];
+        $cases['barodapay_barodampay_allow']    = ['razorpay@barodampay', $throwables['whitelisted']];
+
+        $cases['gpay_okaxis_reject']            = ['razorpay@okaxis', $throwables['not_whitelisted']];
+        $cases['gpay_okbizaxis_reject']         = ['razorpay@okbizaxis', $throwables['not_whitelisted']];
+        $cases['gpay_okicici_reject']           = ['razorpay@okicici', $throwables['not_whitelisted']];
+        $cases['gpay_oksbi_reject']             = ['razorpay@oksbi', $throwables['not_whitelisted']];
+
+        return $cases;
+    }
+
     /***** Tests for as presented mandates *******/
 
     public function testRecurringMandateCreateForAsPresented($encrypted=false, $tpv=false, $bankAccount=[])
@@ -981,5 +1056,45 @@ class UpiInitialRecurringTestCase extends TestCase
         $content = $this->mockMozartServer()->getAsyncCallbackResponseRevoke($mandate, $gateway);
 
         $this->makeS2sCallbackAndGetContentSilently($content, $gateway);
+    }
+
+    /**
+     * @param $throwable null|array
+     * @param $closure callable
+     */
+    private function goWithTheFlow(?array $throwable, callable $closure)
+    {
+        // throwable is not expected if throwable is null
+        $throwableExpected = ($throwable !== null);
+        $throwableThrown = false;
+
+        try
+        {
+            if (is_callable($closure) === true)
+            {
+                $closure();
+            }
+            else
+            {
+                throw new LogicException("Expected a callable");
+            }
+        }
+        catch (\Throwable $t)
+        {
+            $throwableThrown = true;
+
+            $this->assertExceptionClass($t, $throwable['class']);
+
+            $message = $throwable['message'] ?? null;
+
+            if ($message !== null)
+            {
+                $this->assertSame($message, $t->getMessage());
+            }
+        }
+        finally
+        {
+            $this->assertSame($throwableExpected, $throwableThrown, 'Exception not thrown');
+        }
     }
 }
