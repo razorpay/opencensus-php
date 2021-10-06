@@ -98,6 +98,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::END_AT);
     }
 
+    public function getCode()
+    {
+        return $this->getAttribute(self::CODE);
+    }
+
     public function incrementUsedCount()
     {
         $usedCount = $this->getUsedCount();

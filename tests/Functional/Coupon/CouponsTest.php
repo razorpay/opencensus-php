@@ -725,8 +725,11 @@ class CouponsTest extends TestCase
     public function testApplyMtuCoupon()
     {
         $this->mockRazorxTreatment();
+        $promotionAttributes = [
+            'pricing_plan_id' => 'BAJq6FJDNJ4ZqD',
+        ];
 
-        $promotion = $this->fixtures->create('promotion:onetime');
+        $promotion = $this->fixtures->create('promotion:onetime', $promotionAttributes);
 
         $couponAttributes = [
             'entity_id'   => $promotion->getId(),
@@ -743,6 +746,12 @@ class CouponsTest extends TestCase
             'business_type'     => '2',
         ]);
 
+        $pricingPlan = 'random12343231';
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'pricing_plan_id' => $pricingPlan
+        ]);
+
         $this->fixtures->merchant->activate('10000000000000');
 
         $this->ba->proxyAuth();
@@ -750,6 +759,13 @@ class CouponsTest extends TestCase
         $response = $this->applyMtuCouponOnMerchant();
 
         $this->checkValidResponse($response);
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        /*
+         * Assert that pricing plan has not changed for the merchant
+         */
+        $this->assertEquals($pricingPlan, $merchant->getPricingPlanId());
 
         $credit = $this->getLastEntity('credits', true);
 

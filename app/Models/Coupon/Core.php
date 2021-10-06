@@ -231,7 +231,17 @@ class Core extends Base\Core
         //
         $this->repo->transaction(function() use ($merchant, $promotion, $coupon)
         {
-            $this->applyPromotionPricing($merchant, $promotion);
+            if ($this->shouldApplyPromotionPricing($coupon) === true)
+            {
+                $this->applyPromotionPricing($merchant, $promotion);
+            }
+            else
+            {
+                $this->trace->info(TraceCode::MERCHANT_PROMOTION_PRICING_CHANGE_SKIPPED, [
+                    'merchant_id'   => $merchant->getId(),
+                    'coupon_code'   => $coupon->getCode()
+                ]);
+            }
 
             $this->mapPromotionPartnerIfApplicable($merchant, $promotion);
 
@@ -266,6 +276,15 @@ class Core extends Base\Core
             );
 
         return $merchantPromotion !== null;
+    }
+
+    protected function shouldApplyPromotionPricing(Entity $coupon)
+    {
+        $couponCode = $coupon->getCode();
+
+        $config = Constants::COUPON_CONFIG[$couponCode] ?? Constants::COUPON_CONFIG['default'];
+
+        return $config[Constants::APPLY_PROMOTION_PRICING];
     }
 
     protected function applyPromotionPricing(Merchant\Entity $merchant, Promotion\Entity $promotion)
