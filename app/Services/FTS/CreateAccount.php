@@ -474,7 +474,14 @@ class CreateAccount extends Base
     {
         try
         {
+            $startTime = microtime(true);
+
             Account::dispatch($this->mode, $account->getId(), $account->getEntityName(), $product)->delay(5);
+
+            $this->trace->info(TraceCode::PAYOUT_OPTIMIZATION_FOR_COMPOSITE_TIME_TAKEN, [
+                'step'       => 'composite_fts_create_account_dispatch',
+                'time_taken' => (microtime(true) - $startTime) * 1000,
+            ]);
 
             $this->trace->info(
                 TraceCode::FTS_CREATE_ACCOUNT_JOB_DISPATCHED,

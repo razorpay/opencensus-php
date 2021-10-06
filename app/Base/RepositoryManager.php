@@ -205,6 +205,13 @@ class RepositoryManager extends Illuminate\Support\Manager
         return $repo->saveOrFail($entity, $options);
     }
 
+    public function saveOrFailWithoutEsSync($entity, array $options = array())
+    {
+        $repo = $this->getRepositoryClassFromObject($entity);
+
+        return $repo->saveOrFailWithoutEsSync($entity, $options);
+    }
+
     public function save($entity, array $options = array())
     {
         $repo = $this->getRepositoryClassFromObject($entity);

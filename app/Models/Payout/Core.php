@@ -268,6 +268,40 @@ class Core extends Base\Core
     }
 
     /**
+     * THIS FUNCTION IS MEANT ONLY FOR HIGH TPS EXTERNAL MERCHANTS.
+     * NOT SUPPORTED: Workflow, Scheduled Payouts, Partner payouts, Payouts via Apps, Batch Payouts, Payout Microservice
+     *
+     * DO NOT!!!! I REPEAT, DO NOT ONBOARD ANY INTERNAL APPS ON THIS CODE.
+     *
+     * @param array              $input
+     * @param Merchant\Entity    $merchant
+     * @param FundAccount\Entity $fundAccount
+     *
+     * @return Entity
+     */
+    public function createPayoutToFundAccountForCompositePayout(array $input,
+                                                                Merchant\Entity $merchant,
+                                                                FundAccount\Entity $fundAccount,
+                                                                Merchant\Balance\Entity $balance): Entity
+    {
+        $this->trace->info(
+            TraceCode::FUND_ACCOUNT_COMPOSITE_PAYOUT_CREATE_REQUEST,
+            [
+                'input' => $input
+            ]);
+
+        // TODO: See if we can get balance from somewhere before and reuse here.
+        $payout = $this->getProcessor('fund_account_payout')
+                       ->setMerchant($merchant)
+                       ->setFundAccount($fundAccount)
+                        // NOT SUPPORTED: Workflow, Scheduled Payouts, Partner payouts,
+                        // Payouts via Apps, Batch Payouts, Payout Microservice
+                       ->createPayoutForCompositePayoutFlow($input, $balance);
+
+        return $payout;
+    }
+
+    /**
      * IMPS payout from a customer wallet to a func account
      *
      * SOURCE: Customer Wallet Balance

@@ -779,49 +779,6 @@ class RequestLogsTest extends TestCase
                             'RequestLogsTest: Route names do not match when creating a payout');
     }
 
-    public function testPayoutCreateWhenRedisKeyIsOff()
-    {
-        /*
-         * 1. Create a contact, vpa and fund account
-         * 2. Request to create payout
-         * 3. Check if entity type, entity ID and route name match
-         */
-
-        $this->fixtures->on('live')->create('contact', $this->createContactEntityArray());
-        $this->fixtures->on('live')->create('vpa', $this->createVpaEntityArray());
-        $this->fixtures->on('live')->create('fund_account', $this->createVpaFundAccountEntityArray());
-
-        $request = [
-            'url'     => '/payouts',
-            'method'  => 'POST',
-            'content' => [
-                'fund_account_id' => 'fa_fa100000000000',
-                'amount'          => 100,
-                'mode'            => 'UPI',
-                'currency'        => 'INR',
-                'account_number'  => '2224440041626905',
-                'purpose'         => 'refund'
-            ],
-        ];
-
-        $this->setStateViaRedisKeyForEnablingRequestLogging('off');
-
-        $countBefore = count($this->getDbEntities('request_log',[], 'live'));
-
-        $this->makeRequestAndGetContent($request);
-
-        $countAfter = count($this->getDbEntities('request_log',[], 'live'));
-
-        $route = $this->app['api.route']->getCurrentRouteName();
-
-        if(! $this->checkIfRouteNameIsIncluded($route))
-        {
-            return;
-        }
-
-        $this->assertEquals(0, $countBefore - $countAfter);
-    }
-
     public function testCreatePayoutWithIncorrectRequestBody()
     {
         /*

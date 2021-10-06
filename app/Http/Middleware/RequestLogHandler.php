@@ -62,24 +62,14 @@ class RequestLogHandler
 
         $mode = $this->app['rzp.mode'];
 
-        $switchState = (new AdminService)->getConfigKey(
-            ['key' => ConfigKey::REQUEST_LOG_STATE]);
-
-        if (empty($switchState) === true)
-        {
-            $switchState = self::DEFAULT_REQUEST_LOG_STATE;
-        }
-
         // If the request isn't on live mode, then there's no need of logging
         // Also, if the redis key is not 'on', then we don't log as well.
-        if (($mode !== Mode::LIVE) or
-            ($switchState !== 'on'))
+        if ($mode !== Mode::LIVE)
         {
             $this->trace->info(
                 TraceCode::REQUEST_LOG_SKIPPED,
                 [
                     'mode' => $mode,
-                    'Request Log status' => $switchState,
                 ]
             );
             return $response;

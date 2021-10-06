@@ -109,6 +109,20 @@ class Purpose
             ['payout_id' => $payout->getId()]);
     }
 
+    public function setPurposeAndTypeForNewCompositePayoutFlow(Entity $payout, string $purpose)
+    {
+        if (self::isInDefaults($purpose) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invalid purpose: ' . $purpose,
+                Entity::PURPOSE,
+                ['payout_id' => $payout->getId()]);
+        }
+
+        $payout->setPurpose($purpose);
+        $payout->setPurposeType(self::$defaultPurposeTypeMap[$purpose]);
+    }
+
     public function validatePurpose(Merchant\Entity $merchant, string $purpose)
     {
         $trimPurpose = $this->trimSpaces($purpose);

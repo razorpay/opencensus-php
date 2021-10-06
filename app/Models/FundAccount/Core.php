@@ -239,6 +239,72 @@ class Core extends Base\Core
         return $fundAccount;
     }
 
+    public function createForCompositePayout(array $input,
+                                             Merchant\Entity $merchant,
+                                             Contact\Entity $contact,
+                                             array $traceData): Entity
+    {
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST_FOR_COMPOSITE_PAYOUT, [
+            'input' => $traceData
+        ]);
+
+        if ((isset($input[Entity::ACCOUNT_TYPE]) === true) and
+            (strtolower($input[Entity::ACCOUNT_TYPE]) ===  Entity::WALLET))
+        {
+            $input = $this->constructWalletAccountFundAccountRequest($input);
+        }
+
+        $accountDetails = $this->getAccountDetailsForInput($input);
+
+        $uniqueHash = $this->generateUniqueHashForFundAccount($input[Entity::ACCOUNT_TYPE],
+                                                              $merchant,
+                                                              $accountDetails,
+                                                              $contact);
+
+        $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetailsFromHash($uniqueHash);
+
+        if (empty($fundAccount) === false)
+        {
+            $this->trace->info(
+                TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND_USING_HASH,
+                [
+                    Entity::ID          => $fundAccount->getId(),
+                    Entity::UNIQUE_HASH => $uniqueHash,
+                ]);
+
+            return $fundAccount;
+        }
+
+        $fundAccount = (new Entity);
+
+        // This needs to be done before the build since validator
+        // uses the merchant association to check for a feature.
+        $fundAccount->merchant()->associate($merchant);
+
+        $fundAccount = $fundAccount->build($input);
+
+        $account = $this->createAccount($input, $merchant, $contact);
+
+        $fundAccount->source()->associate($contact);
+
+        $fundAccount->account()->associate($account);
+
+        $fundAccount->setUniqueHash($uniqueHash);
+
+        $this->repo->saveOrFailWithoutEsSync($fundAccount);
+
+        $this->createFTSAccountForFundAccount($input, $fundAccount, $contact);
+
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATED_FOR_COMPOSITE_PAYOUT,
+                           [
+                               E::FUND_ACCOUNT => $fundAccount->getId(),
+                           ]);
+
+        Metric::pushCreateMetrics($fundAccount);
+
+        return $fundAccount;
+    }
+
     /**
      * We were accepting the account details object in the `details` key, and then changed to accept this in a
      * key with a name corresponding to the account_type -> `bank_account` or `vpa`.

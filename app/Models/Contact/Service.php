@@ -75,6 +75,11 @@ class Service extends Base\Service
         ];
     }
 
+    public function createForCompositePayout(array $input, array $traceData): Entity
+    {
+        return $this->core->createForCompositeRequest($input, $this->merchant, $traceData);
+    }
+
     public function fetch(string $id, array $input): array
     {
         $merchant = $this->merchant;

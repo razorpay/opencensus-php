@@ -14078,4 +14078,75 @@ return [
             ],
         ],
     ],
+
+    'testCompositePayoutCreationViaNewCompositeFlow' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 2000000,
+                'currency'       => 'INR',
+                'purpose'        => 'refund',
+                'narration'      => 'Batman',
+                'mode'           => 'UPI',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'vpa',
+                    'vpa' => [
+                        'address'  => 'mehulisa10xdev@razorpay',
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'payout',
+                'amount'       => 2000000,
+                'currency'     => 'INR',
+                'narration'    => 'Batman',
+                'purpose'      => 'refund',
+                'status'       => 'processing',
+                'mode'         => 'UPI',
+                'tax'          => 0,
+                'fees'         => 0,
+                'notes'        => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'vpa',
+                    'vpa' => [
+                        'address'  => 'mehulisa10xdev@razorpay',
+                    ],
+                    'batch_id'     => null,
+                    'active'       => true,
+                    'contact'      => [
+                        'entity'       => 'contact',
+                        'name'         => 'Prashanth YV',
+                        'contact'      => '9999999999',
+                        'email'        => 'prashanth@razorpay.com',
+                        'type'         => 'employee',
+                        'reference_id' => null,
+                        'batch_id'     => null,
+                        'active'       => true,
+                        'notes'        => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

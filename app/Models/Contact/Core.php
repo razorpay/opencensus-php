@@ -120,6 +120,53 @@ class Core extends Base\Core
     }
 
     /**
+     * This function is a subset of the above create function. It is much lighter and has been stripped to
+     * the bare minimum. We shall be using this specifically for high TPS merchants.
+     *
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     * @param array           $traceData
+     *
+     * @return Entity
+     */
+    public function createForCompositeRequest(array $input, Merchant\Entity $merchant, array $traceData): Entity
+    {
+        $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST_FOR_COMPOSITE_PAYOUT, [
+            'input' => $traceData
+        ]);
+
+        // Code to check for a duplicate contact
+        // TODO: Replace with Hash, just in this place (if possible)
+        $contact = $this->repo->contact->getContactWithSimilarDetails($input, $merchant);
+
+        if ($contact !== null)
+        {
+            $this->trace->info(
+                TraceCode::DUPLICATE_CONTACT_FOUND,
+                [
+                    Entity::ID => $contact->getId(),
+                ]);
+
+            return $contact;
+        }
+
+        // NOTE: We do not have any checks on contact `type` for this new flow. We shall need to ensure that
+        // merchant only passed the default 4 types, otherwise the fetch API would degrade with the `type` query param.
+        $contact = (new Entity)->build($input);
+
+        $contact->merchant()->associate($merchant);
+
+        $this->repo->saveOrFailWithoutEsSync($contact);
+
+        $this->trace->info(TraceCode::CONTACT_CREATED_FOR_COMPOSITE_PAYOUT,
+                           [
+                               Constants\Entity::CONTACT => $contact->getId(),
+                           ]);
+
+        return $contact;
+    }
+
+    /**
      * This function will check that this is trying to create the TaxPayment internal contact
      * Also checks if the request source is valid
      *

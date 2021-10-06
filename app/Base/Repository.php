@@ -201,6 +201,16 @@ class Repository extends \Razorpay\Spine\Repository
 
     public function saveOrFail($entity, array $options = array())
     {
+        $this->saveOrFailImplementation($entity, $options, true);
+    }
+
+    public function saveOrFailWithoutEsSync($entity, array $options = array())
+    {
+        $this->saveOrFailImplementation($entity, $options, false);
+    }
+
+    protected function saveOrFailImplementation($entity, array $options = array(), $esSyncFlag = true)
+    {
         // TODO: getDirty() doesn't handle related models update. Currently there
         // is no such use case but will come very soon. Handle the same then.
 
@@ -212,7 +222,10 @@ class Repository extends \Razorpay\Spine\Repository
 
         $entity->saveOrFail($options);
 
-        $this->syncToEs($entity, $action, $dirty);
+        if ($esSyncFlag === true)
+        {
+            $this->syncToEs($entity, $action, $dirty);
+        }
     }
 
     protected function updateIdempotencyTableIfRequired(PublicEntity $entity)

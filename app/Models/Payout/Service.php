@@ -21,6 +21,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Models\Admin\Org;
+use RZP\Traits\TrimSpace;
 use RZP\Models\FundAccount;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
@@ -41,6 +42,7 @@ use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
 
 class Service extends Base\Service
 {
+    use TrimSpace;
     use Base\Traits\ProcessAccountNumber;
 
     /**
@@ -149,7 +151,8 @@ class Service extends Base\Service
         }
 
         // Only allowed for Rx payouts, mandates account number
-        $this->processAccountNumber($input);
+        // TODO: Cache the Balance ID
+        $balance = $this->processAccountNumber($input);
 
         (new Validator)->setStrictFalse()
                        ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT, $input);
@@ -165,6 +168,29 @@ class Service extends Base\Service
 
         if ($isCompositePayout === true)
         {
+            $startTime = microtime(true);
+
+            $newFlowFlag = $this->merchant->isFeatureEnabled(Features::HIGH_TPS_COMPOSITE_PAYOUT);
+
+            $this->trace->info(TraceCode::PAYOUT_OPTIMIZATION_FOR_COMPOSITE_TIME_TAKEN, [
+                'step'       => 'feature_enabled_check',
+                'time_taken' => (microtime(true) - $startTime) * 1000,
+            ]);
+
+            if ($newFlowFlag === true)
+            {
+                $payout = $this->newCompositePayoutFlow($input, $balance);
+
+                $compositePayoutResponse = $this->postCreationProcessingForCompositePayout($payout);
+
+                $this->trace->info(TraceCode::PAYOUT_OPTIMIZATION_FOR_COMPOSITE_TIME_TAKEN, [
+                    'step'       => 'entire_composite_flow',
+                    'time_taken' => (microtime(true) - $startTime) * 1000,
+                ]);
+
+                return $compositePayoutResponse->toArrayPublic();
+            }
+
             $input = $this->createContactAndFundAccountAndGetPayoutInputForCompositeRequest($input);
         }
 
@@ -1853,5 +1879,127 @@ class Service extends Base\Service
         (new Validator)->validateInput(Validator::RETRY_PAYOUTS_ON_SERVICE, $input);
 
         return $this->core->retryPayoutsOnPayoutService($input);
+    }
+
+    /**
+     * THIS FUNCTION IS MEANT ONLY FOR HIGH TPS EXTERNAL MERCHANTS.
+     *
+     * DO NOT!!!! I REPEAT, DO NOT ONBOARD ANY INTERNAL APPS ON THIS CODE.
+     *
+     * @param array $input
+     *
+     * @return Entity
+     */
+    protected function newCompositePayoutFlow(array $input, Merchant\Balance\Entity $balance): Entity
+    {
+        $startTime = microtime(true);
+
+        $input = $this->trimSpaces($input);
+
+        // We figure out the trace input at this place, we shall also pass this around,
+        // so that we don't have to redo this process repeatedly for the downstream logs
+        $traceData = $this->unsetSensitiveCardDetails($input);
+
+        $this->trace->info(TraceCode::NEW_PAYOUT_COMPOSITE_CREATE_REQUEST, $traceData);
+
+        // TODO: Update this with a single validator to validate Contact, Fund Account and Payout data at once
+        (new Validator)->validateInput(Validator::FUND_ACCOUNT_PAYOUT_COMPOSITE, $input);
+
+        $this->trace->info(TraceCode::PAYOUT_OPTIMIZATION_FOR_COMPOSITE_TIME_TAKEN, [
+            'step'       => 'composite_validation',
+            'time_taken' => (microtime(true) - $startTime) * 1000,
+        ]);
+
+        $startTime = microtime(true);
+
+        $contact = $this->createContactForNewCompositePayoutFlow($input, $traceData);
+
+        $this->trace->info(TraceCode::PAYOUT_OPTIMIZATION_FOR_COMPOSITE_TIME_TAKEN, [
+            'step'       => 'composite_contact_creation',
+            'time_taken' => (microtime(true) - $startTime) * 1000,
+        ]);
+
+        $startTime = microtime(true);
+
+        $fundAccount = $this->createFundAccountForNewCompositePayoutFlow($input, $contact, $traceData);
+
+        $this->trace->info(TraceCode::PAYOUT_OPTIMIZATION_FOR_COMPOSITE_TIME_TAKEN, [
+            'step'       => 'composite_fund_account_creation',
+            'time_taken' => (microtime(true) - $startTime) * 1000,
+        ]);
+
+        $startTime = microtime(true);
+
+        $payout = $this->createPayoutForNewCompositePayoutFlow($input, $fundAccount, $balance);
+
+        $this->trace->info(TraceCode::PAYOUT_OPTIMIZATION_FOR_COMPOSITE_TIME_TAKEN, [
+            'step'       => 'composite_payout_creation',
+            'time_taken' => (microtime(true) - $startTime) * 1000,
+        ]);
+
+        return $payout;
+    }
+
+    protected function createContactForNewCompositePayoutFlow(array $input, array $traceData): Contact\Entity
+    {
+        [$contactInput, $contactTraceData] = $this->getInputForContactCreationFromCompositePayoutPayload($input, $traceData);
+
+        return (new Contact\Service)->createForCompositePayout($contactInput, $contactTraceData);
+    }
+
+    protected function createFundAccountForNewCompositePayoutFlow(array $input,
+                                                                  Contact\Entity $contact,
+                                                                  array $traceData): FundAccount\Entity
+    {
+        [$fundAccountInput, $faTraceData] = $this->getInputForFundAccountCreationFromCompositePayoutPayload($input,
+                                                                                         $contact->getPublicId(),
+                                                                                         $traceData);
+
+        return (new FundAccount\Service)->createForCompositePayout($fundAccountInput, $contact, $faTraceData);
+
+    }
+
+    protected function createPayoutForNewCompositePayoutFlow(array $input,
+                                                             FundAccount\Entity $fundAccount,
+                                                             Merchant\Balance\Entity $balance): Entity
+    {
+        $payoutInput = $this->getInputForPayoutCreationForNewCompositePayoutFlow($input,
+                                                                                 $fundAccount->getPublicId());
+
+        return $this->core->createPayoutToFundAccountForCompositePayout($payoutInput, $this->merchant, $fundAccount, $balance);
+    }
+
+    protected function getInputForContactCreationFromCompositePayoutPayload(array $input, array $traceData): array
+    {
+        return [$input[Entity::FUND_ACCOUNT ][Entity::CONTACT], $traceData[Entity::FUND_ACCOUNT][Entity::CONTACT]];
+    }
+
+    protected function getInputForFundAccountCreationFromCompositePayoutPayload(array $input,
+                                                                                string $contactId,
+                                                                                array $traceData): array
+    {
+        // Abstract out the Fund Account object
+        $fundAccountInput = $input[Entity::FUND_ACCOUNT];
+        $fundAccountTraceData = $traceData[Entity::FUND_ACCOUNT];
+
+        // Unset the nested contact object from the outer fund account object
+        unset($fundAccountInput[Entity::CONTACT]);
+        unset($fundAccountTraceData[Entity::CONTACT]);
+
+        // Add contactId to the fund account object
+        $fundAccountInput[FundAccount\Entity::CONTACT_ID] = $contactId;
+        $fundAccountTraceData[FundAccount\Entity::CONTACT_ID] = $contactId;
+
+        return [$fundAccountInput, $fundAccountTraceData];
+    }
+
+    protected function getInputForPayoutCreationForNewCompositePayoutFlow(array $input,
+                                                                          string $fundAccountId): array
+    {
+        unset($input[Entity::FUND_ACCOUNT]);
+
+        $input[Payout\Entity::FUND_ACCOUNT_ID] = $fundAccountId;
+
+        return $input;
     }
 }

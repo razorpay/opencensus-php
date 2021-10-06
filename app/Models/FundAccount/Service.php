@@ -69,14 +69,50 @@ class Service extends Base\Service
 
         (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 
-        $source = null;
-
         if (isset($input[Entity::CONTACT_ID]) === true)
         {
             return $this->handleFundAccountCreationForContact($input);
         }
 
         return $this->handleFundAccountCreationForCustomer($input);
+    }
+
+    /**
+     * @param array          $input
+     * @param Contact\Entity $contact
+     * @param array          $traceData
+     *
+     * @return Entity
+     * @throws BadRequestValidationFailureException
+     */
+    public function createForCompositePayout(array $input, Contact\Entity $contact, array $traceData): Entity
+    {
+        $this->trace->info(TraceCode::FUND_ACCOUNT_RAW_REQUEST_FOR_COMPOSITE_PAYOUT, [
+            'input' => $traceData
+        ]);
+
+        $this->preProcessingForCard($input, $traceData);
+
+        if ($contact->isActive() === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Fund accounts cannot be created on an inactive ' . $contact->getEntity());
+        }
+
+        return $this->core->createForCompositePayout($input, $this->merchant, $contact, $traceData);
+    }
+
+    protected function preProcessingForCard(array &$input, array &$traceData)
+    {
+        $input     = $this->trimCardNumberIfRequired($input);
+        $traceData = $this->trimCardNumberIfRequired($traceData);
+
+        $this->unsetIfscIfRequired($input);
+        $this->unsetIfscIfRequired($traceData);
+
+        $orderService = (new OrderService);
+        $orderService->updateIfscIfRequired($input);
+        $orderService->updateIfscIfRequired($traceData);
     }
 
     public function fetch(string $id, array $input): array

@@ -8,6 +8,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
+use RZP\Models\Payout\Entity;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Payout\CounterHelper;
@@ -63,6 +64,21 @@ class FundAccountPayout extends Base
         }
 
         return $payout;
+    }
+
+    public function createPayoutForCompositePayoutFlow(array $input, Balance\Entity $balance = null): Entity
+    {
+        /** @var Balance\Entity $balance */
+        if ($balance === null)
+        {
+            $balance = $this->repo->balance->findOrFailById($input[Balance\Entity::BALANCE_ID]);
+        }
+
+        $queuePayoutCreateRequest = $this->shouldDelayTransactionCreationForPayout();
+
+        $input = array_merge($input, [Payout\Entity::QUEUE_PAYOUT_CREATE_REQUEST => $queuePayoutCreateRequest]);
+
+        return parent::createPayoutForCompositePayoutFlow($input, $balance);
     }
 
     /**

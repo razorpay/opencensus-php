@@ -20,11 +20,11 @@ trait ProcessAccountNumber
      * @param array $input
      * @throws \RZP\Exception\BadRequestException
      */
-    protected function processAccountNumber(array & $input)
+    protected function processAccountNumber(array & $input) : Merchant\Balance\Entity
     {
         /** @var Merchant\Validator $merchantValidator */
         $merchantValidator = $this->merchant->getValidator();
 
-        $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
+        return $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
     }
 }

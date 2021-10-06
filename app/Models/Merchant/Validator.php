@@ -20,6 +20,7 @@ use RZP\Constants\Product;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Payment\Event;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Balance;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Admin\Permission\Name as Permission;
@@ -1859,9 +1860,10 @@ class Validator extends Base\Validator
      *
      * @param array $input
      *
+     * @return Balance\Entity
      * @throws Exception\BadRequestException
      */
-    public function validateAndTranslateAccountNumberForBanking(array & $input)
+    public function validateAndTranslateAccountNumberForBanking(array & $input) : Balance\Entity
     {
         $this->validateBusinessBankingActivated();
 
@@ -1877,9 +1879,12 @@ class Validator extends Base\Validator
 
         try
         {
-            $balanceId = app('repo')->balance->getBalanceIdByAccountNumberOrFail($accountNumber);
+            /** @var Balance\Entity $balance */
+            $balance = app('repo')->balance->getBalanceByAccountNumberOrFail($accountNumber);
 
-            $input[Balance\Entity::BALANCE_ID] = $balanceId;
+            $input[Balance\Entity::BALANCE_ID] = $balance->getId();
+
+            return $balance;
         }
         catch (\Throwable $ex)
         {

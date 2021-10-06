@@ -207,46 +207,6 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotNull($payout['transferred_at']);
     }
 
-    public function testCreatePayoutWithSyncFtsTransferCallBehindRazorx()
-    {
-        $this->mockRazorxTreatment('yesbank',
-                                   'on',
-                                   'off',
-                                   'off',
-                                   'off',
-                                   'on',
-                                   'on',
-                                   'off',
-                                   'on',
-                                   'on',
-                                   'off',
-                                   'on',
-                                   'on',
-                                   'on',
-                                   'control',
-                                   'on',
-                                   'off',
-                                   'off',
-                                   'control',
-                                   'on');
-
-        $this->app['rzp.mode'] = EnvMode::TEST;
-
-        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
-
-        $mock->shouldReceive([
-                                 'shouldAllowTransfersViaFts' => [true, 'Dummy'],
-                             ]);
-
-        $this->app->instance('fts_fund_transfer', $mock);
-
-        $this->testCreatePayout();
-
-        $payout = $this->getLastEntity('payout', true);
-
-        $this->assertNotNull($payout['transferred_at']);
-    }
-
     public function testCreatePayoutOnLiveMode(): array
     {
         $this->liveSetUp();
@@ -14091,5 +14051,16 @@ class PayoutTest extends OAuthTestCase
         );
 
         $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED);
+    }
+
+    public function testCompositePayoutCreationViaNewCompositeFlow()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_PROCESS_ASYNC]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
     }
 }

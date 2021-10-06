@@ -791,7 +791,7 @@ class Constants
      * Merchant level feature flag for HDFC 2.0 Checkout
      */
     const HDFC_CHECKOUT_2   = 'hdfc_checkout_2';
-    
+
     /**
      * Org level feature flag for sub merchant activation with MCC Pending status.
      */
@@ -878,6 +878,11 @@ class Constants
      */
     const ALLOW_NETWORK_TOKENS = 'allow_network_tokens';
 
+    /**
+     * Flag to enable the new composite payout flow meant for high tps merchants.
+     * Initially implemented specifically for whatsapp.
+     */
+    const HIGH_TPS_COMPOSITE_PAYOUT = 'high_tps_composite_payout';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -1254,6 +1259,7 @@ class Constants
         self::API_BULK_APPROVALS              => true,
         self::NETWORK_TOKENIZATION            => true,
         self::CREATE_SOURCE_V2                => true,
+        self::HIGH_TPS_COMPOSITE_PAYOUT       => true,
         self::ALLOW_NETWORK_TOKENS            => true,
     ];
     // Entity type constants
@@ -1820,7 +1826,12 @@ class Constants
             'feature'       =>  self::DISABLE_ONDEMAND_FOR_LOC,
             'display_name'  =>  'Disable ondemand for loc',
             'documentation' =>  '',
-        ]
+        ],
+        self::HIGH_TPS_COMPOSITE_PAYOUT => [
+            'feature'       => self::HIGH_TPS_COMPOSITE_PAYOUT,
+            'display_name'  => 'Feature to have a separate composite API for High TPS merchants',
+            'documentation' => '',
+        ],
     ];
 
     /**

@@ -2262,6 +2262,7 @@ class Entity extends Base\PublicEntity
         // Mail only for processed and reversed payouts
         // Ref: \RZP\Mail\Transaction\Payout::getSubject
         return (($this->isBalanceTypeBanking() === true) and
+                ($this->merchant->isFeatureEnabled(Features::HIGH_TPS_COMPOSITE_PAYOUT) === false) and
                 (in_array($this->getStatus(), [Status::PROCESSED, Status::REVERSED], true) === true));
     }
 

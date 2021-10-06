@@ -103,6 +103,11 @@ class Base extends BaseCore
     protected $balance;
 
     /**
+     * @var FundAccount\Entity
+     */
+    protected $fundAccount;
+
+    /**
      * @var bool
      */
     protected $workflowActivated = false;
@@ -332,21 +337,98 @@ class Base extends BaseCore
         return $payout;
     }
 
+    /**
+     * NOT SUPPORTED: Workflow, Scheduled Payouts, Partner payouts, Payouts via Apps, Batch Payouts, Payout Microservice
+     *
+     * @param array               $input
+     * @param Balance\Entity|null $balance
+     *
+     * @return Entity
+     * @throws BadRequestException
+     */
+    public function createPayoutForCompositePayoutFlow(array $input, Balance\Entity $balance): Entity
+    {
+        $this->setPayoutBalance($input, $balance);
+
+        $this->preValidations();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->repo->transaction(function () use ($input)
+        {
+            $payout =  $this->createPayoutEntityForNewCompositePayoutFlow($input);
+
+            if ($payout->getQueuePayoutCreateRequest() === true)
+            {
+                $payout->setStatus(Status::CREATE_REQUEST_SUBMITTED);
+
+                $this->repo->saveOrFailWithoutEsSync($payout);
+
+                $this->dispatchForPreCreatedPayouts($payout);
+
+                return $payout;
+            }
+
+            // After the current transaction closes, a sync call to FTS is made for payouts with this flag set.
+            // Currently we make sync calls for specific flow only i.e. create fund account payout.
+            if ($this->isPayoutToFtsSyncModeEnabled($payout) === true)
+            {
+                // By setting this flag we can skip sending the request to queue and making a sync call.
+                $payout->setSyncFtsFundTransferFlag(true);
+            }
+
+            $payoutType = $this->getPayoutType();
+
+            $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                           $payout,
+                                                           $this->mode,
+                                                           $this->fundTransferDestination);
+
+            $downstreamProcessor->process();
+
+            if (empty($payout->getStatus()) === true)
+            {
+                $payout->setStatus(Status::CREATED);
+            }
+
+            $this->repo->saveOrFailWithoutEsSync($payout);
+
+            return $payout;
+        });
+
+        $this->trace->info(
+            TraceCode::PAYOUT_CREATED_FOR_COMPOSITE_PAYOUT,
+            [
+                'input'  => $input,
+                'payout' => $payout->toArrayPublic(),
+            ]);
+
+        if ($payout->makeSyncFtsFundTransfer() === true)
+        {
+            $isFts = false;
+
+            $fta = $payout->getFta();
+
+            // fta can be null in some cases like queued payout of CA, on hold payouts.
+            if ($fta !== null)
+            {
+                $isFts = $fta->getIsFts();
+            }
+
+            if ($isFts === true)
+            {
+                $this->syncFTSFundTransfer($payout);
+            }
+        }
+
+        $this->fireEventForPayoutStatus($payout);
+
+        return $payout;
+    }
+
     // payouts to sync mode feature will be enabled based on razorx experiment with a fall back on feature flag.
     protected function isPayoutToFtsSyncModeEnabled(Entity $payout)
     {
-        $variant = $this->app->razorx->getTreatment($payout->merchant->getId(),
-                                                    Merchant\RazorxTreatment::PAYOUT_TO_FTS_SYNC_MODE,
-                                                    $this->mode);
-
-        if (strtolower($variant) === 'on')
-        {
-            $enabled = true;
-        }
-        else
-        {
-            $enabled = $payout->merchant->isFeatureEnabled(Feature::PAYOUT_SYNC_FTS_TRANSFER);
-        }
+        $enabled = $payout->merchant->isFeatureEnabled(Feature::PAYOUT_SYNC_FTS_TRANSFER);
 
         $this->trace->info(
             TraceCode::SYNC_FTS_FUND_TRANSFER_ENABLED,
@@ -1133,6 +1215,13 @@ class Base extends BaseCore
         return $this;
     }
 
+    public function setFundAccount(FundAccount\Entity $fundAccount): self
+    {
+        $this->fundAccount = $fundAccount;
+
+        return $this;
+    }
+
     /**
      * @param callable $createPayoutCallback The callable is expected to create and return a payout entity.
      * @param array $input
@@ -1501,6 +1590,49 @@ class Base extends BaseCore
         return $payout;
     }
 
+    protected function createPayoutEntityForNewCompositePayoutFlow(array $input)
+    {
+        $payout = (new Payout\Entity);
+
+        $queuePayoutCreateRequest = array_pull($input, Payout\Entity::QUEUE_PAYOUT_CREATE_REQUEST, false);
+
+        $this->runInputValidations($payout, $input);
+
+        $payout->merchant()->associate($this->merchant);
+
+        $this->fetchAndAssociatePayoutAccount($payout, $input);
+
+        $this->setMethod($payout);
+
+        $payout->balance()->associate($this->balance);
+
+        //
+        // Doing this after all the associations since
+        // the modifiers and validators require payout
+        // account and merchant to be associated.
+        //
+        $payout = $payout->build($input);
+
+        $this->runEntityValidations($payout, $input);
+
+        $payout->setQueuePayoutCreateRequest($queuePayoutCreateRequest);
+
+
+        if ((isset($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true) and
+            (boolval($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true))
+        {
+            $payout->setQueueFlag(true);
+
+            (new PayoutsDetailsCore)->create(true, $payout);
+        }
+
+        (new Payout\Purpose)->setPurposeAndTypeForNewCompositePayoutFlow($payout, $payout->getPurpose());
+
+        $this->checkMerchantEligibilityForPayoutMode($payout);
+
+        return $payout;
+    }
+
     protected function processPayoutLinkId(Payout\Entity & $payout, array & $input)
     {
         $payoutLinkId = array_pull($input , Payout\Entity::PAYOUT_LINK_ID);
@@ -1565,8 +1697,15 @@ class Base extends BaseCore
         return class_basename(get_called_class());
     }
 
-    protected function setPayoutBalance(array $input)
+    protected function setPayoutBalance(array $input, Balance\Entity $balance = null)
     {
+        if (empty($balance) === false)
+        {
+            $this->balance = $balance;
+
+            return;
+        }
+
         $balanceId = $input[Payout\Entity::BALANCE_ID] ?? null;
 
         if (empty($balanceId) === true)
