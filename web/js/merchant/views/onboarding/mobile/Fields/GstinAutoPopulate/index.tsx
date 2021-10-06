@@ -190,7 +190,7 @@ const GstinAutoPopulate: React.FC<GstinAutoPopulatePropsT> = ({
       onInputChange={onInputChange}
       disabled={disabled}
       filterOptions={false}
-      bottomSheetHeaderText="SELECT BUSINESS NAME"
+      bottomSheetHeaderText="SELECT GSTIN"
     >
       {getOptions()}
     </Select>
