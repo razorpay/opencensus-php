@@ -48,6 +48,9 @@ import NCModal from 'merchant/components/Activation/NCModal';
 import DedupeModal from 'merchant/components/Home/DedupeModal';
 import CongratulatoryBanner from 'merchant/components/Announcements/CongratulatoryBanner';
 import moment from 'moment';
+import ShowWhen from 'merchant/components/ShowWhen';
+import ABCBanner from 'merchant/components/Announcements/ABCBanner';
+
 @withRouter
 @connect(
   (state) => ({
@@ -519,6 +522,9 @@ class AnalyticsDesktop extends Component {
               </Link>
             </AnnouncementBanner>
           )}
+          <ShowWhen additionalCondition={(usr) => usr.isAbcBannerEnabled}>
+            <ABCBanner user={user} />
+          </ShowWhen>
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
           {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}

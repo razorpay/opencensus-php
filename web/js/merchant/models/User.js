@@ -433,6 +433,10 @@ export default class User {
     return getSplitzExperimentVariant('whats_new_lazy_experiment')?.variables?.result === 'on';
   }
 
+  get isAbcBannerEnabled() {
+    return getSplitzExperimentVariant('abc_banner_experiment')?.variables?.result === 'on';
+  }
+
   get isCatalystCampaignEnabled() {
     return getSplitzExperimentVariant('catalyst_campaign_experiment')?.variables?.result === 'on';
   }
