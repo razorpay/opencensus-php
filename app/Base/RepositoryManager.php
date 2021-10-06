@@ -161,6 +161,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Payout\Batch\Repository                        $payouts_batch;
  * @property Models\UpiMandate\Repository                          $upi_mandate;
  * @property Models\DeviceDetail\Repository                        $user_device_detail
+ * @property Models\Dispute\Repository                             $dispute
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

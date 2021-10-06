@@ -25,60 +25,7 @@ class Core extends Base\Core
 
             $this->app['diag']->trackTrustedBadgeEvent(EventCode::TRUSTED_BADGE_CRON_INITIATED, []);
 
-            $blacklistedMIDs = $this->repo->trusted_badge->fetchRTBBlacklistedMerchantIds();
-
-            $this->trace->info(TraceCode::RTB_CRON_CHECKPOINT_REACHED, [
-                'checkpoint'    => 'fetched_blacklisted_mid',
-                'blacklistedMerchantCount' => count($blacklistedMIDs),
-            ]);
-
-            /**
-             * Merchant id query, check the following
-             * 1. activation date < 120 days
-             * 2. is razorpay org
-             * 3. category2 not in (government, lending, govt education)
-             * 4. registered - details table - business_type not in ('2','11')
-             * 5. kyc done - details table - activation_status = 'activated
-             * 6. merchant not in RTB blacklist
-             */
-            $merchantIdListWithInitialChecksPassed = $this->repo->merchant->getMerchantListEligibleForRTB($blacklistedMIDs);
-
-            $this->trace->info(TraceCode::RTB_CRON_CHECKPOINT_REACHED, [
-                'checkpoint'    => 'fetched_merchants_with_initial_checks_passed',
-                'merchantCountWithInitialChecks' => count($merchantIdListWithInitialChecksPassed),
-            ]);
-
-            $standardCheckoutEligibleMIDs = $this->getStandardCheckoutEligibleMerchantsList();
-
-            $this->trace->info(TraceCode::RTB_CRON_CHECKPOINT_REACHED, [
-                'checkpoint'    => 'fetched_eligible_standard_checkout_merchants',
-                'standardCheckoutEligibleMerchantsCount' => count($standardCheckoutEligibleMIDs),
-            ]);
-
-            $dmtMIDs = $this->getDMTMerchantsList();
-
-            $this->trace->info(TraceCode::RTB_CRON_CHECKPOINT_REACHED, [
-                'checkpoint'    => 'fetched_dmt_merchants',
-                'dmtMerchantsCount' => count($dmtMIDs),
-            ]);
-
-            $disputedMIDs = $this->repo->dispute->getLostOrClosedDisputeMerchantIdsInLast4Months();
-
-            $this->trace->info(TraceCode::RTB_CRON_CHECKPOINT_REACHED, [
-                'checkpoint'    => 'fetched_disputed_merchants',
-                'disputedMerchantsCount' => count($disputedMIDs),
-            ]);
-
-            foreach ($merchantIdListWithInitialChecksPassed as $merchantId)
-            {
-                $eligibilityChecks = [
-                    Entity::STANDARD_CHECKOUT_ELIGIBLE => in_array($merchantId, $standardCheckoutEligibleMIDs, true),
-                    Entity::IS_DMT_MERCHANT            => in_array($merchantId, $dmtMIDs, true),
-                    Entity::IS_DISPUTE_MERCHANT        => in_array($merchantId, $disputedMIDs, true),
-                ];
-
-                TrustedBadge::dispatch($this->mode, $merchantId, $eligibilityChecks);
-            }
+            TrustedBadge::dispatch($this->mode);
 
             return ['success' => true];
         }
@@ -124,6 +71,17 @@ class Core extends Base\Core
             }
             else
             {
+                if ($status === Entity::INELIGIBLE) {
+                    /**
+                     * Do not create default records for ineligible merchants
+                     * i.e first record will be created only on the following events
+                     *      1. Blacklisted by Admin
+                     *      2. Waitlist by Merchant
+                     *      3. Eligible by Cron
+                     */
+                    return;
+                }
+
                 // create trusted badge entity
                 $trustedBadge = new Entity;
 
@@ -369,7 +327,7 @@ class Core extends Base\Core
         ]);
     }
 
-    protected function getStandardCheckoutEligibleMerchantsList($retryCount = 0): array
+    public function getStandardCheckoutEligibleMerchantsList($retryCount = 0): array
     {
         try
         {
@@ -394,7 +352,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function getDMTMerchantsList($retryCount = 0): array
+    public function getDMTMerchantsList($retryCount = 0): array
     {
         try
         {
