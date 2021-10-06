@@ -409,6 +409,58 @@ class SubscriptionPaymentTest extends TestCase
         $this->assertTrue($payment->isRecurringTypeAuto());
     }
 
+    public function testAutoPaymentWithGlobalCustomer()
+    {
+        $this->fixtures->create('customer', [
+            'id' => '100002customer',
+            'global_customer_id' => '10000gcustomer',
+        ]);
+
+        $cardGlobalTokenAttributes = [
+            'id'               => '100000custgupi',
+            'token'            => '10000card1234',
+            'customer_id'      => '10000gcustomer',
+            'merchant_id'      => '100000Razorpay',
+            'method'           => 'card',
+            'card_id'          => '100000000lcard',
+            'recurring_status' => 'confirmed',
+            'recurring'        => true,
+        ];
+
+        $token = $this->fixtures->create('token', $cardGlobalTokenAttributes);
+
+        $this->subscription->setStatus(Subscription\Status::AUTHENTICATED);
+        $this->subscription->recurring_type = 'auto';
+        $this->subscription->customer_id = '100002customer';
+        $this->subscription->global_customer = true;
+
+        $this->ba->subscriptionsAuth();
+
+        $order = $this->fixtures->create(
+            'order',
+            ['amount' => $this->cardPayment['amount']]);
+
+        $paymentArray = array_merge($this->cardPayment, [
+            'token' => $token->getPublicId(),
+            'order_id' => $order->getPublicId(),
+        ]);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/subscriptions',
+            'content' => $paymentArray,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDbLastEntity(Entity::PAYMENT);
+
+        $this->assertEquals($this->subscription->getId(), $payment->getSubscriptionId());
+        $this->assertTrue($payment->isAuthorized());
+        $this->assertFalse(empty($payment->getCardId()));
+        $this->assertTrue($payment->isRecurringTypeAuto());
+    }
+
     public function testCreateInitialPaymentUpiWithoutCustomer()
     {
         $this->subscription->customer_id = null;
