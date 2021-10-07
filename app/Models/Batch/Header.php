@@ -1194,6 +1194,12 @@ class Header
     const WEBSITE_CHECKER_URL    = 'url';
     const WEBSITE_CHECKER_RESULT = 'result';
 
+    // Create And Execute Risk Action
+    const RISK_ACTION_MERCHANT_ID               = 'merchant_id';
+    const RISK_ACTION_BULK_WORKFLOW_ACTION_ID   = 'bulk_workflow_action_id';
+    const RISK_ACTION_WORKFLOW_ACTION_ID        = 'workflow_action_id';
+    const RISK_ACTION_STATUS                    = 'workflow_action_status';
+
     // Following is a list of columns that are mandatory headers in the fund account (contact) batch file
     const MANDATORY_AND_CONDITIONALLY_MANDATORY_HEADERS_FOR_FUND_ACCOUNTS = [
         Header::FUND_ACCOUNT_TYPE,
@@ -4020,6 +4026,19 @@ class Header
             self::OUTPUT => [
                 self::WEBSITE_CHECKER_URL,
                 self::WEBSITE_CHECKER_RESULT,
+            ],
+        ],
+
+        Type::CREATE_EXEC_RISK_ACTION => [
+            self::INPUT => [
+                self::RISK_ACTION_MERCHANT_ID,
+                self::RISK_ACTION_BULK_WORKFLOW_ACTION_ID,
+            ],
+            self::OUTPUT => [
+                self::RISK_ACTION_MERCHANT_ID,
+                self::RISK_ACTION_BULK_WORKFLOW_ACTION_ID,
+                self::RISK_ACTION_WORKFLOW_ACTION_ID,
+                self::RISK_ACTION_STATUS,
             ],
         ],
     ];

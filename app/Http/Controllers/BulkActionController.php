@@ -14,4 +14,11 @@ class BulkActionController extends Controller
         $data = (new Service())->executeBulkAction($input);
         return ApiResponse::json($data);
     }
+
+    public function addBulkRiskActionCommentPostExecution()
+    {
+        $input = Request::all();
+        $data = (new Service())->addBulkRiskActionCommentPostExecution($input);
+        return ApiResponse::json($data);
+    }
 }

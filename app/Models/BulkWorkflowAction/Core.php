@@ -4,20 +4,22 @@
 namespace RZP\Models\BulkWorkflowAction;
 
 use RZP\Exception;
-use Monolog\Logger;
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use RZP\Models\Comment;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity as E;
-use RZP\Models\Admin\Permission;
 use RZP\Models\RiskWorkflowAction;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Workflow\Action as Action;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Core extends Base\Core
 {
+    use FileHandlerTrait;
+
     public function handleBulkAction(array $input)
     {
         $this->trace->info(TraceCode::MERCHANT_BULK_RISK_ACTION_UPDATE_REQUEST, ['data' => $input]);
@@ -33,7 +35,7 @@ class Core extends Base\Core
 
         $entityId = UniqueIdEntity::generateUniqueId();
 
-        $tags[] = sprintf("%s%s", Constants::BULK_WORKFLOW_GROUP_TAG_PREFIX, $entityId);
+        $tags[] = sprintf("%s%s", RiskWorkflowAction\Constants::BULK_WORKFLOW_GROUP_TAG_PREFIX, $entityId);
 
         $this->trace->info(TraceCode::CREATE_BULK_EDIT_WORKFLOW,
             [
@@ -62,13 +64,13 @@ class Core extends Base\Core
      */
     public function validateBulkActionInput(array $input)
     {
-        if(isset($input[Constants::RISK_ATTRIBUTES]) === false)
+        if(isset($input[RiskWorkflowAction\Constants::RISK_ATTRIBUTES]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Risk Attributes are not provided', null, $input);
         }
 
-        $riskAttributes = $input[Constants::RISK_ATTRIBUTES];
+        $riskAttributes = $input[RiskWorkflowAction\Constants::RISK_ATTRIBUTES];
 
         if(is_array($riskAttributes) === false)
         {
@@ -107,9 +109,7 @@ class Core extends Base\Core
                 $entityId, E::BULK_WORKFLOW_ACTION, Constants::BULK_WORKFLOW_ACTION_PERMISSION_NAME[$input['action']])
                 ->first();
 
-        $this->editBulkAction($action, $input);
-
-        return ['success' => true];
+        return $this->editBulkAction($action, $input);
     }
 
     private function editBulkAction(Action\Entity $action, array $input)
@@ -118,76 +118,39 @@ class Core extends Base\Core
 
         $actionId = $action->getId();
 
-        $actionStatuses = [];
-
-        $individualRiskWorkflowMaker = $this->getIndividualRiskWorkflowMaker();
+        $riskActionEntries = [];
 
         foreach ($merchantIds as $merchantId)
         {
-            // create individual workflow action that when executed, performs action and sends notification
-            $status = Constants::APPROVED;
-
-            $workflowActionId = null;
-
-            try
-            {
-                $workflowActionId = (new RiskWorkflowAction\Core())->createRiskWorkflowAction(
-                    $merchantId, $individualRiskWorkflowMaker, $input);
-            }
-            catch (Exception\BadRequestException $e)
-            {
-                $status = Constants::INVALIDATED;
-            }
-            catch (Exception\BadRequestValidationFailureException $e)
-            {
-                $status = Constants::INVALIDATED;
-            }
-            catch (\Throwable $e)
-            {
-                $status = Constants::FAILED;
-            }
-
-            $actionStatuses[$merchantId] = [
-                'status'                => $status,
-                'workflow_action_id'    => $workflowActionId,
+            $csvRow = [
+                RiskWorkflowAction\Constants::MERCHANT_ID               => $merchantId,
+                RiskWorkflowAction\Constants::BULK_WORKFLOW_ACTION_ID   => $actionId,
             ];
+
+            $riskActionEntries []= $csvRow;
         }
 
-        $bulkActionStatusComment = sprintf(Constants::MERCHANTS_STATUS_COMMENT_TPL, json_encode($actionStatuses));
+        $url = $this->createCsvFile($riskActionEntries, 'action_file', null, 'files/batch');
+
+        $uploadedFile = new UploadedFile(
+            $url,
+            'action_file.csv',
+            'text/csv',
+            filesize($url),
+            null,
+            true);
+
+        $params = [
+            'file'  => $uploadedFile,
+            'type'  => 'create_exec_risk_action',
+        ];
+
+        $batchResult = (new Batch\Core)->create($params, (new Merchant\Core())->get('100000Razorpay'));
 
         (new Comment\Service())->createForWorkflowAction([
-             'comment'   => $bulkActionStatusComment,
-         ], Action\Entity::getSignedId($actionId));
+            'comment'   => sprintf(Constants::BATCH_STATUS_TPL, $batchResult['id']),
+        ], Action\Entity::getSignedId($actionId));
 
-        $workflowActions = (new Action\Core)->fetchOpenActionOnEntityListOperation(
-            $merchantIds, 'merchant', Permission\Name::$actionMap[$input['action']]);
-
-        // todo: the sleep part to be removed in V2, where we perform the workflow actions execution in async
-        // we could add a short random delay while dispatching in queue to avoid the sleep part.
-        sleep(2);
-
-        foreach ($workflowActions as $workflowAction)
-        {
-            (new Action\Core)->approveActionForcefully($workflowAction, $individualRiskWorkflowMaker);
-
-            (new Action\Core)->executeAction(
-                $workflowAction,
-                $individualRiskWorkflowMaker,
-                $individualRiskWorkflowMaker->getSuperAdminRole());
-        }
-
-        return [
-            'success' => true
-        ];
-    }
-
-    private function getIndividualRiskWorkflowMaker()
-    {
-        // NOTE: maker_email (both maker and checker) should be superadmin
-        $makerEmail = env(Constants::BULK_RISK_ACTION_INDIVIDUAL_WORKFLOW_MAKER_EMAIL);
-
-        $maker = $this->repo->admin->findByEmail($makerEmail);
-
-        return $maker;
+        return $batchResult;
     }
 }

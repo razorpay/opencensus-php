@@ -2,7 +2,6 @@
 
 namespace RZP\Models\RiskWorkflowAction;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -12,7 +11,6 @@ use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Merchant\Action as MerchantAction;
 use RZP\Models\Merchant\Validator as MerchantValidator;
-use RZP\Models\BulkWorkflowAction\Constants as BulkActionConstants;
 
 class Core extends Base\Core
 {
@@ -54,51 +52,51 @@ class Core extends Base\Core
         if (in_array($riskAction, Merchant\Constants::RISK_CONSTRUCTIVE_ACTION_LIST) === false)
         {
             $params = [
-                BulkActionConstants::TRIGGER_COMMUNICATION => $riskAttributes[BulkActionConstants::TRIGGER_COMMUNICATION],
+                Constants::TRIGGER_COMMUNICATION => $riskAttributes[Constants::TRIGGER_COMMUNICATION],
             ];
 
-            if (isset($riskAttributes[BulkActionConstants::RISK_TAG]) === true)
+            if (isset($riskAttributes[Constants::RISK_TAG]) === true)
             {
-                $params[BulkActionConstants::RISK_TAG] = $riskAttributes[BulkActionConstants::RISK_TAG];
+                $params[Constants::RISK_TAG] = $riskAttributes[Constants::RISK_TAG];
             }
 
             return $params;
         }
 
         return [
-            BulkActionConstants::CLEAR_RISK_TAGS    => $riskAttributes[BulkActionConstants::CLEAR_RISK_TAGS],
+            Constants::CLEAR_RISK_TAGS    => $riskAttributes[Constants::CLEAR_RISK_TAGS],
         ];
     }
 
     public function createRiskWorkflowAction($merchantId, $maker, $input)
     {
         try {
-            $riskAction = $input['action'];
+            $riskAction = $input[Constants::ACTION];
 
             $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
             $this->validateMerchantForAction($riskAction, $merchant);
 
-            $riskAttributes = $input[BulkActionConstants::RISK_ATTRIBUTES];
+            $riskAttributes = $input[Constants::RISK_ATTRIBUTES];
 
             $tags = $this->getTagsFromRiskAttributes($riskAttributes);
 
             $riskAttributesParams = $this->getParamsForMerchantAction($riskAction, $riskAttributes);
 
-            $tags[] = sprintf("%s%s", BulkActionConstants::BULK_WORKFLOW_GROUP_TAG_PREFIX, $input['entity_id']);
+            $tags[] = sprintf("%s%s", Constants::BULK_WORKFLOW_GROUP_TAG_PREFIX, $input['entity_id']);
 
             $routePermission = Permission\Name::$actionMap[$riskAction];
 
             $input = [
-                'action'                                            => $riskAction,
+                Constants::ACTION                                   => $riskAction,
                 'use_workflows'                                     => false,
-                BulkActionConstants::RISK_ATTRIBUTES                => $riskAttributesParams,
+                Constants::RISK_ATTRIBUTES                          => $riskAttributesParams,
             ];
 
             $diffData = [
-                'id'                                   => $merchantId,
-                'action'                               => $riskAction,
-                BulkActionConstants::RISK_ATTRIBUTES   => $riskAttributes,
+                'id'                                    => $merchantId,
+                Constants::ACTION                       => $riskAction,
+                Constants::RISK_ATTRIBUTES              => $riskAttributes,
             ];
             // NOTE: given the use case can generate the diff payload directly,
             // but for consistency reasons calling createDiff
@@ -146,19 +144,19 @@ class Core extends Base\Core
     {
         $tag = [];
 
-        if (isset($riskAttributes[BulkActionConstants::RISK_TAG]) === true)
+        if (isset($riskAttributes[Constants::RISK_TAG]) === true)
         {
-            $tag[] = BulkActionConstants::RISK_TAG_PREFIX . $riskAttributes[BulkActionConstants::RISK_TAG];
+            $tag[] = Constants::RISK_TAG_PREFIX . $riskAttributes[Constants::RISK_TAG];
         }
 
-        if (isset($riskAttributes[BulkActionConstants::RISK_SOURCE_PREFIX]) === true)
+        if (isset($riskAttributes[Constants::RISK_SOURCE]) === true)
         {
-            $tag[] = BulkActionConstants::RISK_SOURCE_PREFIX . $riskAttributes[BulkActionConstants::RISK_SOURCE];
+            $tag[] = Constants::RISK_SOURCE_PREFIX . $riskAttributes[Constants::RISK_SOURCE];
         }
 
-        if(isset($riskAttributes[BulkActionConstants::RISK_REASON_PREFIX]) === true)
+        if(isset($riskAttributes[Constants::RISK_REASON]) === true)
         {
-            $tag[] = BulkActionConstants::RISK_REASON_PREFIX . $riskAttributes[BulkActionConstants::RISK_REASON];
+            $tag[] = Constants::RISK_REASON_PREFIX . $riskAttributes[Constants::RISK_REASON];
         }
 
         return $tag;

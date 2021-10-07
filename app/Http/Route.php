@@ -2856,6 +2856,11 @@ class Route
         'token_delete'                            => ['post',        'tokens/delete',                                            'TokenController@delete'                                   ],
 
        'token_pause_not_supported_card_tokens'    => ['post',        'tokens/pause_not_supported/card',                          'TokenController@pauseNotSupportedCardTokens'                                                         ],
+
+        // Risk Actions
+        'create_exec_risk_action'                   => ['post',       'risk-actions/execute',                                    'RiskActionController@createAndExecuteRiskAction'              ],
+        'risk_attributes_get'                       => ['get',        'risk-actions/risk_attributes',                            'RiskActionController@getRiskAttributes'                       ],
+        'bulk_risk_action_status_comment'           => ['post',       'bulk-action/comment',                                     'BulkActionController@addBulkRiskActionCommentPostExecution'   ],
     ];
 
     public static $public = [
@@ -3844,7 +3849,12 @@ class Route
 
         // Payout-Links Expire Cron Job
         'payout_links_expire_cron',
-    ];
+
+        'feature_get_merchants_internal',
+
+        'create_exec_risk_action',
+        'bulk_risk_action_status_comment',
+];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
     // User context is taken from the provided header.
@@ -5472,6 +5482,8 @@ class Route
 
         // razorpay trusted badge
         'trusted_badge_blacklist',
+
+        'risk_attributes_get',
     ];
 
     public static $routePermission = [
@@ -6503,6 +6515,7 @@ class Route
 
         'decrypt_merchant_website_comment'                => Permission::DECRYPT_MERCHANT_WEBSITE_COMMENT,
         'trusted_badge_blacklist'                         => Permission::TRUSTED_BADGE_BLACKLIST,
+        'risk_attributes_get'                             => Permission::MERCHANT_ACTIONS,
     ];
 
     public static $bankingRoutePermissions = [
@@ -9836,7 +9849,9 @@ class Route
             // Risk Audit Workflow Actions
             'w-actions_merchant_risk_audit_get',
 
-            'decrypt_merchant_website_comment'
+            'decrypt_merchant_website_comment',
+
+            'risk_attributes_get',
         ],
 
         //
@@ -10453,6 +10468,8 @@ class Route
             'nach_batch_process',
             'emandate_batch_process',
             'health_checker',
+            'create_exec_risk_action',
+            'bulk_risk_action_status_comment',
         ],
 
         'stork' => [

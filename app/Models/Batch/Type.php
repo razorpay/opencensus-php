@@ -180,6 +180,8 @@ class Type
 
     const WEBSITE_CHECKER = 'website_checker';
 
+    const CREATE_EXEC_RISK_ACTION = 'create_exec_risk_action';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -237,6 +239,7 @@ class Type
         self::HITACHI_CBK_MASTERCARD,
         self::HITACHI_CBK_VISA,
         self::HITACHI_CBK_RUPAY,
+        self::CREATE_EXEC_RISK_ACTION,
     ];
 
     /**
@@ -483,6 +486,7 @@ class Type
         self::RECURRING_CHARGE_AXIS,
         self::WEBSITE_CHECKER,
         self::EMANDATE_DEBIT_HDFC,
+        self::CREATE_EXEC_RISK_ACTION,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data

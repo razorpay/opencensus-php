@@ -9675,4 +9675,26 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testBulkWfActionExecution' => [
+        'request'  => [
+            'url'     => '/bulk-actions/execute_bulk_action',
+            'method'  => 'post',
+            'content' => [
+                'merchant_ids'      => ['10000000000044', '10000000000004'],
+                'action_id'         => '{action_id}',
+                'action'            => 'live_disable',
+                'risk_attributes'   => [
+                    'risk_reason'          => 'high_cts',
+                    'risk_source'          => 'high_fts',
+                    'risk_tag'              => 'risk_review_watchlist',
+                    'trigger_communication' => '1'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

@@ -378,7 +378,7 @@ class Core extends Base\Core
      * @return string
      * @throws \Exception
      */
-    private function downloadAndGetFilePath(string $outputFilePath, string $bucketType, bool $downloadFile): string
+    public function downloadAndGetFilePath(string $outputFilePath, string $bucketType, bool $downloadFile): string
     {
         if ($downloadFile === false)
         {

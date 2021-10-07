@@ -79,7 +79,7 @@ use RZP\Models\Merchant\Balance\Repository as BalanceRepo;
 use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow;
 use RZP\Mail\Merchant\SecondFactorAuth as SecondFactorAuthMail;
-use RZP\Models\BulkWorkflowAction\Constants as BulkActionConstants;
+use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 
@@ -1072,7 +1072,7 @@ class Core extends Base\Core
     {
         foreach ($merchantTags as $merchantTag)
         {
-            if (in_array(strtolower($merchantTag),Merchant\Constants::RISK_TAG_LIST))
+            if (in_array(strtolower($merchantTag),RiskActionConstants::RISK_TAG_LIST))
             {
                 $this->deleteTag($merchant->getId(), $merchantTag);
             }
@@ -1083,14 +1083,14 @@ class Core extends Base\Core
     {
         $merchantTags = $merchant->tagNames();
 
-        if ((isset($riskAttributes[BulkActionConstants::CLEAR_RISK_TAGS]) === true)
-            and (int)($riskAttributes[BulkActionConstants::CLEAR_RISK_TAGS]) === 1)
+        if ((isset($riskAttributes[RiskActionConstants::CLEAR_RISK_TAGS]) === true)
+            and (int)($riskAttributes[RiskActionConstants::CLEAR_RISK_TAGS]) === 1)
         {
             $this->deleteRiskTags($merchantTags, $merchant);
         }
-        else if (isset($riskAttributes[BulkActionConstants::RISK_TAG]) === true)
+        else if (isset($riskAttributes[RiskActionConstants::RISK_TAG]) === true)
         {
-            array_push($merchantTags, $riskAttributes[BulkActionConstants::RISK_TAG]);
+            array_push($merchantTags, $riskAttributes[RiskActionConstants::RISK_TAG]);
 
             $this->addTags($merchant->getId(), [
                 'tags'  => $merchantTags,
@@ -1113,7 +1113,7 @@ class Core extends Base\Core
             $input[ProductInternationalMapper::INTERNATIONAL_PRODUCTS] :
             null;
 
-        $riskAttributes = $input[BulkActionConstants::RISK_ATTRIBUTES] ?? null;
+        $riskAttributes = $input[RiskActionConstants::RISK_ATTRIBUTES] ?? null;
 
         $originalMerchant = clone $merchant;
 
@@ -1142,8 +1142,8 @@ class Core extends Base\Core
             $this->repo->saveOrFail($merchant);
         });
 
-        if (isset($riskAttributes[BulkActionConstants::TRIGGER_COMMUNICATION]) === true
-            and (int)$riskAttributes[BulkActionConstants::TRIGGER_COMMUNICATION] === 1)
+        if (isset($riskAttributes[RiskActionConstants::TRIGGER_COMMUNICATION]) === true
+            and (int)$riskAttributes[RiskActionConstants::TRIGGER_COMMUNICATION] === 1)
         {
             (new MerchantActionNotification())->sendMerchantRiskActionNotifications($merchant, $action);
         }
@@ -1184,7 +1184,7 @@ class Core extends Base\Core
         }
 
         //need to remove notification if added through bulk update
-        if (isset($riskAttributes[BulkActionConstants::TRIGGER_COMMUNICATION]) === false)
+        if (isset($riskAttributes[RiskActionConstants::TRIGGER_COMMUNICATION]) === false)
         {
             (new MerchantActionNotification())->removeNotificationTag($merchant, $action);
         }

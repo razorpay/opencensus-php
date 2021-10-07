@@ -32,7 +32,8 @@ use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Models\Feature\Constants as Features;
-use RZP\Models\Workflow\Action as Action;
+use RZP\Models\Workflow\Action;
+use RZP\Models\RiskWorkflowAction\Constants;
 use RZP\Models\Workflow\Action\Differ\Entity;
 use RZP\Models\User\Constants as UserConstants;
 use Rzp\Credcase\Migrate\V1\RotateApiKeyRequest;
@@ -12643,6 +12644,79 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuth('rzp_test_'.$merchantId, $user['id']);
 
         $this->startTest();
+    }
+
+    public function testBulkWfActionExecution()
+    {
+        $this->createMerchant([
+                                  'id'    => '10000000000044',
+                                  'email' => 'test1@razorpay.com',
+                              ]);
+
+        $this->fixtures->merchant->edit('10000000000044', [
+            'live'          => true,
+            'activated'     => 1,
+            'hold_funds'    => true,
+        ]);
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_merchant_toggle_live_bulk']);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->setupWorkflows([
+                                  PermissionName::EXECUTE_MERCHANT_TOGGLE_LIVE_BULK      => 'Execute toggle live bulk',
+                                  PermissionName::EDIT_MERCHANT_DISABLE_LIVE             => 'disable live',
+                              ]);
+
+        $this->enableRazorXTreatmentForFeature(
+            BulkActionConstants::BULK_RISK_ACTION_WORKFLOW_TRIGGER_FEATURE,'on');
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'live_disable',
+                'risk_attributes' => [
+                    'risk_reason' => 'high_cts',
+                    'risk_source' => 'high_fts',
+                    'risk_tag'     => 'risk_review_watchlist',
+                    'trigger_communication' => '1'
+                ]
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->testData[__FUNCTION__]['request']['content']['entity_id'] = $response['entity_id'];
+
+        $this->startTest();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/risk-actions/execute',
+            'content' => [
+                'merchant_id'               => '10000000000044',
+                'bulk_workflow_action_id'   => $response['id'],
+            ],
+        ];
+
+        $this->ba->batchAppAuth();
+
+        Action\Entity::verifyIdAndSilentlyStripSign($request['content']['bulk_workflow_action_id']);
+
+        $this->esClient->indices()->refresh();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('EXECUTED', $response['workflow_action_status']);
     }
 
     public function testRejectionReasonMerchantNotificationForTransactionLimitSelfServe()

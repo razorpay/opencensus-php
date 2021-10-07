@@ -28,7 +28,7 @@ use \RZP\Models\Workflow\Action\Core as ActionCore;
 use RZP\Exception\BadRequestValidationFailureException;
 use \RZP\Models\Workflow\Action\Entity as ActionEntity;
 use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
-use RZP\Models\BulkWorkflowAction\Constants as BulkActionConstants;
+use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow\InternationalActivationFlow;
@@ -215,7 +215,7 @@ class Validator extends Base\Validator
     protected static $actionRules = [
         Entity::ACTION                                      => 'required|custom',
         ProductInternationalMapper::INTERNATIONAL_PRODUCTS  => 'sometimes|array',
-        BulkActionConstants::RISK_ATTRIBUTES                => 'sometimes|array',
+        RiskActionConstants::RISK_ATTRIBUTES                => 'sometimes|array',
     ];
 
     protected static $change2faSettingRules = [
@@ -981,7 +981,7 @@ class Validator extends Base\Validator
         //Check if the merchant is tagged by Risk team
         foreach ($tags as $tag)
         {
-            if (in_array(strtolower($tag), Constants::RISK_TAG_LIST) === true)
+            if (in_array(strtolower($tag), RiskActionConstants::RISK_TAG_LIST) === true)
             {
                 $taggedByRiskOps = true;
 

@@ -531,6 +531,7 @@ class AdminFetch
                         'nach_debit_nach_citi',
                         'website_checker',
                         'emandate_debit_hdfc',
+                        'create_exec_risk_action',
                     ],
                 ],
             ],
