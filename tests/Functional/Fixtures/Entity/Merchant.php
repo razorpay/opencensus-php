@@ -708,6 +708,16 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['disabled_banks' => $disabledBanks]);
     }
 
+    public function enableCoD($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['cod' => true]);
+    }
+
+    public function disableCoD($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['cod' => false]);
+    }
+
     public function createBalanceOfBankingType(
         int $balance = 0,
         string $merchantId = '10000000000000',

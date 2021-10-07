@@ -288,6 +288,11 @@ class Fee extends Base\Core
             $pricingPlan = $pricingPlan->merge($emiPricing);
         }
 
+        if ($pricingPlan->hasMethod(Payment\Method::COD) === false)
+        {
+            $pricingPlan = $this->addDefaultCoDPricingRules($pricingPlan);
+        }
+
         $pricingPlan = $this->addBankingFallbackRulesIfApplicable($pricingPlan, $entity);
 
         return $pricingPlan;
@@ -307,6 +312,27 @@ class Fee extends Base\Core
         }
 
         $pricingPlan = $this->addBankingPayoutFallbackRules($pricingPlan, $merchant);
+
+        return $pricingPlan;
+    }
+
+    protected function addDefaultCoDPricingRules($pricingPlan)
+    {
+        $id = $this->app['config']->get('pricing.cod.default_rule_id');
+
+        if (empty(($id)))
+        {
+            return $pricingPlan;
+        }
+
+        $codPricing = $this->repo->getPricingPlanByIdWithoutOrgId($id);
+
+        if ($codPricing === null)
+        {
+            return  $pricingPlan;
+        }
+
+        $pricingPlan = $pricingPlan->merge($codPricing);
 
         return $pricingPlan;
     }

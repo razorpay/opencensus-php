@@ -312,6 +312,11 @@ trait Authorize
         // for s2s recurring payments, so that terminal can be set later
         // using this instance variable.
         //
+        if ($this->payment->isCod() === true)
+        {
+            return;
+        }
+
         $this->setSelectedTerminals($payment, $gatewayInput);
 
         $this->setSelectedTerminalsForApplicationMethodsIfApplicable($payment);
@@ -1079,6 +1084,11 @@ trait Authorize
             return $this->processNachPaymentCreated($payment);
         }
 
+        if ($payment->isCoD() === true)
+        {
+            return $this->processPaymentPendingForCoD($payment);
+        }
+
         if ($this->shouldSkipAuthorizeOnRecurringForUpi($payment, $data) === true)
         {
             return $this->processRecurringCreatedForUpi($payment, $data);
@@ -1100,6 +1110,64 @@ trait Authorize
         }
 
         return $this->processAuth($payment, $data);
+    }
+
+    protected function processPaymentPendingForCoD($payment): array
+    {
+        $this->updateAndNotifyPaymentPending();
+
+        $this->updateOrderStatusPending($payment);
+
+        return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    protected function updateOrderStatusPending($payment)
+    {
+        if ($payment->isCod() === false)
+        {
+            return;
+        }
+
+        $order = $this->payment->order;
+
+        $order->setStatus(Order\Status::PLACED);
+
+        $this->repo->order->saveOrFail($order);
+    }
+
+    protected function updateAndNotifyPaymentPending(array $data = []): bool
+    {
+        $payment = $this->payment;
+
+        $status = $this->payment->getStatus();
+
+        if ($payment->getStatus() !== Status::CREATED)
+        {
+            return false;
+        }
+
+        $payment->setErrorNull();
+
+        $payment->setNonVerifiable();
+
+        $payment->setStatus(Payment\Status::PENDING);
+
+        $payment->setSettledBy('delivery_partner');
+
+        $this->trace->info(
+            TraceCode::PAYMENT_STATUS_PENDING,
+            [
+                'payment_id'        => $payment->getId(),
+                'old_status'        => $status,
+            ]);
+
+        $customProperties = $payment->toArrayTraceRelevant();
+
+        $this->segment->trackPayment($payment, TraceCode::PAYMENT_PENDING_SUCCESS, $customProperties);
+
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_PENDING_PROCESSED, $payment);
+
+        return true;
     }
 
     protected function getOtpPaymentCreatedResponse($request, $payment)
@@ -7572,6 +7640,45 @@ trait Authorize
         }
     }
 
+    /**
+     * @throws Exception\BadRequestException
+     */
+    protected function verifyCoDEnabled(Payment\Entity $payment)
+    {
+        $methods = $this->methods;
+
+        $reason = '';
+
+        if (($methods === null) or
+            ($methods->isCoDEnabled() === false))
+        {
+            $reason = 'method not enabled';
+        }
+
+        if ($payment->merchant->isRazorpayOrgId() === false)
+        {
+            $reason = 'cash on delivery not enabled for non razorpay org';
+        }
+
+        if ($payment->merchant->isFeeBearerPlatform() === false)
+        {
+            $reason = 'cash on delivery not supported for customer fee bearer';
+        }
+
+        if (empty($reason) === true)
+        {
+            return;
+        }
+
+        $this->trace->info(TraceCode::PAYMENT_COD_INELIGIBLE_REASON, [
+            'reason' => $reason,
+        ]);
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_PAYMENT_COD_NOT_ENABLED_FOR_MERCHANT);
+    }
+
+
     protected function verifyCardEnabledInLive(Payment\Entity $payment)
     {
         // Only check enabled or not on live mode
@@ -7985,7 +8092,7 @@ trait Authorize
 
                 // Also sets the transaction association with the payment.
                 // Fee Split would be null, as its the dummy transaction, so we are not saving fee split.
-                list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+                [$txn, $feesSplit] = (new Transaction\Core)->createFromPaymentAuthorized($payment);
 
                 $this->repo->saveOrFail($txn);
             }
@@ -8111,7 +8218,8 @@ trait Authorize
         //
         if (($payment->isBankTransfer() === true) or
             ($payment->isBharatQr() === true) or
-            ($payment->isUpiTransfer() === true))
+            ($payment->isUpiTransfer() === true) or
+            ($payment->isCoD() === true))
         {
             return false;
         }
@@ -9125,7 +9233,7 @@ trait Authorize
             return;
         }
 
-        list($fee, $tax, $feesSplit) = $this->repo->useSlave(function () use ($payment)
+        [$fee, $tax, $feesSplit] = $this->repo->useSlave(function () use ($payment)
         {
             return (new Pricing\Fee)->calculateMerchantFees($payment);
         });
@@ -9614,7 +9722,9 @@ trait Authorize
             case Payment\Method::APP:
                 $this->verifyAppEnabled($payment);
                 break;
-
+            case Payment\Method::COD:
+                $this->verifyCoDEnabled($payment);
+                break;
             default:
                 throw new Exception\LogicException(
                     'Should not reach here.',

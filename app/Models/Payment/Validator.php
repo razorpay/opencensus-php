@@ -328,6 +328,7 @@ class Validator extends Base\Validator
         'payment_provider',
         'upi_block',
         'charge_account',
+        'cod',
     ];
 
     protected static $minAmountCheckRules = [
@@ -447,6 +448,29 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'charge account is/are not required and should not be sent');
         }
+    }
+
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function validateCod(array $input)
+    {
+        $payment = $this->entity;
+
+        if ((isset($input[Payment\Entity::METHOD]) === false) or
+            ($input[Payment\Entity::METHOD]) !== Method::COD)
+        {
+            return;
+        }
+
+        if (isset($input[Payment\Entity::ORDER_ID]) === true)
+        {
+            return;
+        }
+
+        $message = 'Cannot create Cash on delivery payment without corresponding order.';
+
+        throw new Exception\BadRequestValidationFailureException($message, 'order_id');
     }
 
     protected function validateAuthType(array $input)

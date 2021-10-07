@@ -1549,6 +1549,12 @@ class Processor
                 'Please provide appropriate payment method',
                 Payment\Entity::METHOD);
         }
+        
+        if ($input['method'] === Payment\Method::COD)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_COD_NOT_ENABLED_FOR_MERCHANT);
+        }
 
         //
         // We only create a dummy payment entity for purpose
@@ -3680,7 +3686,10 @@ class Processor
 
         $this->order->getValidator()->validatePaymentCreation($payment);
 
-        $this->order->setStatus(Order\Status::ATTEMPTED);
+        if ($payment->isCoD() === false)
+        {
+            $this->order->setStatus(Order\Status::ATTEMPTED);
+        }
 
         $this->order->incrementAttempts();
 
@@ -4141,6 +4150,15 @@ class Processor
             $response['should_auto_capture'] = false;
 
             $response['reason'] = Constants::UPI_TRANSFER_PAYMENT;
+
+            return $response;
+        }
+
+        if ($payment->isCoD() === true)
+        {
+            $response['should_auto_capture'] = false;
+
+            $response['reason'] = Constants::PAYMENT_METHOD_COD;
 
             return $response;
         }
@@ -4793,6 +4811,11 @@ class Processor
         // Card recurring payment when created are supposed to be left in created state
         // We will set a instantaneous reminder, which will process the payment state
         if ($payment->isCardMandateNotificationCreateApplicable() === true)
+        {
+            return false;
+        }
+
+        if ($payment->isCoD() === true)
         {
             return false;
         }

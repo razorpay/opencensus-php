@@ -109,6 +109,10 @@ class TransactionFilter extends Terminal\Filter
             case Method::NACH:
                 return $terminal->isNachEnabled();
 
+            case Method::COD:
+                // no terminal should be applicable to cod as it doesnt deal with gateways
+                return false;
+
             case Method::APP:
                 if ($payment->isAppCred() === true) {
                     return $terminal->isCredEnabled();

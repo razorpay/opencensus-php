@@ -77,4 +77,5 @@ class Constants
     const PAYMENT_PASSED_ALL_CHECKS_FOR_CAPTURE     = 'Payment passed all checks for auto capture.';
     const MERCHANT_AUTO_CAPTURE_LATE_AUTH_TRUE      = 'Merchant has auto capture late auth enabled.';
     const MERCHANT_AUTO_CAPTURE_LATE_AUTH_FALSE     = 'Merchant has auto capture late auth disabled.';
+    const PAYMENT_METHOD_COD                        = 'Cannot auto capture cash on delivery payment.';
 }

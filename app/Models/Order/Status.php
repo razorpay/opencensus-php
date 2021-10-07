@@ -7,6 +7,7 @@ class Status
     const CREATED       = 'created';
     const ATTEMPTED     = 'attempted';
     const PAID          = 'paid';
+    const PLACED        = 'placed';
 
     public static function isStatusValid($status)
     {

@@ -14,4 +14,8 @@ return [
         'factor'              => (int)env("PRICING_QUERY_CACHE_LOAD_DISTRIBUTE_FACTOR", 10), // Generate prefix from [1-><distribution_factor>] inclusive
         'merchant_ids'        => explode(',', env("PRICING_QUERY_CACHE_LOAD_DISTRIBUTE_MERCHANT_IDS", '')) ?? [],
     ],
+
+    'cod'  => [
+        'default_rule_id' => env('COD_DEFAULT_RULE_ID', 'I6L2fFrSUiyfZD'),
+    ],
 ];

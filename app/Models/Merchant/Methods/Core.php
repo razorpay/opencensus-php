@@ -115,6 +115,13 @@ class Core extends Base\Core
 
         foreach ($methodsToCheck as $method)
         {
+            if ($method === Payment\Method::COD)
+            {
+                // for Cod we are adding default pricing incase explicit pricing is not present
+                // hence the check can be ignored here
+                continue;
+            }
+
             if (($methods->isMethodEnabled($method)) and
                 ($plan->hasMethodForFeature($method,Feature::PAYMENT, $skipFeatureCheck) === false))
             {

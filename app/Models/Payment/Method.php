@@ -19,6 +19,7 @@ class Method
     const PAYLATER              = 'paylater';
     const NACH                  = 'nach';
     const APP                   = 'app';
+    const COD                   = 'cod';
     const UNSELECTED            = 'unselected';
 
     protected static $methods = [
@@ -35,6 +36,7 @@ class Method
         self::PAYLATER              => 'Pay Later',
         self::NACH                  => 'nach',
         self::APP                   => 'App',
+        self::COD                   => 'Cash on Delivery',
     ];
 
     protected static $nonEsAutomaticMethods = [

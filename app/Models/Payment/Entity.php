@@ -2373,6 +2373,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ($this->isMethod(Payment\Method::NETBANKING)));
     }
 
+    public function isCoD()
+    {
+        return $this->isMethod(Payment\Method::COD);
+    }
+
     public function isSigned()
     {
         return ($this->getAttribute(self::SIGNED) === true);
@@ -2404,6 +2409,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isMccSupported()
     {
         return (($this->getAttribute(self::METHOD) === Method::CARD) or
+                ($this->isCoD() === true) or
                (($this->getAttribute(self::METHOD) === Method::WALLET) and
                    ($this->getWallet() === Wallet::PAYPAL)));
     }

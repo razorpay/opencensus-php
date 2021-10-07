@@ -1381,6 +1381,21 @@ return [
         ],
     ],
 
+    'testAddPricingPlanRuleForCoDMethod' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'cod',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'cod',
+            ],
+        ],
+    ],
+
     'testAddPricingPlanRuleWithReceiver' => [
         'request' => [
             'content' => [

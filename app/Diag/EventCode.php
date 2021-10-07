@@ -176,6 +176,11 @@ class EventCode
         'name'  => 'payment.authentication.2fa.url.sent'
     ];
 
+    const PAYMENT_PENDING_PROCESSED                     = [
+        'group' => 'pending',
+        'name'  => 'payment.pending.processed'
+    ];
+
     const PAYMENT_AUTHORIZATION_INITIATED               = [
         'group' => 'authorization',
         'name'  => 'payment.authorization.initiated'

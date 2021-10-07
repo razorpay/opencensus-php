@@ -31,6 +31,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CREATED_RESPONSE                              = 'PAYMENT_CREATED_RESPONSE';
     const PAYMENT_CREATE_FAILED                                 = 'PAYMENT_CREATE_FAILED';
     const PAYMENT_AUTHENTICATION_SUCCESS                        = 'PAYMENT_AUTHENTICATION_SUCCESS';
+    const PAYMENT_PENDING_SUCCESS                               = 'PAYMENT_PENDING_SUCCESS';
     const PAYMENT_AUTH_SUCCESS                                  = 'PAYMENT_AUTH_SUCCESS';
     const PAYMENT_ID_NULL                                       = 'PAYMENT_ID_NULL';
     const PAYMENT_AUTH_PENDING                                  = 'PAYMENT_AUTH_PENDING';
@@ -360,6 +361,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ORDER_STATUS_AUTHORIZED                               = 'ORDER_STATUS_AUTHORIZED';
     const PAYMENT_STATUS_AUTHENTICATED                          = 'PAYMENT_STATUS_AUTHENTICATED';
     const PAYMENT_STATUS_AUTHORIZED                             = 'PAYMENT_STATUS_AUTHORIZED';
+    const PAYMENT_STATUS_PENDING                                = 'PAYMENT_STATUS_PENDING';
     const PAYMENT_STATUS_CAPTURED                               = 'PAYMENT_STATUS_CAPTURED';
     const ORDER_STATUS_PAID                                     = 'ORDER_STATUS_PAID';
     const ORDER_STATUS_ATTEMPTED                                = 'ORDER_STATUS_ATTEMPTED';
@@ -433,6 +435,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HITACHI_ONBOARD_REQUEST_CREATION_ERROR                = 'HITACHI_ONBOARD_REQUEST_CREATION_ERROR';
     const SKIPPING_HITACHI_AUTOMATIC_ONBOARDING                 = 'SKIPPING_HITACHI_AUTOMATIC_ONBOARDING';
     const HITACHI_TERMINAL_EDIT_ON_MCC_EDIT                     = 'HITACHI_TERMINAL_EDIT_ON_MCC_EDIT';
+    const PAYMENT_COD_INELIGIBLE_REASON            = 'PAYMENT_COD_INELIGIBLE_REASON';
 
     const DUPLICATE_IDEM_KEY_NO_ENTITY_ASSOC                    = 'DUPLICATE_IDEM_KEY_NO_ENTITY_ASSOC';
     const IDEM_KEY_UPDATE_DATA                                  = 'IDEM_KEY_UPDATE_DATA';

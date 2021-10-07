@@ -10,6 +10,7 @@ class Status
     const CAPTURED      = 'captured';
     const FAILED        = 'failed';
     const REFUNDED      = 'refunded';
+    const PENDING       = 'pending';
 
     protected static $statusList = [
         self::CREATED,
@@ -17,7 +18,8 @@ class Status
         self::AUTHORIZED,
         self::CAPTURED,
         self::FAILED,
-        self::REFUNDED
+        self::REFUNDED,
+        self::PENDING,
     ];
 
     public static function isStatusValid($status)

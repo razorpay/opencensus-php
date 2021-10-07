@@ -974,6 +974,13 @@ class Selector extends Base\Core
     {
         $payment = $this->input['payment'];
 
+        // for cash on delivery payments, there is no gateway involved, hence we can bypass
+        // routing logic
+        if ($payment->isCoD() === true)
+        {
+            return false;
+        }
+
         $card = $payment->card;
 
         // For HDFC DC EMI, we need not send the request to smart routing till the same is
