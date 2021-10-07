@@ -22,6 +22,8 @@ class Facade extends BaseFacade
 {
     public static function encrypt($data, $serialize = true,  Base\PublicEntity $entity = null)
     {
+        $entityName = self::getEntityClassName($entity);
+
         $shouldUseByok = self::shouldUseByok($entity);
 
         if ($shouldUseByok === true)
@@ -30,12 +32,12 @@ class Facade extends BaseFacade
 
             if (empty($orgKey) === true)
             {
-                self::traceInfo(TraceCode::BYOK_ENCRYPTION_USING_DEFAULT_KEY);
+                self::traceInfo(TraceCode::BYOK_ENCRYPTION_USING_DEFAULT_KEY, ['entity' => $entityName]);
 
                 return parent::encrypt($data, $serialize);
             }
 
-            self::traceInfo(TraceCode::BYOK_ENCRYPTING_USING_ORG_KEY);
+            self::traceInfo(TraceCode::BYOK_ENCRYPTING_USING_ORG_KEY, ['entity' => $entityName, 'keylen' => strlen($orgKey)]);
 
             $newEncrypter = new Encrypter($orgKey, Config::get('app.cipher'));
 
@@ -43,7 +45,7 @@ class Facade extends BaseFacade
         }
 
         // If $shouldUseByok is false, use default encryption
-        self::traceInfo(TraceCode::BYOK_ENCRYPTION_USING_DEFAULT_KEY);
+        self::traceInfo(TraceCode::BYOK_ENCRYPTION_USING_DEFAULT_KEY, ['entity' => $entityName]);
 
         return parent::encrypt($data, $serialize);
     }
@@ -57,7 +59,9 @@ class Facade extends BaseFacade
             return parent::decrypt($data, $unserialize);
         }
 
-        self::traceInfo(TraceCode::BYOK_DECRYPTING_USING_ORG_KEY);
+        $entityName = self::getEntityClassName($entity);
+
+        self::traceInfo(TraceCode::BYOK_DECRYPTING_USING_ORG_KEY, ['entity' => $entityName, 'keylen' => strlen($orgKey)]);
 
         try
         {
@@ -67,7 +71,7 @@ class Facade extends BaseFacade
         }
         catch(DecryptException $ex) // If above we try to decrypt data that was encrypted by default key
         {
-            self::traceInfo(TraceCode::BYOK_DECRYPTION_FAILED_FALLING_BACK_TO_DEFAULT_KEY);
+            self::traceInfo(TraceCode::BYOK_DECRYPTION_FAILED_FALLING_BACK_TO_DEFAULT_KEY, ['entity' => $entityName]);
 
             return parent::decrypt($data, $unserialize);
         }
@@ -235,5 +239,15 @@ class Facade extends BaseFacade
         $trace = $app['trace'];
 
         $trace->info($traceCode, $data);
+    }
+
+    protected static function getEntityClassName($entity)
+    {
+        if (empty($entity) === true)
+        {
+            return "";
+        }
+
+        return $entity->getEntityName();
     }
 }
