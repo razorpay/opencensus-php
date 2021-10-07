@@ -1553,16 +1553,16 @@ class CheckoutPreferencesTest extends TestCase
 
     }
 
-    public function testGetCheckoutPreferencesForMORdisplay()
+    public function testGetCheckoutPreferencesForSiftJSIntegration()
     {
-        $this->fixtures->merchant->addFeatures(Constants::ENABLE_SIFT_JS);
+        $this->fixtures->merchant->addFeatures(Constants::DISABLE_SIFT_JS);
 
         $response = $this->getPreferences();
 
-        $this->assertEquals($response['features']['enable_sift_js'],true);
+        $this->assertEquals($response['features']['disable_sift_js'],true);
     }
 
-    public function testGetCheckoutPreferencesForSiftJSIntegration()
+    public function testGetCheckoutPreferencesForMORdisplay()
     {
         $this->fixtures->merchant->addFeatures(Constants::SHOW_MOR_TNC);
 

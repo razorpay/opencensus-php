@@ -834,9 +834,9 @@ class Constants
     const ADDRESS_REQUIRED = 'address_required';
 
     /**
-     * Merchant feature used to control sharing of data using Sift JS integration
+     * Merchant feature used to disable the Sift JS integration
      */
-    const ENABLE_SIFT_JS   =   'enable_sift_js';
+    const DISABLE_SIFT_JS   =   'disable_sift_js';
 
     /**
      * All Ledger Features for RX release
@@ -912,7 +912,7 @@ class Constants
         self::TPV,
         self::DIRECT_SETTLEMENT,
         self::RAAS,
-        self::ENABLE_SIFT_JS,
+        self::DISABLE_SIFT_JS,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -1255,7 +1255,7 @@ class Constants
         self::SEND_DCC_COMPLIANCE             => true,
         self::ORG_SUB_MERCHANT_MCC_PENDING    => true,
         self::SOURCED_BY_WALNUT369            => true,
-        self::ENABLE_SIFT_JS                  => true,
+        self::DISABLE_SIFT_JS                 => true,
         self::API_BULK_APPROVALS              => true,
         self::NETWORK_TOKENIZATION            => true,
         self::CREATE_SOURCE_V2                => true,
