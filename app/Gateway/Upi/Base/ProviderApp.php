@@ -12,6 +12,9 @@ class ProviderApp
     const PAYTM                 = 'paytm';
     const PAYTM_APP             = 'net.one97.paytm';
     const BHIM_BARODAPAY_APP    = 'com.bankofbaroda.upi';
+    const BANK_OF_INDIA         = 'com.infra.boiupi';
+    const CANARA_BANK           = 'com.canarabank.mobility';
+    const ICICI_BANK            = 'com.csam.icici.bank.imobile';
 
     // For all other PSP Apps
     const OTHER             = 'other';

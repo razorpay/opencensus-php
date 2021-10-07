@@ -381,6 +381,8 @@ class ProviderCode
         ProviderPsp::AMAZON_PAY,
         ProviderPsp::GOOGLE_PAY,
         ProviderPsp::BHIM_BARODAPAY,
+        ProviderPsp::BHIM_BOI_UPI,
+        ProviderPsp::CANDI_CANARA_BANK,
     ];
 
     /**
@@ -396,6 +398,8 @@ class ProviderCode
         self::OKHDFCBANK    => ProviderPsp::GOOGLE_PAY,
         self::APL           => ProviderPsp::AMAZON_PAY,
         self::BARODAMPAY    => ProviderPsp::BHIM_BARODAPAY,
+        self::BOI           => ProviderPsp::BHIM_BOI_UPI,
+        self::CNRB          => ProviderPsp::CANDI_CANARA_BANK,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
