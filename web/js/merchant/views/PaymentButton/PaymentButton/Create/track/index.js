@@ -13,7 +13,7 @@ function _track() {
 
   function sendToLumberjack(event, data) {
     lumberjackTrack(
-      window.rzpQ.paymentPages().interaction(`button.create.${event}`, {
+      window.rzpQ.paymentButtons().interaction(`button.create.${event}`, {
         data,
         config,
       }),
