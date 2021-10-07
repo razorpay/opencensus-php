@@ -2465,4 +2465,45 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testSettingsInPaymentPageItemsInPaymentButton' => [
+        'request' => [
+            'url'     => '/v1/payment_pages/pl_100000000000pl/details',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'                      => 'pl_100000000000pl',
+                'payment_page_items'      => [
+                    [
+                        'settings'        => [
+                            'position'    => '0'
+                        ]
+                    ]
+                ]
+            ]
+        ],
+    ],
+
+    'testSettingsInPaymentPageItemsInSubscriptionButton'  => [
+        'request' => [
+            'url'     => '/v1/payment_pages/pl_100000000000pl/details',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'                      => 'pl_100000000000pl',
+                'payment_page_items'      => [
+                    [
+                        'settings'        => [
+                            'position'    => '0'
+                        ]
+                    ]
+                ]
+            ]
+        ],
+    ],
+
 ];

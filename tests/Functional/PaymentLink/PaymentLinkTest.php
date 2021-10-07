@@ -1509,6 +1509,34 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testSettingsInPaymentPageItemsInPaymentButton()
+    {
+        $this->createPaymentLink(self::TEST_PL_ID, ['view_type' => 'button']);
+
+        $item = $this->createPaymentPageItem();
+        $settings = [
+            PaymentLink\PaymentPageItem\Entity::POSITION => '0'
+        ];
+
+        $item->getSettingsAccessor()->upsert($settings)->save();
+        $this->startTest();
+    }
+
+    public function testSettingsInPaymentPageItemsInSubscriptionButton()
+    {
+        $this->createPaymentLink(self::TEST_PL_ID, ['view_type' => 'subscription_button']);
+
+        $item = $this->createPaymentPageItem();
+
+        $settings = [
+            PaymentLink\PaymentPageItem\Entity::POSITION => '0'
+        ];
+
+        $item->getSettingsAccessor()->upsert($settings)->save();
+
+        $this->startTest();
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function createPaymentLinkAndOrderForThat(array $paymentLinkAttribute = [], array $orderAttribute = [])
