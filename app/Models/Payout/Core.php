@@ -464,6 +464,11 @@ class Core extends Base\Core
 
         $status = Status::getPayoutStatusFromFtaStatus($payout, $ftaStatus);
 
+        if ($this->repeatedFtsStatusUpdateForTerminalStatePayout($payout, $status) === true)
+        {
+            return;
+        }
+
         $ftaFailureReason = $ftaData[Attempt\Constants::FAILURE_REASON] ?? null;
         $ftaBankStatusCode = $ftaData[Attempt\Entity::BANK_STATUS_CODE] ?? null;
 
@@ -519,6 +524,17 @@ class Core extends Base\Core
                 ]
             );
         }
+    }
+
+    public function repeatedFtsStatusUpdateForTerminalStatePayout(Entity $payout, string $status)
+    {
+        if (($payout->getStatus() === $status) and
+            (in_array($status, Status::$finalStates)))
+            {
+                return true;
+            }
+
+        return false;
     }
 
     public function updateStatusAfterFtaInitiated(Entity $payout, Attempt\Entity $fta)

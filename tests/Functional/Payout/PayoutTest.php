@@ -11632,6 +11632,12 @@ class PayoutTest extends OAuthTestCase
             'bank_status_code' => null
         ]);
 
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'processed',
+            'failure_reason' => null,
+            'bank_status_code' => null
+        ]);
+
         $payoutProcessedEventData = $this->testData[__FUNCTION__];
 
         $this->validateStorkWebhookFireEvent('payout.processed', $payoutProcessedEventData, $payloadProcessed);
@@ -11662,6 +11668,12 @@ class PayoutTest extends OAuthTestCase
         $this->testCreatePayoutOnLiveMode();
 
         $payout = $this->getDbLastEntity('payout', 'live');
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'processed',
+            'failure_reason' => null,
+            'bank_status_code' => null
+        ]);
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
             'fta_status' => 'processed',
