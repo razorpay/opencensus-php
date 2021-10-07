@@ -376,6 +376,60 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertNull($token['expired_at']);
     }
 
+    public function testPaymentErrorResponseWithoutCertificate()
+    {
+        $payment                 = $this->getEmandatePaymentArray('SBIN', 'netbanking', 0);
+        $payment['bank_account'] = [
+            'account_number' => '1111111111111',
+            'ifsc'           => 'sbin0000123',
+            'name'           => 'Test account',
+            'account_type'   => 'savings',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content = 'ErrorXMLWithoutCert';
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $this->assertEquals(0, $payment['amount']);
+
+        $this->assertEquals('initial', $payment['recurring_type']);
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertEquals(null, $enach['umrn']);
+
+        $this->assertEquals('false', $enach['status']);
+
+        $this->assertEquals($this->sharedTerminal['gateway_acquirer'], $enach['acquirer']);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals('netbanking', $token['auth_type']);
+
+        $this->assertEquals(null, $token['recurring_status']);
+
+        $this->assertEquals(null, $token['gateway_token']);
+
+        $this->assertNull($token['expired_at']);
+    }
+
     public function testPaymentVerify()
     {
         $payment                 = $this->getEmandatePaymentArray('SBIN', 'netbanking', 0);

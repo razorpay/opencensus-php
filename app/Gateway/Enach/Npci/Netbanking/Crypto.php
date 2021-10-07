@@ -170,6 +170,15 @@ class Crypto
         return ($verify === 1);
     }
 
+    public function checkSignaturePresent($xmlString)
+    {
+        $sign = new XMLSecLibs\XMLSecurityDSig(null);
+
+        $xmlDoc = $this->makeDomDocument($xmlString);
+
+        return ($sign->locateSignature($xmlDoc));
+    }
+
     public function getSigningPublicKey()
     {
         $cert = $this->signingCertificate;

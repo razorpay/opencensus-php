@@ -62,7 +62,14 @@ class Server extends Base\Mock\Server
 
         $responseXml = $this->getResponseOrErrorXml($responseData, $respType);
 
-        $signedResponseXml = $this->crypto->addSignature($responseXml);
+        if($respType === 'ErrorXMLWithoutCert')
+        {
+            $signedResponseXml = $responseXml;
+        }
+        else
+        {
+            $signedResponseXml = $this->crypto->addSignature($responseXml);
+        }
 
         $callbackUrl = $this->route->getUrl('gateway_emandate_callback_npci_nb');
 
@@ -142,6 +149,25 @@ class Server extends Base\Mock\Server
                     'RejectBy'       => $this->crypto->encrypt($secureData['RejectBy']),
                 ],
                 'IFSC'          => 'HDFC000000000001'
+            ];
+        }
+        else if($respType === 'ErrorXMLWithoutCert')
+        {
+            $data = [
+                'GrpHdr'       => [
+                    'MsgId'          => '000f0f29dc27f00000101b09c5227457f17',
+                    'CreDtTm'        => Carbon::now(Timezone::IST)->toIso8601String(),
+                ],
+                'OrigReqInfo'   => [
+                    'MndtReqId'      => $requestArray['MndtAuthReq']['Mndt']['MndtReqId'],
+                    'NPCI_RefMsgId'  => $npciId,
+                    'CreDtTm'        => $requestArray['MndtAuthReq']['GrpHdr']['CreDtTm'],
+                ],
+                'MndtErrorDtls' => [
+                    'ErrorCode'      => 209,
+                    'ErrorDesc'      => 'Merchant MsgId is duplicate',
+                    'RejectBy'       => 'BANK'
+                ]
             ];
         }
         else

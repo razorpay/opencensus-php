@@ -67,13 +67,18 @@ class Gateway extends Base\Gateway
 
         $responseXmlString = $input['gateway'][ResponseFields::RESPONSE_XML];
 
-        $this->crypto->verifySignature($responseXmlString, $this->crypto->getEncryptionPublicKey());
-
         $responseXml = (array) simplexml_load_string(trim($responseXmlString));
 
         $json = json_encode($responseXml);
 
         $responseArray = json_decode($json, true);
+
+        $signPresent = $this->crypto->checkSignaturePresent($responseXmlString);
+
+        if(($input['gateway'][ResponseFields::RESPONSE_TYPE] === ResponseType::SUCCESS) or ($signPresent !== null))
+        {
+            $this->crypto->verifySignature($responseXmlString, $this->crypto->getEncryptionPublicKey());
+        }
 
         if ($input['gateway'][ResponseFields::RESPONSE_TYPE] === ResponseType::SUCCESS)
         {
