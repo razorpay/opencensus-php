@@ -7,6 +7,7 @@ use RZP\Models\Merchant\Account;
 use RZP\Models\QrCode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Models\BankAccount;
 use RZP\Models\QrPaymentRequest\Type;
 use RZP\Exception\BadRequestException;
 
@@ -49,7 +50,7 @@ class Core extends QrCode\Core
 
         return $qrCode;
     }
-    
+
     private function checkFeatureEnabled($input)
     {
         if ($input[Entity::REQ_PROVIDER] === Type::BHARAT_QR)
@@ -73,7 +74,15 @@ class Core extends QrCode\Core
 
         $qrCode->setCloseReason($closeReason);
 
-        $this->repo->saveOrFail($qrCode);
+        $this->repo->transaction(function() use ($qrCode)
+        {
+            $this->repo->saveOrFail($qrCode);
+
+            if ($qrCode->bankAccount !== null)
+            {
+                $this->repo->deleteOrFail($qrCode->bankAccount);
+            }
+        });
 
         return $qrCode;
     }

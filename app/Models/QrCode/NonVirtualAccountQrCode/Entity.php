@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Models\QrCode;
 use RZP\Models\Feature;
 use RZP\Models\Customer;
+use RZP\Models\BankAccount;
 use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends QrCode\Entity
@@ -299,5 +300,10 @@ class Entity extends QrCode\Entity
     public function getTaxInvoice()
     {
         return $this->getAttribute(self::TAX_INVOICE);
+    }
+
+    public function bankAccount()
+    {
+        return $this->hasOne('RZP\Models\BankAccount\Entity', BankAccount\Entity::ENTITY_ID, Entity::ID);
     }
 }
