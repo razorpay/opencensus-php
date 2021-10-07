@@ -15,7 +15,7 @@ class FundLoading extends Base
     const FUND_LOADING_PROCESSED = "fund_loading_processed";
 
     public function pushTransactionToLedger(Entity $bankTransfer,
-                                            string $transactorType,
+                                            string $transactorEvent,
                                             string $terminalId,
                                             $terminalAccountType)
     {
@@ -28,13 +28,13 @@ class FundLoading extends Base
              * is no event registered at ledger for that fund loading status.
              * In this case, it is not required to push transaction through sns.
              */
-            if ($this->isDefaultEvent($transactorType))
+            if ($this->isDefaultEvent($transactorEvent))
             {
                 $this->trace->info(
-                    TraceCode::LEDGER_JOURNAL_TRANSACTOR_TYPE_NOT_REGISTERED,
+                    TraceCode::LEDGER_JOURNAL_TRANSACTOR_EVENT_NOT_REGISTERED,
                     [
-                        self::TRANSACTOR_TYPE => $transactorType,
-                        self::ENTITY          => $bankTransfer,
+                        self::TRANSACTOR_EVENT => $transactorEvent,
+                        self::ENTITY           => $bankTransfer,
                     ]);
 
                 return;
@@ -48,7 +48,6 @@ class FundLoading extends Base
             $terminalAccountType = $terminalAccountType ?? self::DEFAULT_TERMINAL_ACCOUNT_TYPE;
 
             $payload = [
-                self::TRANSACTOR            => self::X,
                 self::TENANT                => self::X,
                 self::MODE                  => $this->mode,
                 self::IDEMPOTENCY_KEY       => gen_uuid(self::UUID_FORMAT),
@@ -62,8 +61,7 @@ class FundLoading extends Base
                 self::TERMINAL_ID           => $terminalId,
                 self::TERMINAL_ACCOUNT_TYPE => $terminalAccountType,
                 self::TRANSACTOR_ID         => $bankTransfer->getPublicId(),
-                self::TRANSACTOR_TYPE       => $transactorType,
-                self::TRANSACTOR_EVENT      => $transactorType,
+                self::TRANSACTOR_EVENT      => $transactorEvent,
                 self::TRANSACTION_DATE      => $bankTransfer->getCreatedAt(),
                 self::BANKING_ACCOUNT_ID    => $bankTransfer->balance->bankingAccount->getPublicId(),
                 self::API_TRANSACTION_ID    => $bankTransfer->getTransactionId(),
@@ -78,8 +76,8 @@ class FundLoading extends Base
                 Trace::ERROR,
                 TraceCode::LEDGER_JOURNAL_FUND_LOADING_PAYLOAD_ERROR,
                 [
-                    self::TRANSACTOR_ID   => $bankTransfer->getPublicId(),
-                    self::TRANSACTOR_TYPE => $transactorType,
+                    self::TRANSACTOR_ID    => $bankTransfer->getPublicId(),
+                    self::TRANSACTOR_EVENT => $transactorEvent,
                 ]);
         }
         finally

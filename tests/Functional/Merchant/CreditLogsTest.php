@@ -362,7 +362,6 @@ class CreditLogsTest extends TestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
-            $this->assertEquals('X', $ledgerRequestPayload['transactor']);
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('live', $ledgerRequestPayload['mode']);
             $this->assertEquals($creditsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -370,7 +369,6 @@ class CreditLogsTest extends TestCase
             $this->assertEquals('INR', $ledgerRequestPayload['currency']);
             $this->assertEquals('0', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
-            $this->assertEquals('fund_loading_processed', $ledgerRequestPayload['transactor_type']);
             $this->assertEquals('fund_loading_processed', $ledgerRequestPayload['transactor_event']);
             $this->assertEquals('reward', $ledgerRequestPayload['fee_accounting']);
         }

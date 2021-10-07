@@ -2784,7 +2784,6 @@ class BankTransferTest extends TestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
-            $this->assertEquals('X', $ledgerRequestPayload['transactor']);
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($bankTransfersCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -2792,7 +2791,6 @@ class BankTransferTest extends TestCase
             $this->assertEquals('INR', $ledgerRequestPayload['currency']);
             $this->assertEquals('0', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
-            $this->assertEquals('fund_loading_processed', $ledgerRequestPayload['transactor_type']);
             $this->assertEquals('fund_loading_processed', $ledgerRequestPayload['transactor_event']);
             $this->assertEquals('term_SHRDBANKACC3DS', $ledgerRequestPayload['terminal_id']);
             $this->assertEquals('nodal', $ledgerRequestPayload['terminal_account_type']);
@@ -2926,7 +2924,6 @@ class BankTransferTest extends TestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
-            $this->assertEquals('X', $ledgerRequestPayload['transactor']);
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('live', $ledgerRequestPayload['mode']);
             $this->assertEquals($bankTransfersCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -2934,7 +2931,6 @@ class BankTransferTest extends TestCase
             $this->assertEquals('INR', $ledgerRequestPayload['currency']);
             $this->assertEquals('0', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
-            $this->assertEquals('fund_loading_processed', $ledgerRequestPayload['transactor_type']);
             $this->assertEquals('fund_loading_processed', $ledgerRequestPayload['transactor_event']);
             $this->assertEquals('term_SHRDBANKACC3DS', $ledgerRequestPayload['terminal_id']);
             $this->assertEquals('nodal', $ledgerRequestPayload['terminal_account_type']);

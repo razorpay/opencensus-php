@@ -224,7 +224,7 @@ class Ledger extends BaseLedger
             "currency"          => "INR",
             "tenant"            => "X",
             "transactor_id"     => "pout_SamplePayoutId4",
-            "transactor_type"   => "fund_loading_processed",
+            "transactor_event"  => "fund_loading_processed",
             "transaction_date"  => "1611132045",
             "ledger_entry" => [
                 [
@@ -275,7 +275,7 @@ class Ledger extends BaseLedger
             "tenant"                => "X",
             "transactor_event_name" => "XPositiveAdjustmentProcessed",
             "rule" => [
-            "transactor_type"       => "positive_adjustment_processed"
+            "transactor_event"       => "positive_adjustment_processed"
             ],
             "config" => [
             "ledger_entries" => [
@@ -327,7 +327,7 @@ class Ledger extends BaseLedger
             "tenant"                => "X",
             "transactor_event_name" => "XPositiveAdjustmentProcessed2",
             "rule" => [
-                "transactor_type"       => "positive_adjustment_processed2"
+                "transactor_event"       => "positive_adjustment_processed2"
             ],
             "config" => [
                 "ledger_entries" => [
@@ -379,7 +379,7 @@ class Ledger extends BaseLedger
             "tenant"                => "X",
             "transactor_event_name" => "XPositiveAdjustmentProcessed3",
             "rule" => [
-                "transactor_type"       => "positive_adjustment_processed3"
+                "transactor_event"       => "positive_adjustment_processed3"
             ],
             "config" => [
                 "ledger_entries" => [
@@ -604,7 +604,7 @@ class Ledger extends BaseLedger
                 "nominal",
                 "personal"
             ],
-            "transactor_types" => [
+            "transactor_events" => [
                 "fund_loading_processed",
                 "fund_loading_expired",
                 "payout_initiated",
@@ -923,7 +923,7 @@ class Ledger extends BaseLedger
                     ],
                 ]
             ],
-            "transactor_types" => [
+            "transactor_events" => [
                 "label" => "Transactor Type",
                 "type" => "array",
                 "values" => [
@@ -991,7 +991,7 @@ class Ledger extends BaseLedger
                 "type" => "array",
                 "values" => [
                     [
-                        "name" => "transactor_type"
+                        "name" => "transactor_event"
                     ],
                     [
                         "name" => "fee_accounting"

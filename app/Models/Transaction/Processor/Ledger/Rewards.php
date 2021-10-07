@@ -17,7 +17,7 @@ class Rewards extends Base
     const FUND_LOADING_PROCESSED = "fund_loading_processed";
 
     public function pushTransactionToLedger(Entity $credits,
-                                            string $transactorType)
+                                            string $transactorEvent)
     {
         $startTime = millitime();
 
@@ -28,13 +28,13 @@ class Rewards extends Base
              * is no event registered at ledger for that fund loading status.
              * In this case, it is not required to push transaction through sns.
              */
-            if ($this->isDefaultEvent($transactorType))
+            if ($this->isDefaultEvent($transactorEvent))
             {
                 $this->trace->info(
-                    TraceCode::LEDGER_JOURNAL_TRANSACTOR_TYPE_NOT_REGISTERED,
+                    TraceCode::LEDGER_JOURNAL_TRANSACTOR_EVENT_NOT_REGISTERED,//
                     [
-                        self::TRANSACTOR_TYPE => $transactorType,
-                        self::ENTITY          => $credits,
+                        self::TRANSACTOR_EVENT => $transactorEvent,
+                        self::ENTITY           => $credits,
                     ]);
 
                 return;
@@ -45,7 +45,6 @@ class Rewards extends Base
             ];
 
             $payload = [
-                self::TRANSACTOR            => self::X,
                 self::TENANT                => self::X,
                 self::MODE                  => $this->mode,
                 self::IDEMPOTENCY_KEY       => gen_uuid(self::UUID_FORMAT),
@@ -58,8 +57,7 @@ class Rewards extends Base
                 self::TAX                   => '0',
                 self::NOTES                 => json_encode($notes),
                 self::TRANSACTOR_ID         => $credits->getPublicId(),
-                self::TRANSACTOR_TYPE       => $transactorType,
-                self::TRANSACTOR_EVENT      => $transactorType,
+                self::TRANSACTOR_EVENT      => $transactorEvent,
                 self::FEE_ACCOUNTING        => self::REWARD,
                 self::TRANSACTION_DATE      => $credits->getCreatedAt(),
                 self::BANKING_ACCOUNT_ID    => $credits->merchant->sharedBankingBalance->bankingAccount->getPublicId(),
@@ -74,8 +72,8 @@ class Rewards extends Base
                 Trace::ERROR,
                 TraceCode::LEDGER_JOURNAL_REWARD_LOADING_PAYLOAD_ERROR,
                 [
-                    self::TRANSACTOR_ID   => $credits->getPublicId(),
-                    self::TRANSACTOR_TYPE => $transactorType,
+                    self::TRANSACTOR_ID    => $credits->getPublicId(),
+                    self::TRANSACTOR_EVENT => $transactorEvent,
                 ]);
         }
         finally

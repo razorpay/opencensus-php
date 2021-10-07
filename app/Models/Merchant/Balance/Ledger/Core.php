@@ -17,7 +17,6 @@ class Core extends Base\Core
     const SHARED_MERCHANT_ONBOARDING = 'shared_merchant_onboarding';
 
     const MODE                  = 'mode';
-    const TRANSACTOR            = 'transactor';
     const TENANT                = 'tenant';
     const MERCHANT_ID           = 'merchant_id';
     const EVENT                 = 'event';
@@ -53,7 +52,6 @@ class Core extends Base\Core
         $event = $accountType == self::SHARED ? self::SHARED_MERCHANT_ONBOARDING : self::DIRECT_MERCHANT_ONBOARDING;
 
         $payload = [
-            self::TRANSACTOR        => self::X,
             self::TENANT            => self::X,
             self::MODE              => $mode,
             self::IDEMPOTENCY_KEY   => gen_uuid(self::UUID_FORMAT),

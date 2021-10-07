@@ -22,7 +22,7 @@ class Payout extends Base
     const PAYOUT_REVERSED  = "payout_reversed";
 
     public function pushTransactionToLedger(Entity $payout,
-                                            string $transactorType,
+                                            string $transactorEvent,
                                             Reversal\Entity $reversal = null,
                                             array $ftsSourceAccountInformation = [])
     {
@@ -35,13 +35,13 @@ class Payout extends Base
              * is no event registered at ledger for that payout status.
              * In this case, it is not required to push transaction through sns.
              */
-            if ($this->isDefaultEvent($transactorType))
+            if ($this->isDefaultEvent($transactorEvent))
             {
                 $this->trace->info(
-                    TraceCode::LEDGER_JOURNAL_TRANSACTOR_TYPE_NOT_REGISTERED,
+                    TraceCode::LEDGER_JOURNAL_TRANSACTOR_EVENT_NOT_REGISTERED,
                     [
-                        self::TRANSACTOR_TYPE => $transactorType,
-                        self::ENTITY          => $payout,
+                        self::TRANSACTOR_EVENT => $transactorEvent,
+                        self::ENTITY           => $payout,
                     ]);
 
                 return;
@@ -55,7 +55,7 @@ class Payout extends Base
             $ftsSourceAccountData = [];
             $apiTransactionId = null;
 
-            switch ($transactorType)
+            switch ($transactorEvent)
             {
                 case self::PAYOUT_INITIATED:
                     $transactorDate = $payout->getInitiatedAt();
@@ -81,7 +81,7 @@ class Payout extends Base
                     break;
 
                 default:
-                    throw new LogicException(self::TRANSACTOR_TYPE . ' not implemented at ledger : ' . $transactorType);
+                    throw new LogicException(self::TRANSACTOR_EVENT . ' not implemented at ledger : ' . $transactorEvent);
             }
 
             $notes = [
@@ -91,8 +91,7 @@ class Payout extends Base
 
             $payload[self::NOTES]              = json_encode($notes);
             $payload[self::TRANSACTOR_ID]      = $transactorId;
-            $payload[self::TRANSACTOR_TYPE]    = $transactorType;
-            $payload[self::TRANSACTOR_EVENT]   = $transactorType;
+            $payload[self::TRANSACTOR_EVENT]   = $transactorEvent;
             $payload[self::TRANSACTION_DATE]   = $transactorDate;
 
             // Only sending api_transaction ID in case of initiated and reversed
@@ -117,8 +116,8 @@ class Payout extends Base
                 Trace::ERROR,
                 TraceCode::LEDGER_JOURNAL_PAYOUT_PAYLOAD_ERROR,
                 [
-                    self::TRANSACTOR_ID   => $payout->getPublicId(),
-                    self::TRANSACTOR_TYPE => $transactorType,
+                    self::TRANSACTOR_ID    => $payout->getPublicId(),
+                    self::TRANSACTOR_EVENT => $transactorEvent,
                 ]);
         }
         finally
@@ -135,7 +134,7 @@ class Payout extends Base
                                                              Entity $payout)
     {
         // We are not supposed to send and fts_fund_account_id or account_type for payout initiated
-        if ($payload[self::TRANSACTOR_TYPE] === self::PAYOUT_INITIATED)
+        if ($payload[self::TRANSACTOR_EVENT] === self::PAYOUT_INITIATED)
         {
             return;
         }
@@ -164,7 +163,6 @@ class Payout extends Base
     protected function getDefaultPayload(Entity $payout)
     {
         return [
-            self::TRANSACTOR          => self::X,
             self::TENANT              => self::X,
             self::MODE                => $this->mode,
             self::IDEMPOTENCY_KEY     => gen_uuid(self::UUID_FORMAT),

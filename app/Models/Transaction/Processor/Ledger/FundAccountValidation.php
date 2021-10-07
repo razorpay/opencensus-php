@@ -20,14 +20,14 @@ class FundAccountValidation extends Base
 
     /***
      * @param Entity $fundAccountValidation
-     * @param string $transactorType
+     * @param string $transactorEvent
      * @param int $transactorDate
      * @param array $ftsSourceAccountInformation
      */
     public function pushTransactionToLedger(Entity $fundAccountValidation,
-                                            string $transactorType,
-                                            int $transactorDate,
-                                            array $ftsSourceAccountInformation = [])
+                                            string $transactorEvent,
+                                            int    $transactorDate,
+                                            array  $ftsSourceAccountInformation = [])
     {
         $startTime = millitime();
 
@@ -39,13 +39,13 @@ class FundAccountValidation extends Base
              * is no event registered at ledger for that fav status.
              * In this case, it is not required to push transaction through sns.
              */
-            if ($this->isDefaultEvent($transactorType))
+            if ($this->isDefaultEvent($transactorEvent))
             {
                 $this->trace->info(
-                    TraceCode::LEDGER_JOURNAL_TRANSACTOR_TYPE_NOT_REGISTERED,
+                    TraceCode::LEDGER_JOURNAL_TRANSACTOR_EVENT_NOT_REGISTERED,
                     [
-                        self::TRANSACTOR_TYPE => $transactorType,
-                        self::ENTITY          => $fundAccountValidation,
+                        self::TRANSACTOR_EVENT => $transactorEvent,
+                        self::ENTITY           => $fundAccountValidation,
                     ]);
 
                 return;
@@ -69,7 +69,7 @@ class FundAccountValidation extends Base
                 $tax = '0';
             }
 
-            switch ($transactorType)
+            switch ($transactorEvent)
             {
                 case self::FAV_INITIATED:
                     $transactorDate = $fundAccountValidation->getCreatedAt();
@@ -93,11 +93,10 @@ class FundAccountValidation extends Base
                     break;
 
                 default:
-                    throw new LogicException(self::TRANSACTOR_TYPE . ' not implemented at ledger : ' . $transactorType);
+                    throw new LogicException(self::TRANSACTOR_EVENT . ' not implemented at ledger : ' . $transactorEvent);
             }
 
             $payload = [
-                self::TRANSACTOR         => self::X,
                 self::TENANT             => self::X,
                 self::MODE               => $this->mode,
                 self::IDEMPOTENCY_KEY    => gen_uuid(self::UUID_FORMAT),
@@ -109,8 +108,7 @@ class FundAccountValidation extends Base
                 self::TAX                => $tax,
                 self::NOTES              => json_encode($notes),
                 self::TRANSACTOR_ID      => $transactorId,
-                self::TRANSACTOR_TYPE    => $transactorType,
-                self::TRANSACTOR_EVENT   => $transactorType,
+                self::TRANSACTOR_EVENT   => $transactorEvent,
                 self::TRANSACTION_DATE   => $transactorDate,
                 self::BANKING_ACCOUNT_ID => $fundAccountValidation->balance->bankingAccount->getPublicId(),
             ];
@@ -131,8 +129,8 @@ class FundAccountValidation extends Base
                 Trace::ERROR,
                 TraceCode::LEDGER_JOURNAL_FAV_PAYLOAD_ERROR,
                 [
-                    self::TRANSACTOR_ID   => $fundAccountValidation->getPublicId(),
-                    self::TRANSACTOR_TYPE => $transactorType,
+                    self::TRANSACTOR_ID    => $fundAccountValidation->getPublicId(),
+                    self::TRANSACTOR_EVENT => $transactorEvent,
                 ]);
         }
         finally

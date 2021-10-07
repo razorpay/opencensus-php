@@ -16,7 +16,7 @@ class Adjustment extends Base
     const NEGATIVE_ADJUSTMENT_PROCESSED = 'negative_adjustment_processed';
 
     public function pushTransactionToLedger(Entity $adjustment,
-                                            string $transactorType)
+                                            string $transactorEvent)
     {
         $startTime = millitime();
 
@@ -27,13 +27,13 @@ class Adjustment extends Base
              * is no event registered at ledger for that fund loading status.
              * In this case, it is not required to push transaction through sns.
              */
-            if ($this->isDefaultEvent($transactorType))
+            if ($this->isDefaultEvent($transactorEvent))
             {
                 $this->trace->info(
-                    TraceCode::LEDGER_JOURNAL_TRANSACTOR_TYPE_NOT_REGISTERED,
+                    TraceCode::LEDGER_JOURNAL_TRANSACTOR_EVENT_NOT_REGISTERED,
                     [
-                        self::TRANSACTOR_TYPE => $transactorType,
-                        self::ENTITY          => $adjustment,
+                        self::TRANSACTOR_EVENT => $transactorEvent,
+                        self::ENTITY           => $adjustment,
                     ]);
 
                 return;
@@ -45,7 +45,6 @@ class Adjustment extends Base
             ];
 
             $payload = [
-                self::TRANSACTOR         => self::X,
                 self::TENANT             => self::X,
                 self::MODE               => $this->mode,
                 self::IDEMPOTENCY_KEY    => gen_uuid(self::UUID_FORMAT),
@@ -57,8 +56,7 @@ class Adjustment extends Base
                 self::TAX                => (string) $adjustment->transaction->getTax(),
                 self::TRANSACTOR_ID      => $adjustment->getPublicId(),
                 self::NOTES              => json_encode($notes),
-                self::TRANSACTOR_TYPE    => $transactorType,
-                self::TRANSACTOR_EVENT   => $transactorType,
+                self::TRANSACTOR_EVENT   => $transactorEvent,
                 self::TRANSACTION_DATE   => $adjustment->getCreatedAt(),
                 self::BANKING_ACCOUNT_ID => $adjustment->balance->bankingAccount->getPublicId(),
                 self::API_TRANSACTION_ID => $adjustment->getTransactionId(),
@@ -73,8 +71,8 @@ class Adjustment extends Base
                 Trace::ERROR,
                 TraceCode::LEDGER_JOURNAL_ADJUSTMENT_PAYLOAD_ERROR,
                 [
-                    self::TRANSACTOR_ID   => $adjustment->getPublicId(),
-                    self::TRANSACTOR_TYPE => $transactorType,
+                    self::TRANSACTOR_ID    => $adjustment->getPublicId(),
+                    self::TRANSACTOR_EVENT => $transactorEvent,
                 ]);
         }
         finally

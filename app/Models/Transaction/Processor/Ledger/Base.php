@@ -10,7 +10,6 @@ use RZP\Models\Base\Core;
 
 class Base extends Core
 {
-    const TRANSACTOR            = 'transactor';
     const TENANT                = 'tenant';
     const MODE                  = 'mode';
     const MERCHANT_ID           = 'merchant_id';
@@ -28,7 +27,6 @@ class Base extends Core
     const TRANSACTION_ID        = 'transaction_id';
     const TRANSACTION_DATE      = 'transaction_date';
     const TRANSACTOR_ID         = 'transactor_id';
-    const TRANSACTOR_TYPE       = 'transactor_type';
     const TRANSACTOR_EVENT      = 'transactor_event';
     const TRANSACTION_CONFIG_ID = 'transaction_config_id';
     const ENTITY                = 'entity';
