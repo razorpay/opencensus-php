@@ -20,6 +20,7 @@ use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
+use RZP\Models\QrPayment;
 use RZP\Models\Card\Type;
 use RZP\Models\Settlement;
 use RZP\Http\RequestHeader;
@@ -3444,9 +3445,18 @@ trait Refund
                         $input);
                 }
 
-                $bankTransfer = $this->repo->bank_transfer->findByPaymentId($paymentId);
+                if ($payment->qrPayment !== null)
+                {
+                    $qrPayment = $payment->qrPayment;
 
-                $input = (new BankTransfer\Core)->getAccountForRefund($bankTransfer);
+                    $input = (new QrPayment\Core())->getAccountForRefund($qrPayment);
+                }
+                else
+                {
+                    $bankTransfer = $this->repo->bank_transfer->findByPaymentId($paymentId);
+
+                    $input = (new BankTransfer\Core)->getAccountForRefund($bankTransfer);
+                }
             }
             else if (($this->isPaymentTpvAndBankTransferRefund($payment) === true) or
                      ($this->isPaymentNetbankingOrderAccountDetailsAvailableAndNonTpvBankTransferRefund($payment) === true))
@@ -3657,7 +3667,14 @@ trait Refund
 
         if ($payment->isBankTransfer() === true)
         {
-            $bankTransfer = $this->repo->bank_transfer->findByPayment($payment);
+            if ($payment->qrPayment !== null)
+            {
+                $bankTransfer = $payment->qrPayment;
+            }
+            else
+            {
+                $bankTransfer = $this->repo->bank_transfer->findByPayment($payment);
+            }
 
             $input = [
                 FundTransferAttempt\Entity::NARRATION => $bankTransfer->getRefundNarration(),

@@ -113,6 +113,11 @@ class Validator extends Base\Validator
     {
         $bankTransfer = $payment->bankTransfer;
 
+        if ($payment->qrPayment !== null)
+        {
+            $bankTransfer = $payment->qrPayment;
+        }
+
         if ($bankTransfer->payerBankAccount === null)
         {
             throw new Exception\BadRequestException(

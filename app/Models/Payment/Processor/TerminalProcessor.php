@@ -5,7 +5,6 @@ namespace RZP\Models\Payment\Processor;
 use App;
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Constants\Environment;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -13,9 +12,11 @@ use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\BharatQr;
 use RZP\Models\BankTransfer;
+use RZP\Constants\Environment;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Account;
 use RZP\Exception\LogicException;
+use RZP\Models\BankAccount\Entity;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 
@@ -250,9 +251,25 @@ class TerminalProcessor extends Base\Core
 
         $terminals = $this->repo->terminal->getAllBankTransferTerminals($gateway, $terminalMerchantIds);
 
+        return $this->getTerminalForBankAccount($gateway, $terminals, $bankTransfer->getPayeeAccount(), $log);
+    }
+
+    public function getTerminalForQrBankTransfer(Entity $bankAccount, $provider, bool $log = false): Terminal\Entity
+    {
+        $gateway = Payment\Gateway::$bankTransferProviderGateway[$provider];
+
+        $terminalMerchantIds = [$bankAccount->getMerchantId(), Account::SHARED_ACCOUNT];
+
+        $terminals = $this->repo->terminal->getAllBankTransferTerminals($gateway, $terminalMerchantIds);
+
+        return $this->getTerminalForBankAccount($gateway, $terminals, $bankAccount->getAccountNumber(), $log);
+    }
+
+    private function getTerminalForBankAccount($gateway, $terminals, $virtualBankAccount, $log)
+    {
         try
         {
-            return $this->selectTerminalForBankAccount($terminals, $bankTransfer->getPayeeAccount(), $log);
+            return $this->selectTerminalForBankAccount($terminals, $virtualBankAccount, $log);
         }
         catch (LogicException $ex)
         {

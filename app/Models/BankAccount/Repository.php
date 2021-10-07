@@ -488,4 +488,18 @@ class Repository extends Base\Repository
                     ->whereIn($merchantIdColumn, $destinationMIDsToWhitelist)
                     ->exists();
     }
+
+    public function getBankAccountsFromAccountNumberAndType($payeeAccount, $type, $withTrashed = false)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::ACCOUNT_NUMBER, $payeeAccount)
+                      ->where(Entity::TYPE, $type);
+
+        if ($withTrashed === true)
+        {
+            $query = $query->withTrashed();
+        }
+
+        return $query->first();
+    }
 }

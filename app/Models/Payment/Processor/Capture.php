@@ -1300,6 +1300,11 @@ trait Capture
 
     protected function updateVirtualAccountStatusIfApplicable(Payment\Entity $payment)
     {
+        if ($payment->qrPayment !== null)
+        {
+            return;
+        }
+
         if (($payment->isBankTransfer() === true) or
             ($payment->isUpiTransfer() === true))
         {

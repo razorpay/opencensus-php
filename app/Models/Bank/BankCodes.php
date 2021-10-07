@@ -537,14 +537,13 @@ class BankCodes
      * Identify the bank requires us to check Payer IFSC. If it's IMPS, it's not
      * actually an IFSC, it's one of the bank codes given above. Check both.
      *
-     * @param  string $account
-     * @param  Entity $bankTransfer
+     * @param string $account
+     * @param        $ifsc
+     *
      * @return string $account
      */
-    public static function modifyPayerAccountIfNeeded(string $account, BankTransfer\Entity $bankTransfer)
+    public static function modifyPayerAccountIfNeeded(string $account, $ifsc)
     {
-        $ifsc = $bankTransfer->getMappedPayerIfsc();
-
         $haystack = self::STRIP_LEADING_ZEROES_BANKS_NEFT;
 
         $needle = substr($ifsc, 0, 4);

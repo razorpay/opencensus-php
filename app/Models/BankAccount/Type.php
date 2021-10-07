@@ -12,6 +12,7 @@ class Type
     const CUSTOMER        = 'customer';
     const VIRTUAL_ACCOUNT = 'virtual_account';
     const CONTACT         = 'contact';
+    const QR_CODE         = 'qr_code';
 
     public static function validateType($type)
     {

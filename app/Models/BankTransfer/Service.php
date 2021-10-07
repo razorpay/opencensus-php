@@ -16,6 +16,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Models\QrPayment;
 use RZP\Models\BankAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Exception\LogicException;
@@ -117,6 +118,14 @@ class Service extends Base\Service
 
             $this->removeInvalidRegexFromPayerAccount($input);
 
+            $bankAccount = $this->getQrBankAccount($input);
+
+            if ($bankAccount !== null)
+            {
+                return (new QrPayment\Service())->processBankTransfer($input, $provider ?? $this->provider,
+                                                                      $requestPayload, $bankAccount);
+            }
+
             $bankTransferRequest = (new BankTransferRequest\Core())->create(
                 $input,
                 $provider ?? $this->provider,
@@ -187,6 +196,13 @@ class Service extends Base\Service
 
             $input[Entity::PAYER_ACCOUNT] = $payerAccountNumber;
         }
+    }
+
+    private function getQrBankAccount(array $input)
+    {
+        $payeeAccount = $input['payee_account'];
+
+        return $this->repo->bank_account->getBankAccountsFromAccountNumberAndType($payeeAccount, BankAccount\Type::QR_CODE, true);
     }
 
     public function processBankTransfer(BankTransferRequest\Entity $bankTransferRequest)
@@ -730,26 +746,26 @@ class Service extends Base\Service
      */
     public function removeSenderSensitiveInfoFromLogging(array $input, string $provider)
     {
-            switch ($provider)
-            {
-                case Provider::RBL:
+        switch ($provider)
+        {
+            case Provider::RBL:
 
-                    unset($input['Data'][0]['senderAccountNumber']);
-                    break;
+                unset($input['Data'][0]['senderAccountNumber']);
+                break;
 
-                case Provider::ICICI :
+            case Provider::ICICI :
 
-                    unset($input['Virtual_Account_Number_Verification_IN'][0]['payer_account']);
-                    break;
+                unset($input['Virtual_Account_Number_Verification_IN'][0]['payer_account']);
+                break;
 
-                case Provider::HDFC_ECMS :
+            case Provider::HDFC_ECMS :
 
-                    unset($input['Remitter_Account_No'], $input['Account_Number']);
-                    break;
+                unset($input['Remitter_Account_No'], $input['Account_Number']);
+                break;
 
-                default:
-                    break;
-            }
-            return $input;
+            default:
+                break;
+        }
+        return $input;
     }
 }

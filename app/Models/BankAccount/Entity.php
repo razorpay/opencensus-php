@@ -13,6 +13,7 @@ use RZP\Models\VirtualAccount;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
 
 /**
  * @property Merchant\Entity     $merchant
@@ -242,6 +243,11 @@ class Entity extends Base\PublicEntity
     public function isVirtual()
     {
         return ($this->getAttribute(self::VIRTUAL) === 1);
+    }
+
+    public function qrCode()
+    {
+        return $this->hasOne(QrV2\Entity::class, QrV2\Entity::ID, Entity::ENTITY_ID);
     }
 
     public function getMpinSetAttribute()

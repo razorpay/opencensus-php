@@ -84,7 +84,7 @@ class PayerBankAccount extends Base\Core
 
         $account = preg_replace('/[^a-zA-Z0-9]+/', '', $account);
 
-        $account = BankCodes::modifyPayerAccountIfNeeded($account, $bankTransfer);
+        $account = BankCodes::modifyPayerAccountIfNeeded($account, $bankTransfer->getMappedPayerIfsc());
 
         return $account;
     }

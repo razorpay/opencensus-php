@@ -15,7 +15,7 @@ class Validator extends Base\Validator
         Entity::PAYER_VPA             => 'sometimes',
         Entity::TRANSACTION_TIME      => 'sometimes',
         Entity::PROVIDER_REFERENCE_ID => 'required|string',
-        Entity::METHOD                => 'required|string|in:upi,card',
+        Entity::METHOD                => 'required|string|in:upi,card,bank_transfer',
         Entity::MERCHANT_REFERENCE    => 'required|string',
     ];
 }

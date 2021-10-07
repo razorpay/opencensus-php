@@ -17,9 +17,16 @@ class Entity extends Base\PublicEntity
     const AMOUNT                = 'amount';
     const PAYER_VPA             = 'payer_vpa';
     const PROVIDER_REFERENCE_ID = 'provider_reference_id';
+
+    // This is what we receive in callback, this may or may not translate to QR code id
+    // if it doesn't translate to QR code id, payment is made on Fallback QR
     const MERCHANT_REFERENCE    = 'merchant_reference';
     const TRANSACTION_TIME      = 'transaction_time';
+
     const PAYER_BANK_ACCOUNT_ID = 'payer_bank_account_id';
+
+    const MAX_NARRATION_LENGTH          = 39;
+    const INVALID_ACC_CREDIT_NARRATION  = 'ACC DOESNT EXIST';
 
     protected static $sign = 'qp';
 
@@ -78,7 +85,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::AMOUNT => 'int',
+        self::AMOUNT   => 'int',
+        self::EXPECTED => 'bool',
     ];
 
     protected $pii = [
@@ -155,5 +163,30 @@ class Entity extends Base\PublicEntity
         }
 
         return $data;
+    }
+
+    public function getRefundNarration()
+    {
+        $utr = $this->getProviderReferenceId();
+
+        $availableLength = self::MAX_NARRATION_LENGTH - strlen($utr) - 1;
+
+        if ($this->isExpected() === true)
+        {
+            $billingLabel = $this->qrCode->merchant->getBillingLabel();
+
+            $label = substr($billingLabel, 0, $availableLength);
+        }
+        else
+        {
+            $label = self::INVALID_ACC_CREDIT_NARRATION;
+        }
+
+        return $label . '-' . $utr;
+    }
+
+    public function isBankTransfer()
+    {
+        return $this->getAttribute(self::METHOD) === 'bank_transfer';
     }
 }

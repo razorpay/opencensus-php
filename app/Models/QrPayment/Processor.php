@@ -7,6 +7,9 @@ use RZP\Models\Card;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\BankAccount;
+use RZP\Models\VirtualAccount;
+use RZP\Models\Bank\BankCodes;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
@@ -112,6 +115,11 @@ class Processor extends Base\Core
                 $qrPayment->payment()->associate($payment);
 
                 $qrPayment->qrCode()->associate($this->qrCode);
+
+                if ($qrPayment->isBankTransfer())
+                {
+                    $this->createAndAssociatePayerBankAccount($this->callbackData, $qrPayment);
+                }
 
                 $this->repo->saveOrFail($qrPayment);
 
@@ -365,5 +373,109 @@ class Processor extends Base\Core
                 (new NonVirtualAccountQrCode\Core())->close($this->qrCode, NonVirtualAccountQrCode\CloseReason::PAID);
             }
         }
+    }
+
+    private function createAndAssociatePayerBankAccount($callbackArray, Entity $qrPayment)
+    {
+        $bankAccount = new BankAccount\Entity;
+
+        $bankAccountInput = $this->computeBankAccountInput($callbackArray, $qrPayment);
+
+        $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
+
+        $bankAccount->merchant()->associate($qrPayment->qrCode->merchant);
+
+        $bankAccount->source()->associate($qrPayment->qrCode);
+
+        $qrPayment->payerBankAccount()->associate($bankAccount);
+
+        $this->repo->saveOrFail($bankAccount);
+    }
+
+    private function computeBankAccountInput($callbackArray, $qrPayment)
+    {
+        $ifsc = self::getMappedIfsc($callbackArray, $qrPayment);
+
+        return [
+            BankAccount\Entity::IFSC_CODE        => $ifsc,
+            BankAccount\Entity::ACCOUNT_NUMBER   => self::computeBankAccountNumber($callbackArray, $ifsc),
+            BankAccount\Entity::BENEFICIARY_NAME => self::getLabel($qrPayment, $callbackArray)
+        ];
+    }
+
+    private function computeBankAccountNumber($callbackArray, $ifsc)
+    {
+        $account = preg_replace('/[^a-zA-Z0-9]+/', '', $callbackArray['payer_account']);
+
+        $account = BankCodes::modifyPayerAccountIfNeeded($account, $ifsc);
+
+        return $account;
+    }
+
+    protected static function getLabel(Entity $qrPayment, $callbackArray)
+    {
+        $label = $callbackArray['payer_name'];
+
+        $label = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
+
+        // Label could be empty AFTER the preg_replace step
+        if (empty(trim($label)) === true)
+        {
+            if ($qrPayment->isExpected() === true)
+            {
+                $label = $qrPayment->merchant->getBillingLabel();
+
+                // Still necessary to sanitize merchant name
+                $label = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
+            }
+            else
+            {
+                $label = 'Beneficiary';
+            }
+        }
+
+        $label = trim($label);
+
+        return substr($label, 0, 39);
+    }
+
+    public static function getMappedIfsc($callbackArray, $qrPayment)
+    {
+        $ifsc = $callbackArray['payer_ifsc'];
+        $mode = $callbackArray['mode'];
+        $gateway = $qrPayment->getGateway();
+
+        if ((strlen($ifsc) !== BankAccount\Entity::IFSC_CODE_LENGTH) and
+            ($mode === \RZP\Models\BankTransfer\Mode::IMPS))
+        {
+            if ($gateway === VirtualAccount\Provider::KOTAK)
+            {
+                /**
+                 *  In can of Kotak, we get Bank Code followed by 10 digit Mobile number.
+                 *  Bank Codes vary from 3 digits to 5 digits
+                 *  but we are only taking first 3 digits into consideration.
+                 */
+                $impsBankCode = substr($ifsc, 0, 3);
+
+                $ifsc = BankCodes::getIfscForImpsBankCode($impsBankCode);
+
+                if($ifsc === null)
+                {
+                    \Razorpay\Trace\Facades\Trace::info(TraceCode::BANK_TRANSFER_BANK_CODE_MISSING, ['bank_code' => $impsBankCode]);
+                }
+            }
+            else if ($gateway === VirtualAccount\Provider::YESBANK)
+            {
+                $nbin = $ifsc;
+
+                $ifsc = BankCodes::getIfscForNbin($nbin);
+
+                if($ifsc === null)
+                {
+                    Trace::info(TraceCode::BANK_TRANSFER_NBIN_CODE_MISSING, ['nbin' => $nbin]);
+                }
+            }
+        }
+        return $ifsc;
     }
 }

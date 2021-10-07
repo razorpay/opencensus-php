@@ -30,6 +30,23 @@ trait NonVirtualAccountQrCodeTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    private function processRefund($id, $mode = 'test', $merchantId = '10000000000000')
+    {
+        $this->ba->privateAuth();
+
+        if ($mode === 'live')
+        {
+            $this->ba->privateAuth('rzp_live_' . $merchantId);
+        }
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/'. $id . '/refund',
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     private function closeQrCode(string $id)
     {
         $request = [

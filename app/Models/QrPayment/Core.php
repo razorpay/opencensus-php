@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\BharatQr;
+use RZP\Models\BankAccount;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\QrPaymentRequest;
 
@@ -98,5 +99,16 @@ class Core extends Base\Core
         }
 
         return $input;
+    }
+
+    public function getAccountForRefund(Entity $qrPayment)
+    {
+        $payerAccount = $qrPayment->payerBankAccount;
+
+        return [
+            BankAccount\Entity::IFSC_CODE        => $payerAccount->getIfscCode(),
+            BankAccount\Entity::ACCOUNT_NUMBER   => $payerAccount->getAccountNumber(),
+            BankAccount\Entity::BENEFICIARY_NAME => $payerAccount->getBeneficiaryName()
+        ];
     }
 }
