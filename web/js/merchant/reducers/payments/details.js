@@ -387,7 +387,11 @@ export default (state = initialState, action) => {
       });
 
     case `${PAYMENT_RESET}`:
-      return initialState;
+      // maintaining the failure analysis data even in reset
+      return {
+        ...initialState,
+        failureAnalysisData: state.failureAnalysisData,
+      };
 
     default:
       return state;
