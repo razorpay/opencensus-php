@@ -9818,6 +9818,11 @@ class Route
             // Merchant Fraud
             'bulk_fraud_notify',
 
+            //Purpose Code
+            'purpose_code_fetch',
+            'merchant_patch_purpose_code',
+            'user_fetch_purpose_code',
+
             // metro
             'metro_project_create',
             'metro_project_credentials_create',
