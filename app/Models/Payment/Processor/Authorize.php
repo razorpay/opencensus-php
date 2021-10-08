@@ -3904,7 +3904,8 @@ trait Authorize
 
             if((($payment->getMethod() === PaymentConstants::UPI) or
                     (($payment->getMethod() === PaymentConstants::CARD) and
-                        ($payment->isRecurringTypeInitial() === true)))
+                        (($payment->isRecurringTypeInitial() === true) or
+                            ($payment->isRecurringTypeCardChange() === true))))
                 and ($this->subscription !== null))
             {
                 $this->createUpiMandateForSubscriptionIfApplicable($localCustomer, $input, $payment);

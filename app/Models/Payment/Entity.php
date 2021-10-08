@@ -4524,7 +4524,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $token = $this->localToken;
 
         if (($this->isCardRecurring() === true) and
-            ($this->isRecurringTypeInitial() === true) and
+            (($this->isRecurringTypeInitial() === true) or $this->isRecurringTypeCardChange() === true) and
             (empty($token) === false) and
             (empty($token->getCardMandateId()) === true) and
             ($this->card->iinRelation !== null) and
@@ -4561,7 +4561,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $token = $this->localToken;
 
         if (($this->isCardRecurring() === true) and
-            ($this->isRecurringTypeInitial() === true) and
+            (($this->isRecurringTypeInitial() === true) or ($this->isRecurringTypeCardChange() === true)) and
             (empty($token) === false) and
             ($token->hasCardMandate() === true))
         {
