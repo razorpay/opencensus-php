@@ -118,7 +118,7 @@ function UpdateWebsiteDetails(props) {
     if (type === 'website') {
       // Gather all field values into payload
       Object.keys(formFieldValues).forEach((key) => {
-        payload[`business_website_${key}`] = formFieldValues[key];
+        payload[`business_website_${key}`] = autoPrefixUrls(formFieldValues[key]);
       });
 
       // If creds are not checked, removing these keys
@@ -132,7 +132,7 @@ function UpdateWebsiteDetails(props) {
       delete urlDetails.business_website_username;
       delete urlDetails.business_website_password;
     } else {
-      payload.business_app_url = formFieldValues.app_url;
+      payload.business_app_url = autoPrefixUrls(formFieldValues.app_url);
       urlDetails = { ...payload };
 
       if (doesNeedCreds) {
