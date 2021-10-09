@@ -658,7 +658,7 @@ class Core extends Base\Core
 
         $totalAmount = $this->getTotalAmountForOrder($input[Entity::LINE_ITEMS]);
 
-        $order = Tracer::inSpan(['name' => 'payment_page.order.create.create_order'], function() use($totalAmount, $paymentLink)
+        $order = Tracer::inSpan(['name' => 'payment_page.order.create.create_order'], function() use($totalAmount, $paymentLink, $input)
         {
             return (new Order\Core)->create(
                 [

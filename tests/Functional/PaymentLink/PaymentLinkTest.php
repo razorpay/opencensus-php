@@ -1537,6 +1537,27 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * @group nocode_pp_order_notes
+     */
+    public function testOrderCreateShowStoreNotes()
+    {
+        $this->createPaymentLink(self::TEST_PL_ID, ['view_type' => 'page']);
+
+        $ppis = [
+            [
+                PaymentLinkModel\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                PaymentLinkModel\PaymentPageItem\Entity::ITEM => [
+                    Item\Entity::AMOUNT => 5000,
+                ]
+            ]
+        ];
+
+        $this->createPaymentPageItems(self::TEST_PL_ID, $ppis);
+
+        $this->startTest();
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function createPaymentLinkAndOrderForThat(array $paymentLinkAttribute = [], array $orderAttribute = [])

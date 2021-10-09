@@ -2505,5 +2505,44 @@ return [
             ]
         ],
     ],
-
+    'testOrderCreateShowStoreNotes' => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/order',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => 'ppi_10000000000ppi',
+                        'amount'               => 5000,
+                    ]
+                ],
+                "notes" => [
+                    "email"     => "fake@email.com",
+                    "mobile"    => "9878678798",
+                    "something" => "nothing"
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'order' => [
+                    'amount' => 5000,
+                    "notes" => [
+                        "email"     => "fake@email.com",
+                        "mobile"    => "9878678798",
+                        "something" => "nothing"
+                    ],
+                ],
+                'line_items' => [
+                    [
+                        'item_id'  => 'item_10000000000ppi',
+                        'ref_id'   => 'ppi_10000000000ppi',
+                        'ref_type' => 'payment_page_item',
+                        'amount'   => 5000,
+                        'currency' => 'INR',
+                    ]
+                ],
+            ],
+        ],
+    ],
 ];
