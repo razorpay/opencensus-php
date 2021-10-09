@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
-import LocalStorageService from 'common/utils/localStorage';
+import * as LocalStorageService from 'common/utils/localStorage';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import SupportButton from 'merchant/components/Home/SupportButton';
 
@@ -25,10 +25,6 @@ import { trackProductsModal } from 'merchant/containers/Home/OnboardingCard/Inst
 )
 @RTracking(() => window.rzpQ.component('InstantActivationAnnouncements'))
 export default class InstantActivationAnnouncements extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   trackEvent = (eventOrigin) => {
     const { tracking } = this.props;
     tracking.trackEvent(
@@ -60,9 +56,11 @@ export default class InstantActivationAnnouncements extends Component {
       mode,
       payments,
       tracking,
-      showProductsModal,
+      // eslint-disable-next-line no-shadow
       openModal,
+      // eslint-disable-next-line no-shadow
       closeModal,
+      // eslint-disable-next-line no-shadow
       hideProductsModal,
       showProducts,
       limitBreach,
@@ -72,9 +70,9 @@ export default class InstantActivationAnnouncements extends Component {
       theme: 'success',
       title: 'Account Activated',
     };
-    let theme = 'warning',
-      title,
-      content = payments instanceof Object;
+    let theme = 'warning';
+    let title;
+    let content = payments instanceof Object;
 
     const limitBreachHappened =
       !!limitBreach && limitBreach.type === 'payment_breach'
@@ -183,7 +181,7 @@ export default class InstantActivationAnnouncements extends Component {
           break;
         }
         case 'under_review_without_tnc_partial': {
-          theme = 'warning';
+          theme = user.isOrgAxis ? 'burgundy' : 'warning';
           title = (
             <div>
               Payment paused <br /> temporarily
@@ -239,7 +237,7 @@ export default class InstantActivationAnnouncements extends Component {
           break;
         }
         case 'under_review_without_tnc_passed': {
-          theme = 'warning';
+          theme = user.isOrgAxis ? 'burgundy' : 'warning';
           title = (
             <div>
               Payment limits removed,
@@ -295,7 +293,7 @@ export default class InstantActivationAnnouncements extends Component {
           break;
         }
         case 'under_review_without_tnc': {
-          theme = 'warning';
+          theme = user.isOrgAxis ? 'burgundy' : 'warning';
           title = <div>Generate TnC Page</div>;
           content = (
             <div class="announcement-container">
@@ -336,7 +334,7 @@ export default class InstantActivationAnnouncements extends Component {
         case 'needs_clarificarion': {
           theme = 'danger';
           title = 'KYC Clarification';
-          content = content = (
+          content = (
             <div class="announcement-container">
               <div class="announcement-info">
                 We need some clarfication regarding your KYC details. Please clarify at the earliest
@@ -351,7 +349,7 @@ export default class InstantActivationAnnouncements extends Component {
         case 'needs_clarification_mcc_pending': {
           theme = 'danger';
           title = 'KYC Clarification';
-          content = content = (
+          content = (
             <div class="announcement-container">
               <div class="announcement-info">
                 Your KYC details require further clarifications. Update required details within 1
@@ -366,7 +364,7 @@ export default class InstantActivationAnnouncements extends Component {
         case 'needs_clarification_funds_on_hold': {
           theme = 'danger';
           title = 'settlements have been paused';
-          content = content = (
+          content = (
             <div class="announcement-container">
               <div class="announcement-info">
                 Your funds are on hold now. Update required details immediately to unblock your
@@ -381,7 +379,7 @@ export default class InstantActivationAnnouncements extends Component {
         case 'needs_clarification': {
           theme = 'danger';
           title = 'KYC Clarification';
-          content = content = (
+          content = (
             <div class="announcement-container">
               <div class="announcement-info">
                 We need some clarfication regarding your KYC details. Please clarify at the earliest
@@ -422,7 +420,7 @@ export default class InstantActivationAnnouncements extends Component {
         case 'funds_on_hold': {
           theme = 'danger';
           title = 'KYC Under Review';
-          content = content = (
+          content = (
             <div>
               Our compliance team and banking partners are reviewing your KYC and your funds have
               been temporarily put on hold. We will review your KYC and reach out to you for any
@@ -638,24 +636,25 @@ export default class InstantActivationAnnouncements extends Component {
           );
         }
       } else if (user.isHardLimitReached) {
-        (theme = 'warning'),
-          (title = 'Account Under Review'),
-          (content = (
-            <>
-              Our compliance team and partner banks carry out routine audits of your KYC documents.
-              We might temporarily pause your settlements during this time, but don't worry, just
-              look for clarifications asked by our team on your registered email. Once we receive
-              the clarifications, we will resume your settlements. Upon receiving your response, we
-              will be able to process the application within 2 days and re enable settlements for
-              you. Please note, you can still accept payments from your customers.{' '}
-              <a
-                href="https://knowledgebase.razorpay.com/support/solutions/articles/11000103841-why-is-my-settle[%E2%80%A6]ld-and-my-account-under-review-after-getting-activated"
-                target="_blank"
-              >
-                More details
-              </a>
-            </>
-          ));
+        theme = 'warning';
+        title = 'Account Under Review';
+        content = (
+          <>
+            Our compliance team and partner banks carry out routine audits of your KYC documents. We
+            might temporarily pause your settlements during this time, but don't worry, just look
+            for clarifications asked by our team on your registered email. Once we receive the
+            clarifications, we will resume your settlements. Upon receiving your response, we will
+            be able to process the application within 2 days and re enable settlements for you.
+            Please note, you can still accept payments from your customers.{' '}
+            <a
+              href="https://knowledgebase.razorpay.com/support/solutions/articles/11000103841-why-is-my-settle[%E2%80%A6]ld-and-my-account-under-review-after-getting-activated"
+              target="_blank"
+              rel="noreferrer"
+            >
+              More details
+            </a>
+          </>
+        );
       } else if (
         isActivatedMccPending &&
         (user.business_website || user.merchant_tnc || !user.canGenerateTnCPage)
@@ -758,6 +757,7 @@ export default class InstantActivationAnnouncements extends Component {
                 <a
                   href="https://razorpay.freshdesk.com/support/solutions/articles/11000092582"
                   target="_blank"
+                  rel="noreferrer"
                 >
                   Know more
                 </a>

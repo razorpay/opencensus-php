@@ -38,6 +38,13 @@ export const BANNER_THEMES = {
     },
     toString: () => 'purply',
   },
+  burgundy: {
+    colors: {
+      dark: '#97144D',
+      light: '#b62866',
+    },
+    toString: () => 'purply',
+  },
 };
 
 class Announcement extends Component {
