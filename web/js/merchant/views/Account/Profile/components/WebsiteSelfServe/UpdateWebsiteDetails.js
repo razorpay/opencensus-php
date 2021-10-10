@@ -118,7 +118,9 @@ function UpdateWebsiteDetails(props) {
     if (type === 'website') {
       // Gather all field values into payload
       Object.keys(formFieldValues).forEach((key) => {
-        payload[`business_website_${key}`] = autoPrefixUrls(formFieldValues[key]);
+        const isKeyCred = ['username', 'password'].includes(key);
+        const value = formFieldValues[key];
+        payload[`business_website_${key}`] = isKeyCred ? value : autoPrefixUrls(value);
       });
 
       // If creds are not checked, removing these keys
