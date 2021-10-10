@@ -563,6 +563,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_API_REQUEST                                = 'NODAL_SETTLEMENT_API_REQUEST';
     const SETTLEMENT_NOT_SKIPPING_BANK_ACCOUNT_RECENT_CREATION  = 'SETTLEMENT_NOT_SKIPPING_BANK_ACCOUNT_RECENT_CREATION';
 
+    const DEBUG_LOGGING                                         = 'DEBUG_LOGGING';
+
     const KOTAK_NODAL_BALANCE_REQUEST                           = 'KOTAK_NODAL_BALANCE_REQUEST';
     const KOTAK_NODAL_BALANCE_RESPONSE                          = 'KOTAK_NODAL_BALANCE_RESPONSE';
     const TERMINALS_SERVICE_PAYMENT_TERMINALS                   = 'TERMINALS_SERVICE_PAYMENT_TERMINALS';
@@ -4432,6 +4434,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TYPEFORM_PARSED_DATA                                  = 'TYPEFORM_PARSED_DATA';
     const TYPEFORM_WORKFLOW_TRIGGERED                           = 'TYPEFORM_WORKFLOW_TRIGGERED';
     const TYPEFORM_RAW_DATA                                     = 'TYPEFORM_RAW_DATA';
+    const TYPEFORM_COMPLETE_RESPONSES                           = 'TYPEFORM_COMPLETE_RESPONSES';
+    const TYPEFORM_INCOMPLETE_RESPONSES                         = 'TYPEFORM_INCOMPLETE_RESPONSES';
+    const TYPEFORM_FORM_DATA_FETCH                              = 'TYPEFORM_FORM_DATA_FETCH';
+    const TYPEFORM_FORM_ID_INPUT_EMPTY                          = 'TYPEFORM_FORM_ID_INPUT_EMPTY';
+    const TYPEFORM_INCORRECT_FORM_ID                            = 'TYPEFORM_INCORRECT_FORM_ID';
     const PRODUCT_INTERNATIONAL_REQUESTED                       = 'PRODUCT_INTERNATIONAL_REQUESTED';
     const PRODUCT_INTERNATIONAL_TRIGGERED                       = 'PRODUCT_INTERNATIONAL_TRIGGERED';
     const PRODUCT_INTERNATIONAL_APPROVED                        = 'PRODUCT_INTERNATIONAL_APPROVED';

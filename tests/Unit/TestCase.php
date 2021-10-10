@@ -127,7 +127,7 @@ class TestCase extends PHPUnitTestCase
         return $propertyValue;
     }
 
-    protected function setPrivateProperty(& $object, string $propertyName, $value)
+    public function setPrivateProperty(& $object, string $propertyName, $value)
     {
         $reflector = new \ReflectionClass(get_class($object));
 

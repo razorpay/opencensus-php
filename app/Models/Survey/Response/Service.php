@@ -28,4 +28,13 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function pushTypeFormResponsesToDataLake(array $input)
+    {
+        return $this->core->pushTypeFormResponsesToDataLake($input);
+    }
 }

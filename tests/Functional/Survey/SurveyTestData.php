@@ -722,4 +722,122 @@ return [
             ],
         ],
     ],
+
+    'testPushTypeformResponsesToDatalake' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/survey/push_to_datalake',
+            'content' => [
+                'formIds' => ["IWuWQPm5"],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+                'survey_response_saved' => true
+            ],
+        ],
+    ],
+
+    'testPushTypeformResponsesToDatalakeEmptyInput' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/survey/push_to_datalake',
+            'content' => [
+                'formIds' => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+                'survey_response_saved' => false
+            ],
+        ],
+    ],
+
+    'typeformResponsesTemplate' => [
+        [
+            "total_items" =>  1,
+            "page_count" => 1,
+            "items" =>
+                [
+                    [
+                        "landing_id"=> "6algy40gcs5rkrd6algt8iw0uxdcrnse",
+                        "token"=> "6algy40gcs5rkrd6algt8iw0uxdcrnse",
+                        "response_id"=> "6algy40gcs5rkrd6algt8iw0uxdcrnse",
+                        "landed_at"=> "2021-09-14T09:26:13Z",
+                        "submitted_at"=> "2021-09-14T09:26:29Z",
+                        "metadata"=> [
+                            "user_agent"=> "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
+                            "platform"=> "other",
+                            "referer"=> "https://form.typeform.com/to/IWuWQPm5?mid=Bg3TqwixX8hTKB&uid=Bg3TqqlIzIbYVJ&tracker_id=HxEKsbj56HlFd9&prefilled_answer=10&typeform-embed-id=8266666923570756&typeform-embed=embed-widget&typeform-source=x.razorpay.com&typeform-medium=embed-sdk&typeform-medium-version=next&embed-hide-headers=true",
+                            "network_id"=> "3815750dc0",
+                            "browser"=> "default"
+                        ],
+                        "hidden"=> [
+                            "mid"=> "Bg3TqwixX8hTKB",
+                            "source"=> "dashboard",
+                            "tracker_id"=> "HxEKsbj56HlFd9",
+                            "uid"=> "Bg3TqqlIzIbYVJ"
+                        ],
+                        "calculated"=> [
+                            "score"=> 0
+                        ],
+                        "answers"=> [
+                            [
+                                "field"=> [
+                                    "id"=> "887FdhYb2X6l",
+                                    "ref"=> "1bb324fd-91b2-4103-ade4-2890f191fa54",
+                                    "type"=> "opinion_scale"
+                                ],
+                                "type"=> "number",
+                                "number"=> 10
+                            ],
+                            [
+                                "field"=> [
+                                    "id"=> "CoUhkSErJewu",
+                                    "ref"=> "0601aa2c-7af5-4874-936a-e137d5a13edb",
+                                    "type"=> "long_text"
+                                ],
+                                "type"=> "text",
+                                "text"=> "CAL BACK REQ"
+                            ]
+                        ]
+                    ],
+                ]
+        ],
+        [
+            "total_items"=> 2,
+            "page_count"=> 1,
+            "items"=>
+                [
+                    [
+                        "landing_id"=> "w02syanuse2o2r8la1gq4gw02syankmp",
+                        "token"=> "w02syanuse2o2r8la1gq4gw02syankmp",
+                        "response_id"=> "w02syanuse2o2r8la1gq4gw02syankmp",
+                        "landed_at"=> "2021-09-14T05:28:41Z",
+                        "metadata"=> [
+                            "user_agent"=> "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
+                            "platform"=> "other",
+                            "referer"=> "https://razorpay.typeform.com/to/IWuWQPm5",
+                            "network_id"=> "6cb6c86312",
+                            "browser"=> "default"
+                        ]
+                    ],
+                    [
+                        "landing_id"=> "7shvrnvy11w3py4z97shvrafsjd4v2ej",
+                        "token"=> "7shvrnvy11w3py4z97shvrafsjd4v2ej",
+                        "response_id"=> "7shvrnvy11w3py4z97shvrafsjd4v2ej",
+                        "landed_at"=> "2021-09-13T13:13=>00Z",
+                        "metadata"=> [
+                            "user_agent"=> "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
+                            "platform"=> "other",
+                            "referer"=> "https://form.typeform.com/to/IWuWQPm5?mid=FEewk6iAczDG9d&uid=FEewk0QirJwq0i&tracker_id=Hw2jLpPmRJKEya&prefilled_answer=10&typeform-embed-id=3389972623754991&typeform-embed=embed-widget&typeform-source=x.razorpay.com&typeform-medium=embed-sdk&typeform-medium-version=next&embed-hide-headers=true",
+                            "network_id"=> "b4c73fc6f9",
+                            "browser"=> "default"
+                        ]
+                    ]
+                ]
+        ]
+    ],
 ];

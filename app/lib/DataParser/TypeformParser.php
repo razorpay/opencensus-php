@@ -56,7 +56,7 @@ class TypeformParser extends Base implements DataParserInterface
                 $questionsIdAnswers[$referenceId]['question'] .= $choices;
             }
 
-            //   
+            //
             // Remove all dots from the questions as elastic search (where typeform is saved currently)
             // accesses the string after dot as objects.
             //
@@ -126,5 +126,152 @@ class TypeformParser extends Base implements DataParserInterface
         return $questionsAnswers;
     }
 
+    /**
+     * Maps a typeform question id to it's question, which is later used in parsing typeform responses
+     *
+     * @param  array
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function typeformQuestionToQuestionId(): array
+    {
+        if (array_key_exists('fields', $this->input))
+        {
+            $questionIdToQuestion = [];
 
+            $questions = $this->input['fields'];
+
+            $questionIdToQuestion = $this->createQuestionIdToQuestion($questions, $questionIdToQuestion);
+
+            return $questionIdToQuestion;
+        }
+        else
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+    }
+
+    private function createQuestionIdToQuestion(array $questions, array $questionIdToQuestion): array
+    {
+        foreach ($questions as $question)
+        {
+            $referenceId = $question['id'];
+
+            $questionIdToQuestion[$referenceId]['question'] = str_replace(".", "", $question["title"]);
+        }
+
+        return $questionIdToQuestion;
+    }
+
+    public function parseTypeformCompleteResponses($formData): array
+    {
+        if (array_key_exists('items', $this->input))
+        {
+            $completeResponses = [];
+
+            $responses = $this->input['items'];
+
+            foreach ($responses as $response)
+            {
+                $metadata['uid']          = $response['hidden']['uid'];
+                $metadata['mid']          = $response['hidden']['mid'];
+                $metadata['source']       = $response['hidden']['source'];
+                $metadata['tracker_id']   = $response['hidden']['tracker_id'];
+//                $metadata['survey_type']  = $response[''];
+                $metadata['initiated_at'] = $response['landed_at'];
+                $metadata['submitted_at'] = $response['submitted_at'];
+
+                $result['completed'] = true;
+
+                $result['metadata'] = $metadata;
+
+                $answers = $response['answers'];
+                foreach ($answers as $answer)
+                {
+                    $answerType = $answer['type'];
+
+                    if($answerType === 'number')
+                    {
+                        $result['response']['survey_score'] = $answer['number'];
+                    }
+                    else if($answerType === 'text')
+                    {
+                        $question = $formData[$answer['field']['id']]['question'];
+                        $result['response'][$question] = $answer['text'];
+                    }
+                    else if($answerType === 'choice')
+                    {
+                        $question = $formData[$answer['field']['id']]['question'];
+                        $result['response'][$question] = $answer['choice']['label'];
+                    }
+                    else
+                    {
+                        $question = $formData[$answer['field']['id']]['question'];
+                        $result['response'][$question] = $answer['choices']['labels'];
+                    }
+                }
+
+                $completeResponses[] = $result;
+            }
+
+            return $completeResponses;
+        }
+        else
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+    }
+
+    public function parseTypeformIncompleteResponses($formData): array
+    {
+        if (array_key_exists('items', $this->input))
+        {
+            $incompleteResponses = [];
+
+            $responses = $this->input['items'];
+
+            foreach ($responses as $response)
+            {
+                $metadata['initiated_at'] = $response['landed_at'];
+
+                $result['completed'] = [false];
+
+                $result['metadata'] = $metadata;
+
+                if((array_key_exists('metadata', $response)) and
+                    (array_key_exists('referer', $response['metadata'])))
+                {
+                    $result['response']['survey_score'] = $this->getSurveyScoreForIncompleteResponses($response['metadata']['referer']);
+                }
+
+                $incompleteResponses[] = $result;
+            }
+
+            return $incompleteResponses;
+        }
+        else
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+    }
+
+    private function getSurveyScoreForIncompleteResponses(string $referer)
+    {
+        $queryString = 'prefilled_answer';
+
+        $startIndex = strpos($referer, $queryString);
+
+        if($startIndex != false)
+        {
+            $offset = strlen($queryString);
+
+            $option1 = substr($referer,$startIndex+ $offset + 1, 2);
+
+            $option2 = substr($referer,$startIndex + $offset + 1, 1);
+
+            return $option1 == "10" ? $option1 : $option2;
+        }
+
+        return null;
+    }
 }

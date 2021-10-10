@@ -104,6 +104,11 @@ class UfhService
             $this->merchantId = $merchantId ?? $this->repo->merchant->getSharedAccount()->getId();
         }
 
+        if(($this->ba->isInternalApp() === true) && ($this->merchantId == null) && ($merchantId == null))
+        {
+            $this->merchantId = $this->repo->merchant->getSharedAccount()->getId();
+        }
+
         $this->ufhClient = $this->createUfhClient();
     }
 
@@ -288,6 +293,7 @@ class UfhService
         // in case of admin auth we are currently fetching using shared merchant but
         // In some cases admin team wants to see document uploaded by a merchant
         //
+
         if (empty($merchantId) === false)
         {
             $this->merchantId = $merchantId;
