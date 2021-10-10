@@ -54,6 +54,7 @@ class PayoutLinks
     const DESCRIPTION                              = 'description';
     const MERCHANT_ID                              = 'merchant_id';
     const PAYOUT_LINK_ID                           = 'payout_link_id';
+    const STATUS_EXPIRED                           = 'expired';
     const STATUS_PROCESSED                         = 'processed';
     const STATUS_CANCELLED                         = 'cancelled';
     const EXPIRE_BY                                = 'expire_by';
@@ -465,6 +466,21 @@ class PayoutLinks
             $description = mask_by_percentage($description);
         }
 
+        $expiredAt = array_pull($payoutLinkInfo, self::EXPIRED_AT, 0);
+
+        $supportPhone = '';
+
+        $supportMail = '';
+
+        // we want the support details in the final response only if payout link has expired
+        // for other status we don't want as of now coz adding it for all status will lead to the security concern
+        if (empty($plStatus) === false and $plStatus === self::STATUS_EXPIRED)
+        {
+            $supportPhone = array_pull($settings, Entity::SUPPORT_CONTACT, '');
+
+            $supportMail = array_pull($settings, Entity::SUPPORT_EMAIL, '');
+        }
+
         $data = [
             'api_host'                    => $this->config['url.api.production'],
             'payout_link_id'              => $payoutLinkInfo['id'],
@@ -488,6 +504,9 @@ class PayoutLinks
             'payout_utr'                  => $payoutUtr,
             'payout_mode'                 => $payoutMode,
             'payout_links_custom_message' => $settings[Entity::CUSTOM_MESSAGE] ?? null,
+            'expired_at'                  => $expiredAt,
+            'support_phone'               => $supportPhone,
+            'support_email'               => $supportMail,
         ];
 
         return $data;

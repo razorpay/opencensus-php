@@ -1318,5 +1318,97 @@ class PayoutLinkMicroserviceTest extends TestCase
         ];
     }
 
+    private function mockGetHostedResponseForExpiredPL()
+    {
+        $mode['AMAZONPAY'] = 1;
+        $mode['UPI'] = 1;
+        $mode['support_contact'] = '9040434917';
+        $mode['support_email'] = 'test@razorpay';
+        $response['settings'] = ['mode' => $mode];
+        $response['payout_link_response']['amount'] = 1000;
+        $response['payout_link_response']['id'] = 'poutlk_123456';
+        $response['payout_link_response']['status'] = 'expired';
+        $response["payout_link_response"]["account_number"] = "2224440041626905";
+        $response['payout_link_response']['currency'] = 'INR';
+        $response['payout_link_response']['description'] = 'testing';
+        $response['payout_link_response']['contact']['name'] = 'test';
+        $response['payout_link_response']['contact']['email'] = 'test@gmail.com';
+        $response['payout_link_response']['contact']['contact'] = '+919090990909';
+        $response['payout_link_response']['expired_at'] = 1571656972;
+        return $response;
+    }
+
+    private function mockGetHostedResponseForIssuedPLWithSupportDetails()
+    {
+        $mode['AMAZONPAY'] = 1;
+        $mode['UPI'] = 1;
+        $mode['support_contact'] = '9040434917';
+        $mode['support_email'] = 'test@razorpay';
+        $response['settings'] = ['mode' => $mode];
+        $response['payout_link_response']['amount'] = 1000;
+        $response['payout_link_response']['id'] = 'poutlk_123456';
+        $response['payout_link_response']['status'] = 'processed';
+        $response["payout_link_response"]["account_number"] = "2224440041626905";
+        $response['payout_link_response']['currency'] = 'INR';
+        $response['payout_link_response']['description'] = 'testing';
+        $response['payout_link_response']['contact']['name'] = 'test';
+        $response['payout_link_response']['contact']['email'] = 'test@gmail.com';
+        $response['payout_link_response']['contact']['contact'] = '+919090990909';
+        $response['payout_link_response']['expired_at'] = 1571656972;
+        return $response;
+    }
+
+    public function testNonEmptySupportDetailsForGetHostedPageForExpiredPayoutLink()
+    {
+        $newMerchant = $this->fixtures->create('merchant');
+
+        $this->prepareBankingAccountData($newMerchant->getId());
+
+        $response = $this->mockGetHostedResponseForExpiredPL();
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($response);
+        $mock->method('allowUpi')->willReturn(false);
+        $mock->method('allowAmazonPay')->willReturn(false);
+        $mock->method('getEnvironment')->willReturn(Environment::TESTING);
+
+        $data = $mock->getHostedPageData('poutlk_1000000000', $newMerchant);
+
+        $this->assertEquals(1571656972, $data['expired_at'], 'expired_at missing');
+
+        $this->assertEquals('9040434917', $data['support_phone'], 'incorrect support phone');
+
+        $this->assertEquals('test@razorpay', $data['support_email'], 'incorrect support email');
+    }
+
+    public function testEmptySupportDetailsForGetHostedPageForIssuedPayoutLink()
+    {
+        $newMerchant = $this->fixtures->create('merchant');
+
+        $this->prepareBankingAccountData($newMerchant->getId());
+
+        $response = $this->mockGetHostedResponseForIssuedPLWithSupportDetails();
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($response);
+        $mock->method('allowUpi')->willReturn(false);
+        $mock->method('allowAmazonPay')->willReturn(false);
+        $mock->method('getEnvironment')->willReturn(Environment::TESTING);
+
+        $data = $mock->getHostedPageData('poutlk_1000000000', $newMerchant);
+
+        $this->assertEmpty($data['support_phone'], 'support phone present in data');
+
+        $this->assertEmpty($data['support_email'], 'support email present in data');
+    }
+
 }
 

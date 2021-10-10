@@ -182,7 +182,12 @@
         purpose  : '{{ $purpose }}',
         payoutUtr : '{{ $payout_utr }}',
         payoutMode : '{{ $payout_mode }}',
-        payoutLinksCustomMessage : `{{ $payout_links_custom_message }}`
+        payoutLinksCustomMessage : `{{ $payout_links_custom_message }}`,
+        expiredAt: {{ $expired_at }},
+        supportDetails: {
+            supportPhone: '{{ $support_phone }}',
+            supportEmail: '{{ $support_email }}}',
+        }
     };
 </script>
 <script src="{{ $banking_url }}/dist/payoutlinks.js"></script>
