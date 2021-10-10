@@ -21,6 +21,7 @@ class CombinedNachCitiEarlyDebit extends PaperNachCiti
     const FILE_TYPE         = FileStore\Type::CITI_NACH_EARLY_DEBIT;
     const SUMMARY_FILE_TYPE = FileStore\Type::CITI_NACH_EARLY_DEBIT_SUMMARY;
     const FILE_NAME         = 'citi/nach/RAZORP_COLLECT_ACH-DR-CITI-CITI999999-{$date}-MUT00010{$serial}-INP';
+    const NUM_SECS_IN_ONE_DAY = 86400;
 
     protected $userName    = 'CTRAZORMFS';
     protected $productType = 'MUT';
@@ -39,6 +40,17 @@ class CombinedNachCitiEarlyDebit extends PaperNachCiti
         $end = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)
                        ->addHours(15)
                        ->getTimestamp();
+
+        /*
+         * We add one day to begin and end because in cron request for the gateway file generation
+         * the date would be for previous day.
+         * but in this case we need to send the payments of same day
+         */
+        if ($this->app['basicauth']->isCron() === true)
+        {
+            $begin = $begin + self::NUM_SECS_IN_ONE_DAY;
+            $end = $end + self::NUM_SECS_IN_ONE_DAY;
+        }
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
 

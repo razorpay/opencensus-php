@@ -212,7 +212,7 @@ class NachCitiGatewayTest extends NachGatewayTest
         $this->fixtures->stripSign($response['razorpay_payment_id']);
 
         $this->fixtures->edit('payment', $response['razorpay_payment_id'], [
-            'created_at' => Carbon::yesterday( Timezone::IST)->addHours(10)->timestamp
+            'created_at' => Carbon::today( Timezone::IST)->addHours(10)->timestamp
         ]);
 
         $this->ba->cronAuth();
