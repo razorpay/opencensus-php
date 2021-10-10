@@ -843,6 +843,26 @@ class PaymentFetchTest extends TestCase
         $this->assertEquals('platform', $response['fee_bearer']);
     }
 
+    /**
+     * Fix for : https://razorpay.slack.com/archives/C0156ULAEFQ/p1633870042148700?thread_ts=1632807756.453700&cid=C0156ULAEFQ
+     */
+    public function testProxyAuthPaymentFetchFeeBearerAttributeWithDifferentMerchantFeeBearer()
+    {
+        $payment = $this->fixtures->create('payment:authorized', [
+            'fee_bearer' => 'customer',
+        ]);
+
+        $this->testData[__FUNCTION__] = $this->testData['testProxyAuthPaymentFetchFeeBearerAttribute'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/pay_' . $payment['id'];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('customer', $response['fee_bearer']);
+    }
+
     public function testProxyAuthPaymentWithExtraAttributesExposed()
     {
         $org = $this->fixtures->create('org');

@@ -1937,8 +1937,20 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::RECEIVER_TYPE);
     }
 
-    public function getFeeBearer()
+    /**
+     * @param $shouldGetSavedFeeBearer
+     * The caller to decide which value of feebearer to get
+     * Function is called in primarily 2 flows
+     * 1. payment/transaction related flows -> if merchant is platform/customer feebarer at time of payment, return merchant.fee_bearer
+     * 2. flows to display value in merchant/admin dashboard[by setPublicFeeBearerAttribute] -> return saved value from payment entity stored in db.     *
+     */
+    public function getFeeBearer($shouldGetSavedFeeBearer = false)
     {
+        if ($shouldGetSavedFeeBearer === true)
+        {
+            return $this->getAttribute(self::FEE_BEARER);
+        }
+
         if (($this->merchant !== null) and
             ($this->merchant->isFeeBearerDynamic() === false))
         {
@@ -3560,7 +3572,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if (($app['basicauth']->isProxyAuth() === true) and
             (in_array($route, $allowedProxyRoutes) === true))
         {
-            $array[self::FEE_BEARER] = $this->getFeeBearer();
+            $array[self::FEE_BEARER] = $this->getFeeBearer(true);
 
             return;
         }
@@ -3568,7 +3580,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if (($app['basicauth']->isAdminAuth() === true) and
             (in_array($route, $allowedAdminRoutes) === true))
         {
-            $array[self::FEE_BEARER] = $this->getFeeBearer();
+            $array[self::FEE_BEARER] = $this->getFeeBearer(true);
 
             return;
         }
