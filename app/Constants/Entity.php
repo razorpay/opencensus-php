@@ -174,6 +174,8 @@ class Entity
     const MERCHANT_NOTIFICATION_CONFIG = 'merchant_notification_config';
     const VIRTUAL_ACCOUNT_PRODUCTS     = 'virtual_account_products';
 
+    const PAYOUTS_INTERMEDIATE_TRANSACTIONS = 'payouts_intermediate_transactions';
+
     const WORKFLOW_CONFIG            = 'workflow_config';
     const WORKFLOW_ENTITY_MAP        = 'workflow_entity_map';
     const WORKFLOW_STATE_MAP         = 'workflow_state_map';
@@ -776,19 +778,20 @@ class Entity
         self::INVOICE_REMINDER          => \RZP\Models\Invoice\Reminder::class,
         self::MERCHANT_REMINDERS        => \RZP\Models\Merchant\Reminders::class,
         self::D2C_BUREAU_DETAIL         => \RZP\Models\D2cBureauDetail::class,
-        self::D2C_BUREAU_REPORT         => \RZP\Models\D2cBureauReport::class,
-        self::ADDON                     => \RZP\Models\Plan\Subscription\Addon::class,
-        self::BANKING_ACCOUNT_DETAIL    => \RZP\Models\BankingAccount\Detail::class,
-        self::FEE_RECOVERY              => \RZP\Models\FeeRecovery::class,
-        self::SUB_VIRTUAL_ACCOUNT       => \RZP\Models\SubVirtualAccount::class,
-        self::OFFLINE_DEVICE            => \RZP\Models\Offline\Device::class,
-        self::PAYMENT_META              => \RZP\Models\Payment\PaymentMeta::class,
-        self::UPI_METADATA              => \RZP\Models\Payment\UpiMetadata::class,
-        self::MERCHANT_ATTRIBUTE        => \RZP\Models\Merchant\Attribute::class,
-        self::LOW_BALANCE_CONFIG        => \RZP\Models\Merchant\Balance\LowBalanceConfig::class,
-        self::UPI_MANDATE               => \RZP\Models\UpiMandate::class,
-        self::CARD_MANDATE              => \RZP\Models\CardMandate::class,
-        self::CARD_MANDATE_NOTIFICATION => \RZP\Models\CardMandate\CardMandateNotification::class,
+        self::D2C_BUREAU_REPORT                 => \RZP\Models\D2cBureauReport::class,
+        self::ADDON                             => \RZP\Models\Plan\Subscription\Addon::class,
+        self::BANKING_ACCOUNT_DETAIL            => \RZP\Models\BankingAccount\Detail::class,
+        self::FEE_RECOVERY                      => \RZP\Models\FeeRecovery::class,
+        self::SUB_VIRTUAL_ACCOUNT               => \RZP\Models\SubVirtualAccount::class,
+        self::OFFLINE_DEVICE                    => \RZP\Models\Offline\Device::class,
+        self::PAYMENT_META                      => \RZP\Models\Payment\PaymentMeta::class,
+        self::UPI_METADATA                      => \RZP\Models\Payment\UpiMetadata::class,
+        self::MERCHANT_ATTRIBUTE                => \RZP\Models\Merchant\Attribute::class,
+        self::LOW_BALANCE_CONFIG                => \RZP\Models\Merchant\Balance\LowBalanceConfig::class,
+        self::PAYOUTS_INTERMEDIATE_TRANSACTIONS => \RZP\Models\Payout\PayoutsIntermediateTransactions::class,
+        self::UPI_MANDATE                       => \RZP\Models\UpiMandate::class,
+        self::CARD_MANDATE                      => \RZP\Models\CardMandate::class,
+        self::CARD_MANDATE_NOTIFICATION         => \RZP\Models\CardMandate\CardMandateNotification::class,
 
         self::BANKING_ACCOUNT_STATEMENT_DETAILS => \RZP\Models\BankingAccountStatement\Details::class,
 

@@ -592,6 +592,8 @@ return [
 
     E::LOW_BALANCE_CONFIG => [],
 
+    E::PAYOUTS_INTERMEDIATE_TRANSACTIONS => [],
+
     E::ORDER => [],
 
     E::P2P_DEVICE => [

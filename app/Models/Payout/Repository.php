@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout;
 
 use Carbon\Carbon;
+use RZP\Models\Feature\Constants;
 use Illuminate\Database\Query\JoinClause;
 
 use DB;
@@ -44,6 +45,13 @@ class Repository extends Base\Repository
     const SCHEDULED_PAYOUTS_FETCH_LIMIT = 5000;
 
     protected $entity = 'payout';
+
+    public function saveOrFail($payout, array $options = array())
+    {
+        $highTPSCompositePayoutFlag = $payout->merchant->isFeatureEnabled(Constants::HIGH_TPS_COMPOSITE_PAYOUT);
+
+        ($highTPSCompositePayoutFlag === true) ? parent::saveOrFailWithoutEsSync($payout, $options) : parent::saveOrFail($payout, $options);
+    }
 
     public function fetchCreatedPayouts($timestamp, $method)
     {

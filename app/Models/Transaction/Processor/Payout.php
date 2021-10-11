@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
 use RZP\Models\Pricing\Calculator;
 use RZP\Models\Payout as PayoutModel;
@@ -235,12 +236,25 @@ class Payout extends Base
      */
     public function shouldUpdateBalance()
     {
+        // We don't want to update the balance because in this scenario, we would have already deducted the balance
+        if ($this->source->isBalancePreDeducted() === true)
+        {
+            return false;
+        }
+
         return $this->source->shouldValidateAndUpdateBalances();
     }
 
     public function updateBalances(int $negativeLimit = 0)
     {
         $this->validateMerchantBalance();
+
+        if ($this->source->isBalancePreDeducted() === true)
+        {
+            $this->updateMerchantBalance($negativeLimit);
+
+            return;
+        }
 
         parent::updateBalances($negativeLimit);
     }
@@ -258,11 +272,18 @@ class Payout extends Base
             return ;
         }
 
-        $debitAmount = $this->txn->getAmount();
-
-        if ($this->source->getPayoutType() === PayoutModel\Entity::ON_DEMAND)
+        if ($this->source->isBalancePreDeducted() === true)
         {
-            $debitAmount += $this->txn->getFee();
+            $debitAmount = $this->source->getAmount() + $this->source->getFees();
+        }
+        else
+        {
+            $debitAmount = $this->txn->getAmount();
+
+            if ($this->source->getPayoutType() === PayoutModel\Entity::ON_DEMAND)
+            {
+                $debitAmount += $this->txn->getFee();
+            }
         }
 
         // TODO: Use locked balance here to throw the exception
@@ -275,9 +296,9 @@ class Payout extends Base
                 null,
                 [
                     'payout_id'     => $this->source->getId(),
-                    'txn_id'        => $this->txn->getId(),
-                    'txn_amount'    => $this->txn->getAmount(),
-                    'txn_fees'      => $this->txn->getFee(),
+                    'txn_id'        => optional($this->txn)->getId(),
+                    'txn_amount'    => optional($this->txn)->getAmount(),
+                    'txn_fees'      => optional($this->txn)->getFee(),
                     'payout_amount' => $this->source->getAmount(),
                     'debit_amount'  => $debitAmount,
                     'balance_amount'=> $this->merchantBalance->getBalance()
@@ -325,5 +346,167 @@ class Payout extends Base
         $rewardFeeCredits = (new Credits\Transaction\Core)->getCreditsForSource($this->source);
 
         $this->txn->setCredits($rewardFeeCredits);
+    }
+
+    public function preDeductBalanceForPayout($fees, $tax)
+    {
+        $startTime = microtime(true);
+
+        try
+        {
+            $this->fees = $fees;
+
+            $this->tax = $tax;
+
+            $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_LOCK_INIT);
+
+            $lockStartTime = microtime(true);
+
+            // update merchant credits an balances
+            $this->setMerchantBalanceLockForUpdate();
+
+            $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_LOCK_TIME_TAKEN,
+                               [
+                                   'lock_start_time'   => (microtime(true) - $lockStartTime) * 1000
+                               ]
+            );
+
+            $this->updateBalances();
+        }
+        finally
+        {
+            $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_TIME_TAKEN,
+                               [
+                                   'txn_type'              => $this->txn ? $this->txn->getType() : '',
+                                   'async_update'          => false,
+                                   'balance_update_time'   => (microtime(true) - $startTime) * 1000
+                               ]
+            );
+        }
+    }
+
+    public function updateMerchantBalance(int $negativeLimit = 0)
+    {
+        if ($this->source->isBalancePreDeducted() === true)
+        {
+            $merchantBalance = $this->merchantBalance;
+
+            $oldBalance = $merchantBalance->getBalance();
+
+            $netAmount = -1 * ($this->source->getAmount() + $this->fees);
+
+            $merchantBalance->updateBalance(null, $negativeLimit, $netAmount);
+
+            $newBalance = $this->merchantBalance->getBalance();
+
+            $this->trace->info(TraceCode::MERCHANT_BALANCE_DATA,
+                               [
+                                   'merchant_id' => $this->source->getMerchantId(),
+                                   'new_balance' => $newBalance,
+                                   'old_balance' => $oldBalance,
+                                   'method'      => 'updateMerchantBalance',
+                               ]);
+
+            $this->repo->balance->updateBalance($this->merchantBalance);
+        }
+        else
+        {
+            parent::updateMerchantBalance($negativeLimit);
+        }
+    }
+
+    public function setFeeDefaultsWithoutBalanceDeduction()
+    {
+        $this->fees = $this->source->getFee();
+        $this->tax  = $this->source->getTax();
+    }
+
+    public function createTransactionWithoutBalanceDeduction()
+    {
+        // Creates new or fetches existing transaction entity for the source entity
+        $this->setTransactionForSource();
+
+        // set transaction attributes from the source entity
+        $this->setSourceDefaults();
+
+        // fills the transaction attributes from the merchant attributes
+        $this->fillDetails();
+
+        $merchant = $this->source->merchant;
+
+        $this->txn->setFeeModel($merchant->getFeeModel());
+
+        $this->txn->setFeeBearer($merchant->getFeeBearer());
+
+        // fetches credits, balance and calculates fees and taxes
+        $this->setFeeDefaultsWithoutBalanceDeduction();
+
+        // calculates fee sources and calculates credit and debit amounts
+        $this->calculateFees();
+
+        // update credit and debit amounts, fees and taxes in transaction
+        $this->setOtherDetails();
+
+        // updates entity specific attributes in transaction
+        $this->updateTransaction();
+
+        return $this->txn;
+    }
+
+        public function incrementBalanceForPayout($netAmount)
+    {
+        $startTime = microtime(true);
+
+        try
+        {
+            $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_LOCK_INIT);
+
+            $lockStartTime = microtime(true);
+
+            // update merchant credits an balances
+            $this->setMerchantBalanceLockForUpdate();
+
+            $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_LOCK_TIME_TAKEN,
+                               [
+                                   'lock_start_time'   => (microtime(true) - $lockStartTime) * 1000
+                               ]
+            );
+
+            $this->incrementMerchantBalance($netAmount);
+        }
+        finally
+        {
+            $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_TIME_TAKEN,
+                               [
+                                   'txn_type'              => $this->txn ? $this->txn->getType() : '',
+                                   'async_update'          => false,
+                                   'balance_update_time'   => (microtime(true) - $startTime) * 1000
+                               ]
+            );
+        }
+    }
+
+    public function incrementMerchantBalance($netAmount)
+    {
+        if ($this->source->isBalancePreDeducted() === true)
+        {
+            $merchantBalance = $this->merchantBalance;
+
+            $oldBalance = $merchantBalance->getBalance();
+
+            $merchantBalance->updateBalance(null, 0, $netAmount);
+
+            $newBalance = $this->merchantBalance->getBalance();
+
+            $this->trace->info(TraceCode::MERCHANT_BALANCE_DATA,
+                               [
+                                   'merchant_id' => $this->source->getMerchantId(),
+                                   'new_balance' => $newBalance,
+                                   'old_balance' => $oldBalance,
+                                   'method'      => 'incrementMerchantBalance',
+                               ]);
+
+            $this->repo->balance->updateBalance($this->merchantBalance);
+        }
     }
 }

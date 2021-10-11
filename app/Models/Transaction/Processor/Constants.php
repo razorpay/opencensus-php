@@ -11,5 +11,6 @@ class Constants
     const DO_NOT_DISPATCH_FOR_SETTLEMENT = [
         Type::PAYMENT,
         Type::SETTLEMENT,
+        Type::PAYOUT,
     ];
 }

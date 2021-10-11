@@ -341,6 +341,20 @@ class Entity extends Base\PublicEntity
     protected $queuePayoutCreateRequest = false;
 
     /**
+     * @var bool
+     *
+     * This flag will be set to true if we have deducted the balance already for this payout. This will ensure that
+     * we do not deduct the balance again in the transaction creation flow.
+     */
+    protected $balancePreDeducted = false;
+
+    protected $transactionIdWhenBalancePreDeducted        = '';
+
+    protected $transactionCreatedAtWhenBalancePreDeducted = 0;
+
+    protected $closingBalanceWhenBalancePreDeducted       = 0;
+
+    /**
      * In case of direct banking, we get the transactions directly from the bank. We don't create transactions
      * from our system. Sometimes, we are not able to map a transaction to one of the payouts in our system.
      * In these cases, we create the transaction against `external` entity. Later when we are able to map
@@ -871,6 +885,26 @@ class Entity extends Base\PublicEntity
         return ($this->shouldValidateAndUpdateBalancesFlag === true);
     }
 
+    public function isBalancePreDeducted(): bool
+    {
+        return ($this->balancePreDeducted === true);
+    }
+
+    public function getTransactionIdWhenBalancePreDeducted(): string
+    {
+        return $this->transactionIdWhenBalancePreDeducted;
+    }
+
+    public function getClosingBalanceWhenBalancePreDeducted()
+    {
+        return $this->closingBalanceWhenBalancePreDeducted;
+    }
+
+    public function getTransactionCreatedAtWhenBalancePreDeducted(): int
+    {
+        return $this->transactionCreatedAtWhenBalancePreDeducted;
+    }
+
     public function makeSyncFtsFundTransfer(): bool
     {
         return ($this->syncFtsFundTransfer === true);
@@ -1271,6 +1305,26 @@ class Entity extends Base\PublicEntity
     public function setShouldValidateAndUpdateBalancesFlag($flag)
     {
         $this->shouldValidateAndUpdateBalancesFlag = $flag;
+    }
+
+    public function setBalancePreDeductedFlag($flag)
+    {
+        $this->balancePreDeducted = $flag;
+    }
+
+    public function setTransactionIdWhenBalancePreDeducted(string $id)
+    {
+        $this->transactionIdWhenBalancePreDeducted = $id;
+    }
+
+    public function setClosingBalanceWhenBalancePreDeducted($balance)
+    {
+        $this->closingBalanceWhenBalancePreDeducted = $balance;
+    }
+
+    public function setTransactionCreatedAtWhenBalancePreDeducted(int $timestamp)
+    {
+        $this->transactionCreatedAtWhenBalancePreDeducted = $timestamp;
     }
 
     public function setChannel($channel)

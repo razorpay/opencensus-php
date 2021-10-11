@@ -363,13 +363,16 @@ class Entity extends Base\PublicEntity
      * We need to check for balance going less than $negativeLimit
      * whenever we update balance
      *
-     * @param \RZP\Models\Transaction\Entity $txn
+     * @param null $txn
+     * @param int  $negativeLimit
+     * @param null $amount
+     *
+     * @throws BadRequestException
      * @throws Exception\LogicException
-     * @throws Exception\BadRequestException
      */
-    public function updateBalance($txn, int $negativeLimit = 0)
+    public function updateBalance($txn = null, int $negativeLimit = 0, $amount = null)
     {
-        $amount = $txn->getNetAmount();
+        $amount = $amount ?? $txn->getNetAmount();
 
         $oldBalance = $this->getBalance();
 
@@ -390,7 +393,7 @@ class Entity extends Base\PublicEntity
         $data = [
             'balance'     => $this->toArray(),
             'amount'      => $amount,
-            'transaction' => $txn->getId(),
+            'transaction' => $txn ? $txn->getId() : '',
         ];
 
         //

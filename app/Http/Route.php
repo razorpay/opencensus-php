@@ -2581,6 +2581,8 @@ class Route
         'enable_low_balance_config_admin'         => ['post',       'low_balance_configs/{id}/enable/admin',  'LowBalanceConfigController@adminEnableConfig'],
         'low_balance_config_alert_cron'           => ['post',       'low_balance_configs/alert',              'LowBalanceConfigController@alert'],
 
+        'payouts_intermediate_transactions_cron_update' => ['post',  'payouts_intermediate_transactions/update', 'PayoutsIntermediateTransactionsController@updatePayoutIntermediateTransactions'],
+
         // merchant notification config APIs
         'create_merchant_notification_config'     => ['post',   'merchant_notification_configs',              'MerchantNotificationConfigController@create'],
         'update_merchant_notification_config'     => ['patch',  'merchant_notification_configs/{id}',         'MerchantNotificationConfigController@update'],
@@ -3613,6 +3615,7 @@ class Route
         'merchant_poc_update_with_time',
         'unclaimed_merchant_poc_update',
         'low_balance_config_alert_cron',
+        'payouts_intermediate_transactions_cron_update',
         'merchant_notification_config_alert_cron',
         'refund_scrooge_fetch_fee',
         'refund_scrooge_payment_update',
@@ -10106,6 +10109,7 @@ class Route
             'fts_account_balance_alert',
             'tokens_upi_vpa_bulk_cron',
             'low_balance_config_alert_cron',
+            'payouts_intermediate_transactions_cron_update',
             'merchant_notification_config_alert_cron',
             'terminals_proxy_delete_submerchant',
             'terminals_proxy_create_submerchant',

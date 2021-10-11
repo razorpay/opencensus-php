@@ -67,6 +67,8 @@ class Table
     const PAYOUTS_DETAILS              = 'payouts_details';
     const PAYOUTS_BATCH                = 'payouts_batch';
 
+    const PAYOUTS_INTERMEDIATE_TRANSACTIONS = 'payouts_intermediate_transactions';
+
     // Account entity is currently pointing to the 'merchants' table.
     // It will be used for basic CRUD operations over regular merchants,
     // sub-merchants as well as linked accounts. For more information, please

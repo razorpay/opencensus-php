@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Pricing;
+use RZP\Models\Feature;
 use RZP\Constants\Product;
 use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Entity;
@@ -56,7 +57,11 @@ class Base extends FundAccountPayout\Base
             // reward_fee credits if available. The fees and tax of
             // transaction are updated accordingly. We
 
-            $this->setFeeAndTaxForPayout($payout);
+            if (!(($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === true) and
+                ($payout->merchant->isAtLeastOneFeatureEnabled([Feature\Constants::PAYOUT_PROCESS_ASYNC_LP, Feature\Constants::PAYOUT_PROCESS_ASYNC]) === true)))
+            {
+                $this->setFeeAndTaxForPayout($payout);
+            }
 
             $this->createTransaction($payout);
 
@@ -192,7 +197,10 @@ class Base extends FundAccountPayout\Base
             throw new LogicException('No Pricing Rule ID set for payout: ' . $payout->getId());
         }
 
-        $this->adjustMerchantFeesThroughRewardFeeCreditsForPayout($payout, $fees, $tax);
+        if ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === false)
+        {
+            $this->adjustMerchantFeesThroughRewardFeeCreditsForPayout($payout, $fees, $tax);
+        }
 
         $payout->setFees($fees);
 

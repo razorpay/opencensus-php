@@ -149,19 +149,20 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Partner\Activation\Repository                  $partner_activation;
  * @property Models\Merchant\Product\Repository                    $merchant_product;
  * @property Models\Merchant\Product\Request\Repository            $merchant_product_request;
- * @property Models\Merchant\Product\TncMap\Repository             $tnc_map;
- * @property Models\Merchant\Product\TncMap\Acceptance\Repository  $merchant_tnc_acceptance;
- * @property Models\Settlement\Repository                          $settlement
- * @property Gateway\Enach\Base\Repository                         $enach
- * @property Models\SubVirtualAccount\Repository                   $sub_virtual_account
- * @property Models\Settlement\Transfer\Repository                 $settlement_transfer;
- * @property Models\Dispute\Evidence\Repository                    $dispute_evidence;
- * @property Models\Dispute\Evidence\Document\Repository           $dispute_evidence_document;
- * @property Models\Merchant\RiskNotes\Repository                  $merchant_risk_note;
- * @property Models\Payout\Batch\Repository                        $payouts_batch;
- * @property Models\UpiMandate\Repository                          $upi_mandate;
- * @property Models\DeviceDetail\Repository                        $user_device_detail
- * @property Models\Dispute\Repository                             $dispute
+ * @property Models\Merchant\Product\TncMap\Repository                $tnc_map;
+ * @property Models\Merchant\Product\TncMap\Acceptance\Repository     $merchant_tnc_acceptance;
+ * @property Models\Settlement\Repository                             $settlement
+ * @property Gateway\Enach\Base\Repository                            $enach
+ * @property Models\SubVirtualAccount\Repository                      $sub_virtual_account
+ * @property Models\Settlement\Transfer\Repository                    $settlement_transfer;
+ * @property Models\Dispute\Evidence\Repository                       $dispute_evidence;
+ * @property Models\Dispute\Evidence\Document\Repository              $dispute_evidence_document;
+ * @property Models\Merchant\RiskNotes\Repository                     $merchant_risk_note;
+ * @property Models\Payout\Batch\Repository                           $payouts_batch;
+ * @property Models\UpiMandate\Repository                             $upi_mandate;
+ * @property Models\DeviceDetail\Repository                           $user_device_detail
+ * @property Models\Dispute\Repository                                $dispute
+ * @property Models\Payout\PayoutsIntermediateTransactions\Repository $payouts_intermediate_transactions;
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

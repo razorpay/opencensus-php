@@ -2514,10 +2514,6 @@ class Core extends Base\Core
                 'payout_id' => $payout->getId(),
             ]);
 
-        $app = App::getFacadeRoot();
-
-        $this->mutex = $app['api.mutex'];
-
         // Keeping the mutex TTL high while updating the payout to reversed.
         // This is to ensure that the process that is working on the payout
         // resource, releases mutex on the payout only once all entities are

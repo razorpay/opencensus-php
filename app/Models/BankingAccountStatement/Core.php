@@ -1104,8 +1104,7 @@ class Core extends Base\Core
                                 'account_number'    => $basEntity->getAccountNumber(),
                             ]);
 
-            (new Payout\Core)->reversePayout($existingPayout,
-                'REVERSAL');
+            (new Payout\Core)->reversePayout($existingPayout, 'REVERSAL');
 
             $reversal = $existingPayout->reversal;
 

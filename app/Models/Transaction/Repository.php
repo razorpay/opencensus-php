@@ -2465,6 +2465,15 @@ class Repository extends Base\Repository
         return $query->pluck(Entity::ID)->toArray();
     }
 
+    public function findById($id)
+    {
+        $idColumn = $this->repo->transaction->dbColumn(Entity::ID);
+
+        return $this->newQuery()
+                    ->where($idColumn, '=', $id)
+                    ->get();
+    }
+
 //    public function getSettlementIdForTransfer(string $transferId, string $merchantId)
 //    {
 //        $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);

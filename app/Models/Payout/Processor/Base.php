@@ -4,8 +4,12 @@ namespace RZP\Models\Payout\Processor;
 
 use App;
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Error\Error;
 use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
+use RZP\Exception\LogicException;
+use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Vpa;
@@ -13,6 +17,7 @@ use RZP\Models\Card;
 use RZP\Models\Batch;
 use RZP\Models\Payout;
 use RZP\Services\Mutex;
+use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -31,9 +36,11 @@ use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payout\Notifications;
 use RZP\Models\Payout\CounterHelper;
 use RZP\Models\Base\Core as BaseCore;
+use RZP\Models\Payout\QueuedReasons;
 use RZP\Jobs\PayoutPostCreateProcess;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Workflow\Service\Adapter;
@@ -48,6 +55,7 @@ use RZP\Models\Feature\Constants as Features;
 use RZP\Models\FundTransfer\Attempt\Initiator;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Models\PayoutMeta\Core as PayoutMetaCore;
+use RZP\Models\Payout\PayoutsIntermediateTransactions;
 use RZP\Models\PayoutsDetails\Core as PayoutsDetailsCore;
 use RZP\Models\FundTransfer\Metric as FundTransferMetric;
 use RZP\Services\PayoutService\Create as PayoutServiceCreate;
@@ -361,7 +369,7 @@ class Base extends BaseCore
             {
                 $payout->setStatus(Status::CREATE_REQUEST_SUBMITTED);
 
-                $this->repo->saveOrFailWithoutEsSync($payout);
+                $this->repo->payout->saveOrFail($payout);
 
                 $this->dispatchForPreCreatedPayouts($payout);
 
@@ -390,7 +398,7 @@ class Base extends BaseCore
                 $payout->setStatus(Status::CREATED);
             }
 
-            $this->repo->saveOrFailWithoutEsSync($payout);
+            $this->repo->payout->saveOrFail($payout);
 
             return $payout;
         });
@@ -826,7 +834,12 @@ class Base extends BaseCore
 
     public function processPayoutPostCreate(Payout\Entity $payout, bool $queueFlag): Payout\Entity
     {
-        $payout = $this->incrementCounterAndSetExpectedFeeTypeForFundAccountPayouts($payout);
+        $highTPSCompositePayoutFlag = $payout->merchant->isFeatureEnabled(Feature::HIGH_TPS_COMPOSITE_PAYOUT);
+
+        if ($highTPSCompositePayoutFlag === false)
+        {
+            $payout = $this->incrementCounterAndSetExpectedFeeTypeForFundAccountPayouts($payout);
+        }
 
         $feeType = $payout->getExpectedFeeType();
 
@@ -842,10 +855,120 @@ class Base extends BaseCore
             $payout->setSyncFtsFundTransferFlag(true);
         }
 
+        if ($highTPSCompositePayoutFlag === true)
+        {
+            $intermediateTxn = (new PayoutsIntermediateTransactions\Core)
+                                ->fetchIntermediateTransactionForAGivenPayoutId($payout->getId());
+
+            $payout->setBalancePreDeductedFlag(true);
+
+            if ($intermediateTxn !== null)
+            {
+                // This will mean that the intermediate payout transaction is in a terminal state
+                // and hence we don't need to do any processing on it.
+                if ($intermediateTxn->getStatus !== PayoutsIntermediateTransactions\Status::PENDING)
+                {
+                    return $payout;
+                }
+            }
+
+            if ($intermediateTxn === null)
+            {
+                [$fees, $tax, $pricingRuleId] = $this->setFeeAndTaxForHighTpsCompositePayouts($payout);
+
+                $startTime = microtime(true);
+
+                try
+                {
+                    [$payout, $intermediateTxn] = $this->repo->transaction(
+                        function() use ($payout, $fees, $tax) {
+                            $this->deductBalancePreProcessing($payout, $fees, $tax);
+
+                            $transactionId        = UniqueIdEntity::generateUniqueId();
+                            $transactionCreatedAt = Carbon::now(Timezone::IST)->getTimestamp();
+                            $closingBalance       = $payout->balance->getBalance();
+
+                            $payout->setTransactionIdWhenBalancePreDeducted($transactionId);
+                            $payout->setTransactionCreatedAtWhenBalancePreDeducted($transactionCreatedAt);
+                            $payout->setClosingBalanceWhenBalancePreDeducted($closingBalance);
+
+                            $inputForIntermediateTxn = [
+                                PayoutsIntermediateTransactions\Entity::PAYOUT_ID              => $payout->getId(),
+                                PayoutsIntermediateTransactions\Entity::AMOUNT                 => $payout->getAmount() + $fees,
+                                PayoutsIntermediateTransactions\Entity::CLOSING_BALANCE        => $closingBalance,
+                                PayoutsIntermediateTransactions\Entity::TRANSACTION_ID         => $transactionId,
+                                PayoutsIntermediateTransactions\Entity::TRANSACTION_CREATED_AT => $transactionCreatedAt
+                            ];
+
+                            $intermediateTxn = (new PayoutsIntermediateTransactions\Core)->create($inputForIntermediateTxn);
+
+                            return [$payout, $intermediateTxn];
+                        });
+
+                    $this->trace->info(TraceCode::PAYOUT_OPTIMIZATION_FOR_COMPOSITE_TIME_TAKEN, [
+                        'step'       => 'pre_deduct_balance_lock_time_taken',
+                        'time_taken' => (microtime(true) - $startTime) * 1000,
+                    ]);
+
+                    // need to set this here.
+                    // In case if db txn 2 fails, for creating reversal in catch block we will need fee and tax
+                    $payout->setFees($fees);
+                    $payout->setTax($tax);
+
+                    $this->repo->payout->saveOrFail($payout);
+                }
+                catch (\Throwable $ex)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Logger::CRITICAL,
+                        TraceCode::PAYOUT_CREATE_SUBMITTED_PROCESS_FAILED,
+                        [
+                            'payout_id' => $payout->getId(),
+                        ]);
+
+                    if ($ex->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING)
+                    {
+                        $payout->setFees(0);
+
+                        $payout->setTax(0);
+
+                        unset($payout[Entity::PRICING_RULE_ID]);
+
+                        if ($payout->toBeQueued() === true)
+                        {
+                            $payout->setStatus(Status::QUEUED);
+
+                            $payout->setQueuedReason(QueuedReasons::LOW_BALANCE);
+
+                            $this->app->events->dispatch('api.payout.queued', [$payout]);
+                        }
+                        else
+                        {
+                            $payout->setFailureReason('Insufficient balance to process payout');
+
+                            $payout->setStatusCode(ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING);
+
+                            $payout->setStatus(Status::FAILED);
+
+                            $this->app->events->dispatch('api.payout.failed', [$payout]);
+                        }
+
+                        $this->repo->payout->saveOrFail($payout);
+
+                        return $payout;
+                    }
+
+                    throw $ex;
+                }
+
+            }
+        }
+
         try
         {
             $payout = $this->repo->transaction(
-                function() use ($payout)
+                function() use ($payout, $highTPSCompositePayoutFlag)
                 {
                     $this->fundTransferDestination = $payout->fundAccount->account;
 
@@ -873,7 +996,7 @@ class Base extends BaseCore
                         }
                     }
 
-                    $this->repo->saveOrFail($payout);
+                    $this->repo->payout->saveOrFail($payout);
 
                     $this->trace->info(
                         TraceCode::PAYOUT_CREATED,
@@ -898,35 +1021,86 @@ class Base extends BaseCore
 
             $balanceId = $payout->getBalanceId();
 
-            (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
-
-            $payout->setStatus(Status::FAILED);
-
-            if ($ex->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING)
+            if ($highTPSCompositePayoutFlag === true)
             {
-                $payout->setFailureReason('Insufficient balance to process payout');
-
-                $payout->setStatusCode(ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING);
+                (new PayoutsIntermediateTransactions\Helper)->markIntermediateTransactionReversedAndIncrementBalance($payout);
             }
             else
             {
-                $alertData = [
-                    'payout_id' => $payout->getId(),
-                ];
-
-                (new SlackNotification)->send(
-                    'Payout with intermediate state failed due to some other error than balance failure',
-                            $alertData,
-                            $ex,
-                            1,
-                            'x-payouts-core-alerts');
-
-                $payout->setFailureReason('Payout failed. Contact support for help');
-
-                $payout->setStatusCode(ErrorCode::BAD_REQUEST_PAYOUT_FAILED_UNKNOWN_ERROR);
+                (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
             }
 
-            $this->repo->saveOrFail($payout);
+            $payout->reload();
+
+            if ($highTPSCompositePayoutFlag === false)
+            {
+                if ($ex->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING)
+                {
+                    $payout->setFailureReason('Insufficient balance to process payout');
+
+                    $payout->setStatusCode(ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING);
+
+                    $payout->setStatus(Status::FAILED);
+                }
+                else
+                {
+                    $alertData = [
+                        'payout_id' => $payout->getId(),
+                    ];
+
+                    (new SlackNotification)->send(
+                        'Payout with intermediate state failed due to some other error than balance failure',
+                        $alertData,
+                        $ex,
+                        1,
+                        'x-payouts-core-alerts');
+
+                    $payout->setFailureReason('Payout failed. Contact support for help');
+
+                    $payout->setStatus(Status::FAILED);
+
+                    $payout->setStatusCode(ErrorCode::BAD_REQUEST_PAYOUT_FAILED_UNKNOWN_ERROR);
+                }
+
+                $this->repo->payout->saveOrFail($payout);
+            }
+            else
+            {
+                if ($ex->getError()->getInternalErrorCode() !== ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING)
+                {
+                    $alertData = [
+                        'payout_id' => $payout->getId(),
+                    ];
+
+                    (new SlackNotification)->send(
+                        'Payout with intermediate state failed due to some other error than balance failure',
+                        $alertData,
+                        $ex,
+                        1,
+                        'x-payouts-core-alerts');
+                }
+            }
+        }
+
+
+        if ($payout->isBalancePreDeducted() === true)
+        {
+            if ($intermediateTxn->getStatus() === PayoutsIntermediateTransactions\Status::PENDING)
+            {
+                $this->repo->transaction(function() use($payout, $intermediateTxn){
+
+                    (new PayoutsIntermediateTransactions\Core)->markIntermediateTransactionCompleted($intermediateTxn);
+
+                    // associate balance id with payout txn. this is not being done in flow when balance is pre deducted
+                    $payoutTxn = $payout->transaction;
+
+                    $this->repo->transaction->reload($payoutTxn);
+
+                    $payoutTxn->accountBalance()->associate($payout->balance);
+
+                    $this->repo->transaction->saveOrFail($payoutTxn);
+                });
+            }
         }
 
         if ($payout->makeSyncFtsFundTransfer() === true)
@@ -971,6 +1145,49 @@ class Base extends BaseCore
         }
 
         return $payout;
+    }
+
+    protected function setFeeAndTaxForHighTpsCompositePayouts($payout)
+    {
+        list($fees, $tax, $pricingRuleId) = $this->calculateFeesAndTaxForHighTpsCompositePayouts($payout);
+
+        if (empty($pricingRuleId) === true)
+        {
+            throw new LogicException('No Pricing Rule ID set for payout: ' . $payout->getId());
+        }
+
+        $payout->setFees($fees);
+
+        $payout->setTax($tax);
+
+        $payout->setPricingRuleId($pricingRuleId);
+
+        return [$fees, $tax, $pricingRuleId];
+    }
+
+    protected function calculateFeesAndTaxForHighTpsCompositePayouts(Entity $payout)
+    {
+        list($fees, $tax, $feesSplit) = (new Pricing\PayoutFee)->calculateMerchantFees($payout);
+
+        $feesSplitData = $feesSplit->toArray();
+
+        foreach ($feesSplitData as $feesSplit)
+        {
+            // Set pricingRuleId from the feesSplit (there are two entries and at least one has pricingRuleId)
+            if (empty($feesSplit[Entity::PRICING_RULE_ID]) === false)
+            {
+                $pricingRuleId = $feesSplit[Entity::PRICING_RULE_ID];
+            }
+        }
+
+        return [$fees, $tax, $pricingRuleId];
+    }
+
+    protected function deductBalancePreProcessing(Payout\Entity $payout, $fees, $tax)
+    {
+        $payout->setBalancePreDeductedFlag(true);
+
+        (new Transaction\Processor\Payout($payout))->preDeductBalanceForPayout($fees, $tax);
     }
 
     public function processScheduledPayout(Payout\Entity $payout): Payout\Entity
@@ -1948,7 +2165,20 @@ class Base extends BaseCore
     {
         try
         {
-            if ($this->merchant->isFeatureEnabled(Features::PAYOUT_PROCESS_ASYNC_LP) === true)
+            $hashValue = 1;
+            // TODO: Add the hash logic back comment once we have setup more queues on prod.
+            // $hashValue = $this->djbHash($payout->getId());
+
+            $highTpsMerchantFlag = $payout->merchant->isFeatureEnabled(Constants::HIGH_TPS_COMPOSITE_PAYOUT);
+
+            if ($highTpsMerchantFlag === true)
+            {
+                // Manually setting this to 0 so that the payout goes via the low priority queue
+                // and not via the normal queue
+                $hashValue = 0;
+            }
+
+            if ($hashValue === 0)
             {
                 PayoutPostCreateProcessLowPriority::dispatch($this->mode, $payout->getId(), $payout->toBeQueued());
 
@@ -1971,7 +2201,6 @@ class Base extends BaseCore
         }
         catch (\Throwable $e)
         {
-
             $this->trace->traceException(
                 $e,
                 Logger::ERROR,
@@ -1991,6 +2220,16 @@ class Base extends BaseCore
 
             throw $e;
         }
+    }
+
+    protected function djbHash($str)
+    {
+        for ($i = 0, $h = 5381, $len = strlen($str); $i < $len; $i++)
+        {
+            $h = (($h << 5) + $h + ord($str[$i])) & 0x7FFFFFFF;
+        }
+
+        return $h%2;
     }
 
     protected function pullSourceDetails(array & $input)
