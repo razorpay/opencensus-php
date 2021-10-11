@@ -8,14 +8,16 @@ use Queue;
 use Mockery;
 use ZipArchive;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Encryption;
-use RZP\Excel\Import as ExcelImport;
+use RZP\Jobs\BeamJob;
 use RZP\Models\Payment;
+use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Mail\Emi as EmiMail;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Excel\Import as ExcelImport;
+use RZP\Http\Controllers as FileStore;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class GatewayEmiFileTest extends TestCase
@@ -292,6 +294,79 @@ class GatewayEmiFileTest extends TestCase
 
         Mail::assertQueued(EmiMail\Password::class);
         Mail::assertQueued(EmiMail\File::class);
+    }
+
+    public function testGenerateEmiFileForHsbc()
+    {
+        $this->prerequisitesForHsbcEmi();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'hsbc_emi_file',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'zip',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        $this->fixtures->merchant->disableEmi();
+
+        Mail::assertQueued(EmiMail\Password::class);
+
+        $filestorecontrol =  new FileStore\FileStoreController();
+        $fileentity = $filestorecontrol->getFile($file['id']);
+        $data = $fileentity->getOriginalContent();
+
+        $monthYear = Carbon::now(Timezone::IST)->format('mY');
+
+        $zip = new ZipArchive();
+        $zip->open($data["url"]);
+        $zip->setPassword('razorpay' . $monthYear);
+        $pathinfo = pathinfo($data["url"]);
+        $zip->extractTo($pathinfo['dirname']);
+        $filename = $zip->getNameIndex(0);
+        $zip->close();
+
+        $emiFileContents = (new ExcelImport)->toArray($pathinfo['dirname'] . '/' . $filename);
+
+        $this->assertEquals("5546370000099413", $emiFileContents[0][0]["complete_card_number"]);
+        $this->assertEquals("5000", $emiFileContents[0][0]["amount"]);
+        $this->assertEquals("123412341234", $emiFileContents[0][0]["rrn_number"]);
+
+        //Mail::assertQueued(EmiMail\Password::class);
+    }
+
+    public function testGenerateEmiFileForHsbcNoTransaction()
+    {
+        $this->prerequisitesForHsbcEmi();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNull($content[File\Entity::SENT_AT]);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNotNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $this->assertNull($file);
+
+        $this->fixtures->merchant->disableEmi();
+
+        Mail::assertQueued(EmiMail\NoTransaction::class);
     }
 
     public function testGenerateEmiFileForSbi()
@@ -748,6 +823,44 @@ class GatewayEmiFileTest extends TestCase
         );
 
         $this->session($data);
+    }
+
+    protected function prerequisitesForHsbcEmi()
+    {
+        Mail::fake();
+
+        Queue::fake();
+
+        $this->fixtures->create('iin',
+            [
+                'iin'           => '554637',
+                'category'      => 'STANDARD',
+                'network'       => 'Visa',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'HSBC',
+                'issuer'        => 'HSBC',
+                'emi'           => 1,
+                'trivia'        => 'random trivia'
+            ]);
+
+        $this->fixtures->create('emi_plan',
+            [
+                'id'                => '90101010101011',
+                'duration'          => '9',
+                'rate'              => '1400',
+                'methods'           => 'creditcard',
+                'bank'              => 'HSBC',
+                'min_amount'        => '300000',
+                'merchant_id'       => '100000Razorpay',
+            ]);
+
+
+        $this->ba->publicAuth();
+
+        $this->makeEmiPaymentOnCard('5546370000099413', 9);
+
+        $this->ba->adminAuth();
     }
 
     protected function prerequisitesForSbiEmi()

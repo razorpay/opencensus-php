@@ -166,6 +166,7 @@ class Gateway
 
     // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
     const EMI_SBI            = 'emi_sbi';
+    const EMI_HSBC           = 'emi_hsbc';
     const BAJAJFINSERV       = 'bajajfinserv';
     const GOOGLE_PAY         = 'google_pay';
     const VISA_SAFE_CLICK    = 'visasafeclick';
@@ -2767,6 +2768,7 @@ class Gateway
         IFSC::SBIN,
         IFSC::CITI,
         IFSC::BARB,
+        IFSC::HSBC,
         IFSC::STCB,
         IFSC::IDFB,
     ];

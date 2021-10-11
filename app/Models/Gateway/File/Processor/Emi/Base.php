@@ -26,6 +26,11 @@ class Base extends BaseProcessor
     const EMI_FILE_PASSWORD_LENGTH = 7;
     const EXTENSION                = FileStore\Format::XLSX;
 
+    /**
+     * @var $file FileStore\Entity
+     */
+    protected $file;
+
     public function fetchEntities(): PublicCollection
     {
         $begin = $this->gatewayFile->getBegin();
@@ -90,9 +95,9 @@ class Base extends BaseProcessor
 
             $creator->save();
 
-            $file = $creator->getFileInstance();
+            $this->file = $creator->getFileInstance();
 
-            $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
+            $this->gatewayFile->setFileGeneratedAt($this->file->getCreatedAt());
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
         }

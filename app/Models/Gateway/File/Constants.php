@@ -62,7 +62,7 @@ class Constants
     const NSDL             = 'nsdl';
     const BDBL             = 'bdbl';
     const ICICI_EMI        = 'icici_emi';
-
+    const HSBC             = 'hsbc';
     const ENACH_NPCI_NETBANKING             = 'enach_npci_netbanking';
     const ENACH_NPCI_NETBANKING_EARLY_DEBIT = 'enach_npci_netbanking_early_debit';
     const ENACH_NB_ICICI                    = 'enach_nb_icici';  // deprecated
@@ -108,6 +108,7 @@ class Constants
             self::SBI,
             self::CITI,
             self::BOB,
+            self::HSBC,
             self::ONECARD,
         ],
         Type::COMBINED => [
@@ -296,8 +297,10 @@ class Constants
             self::COMBINED_NACH_CITI  => [''],
         ],
 
+
         Type::EMI => [
             self::AXIS     => ['axiscards.emi@razorpay.com'],
+            self::HSBC     => ['hsbc-cards.emi@razorpay.com'],
             self::INDUSIND => ['indusind.emi@razorpay.com'],
             self::KOTAK    => ['kotakcards.emi@razorpay.com'],
             self::RBL      => ['Rblcards.emi@razorpay.com'],
