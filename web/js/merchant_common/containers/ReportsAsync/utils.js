@@ -1,15 +1,14 @@
-const DATE_FORMAT = 'DD MMM YYYY';
 import moment from 'moment';
+const DATE_FORMAT = 'DD MMM YYYY';
 
-export const getFormattedDate = unixTimeStamp =>
-  moment(unixTimeStamp, 'X').format(DATE_FORMAT);
+export const getFormattedDate = (unixTimeStamp) => moment(unixTimeStamp, 'X').format(DATE_FORMAT);
 
-export const getTimeUnix = timeMoment =>
-  timeMoment.diff(timeMoment.clone().startOf('day'), 'seconds');
+export const getTimeUnix = (timeMoment) =>
+  timeMoment.diff(moment(timeMoment).clone().startOf('day'), 'seconds');
 
 export const getStartAndEndUnixTimeStampsForDaysFrom = (
   numberOfDays = 0,
-  dateInMoment = moment().subtract(1, 'day')
+  dateInMoment = moment().subtract(1, 'day'),
 ) => {
   const lastDayEndOfDayUnix = dateInMoment.endOf('day').format('X');
   const lastNthStartOfDayUnix = dateInMoment
@@ -20,12 +19,11 @@ export const getStartAndEndUnixTimeStampsForDaysFrom = (
   return [Number(lastNthStartOfDayUnix), Number(lastDayEndOfDayUnix)];
 };
 
-export const extractExtensionFromTemplate = template =>
+export const extractExtensionFromTemplate = (template) =>
   ((template || {}).file_meta || {}).extension;
 
 const logProcessingStatuses = ['created', 'processing'];
-export const isLogInProgress = logStatus =>
-  logProcessingStatuses.includes(logStatus);
+export const isLogInProgress = (logStatus) => logProcessingStatuses.includes(logStatus);
 
 export const getActualLogStatus = ({ status, fileId }) => {
   switch (status) {
