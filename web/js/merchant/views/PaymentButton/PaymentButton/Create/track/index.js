@@ -82,7 +82,7 @@ function _track() {
       sendToSegment('amount', 'input', { options });
     },
     buttonTheme: (theme) => {
-      sendToLumberjack('setup.amount_button', { theme });
+      sendToLumberjack('setup.theme_button', { theme });
       sendToSegment('theme', 'click', { theme });
     },
     buttonScreenNextSuccess: () => {
