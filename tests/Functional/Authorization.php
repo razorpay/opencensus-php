@@ -957,6 +957,15 @@ class Authorization
         $this->appAuth('rzp_' . $mode, $pwd);
     }
 
+    public function xpayrollAuth($mode = 'test')
+    {
+        $thirdwatchConfig = \Config::get('applications.xpayroll');
+
+        $pwd = $thirdwatchConfig['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
+    }
+
     public function settlementsAuth($mode = 'test')
     {
         $settlementConfig = \Config::get('applications.settlements_service');

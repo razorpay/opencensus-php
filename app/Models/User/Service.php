@@ -1446,6 +1446,16 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function getUserBankingRoles(string $userID, array $input)
+    {
+        $input['user_id'] = $userID;
+        (new Validator)->validateInput('get_user_roles', $input);
+
+        $response = $this->core->getUserBankingRoles($input);
+
+        return $response;
+    }
+
     public function removeIncorrectPasswordCount(array $input)
     {
         (new Validator)->validateInput('reset_incorrect_password_count', $input);

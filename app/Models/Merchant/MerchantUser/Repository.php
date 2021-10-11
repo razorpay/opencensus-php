@@ -122,4 +122,14 @@ class Repository extends Base\Repository
                 ->where(Entity::PRODUCT, $product)
                 ->count() > 0;
     }
+
+    public function getMerchantUserRoles(string $userID, string $merchantID, string $product)
+    {
+        return $this->newQuery()
+                    ->where(Entity::USER_ID, $userID)
+                    ->where(Entity::MERCHANT_ID, $merchantID)
+                    ->where(Entity::PRODUCT, $product)
+                    ->pluck(Entity::ROLE)
+                    ->toArray();
+    }
 }

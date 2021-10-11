@@ -1591,7 +1591,8 @@ class Route
         'user_opt_in_status_whatsapp'              => ['get',      'users/whatsapp/opt_in_status',                   'UserController@optInStatusForWhatsapp'                             ],
         'user_opt_out_whatsapp'                    => ['post',     'users/whatsapp/opt_out',                         'UserController@optOutForWhatsapp'                                  ],
         'user_details'                             => ['get',      'users',                                          'UserController@getUserDetails'                                     ],
-        'user_details_unified'                     => ['get',      'users_unified',                                  'UserController@getUserDetailsUnified'                                     ],
+        'user_details_unified'                     => ['get',      'users_unified',                                  'UserController@getUserDetailsUnified'                              ],
+        'user_banking_roles'                       => ['get',      'users/{user_id}/banking_roles',                  'UserController@getUserBankingRoles'                                ],
         'user_delete_incorrect_password_count'     => ['post',     'users/incorrect_password_count',                 'UserController@removeIncorrectPasswordCount'                       ],
 
         //user device details
@@ -3733,6 +3734,7 @@ class Route
         'order_fetch_by_id_internal_admin',
         'user_details',
         'user_details_unified',
+        'user_banking_roles',
 
         'reward_expire_cron',
         'trusted_badge_eligibility_cron',
@@ -6195,14 +6197,14 @@ class Route
         'throttle_create_config'                   => Permission::EDIT_THROTTLE_SETTINGS,
         'throttle_delete_config'                   => Permission::EDIT_THROTTLE_SETTINGS,
         'throttle_get_config'                      => Permission::VIEW_THROTTLE_SETTINGS,
-        'edge_list_services'                       => Permission::EDIT_THROTTLE_SETTINGS,
-        'edge_list_routes'                         => Permission::EDIT_THROTTLE_SETTINGS,
+        'edge_list_services'                       => Permission::VIEW_THROTTLE_SETTINGS,
+        'edge_list_routes'                         => Permission::VIEW_THROTTLE_SETTINGS,
         'edge_create_rate_limit_rule'              => Permission::EDIT_THROTTLE_SETTINGS,
-        'edge_list_rate_limit_rules'               => Permission::EDIT_THROTTLE_SETTINGS,
+        'edge_list_rate_limit_rules'               => Permission::VIEW_THROTTLE_SETTINGS,
         'edge_update_rate_limit_rule'              => Permission::EDIT_THROTTLE_SETTINGS,
         'edge_delete_rate_limit_rule'              => Permission::EDIT_THROTTLE_SETTINGS,
         'edge_create_rate_limit_limit'             => Permission::EDIT_THROTTLE_SETTINGS,
-        'edge_list_rate_limit_limits'              => Permission::EDIT_THROTTLE_SETTINGS,
+        'edge_list_rate_limit_limits'              => Permission::VIEW_THROTTLE_SETTINGS,
         'edge_update_rate_limit_limit'             => Permission::EDIT_THROTTLE_SETTINGS,
         'edge_delete_rate_limit_limit'             => Permission::EDIT_THROTTLE_SETTINGS,
 
@@ -10350,7 +10352,8 @@ class Route
         'xpayroll' => [
             'user_details',
             'payout_create_internal',
-            'banking_accounts_list_internal'
+            'banking_accounts_list_internal',
+            'user_banking_roles',
         ],
 
         'razorflow' => [

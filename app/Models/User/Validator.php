@@ -303,6 +303,11 @@ class Validator extends Base\Validator
         Entity::EMAIL           => 'required|email',
     ];
 
+    protected static $getUserRolesRules = [
+        'user_id'     => 'required|alpha_num|size:14',
+        'merchant_id' => 'required|alpha_num|size:14',
+    ];
+
     protected static $teamManagementValidators = [
         'self_user',
         'team_user',

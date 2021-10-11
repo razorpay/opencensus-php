@@ -2890,6 +2890,7 @@ class Core extends Base\Core
         $merchantDetails = $this->getPrimaryMerchantDetails($user);
 
         return [
+            'user_id'                 => $user->getId(),
             'name'                    => $user->getName(),
             'email'                   => $user->getEmail(),
             'contact_mobile'          => $user->getContactMobile(),
@@ -2920,6 +2921,19 @@ class Core extends Base\Core
         ];
 
         return $response;
+    }
+
+    public function getUserBankingRoles($input)
+    {
+        $userID     = $input['user_id'];
+        $merchantID = $input['merchant_id'];
+
+        return $this->getUserRoles($userID, $merchantID, Product::BANKING);
+    }
+
+    protected function getUserRoles(string $userID, string $merchantID, string $product)
+    {
+        return $this->repo->merchant_user->getMerchantUserRoles($userID, $merchantID, $product);
     }
 
     /**

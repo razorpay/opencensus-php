@@ -5,8 +5,10 @@ namespace RZP\Tests\Functional\User;
 use DB;
 use Mail;
 use Hash;
+use Mockery;
 use Carbon\Carbon;
 
+use RZP\Constants\Product;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant\Attribute\Type;
 use Illuminate\Database\Eloquent\Factory;
@@ -39,6 +41,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
+use function GuzzleHttp\json_decode;
 
 class UserTest extends TestCase
 {
@@ -4151,7 +4154,41 @@ class UserTest extends TestCase
             ]
         ];
 
-        $this->ba->thirdwatchAuth();
+        $this->ba->xpayrollAuth();
+
+        $this->startTest();
+    }
+
+    public function testUserBankingRolesInvalidMapping()
+    {
+        $this->ba->xpayrollAuth();
+
+        $user = $this->fixtures->create('user');
+
+        $merchant = $user->primaryMerchants()->first();
+
+        // check the data for default test merchant
+        $this->testData[__FUNCTION__] = [
+            'request' => [
+                'method'    => 'GET',
+                'url'       => '/users/EM6yk5JbG6L9rv/banking_roles?user_id=EM6yk5JbG6L9rv&merchant_id=' . $merchant->getId()
+            ],
+            'response' => [
+                'content' => [],
+            ],
+        ];
+
+        $this->startTest();
+
+        $this->testData[__FUNCTION__] = [
+            'request' => [
+                'method'    => 'GET',
+                'url'       => '/users/' . $user->getId() . '/banking_roles?merchant_id=100000Razorpay&user_id=' . $user->getId()
+            ],
+            'response' => [
+                'content' => [],
+            ],
+        ];
 
         $this->startTest();
     }
