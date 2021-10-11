@@ -10,6 +10,8 @@ use RZP\Models\Payout\Service as PayoutService;
 
 class WorkflowTest extends TestCase
 {
+    protected $org;
+
     protected $payoutService;
 
     protected $payoutCore;
@@ -48,8 +50,6 @@ class WorkflowTest extends TestCase
 
         //wip, can be plugged out and run only once for all the tests.
         $this->createTestDependencyMocks();
-
-        $this->basicAuthMock->shouldReceive('getMerchant')->andReturn($this->merchantEntityMock);
 
         $this->payoutService = new PayoutService();
 
@@ -124,6 +124,14 @@ class WorkflowTest extends TestCase
         $this->merchantRepoMock = Mockery::mock('RZP\Models\Merchant\Repository');
 
         $this->merchantEntityMock = Mockery::mock('RZP\Models\Merchant\Entity');
+
+        $this->org = Mockery::mock('RZP\Models\Admin\Org\Entity');
+
+        $this->merchantEntityMock->shouldReceive('getAttribute')->andReturn($this->org);
+
+        $this->org->shouldReceive('getPublicId')->andReturn('100000razorpay');
+
+        $this->org->shouldReceive('getType')->andReturn(NULL);
 
         $this->workflowRepoMock = Mockery::mock('RZP\Models\Workflow\PayoutAmountRules\Repository');
 

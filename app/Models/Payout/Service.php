@@ -656,6 +656,8 @@ class Service extends Base\Service
         {
             $this->merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+            $this->app['basicauth']->setMerchant($this->merchant);
+
             $newConfig = (new WorkflowMigration())->convertOldSummaryIntoNew($this->merchant, $skipFetchFromWfs, $returnOld);
 
             try

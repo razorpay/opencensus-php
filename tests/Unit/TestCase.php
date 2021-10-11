@@ -61,7 +61,7 @@ class TestCase extends PHPUnitTestCase
         $this->app->instance('repo', $this->repoMock);
 
         // BasicAuth mocking
-        $this->basicAuthMock = Mockery::mock('RZP\Http\BasicAuth\BasicAuth');
+        $this->basicAuthMock = Mockery::mock('RZP\Http\BasicAuth\BasicAuth')->makePartial();
 
         $this->app->instance('basicauth', $this->basicAuthMock);
 
