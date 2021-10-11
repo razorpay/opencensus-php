@@ -67,13 +67,13 @@ export default class SelectPeriod extends React.Component {
     if (name && name.endsWith(timeFieldSuffix)) {
       name = name.substring(0, name.indexOf(timeFieldSuffix));
 
-      const dateValue = this.state.values[name].clone().startOf('day');
+      const dateValue = this.state.values[name].clone().startOf('day').startOf('minute');
       const timeInUnix = getTimeUnix(value);
 
       value = dateValue.add(timeInUnix, 'seconds');
     } else {
       const timeInUnix = getTimeUnix(this.state.values[name]);
-      value = value.clone().startOf('day').add(timeInUnix, 'seconds');
+      value = value.clone().startOf('day').startOf('minute').add(timeInUnix, 'seconds');
     }
 
     const target = { value, name };
