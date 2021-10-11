@@ -322,7 +322,7 @@ class App extends Component {
         email: `${user.email}`,
       };
       const GoLiveNPSEnableTypeForm = createSidetab(
-        'E0DfS8AG', // go live survey
+        'BkSfZv4P', // go live survey
         {
           width: 500,
           buttonText: 'Feedback',
@@ -335,7 +335,7 @@ class App extends Component {
       this.state.GoLiveNPSEnableTypeForm = GoLiveNPSEnableTypeForm; // saving reference typeform
 
       const NonGoLiveNPSEnableTypeForm = createSidetab(
-        'yHwe0hQ2', // non go live survey
+        'sYoYpC6o', // non go live survey
         {
           width: 500,
           buttonText: 'Feedback',
@@ -409,7 +409,7 @@ class App extends Component {
         this.state.GoLiveNPSEnableTypeForm
       ) {
         const takeGoLiveNPSSurvey = this.dateIsInRange(user.created_at, [
-          ['2021-08-01', '2021-08-31'],
+          ['2021-09-01', '2021-09-30'],
         ]);
         this.setState({ goLiveNPSSurveyPopup: takeGoLiveNPSSurvey });
       }
@@ -427,9 +427,9 @@ class App extends Component {
         this.state.NonGoLiveNPSEnableTypeForm
       ) {
         const takeNonGoLiveNPSSurvey = this.dateIsInRange(user.created_at, [
-          ['2021-05-01', '2021-05-30'],
-          ['2021-02-01', '2021-02-28'],
-          ['2020-08-01', '2020-08-30'],
+          ['2021-06-01', '2021-06-30'],
+          ['2021-03-01', '2021-03-31'],
+          ['2020-09-01', '2020-09-30'],
         ]);
         this.setState({ nonGoLiveNPSSurveyPopup: takeNonGoLiveNPSSurvey });
       }
