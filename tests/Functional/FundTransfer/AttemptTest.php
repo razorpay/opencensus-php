@@ -440,7 +440,7 @@ class AttemptTest extends TestCase
         $this->assertEquals($channel, $attempt['channel']);
         $this->assertEquals(1, $attempt['is_fts']);
         $this->assertEquals(Payout\Status::PROCESSING, $payout['status']);
-        $this->assertEquals(Attempt\Status::CREATED, $attempt['status']);
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
 
         $this->fixtures->stripSign($attempt['id']);
 
@@ -521,7 +521,7 @@ class AttemptTest extends TestCase
         $this->assertEquals($channel, $attempt['channel']);
         $this->assertEquals(1, $attempt['is_fts']);
         $this->assertEquals(Payout\Status::PROCESSING, $payout['status']);
-        $this->assertEquals(Attempt\Status::CREATED, $attempt['status']);
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
 
         $this->fixtures->stripSign($attempt['id']);
 
@@ -610,7 +610,7 @@ class AttemptTest extends TestCase
         $this->assertEquals($channel, $attempt['channel']);
         $this->assertEquals(1, $attempt['is_fts']);
         $this->assertEquals(Payout\Status::PROCESSING, $payout['status']);
-        $this->assertEquals(Attempt\Status::CREATED, $attempt['status']);
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
 
         $this->fixtures->stripSign($attempt['id']);
 

@@ -277,7 +277,7 @@ class Base extends BaseCore
             if (($payout->hasFundAccount() === true) and
                 ($payout->hasCustomer() === false) and
                 ($payout->isBalanceTypeBanking() === true) and
-                ($this->isPayoutToFtsSyncModeEnabled($payout) === true))
+                ($this->isPayoutToFtsASyncModeEnabled($payout) === false))
             {
                 // By setting this flag we can skip sending the request to queue and making a sync call.
                 $payout->setSyncFtsFundTransferFlag(true);
@@ -370,7 +370,7 @@ class Base extends BaseCore
 
             // After the current transaction closes, a sync call to FTS is made for payouts with this flag set.
             // Currently we make sync calls for specific flow only i.e. create fund account payout.
-            if ($this->isPayoutToFtsSyncModeEnabled($payout) === true)
+            if ($this->isPayoutToFtsASyncModeEnabled($payout) === false)
             {
                 // By setting this flag we can skip sending the request to queue and making a sync call.
                 $payout->setSyncFtsFundTransferFlag(true);
@@ -425,20 +425,22 @@ class Base extends BaseCore
         return $payout;
     }
 
-    // payouts to sync mode feature will be enabled based on razorx experiment with a fall back on feature flag.
-    protected function isPayoutToFtsSyncModeEnabled(Entity $payout)
+    // Default would be a sync call to FTS.
+    // In case we don't want that to happen, we'll have to enable the async mode
+    protected function isPayoutToFtsASyncModeEnabled(Entity $payout)
     {
-        $enabled = $payout->merchant->isFeatureEnabled(Feature::PAYOUT_SYNC_FTS_TRANSFER);
+        // this flag being true would mean that we wish to hit FTS in async mode
+        $asyncEnabled = $payout->merchant->isFeatureEnabled(Feature::PAYOUT_ASYNC_FTS_TRANSFER);
 
         $this->trace->info(
-            TraceCode::SYNC_FTS_FUND_TRANSFER_ENABLED,
+            TraceCode::ASYNC_FTS_FUND_TRANSFER_ENABLED,
             [
                 'payout_id'   => $payout->getId(),
                 'merchant_id' => $payout->merchant->getId(),
-                'enabled'     => $enabled,
+                'enabled'     => $asyncEnabled,
             ]);
 
-        return $enabled;
+        return $asyncEnabled;
     }
 
     public function syncFTSFundTransfer(Entity $payout)
@@ -833,7 +835,7 @@ class Base extends BaseCore
         if (($payout->hasFundAccount() === true) and
             ($payout->hasCustomer() === false) and
             ($payout->isBalanceTypeBanking() === true) and
-            ($this->isPayoutToFtsSyncModeEnabled($payout) === true) and
+            ($this->isPayoutToFtsASyncModeEnabled($payout) === false) and
             ($payout->getIsPayoutService() === false))
         {
             // By setting this flag we can skip sending the request to queue and making a sync call.

@@ -802,7 +802,11 @@ class Constants
      */
     const SHOW_OLD_ERROR_DESC = 'show_old_error_desc';
 
-    const PAYOUT_SYNC_FTS_TRANSFER = 'payout_sync_fts_transfer';
+    /**
+     * Feature flag to make the FTS call in async mode
+     */
+    const PAYOUT_ASYNC_FTS_TRANSFER = 'payout_async_fts_transfer';
+
     /**
      * Feature flag for partner to skip onboarding notifications sent to submerchant
      */
@@ -1233,7 +1237,7 @@ class Constants
         self::ORG_HDFC_VAS_CARDS_SURCHARGE    => true,
         self::HDFC_CHECKOUT_2                 => true,
         self::SHOW_OLD_ERROR_DESC             => true,
-        self::PAYOUT_SYNC_FTS_TRANSFER        => true,
+        self::PAYOUT_ASYNC_FTS_TRANSFER       => true,
         self::SKIP_SUBM_ONBOARDING_COMM       => true,
         self::SKIP_CUSTOMER_ID_CHECKOUT       => true,
         self::DISPUTE_PRESENTMENT             => true,

@@ -120,7 +120,7 @@ class CitiPayoutTest extends TestCase
         $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals(Channel::CITI, $payoutAttempt['channel']);
-        $this->assertEquals(Status::CREATED, $payoutAttempt['status']);
+        $this->assertEquals(Status::INITIATED, $payoutAttempt['status']);
 
         $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
 
@@ -210,7 +210,7 @@ class CitiPayoutTest extends TestCase
         $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals(Channel::CITI, $payoutAttempt['channel']);
-        $this->assertEquals(Status::CREATED, $payoutAttempt['status']);
+        $this->assertEquals(Status::INITIATED, $payoutAttempt['status']);
 
         $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
 
@@ -293,7 +293,7 @@ class CitiPayoutTest extends TestCase
         $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals(Channel::CITI, $payoutAttempt['channel']);
-        $this->assertEquals(Status::CREATED, $payoutAttempt['status']);
+        $this->assertEquals(Status::INITIATED, $payoutAttempt['status']);
 
         $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
 
@@ -381,7 +381,7 @@ class CitiPayoutTest extends TestCase
         $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals(Channel::CITI, $payoutAttempt['channel']);
-        $this->assertEquals(Status::CREATED, $payoutAttempt['status']);
+        $this->assertEquals(Status::INITIATED, $payoutAttempt['status']);
 
         $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
 
@@ -474,7 +474,7 @@ class CitiPayoutTest extends TestCase
         $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals(Channel::CITI, $payoutAttempt['channel']);
-        $this->assertEquals(Status::CREATED, $payoutAttempt['status']);
+        $this->assertEquals(Status::INITIATED, $payoutAttempt['status']);
 
         $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
 
@@ -562,7 +562,7 @@ class CitiPayoutTest extends TestCase
         $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals(Channel::CITI, $payoutAttempt['channel']);
-        $this->assertEquals(Status::CREATED, $payoutAttempt['status']);
+        $this->assertEquals(Status::INITIATED, $payoutAttempt['status']);
 
         $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
 
@@ -600,7 +600,7 @@ class CitiPayoutTest extends TestCase
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
         $this->assertEquals(Channel::CITI, $payoutAttempt['channel']);
-        $this->assertEquals(Status::CREATED, $payoutAttempt['status']);
+        $this->assertEquals(Status::INITIATED, $payoutAttempt['status']);
 
         $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
 

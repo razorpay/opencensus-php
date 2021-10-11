@@ -186,9 +186,9 @@ class PayoutTest extends OAuthTestCase
         return $payout;
     }
 
-    public function testCreatePayoutWithSyncFtsTransferCall()
+    public function testCreatePayoutWithASyncFtsTransferCall()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_SYNC_FTS_TRANSFER]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_ASYNC_FTS_TRANSFER]);
 
         $this->app['rzp.mode'] = EnvMode::TEST;
 
@@ -202,9 +202,14 @@ class PayoutTest extends OAuthTestCase
 
         $this->testCreatePayout();
 
-        $payout = $this->getLastEntity('payout', true);
+        $payout = $this->getDbLastEntity('payout');
 
-        $this->assertNotNull($payout['transferred_at']);
+        $this->assertNull($payout['transferred_at']);
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Assert that fta status is created (FTS async call).
+        $this->assertEquals('created', $fta->getStatus());
     }
 
     public function testCreatePayoutOnLiveMode(): array
@@ -3303,7 +3308,7 @@ class PayoutTest extends OAuthTestCase
         $newPayoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals(Payout\Status::PROCESSING, $newPayout['status']);
-        $this->assertEquals(Attempt\Status::CREATED, $payoutAttempt['status']);
+        $this->assertEquals(Attempt\Status::INITIATED, $payoutAttempt['status']);
 
         // Verify attempt entity
         $this->assertEquals($newPayout['attempts'], 1);
@@ -6997,6 +7002,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testUpdateFTAAndPayoutWithInvalidStateTransition()
     {
+        // Need to keep it async here because we are testing for invalid state transition of created to reversed.
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_ASYNC_FTS_TRANSFER]);
+
         $this->testCreatePayout();
 
         $payout = $this->getDbLastEntity('payout');
@@ -7052,7 +7060,7 @@ class PayoutTest extends OAuthTestCase
                                              ])->first();
 
         // Assert that fta status didn't update
-        $this->assertEquals('created', $ftaForPayout->getStatus());
+        $this->assertEquals('initiated', $ftaForPayout->getStatus());
     }
 
     // TODO: Remove this test once we remove bulk throttling (when file based uploads are started by FTS)
@@ -7178,8 +7186,8 @@ class PayoutTest extends OAuthTestCase
 
         $fta = $payout->fundTransferAttempts()->first();
 
-        // Assert that fta status was created initially.
-        $this->assertEquals('created', $fta->getStatus());
+        // Assert that fta status was initiated (FTS sync call).
+        $this->assertEquals('initiated', $fta->getStatus());
 
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
 
@@ -7214,8 +7222,8 @@ class PayoutTest extends OAuthTestCase
 
         $fta = $payout->fundTransferAttempts()->first();
 
-        // Assert that fta status was created initially.
-        $this->assertEquals('created', $fta->getStatus());
+        // Assert that fta status was initiated (FTS sync call).
+        $this->assertEquals('initiated', $fta->getStatus());
 
         $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . $payout['id'] . '/manual/status';
 
@@ -7233,7 +7241,7 @@ class PayoutTest extends OAuthTestCase
         $fta = $payout->fundTransferAttempts()->first();
 
         // Assert that fta status was also not updated.
-        $this->assertEquals('created', $fta->getStatus());
+        $this->assertEquals('initiated', $fta->getStatus());
     }
 
     public function testUpdatePayoutStatusManuallyToReversed()
@@ -7248,8 +7256,8 @@ class PayoutTest extends OAuthTestCase
 
         $fta = $payout->fundTransferAttempts()->first();
 
-        // Assert that fta status was created initially.
-        $this->assertEquals('created', $fta->getStatus());
+        // Assert that fta status was initiated (FTS sync call).
+        $this->assertEquals('initiated', $fta->getStatus());
 
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
 
@@ -12618,8 +12626,8 @@ class PayoutTest extends OAuthTestCase
 
         $fta1 = $payout1->fundTransferAttempts()->first();
 
-        // Assert that fta status was created initially.
-        $this->assertEquals('created', $fta1->getStatus());
+        // Assert that fta status was initiated (FTS sync call).
+        $this->assertEquals('initiated', $fta1->getStatus());
 
         $this->testCreatePayout();
 
@@ -12627,8 +12635,8 @@ class PayoutTest extends OAuthTestCase
 
         $fta2 = $payout2->fundTransferAttempts()->first();
 
-        // Assert that fta status was created initially.
-        $this->assertEquals('created', $fta2->getStatus());
+        // Assert that fta status was initiated (FTS sync call).
+        $this->assertEquals('initiated', $fta2->getStatus());
 
         $this->fixtures->edit('payout', $payout1['id'], ['status' => 'initiated']);
 

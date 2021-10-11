@@ -5934,8 +5934,8 @@ class RblBankingAccountStatementTest extends TestCase
 
         $fta = $payout->fundTransferAttempts()->first();
 
-        // Assert that fta status was created initially.
-        $this->assertEquals('created', $fta->getStatus());
+        // Assert that fta status was initiated (FTS sync call).
+        $this->assertEquals('initiated', $fta->getStatus());
 
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
 
