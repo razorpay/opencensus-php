@@ -86,6 +86,39 @@ return [
         ],
     ],
 
+    'testMerchantPreferencesViaAdminAuth' => [
+        'request'  => [
+            'content' => [
+                'preferences' => [
+                    [
+                        'type'  => 'ca_proceeded_bank',
+                        'value' => 'ICICI'
+                    ],
+                    [
+                        'type'  => 'ca_allocated_bank',
+                        'value' => 'ICICI'
+                    ]
+                ],
+                'merchant_id' => '10000000000000',
+                'product'     => 'banking',
+            ],
+            'url'     => '/admin/merchant/preferences/x_merchant_current_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'type'  => 'ca_allocated_bank',
+                    'value' => 'ICICI'
+                ],
+                [
+                    'type'  => 'ca_proceeded_bank',
+                    'value' => 'ICICI'
+                ]
+            ]
+        ],
+    ],
+
     'testMerchantAddingNewPreferencesForIntent' => [
         'request' => [
             'content' => [

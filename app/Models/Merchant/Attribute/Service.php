@@ -4,6 +4,7 @@
 namespace RZP\Models\Merchant\Attribute;
 
 use RZP\Models\Base;
+use RZP\Base\Common;
 use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
@@ -51,17 +52,26 @@ class Service extends Base\Service
      */
     public function upsert(string $group, array $input)
     {
-        //Validate input for group & type
+        $merchant = $this->merchant;
+        $product = $this->auth->getRequestOriginProduct();
         $attributeInputValidator = new Validator();
-        foreach ($input as $item){
-            $attributeInputValidator->validateInput('upsert_input_validation', $item);
 
+        if(empty($merchant) === true and
+           $this->app['basicauth']->isAdminAuth() === true)
+        {
+            $attributeInputValidator->validateInput('admin_upsert', $input);
+            $merchant = $this->repo->merchant->findOrFail($input[Common::MERCHANT_ID]);
+            $product = $input['product'] ?? Product::BANKING;
+            $input = array_pull($input, Validator::PREFERENCES);
+        }
+
+        foreach ($input as $item){
+            //Validate input for group & type
+            $attributeInputValidator->validateInput('upsert_input_validation', $item);
             $item[Entity::GROUP] = $group;
             $attributeInputValidator->validateGroupAndType($item);
         }
 
-        $merchant = $this->merchant;
-        $product = $this->auth->getRequestOriginProduct();
         $types = array_column($input, 'type');
 
         $merchantAttributes =  $this->core->fetchKeyValues($merchant, $product, $group, $types);

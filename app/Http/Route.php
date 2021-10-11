@@ -640,6 +640,7 @@ class Route
         'merchant_payout_mail'                     => ['post',     'merchant/payout/mail',                           'MerchantController@sendPayoutMail'                                 ],
         'merchant_post_preferences'                => ['post',     'merchant/preferences/{group}',                   'MerchantController@postMerchantPreferences'                        ],
         'merchant_get_preferences'                 => ['get',      'merchant/preferences/{group}/{type?}',           'MerchantController@getMerchantPreferences'                         ],
+        'admin_merchant_post_preferences'          => ['post',     'admin/merchant/preferences/{group}',             'MerchantController@postMerchantPreferences'                        ],
         'merchant_toggle_fee_bearer'               => ['post',     'merchant/toggle_fee_bearer',                     'MerchantController@toggleFeeBearer'                                ],
         'pricing_create_plan'                      => ['post',     'pricing',                                        'PricingController@postCreatePlan'                                  ],
         'buy_pricing_create_plan'                  => ['post',     'buy_pricing',                                    'PricingController@postCreateBuyPlan'                               ],
@@ -4552,6 +4553,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'admin_merchant_post_preferences',
         'merchant_risk_alerts_foh_workflow_trigger_nc',
         'rbl_current_account_serviceability_get_admin',
         'merchant_business_detail_fetch',
@@ -5491,6 +5493,7 @@ class Route
     ];
 
     public static $routePermission = [
+        'admin_merchant_post_preferences'           => Permission::UPDATE_MERCHANT_PREFERENCE,
         'merchant_activation_gst_details'           => Permission::VIEW_MERCHANT,
         'merchant_business_detail_fetch'            => Permission::VIEW_MERCHANT,
         'merchant_business_detail_save'             => Permission::EDIT_MERCHANT,
@@ -8079,6 +8082,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'admin_merchant_post_preferences',
             'merchant_activation_gst_details',
             'merchant_upload',
             'rbl_current_account_serviceability_get_admin',

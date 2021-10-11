@@ -11,6 +11,8 @@ use RZP\Exception;
  */
 class Validator extends Base\Validator{
 
+    const PREFERENCES = 'preferences';
+
     protected static $createRules = [
         Entity::PRODUCT => 'required|string|in:primary,banking',
         Entity::GROUP => 'required|string',
@@ -28,6 +30,12 @@ class Validator extends Base\Validator{
     protected static $upsertInputValidationRules = [
         Entity::TYPE => 'required|string',
         Entity::VALUE => 'required|string'
+    ];
+
+    protected static $adminUpsertRules = [
+        Entity::MERCHANT_ID => 'required|alpha_num|size:14',
+        Entity::PRODUCT     => 'sometimes|string|in:primary,banking',
+        self::PREFERENCES   => 'required|array',
     ];
 
     public function validateGroupAndType(array $item){
