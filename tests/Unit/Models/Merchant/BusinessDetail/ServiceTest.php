@@ -13,13 +13,11 @@ class ServiceTest extends TestCase
 {
     public function testSaveWebsiteDetailsForMerchant()
     {
-        $this->markTestSkipped('until skipped');
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
-        $this->markTestSkipped('until skipped');
 
         $saveInput = [
             BusinessDetailEntity::WEBSITE_DETAILS => [
-                BusinessDetailConstants::ABOUT => "http://razorpay.co.in"
+                BusinessDetailConstants::ABOUT => "https://hello.com/en/index.html"
             ]
         ];
         $businessDetailService = new Service();
@@ -50,7 +48,7 @@ class ServiceTest extends TestCase
     {
         $fetchInput            = [
             BusinessDetailEntity::WEBSITE_DETAILS => [
-                BusinessDetailConstants::ABOUT => "http://razorpay.co.in"
+                BusinessDetailConstants::ABOUT => "https://hello.com/en/index.html"
             ]
         ];
         $merchantBusinessDetail = $this->fixtures->create('merchant_business_detail', $fetchInput);
