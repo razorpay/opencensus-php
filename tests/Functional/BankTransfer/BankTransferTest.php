@@ -4199,6 +4199,43 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bank_account', $payment['receiver_type']);
     }
 
+    public function testBankTransferValidateTpvWithZeroPreceedingPayerDetails()
+    {
+        $bankTransferTestData = $this->testData['bankTransferValidateTpv'];
+        $bankTransferTestData['request']['content']['payer_account'] = '123499988';
+        $bankTransferTestData['request']['content']['payer_ifsc'] = 'UTIB0000013';
+        $this->processBankTransferForVaWithTpvEnabled($bankTransferTestData);
+
+        $bankTransfer = $this->getDbLastEntityToArray('bank_transfer');
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment = $this->getDbLastEntityToArray('payment');
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+    }
+
+    public function testBankTransferValidateTpvWithZeroPreceedingAllowedPayerDetails()
+    {
+        $bankTransferTestData = $this->testData['bankTransferValidateTpv'];
+        $bankTransferTestData['request']['content']['payer_account'] = '000765432123456789';
+        $this->processBankTransferForVaWithTpvEnabled($bankTransferTestData);
+
+        $bankTransfer = $this->getDbLastEntityToArray('bank_transfer');
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment = $this->getDbLastEntityToArray('payment');
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+    }
+
     public function testBankTransferValidateTpvWithInvalidPayerDetails()
     {
         $testData = $this->testData['bankTransferValidateTpv'];

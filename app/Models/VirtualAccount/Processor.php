@@ -603,6 +603,9 @@ abstract class Processor extends Base\Core
         {
             $allowedPayerDetails = $allowedPayer->entity->getVirtualAccountTpvData(true);
 
+            $allowedPayerDetails['account_number'] = ltrim($allowedPayerDetails['account_number'],'0');
+            $payerDetails['account_number']        = ltrim($payerDetails['account_number'],'0');
+
             if (empty(array_diff($payerDetails, $allowedPayerDetails)) === true)
             {
                 return true;
