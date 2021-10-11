@@ -5,6 +5,8 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { getClassName, getStatusMessage } from './InternationalPayments';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 class PaypalOnboardingButton extends Component {
   is_redirected = false;
@@ -28,6 +30,16 @@ class PaypalOnboardingButton extends Component {
 
   verifyAccount = () => {
     this.setState({ loading: true });
+    analyticsTrack({
+      objectName: 'Paypal Change Account',
+      actionName: 'clicked',
+      screen: 'settings',
+      properties: {
+        location: '',
+        actionName: 'Change Account',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     onboardTerminal('wallet_paypal')
       .then((res) => {
         const w = 520;

@@ -106,9 +106,9 @@ class LeafListItem extends React.Component {
         message: () => (
           <div style={{ marginBottom: '-5px' }}>
             This instrument will be enabled for you using &nbsp;
-            <span class="toggler-btn">
+            <span className="toggler-btn">
               <a href="https://razorpay.com/pricing/" target="_blank" rel="noopener noreferrer">
-                Standard Pricing <i class="i i-external-link" style={{ marginLeft: '2px' }} />
+                Standard Pricing <i className="i i-external-link" style={{ marginLeft: '2px' }} />
               </a>
             </span>
             . Processing the request roughly takes {instrumentsTat[requestSlug]} working days.
@@ -279,7 +279,17 @@ class LeafListItem extends React.Component {
       .catch(() => {});
   };
 
-  handleRaiseRequest = () => {
+  handleRaiseRequest = (status) => {
+    analyticsTrack({
+      objectName: `Raise Request ${status} Instrument Dashboard`,
+      actionName: 'clicked',
+      screen: 'settings',
+      properties: {
+        location: 'Payment Methods',
+        actionName: 'No',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     if (window.rzpTicketSystem) {
       CreateTicketEmitter.emit('create-ticket', 'tickets');
     }
@@ -344,10 +354,10 @@ class LeafListItem extends React.Component {
     };
 
     return (
-      <li class={getListClass(instrument.status, instrument.path)}>
+      <li className={getListClass(instrument.status, instrument.path)}>
         <div>
           {instrument.icon && (
-            <div class="icon">
+            <div className="icon">
               <img
                 src={getIcon(instrument.icon)}
                 alt={instrument.name}
@@ -359,18 +369,18 @@ class LeafListItem extends React.Component {
                 }}
               />
               {!this.state.isImageLoaded && (
-                <div class="flex">
+                <div className="flex">
                   <p className="PlaceholderLoader" />
                 </div>
               )}
             </div>
           )}
-          <div class="detail raise-request">
+          <div className="detail raise-request">
             <div>
               {displayName(instrument.name)}
               {/* {actionItems && Object.keys(actionItems).includes(instrument.path) ? (
                 <span>
-                  <span class="notify-badge">1</span>
+                  <span className="notify-badge">1</span>
                   <Popover align="bottom" theme="dark">
                     <PopoverBody>
                       <div style={{ textAlign: 'left' }}>
@@ -383,7 +393,10 @@ class LeafListItem extends React.Component {
               {instrument.description && <p>{instrument.description}</p>}
             </div>
             {[REJECTED, ACTION_REQUIRED].includes(instrument.status) && (
-              <button class="btn btn-link" onClick={this.handleRaiseRequest}>
+              <button
+                className="btn btn-link"
+                onClick={() => this.handleRaiseRequest(instrument.status)}
+              >
                 Raise Request
               </button>
             )}
@@ -398,7 +411,7 @@ class LeafListItem extends React.Component {
               ACCOUNT_LINKABLE,
               CANCELLED,
             ].includes(instrument.status) && (
-              <button class="btn btn-link" onClick={() => this.handleCancelRequest(instrument)}>
+              <button className="btn btn-link" onClick={() => this.handleCancelRequest(instrument)}>
                 Cancel
               </button>
             )}
@@ -409,7 +422,7 @@ class LeafListItem extends React.Component {
                 <div className="instrument-description-container">
                   <div className="detail">
                     <strong>Live Mode</strong>
-                    <div class="activated status" style={{ marginRight: '0' }}>
+                    <div className="activated status" style={{ marginRight: '0' }}>
                       {instrument.status.replace('_', ' ')}
                       <Popover align="bottom" theme="dark">
                         <PopoverBody>
@@ -434,7 +447,7 @@ class LeafListItem extends React.Component {
             {[ACCOUNT_LINKABLE].includes(instrument.status) && (
               <div className="flex-end">
                 <button
-                  class="btn btn-primary ml-5"
+                  className="btn btn-primary ml-5"
                   disabled={this.state.loading}
                   onClick={() => this.handlePaytmWalletIntegration(1, instrument.status)}
                 >
@@ -445,7 +458,7 @@ class LeafListItem extends React.Component {
             {[REQUESTABLE, CANCELLED, GREYED].includes(instrument.status) && (
               <div className="flex-end">
                 <button
-                  class={`${ctaClass[instrument.status]} ml-5`}
+                  className={`${ctaClass[instrument.status]} ml-5`}
                   disabled={this.state.loading || instrument.status === GREYED}
                   onClick={this.handleCreateRequest}
                 >
@@ -465,7 +478,7 @@ class LeafListItem extends React.Component {
             {![REQUESTABLE, CANCELLED, GREYED, ACCOUNT_LINKABLE].includes(instrument.status) &&
               instrument.path !== 'pg.wallet.paytm' && (
                 <div className="flex-end">
-                  <div class={ctaClass[instrument.status]}>
+                  <div className={ctaClass[instrument.status]}>
                     {instrument.status === ACTIVATED_ACTION_REQUIRED
                       ? ACTIVATED
                       : instrument.status.replace('_', ' ')}
@@ -517,8 +530,8 @@ class LeafListItem extends React.Component {
           </div>
         )}
         {[REJECTED, ACTION_REQUIRED].includes(instrument.status) && (
-          <div class="comment" title={instrument.comment}>
-            <i class="i i-info-outline" />
+          <div className="comment" title={instrument.comment}>
+            <i className="i i-info-outline" />
             <p>{instrument.comment || 'No comments available'}</p>
           </div>
         )}
