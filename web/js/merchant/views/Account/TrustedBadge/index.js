@@ -30,27 +30,29 @@ const TrustedBadge = ({
     (...args) => {
       try {
         if (tracking && args.length) {
-          const { badgeStatus = STATUS.NOT_ELIGIBLE_YES_WAITLISTED_DELISTED, original } =
+          const { badgeStatus = STATUS.NOT_ELIGIBLE_YES_WAITLISTED_DELISTED, original = {} } =
             status || {};
-          if (!original) {
-            const badgeVersion = pageData[badgeStatus]?.version;
-            const commonData = {
-              pageVersion: badgeVersion,
-              RTBStatus: badgeStatus,
-              RTBEligible: original.status === 'eligible',
-              RTBLiveMerchants: badgeVersion === 1,
-              RTBOptedOut: badgeVersion === 2,
-              RTbActivated: badgeVersion === 1,
-              RTBDelisted: original.is_delisted_atleast_once === 1,
-              RTBBlacklisted: original.status === 'blacklist',
-              RTBWaitlisted: original.merchant_status === 'waitlist',
-            };
-            if (args.length === 1) {
-              args[1] = {};
-            }
-            args[1] = { ...commonData, ...args[1] };
+          if (args.length === 1) {
+            args[1] = {};
           }
-          tracking.trackEvent(window.rzpQ && window.rzpQ.merchantActions().interaction(...args));
+          const badgeVersion = pageData[badgeStatus]?.version;
+          const commonData = {
+            pageVersion: badgeVersion,
+            RTBStatus: badgeStatus,
+            RTBEligible: original?.status === 'eligible',
+            RTBLiveMerchants: badgeVersion === 1,
+            RTBOptedOut: badgeVersion === 2,
+            RTbActivated: badgeVersion === 1,
+            RTBDelisted: original?.is_delisted_atleast_once === 1,
+            RTBBlacklisted: original?.status === 'blacklist',
+            RTBWaitlisted: original?.merchant_status === 'waitlist',
+          };
+          args[1] = { ...commonData, ...args[1] };
+          tracking.trackEvent(
+            window.rzpQ &&
+              window.rzpQ.merchantActions() &&
+              window.rzpQ.merchantActions().interaction(args[0], args[1]),
+          );
         }
       } catch (e) {
         // e
@@ -81,6 +83,10 @@ const TrustedBadge = ({
     // Activate Badge Button rendered
     if (status.badgeStatus === STATUS.YES_ELIGIBLE_OPTED_OUT) {
       trackEvent('RTBActivateNowRendered');
+    }
+
+    if (status.badgeStatus === STATUS.NOT_ELIGIBLE_WAITLISTED_DELISTED) {
+      trackEvent('RTBWaitlistButtonRendered');
     }
   }, [status, trackEvent]);
 

@@ -67,11 +67,11 @@ const RenderTrustedBadgePage = ({
           break;
         case 'activate-badge':
           updateStatus('optin');
-          trackEvent('RTBActivated');
+          trackEvent('RTBActivateButtonClicked');
           break;
         case 'join-waitlist':
           updateStatus('waitlist');
-          trackEvent('RTBWaitlisted');
+          trackEvent('RTBWaitlistButtonClicked');
           break;
         default:
           break;

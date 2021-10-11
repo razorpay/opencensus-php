@@ -17,7 +17,7 @@ const SubText = (props) => {
     <>
       <div
         onClick={props.handleOptOut}
-        className={`sub-text ${props.className || ''}`}
+        className={`trusted-sub-text ${props.className || ''}`}
         dangerouslySetInnerHTML={{ __html: text }}
       />
       {props.showDocTnCLink && (

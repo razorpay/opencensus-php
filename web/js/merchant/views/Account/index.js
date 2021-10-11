@@ -1,4 +1,4 @@
-import { Route, NavLink, Link } from 'react-router-dom';
+import { Route, NavLink } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 import TrustedBadge from 'merchant/views/Account/TrustedBadge';
 import Profile from 'merchant/views/Account/Profile';
@@ -15,12 +15,12 @@ export default function MyAccount() {
   return (
     <tabbed-container>
       <header id="myaccount-header">
-        <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
-          <NavLink to="/trustedbadge">Trusted Badge</NavLink>
-        </ShowWhen>
-
         <ShowWhen additionalCondition={(user) => user.isAllowedView('profile')}>
           <NavLink to="/profile">Profile</NavLink>
+        </ShowWhen>
+
+        <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
+          <NavLink to="/trustedbadge">Trusted Badge</NavLink>
         </ShowWhen>
 
         <ShowWhen additionalCondition={(user) => user.isAllowedView('credits')}>
