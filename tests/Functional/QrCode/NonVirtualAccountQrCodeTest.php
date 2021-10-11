@@ -757,11 +757,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals(true, $qrPayment['expected']);
     }
 
-    protected function parseResponseXml(string $response): array
-    {
-        return (array) simplexml_load_string(trim($response));
-    }
-
     public function testReminderCallback()
     {
         $input = $this -> getDefaultQrCodeRequestArray();

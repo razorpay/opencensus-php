@@ -2,12 +2,8 @@
 
 namespace RZP\Tests\Functional\Helpers\QrCode;
 
-use RZP\Tests\Functional\Partner\PartnerTrait;
-
 trait NonVirtualAccountQrCodeTrait
 {
-    use PartnerTrait;
-
     private function createQrCode(array $input = [], $mode = 'test', $merchantId = '10000000000000')
     {
         $this->ba->privateAuth();
@@ -140,5 +136,10 @@ trait NonVirtualAccountQrCodeTrait
         $this->assertEquals('OK', $response[0]);
 
         return $response;
+    }
+
+    public function parseResponseXml(string $response): array
+    {
+        return (array) simplexml_load_string(trim($response));
     }
 }

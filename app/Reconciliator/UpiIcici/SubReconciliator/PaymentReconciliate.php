@@ -106,11 +106,19 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         // Fetch payment ID from bharat_qr
-        $bharatQr = $this->repo->bharat_qr->findByProviderReferenceId($referenceNumber);
+        $qrCodePayment = $this->repo->bharat_qr->findByProviderReferenceId($referenceNumber);
 
-        if ($bharatQr != null)
+        // Fetch payment ID from qr_payment
+        if ($qrCodePayment === null)
         {
-            return $bharatQr->payment->getId();
+            $amount = (int) ($row[self::AMOUNT] * 100);
+
+            $qrCodePayment = $this->repo->qr_payment->findByProviderReferenceIdAndGatewayAndAmount($referenceNumber, Gateway::UPI_ICICI, $amount);
+        }
+
+        if ($qrCodePayment != null)
+        {
+            return $qrCodePayment->payment->getId();
         }
         else
         {
@@ -138,9 +146,16 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             $response = (new BharatQr\Service)->processPayment(json_encode($callbackData), 'upi_icici');
 
             // Fetch and raise alert if payment still not created
-            $bharatQr = $this->repo->bharat_qr->findByProviderReferenceId($referenceNumber);
+            $qrCodePayment = $this->repo->bharat_qr->findByProviderReferenceId($referenceNumber);
 
-            if ($bharatQr === null)
+            if ($qrCodePayment === null)
+            {
+                $amount = (int) ($row[self::AMOUNT] * 100);
+
+                $qrCodePayment = $this->repo->qr_payment->findByProviderReferenceIdAndGatewayAndAmount($referenceNumber, Gateway::UPI_ICICI, $amount);
+            }
+
+            if ($qrCodePayment === null)
             {
                 $this->trace->info(
                     TraceCode::RECON_INFO_ALERT,
@@ -156,7 +171,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             }
             else
             {
-                $paymentId = $bharatQr->payment->getId();
+                $paymentId = $qrCodePayment->payment->getId();
 
                 $this->trace->info(
                     TraceCode::RECON_INFO,
