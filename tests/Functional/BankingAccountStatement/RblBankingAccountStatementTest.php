@@ -9334,6 +9334,8 @@ class RblBankingAccountStatementTest extends TestCase
 
         $mockedResponse = $this->getRblBulkResponse();
 
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0]['txnBalance']['amountValue'] = '122';
+
         $mock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
 
         $mock->shouldReceive('sendRawRequest')

@@ -68,6 +68,17 @@ class Gateway extends BaseProcessor
 
     protected $savePaginationKey = true;
 
+    protected $statementRecordsToMatch = [
+        Entity::ACCOUNT_NUMBER,
+        Entity::CHANNEL,
+        Entity::POSTED_DATE,
+        Entity::TYPE,
+        Entity::DESCRIPTION,
+        Entity::BANK_SERIAL_NUMBER,
+        Entity::AMOUNT,
+        Entity::BANK_TRANSACTION_ID
+    ];
+
     public function __construct(string $channel,
                                 string $accountNumber,
                                 BasDetails\Entity $basDetails,
@@ -100,6 +111,7 @@ class Gateway extends BaseProcessor
         $totalRecords = 0;
         $skippedRecordCount = 0;
         $processedRecordCount = 0;
+        $bankTransactionRecords = [];
 
         $limit = (int) (new AdminService)->getConfigKey(
             ['key' => ConfigKey::RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE]);
@@ -109,7 +121,7 @@ class Gateway extends BaseProcessor
             $limit = self::RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE_DEFAULT;
         }
 
-        foreach ($bankTransactions as $bankTransaction)
+        foreach ($bankTransactions as $index => $bankTransaction)
         {
             $recordsToCheck[] = [
                 $bankTransaction[Entity::BANK_TRANSACTION_ID],
@@ -119,6 +131,8 @@ class Gateway extends BaseProcessor
                 $bankTransaction[Entity::CHANNEL],
                 $bankTransaction[Entity::ACCOUNT_NUMBER],
             ];
+
+            $bankTransactionRecords[$index] = $this->formBankTransactionRecordToMatch($bankTransaction);
 
             $totalRecords++;
             $processedRecordCount++;
@@ -138,7 +152,9 @@ class Gateway extends BaseProcessor
                 {
                     $record->setDescription(trim($record->getDescription()));
 
-                    $isPresent = array_search($record->toArray(), $bankTransactions);
+                    $recordToMatch = $this->formBankTransactionRecordToMatch($record->toArray());
+
+                    $isPresent = array_search($recordToMatch, $bankTransactionRecords);
 
                     if ($isPresent !== false)
                     {
@@ -148,6 +164,7 @@ class Gateway extends BaseProcessor
                 }
 
                 $recordsToCheck = [];
+                $bankTransactionRecords = [];
 
                 $processedRecordCount = 0;
             }
@@ -183,6 +200,19 @@ class Gateway extends BaseProcessor
         }
 
         return $bankTransactions;
+    }
+
+    // instead of matching all fields of the duplicate record we will match only some selected fields which will uniquely identify the record.
+    public function formBankTransactionRecordToMatch($bankTransaction)
+    {
+        $tempBankTransactionRecord = [];
+
+        foreach ($this->statementRecordsToMatch as $statementRecordToMatch)
+        {
+            $tempBankTransactionRecord[$statementRecordToMatch] = $bankTransaction[$statementRecordToMatch];
+        }
+
+        return $tempBankTransactionRecord;
     }
 
     protected function sendRequestAndGetResponseV1(array $input)
@@ -403,11 +433,24 @@ class Gateway extends BaseProcessor
 
             try
             {
+                $startTime = microtime(true);
+
                 $bankResponse = $this->app->mozart->sendMozartRequest(self::MOZART_NAMESPACE,
                                                                       $this->getChannel(),
                                                                       self::MOZART_ACTION,
                                                                       $requestData,
                                                                       $this->version);
+
+                $endTime = microtime(true);
+
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_RBL_V2_RESPONSE_TIME,
+                    [
+                        'merchant_id'         => $this->basDetails->getMerchantId(),
+                        'channel'             => $this->channel,
+                        'account_number'      => $this->accountNumber,
+                        'response_time'       => $endTime - $startTime
+                    ]);
 
                 $this->modifyBankResponseV2($bankResponse);
 
