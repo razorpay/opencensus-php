@@ -21,6 +21,7 @@ export const CLICK_ADD_FUNDS_ON_RESERVE_BALANCE = {
 export const CURRENT_BALANCE_SUCCESS = {
   screen: 'Dashboard - My Account (Balance)',
   actionName: 'Current Balance Added',
+  objectName: 'Current Balance Added Successfully',
   properties: {
     ...getCommonAnalyticsProperties(window.rzp_user),
   },
@@ -29,6 +30,7 @@ export const CURRENT_BALANCE_SUCCESS = {
 export const RESERVE_BALANCE_SUCCESS = {
   screen: 'Dashboard - My Account (Balance)',
   actionName: 'Reserve Balance Added',
+  objectName: 'Reserve Balance Added Successfully',
   properties: {
     ...getCommonAnalyticsProperties(window.rzp_user),
   },
@@ -37,6 +39,7 @@ export const RESERVE_BALANCE_SUCCESS = {
 export const CURRENT_BALANCE_FAILURE = {
   screen: 'Dashboard - My Account (Balance)',
   actionName: 'Current Balance Failed',
+  objectName: 'Current Balance Failed',
   properties: {
     ...getCommonAnalyticsProperties(window.rzp_user),
   },
@@ -45,6 +48,7 @@ export const CURRENT_BALANCE_FAILURE = {
 export const RESERVE_BALANCE_FAILURE = {
   screen: 'Dashboard - My Account (Balance)',
   actionName: 'Reserve Balance Failed',
+  objectName: 'Reserve Balance Failed',
   properties: {
     ...getCommonAnalyticsProperties(window.rzp_user),
   },
