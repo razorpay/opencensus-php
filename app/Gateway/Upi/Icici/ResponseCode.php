@@ -10,7 +10,7 @@ class ResponseCode
         1    => 'User profile not found',
         4    => 'Response parsing error',
         5    => 'The amount given is invalid',
-        9    => 'Transaction rejected',
+        9    => 'Payment declined by user',
         10   => 'Insufficient data',
         99   => 'Transaction cannot be processed',
         101  => 'Unknown Server Error',
@@ -25,7 +25,7 @@ class ResponseCode
         // PSP is not registered
         5008 => 'Invalid VPA',
         // Service unavailable. Please try later.
-        5009 => 'No response from Bank',
+        5009 => 'Payment was unsuccessful due to request timeout',
         5010 => 'Technical Error',
         5011 => 'Duplicate transaction',
         5012 => 'Duplicate transaction (offline)',
@@ -35,6 +35,13 @@ class ResponseCode
         5019 => 'Please try after sometime.',
         5020 => 'No response from Beneficiary Bank. Please wait for recon before initiating the transaction again.',
         5021 => 'Transaction Timed out. Please check transaction status before initiating again',
+        5023 => 'Multiple transactions against given parameter.',
+        5024 => 'Record not found against given parameters',
+        5025 => 'Please enter valid refund amount',
+        5026 => 'Invalid Consumer number',
+        5027 => 'Invalid merchant prefix',
+        5029 => 'No Response From Switch',
+        5030 => 'Please try again',
 
         8000 => 'Invalid Encrypted Request',
         8001 => 'JSON IS EMPTY',

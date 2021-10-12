@@ -12,7 +12,7 @@ class ResponseCodeMap
         1    => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         4    => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         5    => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
-        9    => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        9    => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_CUSTOMER,
         10   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         99   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         101  => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
@@ -28,7 +28,7 @@ class ResponseCodeMap
         // PSP is not registered
         5008 => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
         // Service unavailable. Please try later.
-        5009 => ErrorCode::BAD_REQUEST_PAYMENT_UPI_REQUEST_TIMED_OUT,
+        5009 => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         5010 => ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING,
         5011 => ErrorCode::GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST,
         5012 => ErrorCode::GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST,
@@ -39,6 +39,14 @@ class ResponseCodeMap
         5019 => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         5020 => ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING,
         5021 => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        
+        5023 => ErrorCode::GATEWAY_ERROR_MULTIPLE_REQUEST,
+        5024 => ErrorCode::GATEWAY_ERROR_RECORD_NOT_FOUND,
+        5025 => ErrorCode::GATEWAY_ERROR_REFUND_AMOUNT_INVALID,
+        5026 => ErrorCode::GATEWAY_ERROR_CONSUMER_NUMBER_INVALID,
+        5027 => ErrorCode::GATEWAY_ERROR_INVALID_MERCHANT_PREFIX,
+        5029 => ErrorCode::GATEWAY_ERROR_NO_RESPONSE_FROM_SWITCH,
+        5030 => ErrorCode::GATEWAY_ERROR_TECHNICAL_ERROR,
 
         // 8000-8008 are all JSON parsing or encryption errors
         8000 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
