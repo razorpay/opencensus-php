@@ -30,13 +30,6 @@ export default class LoansConfigLoader extends BaseConfigLoader {
             <span>Repay easily from daily settlements with more options</span>
           </React.Fragment>,
         ],
-        nonFldgSummary: (
-          <div className="Details-desc privileges">
-            Whatever be the industry, we have you covered for your working capital needs to achieve
-            exponential growth. Get collateral-free loans through our industry leading lending
-            partners.
-          </div>
-        ),
         summary: (
           <React.Fragment>
             <div className="Details-desc privileges">

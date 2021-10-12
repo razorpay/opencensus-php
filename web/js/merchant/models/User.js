@@ -1046,6 +1046,10 @@ export default class User {
     return this.isFeatureEnabled('paymentlinks_v2_compat');
   }
 
+  get isNonFldgLoansEnabled() {
+    return this.isFeatureEnabled('allow_non_fldg_loans');
+  }
+
   get isLoansEnabled() {
     return this.isFeatureEnabled('loan');
   }

@@ -1,20 +1,24 @@
-import React, { Component, Suspense } from 'react';
-import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
-import { connect } from 'react-redux';
-
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { isMobileDevice } from 'merchant/components/Home/data';
-
-import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
-import Slider from 'common/ui/Slider';
-import MultiSlider from 'common/ui/MultiSlider';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { ModalMask } from 'common/new-ui/Modal';
-import { ShowWhenRoute } from 'merchant/components/ShowWhen';
-import Home from 'merchant/containers/Home/Index';
-
-import lazy from './LazyLoader';
 import Loader from 'common/ui/Loader';
+import MultiSlider from 'common/ui/MultiSlider';
+import Slider from 'common/ui/Slider';
+import { analyticsTrack } from 'common/utils/analytics';
+import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { isMobileDevice } from 'merchant/components/Home/data';
+import { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import Support from 'merchant/components/Support';
+import Home from 'merchant/containers/Home/Index';
+import { setActiveEntity, setBaseLocation, setSecActiveEntity } from 'merchant/reducers/app';
+import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
+import { openSlider } from 'merchant_common/reducers/slider';
+import qs from 'query-string';
+import React, { Component, Suspense } from 'react';
+import { connect } from 'react-redux';
+import { NavLink, Redirect, Route, Switch, withRouter } from 'react-router-dom';
+import RepaymentsSchedule from '../views/Capital/CashAdvance/RepaymentsSchedule';
+import HandleIndex from './HandleIndex';
+import lazy from './LazyLoader';
 
 const PartnerDashboard = lazy(() =>
   import(/* webpackChunkName: "PartnerDashboard" */ 'merchant/views/PartnerDashboard'),
@@ -98,6 +102,11 @@ const PaypalOnboardRedirect = lazy(() =>
 const LoanDetails = lazy(() =>
   import(/* webpackChunkName: "CapitalLoans" */ 'merchant/views/Capital/Loans'),
 );
+
+const NonFldgLoans = lazy(() =>
+  import(/* webpackChunkName: "NonFldgLoans" */ 'merchant/views/Capital/NonFldgLoans/NonFldgLoans'),
+);
+
 const FlashCreditLandingPage = lazy(() =>
   import(/* webpackChunkName: "CapitalCashAdvance" */ 'merchant/views/Capital/CashAdvance/index'),
 );
@@ -112,21 +121,6 @@ const CorporateCards = lazy(() =>
 const LoansCollections = lazy(() =>
   import(/* webpackChunkName: "Loans" */ 'merchant/views/Capital/Loans/LoansCollections'),
 );
-
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-
-import qs from 'query-string';
-import Spinner from 'common/ui/Spinner';
-
-import { classList } from 'common/utils/rzp-utils';
-import { setBaseLocation, setActiveEntity, setSecActiveEntity } from 'merchant/reducers/app';
-import { openSlider } from 'merchant_common/reducers/slider';
-import Support from 'merchant/components/Support';
-
-import store from 'merchant/store';
-
-import HandleIndex from './HandleIndex';
-import RepaymentsSchedule from '../views/Capital/CashAdvance/RepaymentsSchedule';
 
 // Can be removed with old navigation removal
 const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
@@ -157,9 +151,8 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
 )
 export default class Content extends Component {
   setBaseLocation = (location) => {
-    let { setBaseLocation, setActiveEntity, setSecActiveEntity } = this.props;
-    var matchDetailsRoute = matchDetail(location.pathname);
-    var matchModalsRoute = matchModal(location.pathname);
+    const matchDetailsRoute = matchDetail(location.pathname);
+    const matchModalsRoute = matchModal(location.pathname);
 
     if (matchDetailsRoute || matchModalsRoute) {
       let resultRoute;
@@ -177,38 +170,40 @@ export default class Content extends Component {
       }
 
       const params = resultRoute.match.params;
-      setActiveEntity(params.id);
+      this.props.setActiveEntity(params.id);
 
       this.detailProps = params;
 
-      setActiveEntity(resultRoute.match.params.id);
+      this.props.setActiveEntity(resultRoute.match.params.id);
       if (Object.keys(params > 1)) {
-        setSecActiveEntity(params[Object.keys(params)[1]]);
+        this.props.setSecActiveEntity(params[Object.keys(params)[1]]);
       }
 
-      let query = qs.parse(location.search);
+      const query = qs.parse(location.search);
 
       if (query.basePath) {
-        let _location = {
+        const _location = {
           ...location,
           pathname: query.basePath,
         };
         this.baseLocation = _location;
-        setBaseLocation(_location);
+        this.props.setBaseLocation(_location);
       }
     } else {
       this.detailView = null;
       this.modalView = null;
       this.detailProps = null;
-      setActiveEntity(null);
-      setSecActiveEntity(null);
+
+      this.props.setActiveEntity(null);
+      this.props.setSecActiveEntity(null);
 
       this.baseLocation = location;
-      setBaseLocation(location);
+      this.props.setBaseLocation(location);
     }
   };
 
   toggleRasieTicketModal = ({ location = {} }) => {
+    /*eslint-disable-next-line func-names */
     const onModalClose = function () {
       this.props.history.push(location.pathname);
       window.rzpTicketSystem.removeEventListener('modal-close', onModalClose);
@@ -218,7 +213,8 @@ export default class Content extends Component {
     const urlWithHash = decodeURIComponent(location.pathname);
     const hashInUrl = urlWithHash.substring(urlWithHash.indexOf('#') + 1);
 
-    const hash = location.hash || '#' + hashInUrl;
+    const hash = `${location.hash || `#${hashInUrl}`}`;
+
     if (window.rzpTicketSystem) {
       const actionHash = supportHashMapping[hash];
       if (actionHash && !!location.pathname && location.pathname !== '/') {
@@ -237,8 +233,8 @@ export default class Content extends Component {
 
   listenTrackEvents = () => {
     if (window.rzpTicketSystem && window.rzpTicketSystem.addEventListener) {
-      window.rzpTicketSystem.addEventListener('track-event', function (data) {
-        analyticsTrack({
+      window.rzpTicketSystem.addEventListener('track-event', function trackEvent(data) {
+        return analyticsTrack({
           ...data.event,
           objectName: data.event.objectName,
           actionName: data.event.actionName,
@@ -258,7 +254,7 @@ export default class Content extends Component {
   };
 
   getBaseView = () => {
-    const { user, fullPageView } = this.props;
+    const { fullPageView } = this.props;
 
     if (fullPageView) {
       return fullPageView;
@@ -555,6 +551,7 @@ export default class Content extends Component {
           />
           <ShowWhenRoute path="/capital/cash-advance/:section" component={CashAdvance} />
           <ShowWhenRoute path="/capital/loans/:section" component={LoansCollections} />
+          <ShowWhenRoute path="/capital/non-fldg-loans" component={NonFldgLoans} />
           <ShowWhenRoute path="/capital/cash-advance" component={FlashCreditLandingPage} />
           <ShowWhenRoute path="/capital/corporate-cards" component={CorporateCards} />
           <Route exact path="/" component={HandleIndex} />
@@ -587,7 +584,7 @@ export default class Content extends Component {
     }
   }
 
-  closeModalView = (e) => {
+  closeModalView = () => {
     document.body.classList.remove('noscroll');
     this.props.history.replace(this.baseLocation.pathname);
   };
@@ -595,8 +592,8 @@ export default class Content extends Component {
   render() {
     const { user, fullPageView } = this.props;
 
-    var DetailView = this.detailView;
-    var BaseView = this.baseLocation ? this.getBaseView() : null;
+    let DetailView = this.detailView;
+    const BaseView = this.baseLocation ? this.getBaseView() : null;
 
     let ModalFormView = this.modalView;
 

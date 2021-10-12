@@ -33,7 +33,6 @@ import {
 import DataList from 'merchant/components/OnBoarding/Slides/DataList';
 import { OnBoardingWrapper } from 'merchant/components/OnBoarding';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
-import NonFldgLoansView from './NonFldgLoansView';
 import api from './LoansCollections/api';
 import { PLAN_STATUS } from './LoansCollections/constants';
 
@@ -369,14 +368,10 @@ export default class LoanApplicationOverview extends React.Component {
 
   getApplicationOverview = () => {
     const { loanApplicationDetails } = this.props;
-    const allowNonFldgLoans = this.props.user.isFeatureEnabled('allow_non_fldg_loans');
-    const isLoansProduct = !isCashAdvanceProduct(loanApplicationDetails.meta.product);
 
     const productDetails = this.getProductDetails();
 
     if (!productDetails) console.error('No Corresponding Product found');
-
-    if (isLoansProduct && allowNonFldgLoans) return <NonFldgLoansView />;
 
     if (!loanApplicationDetails.meta.data.application) {
       return (
@@ -466,8 +461,7 @@ export default class LoanApplicationOverview extends React.Component {
   };
 
   render() {
-    const { loanApplicationDetails, user } = this.props;
-    const allowNonFldgLoans = user.isFeatureEnabled('allow_non_fldg_loans');
+    const { loanApplicationDetails } = this.props;
 
     if (loanApplicationDetails.products.loading || loanApplicationDetails.meta.loading)
       return (
@@ -491,15 +485,14 @@ export default class LoanApplicationOverview extends React.Component {
             {UIConfig.product.title}
             <div className="divider" />
           </div>
-          {allowNonFldgLoans ? UIConfig.product.nonFldgSummary : UIConfig.product.summary}
+          {UIConfig.product.summary}
           <hr />
-          {!allowNonFldgLoans && <DataList>{UIConfig.product.pros}</DataList>}
+          <DataList>{UIConfig.product.pros}</DataList>
         </div>
 
         <div
           className={`loan-application-home ${
             this.isLoanApplicationDisabled(loanApplicationDetails) &&
-            !allowNonFldgLoans &&
             'loan-application-home-top-border'
           }`}
         >
