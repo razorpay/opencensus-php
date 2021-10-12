@@ -203,7 +203,11 @@ class Tracing
             'payment_page_get',
             'payment_page_get_details',
             'payment_page_get_payments',
-            'payment_page_list'
+            'payment_page_list',
+
+            // Route
+            'transfer_fetch',
+            'transfer_fetch_multiple',
         ]);
     }
 

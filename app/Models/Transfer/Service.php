@@ -2,20 +2,21 @@
 
 namespace RZP\Models\Transfer;
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use RZP\Error\Error;
 use RZP\Jobs;
+use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Error\Error;
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Timezone;
 use RZP\Base\ConnectionType;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\Transfers\TransferRecon;
 use RZP\Constants\Entity as EntityConstant;
@@ -36,9 +37,12 @@ class Service extends Base\Service
 
     public function fetch(string $id, array $input): array
     {
-        $transfer =  $this->repo
-                          ->transfer
-                          ->findByPublicIdAndMerchant($id, $this->merchant, $input);
+        $transfer = Tracer::inSpan(['name' => 'transfer.fetch'], function() use ($id, $input)
+        {
+            return $this->repo
+                        ->transfer
+                        ->findByPublicIdAndMerchant($id, $this->merchant, $input);
+        });
 
         $variant = $this->app['razorx']->getTreatment(
             $this->merchant->getId(),
@@ -206,7 +210,12 @@ class Service extends Base\Service
             $input[Entity::STATUS] = Constant::FETCH_STATUS;
         }
 
-        $transfers = $this->repo->transfer->fetch($input, $merchantId);
+        $transfers = Tracer::inSpan(['name' => 'transfer.fetch_multiple'], function() use ($input, $merchantId)
+        {
+            return $this->repo
+                        ->transfer
+                        ->fetch($input, $merchantId);
+        });
 
         $this->trace->info(
             TraceCode::TRANSFER_FETCH_MULTIPLE_RESPONSE,
