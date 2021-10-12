@@ -434,6 +434,23 @@ class TerminalMigrationTest extends TestCase
         $this->assertTrue($isEqual);
     }
 
+    public function testTerminalCollectionCompareFunctionWithCompareMethod()
+    {
+        $merchantIds = ['10000000000000'];
+
+        $terminals = $this->terminalRepository->getByTypeAndMerchantIds(Terminal\Type::NON_RECURRING, $merchantIds);
+
+        $arr = $terminals->toArray();
+
+        $newCollection = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($arr);
+
+        $compareMethods = ["getId", "getMerchantId", "getGatewayMerchantId", "getGatewayMerchantId2"];
+
+        $isEqual = Terminal\Service::compareTerminalCollection($terminals, $newCollection, $compareMethods);
+
+        $this->assertTrue($isEqual);
+    }
+
     public function testTerminalParamToRequestConversion()
     {
         $param = [];

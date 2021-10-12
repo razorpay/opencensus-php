@@ -376,7 +376,7 @@ trait Migrate
         return true;
     }
 
-    public static function compareTerminalEntity(Entity $apiEntity, Entity $terminalEntity)
+    public static function compareTerminalEntity(Entity $apiEntity, Entity $terminalEntity, $compareMethods = null)
     {
         $mismatchData = [];
 
@@ -390,7 +390,12 @@ trait Migrate
                     "getVirtualUpiRoot", "getVirtualUpiMerchantPrefix", "getVirtualUpiHandle", "getCapability", "getCurrency",
                     "getNetworkCategory", "isExpected", "getCapability", "getMode", "getEmiDuration"];
 
-        foreach (array_values($methods) as $methodName)
+        if ($compareMethods == null)
+        {
+            $compareMethods = $methods;
+        }
+
+        foreach (array_values($compareMethods) as $methodName)
         {
             if ($apiEntity->$methodName() != $terminalEntity->$methodName())
             {
@@ -488,7 +493,7 @@ trait Migrate
             $terminal->setMode($t["mode"]);
         }
 
-        if (array_key_exists("type",$t) === true)
+        if (array_key_exists("type", $finalArray) === true)
         {
            $terminal->setType($finalArray["type"]);
         }
@@ -514,7 +519,7 @@ trait Migrate
         return $collection;
     }
 
-    public static function compareTerminalCollection(PublicCollection $apiTerminals, PublicCollection $terminals): bool
+    public static function compareTerminalCollection(PublicCollection $apiTerminals, PublicCollection $terminals, $compareMethods = null): bool
     {
         $app = \App::getFacadeRoot();
 
@@ -545,7 +550,7 @@ trait Migrate
 
             $itemToCompare = $terminalSorted[$x];
 
-            $isEntityEqual = self::compareTerminalEntity($item, $itemToCompare);
+            $isEntityEqual = self::compareTerminalEntity($item, $itemToCompare, $compareMethods);
 
             if ($isEntityEqual === false)
             {
@@ -592,7 +597,12 @@ trait Migrate
 
         if (empty($terminalData["enabled"]) === false)
         {
-            $content["enabled"] = $terminalData["enabled"];
+            $content["enabled"] = true;
+
+            if ($terminalData["enabled"] == false)
+            {
+                $content["enabled"] = false;
+            }
         }
 
         $identifiers = [];

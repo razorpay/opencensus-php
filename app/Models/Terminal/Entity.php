@@ -1491,7 +1491,7 @@ class Entity extends Base\PublicEntity
 
                     $path = "v2/terminals/credentials/" . $terminal[Entity::ID];
 
-                    $response = $app['terminals_service']->proxyTerminalService("", "GET", $path, ['timeout' => 30]);
+                    $response = $app['terminals_service']->proxyTerminalService("", "GET", $path, ['timeout' => 3]);
 
                     // compare secrets
                     $tsTerminalPassword = $response["terminal"]["secrets"][Entity::GATEWAY_TERMINAL_PASSWORD];

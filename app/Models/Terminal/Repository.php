@@ -1046,7 +1046,7 @@ class Repository extends Base\Repository
         $apiTerminals = $query->get();
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-        
+
         $variantFlag = $this->app->razorx->getTreatment($gateway, "ROUTE_PROXY_TS_5", $mode);
 
         if ($variantFlag === 'proxy')
@@ -1074,7 +1074,9 @@ class Repository extends Base\Repository
 
                 $terminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
 
-                if (Terminal\Service::compareTerminalCollection($apiTerminals, $terminals) === false)
+                $compareMethods = ["getId", "getMerchantId", "getGatewayMerchantId", "getGatewayMerchantId2"];
+
+                if (Terminal\Service::compareTerminalCollection($apiTerminals, $terminals, $compareMethods) === false)
                 {
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
