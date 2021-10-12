@@ -200,4 +200,11 @@ export default {
     // prod experiment ids
     'I2n2kDaDSfPfyx',
   ],
+  zapier_integration: [
+    // beta experiment ids
+    'HpQN5BGbQ793ir',
+
+    // prod experiment ids
+    'HpmgNbhHWmh3BS',
+  ],
 };

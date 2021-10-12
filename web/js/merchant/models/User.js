@@ -469,6 +469,10 @@ export default class User {
     return getSplitzExperimentVariant('ai_sensy_banner')?.variables?.result === 'on';
   }
 
+  get isPartOfZapierIntegrationExperiment() {
+    return getSplitzExperimentVariant('zapier_integration')?.variables?.result === 'on';
+  }
+
   /* Method to get the Failure Analysis Text Variant */
   get faTextVariant() {
     return getSplitzExperimentVariant('failure_analysis_text_exp')?.variables?.result;

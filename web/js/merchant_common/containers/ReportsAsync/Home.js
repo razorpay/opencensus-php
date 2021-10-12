@@ -1,3 +1,5 @@
+/* eslint-disable consistent-return */
+import React from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -6,6 +8,9 @@ import Spinner from 'common/ui/Spinner';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import ShowWhen from 'merchant/components/ShowWhen';
+import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
+import { getItem } from 'common/utils/localStorage';
 
 import LogList from './Logs/List';
 import GenerateReportPanel from './GenerateReportPanel';
@@ -56,7 +61,7 @@ export default class ReportHome extends React.PureComponent {
                 periodStart: payload.start_time,
                 periodEnd: payload.end_time,
                 formatSelected: payload.template_overrides,
-                emailSelected: payload.emails && payload.emails.length > 0 ? true : false,
+                emailSelected: !!(payload.emails && payload.emails.length > 0),
                 status: 'Success',
                 infoMessage:
                   'Request with same report type and date range is in processing. Please check your request history',
@@ -64,6 +69,7 @@ export default class ReportHome extends React.PureComponent {
               },
             });
           } else if (data.id) {
+            // eslint-disable-next-line no-shadow
             const accountId = data.generated_by !== data.consumer ? data.consumer : undefined;
             this.props.pollLog(data.id, accountId);
             analyticsTrack({
@@ -76,7 +82,7 @@ export default class ReportHome extends React.PureComponent {
                 periodStart: payload.start_time,
                 periodEnd: payload.end_time,
                 formatSelected: payload.template_overrides,
-                emailSelected: payload.emails && payload.emails.length > 0 ? true : false,
+                emailSelected: !!(payload.emails && payload.emails.length > 0),
                 status: 'Success',
                 ...getCommonAnalyticsProperties(window.rzp_user),
               },
@@ -141,6 +147,17 @@ export default class ReportHome extends React.PureComponent {
     const { logs, user, configs, customConfigs, ...otherProps } = this.props;
     return (
       <div>
+        <ShowWhen
+          additionalCondition={(currentUser) =>
+            currentUser.isPartOfZapierIntegrationExperiment &&
+            !getItem(`zapier-integration-banner-${user.current}`)
+          }
+        >
+          <ZapierLaunchBanner
+            fromWhere="reports"
+            bannerKey={`zapier-integration-banner-${user.current}`}
+          />
+        </ShowWhen>
         <tabbed-container>
           <header>
             <NavLink to="/reports">Reports</NavLink>

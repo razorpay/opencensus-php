@@ -1109,20 +1109,26 @@ class Constants
             ]
         ],
         [
-            'id'          => 'Aug25-AppStore-Intent-Zapier',
-            'title'       => 'Coming soon - Zapier+Razorpay plugin!',
-            'description' => "You will soon be able to create Zapier workflows using Razorpay triggers with our official Razorpay app. Want to try?",
+            'id'          => 'Sep22-AppStore-Zapier-GTM-Announcement',
+            'title'       => 'Announcing Zapier Integration',
+            'description' => "Now integrate Razorpay with GSheets, Zoho, Slack and 3000+ apps through Zapier",
             'icon'        => '/dist/css/assets/zapier.png',
             'buttons'     => [
                 [
                     'type'  => 'button',
-                    'label' => 'Get Early Access',
-                    'url'   => '',
-                    'id'    => 'Aug25-AppStore-Intent-Zapier-cta',
+                    'label' => 'Try now',
+                    'url'   => 'https://zapier.com/apps/razorpay-1/integrations/?utm_source=GrowthAsset',
+                    'id'    => '',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Learn more',
+                    'id'    => '',
+                    'url'   => 'https://dashboard.razorpay.com/app/app-store/zapier'
                 ],
             ],
-            'start_ts'    => 1629936000,
-            'end_ts'      => 1627948800,
+            'start_ts'    => 1632960000,
+            'end_ts'      => 1640822400,
             'filters'     => [
                 'splitz_experiments'  => ['ZAPIER_ANNOUNCEMENT_SPLITZ'],
             ],

@@ -13,6 +13,9 @@ import PayPalForInvoice from 'merchant/components/Announcements/PayPalForInvoice
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import Invoices from 'merchant/views/Invoices/Invoices/List';
 import Items from 'merchant/views/Invoices/Items/List';
+import ShowWhen from 'merchant/components/ShowWhen';
+import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
+import { getItem } from 'common/utils/localStorage';
 
 import OnBoarding, {
   getIsInvoicesEnabled,
@@ -20,6 +23,8 @@ import OnBoarding, {
 } from './OnBoarding';
 
 import QuickGuide, { getInvoicesQuickGuideIsClosed } from './QuickGuide';
+
+const ItemsComponent = (props) => <Items {...props} isInvoiceView />;
 
 @withRouter
 @connect(
@@ -55,6 +60,7 @@ export default class InvoicesContainer extends Component {
     }
   }
 
+  // eslint-disable-next-line consistent-return
   initInvoicesOnboarding = (props = this.props) => {
     if (props.invoicesProductOnBoarding.isTour) {
       return false;
@@ -74,7 +80,7 @@ export default class InvoicesContainer extends Component {
       showOnboarding = getIsAllowedResetInvoicesOnBoarding(data);
     }
 
-    let invoicesProductOnBoarding = {
+    const invoicesProductOnBoarding = {
       ...props.invoicesProductOnBoarding,
       showOnboarding,
       isQuickGuideOpen: !getInvoicesQuickGuideIsClosed(props),
@@ -93,6 +99,17 @@ export default class InvoicesContainer extends Component {
 
     return (
       <React.Fragment>
+        <ShowWhen
+          additionalCondition={(currentUser) =>
+            currentUser.isPartOfZapierIntegrationExperiment &&
+            !getItem(`zapier-integration-banner-${user.current}`)
+          }
+        >
+          <ZapierLaunchBanner
+            fromWhere="invoices"
+            bannerKey={`zapier-integration-banner-${user.current}`}
+          />
+        </ShowWhen>
         <PayPalForInvoice />
 
         <tabbed-container>
@@ -114,5 +131,3 @@ export default class InvoicesContainer extends Component {
     );
   }
 }
-
-const ItemsComponent = (props) => <Items {...props} isInvoiceView />;

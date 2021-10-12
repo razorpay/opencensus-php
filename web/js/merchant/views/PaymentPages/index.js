@@ -14,6 +14,8 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 
 import PaymentPageZapierBanner from '../../components/Announcements/PaymentPageZapier';
+import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
+import { getItem } from 'common/utils/localStorage';
 
 @connect((state) => {
   return {
@@ -38,6 +40,17 @@ export default class PaymentPagesContainer extends Component {
           <div className="banner-container">
             <PaymentPageZapierBanner bannerKey={`payment-pages-zapier-${user.current}`} />
           </div>
+        </ShowWhen>
+        <ShowWhen
+          additionalCondition={(currentUser) =>
+            currentUser.isPartOfZapierIntegrationExperiment &&
+            !getItem(`zapier-integration-banner-${user.current}`)
+          }
+        >
+          <ZapierLaunchBanner
+            fromWhere="payment-pages"
+            bannerKey={`zapier-integration-banner-${user.current}`}
+          />
         </ShowWhen>
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}
