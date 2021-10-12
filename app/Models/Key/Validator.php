@@ -13,7 +13,7 @@ class Validator extends Base\Validator
     protected static $demoKeys = array(
         '1DP5mmOlF5G5ag',
         '0wFRWIZnH65uny',
-        'DYpMIPzjsoJuYS'  // Prod - X Demo User
+        'OS3GZfI9mcqKbc'  // Prod - X Demo User
     );
 
     protected static $verifyOtpRules = [
