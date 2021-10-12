@@ -370,6 +370,7 @@ return [
         'response' => [
             'content' => [
                 'payment.authorized',
+                'payment.pending',
                 'payment.failed',
                 'payment.captured',
                 'payment.dispute.created',
@@ -1210,6 +1211,7 @@ return [
         'response' => [
             'content' => [
                 'payment.authorized',
+                'payment.pending',
                 'payment.failed',
                 'payment.captured',
                 'payment.dispute.created',

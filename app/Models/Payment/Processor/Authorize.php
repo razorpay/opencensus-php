@@ -1167,6 +1167,10 @@ trait Authorize
 
         $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_PENDING_PROCESSED, $payment);
 
+        $this->repo->payment->saveOrFail($payment);
+
+        $this->eventPaymentPending();
+
         return true;
     }
 
@@ -6792,6 +6796,17 @@ trait Authorize
         ];
 
         $this->app['events']->dispatch('api.payment.authorized', $eventPayload);
+    }
+
+    public function eventPaymentPending()
+    {
+        $payment = $this->payment;
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $payment
+        ];
+
+        $this->app['events']->dispatch('api.payment.pending', $eventPayload);
     }
 
     /**

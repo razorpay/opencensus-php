@@ -29,6 +29,8 @@ class ErrorMappingService
 
     public const WALLET_ERROR_CODES_JSON            = 'error_codes/error_codes/pg/wallet/internal_error_codes.json';
 
+    public const COD_ERROR_CODES_JSON               = 'error_codes/error_codes/pg/cod/internal_error_codes.json';
+
     public const APP_ERROR_CODES_JSON_FILE          = 'files/errorcodes/app_error_codes.json';
 
     public const CARD_ERROR_CODES_JSON_FILE         = 'files/errorcodes/card_error_codes.json';
@@ -46,6 +48,9 @@ class ErrorMappingService
     public const UPI_ERROR_CODES_JSON_FILE          = 'files/errorcodes/upi_error_codes.json';
 
     public const WALLET_ERROR_CODES_JSON_FILE       = 'files/errorcodes/wallet_error_codes.json';
+
+    public const COD_ERROR_CODES_JSON_FILE          = 'files/errorcodes/cod_error_codes.json';
+
 
     protected $app;
 
@@ -68,7 +73,8 @@ class ErrorMappingService
            file_exists(storage_path(self::NACH_ERROR_CODES_JSON_FILE)) === false or
            file_exists(storage_path(self::NETBANKING_ERROR_CODES_JSON_FILE)) === false or
            file_exists(storage_path(self::UPI_ERROR_CODES_JSON_FILE)) === false or
-           file_exists(storage_path(self::WALLET_ERROR_CODES_JSON_FILE)) === false)
+           file_exists(storage_path(self::WALLET_ERROR_CODES_JSON_FILE)) === false or
+           file_exists(storage_path(self::COD_ERROR_CODES_JSON_FILE)) === false)
        {
            $this->readMappingFromFiles();
        }
@@ -116,6 +122,10 @@ class ErrorMappingService
         {
             $array =  json_decode(file_get_contents(storage_path(self::WALLET_ERROR_CODES_JSON_FILE)), true);
         }
+        if ($method === Method::COD)
+        {
+            $array =  json_decode(file_get_contents(storage_path(self::COD_ERROR_CODES_JSON_FILE)), true);
+        }
 
         if (isset($array[$code]) === false)
         {
@@ -149,6 +159,8 @@ class ErrorMappingService
 
         $walletErrorCodeArray = JsonMachine::fromFile(base_path(self::WALLET_ERROR_CODES_JSON));
 
+        $codErrorCodeArray = JsonMachine::fromFile(base_path(self::COD_ERROR_CODES_JSON));
+
         $appErrorsJson = array();
 
         $cardErrorsJson = array();
@@ -166,6 +178,8 @@ class ErrorMappingService
         $netbankingErrorsJson = array();
 
         $walletErrorsJson = array();
+
+        $codErrorsJson = array();
 
         foreach($appErrorCodeArray as $key => $value)
         {
@@ -203,6 +217,10 @@ class ErrorMappingService
         {
             $walletErrorsJson[$value['internal_error_code']] = json_encode($value);
         }
+        foreach($codErrorCodeArray as $key => $value)
+        {
+            $codErrorsJson[$value['internal_error_code']] = json_encode($value);
+        }
 
         file_put_contents(storage_path(self::APP_ERROR_CODES_JSON_FILE), json_encode($appErrorsJson));
 
@@ -221,5 +239,7 @@ class ErrorMappingService
         file_put_contents(storage_path(self::NETBANKING_ERROR_CODES_JSON_FILE), json_encode($netbankingErrorsJson));
 
         file_put_contents(storage_path(self::WALLET_ERROR_CODES_JSON_FILE), json_encode($walletErrorsJson));
+
+        file_put_contents(storage_path(self::COD_ERROR_CODES_JSON_FILE), json_encode($codErrorsJson));
     }
 }

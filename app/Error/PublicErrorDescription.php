@@ -309,6 +309,7 @@ class PublicErrorDescription
     const BAD_REQUEST_KEY_EXPIRING_SOON                                         = 'Key is already set to expire soon';
     const BAD_REQUEST_KEY_OF_DEMO_ACCOUNT                                       = 'Operation failed for the key because it\'s of a demo account';
     const BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED                           = 'Only payments which have been authorized and not yet captured can be captured';
+    const BAD_REQUEST_PAYMENT_CAPTURE_ONLY_PENDING                              = 'Only cash on delivery payments which are pending and not yet captured can be captured';
     const BAD_REQUEST_PAYMENT_CANCEL_ONLY_CREATED                               = 'Only payments which are just created can be cancelled';
     const BAD_REQUEST_NOTES_TOO_MANY_KEYS                                       = 'Number of fields in notes should be less than or equal to 15';
     const BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY                               = 'Notes values themselves should not be an array';

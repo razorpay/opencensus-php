@@ -4,6 +4,25 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 return [
+    'testPaymentPendingWebhookEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payment.pending',
+        'contains' => [
+            'payment',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity'   => 'payment',
+                    'amount'   => 50000,
+                    'currency' => 'INR',
+                    'status'   => 'pending',
+                    'captured' => false,
+                ],
+            ],
+        ],
+    ],
+
     'testInitiatePaymentWithoutOrderShouldFail' => [
         'response'  => [
             'content'     => [
@@ -32,4 +51,25 @@ return [
             'internal_error_code' => 'BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID',
         ],
     ],
+    'testCaptureCoDPaymentInNonPendingStatusShouldFail' => [
+        'request'   => [
+            'method'  => 'POST',
+            'content' => [
+                'amount' => 50000,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => 'Only cash on delivery payments which are pending and not yet captured can be captured',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => 'BAD_REQUEST_PAYMENT_CAPTURE_ONLY_PENDING',
+        ],
+    ],
+
 ];

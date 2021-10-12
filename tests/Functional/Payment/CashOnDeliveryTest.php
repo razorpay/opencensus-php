@@ -3,14 +3,19 @@
 
 namespace Functional\Payment;
 
-
+use RZP\Models\Payment;
+use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
+use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class CashOnDeliveryTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
+    use TestsWebhookEvents;
 
 
     protected $order;
@@ -89,6 +94,15 @@ class CashOnDeliveryTest extends TestCase
         $this->assertArraySelectiveEquals($expectedOrderData, $order);
     }
 
+
+    public function testPaymentPendingWebhook()
+    {
+        $this->expectWebhookEventWithContents('payment.pending', 'testPaymentPendingWebhookEventData');
+
+        $this->initiatePayment();
+    }
+
+
     protected function initiatePayment()
     {
         $request = $this->getPaymentCreateRequest();
@@ -102,12 +116,7 @@ class CashOnDeliveryTest extends TestCase
 
     protected function getPaymentCreateRequest(): array
     {
-        if ($this->order === null)
-        {
-            $this->order = $this->fixtures->create('order', [
-                'amount' => '50000',
-            ]);
-        }
+       $this->setupOrderIfApplicable();
 
         return [
             'method'  => 'POST',
@@ -265,11 +274,7 @@ class CashOnDeliveryTest extends TestCase
             'amount' => 50000,
         ]);
 
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment['order_id'] = $this->order->getPublicId();
-
-        $this->doAuthPayment($payment);
+        $this->initiateNonCoDPayment();
 
         $order = $this->getLastEntity('order', true);
 
@@ -284,5 +289,168 @@ class CashOnDeliveryTest extends TestCase
         ]);
 
         $this->startTest(['request' => $this->getPaymentCreateRequest()]);
+    }
+
+
+    public function testCapturePayment()
+    {
+        $paymentId = $this->initiatePayment()['razorpay_payment_id'];
+
+        $this->capturePayment($paymentId, 50000);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $order = $this->getEntityById('order', $this->order->getPublicId(), true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+
+        $transactionId = $transaction['id'];
+
+        Transaction\Entity::verifyIdAndStripSign($transactionId);
+
+        $paymentFeeBreakup = $this->getDbEntities('fee_breakup', [
+            'transaction_id' => $transactionId,
+            'name'           => 'payment',
+        ])->first()->toArray();
+
+        $taxFeeBreakup = $this->getDbEntities('fee_breakup', [
+            'transaction_id' => $transactionId,
+            'name'           => 'tax',
+        ])->first()->toArray();
+
+        $this->assertArraySelectiveEquals([
+            'entity_id'       => $paymentId,
+            'type'            => 'payment',
+            'merchant_id'     => '10000000000000',
+            'amount'          => 50000,
+            'fee'             => 0,
+            'mdr'             => 0,
+            'tax'             => 0,
+            'pricing_rule_id' => null,
+            'debit'           => 0,
+            'credit'          => 0,
+            'currency'        => 'INR',
+            'balance'         => 1000000,
+            'gateway_amount'  => null,
+            'gateway_fee'     => 0,
+            'fee_bearer'      => 'platform',
+        ], $transaction);
+
+
+        $this->assertArraySelectiveEquals([
+            'balance' => 1000000,
+        ], $balance);
+
+        $this->assertArraySelectiveEquals([
+            'status'      => 'paid',
+            'amount_paid' => 50000,
+        ], $order);
+
+        $this->assertArraySelectiveEquals([
+            'status'                 => 'captured',
+            'verify_at'              => null,
+            'amount_authorized'      => 0,
+            'settled_by'             => 'delivery_partner',
+            'fee'                    => 0,
+            'mdr'                    => 0,
+            'terminal_id'            => null,
+            'gateway'                => null,
+            'authentication_gateway' => null,
+            'fee_bearer'             => 'platform',
+            //not setting to t+45 here because refund will anyway fail for cod payment. instead payment fail scheduler
+            // flow will be modified to fail the payment after t+45 if its still in pending status
+            'refund_at'              => null,
+            'captured'               => true,
+        ], $payment);
+
+        $this->assertArraySelectiveEquals([
+            'amount'     => 0,
+            'percentage' => NULL,
+        ], $paymentFeeBreakup);
+
+        $this->assertArraySelectiveEquals([
+            'amount'     => 0,
+            'percentage' => 1800,
+        ], $taxFeeBreakup);
+
+    }
+
+    public function testCaptureNonCodPaymentWhenOrderInPlacedStatus()
+    {
+        $paymentId = $this->initiateNonCoDPayment()['razorpay_payment_id'];
+
+        $this->fixtures->edit('order', $this->order->getId(), [
+            'status' => 'placed',
+        ]);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertEquals('placed', $order['status']);
+
+        $this->capturePayment($paymentId, 50000);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testCaptureCoDPaymentWhenOrderInAttemptedStatus()
+    {
+        $codPaymentId = $this->initiatePayment()['razorpay_payment_id'];
+
+        $this->initiateNonCoDPayment();
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertEquals('attempted', $order['status']);
+
+        $this->capturePayment($codPaymentId, 50000);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertArraySelectiveEquals([
+            'status' => 'paid',
+        ], $order);
+    }
+
+    public function testCaptureCoDPaymentInNonPendingStatusShouldFail()
+    {
+        $paymentId = $this->initiatePayment()['razorpay_payment_id'];
+
+        Payment\Entity::verifyIdAndStripSign($paymentId);
+
+        $this->fixtures->edit('payment', $paymentId, [
+            'status' => 'created' // not a valid transition, to be used for testing only
+        ]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest(['request' => [
+            'url' => '/payments/pay_' . $paymentId . '/capture',
+        ]]);
+    }
+
+    protected function initiateNonCoDPayment()
+    {
+        $this->setupOrderIfApplicable();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $this->order->getPublicId();
+
+        return $this->doAuthPayment($payment);
+    }
+
+    protected function setupOrderIfApplicable(): void
+    {
+        if ($this->order === null)
+        {
+            $this->order = $this->fixtures->create('order', [
+                'amount' => '50000',
+            ]);
+        }
     }
 }

@@ -2006,6 +2006,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::STATUS) === Status::AUTHENTICATED);
     }
 
+    public function isPending(): bool
+    {
+        return ($this->getAttribute(self::STATUS) === Status::PENDING);
+    }
+
     public function isCreatedOrAuthorized()
     {
         return ($this->isCreated() or $this->isAuthorized());
@@ -4491,6 +4496,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         if (($this->hasTerminal() === true) and
             ($this->terminal->isDirectSettlement() === true))
+        {
+            return true;
+        }
+
+        if ($this->isCoD() === true)
         {
             return true;
         }

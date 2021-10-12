@@ -427,6 +427,13 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onPaymentPending($payment)
+    {
+        $payload = $this->getPaymentPayload($payment);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onPaymentDisputeCreated($payment)
     {
         $payload = $this->getPaymentPayloadWithDispute($payment);

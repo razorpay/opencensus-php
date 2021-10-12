@@ -16,6 +16,7 @@ use RZP\Models\FundAccount;
 class Event
 {
     const PAYMENT_AUTHORIZED                = 'payment.authorized';
+    const PAYMENT_PENDING                   = 'payment.pending';
     const PAYMENT_FAILED                    = 'payment.failed';
     const PAYMENT_CAPTURED                  = 'payment.captured';
     const PAYMENT_DISPUTE_CREATED           = 'payment.dispute.created';
@@ -132,6 +133,7 @@ class Event
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
+        self::PAYMENT_PENDING,
         self::PAYMENT_CAPTURED,
         self::PAYMENT_DISPUTE_CREATED,
         self::ORDER_PAID,
@@ -248,6 +250,7 @@ class Event
      */
     protected static $names = [
         self::PAYMENT_AUTHORIZED,
+        self::PAYMENT_PENDING,
         self::PAYMENT_FAILED,
         self::PAYMENT_CAPTURED,
         self::PAYMENT_DISPUTE_CREATED,
@@ -470,8 +473,8 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION   => 37,
         self::PAYMENT_LINKS_PRODUCT_REJECTED              => 38,
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW          => 39,
-
-        self::ZAPIER_PAYMENT_PAGE_PAID_V1   => 40,
+        self::ZAPIER_PAYMENT_PAGE_PAID_V1                 => 40,
+        self::PAYMENT_PENDING                             => 41,
     ];
 
     /**
@@ -481,6 +484,7 @@ class Event
      */
     protected static $launchedEvents = [
         self::PAYMENT_AUTHORIZED                => [Product::PRIMARY],
+        self::PAYMENT_PENDING                   => [Product::PRIMARY],
         self::PAYMENT_FAILED                    => [Product::PRIMARY],
         self::PAYMENT_CAPTURED                  => [Product::PRIMARY],
         self::PAYMENT_DISPUTE_CREATED           => [Product::PRIMARY],
@@ -596,6 +600,7 @@ class Event
      */
     public static $eventsToEntityMap = [
         self::PAYMENT_AUTHORIZED                => Entity::PAYMENT,
+        self::PAYMENT_PENDING                   => Entity::PAYMENT,
         self::PAYMENT_CAPTURED                  => Entity::PAYMENT,
         self::PAYMENT_FAILED                    => Entity::PAYMENT,
         self::PAYMENT_DISPUTE_CREATED           => Entity::PAYMENT,

@@ -3002,6 +3002,11 @@ class Processor
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
+        if ($this->shouldCallGatewayFunction() === false)
+        {
+            return;
+        }
+
         $terminal = $this->repo->terminal->fetchForPayment($this->payment);
 
         if ($terminal === null)
@@ -5402,5 +5407,15 @@ class Processor
         (new Payment\Metric())->pushVerifyViaOldOrNewFlowMetrics(get_diff_in_millisecond($startTime), $isVerifyNewFlow, $payment->getGateway());
 
         return $isPushedToKafka;
+    }
+
+    protected function shouldCallGatewayFunction(): bool
+    {
+        if ($this->payment->isCoD() === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

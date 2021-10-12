@@ -1289,6 +1289,8 @@ class Validator extends Base\Validator
 
             $this->failIfNotAuthorized($payment);
 
+            $this->failIfNotPending($payment);
+
             $this->failIfRefundConfigSetLateAuth($payment);
 
             $this->captureAmountValidate($payment, $amount);
@@ -1406,11 +1408,36 @@ class Validator extends Base\Validator
 
     protected function failIfNotAuthorized($payment)
     {
+        if ($payment->isCoD() === true)
+        {
+            return;
+        }
+
         if ($payment->isAuthorized() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED);
         }
+    }
+
+    protected function failIfNotPending($payment)
+    {
+        if ($payment->isCoD() === false)
+        {
+            return;
+        }
+
+        if ($payment->isPending() === true)
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_ONLY_PENDING,
+        null,
+        [
+            'method' => $payment->getMethod(),
+        ]);
     }
 
     protected function failIfRefundConfigSetLateAuth($payment)
