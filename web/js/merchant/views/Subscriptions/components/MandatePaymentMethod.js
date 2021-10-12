@@ -80,17 +80,25 @@ export default function MandatePaymentMethod({ mandate }) {
   }
 
   if (method === 'upi') {
+    let frequency = null;
+    let maxAmount = null;
+    if (mandate.subscription_registration) {
+      frequency = mandate.subscription_registration?.frequency;
+      maxAmount = mandate.subscription_registration?.max_amount;
+    } else if (mandate.frequency) {
+      frequency = mandate.frequency;
+      maxAmount = mandate.max_amount;
+    }
     return (
       <Definition>
         <strong>UPI</strong>
         <>{bank_account && bank_account.bank_name && bank_account.bank_name}</>
-        <>
-          Billing Frequency:{' '}
-          {BILLING_FREQUENCY[mandate?.subscription_registration?.frequency] || 'Monthly'}{' '}
-        </>
-        <>
-          Max Billing Amount: <Amount value={mandate.max_amount} currency={'INR'} />
-        </>
+        {frequency && <>Billing Frequency: {BILLING_FREQUENCY[frequency]} </>}
+        {maxAmount && (
+          <>
+            Max Billing Amount: <Amount value={maxAmount} currency={'INR'} />
+          </>
+        )}
       </Definition>
     );
   }
