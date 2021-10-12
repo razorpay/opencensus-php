@@ -8,26 +8,6 @@ class Constants
 {
     const NOTIFICATIONS = [
         [
-            'title'       => 'You are eligible for our badge of trust',
-            'description' => 'Razorpay Trusted Badge helps you increase conversion on checkout and can be added to your point of sale',
-            'start_ts'    => 1616594400,
-            'end_ts'      => 1622505599,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/rtb_announcement.svg',
-            'track_event' => true,
-            'id'          => 'trusted-badge-mar2021',
-            'buttons'     => [
-                [
-                    'type'  => 'primary-inverted',
-                    'label' => 'Know More',
-                    'url'   => '/trustedbadge',
-                ],
-            ],
-            'filters'     => [
-                'activation_status' => ['activated'],
-                'not_features' => ["rzp_trusted_badge"],
-            ],
-        ],
-        [
             'title'       => 'Settlements on Hold',
             'description' => 'Settlements on Hold: Your settlements are under review due to regulatory requirements. Please provide clarification on the email received on your registered email ID to resolve the issue',
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/rtb_announcement.svg',
@@ -59,26 +39,6 @@ class Constants
                     'label' => 'Know More',
                     'url'   => '/profile',
                 ],
-            ],
-        ],
-        [
-            'title'       => 'You have earned the Razorpay Trusted Badge!',
-            'description' => 'You are now a Razorpay trusted merchant. The badge has been added to your checkout and is ready to be flaunted.',
-            'start_ts'    => 1616594400,
-            'end_ts'      => 1622505599,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/rtb_announcement.svg',
-            'track_event' => true,
-            'id'          => 'trusted-badge-enabled',
-            'buttons'     => [
-                [
-                    'type'  => 'primary-inverted',
-                    'label' => 'Know More',
-                    'url'   => '/trustedbadge',
-                ],
-            ],
-            'filters'     => [
-                'activation_status' => ['activated'],
-                'features' => ["rzp_trusted_badge"],
             ],
         ],
         [
