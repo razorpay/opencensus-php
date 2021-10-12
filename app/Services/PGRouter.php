@@ -536,7 +536,9 @@ class PGRouter
             ],
         ];
 
-        $headers = $this->setHeaders();
+        $this->setHeaders();
+
+        $headers = $this->headers;
 
         $headers['PHP_AUTH_USER'] = $this->auth->getPublicKey();
 
