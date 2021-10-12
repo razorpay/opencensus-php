@@ -34,7 +34,7 @@ const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 const BASE_ROUTES = {
   qrCodes: '/qr_codes',
   transactions: '/payments',
-  account: '/trustedbadge',
+  account: '/profile',
   settings: '/config',
   invoices: '/invoices',
   marketplace: '/route/payments',
