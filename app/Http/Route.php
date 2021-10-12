@@ -10282,6 +10282,7 @@ class Route
             'los_d2c_bureau_report_fetch',
             'internal_merchant_fetch',
             'user_fetch_entity',
+            'merchant_fetch_internal_users',
             'internal_feature_bulk_assign',
             'internal_feature_bulk_remove',
         ],
