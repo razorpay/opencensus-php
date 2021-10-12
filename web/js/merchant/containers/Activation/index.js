@@ -138,7 +138,8 @@ export default class ActivationContainer extends Component {
       let gstinDetails = null;
 
       try {
-        if (this.props.user.isGstinAutoPopulate) {
+        // call only if L1 form fill up is completed
+        if (this.props.user.isGstinAutoPopulate && data?.activation_form_milestone) {
           gst_details = await merchantFetch('merchant/activation/gst_details');
           gst_details = gst_details?.data;
         }
