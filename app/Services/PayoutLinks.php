@@ -1537,7 +1537,10 @@ class PayoutLinks
             'payout_links_custom_message' => $settings[Entity::CUSTOM_MESSAGE] ?? null,
             'support_contact'             => $settings[Entity::SUPPORT_CONTACT] ?? null,
             'support_email'               => $settings[Entity::SUPPORT_EMAIL] ?? null,
-            'support_url'                 => $settings[Entity::SUPPORT_URL] ?? null
+            'support_url'                 => $settings[Entity::SUPPORT_URL] ?? null,
+            'expired_at'                  => 0,
+            'support_phone'               => '',
+
         ];
 
         return View::make('payout_link.customer_hosted', $data);
