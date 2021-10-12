@@ -284,6 +284,7 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::WALLET,
         self::RECURRING,
+        self::RECURRING_DETAILS,
         self::AUTH_TYPE,
         self::MRN,
         self::DCC_ENABLED,
@@ -847,6 +848,38 @@ class Entity extends Base\PublicEntity
 
             $publicArray[self::EXPIRED_AT] = $this->getUpiMandate()->getEndTime();
         }
+
+        return $publicArray;
+    }
+
+    public function toArrayPublicTokeizedCard($serviceProviders)
+    {
+        $publicArray = parent::toArrayPublic();
+
+        foreach (self::$networkTokenUnsetAttributes as $attribute)
+        {
+            unset($publicArray[$attribute]);
+        }
+
+        foreach (Card\Entity::$networkTokenCardUnsetAttributes as $attribute)
+        {
+            unset($publicArray['card'][$attribute]);
+        }
+
+        if (empty($this->getCustomerId()) === false)
+        {
+            $publicArray[self::CUSTOMER_ID] = $this->customer->getPublicId();
+        }
+
+        $publicArray['card']['token_iin']       = $this->card->getIin();
+
+        $publicArray[Card\Entity::EXPIRY_MONTH] = $this->card->getExpiryMonth();
+
+        $publicArray[Card\Entity::EXPIRY_YEAR]  = $this->card->getExpiryYear();
+
+        $publicArray['status'] = ($this->isExpired() === true) ? 'deactivated' : 'activated';
+
+        $publicArray['service_providers'] = $serviceProviders;
 
         return $publicArray;
     }

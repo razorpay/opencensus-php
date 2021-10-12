@@ -46,6 +46,35 @@ class Core extends Base\Core
         return $card;
     }
 
+    public function createTokenizedCard($input, $merchant)
+    {
+        $response = $this->getTokenizedCardResponseFromVault($input, $merchant);
+
+        $createInput = [
+            Card\Entity::IIN                => $response['token_iin'],
+            Card\Entity::VAULT_TOKEN        => $response['token'],
+            Card\Entity::GLOBAL_FINGERPRINT => $response['fingerprint'],
+            Card\Entity::VAULT              => $response['provider'],
+            Card\Entity::EXPIRY_MONTH       => $response['expiry_month'],
+            Card\Entity::EXPIRY_YEAR        => $response['expiry_year'],
+            Card\Entity::LAST4              => $response['last4'],
+            Card\Entity::LENGTH             => $response['length'],
+        ];
+
+        $card = (new Card\Entity)->buildCard($createInput, 'tokenizedCard');
+
+        $card->merchant()->associate($merchant);
+
+        $iin = $this->fillNetworkDetails($card, $input);
+
+        if (empty($iin) === false)
+        {
+            $card->iinRelation()->associate($iin);
+        }
+
+        return [$card, $response['service_providers']];
+    }
+
     public function createViaCps($input, $merchant, $recurring)
     {
         $card = (new Card\Entity)->build($input);
@@ -535,4 +564,22 @@ class Core extends Base\Core
 
         return $input;
     }
+
+    protected function getTokenizedCardResponseFromVault($input, $merchant)
+    {
+        $iinNumber  = substr($input['number'] ?? null, 0, 6);
+
+        $iin = $this->repo->card->retrieveIinDetails($iinNumber);
+
+        $providerInfo = [
+            'issuer'       => $iin->getIssuer(),
+            'network'      => $iin->getNetwork(),
+            'network_code' => $iin->getNetworkCode(),
+        ];
+
+        $cardVault = (new Card\CardVault);
+
+        return $cardVault ->createTokenizedCard($input, $merchant, $providerInfo);
+    }
+
 }

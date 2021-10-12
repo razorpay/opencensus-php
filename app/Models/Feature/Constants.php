@@ -878,7 +878,12 @@ class Constants
     const NETWORK_TOKENIZATION = 'network_tokenization';
 
     /**
-     * Feature flag to allow network tokens in response
+     * Feature flag to enable network tokenization apis in live mode, temporaray feature
+     */
+    const NETWORK_TOKENIZATION_LIVE = 'network_tokenization_live';
+
+     /**
+      * Feature flag to allow network tokens in response
      */
     const ALLOW_NETWORK_TOKENS = 'allow_network_tokens';
 
@@ -1263,6 +1268,7 @@ class Constants
         self::API_BULK_APPROVALS              => true,
         self::NETWORK_TOKENIZATION            => true,
         self::CREATE_SOURCE_V2                => true,
+        self::NETWORK_TOKENIZATION_LIVE       => true,
         self::HIGH_TPS_COMPOSITE_PAYOUT       => true,
         self::ALLOW_NETWORK_TOKENS            => true,
     ];

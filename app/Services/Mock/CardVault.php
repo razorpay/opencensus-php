@@ -74,6 +74,41 @@ class CardVault extends BaseCardVault
         return $response;
     }
 
+    public function createTokenizedCard($input)
+    {
+        $response['success'] = true;
+        $response['provider'] = $input['provider']['network'];
+        $token = base64_encode($input['card']['number']);
+
+        $response['success'] = true;
+        $response['token']  = $token;
+        $response['fingerprint'] = strrev($token);
+        $response['token_iin'] = substr($input['card']['number'] ?? null, 0, 6);
+        $response['last4'] = substr($input['card']['number'] ?? null, 0, 4);
+        $response['expiry_month'] = $input['card']['expiry_month'];
+        $response['expiry_year'] = $input['card']['expiry_year'];
+        $response['length'] = strlen($input['card']['number']);
+
+        if (strlen($response['expiry_year']) > 2)
+        {
+            $response['expiry_year'] = '20' . $response['expiry_year'];
+        }
+
+        $response['service_providers'] = [
+            [
+                'type'  => 'network',
+                'name'  => $input['provider']['network'],
+                'data'  => [
+                    'token_reference_number' => $token,
+                    'card_reference_number'  => strrev($token),
+                    'interoperable'          => true,
+                ],
+            ]
+        ];
+
+        return $response;
+    }
+
     public function getTokenAndFingerprint($input)
     {
         $token = base64_encode($input['card']);

@@ -165,4 +165,17 @@ class CardVault extends Base\Core
             throw $e;
         }
     }
+
+    public function createTokenizedCard($card, $merchant, $providerInfo)
+    {
+        $input['card'] = $card;
+        $input['provider'] = $providerInfo;
+        $input['merchant'] = [
+            'id' => $merchant->getId()
+        ];
+
+        $input['features'] = $merchant->getEnabledFeatures();
+
+        return $this->app['card.cardVault']->createTokenizedCard($input);
+    }
 }

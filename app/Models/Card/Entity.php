@@ -209,7 +209,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
     ];
 
-    public function buildCpsCard(array $input = [], string $operation = 'create')
+    public function buildCard(array $input = [], string $operation = 'create')
     {
         $this->input = $input;
 
@@ -244,23 +244,39 @@ class Entity extends Base\PublicEntity
 
     protected function generateLast4($input)
     {
-        $last4 = substr($input['number'], -4);
+        if (empty($input['number']) === false)
+        {
+            $last4 = substr($input['number'], -4);
 
-        $this->setAttribute(self::LAST4, $last4);
+            $this->setAttribute(self::LAST4, $last4);
+        }
+
+        if (empty($input['last4']) === false)
+        {
+            $this->setAttribute(self::LAST4, $input['last4']);
+        }
     }
 
     protected function generateIin($input)
     {
-        $iin = substr($input['number'], 0, 6);
-
-        if ((empty($input[self::IS_TOKENIZED_CARD]) === false) and
-            ($input[self::IS_TOKENIZED_CARD] === true))
+        if (empty($input['number']) === false)
         {
-            $tokenizedRange = substr($input['number'], 0, 9);
-            $iin = Card\IIN\IIN::getTransactingIinforRange($tokenizedRange) ?? $iin;
+            $iin = substr($input['number'], 0, 6);
+
+            if ((empty($input[self::IS_TOKENIZED_CARD]) === false) and
+                ($input[self::IS_TOKENIZED_CARD] === true))
+            {
+                $tokenizedRange = substr($input['number'], 0, 9);
+                $iin = Card\IIN\IIN::getTransactingIinforRange($tokenizedRange) ?? $iin;
+            }
+
+            $this->setAttribute(self::IIN, $iin);
         }
 
-        $this->setAttribute(self::IIN, $iin);
+        if (empty($input['iin']) === false)
+        {
+            $this->setAttribute(self::IIN, $input['iin']);
+        }
     }
 
     protected function generateType($input)
@@ -270,9 +286,17 @@ class Entity extends Base\PublicEntity
 
     protected function generateLength($input)
     {
-        $length = strlen($input['number']);
+        if (empty($input['number']) === false)
+        {
+            $length = strlen($input['number']);
 
-        $this->setAttribute(self::LENGTH, $length);
+            $this->setAttribute(self::LENGTH, $length);
+        }
+
+        if (empty($input['length']) === false)
+        {
+            $this->setAttribute(self::LENGTH, $input['length']);
+        }
     }
 
     protected function generateVaultToken($input)
@@ -296,6 +320,11 @@ class Entity extends Base\PublicEntity
 
     public static function modifyMaestro(& $input)
     {
+        if (empty($input['number']) === true)
+        {
+            return;
+        }
+
         $iin         = substr($input['number'] ?? null, 0, 6);
         $cardNetwork = Network::detectNetwork($iin);
 
@@ -320,6 +349,11 @@ class Entity extends Base\PublicEntity
 
     public static function modifyBajajFinserv(& $input)
     {
+        if (empty($input['number']) === true)
+        {
+            return;
+        }
+
         $iin         = substr($input['number'] ?? null, 0, 6);
 
         $cardNetwork = Network::detectNetwork($iin);

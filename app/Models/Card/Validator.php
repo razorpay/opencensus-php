@@ -14,7 +14,7 @@ class Validator extends Base\Validator
         Entity::EXPIRY_YEAR        => 'required|integer|digits:4|non_past_year',
         Entity::CVV                => 'sometimes|numeric|digits_between:3,4|nullable',
         Entity::NAME               => 'sometimes|regex:(^[a-zA-Z.\- 0-9\']+$)|max:100',
-        Entity::VAULT              => 'sometimes|string|in:tokenex,rzpvault,rzpencryption',
+        Entity::VAULT              => 'sometimes|string|in:tokenex,rzpvault,rzpencryption,MC,Visa',
         Entity::INTERNATIONAL      => 'sometimes',
         Entity::IS_CVV_OPTIONAL    => 'sometimes|boolean',
         Entity::IS_TOKENIZED_CARD  => 'sometimes|boolean',
@@ -38,6 +38,18 @@ class Validator extends Base\Validator
         Entity::VAULT_TOKEN        => 'sometimes|string',
         Entity::VAULT              => 'required_with:vault_token|in:tokenex,rzpvault,rzpencryption',
         Entity::INTERNATIONAL      => 'sometimes',
+    ];
+
+    protected static $tokenizedCardRules = [
+        Entity::NAME               => 'sometimes|alpha_space|max:100',
+        Entity::VAULT_TOKEN        => 'sometimes|string',
+        Entity::GLOBAL_FINGERPRINT => 'sometimes|string',
+        Entity::VAULT              => 'required_with:vault_token|in:tokenex,rzpvault,rzpencryption,MC,Visa',
+        Entity::IIN                => 'required|numeric|digits:6',
+        Entity::EXPIRY_MONTH       => 'required|integer|digits_between:1,2|max:12|min:1',
+        Entity::EXPIRY_YEAR        => 'required|integer|digits:4|non_past_year',
+        Entity::LAST4              => 'required|integer|digits:4|non_past_year',
+        Entity::LENGTH             => 'required|integer',
     ];
 
     protected static $recurringRules = [

@@ -6,10 +6,10 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\Feature;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
 use RZP\Models\Customer\GatewayToken;
-use RZP\Models\Feature;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Payment;
@@ -508,8 +508,16 @@ class Service extends Base\Service
         return $token->toArrayPublic();
     }
 
+    // todo Rename this to createTokenAndTokenizeCard
     public function createNetworkToken($input)
     {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
+        {
+            list($token, $serviceProviders) = $this->core->createTokenAndTokenizedCard($input);
+
+            return $token->toArrayPublicTokeizedCard($serviceProviders);
+        }
+
         $this->validateMode();
 
         $token = $this->core->createNetworkToken($input);

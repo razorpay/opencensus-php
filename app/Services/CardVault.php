@@ -417,6 +417,21 @@ class CardVault
         return $response;
     }
 
+    public function createTokenizedCard(array $input): array
+    {
+        $this->trace->info(TraceCode::VAULT_CREATE_TOKEN);
+
+        $response = $this->sendRequest('tokens', 'post', $input);
+
+        if ($response[self::SUCCESS] === false)
+        {
+            throw new Exception\RuntimeException(
+                'Network Token create request failed', ['data' => $response]);
+        }
+
+        return $response;
+    }
+
 
     public function renewVaultToken(): array
     {

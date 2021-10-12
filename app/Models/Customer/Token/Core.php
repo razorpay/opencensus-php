@@ -1300,6 +1300,62 @@ class Core extends Base\Core
         }
     }
 
+    public function createTokenAndTokenizedCard($input)
+    {
+        $customer = null;
+
+        (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN, $input);
+
+        if (empty($input[Token\Entity::AUTHENTICATION_DATA]) === false)
+        {
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA, $input[Token\Entity::AUTHENTICATION_DATA]);
+        }
+
+        if (empty($input[Token\Entity::CUSTOMER_ID]) === false)
+        {
+            $customer = $this->repo->customer->findOrFailByPublicIdAndMerchant($input[Token\Entity::CUSTOMER_ID], $this->merchant);
+        }
+
+        list($card, $serviceProviders) = (new Card\Core)->createTokenizedCard($input['card'], $this->merchant);
+
+         $this->trace->info(
+            TraceCode::TOKEN_CREATE_FOR_TOKENIZED_CARD
+        );
+
+        $token = new Token\Entity;
+
+        $createTokenInput = [
+            Entity::METHOD      => Method::CARD,
+            Entity::CARD_ID     => $card->getId(),
+        ];
+
+        $token->build($createTokenInput);
+
+        $token->card()->associate($card);
+
+        $token->setExpiredAt($card->getExpiryTimestamp());
+
+        $token->merchant()->associate($this->merchant);
+
+        if (empty($customer) === false)
+        {
+            $token->customer()->associate($customer);
+        }
+
+        $existingToken = $this->validateExistingNetworkToken($token);
+
+        if (empty($existingToken) === false)
+        {
+            return $existingToken;
+        }
+
+        $this->repo->saveOrFail($card);
+
+        $this->repo->saveOrFail($token);
+
+        return [$token, $serviceProviders];
+    }
+
     public function createNetworkToken($input)
     {
         $customer = null;
