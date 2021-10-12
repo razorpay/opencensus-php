@@ -5,6 +5,8 @@ namespace RZP\Models\RiskWorkflowAction;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Comment;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Workflow\Action\Differ;
@@ -50,16 +52,18 @@ class Service extends Base\Service
 
     public function createAndExecuteRiskAction($input)
     {
+        $merchantId = $input[Constants::MERCHANT_ID];
+
         try
         {
             $diff = (new Differ\Core)->get($input[Constants::BULK_WORKFLOW_ACTION_ID]);
 
             $riskWorkflowMaker = $this->getIndividualRiskWorkflowMaker();
 
-            $workflowActionId = (new Core)->createRiskWorkflowAction($input[Constants::MERCHANT_ID], $riskWorkflowMaker, $diff['new']);
+            $workflowActionId = (new Core)->createRiskWorkflowAction($merchantId, $riskWorkflowMaker, $diff['new']);
 
             $workflowActions = (new Action\Core)->fetchOpenActionOnEntityOperation(
-                $input[Constants::MERCHANT_ID], 'merchant', Permission\Name::$actionMap[$diff['new'][Constants::ACTION]]);
+                $merchantId, 'merchant', Permission\Name::$actionMap[$diff['new'][Constants::ACTION]]);
 
             // note: sleep required because it can take upto 1 second for documents to become available for search in ES.
             // this is acceptable since we are doing this in batch service.
@@ -85,17 +89,29 @@ class Service extends Base\Service
 
             $status = Constants::EXECUTED;
         }
-        catch (Exception\BadRequestException $e)
+        catch (Exception\BadRequestValidationFailureException | Exception\BadRequestException $e)
         {
             $status = Constants::INVALIDATED;
-        }
-        catch (Exception\BadRequestValidationFailureException $e)
-        {
-            $status = Constants::INVALIDATED;
+
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::BULK_RISK_ACTION_CREATE_AND_EXECUTE_WORKFLOW_FAILED,
+                [
+                    'merchantId'            => $merchantId,
+                ]);
         }
         catch (\Throwable $e)
         {
             $status = Constants::FAILED;
+
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::BULK_RISK_ACTION_CREATE_AND_EXECUTE_WORKFLOW_FAILED,
+                [
+                    'merchantId'            => $merchantId,
+                ]);
         }
 
         $input['workflow_action_status'] = $status;
