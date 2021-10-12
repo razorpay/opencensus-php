@@ -17,6 +17,7 @@ use App\Trace\TraceCode;
 use App\Http\AppResponse;
 use App\User\RecoverableException;
 use App\Metrics\Constants as MetricConstants;
+use App\Merchant\Constants as MerchantConstants;
 
 const EVENT_TRIGGER_COUNT = 1;
 class UserController extends Controller
@@ -133,6 +134,14 @@ class UserController extends Controller
                 $data['pl_extra_fields'] = null;
                 $data['pl_customized_form_fields'] = null;
                 $data['is_pl_customer_name_field_enabled'] = null;
+            }
+
+            // If a user accesses PG dashboard using X demo account, then we logout and redirect to signin
+            if (ApiUrl::isPrimaryOriginRequest()
+                and in_array($currentMerchantId,MerchantConstants::X_DEMO_MERCHANT_IDS,true)){
+                $this->getLogout();
+                $data['isAuthenticated'] = false;
+                $data['isConfirmed'] = false;
             }
 
             return view('merchant.index', $data);

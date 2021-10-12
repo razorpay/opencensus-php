@@ -265,4 +265,9 @@ class Constants
         "BfzVQO7NVsj4VX" => 270,
         "6V30Sl8NoMEfno" => 445,
     ];
+
+    const X_DEMO_MERCHANT_IDS = [
+        'Hrw2ujXW6LGEk7', // Demo banking user merchant account - Beta
+        'Hy5Vxj9TTVm4Oi'  // Demo banking user merchant account - Prod
+    ];
 }
