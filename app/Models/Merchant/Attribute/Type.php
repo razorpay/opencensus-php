@@ -10,9 +10,10 @@ class Type
     const CAMPAIGN_TYPE                 = 'campaign_type';
 
     // PREFERENCES Types
-    const BUSINESS_CATEGORY             = 'business_category';
-    const TEAM_SIZE                     = 'team_size';
-    const MONTHLY_PAYOUT_COUNT          = 'monthly_payout_count';
+    const BUSINESS_CATEGORY                                = 'business_category';
+    const TEAM_SIZE                                        = 'team_size';
+    const MONTHLY_PAYOUT_COUNT                             = 'monthly_payout_count';
+    const EXPLORE_DASHBOARD_BUTTON_AT_WELCOME_PAGE_CLICKED = 'explore_dashboard_button_at_welcome_page_clicked';
 
     // CA Account Status Types
     const CA_ALLOCATED_BANK             = 'ca_allocated_bank';

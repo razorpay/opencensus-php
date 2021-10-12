@@ -16,7 +16,8 @@ class GroupType
         Group::X_MERCHANT_PREFERENCES => [
             Type::BUSINESS_CATEGORY,
             Type::TEAM_SIZE,
-            Type::MONTHLY_PAYOUT_COUNT
+            Type::MONTHLY_PAYOUT_COUNT,
+            Type::EXPLORE_DASHBOARD_BUTTON_AT_WELCOME_PAGE_CLICKED
         ],
 
         Group::X_MERCHANT_CURRENT_ACCOUNTS => [

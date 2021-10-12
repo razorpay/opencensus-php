@@ -566,5 +566,44 @@ return [
                 ]
             ]
         ],
+    ],
+
+    'testGetPreferencesForDashboardSeenType' => [
+        'request' => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'url' => '/merchant/preferences/x_merchant_preferences',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'type' => 'explore_dashboard_button_at_welcome_page_clicked',
+                    'value' => 'true'
+                ]
+            ]
+        ],
+    ],
+
+    'testPostPreferencesForDashboardSeenType' => [
+        'request' => [
+            'content' => [
+                [
+                    'type' => 'explore_dashboard_button_at_welcome_page_clicked',
+                    'value' => 'true'
+                ]
+            ],
+            'url' => '/merchant/preferences/x_merchant_preferences',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'type' => 'explore_dashboard_button_at_welcome_page_clicked',
+                    'value' => 'true'
+                ]
+            ]
+        ],
     ]
 ];

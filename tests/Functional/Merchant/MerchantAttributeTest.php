@@ -156,6 +156,22 @@ class MerchantAttributeTest extends TestCase
         $this->startTest();
     }
 
+    public function testPostPreferencesForDashboardSeenType()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetPreferencesForDashboardSeenType()
+    {
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_preferences', 'explore_dashboard_button_at_welcome_page_clicked', 'true');
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testMerchantPreferencesViaAdminAuth()
     {
         $this->ba->adminAuth();
