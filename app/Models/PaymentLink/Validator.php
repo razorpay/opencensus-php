@@ -61,6 +61,7 @@ class Validator extends Base\Validator
         Entity::SETTINGS . '.' . Entity::PP_FB_EVENT_ADD_TO_CART_ENABLED      => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::PP_FB_EVENT_INITIATE_PAYMENT_ENABLED => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::PP_FB_EVENT_PAYMENT_COMPLETE         => 'nullable|string|in:0,1',
+        Entity::SETTINGS . '.' . Entity::GOAL_TRACKER                         => 'nullable|array',
         Entity::PAYMENT_PAGE_ITEMS => 'required|sequential_array|min:1',
     ];
 
@@ -93,6 +94,7 @@ class Validator extends Base\Validator
         Entity::SETTINGS . '.' . Entity::PP_FB_EVENT_ADD_TO_CART_ENABLED      => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::PP_FB_EVENT_INITIATE_PAYMENT_ENABLED => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::PP_FB_EVENT_PAYMENT_COMPLETE         => 'nullable|string|in:0,1',
+        Entity::SETTINGS . '.' . Entity::GOAL_TRACKER                         => 'nullable|array',
 
         Entity::PAYMENT_PAGE_ITEMS => 'sometimes|sequential_array|min:1|max:25',
     ];
@@ -134,11 +136,13 @@ class Validator extends Base\Validator
     protected static $createValidators = [
         Entity::SETTINGS,
         Entity::PAYMENT_PAGE_ITEMS,
+        Entity::GOAL_TRACKER,
     ];
 
     protected static $editValidators = [
         Entity::SETTINGS,
         'min_amount', // Since currency will not be available in edit PP sending currency from custom func.
+        Entity::GOAL_TRACKER,
     ];
 
     protected static $createOrderRules = [
@@ -170,6 +174,39 @@ class Validator extends Base\Validator
 
     protected static $saveReceiptIfPresentRules = [
         Invoice\Entity::RECEIPT => 'sometimes|string|min:1|max:40',
+    ];
+
+
+    /**
+     * Rules for settings.goal_tracker.
+     * @var string[]
+     */
+    protected static $goalTrackerRules = [
+        Entity::TRACKER_TYPE    => 'required|string|custom',
+        Entity::GOAL_IS_ACTIVE  => 'required|string|in:0,1',
+        Entity::META_DATA       => 'required|array',
+
+        Entity::META_DATA.'.'.Entity::AVALIABLE_UNITS           => 'required_if:'.Entity::META_DATA.'.'.Entity::DISPLAY_AVAILABLE_UNITS.',1',
+        Entity::META_DATA.'.'.Entity::DISPLAY_AVAILABLE_UNITS   => 'required_if:'.Entity::TRACKER_TYPE.','.DonationGoalTrackerType::DONATION_SUPPORTER_BASED,
+        Entity::META_DATA.'.'.Entity::DISPLAY_SOLD_UNITS        => 'required_if:'.Entity::TRACKER_TYPE.','.DonationGoalTrackerType::DONATION_SUPPORTER_BASED,
+        Entity::META_DATA.'.'.Entity::GOAL_AMOUNT               => 'required_if:'.Entity::TRACKER_TYPE.','.DonationGoalTrackerType::DONATION_AMOUNT_BASED,
+        Entity::META_DATA.'.'.Entity::GOAL_END_TIMESTAMP        => 'required_if:'.Entity::META_DATA.'.'.Entity::DISPLAY_DAYS_LEFT.',1',
+        Entity::META_DATA.'.'.Entity::DISPLAY_DAYS_LEFT         => 'required',
+        Entity::META_DATA.'.'.Entity::DISPLAY_SUPPORTER_COUNT   => 'required',
+    ];
+
+    /**
+     * Rules to validate goal tracker meta data
+     * @var string[]
+     */
+    protected static $metaDataRules = [
+        Entity::GOAL_END_TIMESTAMP      => 'epoch|custom',
+        Entity::AVALIABLE_UNITS         => 'numeric|min:1|max:4294967295',
+        Entity::DISPLAY_AVAILABLE_UNITS => 'string|in:0,1',
+        Entity::DISPLAY_SOLD_UNITS      => 'string|in:0,1',
+        Entity::GOAL_AMOUNT             => 'mysql_unsigned_int|min_amount',
+        Entity::DISPLAY_DAYS_LEFT       => 'string|in:0,1',
+        Entity::DISPLAY_SUPPORTER_COUNT => 'string|in:0,1',
     ];
 
     /**
@@ -366,6 +403,39 @@ class Validator extends Base\Validator
         // Additionally, validates UDF schema
         $udfSchema = json_decode($settings[Entity::UDF_SCHEMA] ?? '{}', true);
         $this->validateInput('udfSchema', [Entity::UDF_SCHEMA => $udfSchema]);
+    }
+
+    public function validateGoalTracker(array $input)
+    {
+        $tracker = array_get($input, Entity::SETTINGS . '.' . Entity::GOAL_TRACKER, []);
+
+        if (count($tracker) <= 0) {
+            return;
+        }
+
+        $this->validateInput('goalTracker', $tracker);
+
+        $metadata = array_get($tracker, Entity::META_DATA, []);
+        if (count($metadata) <= 0) {
+            return;
+        }
+
+        $this->validateInput('metaData', $metadata);
+    }
+
+    /**
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validateGoalEndTimestamp(string $attribute, $value)
+    {
+        $now    = Carbon::now(Timezone::IST);
+        $future = $now->copy()->addMinutes(30);
+        if ($now->getTimestamp() > $value)
+        {
+            $message = Entity::GOAL_END_TIMESTAMP. ' should be at least ' . $future->diffForHumans($now) . ' current time.';
+
+            throw new BadRequestValidationFailureException($message);
+        }
     }
 
     public function validatePaymentPageItems(array $input)
@@ -586,5 +656,16 @@ class Validator extends Base\Validator
 
             throw new BadRequestValidationFailureException("This account is suspended", null, $data);
         }
+    }
+
+    /**
+     * Validates tracker type
+     * @param  string $attribute
+     * @param  string $value
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateTrackerType(string $attribute, string $value)
+    {
+        DonationGoalTrackerType::checkType($value);
     }
 }

@@ -111,6 +111,24 @@ class Entity extends Base\PublicEntity
     const PAYMENT_BUTTON_TEMPLATE_TYPE = 'payment_button_template_type';
     const DEFAULT_THEME                = 'light';
 
+    // settings applicable for donation goal tracker
+    const GOAL_TRACKER                  = 'goal_tracker';
+    const TRACKER_TYPE                  = 'tracker_type';
+    const GOAL_IS_ACTIVE                = 'is_active';
+    const META_DATA                     = 'meta_data';
+    const DISPLAY_SUPPORTER_COUNT       = 'display_supporter_count';
+    const SUPPORTER_COUNT               = 'supporter_count';
+    const DISPLAY_DAYS_LEFT             = 'display_days_left';
+    const GOAL_END_TIMESTAMP            = 'goal_end_timestamp';
+    // for amount based
+    const GOAL_AMOUNT                   = 'goal_amount';
+    const COLLECTED_AMOUNT              = 'collected_amount';
+    // for supporter based
+    const AVALIABLE_UNITS               = 'available_units';
+    const DISPLAY_AVAILABLE_UNITS       = 'display_available_units';
+    const SOLD_UNITS                    = 'sold_units';
+    const DISPLAY_SOLD_UNITS            = 'display_sold_units';
+
     //Pixel Tracking
     const PP_FB_PIXEL_TRACKING_ID              = 'pp_fb_pixel_tracking_id';
     const PP_GA_PIXEL_TRACKING_ID              = 'pp_ga_pixel_tracking_id';
@@ -137,6 +155,7 @@ class Entity extends Base\PublicEntity
         self::PP_FB_EVENT_ADD_TO_CART_ENABLED,
         self::PP_FB_EVENT_INITIATE_PAYMENT_ENABLED,
         self::PP_FB_EVENT_PAYMENT_COMPLETE,
+        self::GOAL_TRACKER,
     ];
 
     const INVOICE_DETAILS_KEYS          = [

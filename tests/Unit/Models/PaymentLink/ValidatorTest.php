@@ -25,6 +25,8 @@ class ValidatorTest extends TestCase
      */
     protected $paymentLinkvalidator;
 
+    protected $data = [];
+
     /**
      * @inheritDoc
      */
@@ -33,6 +35,35 @@ class ValidatorTest extends TestCase
         parent::setUp();
 
         $this->paymentLinkvalidator = new Validator();
+    }
+
+    public function getData()
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5);
+        $name = $trace[4]['args'][1];
+        if (empty($this->data)) {
+            $this->data = require(__DIR__ . '/Helpers/ValidatorTestData.php');
+        }
+        return $this->data[$name];
+    }
+
+    /**
+     * @dataProvider getData
+     * @group nocode_pp_validator
+     */
+    public function testValidateGoalTracker($data)
+    {
+        if (isset($data['exception_class']))
+        {
+            $this->expectException($data['exception_class']);
+        }
+
+        if (isset($data['exception_message']))
+        {
+            $this->expectExceptionMessage($data['exception_message']);
+        }
+
+        $this->assertNull($this->paymentLinkvalidator->validateGoalTracker($data['item']));
     }
 
     /**
