@@ -391,7 +391,7 @@ class Base extends BaseProcessor
         return $data;
     }
 
-    protected function addNbplusGatewayEntitiesToDataWithNbPlusPaymentIds(array $data, array $nbplusPaymentIds, string $entity)
+    protected function addNbplusGatewayEntitiesToDataWithNbPlusPaymentIds(array $data, array $nbplusPaymentIds, string $entity): array
     {
         // Fetching NBPlus Payments Gateway Data from NBPlus
         if (empty($nbplusPaymentIds) === false)

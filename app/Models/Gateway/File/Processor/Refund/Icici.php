@@ -12,6 +12,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Terminal\Type;
+use RZP\Services\NbPlus\Emandate;
 use RZP\Models\Gateway\File\Status;
 use RZP\Services\NbPlus\Netbanking;
 use RZP\Exception\GatewayFileException;
@@ -230,6 +231,10 @@ class Icici extends Base
     {
         if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
         {
+            if ($data['payment']['method'] === Payment\Method::EMANDATE)
+            {
+                return $data['gateway'][Emandate::BANK_REFERENCE_ID]; // emandate payments through nbplus service
+            }
             return $data['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
         }
 
@@ -358,6 +363,91 @@ class Icici extends Base
         }
 
         return $col;
+    }
+
+    protected function addNbplusGatewayEntitiesToDataWithNbPlusPaymentIds(array $data, array $nbplusPaymentIds, string $entity): array
+    {
+        $registrationPayments = $debitPayments = $netbankingPayments = [];
+
+        foreach ($data as $record)
+        {
+            if ($record['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+            {
+                if ($record['payment']['method'] === Payment\Method::EMANDATE)
+                {
+                    if ($record['payment']['recurring_type'] === Payment\RecurringType::INITIAL)
+                    {
+                        $registrationPayments[] =  $record['payment']['id'];
+                    }
+                    if ($record['payment']['recurring_type'] === Payment\RecurringType::AUTO)
+                    {
+                        $debitPayments[] = $record['payment']['id'];
+                    }
+                }
+                if ($record['payment']['method'] === Payment\Method::NETBANKING)
+                {
+                    $netbankingPayments[] = $record['payment']['id'];
+                }
+            }
+        }
+
+        if (empty($registrationPayments) === false)
+        {
+            list($nbPlusGatewayEntities, $fetchSuccess) = $this->fetchNbPlusGatewayEntities($registrationPayments, 'emandate_registration');
+
+            // Throwing an error in case of NBPlus fetch failure
+            if ($fetchSuccess === false)
+            {
+                throw new GatewayFileException(
+                    ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA,
+                    [
+                        'id' => $this->gatewayFile->getId(),
+                    ]
+                );
+            }
+
+            $data = array_map(function($row) use ($nbPlusGatewayEntities)
+            {
+                $paymentId = $row['payment']['id'];
+
+                if (isset($nbPlusGatewayEntities[$paymentId]) === true)
+                {
+                    $row['gateway'] = $nbPlusGatewayEntities[$paymentId];
+                }
+
+                return $row;
+            }, $data);
+        }
+
+        if (empty($debitPayments) === false)
+        {
+            list($nbPlusGatewayEntities, $fetchSuccess) = $this->fetchNbPlusGatewayEntities($debitPayments, 'emandate_debit');
+
+            // Throwing an error in case of NBPlus fetch failure
+            if ($fetchSuccess === false)
+            {
+                throw new GatewayFileException(
+                    ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA,
+                    [
+                        'id' => $this->gatewayFile->getId(),
+                    ]
+                );
+            }
+
+            $data = array_map(function($row) use ($nbPlusGatewayEntities)
+            {
+                $paymentId = $row['payment']['id'];
+
+                if (isset($nbPlusGatewayEntities[$paymentId]) === true)
+                {
+                    $row['gateway'] = $nbPlusGatewayEntities[$paymentId];
+                }
+
+                return $row;
+            }, $data);
+        }
+
+       return parent::addNbplusGatewayEntitiesToDataWithNbPlusPaymentIds($data, $netbankingPayments, 'netbanking');
     }
 
     protected function getFileNameWithPid($pid)
