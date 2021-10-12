@@ -531,6 +531,10 @@ class Type
         self::SUBMERCHANT_PARTNER_CONFIG_UPSERT => Name::ADMIN_MANAGE_PARTNERS,
         self::SUBMERCHANT_TYPE_UPDATE           => Name::ADMIN_MANAGE_PARTNERS,
         self::PARTNER_SUBMERCHANTS              => Name::ADMIN_MANAGE_PARTNERS,
+        self::ECOLLECT_ICICI                => Name::ECOLLECT_ICICI_BATCH_UPLOAD,
+        self::ECOLLECT_RBL                  => Name::ECOLLECT_RBL_BATCH_UPLOAD,
+        self::VIRTUAL_BANK_ACCOUNT          => Name::VIRTUAL_BANK_ACCOUNT_BATCH_UPLOAD,
+        self::BANK_TRANSFER_EDIT            => Name::BANK_TRANSFER_INSERT,
     ];
 
     public static $workflowApplicableBatchTypes = [
