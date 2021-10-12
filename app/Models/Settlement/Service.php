@@ -838,7 +838,7 @@ class Service extends Base\Service
             ],
             E::REVERSAL => [
                 E::REVERSAL => [
-                    E::REVERSAL . '.' . E::REFUND,
+                    E::REFUND,
                 ],
             ]
         ];
