@@ -8,11 +8,13 @@ export default class GrowthService extends GenericEntity {
   user = store.getState().session.user;
 
   fetchAssetData = (merchant_id, channel_id, assetName) => {
+    const { org_id: corp_id = '' } = this.user?.merchant;
     return this.makeGenericAjaxCall({
       data: {
         merchant_id,
         channel_id,
         asset: assetName,
+        corp_id,
       },
       method: 'post',
       mode: 'live',
