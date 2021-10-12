@@ -1849,7 +1849,21 @@ return [
                 'description'    => 'NEFT payment of 50,000 rupees',
             ],
     ],
-
+    
+    'processBankTransferProcessWithDifferentAmount' => [
+        'url' => '/ecollect/validate/test',
+        'method' => 'post',
+        'content' => [
+            'payee_account'  => 'RZP1234567890',
+            'payer_account'  => '765432346787812',
+            'payer_ifsc'     => 'HDFC0000001',
+            'mode'           => 'neft',
+            'transaction_id' => 'vba_4567',
+            'time'           => 148415544000,
+            'amount'         => 50000,
+            'description'    => 'NEFT payment of 50,000 rupees',
+        ],
+    ],
 
     'testBankTransferToVirtualAccountMerchantNotLiveVa' => [
         'request'  => [
@@ -1871,5 +1885,4 @@ return [
             'content' => []
         ]
     ],
-
 ];

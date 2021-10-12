@@ -675,8 +675,9 @@ class Service extends Base\Service
         {
             $duplicateBankTransfer = $this->repo
                                           ->bank_transfer
-                                          ->findByUtrAndPayeeAccount($input[Entity::REQ_UTR],
-                                                                     $input[Entity::PAYEE_ACCOUNT]);
+                                          ->findByUtrAndPayeeAccountAndAmount($input[Entity::REQ_UTR],
+                                                                              $input[Entity::PAYEE_ACCOUNT],
+                                                                              $input[Entity::AMOUNT] * 100);
 
             if ($duplicateBankTransfer !== null)
             {

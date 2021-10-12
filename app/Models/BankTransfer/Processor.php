@@ -89,9 +89,11 @@ class Processor extends VirtualAccount\Processor
 
         $payeeAccount = $bankTransfer->getPayeeAccount();
 
+        $amount = $bankTransfer->getAmount();
+
         $duplicateBankTransfer = $this->repo
                                     ->bank_transfer
-                                    ->findByUtrAndPayeeAccount($utr, $payeeAccount, $useWritePdo = true);
+                                    ->findByUtrAndPayeeAccountAndAmount($utr, $payeeAccount, $amount, $useWritePdo = true);
 
         if ($duplicateBankTransfer !== null)
         {

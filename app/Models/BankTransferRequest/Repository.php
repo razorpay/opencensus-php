@@ -55,7 +55,10 @@ class Repository extends Base\Repository
         {
             $bankTransfer = $this->repo
                                  ->bank_transfer
-                                 ->findByUtrAndPayeeAccount($bankTransferRequest->getUtr(), $bankTransferRequest->getPayeeAccount());
+                                 ->findByUtrAndPayeeAccountAndAmount(
+                                     $bankTransferRequest->getUtr(),
+                                     $bankTransferRequest->getPayeeAccount(),
+                                     $bankTransferRequest->getAmount());
 
             if (isset($bankTransfer) === true)
             {

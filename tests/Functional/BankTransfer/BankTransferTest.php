@@ -7054,4 +7054,35 @@ class BankTransferTest extends TestCase
 
         $this->assertTrue($bankTransferRequestArray['is_created']);
     }
+
+    protected function processBankTransferProcessWithDifferentAmount($amount)
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+
+        $ifsc = $this->bankAccount['ifsc'];
+
+        $mode = 'test';
+
+        $this->ba->proxyAuth();
+
+        $response = $this->processOrNotifyBankTransfer($accountNumber,$ifsc, 'awesome_utr', $amount, $mode);
+
+        $this->assertTrue($response['valid']);
+
+        $bankTransfer =  $this->getDbLastEntityToArray('bank_transfer', 'test');
+
+        $this->assertEquals($bankTransfer['utr'], 'awesome_utr');
+
+        $this->assertEquals($amount * 100, $bankTransfer['amount']);
+
+        $payment =  $this->getDbLastEntityToArray('payment', 'test');
+
+        $this->assertEquals($amount * 100, $payment['amount']);
+    }
+
+    public function testBankTransferProcessWithDifferentAmount()
+    {
+        $this->processBankTransferProcessWithDifferentAmount(100);
+        $this->processBankTransferProcessWithDifferentAmount(200);
+    }
 }

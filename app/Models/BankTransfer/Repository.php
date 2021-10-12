@@ -70,13 +70,14 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
-    public function findByUtrAndPayeeAccount(string $utr, $payeeAccount, bool $useWritePdo = false)
+    public function findByUtrAndPayeeAccountAndAmount(string $utr, $payeeAccount, int $amount, bool $useWritePdo = false)
     {
         $payeeAccount = strtoupper(str_replace(' ', '', $payeeAccount));
 
         $query =  $this->newQuery()
                        ->where(Entity::UTR, '=', $utr)
-                       ->where(Entity::PAYEE_ACCOUNT, '=', $payeeAccount);
+                       ->where(Entity::PAYEE_ACCOUNT, '=', $payeeAccount)
+                       ->where(Entity::AMOUNT, '=', $amount);
 
         if ($useWritePdo === true)
         {

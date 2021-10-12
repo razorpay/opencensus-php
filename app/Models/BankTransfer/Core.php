@@ -365,9 +365,10 @@ class Core extends Base\Core
 
             $bankTransfer = $this->repo
                                  ->bank_transfer
-                                 ->findByUtrAndPayeeAccount(
+                                 ->findByUtrAndPayeeAccountAndAmount(
                                     $input[Entity::REQ_UTR],
-                                    $input[Entity::PAYEE_ACCOUNT]);
+                                    $input[Entity::PAYEE_ACCOUNT],
+                                    $input[Entity::AMOUNT] * 100);
 
             if ($bankTransfer !== null)
             {

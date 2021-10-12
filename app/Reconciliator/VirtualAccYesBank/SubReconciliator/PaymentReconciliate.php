@@ -60,9 +60,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         $payeeAccount = $row[self::COLUMN_PAYEE_ACCOUNT];
 
+        $amount = $row[self::COLUMN_AMOUNT];
+
         $bankTransfer = $this->repo
                              ->bank_transfer
-                             ->findByUtrAndPayeeAccount($utr, $payeeAccount);
+                             ->findByUtrAndPayeeAccountAndAmount($utr, $payeeAccount, (int)($amount * 100));
 
         if ($bankTransfer === null)
         {
