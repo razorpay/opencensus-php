@@ -14,6 +14,8 @@ import EntityTable from 'merchant/components/EntityTable';
 const getOrderId = ({ notes }) => {
   // Merchant's custom defined order IDs
   // First, we look for whole match. If that fails, we try `order_id` suffix
+  if (!notes) return null;
+
   const orderId = notes.order_id || notes.orderId;
   if (orderId) {
     return orderId;
