@@ -39,6 +39,9 @@ class CreateInvitationsTable extends Migration
             $table->integer(Invitation::DELETED_AT)
                   ->nullable();
 
+            $table->tinyInteger(Invitation::IS_DRAFT)
+                ->nullable();
+
             $table->integer(Invitation::CREATED_AT);
 
             $table->integer(Invitation::UPDATED_AT);

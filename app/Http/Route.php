@@ -1667,6 +1667,11 @@ class Route
         'invitation_action'                        => ['post',     'invitations/{id}/{action}',                      'InvitationController@postAction'                                   ],
         'migrate_tokens_to_gateway_tokens'         => ['post',     'tokens/migrate/gateway_tokens',                  'CustomerController@postMigrateToGatewayTokens'                     ],
 
+        //Draft invitation Links
+        'banking_draft_invitations_create'         => ['post',     'draft_invitations',                               'InvitationController@createInvitationDraft'                         ],
+        'draft_invitation_fetch'                   => ['get',      'draft_invitations',                               'InvitationController@listDraftInvitations'                          ],
+        'draft_invitation_accept'                  => ['put',      'draft_invitations/accept',                        'InvitationController@acceptDraftInvitations'                        ],
+
         // Risk Routes
         'customer_flagging_entity_details'         => ['get',      'customer_flagging/entity_details/{id}',          'RiskController@getEntityDetails'                                   ],
         'customer_flagging_post_grievance'         => ['post',     'customer_flagging/post_customer_grievance',      'RiskController@postCustomerGrievance'                              ],
@@ -4551,6 +4556,11 @@ class Route
         'patch_dispute_contest_by_id',
         'post_dispute_accept_by_id',
         'dispute_fetch_multiple_count',
+
+        //Axis bank changes
+        'banking_draft_invitations_create',
+        'draft_invitation_fetch',
+        'draft_invitation_accept',
     ];
 
     //
@@ -8084,6 +8094,9 @@ class Route
             'get_dispute_document_types_metadata',
             'patch_dispute_contest_by_id',
             'post_dispute_accept_by_id',
+            'banking_draft_invitations_create',
+            'draft_invitation_fetch',
+            'draft_invitation_accept',
         ],
 
         'admin_dashboard' => [
@@ -9862,9 +9875,13 @@ class Route
             // Risk Audit Workflow Actions
             'w-actions_merchant_risk_audit_get',
 
+            'banking_draft_invitations_create',
+            'draft_invitation_fetch',
+            'draft_invitation_accept',
             'decrypt_merchant_website_comment',
 
             'risk_attributes_get',
+
         ],
 
         //

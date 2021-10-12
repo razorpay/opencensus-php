@@ -7,6 +7,7 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Constants\Table;
+use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Invitation\Invite as InvitationMail;
@@ -658,6 +659,36 @@ class InvitationTest extends TestCase
         $this->assertEquals(count($response), 2);
     }
 
+    public function testGetPendingInvitationsWhichAreNotDraft()
+    {
+        $this->fixtures->create('invitation',
+            [
+                'email'       => 'pending1@razorpay.com',
+                'product'     => 'banking',
+                'merchant_id' => '10000000000000',
+            ]);
+
+        $this->fixtures->create('invitation',
+            [
+                'email'       => 'pending1@razorpay.com',
+                'role'        => 'manager',
+                'is_draft'    =>  0,
+                'merchant_id' => '10000000000000',
+            ]);
+
+        $nonOwnerUser = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => $nonOwnerUser->id,
+            'role'        => 'owner',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $nonOwnerUser->toArrayPublic(), 'owner');
+
+        $this->startTest();
+    }
+
     public function testGetPendingInvitationsByNonOwnerMember()
     {
         $this->fixtures->create('invitation', ['email' => 'pending1@razorpay.com']);
@@ -676,7 +707,7 @@ class InvitationTest extends TestCase
             'role'        => 'operations',
         ]);
 
-        $this->ba->proxyAuth('rzp_test_10000000000000', $nonOwnerUser->toArrayPublic(), 'operations');
+        $this->ba->proxyAuth('rzp_test_10000000000000', $nonOwnerUser->toArrayPublic());
 
         $this->startTest();
     }
@@ -858,4 +889,65 @@ class InvitationTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
     }
+
+    public function testDraftInvitationsCreate()
+    {
+        $invitation = $this->fixtures->create('invitation', ['email' => 'testteaminvite@razorpay.com']);
+
+        $xMerchantUser = $this->createXMerchantUser();
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $xMerchantUser->getId());
+
+        $this->startTest();
+
+        $invite = DB::table('invitations')
+            ->where('id', '=', $invitation['id'])
+            ->first();
+    }
+
+    public function testEmailDraftInvitations()
+    {
+        $xMerchantUser = $this->createXMerchantUser();
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $xMerchantUser->getId());
+
+        $invitation = $this->fixtures->create('invitation',['merchant_id'=> self::DEFAULT_X_MERCHANT_ID,
+                                                                    'is_draft'    =>  1,
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/draft_invitations/accept';
+
+        $testData['request']['content']['invitation_ids'][]= $invitation['id'];
+
+        $this->startTest();
+    }
+
+
+    public function testGetPendingInvitationsWithDraftStateAsTrue()
+    {
+        $this->fixtures->create('invitation', ['email' =>  'pending1@razorpay.com']);
+
+        $this->fixtures->create('invitation',
+            [
+                'email'       => 'pending2@razorpay.com',
+                'role'        => 'finance',
+                'is_draft'    =>  1,
+                'merchant_id' => '10000000000000',
+            ]);
+
+        $nonOwnerUser = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => $nonOwnerUser->id,
+            'role'        => 'operations',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $nonOwnerUser->toArrayPublic(), 'operations');
+
+        $this->startTest();
+    }
+
 }

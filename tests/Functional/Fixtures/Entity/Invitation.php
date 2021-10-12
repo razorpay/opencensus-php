@@ -12,7 +12,8 @@ class Invitation extends Base
            'role'        => 'manager',
            'email'       => 'testteaminvite@razorpay.com',
            'merchant_id' => self::DEFAULT_MERCHANT_ID,
-           'token'       => str_random(40)
+           'token'       => str_random(40),
+           'is_draft'    => 0,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

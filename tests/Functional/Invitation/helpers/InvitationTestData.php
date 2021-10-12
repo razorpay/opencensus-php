@@ -49,6 +49,28 @@ return [
         ]
     ],
 
+    'testDraftInvitationsCreate' => [
+            'request' => [
+                'url'    => '/draft_invitations',
+                'method' => 'POST',
+                'content' => [
+                    'email'       => 'testnonexistentuserinvite@razorpay.com',
+                    'role'        => 'admin',
+                    'sender_name' => 'sender_name'
+                ],
+                'server'  => [
+                    'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id' => '100XInviteMerc',
+                    'email'       => 'testnonexistentuserinvite@razorpay.com',
+                    'role'        => 'admin'
+                ]
+            ]
+        ],
+
     'testPostSendInvitationToNewUserInX' => [
         'request' => [
             'url'    => '/invitations',
@@ -273,6 +295,23 @@ return [
                 'email'       => 'testteaminvite@razorpay.com',
                 'role'        => 'manager',
                 'merchant_id' => '1000InviteMerc',
+            ]
+        ]
+    ],
+
+    'testEmailDraftInvitations' => [
+        'request' => [
+            'url'     => '/draft_invitations/accept',
+            'method'  => 'PUT',
+            'content' => [
+                'invitation_ids'=> [
+                ],
+                'sender_name'  => 'sender_name'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'Success',
             ]
         ]
     ],
@@ -564,12 +603,29 @@ return [
                 [
                     'role'        => 'manager',
                     'email'       => 'pending1@razorpay.com',
-                    'merchant_id' => '1000InviteMerc',
+                    'merchant_id' => '10000000000000',
                 ],
                 [
                     'role'        => 'finance',
                     'email'       => 'pending2@razorpay.com',
                     'merchant_id' => '1000InviteMerc',
+                ],
+            ],
+        ]
+    ],
+
+    'testGetPendingInvitationsWhichAreNotDraft' => [
+        'request' => [
+            'url'    => '/invitations',
+            'method' => 'get'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'role'        => 'manager',
+                    'email'       => 'pending1@razorpay.com',
+                    'merchant_id' => '10000000000000',
+                    'is_draft'    => 0,
                 ],
             ],
         ]
@@ -588,6 +644,25 @@ return [
                 ],
             ],
             'status_code' => 400,
+        ],
+    ],
+
+    'testGetPendingInvitationsWithDraftStateAsTrue' => [
+        'request' => [
+            'url'    => '/draft_invitations',
+            'method' => 'get',
+            'content' => [
+                'product' => 'primary'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'role'        => 'finance',
+                    'email'       => 'pending2@razorpay.com',
+                    'merchant_id' => '10000000000000',
+                ],
+            ],
         ],
     ],
 

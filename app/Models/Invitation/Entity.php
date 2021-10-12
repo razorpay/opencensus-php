@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const ACTION        = 'action';
     const SENDER_NAME   = 'sender_name';
     const MERCHANT_NAME = 'merchant_name';
+    const IS_DRAFT      = 'is_draft';
 
     const TOKEN_LENGTH = 40;
 
@@ -37,6 +38,7 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::PRODUCT,
         self::MERCHANT_ID,
+        self::IS_DRAFT,
     ];
 
     protected $fillable = [
@@ -44,6 +46,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::TOKEN,
         self::PRODUCT,
+        self::IS_DRAFT,
     ];
 
     protected $hidden = [
@@ -111,6 +114,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRODUCT);
     }
 
+    public function getDraftState()
+    {
+        return $this->getAttribute(self::IS_DRAFT);
+    }
+
+    public function setDraftState($state)
+    {
+        $input[self::IS_DRAFT] = $state ;
+    }
+
     public function toArrayUser()
     {
         $attributes = [
@@ -120,6 +133,7 @@ class Entity extends Base\PublicEntity
             self::USER_ID       => $this->getAttribute(self::USER_ID),
             self::MERCHANT_ID   => $this->getAttribute(self::MERCHANT_ID),
             self::PRODUCT       => $this->getAttribute(self::PRODUCT),
+            self::IS_DRAFT      => $this->getAttribute(self::IS_DRAFT),
             self::MERCHANT_NAME => $this->merchant->getName(),
         ];
 

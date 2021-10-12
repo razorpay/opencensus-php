@@ -91,6 +91,33 @@ class Core extends Base\Core
         return $invitation;
     }
 
+    public function createInvitationDraft(array $input): Entity
+    {
+        $input[Entity::TOKEN] = str_random(40);
+
+        $input[Entity::IS_DRAFT] = 1;
+
+        $invitation = (new Entity);
+
+        $invitation->merchant()->associate($this->merchant);
+
+        $invitation->build($input);
+
+        $invitedUser = $this->repo->user->getUserFromEmail(strtolower($input[Entity::EMAIL]));
+
+        if (empty($invitedUser) === false)
+        {
+            // Associate user only if it exists
+            $invitation->user()->associate($invitedUser);
+        }
+
+        $this->repo->saveOrFail($invitation);
+
+        $this->trace->info(TraceCode::INVITATION_CREATE, $invitation->toArrayPublic());
+
+        return $invitation;
+    }
+
     public function fetchByToken(string $token): Entity
     {
         $invitation = $this->repo->invitation->fetchByToken($token);
@@ -102,7 +129,14 @@ class Core extends Base\Core
     {
         $merchant = $this->merchant;
 
-        return $merchant->invitations()->where(Entity::PRODUCT, $product)->get()->callOnEveryItem('toArrayPublic');
+        return $this->repo->invitation->fetchInvitations($product, $merchant->getMerchantId());
+    }
+
+    public function listDraftInvitations($product): array
+    {
+        $merchant = $this->merchant;
+
+        return $this->repo->invitation->listDraftInvitations($product, $merchant->getMerchantId());
     }
 
     public function edit(Entity $invitation, array $input): Entity
@@ -131,6 +165,41 @@ class Core extends Base\Core
         $this->sendEmail($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser);
 
         return $invitation;
+    }
+
+    public function acceptDraftInvitations(array $input)
+    {
+        $inviteIdArray = $input['invitation_ids'];
+
+        foreach ($inviteIdArray as $inviteId) {
+
+            $invitation = $this->repo->invitation->findByIdAndMerchant($inviteId, $this->merchant);
+
+            $senderName = $this->getSenderName($input);
+
+            $invitedUser = $this->repo->user->getUserFromEmail($invitation->getEmail());
+
+            $allMerchantsForInvitedUser = optional($invitedUser)->merchants;
+
+            $invitedUserExists = (empty($invitedUser) === false);
+
+            $this->sendEmail($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser);
+
+        }
+        $arr = $this->merchant->invitations()->get()->callOnEveryItem('toArrayPublic');
+
+        $updatedRows = $this->repo->invitation->updateIsDraftToFalse($inviteIdArray);
+
+        $arr2 = $this->merchant->invitations()->get()->callOnEveryItem('toArrayPublic');
+
+        if($updatedRows === count($inviteIdArray)){
+
+            return 'Success';
+        }
+
+        else {
+            return strval($inviteIdArray[0]).' '.strval($arr2[0]['id']).' '.strval($arr2[0]['is_draft']).' '.strval(count($arr)).'Some Internal server error occured'.strval(count($inviteIdArray)).'rows'.strval($updatedRows).strval('id').strval($arr[0]['id']).strval('is_draft').strval($arr[0]['is_draft']);
+        }
     }
 
     /**

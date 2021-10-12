@@ -115,4 +115,45 @@ class Service extends Base\Service
 
         return $invitation->toArrayPublic();
     }
+
+    /**
+     * Create Axis draft invitation for a merchant.
+     *
+     * @param  array  $input
+     * @return array
+     */
+
+    public function createInvitationDraft(array $input): array
+    {
+        $invitation = $this->core()->createInvitationDraft($input);
+
+        return $invitation->toArrayPublic();
+    }
+
+    /**
+     * Email Invitation Mail
+     *
+     * @param  array $input
+     *
+     * @return array
+     */
+    public function acceptDraftInvitations(array $input)
+    {
+        return $this->core()->acceptDraftInvitations($input);
+    }
+
+    /**
+     * Get all draft invitations of a merchant
+     *
+     * @return array
+     */
+    public function listDraftInvitations(array $input): array
+    {
+        $product = $input[Entity::PRODUCT];
+
+        $invitations = $this->core()->listDraftInvitations($product);
+
+        return $invitations;
+    }
+
 }

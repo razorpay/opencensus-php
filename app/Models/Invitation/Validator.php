@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Invitation;
 
+use phpDocumentor\Reflection\Types\Boolean;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\User;
@@ -18,10 +19,12 @@ class Validator extends Base\Validator
         Entity::TOKEN       => 'required|string',
         Entity::SENDER_NAME => 'sometimes|string',
         Entity::PRODUCT     => 'sometimes|string|in:primary,banking',
+        Entity::IS_DRAFT    => 'sometimes|boolean|',
     ];
 
     protected static $editRules = [
-        Entity::ROLE => 'required|string|custom',
+        Entity::ROLE        => 'required|string|custom',
+        Entity::IS_DRAFT    => 'sometimes|boolean|',
     ];
 
     protected static $resendRules = [

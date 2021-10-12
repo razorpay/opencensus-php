@@ -65,4 +65,31 @@ class InvitationController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function createInvitationDraft()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createInvitationDraft($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function listDraftInvitations()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->listDraftInvitations($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function acceptDraftInvitations()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->acceptDraftInvitations($input);
+
+        return ApiResponse::json((array)(string)$data);
+    }
 }
