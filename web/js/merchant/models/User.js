@@ -437,6 +437,13 @@ export default class User {
     return getSplitzExperimentVariant('abc_banner_experiment')?.variables?.result === 'on';
   }
 
+  get isStartupCongratulationBannerEnabled() {
+    return (
+      getSplitzExperimentVariant('startup_congratulations_banner_experiment')?.variables?.result ===
+      'on'
+    );
+  }
+
   get isCatalystCampaignEnabled() {
     return getSplitzExperimentVariant('catalyst_campaign_experiment')?.variables?.result === 'on';
   }

@@ -48,8 +48,9 @@ import NCModal from 'merchant/components/Activation/NCModal';
 import DedupeModal from 'merchant/components/Home/DedupeModal';
 import CongratulatoryBanner from 'merchant/components/Announcements/CongratulatoryBanner';
 import moment from 'moment';
-import ShowWhen from 'merchant/components/ShowWhen';
-import ABCBanner from 'merchant/components/Announcements/ABCBanner';
+import ShowWhen from '../../components/ShowWhen';
+import ABCBanner from '../../components/Announcements/ABCBanner';
+import StartupCongratulationBanner from '../../components/Announcements/StartupCongratulationBanner';
 
 @withRouter
 @connect(
@@ -524,6 +525,9 @@ class AnalyticsDesktop extends Component {
           )}
           <ShowWhen additionalCondition={(usr) => usr.isAbcBannerEnabled}>
             <ABCBanner user={user} />
+          </ShowWhen>
+          <ShowWhen additionalCondition={(usr) => usr.isStartupCongratulationBannerEnabled}>
+            <StartupCongratulationBanner user={user} />
           </ShowWhen>
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}

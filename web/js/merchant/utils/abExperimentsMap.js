@@ -105,6 +105,11 @@ export default {
     'HWP22TCyDAfcRG', // Test account prod
   ],
 
+  startup_congratulations_banner_experiment: [
+    'I7wZi5OdEXarC1', // Prod
+    'I5QTuOXKXJiUcP', // Beta
+  ],
+
   abc_banner_experiment: [
     'I5ed4FX4QRl6o1', // Prod
     'I3f68nS3BRwvuF', // Beta
