@@ -1227,6 +1227,11 @@ export default class User {
     return variant?.name === 'exposed';
   }
 
+  get isSubMerchantKycResellerEnabled() {
+    const variant = getSplitzExperimentVariant('submerchant_kyc_reseller');
+    return variant?.name === 'exposed';
+  }
+
   get canSkipPoiValidation() {
     return this.getExpStatus('bvs_personal_pan_validation');
   }

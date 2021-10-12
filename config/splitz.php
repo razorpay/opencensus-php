@@ -65,6 +65,9 @@ return [
 
         // partnership for RazorpayX
         'PARTNERSHIP_FOR_RAZOARPAYX' => env('PARTNERSHIP_FOR_RAZOARPAYX', ''),
+
+        'SUBMERCHANT_KYC_RESELLER' => env('SUBMERCHANT_KYC_RESELLER', ''),
+
         //QR Code campaign
         'ANNOUNCEMENT_QR_CODE_V1_SPLITZ' => env('ANNOUNCEMENT_QR_CODE_V1_SPLITZ', ''),
 
