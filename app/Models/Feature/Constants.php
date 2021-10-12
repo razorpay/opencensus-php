@@ -1836,6 +1836,11 @@ class Constants
             'display_name'  => 'Feature to have a separate composite API for High TPS merchants',
             'documentation' => '',
         ],
+        self::NEW_SETTLEMENT_SERVICE => [
+            'feature'       => self::NEW_SETTLEMENT_SERVICE,
+            'display_name'  => 'Enable new flow for settlements',
+            'documentation' => '',
+        ],
     ];
 
     /**
