@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Feature\Metric as FeatureMetric;
 
 class Service extends Base\Service
 {
@@ -203,6 +204,11 @@ class Service extends Base\Service
         {
             $failedMerchant = $successfulMerchant = [];
 
+            $dimension = [
+                Entity::ENTITY_TYPE     => $input[Entity::ENTITY_TYPE],
+                Entity::NAME            => $featureName,
+            ];
+
             foreach ($entityIds as $entityId)
             {
                 $featureParam = [
@@ -216,6 +222,8 @@ class Service extends Base\Service
                     $feature = (new Core)->create($featureParam, $shouldSync);
 
                     array_push($successfulMerchant, $entityId);
+
+                    $this->trace->count(FeatureMetric::FEATURE_ASSIGN_TOTAL, $dimension);
                 }
                 catch (\Exception $e)
                 {
@@ -228,6 +236,8 @@ class Service extends Base\Service
                         [
                             'msg' => $e->getMessage()
                         ]);
+
+                    $this->trace->count(FeatureMetric::FEATURE_ASSIGN_FAILURE_TOTAL, $dimension);
                 }
             }
             if (count($failedMerchant) > 0)
@@ -276,6 +286,11 @@ class Service extends Base\Service
         {
             $failedMerchant = $successfulMerchant = [];
 
+            $dimension = [
+                Entity::ENTITY_TYPE     => $input[Entity::ENTITY_TYPE],
+                Entity::NAME            => $featureName,
+            ];
+
             foreach ($entityIds as $entityId)
             {
                 try
@@ -290,6 +305,8 @@ class Service extends Base\Service
                         (new Core)->delete($feature, $shouldSync);
 
                         array_push($successfulMerchant, $entityId);
+
+                        $this->trace->count(FeatureMetric::FEATURE_REMOVE_TOTAL, $dimension);
                     }
                 }
                 catch (\Throwable $e)
@@ -300,6 +317,8 @@ class Service extends Base\Service
                         Trace::ERROR,
                         TraceCode::MERCHANT_FEATURE_NOT_EXIST,
                         $failedMerchant);
+
+                    $this->trace->count(FeatureMetric::FEATURE_REMOVE_FAILURE_TOTAL, $dimension);
                 }
             }
             if (count($failedMerchant) > 0)

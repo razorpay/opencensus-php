@@ -13,6 +13,7 @@ use RZP\Models\Merchant\Account;
 use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Partner\Config\Validator;
+use RZP\Models\Partner\Metric;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -210,6 +211,8 @@ class Service extends Base\Service
 
                 $response->push($record);
 
+                $this->trace->count(Metric::PARTNER_CONFIG_ACTION_SUCCESS_TOTAL);
+
             }
             catch (Exception\BaseException $exception)
             {
@@ -219,6 +222,7 @@ class Service extends Base\Service
 
             }
         }
+        $this->trace->count(Metric::PARTNER_CONFIG_BATCH_ACTION_SUCCESS_TOTAL);
 
         return $response->toArrayWithItems();
     }

@@ -8,7 +8,7 @@ namespace RZP\Models\Batch;
 final class Metric
 {
     // Counters
-    const BATCH_REQUESTS_TOTAL = "batch_requests_total";
+    const BATCH_REQUESTS_TOTAL          = "batch_requests_total";
 
     // Histograms
     const BATCH_PROCESSED_ROWS_TOTAL         = "batch_processed_rows_total";

@@ -238,6 +238,8 @@ class Service extends Base\Service
 
     public function bulkOnboardSubMerchantViaBatch(array $input)
     {
+        $requeststartAt = millitime();
+
         $tracePayload = [
             BatchHeader::MERCHANT_NAME   => $input[BatchHeader::MERCHANT_NAME],
             BatchHeader::MERCHANT_EMAIL  => $input[BatchHeader::MERCHANT_EMAIL],
@@ -249,6 +251,8 @@ class Service extends Base\Service
             $configs = SubMerchantBatchHelper::getConfigParamsFromEntry($input);
 
             $data = (new SubMerchantBatchUtil())->processSubMerchantEntry($input, $configs);
+
+            $this->trace->count(Metric::BATCH_UPLOAD_BY_ADMIN_TOTAL);
         }
         catch (BaseException $e)
         {
@@ -259,6 +263,8 @@ class Service extends Base\Service
             $data[BatchHeader::STATUS]            = BatchStatus::FAILURE;
             $data[BatchHeader::ERROR_CODE]        = $error->getPublicErrorCode();
             $data[BatchHeader::ERROR_DESCRIPTION] = $error->getDescription();
+
+            $this->trace->count(Metric::BATCH_UPLOAD_BY_ADMIN_FAILURE_TOTAL);
         }
         catch (\Throwable $e)
         {
@@ -267,6 +273,8 @@ class Service extends Base\Service
             $data[BatchHeader::STATUS]     = BatchStatus::FAILURE;
             $data[BatchHeader::ERROR_CODE] = ErrorCode::SERVER_ERROR;
         }
+
+        $this->trace->histogram(Metric::BATCH_UPLOAD_BY_ADMIN_LATENCY, millitime() - $requeststartAt);
 
         return $data;
     }
@@ -6532,14 +6540,37 @@ class Service extends Base\Service
 
         foreach ($input as $record)
         {
+            $attribute = [];
+            $settings = [];
+            
+            $this->segregateInputFieldsAndSettings($record, $attribute, $settings);
+
+            (new Validator)->validateInput('access_map_batch', $settings);
+
+            $batch_action = camel_case($settings[Constants::BATCH_ACTION]);
+
             try
             {
                 $this->actionOnAccessMap($record);
 
                 $response->push($record);
+
+                if(Constants::BATCH_ACTION == 'submerchantLink') {
+                    $this->trace->count(Metric::SUBMERCHANT_LINKING_SUCCESS_TOTAL);
+                }
+                else {
+                    $this->trace->count(Metric::SUBMERCHANT_DELINKING_SUCCESS_TOTAL);
+                }
             }
             catch (BaseException $exception)
             {
+                if(Constants::BATCH_ACTION == 'submerchantLink') {
+                    $this->trace->count(Metric::SUBMERCHANT_LINKING_FAILURE_TOTAL);
+                }
+                else {
+                    $this->trace->count(Metric::SUBMERCHANT_DELINKING_FAILURE_TOTAL);
+                }
+
                 $this->setErrorAttributesToResponse($record, $exception, $response);
             }
         }

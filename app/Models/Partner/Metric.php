@@ -27,4 +27,7 @@ final class Metric
 
     const COMMISSION_ANALYTICS_FETCH = 'commission_analytics_fetch';
     const COMMISSION_FETCH           = 'commission_fetch';
+
+    const PARTNER_CONFIG_ACTION_SUCCESS_TOTAL = 'partner_config_action_success_total';
+    const PARTNER_CONFIG_BATCH_ACTION_SUCCESS_TOTAL = 'partner_config_batch_action_success_total';
 }

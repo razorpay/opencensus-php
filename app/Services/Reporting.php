@@ -73,6 +73,9 @@ class Reporting implements ExternalService
     const GENERATED_BY_HEADER   = 'X-Generated-By';
     const BATCH_ID              = 'X-Batch-Id';
 
+    const REPORTING_SERVICE_RESPONSE_FAILURE_TOTAL = 'reporting_service_response_failure_total';
+    const REPORTING_SERVICE_RESPONSE_SUCCESS_TOTAL = 'reporting_service_response_success_total';
+
     const MERCHANT_REPORT_TYPES = [
         self::MERCHANT,
         self::RAZORPAYX,
@@ -695,6 +698,12 @@ class Reporting implements ExternalService
 
             $this->validateResponse($response);
 
+            $dimension = [
+                'request-type' => $request['method']
+            ];
+
+            $this->trace->count(self::REPORTING_SERVICE_RESPONSE_SUCCESS_TOTAL, $dimension);
+
             return $response;
 
         }
@@ -705,6 +714,8 @@ class Reporting implements ExternalService
                 Trace::ERROR,
                 TraceCode::REPORTING_INTEGRATION_ERROR,
                 $this->getTraceableRequest($request));
+
+            $this->trace->count(self::REPORTING_SERVICE_RESPONSE_FAILURE_TOTAL);
 
             throw new Exception\IntegrationException('
                 Could not receive proper response from reporting service');

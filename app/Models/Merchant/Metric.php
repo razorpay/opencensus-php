@@ -49,4 +49,14 @@ final class Metric
     const MERCHANT_SUPPORT_ENTITIES_CREATION_FAILURE_TOTAL = 'merchant_support_entities_creation_failure_total';
 
     const SUBMERCHANT_TAGGING_FAILURE_TOTAL = 'submerchant_tagging_failure_total';
+
+    const BATCH_UPLOAD_BY_ADMIN_TOTAL = 'batch_upload_by_admin_total';
+    const BATCH_UPLOAD_BY_ADMIN_FAILURE_TOTAL = 'batch_upload_by_admin_failure_total';
+    const BATCH_UPLOAD_BY_ADMIN_LATENCY = 'batch_upload_by_admin_latency';
+
+    const SUBMERCHANT_LINKING_SUCCESS_TOTAL = 'submerchant_linking_success_total';
+    const SUBMERCHANT_LINKING_FAILURE_TOTAL = 'submerchant_linking_failure_total';
+    const SUBMERCHANT_DELINKING_SUCCESS_TOTAL = 'submerchant_delinking_success_total';
+    const SUBMERCHANT_DELINKING_FAILURE_TOTAL = 'submerchant_delinking_failure_total';
+
 }
