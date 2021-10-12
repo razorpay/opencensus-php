@@ -459,6 +459,10 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $qrPayment = $this->getDbLastEntity('qr_payment', 'live');
         $payment = $this->getLastEntity('payment', true, 'live');
+
+        $refund = $this->getDbLastEntity('refund', 'live');
+        $this->assertEquals(UnexpectedPaymentReason::QR_PAYMENT_QR_NOT_FOUND, $refund['notes']['refund_reason']);
+
         $this->assertEquals('upi', $payment['method']);
         $this->assertEquals('refunded', $payment['status']);
         $this->assertEquals(4000, $payment['amount']);
@@ -491,6 +495,10 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $qrPayment = $this->getDbLastEntity('qr_payment');
         $payment = $this->getLastEntity('payment', true);
+
+        $refund = $this->getDbLastEntity('refund');
+        $this->assertEquals(UnexpectedPaymentReason::QR_PAYMENT_ON_CLOSED_QR_CODE, $refund['notes']['refund_reason']);
+
         $this->assertEquals('upi', $payment['method']);
         $this->assertEquals('refunded', $payment['status']);
         $this->assertEquals(4000, $payment['amount']);
@@ -558,6 +566,10 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $qrPayment = $this->getDbLastEntity('qr_payment');
         $payment = $this->getLastEntity('payment', true);
+
+        $refund = $this->getDbLastEntity('refund');
+        $this->assertEquals(UnexpectedPaymentReason::QR_PAYMENT_AMOUNT_MISMATCH, $refund['notes']['refund_reason']);
+
         $this->assertEquals('upi', $payment['method']);
         $this->assertEquals('refunded', $payment['status']);
         $this->assertEquals(1000, $payment['amount']);

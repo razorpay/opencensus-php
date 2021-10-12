@@ -149,7 +149,15 @@ class Processor extends Base\Core
         }
         else
         {
-            $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment());
+            $attributeArray = $entity->attributesToArray();
+
+            $refundNotes = [
+                'notes' => [
+                    'refund_reason' =>  $attributeArray['unexpected_reason']
+                ]
+            ];
+
+            $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment(), $refundNotes);
         }
 
         $this->repo->qr_payment->syncToEs($entity, EsRepository::UPDATE);
