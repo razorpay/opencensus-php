@@ -21,10 +21,12 @@ class SettlementsUpdater extends Base
 
             $trace->traceException($e,
                 Trace::ERROR,
-                TraceCode::VENDOR_PAYMENT_PAYOUT_UPDATER_ERROR,
+                TraceCode::SETTLEMENTS_PAYOUT_UPDATER_ERROR,
                 [
                     'payout_id' => $this->payout->getPublicId(),
                 ]);
+
+            throw $e;
         }
     }
 }

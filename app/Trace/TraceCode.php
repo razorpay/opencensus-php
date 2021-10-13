@@ -4354,6 +4354,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENTS_REQUEST                                   = 'SETTLEMENTS_REQUEST';
     const SETTLEMENTS_RESPONSE                                  = 'SETTLEMENTS_RESPONSE';
     const SETTLEMENTS_REQUEST_EXCEPTION                         = 'SETTLEMENTS_REQUEST_EXCEPTION';
+    const SETTLEMENTS_PAYOUT_UPDATER_ERROR                      = 'SETTLEMENTS_PAYOUT_UPDATER_ERROR';
 
     // Refunds service
     const REFUNDS_PAYOUT_UPDATER_ERROR                      = 'REFUNDS_PAYOUT_UPDATER_ERROR';
