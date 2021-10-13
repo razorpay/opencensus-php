@@ -101,6 +101,13 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/whatsapp/opt_in', 'MerchantController@whatsappOptIn');
     });
 
+    Route::group(['middleware' => 'auth:user'] , function()
+    {
+        Route::get('/merchant/experiments', 'MerchantController@getMerchantExperiments');
+        Route::get('/merchant/features', 'MerchantController@getMerchantFeatures');
+        Route::get('/merchant/splitzexperiments', 'MerchantController@getSplitzExperiments');
+    });
+
     Route::group(['middleware'  =>  ['auth:user', 'verified']], function()
     {
         Route::any('/merchant/api/{mode}/{path}', 'GenericController@handleAny')

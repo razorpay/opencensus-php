@@ -6,11 +6,13 @@ use Input;
 use Illuminate\Http\Request;
 
 use App\Api;
+use App\User;
 use App\Generic;
 use App\Merchant;
 use App\Http\AppResponse;
 use App\Mailers\MiscMailer;
 use App\Admin\ApiRequestAny;
+use App\Splitz\Service as SplitzService;
 
 class MerchantController extends Controller
 {
@@ -277,5 +279,30 @@ class MerchantController extends Controller
         list($error, $data) = (new Merchant\Service)->validateCouponCode($input);
 
         return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getMerchantExperiments()
+    {
+         $data = (new Merchant\Service)->getExperiments();
+
+        return AppResponse::jsonResponse([], $data);
+    }
+
+    public function getMerchantFeatures()
+    {
+        $data = (new Merchant\Service)->getMerchantFeatures();
+
+        return AppResponse::jsonResponse([], $data);
+    }
+
+    public function getSplitzExperiments()
+    {
+        $currentUser = Auth::guard('user')->user();
+
+        $merchantId  = $currentUser->currentMerchant()->id;
+
+        $data = (new SplitzService())->getSplitzVariantBulk($merchantId);
+
+        return AppResponse::jsonResponse([], $data);
     }
 }

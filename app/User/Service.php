@@ -519,6 +519,9 @@ class Service extends Base\Service
         }
         $res['merchantIds'] = $merchantIds;
 
+        $currentMerchantId = $genericUser->currentMerchant() ? $genericUser->currentMerchant()->id : null;
+        $res['currentMerchantId']  = $currentMerchantId;
+
         $user = Auth::user();
 
         $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
@@ -588,6 +591,7 @@ class Service extends Base\Service
         $user = Auth::user();
 
         $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
+        $res['currentMerchantId'] = $currentMerchantId;
 
         $traceData = [
             Constants::ID          => $user->id,
@@ -821,11 +825,24 @@ class Service extends Base\Service
         return self::OAUTH_SESSION_TOKEN . '.' . $token;
     }
 
-    public function getUserDetails()
+    public function getUserDetails(array $params = [])
     {
         $data = [
             'current'   =>  null
         ];
+
+        $errors = (new Validator())->validateInput('user_fetch', $params)->messages();
+
+        if(empty($errors) === false)
+        {
+            return [$errors, []];
+        }
+
+        $tags = $params['tags'] ?? "1";
+        $features = $params['features'] ?? "1";
+        $splitzExperiments = $params['splitzExperiments'] ?? "1";
+        $experiments = $params['experiments'] ?? "1";
+        $payouts = $params['payouts'] ?? "1";
 
         $user = Auth::user();
 
@@ -861,6 +878,8 @@ class Service extends Base\Service
         $data['pre_signup'] = [];
         $data['pre_signup_complete'] = true;
         $data['experiments'] = [];
+        $data['tags'] = [];
+        $data['features'] = [];
 
         $currentMerchant = (new Helper)->getCurrentMerchant($genericUser);
 
@@ -899,7 +918,8 @@ class Service extends Base\Service
 
             $this->traceMerchantActivatedTruthyValue($data, __LINE__);
 
-            $data["pre_signup"] = $merchantService->getPreSignupDetails($currentMerchantId);
+            //$data["pre_signup"] = $merchantService->getPreSignupDetails($currentMerchantId);
+            $data["pre_signup"] = (new MerchantDetails\Service)->getPresignupDetails($currentMerchantId, $data);
 
             foreach ($merchants as $merchant) {
 
@@ -907,24 +927,31 @@ class Service extends Base\Service
 
                 if ($merchant['id'] === $currentMerchantId)
                 {
-                    $data = $this->updateExperiments($data);
+                    if($experiments === "1")
+                    {
+                        $experiments = $merchantService->getExperiments();
+
+                        $data['experiments'] = $experiments;
+
+                        $this->trace->info(TraceCode::USER_LOGIN, [
+                            'experiments' =>  $experiments,
+                        ]);
+
+                        $data = $this->updateNewUsersOnlyTypeExperiments($merchant, $data);
+
+                        $data = $this->updateRXCASelfServeExperiment($merchant, $data);
+                    }
+
 
                     $data = $this->updateInstantActivationExperiment($data);
 
-                    $data = $this->updateNewUsersOnlyTypeExperiments($merchant, $data);
+                    $isBankingRequest = ApiUrl::isBankingOriginRequest();
 
-                    $data = $this->updateRXCASelfServeExperiment($merchant, $data);
-
-                    $data = $this->appendBankingDetails($data);
-
-                    if (((bool) $merchant['activated']) === true)
+                    if($payouts === "1")
                     {
-                        $data['experiments']['support_call'] = $merchantService->getTreatment('support_call');
+                        $data = $this->appendBankingDetails($data);
                     }
-                    else
-                    {
-                        $data['experiments']['support_call'] = ['result' => 'off'];
-                    }
+
 
                     if ((new Helper)->isOwner($currentMerchant))
                     {
@@ -933,13 +960,20 @@ class Service extends Base\Service
 
                     $data['current'] = $currentMerchantId;
 
-                    $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);
+                    if($tags === "1")
+                    {
+                        $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);
+                    }
 
-                    $data['features'] = $merchantService->getMerchantFeatures();
+                    if($features === "1")
+                    {
+                        $data['features'] = $merchantService->getMerchantFeatures();
+                    }
 
-                    $data['splitz_experiments'] = (new SplitzService())->getSplitzVariantBulk($currentMerchantId);
-
-                    $isBankingRequest = ApiUrl::isBankingOriginRequest();
+                    if($splitzExperiments === "1")
+                    {
+                        $data['splitz_experiments'] = (new SplitzService())->getSplitzVariantBulk($currentMerchantId);
+                    }
 
                     //
                     // Make switch product call only if
@@ -1606,195 +1640,7 @@ class Service extends Base\Service
         }
     }
 
-    /**
-     * @param $data
-     *
-     * @return array
-     * @throws BadRequestError
-     */
-    protected function updateExperiments(array $data): array
-    {
-        $merchantService = new Merchant\Service;
-
-        $features = [
-            'coupons',
-            'is_announcement',
-            'is_banner',
-            'capital_announcement',
-            'capital_banner',
-            'announcements_early_settlements_1',
-            'checkout_survey',
-            'sellerapp_plus',
-            'disable-view-reports',
-            'mobile_hotjar_survey',
-            'paymentpages_mli',
-            'show_commission_balance',
-            'custom_notes',
-            'capture_settings_revamp',
-            'sellerapp_PL_batch_upload',
-            'nps_survey_banner',
-            'new_pp_success_modal',
-            'va_search',
-            'smart_collect_search_v1',
-            'hide_company_name',
-            'batch_cancel',
-            'rev_up_chennai_announcement',
-            'disable_va_creation_bank_account',
-            'registered_onboarding_auto_kyc',
-            'enable_payment_page_receipt',
-            'emandate_nonzero_amount',
-            'card_recurring_payments_blocked',
-            'allow_yesbank_va_on_x',
-            'rx_creation_flows_v2',
-            'instant_refunds_default_pricing_v2',
-            'covid_19_donation_show',
-            'fee_bearer_self_serve',
-            'ir_pricing_v2_rollout_1',
-            'ir_pricing_v2_rollout_2',
-            'ir_pricing_v2_rollout_3',
-            'ir_pricing_v2_rollout_4',
-            'view_fd_tickets',
-            'support_dashboard_rzpsolutions',
-            'capital_freshdesk_integration',
-            'show_new_grievance_flow',
-            'show_schedule_callback',
-            'ticket_creation_flow_revamp',
-            'ticket_creation_flow_revamp_dashboard',
-            'hide_call_slots_10_12_2',
-            'website_self_serve',
-            'transaction_limit_update_self_serve',
-            'additional_domain_whitelist_self_serve',
-            'settlement_ux_revamp_p2',
-            'rx_scheduled_payouts_rollout',
-            'validate_user_2fa_status',
-            'enable_payment_buttons',
-            'pause_resume_enabled',
-            'batch_scheduling_options',
-            'emandate_subscription',
-            'upi_caw',
-            'rx_payout_links_inactive',
-            'rx_payout_links_ms',
-            'upi_subscription',
-            'rx_bulk_approvals',
-            'offer_on_subscription',
-            'subscription_offers_reports',
-            'rx_payout_links_onboarding_revamp',
-            'rx_tax_payments_payout',
-            'rx_payout_links_new_information_flow',
-            'capital_loans_announcement_aug2020',
-            'schedule_callback_category',
-            'instrument_request_merchant_dashboard',
-            'settlement_ux_revamp_p2',
-            'rx_view_only_update',
-            'rx_accounting_payouts_active',
-            'rx_accounting_payouts_ask_clientID',
-            'enable_pl_batch_upload',
-            'skip_workflow_payout_specific_feature',
-            'low_balance_alert_frequency_30M',
-            'rx_home_v2_existing',
-            'bank_account_update_merchant_dashboard',
-            'app_switcher',
-            'subscription_expiry',
-            'qr_code_coming_soon',
-            'qr_code',
-            'caw_tpv',
-            'show_rx_vp_announcement',
-            'whatsapp_notification_enablement',
-            'rx_vp_inline_recommendation',
-            'partner_app_store',
-            'show_rx_vp_announcement_2',
-            'bulk_payouts_improvements_rollout',
-            'block_bank_account_update_merchant_dashboard',
-            'rx_opfin_announcement_v2',
-            'whats-new-dec-2020',
-            'aov_functionality',
-            'rx_opfin_sso_announcement',
-            'AnnouncementIconJan2021',
-            'TicketSystemSupport',
-            'rx_tax_payments_announcement',
-            'disable_tpv_flow_for_banking_account_fund_loading',
-            'rx_opfin_sso_announcement_xdashboard',
-            'enable_tpv_fe',
-            'shopify_gtm_notification_cohorts',
-            'es_ondeman_restricted_cohorts',
-            'pl_swith_v2',
-            'dashboard_show_nps_survey',
-            'cred_pay_amex_notification',
-            'caw_recurring_charge_axis',
-            'rx_enable_amazonpay_wallet_payout',
-            'nitro_hyderabad_v2',
-            'nitro_hyderabad_v3',
-            'nitro_midmarket_mumbai_v1',
-            'upi_intent_notification',
-            'rx_disable_taxpayment_payoutflow',
-            'bvs_personal_pan_validation',
-            'onboarding_v2',
-            'capture_settings_revamp',
-            'pl_description_required',
-            'pp_description_required',
-            'merchant_tnc',
-            'rzp_merchant_tnc',
-            'support_details_2FA',
-            'comdel_hdfc_test',
-            'rx_icici_ca_onboarding',
-            'show_csat_survey',
-            'rx_mobile_app_announcement',
-            'rx_tally_payouts_enabled',
-            'self_serve_credits',
-            'rx_shopify_pl',
-            'enable_may_dashboard_notification_retention_1',
-            'enable_may_dashboard_notification_retention_2',
-            'enable_may_dashboard_notification_retention_3',
-            'enable_may_dashboard_notification_retention_4',
-            'enable_my_dashboard_notification_remarketing',
-            'enable_my_dashboard_notification_remarketing_1',
-            'instant-activations-functionality',
-            'mandatory_aadhar_ekyc',
-            'rx_email_integration_rollout',
-            'rx_taxpayments_tin_change',
-            'route_batch_upload',
-            'email_self_serve',
-            'payments_extra_refund_details',
-            'mandatory_gstin_input',
-            'sync_experiment',
-            'recurring_more_account_type',
-            'optimizer_add_provider',
-            'mtu_coupon_code',
-            'auto_open_mtu_coupon',
-            'dispute_presentment',
-            'product_recommendation',
-            "switch_onboarding_card",
-            'auto_refresh_experiment',
-            'csm_experince_survey',
-            'inv_create_flow_ux',
-            'loans_collections_dashboard',
-            'optimizer_emi_duration',
-            'rx_ca_portal',
-            'pp_success_page',
-            'auto_pl',
-            'remove_presignup_functionality',
-            'bvs_get_gst_details',
-            'route_transfer_state',
-            'status_page_enable',
-            'pp_hostedpage_new_footer',
-            'rx_gst_payments',
-            'show_L1_Form_on_login',
-            'auto-open-L1-form',
-            'auto-open-L2-form',
-            'mob_welcome_ca_card'
-        ];
-
-        $experimentsResults = $merchantService->getBulkTreatment($features);
-
-        foreach ($experimentsResults as $result => $val)
-        {
-            $data['experiments'][$result] = $val;
-        }
-
-        return $data;
-    }
-
-    protected function isRequestOriginSatisfied(array $experimentConfig)
+    public function isRequestOriginSatisfied(array $experimentConfig)
     {
         if (isset($experimentConfig[Constants::REQUEST_ORIGIN]) === true)
         {
@@ -1855,6 +1701,10 @@ class Service extends Base\Service
          * to current account applicants
          */
         $flag = null;
+
+        // This is to make backward compatible, while fetching experiments, we usually fetch this experiment value as well.
+        // As we are doing a customization logic here for making it ON, resetting to off by default
+        unset($data['experiments']['rx_ca_self_serve_flow_neo']);
 
         $from_ca_campaign = $this->checkIfFromCaCampaign($merchant);
 

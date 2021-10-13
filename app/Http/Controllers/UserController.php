@@ -669,7 +669,9 @@ class UserController extends Controller
     {
         $timeStart = microtime(true);
 
-        list($error, $data) = (new User\Service)->getUserDetails();
+        $params = Input::all();
+
+        list($error, $data) = (new User\Service)->getUserDetails($params);
 
         $result = AppResponse::jsonResponse($error, $data);
 

@@ -8,11 +8,13 @@ use Queue;
 use Session;
 use Request;
 use Carbon\Carbon;
+use App\Http\ApiUrl;
 use Razorpay\Api\Errors\ErrorCode;
 use Razorpay\Api\Errors\BadRequestError;
 
 use App\Base;
 use App\User;
+use App\Razorx;
 use App\Merchant;
 use App\MerchantDetails;
 use App\Trace\TraceCode;
@@ -492,31 +494,6 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function getBulkTreatment(array $features)
-    {
-        $request = new ApiRequestAny(['client_type' => 'merchant']);
-
-        $featureString = implode(', ', $features);
-
-        list($error, $data) = $request->send("razorx/bulkevaluate?features=$featureString", 'GET');
-
-        if (empty($error) === false)
-        {
-            $data = [];
-
-            $this->trace->info(TraceCode::BULK_RAZORX_CALL_FAILED, [
-                "error" => $error
-            ]);
-
-            foreach ($features as $feature)
-            {
-                $data[$feature] = ['result' => 'control'];
-            }
-        }
-
-        return $data;
-    }
-
     public function getPartnerIntent()
     {
         $request = new ApiRequestAny(['client_type'    => 'merchant']);
@@ -705,4 +682,19 @@ class Service extends Base\Service
 
         return $data['count'];
     }
+
+    public function getExperiments()
+    {
+        $response = [];
+
+        $razorxService = (new Razorx\Service());
+
+        $response = $razorxService->updateExperiments($response);
+
+        $experiments = $response['experiments'] ?? [];
+
+        return $experiments;
+    }
+
+
 }

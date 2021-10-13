@@ -101,4 +101,11 @@ class Constants
     const BANKING_DEMO_USER_EMAIL = "acmecorporation2021@gmail.com";
 
     const FAKE_CAPTCHA = "FAKE_CAPTCHA";
+
+    //user fetch constants
+    const EXPERIMENTS        = 'experiments';
+    const SPLITZ_EXPERIMENTS = 'splitz_experiments';
+    const TAGS               = 'tags';
+    const PAYOUTS            = 'payouts';
+    const FEATURES           = 'features';
 }
