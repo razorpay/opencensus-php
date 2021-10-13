@@ -380,6 +380,11 @@ class Validator extends Base\Validator
 
         $network = $input[Entity::PAYMENT_NETWORK] ?? null;
 
+        if ($network === Network::BAJAJ) {
+            // Skip Min Amount Validation for BFL Network
+            return;
+        }
+
         $type = $input[Entity::PAYMENT_METHOD_TYPE] ?? null;
 
         //in case of emi PAYMENT_METHOD_TYPE comes as null

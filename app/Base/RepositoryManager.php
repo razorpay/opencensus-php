@@ -163,6 +163,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\DeviceDetail\Repository                           $user_device_detail
  * @property Models\Dispute\Repository                                $dispute
  * @property Models\Payout\PayoutsIntermediateTransactions\Repository $payouts_intermediate_transactions;
+ * @property Models\Emi\Repository                                    $emi_plan
  */
 
 class RepositoryManager extends Illuminate\Support\Manager
