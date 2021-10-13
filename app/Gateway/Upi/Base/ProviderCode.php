@@ -383,6 +383,7 @@ class ProviderCode
         ProviderPsp::BHIM_BARODAPAY,
         ProviderPsp::BHIM_BOI_UPI,
         ProviderPsp::CANDI_CANARA_BANK,
+        ProviderPsp::IMOBILE,
     ];
 
     /**
@@ -391,7 +392,6 @@ class ProviderCode
     protected static $pspForAutopay = [
         self::UPI           => ProviderPsp::BHIM,
         self::PAYTM         => ProviderPsp::PAYTM,
-        self::ICICI         => ProviderPsp::WHATSAPP,
         self::IBL           => ProviderPsp::PHONEPE,
         self::YBL           => ProviderPsp::PHONEPE,
         self::AXL           => ProviderPsp::PHONEPE,
@@ -400,6 +400,7 @@ class ProviderCode
         self::BARODAMPAY    => ProviderPsp::BHIM_BARODAPAY,
         self::BOI           => ProviderPsp::BHIM_BOI_UPI,
         self::CNRB          => ProviderPsp::CANDI_CANARA_BANK,
+        self::ICICI         => ProviderPsp::IMOBILE,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
