@@ -28,6 +28,8 @@ class CreateSurveyTable extends Migration
 
             $table->integer(Entity::SURVEY_TTL);
 
+            $table->tinyInteger(Entity::CHANNEL);
+
             $table->string(Entity::TYPE, 255);
 
             $table->string(Entity::SURVEY_URL, 255);

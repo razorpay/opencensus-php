@@ -8,7 +8,8 @@ class PrecedenceMapper extends Core
     public $precedenceMap = [
         Entity::NPS_ACTIVE_CA => 1,
         Entity::NPS_CSAT => 2,
-        Entity::NPS_PAYOUTS =>3
+        Entity::NPS_PAYOUTS_DASHBOARD =>3,
+        Entity::NPS_PAYOUTS_API => 3
     ];
 
     // We will sent the survey only if no survey with higher precedence

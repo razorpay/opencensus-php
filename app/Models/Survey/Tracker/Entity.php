@@ -20,10 +20,12 @@ class Entity extends Base\PublicEntity
     const ATTEMPTS               = 'attempts';
     const SKIP_IN_APP            = 'skip_in_app';
 
-    // Constants
+    //
+    const CHANNEL                = 'channel';
     const NPS_ACTIVE_CA          = 'nps_active_ca';
     const NPS_CSAT               = 'nps_csat';
-    const NPS_PAYOUTS            = 'nps_payouts';
+    const NPS_PAYOUTS_DASHBOARD  = 'nps_payouts_dashboard';
+    const NPS_PAYOUTS_API        = 'nps_payouts_api';
     const NPS_SURVEY             = 'nps_survey';
     const SURVEY_TYPE            = 'survey_type';
     const MID                    = 'mid';
@@ -67,6 +69,7 @@ class Entity extends Base\PublicEntity
         self::SKIP_IN_APP,
         self::SURVEY_TYPE,
         self::SURVEY_URL,
+        self::CHANNEL,
     ];
 
     protected $public = [
@@ -79,6 +82,7 @@ class Entity extends Base\PublicEntity
         self::SKIP_IN_APP,
         self::SURVEY_TYPE,
         self::SURVEY_URL,
+        self::CHANNEL,
     ];
 
     protected $dates = [

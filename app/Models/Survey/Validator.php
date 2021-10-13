@@ -16,6 +16,7 @@ class Validator extends Base\Validator
         Entity::SURVEY_TTL          => 'required|integer',
         Entity::SURVEY_URL          => 'required|url',
         Entity::TYPE                => 'required|string',
+        Entity::CHANNEL             => 'required|integer',
     ];
 
     protected static $beforeEditRules = [
@@ -24,6 +25,7 @@ class Validator extends Base\Validator
         Entity::SURVEY_TTL          => 'sometimes|integer',
         Entity::SURVEY_URL          => 'sometimes|string',
         Entity::TYPE                => 'sometimes|string',
+        Entity::CHANNEL             => 'sometimes|integer',
     ];
 
     protected static $createRules = [
@@ -32,6 +34,7 @@ class Validator extends Base\Validator
         Entity::SURVEY_TTL          => 'required|integer',
         Entity::SURVEY_URL          => 'required|string',
         Entity::TYPE                => 'required|string',
+        Entity::CHANNEL             => 'required|integer',
     ];
 
     protected static $editRules = [
@@ -40,5 +43,6 @@ class Validator extends Base\Validator
         Entity::SURVEY_TTL          => 'sometimes|integer',
         Entity::SURVEY_URL          => 'sometimes|string',
         Entity::TYPE                => 'sometimes|string',
+        Entity::CHANNEL             => 'sometimes|integer',
     ];
 }

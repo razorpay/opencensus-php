@@ -1697,7 +1697,7 @@ class Repository extends Base\Repository
         return $query->count();
     }
 
-    public function getPayoutCohortList(int $startTime, int $endTime)
+    public function getPayoutDashboardCohortList(int $startTime, int $endTime)
     {
         $balanceIdColumn            = $this->repo->balance->dbColumn(Balance\Entity::ID);
         $balanceTypeColumn          = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
@@ -1714,9 +1714,32 @@ class Repository extends Base\Repository
                     ->select($selectAttr)
                     ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
                     ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+                    ->whereNotNull(Entity::USER_ID)
                     ->whereBetween($payoutCreatedColumn, [$startTime, $endTime])
                     ->groupBy(Entity::MERCHANT_ID, Entity::USER_ID)
                     ->get();
+    }
+
+    public function getPayoutAPICohortList(int $startTime, int $endTime)
+    {
+        $balanceIdColumn            = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $balanceTypeColumn          = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+
+        $payoutCreatedColumn        = $this->dbColumn(Entity::CREATED_AT);
+        $payoutsBalanceIdColumn     = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+
+        $selectAttr                 = [
+            $this->dbColumn(Entity::MERCHANT_ID)
+        ];
+
+        return $this->newQuery()
+            ->select($selectAttr)
+            ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
+            ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+            ->whereNull(Entity::USER_ID)
+            ->whereBetween($payoutCreatedColumn, [$startTime, $endTime])
+            ->groupBy(Entity::MERCHANT_ID)
+            ->get();
     }
 
     public function getCAPayoutCohortList(int $startTime, int $endTime, $surveyTTL)

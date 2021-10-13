@@ -10,7 +10,7 @@ class Repository extends Base\Repository
 
     public function get(string $type)
     {
-        $surveyTypeColumn      = $this->dbColumn(Entity::TYPE);
+        $surveyTypeColumn = $this->dbColumn(Entity::TYPE);
 
         return $this->newQuery()
                     ->where($surveyTypeColumn, $type)

@@ -121,7 +121,8 @@ class SurveyTest extends TestCase
             'description' => 'This is test survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts'
+            'type' => 'nps_payouts_api',
+            'channel' => 1
         ]);
 
         $this->startTest();
@@ -135,7 +136,8 @@ class SurveyTest extends TestCase
             'description' => 'This is test survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts'
+            'type' => 'nps_payouts_api',
+            'channel' => 2,
         ]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/survey/' . $survey['id'];
@@ -151,7 +153,8 @@ class SurveyTest extends TestCase
             'description' => 'This is test survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts'
+            'type' => 'nps_payouts_dashboard',
+            'channel' => 2,
         ]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/survey/' . $survey['id'];
@@ -167,7 +170,25 @@ class SurveyTest extends TestCase
             'description' => 'This is test survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts'
+            'type' => 'nps_payouts_dashboard',
+            'channel' => 2,
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/survey/' . $survey['id'];
+
+        $this->startTest();
+    }
+
+    public function testUpdateSurveyChannel()
+    {
+        $survey = $this->fixtures->create('survey', [
+            'id' => 'GLuIMZYR32kZiB',
+            'name' => 'Test Survey',
+            'description' => 'This is test survey',
+            'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
+            'survey_ttl' => 30,
+            'type' => 'nps_payouts_dashboard',
+            'channel' => 2,
         ]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/survey/' . $survey['id'];
@@ -183,7 +204,8 @@ class SurveyTest extends TestCase
             'description' => 'This is test survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts'
+            'type' => 'nps_payouts_dashboard',
+            'channel' => 2,
         ]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/survey/' . $survey['id'];
@@ -199,7 +221,8 @@ class SurveyTest extends TestCase
             'description' => 'This is test survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts'
+            'type' => 'nps_payouts_dashboard',
+            'channel' => 2,
         ]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/survey/abcdef' ;
@@ -215,7 +238,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts'
+            'type' => 'nps_payouts_dashboard',
+            'channel' => 2,
         ]);
 
         $this->ba->cronAuth('live');
@@ -255,7 +279,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts'
+            'type' => 'nps_payouts_dashboard',
+            'channel' => 1
         ]);
 
         $this->ba->cronAuth('live');
@@ -283,7 +308,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts'
+            'type' => 'nps_payouts_api',
+            'channel' => 1,
         ]);
 
         $this->ba->cronAuth('live');
@@ -323,7 +349,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts'
+            'type' => 'nps_payouts_dashboard',
+            'channel' => 1,
         ]);
 
         $this->ba->cronAuth('live');
@@ -363,7 +390,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts'
+            'type' => 'nps_payouts_dashboard',
+            'channel' => 1,
         ]);
 
         $this->ba->cronAuth('live');
@@ -410,7 +438,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts'
+            'type' => 'nps_payouts_dashboard',
+            'channel' => 1,
         ]);
 
         $this->ba->cronAuth('live');
@@ -438,7 +467,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts'
+            'type' => 'nps_payouts_api',
+            'channel' => 3,
         ]);
 
         $surveySentAt = Carbon::now(Timezone::IST)->subHours(4)->getTimestamp();
@@ -469,7 +499,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts'
+            'type' => 'nps_payouts_api',
+            'channel' => 2
         ]);
 
         $previousSurveySentAt = Carbon::now(Timezone::IST)->subHours(31)->getTimestamp();
@@ -515,7 +546,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts'
+            'type' => 'nps_payouts_dashboard',
+            'channel' => 1,
         ]);
 
         $this->ba->cronAuth('live');
@@ -538,7 +570,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts',
+            'type' => 'nps_payouts_api',
+            'channel' => 2,
         ]);
 
         $this->fixtures->on('live')->create('survey_tracker', [
@@ -563,7 +596,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts',
+            'type' => 'nps_payouts_api',
+            'channel' => 3,
         ]);
 
         $this->fixtures->on('live')->create('survey_tracker', [
@@ -594,7 +628,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts',
+            'type' => 'nps_payouts_api',
+            'channel' => 2
         ]);
 
         $this->fixtures->on('live')->create('survey_tracker', [
@@ -619,7 +654,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts',
+            'type' => 'nps_payouts_api',
+            'channel' => 3,
         ]);
 
         $tracker = $this->fixtures->on('live')->create('survey_tracker', [
@@ -653,7 +689,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts',
+            'type' => 'nps_payouts_dashboard',
+            'channel' => 2,
         ]);
 
         $this->fixtures->on('live')->create('survey_tracker', [
@@ -678,7 +715,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts',
+            'type' => 'nps_payouts_dashboard',
+            'channel' => 2,
         ]);
 
         $this->fixtures->on('live')->create('survey_tracker', [
@@ -705,7 +743,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
-            'type' => 'nps_payouts',
+            'type' => 'nps_payouts_dashboard',
+            'channel' => 2,
         ]);
 
         $this->fixtures->on('live')->create('survey_tracker', [
@@ -748,6 +787,7 @@ class SurveyTest extends TestCase
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
             'type'  => 'nps_csat',
+            'channel' => 3,
         ]);
 
         $this->ba->cronAuth('live');
@@ -782,6 +822,7 @@ class SurveyTest extends TestCase
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
             'type'  => 'nps_csat',
+            'channel' => 3,
         ]);
 
         $this->ba->cronAuth('live');
@@ -820,6 +861,7 @@ class SurveyTest extends TestCase
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
             'type'  => 'nps_csat',
+            'channel' => 3,
         ]);
 
         $this->ba->cronAuth('live');
@@ -853,6 +895,7 @@ class SurveyTest extends TestCase
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
             'type'  => 'nps_csat',
+            'channel' => 3,
         ]);
 
         $surveySentAt = Carbon::now(Timezone::IST)->subHours(4)->getTimestamp();
@@ -915,7 +958,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 720,
-            'type'  => 'nps_payouts',
+            'type'  => 'nps_payouts_api',
+            'channel' => 2,
         ]);
 
         $csatSurvey = $this->fixtures->on('live')->create('survey', [
@@ -924,6 +968,7 @@ class SurveyTest extends TestCase
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 720,
             'type'  => 'nps_csat',
+            'channel' => 3,
         ]);
 
         $caSurvey = $this->fixtures->on('live')->create('survey', [
@@ -932,6 +977,7 @@ class SurveyTest extends TestCase
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 1080,
             'type'  => 'nps_active_ca',
+            'channel' => 3,
         ]);
 
         $surveySentAt = Carbon::now(Timezone::IST)->subHours(4)->getTimestamp();
@@ -1024,7 +1070,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 720,
-            'type'  => 'nps_payouts',
+            'type'  => 'nps_payouts_dashboard',
+            'channel' => 1,
         ]);
 
         $caSurvey = $this->fixtures->on('live')->create('survey', [
@@ -1033,6 +1080,7 @@ class SurveyTest extends TestCase
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 1080,
             'type'  => 'nps_active_ca',
+            'channel' => 3,
         ]);
 
         $csatSurvey = $this->fixtures->on('live')->create('survey', [
@@ -1041,6 +1089,7 @@ class SurveyTest extends TestCase
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 720,
             'type'  => 'nps_csat',
+            'channel' => 3,
         ]);
 
         $surveySentAt = Carbon::now(Timezone::IST)->subHours(4)->getTimestamp();
@@ -1134,7 +1183,8 @@ class SurveyTest extends TestCase
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 720,
-            'type'  => 'nps_payouts',
+            'type'  => 'nps_payouts_api',
+            'channel' => 1,
         ]);
 
         $caSurvey = $this->fixtures->on('live')->create('survey', [
@@ -1143,6 +1193,7 @@ class SurveyTest extends TestCase
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 1080,
             'type'  => 'nps_active_ca',
+            'channel' => 3,
         ]);
 
         $csatSurvey = $this->fixtures->on('live')->create('survey', [
@@ -1151,6 +1202,7 @@ class SurveyTest extends TestCase
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 720,
             'type'  => 'nps_csat',
+            'channel' => 3,
         ]);
 
         $surveySentAt = Carbon::now(Timezone::IST)->subDays(10)->getTimestamp();
@@ -1233,6 +1285,7 @@ class SurveyTest extends TestCase
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
             'survey_ttl' => 30,
             'type'  => 'nps_csat',
+            'channel' => 3,
         ]);
 
         $this->ba->cronAuth('live');

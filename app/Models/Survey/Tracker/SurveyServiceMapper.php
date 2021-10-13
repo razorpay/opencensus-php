@@ -9,9 +9,10 @@ use RZP\Error\PublicErrorDescription;
 class SurveyServiceMapper
 {
     private static $surveyClientMap = [
-        Entity::NPS_PAYOUTS     => 'Payout\NpsClient',
-        Entity::NPS_CSAT        => 'BankingAccount\NpsClient',
-        Entity::NPS_ACTIVE_CA   => 'Merchant\Balance\NpsClient'
+        Entity::NPS_PAYOUTS_DASHBOARD     => 'Payout\NpsDashboardClient',
+        Entity::NPS_PAYOUTS_API           => 'Payout\NpsAPIClient',
+        Entity::NPS_CSAT                  => 'BankingAccount\NpsClient',
+        Entity::NPS_ACTIVE_CA             => 'Merchant\Balance\NpsClient'
     ];
 
     /**

@@ -18,6 +18,7 @@ class Entity extends Base\PublicEntity
     const SURVEY_TTL             = 'survey_ttl'; // In hours
     const TYPE                   = 'type';
     const SURVEY_URL             = 'survey_url';
+    const CHANNEL                = 'channel';   // Need to add a column in db
 
     protected $fillable = [
         self::ID,
@@ -26,6 +27,7 @@ class Entity extends Base\PublicEntity
         self::SURVEY_TTL,
         self::TYPE,
         self::SURVEY_URL,
+        self::CHANNEL,
     ];
 
     protected $visible = [
@@ -35,6 +37,7 @@ class Entity extends Base\PublicEntity
         self::SURVEY_TTL,
         self::TYPE,
         self::SURVEY_URL,
+        self::CHANNEL,
     ];
 
     protected $public = [
@@ -44,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::SURVEY_TTL,
         self::TYPE,
         self::SURVEY_URL,
+        self::CHANNEL,
     ];
 
     protected $dates = [
@@ -83,6 +87,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SURVEY_URL);
     }
 
+    public function getChannel()
+    {
+        return $this->getAttribute(self::CHANNEL);
+    }
+
     // ============================= END GETTERS =============================
 
     // ============================= SETTERS =============================
@@ -110,6 +119,11 @@ class Entity extends Base\PublicEntity
     public function setSurveyUrl($url)
     {
         $this->setAttribute(self::SURVEY_URL, $url);
+    }
+
+    public function setChannel($channel)
+    {
+        $this->setAttribute(self::CHANNEL, $channel);
     }
 
     // ============================= END SETTERS =============================

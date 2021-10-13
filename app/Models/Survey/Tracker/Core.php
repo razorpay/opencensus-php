@@ -181,25 +181,35 @@ class Core extends Base\Core
             Entity::SURVEY_SENT_AT  => $currentTimeStamp
         ];
 
+        $channel_info = $survey[Entity::CHANNEL];
+
+        if($channel_info === 2){
+            $surveyTrackerEntityInput[Entity::SKIP_IN_APP]  = 1;
+        }
+
         $surveyTrackerEntity = (new Entity)->build($surveyTrackerEntityInput);
 
         $this->repo->saveorFail($surveyTrackerEntity);
 
-        $hubspotInput = [
-            Entity::SURVEY_EMAIL        => $email,
-            Entity::SURVEY_TYPE         => $survey[SurveyEntity::TYPE],
-            Entity::MID                 => $merchantId,
-            Entity::USER_ID             => $uid,
-            Entity::SURVEY_ID           => $survey[Entity::ID],
-            SurveyEntity::SURVEY_URL    => $survey[SurveyEntity::SURVEY_URL],
-            Entity::ID                  => $surveyTrackerEntity->getId(),
-            Entity::CONTACT_TYPE        => $input[Entity::CONTACT_TYPE],
-            Entity::ACCOUNT_STATUS      => $input[Entity::ACCOUNT_STATUS] ?? null
-        ];
+        if($channel_info === 2 || $channel_info === 3){
+            $hubspotInput = [
+                Entity::SURVEY_EMAIL        => $email,
+                Entity::SURVEY_TYPE         => $survey[SurveyEntity::TYPE],
+                Entity::MID                 => $merchantId,
+                Entity::USER_ID             => $uid,
+                Entity::SURVEY_ID           => $survey[Entity::ID],
+                SurveyEntity::SURVEY_URL    => $survey[SurveyEntity::SURVEY_URL],
+                Entity::ID                  => $surveyTrackerEntity->getId(),
+                Entity::CONTACT_TYPE        => $input[Entity::CONTACT_TYPE],
+                Entity::ACCOUNT_STATUS      => $input[Entity::ACCOUNT_STATUS] ?? null
+            ];
 
-        $this->trace->info(TraceCode::COHORT_EMAIL_TO_HUBSPOT, $hubspotInput);
+            $this->trace->info(TraceCode::COHORT_EMAIL_TO_HUBSPOT, $hubspotInput);
 
-        $this->sendToHubspot($hubspotInput);
+            $this->sendToHubspot($hubspotInput);
+        }
+
+
     }
 
     public function getSurveyClient(string $type)

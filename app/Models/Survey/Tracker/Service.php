@@ -34,6 +34,8 @@ class Service extends Base\Service
 
         $surveyType = $input[Entity::SURVEY_TYPE];
 
+//        $channelInformation = $input[Entity::CHANNEL];
+
         $survey = $this->repo->survey->get($surveyType);
 
         if (empty($survey) === true)

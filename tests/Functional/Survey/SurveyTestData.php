@@ -13,7 +13,8 @@ return [
                 'description' => 'This is test survey',
                 'survey_ttl' => 30,
                 'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
-                'type' => 'nps_payouts'
+                'type' => 'nps_payouts_api',
+                'channel' => 1
             ],
         ],
         'response' => [
@@ -22,7 +23,8 @@ return [
                 'description' => 'This is test survey',
                 'survey_ttl' => '30',
                 'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
-                'type' => 'nps_payouts'
+                'type' => 'nps_payouts_api',
+                'channel' => '1'
             ],
         ],
     ],
@@ -35,8 +37,9 @@ return [
                 'name' => 'Test Survey test',
                 'description' => 'This is test survey',
                 'survey_ttl' => 30,
-                'type' => 'nps_payouts',
+                'type' => 'nps_payouts_api',
                 'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
+                'channel'   => 2,
             ],
         ],
         'response'  => [
@@ -66,7 +69,8 @@ return [
                 'description' => 'This is test survey',
                 'survey_ttl' => '60',
                 'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
-                'type' => 'nps_payouts'
+                'type' => 'nps_payouts_api',
+                'channel' => 2,
             ],
         ],
     ],
@@ -84,7 +88,8 @@ return [
                 'description' => 'This is test survey',
                 'survey_ttl' => 30,
                 'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
-                'type' => 'nps_payouts'
+                'type' => 'nps_payouts_dashboard',
+                'channel' => 2,
             ],
         ],
     ],
@@ -102,7 +107,27 @@ return [
                 'description' => 'This is test survey',
                 'survey_ttl' => 30,
                 'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
-                'type' => 'nps_payouts'
+                'type' => 'nps_payouts_dashboard',
+                'channel' => 2,
+            ],
+        ],
+    ],
+
+    'testUpdateSurveyChannel' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'content' => [
+                'channel' => 3
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'Test Survey',
+                'description' => 'This is test survey',
+                'survey_ttl' => 30,
+                'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
+                'type' => 'nps_payouts_dashboard',
+                'channel' => '3',
             ],
         ],
     ],
@@ -120,7 +145,8 @@ return [
                 'description' => 'This is test survey updated',
                 'survey_ttl' => 30,
                 'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
-                'type' => 'nps_payouts'
+                'type' => 'nps_payouts_dashboard',
+                'channel' => 2,
             ],
         ],
     ],
@@ -175,7 +201,7 @@ return [
             'method'  => 'POST',
             'url'     => '/survey/scheduled/process',
             'content' => [
-                'survey_type' => 'nps_payouts',
+                'survey_type' => 'nps_payouts_dashboard',
             ],
         ],
         'response' => [
@@ -190,7 +216,7 @@ return [
             'method'  => 'POST',
             'url'     => '/survey/scheduled/process',
             'content' => [
-                'survey_type' => 'nps_payouts',
+                'survey_type' => 'nps_payouts_api',
             ],
         ],
         'response' => [
@@ -205,7 +231,7 @@ return [
             'method'  => 'POST',
             'url'     => '/survey/scheduled/process',
             'content' => [
-                'survey_type' => 'nps_payouts',
+                'survey_type' => 'nps_payouts_dashboard',
             ],
         ],
         'response' => [
@@ -220,7 +246,7 @@ return [
             'method'  => 'POST',
             'url'     => '/survey/scheduled/process',
             'content' => [
-                'survey_type' => 'nps_payouts',
+                'survey_type' => 'nps_payouts_dashboard',
             ],
         ],
         'response' => [
@@ -235,7 +261,7 @@ return [
             'method'  => 'POST',
             'url'     => '/survey/scheduled/process',
             'content' => [
-                'survey_type' => 'nps_payouts',
+                'survey_type' => 'nps_payouts_dashboard',
             ],
         ],
         'response' => [
@@ -250,7 +276,7 @@ return [
             'method'  => 'POST',
             'url'     => '/survey/scheduled/process',
             'content' => [
-                'survey_type' => 'nps_payouts',
+                'survey_type' => 'nps_payouts_api',
             ],
         ],
         'response' => [
@@ -265,7 +291,7 @@ return [
             'method'  => 'POST',
             'url'     => '/survey/scheduled/process',
             'content' => [
-                'survey_type' => 'nps_payouts',
+                'survey_type' => 'nps_payouts_api',
             ],
         ],
         'response' => [
@@ -280,7 +306,7 @@ return [
             'method'  => 'POST',
             'url'     => '/survey/scheduled/process',
             'content' => [
-                'survey_type' => 'nps_payouts',
+                'survey_type' => 'nps_payouts_dashboard',
             ],
         ],
         'response' => [
@@ -698,7 +724,7 @@ return [
             'method'  => 'POST',
             'url'     => '/survey/scheduled/process',
             'content' => [
-                'survey_type' => 'nps_payouts',
+                'survey_type' => 'nps_payouts_dashboard',
             ],
         ],
         'response' => [

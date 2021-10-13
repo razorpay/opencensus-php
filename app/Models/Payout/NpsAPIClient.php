@@ -8,7 +8,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 
-class NpsClient extends Base\Service
+class NpsAPIClient extends Base\Service
 {
     /**
      * @return array
@@ -20,7 +20,7 @@ class NpsClient extends Base\Service
 
         $startTimeStamp = Carbon::now(Timezone::IST)->subHours(24)->getTimestamp();
 
-        $cohorts = $this->repo->payout->getPayoutCohortList($startTimeStamp, $currentTimeStamp);
+        $cohorts = $this->repo->payout->getPayoutAPICohortList($startTimeStamp, $currentTimeStamp);
 
         $this->trace->info(TraceCode::COHORT_PAYOUT_COUNT, ['Count' => count($cohorts)]);
 
