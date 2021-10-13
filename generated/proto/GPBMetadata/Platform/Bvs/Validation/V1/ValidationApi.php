@@ -17,14 +17,16 @@ class ValidationApi
         \GPBMetadata\Google\Protobuf\Struct::initOnce();
         \GPBMetadata\Platform\Bvs\Validation\V1\Artefact::initOnce();
         \GPBMetadata\Platform\Bvs\Validation\V1\Validation::initOnce();
+        \GPBMetadata\Platform\Bvs\Validation\V1\Metadata::initOnce();
         $pool->internalAddGeneratedFile(
             '
-€
-/platform/bvs/validation/v1/validation_api.protoplatform.bvs.validation.v1)platform/bvs/validation/v1/artefact.proto+platform/bvs/validation/v1/validation.proto"¶
+ñ
+/platform/bvs/validation/v1/validation_api.protoplatform.bvs.validation.v1)platform/bvs/validation/v1/artefact.proto+platform/bvs/validation/v1/validation.proto)platform/bvs/validation/v1/metadata.proto"î
 CreateValidationRequest6
 artefact (2$.platform.bvs.validation.v1.ArtefactY
 enrichments (2D.platform.bvs.validation.v1.CreateValidationRequest.EnrichmentsEntry0
-rules (2!.platform.bvs.validation.v1.RulesV
+rules (2!.platform.bvs.validation.v1.Rules6
+metadata (2$.platform.bvs.validation.v1.MetadataV
 EnrichmentsEntry
 key (	1
 value (2".platform.bvs.validation.v1.Fields:8"Ÿ
@@ -40,7 +42,7 @@ error_code (	
 enrichment_details_fields (	2û
 ValidationAPIw
 CreateValidation3.platform.bvs.validation.v1.CreateValidationRequest..platform.bvs.validation.v1.ValidationResponseq
-GetValidation0.platform.bvs.validation.v1.GetValidationRequest..platform.bvs.validation.v1.ValidationResponseB&Zvalidationv1ÊRzp\\Bvs\\Validation\\V1bproto3'
+GetValidation0.platform.bvs.validation.v1.GetValidationRequest..platform.bvs.validation.v1.ValidationResponseB4Zplatform/bvs/validation/v1ÊRzp\\Bvs\\Validation\\V1bproto3'
         , true);
 
         static::$is_initialized = true;

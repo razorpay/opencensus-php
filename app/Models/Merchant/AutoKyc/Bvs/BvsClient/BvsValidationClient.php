@@ -4,17 +4,24 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
 
 use App;
 use Request;
+
 use Twirp\Error;
 use ErrorException;
 use Google\Protobuf\Struct;
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\MapField;
 
+use RZP\Http\RequestHeader;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant\Detail\Metric;
 use RZP\Exception\IntegrationException;
 use Rzp\Bvs\Validation\V1 as validationV1;
+use RZP\Models\Merchant\Detail\Metric;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\Detail\Status;
+use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Merchant\Detail\Core as DetailCore;
+use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class BvsValidationClient extends BaseClient
 {
@@ -26,8 +33,7 @@ class BvsValidationClient extends BaseClient
     function __construct()
     {
         parent::__construct();
-
-        $this->ValidationApiClient = New validationV1\ValidationAPIClient($this->host, $this->httpClient);
+        $this->ValidationApiClient = new validationV1\ValidationAPIClient($this->host, $this->httpClient);
     }
 
     public function getValidation(array $payload)
@@ -36,18 +42,16 @@ class BvsValidationClient extends BaseClient
 
         $validationRequest = $this->getValidationRequest($payload);
 
-        try
-        {
+        try {
             $response = $this->ValidationApiClient->GetValidation($this->apiClientCtx, $validationRequest);
 
             $this->trace->info(
                 TraceCode::BVS_GET_VALIDATION_RESPONSE,
-                ['validationId' => $response->getValidationId()]);
+                ['validationId' => $response->getValidationId()]
+            );
 
             return $response;
-        }
-        catch (Error $e)
-        {
+        } catch (Error $e) {
             $this->trace->traceException($e, null, TraceCode::BVS_INTEGRATION_ERROR, $e->getMetaMap());
 
             throw new IntegrationException('Could not receive proper response from BVS service');
@@ -69,10 +73,14 @@ class BvsValidationClient extends BaseClient
 
         $requestSuccess = false;
 
+        if($validationCreateRequest->getMetadata()!=null)
+            $this->trace->info(TraceCode::BVS_CREATE_VALIDATION_METADATA, [Constant::META_DATA => $validationCreateRequest->getMetadata()->serializeToJsonString()]);
+        else
+            $this->trace->info(TraceCode::BVS_CREATE_VALIDATION_METADATA, [Constant::META_DATA => null]);
+
         $artefactType = $validation[Constant::ARTEFACT][Constant::TYPE] ?? '';
 
-        try
-        {
+        try {
             $response = $this->ValidationApiClient->CreateValidation($this->apiClientCtx, $validationCreateRequest);
 
             $requestSuccess = true;
@@ -81,23 +89,21 @@ class BvsValidationClient extends BaseClient
                 Metric::BVS_REQUEST_TOTAL,
                 [
                     Constant::ARTEFACT_TYPE => $artefactType,
-                ]);
+                ]
+            );
 
             $this->trace->info(
                 TraceCode::BVS_CREATE_VALIDATION_RESPONSE,
-                ['response' => $response->serializeToJsonString()]);
+                ['response' => $response->serializeToJsonString()]
+            );
 
             return $response;
-        }
-        catch (Error $e)
-        {
+        } catch (Error $e) {
             $this->trace->traceException($e, null, TraceCode::BVS_INTEGRATION_ERROR, $e->getMetaMap());
 
             throw new IntegrationException('
                 Could not receive proper response from BVS service');
-        }
-        finally
-        {
+        } finally {
             $dimension = [
                 Constant::ARTEFACT_TYPE => $artefactType,
                 Constant::SUCCESS       => $requestSuccess,
@@ -128,6 +134,10 @@ class BvsValidationClient extends BaseClient
         $rules = $this->NewRules($validation[Constant::RULES]);
 
         $createValidation->setRules($rules);
+
+        $metadata = $this->newMetadata($artefact->getOwnerId());
+
+        if (isset($metadata)) $createValidation->setMetadata($metadata);
 
         return $createValidation;
     }
@@ -163,6 +173,134 @@ class BvsValidationClient extends BaseClient
     }
 
     /**
+     * Here we try to identify through what flow the merchant/admin is trying to send request,
+     * It is decided on the basis of state of onboarding form, merchant activation status, statys logs etc.
+     * For example, if the merchant is activated and is trying to make a request to BVS we are calling it
+     * post onboarding flow.
+     *
+     * @param string $merchant_id
+     * @return string
+     *
+     */
+    public function getValidationFlow(string $merchant_id): string
+    {
+        [$merchant, $merchantDetailsEntity] = (new DetailCore())->getMerchantAndSetBasicAuth($merchant_id);
+
+        if($merchantDetailsEntity->getActivationStatus() === Status::ACTIVATED or
+            $merchantDetailsEntity->getActivationStatus() === Status::ACTIVATED_MCC_PENDING
+        ){
+            return Constant::POST_ONBOARDING_EDIT;
+        }
+
+        $statusChangeLogs =  (new MerchantCore)->getActivationStatusChangeLog($merchantDetailsEntity->merchant);
+
+        $needsClarificationCount = (new MerchantDetailCore())->getStatusChangeCount($statusChangeLogs, Status::NEEDS_CLARIFICATION);
+
+        if ($needsClarificationCount >=1) {
+            return Constant::NEEDS_CLARIFICATION;
+        }
+
+        return Constant::ONBOARDING_FLOW;
+    }
+
+    /**
+     * Here we are trying to identify who is making this request to BVS,
+     * The actor can be admin, merchant or partner and is decided on the basis of auth
+     * For admin logged in as merchant using merchant auth, we keep actor as empty since
+     * an admin not a merchant is performing this action, and currently we cannot identify on code level
+     * which admin is logged in as merchant.
+     *
+     * @param $headers
+     * @return array
+     */
+    public function getActorDetailsForMetaData($headers): array
+    {
+        $actorDetails = [];
+
+        if (strcmp($headers->get(RequestHeader::X_DASHBOARD_ADMIN_AS_MERCHANT), Constant::ADMIN_IS_LOGGED_IN_AS_MERCHANT_HEADER) == 0) {
+            return $actorDetails;
+        }
+
+        if (empty($headers->get(RequestHeader::X_DASHBOARD_ADMIN_EMAIL))) {
+            $actorDetails[Constant::ACTOR_EMAIL]   =  $headers->get(RequestHeader::X_DASHBOARD_USER_EMAIL);
+            $actorDetails[Constant::ACTOR_ID]      =  $headers->get(RequestHeader::X_DASHBOARD_USER_ID);
+            $actorDetails[Constant::ACTOR_ROLE]    =  $headers->get(RequestHeader::X_DASHBOARD_USER_ROLE);
+        } else {
+            $actorDetails[Constant::ACTOR_EMAIL]   =  $headers->get(RequestHeader::X_DASHBOARD_ADMIN_EMAIL);
+            $actorDetails[Constant::ACTOR_ID]      =  $headers->get(RequestHeader::X_DASHBOARD_ADMIN_USERNAME);
+            $actorDetails[Constant::ACTOR_ROLE]    =  Constant::ADMIN_ROLE;
+        }
+
+        return $actorDetails;
+    }
+
+
+    /**
+     * Here we try to identify where the request is coming from, it can take values like
+     * admin dashboard, merchant dashboard etc. If the admin is logged in as merchant we append
+     * a string that says 'admin logged in as merchant' to the source.
+     *
+     * @param $headers, $requestContext
+     * @return string
+     */
+    public function getSourceForMetaData($headers, $internalAppName): string
+    {
+        if(isset($internalAppName) === false) {
+            return "";
+        }
+
+        if (strcmp($headers->get(RequestHeader::X_DASHBOARD_ADMIN_AS_MERCHANT), Constant::ADMIN_IS_LOGGED_IN_AS_MERCHANT_HEADER) == 0) {
+            return $internalAppName . (Constant::ADMIN_LOGGED_IN_AS_MERCHANT_MESSAGE);
+        } else {
+            return $internalAppName;
+        }
+    }
+
+    /**
+     *
+     * @param string $merchant_id
+     * @return validationV1\Metadata|null
+     */
+    private function newMetadata(string $merchant_id): ?validationV1\Metadata {
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchant_id,
+            RazorxTreatment::BVS_CREATE_VALIDATION_METADATA,
+            Constant::LIVE_MODE
+        );
+
+        if(strcmp($variant, Constant::ON) != 0) {
+            return null;
+        }
+
+        $requestContext =  $this->app['request.ctx'];
+        $request        =  $this->app['request'];
+
+        if(isset($requestContext)===false or isset($request)===false){
+            return null;
+        }
+
+        $headers = $request->headers;
+
+        if(isset($headers)===false){
+           return null;
+        }
+
+        $metadataArray = [
+            Constant::USER_AGENT => $headers->get(RequestHeader::X_USER_AGENT),
+            Constant::IP => $headers->get(RequestHeader::X_DASHBOARD_IP),
+            Constant::FLOW => $this->getValidationFlow($merchant_id),
+            Constant::SOURCE => $this->getSourceForMetaData($headers, $requestContext->getInternalAppName())
+        ];
+
+        $actor          = new validationV1\Actor($this->getActorDetailsForMetaData($headers));
+        $metadata       = new validationV1\Metadata($metadataArray);
+        $metadata->setActor($actor);
+
+        return $metadata;
+    }
+
+    /**
      * @param array $proofsArr
      *
      * @return MapField
@@ -173,10 +311,10 @@ class BvsValidationClient extends BaseClient
         $proofs = new MapField(
             GPBType::INT32,
             GPBType::MESSAGE,
-            validationV1\ProofDetails::class);
+            validationV1\ProofDetails::class
+        );
 
-        foreach ($proofsArr as $key => $proofDetailsArr)
-        {
+        foreach ($proofsArr as $key => $proofDetailsArr) {
             $proofDetails = new validationV1\ProofDetails($proofDetailsArr);
 
             $proofs->offsetSet($key, $proofDetails);
@@ -196,10 +334,10 @@ class BvsValidationClient extends BaseClient
         $enrichmentMap = new MapField(
             GPBType::STRING,
             GPBType::MESSAGE,
-            validationV1\Fields::class);
+            validationV1\Fields::class
+        );
 
-        foreach ($enrichments as $key => $fields)
-        {
+        foreach ($enrichments as $key => $fields) {
             $detailsJsonString = json_encode($fields);
 
             $fieldsMessage = new validationV1\Fields();
@@ -240,10 +378,10 @@ class BvsValidationClient extends BaseClient
         $rulesListMapField = new MapField(
             GPBType::INT32,
             GPBType::MESSAGE,
-            validationV1\Rule::class);
+            validationV1\Rule::class
+        );
 
-        foreach ($ruleList as $key => $rule)
-        {
+        foreach ($ruleList as $key => $rule) {
             $ruleObj = $this->NewRule($rule);
 
             $rulesListMapField->offsetSet($key, $ruleObj);

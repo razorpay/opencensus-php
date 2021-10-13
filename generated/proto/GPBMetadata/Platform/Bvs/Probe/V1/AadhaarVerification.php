@@ -16,7 +16,7 @@ class AadhaarVerification
         }
         $pool->internalAddGeneratedFile(
             '
-¿
+Í
 0platform/bvs/probe/v1/aadhaar_verification.protoplatform.bvs.probe.v1"
 AadhaarGetCaptchaRequest"u
 AadhaarGetCaptchaResponse
@@ -49,7 +49,7 @@ session_id (	
 file_url (	
 
 error_code (	
-error_description (	BZprobev1ÊRzp\\Bvs\\Probe\\V1bproto3'
+error_description (	B*Zplatform/bvs/probe/v1ÊRzp\\Bvs\\Probe\\V1bproto3'
         , true);
 
         static::$is_initialized = true;

@@ -25,6 +25,10 @@ class CreateValidationRequest extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>.platform.bvs.validation.v1.Rules rules = 3;</code>
      */
     protected $rules = null;
+    /**
+     * Generated from protobuf field <code>.platform.bvs.validation.v1.Metadata metadata = 4;</code>
+     */
+    protected $metadata = null;
 
     /**
      * Constructor.
@@ -35,6 +39,7 @@ class CreateValidationRequest extends \Google\Protobuf\Internal\Message
      *     @type \Rzp\Bvs\Validation\V1\Artefact $artefact
      *     @type array|\Google\Protobuf\Internal\MapField $enrichments
      *     @type \Rzp\Bvs\Validation\V1\Rules $rules
+     *     @type \Rzp\Bvs\Validation\V1\Metadata $metadata
      * }
      */
     public function __construct($data = NULL) {
@@ -124,6 +129,38 @@ class CreateValidationRequest extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkMessage($var, \Rzp\Bvs\Validation\V1\Rules::class);
         $this->rules = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>.platform.bvs.validation.v1.Metadata metadata = 4;</code>
+     * @return \Rzp\Bvs\Validation\V1\Metadata|null
+     */
+    public function getMetadata()
+    {
+        return $this->metadata;
+    }
+
+    public function hasMetadata()
+    {
+        return isset($this->metadata);
+    }
+
+    public function clearMetadata()
+    {
+        unset($this->metadata);
+    }
+
+    /**
+     * Generated from protobuf field <code>.platform.bvs.validation.v1.Metadata metadata = 4;</code>
+     * @param \Rzp\Bvs\Validation\V1\Metadata $var
+     * @return $this
+     */
+    public function setMetadata($var)
+    {
+        GPBUtil::checkMessage($var, \Rzp\Bvs\Validation\V1\Metadata::class);
+        $this->metadata = $var;
 
         return $this;
     }

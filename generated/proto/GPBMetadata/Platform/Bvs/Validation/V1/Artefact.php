@@ -17,7 +17,7 @@ class Artefact
         \GPBMetadata\Google\Protobuf\Struct::initOnce();
         $pool->internalAddGeneratedFile(
             '
-…
+“
 )platform/bvs/validation/v1/artefact.protoplatform.bvs.validation.v1"æ
 Artefact
 type (	
@@ -35,7 +35,7 @@ identifier (	(
 key (7
 value (2(.platform.bvs.validation.v1.ProofDetails:8"#
 ProofDetails
-ufh_file_id (	B&Zvalidationv1ÊRzp\\Bvs\\Validation\\V1bproto3'
+ufh_file_id (	B4Zplatform/bvs/validation/v1ÊRzp\\Bvs\\Validation\\V1bproto3'
         , true);
 
         static::$is_initialized = true;

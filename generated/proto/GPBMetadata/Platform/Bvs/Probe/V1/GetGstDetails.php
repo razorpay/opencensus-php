@@ -17,7 +17,7 @@ class GetGstDetails
         \GPBMetadata\Google\Protobuf\Wrappers::initOnce();
         $pool->internalAddGeneratedFile(
             '
-Ò
+à
 +platform/bvs/probe/v1/get_gst_details.protoplatform.bvs.probe.v1"T
 GetGstDetailsRequest
 pan (	
@@ -27,7 +27,7 @@ class GetGstDetails
 count (2.google.protobuf.Int32Value/
 items (2 .platform.bvs.probe.v1.GstResult"
 	GstResult
-gstin (	BZprobev1ÊRzp\\Bvs\\Probe\\V1bproto3'
+gstin (	B*Zplatform/bvs/probe/v1ÊRzp\\Bvs\\Probe\\V1bproto3'
         , true);
 
         static::$is_initialized = true;

@@ -36,6 +36,15 @@ class Constant
     const PROOF_INDEX       = 'proof_index';
     const LLPIN             = 'llpin';
     const PROBE_ID          = 'probe_id';
+    const IP                = 'ip';
+    const USER_AGENT        = 'user_agent';
+    const ACTOR             = 'actor';
+    const SOURCE            = 'source';
+    const FLOW              = 'flow';
+    const ACTOR_ID          = 'id';
+    const ACTOR_ROLE        = 'role';
+    const ACTOR_EMAIL       = 'email';
+    const META_DATA         = 'meta_data';
 
     const ENRICHMENT_DETAIL_FIELDS = "enrichment_details_fields";
 
@@ -48,6 +57,15 @@ class Constant
     const SHOP_AREA_CODE           = 'area_code';
     const SHOP_ENTITY_NAME         = 'entity_name';
     const SHOP_OWNER_NAME          = 'owner_name';
+
+    // CreateValidation Flows
+    const ONBOARDING_FLOW               = 'onboarding';
+    const NEEDS_CLARIFICATION           = 'needs clarification';
+    const POST_ONBOARDING_EDIT          = 'post onboarding edit';
+
+    // Razorx Experiment for BVS metadata
+    const LIVE_MODE  = 'live';
+    const ON         = 'on';
 
     // Config names
     const PERSONAL_PAN_OCR           = 'personal_pan_ocr';
@@ -65,6 +83,10 @@ class Constant
     const BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN    = "bank_account_with_business_or_promoter_pan";
     const AADHAR_BACK                                   = "aadhar_back";
     const AADHAAR_WITH_PAN                              = 'aadhaar_with_pan';
+    const ADMIN_ROLE                                    = "admin";
+    const ADMIN_LOGGED_IN_AS_MERCHANT_MESSAGE           = "(Admin Logged in as Merchant)";
+    const ADMIN_IS_LOGGED_IN_AS_MERCHANT_HEADER         = "1";
+
     //
     // Response fields
     //

@@ -16,7 +16,7 @@ class CompanySearch
         }
         $pool->internalAddGeneratedFile(
             '
-î
+ü
 *platform/bvs/probe/v1/company_search.protoplatform.bvs.probe.v1"-
 CompanySearchRequest
 search_string (	"}
@@ -28,7 +28,7 @@ error_code (	
 CompanyResult
 company_name (	
 identity_number (	
-identity_type (	BZprobev1ÊRzp\\Bvs\\Probe\\V1bproto3'
+identity_type (	B*Zplatform/bvs/probe/v1ÊRzp\\Bvs\\Probe\\V1bproto3'
         , true);
 
         static::$is_initialized = true;
