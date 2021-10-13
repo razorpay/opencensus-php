@@ -3053,6 +3053,28 @@ class UserTest extends TestCase
         $this->assertNotEmpty($response['token']);
     }
 
+    public function testSendOtpForViewOnlyRoleInX()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $mappingData = [
+            'merchant_id' => '10000000000000',
+            'user_id'     => UserFixture::MERCHANT_USER_ID,
+            'role'        => 'view_only',
+            'product'     => 'banking'
+        ];
+
+        $this->fixtures->user->createUserMerchantMapping($mappingData);
+
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
     public function testSendXMobileAppDownloadLink()
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);

@@ -427,6 +427,7 @@ class UserRolePermissionsMap
                  Permission::GENERATE_TDS_CHALLAN_ZIP,
                  Permission::VIEW_ACCOUNTING_INTEGRATION,
                  Permission::WAITLIST_ACCOUNTING_INTEGRATION,
+                 Permission::CREATE_USER_OTP,
              ],
         ];
 

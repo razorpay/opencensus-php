@@ -2225,6 +2225,23 @@ return [
         ],
     ],
 
+    'testSendOtpForViewOnlyRoleInX' => [
+        'request' => [
+            'url'     => '/users/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'medium' => 'sms',
+                'action' => 'verify_contact',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ]
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testSendXMobileAppDownloadLink' => [
         'request' => [
             'url'     => '/users/mobile_app_link',
