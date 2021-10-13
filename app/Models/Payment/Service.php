@@ -3777,25 +3777,17 @@ class Service extends Base\Service
 
         if(array_search($payment->getStatus(), $statusToVerify) === false)
         {
-            $this->trace->info(
-                TraceCode::STATUS_NOT_FOR_VERIFY,
-                [
-                    'payment_id' => $id
-                ]);
-
             $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_STATUS_NOT_FOR_VERIFY, $payment, null, $extraProperties);
 
-            $data['retry_verify'] = false;
+            $this->traceRetryVerifyFalse($id, TraceCode::STATUS_NOT_FOR_VERIFY, $data);
+        }
+        else if (empty($payment->getGateway()) === true)
+        {
+            $this->traceRetryVerifyFalse($id, TraceCode::PAYMENT_VERIFY_GATEWAY_NULL, $data);
         }
         else if ((new Verify())->isFinalErrorCode($payment) === true)
         {
-            $this->trace->info(
-                TraceCode::FINAL_ERROR_CODE,
-                [
-                    'payment_id' => $id
-                ]);
-
-            $data['retry_verify'] = false;
+            $this->traceRetryVerifyFalse($id, TraceCode::FINAL_ERROR_CODE, $data);
         }
         else
         {
@@ -3904,5 +3896,21 @@ class Service extends Base\Service
         }
 
         return false;
+    }
+
+    /**
+     * @param $id
+     * @param $message
+     * @param &$data
+     */
+    protected function traceRetryVerifyFalse($id, $message, &$data)
+    {
+        $data['retry_verify'] = false;
+
+        $this->trace->info(
+            $message,
+            [
+                'payment_id' => $id
+            ]);
     }
 }
