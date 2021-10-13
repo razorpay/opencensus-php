@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\CustomerToken;
 use App;
 use Mockery;
 
+use RZP\Exception;
 use RZP\Models\Customer\Token;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -350,5 +351,144 @@ class TokenTest extends TestCase
         $response = $this->startTest();
 
         $this->assertEquals('SERVER_ERROR', $response['error']['code']);
+    }
+
+    public function testFetchCryptogramLive()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ()
+        {
+            $dummyCardNumber = '4100000000000099';
+
+            $response['success'] = true;
+            $response['service_providers'] = [
+                'type'  => 'network',
+                'name'  => 'Visa',
+                'data'  => [
+                    'token_number' => $dummyCardNumber,
+                    'cryptogram_value' => 12,
+                    'expiry_month' => 12,
+                    'expiry_year' => 2021,
+                ],
+            ];
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->ba->privateAuth();
+
+        $createPayload = $this->testData['testCreateToken'];
+
+        $response = $this->startTest($createPayload);
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $fetchPayload = $this->testData['testFetchCryptogramLive'];
+
+        $fetchPayload['request']['content'] = ['id' => $response['id']];
+
+        $response = $this->startTest($fetchPayload);
+
+        $this->assertNotNull($response['service_provider']['data']['token_number']);
+
+        $this->assertNotNull($response['service_provider']['data']['cryptogram_value']);
+
+        $this->assertEquals('12', $response['service_provider']['data']['expiry_month']);
+
+        $this->assertEquals('2021', $response['service_provider']['data']['expiry_year']);
+
+        $this->assertEquals('4100000000000099', $response['service_provider']['data']['token_number']);
+    }
+
+    public function testFetchCryptogramLiveInvalidToken()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ()
+        {
+            $dummyCardNumber = '4100000000000099';
+
+            $response['success'] = true;
+            $response['service_providers'] = [
+                'type'  => 'network',
+                'name'  => 'Visa',
+                'data'  => [
+                    'token_number' => $dummyCardNumber,
+                    'cryptogram_value' => 12,
+                    'expiry_month' => 12,
+                    'expiry_year' => 2021,
+                ],
+            ];
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+                  ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+                  ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $fetchPayload = $this->testData['testFetchCryptogramLiveInvalidTokenId'];
+
+        $this->startTest($fetchPayload);
+    }
+
+    public function testFetchCryptogramLiveVaultFailure()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ($route, $method, $input)
+        {
+            $response['success'] = false;
+
+            $response['error'] = [
+                [
+                    'code'        => 'SERVER_ERROR',
+                    'description' => 'The server encountered an error. The incident has been reported to admins.'
+                ]
+            ];
+
+            return $response;
+        };
+
+        $this->ba->privateAuth();
+
+        $createPayload = $this->testData['testCreateToken'];
+
+        $response = $this->makeRequestAndGetContent($createPayload['request']);
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $fetchPayload = $this->testData['testFetchCryptogramLive'];
+
+        $fetchPayload['request']['content'] = ['id' => $response['id']];
+
+        $this->startTest($fetchPayload);
     }
 }

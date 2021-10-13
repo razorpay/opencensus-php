@@ -540,11 +540,26 @@ class Service extends Base\Service
         return $this->generateMockResponse($token);
     }
 
-    public function fetchCryptoGram($id)
+    public function fetchCryptoGram($input)
     {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
+        {
+            (new Validator)->validateInput(Validator::FETCH_CRYPTOGRAM, $input);
+
+            $token = $this->repo->token->findOrFailByPublicIdAndMerchant($input['id'], $this->merchant);
+
+            $response = $this->core->fetchCryptogram($token, $this->merchant);
+
+            $serviceProviders = $this->core->fetchCryptogram($token, $this->merchant);
+
+            $response['service_provider'] = $serviceProviders;
+
+            return $response;
+        }
+
         $this->validateMode();
 
-        $token = $this->repo->token->getByPublicIdAndMerchant($id, $this->merchant);
+        $token = $this->repo->token->getByPublicIdAndMerchant($input['id'], $this->merchant);
 
         if ($token === null)
         {

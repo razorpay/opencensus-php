@@ -178,4 +178,23 @@ class CardVault extends Base\Core
 
         return $this->app['card.cardVault']->createTokenizedCard($input);
     }
+
+    public function fetchCryptogram($cardVaultToken, $merchant)
+    {
+        $input['token'] = $cardVaultToken;
+
+        $input = $this->setMerchantDetails($input, $merchant);
+
+        return $this->app['card.cardVault']->fetchCryptogram($input);
+    }
+
+    protected function setMerchantDetails($input, $merchant)
+    {
+        // todo: send required merchant attributes after api contract finalization
+        $input['merchant'] = [
+            'id' => $merchant->getId()
+        ];
+
+        return $input;
+    }
 }

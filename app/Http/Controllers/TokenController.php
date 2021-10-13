@@ -33,7 +33,7 @@ class TokenController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->fetchCryptoGram($input['id']);
+        $data = $this->service()->fetchCryptoGram($input);
 
         return ApiResponse::json($data);
     }

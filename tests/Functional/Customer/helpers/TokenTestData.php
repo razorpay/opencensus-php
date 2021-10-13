@@ -128,5 +128,54 @@ return [
             'class'                 => \RZP\Exception\RuntimeException::class,
             'internal_error_code'   => 'SERVER_ERROR_RUNTIME_ERROR',
         ],
-    ]
+    ],
+
+    'testFetchCryptogramLive' => [
+        'request' => [
+            'url' => '/tokens/cryptogram',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testFetchCryptogramLiveInvalidTokenId' => [
+        'request' => [
+            'url' => '/tokens/cryptogram',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+
+    'testFetchCryptogramLiveVaultFailure' => [
+        'request' => [
+            'url' => '/tokens/cryptogram',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\RuntimeException::class,
+            'internal_error_code'   => 'SERVER_ERROR_RUNTIME_ERROR',
+        ],
+    ],
 ];

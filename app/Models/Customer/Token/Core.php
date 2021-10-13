@@ -1412,4 +1412,9 @@ class Core extends Base\Core
 
         return $token;
     }
+
+    public function fetchCryptogram($token, $merchant)
+    {
+        return (new Card\Core)->fetchCryptogram($token->card, $merchant);
+    }
 }

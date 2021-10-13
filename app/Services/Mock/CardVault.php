@@ -101,7 +101,29 @@ class CardVault extends BaseCardVault
                 'data'  => [
                     'token_reference_number' => $token,
                     'card_reference_number'  => strrev($token),
-                    'interoperable'          => true,
+                ],
+               'interoperable'          => true,
+            ]
+        ];
+
+        return $response;
+    }
+
+    public function fetchCryptogram($input): array
+    {
+        $response['success'] = true;
+
+        $dummyCardNumber = '4100000000000099';
+
+        $response['service_provider'] = [
+            [
+                'type'  => 'network',
+                'name'  => 'Visa',
+                'data'  => [
+                    'token_number' => $dummyCardNumber,
+                    'cryptogram_value' => 12,
+                    'expiry_month' => 12,
+                    'expiry_year' => 2021,
                 ],
             ]
         ];

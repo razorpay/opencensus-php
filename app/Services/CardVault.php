@@ -28,6 +28,7 @@ class CardVault
     const TOKENEX_TOKENS    = 'tokenex_tokens';
     const X_RAZORPAY_TASKID = 'X-Razorpay-TaskId';
     const TOKENEX_VAULT_MAPPING = 'tokenex_vault_mapping';
+    const SERVICE_PROVIDERS = 'service_providers';
 
     const REQUEST_TIMEOUT = 20;
 
@@ -398,7 +399,7 @@ class CardVault
 
     public function createVaultToken(array $input): array
     {
-        (new Validator)->validateInput('create_vault_token', $input);
+        // (new Validator)->validateInput('create_vault_token', $input);
 
         $this->trace->info(TraceCode::VAULT_TOKEN_CREATE_INIT);
 
@@ -481,5 +482,20 @@ class CardVault
         ]);
 
        return $result->get('Plaintext');
+    }
+
+    public function fetchCryptogram($input): array
+    {
+        $this->trace->info(TraceCode::VAULT_FETCH_CRYPTOGRAM);
+
+        $response = $this->sendRequest('tokens/cryptogram', 'post', $input);
+
+        if ($response[self::SUCCESS] === false)
+        {
+            throw new Exception\RuntimeException(
+                'Network Fetch cryptogram request failed', ['data' => $response]);
+        }
+
+        return $response[self::SERVICE_PROVIDERS];
     }
 }

@@ -5,6 +5,7 @@ namespace RZP\Models\Customer\Token;
 use DB;
 
 use RZP\Models\Base;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
@@ -514,6 +515,15 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->merchantId($merchant->getId())
                     ->find($id);
+    }
+
+    public function findOrFailByPublicIdAndMerchant(string $id, Merchant\Entity $merchant)
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        return $this->newQuery()
+                    ->merchantId($merchant->getId())
+                    ->findOrFailPublic($id);
     }
 
     public function fetchByMethodAndCardIdAndMerchant($method,string $cardId, $merchantId)
