@@ -339,12 +339,12 @@ class SettlementsListContainer extends ListContainer {
         };
         handleAnalytics(objectName, 'result', resultProps);
       })
-      .catch((e) => {
+      .catch(({ errors }) => {
         const failureProps = {
           searchTerm: args.id,
           resultsReturned: false,
           status: 'failure',
-          failureReason: e.errors[0],
+          failureReason: errors?.join(', '),
         };
         handleAnalytics(objectName, 'result', failureProps);
       });

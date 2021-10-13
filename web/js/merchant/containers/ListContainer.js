@@ -24,9 +24,9 @@ export default class ListContainer extends Component {
     }
 
     this.state = {
-      /* 
-      As this is a common class which is extended in many places so other inherted components
-      might be using this status state so ignoring this eslint Error
+      /*
+        As this is a common class which is extended in many places so other inherted components
+        might be using this status state so ignoring this eslint Error
       */
       // eslint-disable-next-line react/no-unused-state
       status: {},
@@ -126,9 +126,9 @@ export default class ListContainer extends Component {
         promise
           .then(() => {
             this.setState({
-              /* 
-              As this is a common class which is extended in many places so other inherted components
-              might be using this status state so ignoring this eslint Error
+              /*
+                As this is a common class which is extended in many places so other inherted components
+                might be using this status state so ignoring this eslint Error
               */
               // eslint-disable-next-line react/no-unused-state
               status: {
@@ -139,9 +139,9 @@ export default class ListContainer extends Component {
           })
           .catch((err) => {
             this.setState({
-              /* 
-              As this is a common class which is extended in many places so other inherted components
-              might be using this status state so ignoring this eslint Error
+              /*
+                As this is a common class which is extended in many places so other inherted components
+                might be using this status state so ignoring this eslint Error
               */
               // eslint-disable-next-line react/no-unused-state
               status: {
@@ -163,11 +163,6 @@ export default class ListContainer extends Component {
     return this.fetchAll({
       ...this.getDefaultPageParams(),
       ...this.searchFilters,
-    }).then(() => {
-      if (this.searchAnalytics) {
-        // available from inherited component
-        this.searchAnalytics();
-      }
     });
   };
 
