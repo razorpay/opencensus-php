@@ -1,5 +1,6 @@
 import GenericEntity from './GenericEntity';
 import Refund from './Refund';
+import moment from 'moment';
 
 export default class Payment extends GenericEntity {
   // listRouteName = 'payment_fetch_multiple';
@@ -34,7 +35,7 @@ export default class Payment extends GenericEntity {
       paymentId: payment.id,
       paymentStatus: payment.status,
       paymentMethod: payment.method,
-      createdAt: payment.created_at,
+      createdAt: moment.unix(payment.created_at),
       description: payment.description,
       totalFee: payment.fee,
       orderId: payment.order_id,

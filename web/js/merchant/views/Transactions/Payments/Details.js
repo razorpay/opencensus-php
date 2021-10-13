@@ -148,6 +148,19 @@ class PaymentDetailsContainer extends Component {
         affirmativeLabel: 'Yes, Capture',
         affirmativePendingLabel: 'Capturing...',
         abortLabel: "No, don't!",
+        abort: () => {
+          analyticsTrack({
+            objectName: 'capture payment confirmation popup',
+            actionName: 'clicked',
+            screen: 'home page',
+            properties: {
+              ...payment.analyticsPayload(),
+              action: 'no',
+              location: 'payments',
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
+        },
         action: () => {
           window.rzpAnalytics({
             eventCategory,

@@ -70,8 +70,6 @@ export default class PaymentsListContainer extends ListContainer {
           properties: {
             paymentId: params.id,
             paymentStatus: params.status,
-            emailFilled: Boolean(params.email),
-            notesFilled: Boolean(params.notes),
             location: 'payments',
             ...getCommonAnalyticsProperties(window.rzp_user),
           },

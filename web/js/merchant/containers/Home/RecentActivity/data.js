@@ -2,10 +2,7 @@ import { Link } from 'react-router-dom';
 
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
-import {
-  PaymentStatusLabel,
-  SettlementStatusLabel,
-} from 'merchant/components/StatusLabel';
+import { PaymentStatusLabel, SettlementStatusLabel } from 'merchant/components/StatusLabel';
 
 const commonMeta = {
   columns: [
@@ -25,7 +22,7 @@ const commonMeta = {
       recordKey: 'id',
       transfomer: (value, record, tabName) => {
         return (
-          <Link to={`/${tabName}/${value}`}>
+          <Link to={{ pathname: `/${tabName}/${value}`, state: { fromHomePage: true } }}>
             <code>{value}</code>
           </Link>
         );
@@ -33,15 +30,12 @@ const commonMeta = {
     },
     {
       recordKey: 'created_at',
-      transfomer: value => <Time value={value} relative />,
+      transfomer: (value) => <Time value={value} relative />,
     },
     {
       recordKey: 'status',
       transfomer: (value, entity) => {
-        let Label =
-          entity.entity === 'settlement'
-            ? SettlementStatusLabel
-            : PaymentStatusLabel;
+        const Label = entity.entity === 'settlement' ? SettlementStatusLabel : PaymentStatusLabel;
         value = value || 'refunded';
 
         return <Label status={value} />;
@@ -50,10 +44,10 @@ const commonMeta = {
   ],
 };
 
-const tabs = ['payments', 'settlements', 'refunds'],
-  tabsMeta = {};
+const tabs = ['payments', 'settlements', 'refunds'];
+const tabsMeta = {};
 
-tabs.forEach(tabName => {
+tabs.forEach((tabName) => {
   tabsMeta[tabName] = tabsMeta[tabName] || Object.create(commonMeta);
 });
 

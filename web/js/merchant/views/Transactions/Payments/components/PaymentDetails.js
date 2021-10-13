@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
@@ -23,7 +23,7 @@ import React, { useEffect } from 'react';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-export default (props) => {
+function PaymentDetails(props) {
   const {
     payment,
     card,
@@ -40,28 +40,33 @@ export default (props) => {
     viewSettlementOverview,
     user,
     settlement_amount,
+    location,
   } = props;
   const isSettlementOnHold =
     (settlement_amount.data.no_settlement && settlement_amount.data.no_settlement.on_hold) || false;
+
+  const isFromHomePage = location.state?.fromHomePage;
 
   useEffect(() => {
     if (payment.id) {
       analyticsTrack({
         objectName: 'payment details',
         actionName: 'fetched',
-        screen: 'transactions',
+        screen: isFromHomePage ? 'home page' : 'transactions',
         properties: {
           ...payment.analyticsPayload(),
           ...getCommonAnalyticsProperties(window.rzp_user),
+          location: 'Payments',
         },
       });
       analyticsTrack({
         objectName: 'payment details sidebar',
         actionName: 'rendered',
-        screen: 'transactions',
+        screen: isFromHomePage ? 'home page' : 'transactions',
         properties: {
           ...payment.analyticsPayload(),
           ...getCommonAnalyticsProperties(window.rzp_user),
+          location: 'Payments',
         },
       });
     }
@@ -92,16 +97,17 @@ export default (props) => {
                     analyticsTrack({
                       objectName: 'capture payment',
                       actionName: 'clicked',
-                      screen: 'home page',
+                      screen: isFromHomePage ? 'home page' : 'transactions',
                       properties: {
                         ...payment.analyticsPayload(),
                         ...getCommonAnalyticsProperties(window.rzp_user),
+                        location: 'Payments',
                       },
                     });
                     analyticsTrack({
                       objectName: 'action items on sidebar',
                       actionName: 'clicked',
-                      screen: 'home page',
+                      screen: isFromHomePage ? 'home page' : 'transactions',
                       properties: {
                         ...payment.analyticsPayload(),
                         location: 'payment sidebar',
@@ -335,4 +341,6 @@ export default (props) => {
       )}
     </div>
   );
-};
+}
+
+export default withRouter(PaymentDetails);

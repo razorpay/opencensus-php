@@ -1,15 +1,14 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 import { Link } from 'react-router-dom';
 import Button from 'common/new-ui/Button';
-import EnableInstantRefundsModal from 'merchant/views/Transactions/Payments/components/EnableInstantRefundsModal';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { openModal } from 'merchant_common/reducers/modals';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils';
 import { fetchPayments, fetchRefunds, fetchSettlements } from 'merchant/reducers/collection';
-import { titleCase } from 'common/utils/rzp-utils';
 
 import GenericPanel, {
   PanelBody,
@@ -51,31 +50,13 @@ const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
           );
         }
 
-        return <td key={tabName + '-' + index}>{value}</td>;
+        return <td key={`${tabName}-${index}`}>{value}</td>;
       })}
     </tr>
   );
 };
 
-@connect(
-  (state) => {
-    return {
-      payments: state.payments,
-      default_refund_speed: state.config.config.default_refund_speed,
-      refunds: state.refunds,
-      settlements: state.settlements,
-      windowWidth: state.app.windowWidth,
-    };
-  },
-  {
-    fetchPayments,
-    openModal,
-    fetchRefunds,
-    fetchSettlements,
-  },
-)
-@RTracking(() => window.rzpQ.component('RecentActivity'))
-export default class RecentActivity extends Component {
+class RecentActivity extends Component {
   constructor(props) {
     super(props);
 
@@ -83,11 +64,9 @@ export default class RecentActivity extends Component {
       selectedTab: tabs[0],
       displayCompact: shouldDisplayCompact(props.windowWidth),
     };
-
-    this.handleTabClick = ::this.handleTabClick;
   }
 
-  handleTabClick(e) {
+  handleTabClick = (e) => {
     e.preventDefault();
 
     const tabName = e.target.getAttribute('name');
@@ -96,14 +75,14 @@ export default class RecentActivity extends Component {
       actionName: 'viewed',
       screen: 'home page',
       properties: {
-        tabName: tabName,
+        tabName,
         location: 'recent activity',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
     this.setState({ selectedTab: tabName });
     trackTabClick(titleCase(tabName), this.props.sectionTitle);
-  }
+  };
 
   handleResize(props = this.props) {
     this.setState({
@@ -118,7 +97,7 @@ export default class RecentActivity extends Component {
   }
 
   fetchPayments(params, nextProps) {
-    let payload = Object.assign({}, params);
+    const payload = { ...params };
 
     if (nextProps.startDate && nextProps.endDate) {
       payload.from = nextProps.startDate.unix();
@@ -140,8 +119,10 @@ export default class RecentActivity extends Component {
     }
 
     // On date range change, fetch payments for the given range
-    if (this.props.startDate?.unix() !== nextProps.startDate?.unix() ||
-          this.props.endDate?.unix() !== nextProps.endDate?.unix()) {
+    if (
+      this.props.startDate?.unix() !== nextProps.startDate?.unix() ||
+      this.props.endDate?.unix() !== nextProps.endDate?.unix()
+    ) {
       this.fetchPayments(DEFAULT_PARAMS, nextProps);
     }
   }
@@ -156,6 +137,9 @@ export default class RecentActivity extends Component {
       objectName: 'instant refund',
       actionName: 'clicked',
       screen: 'home page',
+      properties: {
+        location: 'recent activity',
+      },
     });
     this.props.tracking.trackEvent(
       window.rzpQ.merchantActions().initiated(`Click - Enable Now`, {
@@ -167,15 +151,15 @@ export default class RecentActivity extends Component {
   };
 
   render() {
-    const { selectedTab, displayCompact } = this.state,
-      selectedTabData = this.props[selectedTab],
-      numColumns = tabsMeta[selectedTab].columns.length,
-      selectedTabTitle = titleCase(selectedTab);
+    const { selectedTab, displayCompact } = this.state;
+    const selectedTabData = this.props[selectedTab];
+    const numColumns = tabsMeta[selectedTab].columns.length;
+    const selectedTabTitle = titleCase(selectedTab);
     let body = null;
 
     if (selectedTabData.loading || selectedTabData.items.length === 0) {
       let noRecordsFound = `No ${selectedTab} found.`;
-      if (selectedTab === "payments") {
+      if (selectedTab === 'payments') {
         noRecordsFound = 'No payments found for the selected duration.';
       }
 
@@ -210,7 +194,7 @@ export default class RecentActivity extends Component {
           <tabbed-container>
             <div className="row">
               {tabs.map((tabName, index) => {
-                const className = (tabName === selectedTab ? 'active ' : '') + 'col-xs-4';
+                const className = `${tabName === selectedTab ? 'active ' : ''}col-xs-4`;
 
                 return (
                   <a className={className} key={index} name={tabName} onClick={this.handleTabClick}>
@@ -251,7 +235,7 @@ export default class RecentActivity extends Component {
               <div class="pull-left main-page-process-instantly">
                 <p>
                   <i class="i i-instant-refund" /> Process all refunds instantly
-                  <Link to={`/config#instantrefunds`}>
+                  <Link to="/config#instantrefunds">
                     <button onClick={this.enableInstantRefunds} class="btn btn-outline">
                       <b>Enable Now</b>
                     </button>
@@ -286,3 +270,26 @@ export default class RecentActivity extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    payments: state.payments,
+    default_refund_speed: state.config.config.default_refund_speed,
+    refunds: state.refunds,
+    settlements: state.settlements,
+    windowWidth: state.app.windowWidth,
+  };
+};
+
+export default compose(
+  // eslint-disable-next-line babel/new-cap
+  RTracking({
+    page: 'ScheduledNitroBanner',
+  }),
+  connect(mapStateToProps, {
+    fetchPayments,
+    openModal,
+    fetchRefunds,
+    fetchSettlements,
+  }),
+)(RecentActivity);

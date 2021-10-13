@@ -30,7 +30,11 @@ const SettlementEntities = (props) => {
         <LoaderDots />
       )}
       {activeTab ? (
-        <EntityList activeTab={activeTab} settlementId={props.settlementId} />
+        <EntityList
+          breakupDetails={props.breakupDetails}
+          activeTab={activeTab}
+          settlementId={props.settlementId}
+        />
       ) : (
         <div class="div--loading">
           <Spinner />

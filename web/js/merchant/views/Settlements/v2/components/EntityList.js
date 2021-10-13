@@ -212,6 +212,10 @@ const EntityList = (props) => {
   const [count, setcount] = useState(DEFAULT_COUNT);
   const formRef = React.createRef();
 
+  const totalNoOfPayments = props.breakupDetails?.items?.find(
+    (item) => item.component === 'payment',
+  )?.count;
+
   const fetchData = (skipVal, countVal, type) => {
     const tab = sanitizeTabName(type);
     const source = tab === 'ondemand settlement' ? 'settlement.ondemand' : tab;
@@ -284,6 +288,7 @@ const EntityList = (props) => {
         const screen = 'settlement details';
         const properties = {
           searchTerm: searchId,
+          totalNoOfPayments,
         };
         handleAnalytics(objectName, actionName, properties, screen);
       }

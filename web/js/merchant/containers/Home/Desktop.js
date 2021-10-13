@@ -4,6 +4,7 @@ import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import Header from 'common/ui/Header';
+import moment from 'moment';
 import Amount from 'common/ui/Amount';
 import Group, { GroupItem } from 'common/ui/Group';
 import DateRangePicker from 'common/ui/DateRangePicker';
@@ -47,29 +48,10 @@ import { isDedupe, getActivationState } from 'merchant/components/Activation/Act
 import NCModal from 'merchant/components/Activation/NCModal';
 import DedupeModal from 'merchant/components/Home/DedupeModal';
 import CongratulatoryBanner from 'merchant/components/Announcements/CongratulatoryBanner';
-import moment from 'moment';
 import ShowWhen from '../../components/ShowWhen';
 import ABCBanner from '../../components/Announcements/ABCBanner';
 import StartupCongratulationBanner from '../../components/Announcements/StartupCongratulationBanner';
 
-@withRouter
-@connect(
-  (state) => ({
-    user: state.session.user,
-    mode: state.session.mode,
-    config: state.config,
-    internationalProductsStatus: state.config.internationalProductsStatus,
-    limitBreach: state.home.limitBreach,
-  }),
-  {
-    openModal,
-    fetchInternationalProductsStatus,
-    ...NotificationActions,
-    fetchUser,
-    showKYCStatusModal,
-    fetchEscalations,
-  },
-)
 class AnalyticsDesktop extends Component {
   state = {
     showNcPopup: true,
@@ -680,7 +662,21 @@ class AnalyticsDesktop extends Component {
                   </div>
                 ) : (
                   <Link className="pull-right" to="/settlements">
-                    <span className="text-no-wrap" onClick={trackSettlementsClick}>
+                    <span
+                      className="text-no-wrap"
+                      onClick={() => {
+                        trackSettlementsClick();
+                        analyticsTrack({
+                          objectName: 'settlements',
+                          actionName: 'clicked',
+                          screen: 'home page',
+                          properties: {
+                            location: 'analytics',
+                            ...getCommonAnalyticsProperties(window.rzp_user),
+                          },
+                        });
+                      }}
+                    >
                       View Settlements
                     </span>
                   </Link>
@@ -788,4 +784,21 @@ class AnalyticsDesktop extends Component {
   }
 }
 
-export default AnalyticsDesktop;
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+  mode: state.session.mode,
+  config: state.config,
+  internationalProductsStatus: state.config.internationalProductsStatus,
+  limitBreach: state.home.limitBreach,
+});
+
+export default withRouter(
+  connect(mapStateToProps, {
+    openModal,
+    fetchInternationalProductsStatus,
+    ...NotificationActions,
+    fetchUser,
+    showKYCStatusModal,
+    fetchEscalations,
+  })(AnalyticsDesktop),
+);

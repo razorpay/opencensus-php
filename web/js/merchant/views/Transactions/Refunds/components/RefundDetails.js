@@ -15,8 +15,26 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import SettlementInfo from '../../../Settlements/components/SettlementInfo';
 import Definition from 'common/ui/Definition';
 import { bindActionCreators } from 'redux';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 class PaymentDetailsContainer extends Component {
+  componentDidUpdate() {
+    if (this.props.refund && this.props.refund.id) {
+      analyticsTrack({
+        objectName: 'refund details',
+        actionName: 'fetched',
+        screen: 'transactions',
+        properties: {
+          location: 'refunds',
+          status: 'success',
+          ...this.props.refund.analyticsPayload(),
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    }
+  }
+
   render() {
     const { refund } = this.props;
 

@@ -319,7 +319,7 @@ class SettlementsListContainer extends ListContainer {
       eventAction: 'View Settlement Cycle',
       eventLabel: `Settlements`,
     });
-    handleAnalytics('settlement cycle viewed', 'clicked');
+    handleAnalytics('settlement cycle', 'clicked');
   };
 
   handleSearch = (args) => {

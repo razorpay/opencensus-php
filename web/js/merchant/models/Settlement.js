@@ -1,12 +1,12 @@
 import GenericEntity from './GenericEntity';
 import { getFixedINRAmount } from 'common/utils/rzp-utils';
-import ajax from 'merchant/utils/ajax';
+import moment from 'moment';
 
 export default class Settlement extends GenericEntity {
   resourceUrl = 'settlements';
 
   fetchBreakupDetails() {
-    let Klass = this.constructor;
+    const Klass = this.constructor;
 
     const url = `${this.resourceUrl}/${this.id}/details`;
     return this.makeGenericAjaxCall({ url }).then((response) => {
@@ -16,7 +16,7 @@ export default class Settlement extends GenericEntity {
   }
 
   fetchSettlementSchedule() {
-    let Klass = this.constructor;
+    const Klass = this.constructor;
     const url = `schedule_tasks/settlement`;
     return this.makeGenericAjaxCall({ url }).then((response) => {
       response.data = response.data.map((item) => new Klass(item).deserialize());
@@ -26,10 +26,11 @@ export default class Settlement extends GenericEntity {
 
   analyticsPayload() {
     const settlement = this;
+
     return {
       settlementId: settlement.id,
       settlementStatus: settlement.status,
-      createdAt: settlement.created_at,
+      createdAt: moment.unix(settlement.created_at),
       fee: settlement.fees,
       tax: settlement.tax,
       utr: settlement.utr,
