@@ -4518,7 +4518,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'percent_rate' => 15,
+                'percent_rate' => 12,
                 'fixed_rate'   => 0,
                 'fee_bearer' => 'platform',
             ]

@@ -2867,7 +2867,7 @@ class Service extends Base\Service
                 'product'             => Product::PRIMARY,
                 'feature'             => PricingFeature::ESAUTOMATIC,
                 'payment_method'      => $method,
-                'percent_rate'        => 15,
+                'percent_rate'        => 12,
                 'amount_range_active' => 0,
                 'amount_range_max'    => 0,
                 'amount_range_min'    => 0,
