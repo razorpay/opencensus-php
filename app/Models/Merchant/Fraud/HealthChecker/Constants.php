@@ -108,9 +108,9 @@ class Constants
     const TRANSACTION_MILESTONE_COUNT         = 50;
     const MILESTONE_MERCHANT_LIST_DRUID_QUERY =
         'SELECT merchants_id FROM druid.merchant_risk_fact ' .
-        'WHERE (overall_gmv_lt_yesterday < '. self::GMV_MILESTONE_AMOUNT .' AND overall_gmv_ltd >= '. self::GMV_MILESTONE_AMOUNT .') OR ' .
-        '(overall_gmv_lt_yesterday < '. self::GMV_MILESTONE_AMOUNT2 .' AND overall_gmv_ltd >= '. self::GMV_MILESTONE_AMOUNT2 .') OR ' .
-        '(txn_count_lt_yesterday < ' . self::TRANSACTION_MILESTONE_COUNT . ' AND txn_count_ltd >= ' . self::TRANSACTION_MILESTONE_COUNT . ')';
+        'WHERE (merchant_fact_overall_gmv_lt_yesterday < '. self::GMV_MILESTONE_AMOUNT .' AND merchant_fact_overall_gmv_ltd >= '. self::GMV_MILESTONE_AMOUNT .') OR ' .
+        '(merchant_fact_overall_gmv_lt_yesterday < '. self::GMV_MILESTONE_AMOUNT2 .' AND merchant_fact_overall_gmv_ltd >= '. self::GMV_MILESTONE_AMOUNT2 .') OR ' .
+        '(merchant_fact_txn_count_lt_yesterday < ' . self::TRANSACTION_MILESTONE_COUNT . ' AND merchant_fact_txn_count_ltd >= ' . self::TRANSACTION_MILESTONE_COUNT . ')';
 
     const TRANSACTION_DEDUPE_RISK_SCORE        = 90;
     const RISK_SCORE_MERCHANT_LIST_DRUID_QUERY =
