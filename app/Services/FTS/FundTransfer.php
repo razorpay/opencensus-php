@@ -386,7 +386,7 @@ class FundTransfer extends Base
             /** @var $contact \RZP\Models\Contact\Entity */
             $contact = $payout->fundAccount->contact;
 
-            $contactNotes += $contact->getNotes();
+            $contactNotes += $contact->getNotes()->toArray();
         }
 
         if ($this->fta->bankAccount !== null)
