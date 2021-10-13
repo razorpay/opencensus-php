@@ -1,13 +1,13 @@
+import React from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
-import { withRouter } from 'react-router-dom';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Button from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import Tooltip from 'common/ui/Tooltip';
 import Loader from 'common/ui/Loader';
-import { autoPrefixUrls } from 'common/utils/rzp-utils';
+import { autoPrefixUrls, getErrorMessageFromResponse } from 'common/utils/rzp-utils';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
@@ -15,11 +15,9 @@ import PageSettingsModal from 'merchant/views/PaymentPages/PaymentPages/componen
 import PaymentReceiptModal from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PaymentReceipt';
 import { fetchPaymentPage, updateReceiptDetails, updateData } from 'merchant/reducers/wysiwyg';
 import Header from '../Success/Header';
-import { sendLink } from '../model';
-import { editPaymentPage, setReceiptDetails } from '../model';
+import { sendLink, editPaymentPage, setReceiptDetails } from '../model';
 import RoundTickImage from '../../../../../../icons/merchant/tick-round.svg';
 import EmbedButtonImage from '../../../../../../icons/merchant/embed-button.svg';
-import { getErrorMessageFromResponse } from '../../../../../common/utils/rzp-utils';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 @connect(
@@ -56,7 +54,7 @@ class Success extends React.Component {
 
     if (promise instanceof Promise) {
       promise
-        .then(({ data }) => {
+        .then(() => {
           this.setState({
             isLoaded: true,
           });
@@ -87,8 +85,10 @@ class Success extends React.Component {
     // });
     // !this.state.isPageReceiptModalOpened && trackClickOnOpenPaymentReceipts();
 
-    this.setState({
-      isPaymentReceiptsModalOpen: !this.state.isPaymentReceiptsModalOpen,
+    this.setState((prevState) => {
+      return {
+        isPaymentReceiptsModalOpen: !prevState.isPaymentReceiptsModalOpen,
+      };
     });
   };
 
@@ -103,8 +103,10 @@ class Success extends React.Component {
     // });
 
     this.setState(
-      {
-        isPageSettingsModalOpen: !this.state.isPageSettingsModalOpen,
+      (prevState) => {
+        return {
+          isPageSettingsModalOpen: !prevState.isPageSettingsModalOpen,
+        };
       },
       () => {
         // if customize url option, then focus on customize url section
@@ -121,7 +123,7 @@ class Success extends React.Component {
     );
   };
 
-  openShareView = (props) => {
+  openShareView = () => {
     const { paymentPageEntity } = this.props;
     // trackDetailViewEdits('Click Share');
     this.props.openModal({
@@ -152,12 +154,12 @@ class Success extends React.Component {
         // if api call is successful, update store
         this.props.updateReceiptDetails(receipt);
         if (!res || !res.success) {
-          throw new Error(resp.errors);
+          throw new Error(res.errors);
         }
 
         return res;
       })
-      .catch((err) => {
+      .catch(() => {
         this.props.showNotification({
           type: 'error',
           message: 'Receipt settings could not be saved. Please try again.',
@@ -194,7 +196,7 @@ class Success extends React.Component {
       : '';
 
     editPaymentPage(paymentPageEntity.id, reqPayload)
-      .then((res) => {
+      .then(() => {
         // on success, update the store
         this.props.updateData(reqPayload);
         this.setState({
@@ -241,6 +243,10 @@ class Success extends React.Component {
               formItems={FORM_ITEMS}
               handleClose={this.togglePaymentReceiptsModal}
               handleSave={this.handleSavePaymentReceipt}
+              trackingDetails={{
+                isPaymentPage: true,
+                via: 'success',
+              }}
             />
           )}
 
@@ -257,7 +263,7 @@ class Success extends React.Component {
                   <i className="i i-tick" />
                   Your page is now live!
                 </div>
-                <div className="divider"></div>
+                <div className="divider" />
                 <div id="hero-box--action">
                   <div>Page URL</div>
                   <div id="hero-box--action-buttons">
@@ -274,7 +280,7 @@ class Success extends React.Component {
                         //     },
                         // });
                         const ele = document.getElementsByName('short_url');
-                        ele[0] && ele[0].focus();
+                        ele?.[0].focus();
                         // this.props.trackerFn('Click Copy URL');
                       }}
                     >
@@ -287,7 +293,7 @@ class Success extends React.Component {
                       <Button.Primary class="Button--small">Copy</Button.Primary>
                     </CustomClipboard>
                     <Button.Primary onClick={this.openShareView} class="Button--small">
-                      <i className="i i-share-outline mr-5"></i>
+                      <i className="i i-share-outline mr-5" />
                       Share
                     </Button.Primary>
                     {this.props.mode === 'test' ? (
@@ -321,17 +327,22 @@ class Success extends React.Component {
                   height="471"
                   scrolling="no"
                 />
-                <a className="preview-icon" href={paymentPageEntity.short_url} target="_blank">
-                  <i className="i i-external-link"></i>
+                <a
+                  className="preview-icon"
+                  href={paymentPageEntity.short_url}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <i className="i i-external-link" />
                 </a>
-                <div className="image-shadow"></div>
+                <div className="image-shadow" />
               </div>
             </div>
 
             <div id="next-steps">
               <div id="next-steps--title">
                 Next Steps for Your Page
-                <div className="divider"></div>
+                <div className="divider" />
               </div>
               <div className="box">
                 <div className="box--left">
@@ -354,7 +365,7 @@ class Success extends React.Component {
                       <b>
                         customer’s information & 80G details
                         <span className="rzp-tooltip-80g">
-                          <i className="i i-info-outline"></i>
+                          <i className="i i-info-outline" />
                           <Popover align="top" theme="dark">
                             <PopoverBody>
                               <div className="rzp-tooltip-title">For Donations</div>
@@ -372,7 +383,7 @@ class Success extends React.Component {
                     className="button--highlight"
                     onClick={this.togglePaymentReceiptsModal}
                   >
-                    <i className="i i-receipt mr-5"></i>
+                    <i className="i i-receipt mr-5" />
                     Receipt Settings
                   </Button.Transparent>
                 </div>
@@ -380,7 +391,7 @@ class Success extends React.Component {
               <div className="box">
                 <div className="box--left">
                   <div className="box--line">
-                    <i className="i i-redirect"></i>
+                    <i className="i i-redirect" />
                     <b>Redirect</b> customers to your website after payment <br />
                   </div>
                   <div className="box--line">
@@ -388,7 +399,7 @@ class Success extends React.Component {
                     <b>Embed a button</b> on your website that links to this payment page <br />
                   </div>
                   <div className="box--line">
-                    <i className="i i-signal"></i>
+                    <i className="i i-signal" />
                     Track page usage with <b>Facebook Pixel & Google Analytics</b>
                   </div>
                   <div className="box--line box--and-more">...and more!</div>
@@ -398,13 +409,13 @@ class Success extends React.Component {
                     className="button--highlight"
                     onClick={this.togglePageSettingsModal.bind(null, false)}
                   >
-                    <i className="i i-settings-outline mr-5"></i>
+                    <i className="i i-settings-outline mr-5" />
                     Page Settings
                   </Button.Transparent>
                 </div>
               </div>
               <div id="next-steps--note">
-                <i className="i i-info-outline mr-5"></i>
+                <i className="i i-info-outline mr-5" />
                 You can also configure receipts & page settings later from dashboard
               </div>
             </div>

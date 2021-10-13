@@ -167,23 +167,27 @@ export default class PaymentReceipt extends React.Component {
   trackSendingOptions = (event) => {
     const { trackingDetails } = this.props;
 
-    if (trackingDetails.isPaymentPage) {
-      track.receipt.clickSendingOption(event.target.value === '0' ? 'automated' : 'manual');
-    } else {
-      trackPB.receiptsType(
-        trackingDetails.via,
-        event.target.value === '0' ? 'automated' : 'manual',
-      );
+    if (trackingDetails) {
+      if (trackingDetails.isPaymentPage) {
+        track.receipt.clickSendingOption(event.target.value === '0' ? 'automated' : 'manual');
+      } else {
+        trackPB.receiptsType(
+          trackingDetails.via,
+          event.target.value === '0' ? 'automated' : 'manual',
+        );
+      }
     }
   };
 
   handleInputFieldChecked = (e) => {
     const { trackingDetails } = this.props;
 
-    if (trackingDetails.isPaymentPage) {
-      track.receipt.checkInputFields();
-    } else {
-      trackPB.inputFieldCheckbox(trackingDetails.via, e.target.checked);
+    if (trackingDetails) {
+      if (trackingDetails.isPaymentPage) {
+        track.receipt.checkInputFields();
+      } else {
+        trackPB.inputFieldCheckbox(trackingDetails.via, e.target.checked);
+      }
     }
 
     this.setState({
@@ -194,10 +198,12 @@ export default class PaymentReceipt extends React.Component {
   handle80GDetails = (e) => {
     const { trackingDetails } = this.props;
 
-    if (trackingDetails.isPaymentPage) {
-      track.receipt.check80GDetails(e.target.checked ? '80g_on' : '80g_off');
-    } else {
-      trackPB.details80gCheckbox(trackingDetails.via, e.target.checked);
+    if (trackingDetails) {
+      if (trackingDetails.isPaymentPage) {
+        track.receipt.check80GDetails(e.target.checked ? '80g_on' : '80g_off');
+      } else {
+        trackPB.details80gCheckbox(trackingDetails.via, e.target.checked);
+      }
     }
 
     this.setState({
