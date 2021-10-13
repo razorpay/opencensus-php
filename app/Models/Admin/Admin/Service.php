@@ -587,7 +587,11 @@ class Service extends Base\Service
 
         $input[Base\EsRepository::SEARCH_HITS] = 1;
 
+        $startTime = millitime();
+
         $merchants = $this->repo->merchant->fetch($input);
+
+        $this->trace->histogram(Merchant\Metric::FETCH_ALL_PARTNERS_LATENCY,millitime()-$startTime);
 
         return $merchants->toArrayAdmin();
     }

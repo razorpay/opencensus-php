@@ -5195,7 +5195,11 @@ class Service extends Base\Service
         $input['skip'] = $input['skip'] ?? 0;
         $input['count'] = $input['count'] ?? self::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
 
+        $startTime = millitime();
+
         $result = $this->core()->listSubmerchants($partner, $input);
+
+        $this->trace->histogram(Metric::FETCH_ALL_SUBMERCHANTS_LATENCY, millitime()-$startTime);
 
         $response = $result[0]->toArrayPartner();
 
@@ -5432,7 +5436,11 @@ class Service extends Base\Service
      */
     public function fetchAffiliatedPartners(string $merchantId): array
     {
+        $startTime = millitime();
+
         $partners = $this->core()->fetchAffiliatedPartners($merchantId);
+
+        $this->trace->histogram(Metric::AFFILIATED_PARTNERS_FETCH_LATENCY,millitime()-$startTime);
 
         return $partners->toArrayPublic();
     }

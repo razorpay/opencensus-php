@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Base\JitValidator;
 use RZP\Exception\LogicException;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\MerchantApplications;
@@ -21,6 +22,8 @@ use RZP\Models\Merchant\Validator as MerchantValidator;
 
 class OAuthApplicationController extends Controller
 {
+    const PURE_PLATFORM_PARTNER_APPLICATIONS_CREATED_TOTAL = 'pure_platform_partner_applications_created_total';
+    const PARTNER_APPLICATIONS_CREATED_TOTAL = 'partner_applications_created_total';
     /**
      * @var \RZP\Http\BasicAuth\BasicAuth
      */
@@ -69,6 +72,10 @@ class OAuthApplicationController extends Controller
             (new MerchantCore)->createPartnerConfig($oauthApplication, $merchant);
         }
 
+        if ($merchant->isNonPurePlatformPartner() === true){
+            $this->trace->count(self::PURE_PLATFORM_PARTNER_APPLICATIONS_CREATED_TOTAL);
+        }
+
         return ApiResponse::json($data);
     }
 
@@ -89,6 +96,7 @@ class OAuthApplicationController extends Controller
             (new MerchantCore)->createMerchantApplication($merchant, $data[App::ID], $applicationType);
         }
 
+        $this->trace->count(self::PARTNER_APPLICATIONS_CREATED_TOTAL);
         return ApiResponse::json($data);
     }
 

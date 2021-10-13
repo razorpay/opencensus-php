@@ -50,6 +50,10 @@ final class Metric
 
     const SUBMERCHANT_TAGGING_FAILURE_TOTAL = 'submerchant_tagging_failure_total';
 
+    const AFFILIATED_PARTNERS_FETCH_LATENCY = 'affiliated_partners_fetch_latency';
+    const FETCH_ALL_SUBMERCHANTS_LATENCY = 'fetch_all_submerchants_latency';
+    const FETCH_ALL_PARTNERS_LATENCY = 'fetch_all_partners_latency';
+
     const BATCH_UPLOAD_BY_ADMIN_TOTAL = 'batch_upload_by_admin_total';
     const BATCH_UPLOAD_BY_ADMIN_FAILURE_TOTAL = 'batch_upload_by_admin_failure_total';
     const BATCH_UPLOAD_BY_ADMIN_LATENCY = 'batch_upload_by_admin_latency';
@@ -58,5 +62,4 @@ final class Metric
     const SUBMERCHANT_LINKING_FAILURE_TOTAL = 'submerchant_linking_failure_total';
     const SUBMERCHANT_DELINKING_SUCCESS_TOTAL = 'submerchant_delinking_success_total';
     const SUBMERCHANT_DELINKING_FAILURE_TOTAL = 'submerchant_delinking_failure_total';
-
 }
