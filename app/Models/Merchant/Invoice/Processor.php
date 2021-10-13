@@ -135,70 +135,114 @@ class Processor extends Base\Core
                     'details'     => $details
                 ]);
 
-            if (($balance->isTypeBanking() === true) and ($this->checkEligibleLineItems($details) === true))
+            if (($balance->isTypeBanking() === true))
             {
-              try
-               {
-                   $this->trace->info(TraceCode::EINVOICE_ELIGIBLE_INVOICE_FOR_X,
-                       [
-                           'merchant_id' => $this->merchant->getId(),
-                           'month' => $this->month,
-                           'year' => $this->year,
-                           'balance_id' => $balanceId,
-                       ]
-                   );
-                   $xEInvoiceCore = new Merchant\Invoice\EInvoice\XEInvoice;
-
-                   $merchant = $this->repo->merchant->findOrFailPublicWithRelations($this->merchantId, ['merchantDetail']);
-
-                   $date = Carbon::createFromDate($this->year, $this->month, 1, Timezone::IST);
-
-                   $shouldGenerateEInvoice = $xEInvoiceCore->shouldGenerateEInvoice($merchant, $date->getTimestamp());
-
-                    if (($shouldGenerateEInvoice === true))
+                // If invoice not eligible for X
+                if($this->checkEligibleLineItems($details) === false)
+                {
+                    //updating transaction details for balanceId
+                    //This is a double check to ensure we have not skipped updating transaction details.
+                    try
                     {
-                      $invoiceCore = new Core;
+                        $invoice = $this->repo->merchant_invoice->fetchBankingInvoiceDataByBalanceIdAndMerchantId(
+                                                    $balanceId,
+                                                    $this->merchantId,
+                                                    $this->month,
+                                                    $this->year);
 
-                      $data = $invoiceCore->getXEInvoiceData($this->month, $this->year, $merchant);
+                        foreach ($invoice as $index => $lineItem)
+                        {
+                            $tax    = $lineItem[Entity::TAX];
+                            $amount = $lineItem[Entity::AMOUNT];
+                            $type   = $lineItem[Entity::TYPE];
 
-                      $mismatchingSellerEntity = $this->isMismatchingSellerEntity($data);
+                            $details[$type][Entity::TAX] = $tax;
+                            $details[$type][Entity::AMOUNT] = $amount;
+                        }
 
-                      if($mismatchingSellerEntity === false)
-                      {
-                          $this->checkIfCreditNoteAmountGreaterThanInvoiceAmount($data);
-
-                          $invoiceCore->dispatchForXEInvoice($data, $this->month, $this->year, $merchant->getId());
-                      }
-                      else {
-                          $this->trace->info(TraceCode::EINVOICE_MISMATCHING_SELLER_FOR_X,
-                              [
-                                  'merchant_id' => $this->merchant->getId(),
-                                  'month' => $this->month,
-                                  'year' => $this->year,
-                              ]
-                          );
-                      }
                     }
-                    else
+                    catch (\Throwable $e)
                     {
-                        $invoiceCore = new Core;
-                        $data = $invoiceCore->getXEInvoiceData($this->month, $this->year, $merchant);
-                        $this->checkIfCreditNoteAmountGreaterThanInvoiceAmount($data);
+                        $this->trace->traceException(
+                            $e,
+                            Trace::CRITICAL,
+                            TraceCode::FEE_CALCULATION_FOR_BANKING_BALANCE_FAILED,
+                            [
+                                'merchant'      => $this->merchantId,
+                                'month'         => $this->month,
+                                'year'          => $this->year,
+                                'balance_id'    => $balanceId,
+                                'details'       => $details
+                            ]);
                     }
-               }
-               catch (\Throwable $e)
-               {
-                  $this->trace->traceException(
-                      $e,
-                      Trace::ERROR,
-                      TraceCode::EINVOICE_CREATION_FAILED_FOR_X,
-                        [
-                           'merchant_id' => $this->merchant->getId(),
-                           'year'        => $this->year,
-                           'month'       => $this->month,
-                       ]);
-               }
-               break;
+                }
+
+                // If invoice is eligible for X
+                if($this->checkEligibleLineItems($details) === true)
+                {
+                    try
+                    {
+                        $this->trace->info(TraceCode::EINVOICE_ELIGIBLE_INVOICE_FOR_X,
+                            [
+                                'merchant_id' => $this->merchant->getId(),
+                                'month' => $this->month,
+                                'year' => $this->year,
+                                'balance_id' => $balanceId,
+                            ]
+                        );
+                        $xEInvoiceCore = new Merchant\Invoice\EInvoice\XEInvoice;
+
+                        $merchant = $this->repo->merchant->findOrFailPublicWithRelations($this->merchantId, ['merchantDetail']);
+
+                        $date = Carbon::createFromDate($this->year, $this->month, 1, Timezone::IST);
+
+                        $shouldGenerateEInvoice = $xEInvoiceCore->shouldGenerateEInvoice($merchant, $date->getTimestamp());
+
+                        if (($shouldGenerateEInvoice === true))
+                        {
+                            $invoiceCore = new Core;
+
+                            $data = $invoiceCore->getXEInvoiceData($this->month, $this->year, $merchant);
+
+                            $mismatchingSellerEntity = $this->isMismatchingSellerEntity($data);
+
+                            if($mismatchingSellerEntity === false)
+                            {
+                                $this->checkIfCreditNoteAmountGreaterThanInvoiceAmount($data);
+
+                                $invoiceCore->dispatchForXEInvoice($data, $this->month, $this->year, $merchant->getId());
+                            }
+                            else {
+                                $this->trace->info(TraceCode::EINVOICE_MISMATCHING_SELLER_FOR_X,
+                                    [
+                                        'merchant_id' => $this->merchant->getId(),
+                                        'month' => $this->month,
+                                        'year' => $this->year,
+                                    ]
+                                );
+                            }
+                        }
+                        else
+                        {
+                            $invoiceCore = new Core;
+                            $data = $invoiceCore->getXEInvoiceData($this->month, $this->year, $merchant);
+                            $this->checkIfCreditNoteAmountGreaterThanInvoiceAmount($data);
+                        }
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->traceException(
+                            $e,
+                            Trace::ERROR,
+                            TraceCode::EINVOICE_CREATION_FAILED_FOR_X,
+                            [
+                                'merchant_id' => $this->merchant->getId(),
+                                'year'        => $this->year,
+                                'month'       => $this->month,
+                            ]);
+                    }
+                    break;
+                }
             }
         }
     }

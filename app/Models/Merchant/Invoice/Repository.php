@@ -155,4 +155,17 @@ class Repository extends Base\Repository
 
         return [$invoiceCreationFailedMerchantIds, $totalActiveMerchants];
     }
+
+    public function fetchBankingInvoiceDataByBalanceIdAndMerchantId($balanceId, $merchantId, $month, $year)
+    {
+        $typeColumn = $this->repo->merchant_invoice->dbColumn(Entity::TYPE);
+
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::BALANCE_ID, '=', $balanceId)
+            ->whereIn($typeColumn, [Type::RX_TRANSACTIONS, Type::RX_ADJUSTMENTS])
+            ->where(Entity::MONTH, '=', $month)
+            ->where(Entity::YEAR, '=', $year)
+            ->get();
+    }
 }
