@@ -69,6 +69,10 @@ class Constants
 
     const FROM_10_MINUTES_FILTER = 'FROM=10 minutes';
 
+    const FROM = 'From';
+
+    const TO = 'to';
+
     protected static $lookerDashboardForMethod = [
         Constants::CARD           => Constants::CARD_LOOKER_DASHBOARD,
         Constants::UPI            => Constants::UPI_LOOKER_DASHBOARD,

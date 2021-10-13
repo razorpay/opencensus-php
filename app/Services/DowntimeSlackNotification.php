@@ -38,8 +38,6 @@ class DowntimeSlackNotification
 
     private $DOWNTIME_BASE_TEMPLATE_WITH_LOOKER_LINK = '`[$severity]  $heading` '."\n".'```Method : $method'."\n".'Start Time : $startTime'."\n".'$additionalFields```'."\n".'<$lookerLink|Looker Dashboard>';
 
-    private $MERCHANT_DETAILS_TEMPLATE_WITH_LOOKER_LINK = 'Merchant Name: $merchantName'."\n".'Merchant Id : $merchantId'."\n".'<$lookerLink|Looker Dashboard>';
-
     private $RESOLUTION_TEMPLATE = 'End Time: $endTime'."\n".'Duration : $duration minutes';
 
     public function __construct($app)
@@ -244,7 +242,7 @@ class DowntimeSlackNotification
     {
         $severity   = $downtime['severity'];
         $eventTime  = $downtime['eventTime'];
-        $startTime  = $this->formatEpoc($eventTime);
+        $startTime  = $this->formatEpoc($eventTime, 'M d, H:i:s');
 
         $additionalDetails = "";
 
@@ -256,7 +254,7 @@ class DowntimeSlackNotification
         if($this->isResolve($downtimeState) === true)
         {
             $severity = 'RESOLVED';
-            $startTime  = $this->formatEpoc($eTime);
+            $startTime  = $this->formatEpoc($eTime, 'M d, H:i:s');
             $additionalDetails = $additionalDetails."\n".$this->getResolutionDetails($eventTime, $eTime);
         }
 
@@ -407,7 +405,7 @@ class DowntimeSlackNotification
             $lookerLink .= "&" . Constants::MERCHANT_ID_FILTER . "=" . $downtime[DowntimeService::MERCHANT_ID];
         }
 
-        $lookerLink .= "&" . Constants::FROM_10_MINUTES_FILTER;
+        $lookerLink .= "&" . $this->getTimeFilter($downtime);
 
         $this->trace->info(
             TraceCode::LOOKER_DASHBOARD_LINK,
@@ -417,6 +415,17 @@ class DowntimeSlackNotification
         );
 
         return $lookerLink;
+    }
+
+    private function getTimeFilter($downtime): string
+    {
+        $timeFilter = Constants::FROM . '=';
+
+        $timeFilter  .= $this->formatEpoc($downtime[Entity::BEGIN], 'Y-m-d H:i')
+            . " " . Constants::TO . " "
+            . $this->formatEpoc($downtime[Entity::END], 'Y-m-d H:i');
+
+        return $timeFilter;
     }
 
     private function getDashboardForMethod($method): int
@@ -512,11 +521,12 @@ class DowntimeSlackNotification
 
     /**
      * @param $eventTime
+     * @param $format
      * @return string
      */
-    private function formatEpoc($eventTime): string
+    private function formatEpoc($eventTime, $format): string
     {
-        return Carbon::createFromTimestamp($eventTime, Timezone::IST)->format('M d, H:i:s');
+        return Carbon::createFromTimestamp($eventTime, Timezone::IST)->format($format);
     }
 
     private function validateRequiredKeys($downtime)
@@ -552,22 +562,6 @@ class DowntimeSlackNotification
         $id = $downtime['merchantId'];
         $name = $this->getMerchantName($downtime);
 
-        $variant = $this->razorx->getTreatment(
-            Constants::LOOKER_NOTIFICATIONS_RAZORX_KEY,
-            Merchant\RazorxTreatment::DOWNTIMES_LOOKER_TO_SLACK,
-            Core::getMode()
-        );
-
-        $lookerLink = $this->getLookerLink($downtime);
-
-        if (strtolower($variant) === 'on') {
-            return strtr($this->MERCHANT_DETAILS_TEMPLATE_WITH_LOOKER_LINK, [
-                '$merchantId' => $id,
-                '$merchantName' => $name,
-                '$lookerLink' => $lookerLink
-            ]);
-        }
-
         return strtr($this->MERCHANT_DETAILS_TEMPLATE, [
             '$merchantId' => $id,
             '$merchantName' => $name,
@@ -579,7 +573,7 @@ class DowntimeSlackNotification
         $duration = ($eventTime - $startTime);
         $duration =  (round($duration / 60));
 
-        $eventTime = $this->formatEpoc($eventTime);
+        $eventTime = $this->formatEpoc($eventTime, 'M d, H:i:s');
 
         return  strtr($this->RESOLUTION_TEMPLATE, ['$duration' =>  $duration, '$endTime' => $eventTime]);
     }
