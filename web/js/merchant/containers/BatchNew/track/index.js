@@ -2,7 +2,8 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils';
 
 function _track() {
-  function sendToSegment(objectName, actionName, screen, properties) {
+  // setting screen to default value incase it's not passed from callee
+  function sendToSegment(objectName, actionName, screen = 'Batch uploads', properties) {
     analyticsTrack({
       objectName,
       actionName,
