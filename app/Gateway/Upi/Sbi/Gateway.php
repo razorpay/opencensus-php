@@ -247,7 +247,7 @@ class Gateway extends Base\Gateway
 
         unset($response['data']['gateway_response']['addInfo']['statusDesc']);
 
-        $verify->verifyResponseContent = $response['data']['gateway_response'];
+        $verify->verifyResponseContent = $response['data']['gateway_response'] ?? [];
     }
 
     protected function verifyPayment(Verify $verify)
