@@ -1849,8 +1849,8 @@ class Service extends Base\Service
             $amount   = $input['amount'];
             $currency = $input['currency'];
 
-                // markup of 3 is hardcoded at org-level
-                $currencyInfo = $this->getDCCInfo($amount, $currency, 3);
+                // markup of 5 is hardcoded at org-level
+                $currencyInfo = $this->getDCCInfo($amount, $currency, 5);
 
                 $currencyInfo['wallet_currency'] = Currency\Currency::USD;
 

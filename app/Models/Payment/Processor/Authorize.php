@@ -3683,9 +3683,9 @@ trait Authorize
 
             $dccCurrencyRequestId = $input['currency_request_id'];
 
-            // markup of 3 is hardcoded at org-level
+            // markup of 5 is hardcoded at org-level
             $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $payment->getAmount(),
-                $dccCurrency, $dccCurrencyRequestId, 3);
+                $dccCurrency, $dccCurrencyRequestId, 5);
 
             if (empty($requestedCurrencyData) === true)
             {
