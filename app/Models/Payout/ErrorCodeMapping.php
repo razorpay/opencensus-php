@@ -170,7 +170,8 @@ class ErrorCodeMapping
         'MERCHANT_INSUFFICIENT_FUND'            => 'Payout failed due to insufficient funds in the bank account.',
         'FTS_BANK_TXN_LIMIT_CROSSED'            => 'Payout failed due to extended NEFT window limit exhausted. Please try again in the next NEFT window.',
         'MERCHANT_FROZEN_ACCOUNT'               => 'Payout failed as the debit account is under freeze by the partner bank.',
-        'PBANK_VALIDATION_ERROR_PENDING'        => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.'
+        'PBANK_VALIDATION_ERROR_PENDING'        => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
+        'TXN_REJECTED_BENE_BANK_RETRIABLE'      => 'Transaction not permitted to beneficiary account.'
     ];
 
     public static $alternateFailureReasonMapping = [
