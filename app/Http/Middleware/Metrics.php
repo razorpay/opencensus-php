@@ -3,6 +3,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\ApiUrl;
 use App\Metrics\Constants;
 use App\Trace\TraceCode;
 use Closure;
@@ -53,6 +54,7 @@ class Metrics
     protected function getMetricDimensions($request, $response)
     {
         return [
+            Constants::LABEL_HTTP_REQUESTS_PRODUCT     => ApiUrl::isBankingOriginRequest() ? Constants::BANKING : Constants::PRIMARY ,
             Constants::LABEL_HTTP_REQUESTS_METHOD      => $request->getMethod()                         ?? 'unknown_method',
             Constants::LABEL_HTTP_REQUESTS_STATUS      => $response->getStatusCode()                    ?? 'unknown_status',
             Constants::LABEL_HTTP_REQUESTS_ROUTE       => $request->route() !== null ? $request->route()->getName() : 'unknown_route',

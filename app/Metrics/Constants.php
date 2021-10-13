@@ -29,6 +29,7 @@ class Constants
   const LABEL_HTTP_REQUESTS_DOWNSTREAM_IS_SUCCESS   = 'is_success';
   const LABEL_HTTP_REQUESTS_DOWNSTREAM_CONTROLLER   = 'controller';
   const LABEL_HTTP_REQUESTS_DOWNSTREAM_ROUTE        = 'route';
+  const LABEL_HTTP_REQUESTS_PRODUCT                 = 'product';
 
   // Metric labels - HTTP_REQUESTS
   const LABEL_HTTP_REQUESTS_METHOD                  = 'method';
@@ -52,4 +53,9 @@ class Constants
 
   // Event trigger count
   const EVENT_COUNT_ONE             = 1;
+
+
+    // products
+    const PRIMARY                     = 'primary';
+    const BANKING                     = 'banking';
 }
