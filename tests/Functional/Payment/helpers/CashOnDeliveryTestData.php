@@ -72,4 +72,48 @@ return [
         ],
     ],
 
+    'testPaymentTimeout' => [
+        'request'  => [
+            'method'  => 'POST',
+            'content' => [],
+            'url'     => '/payments/timeout',
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+            ],
+        ],
+    ],
+
+    'testReminderCallbackForPendingPaymentBefore45Days' => [
+        'request'   => [
+            'method'  => 'POST',
+            'content' => [],
+            'url'     => '/reminders/send/test/payment/cod_payment_pending/randmPaymentId',
+        ],
+        'response'  => [
+            'content'     => [
+                'success' => true,
+            ],
+            'status_code' => 200, // 200 is error code to reminder service to continue further callbacks on this schedule
+        ],
+
+    ],
+
+    'testReminderCallbackStopScheduleTestData' => [
+        'request'   => [
+            'method'  => 'POST',
+            'content' => [],
+            'url'     => '/reminders/send/test/payment/cod_payment_pending/randmPaymentId',
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 400, // 400 is error code to reminder service to stop further callbacks on this schedule
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => 'BAD_REQUEST_REMINDER_NOT_APPLICABLE',
+        ],
+    ],
 ];

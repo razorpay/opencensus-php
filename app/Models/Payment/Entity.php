@@ -245,6 +245,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_UPI_RECURRING     = 259200;   // 3 Days
     const PAYMENT_TIMEOUT_CARD_RECURRING_MANDATE = 259200;   // 3 Days
     const PAYMENT_TIMEOUT_CARD_RECURRING_MANDATE_WITH_AFA = 345600;   // 4 Days
+    const PAYMENT_TIMEOUT_COD_PENDING       = 86400 * 45; // 45days
     const MCC_MARKDOWN_PERCENTAGE           = 1;
 
     // payment services

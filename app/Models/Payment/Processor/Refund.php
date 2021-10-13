@@ -77,7 +77,8 @@ trait Refund
                 ErrorCode::BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED, null, ['method' => $payment->getMethod()]);
         }
 
-        if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
+        if (($payment->getGateway() === Payment\Gateway::BHARAT_QR) or
+            ($payment->isCoD() === true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,null, ['method' => $payment->getMethod()]);

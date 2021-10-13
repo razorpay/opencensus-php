@@ -1171,7 +1171,37 @@ trait Authorize
 
         $this->eventPaymentPending();
 
+        $this->setCoDPaymentPendingReminder($payment);
+
         return true;
+    }
+
+    protected function setCoDPaymentPendingReminder($payment)
+    {
+        $namespace = 'cod_payment_pending';
+
+        $url = sprintf('reminders/send/%s/payment/%s/%s', $this->mode, $namespace, $payment->getId());
+
+        $merchantId = Merchant\Account::SHARED_ACCOUNT;
+
+        $request = [
+            'namespace'     => $namespace,
+            'entity_id'     => $payment->getId(),
+            'entity_type'   => 'payment',
+            'reminder_data' => [
+                'created_at' => $payment->getCreatedAt(),
+            ],
+            'callback_url'  => $url,
+        ];
+
+        $response = $this->app['reminders']->createReminder($request, $merchantId);
+
+        $reminderId = array_get($response, 'id');
+
+        $this->trace->info(TraceCode::COD_PAYMENT_PENDING_REMINDER_CREATED, [
+            'id'          => $payment->getId(),
+            'reminder_id' => $reminderId,
+        ]);
     }
 
     protected function getOtpPaymentCreatedResponse($request, $payment)
@@ -8529,6 +8559,11 @@ trait Authorize
             return false;
         }
 
+        if ($payment->isCod() === true)
+        {
+            return false;
+        }
+
         if (($payment->isNetbanking() === true) and
             (Gateway::isNetbankingS2SRedirectGateway($payment->getGateway()) === true))
         {
@@ -8613,6 +8648,7 @@ trait Authorize
             ($payment->isVisaSafeClickPayment() === true) or
             ($payment->isNach() === true) or
             ($payment->isGooglePayCard() === true) or
+            ($payment->isCod() === true) or
             (empty($payment->getGooglePayMethods()) === false))
         {
             return false;

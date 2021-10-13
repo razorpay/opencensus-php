@@ -3,9 +3,11 @@
 
 namespace Functional\Payment;
 
+use Mockery;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -18,6 +20,7 @@ class CashOnDeliveryTest extends TestCase
     use TestsWebhookEvents;
 
 
+    const  SECONDS_IN_DAY = 24 * 60 * 60;
     protected $order;
 
     public function setUp(): void
@@ -94,7 +97,6 @@ class CashOnDeliveryTest extends TestCase
         $this->assertArraySelectiveEquals($expectedOrderData, $order);
     }
 
-
     public function testPaymentPendingWebhook()
     {
         $this->expectWebhookEventWithContents('payment.pending', 'testPaymentPendingWebhookEventData');
@@ -116,7 +118,7 @@ class CashOnDeliveryTest extends TestCase
 
     protected function getPaymentCreateRequest(): array
     {
-       $this->setupOrderIfApplicable();
+        $this->setupOrderIfApplicable();
 
         return [
             'method'  => 'POST',
@@ -128,6 +130,16 @@ class CashOnDeliveryTest extends TestCase
         ];
     }
 
+    protected function setupOrderIfApplicable(): void
+    {
+        if ($this->order === null)
+        {
+            $this->order = $this->fixtures->create('order', [
+                'amount' => '50000',
+            ]);
+        }
+    }
+
     protected function getDefaultCoDPaymentArray($attributes): array
     {
         $defaults = $this->getDefaultPaymentArrayNeutral();
@@ -135,6 +147,50 @@ class CashOnDeliveryTest extends TestCase
         $defaults['method'] = 'cod';
 
         return array_merge($attributes, $defaults);
+    }
+
+    public function testInitiatePaymentRemindersCallbackSetup()
+    {
+
+        $remindersMock = $this->setUpRemindersMock();
+
+        $remindersRequest = [];
+
+        $remindersMock->shouldReceive('createReminder')
+            ->andReturnUsing(function ($request, $merchantId) use (&$remindersRequest)
+            {
+
+                $remindersRequest = $request;
+
+                return [
+                    'id' => UniqueIdEntity::generateUniqueId(),
+                ];
+            });
+
+        $paymentId = $this->initiatePayment()['razorpay_payment_id'];
+
+        Payment\Entity::verifyIdAndStripSign($paymentId);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertArraySelectiveEquals([
+            'namespace'     => 'cod_payment_pending',
+            'callback_url'  => 'reminders/send/test/payment/cod_payment_pending/' . $paymentId,
+            'reminder_data' => [
+                'created_at' => $payment['created_at'],
+            ],
+        ], $remindersRequest);
+    }
+
+    protected function setUpRemindersMock()
+    {
+        $mock = Mockery::mock('RZP\Services\Reminders', [$this->app])
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+
+        $this->app['reminders'] = $mock;
+
+        return $mock;
     }
 
     public function testInitiatePaymentWithMethodDisabledShouldFail()
@@ -281,6 +337,17 @@ class CashOnDeliveryTest extends TestCase
         $this->assertEquals('attempted', $order['status']);
     }
 
+    protected function initiateNonCoDPayment()
+    {
+        $this->setupOrderIfApplicable();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $this->order->getPublicId();
+
+        return $this->doAuthPayment($payment);
+    }
+
     public function testInitiateCoDPaymentWithOrderInTerminalStatus()
     {
         $this->order = $this->fixtures->create('order', [
@@ -416,6 +483,20 @@ class CashOnDeliveryTest extends TestCase
         ], $order);
     }
 
+    public function testRefundPaymentShouldFail()
+    {
+        $paymentId = $this->initiatePayment()['razorpay_payment_id'];
+
+        $this->capturePayment($paymentId, 50000);
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionMessage('Refund is currently not supported for this payment method');
+
+        $this->refundPayment($paymentId, 50000);
+    }
+
+
     public function testCaptureCoDPaymentInNonPendingStatusShouldFail()
     {
         $paymentId = $this->initiatePayment()['razorpay_payment_id'];
@@ -428,29 +509,107 @@ class CashOnDeliveryTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->startTest(['request' => [
-            'url' => '/payments/pay_' . $paymentId . '/capture',
-        ]]);
+        $this->startTest([
+            'request' => [
+                'url' => '/payments/pay_' . $paymentId . '/capture',
+            ],
+        ]);
     }
 
-    protected function initiateNonCoDPayment()
+    public function testPaymentTimeout()
     {
-        $this->setupOrderIfApplicable();
+        $minute = 24 * 60 * 60;
 
-        $payment = $this->getDefaultPaymentArray();
+        $eligiblePayment = $this->fixtures->create('payment', ['created_at' => time() - 15 * 60, 'method' => 'cod']);
 
-        $payment['order_id'] = $this->order->getPublicId();
+        $inEligiblePayment = $this->fixtures->create('payment', ['created_at' => time() - 10 * 60, 'method' => 'cod']);
 
-        return $this->doAuthPayment($payment);
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $eligiblePayment->reload();
+
+        $inEligiblePayment->reload();
+
+        $this->assertEquals('failed', $eligiblePayment['status']);
+
+        $this->assertEquals('created', $inEligiblePayment['status']);
     }
 
-    protected function setupOrderIfApplicable(): void
+
+    /**
+     * Usecase for the next 4 tests: fail any cod payment in pending status for more than 45days
+     */
+    public function testReminderCallbackForPendingPaymentBefore45Days()
     {
-        if ($this->order === null)
-        {
-            $this->order = $this->fixtures->create('order', [
-                'amount' => '50000',
-            ]);
-        }
+        $payment = $this->fixtures->create('payment', [
+            'id'         => 'randmPaymentId',
+            'method'     => 'cod',
+            'status'     => 'pending',
+            'created_at' => time() - 30 * self::SECONDS_IN_DAY,
+        ]);
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $payment->reload();
+
+        $this->assertEquals('pending', $payment['status']);
+    }
+
+    public function testReminderCallbackForPendingPaymentAfter45Days()
+    {
+        $payment = $this->fixtures->create('payment', [
+            'id'         => 'randmPaymentId',
+            'method'     => 'cod',
+            'status'     => 'pending',
+            'created_at' => time() - 50 * self::SECONDS_IN_DAY,
+        ]);
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest($this->testData['testReminderCallbackStopScheduleTestData']);
+
+        $payment->reload();
+
+        $this->assertEquals('failed', $payment['status']);
+    }
+
+    public function testReminderCallbackForNonPendingPaymentBefore45Days()
+    {
+        $payment = $this->fixtures->create('payment', [
+            'id'         => 'randmPaymentId',
+            'method'     => 'cod',
+            'status'     => 'captured',
+            'created_at' => time() - 30 * self::SECONDS_IN_DAY,
+        ]);
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest($this->testData['testReminderCallbackStopScheduleTestData']);
+
+        $payment->reload();
+
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    public function testReminderCallbackForNonPendingPaymentAfter45Days()
+    {
+        $payment = $this->fixtures->create('payment', [
+            'id'         => 'randmPaymentId',
+            'method'     => 'cod',
+            'status'     => 'captured',
+            'created_at' => time() - 50 * self::SECONDS_IN_DAY,
+        ]);
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest($this->testData['testReminderCallbackStopScheduleTestData']);
+
+        $payment->reload();
+
+        $this->assertEquals('captured', $payment['status']);
     }
 }

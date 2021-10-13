@@ -2444,6 +2444,36 @@ class Service extends Base\Service
         return $count;
     }
 
+
+    /**
+     * Handles callback from reminder service to mark the payment as failed incase its in pending status for > 45d
+     * The return boolean variable is to decide whether to continue further callback from reminder service.
+     */
+    public function handleReminderCallbackToTimeoutCoDPayment($paymentId): bool
+    {
+        $payment = $this->repo->payment->findOrFailPublic($paymentId);
+
+        $now = time();
+
+        $expectedTimeoutAt = $payment->getCreatedAt() + Payment\Entity::PAYMENT_TIMEOUT_COD_PENDING;
+
+        if ($payment->isPending() === false)
+        {
+            return false;
+        }
+
+        if ($now < $expectedTimeoutAt)
+        {
+            return true;
+        }
+
+        $this->getNewProcessor($payment->merchant)
+              ->setPayment($payment)
+              ->timeoutPayment();
+
+        return false;
+    }
+
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setMemoryLimit('1024M');

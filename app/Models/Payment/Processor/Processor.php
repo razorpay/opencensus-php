@@ -2739,6 +2739,7 @@ class Processor
 
         if (($status !== Status::CREATED) and
             ($status !== Status::AUTHENTICATED) and
+            ($status !== Status::PENDING) and
             ($shouldRunForEmandateFailedPayment === false))
         {
             throw new Exception\LogicException(
