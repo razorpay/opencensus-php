@@ -1,14 +1,15 @@
 import { Component } from 'react';
 
+import { classList } from 'common/utils/rzp-utils';
 export default class Pager extends Component {
-  constructor() {
-    super(...arguments);
-    this.onNext = ::this.onNext;
-    this.onPrev = ::this.onPrev;
+  constructor(...args) {
+    super(...args);
+    this.onNext = this.onNext.bind(this);
+    this.onPrev = this.onPrev.bind(this);
   }
 
   onNext() {
-    let newParams = {
+    const newParams = {
       skip: Number(this.props.skip) + Number(this.props.count),
       count: +this.props.count,
     };
@@ -17,7 +18,7 @@ export default class Pager extends Component {
   }
 
   onPrev() {
-    let newParams = {
+    const newParams = {
       skip: Number(this.props.skip) - Number(this.props.count),
       count: +this.props.count,
     };
@@ -26,13 +27,13 @@ export default class Pager extends Component {
   }
 
   render() {
-    let { length, onClick } = this.props;
-    let count = +this.props.count;
-    let skip = +this.props.skip;
-    let nextDisabled = length < count;
-    let prevDisabled = !skip;
-    let total = skip + length;
-    let current = skip + 1;
+    const { length } = this.props;
+    const count = +this.props.count;
+    const skip = +this.props.skip;
+    const nextDisabled = length < count;
+    const prevDisabled = !skip;
+    const total = skip + length;
+    const current = skip + 1;
 
     if (!total) {
       return null;
@@ -46,7 +47,7 @@ export default class Pager extends Component {
         }}
       >
         {!(nextDisabled && prevDisabled) ? (
-          <div class="btn-group pull-right">
+          <div className={classList('btn-group pull-right', this.props.buttonClass)}>
             <button
               type="button"
               class="btn btn-default btn-sm i"
@@ -66,7 +67,7 @@ export default class Pager extends Component {
           </div>
         ) : null}
 
-        <small class="text-muted">
+        <small className={classList('text-muted', this.props.textClass)}>
           Showing {current} - {total}
         </small>
       </div>

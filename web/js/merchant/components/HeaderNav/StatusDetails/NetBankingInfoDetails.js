@@ -1,28 +1,27 @@
-import {
-  showLowSeverityDowntime,
-  showMediumSeverityDowntime,
-  showHighSeverityDowntime,
-  showWarningText,
-} from './utilities';
 import greenTickTiny from '../../../../../icons/merchant/greenTickTiny.svg';
+import OngoingDowntime from './OngoingDowntime';
 
 const NetBankingInfoDetails = (props) => {
   return (
-    <div class="status-instrument-details">
+    <div>
       <div class="status-method-instrument">
         Banks<span class="status-method-instrument-asterix">*</span>
       </div>
       <div class="status-method-instrument-info">
         {/* Low */}
-        {props.netBankingDowntimes?.low && showLowSeverityDowntime(props.netBankingDowntimes?.low)}
+        {props.netBankingDowntimes?.low && (
+          <OngoingDowntime downtimes={props.netBankingDowntimes?.low} severity="low" />
+        )}
 
         {/* Medium */}
-        {props.netBankingDowntimes?.medium &&
-          showMediumSeverityDowntime(props.netBankingDowntimes?.medium)}
+        {props.netBankingDowntimes?.medium && (
+          <OngoingDowntime downtimes={props.netBankingDowntimes?.medium} severity="medium" />
+        )}
 
         {/* High */}
-        {props.netBankingDowntimes?.high &&
-          showHighSeverityDowntime(props.netBankingDowntimes?.high)}
+        {props.netBankingDowntimes?.high && (
+          <OngoingDowntime downtimes={props.netBankingDowntimes?.high} severity="high" />
+        )}
 
         {/* No issues */}
         <img src={greenTickTiny} />
@@ -38,7 +37,6 @@ const NetBankingInfoDetails = (props) => {
           ))}
         </div>
       </div>
-      {showWarningText()}
     </div>
   );
 };

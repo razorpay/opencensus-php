@@ -3,8 +3,8 @@ import { useEffect, useReducer } from 'react';
 import Pager from 'common/ui/Pager';
 import Spinner from 'common/ui/Spinner';
 import { getTimeinTwelveHourFormat } from './utilities';
-import { fetchHistoricalDowntimes } from 'merchant/reducers/status';
-import { BANKS, PSPs, CARD_ISSUERS } from '../constants';
+import { fetchHistoricalDowntimes } from './service';
+import { BANKS, PSPs, CARD_ISSUERS } from './constants';
 
 const initialState = {
   historicalDowntimes: [],
@@ -68,17 +68,17 @@ const HistoricalDowntimes = (props) => {
           }/${beginDateObj.getFullYear()}  |  ${beginTime}  to  ${endTime}   |`}
           {historicalDowntime.severity === 'low' ? (
             <img
-              src="https://cdn.razorpay.com/static/assets/downtimes/yellow-status-tiny.svg"
+              src={`${window.cdnBaseUrl}/static/assets/downtimes/yellow-status-tiny.svg`}
               class="historical-downtime-icon"
             />
           ) : historicalDowntime.severity === 'medium' ? (
             <img
-              src="https://cdn.razorpay.com/static/assets/downtimes/orange-status-tiny.svg"
+              src={`${window.cdnBaseUrl}/static/assets/downtimes/orange-status-tiny.svg`}
               class="historical-downtime-icon"
             />
           ) : (
             <img
-              src="https://cdn.razorpay.com/static/assets/downtimes/red-status-tiny.svg"
+              src={`${window.cdnBaseUrl}/static/assets/downtimes/red-status-tiny.svg`}
               class="historical-downtime-icon"
             />
           )}
@@ -202,9 +202,8 @@ const HistoricalDowntimes = (props) => {
   };
 
   useEffect(() => {
-    setHistoricalDowntimes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    setHistoricalDowntimes(props.paymentMethod);
+  }, [props.paymentMethod]);
 
   return (
     state.historicalDowntimes.length > 0 && (
@@ -219,7 +218,16 @@ const HistoricalDowntimes = (props) => {
             {state.historicalDowntimes?.map((historicalDowntime) =>
               showHistoricalDowntime(historicalDowntime),
             )}
-            <Pager count={state.count} skip={state.skip} length={state.length} onClick={paginate} />
+            <div class="status-pager">
+              <Pager
+                buttonClass="status-pager-button"
+                textClass="status-pager-text"
+                count={state.count}
+                skip={state.skip}
+                length={state.length}
+                onClick={paginate}
+              />
+            </div>
           </>
         )}
       </>

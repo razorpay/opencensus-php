@@ -1,30 +1,28 @@
-import {
-  showLowSeverityDowntime,
-  showMediumSeverityDowntime,
-  showHighSeverityDowntime,
-  showWarningText,
-} from './utilities';
 import greenTickTiny from '../../../../../icons/merchant/greenTickTiny.svg';
+import OngoingDowntime from './OngoingDowntime';
 
 const CardsInfoDetails = (props) => {
   return (
-    <div class="status-instrument-details">
+    <div>
       <div class="status-method-instrument">
         Card Networks<span class="status-method-instrument-asterix">*</span>
       </div>
 
       <div class="status-method-instrument-info">
         {/* Low */}
-        {props.cardDowntimes?.network?.low &&
-          showLowSeverityDowntime(props.cardDowntimes?.network?.low)}
+        {props.cardDowntimes?.network?.low && (
+          <OngoingDowntime downtimes={props.cardDowntimes?.network?.low} severity="low" />
+        )}
 
         {/* Medium */}
-        {props.cardDowntimes?.network?.medium &&
-          showMediumSeverityDowntime(props.cardDowntimes?.network?.medium)}
+        {props.cardDowntimes?.network?.medium && (
+          <OngoingDowntime downtimes={props.cardDowntimes?.network?.medium} severity="medium" />
+        )}
 
         {/* High */}
-        {props.cardDowntimes?.network?.high &&
-          showHighSeverityDowntime(props.cardDowntimes?.network?.high)}
+        {props.cardDowntimes?.network?.high && (
+          <OngoingDowntime downtimes={props.cardDowntimes?.network?.high} severity="high" />
+        )}
 
         {/* No issues */}
         <img src={greenTickTiny} />
@@ -46,16 +44,19 @@ const CardsInfoDetails = (props) => {
 
       <div class="status-method-instrument-info">
         {/* Low */}
-        {props.cardDowntimes?.issuer?.low &&
-          showLowSeverityDowntime(props.cardDowntimes?.issuer?.low)}
+        {props.cardDowntimes?.issuer?.low && (
+          <OngoingDowntime downtimes={props.cardDowntimes?.issuer?.low} severity="low" />
+        )}
 
         {/* Medium */}
-        {props.cardDowntimes?.issuer?.medium &&
-          showMediumSeverityDowntime(props.cardDowntimes?.issuer?.medium)}
+        {props.cardDowntimes?.issuer?.medium && (
+          <OngoingDowntime downtimes={props.cardDowntimes?.issuer?.medium} severity="medium" />
+        )}
 
         {/* High */}
-        {props.cardDowntimes?.issuer?.high &&
-          showHighSeverityDowntime(props.cardDowntimes?.issuer?.high)}
+        {props.cardDowntimes?.issuer?.high && (
+          <OngoingDowntime downtimes={props.cardDowntimes?.issuer?.high} severity="high" />
+        )}
 
         {/* No Issues */}
         <img src={greenTickTiny} />
@@ -71,7 +72,6 @@ const CardsInfoDetails = (props) => {
           ))}
         </div>
       </div>
-      {showWarningText()}
     </div>
   );
 };

@@ -15,8 +15,8 @@ import NavFragment from './NavFragment';
 import ModesDropdown from './SwitchMode';
 import AppSwitcher from './AppSwitcher';
 import ProfileDropdown from './ProfileDropdown';
-import StatusDetails from './StatusDetails';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import StatusDetails from './StatusDetails/index';
 
 const analyticsAction = (action) => {
   if (window.rzpAnalytics) {
@@ -159,6 +159,11 @@ export default class HeaderNav extends Component {
                     </ErrorBoundary>
                   </li>
                 </ShowWhen>
+                {this.props.user.isOrgRZP && this.props.user.isInternalStatusPageEnabled && (
+                  <li id="status-details">
+                    <StatusDetails />
+                  </li>
+                )}
                 <ShowWhen
                   additionalCondition={(usr) =>
                     usr.isAppSwitcherEnabled && usr.isAccepted && !usr.isOrgAxis
@@ -168,11 +173,6 @@ export default class HeaderNav extends Component {
                     <AppSwitcher analytics={analytics} {...commonProps} />
                   </li>
                 </ShowWhen>
-                {this.props.user.isOrgRZP && this.props.user.isInternalStatusPageEnabled && (
-                  <li id="status-details">
-                    <StatusDetails />
-                  </li>
-                )}
                 <li id="profile-dropdown">
                   <ProfileDropdown
                     analytics={analytics}

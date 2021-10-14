@@ -1,30 +1,28 @@
-import {
-  showLowSeverityDowntime,
-  showMediumSeverityDowntime,
-  showHighSeverityDowntime,
-  showWarningText,
-} from './utilities';
 import greenTickTiny from '../../../../../icons/merchant/greenTickTiny.svg';
+import OngoingDowntime from './OngoingDowntime';
 
 const UPIInfoDetails = (props) => {
   return (
-    <div class="status-instrument-details">
+    <div>
       <div class="status-method-instrument">
         VPA<span class="status-method-instrument-asterix">*</span>
       </div>
 
       <div class="status-method-instrument-info">
         {/* Low */}
-        {props.upiDowntimes?.vpa_handle?.low &&
-          showLowSeverityDowntime(props.upiDowntimes?.vpa_handle?.low)}
+        {props.upiDowntimes?.vpa_handle?.low && (
+          <OngoingDowntime downtimes={props.upiDowntimes?.vpa_handle?.low} severity="low" />
+        )}
 
         {/* Medium */}
-        {props.upiDowntimes?.vpa_handle?.medium &&
-          showMediumSeverityDowntime(props.upiDowntimes?.vpa_handle?.medium)}
+        {props.upiDowntimes?.vpa_handle?.medium && (
+          <OngoingDowntime downtimes={props.upiDowntimes?.vpa_handle?.medium} severity="medium" />
+        )}
 
         {/* High */}
-        {props.upiDowntimes?.vpa_handle?.high &&
-          showHighSeverityDowntime(props.upiDowntimes?.vpa_handle?.high)}
+        {props.upiDowntimes?.vpa_handle?.high && (
+          <OngoingDowntime downtimes={props.upiDowntimes?.vpa_handle?.high} severity="high" />
+        )}
 
         {/* No issues */}
         <img src={greenTickTiny} />
@@ -47,14 +45,19 @@ const UPIInfoDetails = (props) => {
 
       <div class="status-method-instrument-info">
         {/* Low */}
-        {props.upiDowntimes?.psp?.low && showLowSeverityDowntime(props.upiDowntimes?.psp?.low)}
+        {props.upiDowntimes?.psp?.low && (
+          <OngoingDowntime downtimes={props.upiDowntimes?.psp?.low} severity="low" />
+        )}
 
         {/* Medium */}
-        {props.upiDowntimes?.psp?.medium &&
-          showMediumSeverityDowntime(props.upiDowntimes?.psp?.medium)}
+        {props.upiDowntimes?.psp?.medium && (
+          <OngoingDowntime downtimes={props.upiDowntimes?.psp?.medium} severity="medium" />
+        )}
 
         {/* High */}
-        {props.upiDowntimes?.psp?.high && showHighSeverityDowntime(props.upiDowntimes?.psp?.high)}
+        {props.upiDowntimes?.psp?.high && (
+          <OngoingDowntime downtimes={props.upiDowntimes?.psp?.high} severity="high" />
+        )}
 
         {/* No issues */}
         <img src={greenTickTiny} />
@@ -70,8 +73,6 @@ const UPIInfoDetails = (props) => {
           ))}
         </div>
       </div>
-
-      {showWarningText()}
     </div>
   );
 };
