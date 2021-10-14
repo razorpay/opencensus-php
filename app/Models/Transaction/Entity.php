@@ -430,6 +430,32 @@ class Entity extends Base\PublicEntity
         return $mdr;
     }
 
+    public function getSourceAttribute()
+    {
+        if ($this->relationLoaded('source') === true)
+        {
+            return $this->getRelation('source');
+        }
+
+        $source = $this->source()->first();
+
+        if (empty($source) === false)
+        {
+            return $source;
+        }
+
+        if ($this->getType() === Constants\Entity::PAYMENT)
+        {
+            $payment = (new Payment\Repository)->findOrFailPublic($this->getEntityId());
+
+            $this->source()->associate($payment);
+
+            return $payment;
+        }
+
+        return null;
+    }
+
 /* --------------------------- End Accessors ---------------------------------*/
 
 /* --------------------------- Mutators --------------------------------------*/
@@ -1007,6 +1033,8 @@ class Entity extends Base\PublicEntity
     public function toStatement(): Statement\Entity
     {
         $statement = new Statement\Entity;
+
+        $this->load('source');
 
         $statement->exists     = $this->exists;
         $statement->connection = $this->connection;
