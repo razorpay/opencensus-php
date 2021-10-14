@@ -103,7 +103,8 @@ export default function ReferralBox({
             ''
           )}
         </SelectBox>
-        <SelectBox
+        {/* Temporary disable this until X referral flow is fixed*/}
+        {/* <SelectBox
           label={'RazorpayX'}
           description={
             'Refer merchants to RazorpayX products like Current account to process payouts'
@@ -121,7 +122,7 @@ export default function ReferralBox({
           ) : (
             ''
           )}
-        </SelectBox>
+        </SelectBox> */}
       </div>
     </div>
   );

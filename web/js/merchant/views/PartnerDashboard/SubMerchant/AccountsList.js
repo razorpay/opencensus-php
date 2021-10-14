@@ -548,8 +548,11 @@ class ProductSubMerchantsList extends ListContainer {
                         </div>
                       </div>
                       <ShowWhen
-                        additionalCondition={(currentUser) =>
-                          currentUser.isPartner() && currentUser.isPartner('reseller')
+                        additionalCondition={
+                          (currentUser) =>
+                            currentUser.isPartner() &&
+                            currentUser.isPartner('reseller') &&
+                            product !== PRODUCT_TYPE.X // temporary hide for X
                         }
                       >
                         <div>

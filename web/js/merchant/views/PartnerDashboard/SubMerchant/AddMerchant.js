@@ -110,10 +110,20 @@ export default class AddMerchant extends Component {
       })
       .then((response) => {
         const { id } = response;
-        this.setState((prevState) => ({
-          step: prevState.step + 1,
-          merchantEmail: params.email,
-        }));
+        // go to referral link screen only partner is reseller
+        // currently disabled for X until referral link for x is fixed
+        if (user && user.isPartner('reseller') && this.state.merchantType === PRODUCT_TYPE.PG) {
+          this.setState((prevState) => ({
+            step: prevState.step + 1,
+            merchantEmail: params.email,
+          }));
+        } else {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Submerchant created successfully',
+          });
+          this.props.closeModal();
+        }
         this.props.tracking.trackEvent(
           window.rzpQ.onbr().interaction('partnerships.submerchant.add.submerchant', {
             partnerID: user.id,
