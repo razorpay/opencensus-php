@@ -114,7 +114,7 @@ export default function sessionReducer(state = initialState, action) {
     case UPDATE_SESSION:
       return merge(state, {
         ...action.payload,
-        modeFormatted: titleCase(action.payload.mode),
+        modeFormatted: titleCase(action.payload.mode || state.mode),
         partnerModeFormatted: titleCase(action.payload.partnerMode || state.partnerMode),
       });
 

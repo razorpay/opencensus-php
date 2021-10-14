@@ -299,7 +299,7 @@ class App extends Component {
             } else if (!isPartnerKYCActivated) {
               currentPartnerMode = 'test';
             }
-    
+            LocalStorageService.setItem(this.partnerModeToken, currentPartnerMode);
             this.props.updateSession({ 
               partnerMode: currentPartnerMode, isUsingPartnerMode: this.state.isPartnerModeEnabled 
             });
@@ -738,6 +738,7 @@ class App extends Component {
       }
     } else {
       LocalStorageService.setItem(this.partnerModeToken, mode);
+      location.reload();
     }
   }
 
