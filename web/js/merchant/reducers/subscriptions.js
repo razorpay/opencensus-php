@@ -37,16 +37,20 @@ export const fetchSubscriptionItems = (params) => {
   };
 };
 
+export const fetchSubscriptionOfferAPI = (payment_methods) => {
+  return merchantFetch({
+    url: `offers/subscription`,
+    method: 'get',
+    data: {
+      payment_methods,
+    },
+  });
+};
+
 export const fetchSubscriptionOffers = (payment_methods) => {
   return {
     type: SUBSCRIPTION_OFFER_FETCH,
-    payload: merchantFetch({
-      url: `offers/subscription`,
-      method: 'get',
-      data: {
-        payment_methods,
-      },
-    }),
+    payload: fetchSubscriptionOfferAPI(payment_methods),
   };
 };
 

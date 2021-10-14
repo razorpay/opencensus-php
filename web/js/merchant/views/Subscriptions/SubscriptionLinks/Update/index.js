@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
@@ -8,18 +9,19 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 
 import { findBy, stringToObj, classList } from 'common/utils/rzp-utils';
-import { merchantFetch } from 'merchant/utils/ajax';
 import DocsLink from 'merchant/components/DocsLink';
 
 import Plan from 'merchant/models/Plan';
 import { fetchPlan, fetchPlans, updatePlans } from 'merchant/reducers/plans';
 import { fetchItems } from 'merchant/reducers/items';
 import {
+  fetchSettings,
   fetchSubscription,
   updateSubscription,
   fetchScheduledChanges,
+  fetchSubscriptionOfferAPI,
 } from 'merchant/reducers/subscriptions';
-import { fetchSettings } from 'merchant/reducers/subscriptions';
+
 import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
 import UPIBanner from '../components/UPIBanner';
 
@@ -27,6 +29,19 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 import Review from './Review';
 import PlanDetails from './PlanDetails';
+import moment from 'moment';
+
+const tabsMeta = {
+  'Subscription Details': {
+    title: 'SUBSCRIPTION DETAILS',
+  },
+  Review: {
+    title: 'REVIEW CHANGES',
+    desc: 'Please review the changes applied.',
+  },
+};
+
+const tabs = Object.keys(tabsMeta);
 
 @withRouter
 @connect(
@@ -89,11 +104,13 @@ export default class UpdateSubscription extends React.Component {
         };
 
         this.props.updatePlans(updatedPlans);
-      } catch (e) {}
+      } catch (e) {
+        // TODO
+      }
     }
 
     if (this.props.user.isSubscriptionOffersEnabled) {
-      fetchSubscriptionOffers([subscription.payment_method]).then((resp) => {
+      fetchSubscriptionOfferAPI([subscription.payment_method]).then((resp) => {
         this.setState({
           subscriptionOffers: resp.data,
         });
@@ -103,7 +120,7 @@ export default class UpdateSubscription extends React.Component {
     if (subscription.id !== this.props.id) {
       await this.fetchSubscription(this.props.id);
 
-      return;
+      return null;
     }
 
     if (subscription.has_scheduled_changes) {
@@ -111,6 +128,7 @@ export default class UpdateSubscription extends React.Component {
     }
 
     this.initUpdateSubscription(subscription);
+    return null;
   };
 
   initUpdateSubscription = (subscription) => {
@@ -180,12 +198,15 @@ export default class UpdateSubscription extends React.Component {
   };
 
   changeTab = (step) => () => {
-    const currentTab = this.state.currentTab + step;
-
-    const validTabs = [...this.state.validTabs];
-    validTabs[this.state.currentTab] = true;
-
-    this.setState({ currentTab, validTabs });
+    this.setState((prevState) => {
+      const currentTab = prevState.currentTab + step;
+      const validTabs = [...prevState.validTabs];
+      validTabs[prevState.currentTab] = true;
+      return {
+        currentTab,
+        validTabs,
+      };
+    });
   };
 
   handleTabChange = ({ target }) => {
@@ -227,31 +248,34 @@ export default class UpdateSubscription extends React.Component {
     let value = target.value;
     const name = target.name || target.dataset.name;
     const stateKey = target.name ? 'fields' : 'internals';
-    let values = { ...this.state[stateKey] };
+    this.setState((prevState) => {
+      let values = { ...prevState[stateKey] };
 
-    if (name.match(/_time/)) {
-      return;
-    } else if (target.type === 'number') {
-      value = Number(value);
-    } else if (target.type === 'checkbox') {
-      value = target.checked;
-    }
+      if (!name || name.match(/_time/)) {
+        return prevState;
+      } else if (target.type === 'number') {
+        value = Number(value);
+      } else if (target.type === 'checkbox') {
+        value = target.checked;
+      }
 
-    values = stringToObj(name, value, values);
-
-    this.setState({ [stateKey]: values });
+      values = stringToObj(name, value, values);
+      return {
+        [stateKey]: values,
+      };
+    });
   };
 
   handleChangeInPlan = ({ option }) => {
     const currSelectedPlan = findBy(this.props.plans.items, 'id', option.id);
 
-    this.setState({
+    this.setState((prevState) => ({
       fields: {
-        ...this.state.fields,
+        ...prevState.fields,
         plan_id: option.id,
       },
       _selectedPlanAmount: currSelectedPlan.item.amount,
-    });
+    }));
   };
 
   handleDateChange = (fieldName) => (selectedDate) => {
@@ -285,12 +309,12 @@ export default class UpdateSubscription extends React.Component {
   };
 
   handleRadioChange = (e) => {
-    this.setState({
+    this.setState((prevState) => ({
       fields: {
-        ...this.state.fields,
+        ...prevState.fields,
         [e.target.name]: e.target.value,
       },
-    });
+    }));
   };
 
   prepareForSave = () => {
@@ -337,8 +361,8 @@ export default class UpdateSubscription extends React.Component {
 
     return this.props
       .updateSubscription(data)
-      .then((data) => {
-        if (data) {
+      .then((subscription) => {
+        if (subscription) {
           this.props.showNotification({
             type: 'success',
             message: 'Subscription Updates Successfully',
@@ -346,11 +370,11 @@ export default class UpdateSubscription extends React.Component {
 
           if (this.props.onClose) return this.props.onClose();
 
-          const entityId = data.id;
-          const redirectUrl = '/subscriptions/' + entityId;
+          const redirectUrl = `/subscriptions/${subscription.id}`;
 
           this.props.history.push(redirectUrl);
         }
+        return null;
       })
       .catch(({ errors }) => {
         this.props.showNotification({
@@ -361,12 +385,12 @@ export default class UpdateSubscription extends React.Component {
   };
 
   handleChangeInOffer = ({ option = {} } = {}) => {
-    this.setState({
+    this.setState((prevState) => ({
       fields: {
-        ...this.state.fields,
+        ...prevState.fields,
         offer_id: option.id || null,
       },
-    });
+    }));
   };
 
   renderForm = () => {
@@ -429,6 +453,13 @@ export default class UpdateSubscription extends React.Component {
           />
         );
       }
+      default: {
+        return (
+          <div class="page-spinner-container">
+            <Spinner />
+          </div>
+        );
+      }
     }
   };
 
@@ -455,7 +486,7 @@ export default class UpdateSubscription extends React.Component {
           disableTabCondition={this.disableTabCondition}
           description={<p>Make changes to your existing subscriptions</p>}
           tabs={tabs}
-          title="Updates Subscription"
+          title="Update Subscription"
           tabsValidity={this.state.validTabs}
           tabClickHandler={this.handleTabChange}
         />
@@ -469,14 +500,18 @@ export default class UpdateSubscription extends React.Component {
           </Form>
         </main>
         <footer>
-          <div class={classList('card-blocked-banner', showUPIUnAvlBanner && 'upi-banner-visible')}>
-            <i class="i i-info-circle" /> Cards issued by Indian banks are temporarily disabled for
-            new subscriptions.{' '}
-            <DocsLink
-              url="https://razorpay.com/docs/announcements/rbi-card-mandate-guidelines/recurring-payments"
-              title="Learn more"
-            />
-          </div>
+          {this.props.user.isCardRecurringPaymentsBlocked && (
+            <div
+              class={classList('card-blocked-banner', showUPIUnAvlBanner && 'upi-banner-visible')}
+            >
+              <i class="i i-info-circle" /> Cards issued by Indian banks are temporarily disabled
+              for new subscriptions.{' '}
+              <DocsLink
+                url="https://razorpay.com/docs/announcements/rbi-card-mandate-guidelines/recurring-payments"
+                title="Learn more"
+              />
+            </div>
+          )}
           {showUPIUnAvlBanner && <UPIBanner />}
           {currentTab > 0 && (
             <Button onClick={this.changeTab(-1)} type="button">
@@ -515,25 +550,3 @@ export default class UpdateSubscription extends React.Component {
     return <div class="StandAloneContainer">{this.renderWizard({ isModalView })}</div>;
   }
 }
-
-const tabsMeta = {
-  'Subscription Details': {
-    title: 'SUBSCRIPTION DETAILS',
-  },
-  Review: {
-    title: 'REVIEW CHANGES',
-    desc: 'Please review the changes applied.',
-  },
-};
-
-const tabs = Object.keys(tabsMeta);
-
-const fetchSubscriptionOffers = (payment_methods) => {
-  return merchantFetch({
-    url: `offers/subscription`,
-    method: 'get',
-    data: {
-      payment_methods,
-    },
-  });
-};

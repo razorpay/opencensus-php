@@ -10,19 +10,21 @@ import {
   fetchHostMandateBatches as fetchAll,
   fetchHostMandateAuthLinkBatches,
 } from 'merchant/reducers/batches';
-import { titleCase } from 'common/utils/rzp-utils';
 
 import CreateBatch from './CreateBatch';
 
 const gaEvents = setGaTrack('Dashboard - Subscriptions - BU');
 
-const renderBatchOptions = openUploadModal => (
-  <CreateBatch openUploadModal={openUploadModal} />
-);
+const renderBatchOptions = (openUploadModal) => <CreateBatch openUploadModal={openUploadModal} />;
+
+const LINK_TYPE_MAP = {
+  auth_link: 'Registration Link',
+  recurring_charge: 'Recurring Charge',
+};
 
 const typeColumn = {
   title: 'Type',
-  value: ({ type }) => titleCase(type),
+  value: ({ type }) => LINK_TYPE_MAP[type],
 };
 
 const BatchTypeFilterField = () => (
@@ -36,12 +38,12 @@ const BatchTypeFilterField = () => (
   </div>
 );
 
-@connect(state => ({ user: state.session.user }), {
+@connect((state) => ({ user: state.session.user }), {
   fetchAll,
   fetchHostMandateAuthLinkBatches,
 })
 export default class BatchListContainer extends Component {
-  fetchAll = filter => {
+  fetchAll = (filter) => {
     if (this.props.user.isRegistrationLinkSupervisorRole) {
       return this.props.fetchHostMandateAuthLinkBatches(filter);
     }
@@ -49,8 +51,7 @@ export default class BatchListContainer extends Component {
     return this.props.fetchAll(filter);
   };
   render() {
-    const ExtraFilterFields = !this.props.user
-      .isRegistrationLinkSupervisorRole && {
+    const ExtraFilterFields = !this.props.user.isRegistrationLinkSupervisorRole && {
       ExtraFilterFields: BatchTypeFilterField,
     };
 
