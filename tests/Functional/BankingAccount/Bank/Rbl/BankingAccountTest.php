@@ -440,6 +440,44 @@ class BankingAccountTest extends TestCase
         $this->assertNull($bankingAccount);
     }
 
+    public function testCreateBankingAccountWithUnserviceableBusinessCategoryFromAdminDashboard()
+    {
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $this->ba->adminAuth();
+
+        // Turn on the 'allow_all_merchants' feature for admin
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        Mail::fake();
+
+        $this->startTest();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertNull($bankingAccount);
+    }
+
+    public function testCreateBankingAccountWithServiceableBusinessCategoryFromAdminDashboard()
+    {
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $this->ba->adminAuth();
+
+        // Turn on the 'allow_all_merchants' feature for admin
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        Mail::fake();
+
+        $this->startTest();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertNotNull($bankingAccount);
+    }
+
     public function testCreateBankingAccountWithActivationDetailWithSalesTeamAsCapitalSme()
     {
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();

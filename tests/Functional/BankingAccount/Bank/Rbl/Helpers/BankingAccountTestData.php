@@ -303,6 +303,56 @@ return [
           ],
       ],
 
+    'testCreateBankingAccountWithUnserviceableBusinessCategoryFromAdminDashboard' => [
+        'request'  => [
+            'url'     => '/banking_accounts_admin_dashboard',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [
+                'channel' => 'rbl',
+                'pincode' => '560034',
+                'activation_detail' => [
+                    'business_category' => 'llp',
+                    'sales_team'        => 'self_serve'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'serviceability' => true,
+                'business_type_supported' => false,
+                'errorMessage' => null
+            ],
+        ],
+    ],
+
+    'testCreateBankingAccountWithServiceableBusinessCategoryFromAdminDashboard' => [
+        'request'  => [
+            'url'     => '/banking_accounts_admin_dashboard',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [
+                'channel' => 'rbl',
+                'pincode' => '560034',
+                'activation_detail' => [
+                    'business_category' => 'partnership',
+                    'sales_team'        => 'self_serve'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'serviceability' => true,
+                'business_type_supported' => true,
+                'errorMessage' => null
+            ],
+        ],
+    ],
+
     'testCheckServiceableByRBL' => [
         'request'  => [
             'url'     => '/banking_accounts/serviceability/rbl/pincode/221002',

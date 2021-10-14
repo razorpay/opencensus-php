@@ -2331,6 +2331,7 @@ class Route
 
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                  ],
         'banking_account_create_dashboard'        => ['post',     'banking_accounts_dashboard',                                'BankingAccountController@createDashboard'                  ],
+        'banking_account_create_dashboard_admin'  => ['post',     'banking_accounts_admin_dashboard',                          'BankingAccountController@createDashboard'                  ],
         'banking_account_create_admin'            => ['post',     'banking_accounts_admin',                                    'BankingAccountController@create'                           ],
         'banking_account_activate'                => ['post',     'banking_accounts/{id}/activate',                            'BankingAccountController@activate'                         ],
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
@@ -5142,6 +5143,7 @@ class Route
         'governor_optimizer_update_merchant',
 
         'banking_account_create_admin',
+        'banking_account_create_dashboard_admin',
 
         // throttle settings routes
         'fetch_throttle_settings',
@@ -6244,6 +6246,7 @@ class Route
         'banking_account_bulk_assign_reviewer'     => Permission::ASSIGN_BANKING_ACCOUNT_REVIEWER,
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
+        'banking_account_create_dashboard_admin'   => Permission::VIEW_ACTIVATION_FORM,
 
         'commissions_get_multiple'                 => Permission::VIEW_COMMISSIONS,
         'commissions_get'                          => Permission::VIEW_COMMISSIONS,
@@ -8242,6 +8245,7 @@ class Route
             'banking_account_comments_list',
             'banking_account_create',
             'banking_account_create_admin',
+            'banking_account_create_dashboard_admin',
             'banking_account_service_lms_routes_all',
             'banking_account_service_lms_routes_ops',
             'banking_account_statement_generate',
