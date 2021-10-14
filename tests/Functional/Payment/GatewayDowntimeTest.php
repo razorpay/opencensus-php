@@ -957,6 +957,7 @@ class GatewayDowntimeTest extends TestCase
 
     public function testVajraAlertUPIWebhookMerchantId()
     {
+        $this->markTestSkipped("Disabled creation of downtime at terminal level");
         $this->createUpiTerminals();
 
         $this->commonAlertUPIWebHookTestHandler(__FUNCTION__);
@@ -964,6 +965,7 @@ class GatewayDowntimeTest extends TestCase
 
     public function testVajraAlertUPIWebhookMerchantIds()
     {
+        $this->markTestSkipped("Disabled creation of downtime at terminal level");
         $this->createUpiTerminals();
 
         $this->commonAlertUPIWebHookTestHandler(__FUNCTION__);

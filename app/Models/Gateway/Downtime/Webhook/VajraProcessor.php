@@ -261,10 +261,7 @@ class VajraProcessor implements ProcessorInterface
             (is_null($merchantId) === true) ? [] : [$merchantId]
         ));
 
-        $merchantTerminalIds = $this->repo->terminal->getIdsByMerchantIdsAndGateway(
-            $merchantIds,
-            $detailsData[VajraConstants::DETAILS_DATA_GATEWAY_KEY]
-        );
+        $merchantTerminalIds = [];
 
         $terminalIds = array_unique(array_merge(
             $terminalIds,
