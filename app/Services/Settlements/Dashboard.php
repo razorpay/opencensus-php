@@ -31,6 +31,7 @@ class Dashboard extends Base
     const CHANNEL_STATUS_GET           = '/twirp/rzp.settlements.transfer.v1.TransferService/GetChannelState';
 
     const SETTLEMENT_RETRY             = '/twirp/rzp.settlements.settlement.v1.SettlementService/Retry';
+    const SETTLEMENT_INITIATE          = '/twirp/rzp.settlements.settlement.v1.SettlementService/ManualSettlementInitiate';
 
     const REPORT_TRIGGER               = '/twirp/rzp.settlements.report.v1.ReportService/TriggerReport';
     const TRANSFER_STATUS_UPDATE       = '/twirp/rzp.settlements.transfer.v1.TransferService/UpdateStatus';
@@ -433,5 +434,17 @@ class Dashboard extends Base
     public function updateBeneName(array $input) : array
     {
         return $this->makeRequest(self::BENE_NAME_UPDATE, $input, self::SERVICE_DASHBOARD);
+    }
+
+    /**
+     * settlement service manual settlement initiate
+     * @param array $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function settlementsInitiate(array $input) : array
+    {
+        return $this->makeRequest(self::SETTLEMENT_INITIATE, $input, self::SERVICE_DASHBOARD);
     }
 }

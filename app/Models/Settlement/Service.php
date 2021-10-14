@@ -1399,4 +1399,9 @@ class Service extends Base\Service
     {
         return app('settlements_dashboard')->updateBeneName($input);
     }
+
+    public function settlementsInitiate($input)
+    {
+        return app('settlements_dashboard')->settlementsInitiate($input);
+    }
 }
