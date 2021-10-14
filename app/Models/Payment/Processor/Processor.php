@@ -16,6 +16,7 @@ use RZP\Models\Risk;
 use RZP\Models\Admin;
 use RZP\Models\Order;
 use RZP\Models\Offer;
+use RZP\Trace\Tracer;
 use RZP\Models\Gateway;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
@@ -2281,12 +2282,15 @@ class Processor
 
                 $transfers = $this->repo->transaction(function() use ($payment, $input, $asyncTransfer)
                 {
-                    return (new TransferCore)->createForPayment(
-                        $payment,
-                        $input['transfers'],
-                        $this->merchant,
-                        $asyncTransfer
-                    );
+                    return Tracer::inSpan(['name' => 'payment.transfer.create'], function() use ($payment, $input, $asyncTransfer)
+                    {
+                        return (new TransferCore)->createForPayment(
+                            $payment,
+                            $input['transfers'],
+                            $this->merchant,
+                            $asyncTransfer
+                        );
+                    });
                 }, $deadLockRetryAttempts);
 
                 if ($asyncTransfer === true)

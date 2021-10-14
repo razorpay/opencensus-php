@@ -208,6 +208,7 @@ class Tracing
             // Route
             'transfer_fetch',
             'transfer_fetch_multiple',
+            'payment_transfer',
         ]);
     }
 

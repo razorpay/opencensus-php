@@ -7,6 +7,7 @@ use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Order;
+use RZP\Trace\Tracer;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
@@ -124,7 +125,10 @@ class Core extends Base\Core
 
         foreach ($input as $transfer)
         {
-            $transfer = $this->makeTransfer($transfer, $payment, $merchant, $asyncTransfer);
+            $transfer = Tracer::inSpan(['name' => 'payment.transfer.create.make_transfer'], function() use ($transfer, $payment, $merchant, & $asyncTransfer)
+            {
+                return $this->makeTransfer($transfer, $payment, $merchant, $asyncTransfer);
+            });
 
             $totalTransferAmount += $transfer['amount'];
 
@@ -419,7 +423,10 @@ class Core extends Base\Core
 
             $input[Entity::STATUS] = Status::CREATED;
 
-            $transfer = $this->accountTransfer($id, $source, $input, $merchant, $asyncTransfer);
+            $transfer = Tracer::inSpan(['name' => 'payment.transfer.create.make_transfer.account_transfer'], function() use ($id, $source, $input, $merchant, $asyncTransfer)
+            {
+                return $this->accountTransfer($id, $source, $input, $merchant, $asyncTransfer);
+            });
         }
 
         return $transfer;
@@ -500,7 +507,10 @@ class Core extends Base\Core
 
         if($aysncTransfer === true)
         {
-            $transfer = $this->buildTransferEntity($source, $to, $input, $merchant);
+            $transfer = Tracer::inSpan(['name' => 'payment.transfer.create.make_transfer.account_transfer.build'], function() use ($source, $to, $input, $merchant)
+            {
+                return $this->buildTransferEntity($source, $to, $input, $merchant);
+            });
 
             $transfer->setStatus(Status::PENDING);
 
