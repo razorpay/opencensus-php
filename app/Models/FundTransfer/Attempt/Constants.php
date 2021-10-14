@@ -37,7 +37,7 @@ final class Constants
 
     const MAX_UPI_AMOUNT        = 100000;
 
-    const MAX_IMPS_AMOUNT       = 20000000;
+    const MAX_IMPS_AMOUNT       = 50000000;
 
     const NEFT_END_HOUR = 18;
 

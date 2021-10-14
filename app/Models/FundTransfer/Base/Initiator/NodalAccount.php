@@ -36,7 +36,7 @@ abstract class NodalAccount extends Base\Core
     const LOW_BALANCE_ALERT      = 'low_balance_alert';
 
     const MIN_RTGS_AMOUNT        = 200000;
-    const MAX_IMPS_AMOUNT        = 200000;
+    const MAX_IMPS_AMOUNT        = 500000;
 
     const RTGS_CUTOFF_HOUR_MIN   = 8;
     const RTGS_CUTOFF_HOUR_MAX   = 15;

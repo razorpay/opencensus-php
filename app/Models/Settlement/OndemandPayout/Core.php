@@ -34,7 +34,7 @@ class Core extends Base\Core
         'reversed',
     ];
 
-    const MAX_IMPS_AMOUNT = FundTransfer\Base\Initiator\NodalAccount::MAX_IMPS_AMOUNT * 100;
+    const MAX_IMPS_AMOUNT = 200000 * 100;
 
     const PAYOUT_PROCESSED_EVENT = 'payout.processed';
 

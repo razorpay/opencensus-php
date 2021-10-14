@@ -18,7 +18,7 @@ use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer as BulkJob;
 
 class Core extends Base\Core
 {
-    const MAX_IMPS_AMOUNT = FundTransfer\Base\Initiator\NodalAccount::MAX_IMPS_AMOUNT * 100;
+    const MAX_IMPS_AMOUNT = 200000 * 100;
 
     const MIN_SPLIT_AMOUNT = 10000;
 

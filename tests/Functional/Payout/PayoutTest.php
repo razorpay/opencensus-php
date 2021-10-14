@@ -504,6 +504,13 @@ class PayoutTest extends OAuthTestCase
         }
     }
 
+    public function testCreatePayoutWithOtpOutOfIMPSLimit()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testCreatePayoutWithModeNotSet()
     {
         // Not asserting the data, just the count.
@@ -3590,6 +3597,25 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotEquals($payouts['items'], null);
     }
 
+    public function testCreatePayoutWithOtpWithIMPSLimit5L()
+    {
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '200000000']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals("MerchantUser01", $payout['user_id']);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
+    }
+    
     public function testGetPayoutsForReferenceId()
     {
         $this->createEsIndex();

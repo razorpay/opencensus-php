@@ -118,7 +118,7 @@ final class Constants
 
     const MOZART_IDENTIFIER              = 'mozart_identifier';
 
-    const IMPS_CUTOFF_AMOUNT             = 200000;
+    const IMPS_CUTOFF_AMOUNT             = 500000;
 
     const BENEFICIARY_MOBILE             = 'beneficiary_mobile';
 

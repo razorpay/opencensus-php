@@ -565,6 +565,74 @@ return [
         ],
     ],
 
+    'testCreatePayoutWithOtpWithIMPSLimit5L' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_with_otp',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 50000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'otp' =>'0007',
+                'token' => 'BUIj3m2Nx2VvVj',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 50000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+                'tax'             => 270,
+                'fees'            => 1770,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreatePayoutWithOtpOutOfIMPSLimit' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_with_otp',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 60000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'fund_account_id' => 'fa_100000000000fa',
+                'otp' =>'0007',
+                'token' => 'BUIj3m2Nx2VvVj',
+                'mode'            => 'IMPS',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => 'Given method / mode cannot be used for the payout amount specified',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH
+        ],
+    ],
+
     'testApprovePayoutWithComment' => [
         'request'  => [
             'method'  => 'POST',
@@ -3524,14 +3592,14 @@ return [
             'method'  => 'POST',
             'url'     => '/merchant/payout/demand',
             'content' => [
-                'amount'   => 20000100,
+                'amount'   => 50000100,
                 'currency' => 'INR'
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+
                     'description' => PublicErrorDescription::BAD_REQUEST_ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED,
                 ],
             ],
@@ -5988,7 +6056,7 @@ return [
             'url'     => '/payouts',
             'content' => [
                 'account_number'  => '2224440041626905',
-                'amount'          => 30000000,
+                'amount'          => 60000000,
                 'currency'        => 'INR',
                 'purpose'         => 'refund',
                 'narration'       => 'Batman',
