@@ -89,7 +89,9 @@ class ReconServiceController extends Controller
             '^file_types\/[[:alnum:]]{14}$',
             '^file_types\/[[:alnum:]]{14}\/source_configs\/[[:alnum:]]{14}$',
             '^recon_state\/\d+$',
-            '^rule_state_map\/\d+$'
+            '^rule_state_map\/\d+$',
+            '^recon_run_logs\/\d+$',
+            '^ingestion_run_logs\/\d+$'
         ],
         self::DELETE => [
             '^merchants\/[[:alnum:]]{14}$',

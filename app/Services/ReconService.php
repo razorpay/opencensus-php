@@ -24,6 +24,8 @@ class ReconService
 
     const NAME = 'name';
 
+    const METHOD = 'method';
+
     const ART_UFH_FILE_TYPE = 'art_input';
 
     const ART_UFH_BULK_RULE = 'art_bulk_rule';
@@ -37,6 +39,8 @@ class ReconService
     const FILE_TYPE_URL = 'file_types';
 
     const POST = 'POST';
+
+    const GET = 'GET';
 
     const PATCH = 'PATCH';
 
@@ -69,6 +73,11 @@ class ReconService
         {
             $data = json_decode($input['body'], true);
         }
+        else if ($method == self::GET) {
+            $data = $input;
+            unset($data[self::FILE]);
+            unset($data[self::METHOD]);
+        }
         else
         {
             $data = [];
@@ -87,10 +96,14 @@ class ReconService
             unset($input[self::FILE]);
         }
 
-        if ($data)
-        {
-            $data = json_encode($data);
-        }
+        $this->trace->info(
+            TraceCode::RECON_SEND_REQUEST_DATA,
+            [
+                'url'       => $url,
+                'method'    => $method,
+                'input'     => $input,
+                'data'      => $data,
+            ]);
 
         return $this->sendRequest($url, $method, $data);
     }
@@ -185,7 +198,7 @@ class ReconService
     {
         $headers['Content-Type'] = 'application/json';
 
-        $requestPayload = $data ?? [];
+        $requestPayload = $this->getPayload($data ?? [], $method);
 
         $url = $this->baseUrl . $url;
 
@@ -250,5 +263,12 @@ class ReconService
         }
 
         return $responseBody;
+    }
+
+    protected function getPayload($data, $method)
+    {
+        if ($method === 'GET') return $data;
+
+        return json_encode($data, JSON_FORCE_OBJECT);
     }
 }
