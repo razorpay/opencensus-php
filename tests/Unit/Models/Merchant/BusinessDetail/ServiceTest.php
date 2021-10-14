@@ -17,6 +17,7 @@ class ServiceTest extends TestCase
 
         $saveInput = [
             BusinessDetailEntity::WEBSITE_DETAILS => [
+
                 BusinessDetailConstants::ABOUT => "https://hello.com/en/index.html"
             ]
         ];
