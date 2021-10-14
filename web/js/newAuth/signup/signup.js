@@ -60,10 +60,14 @@ const SignUp = () => {
   }, [setOneTapInfo]);
 
   useEffect(() => {
-    //set recommmend product to localstorage.
-    const query = QueryString.parse(window.location.search);
-    if (query?.recommended_product) {
-      localStorage.setItem('merchant_landing_page', query.recommended_product);
+    try {
+      //set recommend product to localstorage.
+      const query = QueryString.parse(window.location.search);
+      if (query?.recommended_product) {
+        localStorage.setItem('merchant_landing_page', query.recommended_product);
+      }
+    } catch (e) {
+      // ignore silently
     }
   }, []);
 

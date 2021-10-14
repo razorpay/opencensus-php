@@ -2295,9 +2295,13 @@ app
 
         $scope.login.data.captcha = captchaVal;
 
-        const OffersForYouCookie = window.localStorage.getItem('offers_for_you_state');
-        if (OffersForYouCookie !== 'hasAppliedCA')
-          window.localStorage.removeItem('offers_for_you_state');
+        try {
+          const OffersForYouCookie = window.localStorage.getItem('offers_for_you_state');
+          if (OffersForYouCookie !== 'hasAppliedCA')
+            window.localStorage.removeItem('offers_for_you_state');
+        } catch (e) {
+          // ignore silently
+        }
 
         var payload = {
           method: 'post',
