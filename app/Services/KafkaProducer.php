@@ -2,8 +2,10 @@
 
 namespace RZP\Services;
 
+use App;
 use RdKafka\Message;
 use RdKafka\Producer;
+use RZP\Trace\TraceCode;
 
 class KafkaProducer
 {
@@ -17,7 +19,7 @@ class KafkaProducer
 
     protected $producerPollTimeOutMS = 0;
 
-    protected $producerFlushTimeOutMS = 120000;
+    protected $producerFlushTimeOutMS = 10000;
 
     public function __construct($topicName, $message, $key = null)
     {
@@ -42,7 +44,17 @@ class KafkaProducer
 
         $this->producer->poll($this->producerPollTimeOutMS);
 
+        $app = App::getFacadeRoot();
+
+        $startTime = microtime(true);
+
         $result = $this->producer->flush($this->producerFlushTimeOutMS);
+
+        $endTime = get_diff_in_millisecond($startTime);
+
+        $app['trace']->info(TraceCode::KAFKA_PRODUCER_FLUSH_TIME,
+            ['kafka_flush_time' => $endTime]
+        );
 
         if (RD_KAFKA_RESP_ERR_NO_ERROR !== $result)
         {

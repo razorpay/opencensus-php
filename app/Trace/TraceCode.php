@@ -5411,6 +5411,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FAILED_TO_VALIDATE_UTF_8_ENCODING                   = 'FAILED_TO_VALIDATE_UTF_8_ENCODING';
     const ERROR_IN_VALIDATING_BATCH_FILE                      = 'ERROR_IN_VALIDATING_BATCH_FILE';
     const VALIDATION_ERROR_IN_BATCH_FILE_ROW                  = 'VALIDATION_ERROR_IN_BATCH_FILE_ROW';
+    const KAFKA_PRODUCER_FLUSH_TIME                           = 'KAFKA_PRODUCER_FLUSH_TIME';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
