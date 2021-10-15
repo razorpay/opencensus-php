@@ -637,7 +637,7 @@ class FreshdeskTicketV2Test extends TestCase
                 'cc_emails' => ['a@b.com', 'merchantuser01@razorpay.com'],
                 'custom_fields' => [
                     'cf_requester_category'       =>  'Merchant',
-                    'cf_requestor_subcategory'    => 'Cash Advance',
+                    'cf_requestor_subcategory'    =>  'Cash Advance',
                     'cf_merchant_id_dashboard'    =>  'merchant_dashboard_10000000000000',
                     'cf_merchant_id'              => '10000000000000',
                 ],

@@ -1143,6 +1143,8 @@ class Service extends Base\Service
 
         $input['priority'] = 1;
 
+        $input = $this->modifyRequestForCapital($input);
+
         $this->getGroupIdForTicketInput($input);
 
         //Removing HTML tags in description
@@ -1499,5 +1501,20 @@ class Service extends Base\Service
         }
 
         return $fdInstance;
+    }
+
+    protected function modifyRequestForCapital(array $input)
+    {
+        if (empty($input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY]) === false and
+            $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY] === 'Capital' and
+            empty($input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_ITEM]) === false
+        ){
+
+            $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY] = $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_ITEM];
+
+            unset($input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_ITEM]);
+        }
+
+        return $input;
     }
 }

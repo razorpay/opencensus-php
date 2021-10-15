@@ -482,7 +482,8 @@ return [
                 'cc_emails'     => ['a@b.com'],
                 'custom_fields' => [
                     'cf_requester_category'          => 'Merchant',
-                    'cf_requestor_subcategory'       => 'Cash Advance',
+                    'cf_requestor_subcategory'       => 'Capital',
+                    'cf_requester_item'              => 'Cash Advance',
                 ],
             ],
         ],
