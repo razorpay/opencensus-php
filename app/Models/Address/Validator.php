@@ -12,7 +12,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::TYPE    => 'required|string',
         Entity::LINE1   => 'required|string|between:10,255',
-        Entity::LINE2   => 'sometimes|string|between:5,255|custom',
+        Entity::LINE2   => 'sometimes|string|between:5,255',
         Entity::CITY    => 'sometimes|string|between:2,32',
         Entity::ZIPCODE => 'sometimes|string|between:2,10',
         Entity::STATE   => 'required|string|between:2,32',
@@ -23,7 +23,7 @@ class Validator extends Base\Validator
     protected static $createForPaymentRules = [
         Entity::TYPE    => 'required|string',
         Entity::LINE1   => 'required|string|between:1,255',
-        Entity::LINE2   => 'sometimes|string|between:5,255|custom',
+        Entity::LINE2   => 'sometimes|string|between:1,255|custom',
         Entity::CITY    => 'required|string|between:2,32',
         Entity::ZIPCODE => 'sometimes|between:2,10',
         Entity::STATE   => 'sometimes|string|between:2,32',
@@ -33,7 +33,7 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::LINE1   => 'sometimes|string|between:10,255',
-        Entity::LINE2   => 'sometimes|string|between:5,255|custom',
+        Entity::LINE2   => 'sometimes|string|between:5,255',
         Entity::CITY    => 'sometimes|string|between:2,32',
         Entity::ZIPCODE => 'sometimes|string|between:2,10',
         Entity::STATE   => 'sometimes|string|between:2,32',
@@ -57,13 +57,13 @@ class Validator extends Base\Validator
      */
     protected function validateLine2($attribute, $value)
     {
-        if((strlen($value) > 255 )|| (strlen($value) < 5))
+        if((strlen($value) > 255 )|| (strlen($value) < 1))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR,
                 Entity::LINE2,
                 [$value],
-            "Address Line 2 must be between 5 and 255 characters.");
+            "Address Line 2 must be between 1 and 255 characters.");
         }
     }
 }
