@@ -156,7 +156,7 @@ class Core extends Base\Core
 
             $typeformResponses = $this->getTypeformResponses($formId);
 
-            $parsedResponses = $this->getTypeformParsedResponses($typeformQuestionToQuestionId, $typeformResponses);
+            $parsedResponses = $this->getTypeformParsedResponses($typeformQuestionToQuestionId, $typeformResponses, $formId);
 
             if(empty($parsedResponses[0]) === false or empty($parsedResponses[1]) === false)
             {
@@ -198,12 +198,13 @@ class Core extends Base\Core
         return $this->validateResponse($response, TraceCode:: TYPEFORM_FORM_DATA_FETCH);
     }
 
-    private function getTypeformParsedResponses($typeformQuestionToQuestionId, $typeformResponses)
+    private function getTypeformParsedResponses($typeformQuestionToQuestionId, $typeformResponses, $formId)
     {
+        $typeformParsedDataForCompleteResponses = $this->getTypeformParser($typeformResponses[0])
+                                                       ->parseTypeformCompleteResponses($typeformQuestionToQuestionId, $formId);
 
-        $typeformParsedDataForCompleteResponses = $this->getTypeformParser($typeformResponses[0])->parseTypeformCompleteResponses($typeformQuestionToQuestionId);
-
-        $typeformParsedDataForIncompleteResponses = $this->getTypeformParser($typeformResponses[1])->parseTypeformIncompleteResponses($typeformQuestionToQuestionId);
+        $typeformParsedDataForIncompleteResponses = $this->getTypeformParser($typeformResponses[1])
+                                                         ->parseTypeformIncompleteResponses($typeformQuestionToQuestionId, $formId);
 
         return array($typeformParsedDataForCompleteResponses, $typeformParsedDataForIncompleteResponses);
     }

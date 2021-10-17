@@ -163,7 +163,7 @@ class TypeformParser extends Base implements DataParserInterface
         return $questionIdToQuestion;
     }
 
-    public function parseTypeformCompleteResponses($formData): array
+    public function parseTypeformCompleteResponses($formData, $formId): array
     {
         if (array_key_exists('items', $this->input))
         {
@@ -177,9 +177,9 @@ class TypeformParser extends Base implements DataParserInterface
                 $metadata['mid']          = $response['hidden']['mid'];
                 $metadata['source']       = $response['hidden']['source'];
                 $metadata['tracker_id']   = $response['hidden']['tracker_id'];
-//                $metadata['survey_type']  = $response[''];
                 $metadata['initiated_at'] = $response['landed_at'];
                 $metadata['submitted_at'] = $response['submitted_at'];
+                $metadata['survey_id']    = $formId;
 
                 $result['completed'] = true;
 
@@ -222,7 +222,7 @@ class TypeformParser extends Base implements DataParserInterface
         }
     }
 
-    public function parseTypeformIncompleteResponses($formData): array
+    public function parseTypeformIncompleteResponses($formData, $formId): array
     {
         if (array_key_exists('items', $this->input))
         {
@@ -233,6 +233,7 @@ class TypeformParser extends Base implements DataParserInterface
             foreach ($responses as $response)
             {
                 $metadata['initiated_at'] = $response['landed_at'];
+                $metadata['survey_id']    = $formId;
 
                 $result['completed'] = [false];
 

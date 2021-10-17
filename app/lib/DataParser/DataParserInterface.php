@@ -15,7 +15,7 @@ interface DataParserInterface
 
     public function typeformQuestionToQuestionId();
 
-    public function parseTypeformCompleteResponses($formData);
+    public function parseTypeformCompleteResponses($formData, $formId);
 
-    public function parseTypeformIncompleteResponses($formData);
+    public function parseTypeformIncompleteResponses($formData, $formId);
 }
