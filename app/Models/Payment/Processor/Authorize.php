@@ -854,7 +854,8 @@ trait Authorize
         {
             $request = $this->runAutoDebitFlow($payment, $gatewayInput);
         }
-        else if ($payment->getCpsRoute() === Payment\Entity::CARD_PAYMENT_SERVICE)
+        else if (($payment->getCpsRoute() === Payment\Entity::CARD_PAYMENT_SERVICE) or
+            ($payment->getCpsRoute() === Payment\Entity::NB_PLUS_SERVICE))
         {
             $request = $this->callGatewayFunction(Action::AUTHORIZE, $gatewayInput);
         }
@@ -1249,6 +1250,59 @@ trait Authorize
             'theme_color'           => $merchant->getBrandColorElseDefault(),
             'nobranding'            => $merchant->isFeatureEnabled(Feature\Constants::PAYMENT_NOBRANDING),
         ];
+
+        // paylater lazypay supports native otp flows only for s2s merchants with jsonv2 route
+        // For checkout merchants, payments happens via ACS page
+        if ($merchant->isFeatureEnabled(Feature\Constants::JSON_V2) === true)
+        {
+            if($payment->isPayLater() === true and $payment->getWallet() === Paylater::LAZYPAY)
+            {
+                $metaData = [
+                    'issuer'     => $payment->getWallet(),
+                    'gateway'    => $payment->getGateway(),
+                ];
+
+                $response['metadata'] = $metaData;
+
+                $next = ['otp_submit'];
+
+                if (isset($request['content']['next']) === true)
+                {
+                    $next = $this->getNextOtpAction($request['content']['next']);
+
+                    unset($request['content']['next']);
+                }
+
+                $otpResend = 'otp_resend';
+
+                $resendUrl = null;
+                $resendUrlPrivate = null;
+
+                if (in_array($otpResend, $next, true) === true)
+                {
+                    $resendUrl        = $this->getOtpResendUrl();
+                    $resendUrlPrivate = $this->getOtpResendUrlPrivate();
+                }
+
+                $response = [
+                    'type'       => 'otp',
+                    'request'    => [
+                        'method'  => 'direct',
+                    ],
+                    'version'    => 1,
+                    'payment_id' => $payment->getPublicId(),
+                    'next'       => $next,
+                    'gateway'    => $response['gateway'],
+                    'submit_url' => $request['url'],
+                    'resend_url' => $resendUrl,
+                    'metadata'   => $metaData,
+                ];
+
+                $response['resend_url_json']    = $this->getOtpResendUrlJson();
+                $response['submit_url_private'] = $this->getOtpSubmitUrlPrivate();
+                $response['resend_url_private'] = $resendUrlPrivate;
+            }
+        }
 
         // This is a hack to return direct method for IVR payments
         if ($payment->isMethodCardOrEmi() === true)
@@ -1721,7 +1775,7 @@ trait Authorize
 
     protected function shouldSkipContactAndProviderValidation($input)
     {
-        if (($input['provider'] === PayLater::ICICI and $input['method'] === Gateway::PAYLATER) or ($input['ott'] === Constants::GETSIMPLTOKEN))
+        if (($input['provider'] === PayLater::ICICI and $input['method'] === Gateway::PAYLATER) or ($input['provider'] === Paylater::LAZYPAY and $input['method'] === Gateway::PAYLATER) or ($input['ott'] === Constants::GETSIMPLTOKEN))
         {
             return true;
         }
@@ -7047,7 +7101,7 @@ trait Authorize
 
         //Paylater ICICI has otp flow enabled
         if (($payment->isPayLater() === true) and
-            ($wallet === PayLater::ICICI))
+            (($wallet === PayLater::ICICI) or ($wallet === Paylater::LAZYPAY)))
         {
             return true;
         }
@@ -8882,6 +8936,16 @@ trait Authorize
 
         if ((empty($terminalGatewayInput['auth_type']) === false) and
             (in_array($terminalGatewayInput['auth_type'], $authTypes, true) === true))
+        {
+            return true;
+        }
+
+        // OTP generate URLs are present only for s2s jsonv2 routes merchants
+        // For others the payment happens via ACS page
+        if(($this->merchant->isFeatureEnabled(Feature\Constants::JSON_V2) === true) and
+            (empty($terminalGatewayInput['payment']) === false) and
+            ($terminalGatewayInput['payment']['method'] === Method::PAYLATER
+                and $terminalGatewayInput['payment']['wallet'] === PayLater::LAZYPAY))
         {
             return true;
         }

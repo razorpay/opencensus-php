@@ -86,6 +86,12 @@ trait OtpResend
 
             return $this->getOtpPaymentCreatedResponse($request, $payment);
         }
+        if ($payment->getCpsRoute() === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            $request = $this->callGatewayFunction(Payment\Action::OTP_RESEND, $gatewayInput);
+
+            return $this->getOtpPaymentCreatedResponse($request, $payment);
+        }
 
         return $this->callGatewayOtpGenerate($gatewayInput, $payment, true);
     }

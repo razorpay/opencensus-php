@@ -11,6 +11,7 @@ use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Validator;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\FileProcessor;
+use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Base extends Core
@@ -138,7 +139,7 @@ class Base extends Core
     const WALNUT369              = 'Walnut369';
     const TWID                   = 'Twid';
     const CARDLESS_EMI_ZESTMONEY = 'CardlessEmiZestMoney';
-
+    const PAYLATER_LAZYPAY       = 'PaylaterLazypay';
     const BT_RBL                 = 'BtRbl';
     const CHECKOUT_DOT_COM       = 'checkout_dot_com';
 
@@ -238,7 +239,7 @@ class Base extends Core
         self::NETBANKING_DLB         => ['alerts@dhanbank.co.in'],
         self::CHECKOUT_DOT_COM       => [],
         self::CARDLESS_EMI_ZESTMONEY => ['finops.settlements@zestmoney.in'],
-
+        self::PAYLATER_LAZYPAY       => [],
         self::NETBANKING_BDBL        => ['imps.dispute@bandhanbank.com'],
 
         // Used when someone from the team needs to send the
@@ -361,6 +362,9 @@ class Base extends Core
             CardlessEmi::FLEXMONEY   => self::CARDLESS_EMI_FLEXMONEY,
             CardlessEmi::WALNUT369   => self::WALNUT369,
             CardlessEmi::ZESTMONEY   => self::CARDLESS_EMI_ZESTMONEY,
+        ],
+        Gateway::PAYLATER               => [
+            PayLater::LAZYPAY        => self::PAYLATER_LAZYPAY,
         ],
         Gateway::BAJAJFINSERV           => self::BAJAJFINSERV,
         Gateway::HDFC_DEBIT_EMI         => self::HDFC_DEBIT_EMI,

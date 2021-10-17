@@ -10,6 +10,7 @@ class PayLater
     const GETSIMPL     = 'getsimpl';
     const ICICI        = 'icic';
     const FLEXMONEY    = 'flexmoney';
+    const LAZYPAY      = 'lazypay';
 
     const HDFC         = 'hdfc';
 
@@ -18,6 +19,7 @@ class PayLater
         self::GETSIMPL     => 'getsimpl',
         self::ICICI        => 'icic',
         self::FLEXMONEY    => 'flexmoney',
+        self::LAZYPAY      => 'lazypay',
     ];
 
     public static $fullNameForSupportedBanks = [

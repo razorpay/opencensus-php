@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Reconciliator\Base\SubReconciliator;
+use RZP\Services\NbPlus\Paylater as PaylaterService;
 use RZP\Services\NbPlus\Emandate as EmandateService;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Services\NbPlus\Netbanking as NetbankingService;
@@ -15,6 +16,7 @@ use RZP\Services\NbPlus\Netbanking as NetbankingService;
 class NbPlusServiceRecon extends SubReconciliator\PaymentReconciliate
 {
     use AppReconTrait;
+    use PaylaterReconTrait;
     use EmandateReconTrait;
     use NetbankingReconTrait;
     use CardlessEmiReconTrait;
@@ -26,6 +28,11 @@ class NbPlusServiceRecon extends SubReconciliator\PaymentReconciliate
         NetbankingService::BANK_TRANSACTION_ID,
         NetbankingService::BANK_ACCOUNT_NUMBER,
         NetbankingService::ADDITIONAL_DATA
+    ];
+
+    const PAYLATER_ATTRIBUTES = [
+        PaylaterService::GATEWAY_REFERENCE_NUMBER,
+        PaylaterService::PROVIDER_REFERENCE_NUMBER,
     ];
 
     //
@@ -70,6 +77,10 @@ class NbPlusServiceRecon extends SubReconciliator\PaymentReconciliate
                     break;
                 case Payment\Method::EMANDATE;
                     $this->nbPlusPaymentServiceEmandateDispatch($rowDetails);
+                    break;
+                case Payment\Method::PAYLATER:
+                    $this->nbPlusPaymentServicePaylaterDispatch($rowDetails);
+                    break;
             }
         }
     }

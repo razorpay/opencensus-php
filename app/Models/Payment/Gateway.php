@@ -136,6 +136,7 @@ class Gateway
     const PAYLATER_ICICI     = 'paylater_icici';
     const CRED               = 'cred';
     const TWID               = 'twid';
+    const LAZYPAY            = 'lazypay';
 
     const ACQUIRER_HDFC         = 'hdfc';
     const ACQUIRER_ICIC         = 'icic';
@@ -220,7 +221,7 @@ class Gateway
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY, CardlessEmi::WALNUT369],
-        self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI, PayLater::FLEXMONEY],
+        self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI, PayLater::FLEXMONEY, Paylater::LAZYPAY],
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX, self::ACQUIRER_ICIC],
         self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
@@ -3852,7 +3853,9 @@ class Gateway
             self::CARDLESS_EMI => [
                 CardlessEmi::WALNUT369,
             ],
-            self::PAYLATER     => [],
+            self::PAYLATER     => [
+                Paylater::LAZYPAY,
+            ],
         ];
 
         if($payment !== null && in_array($gateway, array_keys($acquirerGateways), true))
@@ -3935,7 +3938,9 @@ class Gateway
             self::CARDLESS_EMI => [
                 CardlessEmi::WALNUT369,
             ],
-            self::PAYLATER     => [],
+            self::PAYLATER     => [
+                Paylater::LAZYPAY,
+            ],
         ];
 
         if($payment !== null && in_array($gateway, array_keys($acquirerGateways), true))

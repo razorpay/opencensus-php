@@ -258,6 +258,7 @@ function disableEmptyInputs(form) {
                 <option value="twid">Twid</option>
                 <option value="bajajfinserv">Bajaj Finserv</option>
                 <option value="walnut369">Walnut369</option>
+                <option value="lazypay">Lazypay</option>
             </select>
         </td>
     </tr>

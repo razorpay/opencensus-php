@@ -12,6 +12,11 @@ class Action
     const PREPROCESS_CALLBACK    = 'preprocess_callback';
     const FORCE_AUTHORIZE_FAILED = 'force_authorize_failed';
 
+    const CHECK_ACCOUNT          = 'check_account';
+    const CAPTURE                = 'capture';
+    const OTP_GENERATE           = 'otp_generate';
+    const CALLBACK_OTP_SUBMIT    = 'callback_otp_submit';
+    const OTP_RESEND             = 'otp_resend';
 
     const SUPPORTED_ACTIONS = [
         self::AUTHORIZE,
@@ -21,5 +26,10 @@ class Action
         self::DEBIT,
         self::PREPROCESS_CALLBACK,
         self::FORCE_AUTHORIZE_FAILED,
+        self::CHECK_ACCOUNT,
+        self::CAPTURE,
+        self::OTP_GENERATE,
+        self::OTP_RESEND,
+        self::CALLBACK_OTP_SUBMIT,
     ];
 }

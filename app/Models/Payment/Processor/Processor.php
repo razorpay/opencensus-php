@@ -1183,7 +1183,29 @@ class Processor
         // merchant id is required to fetch details from cache
         $input['merchant_id'] = $merchant[Merchant\Entity::ID];
 
-        $response = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminals[0]);
+        if (Payment\Gateway::isNbPlusServiceGateway($gateway, $payment))
+        {
+            $payment->associateTerminal($terminals[0]);
+
+            $this->setPaymentRoutedThroughCpsIfApplicable($payment, []);
+        }
+
+        if($payment->getCpsRoute() === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            $gatewayInput = $input;
+
+            $gatewayInput['payment'] = $payment;
+
+            $gatewayInput['contact'] = $payment['contact'];
+
+            $gatewayInput['payment']['created_at'] = Carbon::now(Timezone::IST)->getTimestamp();
+
+            $response = $this->callGatewayFunction('check_account', $gatewayInput);
+        }
+        else
+        {
+            $response = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminals[0]);
+        }
 
         unset ($input['merchant_id']);
 
@@ -1721,7 +1743,7 @@ class Processor
         $cpsEnabledMethods = [
             Payment\Method::CARD, Payment\Method::NETBANKING, Payment\Method::EMI,
             Payment\Method::EMANDATE, Payment\Method::CARDLESS_EMI, Payment\Method::UPI,
-            Payment\Method::APP
+            Payment\Method::APP, Payment\Method::PAYLATER,
         ];
 
         if ((in_array($method, $cpsEnabledMethods, true) === false) or
@@ -5260,6 +5282,7 @@ class Processor
                 break;
 
             case PayLater::FLEXMONEY:
+            case Paylater::LAZYPAY:
                 return;
                 break;
 

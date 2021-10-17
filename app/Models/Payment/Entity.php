@@ -1764,6 +1764,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ];
                 break;
 
+            case Method::PAYLATER:
             case Method::CARDLESS_EMI:
 
                 $acquirerData = [

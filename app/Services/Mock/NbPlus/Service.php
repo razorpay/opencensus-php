@@ -6,6 +6,7 @@ use App;
 use RZP\Exception;
 use RZP\Models\Payment;
 
+use RZP\Services\NbPlus\Paylater;
 use RZP\Services\NbPlus\Service as NbPlusService;
 
 class Service extends NbPlusService
@@ -18,6 +19,9 @@ class Service extends NbPlusService
         {
             case 'netbanking':
                 $class = new Netbanking();
+                break;
+            case Payment\Method::PAYLATER:
+                $class = new Paylater();
                 break;
             case Payment\Method::EMANDATE;
                 $class = new Emandate();

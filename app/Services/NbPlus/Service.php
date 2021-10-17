@@ -36,6 +36,7 @@ class Service
         Payment\Method::EMANDATE,
         Payment\Method::CARDLESS_EMI,
         Payment\Method::APP,
+        Payment\Method::PAYLATER,
     ];
 
     protected $baseUrl;
@@ -450,6 +451,9 @@ class Service
                 break;
             case Payment\Method::APP:
                 $class = new AppMethod();
+                break;
+            case PAYMENT\METHOD::PAYLATER:
+                $class = new Paylater();
                 break;
             default:
                 throw new Exception\LogicException('Should not have reached here');

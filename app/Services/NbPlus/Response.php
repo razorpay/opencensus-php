@@ -16,6 +16,8 @@ class Response
     const NEXT     = 'next';
     const REDIRECT = 'redirect';
 
+    const OTP_SUBMIT_URL      = 'otpSubmitUrl';
+
     // callback & verify
     const GATEWAY_REFERENCE_NUMBER = 'gateway_reference_number';
     const STATUS                   = 'status';
