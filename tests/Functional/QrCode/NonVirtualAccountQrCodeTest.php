@@ -5,6 +5,7 @@ namespace Functional\QrCode;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\QrCode\Type;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
@@ -382,6 +383,11 @@ class NonVirtualAccountQrCodeTest extends TestCase
             $amount = $qrCodeEntity['amount'] / 100;
 
             $this->assertStringContainsString('am=' . $amount, $qrCodeEntity['qr_string']);
+        }
+
+        if ($response['type'] === Type::BHARAT_QR)
+        {
+            $this->assertStringContainsString('0518' . substr($response['id'], 3) . 'qrv2', $qrCodeEntity['qr_string']);
         }
     }
 

@@ -465,6 +465,22 @@ class Generator extends QrCode\Generator
         return Tags::MERCHANT_ACCOUNT . $this->getLengthAndValue($value);
     }
 
+    protected function getBharatQrAdditionalDetailTlv(Entity $qrCode, array $merchantIdentifiers)
+    {
+        $idTlv = Tags::ADDITIONAL_DETAIL_ID . $this->getLengthAndValue($qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX);
+
+        if (isset($merchantIdentifiers['rupay_tid']) === true)
+        {
+            $terminalIdTlv = Tags::TERMINAL_ID . $this->getLengthAndValue($merchantIdentifiers['rupay_tid']);
+
+            $idTlv .= $terminalIdTlv;
+        }
+
+        $additionalDetailsString = $idTlv;
+
+        return Tags::ADDITIONAL_DETAIL . strlen($additionalDetailsString) . $additionalDetailsString;
+    }
+
     private function getQrCodeMode($qrCode)
     {
         if ($qrCode->getUsageType() === UsageType::MULTIPLE_USE)
