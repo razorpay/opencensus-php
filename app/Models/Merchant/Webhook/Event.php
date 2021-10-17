@@ -97,6 +97,7 @@ class Event
     const PAYOUT_LINK_ATTEMPTED             = 'payout_link.attempted';
     const PAYOUT_LINK_CANCELLED             = 'payout_link.cancelled';
     const PAYOUT_LINK_PROCESSED             = 'payout_link.processed';
+    const PAYOUT_LINK_EXPIRED               = 'payout_link.expired';
     const PAYMENT_CREATED                   = 'payment.created';
     const PAYMENT_LINK_PAID                 = 'payment_link.paid';
     const PAYMENT_LINK_PARTIALLY_PAID       = 'payment_link.partially_paid';
@@ -214,6 +215,7 @@ class Event
         self::PAYOUT_LINK_ATTEMPTED,
         self::PAYOUT_LINK_CANCELLED,
         self::PAYOUT_LINK_PROCESSED,
+        self::PAYOUT_LINK_EXPIRED,
         self::PAYMENT_LINK_PAID,
         self::PAYMENT_LINK_PARTIALLY_PAID,
         self::PAYMENT_LINK_EXPIRED,
@@ -332,6 +334,7 @@ class Event
         self::PAYOUT_LINK_ATTEMPTED,
         self::PAYOUT_LINK_CANCELLED,
         self::PAYOUT_LINK_PROCESSED,
+        self::PAYOUT_LINK_EXPIRED,
         self::PAYMENT_CREATED,
         self::PAYMENT_LINK_PAID,
         self::PAYMENT_LINK_PARTIALLY_PAID,
@@ -475,6 +478,7 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW          => 39,
         self::ZAPIER_PAYMENT_PAGE_PAID_V1                 => 40,
         self::PAYMENT_PENDING                             => 41,
+        self::PAYOUT_LINK_EXPIRED                         => 42,
     ];
 
     /**
@@ -563,6 +567,7 @@ class Event
         self::PAYOUT_LINK_PROCESSED             => [Product::BANKING],
         self::PAYOUT_LINK_ATTEMPTED             => [Product::BANKING],
         self::PAYOUT_LINK_CANCELLED             => [Product::BANKING],
+        self::PAYOUT_LINK_EXPIRED               => [Product::BANKING],
         self::PAYMENT_LINK_PAID                 => [Product::PRIMARY],
         self::PAYMENT_LINK_PARTIALLY_PAID       => [Product::PRIMARY],
         self::PAYMENT_LINK_EXPIRED              => [Product::PRIMARY],
@@ -674,6 +679,7 @@ class Event
         self::PAYOUT_LINK_PROCESSING            => Entity::PAYOUT_LINK,
         self::PAYOUT_LINK_CANCELLED             => Entity::PAYOUT_LINK,
         self::PAYOUT_LINK_ATTEMPTED             => Entity::PAYOUT_LINK,
+        self::PAYOUT_LINK_EXPIRED               => Entity::PAYOUT_LINK,
         self::PAYOUT_UPDATED                    => Entity::PAYOUT,
         self::PAYOUT_REJECTED                   => Entity::PAYOUT,
         self::PAYMENT_CREATED                   => Entity::PAYMENT,
@@ -754,6 +760,7 @@ class Event
         self::PAYOUT_LINK_PROCESSED             => Feature\Constants::PAYOUT,
         self::PAYOUT_LINK_PROCESSING            => Feature\Constants::PAYOUT,
         self::PAYOUT_LINK_CANCELLED             => Feature\Constants::PAYOUT,
+        self::PAYOUT_LINK_EXPIRED               => Feature\Constants::PAYOUT,
         self::BANKING_ACCOUNTS_ISSUED           => Feature\Constants::BANKING_ACCOUNTS_ISSUED,
         self::REFUND_ARN_UPDATED                => Feature\Constants::REFUND_ARN_WEBHOOK,
         self::P2P_TRANSACTION_CREATED           => Feature\Constants::P2P_UPI,
