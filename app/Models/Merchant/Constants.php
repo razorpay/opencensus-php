@@ -644,15 +644,6 @@ final class Constants
 
     const FD_SUB_CATEGORY_FUNDS_ON_HOLD      = 'Funds on hold';
 
-    const BULK_RISK_ACTIONS = [
-        Action::SUSPEND,
-        Action::HOLD_FUNDS,
-        Action::LIVE_DISABLE,
-        Action::UNSUSPEND,
-        Action::RELEASE_FUNDS,
-        Action::LIVE_ENABLE
-    ];
-
     const CA_STATUS_MAP = [
         'created'       => 'Request received',
         'picked'        => 'Process started',

@@ -88,6 +88,7 @@ use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Pricing\Entity as PricingEntity;
 use RZP\Models\BulkWorkflowAction as BulkAction;
+use RZP\Models\RiskWorkflowAction as RiskAction;
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Workflow\Service as WorkflowService;
@@ -2560,7 +2561,9 @@ class Service extends Base\Service
 
             (new Validator)->validateAdminPermissionForAction($action);
 
-            if(in_array($action, Constants::BULK_RISK_ACTIONS) === true)
+            $riskActions = explode(',', RiskAction\Constants::RISK_ACTIONS_CSV);
+
+            if(in_array($action, $riskActions) === true)
             {
                 $mode = $this->mode ??  Mode::LIVE ;
 

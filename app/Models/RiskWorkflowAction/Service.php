@@ -96,7 +96,9 @@ class Service extends Base\Service
         {
             $diff = (new Differ\Core)->get($input[Constants::BULK_WORKFLOW_ACTION_ID]);
 
-            $workflowActionId = (new Core)->createRiskWorkflowAction($merchantId, $riskWorkflowMaker, $diff['new']);
+            $diff['new'][Constants::MERCHANT_ID] = $merchantId;
+
+            $workflowActionId = (new Core)->createRiskWorkflowAction($diff['new'], $riskWorkflowMaker)['id'];
 
             $workflowActions = (new Action\Core)->fetchOpenActionOnEntityOperation(
                 $merchantId, 'merchant', Permission\Name::$actionMap[$diff['new'][Constants::ACTION]]);
@@ -152,6 +154,15 @@ class Service extends Base\Service
         $input['workflow_action_status'] = $status;
 
         return $input;
+    }
+
+    public function createRiskWorkflowAction($input)
+    {
+        (new Validator())->validateInput('create_risk_action', $input);
+
+        (new Core())->validateRiskAttributes($input);
+
+        return (new Core())->createRiskWorkflowAction($input);
     }
 
     public function getIndividualRiskWorkflowMaker()

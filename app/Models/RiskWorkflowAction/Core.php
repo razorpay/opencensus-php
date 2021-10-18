@@ -2,6 +2,7 @@
 
 namespace RZP\Models\RiskWorkflowAction;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -68,10 +69,45 @@ class Core extends Base\Core
         ];
     }
 
-    public function createRiskWorkflowAction($merchantId, $maker, $input)
+    public function validateRiskAttributes(array $input)
+    {
+        if(isset($input[Constants::RISK_ATTRIBUTES]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Risk Attributes are not provided', null, $input);
+        }
+
+        $riskAttributes = $input[Constants::RISK_ATTRIBUTES];
+
+        if(is_array($riskAttributes) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Risk Attributes provided is malformed', null, $input);
+        }
+
+        // assuming that this is already validated at the bulk merchant action layer
+        $riskAction = $input['action'];
+
+        if (in_array($riskAction, Merchant\Constants::RISK_CONSTRUCTIVE_ACTION_LIST) === true)
+        {
+            (new Validator())->validateInput(
+                Constants::CREATE_CONSTRUCTIVE_RISK_ATTRIBUTES_VALIDATOR,
+                $riskAttributes);
+        }
+        else
+        {
+            (new Validator())->validateInput(
+                Constants::CREATE_DESTRUCTIVE_RISK_ATTRIBUTES_VALIDATOR,
+                $riskAttributes);
+        }
+    }
+
+    public function createRiskWorkflowAction($input, $maker = null)
     {
         try {
             $riskAction = $input[Constants::ACTION];
+
+            $merchantId= $input[Constants::MERCHANT_ID];
 
             $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
@@ -83,7 +119,10 @@ class Core extends Base\Core
 
             $riskAttributesParams = $this->getParamsForMerchantAction($riskAction, $riskAttributes);
 
-            $tags[] = sprintf("%s%s", Constants::BULK_WORKFLOW_GROUP_TAG_PREFIX, $input['entity_id']);
+            if (isset($input['entity_id']) === true)
+            {
+                $tags[] = sprintf("%s%s", Constants::BULK_WORKFLOW_GROUP_TAG_PREFIX, $input['entity_id']);
+            }
 
             $routePermission = Permission\Name::$actionMap[$riskAction];
 
@@ -104,11 +143,18 @@ class Core extends Base\Core
 
             $diff = (new Differ\Core)->createDiff([], $diffData);
 
-            $workflowAction = $this->app['workflow']
+            $workflowAction = $this->app['workflow'];
+
+            if (isset($maker) === true)
+            {
+                $workflowAction = $workflowAction
+                    ->setMakerFromAuth(false)
+                    ->setWorkflowMaker($maker);
+            }
+
+            $workflowAction = $workflowAction
                 ->setPermission($routePermission)
                 ->setTags($tags)
-                ->setMakerFromAuth(false)
-                ->setWorkflowMaker($maker)
                 ->setWorkflowMakerType(MakerType::ADMIN)
                 ->setRouteName(Constants::RISK_ACTION_ROUTE_NAME)
                 ->setController(Constants::RISK_ACTION_ROUTE_CONTROLLER)
@@ -124,7 +170,7 @@ class Core extends Base\Core
                    'wf_action_id'   => $workflowAction['id'],
                ]);
 
-            return $workflowAction['id'];
+            return $workflowAction;
         }
         catch (\Throwable $e)
         {

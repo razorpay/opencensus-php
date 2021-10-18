@@ -24,7 +24,7 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::MERCHANT_BULK_RISK_ACTION_UPDATE_REQUEST, ['data' => $input]);
 
-        $this->validateBulkActionInput($input);
+        (new RiskWorkflowAction\Core())->validateRiskAttributes($input);
 
         $this->createBulkActionWorkflow($input);
     }
@@ -56,43 +56,6 @@ class Core extends Base\Core
             ->setTags($tags)
             ->setInput($input)
             ->handle(null, $input);
-    }
-
-    /**
-     * handle the bulk action call
-     * @param array $input
-     */
-    public function validateBulkActionInput(array $input)
-    {
-        if(isset($input[RiskWorkflowAction\Constants::RISK_ATTRIBUTES]) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Risk Attributes are not provided', null, $input);
-        }
-
-        $riskAttributes = $input[RiskWorkflowAction\Constants::RISK_ATTRIBUTES];
-
-        if(is_array($riskAttributes) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Risk Attributes provided is malformed', null, $input);
-        }
-
-        // assuming that this is already validated at the bulk merchant action layer
-        $riskAction = $input['action'];
-
-        if (in_array($riskAction, Merchant\Constants::RISK_CONSTRUCTIVE_ACTION_LIST) === true)
-        {
-            (new Validator())->validateInput(
-                Constants::CREATE_CONSTRUCTIVE_BULK_RISK_ATTRIBUTES_VALIDATOR,
-                $riskAttributes);
-        }
-        else
-        {
-            (new Validator())->validateInput(
-                Constants::CREATE_DESTRUCTIVE_BULK_RISK_ATTRIBUTES_VALIDATOR,
-                $riskAttributes);
-        }
     }
 
     public function executeBulkAction(array $input)

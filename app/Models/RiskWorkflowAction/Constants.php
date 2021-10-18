@@ -2,6 +2,8 @@
 
 namespace RZP\Models\RiskWorkflowAction;
 
+use RZP\Models\Merchant\Action;
+
 class Constants
 {
     const RISK_ACTION_ROUTE_NAME        = 'merchant_actions';
@@ -109,6 +111,14 @@ class Constants
         self::RISK_TAG_MS_RISK_REVIEW_ONHOLD,
     ];
 
+    const RISK_ACTIONS_CSV =
+        Action::SUSPEND . ',' .
+        Action::HOLD_FUNDS . ',' .
+        Action::LIVE_DISABLE . ',' .
+        Action::UNSUSPEND . ',' .
+        Action::RELEASE_FUNDS . ',' .
+        Action::LIVE_ENABLE;
+
     const RISK_SOURCE_PREFIX      = 'risk_source_';
     const RISK_REASON_PREFIX      = 'risk_reason_';
     const RISK_TAG_PREFIX         = 'risk_tag_';
@@ -121,6 +131,9 @@ class Constants
     const BULK_RISK_ACTION_INDIVIDUAL_WORKFLOW_MAKER_EMAIL = 'BULK_RISK_ACTION_INDIVIDUAL_WORKFLOW_MAKER_EMAIL';
 
     const BULK_WORKFLOW_DETAILS_TPL = 'BULK_WORKFLOW_DETAILS:: MAKER: %s CHECKER: %s LINK: %s';
+
+    const CREATE_DESTRUCTIVE_RISK_ATTRIBUTES_VALIDATOR  = 'create_destructive_risk_attributes';
+    const CREATE_CONSTRUCTIVE_RISK_ATTRIBUTES_VALIDATOR = 'create_constructive_risk_attributes';
 
     // Risk workflow statuses
     const EXECUTED      = 'EXECUTED';

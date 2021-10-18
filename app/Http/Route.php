@@ -2876,6 +2876,7 @@ class Route
        'token_pause_not_supported_card_tokens'    => ['post',        'tokens/pause_not_supported/card',                          'TokenController@pauseNotSupportedCardTokens'                                                         ],
 
         // Risk Actions
+        'create_risk_action'                        => ['post',       'risk-actions/create',                                     'RiskActionController@createRiskAction'                        ],
         'create_exec_risk_action'                   => ['post',       'risk-actions/execute',                                    'RiskActionController@createAndExecuteRiskAction'              ],
         'risk_attributes_get'                       => ['get',        'risk-actions/risk_attributes',                            'RiskActionController@getRiskAttributes'                       ],
         'bulk_risk_action_status_comment'           => ['post',       'bulk-action/comment',                                     'BulkActionController@addBulkRiskActionCommentPostExecution'   ],
@@ -5518,6 +5519,8 @@ class Route
         'trusted_badge_blacklist',
 
         'risk_attributes_get',
+
+        'create_risk_action',
     ];
 
     public static $routePermission = [
@@ -6554,6 +6557,7 @@ class Route
         'decrypt_merchant_website_comment'                => Permission::DECRYPT_MERCHANT_WEBSITE_COMMENT,
         'trusted_badge_blacklist'                         => Permission::TRUSTED_BADGE_BLACKLIST,
         'risk_attributes_get'                             => Permission::MERCHANT_ACTIONS,
+        'create_risk_action'                              => Permission::MERCHANT_ACTIONS,
     ];
 
     public static $bankingRoutePermissions = [
@@ -9901,6 +9905,7 @@ class Route
 
             'risk_attributes_get',
 
+            'create_risk_action',
         ],
 
         //

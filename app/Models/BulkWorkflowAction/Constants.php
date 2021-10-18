@@ -36,8 +36,5 @@ class Constants
 
     const BULK_RISK_ACTION_WORKFLOW_TRIGGER_FEATURE = 'BULK_RISK_ACTION_WORKFLOW_TRIGGER';
 
-    const CREATE_DESTRUCTIVE_BULK_RISK_ATTRIBUTES_VALIDATOR  = 'create_destructive_bulk_risk_attributes';
-    const CREATE_CONSTRUCTIVE_BULK_RISK_ATTRIBUTES_VALIDATOR = 'create_constructive_bulk_risk_attributes';
-
     const BATCH_STATUS_TPL = 'Bulk Workflow Action Batch Status: https://admin-dashboard.razorpay.com/admin/entity/batch.service/live/%s';
 }
