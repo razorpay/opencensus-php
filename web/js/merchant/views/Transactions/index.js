@@ -248,6 +248,7 @@ class TransactionsContainer extends Component {
               )}
             </NavLink>
             {no_settlement &&
+            !user.isNewSettlementServiceEnabled &&
             (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') &&
             mode === 'live' &&
             this.props.payments &&

@@ -574,7 +574,11 @@ class AnalyticsDesktop extends Component {
                       )}
                     </span>
                     <br />
-                    {no_settlement && payments && payments.items.length > 0 && mode === 'live' ? (
+                    {no_settlement &&
+                    !user.isNewSettlementServiceEnabled &&
+                    payments &&
+                    payments.items.length > 0 &&
+                    mode === 'live' ? (
                       <div class="text-right" style={{ width: '100%' }}>
                         {no_settlement.caption}
                         {no_settlement.reason && (

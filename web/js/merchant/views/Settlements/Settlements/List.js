@@ -561,6 +561,7 @@ class SettlementsListContainer extends ListContainer {
                   <br />
                   {mode === 'live' &&
                   no_settlement &&
+                  !user.isNewSettlementServiceEnabled &&
                   this.props.payments &&
                   this.props.payments.items.length > 0 ? (
                     <span style={{ fontSize: '13px' }}>

@@ -1313,6 +1313,10 @@ export default class User {
     return this.getExpStatus('auto-open-L1-form') && !!this.isOrgRZP;
   }
 
+  get isNewSettlementServiceEnabled() {
+    return this.isFeatureEnabled('new_settlement_service');
+  }
+
   get autoOpenL2Form() {
     return this.getExpStatus('auto-open-L2-form') && !!this.isOrgRZP;
   }
