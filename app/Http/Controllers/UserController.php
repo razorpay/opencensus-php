@@ -137,8 +137,8 @@ class UserController extends Controller
             }
 
             // If a user accesses PG dashboard using X demo account, then we logout and redirect to signin
-            if (ApiUrl::isPrimaryOriginRequest()
-                and in_array($currentMerchantId,MerchantConstants::X_DEMO_MERCHANT_IDS,true)){
+            // Since this is a PG dashboard route, no need to check product origin explicitly
+            if (in_array($currentMerchantId,MerchantConstants::X_DEMO_MERCHANT_IDS,true)){
                 $this->getLogout();
                 $data['isAuthenticated'] = false;
                 $data['isConfirmed'] = false;
