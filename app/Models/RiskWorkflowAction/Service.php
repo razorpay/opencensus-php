@@ -28,9 +28,9 @@ class Service extends Base\Service
         ];
     }
 
-    private function getBulkWorkflowDetailsComment($actionId)
+    private function createBulkWorkflowDetailsComment($bulkActionId, $workflowAction, $riskWorkflowMaker)
     {
-        $publicId = sprintf('%s_%s', Action\Entity::getSign(), $actionId);
+        $publicId = sprintf('%s_%s', Action\Entity::getSign(), $bulkActionId);
 
         try
         {
@@ -43,10 +43,47 @@ class Service extends Base\Service
 
             $link = sprintf('https://admin-dashboard.razorpay.com/admin/requests/%s', $publicId);
 
-            return sprintf(Constants::BULK_WORKFLOW_DETAILS_TPL, $makerDetails, $checkerDetails, $link);
+            $comment = sprintf(Constants::BULK_WORKFLOW_DETAILS_TPL, $makerDetails, $checkerDetails, $link);
+
+            if (isset($comment) === true)
+            {
+                (new Comment\Core())->createForWorkflowAction([
+                                                                  'comment'   => $comment,
+                                                              ], $workflowAction, $riskWorkflowMaker);
+            }
         }
-        catch (Exception\BadRequestException $e) {
-            return null;
+        catch (\Throwable $e) {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::BULK_RISK_ACTION_COMMENT_DETAILS_CREATION_FAILED,
+                [
+                    'workflow_action_id'  => $publicId,
+                ]);
+        }
+    }
+
+    protected function closeWorkflowIfApplicable($workflowAction, $riskWorkflowMaker)
+    {
+        try {
+            if (isset($workflowAction) === false)
+            {
+                return;
+            }
+            if ($workflowAction->isExecuted() === false)
+            {
+                (new Action\Core())->close($workflowAction, $riskWorkflowMaker, true);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::BULK_RISK_ACTION_CLOSE_WORKFLOW_FAILED,
+                [
+                    'workflow_action_id'  => $workflowAction->getId(),
+                ]);
         }
     }
 
@@ -54,11 +91,10 @@ class Service extends Base\Service
     {
         $merchantId = $input[Constants::MERCHANT_ID];
 
+        $riskWorkflowMaker = $this->getIndividualRiskWorkflowMaker();
         try
         {
             $diff = (new Differ\Core)->get($input[Constants::BULK_WORKFLOW_ACTION_ID]);
-
-            $riskWorkflowMaker = $this->getIndividualRiskWorkflowMaker();
 
             $workflowActionId = (new Core)->createRiskWorkflowAction($merchantId, $riskWorkflowMaker, $diff['new']);
 
@@ -77,14 +113,7 @@ class Service extends Base\Service
 
                 (new Action\Core)->executeAction($workflowAction, $riskWorkflowMaker, $riskWorkflowMaker->getSuperAdminRole());
 
-                $comment = $this->getBulkWorkflowDetailsComment($input[Constants::BULK_WORKFLOW_ACTION_ID]);
-
-                if (isset($comment) === true)
-                {
-                    (new Comment\Core())->createForWorkflowAction([
-                        'comment'   => $comment,
-                    ], $workflowAction, $riskWorkflowMaker);
-                }
+                $this->createBulkWorkflowDetailsComment($input[Constants::BULK_WORKFLOW_ACTION_ID], $workflowAction, $riskWorkflowMaker);
             }
 
             $status = Constants::EXECUTED;
@@ -93,17 +122,7 @@ class Service extends Base\Service
         {
             $status = Constants::INVALIDATED;
 
-            $this->trace->traceException(
-                $e,
-                Logger::ERROR,
-                TraceCode::BULK_RISK_ACTION_CREATE_AND_EXECUTE_WORKFLOW_FAILED,
-                [
-                    'merchantId'            => $merchantId,
-                ]);
-        }
-        catch (\Throwable $e)
-        {
-            $status = Constants::FAILED;
+            $this->closeWorkflowIfApplicable($workflowAction, $riskWorkflowMaker);
 
             $this->trace->traceException(
                 $e,
@@ -111,6 +130,22 @@ class Service extends Base\Service
                 TraceCode::BULK_RISK_ACTION_CREATE_AND_EXECUTE_WORKFLOW_FAILED,
                 [
                     'merchantId'            => $merchantId,
+                    'execution_status'       => $status,
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $status = Constants::FAILED;
+
+            $this->closeWorkflowIfApplicable($workflowAction, $riskWorkflowMaker);
+
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::BULK_RISK_ACTION_CREATE_AND_EXECUTE_WORKFLOW_FAILED,
+                [
+                    'merchantId'            => $merchantId,
+                    'execution_status'       => $status,
                 ]);
         }
 
@@ -124,7 +159,6 @@ class Service extends Base\Service
         // NOTE: maker_email (both maker and checker) should be superadmin
         $makerEmail = env(Constants::BULK_RISK_ACTION_INDIVIDUAL_WORKFLOW_MAKER_EMAIL);
 
-        // todo: we can cache the result
         $maker = $this->repo->admin->findByEmail($makerEmail);
 
         return $maker;
