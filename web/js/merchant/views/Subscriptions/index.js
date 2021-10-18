@@ -35,6 +35,8 @@ import SubscriptionSettings from 'merchant/views/Subscriptions/Settings';
 import Announcement from 'merchant/components/Announcements';
 import { CardsGoLiveBanner } from './components/banners/';
 import { CAW_CARDS_BANNER, SUBSCRIPTION_CARDS_BANNER } from './constants';
+import RTracking from 'react-tracking';
+import analytics from './analytics';
 
 @connect(
   (state) => ({
@@ -55,11 +57,13 @@ import { CAW_CARDS_BANNER, SUBSCRIPTION_CARDS_BANNER } from './constants';
     handleProductQuickGuide,
   },
 )
+@RTracking(() => window.rzpQ.component('Subscriptions'))
 class SubscriptionsController extends React.Component {
   componentDidMount() {
     this.initSubscriptions();
     this.fetchDataForOnboarding();
     this.props.getCheckoutInfo(this.props.user.current);
+    analytics.init(this.props.tracking.trackEvent);
   }
 
   componentWillUnmount() {
