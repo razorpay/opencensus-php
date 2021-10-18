@@ -38,13 +38,11 @@ class Core extends Base\Core
 
     public function delete(string $merchantId, string $id)
     {
-        $adminId = $this->app['basicauth']->getAdmin()->getId();
+        $admin = $this->app['basicauth']->getAdmin();
 
         $riskNote = $this->repo->merchant_risk_note->findByIdAndMerchantId($id, $merchantId);
 
-        $riskNote = $riskNote->first();
-
-        $riskNote->setDeletedBy($adminId);
+        $riskNote->deletedByAdmin()->associate($admin);
 
         $riskNote->setDeletedAt();
 

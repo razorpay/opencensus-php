@@ -11,5 +11,6 @@ class Repository extends Base\Repository
 
     protected $expands = [
         Entity::ADMIN,
+        Entity::DELETED_BY_ADMIN,
     ];
 }

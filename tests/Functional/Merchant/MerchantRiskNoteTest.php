@@ -68,7 +68,7 @@ class MerchantRiskNoteTest extends TestCase
     {
         $createdNote->setDeletedAt();
 
-        $createdNote->setDeletedBy('RzrpySprAdmnId');
+        $createdNote->deletedByAdmin()->associate('RzrpySprAdmnId');
 
         (new RiskNotes\Repository())->saveOrFail($createdNote);
     }
@@ -93,6 +93,8 @@ class MerchantRiskNoteTest extends TestCase
         $this->assertNotNull($response['id']);
 
         $this->assertNotNull($response['created_at']);
+
+        $this->assertNotNull($response['note']);
 
         $this->assertEquals($response['admin_id'], $admin->getId());
 
@@ -193,6 +195,9 @@ class MerchantRiskNoteTest extends TestCase
         $this->assertNotNull($items[0]['id']);
         $this->assertNotNull($items[1]['id']);
 
+        $this->assertNotNull($items[0]['note']);
+        $this->assertNotNull($items[1]['note']);
+
         $this->assertEquals($items[0]['admin']['name'], $admin->getName());
         $this->assertEquals($items[0]['merchant_id'], $merchant->getId());
 
@@ -201,6 +206,9 @@ class MerchantRiskNoteTest extends TestCase
 
         $this->assertNull($items[0]['deleted_by']);
         $this->assertNull($items[1]['deleted_by']);
+
+        $this->assertNull($items[0]['deleted_by_admin']);
+        $this->assertNull($items[1]['deleted_by_admin']);
     }
 
     public function testGetAllRiskNotesShowSoftDeletes()
@@ -224,6 +232,9 @@ class MerchantRiskNoteTest extends TestCase
         $this->assertNotNull($items[0]['id']);
         $this->assertNotNull($items[1]['id']);
 
+        $this->assertNotNull($items[0]['note']);
+        $this->assertNotNull($items[1]['note']);
+
         $this->assertEquals($items[0]['admin']['name'], $admin->getName());
 
         $this->assertNotNull($items[0]['deleted_at']);
@@ -231,6 +242,14 @@ class MerchantRiskNoteTest extends TestCase
 
         $this->assertNotNull($items[0]['deleted_by']);
         $this->assertNull($items[1]['deleted_by']);
+
+        $this->assertEquals($items[0]['deleted_by'],$admin->getId());
+
+        $this->assertNotNull($items[0]['deleted_by_admin']);
+        $this->assertNull($items[1]['deleted_by_admin']);
+
+        $this->assertEquals($items[0]['deleted_by_admin']['name'],$admin->getName());
+
     }
 
     public function testGetAllRiskNotesHideSoftDeletes()
@@ -250,6 +269,8 @@ class MerchantRiskNoteTest extends TestCase
         $this->assertSame(sizeof($items), 1);
 
         $this->assertNotNull($items[0]['id']);
+
+        $this->assertNotNull($items[0]['note']);
 
         $this->assertNull($items[0]['deleted_at']);
 

@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const ADMIN                = 'admin';
     const NOTE                 = 'note';
     const DELETED_BY           = 'deleted_by';
+    const DELETED_BY_ADMIN     = 'deleted_by_admin';
     const UPDATED_AT           = null;
 
     protected $entity                   = Constants\Entity::MERCHANT_RISK_NOTE;
@@ -42,22 +43,11 @@ class Entity extends Base\PublicEntity
         self::DELETED_BY,
     ];
 
-    protected $expanded = [self::ADMIN];
+    protected $expanded = [self::ADMIN, self::DELETED_BY_ADMIN];
 
     public $timestamps = [self::CREATED_AT];
 
     protected $guarded = [];
-
-    //--------------Setters---------------
-    public function setDeletedBy($adminId)
-    {
-        $this->setAttribute(self::DELETED_BY, $adminId);
-    }
-
-    public function setDeletedAt()
-    {
-        $this->setAttribute(self::DELETED_AT, Carbon::now()->getTimestamp());
-    }
 
     // ------------ Relations ------------
     public function merchant()
@@ -68,5 +58,15 @@ class Entity extends Base\PublicEntity
     public function admin()
     {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
+    }
+
+    public function deletedByAdmin()
+    {
+        return $this->belongsTo('RZP\Models\Admin\Admin\Entity', self::DELETED_BY);
+    }
+
+    public function setDeletedAt()
+    {
+        $this->setAttribute(self::DELETED_AT, Carbon::now()->getTimestamp());
     }
 }
