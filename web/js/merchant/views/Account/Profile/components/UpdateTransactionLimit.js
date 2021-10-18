@@ -10,12 +10,10 @@ import Amount from 'common/ui/Amount';
 import FileUpload from 'merchant/components/File/Upload';
 import { getCommonAnalyticsProperties, rupeesToPaise } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
-import { TRANSACTION_LIMIT_CONSTANTS } from 'merchant/helpers/data';
 
 function UpdateTransactionLimit(props) {
   const [file, setfile] = useState(null);
   const [isReasonValid, setisReasonValid] = useState(null); // Validity => minimum 100 words
-  const [isLimitValid, setisLimitValid] = useState(true); // Validity => value below allowed limit
 
   const save = async (e) => {
     e.preventDefault();
@@ -123,31 +121,6 @@ function UpdateTransactionLimit(props) {
     else setisReasonValid(false);
   };
 
-  const validateTransactionLimit = (inputValue) => {
-    const businessCategory = props.user.business_category;
-    const isUnRegisteredMerchant =
-      props.user.business_type === '2' || props.user.business_type === '11';
-
-    // If business_Category doesn't exist, it's slotted into others category
-    const maxAllowedValues = businessCategory
-      ? TRANSACTION_LIMIT_CONSTANTS[businessCategory]
-      : TRANSACTION_LIMIT_CONSTANTS.others;
-
-    const limitAllowedForBusinessType = isUnRegisteredMerchant
-      ? maxAllowedValues[0]
-      : maxAllowedValues[1];
-
-    if (+inputValue > limitAllowedForBusinessType) {
-      setisLimitValid(false);
-      if (businessCategory)
-        return `Amount entered is greater then the limit allowed for ${businessCategory} business category`;
-      else return `Amount entered is greater then the limit allowed for business category`;
-    }
-
-    setisLimitValid(true);
-    return '';
-  };
-
   return (
     <div>
       <ModalHeader title="Increase Transaction Limit" onCloseClick={props.closeModal} />
@@ -165,14 +138,7 @@ function UpdateTransactionLimit(props) {
           </span>
 
           <div class="actions-header">
-            <Input
-              name="limit"
-              label="Required limit"
-              required
-              type="number"
-              validator={validateTransactionLimit}
-              addonBefore="₹"
-            />
+            <Input name="limit" label="Required limit" required type="number" addonBefore="₹" />
 
             <Input.Textarea
               placeholder="Min 100 Words"
@@ -205,7 +171,7 @@ function UpdateTransactionLimit(props) {
             <button
               type="submit"
               class="btn btn-primary btn-block"
-              disabled={isReasonValid === false || isLimitValid === false}
+              disabled={isReasonValid === false}
             >
               Submit Details
             </button>
