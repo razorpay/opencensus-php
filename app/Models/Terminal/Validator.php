@@ -1040,10 +1040,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $netbankingCanaraEditTerminalRules = [
-        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID     => 'sometimes|string',
         Entity::TYPE                    => 'sometimes|array',
         Entity::PROCURER                => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::TPV                     => 'sometimes|in:0,1,2',
     ];
 
     protected static $netbankingEquitasTerminalRules = [
