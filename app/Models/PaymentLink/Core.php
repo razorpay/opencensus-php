@@ -545,7 +545,9 @@ class Core extends Base\Core
 
         if ($variant === 'on')
         {
-            PaymentPageProcessor::dispatch($this->mode, $payment);
+            PaymentPageProcessor::dispatch($this->mode, [
+                'payment'   => $payment,
+            ]);
 
             return;
         }
@@ -926,13 +928,21 @@ class Core extends Base\Core
 
         $lineItems = $order->lineItems()->get();
 
+        // for donation goal tracker
+        $unitsSold          = 0;
+        $collectedAmount    = 0;
+
         foreach ($lineItems as $lineItem)
         {
             $paymentPageItem = $lineItem->ref;
 
             $paymentPageItem->incrementQuantitySold($lineItem->getQuantity());
 
+            $unitsSold  += $lineItem->getQuantity();
+
             $paymentPageItem->incrementTotalAmountPaidBy($lineItem->getQuantity() * $lineItem->getAmount());
+
+            $collectedAmount    += $lineItem->getQuantity() * $lineItem->getAmount();
 
             $paymentPageItem->saveOrFail();
         }
@@ -951,7 +961,59 @@ class Core extends Base\Core
                 E::PAYMENT_LINK    => $paymentLink->toArrayPublic(),
             ]);
 
+        // update donation goal tracker dynamic keys if applicable
+        $this->updateDonationGoalTrackerKeys($paymentLink, [
+            Entity::SOLD_UNITS          => $unitsSold,
+            Entity::COLLECTED_AMOUNT    => $collectedAmount,
+            Entity::SUPPORTER_COUNT     => 1
+        ]);
+
         $this->trace->count(Metric::PAYMENT_PAGE_PAID_TOTAL, $paymentLink->getMetricDimensions());
+    }
+
+    protected function updateDonationGoalTrackerKeys(Entity $paymentLink, array $items, bool $decrement = false): void
+    {
+        $this->repo->assertTransactionActive();
+
+        $settings   = $paymentLink->getSettings()->toArray();
+        if (empty(array_get($settings, Entity::GOAL_TRACKER.'.'.Entity::META_DATA, [])))
+        {
+            return;
+        }
+
+        $context = [
+            "items"     => $items,
+            "entity"    => [
+                Entity::ID  => $paymentLink->getId(),
+            ],
+            Entity::GOAL_TRACKER    => $settings[Entity::GOAL_TRACKER][Entity::META_DATA],
+        ];
+
+        $this->trace->info(TraceCode::PAYMENT_LINK_DONATION_GOAL_TRACKER_UPDATES_START, $context);
+
+        $multiplier = $decrement ? -1 : 1;
+        $code       = $decrement
+            ? TraceCode::PAYMENT_LINK_DONATION_GOAL_TRACKER_DECREMENT
+            : TraceCode::PAYMENT_LINK_DONATION_GOAL_TRACKER_INCREMENT;
+
+        $this->trace->info($code, $context);
+
+        $metadaKey          = Entity::GOAL_TRACKER.'.'.Entity::META_DATA;
+        $amountKey          = $metadaKey.'.'.Entity::COLLECTED_AMOUNT;
+        $soldUnitKey        = $metadaKey.'.'.Entity::SOLD_UNITS;
+        $supporterCountKey  = $metadaKey.'.'.Entity::SUPPORTER_COUNT;
+
+        $amount         = ((int) array_get($settings, $amountKey, "0")) + ($multiplier * $items[Entity::COLLECTED_AMOUNT]);
+        $soldUnit       = ((int) array_get($settings, $soldUnitKey, "0")) + ($multiplier * $items[Entity::SOLD_UNITS]);
+        $supporterCount = ((int) array_get($settings, $supporterCountKey, "0")) + ($multiplier * $items[Entity::SUPPORTER_COUNT]);
+
+        array_set($settings, $amountKey, $amount < 0 ? 0 : $amount);
+        array_set($settings, $soldUnitKey, $soldUnit < 0 ? 0 : $soldUnit);
+        array_set($settings, $supporterCountKey, $supporterCount < 0 ? 0 : $supporterCount);
+
+        $paymentLink->getSettingsAccessor()->upsert($settings)->save();
+
+        $this->trace->info(TraceCode::PAYMENT_LINK_DONATION_GOAL_TRACKER_UPDATES_COMPLETED, $context);
     }
 
     protected function createInvoiceIfEnabled(Entity $paymentLink, Payment\Entity $payment)

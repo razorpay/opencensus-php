@@ -98,6 +98,9 @@ class ViewSerializer extends Base\Core
         // Puts other settings defaults
         $settings += [Entity::THEME => Entity::DEFAULT_THEME];
 
+        // add donation goal tracker dynamic keys
+        $this->populateDonationGoalTrackerWithAdditionalKeys($settings);
+
         return $settings;
     }
 
@@ -341,5 +344,23 @@ class ViewSerializer extends Base\Core
             'page_load_optimization_enabled' => $pageLoadOptimizationEnabled,
             'disclaimer_text_enabled'        => $disclaimerTextEnabled,
             ];
+    }
+
+    protected function populateDonationGoalTrackerWithAdditionalKeys(array & $settings): void
+    {
+        $metaData = array_get($settings, Entity::GOAL_TRACKER.'.'.Entity::META_DATA, []);
+        if (empty($metaData))
+        {
+            return;
+        }
+
+        $collectedAmount    = (string) array_get($metaData, Entity::COLLECTED_AMOUNT, 0);
+        $supporterCount     = (string) array_get($metaData, Entity::SUPPORTER_COUNT, 0);
+        $soldUnits          = (string) array_get($metaData, Entity::SOLD_UNITS, 0);
+
+
+        $settings[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::COLLECTED_AMOUNT]    = $collectedAmount;
+        $settings[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::SUPPORTER_COUNT]     = $supporterCount;
+        $settings[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::SOLD_UNITS]          = $soldUnits;
     }
 }

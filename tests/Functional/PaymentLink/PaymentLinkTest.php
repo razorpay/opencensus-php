@@ -1558,7 +1558,270 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * @group pp_donation_goal_tracker
+     */
+    public function testCreatePaymentPageWithDonationGoalTrackerShouldBeReturnedInDetailsApi()
+    {
+        $pl = $this->createPaymentLink(self::TEST_PL_ID, ['view_type' => 'page']);
+        $settings = [
+            Entity::GOAL_TRACKER    => [
+                Entity::TRACKER_TYPE    => PaymentLink\DonationGoalTrackerType::DONATION_AMOUNT_BASED,
+                Entity::GOAL_IS_ACTIVE  => "1",
+                Entity::META_DATA       => [
+                    Entity::GOAL_AMOUNT             => "10000",
+                    Entity::DISPLAY_DAYS_LEFT       => "0",
+                    Entity::DISPLAY_SUPPORTER_COUNT => "0"
+                ]
+            ]
+        ];
+
+        $pl->getSettingsAccessor()->upsert($settings)->save();
+        $this->startTest();
+    }
+
+    /**
+     * @group pp_donation_goal_tracker
+     */
+    public function testCreatePaymentPageWithDonationGoalTrackerAmountBasedSuccessfully()
+    {
+        $data = $this->startTest();
+        $this->ba->proxyAuth();
+        $pl = $this->getDbEntityById('payment_link', $data['id']);
+        $resDataSubSet = [
+            Entity::GOAL_TRACKER        => [
+                Entity::TRACKER_TYPE    => PaymentLink\DonationGoalTrackerType::DONATION_AMOUNT_BASED,
+                Entity::GOAL_IS_ACTIVE  => "1",
+                Entity::META_DATA       => [
+                    Entity::GOAL_AMOUNT             => "10000",
+                    Entity::DISPLAY_DAYS_LEFT       => "0",
+                    Entity::DISPLAY_SUPPORTER_COUNT => "1",
+                    Entity::COLLECTED_AMOUNT        => "0",
+                    Entity::SUPPORTER_COUNT         => "0"
+                ]
+            ]
+        ];
+        $this->assertDonationGoalTracker($pl, $resDataSubSet);
+    }
+
+    /**
+     * @group pp_donation_goal_tracker
+     */
+    public function testCreatePaymentPageWithDonationGoalTrackerSupporterBasedSuccessfully()
+    {
+        $data = $this->startTest();
+        $this->ba->proxyAuth();
+        $pl = $this->getDbEntityById('payment_link', $data['id']);
+        $resDataSubSet = [
+            Entity::GOAL_TRACKER    => [
+                Entity::TRACKER_TYPE    => PaymentLink\DonationGoalTrackerType::DONATION_SUPPORTER_BASED,
+                Entity::GOAL_IS_ACTIVE  => "1",
+                Entity::META_DATA       => [
+                    Entity::AVALIABLE_UNITS         => "10000",
+                    Entity::DISPLAY_AVAILABLE_UNITS => "1",
+                    Entity::DISPLAY_SOLD_UNITS      => "1",
+                    Entity::DISPLAY_DAYS_LEFT       => "0",
+                    Entity::DISPLAY_SUPPORTER_COUNT => "1",
+                    Entity::SOLD_UNITS              => "0",
+                    Entity::SUPPORTER_COUNT         => "0"
+                ]
+            ]
+        ];
+
+        $this->assertDonationGoalTracker($pl, $resDataSubSet);
+    }
+
+    /**
+     * @group pp_donation_goal_tracker
+     */
+    public function testDonationGoalTrackerAmountBasedOnMakePaymentShouldIncrementKeys()
+    {
+        [$pl, $_] = $this->createDonationGoalTrackerWithSinglePayment(
+            ['view_type' => 'page']
+        );
+        $pl = $this->getDbEntityById('payment_link', $pl->getId());
+        $resDataSubSet = [
+            Entity::GOAL_TRACKER    => [
+                Entity::TRACKER_TYPE    => PaymentLink\DonationGoalTrackerType::DONATION_AMOUNT_BASED,
+                Entity::GOAL_IS_ACTIVE  => "1",
+                Entity::META_DATA       => [
+                    Entity::GOAL_AMOUNT             => "10000",
+                    Entity::DISPLAY_DAYS_LEFT       => "0",
+                    Entity::DISPLAY_SUPPORTER_COUNT => "1",
+                    Entity::SOLD_UNITS              => "2",
+                    Entity::SUPPORTER_COUNT         => "1",
+                    Entity::COLLECTED_AMOUNT        => "15000",
+                ]
+            ]
+        ];
+
+        $this->assertDonationGoalTracker($pl, $resDataSubSet);
+    }
+
+    /**
+     * @group pp_donation_goal_tracker
+     */
+    public function testDonationGoalTrackerAmountBasedOnMultipleOrderMakePaymentShouldIncrementKeys()
+    {
+        [$pl, $order] = $this->createDonationGoalTrackerWithSinglePayment(
+            ['view_type' => 'page']
+        );
+
+        // total 6 payments
+        for ($i = 0; $i<5; $i++)
+        {
+            $orderRes   = $this->startTest();
+            $orderId    = $order->stripDefaultSign($orderRes['order']['id']);
+            $this->makePaymentForPaymentLinkWithOrderAndAssert($pl, $this->getDbEntityById('order', $orderId));
+        }
+
+        $pl = $this->getDbEntityById('payment_link', $pl->getId());
+        $resDataSubSet = [
+            Entity::GOAL_TRACKER    => [
+                Entity::TRACKER_TYPE    => PaymentLink\DonationGoalTrackerType::DONATION_AMOUNT_BASED,
+                Entity::GOAL_IS_ACTIVE  => "1",
+                Entity::META_DATA       => [
+                    Entity::GOAL_AMOUNT             => "10000",
+                    Entity::DISPLAY_DAYS_LEFT       => "0",
+                    Entity::DISPLAY_SUPPORTER_COUNT => "1",
+                    Entity::SOLD_UNITS              => "17",
+                    Entity::SUPPORTER_COUNT         => "6",
+                    Entity::COLLECTED_AMOUNT        => stringify(15000 + (5000 * 5) + (10000 * 5 * 2)),
+                ]
+            ]
+        ];
+
+        $this->assertDonationGoalTracker($pl, $resDataSubSet);
+    }
+
+    /**
+     * @group pp_donation_goal_tracker
+     */
+    public function testDonationGoalTrackerSupporterBasedOnMakePaymentShouldIncrementKeys()
+    {
+        [$pl, $_] = $this->createDonationGoalTrackerWithSinglePayment(
+            ['view_type' => 'page'],
+            [
+                Entity::AVALIABLE_UNITS         => "10000",
+                Entity::DISPLAY_AVAILABLE_UNITS => "1",
+                Entity::DISPLAY_SOLD_UNITS      => "1",
+                Entity::DISPLAY_DAYS_LEFT       => "0",
+                Entity::DISPLAY_SUPPORTER_COUNT => "1"
+            ],
+            PaymentLink\DonationGoalTrackerType::DONATION_SUPPORTER_BASED
+        );
+        $pl = $this->getDbEntityById('payment_link', $pl->getId());
+        $resDataSubSet = [
+            Entity::GOAL_TRACKER    => [
+                Entity::TRACKER_TYPE    => PaymentLink\DonationGoalTrackerType::DONATION_SUPPORTER_BASED,
+                Entity::GOAL_IS_ACTIVE  => "1",
+                Entity::META_DATA       => [
+                    Entity::DISPLAY_DAYS_LEFT       => "0",
+                    Entity::DISPLAY_SUPPORTER_COUNT => "1",
+                    Entity::SOLD_UNITS              => "2",
+                    Entity::SUPPORTER_COUNT         => "1",
+                    Entity::COLLECTED_AMOUNT        => "15000",
+                ]
+            ]
+        ];
+
+        $this->assertDonationGoalTracker($pl, $resDataSubSet);
+    }
+
+    /**
+     * @group pp_donation_goal_tracker
+     */
+    public function testDonationGoalTrackerSupporterBasedOnMultipleOrderMakePaymentShouldIncrementKeys()
+    {
+        [$pl, $order] = $this->createDonationGoalTrackerWithSinglePayment(
+            ['view_type' => 'page'],
+            [
+                Entity::AVALIABLE_UNITS         => "10000",
+                Entity::DISPLAY_AVAILABLE_UNITS => "1",
+                Entity::DISPLAY_SOLD_UNITS      => "1",
+                Entity::DISPLAY_DAYS_LEFT       => "0",
+                Entity::DISPLAY_SUPPORTER_COUNT => "1"
+            ],
+            PaymentLink\DonationGoalTrackerType::DONATION_SUPPORTER_BASED
+        );
+
+        // total 6 payments
+        for ($i = 0; $i<5; $i++)
+        {
+            $orderRes   = $this->startTest();
+            $orderId    = $order->stripDefaultSign($orderRes['order']['id']);
+            $this->makePaymentForPaymentLinkWithOrderAndAssert($pl, $this->getDbEntityById('order', $orderId));
+        }
+
+        $pl = $this->getDbEntityById('payment_link', $pl->getId());
+        $resDataSubSet = [
+            Entity::GOAL_TRACKER    => [
+                Entity::TRACKER_TYPE    => PaymentLink\DonationGoalTrackerType::DONATION_SUPPORTER_BASED,
+                Entity::GOAL_IS_ACTIVE  => "1",
+                Entity::META_DATA       => [
+                    Entity::DISPLAY_DAYS_LEFT       => "0",
+                    Entity::DISPLAY_SUPPORTER_COUNT => "1",
+                    Entity::SOLD_UNITS              => "27",
+                    Entity::SUPPORTER_COUNT         => "6",
+                    Entity::COLLECTED_AMOUNT        => stringify(15000 + (5000 * 5 * 3) + (10000 * 5 * 2)),
+                ]
+            ]
+        ];
+
+        $this->assertDonationGoalTracker($pl, $resDataSubSet);
+    }
+
     // -------------------- Protected methods --------------------
+
+    protected function createDonationGoalTrackerWithSinglePayment(
+        array $paymentLinkAttribute = [],
+        array $metadata = [],
+        string $trackerType = PaymentLink\DonationGoalTrackerType::DONATION_AMOUNT_BASED,
+        string $goalIsActive = "1",
+        array $orderAttribute = []
+    ): array
+    {
+        $data = $this->createPaymentLinkAndOrderForThat($paymentLinkAttribute, $orderAttribute);
+        if (empty($metadata))
+        {
+            $metadata =  [
+                Entity::GOAL_AMOUNT             => "10000",
+                Entity::DISPLAY_DAYS_LEFT       => "0",
+                Entity::DISPLAY_SUPPORTER_COUNT => "1"
+            ];
+        }
+        $settings = [
+            Entity::GOAL_TRACKER    => [
+                Entity::TRACKER_TYPE    => $trackerType,
+                Entity::GOAL_IS_ACTIVE  => $goalIsActive,
+                Entity::META_DATA       => $metadata,
+            ]
+        ];
+
+        $pl     = $data['payment_link'];
+        $order  = $data['payment_link_order']['order'];
+
+        $pl->getSettingsAccessor()->upsert($settings)->save();
+
+        $this->makePaymentForPaymentLinkWithOrderAndAssert($pl, $order);
+
+        return [$pl, $order];
+    }
+
+    protected function assertDonationGoalTracker(Entity $paymentLink, array $goalTrackerSubArray)
+    {
+        $serializer     = new PaymentLink\ViewSerializer($paymentLink);
+        $settings       = $serializer->serializeSettingsWithDefaults();
+        $forHostedPage  = $serializer->serializeForHosted();
+
+        $resHostedPagePayloadSubSet = [
+            "payment_link"  => [
+                Entity::SETTINGS => $goalTrackerSubArray
+            ]
+        ];
+        $this->assertArraySubset($goalTrackerSubArray, $settings);
+        $this->assertArraySubset($resHostedPagePayloadSubSet, $forHostedPage);
+    }
 
     protected function createPaymentLinkAndOrderForThat(array $paymentLinkAttribute = [], array $orderAttribute = [])
     {
