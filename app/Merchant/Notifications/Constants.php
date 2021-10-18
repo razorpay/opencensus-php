@@ -829,6 +829,167 @@ class Constants
             ],
         ],
         [
+            'id'          => 'sept21-pb-wpgeneric-gtm',
+            'title'       => 'Razorpay Payment Button for WordPress & Elementor!',
+            'description' => 'Start accepting payments on WordPress & Elementor site or blog with Payment Button Plugins.',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/cms-logo.png',
+            'image_url'   => 'http://cdn.razorpay.com/static/assets/notifs/cms-generic.png',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Read More',
+                    'id'    => 'announcement-details-l2',
+                    'url'   => '/announcements/sept21-pb-wpgeneric-gtm/',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'View documentation',
+                    'url'   => 'https://razorpay.com/docs/payment-button/supported-platforms/wordpress/'
+                ],
+            ],
+            'l2_content'  => [
+                'content'     => " <div class='title' style='align-items: center;font-size: 16px;'> <img src='https://cdn.razorpay.com/static/assets/notifs/cms-logo.png' width='32px' style='margin-right:10px;'/> <b>Introducing Payment Button Plugins for WordPress & Elementor</b> </div><div class='video'> <p style='margin-bottom:20px;'> Razorpay Payment Button plugin is an easy-to-use tool that instantly adds a payment checkout function on WordPress & Elementor site or blog.</p> <iframe width='420' height='214' style='border: 0; margin: 10px 0;' src='https://www.youtube.com/embed/4MCy8Blo4Pw'></iframe> </div><div class='paragraph'> <p style='margin-bottom:20px;'><b>Razorpay Payment Button plugin: One button, many uses</b> </p> <ul> <li>100+ Payment modes including UPI, cards, and more</li> <li>One time and recurring payment options. <a href='https://razorpay.com/docs/payment-button/subscription-buttons/' target='_blank'>Read more</a></li> <li>Keep a fixed amount or let your customers fill the amount</li> <li>Accept International Payments in 100+ foreign currencies</li> </ul> <a href='https://razorpay.com/docs/payment-button/supported-platforms/wordpress/' target='_blank'>View documentation</a></div><div> <p style='margin-bottom:20px;'> <b >How to add Razorpay Payment Button on WordPress & Elementor</b> </p> <p style='margin-bottom:10px;'><b>Download and upload Payment Button Plugin:</b></p> <ol style='margin-bottom:20px;'> <li>Download the plugin from WordPress plugin store</li> <li>Upload the Zip file to the WordPress plugin directory</li> <li>Activate from the ‘Plugins’ menu in WordPress</li> </ol> <p>Or simply install the plugin within WordPress</p> <p style='margin-bottom:10px;'><b>Install and activate Razorpay Payment Button Plugin:</b></p> <ol style='margin-bottom:20px;'> <li>Visit the plugins page within WordPress dashboard and select ‘Add New’</li> <li>Search for ‘Razorpay Payment Button’</li> <li>Activate the plugin from ‘Plugins Page’</li> </ol></div><div> <p style='margin-bottom:20px;'><b>Sync WordPress and Razorpay account: </b></p> <ol> <li> <b>On your Razorpay Dashboard: </b> <p>Settings → API Keys → Generate/Copy your saved API Keys and Key ID</p> </li> <li> <b>On your WordPress Admin Dashboard</b> <p>Razorpay Payment Button → Settings → Add API Secret Keys and details</p> </li> </ol></div>",
+                'buttons'     => [
+                    [
+                        'type'  => 'button',
+                        'label' => 'Plugin for WordPress',
+                        'url'   => 'https://wordpress.org/plugins/razorpay-payment-button/',
+                    ],
+                    [
+                        'type'  => 'primary-inverted',
+                        'label' => 'Plugin for Elementor',
+                        'url'   => 'https://wordpress.org/plugins/razorpay-payment-button-elementor/',
+                    ],
+                ],
+            ],
+            'start_ts'    => 1634187296,
+            'end_ts'      => 1642136096,
+            'filters'     => [
+                'splitz_experiments'         => ['PLATFORM_PB_PLUGIN_GENERIC_MERCHANTS_ANNOUNCEMENT_SPLITZ'],
+            ],
+        ],
+        [
+            'id'          => 'sept21-pb-wpcharity-gtm',
+            'title'       => 'Donate Now button on WordPress & Elementor!',
+            'description' => 'Accept one time and recurring donations, international payments on WordPress & Elementor with Payment Button Plugins.',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/cms-logo.png',
+            'image_url'   => 'http://cdn.razorpay.com/static/assets/notifs/cms-generic.png',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Read More',
+                    'id'    => 'announcement-details-l2',
+                    'url'   => '/announcements/sept21-pb-wpcharity-gtm/',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'View documentation',
+                    'url'   => 'https://razorpay.com/docs/payment-button/supported-platforms/wordpress/',
+                ],
+            ],
+            'l2_content'  => [
+                'content'     => " <div class='title' style='align-items: center;font-size: 16px;'><img src='https://cdn.razorpay.com/static/assets/notifs/cms-logo.png' width='32px' style='margin-right:10px;'/> <b>Collect one-time and recurring donations on WordPress with our latest plugins!</b> </div><div class='video'> <p style='margin-bottom:20px;'> Razorpay Payment Button plugin is an easy-to-use tool that instantly adds a payment checkout function on WordPress & Elementor site or blog. </p> <iframe width='420' height='214' style='border: 0; margin: 10px 0;' src='https://www.youtube.com/embed/4MCy8Blo4Pw'></iframe> </div><div class='paragraph'> <p style='margin-bottom:20px;'><b>Razorpay Payment Button plugin: One button, many uses</b> </p> <ul> <li>Send automated and 80G receipts to your customers</li> <li>Accept one time and recurring donations. <a href='https://razorpay.com/docs/payment-button/subscription-buttons/' target='_blank'>Read more</a></li> <li>Offer 100+ payment modes including UPI, cards, and more</li> <li>Keep a fixed amount or let your customers decide the amount</li> <li>Accept International Payments in 100+ foreign currencies</li> </ul> <a href='https://razorpay.com/docs/payment-button/supported-platforms/wordpress/' target='_blank'>View documentation</a></div><div> <p style='margin-bottom:20px;'> <b >How to add Razorpay Payment Button on WordPress & Elementor</b> </p> <p style='margin-bottom:10px;'><b>Download and upload Payment Button Plugin:</b></p> <ol style='margin-bottom:20px;'> <li>Download the plugin from WordPress plugin store</li> <li>Upload the Zip file to the WordPress plugin directory</li> <li>Activate from the ‘Plugins’ menu in WordPress</li> </ol> <p>Or simply install the plugin within WordPress</p> <p style='margin-bottom:10px;'><b>Install and activate Razorpay Payment Button Plugin:</b></p> <ol style='margin-bottom:20px;'> <li>Visit the plugins page within WordPress dashboard and select ‘Add New’</li> <li>Search for ‘Razorpay Payment Button’</li> <li>Activate the plugin from ‘Plugins Page’</li> </ol></div><div> <p style='margin-bottom:20px;'><b>Sync WordPress and Razorpay account: </b></p> <ol> <li> <b>On your Razorpay Dashboard: </b> <p>Settings → API Keys → Generate/Copy your saved API Keys and Key ID</p> </li> <li> <b>On your WordPress Admin Dashboard</b> <p>Razorpay Payment Button → Settings → Add API Secret Keys and details</p> </li> </ol></div>",
+                'buttons'     => [
+                    [
+                        'type'  => 'button',
+                        'label' => 'Plugin for WordPress',
+                        'url'   => 'https://wordpress.org/plugins/razorpay-payment-button/',
+                    ],
+                    [
+                        'type'  => 'primary-inverted',
+                        'label' => 'Plugin for Elementor',
+                        'url'   => 'https://wordpress.org/plugins/razorpay-payment-button-elementor/',
+                    ],
+                ],
+            ],
+            'start_ts'    => 1634187296,
+            'end_ts'      => 1642136096,
+            'filters'     => [
+                'splitz_experiments'         => ['PLATFORM_PB_PLUGIN_CHARITY_MERCHANTS_ANNOUNCEMENT_SPLITZ'],
+            ],
+        ],
+        [
+            'id'          => 'sept21-pb-wpelearning-gtm',
+            'title'       => 'Collect online course fees on WordPress & Elementor!',
+            'description' => 'Grow your e-learning business by offering multiple payment plans on WordPress and Elementor sites with Payment Button Plugins.',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/cms-logo.png',
+            'image_url'   => 'http://cdn.razorpay.com/static/assets/notifs/cms-generic.png',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Read More',
+                    'id'    => 'announcement-details-l2',
+                    'url'   => '/announcements/sept21-pb-wpelearning-gtm/',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'View documentation',
+                    'url'   => 'https://razorpay.com/docs/payment-button/supported-platforms/wordpress/',
+                ],
+            ],
+            'l2_content'  => [
+                'content'     => " <div class='title' style='align-items: center;font-size: 16px;'> <img src='https://cdn.razorpay.com/static/assets/notifs/cms-logo.png' width='32px' style='margin-right:10px;'/> <b>Start collecting fees on your WordPress & Elemetor site instantly with Payment Button Plugins</b> </div><div class='video'> <p style='margin-bottom:20px;'> Razorpay Payment Button plugin is an easy-to-use tool that instantly adds a payment checkout function on WordPress & Elementor site or blog. </p> <p style='margin-bottom:20px;'> Start accepting payments for your online course, webinars and programs on WordPress in less than five minutes. </p> <iframe width='420' height='214' style='border: 0; margin: 10px 0;' src='https://www.youtube.com/embed/4MCy8Blo4Pw'></iframe> </div><div class='paragraph'> <p style='margin-bottom:20px;'><b>Plug and play with Razorpay Payment Buttons</b> </p> <ul> <li>Offer 100+ Payment modes including UPI, cards, and more</li> <li>Accept one time and recurring payments. <a href='https://razorpay.com/docs/payment-button/subscription-buttons/' target='_blank'>Read more</a></li> <li>Collect student details and track them on one dashboard</li> <li>Keep a fixed amount or let your customers decide the amount</li> <li>Accept International Payments in 100+ foreign currencies</li> </ul> <a href='https://razorpay.com/docs/payment-button/supported-platforms/wordpress/' target='_blank'>View documentation</a></div><div> <p style='margin-bottom:20px;'> <b >How to add Razorpay Payment Button on WordPress & Elementor</b> </p> <p style='margin-bottom:10px;'><b>Download and upload Payment Button Plugin:</b></p> <ol style='margin-bottom:20px;'> <li>Download the plugin from WordPress plugin store</li> <li>Upload the Zip file to the WordPress plugin directory</li> <li>Activate from the ‘Plugins’ menu in WordPress</li> </ol> <p>Or simply install the plugin within WordPress</p> <p style='margin-bottom:10px;'><b>Install and activate Razorpay Payment Button Plugin:</b></p> <ol style='margin-bottom:20px;'> <li>Visit the plugins page within WordPress dashboard and select ‘Add New’</li> <li>Search for ‘Razorpay Payment Button’</li> <li>Activate the plugin from ‘Plugins Page’</li> </ol></div><div> <p style='margin-bottom:20px;'><b>Sync WordPress and Razorpay account: </b></p> <ol> <li> <b>On your Razorpay Dashboard: </b> <p>Settings → API Keys → Generate/Copy your saved API Keys and Key ID</p> </li> <li> <b>On your WordPress Admin Dashboard</b> <p>Razorpay Payment Button → Settings → Add API Secret Keys and details</p> </li> </ol></div>",
+                'buttons'     => [
+                    [
+                        'type'  => 'button',
+                        'label' => 'Plugin for WordPress',
+                        'url'   => 'https://wordpress.org/plugins/razorpay-payment-button/',
+                    ],
+                    [
+                        'type'  => 'primary-inverted',
+                        'label' => 'Plugin for Elementor',
+                        'url'   => 'https://wordpress.org/plugins/razorpay-payment-button-elementor/',
+                    ],
+                ],
+            ],
+            'start_ts'    => 1634187296,
+            'end_ts'      => 1642136096,
+            'filters'     => [
+                'splitz_experiments'         => ['PLATFORM_PB_PLUGIN_LEARNING_MERCHANTS_ANNOUNCEMENT_SPLITZ'],
+            ],
+        ],
+        [
+            'id'          => 'sept21-pb-wpwebsite-gtm',
+            'title'       => 'Payment Button Plugins for WordPress & Elementor!',
+            'description' => 'Accept one time, recurring and international payments on WordPress & Elementor site with Razorpay Payment Button Plugins!',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/cms-logo.png',
+            'image_url'   => 'http://cdn.razorpay.com/static/assets/notifs/cms-generic.png',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Read More',
+                    'id'    => 'announcement-details-l2',
+                    'url'   => '/announcements/sept21-pb-wpwebsite-gtm/',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Install the plugin',
+                    'url'   => 'https://wordpress.org/plugins/razorpay-payment-button/',
+
+                ],
+            ],
+            'l2_content'  => [
+                'content'     => " <div class='title' style='align-items: center;font-size: 16px;'> <img src='https://cdn.razorpay.com/static/assets/notifs/cms-logo.png' width='32px' style='margin-right:10px;'/> <b>Make your work more efficient with Razorpay Payment Button Plugins!</b> </div><div class='video'> <p style='margin-bottom:20px;'> Razorpay Payment Button Plugin is an easy-to-setup tool that helps you accept payments on WordPress & Elementor. The plugin allows you to instantly add a payment checkout function at the touch of a button. </p> <iframe width='420' height='214' style='border: 0; margin: 10px 0;' src='https://www.youtube.com/embed/4MCy8Blo4Pw'></iframe> </div> <p>So now, no more deep-diving into the source code; plugins help developers save time, especially if you are adding multiple payment buttons on your site.</p><div class='paragraph'> <p style='margin-bottom:20px;'><b>Plug and play with Razorpay Payment Buttons</b> </p> <ul> <li>Accept one time and recurring payments. <a href='https://razorpay.com/docs/payment-button/subscription-buttons/' target='_blank'>Read more</a></li> <li>Offer 100+ Payment modes including UPI, cards, and more</li> <li>Keep a fixed amount or let your customers decide the amount</li> <li>Accept International Payments in 100+ foreign currencies</li> </ul> <a href='https://razorpay.com/docs/payment-button/supported-platforms/wordpress/' target='_blank'>View documentation</a></div><p>Drag, drop and collect with Razorpay Payment Button plugins!</p>",
+                'buttons'     => [
+                    [
+                        'type'  => 'button',
+                        'label' => 'Plugin for WordPress',
+                        'url'   => 'https://wordpress.org/plugins/razorpay-payment-button/',
+                    ],
+                    [
+                        'type'  => 'primary-inverted',
+                        'label' => 'Plugin for Elementor',
+                        'url'   => 'https://wordpress.org/plugins/razorpay-payment-button-elementor/',
+                    ],
+                ],
+            ],
+            'start_ts'    => 1634187296,
+            'end_ts'      => 1642136096,
+            'filters'     => [
+                'splitz_experiments'         => ['PLATFORM_PB_PLUGIN_WEBDEV_MERCHANTS_ANNOUNCEMENT_SPLITZ'],
+            ],
+        ],
+        [
             'title'       => 'Razorpay Trusted Business badge is now Live!',
             'description' => 'Congratulations, you are now a Razorpay Trusted Business! 🚀',
             'start_ts'    => 1632421145,
