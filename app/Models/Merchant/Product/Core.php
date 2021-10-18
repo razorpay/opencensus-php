@@ -251,6 +251,13 @@ class Core extends Base\Core
     {
         $merchantProducts = $subMerchant->merchantProducts;
 
+        $this->trace->info(TraceCode::MERCHANT_PRODUCT_STATUS_AUTO_UPDATE_ATTEMPT,
+                           [
+                               'merchant_id'            => $subMerchant->getId(),
+                               'message'                => 'attempting to update all merchant products',
+                               'basic_auth_merchant_id' => $this->app['basicauth']->getMerchant()->getId(),
+                           ]);
+
         foreach ($merchantProducts as $merchantProduct)
         {
             $productName = $merchantProduct->getProduct();

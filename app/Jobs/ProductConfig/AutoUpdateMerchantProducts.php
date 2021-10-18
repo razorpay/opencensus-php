@@ -2,6 +2,7 @@
 
 namespace RZP\Jobs\ProductConfig;
 
+use App;
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
@@ -31,6 +32,8 @@ class AutoUpdateMerchantProducts extends Job
         $this->source          = $source;
         $this->merchant        = $merchant;
         $this->merchantDetails = $merchantDetails;
+        $app                   = App::getFacadeRoot();
+        $app['basicauth']->setMerchant($merchant);
     }
 
     public function handle()

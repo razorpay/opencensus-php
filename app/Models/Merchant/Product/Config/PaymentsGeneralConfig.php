@@ -117,13 +117,7 @@ class PaymentsGeneralConfig extends Base\Service
     {
         $response = $this->merchantService->fetchConfig();
 
-        $featuresData = $this->merchantService->getMerchantFeatures();
-
-        $flashCheckout = array_filter($featuresData['features'], function($feature) {
-            return ($feature['feature'] === Util\Constants::NOFLASHCHECKOUT);
-        });
-
-        $noFlashCheckoutValue = empty($flashCheckout) === true ? true : $flashCheckout[0]['value'];
+        $noFlashCheckoutValue = $this->getNoFlashCheckoutValue($merchant);
 
         $response[Util\Constants::FLASH_CHECKOUT] = !$noFlashCheckoutValue;
 
@@ -255,14 +249,7 @@ class PaymentsGeneralConfig extends Base\Service
 
             unset($input[Util\Constants::FLASH_CHECKOUT]);
 
-            $featuresEnabled = $this->repo->feature->findMerchantWithFeatures($merchant->getId(), [Feature\Constants::NOFLASHCHECKOUT]);
-
-            $existingNoFlashCheckoutFeatureValue = false;
-
-            if (count($featuresEnabled) > 0)
-            {
-                $existingNoFlashCheckoutFeatureValue = true;
-            }
+            $existingNoFlashCheckoutFeatureValue = $this->getNoFlashCheckoutValue($merchant);
 
             if ($existingNoFlashCheckoutFeatureValue !== $noFlashCheckoutFeatureValue)
             {
@@ -308,5 +295,19 @@ class PaymentsGeneralConfig extends Base\Service
         $accountCore->updateNCFieldsAcknowledgedIfApplicable($input, $merchant);
 
         AutoUpdateMerchantProducts::dispatch(Product\Status::PRODUCT_CONFIG_SOURCE, $merchant, $merchantDetails);
+    }
+
+    private function getNoFlashCheckoutValue(Merchant\Entity $merchant): bool
+    {
+        $existingNoFlashCheckoutFeatureValue = false;
+
+        $featuresEnabled = $this->repo->feature->findMerchantWithFeatures($merchant->getId(), [Feature\Constants::NOFLASHCHECKOUT]);
+
+        if (count($featuresEnabled) > 0)
+        {
+            $existingNoFlashCheckoutFeatureValue = true;
+        }
+
+        return $existingNoFlashCheckoutFeatureValue;
     }
 }

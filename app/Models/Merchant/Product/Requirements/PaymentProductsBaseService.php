@@ -102,8 +102,6 @@ class PaymentProductsBaseService extends Base\Service
 
         else
         {
-            $this->validationFields = $this->merchantDetailCore->getValidationFields($merchantDetails, true);
-
             $requirements = $this->getRequirements($merchant, $merchantDetails, $merchantProduct);
 
             $requirements = $this->updateResolutionUrl($merchantDetails, $merchantProduct, $requirements);
@@ -183,6 +181,8 @@ class PaymentProductsBaseService extends Base\Service
      */
     public function getRequirements(Merchant\Entity $merchant, Detail\Entity $merchantDetails, Product\Entity $merchantProduct): array
     {
+        $this->validationFields = $this->merchantDetailCore->getValidationFields($merchantDetails, true);
+
         $requirements = [];
 
         $verificationResponse = [];
