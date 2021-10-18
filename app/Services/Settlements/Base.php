@@ -32,6 +32,8 @@ class Base
     const LEDGER_CRON_EXECUTION_ADD         = '/twirp/rzp.settlements.ledger_cron_execution.v1.LedgerCronExecutionService/Create';
     const LEDGER_CRON_EXECUTION_UPDATE      = '/twirp/rzp.settlements.ledger_cron_execution.v1.LedgerCronExecutionService/Update';
 
+    const OPTIMIZER_EXTERNAL_SETTLEMENTS_EXECUTION = '/twirp/rzp.settlements.optimizer_settlements.v1.ExecuteOptimizerSettlementsAPI/Execute';
+
 
     protected $trace;
 

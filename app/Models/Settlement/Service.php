@@ -1400,6 +1400,16 @@ class Service extends Base\Service
         return app('settlements_dashboard')->updateBeneName($input);
     }
 
+    /**
+     * execute optimizer settlements
+     * @param array $input
+     * @return array
+     */
+    public function optimizerExternalSettlementsExecute(array $input) : array
+    {
+        return app('settlements_api')->optimizerExternalSettlementsExecute($input);
+    }
+
     public function settlementsInitiate($input)
     {
         return app('settlements_dashboard')->settlementsInitiate($input);

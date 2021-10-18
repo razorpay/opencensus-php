@@ -760,6 +760,8 @@ class Route
         'setl_migrate_payout'                      => ['post',     'settlements/migration/migrate_to_payout',        'SettlementController@migrateToPayout'                              ],
         'setl_transfer_status_update'              => ['post',     'settlements/transfer_status_update' ,            'SettlementController@transferStatusUpdate'                         ],
         'setl_entity_download_file'                => ['post',     'settlements/entities/get_file',                  'SettlementController@getSettlementServiceEntityFile'               ],
+        'setl_optimizer_settlement_cron'           => ['post',     'settlements/optimizer/execute',                  'SettlementController@optimizerExternalSettlementsExecute'          ],
+
 
         'adj_fetch_by_id'                          => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                       => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
@@ -3873,6 +3875,9 @@ class Route
 
         'create_exec_risk_action',
         'bulk_risk_action_status_comment',
+
+        // Optimizer settlements cron
+        'setl_optimizer_settlement_cron',
 ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -10188,6 +10193,9 @@ class Route
             'refresh_payments_scheduled_downtimes_cron',
             'push_to_datalake',
             'rbl_in_progress_lead_to_sales_force',
+
+            // Optimizer settlements cron
+            'setl_optimizer_settlement_cron',
         ],
 
         'subscriptions' => [

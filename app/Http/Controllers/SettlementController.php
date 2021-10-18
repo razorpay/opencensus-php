@@ -688,6 +688,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function optimizerExternalSettlementsExecute()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->optimizerExternalSettlementsExecute($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function settlementsInitiate()
     {
         $input = Request::all();

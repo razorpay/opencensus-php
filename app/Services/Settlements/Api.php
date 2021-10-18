@@ -182,4 +182,18 @@ class Api extends Base
     {
         return $this->makeRequest(self::LEDGER_RECON_ACTIVE_MTU_UPDATE, $input, self::SERVICE_API, $mode);
     }
+
+
+    /**
+     * triggers optimizer externals settlemnts execution
+     * @param array $input
+     * @param null $mode
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function optimizerExternalSettlementsExecute(array $input, $mode = null) : array
+    {
+        return $this->makeRequest(self::OPTIMIZER_EXTERNAL_SETTLEMENTS_EXECUTION, $input, self::SERVICE_API, $mode);
+    }
 }
