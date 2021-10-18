@@ -130,15 +130,11 @@ class HyperVerge
 
     public function generateNACH(array $input, PaperMandate\Entity $paperMandate)
     {
-        $log_input = $input;
-
-        unset($log_input[ACCOUNT_NUMBER]);
-
         $this->trace->info(
             TraceCode::PAPER_MANDATE_CREATE_FORM_REQUEST_TO_HYPERVERGE,
             [
                 'paper_mandate_id' => $paperMandate->getPublicId(),
-                'input'            => $log_input
+                'input'            => $input
             ]);
 
         $headers = $this->getHeaders($paperMandate);
