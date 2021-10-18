@@ -391,6 +391,12 @@ class Route
         'merchant_bulk_update_pricing_cron'        => ['post',     'merchants/pricing/bulk/update',                  'MerchantController@bulkUpdatePricingPlanOnEligibilityCron' ],
         'merchant_pricing_bulk'                    => ['post',     'merchants/pricing/bulk',                         'MerchantController@bulkAssignPricing'                              ],
         'create_submerchant_user'                  => ['post',     'submerchant/user/{id}',                          'MerchantController@postSubMerchantUser'                            ],
+
+        // sub balance adjustment route
+        'sub_balance_adjustment'                   => ['post', 'sub_balance/adjustment',                             'AdjustmentController@subBalanceAdjustment'],
+        //sub balance creation route
+        'create_sub_balances'                      => ['post', 'create_sub_balance',                                 'SubBalanceMapController@createSubBalance'],
+
         'balance_fetch'                            => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'merchant_balance_fetch'                   => ['get',      'balances',                                       'MerchantController@getAccountBalances'                             ],
         'merchant_primary_balance_fetch'           => ['get',      'primary_balance',                                'MerchantController@getPrimaryBalance'                              ],
@@ -5390,6 +5396,8 @@ class Route
 
         // Update free_payout attributes for balance
         'update_free_payouts_attributes',
+        'create_sub_balances',
+        'sub_balance_adjustment',
 
         // Get free_payout attributes for balance
         'admin_get_free_payouts_attributes',
@@ -6429,6 +6437,8 @@ class Route
 
         // update free payout attributes
         'update_free_payouts_attributes'              => Permission::UPDATE_FREE_PAYOUTS_ATTRIBUTES,
+        'create_sub_balances'                         => Permission::PAYOUT_STATUS_UPDATE_MANUALLY,
+        'sub_balance_adjustment'                      => Permission::PAYOUT_STATUS_UPDATE_MANUALLY,
 
         // Get free_payout attributes for balance
         'admin_get_free_payouts_attributes'           => Permission::VIEW_FREE_PAYOUTS_ATTRIBUTES,
@@ -9701,6 +9711,8 @@ class Route
             'unclaimed_merchant_poc_update',
             'update_config_key',
             'update_free_payouts_attributes',
+            'create_sub_balances',
+            'sub_balance_adjustment',
             'update_late_auth_config_admin_bulk',
             'update_low_balance_config_admin',
             'update_merchant_notification_config',

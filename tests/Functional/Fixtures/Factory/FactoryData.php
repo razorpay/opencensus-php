@@ -1598,6 +1598,13 @@ final class FactoryData
             'autoload_amount'     => 0,
         ]);
 
+        $factory(\RZP\Models\Merchant\Balance\SubBalanceMap\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'merchant_id'       => '10000000000000',
+            'parent_balance_id' => $faker->uniqueid,
+            'child_balance_id'  => $faker->uniqueid
+        ]);
+
         $factory(\RZP\Models\Merchant\Credits\Balance\Entity::class, [
                                                                        'id'            => $faker->uniqueid,
                                                                        'merchant_id'   => '10000000000000',

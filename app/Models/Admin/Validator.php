@@ -176,6 +176,7 @@ class Validator extends Base\Validator
         ConfigKey::ICICI_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE                    => 'filled|integer',
         ConfigKey::PAYER_ACCOUNT_NUMBER_INVALID_REGEXES                                => 'filled|array',
         ConfigKey::ICICI_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE                    => 'filled|integer',
+        ConfigKey::SUB_BALANCES_MAP                                                    => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [

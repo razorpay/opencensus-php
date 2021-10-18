@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Models\Transfer;
 use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
@@ -193,6 +194,29 @@ class Core extends Base\Core
         return $this->reverseForTransferAndCustomerRefund($transfer, $input, $merchant->parent, $merchant);
     }
 
+    public function createTransactionFromPayoutReversalForHighTpsMerchants(Entity $reversal): Entity
+    {
+        if ($reversal->hasTransaction() === true)
+        {
+            throw new Exception\LogicException(
+                'Transaction has already been created for the reversal!',
+                ErrorCode::SERVER_ERROR_REVERSAL_TXN_ALREADY_CREATED,
+                [
+                    'reversal_id'       => $reversal->getId(),
+                    'transaction_id'    => $reversal->getTransactionId(),
+                    'transaction_type'  => $reversal->getTransactionType(),
+                ]);
+        }
+
+        $txnCore = (new Transaction\Core);
+
+        $txn = $txnCore->createFromPayoutReversal($reversal);
+
+        $this->repo->saveOrFail($txn);
+
+        return $reversal;
+    }
+
     public function createTransactionFromPayoutReversal(Entity $reversal): Entity
     {
         if ($reversal->hasTransaction() === true)
@@ -244,7 +268,28 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::PAYOUT_REVERSAL_CREATED,
             [
-                'payout_id' => $payout->getId(),
+                'payout_id'   => $payout->getId(),
+                'reversal_id' => $reversal->getId(),
+            ]);
+
+        return $reversal;
+    }
+
+    public function reverseForPayoutForHighTpsMerchants(Payout\Entity $payout): Entity
+    {
+        if ($payout->isCustomerPayout() === true)
+        {
+            $reversal = $this->reverseCustomerPayout($payout);
+        }
+        else
+        {
+            $reversal = $this->reverseMerchantPayoutForHighTps($payout);
+        }
+
+        $this->trace->info(
+            TraceCode::PAYOUT_REVERSAL_CREATED_HIGH_TPS,
+            [
+                'payout_id'   => $payout->getId(),
                 'reversal_id' => $reversal->getId(),
             ]);
 
@@ -488,6 +533,33 @@ class Core extends Base\Core
 
             (new Transaction\Core)->dispatchEventForTransactionCreated($reversal->transaction);
         }
+
+        $this->repo->saveOrFail($reversal);
+
+        return $reversal;
+    }
+
+    private function reverseMerchantPayoutForHighTps(Payout\Entity $payout): Entity
+    {
+        $amount = $payout->getAmount() + $payout->getFees();
+
+        $reversalInput = [
+            Entity::AMOUNT   => $amount,
+            Entity::CURRENCY => $payout->getCurrency(),
+            Entity::UTR      => ($payout->getReturnUtr() ?? $payout->getUtr()),
+        ];
+
+        $reversal = $this->create($reversalInput);
+
+        $reversal->setChannel($payout->getChannel());
+
+        $reversal->merchant()->associate($payout->merchant);
+
+        $reversal->entity()->associate($payout);
+
+        $reversal->balance()->associate($payout->balance);
+
+        $reversal = $this->createTransactionFromPayoutReversalForHighTpsMerchants($reversal);
 
         $this->repo->saveOrFail($reversal);
 

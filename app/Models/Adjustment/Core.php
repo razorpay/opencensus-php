@@ -478,4 +478,161 @@ class Core extends Base\Core
             return Ledger\Adjustment::NEGATIVE_ADJUSTMENT_PROCESSED;
         }
     }
+
+    public function createAdjustmentForSubBankingBalance(array $input, Merchant\Entity $merchant): Entity
+    {
+        $this->trace->info(
+            TraceCode::ADJUSTMENT_CREATE_REQUEST_FOR_SUB_BALANCES,
+            [
+                'input'    => $input,
+                'merchant' => $merchant->getId()
+            ]);
+
+        // Create input for adjustment
+        $adjInput = $input;
+
+        // Checking validations on input array
+        (new Validator)->validateInput(Validator::SUB_BANKING_BALANCE_ADJUSTMENT_CREATE, $input);
+
+        /** @var Balance\Entity $balance */
+        $balance = $this->repo->balance->findByIdAndMerchant($input[self::BALANCE_ID], $merchant);
+
+        $balanceType = $balance->getType();
+
+        // check balance is of type: principal, charge, interest
+        if ($balanceType !== Balance\Type::BANKING)
+        {
+            throw new Exception\BadRequestValidationFailureException('invalid balance type: '.
+                                                                     $balance->getType(), self::BALANCE_ID, $balance->toArrayPublic());
+        }
+
+        unset($adjInput[self::BALANCE_ID]);
+
+        $adj = (new Adjustment\Entity)->build($adjInput);
+
+        $adj->balance()->associate($balance);
+
+        /** @var Entity|null $adjustment */
+        $adjustment = null;
+
+        if (isset($input[Entity::AMOUNT]) === true)
+        {
+            // Creating adjustment only, since no invoice record is reqd
+            $adjustment = $this->createAdjInTransactionWithoutNotification($adj, $merchant);
+
+            $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_SUCCESSFULL,
+                               [
+                                   'adjustment transaction'  => $adjustment,
+                                   'balance_type'             => $balanceType,
+                                   'merchant_id'              => $merchant->getMerchantId()
+                               ]
+            );
+        }
+
+        $this->processLedgerAdjustment($adjustment);
+
+        $this->trace->info(
+            TraceCode::ADJUSTMENT_CREATE_RESPONSE_SUB_BALANCE,
+            [
+                'input'      => $input,
+                'merchant'   => $merchant->getId(),
+                'adjustment' => $adjustment->toArrayPublic(),
+            ]);
+
+        return $adjustment;
+    }
+
+    public function subBalanceAdjustment(array $input, Merchant\Entity $merchant)
+    {
+        try
+        {
+            $sourceAdInput = $input;
+
+            $sourceAdInput[Entity::BALANCE_ID] = $sourceAdInput[Entity::SOURCE_BALANCE_ID];
+
+            $sourceAdInput[Entity::AMOUNT] = -1 * $sourceAdInput[Entity::AMOUNT];
+
+            unset($sourceAdInput[Entity::SOURCE_BALANCE_ID]);
+            unset($sourceAdInput[Entity::DESTINATION_BALANCE_ID]);
+
+            $destinationAdjustmentInput = $input;
+
+            $destinationAdjustmentInput[Entity::BALANCE_ID] = $destinationAdjustmentInput[Entity::DESTINATION_BALANCE_ID];
+
+            unset($destinationAdjustmentInput[Entity::SOURCE_BALANCE_ID]);
+            unset($destinationAdjustmentInput[Entity::DESTINATION_BALANCE_ID]);
+
+            [$sourceAdjustment, $destinationAdjustment] = $this->repo->transaction(function() use ($sourceAdInput, $destinationAdjustmentInput, $merchant) {
+
+                $sourceAdjustment = $this->createAdjustmentForSubBankingBalance($sourceAdInput, $merchant);
+
+                $this->trace->info(
+                    TraceCode::ADJUSTMENT_CREATED_FOR_SOURCE_BALANCE_ID,
+                    [
+                        'source_adjustment_input' => $sourceAdInput,
+                        'merchant'                => $merchant->getId(),
+                        'source_adjustment'       => $sourceAdjustment->toArrayPublic(),
+                    ]);
+
+                $destinationAdjustment = $this->createAdjustmentForSubBankingBalance($destinationAdjustmentInput, $merchant);
+
+                return [$sourceAdjustment, $destinationAdjustment];
+            });
+        }
+        catch (\Throwable $exception)
+        {
+            throw $exception;
+        }
+
+        $this->trace->info(
+            TraceCode::ADJUSTMENT_BETWEEN_BALANCE_CREATE_RESPONSE,
+            [
+                'input'                  => $input,
+                'merchant'               => $merchant->getId(),
+                'source_adjustment'      => $sourceAdjustment->toArrayPublic(),
+                'destination_adjustment' => $destinationAdjustment->toArrayPublic()
+            ]);
+
+        return [
+            'source_adjustment'      => $sourceAdjustment->toArrayPublic(),
+            'destination_adjustment' => $destinationAdjustment->toArrayPublic()
+        ];
+    }
+
+    protected function createAdjInTransactionWithoutNotification($adj, $merchant): Entity
+    {
+        $this->repo->assertTransactionActive();
+
+        // set channel if not set already from input
+        if ($adj->getChannel() === null)
+        {
+            if ($adj->isBalanceTypeBanking() === true)
+            {
+                // TODO : Remove second condition later
+                $channel = $adj->balance->getChannel() ?? BankingChannel::YESBANK;
+
+                $adj->setChannel($channel);
+            }
+            else
+            {
+                $adj->setChannel($merchant->getChannel());
+            }
+        }
+
+        $adj->merchant()->associate($merchant);
+
+        $this->repo->saveOrFail($adj);
+
+        $txn = (new Transaction\Core)->createFromAdjustment($adj);
+
+        $this->repo->saveOrFail($txn);
+
+        $this->repo->saveOrFail($adj);
+
+        $this->trace->info(
+            TraceCode::ADJUSTMENT_CREATE_SUCCESS,
+            $adj->toArrayPublic());
+
+        return $adj;
+    }
 }

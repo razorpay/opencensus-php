@@ -484,6 +484,18 @@ class Core extends Base\Core
                 break;
 
             case Status::REVERSED:
+                if (($payout->isBalanceAccountTypeShared() === true) and
+                    ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === true))
+                {
+                    // this is only on shared account
+                    $this->handlePayoutReversedForHighTpsMerchants($payout,
+                                                                   $ftaFailureReason,
+                                                                   $ftaBankStatusCode,
+                                                                   null,
+                                                                   $ftsSourceAccountInformation);
+                    break;
+                }
+
                 $this->handlePayoutReversed($payout, $ftaFailureReason, $ftaBankStatusCode, null, $ftsSourceAccountInformation);
                 break;
 
@@ -959,6 +971,7 @@ class Core extends Base\Core
             $payoutId,
             function() use ($payoutId, $queueFlag)
             {
+                /** @var Entity $payout */
                 $payout = $this->repo->payout->findOrFail($payoutId);
 
                 $payout->getValidator()->validatePostCreateProcessPayout();
@@ -973,6 +986,92 @@ class Core extends Base\Core
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
+    public function processPayoutPostCreateLowPriority(string $payoutId, bool $queueFlag)
+    {
+        return $this->mutex->acquireAndRelease(
+            $payoutId,
+            function() use ($payoutId, $queueFlag)
+            {
+                /** @var Entity $payout */
+                $payout = $this->repo->payout->findOrFail($payoutId);
+
+                $payout = $this->setSubBalance($payout);
+
+                $payout->getValidator()->validatePostCreateProcessPayout();
+
+                $payout = $this->getProcessor('fund_account_payout')
+                               ->setMerchant($payout->merchant)
+                               ->processPayoutPostCreate($payout, $queueFlag);
+
+                $this->processLedgerPayout($payout);
+
+                return $payout;
+            },
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
+    // This is a feature for high tps merchants. A single merchant can have multiple sub balance (entity of type balance)
+    // apart from main balance entity. We will pick one of the sub balance from sub balance map and associate it to the payout.
+    // Transaction will also have sub balance id as balance id.
+    public function setSubBalance(Entity $payout)
+    {
+        $subBalances = (new Balance\SubBalanceMap\Core)->getSubBalancesForParentBalance($payout->getBalanceId());
+
+        if (count($subBalances) === 0)
+        {
+            return $payout;
+        }
+
+        /** @var Merchant\Balance\SubBalanceMap\Entity $subBalanceToFix */
+        $subBalanceToFix = $this->pickSubBalanceFromMap($payout, $subBalances);
+
+        $payout->setAttribute(Entity::BALANCE_ID, $subBalanceToFix);
+
+        return $payout;
+    }
+
+    public function pickSubBalanceFromMap(Entity $payout, $subBalances)
+    {
+        $redis = $this->app['redis']->connection();
+
+        $redisKey = "round_robin_" . $payout->getBalanceId();
+
+        try
+        {
+            // Picking a sub balance from available sub balances in round robin fashion.
+            $value = $redis->incr($redisKey);
+
+            $balanceNumber = $value % count($subBalances);
+
+            if ($value == 4000000)
+            {
+                $redis->decrby($redisKey, 4000000);
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            // If redis in round robin fails then randomly a sub balance is picked.
+            $balanceNumber = rand(0,count($subBalances)-1);
+
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::SUB_BALANCE_MAP_ROUND_ROBIN_FAILURE,
+                []);
+        }
+
+        $this->trace->info(TraceCode::SUB_BALANCE_MAP_PAYOUT_BALANCE_ID, [
+            'payout_id'         => $payout->getId(),
+            Entity::MERCHANT_ID => $payout->getMerchantId(),
+            Entity::BALANCE_ID  => $payout->getBalanceId(),
+            'child_balance_id'  => $subBalances[$balanceNumber],
+            'balance_number'    => $balanceNumber
+        ]);
+
+        return $subBalances[$balanceNumber];
     }
 
     public function processScheduledPayout(string $payoutId): Entity
@@ -2369,6 +2468,26 @@ class Core extends Base\Core
         $this->processLedgerPayout($payout, $reversal, $ftsSourceAccountInformation, $previousStatus);
     }
 
+    public function handlePayoutReversedForHighTpsMerchants(Entity $payout,
+                                         string $ftaFailureReason = null,
+                                         string $ftaBankStatusCode = null,
+                                         $credit_bas = null,
+                                         array $ftsSourceAccountInformation = [])
+    {
+        $reversal = null;
+
+        $previousStatus = $payout->getStatus();
+
+        // will be removed after new error object is released.
+        $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
+
+        $this->reversePayoutForHighTpsMerchants($payout, $ftaFailureReason, $ftaBankStatusCode, $credit_bas, $reversal);
+
+        $this->app->events->dispatch('api.payout.reversed', [$payout]);
+
+        $this->processLedgerPayout($payout, $reversal, $ftsSourceAccountInformation, $previousStatus);
+    }
+
     protected function handlePayoutFailed(Entity $payout,
                                           string $ftaFailureReason = null,
                                           string $ftaBankStatusCode = null,
@@ -2577,6 +2696,65 @@ class Core extends Base\Core
                         {
                             (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout, $previousStatus, $reversal);
                         }
+
+                        $this->repo->saveOrFail($payout);
+
+                        return $reversal;
+                    });
+            },
+            self::PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
+    }
+
+    public function reversePayoutForHighTpsMerchants(Entity $payout,
+                                                     string $reverseReason = null,
+                                                     $ftaBankStatusCode = null,
+                                                     $credit_bas = null,
+                                                     Reversal\Entity &$reversal = null)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_REVERSAL_INITIATED_HIGH_TPS,
+            [
+                'payout_id' => $payout->getId(),
+            ]);
+
+        // Keeping the mutex TTL high while updating the payout to reversed.
+        // This is to ensure that the process that is working on the payout
+        // resource, releases mutex on the payout only once all entities are
+        // saved in the database.
+        $this->mutex->acquireAndRelease(
+            'reversal_payout_id_' . $payout->getId(),
+            function () use ($payout, $reverseReason, $ftaBankStatusCode, $credit_bas, &$reversal)
+            {
+                // reloading the payout here to ensure if any other process
+                // gets a mutex on payout resource, it gets a fresh copy
+                // of payout to work.
+                $this->repo->reload($payout);
+
+                if ($payout->isStatusReversed() === true)
+                {
+                    $this->trace->info(TraceCode::PAYOUT_ALREADY_REVERSED,
+                                       [
+                                           'payout_id'      => $payout->getId(),
+                                           'status'         => $payout->getStatus(),
+                                           'reverse_reason' => $reverseReason,
+                                       ]);
+
+                    return;
+                }
+
+                $reversal = $this->repo->transaction(
+                    function() use ($payout, $reverseReason, $ftaBankStatusCode, $credit_bas) {
+                        $reversal = (new Reversal\Core)->reverseForPayoutForHighTpsMerchants($payout);
+
+                        $payout->setFailureReason($reverseReason);
+
+                        $payout->setStatusCode($ftaBankStatusCode);
+
+                        $previousStatus = $payout->getStatus();
+
+                        $payout->setStatus(Status::REVERSED);
 
                         $this->repo->saveOrFail($payout);
 

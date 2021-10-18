@@ -208,4 +208,23 @@ class Service extends Base\Service
     {
         return $this->core()->splitAdjustments($input);
     }
+
+    public function subBalanceAdjustment(array $input)
+    {
+        $this->trace->info(
+            TraceCode::ADJUSTMENT_BETWEEN_BANKING_BALANCE_CREATE_REQUEST,
+            [
+                'input' => $input
+            ]);
+
+        (new Validator)->validateInput(Validator::ADJUSTMENT_BETWEEN_BALANCES, $input);
+
+        $merchantId = $input[Entity::MERCHANT_ID];
+        unset($input[Entity::MERCHANT_ID]);
+        unset($input[Entity::TYPE]);
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        return $this->core()->subBalanceAdjustment($input, $merchant);
+    }
 }

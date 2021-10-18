@@ -260,6 +260,8 @@ class ConfigKey
 
     const ASYNC_ESCALATION_HANDLING_ENABLED = self::PREFIX . 'async_escalation_handling_enabled';
 
+    const SUB_BALANCES_MAP = self::PREFIX . 'sub_balance_map';
+
     const PUBLIC_KEYS = [
         self::ASYNC_ESCALATION_HANDLING_ENABLED,
         self::TERMINAL_SELECTION_LOG_VERBOSE,
@@ -371,6 +373,7 @@ class ConfigKey
         self::RBL_STATEMENT_FETCH_V2_API_MAX_RECORDS,
         self::PAYER_ACCOUNT_NUMBER_INVALID_REGEXES,
         self::RBL_CA_BALANCE_UPDATE_LIMITS,
+        self::SUB_BALANCES_MAP,
     ];
 
     const REDIS_CONFIG_MAP = [

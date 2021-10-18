@@ -3615,7 +3615,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
     }
-    
+
     public function testGetPayoutsForReferenceId()
     {
         $this->createEsIndex();
@@ -14142,15 +14142,38 @@ class PayoutTest extends OAuthTestCase
     public function testProcessingOfCreateRequestSubmittedPayoutForHighTps()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT]);
+
         $this->testCreatePayoutForRequestSubmitted();
 
         $payout = $this->getDbLastEntity('payout');
         $balance = $this->getDbEntityById('balance', $this->bankingBalance->getId());
 
+        $request = [
+            'url'     => '/create_sub_balance',
+            'method'  => 'post',
+            'content' => [
+                'parent_balance_id'   => $payout->getBalanceId(),
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        /** @var Balance\Entity $subBalance */
+        $subBalance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->edit('balance', $subBalance->getId(), ['balance' => $this->bankingBalance->getBalance()]);
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => 0]);
+
+        $subBalance->reload();
+
+        /** @var Balance\SubBalanceMap\Entity $subBalanceMap */
+        $subBalanceMap = $this->getDbLastEntity('sub_balance_map');
+
         // Manually pushing into the queue because this is the only way to do this.
         // Keeping the queueFlag as false for this test.
         // Payout should get processed since merchant has enough balance
-        PayoutPostCreateProcess::dispatch('test', $payout->getId(), 'false');
+        PayoutPostCreateProcessLowPriority::dispatch('test', $payout->getId(), 'false');
 
         /** @var PayoutsIntermediateTransactions\Entity $intermediateTxn */
         $intermediateTxn = $this->getDbLastEntity(Constants\Entity::PAYOUTS_INTERMEDIATE_TRANSACTIONS);
@@ -14161,21 +14184,21 @@ class PayoutTest extends OAuthTestCase
         /** @var TransactionEntity $txn */
         $txn = $this->getDbLastEntity(Constants\Entity::TRANSACTION);
 
-        /** @var Balance\Entity $balanceAfter */
-        $balanceAfter = $this->getDbEntityById('balance', $this->bankingBalance->getId());
+        /** @var Balance\Entity $subBalanceAfter */
+        $subBalanceAfter = $this->getDbEntityById('balance', $subBalance->getId());
 
         /** @var Payout\Entity $payout */
         $payout->reload();
 
         // assertions on balance_id
-        $this->assertEquals($balanceAfter->getId(), $payout->getBalanceId());
+        $this->assertEquals($subBalanceAfter->getId(), $payout->getBalanceId());
         $this->assertEquals($payout->getBalanceId(), $txn->getBalanceId());
 
         // assertions on closing balance
-        $this->assertEquals($balanceAfter->getBalance(),
-                            $balance->getBalance() - $payout->getAmount() - $payout->getFees());
-        $this->assertEquals($balanceAfter->getBalance(), $txn->getBalance());
-        $this->assertEquals($balanceAfter->getBalance(), $intermediateTxn->getClosingBalance());
+        $this->assertEquals($subBalanceAfter->getBalance(),
+                            $subBalance->getBalance() - $payout->getAmount() - $payout->getFees());
+        $this->assertEquals($subBalanceAfter->getBalance(), $txn->getBalance());
+        $this->assertEquals($subBalanceAfter->getBalance(), $intermediateTxn->getClosingBalance());
         $this->assertEquals($intermediateTxn->getClosingBalance(), $txn->getBalance());
 
         // assertions on payout intermediate transactions
@@ -14373,5 +14396,83 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('reversed', $payout['internal_status']);
         $this->assertEquals('reversed', $publicResponse['status']);
         $this->assertNotNull($payout['reversed_at']);
+    }
+
+    // fts returns with failed status
+    public function testCreateRequestSubmittedPayoutForHighTpsWithReversal()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT]);
+        $this->testCreatePayoutForRequestSubmitted();
+
+        $payout = $this->getDbLastEntity('payout');
+        $balance = $this->getDbEntityById('balance', $this->bankingBalance->getId());
+
+        // Manually pushing into the queue because this is the only way to do this.
+        // Keeping the queueFlag as false for this test.
+        // Payout should get processed since merchant has enough balance
+        PayoutPostCreateProcess::dispatch('test', $payout->getId(), 'false');
+
+        $this->fixtures->edit('payout', $payout->getId(), ['status' => 'initiated']);
+
+        $this->expectWebhookEvent('payout.reversed');
+
+        $this->updateFtaAndSource($payout->getId(), Status::FAILED);
+
+        /** @var PayoutsIntermediateTransactions\Entity $intermediateTxn */
+        $intermediateTxn = $this->getDbLastEntity(Constants\Entity::PAYOUTS_INTERMEDIATE_TRANSACTIONS);
+
+        /** @var ReversalEntity $reversal */
+        $reversal = $this->getDbLastEntity(Constants\Entity::REVERSAL);
+
+        /** @var TransactionEntity $payoutTxn */
+        $payoutTxn = $this->getDbEntity(Constants\Entity::TRANSACTION, ['type' => 'payout']);
+        $reversalTxn = $this->getDbEntity(Constants\Entity::TRANSACTION, ['type' => 'reversal']);
+
+        /** @var Balance\Entity $balanceAfter */
+        $balanceAfter = $this->getDbEntityById('balance', $this->bankingBalance->getId());
+
+        /** @var Payout\Entity $payout */
+        $payout->reload();
+
+        // assertions on balance_id
+        $this->assertEquals($balanceAfter->getId(), $payout->getBalanceId());
+        $this->assertEquals($payout->getBalanceId(), $payoutTxn->getBalanceId());
+
+        // assertions on closing balance
+        $this->assertEquals($balanceAfter->getBalance(), $balance->getBalance());
+        $this->assertEquals($balanceAfter->getBalance(), $reversalTxn->getBalance());
+        $this->assertNotEquals($balanceAfter->getBalance(), $intermediateTxn->getClosingBalance());
+        $this->assertEquals($intermediateTxn->getClosingBalance(), $payoutTxn->getBalance());
+
+        // assertions on payout intermediate transactions
+        $this->assertEquals(PayoutsIntermediateTransactions\Status::COMPLETED, $intermediateTxn->getStatus());
+        $this->assertNotNull($intermediateTxn->getAttribute(PayoutsIntermediateTransactions\Entity::PENDING_AT));
+        $this->assertNotNull($intermediateTxn->getAttribute(PayoutsIntermediateTransactions\Entity::COMPLETED_AT));
+        $this->assertNull($intermediateTxn->getAttribute(PayoutsIntermediateTransactions\Entity::REVERSED_AT));
+
+        // assertions on id
+        $this->assertEquals($payoutTxn->getId(), $payout->getTransactionId());
+        $this->assertEquals($payoutTxn->getId(), $intermediateTxn->getTransactionId());
+        $this->assertEquals($payout->getId(), $intermediateTxn->payout->getId());
+        $this->assertEquals('payout', $payoutTxn->getType());
+
+        // assertions on amount and fees and pricing rule id
+        $this->assertEquals($payout->getAmount() + $payout->getFees(), $payoutTxn->getAmount());
+        $this->assertEquals($payout->getFees(), $payoutTxn->getFee());
+        $this->assertEquals($payout->getTax(), $payoutTxn->getTax());
+        $this->assertEquals($payout->getAmount() + $payout->getFees(), $intermediateTxn->getAmount());
+        $this->assertNotNull($payout->getPricingRuleId());
+
+        $publicResponse = $payout->toArrayPublic();
+
+        // assertions on final status
+        $this->assertEquals('reversed', $payout['internal_status']);
+        $this->assertEquals('reversed', $publicResponse['status']);
+        $this->assertNotNull($payout['reversed_at']);
+
+        $this->assertEquals($payout->getId(), $reversal->getEntityId());
+        $this->assertEquals('payout', $reversal->getEntityType());
+        $this->assertEquals($payout->getAmount() + $payout->getFees(), $reversal->getAmount());
     }
 }

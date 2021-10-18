@@ -293,8 +293,6 @@ class Core extends Base\Core
 
         $this->repo->saveOrFailWithoutEsSync($fundAccount);
 
-        $this->createFTSAccountForFundAccount($input, $fundAccount, $contact);
-
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATED_FOR_COMPOSITE_PAYOUT,
                            [
                                E::FUND_ACCOUNT => $fundAccount->getId(),

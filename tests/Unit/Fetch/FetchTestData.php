@@ -602,6 +602,8 @@ return [
 
     E::PAYOUTS_INTERMEDIATE_TRANSACTIONS => [],
 
+    E::SUB_BALANCE_MAP => [],
+
     E::ORDER => [],
 
     E::P2P_DEVICE => [

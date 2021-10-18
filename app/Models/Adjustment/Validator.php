@@ -18,6 +18,10 @@ class Validator extends Base\Validator
 {
     const FEES = 'fees';
 
+    const SUB_BANKING_BALANCE_ADJUSTMENT_CREATE = 'sub_banking_balance_adjustment_create';
+
+    const ADJUSTMENT_BETWEEN_BALANCES = 'adjustment_between_balances';
+
     // This is the maximum balance supported in reserve balance.
     // If user tries to add balance > 50,000 INR, this will throw exception and balance will not be added.
     // This limit is there for both reserve_primary and reserve_banking balance types.
@@ -34,6 +38,25 @@ class Validator extends Base\Validator
         Entity::CURRENCY      => 'required|in:INR',
         Entity::DESCRIPTION   => 'required|min:10|max:255',
         Entity::SETTLEMENT_ID => 'sometimes|size:14',
+    ];
+
+    protected static $subBankingBalanceAdjustmentCreateRules = [
+        Entity::AMOUNT        => 'required|integer',
+        Entity::CHANNEL       => 'sometimes|string|max:32|custom',
+        Entity::CURRENCY      => 'required|in:INR',
+        Entity::DESCRIPTION   => 'required|min:10|max:255',
+        Entity::BALANCE_ID    => 'required|size:14'
+    ];
+
+    protected static $adjustmentBetweenBalancesRules = [
+        Entity::AMOUNT                 => 'required|integer',
+        Entity::CHANNEL                => 'sometimes|string|max:32|custom',
+        Entity::TYPE                   => 'required|in:banking',
+        Entity::CURRENCY               => 'required|in:INR',
+        Entity::DESCRIPTION            => 'required|min:10|max:255',
+        Entity::MERCHANT_ID            => 'required|size:14',
+        Entity::SOURCE_BALANCE_ID      => 'required|size:14',
+        Entity::DESTINATION_BALANCE_ID => 'required|size:14'
     ];
 
     protected static $feeAdjustmentRules = [

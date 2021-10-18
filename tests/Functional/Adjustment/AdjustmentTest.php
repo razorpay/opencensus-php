@@ -9,14 +9,15 @@ use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Transaction\Adjustment;
 use RZP\Models\Merchant\Balance\Type;
-use RZP\Models\Merchant\Balance\Entity;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Mail\Banking\YesbankLoadViaAdjustment;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Merchant\NegativeBalanceThresholdAlert;
+use RZP\Models\Adjustment\Entity as AdjustmentEntity;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Mail\Merchant\ReserveBalanceActivate as ReserveBalanceActivateMail;
 
 class AdjustmentTest extends TestCase
@@ -1135,9 +1136,9 @@ class AdjustmentTest extends TestCase
         Mail::fake();
 
         $balancefixture = $this->fixtures->create('balance', [
-            Entity::MERCHANT_ID => '100abc000abc00',
-            Entity::TYPE        => Type::PRINCIPAL,
-            Entity::BALANCE     => 100000,
+            BalanceEntity::MERCHANT_ID => '100abc000abc00',
+            BalanceEntity::TYPE        => Type::PRINCIPAL,
+            BalanceEntity::BALANCE     => 100000,
         ]);
 
         $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balancefixture['id'];
@@ -1178,5 +1179,75 @@ class AdjustmentTest extends TestCase
         $this->assertEquals($balanceId, $transaction['balance_id']);
 
         $this->assertNotNull($transaction['posted_at']);
+    }
+
+    public function testAdjustmentBetweenSubBalance()
+    {
+        Mail::fake();
+
+        $this->fixtures->create(
+            'balance',
+            [
+                'id'           => 'xbalancesource',
+                'balance'      => 10000,
+                'type'         => 'banking',
+                'account_type' => 'shared',
+                'merchant_id'  => '10000000000000'
+            ]
+        );
+
+        $this->fixtures->create(
+            'balance',
+            [
+                'id'           => 'xbalancedestin',
+                'balance'      => 10000,
+                'type'         => 'banking',
+                'account_type' => 'shared',
+                'merchant_id'  => '10000000000000'
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/sub_balance/adjustment',
+            'content'   => [
+                "amount"                 => "1000",
+                "type"                   => "banking",
+                "currency"               => "INR",
+                "description"            => "kurama is dead",
+                "merchant_id"            => "10000000000000",
+                "source_balance_id"      => "xbalancesource",
+                "destination_balance_id" => "xbalancedestin"
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        /** @var AdjustmentEntity $sourceAdjustment */
+        $sourceAdjustment = $this->getDbEntityById('adjustment', $response['source_adjustment']['id']);
+        $destinationAdjustment = $this->getDbEntityById('adjustment', $response['destination_adjustment']['id']);
+
+        /** @var BalanceEntity $sourceBalance */
+        $sourceBalance = $this->getDbEntityById('balance', 'xbalancesource');
+
+        /** @var BalanceEntity $destinationBalance */
+        $destinationBalance = $this->getDbEntityById('balance', 'xbalancedestin');
+
+        $this->assertEquals(9000, $sourceBalance->getBalance());
+        $this->assertEquals(11000, $destinationBalance->getBalance());
+
+        $this->assertEquals(-1000, $sourceAdjustment->getAmount());
+        $this->assertEquals(1000, $destinationAdjustment->getAmount());
+
+        $this->assertEquals($sourceAdjustment->transaction->getDebit(), $destinationAdjustment->transaction->getCredit());
+        $this->assertEquals(0, $sourceAdjustment->transaction->getCredit());
+        $this->assertEquals(0, $destinationAdjustment->transaction->getDebit());
+
+        $this->assertEquals('xbalancesource' ,$sourceAdjustment->getBalanceId());
+        $this->assertEquals('xbalancedestin' ,$destinationAdjustment->getBalanceId());
+        $this->assertEquals('xbalancesource', $sourceAdjustment->transaction->getBalanceId());
+        $this->assertEquals('xbalancedestin', $destinationAdjustment->transaction->getBalanceId());
     }
 }

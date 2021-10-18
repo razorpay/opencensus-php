@@ -467,6 +467,7 @@ class Base extends BaseCore
                                    'payout_id'   => $payout->getId(),
                                    'fta_id'      => $fta->getId(),
                                    'merchant_id' => $payout->getMerchantId(),
+                                   'current_time' => microtime(true),
                                ]);
 
             $transferService = App::getFacadeRoot()['fts_fund_transfer'];
@@ -501,6 +502,7 @@ class Base extends BaseCore
                     'fta_id'      => $fta->getId(),
                     'merchant_id' => $payout->getMerchantId(),
                     'response'    => $ftsResponse,
+                    'current_time' => microtime(true),
                 ]);
         }
         catch (\Throwable $exception)
@@ -1130,16 +1132,19 @@ class Base extends BaseCore
             }
             else
             {
-                $payoutType = $this->getPayoutType();
-
-                $processor = (new Payout\Core)->getProcessor($payoutType);
-
-                $processor->fireEventForPayoutStatus($payout);
-
-                if (($payout->isStatusBeforeCreate() === false) and
-                    ($payout->getBalanceAccountType() === AccountType::SHARED))
+                if ($highTPSCompositePayoutFlag === false)
                 {
-                    (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+                    $payoutType = $this->getPayoutType();
+
+                    $processor = (new Payout\Core)->getProcessor($payoutType);
+
+                    $processor->fireEventForPayoutStatus($payout);
+
+                    if (($payout->isStatusBeforeCreate() === false) and
+                        ($payout->getBalanceAccountType() === AccountType::SHARED))
+                    {
+                        (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+                    }
                 }
             }
         }

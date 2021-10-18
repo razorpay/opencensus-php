@@ -30,6 +30,10 @@ class Entity extends Base\PublicEntity
     const FEES              = 'fees';
     const TYPE              = 'type';
 
+    // for Sub balance
+    const SOURCE_BALANCE_ID      = 'source_balance_id';
+    const DESTINATION_BALANCE_ID = 'destination_balance_id';
+
     protected static $sign = 'adj';
 
     protected $entity = 'adjustment';

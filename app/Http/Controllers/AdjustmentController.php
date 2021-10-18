@@ -68,4 +68,13 @@ class AdjustmentController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function subBalanceAdjustment()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->subBalanceAdjustment($input);
+
+        return ApiResponse::json($data);
+    }
 }

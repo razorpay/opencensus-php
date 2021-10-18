@@ -165,6 +165,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Dispute\Repository                                $dispute
  * @property Models\Payout\PayoutsIntermediateTransactions\Repository $payouts_intermediate_transactions;
  * @property Models\Emi\Repository                                    $emi_plan
+ * @property Models\Merchant\Balance\SubBalanceMap\Repository         $sub_balance_map
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

@@ -1681,6 +1681,9 @@ class AdminFetch
                 ]
             ],
 
+            Entity::SUB_BALANCE_MAP => [
+            ],
+
             Entity::EXTERNAL => [
                 External\Entity::MERCHANT_ID => Fetch::FIELD_MERCHANT_ID,
                 External\Entity::TRANSACTION_ID => [

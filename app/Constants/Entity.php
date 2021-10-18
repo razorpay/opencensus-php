@@ -173,6 +173,7 @@ class Entity
     const LOW_BALANCE_CONFIG           = 'low_balance_config';
     const MERCHANT_NOTIFICATION_CONFIG = 'merchant_notification_config';
     const VIRTUAL_ACCOUNT_PRODUCTS     = 'virtual_account_products';
+    const SUB_BALANCE_MAP              = 'sub_balance_map';
 
     const PAYOUTS_INTERMEDIATE_TRANSACTIONS = 'payouts_intermediate_transactions';
 
@@ -796,6 +797,7 @@ class Entity
         self::UPI_MANDATE                       => \RZP\Models\UpiMandate::class,
         self::CARD_MANDATE                      => \RZP\Models\CardMandate::class,
         self::CARD_MANDATE_NOTIFICATION         => \RZP\Models\CardMandate\CardMandateNotification::class,
+        self::SUB_BALANCE_MAP                   => \RZP\Models\Merchant\Balance\SubBalanceMap::class,
 
         self::BANKING_ACCOUNT_STATEMENT_DETAILS => \RZP\Models\BankingAccountStatement\Details::class,
 

@@ -42,9 +42,11 @@ class PayoutPostCreateProcessLowPriority extends Job
             TraceCode::PAYOUT_CREATE_SUBMITTED_INITIATE_REQUEST_LOW_PRIORITY,
                      $traceData);
 
+        $startTime = microtime(true);
+
         try
         {
-            (new Payout\Core)->processPayoutPostCreate($this->payoutId, $this->queueFlag);
+            (new Payout\Core)->processPayoutPostCreateLowPriority($this->payoutId, $this->queueFlag);
 
             $this->delete();
         }
@@ -58,6 +60,14 @@ class PayoutPostCreateProcessLowPriority extends Job
 
             $this->checkRetry();
         }
+
+        $this->trace->info(
+            TraceCode::PAYOUT_CREATE_SUBMITTED_RESPONSE_LOW_PRIORITY,
+            [
+                'worker_start_taken' => $startTime,
+                'worker_end_time'    => microtime(true)
+            ]);
+
     }
 
     protected function checkRetry()
