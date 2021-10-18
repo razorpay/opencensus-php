@@ -4189,6 +4189,59 @@ class BankingAccountTest extends TestCase
         return $bankingAccount;
     }
 
+    public function testCreateBankingAccountActivationCallLog(array $bankingAccount = null, string $finalStatus = null, string $finalSubStatus = null)
+    {
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        if ($bankingAccount === null){
+            $attribute = ['activation_status' => 'activated'];
+
+            $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+            $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+            $bankingAccount = $this->createBankingAccount();
+        }
+
+        $finalStatus    = $finalStatus ?:'picked';
+        $finalSubStatus = $finalSubStatus ?: Status::CONNECTIVITY__ASKED_TO_CALL_LATER;
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'method'  => 'PATCH',
+                'content' => [
+                    RZP\Models\BankingAccount\Entity::STATUS     => $finalStatus,
+                    RZP\Models\BankingAccount\Entity::SUB_STATUS => $finalSubStatus,
+                    'activation_detail'                          => [
+                        'call_log' => [
+                            'date_and_time'           => '1631008860',
+                            'follow_up_date_and_time' => '1641008860'
+                        ],
+                        'comment'  => [
+                            'source_team'      => 'ops',
+                            'added_at'         => '1631008860',
+                            'comment'          => 'this is a comment from Ops team',
+                            'source_team_type' => 'internal',
+                            'type'             => 'internal'
+                        ]
+                    ]
+                ]
+            ],
+            'response' => [
+                'content' => [
+                    RZP\Models\BankingAccount\Entity::STATUS => $finalStatus,
+                ],
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+
+        return $bankingAccount;
+    }
+
 
     public function testUpdateActivationDetail(RZP\Models\BankingAccount\Entity $bankingAccount = null)
     {
@@ -4583,6 +4636,58 @@ class BankingAccountTest extends TestCase
         $dataToReplace = [
             'request'  => [
                 'url'     => '/banking_accounts/activation/' . $bankingAccount['id'] . '/comments?expand[]=admin',
+                'method'  => 'GET',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testGetBankingAccountActivationCallLog()
+    {
+        $bankingAccount = $this->testCreateBankingAccountActivationCallLog();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/activation/' . $bankingAccount['id'] . '/call_logs?expand[]=comment&expand[]=admin&expand[]=state_log',
+                'method'  => 'GET',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testGetBankingAccountActivationCallLogForMoreThanOne()
+    {
+        $bankingAccount = $this->testCreateBankingAccountActivationCallLog();
+
+        $bankingAccount = $this->testCreateBankingAccountActivationCallLog($bankingAccount, Status::PICKED, Status::CONNECTIVITY__DISCONNECTED_THE_CALL);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/activation/' . $bankingAccount['id'] . '/call_logs?expand[]=comment&expand[]=admin&expand[]=state_log',
+                'method'  => 'GET',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testGetBankingAccountActivationCallLogForMoreThanOneForSameStatus()
+    {
+        $bankingAccount = $this->testCreateBankingAccountActivationCallLog();
+
+        $bankingAccount = $this->testCreateBankingAccountActivationCallLog($bankingAccount);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/activation/' . $bankingAccount['id'] . '/call_logs?expand[]=comment&expand[]=admin&expand[]=state_log',
                 'method'  => 'GET',
             ],
         ];

@@ -125,6 +125,15 @@ class BankingAccountController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getActivationCallLogs(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::BANKING_ACCOUNT_CALL_LOG)->fetchMultiple($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function patchUpdateActivationComment(string $id)
     {
         $input = Request::all();

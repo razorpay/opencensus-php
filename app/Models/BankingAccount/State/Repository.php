@@ -33,4 +33,13 @@ class Repository extends Base\Repository
             }
         );
     }
+
+    public function getLatestStateLogByBankingAccountId(string $bankingAccountId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::BANKING_ACCOUNT_ID, '=', $bankingAccountId)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->get()
+                    ->first();
+    }
 }

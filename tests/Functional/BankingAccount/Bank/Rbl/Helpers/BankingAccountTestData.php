@@ -2827,6 +2827,121 @@ return [
         ],
     ],
 
+    'testGetBankingAccountActivationCallLog' => [
+        'request' => [
+            'url'     => '/banking_accounts/activation/{id}/call_logs?expand[]=admin',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'admin_id'  => 'RzrpySprAdmnId', 'date_and_time' => 1631008860,
+                        'comment'   => [
+                            'admin_id'         => 'RzrpySprAdmnId',
+                            'comment'          => 'this is a comment from Ops team',
+                            'source_team_type' => 'internal',
+                            'source_team'      => 'ops',
+                            'type'             => 'internal',
+                            'added_at'         => 1631008860,
+                        ],
+                        'admin'     => [
+                            'id' => 'admin_RzrpySprAdmnId'
+                        ],
+                        'state_log' => [
+                            'status' => 'picked'
+                        ],
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testGetBankingAccountActivationCallLogForMoreThanOne' => [
+        'request' => [
+            'url'     => '/banking_accounts/activation/{id}/call_logs?expand[]=admin',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'admin_id'  => 'RzrpySprAdmnId',
+                        'comment'   => [
+                            'admin_id'         => 'RzrpySprAdmnId',
+                            'comment'          => 'this is a comment from Ops team',
+                            'source_team_type' => 'internal',
+                            'source_team'      => 'ops',
+                            'type'             => 'internal',
+                        ],
+                        'admin'     => [
+                            'id' => 'admin_RzrpySprAdmnId'
+                        ],
+                    ],
+                    [
+                        'admin_id'  => 'RzrpySprAdmnId',
+                        'comment'   => [
+                            'admin_id'         => 'RzrpySprAdmnId',
+                            'comment'          => 'this is a comment from Ops team',
+                            'source_team_type' => 'internal',
+                            'source_team'      => 'ops',
+                            'type'             => 'internal',
+                        ],
+                        'admin'     => [
+                            'id' => 'admin_RzrpySprAdmnId'
+                        ],
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testGetBankingAccountActivationCallLogForMoreThanOneForSameStatus' => [
+        'request' => [
+            'url'     => '/banking_accounts/activation/{id}/call_logs?expand[]=admin',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'admin_id'  => 'RzrpySprAdmnId',
+                        'comment'   => [
+                            'admin_id'         => 'RzrpySprAdmnId',
+                            'comment'          => 'this is a comment from Ops team',
+                            'source_team_type' => 'internal',
+                            'source_team'      => 'ops',
+                            'type'             => 'internal',
+                        ],
+                        'admin'     => [
+                            'id' => 'admin_RzrpySprAdmnId'
+                        ],
+                    ],
+                    [
+                        'admin_id'  => 'RzrpySprAdmnId',
+                        'comment'   => [
+                            'admin_id'         => 'RzrpySprAdmnId',
+                            'comment'          => 'this is a comment from Ops team',
+                            'source_team_type' => 'internal',
+                            'source_team'      => 'ops',
+                            'type'             => 'internal',
+                            'added_at'         => 1631008860,
+                        ],
+                        'admin'     => [
+                            'id' => 'admin_RzrpySprAdmnId'
+                        ],
+                    ],
+                ]
+            ],
+        ],
+    ],
+
     'testUpdateBankingAccountAssignee' => [
         'request'  => [
             'url'     => '/banking_account',

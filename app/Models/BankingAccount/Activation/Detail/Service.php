@@ -88,6 +88,16 @@ class Service extends Base\Service
         return (new BankingAccount\Service())->fetch($id);
     }
 
+    protected function extractCallDateAndTime(array & $input)
+    {
+        if (isset($input['call_log']) === true)
+        {
+            return array_pull($input, 'call_log');
+        }
+
+        return null;
+    }
+
     protected function extractCommentInput(array & $input)
     {
         if (isset($input['comment']) === true)
@@ -119,6 +129,8 @@ class Service extends Base\Service
         // - update via batch service.
         $commentInput = $this->extractCommentInput($input);
 
+        $callDateAndTime = $this->extractCallDateAndTime($input);
+
         $activationDetail = $this->repo->banking_account_activation_detail->findByBankingAccountId($bankingAccount->getId());
 
         if ($activationDetail === null)
@@ -141,6 +153,7 @@ class Service extends Base\Service
             $activationDetail,
             $input,
             $commentInput,
+            $callDateAndTime,
             $admin,
             $entity)
         {
@@ -171,9 +184,18 @@ class Service extends Base\Service
                 $this->notifier->notify($activationDetail->bankingAccount, Event::ASSIGNEE_CHANGE, Event::ALERT);
             }
 
+            $comment = null;
+
             if (empty($commentInput) === false)
             {
-                (new Comment\Core())->create($bankingAccount, $admin, $commentInput);
+                $comment = (new Comment\Core())->create($bankingAccount, $admin, $commentInput);
+            }
+
+            if (empty($callDateAndTime) === false)
+            {
+                $stateLog = $this->repo->banking_account_state->getLatestStateLogByBankingAccountId($bankingAccount->getId());
+
+                (new BankingAccount\Activation\CallLog\Core())->create($bankingAccount, $admin, $stateLog, $callDateAndTime, $comment);
             }
 
             return $activationDetail;

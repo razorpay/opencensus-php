@@ -46,6 +46,50 @@ class Status
     const API_ONBOARDING_IN_PROGRESS     = 'api_onboarding_in_progress';
     const NONE                           = 'none';
 
+    // Sub-status for OPS Telephonic verification
+    const CONNECTIVITY__DID_NOT_PICK_UP_THE_PHONE = 'connectivity_|_did_not_pick_up_the_phone';
+    const CONNECTIVITY__ASKED_TO_CALL_LATER = 'connectivity_|_asked_to_call_later';
+    const CONNECTIVITY__DISCONNECTED_THE_CALL = 'connectivity_|_disconnected_the_call';
+    const CONNECTIVITY__CONNECTIVITY_ISSUE = 'connectivity_|_connectivity_issue';
+    const DOCUMENTATION__DOES_NOT_HAVE_ADDRESS_PROOF = 'documentation_|_does_not_have_address_proof';
+    const DOCUMENTATION__DOES_NOT_HAVE_BUSINESS_PROOF = 'documentation_|_does_not_have_business_proof';
+    const AVAILABILITY__OUT_OF_STATION_FOR_MORE_THAN_15_DAYS = 'availability_|_out_of_station_for_more_than_15_days';
+    const AVAILABILITY__DIRECTORS_ARE_AT_UNSERVICEABLE_PINCODE = 'availability_|_directors_are_at_unserviceable_pincode';
+    const AVAILABILITY__COVID19_RELATED_CONCERN = 'availability_|_covid-19_related_issue';
+    const UNSERVICEABLE__PINCODE = 'unserviceable_|_pincode';
+    const UNSERVICEABLE__BUSINESS_TYPE = 'unserviceable_|_business_type';
+    const UNSERVICEABLE__BUSINESS_MODEL = 'unserviceable_|_business_model';
+    const UNSERVICEABLE__UNREGISTERED_BUSINESS = 'unserviceable_|_unregistered_business';
+    const NOT_INTERESTED_IN_CA__LOOKING_FOR_NEARBY_PHYSICAL_BRANCH = 'not_interested_in_CA_|_looking_for_nearby_physical_branch';
+    const NOT_INTERESTED_IN_CA__ISSUE_WITH_RBL_BANK = 'not_interested_in_CA_|_issue_with_RBL_bank';
+    const NOT_INTERESTED_IN_CA__ISSUE_WITH_TAT = 'not_interested_in_CA_|_issue_with_TAT';
+    const NOT_INTERESTED_IN_CA__ISSUE_WITH_MAB_REQUIREMENT = 'not_interested_in_CA_|_issue_with_MAB_requirement';
+    const NOT_INTERESTED_IN_CA__ISSUE_WITH_RX_PRICING = 'not_interested_in_CA_|_issue_with_RX_pricing';
+    const NOT_INTERESTED_IN_CA__LOOKING_FOR_ONLY_PG_PRODUCTS = 'not_interested_in_CA_|_looking_for_only_PG_products';
+    const NOT_INTERESTED_IN_CA__WANT_TO_LINK_EXISTING_CA = 'not_interested_in_CA_|_want_to_link_existing_CA';
+    const NOT_INTERESTED_IN_CA__DID_NOT_HAVE_AN_INTENT = 'not_interested_in_CA_|_did_not_have_an_intent';
+    const NOT_INTERESTED_IN_CA__OPENED_CA_WITH_OTHER_BANK = 'not_interested_in_CA_|_opened_CA_with_other_Bank';
+    const NOT_INTERESTED_IN_CA__LOOKING_FOR_ZERO_BALANCE_CA = 'not_interested_in_CA_|_looking_for_zero_balance_CA';
+    const NOT_INTERESTED_IN_CA__OTHER= 'not_interested_in_CA_|_other';
+    const REQUIRES_SALES_INTERVENTION__DETAILS_ABOUT_CURRENT_ACCOUNT = 'requires_sales_intervention_|_details_about_current_account';
+    const REQUIRES_SALES_INTERVENTION__UNCLEAR_ON_CA_PROCESS = 'requires_sales_intervention_|_unclear_on_CA_process';
+    const REQUIRES_SALES_INTERVENTION__UNCLEAR_ON_RX_PRODUCT = 'requires_sales_intervention_|_unclear_on_RX_product';
+    const REQUIRES_SALES_INTERVENTION__PRODUCT_DEMO = 'requires_sales_intervention_|_product_demo';
+    const REQUIRES_SALES_INTERVENTION__RX_PRICING_DETAILS = 'requires_sales_intervention_|_RX_pricing_details';
+    const REQUIRES_SALES_INTERVENTION__PG_DETAILS = 'requires_sales_intervention_|_PG_details';
+    const REQUIRES_SALES_INTERVENTION__OTHER = 'requires_sales_intervention_|_other';
+    const REGULATORY__BUSINESS_HAS_CC_OD_WITH_OTHER_BANK = 'regulatory_|_business_has_CC/OD_with_other_bank';
+    const REGULATORY__FRAUD_OR_RISKY_MERCHANT = 'regulatory_|_fraud_or_risky_merchant';
+    const FOLLOW_UP__WAITING_FOR_BUSINESS_DETAILS = 'follow_up_|_waiting_for_business_details';
+    const FOLLOW_UP__WAITING_FOR_ADDRESS_DETAILS = 'follow_up_|_waiting_for_address_details';
+    const FOLLOW_UP__WANT_CA_AT_LATER_DATE = 'follow_up_|_want_CA_at_later_date';
+    const FOLLOW_UP__DIRECTORS_WILL_BE_AVAILABLE_AT_A_LATER_DATE = 'follow_up_|_directors_will_be_available_at_a_later_date';
+    const FOLLOW_UP__NEED_TIME_TO_PREPARE_DOCS = 'follow_up_|_need_time_to_prepare_docs';
+    const FOLLOW_UP__BUSINESS_GOING_THROUGH_ENTITY_CHANGES = 'follow_up_|_business_going_through_entity_changes';
+    const FOLLOW_UP__REQUESTED_CALL_BACK_IN_REGIONAL_LANGUAGE = 'follow_up_|_requested_call_back_in_regional_language';
+    const FOLLOW_UP__REQUESTED_CALL_BACK_IN_HINDI = 'follow_up_|_requested_call_back_in_hindi';
+    const FOLLOW_UP__OTHER = 'follow_up_|_other';
+    const OTHER = 'other'; // Need to confirm
 
     // External Substatuses as inputted by Ops/Sales teams via batch
     const DOCS_WALK_THROUGH_PENDING_EXTERNAL      = 'Docs Walkthrough Pending';
@@ -199,6 +243,49 @@ class Status
         self::API_ONBOARDING_INITIATED,
         self::API_ONBOARDING_PENDING,
         self::API_ONBOARDING_IN_PROGRESS,
+        self::CONNECTIVITY__DID_NOT_PICK_UP_THE_PHONE,
+        self::CONNECTIVITY__ASKED_TO_CALL_LATER,
+        self::CONNECTIVITY__DISCONNECTED_THE_CALL,
+        self::AVAILABILITY__OUT_OF_STATION_FOR_MORE_THAN_15_DAYS,
+        self::AVAILABILITY__DIRECTORS_ARE_AT_UNSERVICEABLE_PINCODE,
+        self::AVAILABILITY__COVID19_RELATED_CONCERN,
+        self::UNSERVICEABLE__PINCODE,
+        self::UNSERVICEABLE__BUSINESS_TYPE,
+        self::NOT_INTERESTED_IN_CA__DID_NOT_HAVE_AN_INTENT,
+        self::NOT_INTERESTED_IN_CA__OPENED_CA_WITH_OTHER_BANK,
+        self::NOT_INTERESTED_IN_CA__LOOKING_FOR_ZERO_BALANCE_CA,
+        self::NOT_INTERESTED_IN_CA__OTHER,
+        self::REQUIRES_SALES_INTERVENTION__PRODUCT_DEMO,
+        self::REQUIRES_SALES_INTERVENTION__RX_PRICING_DETAILS,
+        self::REQUIRES_SALES_INTERVENTION__PG_DETAILS,
+        self::REQUIRES_SALES_INTERVENTION__OTHER,
+        self::REGULATORY__BUSINESS_HAS_CC_OD_WITH_OTHER_BANK,
+        self::REGULATORY__FRAUD_OR_RISKY_MERCHANT,
+        self::CONNECTIVITY__CONNECTIVITY_ISSUE,
+        self::DOCUMENTATION__DOES_NOT_HAVE_ADDRESS_PROOF,
+        self::DOCUMENTATION__DOES_NOT_HAVE_BUSINESS_PROOF,
+        self::UNSERVICEABLE__BUSINESS_MODEL,
+        self::UNSERVICEABLE__UNREGISTERED_BUSINESS,
+        self::NOT_INTERESTED_IN_CA__LOOKING_FOR_NEARBY_PHYSICAL_BRANCH,
+        self::NOT_INTERESTED_IN_CA__ISSUE_WITH_RBL_BANK,
+        self::NOT_INTERESTED_IN_CA__ISSUE_WITH_TAT,
+        self::NOT_INTERESTED_IN_CA__ISSUE_WITH_MAB_REQUIREMENT,
+        self::NOT_INTERESTED_IN_CA__ISSUE_WITH_RX_PRICING,
+        self::NOT_INTERESTED_IN_CA__LOOKING_FOR_ONLY_PG_PRODUCTS,
+        self::NOT_INTERESTED_IN_CA__WANT_TO_LINK_EXISTING_CA,
+        self::REQUIRES_SALES_INTERVENTION__DETAILS_ABOUT_CURRENT_ACCOUNT,
+        self::REQUIRES_SALES_INTERVENTION__UNCLEAR_ON_CA_PROCESS,
+        self::REQUIRES_SALES_INTERVENTION__UNCLEAR_ON_RX_PRODUCT,
+        self::FOLLOW_UP__WAITING_FOR_BUSINESS_DETAILS,
+        self::FOLLOW_UP__WAITING_FOR_ADDRESS_DETAILS,
+        self::FOLLOW_UP__WANT_CA_AT_LATER_DATE,
+        self::FOLLOW_UP__DIRECTORS_WILL_BE_AVAILABLE_AT_A_LATER_DATE,
+        self::FOLLOW_UP__NEED_TIME_TO_PREPARE_DOCS,
+        self::FOLLOW_UP__BUSINESS_GOING_THROUGH_ENTITY_CHANGES,
+        self::FOLLOW_UP__REQUESTED_CALL_BACK_IN_REGIONAL_LANGUAGE,
+        self::FOLLOW_UP__REQUESTED_CALL_BACK_IN_HINDI,
+        self::FOLLOW_UP__OTHER,
+        self::OTHER,
         self::NONE,
     ];
 
@@ -220,6 +307,49 @@ class Status
             self::READY_TO_SEND_TO_BANK,
             self::DOCS_WALK_THROUGH_PENDING,
             self::NEEDS_CLARIFICATION_FROM_SALES,
+            self::CONNECTIVITY__DID_NOT_PICK_UP_THE_PHONE,
+            self::CONNECTIVITY__ASKED_TO_CALL_LATER,
+            self::CONNECTIVITY__DISCONNECTED_THE_CALL,
+            self::AVAILABILITY__OUT_OF_STATION_FOR_MORE_THAN_15_DAYS,
+            self::AVAILABILITY__DIRECTORS_ARE_AT_UNSERVICEABLE_PINCODE,
+            self::AVAILABILITY__COVID19_RELATED_CONCERN,
+            self::UNSERVICEABLE__PINCODE,
+            self::UNSERVICEABLE__BUSINESS_TYPE,
+            self::NOT_INTERESTED_IN_CA__DID_NOT_HAVE_AN_INTENT,
+            self::NOT_INTERESTED_IN_CA__OPENED_CA_WITH_OTHER_BANK,
+            self::NOT_INTERESTED_IN_CA__LOOKING_FOR_ZERO_BALANCE_CA,
+            self::NOT_INTERESTED_IN_CA__OTHER,
+            self::REQUIRES_SALES_INTERVENTION__PRODUCT_DEMO,
+            self::REQUIRES_SALES_INTERVENTION__RX_PRICING_DETAILS,
+            self::REQUIRES_SALES_INTERVENTION__PG_DETAILS,
+            self::REQUIRES_SALES_INTERVENTION__OTHER,
+            self::REGULATORY__BUSINESS_HAS_CC_OD_WITH_OTHER_BANK,
+            self::REGULATORY__FRAUD_OR_RISKY_MERCHANT,
+            self::CONNECTIVITY__CONNECTIVITY_ISSUE,
+            self::DOCUMENTATION__DOES_NOT_HAVE_ADDRESS_PROOF,
+            self::DOCUMENTATION__DOES_NOT_HAVE_BUSINESS_PROOF,
+            self::UNSERVICEABLE__BUSINESS_MODEL,
+            self::UNSERVICEABLE__UNREGISTERED_BUSINESS,
+            self::NOT_INTERESTED_IN_CA__LOOKING_FOR_NEARBY_PHYSICAL_BRANCH,
+            self::NOT_INTERESTED_IN_CA__ISSUE_WITH_RBL_BANK,
+            self::NOT_INTERESTED_IN_CA__ISSUE_WITH_TAT,
+            self::NOT_INTERESTED_IN_CA__ISSUE_WITH_MAB_REQUIREMENT,
+            self::NOT_INTERESTED_IN_CA__ISSUE_WITH_RX_PRICING,
+            self::NOT_INTERESTED_IN_CA__LOOKING_FOR_ONLY_PG_PRODUCTS,
+            self::NOT_INTERESTED_IN_CA__WANT_TO_LINK_EXISTING_CA,
+            self::REQUIRES_SALES_INTERVENTION__DETAILS_ABOUT_CURRENT_ACCOUNT,
+            self::REQUIRES_SALES_INTERVENTION__UNCLEAR_ON_CA_PROCESS,
+            self::REQUIRES_SALES_INTERVENTION__UNCLEAR_ON_RX_PRODUCT,
+            self::FOLLOW_UP__WAITING_FOR_BUSINESS_DETAILS,
+            self::FOLLOW_UP__WAITING_FOR_ADDRESS_DETAILS,
+            self::FOLLOW_UP__WANT_CA_AT_LATER_DATE,
+            self::FOLLOW_UP__DIRECTORS_WILL_BE_AVAILABLE_AT_A_LATER_DATE,
+            self::FOLLOW_UP__NEED_TIME_TO_PREPARE_DOCS,
+            self::FOLLOW_UP__BUSINESS_GOING_THROUGH_ENTITY_CHANGES,
+            self::FOLLOW_UP__REQUESTED_CALL_BACK_IN_REGIONAL_LANGUAGE,
+            self::FOLLOW_UP__REQUESTED_CALL_BACK_IN_HINDI,
+            self::FOLLOW_UP__OTHER,
+            self::OTHER,
         ],
         self::INITIATED => [
             self::NONE,

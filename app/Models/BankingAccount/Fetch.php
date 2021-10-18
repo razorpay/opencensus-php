@@ -22,7 +22,7 @@ class Fetch extends BaseFetch
             Entity::REVIEWER_ID           => 'sometimes|string',
         ],
         AuthType::PRIVILEGE_AUTH => [
-            self::EXPAND_EACH             => 'filled|string|in:merchant,merchant.merchantDetail,merchant.promotions.promotion,banking_account_details,reviewers,spocs,banking_account_activation_details',
+            self::EXPAND_EACH             => 'filled|string|in:merchant,merchant.merchantDetail,merchant.promotions.promotion,banking_account_details,reviewers,spocs,banking_account_activation_details,activationCallLog,activationComments',
             Entity::MERCHANT_EMAIL                      => 'sometimes|string',
             Entity::MERCHANT_BUSINESS_NAME              => 'sometimes|string',
             Entity::MERCHANT_POC_CITY                   => 'sometimes|string',

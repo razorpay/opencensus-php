@@ -205,6 +205,7 @@ class Entity
     const BANKING_ACCOUNT_STATEMENT         = 'banking_account_statement';
     const BANKING_ACCOUNT_STATEMENT_DETAILS = 'banking_account_statement_details';
     const BANKING_ACCOUNT_ACTIVATION_DETAIL = 'banking_account_activation_detail';
+    const BANKING_ACCOUNT_CALL_LOG          = 'banking_account_call_log';
 
     // heimdall
     const ORG                   = 'org';
@@ -736,6 +737,7 @@ class Entity
         self::BANKING_ACCOUNT_ACTIVATION_DETAIL
                                         => \RZP\Models\BankingAccount\Activation\Detail::class,
         self::BANKING_ACCOUNT_COMMENT   => \RZP\Models\BankingAccount\Activation\Comment::class,
+        self::BANKING_ACCOUNT_CALL_LOG  => Models\BankingAccount\Activation\CallLog::class,
         self::MERCHANT_REQUEST          => \RZP\Models\Merchant\Request::class,
         self::CUSTOMER_BALANCE          => \RZP\Models\Customer\Balance::class,
         self::GATEWAY_DOWNTIME          => \RZP\Models\Gateway\Downtime::class,

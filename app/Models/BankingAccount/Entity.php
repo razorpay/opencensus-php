@@ -13,6 +13,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\BankingAccount\State;
 use RZP\Models\Base\PublicCollection;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property Merchant\Entity            $merchant
@@ -124,6 +125,7 @@ class Entity extends Base\PublicEntity
     // Relation Constants
     const BANKING_ACCOUNT_DETAILS            = 'banking_account_details';
     const BANKING_ACCOUNT_ACTIVATION_DETAILS = 'banking_account_activation_details';
+    const BANKING_ACCOUNT_CALL_LOG           = 'activation_call_log';
     const BALANCE                            = 'balance';
     const REVIEWERS                          = 'reviewers';
     const SPOCS                              = 'spocs';
@@ -269,6 +271,9 @@ class Entity extends Base\PublicEntity
         //
         'bankingAccountDetails',
         'bankingAccountActivationDetails',
+        self::BANKING_ACCOUNT_CALL_LOG,
+        'activationCallLog',
+        'activationComments',
         self::REVIEWERS,
         self::SPOCS,
         self::PASSWORD,
@@ -636,7 +641,11 @@ class Entity extends Base\PublicEntity
     public function activationComments()
     {
         return $this->hasMany(Activation\Comment\Entity::class);
+    }
 
+    public function activationCallLog()
+    {
+        return $this->hasMany(Activation\CallLog\Entity::class);
     }
 
     /**
@@ -668,6 +677,13 @@ class Entity extends Base\PublicEntity
     public function bankingAccountDetails()
     {
         return $this->hasMany(Detail\Entity::class, Detail\Entity::BANKING_ACCOUNT_ID, self::ID);
+    }
+
+    public function getActivationCallLog(): PublicCollection
+    {
+        return $this->activationCallLog()
+                    ->orderBy(Model::CREATED_AT)
+                    ->get();
     }
 
     // ----------------------- Public setters ---------------------------------

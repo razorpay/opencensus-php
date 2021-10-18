@@ -135,6 +135,14 @@ return [
         ],
     ],
 
+    E::BANKING_ACCOUNT_CALL_LOG => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'banking_account_id' => str_random(14)
+            ],
+        ],
+    ],
+
     E::EXTERNAL => [
         Type::PRIVILEGE_AUTH => [
             [
