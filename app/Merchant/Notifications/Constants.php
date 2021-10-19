@@ -1255,6 +1255,17 @@ class Constants
             ],
         ],
         [
+            'id'          => 'Cardsgolive_Sub_Sep2021',
+            'title'       => 'Cards are back on Subscriptions!',
+            'description' => "IMPORTANT UPDATE - Your favourite payment method ‘Cards’ is back and live on Razorpay Subscriptions!",
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/subscriptions-nav.svg',
+            'start_ts'    => 1632984489,
+            'end_ts'      => 1638254889,
+            'filters'     => [
+                'splitz_experiments'  => ['CARDS_GO_LIVE_SUBSCRIPTIONS_SPLITZ', 'CARDS_GO_LIVE_CAW_SPLITZ'],
+            ],
+        ],
+        [
             'id'          => 'SEP21-ULTRALOC-ANNCMNT',
             'title'       => 'Credit Line to Grow your Business',
             'description' => 'Borrow collateral-free money that goes to your bank account within seconds. Withdraw 24/7 and Repay in easy instalments.',
@@ -1422,6 +1433,32 @@ class Constants
                 'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_APP_SWITCHER_SPLITZ'],
             ]
 
+        ],
+        'Cardsgolive_Sub_Sep2021' => [
+            [
+                'data' => [
+                    'buttons'     => [
+                        [
+                            'type'  => 'button',
+                            'label' => 'Know More',
+                            'url'   => 'https://razorpay.com/docs/announcements/rbi-card-mandate-guidelines/subscriptions/cards/',
+                        ],
+                    ],
+                ],
+                'splitz_experiments'         => ['CARDS_GO_LIVE_SUBSCRIPTIONS_SPLITZ'],
+            ],
+            [
+                'data' => [
+                    'buttons'     => [
+                        [
+                            'type'  => 'button',
+                            'label' => 'Know More',
+                            'url'   => 'https://razorpay.com/docs/announcements/rbi-card-mandate-guidelines/recurring-payments/cards/?utm_campaign=MandateHQ%20awareness%20campaign&utm_source=hs_email&utm_medium=email&_hsenc=p2ANqtz-_2BN3IFsMAeigJhehpUFqTutaXUAvrcwI202D0ApStea1l-E78TVYGUE9hbRPkSTOJentC',
+                        ],
+                    ],
+                ],
+                'splitz_experiments'         => ['CARDS_GO_LIVE_CAW_SPLITZ'],
+            ]
         ],
         'whats-new-april21-m2mrewards-gtm'=> [
             [
