@@ -515,7 +515,7 @@ class Service extends Base\Service
         {
             list($token, $serviceProviders) = $this->core->createTokenAndTokenizedCard($input);
 
-            return $token->toArrayPublicTokeizedCard($serviceProviders);
+            return $token->toArrayPublicTokenizedCard($serviceProviders);
         }
 
         $this->validateMode();
@@ -525,11 +525,27 @@ class Service extends Base\Service
         return $this->generateMockResponse($token);
     }
 
-    public function fetchNetworkToken($id)
+    public function fetchNetworkToken($input)
     {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
+        {
+            (new Validator)->validateInput(Validator::FETCH_TOKEN, $input);
+
+            $token = $this->repo->token->findOrFailByPublicIdAndMerchant($input['id'], $this->merchant);
+
+            $serviceProviders = [];
+
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NETWORK_TOKENS) === true)
+            {
+                $serviceProviders = $this->core->fetchToken($token);
+            }
+
+            return $token->toArrayPublicTokenizedCard($serviceProviders);
+        }
+
         $this->validateMode();
 
-        $token = $this->repo->token->getByPublicIdAndMerchant($id, $this->merchant);
+        $token = $this->repo->token->getByPublicIdAndMerchant($input['id'], $this->merchant);
 
         if ($token === null)
         {
@@ -548,11 +564,9 @@ class Service extends Base\Service
 
             $token = $this->repo->token->findOrFailByPublicIdAndMerchant($input['id'], $this->merchant);
 
-            $response = $this->core->fetchCryptogram($token, $this->merchant);
-
             $serviceProviders = $this->core->fetchCryptogram($token, $this->merchant);
 
-            $response['service_provider'] = $serviceProviders;
+            $response['service_providers'] = $serviceProviders;
 
             return $response;
         }
@@ -570,11 +584,22 @@ class Service extends Base\Service
         return $this->generateMockResponseForCryptoGram($token);
     }
 
-    public function deleteNetworkToken($id)
+    public function deleteNetworkToken($input)
     {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
+        {
+            (new Validator)->validateInput(Validator::FETCH_TOKEN, $input);
+
+            $token = $this->repo->token->findOrFailByPublicIdAndMerchant($input['id'], $this->merchant);
+
+            $this->core->deleteToken($token);
+
+            return [];
+        }
+
         $this->validateMode();
 
-        $token = $this->repo->token->getByPublicIdAndMerchant($id, $this->merchant);
+        $token = $this->repo->token->getByPublicIdAndMerchant($input['id'], $this->merchant);
 
         if ($token === null)
         {

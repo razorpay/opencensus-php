@@ -178,4 +178,102 @@ return [
             'internal_error_code'   => 'SERVER_ERROR_RUNTIME_ERROR',
         ],
     ],
+
+    'testFetchTokenLive' => [
+        'request' => [
+            'url' => '/tokens/fetch',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testFetchTokenLiveInvalidToken' => [
+        'request' => [
+            'url' => '/tokens/fetch',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+
+    'testFetchTokenLiveVaultFailure' => [
+        'request' => [
+            'url' => '/tokens/fetch',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\RuntimeException::class,
+            'internal_error_code'   => 'SERVER_ERROR_RUNTIME_ERROR',
+        ],
+    ],
+
+    'testTokenDeleteLive' => [
+        'request' => [
+            'url' => '/tokens/delete',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testTokenDeleteLiveVaultFailure' => [
+        'request' => [
+            'url' => '/tokens/delete',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\RuntimeException::class,
+            'internal_error_code'   => 'SERVER_ERROR_RUNTIME_ERROR',
+        ],
+    ],
+
+    'testTokenDeleteLiveInvalidToken' => [
+        'request' => [
+            'url' => '/tokens/delete',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
 ];

@@ -852,7 +852,7 @@ class Entity extends Base\PublicEntity
         return $publicArray;
     }
 
-    public function toArrayPublicTokeizedCard($serviceProviders)
+    public function toArrayPublicTokenizedCard($serviceProviders)
     {
         $publicArray = parent::toArrayPublic();
 
@@ -879,7 +879,10 @@ class Entity extends Base\PublicEntity
 
         $publicArray['status'] = ($this->isExpired() === true) ? 'deactivated' : 'activated';
 
-        $publicArray['service_providers'] = $serviceProviders;
+        if (empty($serviceProviders) === false)
+        {
+            $publicArray['service_providers'] = $serviceProviders;
+        }
 
         return $publicArray;
     }

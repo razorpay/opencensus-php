@@ -24,7 +24,7 @@ class TokenController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->fetchNetworkToken($input['id']);
+        $data = $this->service()->fetchNetworkToken($input);
 
         return ApiResponse::json($data);
     }
@@ -42,7 +42,7 @@ class TokenController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->deleteNetworkToken($input['id']);
+        $data = $this->service()->deleteNetworkToken($input);
 
         return ApiResponse::json($data);
     }

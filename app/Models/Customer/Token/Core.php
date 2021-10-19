@@ -1415,6 +1415,26 @@ class Core extends Base\Core
 
     public function fetchCryptogram($token, $merchant)
     {
-        return (new Card\Core)->fetchCryptogram($token->card, $merchant);
+        $response = (new Card\Core)->fetchCryptogram($token->card, $merchant);
+
+        return $response['service_providers'];
+    }
+
+    public function fetchToken($token)
+    {
+        $response = (new Card\Core)->fetchToken($token->card);
+
+        return $response['service_providers'];
+    }
+
+    public function deleteToken($token)
+    {
+        $response = (new Card\Core)->deleteToken($token->card);
+
+        $token->setExpiredAt(Carbon::now()->getTimestamp());
+
+        $this->repo->saveOrFail($token);
+
+        return $response;
     }
 }

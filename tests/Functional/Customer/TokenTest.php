@@ -398,15 +398,15 @@ class TokenTest extends TestCase
 
         $response = $this->startTest($fetchPayload);
 
-        $this->assertNotNull($response['service_provider']['data']['token_number']);
+        $this->assertNotNull($response['service_providers']['data']['token_number']);
 
-        $this->assertNotNull($response['service_provider']['data']['cryptogram_value']);
+        $this->assertNotNull($response['service_providers']['data']['cryptogram_value']);
 
-        $this->assertEquals('12', $response['service_provider']['data']['expiry_month']);
+        $this->assertEquals('12', $response['service_providers']['data']['expiry_month']);
 
-        $this->assertEquals('2021', $response['service_provider']['data']['expiry_year']);
+        $this->assertEquals('2021', $response['service_providers']['data']['expiry_year']);
 
-        $this->assertEquals('4100000000000099', $response['service_provider']['data']['token_number']);
+        $this->assertEquals('4100000000000099', $response['service_providers']['data']['token_number']);
     }
 
     public function testFetchCryptogramLiveInvalidToken()
@@ -490,5 +490,259 @@ class TokenTest extends TestCase
         $fetchPayload['request']['content'] = ['id' => $response['id']];
 
         $this->startTest($fetchPayload);
+    }
+
+    public function testFetchTokenLive()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ($route, $method, $input)
+        {
+            $response['success'] = true;
+            $token = base64_encode('I2lCam2io3vfu1');
+
+            $response['token'] = 'I2lCam2io3vfu1';
+            $response['fingerprint'] = strrev($token);
+            $response['status'] = 'activated';
+
+            $response['service_providers'] = [
+                [
+                    'type'  => 'network',
+                    'name'  => 'visa',
+                    'data'  => [
+                        'token_reference_number' => $token,
+                        'card_reference_number'  => strrev($token),
+                        'interoperable'          => true,
+                    ],
+                ]
+            ];
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->ba->privateAuth();
+
+        $createPayload = $this->testData['testCreateToken'];
+
+        $response = $this->startTest($createPayload);
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $fetchPayload = $this->testData['testFetchTokenLive'];
+
+        $fetchPayload['request']['content'] = ['id' => $response['id']];
+
+        $fetchResponse = $this->startTest($fetchPayload);
+
+        $this->assertEquals('card', $fetchResponse['method']);
+
+        $this->assertEquals('12', $fetchResponse['expiry_month']);
+
+        $this->assertEquals('2023', $fetchResponse['expiry_year']);
+
+        $this->assertNotNull($fetchResponse['service_providers']);
+    }
+
+    public function testFetchTokenLiveInvalidToken()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ($route, $method, $input)
+        {
+            $response['success'] = true;
+            $token = base64_encode('I2lCam2io3vfu1');
+
+            $response['token'] = 'I2lCam2io3vfu1';
+            $response['fingerprint'] = strrev($token);
+            $response['status'] = 'activated';
+
+            $response['service_providers'] = [
+                [
+                    'type'  => 'network',
+                    'name'  => 'visa',
+                    'data'  => [
+                        'token_reference_number' => $token,
+                        'card_reference_number'  => strrev($token),
+                        'interoperable'          => true,
+                    ],
+                ]
+            ];
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $fetchPayload = $this->testData['testFetchTokenLive'];
+
+        $this->startTest($fetchPayload);
+    }
+
+    public function testFetchTokenLiveVaultFailure()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ($route, $method, $input)
+        {
+            $response['success'] = false;
+
+            $response['error'] = [
+                [
+                    'code'        => 'SERVER_ERROR',
+                    'description' => 'The server encountered an error. The incident has been reported to admins.'
+                ]
+            ];
+
+            return $response;
+        };
+
+        $this->ba->privateAuth();
+
+        $createPayload = $this->testData['testCreateToken'];
+
+        $response = $this->makeRequestAndGetContent($createPayload['request']);
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $fetchPayload = $this->testData['testFetchTokenLive'];
+
+        $fetchPayload['request']['content'] = ['id' => $response['id']];
+
+        $this->startTest($fetchPayload);
+    }
+
+    public function testTokenDeleteLive()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ($route, $method, $input)
+        {
+            $response['success'] = true;
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->ba->privateAuth();
+
+        $createPayload = $this->testData['testCreateToken'];
+
+        $response = $this->startTest($createPayload);
+
+        $fetchPayload = $this->testData['testFetchToken'];
+
+        $fetchPayload['request']['content'] = ['id' => $response['id']];
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $deletePayload = $this->testData['testTokenDelete'];
+
+        $deletePayload['request']['content'] = ['id' => $response['id']];
+
+        $this->startTest($deletePayload);
+    }
+
+    public function testTokenDeleteLiveVaultFailure()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ($route, $method, $input)
+        {
+            $response['success'] = false;
+
+            $response['error'] = [
+                'code' => 'SERVER_ERROR',
+                'description' => 'The server encountered an error. The incident has been reported to admins.'
+            ];
+
+            return $response;
+        };
+
+        $this->ba->privateAuth();
+
+        $createPayload = $this->testData['testCreateToken'];
+
+        $response = $this->makeRequestAndGetContent($createPayload['request']);
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $fetchPayload = $this->testData['testFetchToken'];
+
+        $fetchPayload['request']['content'] = ['id' => $response['id']];
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $deletePayload = $this->testData['testTokenDelete'];
+
+        $deletePayload['request']['content'] = ['id' => $response['id']];
+
+        $this->startTest($deletePayload);
+    }
+
+    public function testTokenDeleteLiveInvalidToken()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ($route, $method, $input)
+        {
+            $response['success'] = true;
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $deletePayload = $this->testData['testTokenDelete'];
+
+        $this->startTest($deletePayload);
     }
 }

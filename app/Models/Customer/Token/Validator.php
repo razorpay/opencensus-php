@@ -14,10 +14,12 @@ use RZP\Models\PaperMandate\Constants as PaperMandateConstants;
 
 class Validator extends Base\Validator
 {
-    const CREATE_DIRECT        = 'create_direct';
-    const CREATE_NETWORK_TOKEN = 'create_network_token';
+    const CREATE_DIRECT                           = 'create_direct';
+    const CREATE_NETWORK_TOKEN                    = 'create_network_token';
     const CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA = 'create_network_token_authentication_data';
-    const FETCH_CRYPTOGRAM = 'fetch_cryptogram';
+    const FETCH_CRYPTOGRAM                        = 'fetch_cryptogram';
+    const FETCH_TOKEN                             = 'fetch_token';
+    const DELETE_TOKEN                            = 'delete_token';
 
     /**
      * token epoch constrains :
@@ -79,6 +81,14 @@ class Validator extends Base\Validator
     ];
 
     protected static $fetchCryptogramRules = [
+        'id'     => 'required|public_id',
+    ];
+
+    protected static $fetchTokenRules = [
+        'id'     => 'required|public_id',
+    ];
+
+    protected static $deleteTokenRules = [
         'id'     => 'required|public_id',
     ];
 

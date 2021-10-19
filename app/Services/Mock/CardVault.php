@@ -74,7 +74,7 @@ class CardVault extends BaseCardVault
         return $response;
     }
 
-    public function createTokenizedCard($input)
+    public function createTokenizedCard($input): array
     {
         $response['success'] = true;
         $response['provider'] = $input['provider']['network'];
@@ -101,8 +101,8 @@ class CardVault extends BaseCardVault
                 'data'  => [
                     'token_reference_number' => $token,
                     'card_reference_number'  => strrev($token),
+                    'interoperable'          => true,
                 ],
-               'interoperable'          => true,
             ]
         ];
 
@@ -115,7 +115,7 @@ class CardVault extends BaseCardVault
 
         $dummyCardNumber = '4100000000000099';
 
-        $response['service_provider'] = [
+        $response['service_providers'] = [
             [
                 'type'  => 'network',
                 'name'  => 'Visa',
@@ -127,6 +127,38 @@ class CardVault extends BaseCardVault
                 ],
             ]
         ];
+
+        return $response;
+    }
+
+    public function fetchToken($input): array
+    {
+        $response['success'] = true;
+
+        $token = base64_encode($input['token']);
+
+        $response['token'] = $input['token'];
+        $response['fingerprint'] = strrev($token);
+        $response['status'] = 'activated';
+
+        $response['service_providers'] = [
+            [
+                'type'  => 'network',
+                'name'  => 'visa',
+                'data'  => [
+                    'token_reference_number' => $token,
+                    'card_reference_number'  => strrev($token),
+                    'interoperable'          => true,
+                ]
+            ]
+        ];
+
+        return $response;
+    }
+
+    public function deleteNetworkToken($input): array
+    {
+        $response['success'] = true;
 
         return $response;
     }

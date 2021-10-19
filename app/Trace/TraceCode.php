@@ -3504,8 +3504,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VAULT_TOKEN_MIGRATION_CRON_REQUEST                    = 'VAULT_TOKEN_MIGRATION_CRON_REQUEST';
     const VAULT_TOKEN_RENEWAL_REQUEST                           = 'VAULT_TOKEN_RENEWAL_REQUEST';
     const VAULT_TOKEN_RENEWAL_RESPONSE                          = 'VAULT_TOKEN_RENEWAL_RESPONSE';
+
     const VAULT_CREATE_TOKEN                                    = 'VAULT_CREATE_TOKEN';
     const VAULT_FETCH_CRYPTOGRAM                                = 'VAULT_FETCH_CRYPTOGRAM';
+    const VAULT_FETCH_TOKEN                                     = 'VAULT_FETCH_TOKEN';
+    const VAULT_DELETE_TOKEN    = 'VAULT_DELETE_TOKEN';
 
     const VAULT_TOKEN_MIGRATION_DISPATCH_FAILED                 = 'VAULT_TOKEN_MIGRATION_DISPATCH_FAILED';
     const VAULT_TOKEN_MIGRATION_CRON_DISPATCH_FAILED            = 'VAULT_TOKEN_MIGRATION_CRON_DISPATCH_FAILED';

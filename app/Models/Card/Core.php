@@ -51,14 +51,14 @@ class Core extends Base\Core
         $response = $this->getTokenizedCardResponseFromVault($input, $merchant);
 
         $createInput = [
-            Card\Entity::IIN          => $response['token_iin'],
-            Card\Entity::VAULT_TOKEN  => $response['token'],
-            Card\Entity::GLOBAL_FINGERPRINT  => $response['fingerprint'],
-            Card\Entity::VAULT  => $response['provider'],
-            Card\Entity::EXPIRY_MONTH => $response['expiry_month'],
-            Card\Entity::EXPIRY_YEAR  => $response['expiry_year'],
-            Card\Entity::LAST4        => $response['last4'],
-            Card\Entity::LENGTH       => $response['length'],
+            Card\Entity::IIN                => $response['token_iin'],
+            Card\Entity::VAULT_TOKEN        => $response['token'],
+            Card\Entity::GLOBAL_FINGERPRINT => $response['fingerprint'],
+            Card\Entity::VAULT              => $response['provider'],
+            Card\Entity::EXPIRY_MONTH       => $response['expiry_month'],
+            Card\Entity::EXPIRY_YEAR        => $response['expiry_year'],
+            Card\Entity::LAST4              => $response['last4'],
+            Card\Entity::LENGTH             => $response['length'],
         ];
 
         $card = (new Card\Entity)->buildCard($createInput, 'tokenizedCard');
@@ -78,6 +78,16 @@ class Core extends Base\Core
     public function fetchCryptogram($card, $merchant)
     {
         return $this->getCryptogramResponseFromVault($card, $merchant);
+    }
+
+    public function fetchToken($card)
+    {
+        return $this->getTokenResponseFromVault($card);
+    }
+
+    public function deleteToken($card)
+    {
+        return $this->deleteTokenResponseFromVault($card);
     }
 
     public function createViaCps($input, $merchant, $recurring)
@@ -594,5 +604,23 @@ class Core extends Base\Core
         $cardVaultToken = $card->getVaultToken();
 
         return $cardVault->fetchCryptogram($cardVaultToken, $merchant);
+    }
+
+    protected function getTokenResponseFromVault($card)
+    {
+        $cardVault = (new Card\CardVault);
+
+        $cardVaultToken = $card->getVaultToken();
+
+        return $cardVault->fetchToken($cardVaultToken);
+    }
+
+    protected function deleteTokenResponseFromVault($card)
+    {
+        $cardVault = (new Card\CardVault);
+
+        $cardVaultToken = $card->getVaultToken();
+
+        return $cardVault->deleteNetworkToken($cardVaultToken);
     }
 }
