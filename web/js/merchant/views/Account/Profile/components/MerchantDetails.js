@@ -175,7 +175,6 @@ const MerchantDetails = ({
   }, []);
 
   useEffect(() => {
-    getAdditionalWebsiteWorkflowStatus();
     // Only fetch request if user is owner, other users shouldn't see the error
     if (user.role === 'owner') getTransactionLimitWorkflowStatus();
   }, []);
