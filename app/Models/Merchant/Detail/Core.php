@@ -1632,11 +1632,34 @@ class Core extends Base\Core
             (new AvgOrderValue\Core)->createOrEditAvgOrderValue($merchantDetails, $input['merchant_avg_order_value']);
         }
 
+
         $this->repo->saveOrFail($merchant);
 
-        $this->app['segment-analytics']->pushIdentifyAndTrackEvent($merchant, $input, SegmentEvent::KYC_FORM_SAVED);
+        $segmentProperties = $this->getSegmentPropertiesForFormSubmit($merchant, $input);
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $merchant, $segmentProperties, SegmentEvent::KYC_FORM_SAVED);
 
         return $merchantDetails;
+    }
+
+    protected function getSegmentPropertiesForFormSubmit($merchant, $input)
+    {
+        $properties = [];
+
+        foreach (DEConstants::KYC_FORM_SUBMIT_SEGMENT_PROPERTIES as $key)
+        {
+            if(isset($input[$key]) === true)
+            {
+                $properties[$key] = $input[$key];
+            }
+            else
+            {
+                $properties[$key] = $merchant->merchantDetail->getAttribute($key) ?? 'NULL';
+            }
+        }
+
+        return $properties;
     }
 
     protected function updateBusinessCategory($merchantDetails, array $input)

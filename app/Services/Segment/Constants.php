@@ -20,7 +20,9 @@ class Constants
         Merchant\Detail\Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS,
         Merchant\Detail\Entity::BUSINESS_CATEGORY,
         Merchant\Detail\Entity::BUSINESS_SUBCATEGORY,
-        Merchant\Detail\Entity::ACTIVATION_FORM_MILESTONE
+        Merchant\Detail\Entity::ACTIVATION_FORM_MILESTONE,
+        Merchant\Detail\Entity::BUSINESS_TYPE,
+        Merchant\Detail\Entity::BUSINESS_DBA,
     ];
 
     //common event properties

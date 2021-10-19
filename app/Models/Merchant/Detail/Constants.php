@@ -412,5 +412,24 @@ class Constants
 
     //Encryper business website comment on workflow request start with following
     const ENCRYPTED_WEBSITE_DETAILS_IDENTIFIER     = 'business_website_credentials_.';
+
+    const KYC_FORM_SUBMIT_SEGMENT_PROPERTIES = [
+        Entity::BUSINESS_TYPE,
+        Entity::BUSINESS_CATEGORY,
+        Entity::BUSINESS_SUBCATEGORY,
+        Entity::BUSINESS_DBA,
+        Entity::BUSINESS_NAME,
+        Entity::BUSINESS_WEBSITE,
+        Entity::BUSINESS_DOE,
+        Entity::BUSINESS_MODEL,
+        Entity::BUSINESS_OPERATION_STATE,
+        Entity::BUSINESS_OPERATION_CITY,
+        Entity::BUSINESS_OPERATION_PIN,
+        Entity::BUSINESS_REGISTERED_STATE,
+        Entity::BUSINESS_REGISTERED_CITY,
+        Entity::BUSINESS_REGISTERED_PIN,
+        Entity::PROMOTER_PAN,
+        Entity::PROMOTER_PAN_NAME
+    ];
 }
 

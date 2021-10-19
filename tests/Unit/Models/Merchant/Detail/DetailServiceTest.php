@@ -424,6 +424,25 @@ class DetailServiceTest extends TestCase
 
         $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('stakeholder')->andReturn($this->stakeholderEntityMock);
 
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('business_type')->andReturn(11);
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('business_category')->andReturn('ecommerce');
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('business_subcategory')->andReturn('agriculture');
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('business_dba')->andReturn('something');
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('business_name')->andReturn('something');
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('business_website')->andReturn('www.abc.com');
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('business_doe')->andReturn('something');
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('business_model')->andReturn('asdasd');
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('business_operation_state')->andReturn('maharashtra');
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('business_operation_city')->andReturn('mumbai');
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('business_operation_pin')->andReturn(400076);
+
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('business_registered_state')->andReturn('maharashtra');
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('business_registered_city')->andReturn('mumbai');
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('business_registered_pin')->andReturn(400076);
+
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('promoter_pan')->andReturn('AZVGG7840O');
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('promoter_pan_name')->andReturn('something');
+
         $response = $this->merchantService->editMerchantDetailsByPartner('acc_1cXSLlUU8V9sXa', $merchantData);
 
         $this->assertEquals([], $response);

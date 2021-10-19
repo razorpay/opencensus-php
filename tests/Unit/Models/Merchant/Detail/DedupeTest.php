@@ -19,7 +19,6 @@ class DedupeTest extends OAuthTestCase
 {
     protected function mockMerchantRiskClient(string $merchantId, array $fields = [])
     {
-        
         $mockMR = $this->getMockBuilder(MerchantRiskClient::class)
             ->setMethods(['getMerchantRiskScores'])
             ->getMock();

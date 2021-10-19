@@ -128,6 +128,7 @@ class SegmentAnalyticsClient extends AbstractEventClient
         $merchantDetail = $merchant->merchantDetail;
 
         $properties = [
+            Merchant\Entity::PARENT_ID      => $merchant->getParentId(),
             Merchant\Entity::MERCHANT_ID    => $merchant->getId(),
             Merchant\Entity::PARTNER_TYPE   => $merchant->getPartnerType(),
             Merchant\Entity::ORG_ID         => $merchant->getOrgId(),
@@ -135,7 +136,9 @@ class SegmentAnalyticsClient extends AbstractEventClient
 
         foreach (Constants::COMMON_MERCHANT_DETAIL_PROPERTIES as $attribute)
         {
-            $properties[$attribute] = $merchantDetail->getAttribute($attribute);
+            $property = $merchantDetail->getAttribute($attribute);
+
+            $properties[$attribute] = $property ?? 'NULL';
         }
 
         return $properties;
