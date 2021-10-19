@@ -2713,6 +2713,11 @@ trait Refund
             Constants::IS_PAYMENT_AMOUNT_MISMATCH   => $payment->isUpiAndAmountMismatched()
         ];
 
+        if ($payment->getGateway() === Payment\Gateway::NETBANKING_ICICI)
+        {
+            $metaData[Constants::PAYMENT_REFERENCE1] = $payment->getReference1();
+        }
+
         if (empty($input[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]) === false)
         {
             $metaData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND] = $input[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND];

@@ -35,6 +35,7 @@ class Constants
     const IS_PAYMENT_CAPTURED           = 'is_payment_captured';
     const IS_ADMIN_AUTH                 = 'is_admin_auth';
     const IS_PAYMENT_AMOUNT_MISMATCH    = 'is_payment_amount_mismatch';
+    const PAYMENT_REFERENCE1            = 'payment_reference1';
 
     //kafka constants
     const REGISTER_PAYMENT_IN_SCHEDULER   = 'register_payment_in_scheduler';
