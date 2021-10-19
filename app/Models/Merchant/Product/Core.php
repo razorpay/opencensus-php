@@ -242,6 +242,10 @@ class Core extends Base\Core
      * most of the products. So when any of the entities get updated, we try to calculate requirements and if the
      * requirements are 0, Further processing will be taken care by respective products
      *
+     * This function will be invoked only via async job.
+     * Even this function is invoked from an API flow, we always need submerchant to be acting as merchant in basicAuth
+     * We need submerchant context in BasicAuth since we are submitting the products (i.e. form) of a submerchant only.
+     *
      * @param Merchant\Entity $subMerchant
      * @param Detail\Entity   $merchantDetails
      *
@@ -249,6 +253,8 @@ class Core extends Base\Core
      */
     public function updateMerchantProductsIfApplicable(Merchant\Entity $subMerchant, Detail\Entity $merchantDetails)
     {
+        $this->app['basicauth']->setMerchant($subMerchant);
+
         $merchantProducts = $subMerchant->merchantProducts;
 
         $this->trace->info(TraceCode::MERCHANT_PRODUCT_STATUS_AUTO_UPDATE_ATTEMPT,

@@ -32,8 +32,6 @@ class AutoUpdateMerchantProducts extends Job
         $this->source          = $source;
         $this->merchant        = $merchant;
         $this->merchantDetails = $merchantDetails;
-        $app                   = App::getFacadeRoot();
-        $app['basicauth']->setMerchant($merchant);
     }
 
     public function handle()
