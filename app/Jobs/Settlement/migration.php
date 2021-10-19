@@ -12,7 +12,9 @@ use RZP\Models\Settlement\Core;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\AccessMap\Entity;
 use RZP\Models\BankAccount\Core as BankAccount;
+use RZP\Models\Settlement\SettlementServiceMigration;
 
 class migration extends Job
 {
@@ -104,6 +106,22 @@ class migration extends Job
 
         $skip = false;
         $skipReason = null;
+
+        $merchant = $this->repoManager
+                         ->merchant
+                         ->findOrFail($this->merchantId);
+
+        if(in_array($this->merchantId, SettlementServiceMigration::MIGRATION_BLACKLISTED_MIDS) === true)
+        {
+            $skip = true;
+            $skipReason = 'merchant belong to blacklisted mids';
+        }
+
+        if(in_array($merchant->getParentId(), SettlementServiceMigration::MIGRATION_BLACKLISTED_PARENT_MIDS) === true)
+        {
+            $skip = true;
+            $skipReason = sprintf('merchants parent mid %s belongs to blacklisted parent mids', $merchant->getParentId());
+        }
 
         if(in_array(Constants::DAILY_SETTLEMENT, $featureResult) === true)
         {
