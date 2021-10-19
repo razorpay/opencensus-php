@@ -1,3 +1,18 @@
+import { useEffect } from 'react';
+
+function Zaps() {
+  useEffect(() => {
+    const widget = document.createElement('script');
+    widget.type = 'text/javascript';
+    widget.async = true;
+    widget.src =
+      'https://zapier.com/apps/embed/widget.js?services=razorpay-1&limit=10&html_id=zapier-widget';
+    document.body.appendChild(widget);
+  }, []);
+
+  return <div id="zapier-widget" />;
+}
+
 function Data(brandColor) {
   const brandStyles = {
     brandBorderLeft: { borderLeft: `8px solid ${brandColor}` },
@@ -54,6 +69,12 @@ function Data(brandColor) {
           <section className="how-to-use-video">
             <p>Watch this quick video tutorial to start using Razorpay with Zapier.</p>
             <iframe width="560" height="315" src={howToVideoUrl} frameBorder="0" allowFullScreen />
+          </section>
+          <section className="queries-section">
+            <p>
+              <h2>Try our ready-to-use Zap templates</h2>
+            </p>
+            <Zaps />
           </section>
           <section className="queries-section">
             <p>
