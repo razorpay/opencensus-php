@@ -44,6 +44,15 @@ class Dashboard extends Base
 
     const MIGRATE_TO_PAYOUT                = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/MigrateToPayout';
 
+    const ENTITIES = 'entities';
+    const TYPES = 'types';
+    const AGGREGATE = 'aggregate';
+    const ENABLE = 'enable';
+    const TRANSACTION_LEVEL = 'transaction_level';
+    const PREFERENCES = 'preferences';
+    const ZERO_DS_IGNORE = 'zero_ds_ignore';
+    const DEFAULT = 'default';
+
     public function __construct($app)
     {
         parent::__construct($app);
@@ -184,6 +193,35 @@ class Dashboard extends Base
     public function merchantConfigUpdate(array $input, $mode = null) : array
     {
         return $this->makeRequest(self::MERCHANT_CONFIG_UPDATE, $input, self::SERVICE_DASHBOARD, $mode);
+    }
+    /**
+     * Merchant Config Service Bulk Update
+     * @param array  $input
+     * @param null $mode
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+
+    public function merchantConfigBulkUpdate(array $input, $mode = null) : array
+    {
+        if (isset($input[self::ENTITIES][self::TYPES][self::AGGREGATE][self::ENABLE]) === true)
+        {
+            $input[self::ENTITIES][self::TYPES][self::AGGREGATE][self::ENABLE]  = ($input[self::ENTITIES][self::TYPES][self::AGGREGATE][self::ENABLE] == true);
+        }
+        if (isset($input[self::ENTITIES][self::TYPES][self::DEFAULT][self::ENABLE]) === true)
+        {
+            $input[self::ENTITIES][self::TYPES][self::DEFAULT][self::ENABLE]  = ($input[self::ENTITIES][self::TYPES][self::DEFAULT][self::ENABLE] == true);
+        }
+        if (isset($input[self::ENTITIES][self::TYPES][self::TRANSACTION_LEVEL][self::ENABLE]) === true)
+        {
+            $input[self::ENTITIES][self::TYPES][self::TRANSACTION_LEVEL][self::ENABLE]  = ($input[self::ENTITIES][self::TYPES][self::TRANSACTION_LEVEL][self::ENABLE] == true);
+        }
+        if (isset($input[self::ENTITIES][self::PREFERENCES][self::ZERO_DS_IGNORE]) === true)
+        {
+            $input[self::ENTITIES][self::PREFERENCES][self::ZERO_DS_IGNORE]  = ($input[self::ENTITIES][self::PREFERENCES][self::ZERO_DS_IGNORE] == true);
+        }
+        return $this->makeRequest(self::MERCHANT_CONFIG_BULK_UPDATE, $input, self::SERVICE_DASHBOARD, $mode);
     }
 
     /**

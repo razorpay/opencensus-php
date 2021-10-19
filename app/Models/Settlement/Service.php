@@ -978,6 +978,11 @@ class Service extends Base\Service
         return app('settlements_dashboard')->merchantConfigUpdate($input);
     }
 
+    public function merchantConfigBulkUpdate(array $input) : array
+    {
+        return app('settlements_dashboard')->merchantConfigBulkUpdate($input);
+    }
+
     public function merchantConfigGetScheduleableEntities(): array
     {
         return app('settlements_dashboard')->merchantConfigGetScheduleableEntities();

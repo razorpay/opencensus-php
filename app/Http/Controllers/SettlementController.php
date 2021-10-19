@@ -379,6 +379,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function merchantConfigBulkUpdate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->merchantConfigBulkUpdate($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function merchantConfigGetScheduleableEntities()
     {
         $data = $this->service()->merchantConfigGetScheduleableEntities();
