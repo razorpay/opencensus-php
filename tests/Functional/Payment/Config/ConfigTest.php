@@ -318,4 +318,180 @@ class ConfigTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testCreateConvenienceFeeConfigWithEmptyRules()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigWithNullRules()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigForUPIWithFlatValue()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigForNetbanking()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigForUPIWithPercentageValue()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigForCardWithFlatValue()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigForCardWithPercentageValue()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigForNonRepeatingCardTypes()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigWithExtraFieldProvided()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigForRepeatingCardTypes()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigforPercentageFeeInFloat()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigForPercentageFeeInvalidValue()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigForInvalidMethodName()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigForFlatValueLessThanZero()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigWithExtraFieldProvidedInRules()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigWithRequiredFieldNotProvidedInRules()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigWithRepeatingWalletConfig()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigWithRepeatingCardConfig()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigForPercentageFeeLessThanZero()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigForPercentageGreaterThanMaxValue()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigWithInvalidFeePayee()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigWithRepeatingCardTypeConfig()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigWithInvalidCardType()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigWithMethodNotSent()
+    {
+
+        $this->startTest();
+
+    }
+
+    public function testCreateConvenienceFeeConfigInvalidLabelLength()
+    {
+
+        $this->startTest();
+
+    }
+
 }

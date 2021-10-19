@@ -357,4 +357,105 @@ class Core extends Base\Core
 
             return $config;
     }
+
+    public function validateAndSaveCustomerFeeConfig($inputConfig)
+    {
+
+        $convenienceFeeConfig = [];
+
+        if(isset($inputConfig['rules']) === false)
+        {
+            return $convenienceFeeConfig;
+        }
+
+        if(isset($inputConfig['message']) === true and
+            strlen($inputConfig['message']) > 0)
+        {
+            $convenienceFeeConfig['message'] = $inputConfig['message'];
+        }
+
+        $convenienceFeeConfig['label'] = 'Convenience Fee';
+
+        if(isset($inputConfig['label']) === true and
+            strlen($inputConfig['label']) > 0 )
+        {
+            $convenienceFeeConfig['label'] =  $inputConfig['label'];
+        }
+
+
+        $convenienceFeeConfig['rules'] = [];
+
+        foreach ($inputConfig['rules'] as $rule)
+        {
+            $this->validateAndAddConfigRules($convenienceFeeConfig['rules'], $rule);
+        }
+
+        return $convenienceFeeConfig;
+    }
+
+    public function validateAndAddConfigRules(array & $convenienceFeeConfig, $rule)
+    {
+
+        if(isset($rule['fee']['percentage_value']) === true)
+        {
+            $rule['fee']['percentage_value'] = floatval($rule['fee']['percentage_value']);
+        }
+
+
+        if($rule['method'] === 'card' and
+            isset($rule['card.type']) === true)
+        {
+            $cardTypes = $rule['card.type'];
+
+            foreach ($cardTypes as $cardType)
+            {
+                if(in_array($cardType, Entity::CARD_TYPES) === false)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG,
+                        'convenience_fee_config.rules.card.type',
+                        null,
+                        "{$cardType} is not a valid card type."
+                    );
+                }
+                else if(isset($convenienceFeeConfig['card']['type'][$cardType]) === true)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG,
+                        'convenience_fee_config.rules.card.type',
+                        null,
+                        "Duplicate configuration for {$cardType} "
+                    );
+                }
+                $convenienceFeeConfig['card']['type'][$cardType]['fee'] = $rule['fee'];
+            }
+        }
+        else if($rule['method'] === 'card')
+        {
+            if(isset($convenienceFeeConfig[$rule['method']]) === true and
+                isset($convenienceFeeConfig['card']['fee']) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG,
+                    'convenience_fee_config.rules.card',
+                    null,
+                    "Duplicate configuration for card"
+                );
+            }
+            $convenienceFeeConfig['card']['fee'] = $rule['fee'];
+        }
+        else
+        {
+            if(isset($convenienceFeeConfig[$rule['method']]) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG,
+                    'convenience_fee_config.rules.card',
+                    null,
+                    "Duplicate configuration for {$rule['method']}"
+                );
+            }
+            $convenienceFeeConfig[$rule['method']]['fee'] = $rule['fee'];
+        }
+    }
 }

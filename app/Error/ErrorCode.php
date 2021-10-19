@@ -2338,7 +2338,10 @@ class ErrorCode
     const GATEWAY_ERROR_WHILE_PROCESSING_REFUND_REQUEST                             = 'GATEWAY_ERROR_WHILE_PROCESSING_REFUND_REQUEST';
     const GATEWAY_ERROR_REMITTER_BANK_NOT_AVAILABLE                                 = 'GATEWAY_ERROR_REMITTER_BANK_NOT_AVAILABLE';
 
-    static function getConstants()
+    //Dynamic Fee Bearer Error Codes
+    const BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG                                = 'BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG';
+
+        static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);
 

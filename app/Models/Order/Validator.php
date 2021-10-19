@@ -16,6 +16,7 @@ use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Currency\Core as CurrencyCore;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Trace\TraceCode;
 
 class Validator extends Base\Validator
 {
@@ -67,6 +68,7 @@ class Validator extends Base\Validator
         Entity::APP_OFFER                          => 'sometimes|boolean',
         Entity::PRODUCTS                           => 'sometimes|array|max:128',
         Entity::TAX_INVOICE                        => 'sometimes|array',
+        Entity::CONVENIENCE_FEE_CONFIG             => 'sometimes|nullable|array'
     ];
 
     protected static $createValidators = [
@@ -625,4 +627,5 @@ class Validator extends Base\Validator
     {
         ProductType::checkType($value);
     }
+
 }

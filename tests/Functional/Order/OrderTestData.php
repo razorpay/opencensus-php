@@ -2184,4 +2184,131 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ORDER_BANK_NOT_ENABLED_FOR_MERCHANT
         ],
     ],
+    'testCreateOrderWithConvenienceFeeConfigEmpty' => [
+        'request' => [
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR',
+                'method'   => 'netbanking',
+                'convenience_fee_config' => []
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'amount' => 1000,
+                'currency' => 'INR'
+            ],
+
+        ],
+    ],
+
+    'testCreateOrderWithConvenienceFeeConfigMerchantNotOnDynamicFeeBearer' => [
+        'request' => [
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR',
+                'method'   => 'netbanking',
+                'convenience_fee_config' => [
+                    'rules' => []
+                ]
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Convenience fee configurable for dynamic fee bearer users only',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG
+        ],
+    ],
+
+    'testCreateOrderWithConvenienceFeeConfigMerchantOnDynamicFeeBearer' => [
+        'request' => [
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR',
+                'method'   => 'netbanking',
+                'convenience_fee_config' => [
+                    "rules" => [
+                        [
+                            "method" => "netbanking",
+                            "fee" => [
+                                "payee" => "customer",
+                                "flat_value" => 20
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'amount' => 1000,
+                'currency' => 'INR',
+                'convenience_fee_config' => [
+                    "rules" => [
+                        [
+                            "method" => "netbanking",
+                            "fee" => [
+                                "payee" => "customer",
+                                "flat_value" => 20
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testCreateOrderWithConvenienceFeeConfigWithDifferentCurrency' => [
+        'request' => [
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'USD',
+                'method'   => 'card',
+                'convenience_fee_config' => [
+                    "rules" => [
+                        [
+                            "method" => "netbanking",
+                            "fee" => [
+                                "payee" => "customer",
+                                "flat_value" => 20
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'amount' => 1000,
+                'currency' => 'USD',
+                'convenience_fee_config' => [
+                    "rules" => [
+                        [
+                            "method" => "netbanking",
+                            "fee" => [
+                                "payee" => "customer",
+                                "flat_value" => 20
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
 ];

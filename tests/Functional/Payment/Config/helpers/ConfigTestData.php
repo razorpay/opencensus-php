@@ -753,5 +753,1015 @@ return  [
             ],
             'status_code'   =>  200
         ]
-    ]
+    ],
+
+    'testCreateConvenienceFeeConfigWithEmptyRules' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'rules' => []
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => false,
+                'config'     => [
+                    'label' => 'Convenience Fee',
+                    'rules' => []
+                ],
+            ]
+        ],
+    ],
+
+    'testCreateConvenienceFeeConfigWithNullRules' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'rules' => null
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => false,
+                'config'     => [],
+            ]
+        ],
+    ],
+
+    'testCreateConvenienceFeeConfigForUPIWithFlatValue' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than UPI',
+                    'rules' => [
+                        [
+                            'method' => 'upi',
+                            'fee' => [
+                                'payee' => 'business',
+                                'flat_value' => 20
+                            ],
+                        ]
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => false,
+                'config'     => [
+                    'label' => 'Convenience Fee',
+                    'message' => 'To prevent additional fee use methods other than UPI',
+                    'rules' => [
+                        'upi' => [
+                            'fee' => [
+                                'payee' => 'business',
+                                'flat_value' => 20
+                            ]
+                        ]
+                    ]
+                ],
+            ]
+        ],
+    ],
+
+    'testCreateConvenienceFeeConfigForUPIWithPercentageValue' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than UPI',
+                    'rules' => [
+                        [
+                            'method' => 'upi',
+                            'fee' => [
+                                'payee' => 'business',
+                                'percentage_value' => "20.22"
+                            ],
+                        ]
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => false,
+                'config'     => [
+                    'label' => 'Convenience Fee',
+                    'message' => 'To prevent additional fee use methods other than UPI',
+                    'rules' => [
+                        'upi' => [
+                            'fee' => [
+                                'payee' => 'business',
+                                'percentage_value' => 20.22
+                            ]
+                        ]
+                    ]
+                ],
+            ]
+        ],
+    ],
+
+    'testCreateConvenienceFeeConfigForNetbanking' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'rules' => [
+                        [
+                            'method' => 'netbanking',
+                            'fee' => [
+                                'payee' => 'customer',
+                                'flat_value' => 20
+                            ],
+                        ]
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => false,
+                'config'     => [
+                    'label' => 'Convenience Fee',
+                    'rules' => [
+                        'netbanking' => [
+                            'fee' => [
+                                'payee' => 'customer',
+                                'flat_value' => 20
+                            ]
+                        ]
+                    ]
+                ],
+            ]
+        ],
+    ],
+
+    'testCreateConvenienceFeeConfigWithExtraFieldProvided' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than UPI',
+                    'rules' => [
+                        [
+                            'method' => 'upi',
+                            'fee' => [
+                                'payee' => 'business',
+                                'flat_value' => 20
+                            ],
+                        ]
+                    ],
+                    'random' => 'extra field'
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'convenience_fee.random is/are not required and should not be sent'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+                'class' => 'RZP\Exception\ExtraFieldsException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
+        ],
+    ],
+
+    'testCreateConvenienceFeeConfigForCardWithFlatValue' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        [
+                            'method' => 'card',
+                            'fee' => [
+                                'payee' => 'business',
+                                'flat_value' => 20
+                            ],
+                        ]
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => false,
+                'config'     => [
+                    'label' => 'Convenience Fee',
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        'card' => [
+                            'fee' => [
+                                'payee' => 'business',
+                                'flat_value' => 20
+                            ]
+                        ]
+                    ]
+                ],
+            ]
+        ],
+    ],
+
+    'testCreateConvenienceFeeConfigForCardWithPercentageValue' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        [
+                            'method' => 'card',
+                            'fee' => [
+                                'payee' => 'business',
+                                'percentage_value' => "20.23"
+                            ],
+                        ]
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => false,
+                'config'     => [
+                    'label' => 'Convenience Fee',
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        'card' => [
+                            'fee' => [
+                                'payee' => 'business',
+                                'percentage_value' => 20.23
+                            ]
+                        ]
+                    ]
+                ],
+            ]
+        ],
+    ],
+
+    'testCreateConvenienceFeeConfigForNonRepeatingCardTypes' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        [
+                            "method" => "card",
+                            "card.type" => ["prepaid", "debit"],
+                            "fee" => [
+                                 "payee" => "business",
+                                 "flat_value" => 20
+                            ],
+                        ],
+                        [
+                            "method" => "card",
+                            "card.type" => ["credit"],
+                            "fee" => [
+                                "payee" => "customer",
+                                "percentage_value" => "20"
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => false,
+                'config'     => [
+                    'label' => 'Convenience Fee',
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        'card' => [
+                            'type' => [
+                                'prepaid' => [
+                                    'fee' => [
+                                        "payee" => "business",
+                                        "flat_value" => 20
+                                    ]
+                                ],
+                                'debit' => [
+                                    'fee' => [
+                                        "payee" => "business",
+                                        "flat_value" => 20
+                                    ]
+                                ],
+                                'credit' => [
+                                    "fee" => [
+                                        "payee" => "customer",
+                                        "percentage_value" => 20
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+            ]
+        ],
+    ],
+
+    'testCreateConvenienceFeeConfigForRepeatingCardTypes' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        [
+                            "method" => "card",
+                            "card.type" => ["prepaid", "debit"],
+                            "fee" => [
+                                "payee" => "business",
+                                "flat_value" => 20
+                            ],
+                        ],
+                        [
+                            "method" => "card",
+                            "card.type" => ["debit", "credit"],
+                            "fee" => [
+                                "payee" => "customer",
+                                "flat_value" => 20
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG
+        ],
+
+    ],
+
+    'testCreateConvenienceFeeConfigforPercentageFeeInFloat' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        [
+                            "method" => "card",
+                            "card.type" => ["prepaid", "debit"],
+                            "fee" => [
+                                "payee" => "business",
+                                "percentage_value" => 20.00
+                            ],
+                        ]
+
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'percentage_value value should be string'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG
+        ],
+
+    ],
+
+    'testCreateConvenienceFeeConfigForPercentageFeeInvalidValue' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        [
+                            "method" => "card",
+                            "card.type" => ["prepaid", "debit"],
+                            "fee" => [
+                                "payee" => "business",
+                                "percentage_value" => "20.009"
+                            ],
+                        ]
+
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'Incorrect format provided for the parameter. Please check the valid format'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG
+        ],
+
+    ],
+
+    'testCreateConvenienceFeeConfigForInvalidMethodName' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        [
+                            "method" => "emandate",
+                            "fee" => [
+                                "payee" => "business",
+                                "percentage_value" => "20.0"
+                            ],
+                        ]
+
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'emandate is not a valid method',
+                    'field' => 'convenience_fee_config.rules.emandate'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG
+        ],
+
+    ],
+
+    'testCreateConvenienceFeeConfigForFlatValueLessThanZero' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        [
+                            "method" => "card",
+                            "fee" => [
+                                "payee" => "business",
+                                "flat_value" => -20
+                            ],
+                        ]
+
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'The value for this parameter cannot be less than 0',
+                    'field' => 'convenience_fee_config.rules.fee.flat_value'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG
+        ],
+    ],
+
+    'testCreateConvenienceFeeConfigWithExtraFieldProvidedInRules' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than UPI',
+                    'rules' => [
+                        [
+                            'method' => 'upi',
+                            'fee' => [
+                                'payee' => 'business',
+                                'flat_value' => 20
+                            ],
+                            'random' => 'extra field'
+                        ]
+                    ],
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'convenience_fee_config.rules.random is/are not required and should not be sent'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
+        ],
+    ],
+
+    'testCreateConvenienceFeeConfigWithRequiredFieldNotProvidedInRules' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than UPI',
+                    'rules' => [
+                        [
+                            'fee' => [
+                                'payee' => 'business',
+                                'flat_value' => 20
+                            ]
+                        ]
+                    ],
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The order could not be processed as it is missing required information',
+                    'field' => 'convenience_fee_config.rules.method'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG
+        ],
+    ],
+
+    'testCreateConvenienceFeeConfigWithRepeatingWalletConfig' =>[
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than Wallet',
+                    'rules' => [
+                        [
+                            "method" => "wallet",
+                            "fee" => [
+                                "payee" => "business",
+                                "flat_value" => 20
+                            ],
+                        ],
+                        [
+                            "method" => "wallet",
+                            "fee" => [
+                                "payee" => "customer",
+                                "flat_value" => 20
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Duplicate configuration for wallet'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG
+        ],
+    ],
+
+    'testCreateConvenienceFeeConfigWithRepeatingCardConfig' =>[
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        [
+                            "method" => "card",
+                            "fee" => [
+                                "payee" => "business",
+                                "flat_value" => 20
+                            ],
+                        ],
+                        [
+                            "method" => "card",
+                            "fee" => [
+                                "payee" => "customer",
+                                "percentage_value" => "99.99"
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Duplicate configuration for card'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG
+        ],
+    ],
+
+    'testCreateConvenienceFeeConfigForPercentageFeeLessThanZero' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        [
+                            "method" => "card",
+                            "card.type" => ["prepaid", "debit"],
+                            "fee" => [
+                                "payee" => "business",
+                                "percentage_value" => "-9"
+                            ],
+                        ]
+
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'The value for this parameter cannot be less than 0 or greater than 100'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG
+        ],
+
+    ],
+
+    'testCreateConvenienceFeeConfigForPercentageGreaterThanMaxValue' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        [
+                            "method" => "card",
+                            "card.type" => ["prepaid", "debit"],
+                            "fee" => [
+                                "payee" => "business",
+                                "percentage_value" => "101"
+                            ],
+                        ]
+
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'The value for this parameter cannot be less than 0 or greater than 100'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG
+        ],
+
+    ],
+
+    'testCreateConvenienceFeeConfigWithInvalidFeePayee' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        [
+                            "method" => "card",
+                            "card.type" => ["prepaid", "debit"],
+                            "fee" => [
+                                "payee" => "platform",
+                                "percentage_value" => "100"
+                            ],
+                        ]
+
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'platform is not a valid value for this parameter.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG
+        ],
+
+    ],
+
+    'testCreateConvenienceFeeConfigWithRepeatingCardTypeConfig' =>[
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        [
+                            "method" => "card",
+                            "card.type" => ['debit', 'credit'],
+                            "fee" => [
+                                "payee" => "business",
+                                "flat_value" => 20
+                            ],
+                        ],
+                        [
+                            "method" => "card",
+                            "card.type" => ['debit'],
+                            "fee" => [
+                                "payee" => "customer",
+                                "percentage_value" => "99.99"
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Duplicate configuration for debit '
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG
+        ],
+    ],
+
+    'testCreateConvenienceFeeConfigWithInvalidCardType' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        [
+                            "method" => "card",
+                            "card.type" => ["testCard"],
+                            "fee" => [
+                                "payee" => "business",
+                                "percentage_value" => "50"
+                            ],
+                        ]
+
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'testCard is not a valid card type.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG
+        ],
+
+    ],
+
+    'testCreateConvenienceFeeConfigWithMethodNotSent' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        [
+                            "fee" => [
+                                "payee" => "business",
+                                "flat_value" => 50
+                            ],
+                        ]
+
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'The order could not be processed as it is missing required information'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG
+        ],
+    ],
+
+    'testCreateConvenienceFeeConfigInvalidLabelLength' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => '0',
+                'type'       => 'convenience_fee',
+                'config'     => [
+                    'label' => "Convenience Fee Configuration",
+                    'message' => 'To prevent additional fee use methods other than Card',
+                    'rules' => [
+                        [
+                            "method" => "card",
+                            "fee" => [
+                                "payee" => "business",
+                                "flat_value" => 50
+                            ],
+                        ]
+
+                    ]
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'label cannot be greater then 20 characters'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG
+        ],
+    ],
 ];

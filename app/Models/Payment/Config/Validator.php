@@ -269,8 +269,217 @@ class Validator extends Base\Validator
                         'Config Manual duration should be set when capture is manual');
                 }
         }
+        if($input['type'] === Type::CONVENIENCE_FEE)
+        {
+            $this->validateConvenienceFeeConfig($input['config']);
+        }
     }
 
+    protected function validateConvenienceFeeConfig($config)
+    {
+        $convenienceFeeConfig = $config;
+
+        if(isset($config['rules']) === false) {
+            return;
+        }
+
+        $this->validateInputTypeAndExtraFields("convenience_fee.",
+            [
+                'message'=>['string', 120],
+                'label'  =>['string', 20],
+                'rules'  =>['array', 10]
+            ],
+            $convenienceFeeConfig
+        );
+
+        if(isset($convenienceFeeConfig['rules']) === true)
+        {
+            foreach ($convenienceFeeConfig['rules'] as $rule)
+            {
+                $this->validateConfigRule($rule);
+            }
+        }
+    }
+
+    public function validateConfigRule($rule)
+    {
+        $this->validateRequiredFields('convenience_fee_config.rules.', ['method', 'fee'], $rule);
+
+        if(is_string($rule['method']) and in_array($rule['method'], Entity::FEE_CONFIG_METHODS) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG,
+                'convenience_fee_config.rules.'.$rule['method'],
+                null,
+                "{$rule['method']} is not a valid method"
+            );
+        }
+
+        if($rule['method'] === 'card' and
+            isset($rule['card.type']) === true)
+        {
+            $this->validateInputTypeAndExtraFields(
+                'convenience_fee_config.rules.',
+                ['method' => ['string'], 'card.type' => ['array', 3], 'fee'=>['array']],
+                $rule
+            );
+        }
+        else
+        {
+            $this->validateInputTypeAndExtraFields(
+                'convenience_fee_config.rules.',
+                ['method' => ['string'], 'fee'=>['array']],
+                $rule
+            );
+        }
+
+        $this->validateFee($rule['fee']);
+    }
+
+
+    //Fee related validations for convenience fee config
+    public function validateFee($fee)
+    {
+        if(isset($fee['flat_value']) === true)
+        {
+            $this->validateInputTypeAndExtraFields(
+                'convenience_fee_config.rules.',
+                ['payee' => ['string'], 'flat_value'=>['integer']],
+                $fee
+            );
+            $this->validateRequiredFields("convenience_fee_config.rules.fee.",['payee', 'flat_value'],$fee);
+
+            if($fee['flat_value'] < 0)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG,
+                    'convenience_fee_config.rules.fee.flat_value',
+                    null,
+                    'The value for this parameter cannot be less than 0'
+                );
+            }
+        }
+        else
+        {
+            $this->validateInputTypeAndExtraFields(
+                'convenience_fee_config.rules.',
+                ['payee' => ['string'], 'percentage_value'=>['string']],
+                $fee
+            );
+
+            $this->validateRequiredFields("convenience_fee_config.rules.fee.",['payee', 'percentage_value'],$fee);
+
+            if((is_numeric($fee['percentage_value']) === true and
+                $this->validatePercentage(floatval($fee['percentage_value'])) === false) or
+                is_numeric($fee['percentage_value']) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG,
+                    'convenience_fee_config.rules.fee.percentage_value',
+                    null,
+                    'Incorrect format provided for the parameter. Please check the valid format'
+                );
+            }
+            else if((is_numeric($fee['percentage_value']) === true and
+                $this->validatePercentage(floatval($fee['percentage_value'])) === true) and
+                (floatval($fee['percentage_value']) < 0 or floatval($fee['percentage_value']) > 100 ))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG,
+                    'convenience_fee_config.rules.fee.percentage_value',
+                    null,
+                    'The value for this parameter cannot be less than 0 or greater than 100'
+                );
+            }
+        }
+
+        if( in_array($fee['payee'], Entity::FEE_PAYEE) === false )
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG,
+                'convenience_fee_config.rules.fee.payee',
+                null,
+                "{$fee['payee']} is not a valid value for this parameter."
+            );
+        }
+    }
+
+    public function validatePercentage($number,$decimal=2) : bool
+    {
+        $multiplicationFactor=pow(10,$decimal);
+
+        if((int)($number*$multiplicationFactor) == $number*$multiplicationFactor)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    //This function will take input list of fields and correspondingly type and length
+    // and validates with actual value
+    protected function validateInputTypeAndExtraFields(string $fieldPrefix, $rules, $convenienceFeeConfig)
+    {
+        $extraFields = [];
+        foreach($convenienceFeeConfig as $key => $value)
+        {
+            if(isset($rules[$key]) === true)
+            {
+                $inputType = gettype($value);
+
+                if($inputType !== $rules[$key][0])
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG,
+                        $fieldPrefix.$key,
+                        null,
+                        "{$key} value should be {$rules[$key][0]}"
+                    );
+                }
+                else if(isset($rules[$key][1]) === true)
+                {
+                    $length = $inputType === 'string' ? strlen($value) : sizeof(($value));
+
+                    if($length > $rules[$key][1])
+                    {
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG,
+                            $fieldPrefix.$key,
+                            null,
+                            "{$key} cannot be greater then {$rules[$key][1]} characters"
+                        );
+                    }
+                }
+            }
+            else {
+                $extraFields[] = $fieldPrefix.$key;
+            }
+        }
+
+        if(sizeof($extraFields) !== 0)
+        {
+            throw new Exception\ExtraFieldsException($extraFields);
+        }
+    }
+
+    //This field validates whether field is required(applicable only for convenience field config)
+    public function validateRequiredFields($fieldPrefix, $fields, $rule)
+    {
+        foreach($fields as $field)
+        {
+            if(isset($rule[$field]) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG,
+                    $fieldPrefix.$field,
+                    null,
+                    "The order could not be processed as it is missing required information"
+                );
+            }
+        }
+    }
     protected function validateIssuers($attribute, $input)
     {
         if (is_array($input) === false)

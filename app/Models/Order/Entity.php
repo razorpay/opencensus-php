@@ -96,7 +96,8 @@ class Entity extends Base\PublicEntity
     const REFERENCE4        = 'reference4';
     const REFERENCE5        = 'reference5';
     const REFERENCE6        = 'reference6';
-    const REFERENCE7        = 'reference7';
+    // Using reference7 column to store config_id for convenience fee config
+    const FEE_CONFIG_ID     = 'reference7';
     const REFERENCE8        = 'reference8';
     const PUBLIC_KEY        = 'public_key';
 
@@ -163,6 +164,8 @@ class Entity extends Base\PublicEntity
 
     const TAX_INVOICE = 'tax_invoice';
 
+    const CONVENIENCE_FEE_CONFIG = 'convenience_fee_config';
+
     protected $fillable = [
         self::DISCOUNT,
         self::AMOUNT,
@@ -209,6 +212,7 @@ class Entity extends Base\PublicEntity
         self::PROVIDER_CONTEXT      => null,
         self::APP_OFFER             => false,
         self::PG_ROUTER_SYNCED      => false,
+        self::FEE_CONFIG_ID         => null,
     ];
 
     protected $public = [
@@ -520,6 +524,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::LATE_AUTH_CONFIG_ID, $lateAuthConfigId);
     }
 
+    public function setFeeConfigId(string $feeConfigId)
+    {
+        return $this->setAttribute(self::FEE_CONFIG_ID, $feeConfigId);
+    }
+
     public function setPublicKey($publicKey)
     {
         $this->setAttribute(self::PUBLIC_KEY, $publicKey);
@@ -528,6 +537,11 @@ class Entity extends Base\PublicEntity
     public function getLateAuthConfigId()
     {
         return $this->getAttribute(self::LATE_AUTH_CONFIG_ID);
+    }
+
+    public function getFeeConfigId()
+    {
+        return $this->getAttribute(self::FEE_CONFIG_ID);
     }
 
     public function getStatus()

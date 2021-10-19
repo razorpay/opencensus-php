@@ -100,7 +100,15 @@ class Service extends Base\Service
             "merchant_id" => $this->merchant->getId(),
         ]);
 
-        return $order->toArrayPublic();
+        $result = $order->toArrayPublic();
+
+        if(isset($input[Entity::CONVENIENCE_FEE_CONFIG]) === true and
+            empty($input[Entity::CONVENIENCE_FEE_CONFIG]) === false)
+        {
+            $result[Entity::CONVENIENCE_FEE_CONFIG] = $input[Entity::CONVENIENCE_FEE_CONFIG];
+        }
+
+        return $result;
     }
 
     /**

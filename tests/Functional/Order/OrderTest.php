@@ -2535,4 +2535,66 @@ class OrderTest extends TestCase
         $this->assertEquals($orderData[Order\Entity::BANK], $orderEntity['bank']);
         $this->assertEquals($orderData[Order\Entity::AMOUNT], $orderEntity['amount']);
     }
+
+    public function testCreateOrderWithConvenienceFeeConfigEmpty()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($data);
+
+        $orderEntity = $this->getDbLastOrder()->toArray();
+
+        $this->assertEquals(null, $orderEntity['reference7']);
+    }
+
+    public function testCreateOrderWithConvenienceFeeConfigMerchantNotOnDynamicFeeBearer()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->fixtures->edit('merchant', '10000000000000',['fee_bearer' => 'customer']);
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($data);
+    }
+
+    public function testCreateOrderWithConvenienceFeeConfigMerchantOnDynamicFeeBearer()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic']);
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($data);
+
+        $orderEntity = $this->getDbLastOrder()->toArray();
+
+        $this->assertNotNull($orderEntity['reference7']);
+
+        $config = $this->getDbEntityById('config', $orderEntity['reference7']);
+
+        $this->assertEquals('{"label": "Convenience Fee", "rules": {"netbanking": {"fee": {"payee": "customer", "flat_value": 20}}}}', $config->getConfig());
+    }
+
+    public function testCreateOrderWithConvenienceFeeConfigWithDifferentCurrency()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->fixtures->edit('merchant','10000000000000' ,['convert_currency' => true, 'fee_bearer' => 'dynamic']);
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($data);
+
+        $orderEntity = $this->getDbLastOrder()->toArray();
+
+        $this->assertNotNull($orderEntity['reference7']);
+
+        $config = $this->getDbEntityById('config', $orderEntity['reference7']);
+
+        $this->assertEquals('{"label": "Convenience Fee", "rules": {"netbanking": {"fee": {"payee": "customer", "flat_value": 20}}}}', $config->getConfig());
+    }
 }

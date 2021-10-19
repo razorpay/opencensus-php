@@ -76,6 +76,9 @@ class Core extends Base\Core
 
         $this->createLateAuthConfigIfApplicable($input, $order);
 
+        $this->createConvenienceFeeConfigIfApplicable($input, $order);
+
+
         list($order, $ba) = $this->repo->transaction(function() use ($order, $input, $dummyProcessing)
         {
             //The variable pushToQueue is added since we want to delay razorx call and queue push till
@@ -162,6 +165,57 @@ class Core extends Base\Core
 
             $order->setLateAuthConfigId($configEntity->getId());
         }
+    }
+
+    /*
+     * This function is used to create method wise convenience fee config
+     * based on rules sent in order create input. This is only applicable
+     * for merchant who are on Dynamic Fee Bearer configuration
+     */
+    private function createConvenienceFeeConfigIfApplicable(& $input, $order)
+    {
+        if(isset($input[Entity::CONVENIENCE_FEE_CONFIG]) === false)
+        {
+            return;
+        }
+
+        if(isset($input[Entity::CONVENIENCE_FEE_CONFIG]) === true and
+            empty( $input[Entity::CONVENIENCE_FEE_CONFIG]) === true)
+        {
+            return;
+        }
+
+        $inputConfig = $input[Entity::CONVENIENCE_FEE_CONFIG];
+
+        if($order->merchant->getFeeBearer() !== 'dynamic')
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG,
+                'convenience_fee_config',
+                null,
+                'Convenience fee configurable for dynamic fee bearer users only'
+            );
+        }
+
+        $this->createConvenienceFeeConfig($inputConfig, $order);
+    }
+
+    private function createConvenienceFeeConfig($convenienceFeeConfig, $order)
+    {
+        $config['config'] = $convenienceFeeConfig;
+
+        $config['type'] = 'convenience_fee';
+
+        $config['name'] = $order->getAttribute(Entity::MERCHANT_ID).'_fee_config';
+
+        $config['is_default'] = false;
+
+        $configCore = new Config\Core();
+
+        $configEntity = $configCore->create($config);
+
+        $order->setFeeConfigId($configEntity->getId());
+
     }
 
     public function getInputWithoutExtraParams(array $input)

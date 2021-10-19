@@ -17,6 +17,14 @@ class Entity extends Base\PublicEntity
     const IS_DEFAULT          = 'is_default';
     const IS_DELETED          = 'is_deleted';
 
+    const CONVENIENCE_FEE_CONFIG = 'convenience_fee_config';
+
+    const FEE_CONFIG_METHODS = ['card', 'wallet', 'netbanking', 'upi'];
+
+    const FEE_PAYEE = ['business', 'customer'];
+
+    const CARD_TYPES = ['prepaid', 'debit', 'credit'];
+
     protected static $sign    = 'config';
 
     protected $entity         = 'config';
@@ -83,6 +91,12 @@ class Entity extends Base\PublicEntity
     public function build(array $input = [], string $operation = 'create')
     {
         $this->getValidator()->validateInput($operation, $input);
+
+        //Validating and save convenience fee config if applicable
+        if((isset($input['type']) === true) and ($input['type'] === TYPE::CONVENIENCE_FEE))
+        {
+            $input['config'] =  (new Core)->validateAndSaveCustomerFeeConfig($input['config']);
+        }
 
         $this->fillAndGenerateId($input);
 
