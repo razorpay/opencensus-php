@@ -22,7 +22,7 @@ class Core extends Base\Core
 {
     const TEMP_PATH = '/tmp/';
 
-    const STORE_TYPE = 'file';
+    const TYPE = 'nps_survey';
 
     const CONTENT_TYPE_JSON = 'application/json';
 
@@ -269,7 +269,7 @@ class Core extends Base\Core
 
         $response = $ufhService->uploadFileAndGetUrl($uploadedFileInstance,
             $name = File::name($pathToTemporaryFile),
-            self::STORE_TYPE,
+            self::TYPE,
             null);
 
         $this->trace->info(
