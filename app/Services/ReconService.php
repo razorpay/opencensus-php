@@ -44,6 +44,12 @@ class ReconService
 
     const PATCH = 'PATCH';
 
+    const AUTH_TYPE = 'auth_type';
+
+    const API = 'api';
+
+    const MATCHER = 'matcher';
+
 
     public function __construct($app)
     {
@@ -62,6 +68,10 @@ class ReconService
         $this->auth = $app['basicauth'];
 
         $this->secret = $this->config['secret'];
+
+        $this->matcher_key = $this->config['matcher_key'];
+
+        $this->matcher_secret = $this->config['matcher_secret'];
 
         $this->ufh = (new UfhService($app));
 
@@ -104,6 +114,13 @@ class ReconService
                 'input'     => $input,
                 'data'      => $data,
             ]);
+
+        if (array_key_exists(self::AUTH_TYPE, $data))
+        {
+            $auth_type = $data[self::AUTH_TYPE];
+            unset($data[self::AUTH_TYPE]);
+            return $this->sendRequest($url, $method, $data, $auth_type);
+        }
 
         return $this->sendRequest($url, $method, $data);
     }
@@ -194,7 +211,7 @@ class ReconService
         return $response['relative_location'];
     }
 
-    protected function sendRequest($url, $method, $data = null)
+    protected function sendRequest($url, $method, $data = null, $auth_type=self::API)
     {
         $headers['Content-Type'] = 'application/json';
 
@@ -202,9 +219,16 @@ class ReconService
 
         $url = $this->baseUrl . $url;
 
+        if ($auth_type == self::MATCHER) {
+            $auth = [$this->matcher_key, $this->matcher_secret];
+        }
+        else {
+            $auth = [$this->key, $this->secret];
+        }
+
         $options = array(
             'timeout' => self::REQUEST_TIMEOUT,
-            'auth'    => [$this->key, $this->secret],
+            'auth'    => $auth,
         );
 
         try {
@@ -268,6 +292,7 @@ class ReconService
     protected function getPayload($data, $method)
     {
         if ($method === 'GET') return $data;
+        if ($method === 'DELETE') return $data;
 
         return json_encode($data, JSON_FORCE_OBJECT);
     }

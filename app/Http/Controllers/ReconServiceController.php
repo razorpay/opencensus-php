@@ -22,9 +22,11 @@ class ReconServiceController extends Controller
 
     const WHITELISTED_ROUTES_REGEX = [
         self::GET => [
-            '^recon_run_logs$',
+            '^recon_runs$',
+            '^ingestion_runs$',
+            '^recon_runs\/\d+$',
+            '^ingestion_runs\/\d+$',
             '^ingestion_run_logs$',
-            '^recon_run_logs\/\d+$',
             '^ingestion_run_logs\/\d+$',
             '^journal_voucher$',
             '^workspaces$',
@@ -55,10 +57,10 @@ class ReconServiceController extends Controller
             '^recon_state\/\d+$',
             '^rule_state_map$',
             '^rule_state_map\/\d+$',
-            '^recon_run_logs$',
-            '^ingestion_run_logs$',
-            '^recon_run_logs\/\d+$',
-            '^ingestion_run_logs\/\d+$',
+            '^recon_runs$',
+            '^ingestion_runs$',
+            '^recon_runs\/\d+$',
+            '^ingestion_runs\/\d+$',
             '^journal_voucher$',
             '^signed_url$',
         ],
@@ -90,6 +92,8 @@ class ReconServiceController extends Controller
             '^file_types\/[[:alnum:]]{14}\/source_configs\/[[:alnum:]]{14}$',
             '^recon_state\/\d+$',
             '^rule_state_map\/\d+$',
+            '^recon_runs\/\d+$',
+            '^ingestion_runs\/\d+$',
             '^recon_run_logs\/\d+$',
             '^ingestion_run_logs\/\d+$'
         ],
@@ -104,8 +108,8 @@ class ReconServiceController extends Controller
             '^recon_state\/\d+$',
             '^rule_state_map\/\d+$',
             '^bulk_delete$',
-            '^recon_run_logs\/\d+$',
-            '^ingestion_run_logs\/\d+$',
+            '^recon_runs\/\d+$',
+            '^ingestion_runs\/\d+$',
         ],
     ];
 

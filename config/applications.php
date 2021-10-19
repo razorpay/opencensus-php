@@ -1080,9 +1080,11 @@ return [
     ],
 
     'recon'         => [
-        'key'           => env('RECON_SERVICE_AUTH_KEY'),
-        'secret'        => env('RECON_SERVICE_AUTH_SECRET'),
-        'url'           => env('RECON_SERVICE_URL'),
+        'key'               => env('RECON_SERVICE_API_AUTH_KEY'),
+        'secret'            => env('RECON_SERVICE_API_AUTH_SECRET'),
+        'url'               => env('RECON_SERVICE_URL'),
+        'matcher_key'       => env('RECON_SERVICE_MATCHER_AUTH_KEY'),
+        'matcher_secret'    => env('RECON_SERVICE_MATCHER_AUTH_SECRET'),
     ],
 
     'bbps' => [
