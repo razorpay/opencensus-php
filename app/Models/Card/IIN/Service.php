@@ -74,6 +74,14 @@ class Service extends Base\Service
             $data['issuer']       = $iinEntity->getIssuer();
             $data['network']      = $iinEntity->getNetwork();
 
+            $app = App::getFacadeRoot();
+
+            $routeName = $app['api.route']->getCurrentRouteName();
+
+            if($routeName == 'payment_get_iin_details')
+            {
+                $data['country']  = $iinEntity->getCountry();
+            }
             /*
              * Need to return emi as available for HDFC Debit Cards because their eligibility is checked
              * in the next step when the user enters his/her phone number.

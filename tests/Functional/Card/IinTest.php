@@ -341,6 +341,8 @@ class IinTest extends TestCase
 
         $response = $this->startTest();
 
+        $this->assertArrayHasKey('country', $response);
+
         $this->assertArrayNotHasKey('atm_pin_auth', $response);
     }
 
