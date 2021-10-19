@@ -233,4 +233,34 @@ return [
         ]
 
     ],
+
+    'testGetChartOfAccountsServiceMethod'  => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/accounting-integration/chart-of-accounts/zoho',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testPutChartOfAccountsServiceMethod'  => [
+        'request'  => [
+            'method' => 'PUT',
+            'url'    => '/accounting-integration/chart-of-accounts/zoho',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testSyncChartOfAccountsServiceMethod'  => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/accounting-integration/chart-of-accounts/zoho/sync',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

@@ -633,6 +633,7 @@ class Name
     const CREATE_ACCOUNTING_INTEGRATION   = 'create_accounting_integration';
     const DELETE_ACCOUNTING_INTEGRATION   = 'delete_accounting_integration';
     const VIEW_ACCOUNTING_INTEGRATION     = 'view_accounting_integration';
+    const UPDATE_ACCOUNTING_INTEGRATION   = 'update_accounting_integration';
     const SYNC_ACCOUNTING_INTEGRATION     = 'sync_accounting_integration';
     const WAITLIST_ACCOUNTING_INTEGRATION = 'waitlist_accounting_integration';
 

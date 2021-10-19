@@ -434,4 +434,49 @@ class AccountingPayoutsTest extends TestCase
 
         $apMock->shouldHaveReceived('listCashFlowBA');
     }
+
+    public function testGetChartOfAccountsServiceMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('getChartOfAccounts')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('getChartOfAccounts');
+    }
+
+    public function testPutChartOfAccountsServiceMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('putChartOfAccounts')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('putChartOfAccounts');
+    }
+
+    public function testSyncChartOfAccountsServiceMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('syncChartOfAccounts')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('syncChartOfAccounts');
+    }
 }

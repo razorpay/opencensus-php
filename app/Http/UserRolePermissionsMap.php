@@ -129,6 +129,7 @@ class UserRolePermissionsMap
                  Permission::SYNC_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_ACCOUNTING_INTEGRATION,
                  Permission::WAITLIST_ACCOUNTING_INTEGRATION,
+                 Permission::UPDATE_ACCOUNTING_INTEGRATION,
 
                  Permission::MERCHANT_FETCH_SUB_VIRTUAL_ACCOUNT,
                  Permission::MERCHANT_SUB_VIRTUAL_ACCOUNT_TRANSFER,
@@ -224,6 +225,7 @@ class UserRolePermissionsMap
                  Permission::SYNC_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_ACCOUNTING_INTEGRATION,
                  Permission::WAITLIST_ACCOUNTING_INTEGRATION,
+                 Permission::UPDATE_ACCOUNTING_INTEGRATION,
 
                  Permission::PAY_TAX_PAYMENTS,
                  Permission::CREATE_TAX_PAYMENTS,
@@ -319,6 +321,7 @@ class UserRolePermissionsMap
                  Permission::SYNC_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_ACCOUNTING_INTEGRATION,
                  Permission::WAITLIST_ACCOUNTING_INTEGRATION,
+                 Permission::UPDATE_ACCOUNTING_INTEGRATION,
 
                  Permission::CREATE_INVITATION,
              ],
@@ -371,6 +374,7 @@ class UserRolePermissionsMap
                  Permission::SYNC_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_ACCOUNTING_INTEGRATION,
                  Permission::WAITLIST_ACCOUNTING_INTEGRATION,
+                 Permission::UPDATE_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_PAYOUT_WORKFLOW_SUMMARY,
              ],
 

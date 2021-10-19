@@ -123,4 +123,18 @@ class AccountingPayoutsController extends Controller
     {
         return $this->service->setOrganisationInfo($this->ba->getMerchant(), $app, $this->input);
     }
+    public function getChartOfAccounts(string $app)
+    {
+        return $this->service->getChartOfAccounts($this->ba->getMerchant(), $this->input, $app, $this->ba->getUser());
+    }
+
+    public function putChartOfAccounts(string $app)
+    {
+        return $this->service->putChartOfAccounts($this->ba->getMerchant(), $this->input, $app, $this->ba->getUser());
+    }
+
+    public function syncChartOfAccounts(string $app)
+    {
+        return $this->service->syncChartOfAccounts($this->ba->getMerchant(), $this->input, $app, $this->ba->getUser());
+    }
 }

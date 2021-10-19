@@ -1430,6 +1430,10 @@ class Route
         'accounting_integration_tally_integrate'                => ['post',     'accounting-integration/tally/integrate',                   'AccountingPayoutsController@integrateTally'            ],
         'accounting_integration_tally_delete_integration'       => ['post',     'accounting-integration/tally/delete',                      'AccountingPayoutsController@deleteIntegrationTally'    ],
 
+        'accounting_integration_get_chart_of_accounts'          => ['get',      'accounting-integration/chart-of-accounts/{app}',           'AccountingPayoutsController@getChartOfAccounts'        ],
+        'accounting_integration_put_chart_of_accounts'          => ['put',      'accounting-integration/chart-of-accounts/{app}',           'AccountingPayoutsController@putChartOfAccounts'        ],
+        'accounting_integration_sync_chart_of_accounts'         => ['post',     'accounting-integration/chart-of-accounts/{app}/sync',      'AccountingPayoutsController@syncChartOfAccounts'       ],
+
         // Tax Payments
         'tax_payments_add_penalty_cron'            => ['post',    'tax-payments/addPenalty',                         'TaxPaymentController@addPenalty'                                   ],
         'tax_payments_mail_cron'                   => ['post',    'tax-payments/mailCron',                           'TaxPaymentController@mailCron'                                     ],
@@ -4438,6 +4442,9 @@ class Route
         'accounting_integration_get_domain',
         'accounting_integration_get_organization',
         'accounting_integration_set_organization',
+        'accounting_integration_get_chart_of_accounts',
+        'accounting_integration_put_chart_of_accounts',
+        'accounting_integration_sync_chart_of_accounts',
 
         // Virtual VPA Prefix
         'virtual_vpa_prefix_validate',
@@ -6594,6 +6601,9 @@ class Route
         'accounting_integration_get_domain'            => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_integration_get_organization'      => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_integration_set_organization'      => Permission::CREATE_ACCOUNTING_INTEGRATION,
+        'accounting_integration_get_chart_of_accounts' => Permission::VIEW_ACCOUNTING_INTEGRATION,
+        'accounting_integration_put_chart_of_accounts' => Permission::UPDATE_ACCOUNTING_INTEGRATION,
+        'accounting_integration_sync_chart_of_accounts'=> Permission::SYNC_ACCOUNTING_INTEGRATION,
 
         'merchant_primary_balance_fetch'               => '*',
         'ufh_upload_file'                              => '*',
@@ -7150,7 +7160,9 @@ class Route
             'accounting_integration_get_domain',
             'accounting_integration_get_organization',
             'accounting_integration_set_organization',
-
+            'accounting_integration_get_chart_of_accounts',
+            'accounting_integration_put_chart_of_accounts',
+            'accounting_integration_sync_chart_of_accounts',
             'accounting_integration_tally_invoices',
             'accounting_integration_tally_fetch_invoice',
             'accounting_integration_tally_cancel_invoice',
@@ -8171,7 +8183,9 @@ class Route
             'accounting_integration_get_domain',
             'accounting_integration_get_organization',
             'accounting_integration_set_organization',
-
+            'accounting_integration_get_chart_of_accounts',
+            'accounting_integration_put_chart_of_accounts',
+            'accounting_integration_sync_chart_of_accounts',
             'action_checker_create',
             'action_comment_create',
             'action_diff_get',
@@ -11286,7 +11300,9 @@ class Route
         'accounting_integration_get_domain',
         'accounting_integration_get_organization',
         'accounting_integration_set_organization',
-
+        'accounting_integration_get_chart_of_accounts',
+        'accounting_integration_put_chart_of_accounts',
+        'accounting_integration_sync_chart_of_accounts',
         'accounting_integration_tally_invoices',
         'accounting_integration_tally_fetch_invoice',
         'accounting_integration_tally_cancel_invoice',

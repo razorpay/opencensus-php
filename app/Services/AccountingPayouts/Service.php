@@ -43,6 +43,9 @@ class Service
     const SET_DOMAIN                  = 'SetAccountingAppDomain';
     const GET_ORGANISATION_INFO       = 'GetOrganisationsAccountingApp';
     const SET_ORGANISATION_INFO       = 'SetOrganisationInfoAccountingApp';
+    const GET_CHART_OF_ACCOUNTS       = 'GetChartOfAccounts';
+    const PUT_CHART_OF_ACCOUNTS       = 'PutChartOfAccounts';
+    const SYNC_CHART_OF_ACCOUNTS      = 'SyncChartOfAccounts';
 
     protected $app;
 
@@ -310,6 +313,48 @@ class Service
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::SET_ORGANISATION_INFO);
 
         return $this->makeRequest($merchant, $url, $input, $app, [], 'POST', MODE::LIVE);
+    }
+
+    public function getChartOfAccounts(MerchantEntity $merchant, array $input, string $app, Entity $user = null)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_CHART_OF_ACCOUNTS);
+
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
+        }
+
+        $input['user_id'] = $user->getPublicId();
+
+        return $this->makeRequest($merchant, $url, $input, $app);
+    }
+
+    public function putChartOfAccounts(MerchantEntity $merchant, array $input, string $app, Entity $user = null)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::PUT_CHART_OF_ACCOUNTS);
+
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
+        }
+
+        $input['user_id'] = $user->getPublicId();
+
+        return $this->makeRequest($merchant, $url, $input, $app);
+    }
+
+    public function syncChartOfAccounts(MerchantEntity $merchant, array $input, string $app, Entity $user = null)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::SYNC_CHART_OF_ACCOUNTS);
+
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
+        }
+
+        $input['user_id'] = $user->getPublicId();
+
+        return $this->makeRequest($merchant, $url, $input, $app);
     }
 
     protected function makeRequest(MerchantEntity $merchant = null,
