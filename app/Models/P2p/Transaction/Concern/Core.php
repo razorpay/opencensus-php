@@ -19,7 +19,7 @@ class Core extends Base\Core
 
         $entity->associateTransaction($transaction);
 
-        $this->repo->save($entity);
+        $this->repo->saveOrFail($entity);
 
         return $entity;
     }

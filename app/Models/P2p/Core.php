@@ -80,7 +80,7 @@ class Core extends Base\Core
         if ($p2p->source->bankAccount->getMpin() === $input['mpin'])
         {
             // Confirm the payment
-            $p2p->setStatus('transferred')->save();
+            $p2p->setStatus('transferred')->saveOrFail();
         }
         else
         {
@@ -91,7 +91,7 @@ class Core extends Base\Core
 
             $p2p->setErrorDescription('An unknown error has occurred.');
 
-            $p2p->save();
+            $p2p->saveOrFail();
         }
 
         return $p2p;

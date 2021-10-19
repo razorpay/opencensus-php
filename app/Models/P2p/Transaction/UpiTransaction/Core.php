@@ -19,7 +19,7 @@ class Core extends Base\Core
 
         $entity->associateTransaction($transaction);
 
-        $this->repo->save($entity);
+        $this->repo->saveOrFail($entity);
 
         $transaction->upi()->setModel($entity);
 
@@ -30,7 +30,7 @@ class Core extends Base\Core
     {
         $upi->edit($input);
 
-        $this->repo->save($upi);
+        $this->repo->saveOrFail($upi);
 
         return $upi;
     }
