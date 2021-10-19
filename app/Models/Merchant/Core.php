@@ -973,6 +973,32 @@ class Core extends Base\Core
 
         $this->repo->balance->createBalance($merchantBalance);
 
+        /*
+         * adding logs to see if balance is getting saved to DB
+         * Thread: https://razorpay.slack.com/archives/CNXC0JHQF/p1634534875388500
+         */
+        $savedBalance = $this->repo->balance->getMerchantBalanceByType(
+            $merchant->getId(), Type::PRIMARY, $mode);
+
+        if(empty($savedBalance) === true)
+        {
+            throw new Exception\ServerErrorException(
+                'balance entity could not be saved',
+                ErrorCode::SERVER_ERROR,
+                [
+                    'merchant_id'   => $merchant->getId(),
+                    'mode'          => $mode
+                ]);
+        }
+        else
+        {
+            $this->trace->info(TraceCode:: MERCHANT_BALANCE_ID, [
+                'balance_id'    => $savedBalance->getId(),
+                'merchant_id'   => $merchant->getId(),
+                'mode'          => $mode
+            ]);
+        }
+
         return $merchantBalance;
     }
 
