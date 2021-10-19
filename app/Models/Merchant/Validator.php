@@ -216,6 +216,7 @@ class Validator extends Base\Validator
         Entity::ACTION                                      => 'required|custom',
         ProductInternationalMapper::INTERNATIONAL_PRODUCTS  => 'sometimes|array',
         RiskActionConstants::RISK_ATTRIBUTES                => 'sometimes|array',
+        Constants::BULK_WORKFLOW_ACTION_ID                  => 'sometimes|string|size:14',
     ];
 
     protected static $change2faSettingRules = [
@@ -966,7 +967,7 @@ class Validator extends Base\Validator
      * @param $merchant
      * @param $action
      */
-    public function validateRiskPermissionForAction($merchant, $action)
+    public function validateRiskPermissionForAction($merchant, $action, $admin = null)
     {
         //if the action is constructive action
         if(in_array($action, Constants::RISK_CONSTRUCTIVE_ACTION_LIST) === false)
@@ -988,16 +989,21 @@ class Validator extends Base\Validator
                 break;
             }
         }
+
         //if the merchant is not tagged, no further check required
         if ($taggedByRiskOps === false)
         {
+
             return;
         }
 
         //if the merchant is tagged, we need check the permission
         $app = App::getFacadeRoot();
 
-        $admin = $app['basicauth']->getAdmin();
+        if (isset($admin) === false)
+        {
+            $admin = $app['basicauth']->getAdmin();
+        }
 
         $adminPermissions = $admin->getPermissionsList();
 

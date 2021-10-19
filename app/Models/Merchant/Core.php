@@ -38,6 +38,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Admin\Group;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Models\Admin\Admin;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Admin\Action;
 use RZP\Constants\Entity as E;
@@ -1124,6 +1125,32 @@ class Core extends Base\Core
         }
     }
 
+    protected function getAdminEntityForBulkAction($input)
+    {
+        try
+        {
+            if (isset($input[Constants::BULK_WORKFLOW_ACTION_ID]) === true)
+            {
+                $bulkAction = $this->repo->workflow_action->findOrFailPublic($input[Constants::BULK_WORKFLOW_ACTION_ID]);
+
+                if (isset($bulkAction) === true)
+                {
+                    return $this->repo->admin->findByPublicId(sprintf('%s_%s', Admin\Entity::getSign(), $bulkAction->getStateChangerId()));
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::BULK_RISK_ACTION_ADMIN_FETCH_FAILED, [
+                    'bulk_action_id'    => $input[Constants::BULK_WORKFLOW_ACTION_ID] ?? null,
+                ]);
+        }
+        return null;
+    }
+
     public function action($merchant, $input, bool $useWorkflows = true)
     {
         $merchant->getValidator()->validateInput('action', $input);
@@ -1132,7 +1159,9 @@ class Core extends Base\Core
 
         if($this->shouldValidateTag($useWorkflows) === true)
         {
-            (new Validator)->validateRiskPermissionForAction($merchant,$action);
+            $adminEntity = $this->getAdminEntityForBulkAction($input);
+
+            (new Validator())->validateRiskPermissionForAction($merchant, $action, $adminEntity);
         }
 
         $internationalProducts = array_key_exists(ProductInternationalMapper::INTERNATIONAL_PRODUCTS, $input) ?

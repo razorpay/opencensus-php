@@ -115,6 +115,8 @@ class Core extends Base\Core
 
             $riskAttributes = $input[Constants::RISK_ATTRIBUTES];
 
+            $bulkActionId = $input[Constants::BULK_WORKFLOW_ACTION_ID] ?? null;
+
             $tags = $this->getTagsFromRiskAttributes($riskAttributes);
 
             $riskAttributesParams = $this->getParamsForMerchantAction($riskAction, $riskAttributes);
@@ -130,6 +132,7 @@ class Core extends Base\Core
                 Constants::ACTION                                   => $riskAction,
                 'use_workflows'                                     => false,
                 Constants::RISK_ATTRIBUTES                          => $riskAttributesParams,
+                Constants::BULK_WORKFLOW_ACTION_ID                  => $bulkActionId,
             ];
 
             $diffData = [

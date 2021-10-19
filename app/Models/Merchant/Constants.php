@@ -695,6 +695,8 @@ final class Constants
     const QUERY_EXECUTION_TIME           = 'query_execution_time';
     const FAILURE_ANALYSIS_FOR_TIME_RANGE = 'failure_analysis_for_time_range';
 
+    const BULK_WORKFLOW_ACTION_ID = 'bulk_workflow_action_id';
+
     // Mapping from payment error source to failure category
     const ERROR_SOURCE_CATEGORY = [
         self::GATEWAY          => self::BANK_FAILURE,

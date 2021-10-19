@@ -98,6 +98,8 @@ class Service extends Base\Service
 
             $diff['new'][Constants::MERCHANT_ID] = $merchantId;
 
+            $diff['new'][Constants::BULK_WORKFLOW_ACTION_ID] = $input[Constants::BULK_WORKFLOW_ACTION_ID];
+
             $workflowActionId = (new Core)->createRiskWorkflowAction($diff['new'], $riskWorkflowMaker)['id'];
 
             $workflowActions = (new Action\Core)->fetchOpenActionOnEntityOperation(

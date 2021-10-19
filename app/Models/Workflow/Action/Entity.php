@@ -241,6 +241,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::CURRENT_LEVEL);
     }
 
+    public function getStateChangerId() : string
+    {
+        return $this->getAttribute(self::STATE_CHANGER_ID);
+    }
+
     public function getWorkflowId() : string
     {
         return $this->getAttribute(self::WORKFLOW_ID);
