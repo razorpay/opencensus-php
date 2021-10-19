@@ -12,6 +12,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
+use RZP\Models\Merchant\Entity;
 use RZP\Models\Risk;
 use RZP\Models\Admin;
 use RZP\Models\Order;
@@ -293,6 +294,25 @@ class Processor
     protected $secureCacheDriver;
 
     protected $sendDopplerFeedback = true;
+
+    /**
+     * Array of error codes upon which paypal maybe suggested as a backup option
+     */
+
+    protected static $errorCodesToAllowPaypal = array(
+        ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,
+        ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD_GATEWAY,
+        ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK,
+        ErrorCode::GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED,
+        ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_NOT_PERMITTED_TXN
+    );
+
+    /**
+     * Array of backup methods for retry of failed international card payments
+     */
+    protected static $retryMethodsForIntl = array(
+        Methods\Entity::PAYPAL
+    );
 
     public function __construct(Merchant\Entity $merchant)
     {
@@ -1572,7 +1592,7 @@ class Processor
                 'Please provide appropriate payment method',
                 Payment\Entity::METHOD);
         }
-        
+
         if ($input['method'] === Payment\Method::COD)
         {
             throw new Exception\BadRequestException(
@@ -5445,5 +5465,32 @@ class Processor
         }
 
         return true;
+    }
+
+    /**
+     * Generic function to suggest backup options in case of payment failures
+     * Enriches the exception object with metadata for next actions on meeting suitable criteria
+     *
+     * @param Payment\Entity $payment
+     * @param Merchant\Entity $merchant
+     * @param Exception\BaseException $e
+     **/
+    public function addBackupMethodForRetry(Payment\Entity $payment, Entity $merchant, Exception\BaseException &$e)
+    {
+        if(in_array($e->getError()->getInternalErrorCode(), self::$errorCodesToAllowPaypal)) {
+            if ($payment->isCard() === true && $payment->isInternational() === true
+                && $merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::ENABLE_PAYPAL_AS_BACKUP) === true) {
+
+                //@TODO : Make the following block more generic to test if any method is enabled
+
+                $wallets = $merchant->getMethods()->getEnabledWallets();
+
+                foreach (self::$retryMethodsForIntl as $method) {
+                    if (isset($wallets[$method]) === true && $wallets[$method] === true) {
+                       Exception\Handler::constructErrorWithRetryMetadata($method, 'wallet', $e);
+                    }
+                }
+            }
+        }
     }
 }

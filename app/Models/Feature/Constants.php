@@ -843,6 +843,11 @@ class Constants
     const DISABLE_SIFT_JS   =   'disable_sift_js';
 
     /**
+     * Merchant feature used to provide paypal as a backup
+     */
+    const ENABLE_PAYPAL_AS_BACKUP   =   'enable_paypal_as_backup';
+
+    /**
      * All Ledger Features for RX release
      */
     const LEDGER_JOURNAL_WRITES = 'ledger_journal_writes';
@@ -1271,6 +1276,7 @@ class Constants
         self::NETWORK_TOKENIZATION_LIVE       => true,
         self::HIGH_TPS_COMPOSITE_PAYOUT       => true,
         self::ALLOW_NETWORK_TOKENS            => true,
+        self::ENABLE_PAYPAL_AS_BACKUP         => true,
     ];
     // Entity type constants
     const ACCOUNT                       = 'account';

@@ -3356,6 +3356,7 @@ trait Authorize
                     'riskSource' => $riskSource
                 ]);
 
+            $this->addBackupMethodForRetry($this->payment, $this->merchant, $ex);
             throw $ex;
         }
     }

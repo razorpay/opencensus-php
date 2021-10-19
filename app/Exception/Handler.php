@@ -435,6 +435,10 @@ class Handler extends ExceptionHandler
 
         $metadata = null;
 
+        if(isset($data['error']) === true && isset($data['error']['metadata']) === true)
+        {
+            $metadata = $data['error']['metadata'];
+        }
         if (isset($data['payment_id']) === true)
         {
             $metadata['payment_id'] = $data['payment_id'];
@@ -575,5 +579,56 @@ class Handler extends ExceptionHandler
         }
 
         return $obscuredStack;
+    }
+
+    /**
+     * Function to add payment retry methods to error payload in case of failed payments
+     *
+     * @param string $instrument
+     * @param string $method
+     * @param BaseException $e
+     */
+    public static function constructErrorWithRetryMetadata(string $instrument, string $method, BaseException &$e)
+    {
+        $data = $e->getData();
+        $newInstrument = [
+            'instrument'  => $instrument,
+            'method'      => $method
+        ];
+        $retryAction = [
+            'action'      => 'suggest_retry',
+            'instruments' => array($newInstrument)
+        ];
+        $nextBlock = [
+            'next' => array($retryAction)
+        ];
+
+        if(isset($data['error']['metadata']))
+        {
+            if(isset($data['error']['metadata']['next']))
+            {
+                $_set = false;
+                $data['error']['metadata']['next'] = array_map(function($next) use ($newInstrument, &$_set){
+                   if($next['action'] === 'suggest_retry'){
+                       array_push($next['instruments'], $newInstrument);
+                       $_set = true;
+                   }
+                   return $next;
+                }, $data['error']['metadata']['next']);
+                if($_set === false)
+                {
+                    array_push($data['error']['metadata']['next'], $retryAction);
+                }
+            }
+            else
+            {
+                $data['error']['metadata']['next'] = array($retryAction);
+            }
+        }
+        else
+        {
+            $data['error']['metadata'] = $nextBlock;
+        }
+        $e->setData($data);
     }
 }

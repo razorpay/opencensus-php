@@ -820,6 +820,8 @@ trait Callback
                 $this->updatePaymentAuthFailed($e);
 
                 $this->processUpiRecurringFailureIfApplicable($this->payment, $previousExceptionData);
+
+                $this->addBackupMethodForRetry($this->payment, $this->merchant, $e);
             }
         }
         else
