@@ -903,7 +903,7 @@ class Service extends Base\Service
 
     protected function removeWebhookEventsFromResponse(array & $webhookEvents)
     {
-        $webhookEvents = array_diff($webhookEvents, Merchant\Webhook\Event::getEventsSkippedFromListingApi());
+        $webhookEvents = array_values(array_diff($webhookEvents, Merchant\Webhook\Event::getEventsSkippedFromListingApi()));
     }
 
     private function getDimensionsForWebhookData(): array
