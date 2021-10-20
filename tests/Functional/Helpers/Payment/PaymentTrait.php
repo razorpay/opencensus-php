@@ -2578,6 +2578,16 @@ trait PaymentTrait
                                 'message' => 'source account registered',
                             ]
                         ];
+                    return $response;
+
+                case '/direct_source_accounts':
+                    $response = [
+                        'body'=> [
+                            'fund_account_id' => random_integer(2),
+                            'source_account_ids' => [random_integer(2),random_integer(2)],
+                        ],
+                        'code' => 200
+                    ];
 
                     return $response;
 

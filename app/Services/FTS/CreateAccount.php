@@ -146,6 +146,19 @@ class CreateAccount extends Base
         return $response;
     }
 
+    //Create fund account and source accounts in one go for direct rbl onboarding
+    public function createFundAccountAndSourceAccounts(array $sourceAccountCreds, string $product, string $channel): array
+    {
+        $input[Constants::BANK_ACCOUNT] = $this->getBankingAccountDetails($this->account);
+        $input[Constants::CREDENTIALS]  = $sourceAccountCreds;
+        $input[Constants::CHANNEL]      = strtoupper($channel);
+        $input[Constants::PRODUCT]      = $product;
+
+        $response = $this->createAndSendRequest(parent::DIRECT_SOURCE_ACCOUNTS_CREATION, 'POST', $input);
+
+        return $response;
+    }
+
     /**
      * Method to make request to be sent to FTS
      * based on the type of account

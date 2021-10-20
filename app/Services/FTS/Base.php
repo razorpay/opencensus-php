@@ -54,6 +54,8 @@ class Base
     // Source Account related URIs
     const SOURCE_ACCOUNT_CREATE_URI = '/source_account';
 
+    const DIRECT_SOURCE_ACCOUNTS_CREATION = '/direct_source_accounts' ;
+
     const SOURCE_ACCOUNT_COPY = '/source_account/copy';
 
     const SOURCE_ACCOUNT_DELETE_URI = '/source_account';

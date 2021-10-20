@@ -1228,13 +1228,14 @@ class PublicErrorDescription
     const BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED                                  = 'Instant refund not supported for the payment';
 
     // Banking Accounts
-    const BAD_REQUEST_ERROR_BANKING_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED            = 'Operation could not be completed. Please try again';
-    const BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED                       = 'Operation could not be completed. Please try again';
-    const BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_NOT_PERMITTED                      = 'Account cannot be activated, Please contact support';
-    const BAD_REQUEST_ERROR_WRONG_BANKING_ACCOUNT_CREDENTIALS                       = 'Account details are incorrect. Please try again';
-    const BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED                             = 'Operation failed, your account is already activated';
-    const BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_PERMITTED_ONLY_ON_ADMIN_AUTH       = 'Access forbidden for requested resource';
-    const BAD_REQUEST_BANKING_ACCOUNT_WEBHOOK_RESET_NOT_ALLOWED_FOR_CURRENT_STATUS  = 'Webhook data reset not allowed for current status';
+    const BAD_REQUEST_ERROR_BANKING_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED           = 'Operation could not be completed. Please try again';
+    const BAD_REQUEST_ERROR_DIRECT_FUND_ACCOUNT_AND_SOURCE_ACCOUNT_CREATION_FAILED = 'Operation could not be completed. Please try again';
+    const BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED                      = 'Operation could not be completed. Please try again';
+    const BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_NOT_PERMITTED                     = 'Account cannot be activated, Please contact support';
+    const BAD_REQUEST_ERROR_WRONG_BANKING_ACCOUNT_CREDENTIALS                      = 'Account details are incorrect. Please try again';
+    const BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED                            = 'Operation failed, your account is already activated';
+    const BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_PERMITTED_ONLY_ON_ADMIN_AUTH      = 'Access forbidden for requested resource';
+    const BAD_REQUEST_BANKING_ACCOUNT_WEBHOOK_RESET_NOT_ALLOWED_FOR_CURRENT_STATUS = 'Webhook data reset not allowed for current status';
 
     // stork
     const BAD_REQUEST_STORK_WEBHOOK_ALREADY_CREATED                                 = 'Webhook setting already exists';

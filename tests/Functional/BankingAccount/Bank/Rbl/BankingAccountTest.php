@@ -1665,10 +1665,7 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
-    public function testActivateFailedDueToFtsFundAccountValidationFailure($ftsResponseCallable = null,
-                                                                           string $ftsErrorDescription = null,
-                                                                           string $endUserErrorDescription = null,
-                                                                           string $internalErrorCode = null)
+    public function testActivateFailedDueToFtsDirectAccountCreationValidationFailure()
     {
         $attribute = ['activation_status' => 'activated'];
 
@@ -1693,17 +1690,14 @@ class BankingAccountTest extends TestCase
 
         $this->setMozartMockResponse($mozartResponse);
 
-        $ftsErrorDescription = $ftsErrorDescription ?: "bank_account: beneficiary_mobile: not a valid input";
+        $internalErrorCode = \RZP\Error\ErrorCode::BAD_REQUEST_ERROR_DIRECT_FUND_ACCOUNT_AND_SOURCE_ACCOUNT_CREATION_VALIDATION_FAILED;
 
-        $internalErrorCode = $internalErrorCode ?: \RZP\Error\ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_FUND_ACCOUNT_CREATION_VALIDATION_FAILED;
-
-        $this->mockFundAccountService($ftsResponseCallable ?: function () use ($ftsErrorDescription)
+       $this->mockFundAccountService(function ()
         {
             return [
                 'body' => [
                     "internal_error" => [
                         "code"      => "VALIDATION_ERROR",
-                        "message"   => $ftsErrorDescription,
                         "sub_code"  => 0
                     ],
                     "public_error" => [
@@ -1715,7 +1709,7 @@ class BankingAccountTest extends TestCase
             ];
         });
 
-        $endUserErrorDescription = $endUserErrorDescription ?: 'Operation failed. FTS Account could not stored because of a validation error: ' . $ftsErrorDescription;
+        $endUserErrorDescription = 'Operation failed. FTS Account could not stored because of a validation error: '.'VALIDATION_ERROR' ;
 
         $this->testData[__FUNCTION__]['response']['content']['error']['description'] = $endUserErrorDescription;
 
@@ -1724,49 +1718,6 @@ class BankingAccountTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest($dataToReplace);
-    }
-
-    public function testActivateFailedDueToFtsSourceAccountValidationFailure()
-    {
-        $ftserrorDescription = 'bank_account: corp_id: not a valid input';
-
-        $endUserErrorDescription = 'Operation failed. FTS Account could not stored because of a validation error: ' . $ftserrorDescription;
-
-        $internalErrorCode = \RZP\Error\ErrorCode::BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_VALIDATION_FAILED;
-
-        $this->testActivateFailedDueToFtsFundAccountValidationFailure(function ($endpoint, $method, $data = []) use ($ftserrorDescription)
-        {
-            switch ($endpoint)
-            {
-                case '/account':
-                    $response = [
-                        'body' => [
-                            'fund_account_id' => random_integer(2),
-                        ],
-                        'code' => 201
-                    ];
-
-                    return $response;
-
-                case '/source_account':
-                    $response = [
-                        'body'=> [
-                            "internal_error" => [
-                                "code"      => "VALIDATION_ERROR",
-                                "message"   => $ftserrorDescription,
-                                "sub_code"  => 0
-                            ],
-                            "public_error" => [
-                                "code"      => "BAD_REQUEST_ERROR",
-                                "message"   => "invalid request sent"
-                            ]
-                        ]
-                    ];
-
-                    return $response;
-            }
-        },
-            $ftserrorDescription, $endUserErrorDescription, $internalErrorCode);
     }
 
     public function testActivateFailedDueToMissingData()

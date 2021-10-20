@@ -15,6 +15,7 @@ use RZP\Models\BankingAccount\Entity;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\RecordAlreadyExists;
 use RZP\Models\BankingAccountStatement\Channel;
+use RZP\Models\BankingAccount\Gateway\Rbl\Fields as Fields;
 
 abstract class Processor extends Base\Core
 {
@@ -28,7 +29,8 @@ abstract class Processor extends Base\Core
 
     protected $ftsErrorCodesToPropagate = [
         ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_FUND_ACCOUNT_CREATION_VALIDATION_FAILED,
-        ErrorCode::BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_VALIDATION_FAILED
+        ErrorCode::BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_VALIDATION_FAILED,
+        ErrorCode::BAD_REQUEST_ERROR_DIRECT_FUND_ACCOUNT_AND_SOURCE_ACCOUNT_CREATION_VALIDATION_FAILED
     ];
 
     public function validateAndPreProcessInputForAccountCreation(array $input)
@@ -107,22 +109,33 @@ abstract class Processor extends Base\Core
                     'id' => $bankingAccount->getId()
                 ]);
 
-            $fundAccountId = $this->createOrFetchFtsFundAccountForMerchant($bankingAccount);
-
             $channel = $bankingAccount->getChannel();
 
-            $content = $this->generateRequestForSourceAccount($bankingAccount);
+            //these credentials fields are mandatory at FTS for account creation. Any change in the field names should
+            // be communicated before making any change
+            $credentials = [
+                Fields::USERNAME      => $bankingAccount->getUsername(),
+                Fields::PASSWORD      => $bankingAccount->getPassword(),
+                Fields::CORP_ID       => $bankingAccount->getReference1(),
+                Fields::CLIENT_ID     => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_ID),
+                Fields::CLIENT_SECRET => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_SECRET),
+            ];
 
             $product = 'PAYOUT';
 
-            $this->makeSourceAccountRequest(
-                $bankingAccount->getId(),
-                $fundAccountId,
-                $content,
+            $response = $this->createFtsDirectFundAccountAndSourceAccounts(
+                $bankingAccount,
+                $credentials,
                 $product,
                 $channel);
 
-            return $bankingAccount;
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_FTS_MAPPING_CREATION_RESPONSE,
+                [
+                    'response' => $response,
+                    'id'       => $bankingAccount->getId()
+                ]);
+
         }
         catch (\Throwable $e)
         {
@@ -131,8 +144,8 @@ abstract class Processor extends Base\Core
                 \Razorpay\Trace\Logger::CRITICAL,
                 TraceCode::FTS_FAILURE_EXCEPTION,
                 [
-                    'code'          => $e->getCode(),
-                    'message'       => $e->getMessage(),
+                    'code'    => $e->getCode(),
+                    'message' => $e->getMessage(),
                 ]);
 
             if ($this->shouldPropagateErrorToUser($e->getCode()))
@@ -223,6 +236,59 @@ abstract class Processor extends Base\Core
         return $response[FTS\Constants::BODY][FTS\Constants::FUND_ACCOUNT_ID];
     }
 
+    protected function createFtsDirectFundAccountAndSourceAccounts(Entity $bankingAccount, array $credentials, string $product = 'PAYOUT', string $channel = 'RBL') :array
+    {
+        $retryCount = 0;
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_FTS_MAPPING_CREATION_REQUEST,
+            [
+                'id'          => $bankingAccount->getId(),
+                'channel'     => $channel,
+                'credentials' => $credentials,
+                'product'     => $product,
+            ]);
+
+        /** @var FTS\CreateAccount $ftsService */
+        $ftsService = app('fts_create_account');
+
+        while (true) {
+            try {
+                $ftsService->initialize($bankingAccount->getId(),
+                    Constants\Entity::BANKING_ACCOUNT,
+                    Constants\Entity::PAYOUT);
+
+                $response = $ftsService->createFundAccountAndSourceAccounts($credentials,
+                    $product,
+                    $channel);
+
+                $this->checkFtsDirectFundAccountAndSourceAccountsResponseForError($response, $bankingAccount);
+
+                $ftsFundAccountId = $response[FTS\Constants::BODY][FTS\Constants::FUND_ACCOUNT_ID];
+
+                $ftsService->saveFtsAccountId($ftsFundAccountId);
+
+                return $response;
+
+            } catch (\Throwable $e) {
+                if (($e instanceof \Requests_Exception) and
+                    (checkRequestTimeout($e) === true) and
+                    ($retryCount < self::FTS_MAX_RETRIES)) {
+                    $this->trace->info(
+                        TraceCode::FTS_SERVICE_RETRY,
+                        [
+                            'message' => $e->getMessage(),
+                            'data'    => $e->getData(),
+                        ]);
+
+                    $retryCount++;
+                } else {
+                    throw $e;
+                }
+            }
+        }
+    }
+
     protected function makeSourceAccountRequest(
         string $id,
         string $ftsAccountId,
@@ -235,7 +301,7 @@ abstract class Processor extends Base\Core
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_SOURCE_ACCOUNT_CREATION_REQUEST,
             [
-                'id' => $id,
+                'id'     => $id,
                 'fts_id' => $ftsAccountId
             ]);
 
@@ -340,6 +406,34 @@ abstract class Processor extends Base\Core
                 null,
                 $contextData,
                 'Source account creation failed, Try again'
+            );
+        }
+
+    }
+
+    protected function checkFtsDirectFundAccountAndSourceAccountsResponseForError(array $response, Entity $bankingAccount)
+    {
+        if (empty($response[FTS\Constants::BODY][FTS\Constants::FUND_ACCOUNT_ID]) === true)
+        {
+            // If it's a validation error, we want to propagate the error back to the user (Ops user from admin dashboard)
+            // in this case
+            if ($this->isValidationError($response) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR_DIRECT_FUND_ACCOUNT_AND_SOURCE_ACCOUNT_CREATION_VALIDATION_FAILED,
+                    null,
+                    ['id' => $bankingAccount->getId(), 'response' => $response],
+                    self::FTS_VALIDATION_ERROR_DESCRIPTION
+                    .trim($response[FTS\Constants::BODY][FTS\Constants::INTERNAL_ERROR][FTS\Constants::CODE])
+                );
+            }
+
+            // Throw a generic error for any other case
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR_DIRECT_FUND_ACCOUNT_AND_SOURCE_ACCOUNT_CREATION_FAILED,
+                null,
+                ['id' => $bankingAccount->getId(), 'response' => $response],
+                'FTS direct fund account and source account creation is not successful, Please try again!'
             );
         }
 

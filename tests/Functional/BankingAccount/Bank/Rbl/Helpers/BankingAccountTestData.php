@@ -1475,8 +1475,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
         ],
     ],
-
-    'testActivateFailedDueToFtsFundAccountValidationFailure' => [
+    'testActivateFailedDueToFtsDirectAccountCreationValidationFailure' => [
         'request'  => [
             'url'     => '/banking_accounts/{id}/activate',
             'method'  => 'POST',
@@ -1486,17 +1485,16 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Operation failed. FTS Account could not stored because of a validation error: ',
+                    'description' => 'Operation failed. FTS Account could not stored because of a validation error: '.'VALIDATION_ERROR',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_FUND_ACCOUNT_CREATION_VALIDATION_FAILED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR_DIRECT_FUND_ACCOUNT_AND_SOURCE_ACCOUNT_CREATION_VALIDATION_FAILED,
         ],
     ],
-
     'testActivateFailedDueToMozartGatewayException' => [
         'request'  => [
             'url'     => '/banking_accounts/{id}/activate',
