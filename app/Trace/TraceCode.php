@@ -1438,7 +1438,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_TRANSFER_PROCESSING_FAILED                       = 'BANK_TRANSFER_PROCESSING_FAILED';
     const BANK_TRANSFER_VIRTUAL_ACCOUNT_NOT_FOUND               = 'BANK_TRANSFER_VIRTUAL_ACCOUNT_NOT_FOUND';
     const BANK_TRANSFER_PROCESS_DUPLICATE_UTR                   = 'BANK_TRANSFER_PROCESS_DUPLICATE_UTR';
-
+    const VIRTUAL_ACCOUNT_CLOSED                                = 'VIRTUAL_ACCOUNT_CLOSED';
     // Ideally BANK_TRANSFER_PROCESS_DUPLICATE_UTR should have named as BANK_TRANSFER_PROCESS_DUPLICATE_REQUEST
     // or something on those lines. Since it has been in use already, don't want to rename it.
     // BANK_TRANSFER_PROCESS_WITH_EXISTING_UTR is used to log info when UTR is duplicate but Payee Account Number

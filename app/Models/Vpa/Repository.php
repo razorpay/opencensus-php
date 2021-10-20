@@ -3,7 +3,8 @@
 namespace RZP\Models\Vpa;
 
 use RZP\Models\Base;
-use RZP\Models\Customer\Repository as CustomerRepo;
+use Rzp\Models\Merchant;
+use RZP\Models\Base\PublicEntity;
 
 class Repository extends Base\Repository
 {
@@ -34,5 +35,34 @@ class Repository extends Base\Repository
                     ->merchantId($merchantId)
                     ->latest()
                     ->first();
+    }
+
+    public function findbyPublicIdAndMerchantAlsoWithTrash(
+        string $id,
+        Merchant\Entity $merchant,
+        $withTrashed = true): PublicEntity
+    {
+
+        $entity = $this->getEntityClass();
+
+        $entity::verifyIdAndStripSign($id);
+
+        $query = $this->newQuery()
+                      ->where(Entity::ID, $id)
+                      ->where(Entity::MERCHANT_ID, $merchant->getId());
+
+        if ($withTrashed === true)
+        {
+            $query =  $query->withTrashed();
+        }
+
+        $entity = $query->first();
+
+        if (method_exists($entity, 'merchant') === true)
+        {
+            $entity->merchant()->associate($merchant);
+        }
+
+        return $entity;
     }
 }

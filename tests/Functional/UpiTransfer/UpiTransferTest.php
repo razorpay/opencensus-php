@@ -476,19 +476,19 @@ class UpiTransferTest extends TestCase
 
         $upiTransfer = $this->getDbLastEntity('upi_transfer');
         $this->assertEquals(false, $upiTransfer['expected']);
-        $this->assertEquals('VIRTUAL_ACCOUNT_NOT_FOUND', $upiTransfer['unexpected_reason']);
+        $this->assertEquals('VIRTUAL_ACCOUNT_CLOSED', $upiTransfer['unexpected_reason']);
 
         $payment = $this->getDbLastEntity('payment');
         $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
-        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('refunded', $payment['status']);
 
         $this->runUpiTransferRequestAssertions(
             'upi_icici',
             true,
-            'VIRTUAL_ACCOUNT_NOT_FOUND',
+            'VIRTUAL_ACCOUNT_CLOSED',
             [
                 'intended_virtual_account_id'   => $this->virtualAccountId,
-                'actual_virtual_account_id'     => 'va_ShrdVirtualAcc',
+                'actual_virtual_account_id'     => $this->virtualAccountId,
                 'merchant_id'                   => '10000000000000',
                 'upi_transfer_id'               => $upiTransfer->getPublicId(),
                 'payment_id'                    => $payment->getPublicId(),
@@ -513,13 +513,13 @@ class UpiTransferTest extends TestCase
         $response = $this->processUpiTransfer('testProcessICICIUpiTransferToVaWithPastCloseBy');
         $this->assertNull($response['message']);
 
-        $upiTransfer = $this->getDbLastEntity('upi_transfer');
+        $upiTransfer = $this->getLastEntity('upi_transfer', true);
         $this->assertEquals(false, $upiTransfer['expected']);
         $this->assertEquals('VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED', $upiTransfer['unexpected_reason']);
 
-        $payment = $this->getDbLastEntity('payment');
+        $payment = $this->getLastEntity('payment', true);
         $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
-        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('refunded', $payment['status']);
 
         $this->runUpiTransferRequestAssertions(
             'upi_icici',
@@ -527,10 +527,10 @@ class UpiTransferTest extends TestCase
             'VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED',
             [
                 'intended_virtual_account_id'   => $this->virtualAccountId,
-                'actual_virtual_account_id'     => 'va_ShrdVirtualAcc',
+                'actual_virtual_account_id'     => $upiTransfer['virtual_account_id'],
                 'merchant_id'                   => '10000000000000',
-                'upi_transfer_id'               => $upiTransfer->getPublicId(),
-                'payment_id'                    => $payment->getPublicId(),
+                'upi_transfer_id'               => $upiTransfer['id'],
+                'payment_id'                    => $payment['id'],
             ]
         );
     }
