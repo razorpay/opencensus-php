@@ -705,9 +705,13 @@ class AuthorizeTest extends TestCase
                 'recurring_type'    => PaymentModel\RecurringType::AUTO,
             ]);
 
-        $content = $this->timeoutOldPayment();
+        $content = $this->timeoutOldEmandatePayment(PaymentModel\RecurringType::AUTO);
 
-        $this->assertEquals(3, $content['count']);
+        $this->assertEquals(1, $content['count']);
+
+        $content = $this->timeoutOldEmandatePayment(PaymentModel\RecurringType::INITIAL);
+
+        $this->assertEquals(1, $content['count']);
     }
 
     public function testTimeoutOldGooglePayPayment()
@@ -1809,5 +1813,4 @@ class AuthorizeTest extends TestCase
         });
 
     }
-
 }

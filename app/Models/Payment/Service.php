@@ -2283,9 +2283,16 @@ class Service extends Base\Service
             $allMethods = $input['methods'] ;
         }
 
+        $emandateRecurringType = null;
+
+        if (isset($input['recurring_type']) === true)
+        {
+            $emandateRecurringType = $input['recurring_type'];
+        }
+
         foreach ($allMethods as $method)
         {
-            $count = $count + $this->timeoutOldPaymentsForMethod($limit, $method);
+            $count = $count + $this->timeoutOldPaymentsForMethod($limit, $method, $emandateRecurringType);
         }
 
         return ['count' => $count];
@@ -2374,7 +2381,7 @@ class Service extends Base\Service
         return $count;
     }
 
-    public function timeoutOldPaymentsForMethod($limit, $method)
+    public function timeoutOldPaymentsForMethod($limit, $method, $emandateRecurringType)
     {
         $count = 0;
 
@@ -2387,14 +2394,15 @@ class Service extends Base\Service
 
         $toTimestamp = $now - Payment\Entity::PAYMENT_TIMEOUT_DEFAULT_OLD;
 
-        $fromTimestamp = $this->repo->payment->fetchOldPaymentsMinCreatedForMethodForTimeout($method);
+        $fromTimestamp = $this->repo->payment->fetchOldPaymentsMinCreatedForMethodForTimeout($method, $emandateRecurringType);
 
         if (isset($fromTimestamp) === false)
         {
             return;
         }
 
-        $payments = $this->repo->payment->fetchOldCreatedPaymentsForMethodForTimeout($fromTimestamp, $toTimestamp, $limit, $method);
+        $payments = $this->repo->payment->fetchOldCreatedPaymentsForMethodForTimeout($fromTimestamp, $toTimestamp, $limit, $method, $emandateRecurringType);
+
 
         $total = count($payments);
 

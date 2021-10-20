@@ -1407,6 +1407,22 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function timeoutOldEmandatePayment($recurringType)
+    {
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'     => '/payments/timeout',
+            'content' => [
+                'limit' => 10,
+                'recurring_type' => $recurringType,
+                'methods' => ['emandate']
+            ],
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function timeoutAuthenticatedPayment()
     {
         $this->ba->cronAuth();

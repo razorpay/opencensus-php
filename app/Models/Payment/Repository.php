@@ -600,20 +600,28 @@ class Repository extends Base\Repository
      * @param int $toTimestamp
      * @param int $limit
      * @param string $method
+     * @param string $emandateRecurringType
+     * @return
      */
-    public function fetchOldCreatedPaymentsForMethodForTimeout(int $fromTimestamp, int $toTimestamp, int $limit, string $method)
+    public function fetchOldCreatedPaymentsForMethodForTimeout(int $fromTimestamp, int $toTimestamp, int $limit, string $method, $emandateRecurringType)
     {
-        return $this->repo->useSlave(function() use ($fromTimestamp, $toTimestamp, $limit, $method)
+        return $this->repo->useSlave(function() use ($fromTimestamp, $toTimestamp, $limit, $method, $emandateRecurringType)
         {
-            return $this->newQuery()
+            $query = $this->newQuery()
                         ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
                         ->status(Payment\Status::CREATED)
                         ->where(Payment\Entity::CREATED_AT, '>=', $fromTimestamp)
                         ->where(Payment\Entity::CREATED_AT, '<=', $toTimestamp)
-                        ->where(Payment\Entity::METHOD, '=', $method)
-                        ->with(['merchant', 'merchant.features'])
-                        ->limit($limit)
-                        ->get();
+                        ->where(Payment\Entity::METHOD, '=', $method);
+
+            if ($emandateRecurringType !== null)
+            {
+                $query->where(Payment\Entity::RECURRING_TYPE, '=', $emandateRecurringType);
+            }
+
+            return $query->with(['merchant', 'merchant.features'])
+                         ->limit($limit)
+                         ->get();
         });
     }
 
@@ -652,17 +660,22 @@ class Repository extends Base\Repository
     /**
      * Fetches min created_at for particular method in created state.
      * @param string $method
+     * @param string $emandateRecurringType
      * @return int
      */
-    public function fetchOldPaymentsMinCreatedForMethodForTimeout(string $method)
+    public function fetchOldPaymentsMinCreatedForMethodForTimeout(string $method, $emandateRecurringType)
     {
-        return $this->repo->useSlave(function() use ($method)
+        return $this->repo->useSlave(function() use ($method, $emandateRecurringType)
         {
-          return $this->newQueryWithConnection($this->getSlaveConnection())
+          $query =  $this->newQueryWithConnection($this->getSlaveConnection())
                       ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
                       ->status(Payment\Status::CREATED)
-                      ->where(Payment\Entity::METHOD, '=', $method)
-                      ->min(Entity::CREATED_AT);
+                      ->where(Payment\Entity::METHOD, '=', $method);
+          if ($emandateRecurringType !== null)
+          {
+              $query->where(Payment\Entity::RECURRING_TYPE, '=', $emandateRecurringType);
+          }
+          return $query->min(Entity::CREATED_AT);
         });
     }
 
@@ -2726,4 +2739,5 @@ class Repository extends Base\Repository
             'did_use_elastic'   => $didUseElasticSearch,
         ]);
     }
+
 }
