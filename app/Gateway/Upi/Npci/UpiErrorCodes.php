@@ -64,6 +64,7 @@ class UpiErrorCodes
         'B3' => 'Transaction not permitted to the account',
         '00' => 'APPROVED OR COMPLETED SUCCESSFULLY',
         'DF' => 'Random unknown error',
+        'ZA' => 'TRANSACTION DECLINED BY CUSTOMER',
     ];
 
     public static function getErrorMessage($code)

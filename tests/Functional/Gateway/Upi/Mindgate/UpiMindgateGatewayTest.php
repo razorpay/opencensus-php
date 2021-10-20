@@ -627,7 +627,7 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->assertEquals('failed', $payment['status']);
 
-        $this->assertEquals(ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED, $payment['internal_error_code']);
+        $this->assertEquals(ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_CUSTOMER, $payment['internal_error_code']);
 
         $upiEntity = $this->getDbLastEntity('upi');
 
