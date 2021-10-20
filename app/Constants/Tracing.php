@@ -185,6 +185,8 @@ class Tracing
             'pages_view',
             'pages_view_by_slug',
             'payment_page_view_get',
+            'payment_callback_with_key_post',
+            'payment_callback_with_key_get',
             'payment_page_update',
             'payment_page_notify',
             'payment_page_expire_cron',

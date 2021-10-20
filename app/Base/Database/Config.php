@@ -163,4 +163,3 @@ class Config
         return false;
     }
 }
-
