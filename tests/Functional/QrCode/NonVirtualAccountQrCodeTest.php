@@ -418,6 +418,48 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals($rrn, $payment['reference16']);
     }
 
+    public function testQrPaymentWithDisabledUpiMethod()
+    {
+
+        $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer');
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn                                  = '000011100101';
+        $request['content']['BankRRN']        = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $this->fixtures->merchant->disableMethod('LiveAccountMer', 'upi');
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getDbLastEntityToArray('qr_payment', 'live');
+        $payment   = $this->getDbLastEntityToArray('payment', 'live');
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals( $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(0, $qrPayment['expected']);
+        $this->assertEquals(UnexpectedPaymentReason::QR_CODE_PAYMENT_FAILED_UPI_NOT_ENABLED, $qrPayment['unexpected_reason']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+    }
+
+    public function testCreateQrCodeWithUpiDisabled()
+    {
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionMessage('UPI transactions are not enabled for the merchant');
+
+        $this->fixtures->merchant->disableMethod('LiveAccountMer', 'upi');
+
+        $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer');
+    }
+
     protected function processIciciQrPaymentWithDifferentAmountUtil($amount, $expectedStatus = true)
     {
         $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer']);
@@ -596,10 +638,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer');
 
         $qrCodeId = $qrCode['id'];
-        $this->fixtures->stripSign($qrCodeId);
-
-        $qrCodeId = $qrCode['id'];
-
         $this->fixtures->stripSign($qrCodeId);
 
         $request = $this->testData['testProcessIciciQrPayment'];

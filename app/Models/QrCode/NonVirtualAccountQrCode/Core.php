@@ -62,6 +62,16 @@ class Core extends QrCode\Core
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);
             }
         }
+
+        if ($input[Entity::REQ_PROVIDER] === Type::UPI_QR)
+        {
+            $methods = $this->merchant->getMethods();
+
+            if ($methods->isUpiEnabled() === false)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_UPI_NOT_ENABLED_FOR_MERCHANT);
+            }
+        }
     }
 
     public function close($qrCode, $closeReason)

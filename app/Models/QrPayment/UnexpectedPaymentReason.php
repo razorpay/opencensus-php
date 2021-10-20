@@ -13,8 +13,11 @@ class UnexpectedPaymentReason
 
     const QR_CODE_PAYMENT_FAILED_FEE_OR_TAX_TAMPERED = 'Payment failed because fees or tax was tampered';
 
+    const QR_CODE_PAYMENT_FAILED_UPI_NOT_ENABLED     = 'UPI transactions are not enabled for the merchant';
+
     protected static $toCreateUnexpected = [
         self::QR_CODE_PAYMENT_FAILED_FEE_OR_TAX_TAMPERED,
+        self::QR_CODE_PAYMENT_FAILED_UPI_NOT_ENABLED,
     ];
 
     public static function shouldCreateUnexpectedPayment(string $message) : bool
