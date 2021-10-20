@@ -1231,6 +1231,7 @@ class Gateway
         Payment\Gateway::FULCRUM,
         Payment\Gateway::TWID,
         Payment\Gateway::CHECKOUT_DOT_COM,
+        Payment\Gateway::ZAAKPAY,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
