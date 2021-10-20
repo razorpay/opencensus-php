@@ -2081,6 +2081,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::NO_COMM_WITH_SUBMERCHANTS) === false);
     }
 
+    public function canSkipWorkflowToAccessSubmerchantKyc(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::PARTNER_SUB_KYC_ACCESS) === true);
+    }
+
     public function forceGreyListInternational(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::FORCE_GREYLIST_INTERNAT) === true);

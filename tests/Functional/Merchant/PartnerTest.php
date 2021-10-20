@@ -92,6 +92,8 @@ class PartnerTest extends OAuthTestCase
     {
         $this->createResellerPartnerSubmerchant();
 
+        $this->fixtures->merchant->addFeatures(['partner_sub_kyc_access'], self::DEFAULT_MERCHANT_ID);
+
         $this->updateUploadDocumentData(__FUNCTION__);
 
         $request = $this->testData[__FUNCTION__]['request'];
@@ -125,12 +127,16 @@ class PartnerTest extends OAuthTestCase
     {
         $this->createResellerPartnerSubmerchant();
 
+        $this->fixtures->merchant->addFeatures(['partner_sub_kyc_access'], self::DEFAULT_MERCHANT_ID);
+
         $this->startTest();
     }
 
     public function testSubmerchantKYCByPartner()
     {
         $this->createResellerPartnerSubmerchant();
+
+        $this->fixtures->merchant->addFeatures(['partner_sub_kyc_access'], self::DEFAULT_MERCHANT_ID);
 
         $this->startTest();
 
@@ -148,6 +154,8 @@ class PartnerTest extends OAuthTestCase
     public function testfetchSubmerchantActivationByPartner()
     {
         $this->createResellerPartnerSubmerchant();
+
+        $this->fixtures->merchant->addFeatures(['partner_sub_kyc_access'], self::DEFAULT_MERCHANT_ID);
 
         $testData = $this->testData[__FUNCTION__];
 

@@ -3022,6 +3022,11 @@ class Core extends Base\Core
         return (empty($mapping) === false);
     }
 
+    public function canSkipWorkflowToAccessSubmerchantKyc(Entity $merchant)
+    {
+        return ($merchant->canSkipWorkflowToAccessSubmerchantKyc() === true);
+    }
+
     /**
      * @param Entity $merchant
      *

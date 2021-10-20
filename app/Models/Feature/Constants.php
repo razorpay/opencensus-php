@@ -277,6 +277,12 @@ class Constants
      */
     const NO_COMM_WITH_SUBMERCHANTS       = 'no_comm_with_submerchants';
 
+
+    /**
+     * Feature flag to skip approval workflow to access submerchant Kyc.
+     */
+    const PARTNER_SUB_KYC_ACCESS        = 'partner_sub_kyc_access';
+
     /**
      * Feature flag to enable to create new customer if contact and email both are null,
      * this functionality will be there by default for new merchants , flag need to be enabled if
@@ -1102,6 +1108,7 @@ class Constants
         self::KYC_HANDLED_BY_PARTNER          => true,
         self::RETAIN_SUB_MERCHANT_NAME        => true,
         self::NO_COMM_WITH_SUBMERCHANTS       => true,
+        self::PARTNER_SUB_KYC_ACCESS          => true,
         self::SUBMERCHANT_ONBOARDING          => true,
         self::SUBMERCHANT_ONBOARDING_V2       => true,
         self::EXPOSE_FA_VALIDATION_UTR        => true,
