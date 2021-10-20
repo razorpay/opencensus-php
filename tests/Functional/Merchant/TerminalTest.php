@@ -3240,4 +3240,13 @@ class TerminalTest extends TestCase
         // should not get decrypted using default RZP key, should get The MAC is invalid. exception
         $decryptedGatewayTerminalPassword  = Crypt::decrypt($gatewayTerminalPasswordDb); // Crypt will try to decrypt using default key as we have not passed entity
     }
+
+    public function testCreateWalletPayzappTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
 }

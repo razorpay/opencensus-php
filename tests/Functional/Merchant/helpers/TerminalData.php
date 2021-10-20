@@ -4142,4 +4142,31 @@ return [
             ]
         ]
     ],
+
+    'testCreateWalletPayzappTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'wallet_payzapp',
+                'category'                  => 7299,
+                'network_category'          => 'food_and_beverage',
+                'gateway_terminal_id'       => '98765431',
+                'gateway_merchant_id'       => '98982332',
+                'gateway_merchant_id2'      => '98765432',
+                'gateway_terminal_password' => 'randompassword12',
+                'gateway_access_code'       => 9591,
+                'gateway_secure_secret'     => 'randomsecret123',
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway'                   => 'wallet_payzapp',
+                'category'                  => '7299',
+                'network_category'          => 'food_and_beverage',
+            ]
+        ]
+    ],
 ];
