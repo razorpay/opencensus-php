@@ -11,6 +11,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Exception\ServerErrorException;
+use RZP\Gateway\Enach\Npci\Netbanking\DebitFileHeading as Headings;
 
 class EnachNpciNetbankingEarlyDebit extends EnachNpciNetbanking
 {
@@ -73,5 +74,27 @@ class EnachNpciNetbankingEarlyDebit extends EnachNpciNetbanking
             ]);
 
         return $tokens;
+    }
+
+    protected function formatDataForFile($tokens): array
+    {
+        $rows = [];
+
+        foreach ($tokens as $token)
+        {
+            $terminal  = $token->terminal;
+            $paymentId = $token['payment_id'];
+            $debitDate = Carbon::tomorrow(Timezone::IST)->format('dmY');
+
+            $rows[$terminal->getGatewayMerchantId2()][] = [
+                Headings::PAYMENT_ID      => $paymentId,
+                Headings::UMRN            => $token->getGatewayToken(),
+                Headings::AMOUNT          => $this->getFormattedAmount($token['payment_amount']),
+                Headings::SETTLEMENT_DATE => $debitDate,
+                Headings::UTILITY_CODE    => $token->terminal->getGatewayMerchantId2(),
+            ];
+        }
+
+        return $rows;
     }
 }
