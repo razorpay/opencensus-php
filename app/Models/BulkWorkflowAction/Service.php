@@ -20,6 +20,8 @@ class Service extends Base\Service
     {
         $failedMids = [];
 
+        $failedMidsDueToRiskConstructiveAction = [];
+
         $bucketType = $input[Batch\Entity::BUCKET_TYPE];
 
         $outputFilePath = $input[Batch\Entity::OUTPUT_FILE_PATH];
@@ -38,6 +40,11 @@ class Service extends Base\Service
             {
                 $failedMids[] = $row[0];
             }
+
+            if (sizeof($row) > 3 and $row[sizeof($row) - 2] === Constants::RISK_CONSTRUCTIVE_ACTION_PERMISSION_ERROR_MESSAGE)
+            {
+                $failedMidsDueToRiskConstructiveAction[] = $row[0];
+            }
         }
 
         $bulkActionResult = [
@@ -46,6 +53,13 @@ class Service extends Base\Service
             'failed_count'  => sizeof($failedMids),
             'failed_mids'   => $failedMids,
         ];
+
+        if (sizeof($failedMidsDueToRiskConstructiveAction) > 0)
+        {
+            $bulkActionResult['failed_mids_due_to_risk_constructive_action'] = $failedMidsDueToRiskConstructiveAction;
+
+            $bulkActionResult['failure_reason'] = 'Atleast 1 of the merchant has risk tag and hence constructive action can only be performed for these MIDs by Risk L3';
+        }
 
         $riskWorkflowMaker = (new RiskWorkflowAction\Service())->getIndividualRiskWorkflowMaker();
 

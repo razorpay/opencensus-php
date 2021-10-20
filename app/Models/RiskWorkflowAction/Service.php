@@ -126,7 +126,12 @@ class Service extends Base\Service
         {
             $status = Constants::INVALIDATED;
 
-            $this->closeWorkflowIfApplicable($workflowAction, $riskWorkflowMaker);
+            $input['failure_message'] = $e->getMessage();
+
+            if (isset($workflowAction) === true)
+            {
+                $this->closeWorkflowIfApplicable($workflowAction, $riskWorkflowMaker);
+            }
 
             $this->trace->traceException(
                 $e,
@@ -141,7 +146,12 @@ class Service extends Base\Service
         {
             $status = Constants::FAILED;
 
-            $this->closeWorkflowIfApplicable($workflowAction, $riskWorkflowMaker);
+            $input['failure_message'] = $e->getMessage();
+
+            if (isset($workflowAction) === true)
+            {
+                $this->closeWorkflowIfApplicable($workflowAction, $riskWorkflowMaker);
+            }
 
             $this->trace->traceException(
                 $e,
