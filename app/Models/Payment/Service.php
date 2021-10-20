@@ -1261,7 +1261,10 @@ class Service extends Base\Service
             $transferStatus = Transfer\Constant::FETCH_STATUS;
         }
 
-        $transfers = (new Transfer\Core())->getForPayment($id, $transferStatus);
+        $transfers = Tracer::inSpan(['name' => 'transfer.fetch_by_payment'], function() use ($id, $transferStatus)
+        {
+            return (new Transfer\Core())->getForPayment($id, $transferStatus);
+        });
 
         $payment = $this->repo
                         ->payment
@@ -1271,7 +1274,10 @@ class Service extends Base\Service
         {
             $orderId = $payment->getApiOrderId();
 
-            $transfersFromOrder = (new Transfer\Core())->getForOrder($orderId, $transferStatus);
+            $transfersFromOrder = Tracer::inSpan(['name' => 'transfer.fetch_by_order'], function() use ($orderId, $transferStatus)
+            {
+                return (new Transfer\Core())->getForOrder($orderId, $transferStatus);
+            });
 
             foreach ($transfersFromOrder as $transferFromOrder)
             {

@@ -211,6 +211,7 @@ class Tracing
             'transfer_fetch',
             'transfer_fetch_multiple',
             'payment_transfer',
+            'payment_fetch_transfers',
         ]);
     }
 
