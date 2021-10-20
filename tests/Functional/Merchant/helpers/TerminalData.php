@@ -1414,6 +1414,31 @@ return [
         ]
     ],
 
+    'testCreateDirectSettlementIndusIndTerminal' => [
+        'request' => [
+            'url'   => '/merchants/100000Razorpay/terminals',
+            'method' => 'POST',
+            'content' => [
+                'gateway'                   => 'netbanking_indusind',
+                'gateway_merchant_id'       => '12345',
+                'gateway_secure_secret'     => '12345678',
+                'netbanking'                => '1',
+                'network_category'          => 'ecommerce',
+                'type'                      => [
+                    'direct_settlement_with_refund' => '1',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'gateway'             => 'netbanking_indusind',
+                'gateway_merchant_id' => '12345',
+                'status'              => 'activated',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateDirectSettlementTerminalValidationFailure' => [
         'request' => [
             'content' => [

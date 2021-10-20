@@ -726,6 +726,11 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateDirectSettlementIndusIndTerminal()
+    {
+        $this->startTest();
+    }
+
     public function testCreateDirectSettlementTerminalValidationFailure()
     {
         $url = '/merchants/100000Razorpay/terminals';

@@ -37,7 +37,8 @@ class Gateway
     const CYBERSOURCE            = 'cybersource';
     const EBS                    = 'ebs';
     const ICICI                  = 'icici';
-    const ICICI_EMI               = 'icici_emi';
+    const ICICI_EMI              = 'icici_emi';
+    const INDUSIND               = 'indusind';
     const KOTAK                  = 'kotak';
     const YESB                   = 'yesb';
     const RBL                    = 'rbl';
@@ -319,6 +320,7 @@ class Gateway
         self::CCAVENUE              => self::CCAVENUE,
         self::NETBANKING_IDFC       => self::IDFC,
         self::NETBANKING_SBI        => self::SBIN,
+        self::NETBANKING_INDUSIND   => self::INDUSIND,
     ];
 
     // Map of DS settlement entity with DS Bank/org name
@@ -328,6 +330,7 @@ class Gateway
         self::AXIS                  => self::AXIS,
         self::BILLDESK              => self::BILLDESK,
         self::ICICI                 => self::ICICI,
+        self::INDUSIND              => self::INDUSIND,
         self::KOTAK                 => self::KOTAK,
         self::RBL                   => self::RBL,
         self::PAYTM                 => self::PAYTM,

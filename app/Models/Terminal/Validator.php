@@ -889,6 +889,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER          => 'sometimes|string|max:50',
         Entity::PROCURER                => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::TYPE                    => 'sometimes|array',
     ];
 
     protected static $walletPayzappTerminalRules = [
@@ -1482,6 +1483,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $netbankingPnbTerminalRules = [

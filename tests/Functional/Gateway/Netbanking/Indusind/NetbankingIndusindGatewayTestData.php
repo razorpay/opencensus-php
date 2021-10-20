@@ -191,5 +191,38 @@ return [
                 ]
             ]
         ]
+    ],
+
+    'testGenerateCombinedFileDirectSettlementTerminal' => [
+        'request' => [
+            'content' => [
+                'type'     => 'combined',
+                'targets'  => ['indusind'],
+                'begin'    => Carbon::yesterday(Timezone::IST)->getTimestamp(),
+                'end'      => Carbon::today(Timezone::IST)->getTimestamp()
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'acknowledged',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'refunds@razorpay.com',
+                        'type'                => 'combined',
+                        'target'              => 'indusind',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ]
+            ]
+        ]
     ]
 ];

@@ -5,14 +5,20 @@ use Mail;
 use Excel;
 use Carbon\Carbon;
 
+use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Mail\Gateway\DailyFile;
+use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
+use RZP\Tests\Functional\Helpers\FileUploadTrait;
+use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
 class NbplusNetbankingIndusindCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
 {
+    use ReconTrait;
+    use FileUploadTrait;
     /**
      * @var array
      */
@@ -174,5 +180,62 @@ class NbplusNetbankingIndusindCombinedFileTest extends NbPlusPaymentServiceNetba
         $this->assertEquals($payment1['id'], $payment1RowData[1]);
 
         $this->assertEquals($payment2['id'], $payment2RowData[1]);
+    }
+
+    public function testGenerateCombinedFileDirectSettlementTerminal()
+    {
+        Mail::fake();
+
+        $this->fixtures->terminal->edit($this->terminal->getId(), [
+            'type' => [
+                'direct_settlement_with_refund' => '1',
+            ],
+        ]);
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals(3, $payment->getCpsRoute());
+
+        $reconFile = $this->getReconFile([$payment]);
+
+        $uploadedFile = $this->createUploadedFile($reconFile);
+
+        $this->reconcile($uploadedFile, Base::NETBANKING_INDUSIND);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+        $content = $content['items'][0];
+        $this->assertNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNull($content[File\Entity::SENT_AT]);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNotNull($content[File\Entity::ACKNOWLEDGED_AT]);
+    }
+
+    protected function getReconFile($payments)
+    {
+        $formattedData = '';
+
+        foreach ($payments as $payment)
+        {
+            $amount  = number_format($payment->getAmount() / 100, '2', '.', '');
+
+            $formattedData = $formattedData . '1234' . '^' . $amount . '^' . '000' . '^' . $payment->getId() . '^' .
+                Carbon::createFromTimestamp($payment->getCreatedAt())->format("d-m-y") . "\n";
+        }
+
+        $creator = new FileStore\Creator;
+
+        $file = $creator->extension(FileStore\Format::TXT)
+                        ->content($formattedData)
+                        ->name('Indusind_Netbanking_Reconciliation')
+                        ->type(FileStore\Type::MOCK_RECONCILIATION_FILE)
+                        ->headers(false)
+                        ->save()
+                        ->get();
+
+        return $file['local_file_path'];
     }
 }

@@ -3,10 +3,12 @@
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Services\NbPlus\Netbanking;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 use RZP\Gateway\Netbanking\Indusind\RefundFileFields;
 
@@ -57,5 +59,17 @@ class Indusind extends NetbankingBase
         }
 
         return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $time;
+    }
+
+    protected function fetchReconciledPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
+    {
+        $claims = parent::fetchReconciledPaymentsToClaim($begin, $end, $statuses);
+
+        $claims = $claims->reject(function($claim)
+        {
+            return ($claim->terminal->isDirectSettlement() === true);
+        });
+
+        return $claims;
     }
 }
