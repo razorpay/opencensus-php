@@ -1273,6 +1273,20 @@ trait Authorize
                     unset($request['content']['next']);
                 }
 
+                $templateData = [
+                    'data'          => $response,
+                    'cdn'           => $this->app['config']->get('url.cdn.production'),
+                    'production'    => $this->app->environment() === Environment::PRODUCTION,
+                    'language_code' => $languageCode
+                ];
+
+                $templateData += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
+                $content = $this->app['view']
+                    ->make('gateway.gatewayOtpPostForm')
+                    ->with('data', $templateData)
+                    ->render();
+
                 $otpResend = 'otp_resend';
 
                 $resendUrl = null;
@@ -1288,6 +1302,7 @@ trait Authorize
                     'type'       => 'otp',
                     'request'    => [
                         'method'  => 'direct',
+                        'content' => $content
                     ],
                     'version'    => 1,
                     'payment_id' => $payment->getPublicId(),
