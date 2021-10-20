@@ -4270,6 +4270,37 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testUpdateAdditionalDetailswithDifferentValues()
+    {
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id'       => '10000000000000',
+                'business_type'     => '2',
+            ]);
+
+        $bankingAccount = $this->testCreateActivationDetail([
+            ActivationDetail\Entity::ADDITIONAL_DETAILS => json_encode(["green_channel" => false])
+        ]);
+
+        $bankingAccountId = $bankingAccount['id'];
+
+        if(str_contains($bankingAccount['id'], Entity::getIdPrefix()) === false)
+        {
+            $bankingAccountId = $bankingAccount->getPublicId();
+        }
+
+        $dataToReplace  = [
+            'request' => [
+                'url'     => '/banking_accounts/activation/' . $bankingAccountId . '/details',
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
     public function testUpdateActivationDetailForNeostoneFlow()
     {
         $attribute = ['activation_status' => 'activated'];

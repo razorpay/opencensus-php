@@ -144,9 +144,45 @@ class Service extends Base\Service
             (new Validator())->validateCommentOnAssigneeTeamChange($activationDetail, $input, $commentInput);
         }
 
-        if(array_key_exists(Entity::ADDITIONAL_DETAILS, $input) === true)
+        if (array_key_exists(Entity::ADDITIONAL_DETAILS, $input) === true)
         {
-            $input[Entity::ADDITIONAL_DETAILS] = json_encode($input['additional_details']);
+            // This is to ensure that update request comes with only those keys which has to be updated and
+            // not necessarily the entire json value. It will also ensure that previous data is not lost.
+
+            $previousAdditionalDetails = json_decode($activationDetail->getAdditionalDetails(), true);
+
+            $currentAdditionalDetails = $input[Entity::ADDITIONAL_DETAILS];
+
+            $dateFields = [
+                Entity::API_ONBOARDED_DATE,
+                Entity::API_ONBOARDING_LOGIN_DATE,
+            ];
+
+            // Convert date strings to epoch
+            foreach($dateFields as $dateField)
+            {
+                if (array_key_exists($dateField,$currentAdditionalDetails))
+                {
+                    if(strtotime($currentAdditionalDetails[$dateField]))
+                    {
+                        $currentAdditionalDetails[$dateField] =
+                            strtoepoch($currentAdditionalDetails[$dateField], 'd-M-Y', true);
+                    }
+                }
+            }
+
+            if ($previousAdditionalDetails)
+            {
+                if(!is_array($previousAdditionalDetails)){
+                    $previousAdditionalDetails = json_decode($previousAdditionalDetails,true);
+                }
+
+                $input[Entity::ADDITIONAL_DETAILS] = json_encode(array_merge($previousAdditionalDetails,$currentAdditionalDetails),true);
+            }
+            else
+            {
+                $input[Entity::ADDITIONAL_DETAILS] = json_encode($currentAdditionalDetails);
+            }
         }
 
         $updatedActivationDetail = $this->repo->transaction(function() use ($bankingAccount,

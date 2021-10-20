@@ -1063,6 +1063,8 @@ class Header
     const ACCOUNT_LOGIN_DATE        = 'Account Login Date';
     const SALES_TEAM                = 'Sales Team';
     const SALES_POC_EMAIL           = 'Sales POC Email';
+    const API_ONBOARDED_DATE        = 'API Onboarded Date';
+    const API_ONBOARDING_LOGIN_DATE = 'API Onboarding Login Date';
 
     //ICICI CA Activation
     const APPLICATION_NO            = 'APPLICATION_NO';
@@ -3743,7 +3745,9 @@ class Header
                 self::ACCOUNT_OPEN_DATE,
                 self::ACCOUNT_LOGIN_DATE,
                 self::SALES_TEAM,
-                self::SALES_POC_EMAIL
+                self::SALES_POC_EMAIL,
+                self::API_ONBOARDED_DATE,
+                self::API_ONBOARDING_LOGIN_DATE,
             ],
         ],
 

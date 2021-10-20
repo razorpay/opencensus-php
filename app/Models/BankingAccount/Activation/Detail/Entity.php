@@ -106,6 +106,9 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_OPEN_DATE = 'account_open_date';
     // (RBL) Date at which RM logs the docs into the bank's system, and processing starts.
     const ACCOUNT_LOGIN_DATE = 'account_login_date';
+    // Bank is sending us this data and we have to start saving it in our system
+    const API_ONBOARDED_DATE        = 'api_onboarded_date';
+    const API_ONBOARDING_LOGIN_DATE = 'api_onboarding_login_date';
 
     // relations
     // admin_audit_map is used here
@@ -351,5 +354,10 @@ class Entity extends Base\PublicEntity
             $array[self::ADDITIONAL_DETAILS] = json_decode($array[self::ADDITIONAL_DETAILS], true);
 
         }
+    }
+
+    public function getAdditionalDetails()
+    {
+        return $this->getAttributeValue(self::ADDITIONAL_DETAILS);
     }
 }

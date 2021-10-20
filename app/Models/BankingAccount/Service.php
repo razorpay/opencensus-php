@@ -435,6 +435,7 @@ class Service extends Base\Service
             ActivationDetail\Entity::RM_PHONE_NUMBER,
             ActivationDetail\Entity::ACCOUNT_OPEN_DATE,
             ActivationDetail\Entity::ACCOUNT_LOGIN_DATE,
+            ActivationDetail\Entity::ADDITIONAL_DETAILS,
         ];
 
         $requiredKeysforCommentInput = [

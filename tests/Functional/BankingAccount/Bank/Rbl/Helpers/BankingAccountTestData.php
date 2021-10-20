@@ -2576,7 +2576,7 @@ return [
                 'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
                 'rm_name' => 'Test RM',
                 'rm_phone_number' => '9234567890',
-                'additional_details' => json_encode(["green_channel" => true]),
+                'additional_details' => ["green_channel" => true],
             ],
         ],
         'response' => [
@@ -2586,7 +2586,36 @@ return [
                 'expected_monthly_gmv' => '10000',
                 'account_type' => 'zero_balance',
                 "is_documents_walkthrough_complete" => '1',
-                'additional_details' => json_encode(["green_channel" => true]),
+                'additional_details' => ["green_channel" => true],
+            ],
+        ],
+    ],
+
+    'testUpdateAdditionalDetailswithDifferentValues' => [
+        'request'  => [
+            'url'     => '/banking_accounts/activation/{id}/details',
+            'method'  => 'PATCH',
+            'content' => [
+                'merchant_poc_name' => 'Sample',
+                'merchant_poc_phone_number' => '1234554321',
+                'expected_monthly_gmv' => '10000',
+                'business_category' => 'sole_proprietorship',
+                'account_type' => 'zero_balance',
+                'is_documents_walkthrough_complete' => true,
+                'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                'rm_name' => 'Test RM',
+                'rm_phone_number' => '9234567890',
+                'additional_details' => ["api_onboarding_login_date" => "26-Jun-2020"],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_poc_name' => 'Sample',
+                'merchant_poc_phone_number' => '1234554321',
+                'expected_monthly_gmv' => '10000',
+                'account_type' => 'zero_balance',
+                "is_documents_walkthrough_complete" => '1',
+                'additional_details' => ["green_channel" => false,"api_onboarding_login_date"=> '1593109800'],
             ],
         ],
     ],
