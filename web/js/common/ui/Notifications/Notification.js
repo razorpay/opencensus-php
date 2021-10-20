@@ -8,15 +8,16 @@ const NOTIFICATION_TYPES = {
 };
 
 class Notification extends Component {
-  constructor() {
-    super(...arguments);
+  constructor(...args) {
+    super(...args);
     this.close = ::this.close;
   }
 
   componentDidMount() {
     setTimeout(() => {
-      this.notificationEle &&
+      if (this.notificationEle) {
         this.notificationEle.classList.add('Notification__show');
+      }
     }, 0);
 
     this.timerId = setTimeout(() => {
@@ -39,25 +40,29 @@ class Notification extends Component {
     if (this.isClosed) {
       return;
     }
-    this.notificationEle.classList.remove('Notification__show');
+    if (this.notificationEle) {
+      this.notificationEle.classList.remove('Notification__show');
+    }
     this.isClosed = true;
     clearTimeout(this.timerId);
 
     setTimeout(() => {
       this.props.onClose();
-
-      this.props.onTimeOutClose && this.props.onTimeOutClose();
+      if (this.props.onTimeOutClose) {
+        this.props.onTimeOutClose();
+      }
     }, this.props.transitionTimeout);
   }
 
   onCloseClick = () => {
     this.close();
-
-    this.props.onCloseClick && this.props.onCloseClick();
+    if (this.props.onCloseClick) {
+      this.props.onCloseClick();
+    }
   };
 
   render() {
-    let { type, message, showClose, hidePrevious } = this.props;
+    const { type, message, showClose, hidePrevious } = this.props;
 
     if (hidePrevious) {
       return null;
@@ -65,7 +70,7 @@ class Notification extends Component {
 
     return (
       <div
-        ref={notificationEle => {
+        ref={(notificationEle) => {
           this.notificationEle = notificationEle;
         }}
         class={`Notification ${NOTIFICATION_TYPES[type]}`}
@@ -74,7 +79,9 @@ class Notification extends Component {
           message()
         ) : Array.isArray(message) ? (
           <ul class="list-unstyled">
-            {message.map((msg, idx) => <li key={idx}>{msg}</li>)}
+            {message.map((msg, idx) => (
+              <li key={idx}>{msg}</li>
+            ))}
           </ul>
         ) : (
           message
