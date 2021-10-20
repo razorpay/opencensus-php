@@ -3,10 +3,18 @@
 namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use RZP\Models\Bank\IFSC;
-use RZP\Models\Base\PublicCollection;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
+use RZP\Models\Bank\IFSC;
+use RZP\Constants\Timezone;
+use RZP\Mail\Base\Constants;
+use RZP\Services\Beam\Service;
+use RZP\Models\Gateway\File\Status;
+use RZP\Models\Base\PublicCollection;
+use RZP\Exception\GatewayFileException;
+use RZP\Models\FileStore\Storage\Base\Bucket;
+use RZP\Services\Beam\Constants as BeamConstants;
 
 class Indusind extends Base
 {
@@ -15,21 +23,105 @@ class Indusind extends Base
     const FILE_NAME   = 'IndusInd_Emi_File';
     const DATE_FORMAT = 'j/n/Y';
 
+    protected function sendEmiFile($data)
+    {
+        try {
+            $fullFileName = $this->file->getName() . '.' . $this->file->getExtension();
+
+            $fileInfo = [$fullFileName];
+
+            $bucketConfig = $this->getBucketConfig();
+
+            $data = [
+                Service::BEAM_PUSH_FILES          => $fileInfo,
+                Service::BEAM_PUSH_JOBNAME        => BeamConstants::INDUSIND_EMI_FILE_JOB_NAME,
+                Service::BEAM_PUSH_BUCKET_NAME    => $bucketConfig['name'],
+                Service::BEAM_PUSH_BUCKET_REGION  => $bucketConfig['region'],
+            ];
+
+            // In seconds
+            $timelines = [];
+
+            $mailInfo = [
+                'fileInfo'  => $fileInfo,
+                'channel'   => 'settlements',
+                'filetype'  => 'emi',
+                'subject'   => 'File Send failure',
+                'recipient' => Constants::MAIL_ADDRESSES[Constants::DEVELOPERS]
+            ];
+
+            $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+        } catch (\Exception $e) {
+            $this->trace->error(TraceCode::BEAM_PUSH_FAILED,
+                [
+                    'job_name'  => BeamConstants::INDUSIND_EMI_FILE_JOB_NAME,
+                    'file_name' => $fullFileName,
+                ]);
+        }
+    }
+
+    // Don't zip the file so don't need to send password
+    protected function sendEmiPassword($data)
+    {
+        return;
+    }
+
+
     public function generateData(PublicCollection $emiPayments): array
     {
         $data['items'] = $emiPayments->all();
 
-        if($this->mode === "test")
-        {
-            $monthYear = Carbon::now(Timezone::IST)->format('mY');
-
-            $data['password'] = "razorpay" . $monthYear;
-        }
-        else {
-            $data['password'] = $this->generateEmiFilePassword();
-        }
-
         return $data;
+    }
+
+    public function createFile($data)
+    {
+        if ($this->isFileGenerated() === true)
+        {
+            return;
+        }
+
+        try
+        {
+            $fileData = $this->formatDataForFile($data);
+
+            $fileName = $this->getFileToWriteName();
+
+            $creator = new FileStore\Creator;
+
+            $creator->extension(static::EXTENSION)
+                ->content($fileData)
+                ->name($fileName)
+                ->store(FileStore\Store::S3)
+                ->type(static::FILE_TYPE)
+                ->entity($this->gatewayFile)
+                ->metadata(static::FILE_METADATA);
+
+            $creator->save();
+
+            $this->file = $creator->getFileInstance();
+
+            $this->gatewayFile->setFileGeneratedAt($this->file->getCreatedAt());
+
+            $this->gatewayFile->setStatus(Status::FILE_GENERATED);
+        }
+        catch (\Throwable $e)
+        {
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE, [
+                'id'        => $this->gatewayFile->getId(),
+            ],
+                $e);
+        }
+    }
+
+    protected function getBucketConfig()
+    {
+        $config = $this->app['config']->get('filestore.aws');
+
+        $bucketType = Bucket::getBucketConfigName(self::FILE_TYPE, $this->env);
+
+        return $config[$bucketType];
     }
 
     protected function formatDataForFile($data)

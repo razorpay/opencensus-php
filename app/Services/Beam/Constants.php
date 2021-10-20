@@ -22,6 +22,8 @@ class Constants
 
     const SBI_UPI_REFUND_FILE_JOB_NAME = 'sbi_upi_refund';
 
+    const INDUSIND_EMI_FILE_JOB_NAME   = 'indusind_emi';
+
     const ICIC_EMI_FILE_JOB_NAME       = 'icici_emi';
 
     const YESBANK_EMI_FILE_JOB_NAME    = 'yesbank_emi';

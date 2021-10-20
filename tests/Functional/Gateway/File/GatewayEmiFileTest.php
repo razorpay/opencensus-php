@@ -140,6 +140,8 @@ class GatewayEmiFileTest extends TestCase
     {
         Mail::fake();
 
+        Queue::fake();
+
         $this->ba->publicAuth();
 
         $this->makeEmiPaymentOnCard('4147720000000009', 9);
@@ -161,19 +163,22 @@ class GatewayEmiFileTest extends TestCase
             'type'        => 'indusind_emi_file',
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
-            'extension'   => 'zip',
+            'extension'   => 'xlsx',
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertQueued(EmiMail\Password::class);
-        Mail::assertQueued(EmiMail\File::class);
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testGenerateEmiFileForIndusIndForCardMasking()
     {
         Mail::fake();
 
+        Queue::fake();
+
         $this->ba->publicAuth();
 
         $this->makeEmiPaymentOnCard('4147720000000009', 9);
@@ -195,35 +200,29 @@ class GatewayEmiFileTest extends TestCase
             'type'        => 'indusind_emi_file',
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
-            'extension'   => 'zip',
+            'extension'   => 'xlsx',
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertQueued(EmiMail\Password::class);
+        $filestorecontrol = new FileStore\FileStoreController();
 
-        Mail::assertQueued(EmiMail\File::class, function ($file) {
-            $fileData = $file->getFileData();
+        $fileentity = $filestorecontrol->getFile($file['id']);
 
-            $monthYear = Carbon::now(Timezone::IST)->format('mY');
+        $content = $fileentity->getOriginalContent();
 
-            $zip = new ZipArchive();
-            $zip->open($fileData['signed_url']);
-            $zip->setPassword('razorpay' . $monthYear);
-            $pathinfo = pathinfo($fileData['signed_url']);
-            $zip->extractTo($pathinfo['dirname']);
-            $filename = $zip->getNameIndex(0);
-            $zip->close();
+        $data = $content["url"];
 
-            $emiFileContents = (new ExcelImport)->toArray($pathinfo['dirname'] . '/' . $filename);
+        $emiFileContents = (new ExcelImport)->toArray($data);
 
-            // Check if the fields are set correctly
-            $this->assertEquals('414772XXXXXX0009', $emiFileContents[0][0]['card_pan']);
-            $this->assertEquals('INDUSIND', $emiFileContents[0][0]['issuer']);
-            $this->assertEquals('14%', $emiFileContents[0][0]['interest_rate']);
+        // Check if the fields are set correctly
+        $this->assertEquals('414772XXXXXX0009', $emiFileContents[0][0]['card_pan']);
+        $this->assertEquals('INDUSIND', $emiFileContents[0][0]['issuer']);
+        $this->assertEquals('14%', $emiFileContents[0][0]['interest_rate']);
 
-            return true;
-        });
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testGenerateEmiFileForKotak()
