@@ -428,6 +428,7 @@ return [
             'merchant_risk' => env('FRESHDESK_GROUP_MERCHANT_RISK_ID'),
             'rzpind' => [
                 'merchant_risk' => env('FRESHDESK_IND_GROUP_MERCHANT_RISK_ID'),
+                'foh'           => env('FRESHDESK_IND_GROUP_FOH_NOTIFICATION_ID'),
                 'byers_risk'    => env('FRESHDESK_IND_GROUP_BUYERS_RISK_ID'),
             ]
         ],
@@ -436,6 +437,7 @@ return [
             'risk_notification' => env('FRESHDESK_EMAIL_CONFIG_RISK_NOTIFICATION_ID'),
             'rzpind' => [
                 'risk_notification' => env('FRESHDESK_IND_EMAIL_CONFIG_RISK_NOTIFICATION_ID'),
+                'foh_notification'  => env('FRESHDESK_IND_EMAIL_CONFIG_FOH_NOTIFICATION_ID'),
             ]
         ],
     ],

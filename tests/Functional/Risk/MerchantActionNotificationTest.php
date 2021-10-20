@@ -61,14 +61,20 @@ class MerchantActionNotificationTest extends TestCase
 
     public function testFOHEmailBulkWorkflow()
     {
+        $expectedContent = self::FOH_EXPECTED_CONTENT;
+
+        $expectedContent['email_config_id'] = 82000098428;
+
+        $expectedContent['group_id'] = 82000655429;
+
+
         $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
-                                                    self::FOH_EXPECTED_CONTENT,
+                                                    $expectedContent,
                                                     [
                                                         'id' => '1234',
                                                     ]);
 
         $this->startTest();
-
     }
 
     public function testSuspendEmailBulkWorkflow()

@@ -367,7 +367,7 @@ class Service extends Base\Service
     {
         try
         {
-            [$subject, $viewTemplate, $data, $fdSubcategory, $notificationType, $rasTriggerReason] = $content;
+            [$subject, $viewTemplate, $data, $fdSubcategory, $notificationType, $rasTriggerReason, $groupId, $emailConfigId] = $content;
 
             $merchantEmail = $merchant->merchantDetail->getContactEmail();
 
@@ -393,8 +393,8 @@ class Service extends Base\Service
                     'priority'        => 1,
                     'email'           => $merchantEmail,
                     'tags'            => $fdTags,
-                    'group_id'        => (int) $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
-                    'email_config_id' => (int) $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
+                    'group_id'        => (int) $groupId,
+                    'email_config_id' => (int) $emailConfigId,
                     'custom_fields'  => [
                         'cf_ticket_queue' => 'Merchant',
                         'cf_category'     => 'Risk Report_Merchant',
@@ -559,6 +559,10 @@ class Service extends Base\Service
         $data          = '';
         $fdSubcategory = '';
 
+        $groupId = (int) $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'];
+
+        $emailConfigId = (int) $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'];
+
         if ($notificationType === Constants::FOH_NC_NOTIFICATION)
         {
             if ($this->isHealthCheckTriggerReason($rasTriggerReason) === false)
@@ -595,6 +599,10 @@ class Service extends Base\Service
             }
             else
             {
+                $groupId = (int) $this->freshdeskConfig['group_ids']['rzpind']['foh'];
+
+                $emailConfigId = (int) $this->freshdeskConfig['email_config_ids']['rzpind']['foh_notification'];
+
                 $subject = Constants::FOH_GENERIC_CONFIRMATION_MAIL_SUBJECT;
 
                 $viewTemplate = Constants::FOH_GENERIC_CONFIRMATION_MAIL_TPL;
@@ -606,7 +614,7 @@ class Service extends Base\Service
             }
         }
 
-        return [$subject, $viewTemplate, $data, $fdSubcategory, $notificationType, $rasTriggerReason];
+        return [$subject, $viewTemplate, $data, $fdSubcategory, $notificationType, $rasTriggerReason, $groupId, $emailConfigId];
     }
 
     private function getSmsData(Merchant\Entity $merchant, string $notificationType, string $rasTriggerReason)
@@ -853,6 +861,8 @@ class Service extends Base\Service
             Constants::FD_SUB_CATEGORY_FRAUD_ALERTS,
             Constants::FOH_NC_NOTIFICATION,
             Constants::RAS_TRIGGER_REASON_NC_FLOW,
+            $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+            $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
         ], []);
     }
 

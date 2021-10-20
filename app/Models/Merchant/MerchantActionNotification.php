@@ -156,7 +156,7 @@ class MerchantActionNotification
         $this->trace->info(TraceCode::MERCHANT_RISK_ACTIONS_NOTIFICATIONS_CRON_END);
     }
 
-    private function sendEmail(Merchant\Entity $merchant, $viewTemplate, $subject, $data)
+    private function sendEmail(Merchant\Entity $merchant, $viewTemplate, $subject, $data, $action)
     {
         try
         {
@@ -168,6 +168,18 @@ class MerchantActionNotification
 
             $mailBody = View::make($viewTemplate, $data)->render();
 
+            $groupIdMapping = [
+                Action::HOLD_FUNDS      =>  $this->freshdeskConfig['group_ids']['rzpind']['foh'],
+                Action::SUSPEND         =>  $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                Action::LIVE_DISABLE    =>  $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+            ];
+
+            $emailConfigIdMapping = [
+                Action::HOLD_FUNDS      =>  $this->freshdeskConfig['email_config_ids']['rzpind']['foh_notification'],
+                Action::SUSPEND         =>  $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
+                Action::LIVE_DISABLE    =>  $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
+            ];
+
             $fdOutboundEmailRequest = [
                 'subject'         => $mailSubject,
                 'description'     => $mailBody,
@@ -176,8 +188,8 @@ class MerchantActionNotification
                 'tags'            => ['bulk_workflow_email'],
                 'priority'        => 1,
                 'email'           => $merchantEmail,
-                'group_id'        => (int) $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
-                'email_config_id' => (int) $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
+                'group_id'        => (int) $groupIdMapping[$action],
+                'email_config_id' => (int) $emailConfigIdMapping[$action],
                 'custom_fields'  => [
                     'cf_ticket_queue' => 'Merchant',
                     'cf_category'     => 'Risk Report_Merchant',
@@ -242,7 +254,7 @@ class MerchantActionNotification
 
             $templates = Constants::MERCHANT_RISK_ACTIONS_TEMPLATE_MAP[$action];
 
-            $this->sendEmail($merchant, $templates[Constants::EMAIL_TEMPLATE], $templates[Constants::EMAIL_SUBJECT], $params);
+            $this->sendEmail($merchant, $templates[Constants::EMAIL_TEMPLATE], $templates[Constants::EMAIL_SUBJECT], $params, $action);
 
             $this->sendSms($merchant, $templates[Constants::SMS_TEMPLATE], $params);
 
