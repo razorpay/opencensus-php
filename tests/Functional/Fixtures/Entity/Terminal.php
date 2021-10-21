@@ -413,7 +413,7 @@ class Terminal extends Base
             'upi'                   => 0,
             'netbanking'            => 0,
             'gateway_merchant_id'   => 'abcd',
-            'network_category'      => 'ecommerce',
+            'category'              => '1240',
         ];
         $attributes = array_merge($attributes, $override);
         return $this->createEntityInTestAndLive('terminal', $attributes);

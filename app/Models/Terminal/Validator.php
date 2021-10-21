@@ -311,6 +311,7 @@ class Validator extends Base\Validator
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::INTERNATIONAL                           => 'sometimes|boolean',
         Entity::CURRENCY                                => 'sometimes|array',
+        Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
     ];
 
     protected static $checkoutDotComEditTerminalRules = [
@@ -319,6 +320,7 @@ class Validator extends Base\Validator
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::INTERNATIONAL                           => 'sometimes|boolean',
         Entity::CURRENCY                                => 'sometimes|array',
+        Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
     ];
 
     protected static $ccavenueTerminalRules = [
