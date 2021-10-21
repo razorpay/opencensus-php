@@ -374,6 +374,21 @@ return [
         ],
     ],
 
+    'testCobrandingPartnerFromIinDetailsEndpoint' => [
+        'request'  => [
+            'url'     => '/payment/iin',
+            'content' => [
+                'iin' => '112333',
+            ],
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'cobranding_partner' => 'onecard',
+            ],
+        ],
+    ],
+
     'testGetPaymentFlowsEmptyResponseFromIinDetailsEndpoint' => [
         'request'  => [
             'url'     => '/payment/iin',

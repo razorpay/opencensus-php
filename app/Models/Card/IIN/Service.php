@@ -69,10 +69,11 @@ class Service extends Base\Service
 
         if (is_null($iinEntity) === false)
         {
-            $data['flows']['emi'] = $iinEntity->isEmiAvailable();
-            $data['type']         = $iinEntity->getType();
-            $data['issuer']       = $iinEntity->getIssuer();
-            $data['network']      = $iinEntity->getNetwork();
+            $data['flows']['emi']       = $iinEntity->isEmiAvailable();
+            $data['type']               = $iinEntity->getType();
+            $data['issuer']             = $iinEntity->getIssuer();
+            $data['network']            = $iinEntity->getNetwork();
+            $data['cobranding_partner'] = $iinEntity->getCobrandingPartner();
 
             $app = App::getFacadeRoot();
 

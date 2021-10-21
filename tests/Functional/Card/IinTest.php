@@ -318,6 +318,24 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testCobrandingPartnerFromIinDetailsEndpoint()
+    {
+        $this->testAddIin();
+
+        $this->ba->publicAuth();
+
+        $flows = [
+            'pin'          => '1',
+            'headless_otp' => '1',
+            'otp'          => '1',
+            'iframe'       => '1',
+        ];
+
+        $this->fixtures->edit('iin', 112333, ['cobranding_partner' => 'onecard']);
+
+        $this->startTest();
+    }
+
     public function testGetPaymentFlowsEmptyResponseFromIinDetailsEndpoint()
     {
         $this->ba->publicAuth();
