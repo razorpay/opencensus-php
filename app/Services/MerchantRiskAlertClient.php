@@ -165,7 +165,7 @@ class MerchantRiskAlertClient
     public function createMerchantAlert(
         string $merchantId, string $entityType, string $entityId,
         string $category, string $source, string $eventType,
-        int $eventTimestamp, array $data)
+        int $eventTimestamp, ?array $data)
     {
         $retryWithFallbackRoute = false;
 

@@ -19,6 +19,7 @@ class DruidService extends BaseDruidService
             'pg_only'                         => false,
             'pl_only'                         => true,
             'pp_only'                         => false,
+            'merchants_id'                    => '10000000000000',
         ];
 
         return [null, [$data]];

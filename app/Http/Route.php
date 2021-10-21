@@ -2811,6 +2811,7 @@ class Route
         'health_checker_risk_score_cron'         => ['post',    'merchant/{checker_type}/checker/risk/score/cron',                'MerchantController@healthCheckerRiskScoreCron'               ],
         'health_checker_retry_cron'              => ['post',    'merchant/{checker_type}/checker/retry/cron',                     'MerchantController@healthCheckerRetryCron'                   ],
         'health_checker_reminder_cron'           => ['post',    'merchant/{checker_type}/checker/reminder/cron',                  'MerchantController@healthCheckerReminderCron'                ],
+        'fraud_checker_milestone_cron'           => ['post',    'merchant/fraud/{category}/milestone/checker',                    'MerchantController@fraudCheckerMilestoneCron'                ],
 
         // Merchant Risk Notes
         'merchant_risk_notes_get'              => ['get',       'merchants/{merchant_id}/risk_notes',                       'MerchantRiskNotesController@getAll'    ],
@@ -3835,6 +3836,7 @@ class Route
         'health_checker_risk_score_cron',
         'health_checker_retry_cron',
         'health_checker_reminder_cron',
+        'fraud_checker_milestone_cron',
 
         // payout service
         'create_payout_entry',
@@ -10225,6 +10227,7 @@ class Route
             'health_checker_risk_score_cron',
             'health_checker_retry_cron',
             'health_checker_reminder_cron',
+            'fraud_checker_milestone_cron',
             'payment_analytics_partition_cron',
             'banking_account_service_cron_routes',
             'merchant_methods_hdfc_debit_emi',

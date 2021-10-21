@@ -2358,6 +2358,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function fraudCheckerMilestoneCron($category)
+    {
+        $response = $this->service(E::MERCHANT_FRAUD_CHECKER)->milestoneCron($category);
+
+        return ApiResponse::json($response);
+    }
+
     public function fireHubspotEventFromDashboard()
     {
         $input = Request::all();
