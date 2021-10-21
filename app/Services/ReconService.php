@@ -28,11 +28,15 @@ class ReconService
 
     const ART_UFH_FILE_TYPE = 'art_input';
 
+    const ART_UFH_WORKFLOW_FILE_TYPE = 'art_workflow';
+
+    const ADMIN_DASHBOARD_UPLOAD = 'admin_dashboard/upload';
+
+    const ADMIN_DASHBOARD_WORKFLOW_UPLOAD = 'admin_dashboard/upload/workflow';
+
     const ART_UFH_BULK_RULE = 'art_bulk_rule';
 
     const ART_UFH_SAMPLE_FILE = 'art_sample_file';
-
-    const ADMIN_DASHBOARD_UPLOAD = 'admin_dashboard/upload';
 
     const BULK_RULE_URL = 'bulk_rule';
 
@@ -139,11 +143,32 @@ class ReconService
 
         $storageFileName = self::ADMIN_DASHBOARD_UPLOAD . '/' . $merchant_id . '/' . $workspace_id . '/' . $file_type_id . '/' . $fileName;
 
-       $input['file_path'] = $this->uploadFileToUfh($file, $storageFileName, self::ART_UFH_FILE_TYPE);
+        $input['file_path'] = $this->uploadFileToUfh($file, $storageFileName, self::ART_UFH_FILE_TYPE);
 
-       unset($input[self::FILE]);
+        unset($input[self::FILE]);
 
         return $this->sendRequest('file', 'POST', $input);
+    }
+
+    public function workflowFileUpload($input)
+    {
+        $merchant_id = $input[self::MERCHANT_ID];
+
+        $workspace_id = $input[self::WORKSPACE_ID];
+
+        $file_type_id = $input[self::FILE_TYPE_ID];
+
+        $file = $input[self::FILE];
+
+        $fileName = $file->getClientOriginalName();
+
+        $storageFileName = self::ADMIN_DASHBOARD_WORKFLOW_UPLOAD . '/' . $merchant_id . '/' . $workspace_id . '/' . $file_type_id . '/' . $fileName;
+
+        $input['file_path'] = $this->uploadFileToUfh($file, $storageFileName, self::ART_UFH_WORKFLOW_FILE_TYPE);
+
+        unset($input[self::FILE]);
+
+        return $this->sendRequest('workflow_file', 'POST', $input);
     }
 
     protected function uploadBulkRuleFile($input)

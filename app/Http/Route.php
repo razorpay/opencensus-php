@@ -2862,8 +2862,9 @@ class Route
 
         // Recon service proxy route
         'recon_service_request_proxy'             => ['any',        'recon/service/common/{path?}',                         'ReconServiceController@handleAny'                             ],
-        'recon_service_file_upload_proxy'          => ['post',       'recon/service/upload_file',                            'ReconServiceController@uploadFile'                            ],
-        'recon_service_admin_request_proxy'       => ['post',       'recon/service/admin/{path?}',                         'ReconServiceController@handleAdminCall'                             ],
+        'recon_service_file_upload_proxy'          => ['post',       'recon/service/upload_file',                             'ReconServiceController@uploadFile'                            ],
+        'recon_service_workflow_file_upload_proxy'  => ['post',       'recon/service/workflow_file_upload',                     'ReconServiceController@workflowFileUpload'                     ],
+        'recon_service_admin_request_proxy'       => ['post',       'recon/service/admin/{path?}',                          'ReconServiceController@handleAdminCall'                       ],
 
         'payment_update_reference6'               => ['patch',      'payments/{id}/updateReference6',                       'PaymentController@updateReference6'                           ],
 
@@ -4015,6 +4016,7 @@ class Route
         'freshchat_get_chat_holidays_config_proxy',
         'recon_service_request_proxy',
         'recon_service_file_upload_proxy',
+        'recon_service_workflow_file_upload_proxy',
         'recon_service_admin_request_proxy',
         'rbl_current_account_serviceability_get',
         'merchant_primary_balance_fetch',
@@ -4602,6 +4604,7 @@ class Route
         'loc_service_dev_admin',
         'recon_service_request_proxy',
         'recon_service_file_upload_proxy',
+        'recon_service_workflow_file_upload_proxy',
         'recon_service_admin_request_proxy',
         'populate_merchant_trim_data_cron',
         'advertiser_logo',
@@ -5549,6 +5552,7 @@ class Route
         'loc_service_dev_admin'                    => Permission::CAPITAL_DEVELOPER,
         'recon_service_request_proxy'              => Permission::RECON_OPERATION,
         'recon_service_file_upload_proxy'           => Permission::RECON_OPERATION,
+        'recon_service_workflow_file_upload_proxy'   => Permission::RECON_OPERATION,
         'recon_service_admin_request_proxy'        => Permission::RECON_ADMIN_OPERATION,
         'merchant_rtb_details_fetch'               => Permission::VIEW_MERCHANT,
         'populate_merchant_trim_data_cron'         => Permission::MANAGE_BULK_FEATURE_MAPPING,
@@ -9368,6 +9372,7 @@ class Route
             'refunds_fetch_for_customer',
             'recon_service_request_proxy',
             'recon_service_file_upload_proxy',
+            'recon_service_workflow_file_upload_proxy',
             'recon_service_admin_request_proxy',
             'reminder_admin',
             'reminder_next_run',

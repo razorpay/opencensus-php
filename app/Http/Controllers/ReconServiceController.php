@@ -168,6 +168,15 @@ class ReconServiceController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function workflowFileUpload()
+    {
+        $input = Request::all();
+
+        $response = $this->reconService()->workflowFileUpload($input);
+
+        return ApiResponse::json($response);
+    }
+
     protected function reconService()
     {
         $app = App::getFacadeRoot();
