@@ -355,7 +355,7 @@ class Service extends Base\Service
 
             foreach ($diffPaymentIds as $paymentId)
             {
-                $payment = $this->app['pg_router']->fetch(Constants\Entity::PAYMENT, $paymentId, null, null);
+                $payment = $this->app['pg_router']->fetch(Constants\Entity::PAYMENT, $paymentId, '', array());
 
                 if ($payment !== null)
                 {
