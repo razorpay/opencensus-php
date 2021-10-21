@@ -7,11 +7,10 @@ import QueryString from 'query-string';
 import { withRouter } from 'react-router-dom';
 
 import { Modal, ModalContent } from 'common/new-ui/Modal';
-import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { classList } from 'common/utils/rzp-utils';
 import * as LocalStorageService from 'common/utils/localStorage';
-import Spinner from 'common/ui/Spinner';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { analyticsTrack } from 'common/utils/analytics';
+import * as EventsActions from 'merchant/reducers/trackEvents';
 
 import KycForm from './new';
 import { setInstantActivationsTracking } from './ga_new';
@@ -25,7 +24,7 @@ const SOURCE_RAZORPAY_X = 'x';
   user: state.session.user,
   session: state.session,
   current_tab_name: state.activationWizard.current_tab_name,
-}))
+}), { ...EventsActions, })
 export default class ActivationContainer extends Component {
   constructor(props) {
     super(props);
@@ -232,17 +231,15 @@ export default class ActivationContainer extends Component {
   };
 
   sendSegmentEvents = (isFormCloseAction) => {
-    const isL1Submitted = this.props.user.instantActivation.isL1Submitted;
+    const { user } = this.props;
+    const isL1Submitted = user.instantActivation.isL1Submitted;
     const objectName = isL1Submitted ? 'L2 form' : 'L1 form';
-    const actionName = isFormCloseAction ? 'close success' : 'load success';
-    analyticsTrack({
+    const actionName = isFormCloseAction ? 'Closed' : 'Loaded';
+
+    this.props.trackEvents({
       objectName,
       actionName,
       screen: 'home page',
-      properties: {
-        result: 'success',
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
     });
   };
 
@@ -262,13 +259,12 @@ export default class ActivationContainer extends Component {
       signUpFormStatus === 'sign_up_completed' &&
       this.props.user.showL1FormOnLogin
     ) {
-      analyticsTrack({
+      this.props.trackEvents({
         objectName: 'Show Activation form on login',
         actionName: 'redirect',
         screen: 'home page',
         properties: {
           loginL1Experiment: 'redirect to activation page',
-          ...getCommonAnalyticsProperties(window.rzp_user),
         },
       });
       LocalStorageService.setItem('sign_up_exp_status', 'kyc_form_fill_started');

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Space from '@razorpay/blade-old/src/atoms/Space';
@@ -8,10 +8,11 @@ import useActivation from '../../hooks/useActivation';
 import WhitelistedSteps from './WhitelistedSteps';
 import GreylistedSteps from './GreylistedSteps';
 import ActivationProgressHeader from './ActivationProgressHeader';
-import { checkIfDedupe, isUnregisteredBusiness } from '../../services/utils';
+import { checkIfDedupe, isUnregisteredBusiness, isL1Submitted } from '../../services/utils';
 import { useApp } from 'common/context/App';
 import { ActivationModal, ModalTypeT } from '../../ActivationModals';
 import { switchMode } from 'common/services/mode';
+import useTrackEvents from 'merchant/hooks/useTrackEvents';
 import usePartnerActivation from '../../hooks/usePartnerActivation';
 import AccessBlockedSteps from './AccessBlockedSteps';
 
@@ -39,6 +40,17 @@ const ActivationProgress: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalType, setModalType] = useState<ModalTypeT>('');
   const { user, experiments } = useApp();
+  const trackEvents = useTrackEvents();
+
+  useEffect(() => {
+    if (data) {
+      trackEvents({
+        objectName: `${isL1Submitted(data.activation_form_milestone) ? 'L2' : 'L1'} Form`,
+        actionName: 'Loaded',
+        screen: 'onboarding',
+      });
+    }
+  }, [trackEvents]);
   const { shouldBlockMerchantKYC } = usePartnerActivation();
 
   if (status === 'loading') {

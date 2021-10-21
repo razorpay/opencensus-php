@@ -7,8 +7,8 @@ import { getMode, switchMode } from 'common/services/mode';
 import Info from './Info';
 import Buttons from './Buttons';
 import * as Messages from './Constants';
-import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
+import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 const InlineText = styled.span`
   color: #162f5661;
@@ -20,9 +20,21 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; esc
   history,
 }) => {
   const { user, experiments } = useApp();
+  const trackEvents = useTrackEvents();
+
   const onCTAClick = () => {
     history.push('/onboarding/steps');
-    analyticsTrack({
+    trackEvents({
+      objectName: `${isL1Submitted(data.activation_form_milestone) ? 'L2' : 'L1'} Form`,
+      actionName: 'initiated',
+      screen: 'home page',
+      properties: {
+        ctaLabel: 'Submit KYC',
+        ctaLocation: 'Obnoarding banner',
+      },
+    });
+
+    trackEvents({
       objectName: `${isL1Submitted(data.activation_form_milestone) ? 'L2' : 'L1'} Start`,
       actionName: 'form fill',
       screen: 'home page',
@@ -31,7 +43,6 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; esc
         milestone: `${isL1Submitted(data.activation_form_milestone) ? 'L2' : 'L1'} Start`,
       },
       activationType: isL1Submitted(data.activation_form_milestone) ? 'kyc' : 'act',
-      user,
     });
   };
 
@@ -129,13 +140,12 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; esc
             <Buttons.Primary
               onClick={() => {
                 history.push('/tncform');
-                analyticsTrack({
+                trackEvents({
                   objectName: 'Act',
                   actionName: 'generate page now',
                   screen: 'home page',
                   properties: { clickSource: 'onboarding card' },
                   eventAction: 'initiated',
-                  user,
                 });
               }}
               title="Generate Terms And Conditions"

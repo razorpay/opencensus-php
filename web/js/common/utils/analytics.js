@@ -143,7 +143,9 @@ export const analyticsTrack = ({
       screen,
       eventTimestamp,
       experiment_ID: getCookie('auth_source') === 'website' ? 'Signup_experiment_1' : 'none',
+      // TODO: Deprecated, remove once all iterations are migrated
       device_type: window.innerWidth <= 1020 ? 'mweb' : 'dweb',
+      source: window.innerWidth <= 1020 ? 'mweb' : 'dweb',
     });
   }
 

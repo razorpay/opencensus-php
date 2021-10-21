@@ -6,13 +6,11 @@ import RTracking from 'react-tracking';
 import AcceptPaymentsModal from 'merchant/containers/Home/OnboardingCard/Instant/AcceptPaymentsModal';
 
 import { toggleMobileMenu } from 'merchant/reducers/app';
+import * as EventsActions from 'merchant/reducers/trackEvents';
 import { showAcceptPaymentsModal, hideAcceptPaymentsModal } from 'merchant/reducers/home';
 
 import ActivationProgress from './ActivationProgress';
 import { trackGoToActivation, trackGoToConfig } from './ga';
-
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 
 import MainNavLink from 'merchant_common/components/MainNavLink';
 import MainNavLinkGroup from './MainNavLinkGroup';
@@ -55,7 +53,7 @@ const BASE_ROUTES = {
     showMobileMenu: state.app.showMobileMenu,
     showAcceptPayments: state.home.instantActivations.showAcceptPayments,
   }),
-  { toggleMobileMenu, showAcceptPaymentsModal, hideAcceptPaymentsModal },
+  { toggleMobileMenu, showAcceptPaymentsModal, hideAcceptPaymentsModal, ...EventsActions },
 )
 @RTracking(() => window.rzpQ.component('Sidebar'))
 export default class Sidebar extends Component {
@@ -160,18 +158,19 @@ export default class Sidebar extends Component {
       this.props.showAcceptPaymentsModal();
     } else {
       const isL1Submitted = user?.instantActivation?.isL1Submitted;
-      if (isL1Submitted) {
-        analyticsTrack({
-          objectName: 'L2 Start',
-          actionName: 'form fill initiated',
-          screen: 'home page',
-          properties: {
-            clickSource: 'form submission popup',
-            ...getCommonSegmentProperties(),
-            milestone: 'L2 Start',
-          },
-        });
-      }
+
+      const objectName = `${isL1Submitted ? 'L2' : 'L1'} Form`;
+
+      this.props.trackEvents({
+        objectName,
+        actionName: 'initiated',
+        screen: 'home page',
+        properties: {
+          ctaLabel: 'Account Activation',
+          ctaLocation: 'LHS_Nav_Bar',
+        },
+      });
+
       this.props.history.push('/activation');
     }
 
@@ -273,12 +272,10 @@ class PartnerSidebar extends Component {
 
   toggle = (type) => () => {
     this.setState(
-      (prevState) => {
-        return {
-          [type]: !prevState[type],
-          [this.getCounterType(type)]: prevState[type],
-        };
-      },
+      (prevState) => ({
+        [type]: !prevState[type],
+        [this.getCounterType(type)]: prevState[type],
+      }),
       () => {
         setTimeout(() => {
           this.props.history.push(this.getDefaultRoute(type));

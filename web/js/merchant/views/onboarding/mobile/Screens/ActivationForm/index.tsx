@@ -28,10 +28,10 @@ import BusinessDetails from '../../BusinessDetails';
 import DocumentUpload from '../../DocumentUpload';
 import SaveAndExitModal from '../../SaveAndExitModal';
 import FAQs from '../../FAQs/FAQs';
-import { analyticsTrack } from 'common/services/tracking/segment';
 import { ActivationModal, ModalTypeT } from '../../ActivationModals';
 import { useApp } from 'common/context/App';
 import { getMode, switchMode } from 'common/services/mode';
+import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 type NextTextT = 'Submit And Verify' | 'Submit KYC' | 'Next';
 
@@ -101,16 +101,17 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalType, setModalType] = useState<ModalTypeT>('');
 
+  const trackEvents = useTrackEvents();
+
   const sendSegmentEvents = (isFormCloseAction) => {
     const isL2Form = isL1Submitted(data?.activation_form_milestone);
     const objectName = isL2Form ? 'L2 form' : 'L1 form';
     const actionName = isFormCloseAction ? 'close' : 'load';
     const activationType = isL2Form ? 'kyc' : 'act';
-    analyticsTrack({
+    trackEvents({
       objectName,
       actionName,
       screen: 'home page',
-      user,
       eventAction: 'success',
       properties: {
         result: 'success',
@@ -119,6 +120,17 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       isLJReqiuired: false,
     });
   };
+
+  useEffect(() => {
+    trackEvents({
+      objectName: 'Activation Tab',
+      actionName: 'Loaded',
+      screen: 'home page',
+      properties: {
+        tab: activeTabId,
+      },
+    });
+  }, [activeTabId, trackEvents, user]);
 
   useEffect(() => {
     if (data) {
@@ -173,69 +185,100 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     status === 'success' && hasSelectedBlacklistCategory(data, businessCategoriesData);
 
   const submitL1 = () => {
-    analyticsTrack({
-      objectName: 'SignUp L1',
-      actionName: 'submit form',
+    trackEvents({
+      objectName: 'L1 Form',
+      actionName: 'Submitted',
       screen: 'home page',
-      user,
-      eventAction: 'initiated',
-      properties: {
-        clickSource: 'submit-and-verify',
-      },
-      activationType: 'act',
     });
-    postData({ activation_form_milestone: 'L1' }).then((res) => {
-      if (res && res.activation_form_milestone === 'L1') {
-        const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
-        if (dedupeStatus === 'blocked') {
-          setModalType('dedupe');
-        } else if (
-          isUnregisteredBusiness(res.business_type) &&
-          res.poi_verification_status === 'initiated' &&
-          experiments.canSkipPoiValidation
-        ) {
-          setModalType('poi_initiated');
-        } else if (res.activated && res.activation_status === 'instantly_activated') {
-          setModalType('payment_enable');
-          switchMode(user.current, 'live');
-        } else if (dedupeStatus === 'partial_match' || res?.activation_flow === 'greylist') {
-          setModalType('payment_disable');
+    postData({ activation_form_milestone: 'L1' })
+      .then((res) => {
+        if (res && res.activation_form_milestone === 'L1') {
+          trackEvents({
+            objectName: 'L1 Form',
+            actionName: 'Result',
+            screen: 'home page',
+            properties: {
+              status: 'sucess',
+            },
+          });
+
+          const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
+          if (dedupeStatus === 'blocked') {
+            setModalType('dedupe');
+          } else if (
+            isUnregisteredBusiness(res.business_type) &&
+            res.poi_verification_status === 'initiated' &&
+            experiments.canSkipPoiValidation
+          ) {
+            setModalType('poi_initiated');
+          } else if (res.activated && res.activation_status === 'instantly_activated') {
+            setModalType('payment_enable');
+            switchMode(user.current, 'live');
+          } else if (dedupeStatus === 'partial_match' || res?.activation_flow === 'greylist') {
+            setModalType('payment_disable');
+          }
+          setIsModalOpen(true);
         }
-        setIsModalOpen(true);
-      }
-    });
+      })
+      .catch((e) => {
+        trackEvents({
+          objectName: 'L1 Form',
+          actionName: 'Result',
+          screen: 'home page',
+          properties: {
+            status: 'failure',
+            errorMessage: e,
+          },
+        });
+      });
   };
 
   const submitL2 = () => {
-    analyticsTrack({
-      objectName: 'SignUp',
-      actionName: 'submit form',
+    trackEvents({
+      objectName: 'L2 Form',
+      actionName: 'Submitted',
       screen: 'home page',
-      user,
-      eventAction: 'initiated',
-      properties: {
-        clickSource: 'submit-and-verify',
-      },
     });
     const payload = isInstantActivationEnabled
       ? { activation_form_milestone: 'L2' }
       : { submit: 1 };
-    postData(payload).then((res) => {
-      if (res) {
-        const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
-        if (res.submitted && dedupeStatus === 'blocked') {
-          setModalType('dedupe');
-        } else if (!res.business_website && experiments.canGenerateTnCPage) {
-          setModalType('tnc');
-        } else {
-          setModalType('under_review');
-          if (isTestMode && res.activated) {
-            switchMode(user.current, 'live');
+    postData(payload)
+      .then((res) => {
+        if (res) {
+          trackEvents({
+            objectName: 'L2 Form',
+            actionName: 'Result',
+            screen: 'home page',
+            properties: {
+              Status: 'sucess',
+            },
+          });
+
+          const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
+          if (res.submitted && dedupeStatus === 'blocked') {
+            setModalType('dedupe');
+          } else if (!res.business_website && experiments.canGenerateTnCPage) {
+            setModalType('tnc');
+          } else {
+            setModalType('under_review');
+            if (isTestMode && res.activated) {
+              switchMode(user.current, 'live');
+            }
           }
+          setIsModalOpen(true);
         }
-        setIsModalOpen(true);
-      }
-    });
+      })
+      .catch((e) => {
+        trackEvents({
+          objectName: 'L2 Form',
+          actionName: 'Result',
+          screen: 'home page',
+          properties: {
+            status: 'failure',
+            errorMessage: e?.errors,
+          },
+        });
+      });
   };
   const getNextText = (): NextTextT => {
     if (activeTabId === 'documents') {
@@ -253,21 +296,28 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     return 'Next';
   };
   const handleNextClick = () => {
+    trackEvents({
+      objectName: 'save and next',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        tab: activeTabId,
+      },
+    });
+
     switch (activeTabId) {
       case 'contact_details':
-        analyticsTrack({
+        trackEvents({
           objectName: 'SignUp',
           actionName: 'contact info',
           screen: 'home page',
-          user,
           eventAction: 'initiated',
         });
-        analyticsTrack({
+        trackEvents({
           objectName: 'SignUp',
           actionName: 'save modifications',
           screen: 'home page',
           eventAction: 'initiated',
-          user,
           properties: {
             clickSource: 'save-next',
             currentTabName: 'contact details',
@@ -276,19 +326,17 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         setActiveTabId('business_overview');
         break;
       case 'business_overview':
-        analyticsTrack({
+        trackEvents({
           objectName: 'SignUp',
           actionName: 'business overview',
           screen: 'home page',
           eventAction: 'initiated',
-          user,
         });
-        analyticsTrack({
+        trackEvents({
           objectName: 'SignUp',
           actionName: 'save modifications',
           screen: 'home page',
           eventAction: 'initiated',
-          user,
           properties: {
             clickSource: 'save-next',
             currentTabName: 'business overview',
@@ -297,19 +345,17 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         setActiveTabId('business_details');
         break;
       case 'business_details':
-        analyticsTrack({
+        trackEvents({
           objectName: 'SignUp',
           actionName: 'business details',
           screen: 'home page',
           eventAction: 'initiated',
-          user,
         });
-        analyticsTrack({
+        trackEvents({
           objectName: 'SignUp',
           actionName: 'save modifications',
           screen: 'home page',
           eventAction: 'initiated',
-          user,
           properties: {
             clickSource: 'save-next',
             currentTabName: 'business details',
@@ -322,19 +368,17 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         }
         break;
       case 'bank_details':
-        analyticsTrack({
+        trackEvents({
           objectName: 'SignUp',
           actionName: 'bank details',
           screen: 'home page',
           eventAction: 'initiated',
-          user,
         });
-        analyticsTrack({
+        trackEvents({
           objectName: 'SignUp',
           actionName: 'save modifications',
           screen: 'home page',
           eventAction: 'initiated',
-          user,
           properties: {
             clickSource: 'save-next',
             currentTabName: 'bank details',
@@ -343,19 +387,17 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         setActiveTabId('documents');
         break;
       case 'documents':
-        analyticsTrack({
+        trackEvents({
           objectName: 'SignUp',
           actionName: 'documents',
           screen: 'home page',
           eventAction: 'initiated',
-          user,
         });
-        analyticsTrack({
+        trackEvents({
           objectName: 'SignUp',
           actionName: 'save modifications',
           screen: 'home page',
           eventAction: 'initiated',
-          user,
           properties: {
             clickSource: 'save-next',
             currentTabName: 'document',
@@ -378,12 +420,11 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     isL1AllTabComplete && isBankAndCompanyDetailsCompleted && isDocumentsUploadCompleted;
 
   if (isContactDetailsCompleted) {
-    analyticsTrack({
+    trackEvents({
       objectName: 'SignUp',
       actionName: 'tab filled',
       screen: 'home page',
       eventAction: 'success',
-      user,
       properties: {
         filed_tab_details: 'Contact Details',
         tab_filled: 'yes',
@@ -391,12 +432,11 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     });
   }
   if (isBusinessOverviewCompleted) {
-    analyticsTrack({
+    trackEvents({
       objectName: 'SignUp',
       actionName: 'tab filled',
       screen: 'home page',
       eventAction: 'success',
-      user,
       properties: {
         filed_tab_details: 'Business Overview',
         tab_filled: 'yes',
@@ -404,12 +444,11 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     });
   }
   if (isBusinessDetailsCompleted) {
-    analyticsTrack({
+    trackEvents({
       objectName: 'SignUp',
       actionName: 'tab filled',
       screen: 'home page',
       eventAction: 'success',
-      user,
       properties: {
         filed_tab_details: 'Business Details',
         tab_filled: 'yes',
@@ -417,12 +456,11 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     });
   }
   if (isBankAndCompanyDetailsCompleted) {
-    analyticsTrack({
+    trackEvents({
       objectName: 'SignUp',
       actionName: 'tab filled',
       screen: 'home page',
       eventAction: 'success',
-      user,
       properties: {
         filed_tab_details: 'Bank Details',
         tab_filled: 'yes',
@@ -430,12 +468,11 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     });
   }
   if (isDocumentsUploadCompleted) {
-    analyticsTrack({
+    trackEvents({
       objectName: 'SignUp',
       actionName: 'tab filled',
       screen: 'home page',
       eventAction: 'success',
-      user,
       properties: {
         filed_tab_details: 'Document',
         tab_filled: 'yes',
@@ -564,12 +601,11 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
                   history.push('/dashboard');
                 }
 
-                analyticsTrack({
+                trackEvents({
                   objectName: 'SignUp',
                   actionName: 'form fill',
                   screen: 'home page',
                   eventAction: 'dropped',
-                  user,
                 });
               }}
               size="xsmall"
@@ -588,14 +624,22 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
             onChange={(tabId) => {
               if (typeof tabId === 'string') {
                 setActiveTabId(tabId);
-                analyticsTrack({
+                trackEvents({
                   objectName: 'SignUp',
                   actionName: 'nav action',
                   screen: 'home page',
                   eventAction: 'initiated',
-                  user,
                   properties: {
                     currentTabName: tabId,
+                  },
+                });
+
+                trackEvents({
+                  objectName: 'Activation Tab',
+                  actionName: 'Clicked',
+                  screen: 'home page',
+                  properties: {
+                    tab: tabId,
                   },
                 });
               }
@@ -620,12 +664,11 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
                         refetch();
                       }
                       setL1Acknowledge(value);
-                      analyticsTrack({
+                      trackEvents({
                         objectName: 'sync experiment',
                         actionName: 'checkbox',
                         screen: 'home page',
                         eventAction: 'clicked',
-                        user,
                         isLJReqiuired: false,
                         properties: {
                           checked: value,
@@ -654,12 +697,11 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           <Button
             onClick={() => {
               setIsOpen(true);
-              analyticsTrack({
+              trackEvents({
                 objectName: 'SignUp',
                 actionName: 'faq',
                 screen: 'home page',
                 eventAction: 'initiated',
-                user,
               });
             }}
             variant="tertiary"

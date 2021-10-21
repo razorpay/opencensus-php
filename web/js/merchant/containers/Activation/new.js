@@ -20,8 +20,7 @@ import { trackLinkClick, trackGoToConfig } from './ga_new';
 
 import { LLPIN_BusinessTypes } from 'merchant/components/Activation/ActivationFormMap';
 import { isSourceRX, isDedupeOldFunc } from 'merchant/components/Activation/ActivationUtils';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
+import * as EventsActions from 'merchant/reducers/trackEvents';
 
 const welcomeImg = '/img/activation/welcome.svg';
 const successImg = '/img/activation/submit-success.svg';
@@ -48,6 +47,7 @@ const successImg = '/img/activation/submit-success.svg';
     showTnC,
     openModal,
     closeModal,
+    ...EventsActions,
   },
 )
 export default class ActivationContainer extends React.Component {
@@ -234,7 +234,17 @@ export default class ActivationContainer extends React.Component {
 
   submitForm = ({ data }) => {
     if (this.props.user.isInstantActivationEnabled) {
-      const isL1Done = this.props.user.instantActivation.isL1Submitted;
+      const { user } = this.props;
+      const isL1Done = user.activation_form_milestone;
+
+      const objectName = isL1Done ? 'L2 form' : 'L1 form';
+
+      this.props.trackEvents({
+        objectName,
+        actionName: 'Submitted',
+        screen: 'home page',
+      });
+
       return merchantFetch({
         url: 'merchant/activation',
         method: 'post',
@@ -251,6 +261,15 @@ export default class ActivationContainer extends React.Component {
         accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
       })
         .then((response) => {
+          this.props.trackEvents({
+            objectName,
+            actionName: 'Result',
+            screen: 'home page',
+            properties: {
+              Status: 'success',
+            },
+          });
+
           if (isL1Done && !response?.data?.can_submit) {
             throw { errors: ['Some mandatory fields are required'] };
           }
@@ -266,13 +285,10 @@ export default class ActivationContainer extends React.Component {
                 clickSource: 'Dashboard_CTA',
               }),
             );
-            analyticsTrack({
+            this.props.trackEvents({
               objectName: 'act submit form success',
               actionName: 'clicked',
               screen: 'home page',
-              properties: {
-                ...getCommonSegmentProperties(),
-              },
             });
           }
 
@@ -324,13 +340,12 @@ export default class ActivationContainer extends React.Component {
                   this.updateSession(res.data);
                   this.props.setActivationFormLoadingState(); //false loading state
                   if (this.props.user.autoOpenL2Form && res?.data && !res.data.activated) {
-                    analyticsTrack({
+                    this.props.trackEvents({
                       objectName: 'Auto Open L2 form on not instantly activated',
                       actionName: 'displayed',
                       screen: 'home page',
                       properties: {
                         loginL1Experiment: 'auto open L2 form on not instantly activated',
-                        ...getCommonSegmentProperties(),
                       },
                     });
                     this.setState({
@@ -346,13 +361,12 @@ export default class ActivationContainer extends React.Component {
                   // if poi status not changed reload the page
                   this.props.history.replace(`/`);
                 }
-                analyticsTrack({
+                this.props.trackEvents({
                   objectName: 'poi verification status',
                   actionName: 'load',
                   screen: 'home page',
                   properties: {
                     poi_status: res?.data?.poi_verification_status,
-                    ...getCommonSegmentProperties(),
                   },
                 });
               });
@@ -364,13 +378,12 @@ export default class ActivationContainer extends React.Component {
               response?.data &&
               !response.data.activated
             ) {
-              analyticsTrack({
+              this.props.trackEvents({
                 objectName: 'Auto Open L2 form on not instantly activated',
                 actionName: 'displayed',
                 screen: 'home page',
                 properties: {
                   loginL1Experiment: 'auto open L2 form on not instantly activated',
-                  ...getCommonSegmentProperties(),
                 },
               });
               this.updateSession(response.data);
@@ -401,6 +414,16 @@ export default class ActivationContainer extends React.Component {
           this.props.showNotification({
             type: 'error',
             message: err.errors,
+          });
+
+          this.props.trackEvents({
+            objectName,
+            actionName: 'Result',
+            screen: 'home page',
+            properties: {
+              status: 'failure',
+              errorMessage: err.errors,
+            },
           });
         });
     } else {

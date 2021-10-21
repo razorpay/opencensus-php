@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
 import { Link } from 'react-router-dom';
 import rTracking from 'react-tracking';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import * as LocalStorageService from 'common/utils/localStorage';
+import * as EventsActions from 'merchant/reducers/trackEvents';
 
 const RECOMMANDED_PRODUCT_LIST = [
   'payment_gateway',
@@ -24,6 +25,7 @@ const WelcomeModal = ({
   isOnboardingV2Enabled,
   isProductRecommendationEnabled,
   hideCTAs,
+  trackEvents,
 }) => {
   const getLandingProduct =
     LocalStorageService.getItem('merchant_landing_page') ||
@@ -34,12 +36,13 @@ const WelcomeModal = ({
 
   const handleActivationClick = () => {
     onActivate();
-    analyticsTrack({
-      objectName: 'SignUp',
-      actionName: 'Activate Account CTA Clicked',
+    trackEvents({
+      objectName: 'L1 Form',
+      actionName: 'initiated',
       screen: 'home page',
       properties: {
-        ...getCommonSegmentProperties(),
+        ctaLabel: 'Activate your account',
+        ctaLocation: 'welcome modal',
       },
     });
     tracking.trackEvent(
@@ -62,13 +65,10 @@ const WelcomeModal = ({
 
   const handleTryOutClick = () => {
     onClose();
-    analyticsTrack({
+    trackEvents({
       objectName: 'SignUp',
       actionName: 'Try Dashboard CTA Clicked',
       screen: 'home page',
-      properties: {
-        ...getCommonSegmentProperties(),
-      },
     });
     tracking.trackEvent(
       window.rzpQ.onbr().success('login.first_login_modal', {
@@ -196,6 +196,9 @@ const WelcomeModal = ({
   );
 };
 
-export default rTracking(() => {
-  window.rzpQ.component('WelcomeModal');
-})(WelcomeModal);
+export default compose(
+  connect(null, ...EventsActions),
+  rTracking(() => {
+    window.rzpQ.component('WelcomeModal');
+  }),
+)(WelcomeModal);

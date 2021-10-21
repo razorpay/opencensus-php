@@ -29,9 +29,11 @@
     "js/merchant/views/referral",
     "js/merchant/views/onboarding",
     "js/merchant/views/Settlements",
+    "js/merchant/hooks",
     "js/common/hooks",
     "js/common/context",
     "js/common/services",
-    "js/common/components"
+    "js/common/components",
+    "js/common/utils"
   ]
 }

@@ -1,10 +1,11 @@
 import React from 'react';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Loader from './Loader';
+import { connect } from 'react-redux';
 import { FOOTER_BUTTONS } from '../Constants';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonSegmentProperties, classList } from 'common/utils/rzp-utils';
+import { classList } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
+import * as EventActions from 'merchant/reducers/trackEvents';
 import Input from 'common/new-ui/Input';
 
 const Save = ({ saveCurrentTab }) => <Button onClick={saveCurrentTab}>Save</Button>;
@@ -16,18 +17,15 @@ const SaveAndNext = ({ next }) => (
   </Button.Primary>
 );
 
-const SubmitL1Form = ({ canSubmitL1Form, submitL1, tracking }) => (
+let SubmitL1Form = ({ canSubmitL1Form, submitL1, tracking, trackEvents }) => (
   <AsyncBtn.Primary
     disabled={!canSubmitL1Form}
     onClick={() => {
       tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
-      analyticsTrack({
+      trackEvents({
         objectName: 'SignUp',
         actionName: 'Submit L1 CTA Clicked',
         screen: 'home page',
-        properties: {
-          ...getCommonSegmentProperties(),
-        },
       });
       return submitL1();
     }}
@@ -38,26 +36,27 @@ const SubmitL1Form = ({ canSubmitL1Form, submitL1, tracking }) => (
   </AsyncBtn.Primary>
 );
 
-const SubmitKYCForm = ({ isAllTabsValid, tracking, toggleSubmitLayer }) => (
+SubmitL1Form = connect(null, { ...EventActions })(SubmitL1Form);
+
+let SubmitKYCForm = ({ isAllTabsValid, tracking, toggleSubmitLayer, trackEvents }) => (
   <Button.Primary
     disabled={!isAllTabsValid()}
     onClick={() => {
       tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.save_documents'));
       tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.submit_form'));
       toggleSubmitLayer();
-      analyticsTrack({
+      trackEvents({
         objectName: 'SignUp',
         actionName: 'Submit L2 CTA Clicked',
         screen: 'home page',
-        properties: {
-          ...getCommonSegmentProperties(),
-        },
       });
     }}
   >
     Submit Form
   </Button.Primary>
 );
+
+SubmitKYCForm = connect(null, { ...EventActions })(SubmitKYCForm);
 
 const SubmitClarifications = ({ canSubmitNeedsClarification, submitClarifications }) => (
   <AsyncBtn.Primary
@@ -70,7 +69,7 @@ const SubmitClarifications = ({ canSubmitNeedsClarification, submitClarification
   </AsyncBtn.Primary>
 );
 
-const FooterCheckBox = ({
+let FooterCheckBox = ({
   activeTab,
   isL1Submitted,
   canSubmitL1Form,
@@ -78,6 +77,7 @@ const FooterCheckBox = ({
   setCheckBox,
   onAction,
   fetchData,
+  trackEvents,
 }) => {
   const fetchMerchantData = (isChecked) => {
     if (isChecked) {
@@ -89,12 +89,11 @@ const FooterCheckBox = ({
     } else {
       setCheckBox(isChecked);
     }
-    analyticsTrack({
+    trackEvents({
       objectName: 'sync experiment checkbox',
       actionName: 'clicked',
       screen: 'home page',
       properties: {
-        ...getCommonSegmentProperties(),
         checked: isChecked,
       },
     });
@@ -133,6 +132,8 @@ const FooterCheckBox = ({
     </ShowWhen>
   );
 };
+
+FooterCheckBox = connect(null, { ...EventActions })(FooterCheckBox);
 
 const Footer = ({
   isSaving,

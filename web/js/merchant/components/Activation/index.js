@@ -68,8 +68,6 @@ import {
   validateCompanyPAN,
   validateCIN,
 } from 'common/utils/validators';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import L1FormFieldNames from './L1FormFieldNames';
 import {
@@ -100,6 +98,7 @@ import EAadhard from './components/E-Aadhar';
 import SupportButton from 'merchant/components/Home/SupportButton';
 import { GTAG_KEYS, invokeGtag } from 'merchant/components/OnBoarding/utils';
 import { isValidGSTIN } from '../../../common/utils/rzp-utils';
+import { trackEvents as trackEventsAction } from 'merchant/reducers/trackEvents';
 
 /*
  *             Main-form        LA-form
@@ -142,6 +141,7 @@ const SAVE_BUTTON_DISABLED_STEPS = [BUSINESS_DETAILS_STEP];
     submitL1FormSuccess,
     showKYCStatusModal,
     setCurrentTab,
+    trackEventsAction
   },
 )
 @RTracking(() => window.rzpQ.component('ActivationWizard'))
@@ -359,13 +359,12 @@ export default class ActivationWizard extends React.Component {
                 name: filename,
               }),
             );
-            analyticsTrack({
+            this.props.trackEventsAction({
               objectName: 'kyc upload document',
               actionName: 'clicked',
               screen: 'KYC Document',
               properties: {
                 location: 'Activation page',
-                ...getCommonAnalyticsProperties(window.rzp_user),
               },
             });
             if (!this.isOnKYCTab()) {
@@ -407,7 +406,18 @@ export default class ActivationWizard extends React.Component {
     });
   };
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.activeTab !== prevState.activeTab) {
+      this.props.trackEventsAction({
+        objectName: 'Activation Tab',
+        actionName: 'Loaded',
+        screen: 'KYC Document',
+        properties: {
+          tab: mainFormTabs[this.state.activeTab]
+        },
+      });
+    }
+
     if (prevProps.showL2Form !== this.props.showL2Form && this.props.showL2Form === true) {
       this.prepareTabs(this.props);
       this.setState({
@@ -435,6 +445,15 @@ export default class ActivationWizard extends React.Component {
     const query = QueryString.parse(this.props.location.search);
     this.handleActionBasedOnQuery(query);
     this.addVisitedFlag();
+
+    this.props.trackEventsAction({
+      objectName: 'Activation Tab',
+      actionName: 'Loaded',
+      screen: 'KYC Document',
+      properties: {
+        tab: mainFormTabs[this.state.activeTab]
+      },
+    });
   }
 
   addVisitedFlag = () => {
@@ -555,6 +574,15 @@ export default class ActivationWizard extends React.Component {
 
   next = (e) => {
     const currenActiveTab = this.state.activeTab;
+    this.props.trackEventsAction({
+      objectName: 'Save and Next',
+      actionName: 'Clicked',
+      screen: 'home page',
+      properties: {
+        tab: mainFormTabs[currenActiveTab],
+      },
+    });
+
     const tracker = () =>
       this.props.tracking.trackEvent(
         window.rzpQ.onbr().initiated(`${this.trackingType}.save_modifications`, {
@@ -603,6 +631,15 @@ export default class ActivationWizard extends React.Component {
   changeTab = ({ target }) => {
     const tabId = parseInt(target.getAttribute('data-index'));
     const currentActiveTab = this.state.activeTab;
+    this.props.trackEventsAction({
+      objectName: 'Activation Tab',
+      actionName: 'Clicked',
+      screen: 'KYC Document',
+      properties: {
+        tab: mainFormTabs[tabId]
+      },
+    });
+
     const tracker = () =>
       this.props.tracking.trackEvent(
         window.rzpQ.onbr().initiated(`${this.trackingType}.nav_action`, {

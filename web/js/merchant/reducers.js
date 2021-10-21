@@ -100,6 +100,7 @@ import instrumentRequestsReducer from 'merchant/reducers/instrumentRequests';
 import navigatorReducer from 'merchant/reducers/navigator/details';
 import supportDetailReducer from 'merchant/reducers/support_detail';
 import fetchTransactionReducer from 'merchant/reducers/fetchTransaction';
+import trackEventsReducer from './reducers/trackEvents';
 
 export default combineReducers({
   modal: modalReducer,
@@ -198,4 +199,5 @@ export default combineReducers({
   rewards: rewardsReducer,
   qr_codes: qrCodesReducer,
   migrations: MigrationReducer,
+  trackEvents: trackEventsReducer,
 });

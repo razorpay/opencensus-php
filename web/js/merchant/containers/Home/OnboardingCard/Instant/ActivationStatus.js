@@ -1,16 +1,19 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { analyticsTrack } from 'common/utils/analytics';
-import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
+import { Step, StepTitle, StepContent, possibleStatuses } from './Step';
 import RTracking from 'react-tracking';
-import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import SettlementSchedule from 'merchant/views/Settlements/Settlements/components/SettlementSchedule';
 import { openModal } from 'merchant_common/reducers/modals';
+import * as EventsActions from 'merchant/reducers/trackEvents';
 import ProductsModal from 'merchant/components/Home/ProductsModal';
 import { trackProductsModal } from './ga';
-import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
+import { compose } from 'redux';
+import {
+  showProductsModal,
+  hideProductsModal as hideProductsModalAction,
+} from 'merchant/reducers/home';
 
 const initialState = {
   status: null,
@@ -19,21 +22,7 @@ const initialState = {
   showProductModal: false,
 };
 
-@RTracking(() => {
-  return window.rzpQ.component('ActivationCard');
-})
-@connect(
-  (state) => ({
-    showProducts: state.home.instantActivations.showProductsModal,
-    limitBreach: state.home.limitBreach,
-  }),
-  {
-    openModal,
-    showProductsModal,
-    hideProductsModal,
-  },
-)
-export default class ActivationCard extends Component {
+class ActivationCard extends Component {
   constructor(props) {
     super(props);
     this.state = initialState;
@@ -89,21 +78,30 @@ export default class ActivationCard extends Component {
               <Link
                 to="/activation"
                 className="btn btn-primary"
-                onClick={(e) => {
+                onClick={() => {
                   track.activateAccount();
                   this.props.tracking.trackEvent(
                     window.rzpQ.onbr().initiated('act.form_fill', {
                       clickSource: 'onboarding banner',
                     }),
                   );
-                  analyticsTrack({
+                  this.props.trackEvents({
                     objectName: 'act form fill initiated',
                     actionName: 'clicked',
                     screen: 'home page',
                     properties: {
                       clickSource: 'onboarding card',
-                      ...getCommonSegmentProperties(),
                       milestone: 'L1 start',
+                    },
+                  });
+
+                  this.props.trackEvents({
+                    objectName: `L1 Form`,
+                    actionName: 'initiated',
+                    screen: 'home page',
+                    properties: {
+                      ctaLabel: 'Submit KYC',
+                      ctaLocation: 'onboarding card',
                     },
                   });
                 }}
@@ -121,7 +119,9 @@ export default class ActivationCard extends Component {
         status = possibleStatuses.blocked;
         content =
           'We can’t support your business to accept payments. Please reach out to support for any queriest';
+        // eslint-disable-next-line no-lone-blocks
         {
+          // eslint-disable-next-line babel/no-unused-expressions
           L2_dedupe_blocked &&
             'In case you have pending settlements, you can raise a ticket and get your funds settled to your account.';
         }
@@ -147,21 +147,30 @@ export default class ActivationCard extends Component {
               <Link
                 to="/activation"
                 className="btn btn-primary"
-                onClick={(e) => {
+                onClick={() => {
                   track.activateAccount();
                   this.props.tracking.trackEvent(
                     window.rzpQ.onbr().initiated('kyc.form_fill', {
                       clickSource: 'onboarding banner',
                     }),
                   );
-                  analyticsTrack({
+                  this.props.trackEvents({
                     objectName: 'L2 Start',
                     actionName: 'form fill initiated',
                     screen: 'home page',
                     properties: {
                       clickSource: 'form submission popup',
-                      ...getCommonSegmentProperties(),
                       milestone: 'L2 Start',
+                    },
+                  });
+
+                  this.props.trackEvents({
+                    objectName: `L2 Form`,
+                    actionName: 'initiated',
+                    screen: 'home page',
+                    properties: {
+                      ctaLabel: 'Submit KYC',
+                      ctaLocation: 'onboarding card',
                     },
                   });
                 }}
@@ -765,10 +774,11 @@ export default class ActivationCard extends Component {
   }
 
   get accountUnderReviewContent() {
-    const { internationalActivationFlow, isAutoKycDone, kyc_clarification_reasons } = this.props;
+    const { internationalActivationFlow, kyc_clarification_reasons } = this.props;
     if (internationalActivationFlow.isGraylistFlow) {
-      return `We are reviewing your form. Expect confirmation in ${kyc_clarification_reasons?.nc_count ? ' 3 ' : ' 3 - 4 '
-        } business days. You can request for international payments acceptance post KYC Verification.`;
+      return `We are reviewing your form. Expect confirmation in ${
+        kyc_clarification_reasons?.nc_count ? ' 3 ' : ' 3 - 4 '
+      } business days. You can request for international payments acceptance post KYC Verification.`;
     }
 
     return 'We are reviewing your KYC details for activation';
@@ -794,3 +804,21 @@ export default class ActivationCard extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => ({
+  showProducts: state.home.instantActivations.showProductsModal,
+  limitBreach: state.home.limitBreach,
+});
+
+export default compose(
+  connect(mapStateToProps, {
+    openModal,
+    showProductsModal,
+    hideProductsModal: hideProductsModalAction,
+    ...EventsActions,
+  }),
+  // eslint-disable-next-line babel/new-cap
+  RTracking(() => {
+    return window.rzpQ.component('ActivationCard');
+  }),
+)(ActivationCard);

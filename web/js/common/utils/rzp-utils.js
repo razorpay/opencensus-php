@@ -51,10 +51,23 @@ export function humanize(sentence) {
   return titleCase(sentence.split('_').join(' '));
 }
 
-export function getCommonAnalyticsProperties(user) {
+export function getCommonAnalyticsProperties(user, config = {}) {
   if (!user) {
     // skip properties if sesion is expired/user details are not availble
     return {};
+  }
+
+  const { addUserProperties = false } = config;
+
+  let userProperties = {};
+
+  if (addUserProperties) {
+    userProperties = {
+      business_type: user.business_type,
+      activation_status: user.activated,
+      user_business_category: user.business_category,
+      user_business_sub_category: user.business_subcategory,
+    };
   }
 
   const mode = localStorage.getItem(`rzp_mode--${user.id}`);
@@ -63,15 +76,44 @@ export function getCommonAnalyticsProperties(user) {
     mode,
     userRole: user.role,
     merchantId: user.current,
+    ...userProperties,
   };
 }
 
-export const getCommonSegmentProperties = () => {
+export const getCommonSegmentProperties = (user = window.rzp_user, config = {}) => {
+  if (!user) {
+    // skip properties if sesion is expired/user details are not availble
+    return {};
+  }
+
+  const mode = localStorage.getItem(`rzp_mode--${user.id}`);
+
+  const { addUserProperties = false } = config;
+
+  let userProperties = {};
+
+  if (addUserProperties) {
+    userProperties = {
+      business_type: user.business_type,
+      activation_status: user.activated,
+      user_business_category: user.business_category,
+      user_business_sub_category: user.business_subcategory,
+    };
+  }
+
   const properties = {
-    pageUrl: window.location.href,
-    userId: window.rzp_user.id,
+    pageUrl: window.location.href.split('?')[0],
+    slug: window.location.pathname,
+    mode,
+    userId: user.user?.id,
+    userRole: user.role,
+    merchantId: user.current,
+    ...userProperties,
   };
-  return properties;
+
+  return {
+    ...properties,
+  };
 };
 
 export function makeArray(obj) {
@@ -493,7 +535,7 @@ export const getEMI = (principle, length, rate) => {
 
   rate /= 1200;
 
-  var multiplier = Math.pow(1 + rate, length);
+  var multiplier = (1 + rate) ** length;
 
   return parseInt((principle * rate * multiplier) / (multiplier - 1), 10);
 };
@@ -716,7 +758,7 @@ export const readableFileSize = (bytes) => {
 
   if (!bytes) return `0 bytes`;
   var e = Math.floor(Math.log(bytes) / Math.log(1024));
-  return `${(bytes / Math.pow(1024, e)).toFixed(2)} ${sizes[e]}`;
+  return `${(bytes / 1024 ** e).toFixed(2)} ${sizes[e]}`;
 };
 
 /**

@@ -1,4 +1,5 @@
 import { getMode } from '../mode';
+import getMobileDetect from 'common/utils/mobileDetect';
 /* Delimiters are space / underscore */
 export const titleCase = (sentence) => {
   return (sentence || '')
@@ -12,7 +13,8 @@ const getCommonProperties = ({ screen, properties, user }) => {
   let utm = null;
   let gclid = null; //Google click id, analytics will try to capture and save to cookie if present.
   let browser_details = {};
-  const source = 'pg';
+  const source = getMobileDetect()?.isMobile() ? 'mweb' : 'dweb';
+
   if (typeof window.razorpayAnalytics !== 'undefined') {
     utm = window.razorpayAnalytics.utils.getLandingParams();
     gclid = window.razorpayAnalytics.utils.getCookie('gclid');
@@ -22,6 +24,7 @@ const getCommonProperties = ({ screen, properties, user }) => {
   }
   const commonProperties = {
     pageUrl: window.location.href,
+    slug: window.location.pathname,
     screen,
     eventTimestamp,
     source,
@@ -39,7 +42,7 @@ const getCommonProperties = ({ screen, properties, user }) => {
     is_gstin_mandatory: user.isGstinMandatory,
     user_business_category: user.business_category,
     user_business_sub_category: user.business_subcategory,
-    device_type: 'mweb',
+    device_type: getMobileDetect()?.isMobile() ? 'mweb' : 'dweb',
     new_onboarding_flow: 'yes',
     mode: 'live',
     rzp_mode: getMode(user.id) || '',
@@ -71,7 +74,7 @@ export const analyticsTrack = ({
   actionName,
   screen,
   properties = {},
-  eventAction,
+  eventAction = '',
   activationType = 'kyc',
   user,
   isLJReqiuired = true,
@@ -102,7 +105,7 @@ export const analyticsTrack = ({
     return; // Don't capture the event if the actionName contains a "_".
   }
 
-  const eventName = titleCase(`${objectName} ${actionName} ${eventAction}`);
+  const eventName = titleCase(`${objectName} ${actionName}${eventAction ? ` ${eventAction}` : ''}`);
   const dataLakeEventName = `${activationType}.${actionName.split(' ').join('_')}`;
   const commonProperties = getCommonProperties({ screen, properties, user });
   if (window.analytics && window.analytics.track) {
