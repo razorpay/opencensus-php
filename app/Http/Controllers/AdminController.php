@@ -109,6 +109,15 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function syncEntityById($type, $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->syncEntityById($type, $id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getEntityByIdForExternalAdmin($type, $id)
     {
         $input = Request::all();

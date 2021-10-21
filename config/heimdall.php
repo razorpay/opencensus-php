@@ -750,6 +750,10 @@ return [
                                    To be assigned to external admin-roles only',
                 'assignable'   => true,
             ],
+            Permission::SYNC_ENTITY_BY_ID => [
+                'assignable'  => true,
+                'workflow'    => true
+            ],
         ],
 
         // UAM

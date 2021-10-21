@@ -42,6 +42,12 @@ use RZP\Models\{Admin\Permission\Name, Base, Base\EsRepository, Base\UniqueIdEnt
 
 class Service extends Base\Service
 {
+    use Base\RepositoryUpdateTestAndLive;
+
+    const FROM_MODE = 'from_mode';
+    const TO_MODE = 'to_mode';
+    const FIELDS_TO_SYNC = 'fields_to_sync';
+
     public function getAllEntities($input, $isExternalAdmin = false)
     {
         $fields = AdminFetch::fields();
@@ -102,6 +108,80 @@ class Service extends Base\Service
         });
 
         return $entities;
+    }
+
+    public function syncEntityById(string $entity, string $id, array $input): array
+    {
+        Entity::validateEntityOrFailPublic($entity);
+
+        (new Validator)->validateInput('sync_entity', $input);
+
+        Mode::validateModeOrFailPublic($input[self::FROM_MODE]);
+
+        $fromMode = $input[self::FROM_MODE];
+
+        Mode::validateModeOrFailPublic($input[self::TO_MODE]);
+
+        $toMode = $input[self::TO_MODE];
+
+        $entityFrom = $this->repo->$entity->connection($fromMode)->findOrFailPublic($id);
+
+        if (!(method_exists($this->repo->$entity, 'entityShouldSync') && $this->entityShouldSync($entityFrom)))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ONLY_SYNCED_ENTITIES_CAN_BE_SYNCED, null, null, 'requested entity is not a synced entity');
+        }
+
+        $entityTo = $this->repo->$entity->connection($toMode)->findOrFailPublic($id);
+
+        $entityFieldsBefore = array();
+        $entityFieldsAfter = array();
+
+        foreach ($input[self::FIELDS_TO_SYNC] as $column)
+        {
+            if ($entityTo->hasAttribute($column))
+            {
+                $entityFieldsBefore[$column] = $entityTo->getAttribute($column);
+                $entityTo->setAttribute($column, $entityFrom->getAttribute($column));
+                $entityFieldsAfter[$column] = $entityTo->getAttribute($column);
+            }
+            else
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_FIELD_SENT, null, null, 'given field is an invalid field');
+            }
+        }
+
+        $data1 = [
+            'entity' => $entity,
+            'mode'   => $toMode,
+            'fieldsBeforeSync' => $entityFieldsBefore
+        ];
+
+        $this->app['trace']->info(TraceCode::ENTITIES_BEFORE_SYNC, $data1);
+
+        $this->app['workflow']
+            ->setEntityAndId($entityTo->getEntity(), $entityTo->getId())
+            ->setInput($input)
+            ->setOriginal([])
+            ->setDirty($input)
+            ->handle(null, null);
+
+        $entityTo->setConnection($toMode);
+
+        $entityTo->saveOrFail();
+
+        $this->repo->$entity->syncToEs($entityTo, EsRepository::UPDATE, null, $toMode);
+
+        $data2 = [
+            'entity' => $entity,
+            'mode'   => $toMode,
+            'fieldsAfterSync' => $entityFieldsAfter
+        ];
+
+        $this->app['trace']->info(TraceCode::ENTITIES_AFTER_SYNC, $data2);
+
+        return [
+            'success' => true
+        ];
     }
 
     public function fetchEntityById(string $entity, string $id, array $input = [], $isExternalAdmin = false): array

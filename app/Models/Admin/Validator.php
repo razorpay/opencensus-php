@@ -53,6 +53,12 @@ class Validator extends Base\Validator
         'MRH_Date__c'                   => 'sometimes|string',
     ];
 
+    protected static $syncEntityRules = [
+        'from_mode'      => 'required|string',
+        'to_mode'        => 'required|string',
+        'fields_to_sync' => 'required',
+    ];
+
     protected static $setConfigKeysRules = [
         ConfigKey::ASYNC_ESCALATION_HANDLING_ENABLED    => 'filled|boolean',
         ConfigKey::TERMINAL_SELECTION_LOG_VERBOSE       => 'filled|boolean',

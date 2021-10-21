@@ -79,6 +79,7 @@ class Workflow
         Permission::EDIT_MERCHANT_RISK_ATTRIBUTES,
         Permission::ADD_ADDITIONAL_WEBSITE,
         Permission::INCREASE_TRANSACTION_LIMIT,
+        Permission::SYNC_ENTITY_BY_ID,
     ];
 
     protected $app;

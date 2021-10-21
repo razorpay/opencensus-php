@@ -1401,6 +1401,8 @@ class ErrorCode
     const CUSTOMER_REJECTED_PAYMENT                                                 = 'CUSTOMER_REJECTED_PAYMENT';
     const CUSTOMER_INSOLVENT                                                        = 'CUSTOMER_INSOLVENT';
     const CUSTOMER_DENIED                                                           = 'CUSTOMER_DENIED';
+    const BAD_REQUEST_ONLY_SYNCED_ENTITIES_CAN_BE_SYNCED                            = 'BAD_REQUEST_ONLY_SYNCED_ENTITIES_CAN_BE_SYNCED';
+    const BAD_REQUEST_INVALID_FIELD_SENT                                            = 'BAD_REQUEST_INVALID_FIELD_SENT';
 
     const BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN                             = 'BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN';
     const BAD_REQUEST_PAYMENT_INVALID_ACCOUNT                                       = 'BAD_REQUEST_PAYMENT_INVALID_ACCOUNT';

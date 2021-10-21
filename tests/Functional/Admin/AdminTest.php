@@ -8,6 +8,7 @@ use Mail;
 use Cache;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use RZP\Models\Admin\Role;
 use RZP\Models\Base\EsDao;
 use RZP\Models\Admin\Admin;
@@ -1366,6 +1367,11 @@ class AdminTest extends TestCase
         $this->addPermissionToBaAdmin('external_admin_view_all_entity');
     }
 
+    protected function setupAdminEntitySyncByIDTest()
+    {
+        $this->addPermissionToBaAdmin('sync_entity_by_id');
+    }
+
     protected function setUpFixturesForExternalAdminEntityFetchTest()
     {
         $payment = $this->fixtures->create('payment:captured');
@@ -1491,6 +1497,46 @@ class AdminTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] .= $terminalId;
 
         $this->setupAdminForExternalAdminEntityFetchTest();
+
+        $this->startTest();
+    }
+
+    public function testAdminEntitySyncByIDSuccess()
+    {
+        $merchantLive = $this->fixtures->on(Mode::LIVE)->edit('merchant', '10000000000000', ['account_code' => '11']);
+
+        $merchantTest = $this->fixtures->on(Mode::TEST)->edit('merchant', '10000000000000', ['account_code' => '12']);
+
+        $this->setupAdminEntitySyncByIDTest();
+
+        $this->startTest();
+
+        $this->assertSame($merchantLive->reload()->account_code, $merchantTest->reload()->account_code);
+    }
+
+    public function testAdminEntitySyncByIDFailureByWrongEntity()
+    {
+        $this->setupAdminEntitySyncByIDTest();
+
+        $this->startTest();
+    }
+
+    public function testAdminEntitySyncByIDFailureByWrongMode()
+    {
+        $this->setupAdminEntitySyncByIDTest();
+
+        $this->startTest();
+    }
+
+    public function testAdminEntitySyncByIDFailureByNonSyncEntity()
+    {
+        $id = '10000000000000';
+
+        $this->fixtures->on(Mode::LIVE)->create('card', ['id' => $id]);
+
+        $this->fixtures->on(Mode::TEST)->create('card', ['id' => $id]);
+
+        $this->setupAdminEntitySyncByIDTest();
 
         $this->startTest();
     }

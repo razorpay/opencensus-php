@@ -1362,6 +1362,87 @@ return [
         ],
     ],
 
+    'testAdminEntitySyncByIDSuccess' => [
+        'request'  => [
+            'url'    => '/admin/entity_sync/merchant/10000000000000',
+            'method' => 'post',
+            'content' => [
+                'from_mode' => 'live',
+	            'to_mode' => 'test',
+	            'fields_to_sync' => ['account_code'],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testAdminEntitySyncByIDFailureByWrongEntity' => [
+        'request'  => [
+            'url'    => '/admin/entity_sync/merchanty/10000000000000',
+            'method' => 'post',
+            'content' => [
+                'from_mode' => 'live',
+	            'to_mode' => 'test',
+	            'fields_to_sync' => ['account_code'],
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAdminEntitySyncByIDFailureByWrongMode' => [
+        'request'  => [
+            'url'    => '/admin/entity_sync/merchant/10000000000000',
+            'method' => 'post',
+            'content' => [
+                'from_mode' => 'livee',
+                'to_mode' => 'test',
+                'fields_to_sync' => ['account_code'],
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAdminEntitySyncByIDFailureByNonSyncEntity' => [
+        'request'  => [
+            'url'    => '/admin/entity_sync/card/10000000000000',
+            'method' => 'post',
+            'content' => [
+                'from_mode' => 'live',
+                'to_mode' => 'test',
+                'fields_to_sync' => ['account_code'],
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_SYNCED_ENTITIES_CAN_BE_SYNCED,
+        ],
+    ],
+
     'testExternalAdminFetchEntityMultipleBlockedEntityShouldFail' => [
         'request'   => [
             'url'    => '/external_admin/terminal/',
