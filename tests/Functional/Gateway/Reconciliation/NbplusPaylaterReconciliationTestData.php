@@ -22,5 +22,6 @@ return [
         'Org issuer txn reference number'   => '110',
         'Net banking payment ID'            => '',
         'PG payment ID'                     => '',
+        'Aggregator_txn_no'                 => '',
     ],
 ];

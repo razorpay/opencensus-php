@@ -15,6 +15,7 @@ class Reconciliate extends Base\Reconciliate
     const TRANSACTION_AMOUNT                 = 'transaction_amount';
     const MERCHANT_REFERENCE_NUMBER          = 'merchant_reference_number';
     const GATEWAY_PAYMENT_ID                 = 'issuer_txn_ref_number';
+    const AGGREGATOR_REFERENCE_NUMBER        = 'aggregator_txn_no';
 
 
     public function getFileType(string $mimeType): string
