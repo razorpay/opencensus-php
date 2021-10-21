@@ -11,12 +11,14 @@ const S0 = (props) => {
       }),
     );
 
-    window.trackHubs({
-      name: 'update_property',
-      data: {
-        partner_dashboard_welcome_module: true,
-      },
-    });
+    if (window.trackHubs) {
+      window.trackHubs({
+        name: 'update_property',
+        data: {
+          partner_dashboard_welcome_module: true,
+        },
+      });
+    }
   };
 
   const handleLearnMoreClick = () => {
@@ -54,6 +56,7 @@ const S0 = (props) => {
               marginTop: '40px',
             }}
             onClick={handleLearnMoreClick}
+            rel="noreferrer"
           >
             Learn more about Partner Program <i className="i i-external-link " />
           </a>

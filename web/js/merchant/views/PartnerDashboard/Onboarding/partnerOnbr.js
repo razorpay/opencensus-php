@@ -13,7 +13,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
-import { track } from './ga.js';
+import { track } from './ga';
 import RTracking from 'react-tracking';
 import { getCookie } from 'common/utils/cookies';
 
@@ -36,7 +36,6 @@ export default class BaseScreen extends React.Component {
   state = { role: null };
   constructor(props) {
     super(props);
-    const defaultVariant = 'not_in_exp';
     let landingPageVariantInfo = getCookie('partner-lp-experiment');
     if (landingPageVariantInfo) {
       landingPageVariantInfo = JSON.parse(atob(landingPageVariantInfo));
@@ -45,7 +44,7 @@ export default class BaseScreen extends React.Component {
       role: null,
       lpVariant: landingPageVariantInfo ? landingPageVariantInfo.lpVariant : null,
       lpFold: landingPageVariantInfo ? landingPageVariantInfo.lpFold : null,
-      businessTypeName:this.props.user.isUnregisteredBusiness ? 'Unregistered' : 'Registered',
+      businessTypeName: this.props.user.isUnregisteredBusiness ? 'Unregistered' : 'Registered',
       fbBusinessTypeSuffix: this.props.user.isUnregisteredBusiness ? 'unreg' : 'reg',
     };
   }
@@ -59,12 +58,14 @@ export default class BaseScreen extends React.Component {
       }),
     );
     triggerHotjarRecording('pure_platform_experiment', ['pure_platform_experiment']);
-    window.trackHubs({
-      name: 'update_property',
-      data: {
-        partner_signup_start: true,
-      },
-    });
+    if (window.trackHubs) {
+      window.trackHubs({
+        name: 'update_property',
+        data: {
+          partner_signup_start: true,
+        },
+      });
+    }
   }
 
   onRoleSelect = (role) => {
@@ -78,14 +79,15 @@ export default class BaseScreen extends React.Component {
       }),
     );
 
-    window.trackHubs({
-      name: 'update_property',
-      data: {
-        partner_type_selection: role,
-      },
-    });
+    if (window.trackHubs) {
+      window.trackHubs({
+        name: 'update_property',
+        data: {
+          partner_type_selection: role,
+        },
+      });
+    }
 
-    
     fireAnalyticsEvents({
       fbData: `partner_partnertype_${role}_${this.state.fbBusinessTypeSuffix}`,
     });
@@ -110,12 +112,14 @@ export default class BaseScreen extends React.Component {
         pagePath: window.location.pathname,
       }),
     );
-    window.trackHubs({
-      name: 'update_property',
-      data: {
-        partner_signup_complete: true,
-      },
-    });
+    if (window.trackHubs) {
+      window.trackHubs({
+        name: 'update_property',
+        data: {
+          partner_signup_complete: true,
+        },
+      });
+    }
   };
 
   closeTransaction = (url, data) => {
@@ -126,11 +130,11 @@ export default class BaseScreen extends React.Component {
       merchant_partner_intent: false,
     });
     return merchantFetch({
-      url: url,
+      url,
       method: 'PATCH',
       data,
     })
-      .then((response) => {
+      .then(() => {
         this.props.updateSession({ user: userval });
         this.props.history.push(`partners/submerchants`);
         this.props.closeModal();
@@ -140,7 +144,7 @@ export default class BaseScreen extends React.Component {
           this.trackSignupSuccessEvents();
         }
       })
-      .catch((err) => {
+      .catch(() => {
         this.props.closeModal();
         this.props.showNotification({
           type: 'error',
@@ -186,7 +190,7 @@ export default class BaseScreen extends React.Component {
 
   render() {
     return (
-      <div className={`partner-onboarding-base-screen new-screen`}>
+      <div className="partner-onboarding-base-screen new-screen">
         <Slider>
           {!this.props.disableClose
             ? (sliderProps) => (
