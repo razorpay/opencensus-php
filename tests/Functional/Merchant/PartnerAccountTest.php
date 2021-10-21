@@ -14,6 +14,7 @@ use RZP\Models\Terminal;
 use RZP\Models\User\Role;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Constants;
+use RZP\Tests\Functional\Fixtures\Entity\Org as Org;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Merchant\Account\Metric;
@@ -590,7 +591,9 @@ class PartnerAccountTest extends TestCase
 
         $testData = $this->testData['submitKyc'];
 
-        $this->ba->proxyAuth('rzp_live_' . $merchant->getId());
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId(), [], Role::OWNER, Mode::LIVE);
+
+        $this->ba->proxyAuth('rzp_live_' . $merchant->getId(), $merchantUser['id']);
 
         $this->runRequestResponseFlow($testData);
 

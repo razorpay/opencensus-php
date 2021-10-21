@@ -38,7 +38,9 @@ class GetGstDetailsTest extends TestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailsData);
 
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
 
         Config::set('services.bvs.mock', true);
         Config::set('services.bvs.response', Constant::SUCCESS);
@@ -61,7 +63,9 @@ class GetGstDetailsTest extends TestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailsData);
 
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
 
         Config::set('services.bvs.mock', true);
         Config::set('services.bvs.response', Constant::FAILURE);
@@ -84,7 +88,9 @@ class GetGstDetailsTest extends TestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailsData);
 
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
 
         Config::set('services.bvs.mock', true);
 
@@ -109,7 +115,9 @@ class GetGstDetailsTest extends TestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailsData);
 
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
 
         Config::set('services.bvs.mock', true);
 

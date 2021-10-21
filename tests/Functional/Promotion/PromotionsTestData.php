@@ -447,6 +447,9 @@ return [
             ],
             'url'     => '/pre_signup',
             'method'  => 'PUT',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
         ],
         'response' => [
             'content' => [
@@ -464,6 +467,9 @@ return [
             'content' => [
                 'business_type' => '2',
                 'department'    => '7',
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
             ],
             'url'     => '/pre_signup',
             'method'  => 'PUT',
@@ -487,6 +493,9 @@ return [
             ],
             'url'     => '/pre_signup',
             'method'  => 'PUT',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
         ],
         'response' => [
             'content' => [

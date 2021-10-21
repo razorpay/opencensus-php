@@ -119,7 +119,9 @@ class InternationalEnablementTest extends TestCase
     {
         $merchant = $this->createFixtures();
 
-        $this->ba->proxyAuth('rzp_live_' . $merchant->getId());
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
 
         $this->startTest();
 
@@ -133,7 +135,9 @@ class InternationalEnablementTest extends TestCase
     {
         $merchant = $this->createFixtures();
 
-        $this->ba->proxyAuth('rzp_live_' . $merchant->getId());
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
 
         $testData = $this->testData['testDraftWithValidationErrorCase1'];
 
@@ -152,7 +156,9 @@ class InternationalEnablementTest extends TestCase
     {
         $merchant = $this->createFixtures();
 
-        $this->ba->proxyAuth('rzp_live_' . $merchant->getId());
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
 
         // no entry
 
@@ -194,7 +200,9 @@ class InternationalEnablementTest extends TestCase
     {
         $merchant = $this->createFixtures();
 
-        $this->ba->proxyAuth('rzp_live_' . $merchant->getId());
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
 
         // draft (without intl txn documents)
 
@@ -237,7 +245,9 @@ class InternationalEnablementTest extends TestCase
     {
         $merchant = $this->createFixtures();
 
-        $this->ba->proxyAuth('rzp_live_' . $merchant->getId());
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
 
         // no entry
 
@@ -280,7 +290,9 @@ class InternationalEnablementTest extends TestCase
 
         $merchant = $this->createFixtures();
 
-        $this->ba->proxyAuth('rzp_live_' . $merchant->getId());
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
 
         $testData = $this->testData['testSubmitWithValidationError'];
 

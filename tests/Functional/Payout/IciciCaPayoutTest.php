@@ -90,6 +90,9 @@ class IciciCaPayoutTest extends TestCase
         $createScheduleRequest = [
             'method'  => 'POST',
             'url'     => '/schedules',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content'   => [
                 'type'      => 'fee_recovery',
                 'name'      => 'Basic T+7',
@@ -147,7 +150,10 @@ class IciciCaPayoutTest extends TestCase
 
         $request = [
             'url'       => '/banking_account_statement/process/icici',
-            'method'    => 'POST'
+            'method'    => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
         ];
 
         $this->flushCache();
@@ -248,13 +254,6 @@ class IciciCaPayoutTest extends TestCase
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
 
         // Create merchant user mapping
-        $this->fixtures->on('live')->user->createUserMerchantMapping([
-                                                                         'merchant_id' => '10000000000000',
-                                                                         'user_id'     => User::MERCHANT_USER_ID,
-                                                                         'product'     => 'primary',
-                                                                         'role'        => 'owner',
-                                                                     ], 'live');
-
         $this->fixtures->on('live')->create('banking_account_statement_details',[
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => '10000000000000',
@@ -299,6 +298,9 @@ class IciciCaPayoutTest extends TestCase
         $request = [
             'method'  => 'put',
             'url'     => '/banking_accounts/gateway/icici/balance',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
         ];
 
         $this->ba->cronAuth();
@@ -858,6 +860,9 @@ class IciciCaPayoutTest extends TestCase
         $request = [
             'method'  => 'POST',
             'url'     => '/payouts/' . $payout['id'] . '/approve',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'                => 'BUIj3m2Nx2VvVj',
                 'otp'                  => '0007',
@@ -990,6 +995,9 @@ class IciciCaPayoutTest extends TestCase
         $request = [
             'method'  => 'POST',
             'url'     => '/payouts/approve/bulk',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'payout_ids'           => [$payout1['id'], $payout2['id']],
                 'token'                => 'BUIj3m2Nx2VvVj',
@@ -1101,6 +1109,9 @@ class IciciCaPayoutTest extends TestCase
         $request = [
             'url'       => '/payouts',
             'method'    => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content'   => $content
         ];
 
@@ -1160,6 +1171,9 @@ class IciciCaPayoutTest extends TestCase
         $request = [
             'method'  => 'POST',
             'url'     => '/payouts',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'account_number'       => '2224440041626905',
                 'amount'               => 2000000,
@@ -1204,6 +1218,9 @@ class IciciCaPayoutTest extends TestCase
     {
         $testData = $this->testData['testCreateFreePayoutForNEFTModeDirectAccountProxyAuth'];
         $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['server'] = [
+                    'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+                ];
         $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
         $testData['request']['content']['otp']   = '0007';
 
@@ -1219,7 +1236,7 @@ class IciciCaPayoutTest extends TestCase
         $this->setUpCounterAndFreePayoutsCount('direct', $balanceId, 'icici');
 
         $this->testData[__FUNCTION__] = $testData;
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_test_10000000000000', 'MerchantUser01');
         $this->startTest();
 
         $payout = $this->getDbLastEntity('payout');
@@ -1454,6 +1471,8 @@ class IciciCaPayoutTest extends TestCase
     {
         $this->liveSetUp();
 
+        $this->fixtures->on('live');
+
         $this->ownerRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'owner','live');
 
         // Create two queued payouts
@@ -1502,6 +1521,9 @@ class IciciCaPayoutTest extends TestCase
         $fundAccountRequest = [
             'method'  => 'POST',
             'url'     => '/fund_accounts',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 "account_type" => "card",
                 "contact_id"   => "cont_1000001contact",
@@ -1563,6 +1585,9 @@ class IciciCaPayoutTest extends TestCase
         $fundAccountRequest = [
             'method'  => 'POST',
             'url'     => '/fund_accounts',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 "account_type" => "card",
                 "contact_id"   => "cont_" . $contact["id"],
@@ -1609,6 +1634,9 @@ class IciciCaPayoutTest extends TestCase
         $fundAccountRequest = [
             'method'  => 'POST',
             'url'     => '/fund_accounts',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 "account_type" => "vpa",
                 "contact_id"   => "cont_1000001contact",

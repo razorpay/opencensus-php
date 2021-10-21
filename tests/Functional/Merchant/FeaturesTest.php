@@ -1330,7 +1330,9 @@ class FeaturesTest extends OAuthTestCase
 
         $this->updateMarketplaceOnboardingResponse();
 
-        $this->ba->proxyAuth('rzp_' . $liveMode . '_' . $merchantId);
+        $user = $this->fixtures->user->createUserForMerchant($merchantId, [], 'owner', $liveMode);
+
+        $this->ba->proxyAuth('rzp_' . $liveMode . '_' . $merchantId, $user->getId());
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -1450,7 +1452,8 @@ class FeaturesTest extends OAuthTestCase
 
     public function createMarketplaceOnboardingResponse(string $merchantId, bool $expectError = false)
     {
-        $this->ba->proxyAuth('rzp_live_' . $merchantId);
+        $user = $this->fixtures->user->createUserForMerchant($merchantId, [], 'owner', 'live');
+        $this->ba->proxyAuth('rzp_live_' . $merchantId, $user->getId());
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -1623,7 +1626,9 @@ class FeaturesTest extends OAuthTestCase
     {
         $liveMode = $this->app['basicauth']->getLiveConnection();
 
-        $this->ba->proxyAuth('rzp_' . $liveMode . '_' . $merchantId);
+        $user = $this->fixtures->user->createUserForMerchant($merchantId, [], 'owner', $liveMode);
+
+        $this->ba->proxyAuth('rzp_' . $liveMode . '_' . $merchantId, $user->getId());
 
         $url = storage_path("files/" . Constants::ONBOARDING .  "/" . Constants::VENDOR_AGREEMENT . ".pdf");
 
@@ -1779,7 +1784,9 @@ class FeaturesTest extends OAuthTestCase
 
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $detailsAttributes);
 
-        $this->ba->proxyAuth('rzp_live_' . $merchantId);
+        $user = $this->fixtures->user->createUserForMerchant($merchantId, [], 'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantId, $user->getId());
 
         return $merchantId;
     }

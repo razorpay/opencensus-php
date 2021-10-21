@@ -121,13 +121,6 @@ class RblPayoutTest extends TestCase
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
 
         // Create merchant user mapping
-        $this->fixtures->on('live')->user->createUserMerchantMapping([
-                                                                         'merchant_id' => '10000000000000',
-                                                                         'user_id'     => User::MERCHANT_USER_ID,
-                                                                         'product'     => 'primary',
-                                                                         'role'        => 'owner',
-                                                                     ], 'live');
-
         $this->fixtures->on('live')->create('banking_account_statement_details',[
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => '10000000000000',
@@ -346,6 +339,9 @@ class RblPayoutTest extends TestCase
         $request = [
             'method'  => 'POST',
             'url'     => '/payouts/' . $payout['id'] . '/approve',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'                => 'BUIj3m2Nx2VvVj',
                 'otp'                  => '0007',
@@ -405,6 +401,9 @@ class RblPayoutTest extends TestCase
         $request = [
             'method'  => 'POST',
             'url'     => '/payouts/approve/bulk',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'payout_ids'           => [$payout1['id'], $payout2['id']],
                 'token'                => 'BUIj3m2Nx2VvVj',

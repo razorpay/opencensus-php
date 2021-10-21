@@ -635,6 +635,9 @@ return [
 
     'testApprovePayoutWithComment' => [
         'request'  => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'method'  => 'POST',
             'url'     => '/payouts/{id}/approve',
             'content' => [
@@ -652,6 +655,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/approve',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '0007',
@@ -827,6 +833,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/approve',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '0007',
@@ -999,6 +1008,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/approve',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '0007',
@@ -1175,6 +1187,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/reject',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '0007',
@@ -1383,6 +1398,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/reject',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '1234',
@@ -1400,6 +1418,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/reject',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '1234',
@@ -2027,6 +2048,9 @@ return [
         'request' => [
             'url' => '/payouts/bulk_approve',
             'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 [
                     'payout_update_action' => 'A',
@@ -2131,6 +2155,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/approve',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'   => 'BUIj3m2Nx2VvVj',
                 'otp'     => '0007',
@@ -2145,6 +2172,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/approve',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'   => 'BUIj3m2Nx2VvVj',
                 'otp'     => '0007',
@@ -2183,6 +2213,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/approve/bulk',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'payout_ids'   => [],
                 'token'        => 'BUIj3m2Nx2VvVj',
@@ -2202,6 +2235,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/approve/bulk',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'payout_ids'   => [],
                 'token'        => 'BUIj3m2Nx2VvVj',
@@ -2221,6 +2257,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/approve/bulk',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'payout_ids' => [],
                 'token'      => 'BUIj3m2Nx2VvVj',
@@ -2239,6 +2278,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/reject',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '1234',
@@ -2256,6 +2298,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/reject',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '1234',
@@ -2273,6 +2318,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/reject',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '1234',
@@ -2290,6 +2338,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/reject',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'   => 'BUIj3m2Nx2VvVj',
                 'otp'     => '1234',
@@ -2306,6 +2357,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/reject/bulk',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'payout_ids' => [],
                 'user_comment'    => 'Bulk Rejecting',
@@ -2323,6 +2377,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/reject/bulk',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'payout_ids' => [],
             ],
@@ -3637,6 +3694,9 @@ return [
         'request' => [
             'method'  => 'POST',
             'url'     => '/merchant/payout/demand',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'amount'   => 1000,
                 'currency' => 'INR'
@@ -4442,6 +4502,9 @@ return [
         'request' => [
             'url' => '/payouts/bulk_approve',
             'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 [
                     'payout_update_action' => 'A',
@@ -4487,6 +4550,9 @@ return [
         'request' => [
             'url' => '/payouts/bulk_approve',
             'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 [
                     'payout_update_action' => 'R',
@@ -4699,6 +4765,9 @@ return [
         'request' => [
             'url'    => '/payouts',
             'method' => 'get',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'product' => 'banking',
             ],
@@ -5152,6 +5221,9 @@ return [
         'request'  => [
             'method'  => 'GET',
             'url'     => '/payouts/_meta/summary',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
         ],
         'response' => [
             'content' => [
@@ -7008,6 +7080,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/approve',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '0007',
@@ -7207,6 +7282,9 @@ return [
         'request'  => [
             'method'  => 'GET',
             'url'     => '/payouts/_meta/summary',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
         ],
         'response' => [
             'content' => [
@@ -7218,6 +7296,9 @@ return [
         'request' => [
             'method'  => 'POST',
             'url'     => '/merchant/payout/demand',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'amount'   => 1000,
                 'currency' => 'INR'
@@ -7446,6 +7527,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/approve',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '0007',
@@ -7801,6 +7885,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/approve',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '0007',
@@ -7844,6 +7931,9 @@ return [
     'testRejectScheduledPayoutAfterScheduledAtTime' => [
         'request'  => [
             'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
         ],
         'response'  => [
             'content'     => [
@@ -8455,6 +8545,9 @@ return [
     'testRejectPayoutNotInPendingState' => [
         'request'  => [
             'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
         ],
         'response' => [
             'content'     => [
@@ -8788,7 +8881,10 @@ return [
     'testScheduledPayoutProcessingAutoReject' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payouts/scheduled/process'
+            'url'     => '/payouts/scheduled/process',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
         ],
         'response'  => [
             'content' => [
@@ -8799,7 +8895,10 @@ return [
     'testScheduledPayoutProcessingAutoRejectWithWfs' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payouts/scheduled/process'
+            'url'     => '/payouts/scheduled/process',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
         ],
         'response'  => [
             'content' => [
@@ -8826,6 +8925,9 @@ return [
         'request'  => [
             'method'  => 'GET',
             'url'     => '/payouts/_meta/summary',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
         ],
         'response' => [
             'content' => [
@@ -9208,6 +9310,9 @@ return [
         'request'   => [
             'url'     => '/payouts/bulk',
             'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 [
                     'razorpayx_account_number'  => '2224440041626905',
@@ -9391,6 +9496,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/approve/bulk',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'   => 'BUIj3m2Nx2VvVj',
                 'otp'     => '0007',
@@ -9988,6 +10096,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/approve',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '0007',
@@ -10003,6 +10114,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/approve',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '0007',
@@ -10457,6 +10571,7 @@ return [
             'method'  => 'GET',
             'server' => [
                 'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'url'     => '/payouts_internal/{payout_id}',
         ],

@@ -42,7 +42,6 @@ class SettlementOndemandTest extends TestCase
             'business_type' => 3
         ]);
 
-
         $this->user = $this->fixtures->user->createUserForMerchant($this->merchantDetail['merchant_id'], [
             'id'               => '20000000000000',
             'name'              => 'john doe',
@@ -1320,7 +1319,7 @@ class SettlementOndemandTest extends TestCase
 
     public function testOndemandFeatureValidationSuccess()
     {
-        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id']);
 
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
@@ -1340,7 +1339,7 @@ class SettlementOndemandTest extends TestCase
 
     public function testOndemandFeatureValidationNoAttemptLeftFailure()
     {
-        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id']);
 
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
@@ -1370,7 +1369,7 @@ class SettlementOndemandTest extends TestCase
 
     public function testOndemandFeatureValidationDailyAmountExceededFailure()
     {
-        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id']);
 
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
@@ -1930,7 +1929,7 @@ class SettlementOndemandTest extends TestCase
 
     public function testOndemandCreationWithLimitExceededError()
     {
-        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id']);
 
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
@@ -1963,7 +1962,7 @@ class SettlementOndemandTest extends TestCase
 
     public function testOndemandCreationWithAmountExceededError()
     {
-        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id']);
 
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
@@ -3270,7 +3269,7 @@ class SettlementOndemandTest extends TestCase
         $this->assertNotEmpty($newOndemandPayoutPricingRule);
     }
 
-    public function testNoMinLimitFornEsAutomaticMerchants()
+    public function testNoMinLimitFormEsAutomaticMerchants()
     {
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 

@@ -3978,6 +3978,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // AuthN & AuthZ
     const USER_ACCESS_MISSING_ROUTE_ROLE_MAPPING = 'USER_ACCESS_MISSING_ROUTE_ROLE_MAPPING';
+    const USER_ACCESS_ROLE_MISSING               = 'USER_ACCESS_ROLE_MISSING';
+    const USER_ACCESS_AUTHZ_FAILED               = 'USER_ACCESS_AUTHZ_FAILED';
 
     // Edge<>api integration.
     const PASSPORT_JWT_PARSE_FAILED                             = 'PASSPORT_JWT_PARSE_FAILED';

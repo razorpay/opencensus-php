@@ -442,12 +442,16 @@ class CreditLogsTest extends TestCase
 
         $merchantDetail = $this->fixtures->on('live')->create('merchant_detail',['merchant_id' => '10000000000000']);
 
-        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id'], [], 'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id'], $merchantUser['id']);
 
         $credit = $this->getDbLastEntity('credits', 'live');
 
         // test merchant dashboard API call to fetch credit balances of merchant
-        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id'], $merchantUser['id']);
 
         $this->startTest();
     }

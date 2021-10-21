@@ -6,29 +6,30 @@ use RZP\Error\PublicErrorDescription;
 
 return [
     'testCompositeExpands' => [
-        'request' => [
-            'method' => 'GET',
-            'server' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'   => config('applications.banking_service_url'),
                 'HTTP_X-Razorpay-Account' => '10000000000000',
             ],
-            'url' => '/vendor-payments/composite-expands',
+            'url'     => '/vendor-payments/composite-expands',
             'content' => [
-                'user_ids' => ['10000000000000'],
+                'user_ids'         => ['10000000000000'],
                 'fund_account_ids' => ['fa_D6Z9Jfir2egAUD'],
-                'contact_ids' => ['cont_Dsp92d4N1Mmm6Q'],
-                'payout_ids' => ['pout_DuuYxmO7Yegu3x'],
-                'merchant_ids' => ['10000000000000'],
+                'contact_ids'      => ['cont_Dsp92d4N1Mmm6Q'],
+                'payout_ids'       => ['pout_DuuYxmO7Yegu3x'],
+                'merchant_ids'     => ['10000000000000'],
             ],
         ],
         'response' => [
             'content' => [
-                'merchants' => [],
-                'users' => [
+                'merchants'     => [],
+                'users'         => [
                     'entity' => 'collection',
-                    'count' => 1,
-                    'items' => [
+                    'count'  => 1,
+                    'items'  => [
                         [
-                            'id' => '10000000000000',
+                            'id'   => '10000000000000',
                             'name' => 'test-me'
                         ]
                     ]
@@ -43,23 +44,23 @@ return [
                         'account_type' => 'bank_account'
                     ]
                 ],
-                'contacts' => [
+                'contacts'      => [
                     'cont_Dsp92d4N1Mmm6Q' => [
                         'id'   => 'cont_Dsp92d4N1Mmm6Q',
                         'name' => 'test_contact'
                     ]
                 ],
-                'payouts' => [
+                'payouts'       => [
                     'entity' => 'collection',
-                    'count' => 1,
-                    'items' => [
+                    'count'  => 1,
+                    'items'  => [
                         [
-                            'id' => 'pout_DuuYxmO7Yegu3x',
+                            'id'              => 'pout_DuuYxmO7Yegu3x',
                             'fund_account_id' => 'fa_D6Z9Jfir2egAUT',
-                            'fund_account' => [
-                                'id' => 'fa_D6Z9Jfir2egAUT',
+                            'fund_account'    => [
+                                'id'      => 'fa_D6Z9Jfir2egAUT',
                                 'contact' => [
-                                    'id' => 'cont_Dsp92d4N1Mmm6Q',
+                                    'id'   => 'cont_Dsp92d4N1Mmm6Q',
                                     'name' => 'test_contact'
                                 ]
                             ]
@@ -72,43 +73,44 @@ return [
     ],
 
     'testCompositeExpandsWhenOnlyPayoutIsPassed' => [
-        'request' => [
-            'method' => 'GET',
-            'server' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'   => config('applications.banking_service_url'),
                 'HTTP_X-Razorpay-Account' => '10000000000000',
             ],
-            'url' => '/vendor-payments/composite-expands',
+            'url'     => '/vendor-payments/composite-expands',
             'content' => [
-                'payout_ids' => ['pout_DuuYxmO7Yegu3x'],
+                'payout_ids'   => ['pout_DuuYxmO7Yegu3x'],
                 'merchant_ids' => ['10000000000000']
             ],
         ],
         'response' => [
             'content' => [
-                'merchants' => [],
+                'merchants'     => [],
                 'fund_accounts' => [
                     'fa_D6Z9Jfir2egAUT' => [
                         'id'           => 'fa_D6Z9Jfir2egAUT',
                         'account_type' => 'bank_account'
                     ]
                 ],
-                'contacts' => [
+                'contacts'      => [
                     'cont_Dsp92d4N1Mmm6Q' => [
                         'id'   => 'cont_Dsp92d4N1Mmm6Q',
                         'name' => 'test_contact'
                     ]
                 ],
-                'payouts' => [
+                'payouts'       => [
                     'entity' => 'collection',
-                    'count' => 1,
-                    'items' => [
+                    'count'  => 1,
+                    'items'  => [
                         [
-                            'id' => 'pout_DuuYxmO7Yegu3x',
+                            'id'              => 'pout_DuuYxmO7Yegu3x',
                             'fund_account_id' => 'fa_D6Z9Jfir2egAUT',
-                            'fund_account' => [
-                                'id' => 'fa_D6Z9Jfir2egAUT',
+                            'fund_account'    => [
+                                'id'      => 'fa_D6Z9Jfir2egAUT',
                                 'contact' => [
-                                    'id' => 'cont_Dsp92d4N1Mmm6Q',
+                                    'id'   => 'cont_Dsp92d4N1Mmm6Q',
                                     'name' => 'test_contact'
                                 ]
                             ]
@@ -124,14 +126,15 @@ return [
 
     'testVendorPaymentBulkCancel' => [
         'request'  => [
-            'method' => 'POST',
+            'method'  => 'POST',
             'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
                 'HTTP_X-Dashboard-User-Id' => '20000000000000',
             ],
-            'url'    => '/vendor-payments/bulk-cancel',
+            'url'     => '/vendor-payments/bulk-cancel',
             'content' => [
-                    'vendor_payments_ids' => ['vdpm_F2qwMZe97QTGG1'],
-                    'cancellation_reason' => 'some reson'
+                'vendor_payments_ids' => ['vdpm_F2qwMZe97QTGG1'],
+                'cancellation_reason' => 'some reson'
             ],
         ],
         'response' => [
@@ -142,7 +145,8 @@ return [
     'testVendorPaymentGetOcrData' => [
         'request'  => [
             'method' => 'GET',
-            'server'  => [
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
                 'HTTP_X-Dashboard-User-Id' => '20000000000000',
             ],
             'url'    => '/vendor-payments/get-ocr-data/ocr_1234556',
@@ -155,7 +159,8 @@ return [
     'testVendorPaymentOcrAccuracyCheck' => [
         'request'  => [
             'method' => 'POST',
-            'server'  => [
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
                 'HTTP_X-Dashboard-User-Id' => '20000000000000',
             ],
             'url'    => '/vendor-payments/_meta/ocr-accuracy-check',
@@ -167,13 +172,14 @@ return [
 
     'testVendorPaymentMarkAsPaid' => [
         'request'  => [
-            'method' => 'POST',
+            'method'  => 'POST',
             'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
                 'HTTP_X-Dashboard-User-Id' => '20000000000000',
             ],
-            'url'    => '/vendor-payments/mark-as-paid',
+            'url'     => '/vendor-payments/mark-as-paid',
             'content' => [
-                'vendor_payment_id' => ['vdpm_F2qwMZe97QTGG1'],
+                'vendor_payment_id'      => ['vdpm_F2qwMZe97QTGG1'],
                 'manually_paid_metadata' => [
                     'notes1' => 'smoething'
                 ],
@@ -185,13 +191,14 @@ return [
     ],
 
     'testVendorPaymentMarkAsPaidNegative' => [
-        'request'  => [
-            'method' => 'POST',
+        'request'   => [
+            'method'  => 'POST',
             'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
-            'url'    => '/vendor-payments/mark-as-paid',
+            'url'     => '/vendor-payments/mark-as-paid',
             'content' => [
-                'vendor_payment_id' => ['vdpm_F2qwMZe97QTGG1'],
+                'vendor_payment_id'      => ['vdpm_F2qwMZe97QTGG1'],
                 'manually_paid_metadata' => [
                     'notes1' => 'smoething'
                 ],
@@ -214,11 +221,12 @@ return [
 
     'testGetReportingInfo' => [
         'request'  => [
-            'method' => 'GET',
+            'method'  => 'GET',
             'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
                 'HTTP_X-Dashboard-User-Id' => '20000000000000',
             ],
-            'url'    => '/vendor-payments/_meta/get-reporting-info',
+            'url'     => '/vendor-payments/_meta/get-reporting-info',
             'content' => [
                 'status'      => 'unpaid',
                 'payout_mode' => 'IMPS',
@@ -231,11 +239,12 @@ return [
 
     'testGetReportingInfoFromCARole' => [
         'request'  => [
-            'method' => 'GET',
+            'method'  => 'GET',
             'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
                 'HTTP_X-Dashboard-User-Id' => '20000000000006',
             ],
-            'url'    => '/vendor-payments/_meta/get-reporting-info',
+            'url'     => '/vendor-payments/_meta/get-reporting-info',
             'content' => [
                 'status'      => 'unpaid',
                 'payout_mode' => 'IMPS',
@@ -248,13 +257,14 @@ return [
 
     'testBulkInvoiceDownload' => [
         'request'  => [
-            'method' => 'POST',
+            'method'  => 'POST',
             'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
                 'HTTP_X-Dashboard-User-Id' => '20000000000000',
             ],
-            'url'    => '/vendor-payments/_meta/bulk-invoice-download',
+            'url'     => '/vendor-payments/_meta/bulk-invoice-download',
             'content' => [
-                'file_ids'   => ['id1','id2'],
+                'file_ids'   => ['id1', 'id2'],
                 'send_email' => false,
             ],
         ],
@@ -265,13 +275,14 @@ return [
 
     'testEditInvoice' => [
         'request'  => [
-            'method' => 'POST',
+            'method'  => 'POST',
             'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
                 'HTTP_X-Dashboard-User-Id' => '20000000000000',
             ],
-            'url'    => '/vendor-payments/vp_id/update-invoice-file-id',
+            'url'     => '/vendor-payments/vp_id/update-invoice-file-id',
             'content' => [
-                'invoice_file_id'   => 'id1'
+                'invoice_file_id' => 'id1'
             ],
         ],
         'response' => [
@@ -281,17 +292,17 @@ return [
 
     'testEditInvoiceFromCARole' => [
         'request'  => [
-            'method' => 'POST',
+            'method'  => 'POST',
             'server'  => [
                 'HTTP_X-Dashboard-User-Id' => '20000000000006',
                 'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
             ],
-            'url'    => '/vendor-payments/vp_id/update-invoice-file-id',
+            'url'     => '/vendor-payments/vp_id/update-invoice-file-id',
             'content' => [
-                'invoice_file_id'   => 'id1'
+                'invoice_file_id' => 'id1'
             ],
         ],
-        'response'  => [
+        'response' => [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
@@ -304,11 +315,12 @@ return [
 
     'testGetUfhFileStatus' => [
         'request'  => [
-            'method' => 'GET',
+            'method'  => 'GET',
             'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
                 'HTTP_X-Dashboard-User-Id' => '20000000000000',
             ],
-            'url'    => '/vendor-payments/invoices/ufh/file_12345',
+            'url'     => '/vendor-payments/invoices/ufh/file_12345',
             'content' => [],
         ],
         'response' => [
@@ -316,11 +328,12 @@ return [
         ]
     ],
 
-    'testCreatePayout' => [
+    'testCreatePayout'                                     => [
         'request'  => [
             'method'  => 'POST',
-            'server' => [
-                'HTTP_X-Razorpay-Account' => '10000000000000',
+            'server'  => [
+                'HTTP_X-Request-Origin'     => config('applications.banking_service_url'),
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
                 'HTTP_X-Payout-Idempotency' => 'test_i_key',
             ],
             'url'     => '/payouts_internal',
@@ -355,11 +368,12 @@ return [
             ],
         ],
     ],
-    'testCreateScheduledPayout' => [
+    'testCreateScheduledPayout'                            => [
         'request'  => [
             'method'  => 'POST',
-            'server' => [
-                'HTTP_X-Razorpay-Account' => '10000000000000',
+            'server'  => [
+                'HTTP_X-Request-Origin'     => config('applications.banking_service_url'),
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
                 'HTTP_X-Payout-Idempotency' => 'test_i_key',
             ],
             'url'     => '/payouts_internal',
@@ -415,26 +429,35 @@ return [
             'method'  => 'POST',
             'url'     => '/vendor-payments/sendMailGeneric',
             'content' => [],
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
         ],
         'response' => [
             'content' => []
         ]
     ],
-    'testUpcomingMailCronRouteCallsServiceMethod' => [
+    'testUpcomingMailCronRouteCallsServiceMethod'          => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/vendor-payments/sendUpcomingMailCron',
             'content' => [],
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
         ],
         'response' => [
             'content' => []
         ]
     ],
-    'testVendorPaymentSendMailValidation' => [
-        'request'  => [
+    'testVendorPaymentSendMailValidation'                  => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/vendor-payments/sendMailGeneric',
             'content' => [],
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
         ],
         'response'  => [
             'content'     => [
@@ -450,15 +473,18 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
-    'testVendorPaymentSendMailValidateEmails' => [
-        'request'  => [
+    'testVendorPaymentSendMailValidateEmails'              => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/vendor-payments/sendMailGeneric',
             'content' => [
-                'to_emails' => ['wrongmail'],
-                'data' => ['some data'],
-                'subject' => 'some subject',
+                'to_emails'     => ['wrongmail'],
+                'data'          => ['some data'],
+                'subject'       => 'some subject',
                 'template_name' => 'some template',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
         ],
         'response'  => [
@@ -475,102 +501,117 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
-    'testVendorPaymentBulkExecuteCallsServiceMethods' => [
+    'testVendorPaymentBulkExecuteCallsServiceMethods'      => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/vendor-payments/bulk/execute',
             'content' => [],
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
         ],
         'response' => [
             'content' => []
         ]
     ],
-    'testGetQuickFilterAmounts' => [
+    'testGetQuickFilterAmounts'                            => [
         'request'  => [
-            'method' => 'GET',
+            'method'  => 'GET',
             'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
                 'HTTP_X-Dashboard-User-Id' => '20000000000000',
             ],
-            'url'    => '/vendor-payments/_meta/quick-filter-amounts',
+            'url'     => '/vendor-payments/_meta/quick-filter-amounts',
             'content' => [],
         ],
         'response' => [
             'content' => []
         ]
     ],
-    'testProcessIncomingMail' => [
+    'testProcessIncomingMail'                              => [
         'request'  => [
-            'method' => 'POST',
-            'url' => '/vendor-payments/mailgun-webhook',
+            'method'  => 'POST',
+            'url'     => '/vendor-payments/mailgun-webhook',
             'content' => [
-                'sender' => 'abc@abc.com',
+                'sender'    => 'abc@abc.com',
                 'recipient' => 'invoices+anything@invoices.razorpay.com',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
         ],
         'response' => [
-            'content' => [
+            'content'     => [
                 'error' => 'error'
             ],
             'status_code' => 406
         ]
     ],
-    'testProcessIncomingMailWithoutStatusCode' => [
+    'testProcessIncomingMailWithoutStatusCode'             => [
         'request'  => [
-            'method' => 'POST',
-            'url' => '/vendor-payments/mailgun-webhook',
+            'method'  => 'POST',
+            'url'     => '/vendor-payments/mailgun-webhook',
             'content' => [
-                'sender' => 'abc@abc.com',
+                'sender'    => 'abc@abc.com',
                 'recipient' => 'invoices+anything@invoices.razorpay.com',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
         ],
         'response' => [
-            'content' => [
+            'content'     => [
                 'error' => 'error'
             ],
             'status_code' => 400
         ]
     ],
-    'testProcessIncomingMailSuccess' => [
+    'testProcessIncomingMailSuccess'                       => [
         'request'  => [
-            'method' => 'POST',
-            'url' => '/vendor-payments/mailgun-webhook',
+            'method'  => 'POST',
+            'url'     => '/vendor-payments/mailgun-webhook',
             'content' => [
-                'sender' => 'abc@abc.com',
+                'sender'    => 'abc@abc.com',
                 'recipient' => 'invoices+anything@invoices.razorpay.com',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
         ],
         'response' => [
-            'content' => [
+            'content'     => [
                 'mail' => 'mail_something'
             ],
             'status_code' => 200
         ]
     ],
-    'testGetMerchantEmailAddress' => [
+    'testGetMerchantEmailAddress'                          => [
         'request'  => [
-            'method' => 'GET',
+            'method'  => 'GET',
             'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
                 'HTTP_X-Dashboard-User-Id' => '20000000000000',
             ],
-            'url'    => '/vendor-payments/email-integration/email',
+            'url'     => '/vendor-payments/email-integration/email',
             'content' => [],
         ],
         'response' => [
             'content' => []
         ]
     ],
-    'testCreateMerchantEmailMapping' => [
+    'testCreateMerchantEmailMapping'                       => [
         'request'  => [
-            'method' => 'POST',
+            'method'  => 'POST',
             'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
                 'HTTP_X-Dashboard-User-Id' => '20000000000000',
             ],
-            'url'    => '/vendor-payments/email-integration/email',
+            'url'     => '/vendor-payments/email-integration/email',
             'content' => [],
         ],
         'response' => [
             'status_code' => 200,
-            'content' => [
+            'content'     => [
                 'email_address' => 'invoices+abcdef@invoice.razorpay.com'
             ]
         ]

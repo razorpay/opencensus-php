@@ -115,7 +115,9 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($closeBy, $virtualAccount['close_by']);
 
         // Test create ecms VA with merchant level VA expiry setting
-        $this->ba->proxyAuth('rzp_test_10000000000035');
+        $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000035');
+
+        $this->ba->proxyAuth('rzp_test_10000000000035', $merchantUser['id']);
 
         $this->runRequestResponseFlow($this->testData['testVirtualAccountExpirySetting']);
 
@@ -134,14 +136,18 @@ class VirtualAccountTest extends TestCase
 
     public function testVirtualAccountExpirySetting()
     {
-        $this->ba->proxyAuth('rzp_test_10000000000035');
+        $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000035');
+
+        $this->ba->proxyAuth('rzp_test_10000000000035', $merchantUser['id']);
 
         $this->startTest();
     }
 
     public function testVirtualAccountExpirySettingFetch()
     {
-        $this->ba->proxyAuth('rzp_test_10000000000035');
+        $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000035');
+
+        $this->ba->proxyAuth('rzp_test_10000000000035', $merchantUser['id']);
 
         $request = $this->testData['testVirtualAccountExpirySetting']['request'];
 

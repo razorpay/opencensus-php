@@ -395,7 +395,9 @@ class PartnerConfigTest extends OAuthTestCase
         $this->createConfigForPartnerApp($app->getId());
         $this->createSubMerchant($partner, $app);
 
-        $this->ba->proxyAuth('rzp_test_' . $partner->getId());
+        $merchantUser = $this->fixtures->user->createUserForMerchant($partner->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . $partner->getId(), $merchantUser['id']);
 
         $this->startTest();
     }

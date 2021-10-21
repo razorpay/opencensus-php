@@ -222,7 +222,7 @@ return [
         ]
     ],
 
-    'testNoMinLimitFornEsAutomaticMerchants' => [
+    'testNoMinLimitFormEsAutomaticMerchants' => [
         'request'  => [
             'url'     => '/settlements/ondemand',
             'method'  => 'post',
@@ -634,6 +634,9 @@ return [
         'request'  => [
             'url'     => '/settlements/ondemand',
             'method'  => 'post',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'amount' => 20000,
                 'settle_full_balance' => 1,
@@ -867,6 +870,9 @@ return [
         'request'  => [
             'url'     => '/settlements/ondemand',
             'method'  => 'post',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'amount'    => 20030000,
                 'description' => 'Demo Narration - optional',
@@ -1001,6 +1007,9 @@ return [
         'request'  => [
             'url'     => '/settlements/ondemand/feature/validate',
             'method'  => 'get',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 ],
             ],
@@ -1018,6 +1027,9 @@ return [
         'request'  => [
             'url'     => '/settlements/ondemand/feature/validate',
             'method'  => 'get',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
             ],
         ],
@@ -1035,6 +1047,9 @@ return [
         'request'  => [
             'url'     => '/settlements/ondemand/feature/validate',
             'method'  => 'get',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
             ],
         ],
@@ -1228,6 +1243,9 @@ return [
         'request'  => [
             'url'     => '/settlements/ondemand',
             'method'  => 'post',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'amount'    => 6000,
                 'description' => 'Demo Narration - optional',
@@ -1256,6 +1274,9 @@ return [
         'request'  => [
             'url'     => '/settlements/ondemand',
             'method'  => 'post',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'content' => [
                 'amount'    => 10000,
                 'description' => 'Demo Narration - optional',
