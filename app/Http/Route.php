@@ -2049,6 +2049,7 @@ class Route
 
         // Pincode Service
         'pincode_get'                              => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
+        '1cc_pincode_get'                          => ['get',      '1cc/pincodes/{id}',                              'PincodeSearchController@get'                                       ],
         'cities_get'                               => ['get',      'cities',                                         'CityController@getCities'                                          ],
         'db_meta_query'                            => ['post',     'db_meta_query',                                  'AdminController@dbMetaDataQuery'                                   ],
 
@@ -2996,7 +2997,7 @@ class Route
         'subscription_button_hosted_view',
         'subscription_button_create_subscription',
         'checkout_rewards',
-        'pincode_get',
+        '1cc_pincode_get',
     ];
 
     public static $device = [
