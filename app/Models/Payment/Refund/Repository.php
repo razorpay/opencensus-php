@@ -191,20 +191,20 @@ class Repository extends Base\Repository
 
         switch($params[Entity::PUBLIC_STATUS])
         {
-            case Status::PROCESSED:
+            case Refund\Status::PROCESSED:
                 ($showApiRefundStatus === true) ?
-                    $query->where(Entity::STATUS, '=', Status::PROCESSED) : $query->whereNotNull(Entity::SPEED_PROCESSED);
+                    $query->where(Entity::STATUS, '=', Refund\Status::PROCESSED) : $query->whereNotNull(Entity::SPEED_PROCESSED);
 
                 break;
 
-            case Status::PROCESSING:
+            case Refund\Status::PROCESSING:
                 ($showApiRefundStatus === true) ?
-                    $query->where(Entity::STATUS, '!=', Status::PROCESSED) : $query->whereNull(Entity::SPEED_PROCESSED);
+                    $query->where(Entity::STATUS, '!=', Refund\Status::PROCESSED) : $query->whereNull(Entity::SPEED_PROCESSED);
 
                 break;
 
-            case Status::FAILED:
-                $query->where(Entity::STATUS, '=', Status::REVERSED);
+            case Refund\Status::FAILED:
+                $query->where(Entity::STATUS, '=', Refund\Status::REVERSED);
 
                 break;
         }
@@ -867,7 +867,7 @@ class Repository extends Base\Repository
         $query =  $this->newQuery()
                        ->select($this->dbColumn('*'))
                        ->join(Table::PAYMENT, $refundPaymentId, '=', $paymentId)
-                       ->where($refundStatus, '=', Status::FAILED)
+                       ->where($refundStatus, '=', Refund\Status::FAILED)
                        ->where($paymentMethod, '=', $method)
                        ->with(['payment','payment.terminal'])
                        ->inRandomOrder()
