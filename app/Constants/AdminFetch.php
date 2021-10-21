@@ -25,6 +25,7 @@ use RZP\Models\Partner\Commission;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\MerchantUser;
 use RZP\Reconciliator\RequestProcessor;
+use RZP\Models\BankingAccountTpv\Status;
 use RZP\Models\Merchant\Invoice\EInvoice;
 use RZP\Models\Partner\Commission\Invoice;
 use RZP\Models\Partner\Commission\Component;
@@ -3815,6 +3816,34 @@ class AdminFetch
                 'recovery_payout_id'    => [],
                 'attempt_number'        => [],
                 'reference_number'      => [],
+            ],
+
+            Entity::BANKING_ACCOUNT_TPV => [
+                'merchant_id'                  => [
+                    Fetch::LABEL => 'Merchant Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING
+                ],
+                'balance_id'                   => [
+                    Fetch::LABEL => 'Balance Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING
+                ],
+                'status'                       => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => Status::getAll()
+                ],
+                'payer_ifsc'                   => [
+                    Fetch::LABEL  => 'Payer IFSC',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'payer_account_number'         => [
+                    Fetch::LABEL  => 'Payer Account Number',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'trimmed_payer_account_number' => [
+                    Fetch::LABEL  => 'Trimmed Payer Account Number',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
             ],
 
             Entity::BANK_TRANSFER_HISTORY => [

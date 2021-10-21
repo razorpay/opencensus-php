@@ -9,4 +9,15 @@ class Status
     const APPROVED = 'approved';
 
     const REJECTED = 'rejected';
+
+    const ALL_STATUSES = [
+        self::PENDING,
+        self::APPROVED,
+        self::REJECTED
+    ];
+
+    public static function getAll()
+    {
+        return self::ALL_STATUSES;
+    }
 }

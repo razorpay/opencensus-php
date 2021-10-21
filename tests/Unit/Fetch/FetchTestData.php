@@ -693,6 +693,8 @@ return [
 
     E::FEE_RECOVERY => [],
 
+    E::BANKING_ACCOUNT_TPV => [],
+
     E::PAYOUT_DOWNTIMES => [],
 
     E::REQUEST_LOG => [],
