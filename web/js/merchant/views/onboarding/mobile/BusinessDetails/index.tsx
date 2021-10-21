@@ -34,6 +34,7 @@ import { useSnackbar } from 'common/components/SnackBar/SnackbarContext';
 import { fetch } from 'common/services/rest/rest-fetch';
 import BusinessName from '../Fields/BusinessName';
 import GstinAutoPopulate from '../Fields/GstinAutoPopulate';
+import usePartnerActivation from '../hooks/usePartnerActivation';
 
 const businessDetailsSchema = ({ hasGSTIN, businessOverviewDetails }) =>
   Yup.object().shape({
@@ -163,6 +164,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
   const setSameAddress = useActivationFormState((state) => state.setSameAddress);
   const hasSameAdress = useActivationFormState((state) => state.same_address);
   const [isBlurCalled, setIsBlurCalled] = useState(false);
+  const { getFieldStatus } = usePartnerActivation();
 
   const autoFillCityState = (context) => {
     let reqData = {};
@@ -383,7 +385,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                 width="auto"
                 name="company_pan"
                 label="Business PAN"
-                helpText="PAN of the Company"
                 value={
                   formikProps.values.company_pan && formikProps.values.company_pan.toUpperCase()
                 }
@@ -392,7 +393,10 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                   formikProps.errors.company_pan,
                   isCompanyPanInvalid,
                 )}
-                disabled={isFormLocked || isCompanyPanVerified}
+                disabled={
+                  isFormLocked || isCompanyPanVerified || getFieldStatus('company_pan').isDisabled
+                }
+                helpText={getFieldStatus('company_pan').description || 'PAN of the Company'}
                 autoCapitalize="characters"
               />
             </Field>
@@ -428,7 +432,11 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                         }
                         setIsBlurCalled(true);
                       }}
-                      disabled={isFormLocked || isCompanyPanVerified}
+                      disabled={
+                        isFormLocked ||
+                        isCompanyPanVerified ||
+                        getFieldStatus('business_name').isDisabled
+                      }
                     />
                   </View>
                 </Space>
@@ -437,14 +445,20 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                   width="auto"
                   name="business_name"
                   label="Business Name"
-                  helpText="As mentioned in the PAN"
                   value={formikProps.values.business_name}
                   errorText={getPanNameError(
                     formikProps.touched.business_name,
                     formikProps.errors.business_name,
                     isCompanyPanInvalid,
                   )}
-                  disabled={isFormLocked || isCompanyPanVerified}
+                  disabled={
+                    isFormLocked ||
+                    isCompanyPanVerified ||
+                    getFieldStatus('business_name').isDisabled
+                  }
+                  helpText={
+                    getFieldStatus('business_name').description || 'As mentioned in the PAN'
+                  }
                 />
               )}
             </Field>
@@ -472,7 +486,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                 width="auto"
                 name="promoter_pan"
                 label={getLabel('promoter_pan', data)}
-                helpText={getHelpText('promoter_pan', data)}
                 value={
                   formikProps.values.promoter_pan && formikProps.values.promoter_pan.toUpperCase()
                 }
@@ -481,7 +494,12 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                   formikProps.errors.promoter_pan,
                   shouldShowPoiError,
                 )}
-                disabled={isFormLocked || isPanVerified}
+                disabled={
+                  isFormLocked || isPanVerified || getFieldStatus('promoter_pan').isDisabled
+                }
+                helpText={
+                  getFieldStatus('promoter_pan').description || getHelpText('promoter_pan', data)
+                }
                 autoCapitalize="characters"
               />
             </Field>
@@ -490,14 +508,18 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                 width="auto"
                 name="promoter_pan_name"
                 label={getLabel('promoter_pan_name', data)}
-                helpText="As mentioned in the PAN"
                 value={formikProps.values.promoter_pan_name}
                 errorText={getPanNameError(
                   formikProps.touched.promoter_pan_name,
                   formikProps.errors.promoter_pan_name,
                   shouldShowPoiError,
                 )}
-                disabled={isFormLocked || isPanVerified}
+                disabled={
+                  isFormLocked || isPanVerified || getFieldStatus('promoter_pan_name').isDisabled
+                }
+                helpText={
+                  getFieldStatus('promoter_pan_name').description || 'As mentioned in the PAN'
+                }
               />
             </Field>
           </FormSection>
@@ -702,7 +724,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                       setIsBlurCalled(true);
                     }}
                     hasGSTIN={hasGSTIN}
-                    disabled={isFormLocked || hasGSTIN}
+                    disabled={isFormLocked || hasGSTIN || getFieldStatus('gstin').isDisabled}
                     location="Business Details Tab"
                   />
                 ) : (
@@ -710,7 +732,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                     width="auto"
                     name="gstin"
                     label="GST Identification Number (GSTIN)"
-                    helpText="Enter GSTIN & get reviewed faster. Should match your business address."
                     value={formikProps.values.gstin}
                     errorText={formikProps.touched.gstin && formikProps.errors.gstin}
                     onBlur={() => {
@@ -722,7 +743,11 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                         user,
                       });
                     }}
-                    disabled={isFormLocked || hasGSTIN}
+                    disabled={isFormLocked || hasGSTIN || getFieldStatus('gstin').isDisabled}
+                    helpText={
+                      getFieldStatus('gstin').description ||
+                      'Enter GSTIN & get reviewed faster. Should match your business address.'
+                    }
                   />
                 )}
               </Field>

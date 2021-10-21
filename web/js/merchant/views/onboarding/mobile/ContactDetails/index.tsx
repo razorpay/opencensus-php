@@ -5,6 +5,7 @@ import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isTabComplete } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';
+import usePartnerActivation from '../hooks/usePartnerActivation';
 
 const contactDetailsSchema = Yup.object().shape({
   contact_name: Yup.string()
@@ -33,6 +34,7 @@ interface ContactDetailsProps {
 
 const ContactDetails: React.FC<ContactDetailsProps> = ({ isFormLocked }) => {
   const { data, postData } = useActivation();
+  const { getFieldStatus } = usePartnerActivation();
   const contactDetails = data.contact_details;
   const [isBlurCalled, setIsBlurCalled] = useState(false);
   const setContactDetailsCompleted = useActivationFormState(
@@ -79,7 +81,8 @@ const ContactDetails: React.FC<ContactDetailsProps> = ({ isFormLocked }) => {
                 label="Contact Name"
                 value={formikProps.values.contact_name}
                 errorText={formikProps.touched.contact_name && formikProps.errors.contact_name}
-                disabled={isFormLocked}
+                disabled={isFormLocked || getFieldStatus('contact_name').isDisabled}
+                helpText={getFieldStatus('contact_name').description}
               />
             </Field>
             <Field>
@@ -87,10 +90,13 @@ const ContactDetails: React.FC<ContactDetailsProps> = ({ isFormLocked }) => {
                 width="auto"
                 name="contact_email"
                 label="Contact Email"
-                helpText="We will reach out at this email id in case of any account related issue"
+                helpText={
+                  getFieldStatus('contact_name').description ||
+                  'We will reach out at this email id in case of any account related issue'
+                }
                 value={formikProps.values.contact_email}
                 errorText={formikProps.touched.contact_email && formikProps.errors.contact_email}
-                disabled={isFormLocked}
+                disabled={isFormLocked || getFieldStatus('contact_email').isDisabled}
               />
             </Field>
             <Field last>
@@ -101,7 +107,8 @@ const ContactDetails: React.FC<ContactDetailsProps> = ({ isFormLocked }) => {
                 label="Contact Number"
                 value={formikProps.values.contact_mobile}
                 errorText={formikProps.touched.contact_mobile && formikProps.errors.contact_mobile}
-                disabled={isFormLocked}
+                disabled={isFormLocked || getFieldStatus('contact_mobile').isDisabled}
+                helpText={getFieldStatus('contact_mobile').description}
               />
             </Field>
           </FormSection>

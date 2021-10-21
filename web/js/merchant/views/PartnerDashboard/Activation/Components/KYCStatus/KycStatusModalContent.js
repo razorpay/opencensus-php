@@ -31,7 +31,7 @@ export const kycModalContent = (args = {}) => {
 
   if (args.modalType === 'PARTNER_KYC_BLOCKED_MODAL') {
     return {
-      title: 'Complete your merchant KYC First',
+      title: 'Complete your Merchant KYC First',
       body: (
         <div>
           <p>
@@ -44,6 +44,26 @@ export const kycModalContent = (args = {}) => {
       button: (
         <button className="btn btn-primary" onClick={args.goToMerchantDashboard}>
           Go to Dashboard
+        </button>
+      ),
+    };
+  }
+
+  if (args.modalType === 'MERCHANT_KYC_BLOCKED_MODAL') {
+    return {
+      title: 'Complete your Partner KYC First',
+      body: (
+        <div>
+          <p>
+            Kindly open the Partner section on your dashboard and submit the required information
+            for Partner KYC before accessing the Merchant KYC
+          </p>
+        </div>
+      ),
+      background: 'warning',
+      button: (
+        <button className="btn btn-primary" onClick={args.onGoToDashboard}>
+          Go to Partner Dashboard
         </button>
       ),
     };

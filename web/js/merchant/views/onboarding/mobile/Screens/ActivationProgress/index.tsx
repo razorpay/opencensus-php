@@ -12,6 +12,8 @@ import { checkIfDedupe, isUnregisteredBusiness } from '../../services/utils';
 import { useApp } from 'common/context/App';
 import { ActivationModal, ModalTypeT } from '../../ActivationModals';
 import { switchMode } from 'common/services/mode';
+import usePartnerActivation from '../../hooks/usePartnerActivation';
+import AccessBlockedSteps from './AccessBlockedSteps';
 
 const Screen = styled(View)`
   background-color: #f9fbfe;
@@ -37,6 +39,7 @@ const ActivationProgress: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalType, setModalType] = useState<ModalTypeT>('');
   const { user, experiments } = useApp();
+  const { shouldBlockMerchantKYC } = usePartnerActivation();
 
   if (status === 'loading') {
     return <FullPageLoader />;
@@ -90,7 +93,11 @@ const ActivationProgress: React.FC = () => {
             <StyledSeparator />
             <Space padding={[2]}>
               <Screen>
-                <Steps showL1Modal={(activationData) => openModal(activationData)} />
+                {shouldBlockMerchantKYC() ? (
+                  <AccessBlockedSteps />
+                ) : (
+                  <Steps showL1Modal={(activationData) => openModal(activationData)} />
+                )}
               </Screen>
             </Space>
           </ScreenContainer>

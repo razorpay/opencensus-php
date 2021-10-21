@@ -727,6 +727,7 @@ export default class ActivationContainer extends React.Component {
           gstinDetails={gstinDetails}
           isModalView={isModalView && isActivationFormLoading}
           showL2Form={this.state.showL2Form}
+          partnerActivationData={this.props.partnerActivationData}
         />
       );
     }

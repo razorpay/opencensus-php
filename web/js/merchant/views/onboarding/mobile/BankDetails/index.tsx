@@ -8,6 +8,7 @@ import useActivation, { getRequestData } from '../hooks/useActivation';
 import { getDetailsForIFSC, getBankTabHeader } from '../services/utils';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
+import usePartnerActivation from '../hooks/usePartnerActivation';
 
 interface BankDetailsProps {
   isFormLocked?: boolean;
@@ -25,6 +26,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
 
   const [bankAccountNumber, setBankAccountNumber] = useState();
   const [reAccountNumber, setReAccountNumber] = useState();
+  const { getFieldStatus } = usePartnerActivation();
 
   const handleSubmit = (updatedDetails) => {
     const isAccountNumberValid =
@@ -130,7 +132,8 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                     user,
                   });
                 }}
-                disabled={isFormLocked}
+                disabled={isFormLocked || getFieldStatus('bank_account_name').isDisabled}
+                helpText={getFieldStatus('bank_account_name').description}
               />
             </Field>
             <Field>
@@ -154,7 +157,8 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                     user,
                   });
                 }}
-                disabled={isFormLocked}
+                disabled={isFormLocked || getFieldStatus('bank_account_number').isDisabled}
+                helpText={getFieldStatus('bank_account_number').description}
               />
             </Field>
             {!data.submitted ? (
@@ -171,7 +175,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                   onChange={(value) => {
                     setReAccountNumber(value);
                   }}
-                  disabled={isFormLocked}
+                  disabled={isFormLocked || getFieldStatus('bank_account_number').isDisabled}
                 />
               </Field>
             ) : null}
@@ -188,7 +192,6 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                     }
                   }
                 }}
-                helpText={branchIfscInfo}
                 value={formikProps.values.bank_branch_ifsc}
                 errorText={
                   formikProps.touched.bank_branch_ifsc && formikProps.errors.bank_branch_ifsc
@@ -202,7 +205,8 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                     user,
                   });
                 }}
-                disabled={isFormLocked}
+                disabled={isFormLocked || getFieldStatus('bank_branch_ifsc').isDisabled}
+                helpText={getFieldStatus('bank_branch_ifsc').description || branchIfscInfo}
               />
             </Field>
           </FormSection>

@@ -21,6 +21,7 @@ import useBusinessCategory from '../hooks/useBusinessCategory';
 import { autoPrefixUrls, hasSelectedBlacklistCategory } from '../services/utils';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
+import usePartnerActivation from '../hooks/usePartnerActivation';
 
 interface BusinessOverviewProps {
   isFormLocked?: boolean;
@@ -46,6 +47,7 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
   const [websiteOption, setWebiteOption] = useState('1');
   const setIsOpen = useActivationFormState((state) => state.setIsFAQOpen);
   const setFAQSection = useActivationFormState((state) => state.setFAQSection);
+  const { getFieldStatus } = usePartnerActivation();
 
   const handleBlur = (e, formikProps) => {
     formikProps.handleBlur(e);
@@ -235,9 +237,9 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                     formikProps.setFieldValue('business_type', value);
                     setIsBlurCalled(true);
                   }}
-                  disabled={isFormLocked}
+                  disabled={isFormLocked || getFieldStatus('business_type').isDisabled}
                 />
-                {showUnregisteredText()}
+                {getFieldStatus('business_type').description || showUnregisteredText()}
               </Field>
               <Field>
                 <BusinessCategory

@@ -15,6 +15,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 
 import KycForm from './new';
 import { setInstantActivationsTracking } from './ga_new';
+import KYCStatusModal from 'merchant/views/PartnerDashboard/Activation/Components/KYCStatus/KYCStatusModal';
 
 const SOURCE_RAZORPAY_X = 'x';
 
@@ -40,6 +41,8 @@ export default class ActivationContainer extends Component {
       gstinDetails: null,
       isActivationFormLoading: false,
       showWelcomeBanner: false,
+      shouldBlockMerchantKYC: false,
+      partnerActivationData: null,
     };
 
     this.fetchActivationDetails = this.fetchActivationDetails.bind(this);
@@ -120,6 +123,11 @@ export default class ActivationContainer extends Component {
   }
 
   fetchActivationDetails(accountId) {
+    // Check Partner activation status for eligible users
+    const shouldCheckForPartnerActivationStatus = !this.isSourceRX && this.props.user.isPartner() && this.props.user.isIndependentPartnerKYCEnabled;
+    if (shouldCheckForPartnerActivationStatus) {
+      this.fetchPartnerActivationDetails();
+    }
     return Promise.all([
       merchantFetch({
         url: 'merchant/activation',
@@ -178,6 +186,23 @@ export default class ActivationContainer extends Component {
       }
     });
   }
+
+  fetchPartnerActivationDetails = () => {
+    merchantFetch({
+      url: 'partner/activation',
+    }).then((res) => {
+      const data = res?.data || {};
+      let shouldBlockMerchantKYC = false;
+      // block the merchant KYC if Partner KYC is in NC and Merchant KYC form is not submitted
+      if (data?.partner_activation?.activation_status === 'needs_clarification' && data.submitted === false) {
+          shouldBlockMerchantKYC = true;
+      }
+      this.setState({
+        partnerActivationData: data,
+        shouldBlockMerchantKYC
+      })
+    });
+  };
 
   updateActivationData = (activationData) => {
     this.setState({
@@ -283,6 +308,8 @@ export default class ActivationContainer extends Component {
       gstinDetails,
       isActivationFormLoading,
       showWelcomeBanner,
+      partnerActivationData,
+      shouldBlockMerchantKYC,
     } = this.state;
     const { user } = this.props;
     const commonProps = {
@@ -315,7 +342,17 @@ export default class ActivationContainer extends Component {
           <div className={classList('spin-btn large page-center visible', isModal && 'gray')} />
         </div>
       );
-    } else {
+    } else if (shouldBlockMerchantKYC) {
+      // show modal to complete the Partner KYC first before proceeding to Merchant KYC
+      content = <KYCStatusModal
+        onGoToDashboard={() => {
+          this.props.history.push('/partners');
+        }}
+        activationStatus={'needs_clarification'}
+        modalType={'MERCHANT_KYC_BLOCKED_MODAL'}
+      />
+    }
+     else {
       content = (
         <KycForm
           {...commonProps}
@@ -323,6 +360,7 @@ export default class ActivationContainer extends Component {
           setAdditionalModalClass={this.setAdditionalModalClass}
           sendEventsForSubMerchantView={this.sendEventsForSubMerchantView}
           isModalView={isModal}
+          partnerActivationData={partnerActivationData}
         />
       );
       trackerIntent = 'kyc.form_fill';

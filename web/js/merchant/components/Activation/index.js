@@ -2433,6 +2433,29 @@ export function ActivationField(field) {
     defaultValue = this.props.data[rest.name];
   }
 
+  const partnerActivationStatus = this.props?.partnerActivationData?.partner_activation?.activation_status;
+  if (
+    !this.isOnKYCTab() && // don't check for NC tab, as we need to keep fields unlocked for NC tab
+    this.props?.user?.isIndependentPartnerKYCEnabled && 
+    rest.name && 
+    (this.props.data?.lock_common_fields || []).includes(rest.name)
+  ) {
+    // disable common fields which are either under review or activated in Partner KYC
+    rest.disabled = true;
+
+    if(['activated', 'under_review'].includes(partnerActivationStatus)) {
+      switch(partnerActivationStatus) {
+        case 'activated':
+          rest.description = 'Verified under Partner KYC';
+          break;
+        case 'under_review':
+          rest.description = `Cannot edit this field because it's under review in Partner KYC`;
+          break;
+      }
+    }
+  }
+  
+
   const _Component = rest.customField ? CustomField : Component;
 
   return (
