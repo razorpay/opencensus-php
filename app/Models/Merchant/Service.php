@@ -2137,7 +2137,31 @@ class Service extends Base\Service
         ];
     }
 
-    protected function getDataFromDruid($merchantId)
+    public function getDataFromDruidForMerchantIds(array $merchantIdList)
+    {
+        $strMerchantIds = implode(', ', array_map(function ($val) { return sprintf('\'%s\'', $val);}, $merchantIdList));
+
+        $query = 'select *from druid.segment_fact as merchant_data where merchant_data.merchant_details_merchant_id in (%s)';
+
+        $query = sprintf($query, $strMerchantIds);
+
+        $content = [
+            'query' => $query
+        ];
+
+        $druidService = $this->app['druid.service'];
+
+        list($error, $data) = $druidService->getDataFromDruid($content);
+
+        if (empty($error) === false)
+        {
+            return [];
+        }
+
+        return $data;
+    }
+
+    public function getDataFromDruid($merchantId)
     {
         $query = 'select *from druid.segment_fact as merchant_data where merchant_data.merchant_details_merchant_id = \'%s\'';
 
@@ -6553,7 +6577,7 @@ class Service extends Base\Service
         {
             $attribute = [];
             $settings = [];
-            
+
             $this->segregateInputFieldsAndSettings($record, $attribute, $settings);
 
             (new Validator)->validateInput('access_map_batch', $settings);

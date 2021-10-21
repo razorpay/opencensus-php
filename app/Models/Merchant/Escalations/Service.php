@@ -46,6 +46,18 @@ class Service extends Base\Service
                 'error' => $e->getMessage()
             ]);
         }
+
+        try
+        {
+            $core->pushTransactionDetailsToSegmentCron();
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
+                'type'  => 'pushTransactionDetailsToSegmentCron',
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 
     public function fetchOnboardingEscalations()

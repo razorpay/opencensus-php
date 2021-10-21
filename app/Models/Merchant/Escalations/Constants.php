@@ -15,6 +15,7 @@ use RZP\Notifications\Onboarding\Events;
 
 class Constants
 {
+    const TRANSACTION_CRON_CACHE_KEY                   = 'onboarding_transaction_cron_timestamp';
     const ESCALATION_CACHE_KEY                         = 'onboarding_escalation_timestamp';
     const SEGMENT_MTU_CACHE_KEY                        = 'onboarding_segment_mtu_timestamp';
     const L1_ACTIVATION_NOT_STARTED_IN_1_DAY_CACHE_KEY = 'onboarding_segment_mtu_timestamp';

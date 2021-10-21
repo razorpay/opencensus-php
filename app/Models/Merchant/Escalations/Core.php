@@ -7,7 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
-use Illuminate\Support\Facades\DB;
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -142,6 +142,63 @@ class Core extends Base\Core
     private function updateLastCronTime(string $cacheKey)
     {
         $this->cache->put($cacheKey, Carbon::now()->getTimestamp());
+    }
+
+    public function pushTransactionDetailsToSegmentCron()
+    {
+        $lastCronTime = $this->getLastCronTime(Constants::TRANSACTION_CRON_CACHE_KEY);
+
+        /*
+         * Update last Cron time instantly, since processing of cron may take another 5-10 mins
+         * and during that time another payments can happen
+         */
+        $this->updateLastCronTime(Constants::TRANSACTION_CRON_CACHE_KEY);
+
+        // Filter out all merchants that have transacted since last time cron ran
+        $transactedMerchants = $this->repo->transaction->fetchTransactedMerchants(
+            'payment', $lastCronTime, false);
+
+        $this->trace->info(TraceCode::TRANSACTION_DETAILS_CRON_TRACE, [
+            'last_cron_time'  => $lastCronTime,
+            'type'            => 'transaction_cron',
+            'merchants_count' => count($transactedMerchants),
+        ]);
+
+        $merchantIdChunks = array_chunk($transactedMerchants, 1000);
+
+        foreach ($merchantIdChunks as $merchantIdChunk)
+        {
+            $druidData = (new Merchant\Service)->getDataFromDruidForMerchantIds($merchantIdChunk);
+
+            foreach ($druidData as $data)
+            {
+                $segmentProperties = [
+                    Merchant\Service::SEGMENT_DATA_USER_DAYS_TILL_LAST_TRANSACTION => $data[Merchant\Service::SEGMENT_DATA_USER_DAYS_TILL_LAST_TRANSACTION] ?: 'NULL',
+                    Merchant\Service::SEGMENT_DATA_MERCHANT_LIFE_TIME_GMV          => $data[Merchant\Service::SEGMENT_DATA_MERCHANT_LIFE_TIME_GMV] ?: 'NULL',
+                    Merchant\Service::SEGMENT_DATA_AVERAGE_MONTHLY_GMV             => $data[Merchant\Service::SEGMENT_DATA_AVERAGE_MONTHLY_GMV] ?: 'NULL',
+                    Merchant\Service::SEGMENT_DATA_PRIMARY_PRODUCT_USED            => $data[Merchant\Service::SEGMENT_DATA_PRIMARY_PRODUCT_USED] ?: 'NULL',
+                    Merchant\Service::SEGMENT_DATA_PPC                             => $data[Merchant\Service::SEGMENT_DATA_PPC] ?: 'NULL',
+                    Merchant\Service::SEGMENT_DATA_AVERAGE_MONTHLY_TRANSACTIONS    => $data[Merchant\Service::SEGMENT_DATA_AVERAGE_MONTHLY_TRANSACTIONS] ?: 'NULL',
+                    Merchant\Service::SEGMENT_DATA_PG_ONLY                         => isset($data[Merchant\Service::SEGMENT_DATA_PG_ONLY]) ? $data[Merchant\Service::SEGMENT_DATA_PG_ONLY] : 'NULL',
+                    Merchant\Service::SEGMENT_DATA_PL_ONLY                         => isset($data[Merchant\Service::SEGMENT_DATA_PL_ONLY]) ? $data[Merchant\Service::SEGMENT_DATA_PL_ONLY] : 'NULL',
+                    Merchant\Service::SEGMENT_DATA_PP_ONLY                         => isset($data[Merchant\Service::SEGMENT_DATA_PP_ONLY]) ? $data[Merchant\Service::SEGMENT_DATA_PP_ONLY] : 'NULL'
+                ];
+
+                $merchantId = $data['merchant_details_merchant_id'];
+
+                $this->trace->info(TraceCode::TRANSACTION_DETAILS_CRON_TRACE, [
+                    'type'          => 'transaction_cron',
+                    'merchant_id'   => $merchantId,
+                    'segment_properties'    => $segmentProperties
+                ]);
+
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $this->app['segment-analytics']->pushIdentify($merchant, $segmentProperties);
+            }
+        }
+
+        $this->app['segment-analytics']->buildRequestAndSend();
     }
 
     public function handleMtuSegmentEvent()

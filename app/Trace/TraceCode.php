@@ -4643,6 +4643,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SEND_NOTIFICATION                     = 'SEND_NOTIFICATION';
     const SEND_NOTIFICATION_ATTEMPT_SKIPPED     = 'SEND_NOTIFICATION_ATTEMPT_SKIPPED';
     const SEND_NOTIFICATION_ATTEMPT_FAILED      = 'SEND_NOTIFICATION_ATTEMPT_FAILED';
+
     //Merchant Onboarding Escalations
     const ESCALATION_CRON_TRACE                 = 'ESCALATION_CRON_TRACE';
     const ESCALATION_ATTEMPT                    = 'ESCALATION_ATTEMPT';
@@ -4655,6 +4656,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SEGMENT_EVENT_PUSH                    = 'SEGMENT_EVENT_PUSH';
     const SEGMENT_EVENT_PUSH_FAILURE            = 'SEGMENT_EVENT_PUSH_FAILURE';
+
+    const TRANSACTION_DETAILS_CRON_TRACE        = 'TRANSACTION_DETAILS_CRON_TRACE';
 
     // Tracing error logs
     const OPENCENSUS_ERROR = 'OPENCENSUS_ERROR';
