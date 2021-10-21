@@ -3968,8 +3968,16 @@ class Core extends Base\Core
                         'data'          => []
                     ];
 
+                    $startAt = millitime();
+
                     //Fetching top 5 pending payouts in chronological order for selected merchant-user combination
                     $payouts = $this->repo->payout->fetchPendingPayoutsToDisplay($merchantId, $input['role']);
+
+                    $this->trace->info(TraceCode::PENDING_APPROVAL_EMAILS_PAYOUTS_QUERY_DURATION, [
+                                                        'query_execution_time' => millitime() - $startAt,
+                                                        'payouts_data'         => $payouts
+                            ]);
+
                     $payouts = $payouts->sortByDesc(Entity::CREATED_AT, 1);
                     $payoutsGroupedByPurpose = $payouts->groupBy(Entity::PURPOSE);
 

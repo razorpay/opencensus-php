@@ -267,7 +267,14 @@ class Service extends Base\Service
 
     public function sendPendingPayoutApprovalEmails()
     {
+        $startAt = millitime();
+
         $approverList = $this->repo->payout->fetchMerchantUserDataHavingPendingPayouts();
+
+        $this->trace->info(TraceCode::PENDING_APPROVAL_EMAILS_MERCHANT_QUERY_DURATION, [
+            'query_execution_time' => millitime() - $startAt,
+            'approver_list'         => $approverList
+        ]);
 
         return $this->core->prepareTemplateAndDispatchEmail($approverList);
     }
