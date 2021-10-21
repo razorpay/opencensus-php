@@ -1016,6 +1016,7 @@ class ServiceablePincodes
         833217,
         833219,
         833220,
+        276204,
     ];
 
     public function checkIfPincodeIsWhitelisted(string $pincode): bool

@@ -7192,9 +7192,19 @@ class Service extends Base\Service
         return $this->core()->getMerchantRiskData($merchantId);
     }
 
+    /**
+     * @throws BadRequestException
+     */
     public function fireHubspotEventFromDashboard(array $input): array
     {
         $merchantEmail = array_pull($input, 'merchant_email');
+
+        $merchant = $this->merchant;
+
+        if ($merchantEmail !== $merchant->getEmail())
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, 'The provided Email Id does not belongs to the merchant');
+        }
 
         $this->app->hubspot->trackHubspotEvent($merchantEmail, $input);
 
@@ -7233,8 +7243,20 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
+    /**
+     * @throws BadRequestException
+     */
     public function createSalesforceLeadFromDashboard(array $input): array
     {
+        $merchant_id = array_pull($input, 'merchant_id');
+
+        $merchant = $this->merchant;
+
+        if ($merchant->getId() !== $merchant_id)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, 'The id provided does not exist');
+        }
+
         try
         {
             $this->app->salesforce->sendNeostoneFlag($input);

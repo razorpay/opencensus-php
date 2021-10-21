@@ -8733,7 +8733,7 @@ return [
             'url'     => '/merchants/fire_hubspot_event',
             'method'  => \Requests::POST,
             'content' => [
-                "merchant_email"        =>  'testing@abc.com',
+                "merchant_email"        =>  'test@razorpay.com',
                 "ca_neostone_eligible"  =>  'TRUE',
             ],
         ],
@@ -8742,6 +8742,30 @@ return [
             'content' => [
                 'success' => true
             ],
+        ],
+    ],
+
+    'testFireHubspotEventFromDashboardForWrongEmailId'  =>  [
+        'request'       => [
+            'url'     => '/merchants/fire_hubspot_event',
+            'method'  => \Requests::POST,
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+                "merchant_email"        =>  'testing@abc.com',
+                "ca_neostone_eligible"  =>  'TRUE',
+            ],
+        ],
+
+        'response'    => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The provided Email Id does not belongs to the merchant',
+                ],
+            ],
+            'status_code' => 400,
         ],
     ],
 
@@ -8759,6 +8783,30 @@ return [
             'content' => [
                 'success' => true
             ],
+        ],
+    ],
+
+    'testNeostoneSendFlagToSalesforceWrongMid' => [
+        'request'       => [
+            'url'     => '/merchants/lead_to_salesforce',
+            'method'  => \Requests::POST,
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+                'merchant_id' => '10000000000001',
+                'x_onboarding_category'   => 'self_serve'
+            ],
+        ],
+
+        'response'    => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
         ],
     ],
 

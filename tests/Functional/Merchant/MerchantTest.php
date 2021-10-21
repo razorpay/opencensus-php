@@ -11149,6 +11149,19 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testFireHubspotEventFromDashboardForWrongEmailId()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $this->startTest();
+    }
+
     public function testNeostoneSendFlagToSalesforce()
     {
         $this->ba->proxyAuth();
@@ -11162,6 +11175,19 @@ class MerchantTest extends TestCase
         $this->app->instance('salesforce', $salesforceClientMock);
 
         $salesforceClientMock->expects($this->exactly(1))->method($methodName);
+
+        $this->startTest();
+    }
+
+    public function testNeostoneSendFlagToSalesforceWrongMid()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->expectException(\RZP\Exception\BadRequestException::class);
 
         $this->startTest();
     }
