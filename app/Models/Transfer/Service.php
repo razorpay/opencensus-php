@@ -1052,10 +1052,19 @@ class Service extends Base\Service
 
     public function dispatchBackfillJob(array $input)
     {
+        $midJun     = Carbon::createFromDate(2021, 6, 16, Timezone::IST)->getTimestamp();
+        $startJul   = Carbon::createFromDate(2021, 7, 1, Timezone::IST)->getTimestamp();
+        $startAug   = Carbon::createFromDate(2021, 8, 1, Timezone::IST)->getTimestamp();
+        $startSept  = Carbon::createFromDate(2021, 9, 1, Timezone::IST)->getTimestamp();
+        $startOct   = Carbon::createFromDate(2021, 10, 1, Timezone::IST)->getTimestamp();
+        // Don't need post this since code is already live from mid September.
+
         foreach ($input['merchant_ids'] as $merchantId)
         {
-            // Cannot push a single job, might get timed out. Will have to push several jobs.
-            TransferBackfillJob::dispatch($this->mode, $merchantId);
+            TransferBackfillJob::dispatch($this->mode, $merchantId, $midJun, $startJul);
+            TransferBackfillJob::dispatch($this->mode, $merchantId, $startJul, $startAug);
+            TransferBackfillJob::dispatch($this->mode, $merchantId, $startAug, $startSept);
+            TransferBackfillJob::dispatch($this->mode, $merchantId, $startSept, $startOct);
 
             $this->trace->info(
                 TraceCode::TRANSFER_BACKFILL_JOB_ENQUEUED,
@@ -1066,16 +1075,14 @@ class Service extends Base\Service
         }
     }
 
-    public function updateSettlementStatusAndErrorCode(string $merchantId)
+    public function updateSettlementStatusAndErrorCode(string $merchantId, int $startDate, int $endDate)
     {
-        $startDate = Carbon::createFromDate(2021, 6, 16, Timezone::IST)->getTimestamp();
-
         $totalCount = 0;
         $chunk = 1000;
 
         for ($skip = 0; true; $skip = $skip + $chunk)
         {
-            $transferIds = $this->repo->transfer->getByMerchantId($merchantId, $startDate, $skip, $chunk);
+            $transferIds = $this->repo->transfer->getByMerchantId($merchantId, $startDate, $endDate, $skip, $chunk);
 
             $count = count($transferIds);
 
@@ -1102,6 +1109,7 @@ class Service extends Base\Service
                 [
                     'merchant_id'   => $merchantId,
                     'chunk_count'   => $count,
+                    'transfer_ids'  => $transferIds,
                 ]
             );
 
