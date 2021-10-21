@@ -918,7 +918,7 @@ class InvitationTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/draft_invitations/accept';
-        $testData['request']['server'] = ['HTTP_X-Request-Origin' => config('applications.banking_service_url')];
+
         $testData['request']['content']['invitation_ids'][]= $invitation['id'];
 
         $this->startTest();
@@ -945,7 +945,7 @@ class InvitationTest extends TestCase
             'role'        => 'operations',
         ]);
 
-        $this->ba->proxyAuth('rzp_test_10000000000000');
+        $this->ba->proxyAuth('rzp_test_10000000000000', $nonOwnerUser->toArrayPublic(), 'operations');
 
         $this->startTest();
     }

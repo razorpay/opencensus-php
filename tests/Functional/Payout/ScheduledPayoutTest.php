@@ -2,7 +2,6 @@
 
 namespace RZP\Tests\Functional\Payout;
 
-use DB;
 use Mail;
 use Carbon\Carbon;
 
@@ -75,7 +74,7 @@ class ScheduledPayoutTest extends TestCase
 
         $this->createBankingAccount($bankingAccountParams);
 
-//        $this->flushCache();
+        $this->flushCache();
 
         $this->mockStorkService();
 
@@ -106,6 +105,14 @@ class ScheduledPayoutTest extends TestCase
 
         // Merchant needs to be activated to make live requests
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
+
+        // Create merchant user mapping
+        $this->fixtures->on('live')->user->createUserMerchantMapping([
+                                                                         'merchant_id' => '10000000000000',
+                                                                         'user_id'     => User::MERCHANT_USER_ID,
+                                                                         'product'     => 'primary',
+                                                                         'role'        => 'owner',
+                                                                     ], 'live');
     }
 
     /**

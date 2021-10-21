@@ -41,8 +41,6 @@ class FeeRecoveryTest extends TestCase
      * @var \RZP\Models\FundAccount\Entity
      */
     private $fundAccount;
-    private $ownerRoleUser;
-    private $finL3RoleUser;
 
     protected function setUp(): void
     {
@@ -99,14 +97,6 @@ class FeeRecoveryTest extends TestCase
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(100);
 
         $this->merchant = $this->getDbEntityById('merchant', '10000000000000');
-        $this->setupUserRoles();
-    }
-
-    private function setupUserRoles()
-    {
-        $this->ownerRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'owner', 'live');
-
-        $this->finL3RoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'finance_l3', 'live');
     }
 
     public function testCreateFeeRecoveryAtPayoutCreationForRBLPayouts()

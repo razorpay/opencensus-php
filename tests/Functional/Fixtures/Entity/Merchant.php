@@ -69,17 +69,6 @@ class Merchant extends Base
                                     'product_international' => '1111000000'
                                 ]);
 
-        //
-        // TODO (probably never): A merchant_detail record should have been created for every merchant record.
-        // Since that wasn't done in the beginning, testcases are creating the record themselves, and it's probably
-        // too late to address this here.
-        //
-        // If the below line is uncommented, those 100s of testcases that create the merchant_detail fixture for the
-        // '10000000000000' merchant id will fail with `Duplicate entry '10000000000000' for key 'merchant_details.PRIMARY'`
-        // errors
-        //
-        //$this->fixtures->create('merchant_detail:sane', ['merchant_id' => '10000000000000', 'activation_status' => 'activated', 'business_type' => '2']);
-
         // Merchant on whom all shared terminals are created
         $this->fixtures->create('merchant', ['id' => '1MercShareTerm']);
 

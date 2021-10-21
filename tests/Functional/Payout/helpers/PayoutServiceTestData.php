@@ -326,9 +326,6 @@ return [
     'testServiceCancelQueuedPayoutProxyAuth' => [
         'request'  => [
             'method' => 'POST',
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-            ],
         ],
         'response' => [
             'content' => [

@@ -44,8 +44,11 @@ class BalanceTest extends TestCase
             Balance::BALANCE      => 900,
         ]);
 
-        $user = $this->fixtures->user->createBankingUserForMerchant($balance['merchant_id']);
-        $this->ba->proxyAuth('rzp_test_'. $balance['merchant_id'] , $user->getId());
+        $config = \Config::get('applications.frontend_graphql');
+
+        $pwd = $config['secret'];
+
+        $this->ba->appAuth('rzp_test_'. $balance['merchant_id'] , $pwd);
 
         $this->testData[__FUNCTION__]['request']['url'] = strtr($this->testData[__FUNCTION__]['request']['url'], ['{id}' => $balance['id'],]);
 

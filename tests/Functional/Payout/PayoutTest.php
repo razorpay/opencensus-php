@@ -1155,7 +1155,6 @@ class PayoutTest extends OAuthTestCase
 
         $this->liveSetUp();
 
-        $this->fixtures->on('live');
         $secondBankingBalance = $this->createDirectBankingBalance();
 
         // Creating 2 banking accounts. First for the existing bankingBalance and second for the secondBankingBalance
@@ -2827,9 +2826,6 @@ class PayoutTest extends OAuthTestCase
         $request = [
             'method' => 'POST',
             'url' => '/payouts/'.$payout1['id'].'/approve',
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-            ],
             'content' => [
                 'token' => 'BUIj3m2Nx2VvVj',
                 'otp' => '0007',
@@ -3013,9 +3009,6 @@ class PayoutTest extends OAuthTestCase
 
         $request = [
             'method'  => 'get',
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-            ],
             'content' => [
                 'product'          => 'banking',
                 'expand'           => ['user'],
@@ -3033,9 +3026,6 @@ class PayoutTest extends OAuthTestCase
 
         $request = [
             'method'  => 'get',
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-            ],
             'content' => [
                 'product'          => 'banking',
                 'expand'           => ['user'],
@@ -3056,9 +3046,6 @@ class PayoutTest extends OAuthTestCase
         $request = [
             'method'  => 'POST',
             'url'     => "/payouts/{$expectedPayoutId}/approve",
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '0007',
@@ -3077,9 +3064,6 @@ class PayoutTest extends OAuthTestCase
 
         $request = [
             'method'  => 'get',
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-            ],
             'content' => [
                 'product'          => 'banking',
                 'expand'           => ['user'],
@@ -3723,9 +3707,6 @@ class PayoutTest extends OAuthTestCase
         $request = [
             'method'  => 'POST',
             'url'     => "/payouts/{$payout['id']}/approve",
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '0007',
@@ -3740,9 +3721,6 @@ class PayoutTest extends OAuthTestCase
         $request = [
             'method'  => 'POST',
             'url'     => "/payouts/{$payout['id']}/approve",
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '0007',
@@ -3760,9 +3738,6 @@ class PayoutTest extends OAuthTestCase
 
         $request = [
             'method'  => 'get',
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-            ],
             'content' => [
                 'product'          => 'banking',
                 'expand'           => ['user'],
@@ -3780,9 +3755,6 @@ class PayoutTest extends OAuthTestCase
 
         $request = [
             'method'  => 'get',
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-            ],
             'content' => [
                 'product'          => 'banking',
                 'expand'           => ['user'],
@@ -4546,9 +4518,6 @@ class PayoutTest extends OAuthTestCase
         $request = [
             'method' => 'POST',
             'url' => '/payouts/'.$payout1['id'].'/approve',
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-            ],
             'content' => [
                 'token' => 'BUIj3m2Nx2VvVj',
                 'otp' => '0007',
@@ -4591,9 +4560,6 @@ class PayoutTest extends OAuthTestCase
         $request = [
             'method' => 'POST',
             'url' => '/payouts/'.$payout1['id'].'/approve',
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-            ],
             'content' => [
                 'token' => 'BUIj3m2Nx2VvVj',
                 'otp' => '0007',
@@ -6231,7 +6197,6 @@ class PayoutTest extends OAuthTestCase
     {
         $this->liveSetUp();
 
-        $this->fixtures->on('live');
         $secondBankingBalance = $this->createDirectBankingBalance();
 
         // Creating 2 banking accounts. First for the existing bankingBalance and second for the secondBankingBalance
@@ -7589,7 +7554,7 @@ class PayoutTest extends OAuthTestCase
         $testData['request']['content']['otp']   = '0007';
 
         $this->testData[__FUNCTION__] = $testData;
-        $this->ba->proxyAuth('rzp_test_10000000000000', 'MerchantUser01');
+        $this->ba->proxyAuth();
         $this->startTest();
 
         $payout = $this->getDbLastEntity('payout');
@@ -7927,7 +7892,7 @@ class PayoutTest extends OAuthTestCase
         $testData['request']['content']['otp']   = '0007';
 
         $this->testData[__FUNCTION__] = $testData;
-        $this->ba->proxyAuth('rzp_test_10000000000000', 'MerchantUser01');
+        $this->ba->proxyAuth();
         $this->startTest();
 
         $payout = $this->getDbLastEntity('payout');
@@ -7996,7 +7961,7 @@ class PayoutTest extends OAuthTestCase
         $this->setUpCounterAndFreePayoutsCount('direct', $balanceId, 'rbl');
 
         $this->testData[__FUNCTION__] = $testData;
-        $this->ba->proxyAuth('rzp_test_10000000000000', 'MerchantUser01');
+        $this->ba->proxyAuth();
         $this->startTest();
 
         $payout = $this->getDbLastEntity('payout');
@@ -8089,7 +8054,7 @@ class PayoutTest extends OAuthTestCase
         $this->setUpCounterAndFreePayoutsCount('direct', $balanceId, 'rbl');
 
         $this->testData[__FUNCTION__] = $testData;
-        $this->ba->proxyAuth('rzp_test_10000000000000', 'MerchantUser01');
+        $this->ba->proxyAuth();
         $this->startTest();
 
         $payout = $this->getDbLastEntity('payout');

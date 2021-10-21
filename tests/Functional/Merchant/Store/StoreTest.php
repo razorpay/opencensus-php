@@ -27,8 +27,7 @@ class StoreTest extends TestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $user = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id'], [], 'owner', 'live');
-        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id'], $user->getId());
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
 
         $this->startTest();
     }
@@ -37,8 +36,7 @@ class StoreTest extends TestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $user = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id'], [], 'owner', 'live');
-        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id'], $user->getId());
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
 
         $this->startTest();
     }
@@ -53,7 +51,7 @@ class StoreTest extends TestCase
             'namespace'                 => 'onboarding',
             'mtu_coupon_popup_count'    => 1
         ];
-
+        
         (new Store\Core())->updateMerchantStore($merchantDetail['merchant_id'], $data);
         $this->startTest();
     }

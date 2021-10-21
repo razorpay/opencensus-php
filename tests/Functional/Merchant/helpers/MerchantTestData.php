@@ -4594,11 +4594,15 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Authentication failed',
+                    'description' => 'The input action is not supported for the merchant user',
                 ],
             ],
             'status_code' => 400,
         ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED,
+        ]
     ],
 
     'testEnableEsScheduledUnknownScheduleFailure' => [

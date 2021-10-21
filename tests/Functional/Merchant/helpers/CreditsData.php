@@ -612,10 +612,7 @@ return [
         'request' => [
             'url' => '/merchants/credits/balance/banking',
             'method' => 'GET',
-            'content' => [],
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-            ],
+            'content' => []
         ],
         'response' => [
             'content' => [

@@ -2,7 +2,6 @@
 
 namespace RZP\tests\Functional\RequestLog;
 
-use DB;
 use App;
 use Mail;
 use Queue;
@@ -857,9 +856,6 @@ class RequestLogsTest extends TestCase
         $request = [
             'method'  => 'POST',
             'url'     => '/payouts_with_otp',
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-            ],
             'content' => [
                 'fund_account_id' => 'fa_fa100000000000',
                 'amount'          => 100,
@@ -926,8 +922,7 @@ class RequestLogsTest extends TestCase
 
     protected function makeCreateLowBalanceConfigRequestAndGetContent()
     {
-        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'owner', 'live');
-        $this->ba->proxyAuth('rzp_live_10000000000000', $user->getId());
+        $this->ba->proxyAuth('rzp_live_10000000000000', User::MERCHANT_USER_ID);
 
         // Request for Low Balance Config
         $request = [

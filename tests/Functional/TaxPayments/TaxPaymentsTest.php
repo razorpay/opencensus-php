@@ -5,14 +5,11 @@ namespace RZP\Tests\Functional\TaxPayments;
 use Mockery;
 
 use App;
-use RZP\Constants\Mode;
-use RZP\Constants\Product;
 use RZP\Models\Contact\Type;
 use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Purpose;
 use RZP\Models\Settings\Module;
 use RZP\Models\Settings\Accessor;
-use RZP\Models\User\Role;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;

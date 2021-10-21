@@ -10,7 +10,6 @@ return [
             'method'  => 'POST',
             'server'  => [
                 'HTTP_X-Razorpay-Account' => '10000000000000',
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'url'     => '/settings_internal/tax_payments',
             'content' => [
@@ -28,7 +27,6 @@ return [
             'method'  => 'GET',
             'server'  => [
                 'HTTP_X-Razorpay-Account' => '10000000000000',
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'url'     => '/settings_internal/tax_payments',
             'content' => []
@@ -45,9 +43,6 @@ return [
         'request'  => [
             'method' => 'GET',
             'url'    => '/tax-payments/settings',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -57,9 +52,6 @@ return [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/settings',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -69,9 +61,6 @@ return [
         'request'  => [
             'method' => 'GET',
             'url'    => '/tax-payments/txpy_1234',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -81,9 +70,6 @@ return [
         'request'  => [
             'method' => 'GET',
             'url'    => '/tax-payments',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -93,9 +79,6 @@ return [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/some_payment_id/pay',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -105,9 +88,6 @@ return [
         'request'   => [
             'method'  => 'POST',
             'url'     => '/contacts',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'content' => [
                 'name' => 'some name',
                 'type' => 'rzp_tax_pay',
@@ -133,7 +113,6 @@ return [
             'url'     => '/contacts_internal',
             'server'  => [
                 'HTTP_X-Razorpay-Account' => '10000000000000',
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'content' => [
                 'name' => 'test_name',
@@ -153,9 +132,6 @@ return [
         'request'   => [
             'method'  => 'POST',
             'url'     => '/fund_accounts',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'content' => [
                 'account_type' => 'bank_account',
                 'bank_account' => [
@@ -185,7 +161,6 @@ return [
             'url'     => '/fund_accounts_internal',
             'server'  => [
                 'HTTP_X-Razorpay-Account' => '10000000000000',
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'content' => [
                 'account_type' => 'bank_account',
@@ -218,7 +193,6 @@ return [
             'url'     => '/contacts/',
             'server'  => [
                 'HTTP_X-Razorpay-Account' => '10000000000000',
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'content' => [
                 'name' => 'new name'
@@ -244,7 +218,6 @@ return [
             'url'     => '/contacts/',
             'server'  => [
                 'HTTP_X-Razorpay-Account' => '10000000000000',
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'content' => [
                 'type' => 'rzp_tax_pay'
@@ -268,7 +241,6 @@ return [
         'request'  => [
             'server'  => [
                 'HTTP_X-Razorpay-Account' => '10000000000000',
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'method'  => 'POST',
             'url'     => '/internalContactPayout',
@@ -306,7 +278,6 @@ return [
         'request'   => [
             'server'  => [
                 'HTTP_X-Razorpay-Account' => '10000000000000',
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'method'  => 'POST',
             'url'     => '/internalContactPayout',
@@ -340,7 +311,6 @@ return [
         'request'   => [
             'server'  => [
                 'HTTP_X-Razorpay-Account' => '10000000000000',
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'method'  => 'POST',
             'url'     => '/internalContactPayout',
@@ -375,7 +345,6 @@ return [
         'request'   => [
             'server'  => [
                 'HTTP_X-Razorpay-Account' => '10000000000000',
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'method'  => 'POST',
             'url'     => '/internalContactPayout',
@@ -410,9 +379,6 @@ return [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/bulk-pay',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -422,7 +388,6 @@ return [
         'request'  => [
             'server' => [
                 'HTTP_X-Razorpay-Account' => '10000000000000',
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'method' => 'POST',
             'url'    => '',
@@ -436,7 +401,6 @@ return [
             'method'  => 'GET',
             'server'  => [
                 'HTTP_X-Razorpay-Account' => '200DemoAccount',
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'url'     => '/tax-payments/enabledMerchantSettings',
             'content' => [
@@ -472,7 +436,6 @@ return [
             'method'  => 'GET',
             'server'  => [
                 'HTTP_X-Razorpay-Account' => '200DemoAccount',
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'url'     => '/tax-payments/enabledMerchantSettings?offset=0&limit=1',
             'content' => [
@@ -501,7 +464,6 @@ return [
             'method'  => 'GET',
             'server'  => [
                 'HTTP_X-Razorpay-Account' => '200DemoAccount',
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'url'     => '/tax-payments/enabledMerchantSettings?offset=1&limit=1',
             'content' => [
@@ -524,7 +486,6 @@ return [
             'method'  => 'POST',
             'server'  => [
                 'HTTP_X-Razorpay-Account' => '200DemoAccount',
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'url'     => '/settings_internal/tax_payments',
             'content' => [
@@ -541,9 +502,6 @@ return [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/initiateMonthlyPayouts',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -553,9 +511,6 @@ return [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/mailCron',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -565,9 +520,6 @@ return [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/cancelQueuedPayouts',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -577,9 +529,6 @@ return [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/sendMail',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -589,9 +538,6 @@ return [
         'request'  => [
             'method' => 'GET',
             'url'    => '/tax-payments/_meta/summary',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -601,9 +547,6 @@ return [
         'request'   => [
             'method' => 'POST',
             'url'    => '/tax-payments/sendMail',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response'  => [
             'content'     => [
@@ -626,9 +569,6 @@ return [
             'content' => [
                 'merchant_email' => 'some@mail.com'
             ],
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response'  => [
             'content'     => [
@@ -648,9 +588,6 @@ return [
         'request'   => [
             'method'  => 'POST',
             'url'     => '/tax-payments/sendMail',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'content' => [
                 'merchant_email' => 'some@mail.com',
                 'data'           => ['some' => 'data'],
@@ -674,9 +611,6 @@ return [
         'request'   => [
             'method'  => 'POST',
             'url'     => '/tax-payments/sendMail',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'content' => [
                 'merchant_email' => 'some@mail.com',
                 'data'           => ['some' => 'data'],
@@ -701,9 +635,6 @@ return [
         'request'  => [
             'method' => 'POST',
             'url'    => '/payouts/<>/cancel',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => [
@@ -717,7 +648,6 @@ return [
             'method'  => 'POST',
             'server'  => [
                 'HTTP_X-Dashboard-User-Id' => '20000000000000',
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'url'     => '/tax-payments/mark-as-paid',
             'content' => [
@@ -736,7 +666,6 @@ return [
             'method'  => 'POST',
             'server'  => [
                 'HTTP_X-Dashboard-User-Id' => '20000000000000',
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'url'     => '/tax-payments/upload-challan',
             'content' => [
@@ -750,9 +679,6 @@ return [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/txpy_1234/edit',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -762,9 +688,6 @@ return [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/challans/download',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => [
@@ -776,7 +699,6 @@ return [
         'request'   => [
             'method'  => 'POST',
             'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
             'url'     => '/tax-payments/mark-as-paid',
             'content' => [
@@ -804,9 +726,6 @@ return [
         'request'  => [
             'method' => 'GET',
             'url'    => '/internal/merchants/10000000000000',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => [
@@ -823,9 +742,6 @@ return [
         'request'  => [
             'method' => 'GET',
             'url'    => '/internal/merchants/10000000000000',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => [
@@ -842,9 +758,6 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/tax-payments/addPenalty',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'content' => [
             ],
         ],
@@ -858,9 +771,6 @@ return [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -870,9 +780,6 @@ return [
         'request'  => [
             'method' => 'PATCH',
             'url'    => '/tax-payments/txpy_1234',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -882,9 +789,6 @@ return [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/txpy_1234/cancel',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -894,9 +798,6 @@ return [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/direct',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -906,9 +807,6 @@ return [
         'request'  => [
             'method' => 'GET',
             'url'    => '/tax-payments/direct/tds-categories',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -918,9 +816,6 @@ return [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/direct/pg-webhook',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -930,9 +825,6 @@ return [
         'request'  => [
             'method' => 'GET',
             'url'    => '/tax-payments/_meta/invalid_tan_status',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -942,9 +834,6 @@ return [
         'request'  => [
             'method' => 'GET',
             'url'    => '/tax-payments/_meta/downtime_schedule',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -955,9 +844,6 @@ return [
         'request'  => [
             'method' => 'POST',
             'url'    => '/tax-payments/reminders/live/tax_payments/txpy_1234',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []
@@ -968,9 +854,6 @@ return [
         'request' => [
             'method' => 'GET',
             'url' => '/tax-payments/gst/fetch',
-            'server'  => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
         ],
         'response' => [
             'content' => []

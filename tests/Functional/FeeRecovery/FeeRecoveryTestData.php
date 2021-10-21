@@ -112,9 +112,6 @@ return [
     'testApprovePendingPayoutFeeRecoveryCreated' => [
         'request'  => [
             'method' => 'POST',
-            'server' => [
-                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
-            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '0007',

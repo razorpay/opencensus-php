@@ -8421,7 +8421,6 @@ class MerchantTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $merchantDetailsData);
 
         $merchantId = $merchantDetail->getMerchantId();
-        $this->fixtures->user->createUserMerchantMappingForDefaultUser($merchantId);
 
         $merchantData = [
             'international'     => 0,
@@ -8448,7 +8447,6 @@ class MerchantTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $merchantDetailsData);
 
         $merchantId = $merchantDetail->getMerchantId();
-        $this->fixtures->user->createUserMerchantMappingForDefaultUser($merchantId);
 
         $merchantData = [
             'international'     => 0,
@@ -8472,7 +8470,6 @@ class MerchantTest extends TestCase
         ];
 
         $merchant = $this->fixtures->create('merchant', $merchantData);
-        $this->fixtures->user->createUserMerchantMappingForDefaultUser($merchant->id);
 
         $this->fixtures->create('merchant_detail',[
             'merchant_id' => $merchant['id'],
@@ -8495,7 +8492,6 @@ class MerchantTest extends TestCase
         ];
 
         $merchant = $this->fixtures->create('merchant', $merchantData);
-        $this->fixtures->user->createUserMerchantMappingForDefaultUser($merchant->id);
 
         $merchantDetailsData =[
             'merchant_id'      => $merchant['id'],
@@ -8518,7 +8514,6 @@ class MerchantTest extends TestCase
         ];
 
         $merchant = $this->fixtures->create('merchant', $merchantData);
-        $this->fixtures->user->createUserMerchantMappingForDefaultUser($merchant->id);
 
         $this->fixtures->create('merchant_detail',[
             'merchant_id' => $merchant['id'],
@@ -8534,7 +8529,6 @@ class MerchantTest extends TestCase
     public function testInternationalDisableWhenAlreadyInActive()
     {
         $merchant = $this->fixtures->create('merchant');
-        $this->fixtures->user->createUserMerchantMappingForDefaultUser($merchant->id);
 
         $merchantData = [
             'international'     => 0,
@@ -8558,7 +8552,6 @@ class MerchantTest extends TestCase
     public function testInternationalToggleWithInvalidValue()
     {
         $merchant = $this->fixtures->create('merchant');
-        $this->fixtures->user->createUserMerchantMappingForDefaultUser($merchant->id);
 
         $this->fixtures->create('merchant_detail',[
             'merchant_id' => $merchant['id'],
@@ -8755,7 +8748,6 @@ class MerchantTest extends TestCase
         ];
 
         $merchant = $this->fixtures->create('merchant', $merchantData);
-        $this->fixtures->user->createUserMerchantMappingForDefaultUser($merchant->id);
 
         $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $merchant['id']);
         //
@@ -10304,7 +10296,6 @@ class MerchantTest extends TestCase
         $this->updateUploadDocumentData($testcasename, 'address_proof_url');
 
         $merchant = $this->fixtures->create('merchant');
-        $this->fixtures->user->createUserMerchantMappingForDefaultUser($merchant->id);
 
         $merchantId = $merchant['id'];
 
@@ -11512,7 +11503,6 @@ class MerchantTest extends TestCase
                 'entity_type' => 'org',
             ]);
 
-        $this->fixtures->user->createUserMerchantMappingForDefaultUser($merchant['id']);
         $this->ba->proxyAuth('rzp_test_'.$merchant['id']);
 
         $this->startTest();
@@ -11524,7 +11514,6 @@ class MerchantTest extends TestCase
         $feature = 'email_update_2fa_enabled';
 
         $merchant = $this->fixtures->create('merchant');
-        $this->fixtures->user->createUserMerchantMappingForDefaultUser($merchant->id);
 
         $this->fixtures->create(
             'feature',
@@ -11554,7 +11543,6 @@ class MerchantTest extends TestCase
                 'entity_type' => 'org',
             ]);
 
-        $this->fixtures->user->createUserMerchantMappingForDefaultUser($merchant['id']);
         $this->ba->proxyAuth('rzp_test_'.$merchant['id']);
 
         $this->startTest();
@@ -12679,11 +12667,6 @@ class MerchantTest extends TestCase
 
         $testData['request']['url'] = "/merchant/" . $workflowType . "/details";
 
-        $this->fixtures->user->createUserMerchantMapping([
-            'user_id'     => $user['id'],
-            'merchant_id' => $merchantId,
-            'role'        => Role::OWNER,
-        ]);
         $this->ba->proxyAuth('rzp_test_'.$merchantId, $user['id']);
 
         $this->startTest();

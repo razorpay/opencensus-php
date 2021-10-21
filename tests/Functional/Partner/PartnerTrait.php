@@ -9,7 +9,6 @@ use RZP\Models\Feature\Constants as FName;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\MerchantApplications;
-use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Tests\Functional\Fixtures\Entity\Org as Org;
@@ -56,13 +55,6 @@ trait PartnerTrait
         }
 
         $partner = $this->fixtures->merchant->createMerchantWithDetails(Org::RZP_ORG, $merchantId, $partnerAttributes);
-
-        $this->fixtures->user->createUserMerchantMapping(
-            [
-                'merchant_id' => $merchantId,
-                'user_id'     => User::MERCHANT_USER_ID,
-                'role'        => 'owner',
-            ]);
 
         $defaultAppAttributes = [
             'merchant_id' => $partner->getId(),
@@ -190,13 +182,6 @@ trait PartnerTrait
     {
         $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
-
-        $this->fixtures->user->createUserMerchantMapping(
-            [
-                'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
-                'user_id'     => User::MERCHANT_USER_ID,
-                'role'        => 'owner',
-            ]);
 
         $this->fixtures->merchant->activate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->fixtures->merchant->activate(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);

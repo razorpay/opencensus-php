@@ -7,7 +7,7 @@ use DB;
 
 class User extends Base
 {
-    const MERCHANT_USER_ID    = 'MerchantUser01';
+    const MERCHANT_USER_ID = 'MerchantUser01';
     const MERCHANT_USER_EMAIL = 'merchantuser01@razorpay.com';
 
     public function setUp()
@@ -21,12 +21,7 @@ class User extends Base
             'product'     => 'primary',
         ];
 
-        $this->createUserMerchantMapping($mappingData, 'test');
-        $this->createUserMerchantMapping($mappingData, 'live');
-
-        $mappingData['product'] = 'banking';
-        $this->createUserMerchantMapping($mappingData, 'test');
-        $this->createUserMerchantMapping($mappingData, 'live');
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
     }
 
     public function create(array $attributes = [])
@@ -65,16 +60,6 @@ class User extends Base
                 'created_at'  => Carbon::now()->getTimestamp(),
                 'updated_at'  => Carbon::now()->getTimestamp(),
             ]);
-    }
-
-    public function createUserMerchantMappingForDefaultUser($merchantId, $role = 'owner', $mode = 'test', $product = 'primary')
-    {
-        $this->createUserMerchantMapping([
-            'merchant_id' => $merchantId,
-            'user_id'     => self::MERCHANT_USER_ID,
-            'role'        => $role,
-            'product'     => $product,
-        ], $mode);
     }
 
     public function createUserForMerchant(string $merchantId = '10000000000000',

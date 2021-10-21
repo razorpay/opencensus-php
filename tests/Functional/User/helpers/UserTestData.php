@@ -2832,11 +2832,15 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Authentication failed',
+                    'description' => PublicErrorDescription::BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION,
                 ],
             ],
             'status_code' => 400,
-        ]
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION,
+        ],
     ],
 
     'testEditContactMobileByUserAndVerify' => [

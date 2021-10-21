@@ -47,9 +47,6 @@ return [
             'amount'         => 50000,
             'description'    => 'NEFT payment of 50,000 rupees',
         ],
-        'server' => [
-            'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-        ],
     ],
 
     'testBankTransferImps' => [

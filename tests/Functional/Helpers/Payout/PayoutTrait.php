@@ -400,9 +400,6 @@ trait PayoutTrait
         $request = [
             'method'  => 'POST',
             'url'     => '/payouts_with_otp',
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-            ],
             'content' => $content,
         ];
 
@@ -511,6 +508,21 @@ trait PayoutTrait
 
         // Merchant needs to be activated to make live requests
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
+
+        // Create merchant user mapping
+        $this->fixtures->on('live')->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => User::MERCHANT_USER_ID,
+            'product'     => 'primary',
+            'role'        => 'owner',
+        ], 'live');
+
+        $this->fixtures->on('live')->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => User::MERCHANT_USER_ID,
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ], 'live');
     }
 
     protected function runBalanceFetchCron()
@@ -576,6 +588,14 @@ trait PayoutTrait
         // Merchant needs to be activated to make live requests
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
 
+        // Create merchant user mapping
+        $this->fixtures->on('live')->user->createUserMerchantMapping([
+                                                                         'merchant_id' => '10000000000000',
+                                                                         'user_id'     => User::MERCHANT_USER_ID,
+                                                                         'product'     => 'primary',
+                                                                         'role'        => 'owner',
+                                                                     ], 'live');
+
         $this->fixtures->on('live')->create('banking_account_statement_details',[
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => '10000000000000',
@@ -602,9 +622,6 @@ trait PayoutTrait
         $request = [
             'method'  => 'POST',
             'url'     => '/payouts/' . $payoutId . '/approve',
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-            ],
             'content' => [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '0007',

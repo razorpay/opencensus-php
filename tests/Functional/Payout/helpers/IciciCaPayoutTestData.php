@@ -232,9 +232,6 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/approve/bulk',
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-            ],
             'content' => [
                 'payout_ids'   => [],
                 'token'        => 'BUIj3m2Nx2VvVj',

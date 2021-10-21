@@ -1,7 +1,6 @@
 <?php
 
 use Carbon\Carbon;
-use RZP\Constants\Mode;
 use RZP\Models\Contact;
 use RZP\Constants\Table;
 use RZP\Constants\Timezone;
@@ -58,11 +57,6 @@ class BankingAccountTest extends TestCase
         $this->app['config']->set('applications.banking_account.mock', true);
 
         $this->ba->proxyAuth();
-
-        $this->ba->addXOriginHeader();
-
-        $this->fixtures->on('live')->create('merchant_detail:sane', ['merchant_id'=>'10000000000000']);
-        $this->fixtures->on('test')->create('merchant_detail:sane', ['merchant_id'=>'10000000000000']);
     }
 
     public function detachAdminPermission(string $permissionName)
@@ -291,11 +285,9 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
@@ -326,11 +318,9 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $this->createBankingAccountFromDashboard();
 
@@ -355,11 +345,9 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $bankingAccount = $this->createBankingAccountFromDashboard();
 
@@ -395,11 +383,9 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $bankingAccount = $this->createBankingAccountFromDashboard();
 
@@ -439,11 +425,9 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
@@ -619,11 +603,9 @@ class BankingAccountTest extends TestCase
 
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $this->startTest();
     }
@@ -632,11 +614,9 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $this->startTest();
     }
@@ -676,13 +656,11 @@ class BankingAccountTest extends TestCase
                 'merchant_id'       => '1cXSLlUU8V9sXl',
             ];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $merchantId = '1cXSLlUU8V9sXl';
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
-
-        $this->ba->addXOriginHeader();
 
         $this->testCreateBankingAccount();
 
@@ -740,7 +718,7 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $bankingAccount = $this->setAuthAndCreateBankingAccount($merchantDetail->merchant['id']);
 
@@ -766,7 +744,7 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $bankingAccount = $this->setAuthAndCreateBankingAccount($merchantDetail->merchant['id']);
 
@@ -793,6 +771,7 @@ class BankingAccountTest extends TestCase
         $merchantDetailArray = [
             'contact_name'               => 'rzp',
             'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
             'business_operation_address' => 'Koramangala',
             'business_operation_state'   => 'KARNATAKA',
             'business_operation_pin'     => 560034,
@@ -802,7 +781,7 @@ class BankingAccountTest extends TestCase
             'activation_status'          => 'activated'
         ];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $merchantDetailArray);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
         $bankingAccount = $this->setAuthAndCreateBankingAccount($merchantDetail->merchant['id']);
 
@@ -840,6 +819,7 @@ class BankingAccountTest extends TestCase
         $merchantDetailArray = [
             'contact_name'               => 'rzp',
             'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
             'business_operation_address' => 'Koramangala',
             'business_operation_state'   => 'KARNATAKA',
             'business_operation_pin'     => 560034,
@@ -849,7 +829,7 @@ class BankingAccountTest extends TestCase
             'activation_status'          => 'activated'
         ];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $merchantDetailArray);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
         $bankingAccount = $this->setAuthAndCreateBankingAccount($merchantDetail->merchant['id']);
 
@@ -887,6 +867,7 @@ class BankingAccountTest extends TestCase
         $merchantDetailArray = [
             'contact_name'               => 'rzp',
             'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
             'business_operation_address' => 'Koramangala',
             'business_operation_state'   => 'KARNATAKA',
             'business_operation_pin'     => 560034,
@@ -896,7 +877,7 @@ class BankingAccountTest extends TestCase
             'activation_status'          => 'activated'
         ];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $merchantDetailArray);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
         $bankingAccount = $this->setAuthAndCreateBankingAccount($merchantDetail->merchant['id']);
 
@@ -934,6 +915,7 @@ class BankingAccountTest extends TestCase
         $merchantDetailArray = [
             'contact_name'               => 'rzp',
             'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
             'business_operation_address' => 'Koramangala',
             'business_operation_state'   => 'KARNATAKA',
             'business_operation_pin'     => 560034,
@@ -943,7 +925,7 @@ class BankingAccountTest extends TestCase
             'activation_status'          => 'activated'
         ];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $merchantDetailArray);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
         $bankingAccount = $this->setAuthAndCreateBankingAccount($merchantDetail->merchant['id']);
 
@@ -1005,7 +987,7 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
 
@@ -1210,14 +1192,7 @@ class BankingAccountTest extends TestCase
 
     protected function createMerchantDetail(array $attrs = ['activation_status' => 'activated'])
     {
-        if (array_key_exists('merchant_id', $attrs) and $attrs['merchant_id'] === '10000000000000')
-        {
-            $this->fixtures->edit('merchant_detail', '10000000000000', array_except($attrs, 'merchant_id'));
-        }
-        else
-        {
-            $this->fixtures->create('merchant_detail', $attrs);
-        }
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attrs);
     }
 
     public function testActivate()
@@ -1228,11 +1203,9 @@ class BankingAccountTest extends TestCase
 
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         (new User())->createBankingUserForMerchant($merchantDetail->merchant['id'], [
             'contact_mobile' => '8888888888',
@@ -1382,11 +1355,9 @@ class BankingAccountTest extends TestCase
 
         $attribute = ['activation_status' => 'deactivated' , 'business_website' => 'www.businesswebsite.com'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         (new User())->createBankingUserForMerchant($merchantDetail->merchant['id'], [
             'contact_mobile' => '8888888888',
@@ -1449,11 +1420,9 @@ class BankingAccountTest extends TestCase
 
         $attribute = ['activation_status' => 'deactivated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         (new User())->createBankingUserForMerchant($merchantDetail->merchant['id'], [
             'contact_mobile' => '8888888888',
@@ -1593,11 +1562,9 @@ class BankingAccountTest extends TestCase
 
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $this->createBankingAccount();
 
@@ -1667,11 +1634,9 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' .  $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $this->createBankingAccount();
 
@@ -1704,11 +1669,9 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' .  $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $this->createBankingAccount();
 
@@ -1761,11 +1724,9 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $this->createBankingAccount();
 
@@ -1900,11 +1861,9 @@ class BankingAccountTest extends TestCase
         {
             $attribute = ['activation_status' => 'activated'];
 
-            $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+            $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
             $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-            $this->ba->addXOriginHeader();
 
             $bankingAccount = $this->createBankingAccountFromDashboard();
 
@@ -2021,11 +1980,9 @@ class BankingAccountTest extends TestCase
         {
             $attribute = ['activation_status' => 'activated'];
 
-            $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+            $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
             $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-            $this->ba->addXOriginHeader();
 
             $bankingAccount = $this->createBankingAccount();
         }
@@ -2283,11 +2240,9 @@ class BankingAccountTest extends TestCase
 
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $bankingAccount = $this->createBankingAccount();
 
@@ -2332,11 +2287,9 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $bankingAccount = $this->createBankingAccount();
 
@@ -2362,11 +2315,9 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $bankingAccount = $this->createBankingAccount();
 
@@ -2476,11 +2427,9 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $bankingAccount = $this->createBankingAccountFromDashboard();
 
@@ -2502,13 +2451,11 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $mid = $merchantDetail->merchant['id'];
 
         $this->ba->proxyAuth('rzp_test_' . $mid);
-
-        $this->ba->addXOriginHeader();
 
         $bankingAccount = $this->createBankingAccountFromDashboard();
 
@@ -2545,13 +2492,11 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $mid = $merchantDetail->merchant['id'];
 
         $this->ba->proxyAuth('rzp_test_' . $mid);
-
-        $this->ba->addXOriginHeader();
 
         $bankingAccount = $this->createBankingAccountFromDashboard();
 
@@ -2588,13 +2533,11 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $mid = $merchantDetail->merchant['id'];
 
         $this->ba->proxyAuth('rzp_test_' . $mid);
-
-        $this->ba->addXOriginHeader();
 
         $activationDetail = ['activation_detail' => [
             ActivationDetail\Entity::BUSINESS_CATEGORY => 'sole_proprietorship',
@@ -2677,11 +2620,9 @@ class BankingAccountTest extends TestCase
 
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $bankingAccount = $this->createBankingAccountFromDashboard($activationDetails);
 
@@ -2727,8 +2668,6 @@ class BankingAccountTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
 
-        $this->ba->addXOriginHeader();
-
         $bankingAccount = $this->createBankingAccountFromDashboard($activationDetails);
 
         $this->ba->proxyAuth();
@@ -2768,11 +2707,9 @@ class BankingAccountTest extends TestCase
 
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $bankingAccount = $this->createBankingAccountFromDashboard($activationDetails);
 
@@ -2824,7 +2761,6 @@ class BankingAccountTest extends TestCase
 
     protected function createBankingAccount(array $attributes = [])
     {
-
         $data = [
             Entity::PINCODE => '560030',
             Entity::CHANNEL => 'rbl',
@@ -2906,6 +2842,7 @@ class BankingAccountTest extends TestCase
         $merchantDetailArray = [
             'contact_name'               => 'rzp',
             'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
             'business_operation_address' => 'Koramangala',
             'business_operation_state'   => 'KARNATAKA',
             'business_operation_pin'     => 560047,
@@ -2913,7 +2850,7 @@ class BankingAccountTest extends TestCase
             'business_name'              => 'rzp_test',
             'business_operation_city'    => 'Bangalore',
         ];
-        $this->fixtures->edit('merchant_detail', '10000000000000', $merchantDetailArray);
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
         $this->ba->adminAuth();
 
@@ -2927,12 +2864,9 @@ class BankingAccountTest extends TestCase
             'activation_status' => 'activated'
         ];
 
-        $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
-        $this->fixtures->on('live')->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
-        $this->ba->proxyAuth('rzp_live_10000000000000');
-
-        $this->ba->addXOriginHeader();
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail->merchant['id']);
 
         $payload = [
             'activation_detail' => [
@@ -2958,6 +2892,7 @@ class BankingAccountTest extends TestCase
         $merchantDetailArray = [
             'contact_name'               => 'rzp',
             'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
             'business_operation_address' => 'Koramangala',
             'business_operation_state'   => 'KARNATAKA',
             'business_operation_pin'     => 560047,
@@ -2965,7 +2900,7 @@ class BankingAccountTest extends TestCase
             'business_name'              => 'rzp_test',
             'business_operation_city'    => 'Bangalore',
         ];
-        $this->fixtures->edit('merchant_detail', '10000000000000', $merchantDetailArray);
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
         $this->ba->adminAuth();
 
@@ -2987,8 +2922,9 @@ class BankingAccountTest extends TestCase
 
     public function testBankingAccountFetchForMerchantName(string $dbName = 'Test Account123', string $searchName = "Test Account123")
     {
-        $this->fixtures->edit('merchant_detail', '10000000000000',
+        $this->fixtures->create('merchant_detail',
             [
+                'merchant_id'       => '10000000000000',
                 'business_name'     => $dbName
             ]);
 
@@ -3018,8 +2954,9 @@ class BankingAccountTest extends TestCase
     {
         $mid1 = '10000000000000';
 
-        $this->fixtures->edit('merchant_detail', '10000000000000',
+        $this->fixtures->create('merchant_detail',
             [
+                "merchant_id"     => $mid1,
                 "business_name"   => "Test ACCOUNT 1"
             ]);
 
@@ -3221,9 +3158,12 @@ class BankingAccountTest extends TestCase
     {
         Mail::fake();
 
+        $response = $this->createBankingAccount();
+
         $merchantDetailArray = [
             'contact_name'               => 'rzp',
             'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
             'business_operation_address' => 'Koramangala',
             'business_operation_state'   => 'KARNATAKA',
             'business_operation_pin'     => 560047,
@@ -3231,9 +3171,7 @@ class BankingAccountTest extends TestCase
             'business_name'              => 'rzp_test',
             'business_operation_city'    => 'Bangalore',
         ];
-        $this->fixtures->edit('merchant_detail', '10000000000000', $merchantDetailArray);
-
-        $response = $this->createBankingAccount();
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
         $this->ba->adminAuth();
 
@@ -3433,11 +3371,9 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $bankingAccount = $this->createBankingAccount();
 
@@ -3636,13 +3572,11 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $merchantId = $merchantDetail->merchant['id'];
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $xBalance1 = $this->fixtures->create('balance',
             [
@@ -3699,13 +3633,11 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $merchantId = $merchantDetail->merchant['id'];
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
-
-        $this->ba->addXOriginHeader();
 
         $balance = $this->fixtures->create('balance',
             [
@@ -3741,8 +3673,6 @@ class BankingAccountTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
-        $this->ba->addXOriginHeader();
-
         $response = $this->startTest();
 
         $this->assertEquals('Test RM', $response['items'][0]['banking_account_ca_spoc_details']['rm_name']);
@@ -3756,13 +3686,11 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $merchantId = $merchantDetail->merchant['id'];
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
-
-        $this->ba->addXOriginHeader();
 
         $balance = $this->fixtures->create('balance',
             [
@@ -3798,8 +3726,6 @@ class BankingAccountTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
-        $this->ba->addXOriginHeader();
-
         $response = $this->startTest();
 
         $this->assertEquals(null, $response['items'][0]['banking_account_ca_spoc_details']['rm_name']);
@@ -3814,13 +3740,11 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $merchantId = $merchantDetail->merchant['id'];
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
-
-        $this->ba->addXOriginHeader();
 
         $balance = $this->fixtures->create('balance',
             [
@@ -3856,8 +3780,6 @@ class BankingAccountTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
-        $this->ba->addXOriginHeader();
-
         $response = $this->startTest();
 
         $this->assertEquals(null, $response['items'][0]['banking_account_ca_spoc_details']['rm_name']);
@@ -3872,13 +3794,11 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $merchantId = $merchantDetail->merchant['id'];
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
-
-        $this->ba->addXOriginHeader();
 
         $balance = $this->fixtures->create('balance',
             [
@@ -3913,8 +3833,6 @@ class BankingAccountTest extends TestCase
         $this->testUpdateActivationDetailWithRmNameAsEmpty($bankingAccountEntity);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
-
-        $this->ba->addXOriginHeader();
 
         $response = $this->startTest();
 
@@ -4229,11 +4147,9 @@ class BankingAccountTest extends TestCase
         if ($bankingAccount === null){
             $attribute = ['activation_status' => 'activated'];
 
-            $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+            $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
             $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-            $this->ba->addXOriginHeader();
 
             $bankingAccount = $this->createBankingAccount();
         }
@@ -4327,8 +4243,9 @@ class BankingAccountTest extends TestCase
 
     public function testUpdateAdditionalDetailUpdated()
     {
-        $this->fixtures->edit('merchant_detail', '10000000000000',
+        $this->fixtures->create('merchant_detail',
             [
+                'merchant_id'       => '10000000000000',
                 'business_type'     => '2',
             ]);
 
@@ -4355,6 +4272,12 @@ class BankingAccountTest extends TestCase
 
     public function testUpdateAdditionalDetailswithDifferentValues()
     {
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id'       => '10000000000000',
+                'business_type'     => '2',
+            ]);
+
         $bankingAccount = $this->testCreateActivationDetail([
             ActivationDetail\Entity::ADDITIONAL_DETAILS => json_encode(["green_channel" => false])
         ]);
@@ -4382,11 +4305,9 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $activationDetail = ['activation_detail' => [
             ActivationDetail\Entity::MERCHANT_POC_NAME => 'Sample Name',
@@ -4424,11 +4345,9 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $activationDetail = ['activation_detail' => [
             ActivationDetail\Entity::MERCHANT_POC_NAME => 'Sample Name',
@@ -4953,7 +4872,6 @@ class BankingAccountTest extends TestCase
 
     public function testBankingAccountFetchForAssignee()
     {
-
         $baAttributes = [
             'assignee_team' => 'ops'
         ];
@@ -5087,7 +5005,6 @@ class BankingAccountTest extends TestCase
 
     public function testBankingAccountExternalCommentsMISWithAssigneeTeamAsSales()
     {
-
         $this->testData[__FUNCTION__] = $this->testData['testBankingAccountExternalCommentsMIS'];
 
         $this->testData[__FUNCTION__]['request']['content']['assignee_team'] = 'sales';
@@ -5283,8 +5200,6 @@ class BankingAccountTest extends TestCase
     {
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
-        $this->ba->addXOriginHeader();
-
         $this->testCreateBankingAccount();
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
@@ -5343,11 +5258,9 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $this->createBankingAccountFromDashboard();
 
@@ -5358,11 +5271,9 @@ class BankingAccountTest extends TestCase
     {
         $attribute = ['activation_status' => 'activated'];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
 
         $data = [
             Entity::PINCODE => '560030',
@@ -5481,7 +5392,8 @@ class BankingAccountTest extends TestCase
     {
         Mail::fake();
 
-        $this->fixtures->edit('merchant_detail', '10000000000000', [
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'          => '10000000000000',
             'activation_status'    => 'activated',
             'business_category'    => 'education',
             'business_subcategory' => 'college']);
@@ -5533,7 +5445,8 @@ class BankingAccountTest extends TestCase
     {
         Mail::fake();
 
-        $this->fixtures->edit('merchant_detail', '10000000000000', [
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'          => '10000000000000',
             'activation_status'    => 'activated',
             'business_category'    => 'education',
             'business_subcategory' => 'college']);

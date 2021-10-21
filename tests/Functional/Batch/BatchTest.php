@@ -298,8 +298,6 @@ class BatchTest extends TestCase
 
             $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
 
-            $this->ba->addXOriginHeader();
-
             $this->startTest();
         }
     }

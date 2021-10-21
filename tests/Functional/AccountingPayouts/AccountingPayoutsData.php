@@ -3,9 +3,6 @@
 return [
     'testGetIntegrationUrlServiceMethod' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'GET',
             'url'    => '/accounting-payouts/integration/quickbooks',
         ],
@@ -16,9 +13,6 @@ return [
 
     'testInitiateIntegrationServiceMethod' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'POST',
             'url'    => '/accounting-payouts/integration/quickbooks',
         ],
@@ -29,9 +23,6 @@ return [
 
     'testIntegrationStatusServiceMethod' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'GET',
             'url'    => '/accounting-payouts/integration/status',
         ],
@@ -42,9 +33,6 @@ return [
 
     'testIntegrationStatusAppServiceMethod' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'GET',
             'url'    => '/accounting-payouts/integration/quickbooks/status',
         ],
@@ -55,9 +43,6 @@ return [
 
     'testCallbackServiceMethod' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'GET',
             'url'    => '/accounting-payouts/callback',
         ],
@@ -68,9 +53,6 @@ return [
 
     'testAppCredentialsServiceMethod' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'POST',
             'url'    => '/accounting-payouts/appcredentials/quickbooks',
         ],
@@ -81,9 +63,6 @@ return [
 
     'testDeleteServiceMethod' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'POST',
             'url'    => '/accounting-payouts/delete/quickbooks',
         ],
@@ -94,9 +73,6 @@ return [
 
     'testSyncStatusServiceMethod' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'GET',
             'url'    => '/accounting-payouts/sync/quickbooks',
         ],
@@ -107,9 +83,6 @@ return [
 
     'testSyncServiceMethod' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'POST',
             'url'    => '/accounting-payouts/sync/quickbooks',
         ],
@@ -120,9 +93,6 @@ return [
 
     'testWaitlistServiceMethod' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'POST',
             'url'    => '/accounting-payouts/waitlist/quickbooks',
         ],
@@ -133,9 +103,6 @@ return [
 
     'testIntegrationStatusForViewOnlyUsers' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'GET',
             'url'    => '/accounting-payouts/integration/status',
         ],
@@ -146,9 +113,6 @@ return [
 
     'testSyncStatusForViewOnlyUsers' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'GET',
             'url'    => '/accounting-payouts/sync/quickbooks',
         ],
@@ -159,9 +123,6 @@ return [
 
     'testCreateTallyInvoiceServiceMethod' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'POST',
             'url'    => '/accounting-integration/tally/invoices',
         ],
@@ -172,9 +133,6 @@ return [
 
     'testFetchTallyInvoiceServiceMethod' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'GET',
             'url'    => '/accounting-integration/tally/invoices',
         ],
@@ -185,9 +143,6 @@ return [
 
     'testCancelTallyInvoiceServiceMethod' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'POST',
             'url'    => '/accounting-integration/tally/invoices/cancel',
         ],
@@ -198,9 +153,6 @@ return [
 
     'testFetchTallyPaymentsServiceMethod' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'GET',
             'url'    => '/accounting-integration/tally/payments',
         ],
@@ -211,9 +163,6 @@ return [
 
     'testAcknowledgeTallyPaymentServiceMethod' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'POST',
             'url'    => '/accounting-integration/tally/payments/randomid/acknowledge',
         ],
@@ -224,9 +173,6 @@ return [
 
     'testIntegrateTallyServiceMethod' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'POST',
             'url'    => '/accounting-integration/tally/integrate',
         ],
@@ -237,9 +183,6 @@ return [
 
     'testDeleteIntegrationTallyServiceMethod' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'POST',
             'url'    => '/accounting-integration/tally/delete',
         ],
@@ -250,9 +193,6 @@ return [
 
     'testUpdateBankAccountMappingCallsServiceMethods' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'POST',
             'url'    => '/accounting-integration/cashflow/update-bank-mapping',
 
@@ -263,9 +203,6 @@ return [
     ],
     'testGetOrganisationsInfoServiceMethod'           => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'GET',
             'url'    => '/accounting-integration/organizations/zoho',
 
@@ -277,9 +214,6 @@ return [
 
     'testListCashFlowBankAccountCallsServiceMethods' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'GET',
             'url'    => '/accounting-integration/cashflow/bank-accounts',
         ],
@@ -290,9 +224,6 @@ return [
 
     'testSetOrganisationsInfoServiceMethod' => [
         'request'  => [
-            'server' => [
-                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
-            ],
             'method' => 'POST',
             'url'    => '/accounting-integration/organizations/zoho',
 

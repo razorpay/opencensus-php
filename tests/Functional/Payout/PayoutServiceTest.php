@@ -2,7 +2,6 @@
 
 namespace Functional\Payout;
 
-use DB;
 use Mockery;
 use Requests_Response;
 

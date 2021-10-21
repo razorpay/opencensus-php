@@ -7,7 +7,6 @@ use Mail;
 use RZP\Services\RazorXClient;
 use Illuminate\Support\Facades\Artisan;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -481,13 +480,6 @@ class PartnerActivationTest extends OAuthTestCase
         {
             $this->fixtures->edit('merchant', $merchantId, ['partner_type' => 'reseller']);
         }
-
-        $this->fixtures->user->createUserMerchantMapping(
-            [
-                'merchant_id' => $merchantId,
-                'user_id'     => User::MERCHANT_USER_ID,
-                'role'        => 'owner',
-            ]);
     }
 
     private function fillAllRequirements(string $merchantId, bool $registeredBusinessType)

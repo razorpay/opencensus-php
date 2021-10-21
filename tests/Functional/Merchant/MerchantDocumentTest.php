@@ -67,9 +67,7 @@ class MerchantDocumentTest Extends TestCase
 
     public function testDocumentUpload()
     {
-        $merchantUser = $this->fixtures->user->createUserForMerchant('1cXSLlUU8V9sXl');
-
-        $this->ba->proxyAuth('rzp_test_' . '1cXSLlUU8V9sXl', $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . '1cXSLlUU8V9sXl');
 
         //Merchant detail entity for default test merchant
         $this->fixtures->create(
@@ -101,9 +99,7 @@ class MerchantDocumentTest Extends TestCase
 
     public function testFileUploadDocumentTypeInvalid()
     {
-        $merchantUser = $this->fixtures->user->createUserForMerchant('1cXSLlUU8V9sXl');
-
-        $this->ba->proxyAuth('rzp_test_' . '1cXSLlUU8V9sXl', $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . '1cXSLlUU8V9sXl');
 
         $this->fixtures->create('merchant_detail',[
             'merchant_id' => '1cXSLlUU8V9sXl',
@@ -243,9 +239,7 @@ class MerchantDocumentTest Extends TestCase
             'business_type' => 2
         ]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant('1cXSLlUU8V9sXl', [], 'owner', 'live');
-
-        $this->ba->proxyAuth('rzp_live_' . '1cXSLlUU8V9sXl', $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_live_' . '1cXSLlUU8V9sXl');
 
         $this->createMerchantDocumentAndFileStoreEntity();
 
@@ -331,9 +325,7 @@ class MerchantDocumentTest Extends TestCase
                                           'promoter_address_url',
                                       ]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
 
         $this->updateUploadDocumentData('testDocumentUpload');
 
@@ -364,9 +356,7 @@ class MerchantDocumentTest Extends TestCase
 
     protected function uploadDocument(string $documentKey, string $documentVerificationKey, $mid = '1cXSLlUU8V9sXl')
     {
-        $merchantUser = $this->fixtures->user->createUserForMerchant($mid);
-
-        $this->ba->proxyAuth('rzp_test_' . $mid, $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $mid);
 
         //Merchant detail entity for default test merchant
         $this->fixtures->create(

@@ -360,7 +360,7 @@ class Authorization
 
     public function proxyAuthLive()
     {
-        $this->proxyAuth('rzp_live_10000000000000', 'MerchantUser01');
+        $this->proxyAuth('rzp_live_10000000000000');
     }
 
     public function publicAuth($key = null)

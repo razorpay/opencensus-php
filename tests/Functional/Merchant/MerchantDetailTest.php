@@ -121,9 +121,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
 
         $this->startTest();
     }
@@ -132,9 +130,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
 
         $this->createDocumentEntities($merchantDetail[MerchantDetails::MERCHANT_ID],
                                       [
@@ -196,9 +192,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->fixtures->edit('merchant', $merchantId, ['linked_account_kyc' => 0, 'parent_id' => '10000000000000']);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
-
-        $this->ba->proxyAuth('rzp_test_' .$merchantId, $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
 
@@ -220,9 +214,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:invalid_fields');
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
 
         $this->startTest();
     }
@@ -231,9 +223,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
 
         $this->startTest();
     }
@@ -242,9 +232,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
 
         $this->startTest();
     }
@@ -253,9 +241,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
 
         $this->startTest();
     }
@@ -264,9 +250,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
 
         $this->startTest();
     }
@@ -277,9 +261,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
 
         $this->startTest();
     }
@@ -826,9 +808,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $merchantId = $merchantDetail['merchant_id'];
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_'.$merchantId);
 
         $this->startTest();
 
@@ -843,9 +823,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $merchantId = $merchantDetail['merchant_id'];
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_'.$merchantId);
 
         $this->startTest();
 
@@ -862,9 +840,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->setupWorkflow("update_website", PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_'.$merchantId);
 
         $this->startTest();
 
@@ -1049,9 +1025,7 @@ class MerchantDetailTest extends OAuthTestCase
             'business_type' => 2
         ]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant['id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' .$merchant['id']);
 
         $this->startTest();
     }
@@ -1119,9 +1093,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->fixtures->create('merchant_detail', $merchantDetailData);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000155');
-
-        $this->ba->proxyAuth('rzp_test_10000000000155', $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_live_10000000000155');
 
         $this->startTest();
     }
@@ -1147,9 +1119,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $merchantUser = $this->fixtures->user->createBankingUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
 
         $this->mockHubSpotClient('trackPreSignupEvent');
 
@@ -1173,9 +1143,7 @@ class MerchantDetailTest extends OAuthTestCase
                                     'value'       => 'ca_neostone'
                                 ]);
 
-        $merchantUser = $this->fixtures->user->createBankingUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
 
         $this->mockHubSpotClient('trackPreSignupEvent');
 
@@ -1213,9 +1181,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $merchantUser = $this->fixtures->user->createBankingUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
 
         $this->startTest();
     }
@@ -1263,9 +1229,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
 
         $this->startTest();
 
@@ -1347,9 +1311,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
 
         $this->startTest();
 
@@ -1452,9 +1414,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_live_'.$merchantDetail['merchant_id']);
 
         $this->startTest();
 
@@ -1646,10 +1606,7 @@ class MerchantDetailTest extends OAuthTestCase
                                                              'role'        => 'owner',
                                                          ], 'live');
 
-
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_live_'.$merchantDetail['merchant_id']);
 
         $this->startTest();
 
@@ -1678,9 +1635,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $merchantUser = $this->fixtures->user->createBankingUserForMerchant($merchantDetail['merchant_id'], [], 'owner', 'live');
-
-        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
 
         $this->startTest();
 
@@ -1710,9 +1665,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
 
         $this->startTest();
     }
@@ -1795,9 +1748,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $merchantId = $merchantDetail['merchant_id'];
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->fixtures->merchant->activate($merchantId);
 
@@ -1814,9 +1765,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $merchantId = $merchantDetail['merchant_id'];
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->fixtures->merchant->activate($merchantId);
 
@@ -1833,9 +1782,7 @@ class MerchantDetailTest extends OAuthTestCase
             MerchantDetails::BUSINESS_CATEGORY    => BusinessCategory::FINANCIAL_SERVICES,
         ]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail[MerchantDetails::MERCHANT_ID]);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
 
         $this->startTest();
 
@@ -1859,9 +1806,7 @@ class MerchantDetailTest extends OAuthTestCase
             MerchantDetails::BUSINESS_CATEGORY    => BusinessCategory::FINANCIAL_SERVICES,
         ]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
 
         $this->startTest();
 
@@ -1891,9 +1836,7 @@ class MerchantDetailTest extends OAuthTestCase
                                                          'promoter_address_url'
                                                      ]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
 
         $this->startTest();
     }
@@ -1907,9 +1850,7 @@ class MerchantDetailTest extends OAuthTestCase
             MerchantDetails::ACTIVATION_FLOW => ActivationFlow::WHITELIST
         ]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
 
         $this->startTest();
     }
@@ -1946,9 +1887,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
 
@@ -1971,9 +1910,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'business_website' => $website]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
 
@@ -2013,9 +1950,7 @@ class MerchantDetailTest extends OAuthTestCase
             MerchantDocuments::FILE_STORE_ID => $fileStoreId,
         ]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
 
         $this->updateUploadDocumentData(__FUNCTION__, $documentType);
 
@@ -2092,9 +2027,9 @@ class MerchantDetailTest extends OAuthTestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail', $testData);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+        $merchantId = $merchantDetail['merchant_id'];
 
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
     }
@@ -2107,9 +2042,9 @@ class MerchantDetailTest extends OAuthTestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail', $testData);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+        $merchantId = $merchantDetail['merchant_id'];
 
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
     }
@@ -2120,9 +2055,9 @@ class MerchantDetailTest extends OAuthTestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail', $testData);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+        $merchantId = $merchantDetail['merchant_id'];
 
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
     }
@@ -2246,9 +2181,7 @@ class MerchantDetailTest extends OAuthTestCase
             'business_type' => 2
         ]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($referredSubMerchantId);
-
-        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId, $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId);
 
         $this->startTest();
 
@@ -2317,9 +2250,7 @@ class MerchantDetailTest extends OAuthTestCase
             'business_type' => 2
         ]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($referredSubMerchantId);
-
-        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId, $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId);
 
         $this->startTest();
 
@@ -2384,9 +2315,7 @@ class MerchantDetailTest extends OAuthTestCase
             'business_type' => 2
         ]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($referredSubMerchantId);
-
-        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId, $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId);
 
         $this->startTest();
 
@@ -2442,9 +2371,7 @@ class MerchantDetailTest extends OAuthTestCase
             'business_type' => 2
         ]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($referredSubMerchantId);
-
-        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId, $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId);
 
         $this->startTest();
 
@@ -2497,9 +2424,7 @@ class MerchantDetailTest extends OAuthTestCase
             'business_type' => 2
         ]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($referredSubMerchantId, [], 'owner', 'live');
-
-        $this->ba->proxyAuth('rzp_live_' . $referredSubMerchantId, $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_live_' . $referredSubMerchantId);
 
         $this->startTest();
 
@@ -2712,9 +2637,7 @@ class MerchantDetailTest extends OAuthTestCase
             'business_type'                   => '4',
         ]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         Config::set('applications.kyc.company_pan_authentication', $data['mock_status']);
 
@@ -2801,9 +2724,7 @@ class MerchantDetailTest extends OAuthTestCase
             'business_type'           => '4',
         ]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         Config::set('applications.kyc.pan_authentication', $data['mock_status']);
 
@@ -3029,9 +2950,7 @@ class MerchantDetailTest extends OAuthTestCase
                                           'cancelled_cheque',
                                       ]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
 
         $this->createBalanceForSharedMerchant();
 
@@ -3403,9 +3322,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $merchantUser = $this->fixtures->user->createBankingUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
 
         $this->mockHubSpotClientForProductType('dispatchRequestJob', $param);
 
@@ -3420,9 +3337,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
 
         $this->mockHubSpotClientForProductType('dispatchRequestJob', $param);
 
@@ -3433,9 +3348,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
 
         $this->startTest();
     }
@@ -3444,9 +3357,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
 
         $this->startTest();
     }
@@ -3508,9 +3419,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
 
         $this->createDocumentEntities($merchantDetail[MerchantDetails::MERCHANT_ID],
                                       ['aadhar_front'], ['ocr_verify' => $status]);
@@ -3932,9 +3841,7 @@ class MerchantDetailTest extends OAuthTestCase
             return true;
         });
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $user['id'] );
 
         $this->startTest();
     }

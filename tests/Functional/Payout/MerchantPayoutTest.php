@@ -3,7 +3,6 @@
 
 namespace RZP\Tests\Functional\Payout;
 
-use DB;
 use Mail;
 use Config;
 
