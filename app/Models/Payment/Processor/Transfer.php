@@ -2,10 +2,11 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use RZP\Models\Merchant;
+use RZP\Trace\Tracer;
 use RZP\Models\Payment;
-use RZP\Models\Transaction;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
 use Razorpay\Trace\Logger as Trace;
 
 trait Transfer
@@ -22,7 +23,10 @@ trait Transfer
     {
         $paymentData = $this->getTransferPaymentData($input, $originPayment);
 
-        $payment = $this->createPaymentEntity($paymentData);
+        $payment = Tracer::inSpan(['name' => 'transfer.process.create_transfer_payment.create_payment'], function() use ($paymentData)
+        {
+            return $this->createPaymentEntity($paymentData);
+        });
 
         $inputTrace = $input;
 

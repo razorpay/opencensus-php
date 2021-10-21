@@ -17,6 +17,7 @@ use RZP\Jobs\Settlement\Bucket;
 use RZP\Jobs\CardsPaymentTransaction;
 use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Dispute;
 use RZP\Models\Reversal;
@@ -264,7 +265,10 @@ class Core extends Base\Core
      */
     public function createFromPaymentTransferred(Payment\Entity $payment) : array
     {
-        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
+        list($txn, $feesSplit) = Tracer::inSpan(['name' => 'transfer.process.create_transfer_payment.create_transaction'], function() use ($payment)
+        {
+            return $this->txnCreationFromPaymentOperation($payment);
+        });
 
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_CREATE_TRANSACTION,
@@ -1356,7 +1360,10 @@ class Core extends Base\Core
 
         $startTime = microtime(true);
 
-        $merchantBalance = $this->repo->balance->getBalanceLockForUpdate($merchantId);
+        $merchantBalance = Tracer::inSpan(['name' => 'transfer.process.create_transfer_transaction.balance_lock'], function() use ($merchantId)
+        {
+            return $this->repo->balance->getBalanceLockForUpdate($merchantId);
+        });
 
         $endTime = microtime(true);
 
@@ -1574,7 +1581,10 @@ class Core extends Base\Core
                 'time_taken'    => (microtime(true) - $startTime) * 1000
             ]);
 
-        list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($transaction);
+        list($fee, $tax, $feesSplit) = Tracer::inSpan(['name' => 'transfer.process.create_transfer_transaction.calculate_fees'], function() use ($transaction)
+        {
+            return $this->calculateMerchantFees($transaction);
+        });
 
         $transaction->setFeeModel($merchant->getFeeModel());
 

@@ -2,14 +2,14 @@
 
 namespace RZP\Models\Transfer;
 
-use Illuminate\Support\Facades\App;
 use RZP\Constants;
-use RZP\Error\ErrorCode;
-use RZP\Listeners\ApiEventSubscriber;
-use RZP\Models\Adjustment;
-use RZP\Models\Merchant;
+use RZP\Trace\Tracer;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Adjustment;
+use Illuminate\Support\Facades\App;
 
 abstract class AbstractTransfer
 {
@@ -75,9 +75,12 @@ abstract class AbstractTransfer
 
         $transferStatus = $this->status;
 
-        $transfers = $this->repo
-                          ->transfer
-                          ->fetchBySourceTypeAndIdAndMerchant($this->transfermode,  $this->sourceId, $this->merchant , $transferStatus);
+        $transfers = Tracer::inSpan(['name' => 'transfer.process.fetch_by_source'], function() use ($transferStatus)
+        {
+            return $this->repo
+                        ->transfer
+                        ->fetchBySourceTypeAndIdAndMerchant($this->transfermode,  $this->sourceId, $this->merchant , $transferStatus);
+        });
 
         $this->trace->info($this->tracecode,
             [
@@ -169,7 +172,10 @@ abstract class AbstractTransfer
 
                 $oldTransfer = clone $transfer;
 
-                $transfer = (new Core())->createTransactionForTransfer($oldTransfer);
+                $transfer = Tracer::inSpan(['name' => 'transfer.process.create_transfer_transaction'], function() use ($oldTransfer)
+                {
+                    return (new Core())->createTransactionForTransfer($oldTransfer);
+                });
 
                 $this->createTransferredEntity($transfer, $payment);
 
@@ -231,7 +237,10 @@ abstract class AbstractTransfer
         }
         else
         {
-            $this->createTransferredPayment($transfer, $payment);
+            Tracer::inSpan(['name' => 'transfer.process.create_transfer_payment'], function() use ($transfer, $payment)
+            {
+                $this->createTransferredPayment($transfer, $payment);
+            });
         }
     }
 
