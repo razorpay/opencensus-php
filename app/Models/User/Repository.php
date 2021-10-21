@@ -47,6 +47,18 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
+    public function filterEmailNotVerifiedUserIds(int $from, int $to): array
+    {
+        return $this->newQuery()
+            ->select(Entity::ID)
+            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->WhereNotNull(Entity::CONTACT_MOBILE)
+            ->WhereNotNull(Entity::CONFIRM_TOKEN)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
+
     public function getUserFromEmail(string $email)
     {
         return $this->newQuery()

@@ -23,6 +23,8 @@ class Events
     const ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     = 'ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH';
     const ACTIVATED_MCC_PENDING_SUCCESS               = 'ACTIVATED_MCC_PENDING_SUCCESS';
     const ACTIVATED_MCC_PENDING_ACTION_REQUIRED       = 'ACTIVATED_MCC_PENDING_ACTION_REQUIRED';
+    const ONBOARDING_VERIFY_EMAIL                     = 'ONBOARDING_VERIFY_EMAIL';
+    const COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU       = 'COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU';
 
     const SMS_TEMPLATES = [
         self::PAYMENTS_ENABLED                            => 'sms.onboarding.payments_enabled',
@@ -40,7 +42,9 @@ class Events
         self::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => 'sms.onboarding.activated_mcc_pending_hard_limit_breach',
         self::FUNDS_ON_HOLD                               => 'sms.onboarding.funds_on_hold',
         self::FUNDS_ON_HOLD_REMINDER                      => 'sms.onboarding.funds_on_hold_reminder',
+        self::ONBOARDING_VERIFY_EMAIL                     => 'sms.onboarding.onboarding_verify_email',
         self::ONBOARDING_ACTIVATION_L1_PENDING            => 'sms.onboarding.l1_activation_not_started_in_1_day',
+        self::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU       => 'sms.onboarding.coupon_code_eligible_merchant_not_mtu',
     ];
 
 
@@ -65,6 +69,7 @@ class Events
         self::FUNDS_ON_HOLD_REMINDER                      => 'whatsapp.merchant.onboarding.funds_on_hold_reminder',
         self::ONBOARDING_ACTIVATION_L1_PENDING            => 'whatsapp.merchant.onboarding.onboarding_activation_l1_pending',
         self::PAYMENTS_ENABLED                            => 'whatsapp.merchant.onboarding.payments_enabled',
+        self::ONBOARDING_VERIFY_EMAIL                     => 'whatsapp.merchant.onboarding.onboarding_verify_email',
     ];
 
     const EMAIL_TEMPLATES = [
@@ -87,6 +92,5 @@ class Events
         self::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => '[Urgent] Clarifications needed for continuity of your Razorpay account',
         self::FUNDS_ON_HOLD                               => '[Urgent] Settlements have been paused for your Razorpay account',
         self::FUNDS_ON_HOLD_REMINDER                      => '[Urgent] Settlements have been paused for your Razorpay account',
-
     ];
 }

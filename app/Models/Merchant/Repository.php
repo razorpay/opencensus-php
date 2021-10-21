@@ -419,6 +419,19 @@ class Repository extends Base\Repository
                     ->whereNull(Entity::SUSPENDED_AT);
     }
 
+    public function fetchAllLiveAndActivatedMerchants(int $from, int $to)
+    {
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+                    ->select(Entity::ID)
+                    ->where(Entity::LIVE, '=', 1)
+                    ->where(Entity::ACTIVATED, '=', 1)
+                    ->whereBetween(Entity::ACTIVATED_AT,[$from, $to])
+                    ->whereNull(Entity::SUSPENDED_AT)
+                    ->get()
+                    ->pluck(Entity::ID)
+                    ->toArray();
+    }
+
     public function fetchMerchantFromEntity($entity)
     {
         if ($entity->hasRelation('merchant'))

@@ -10,8 +10,10 @@ use RZP\Constants\Timezone;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Notifications\Onboarding\Events;
+use RZP\Models\Coupon\Constants as CouponCodeConstants;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
+use RZP\Models\Merchant\Account as MerchantAccount;
 use RZP\Models\Merchant\Escalations\Actions\Entity as ActionEntity;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 
@@ -370,25 +372,7 @@ class Core extends Base\Core
     {
 
         //L1_ACTIVATION_NOT_STARTED_IN_1_DAY
-        if (empty($input[Constants::START_TIME]) === true)
-        {
-            $lastCronTime = Carbon::createFromTimestamp(
-                $this->getLastCronTime(Constants::L1_ACTIVATION_NOT_STARTED_IN_1_DAY_CACHE_KEY), Timezone::IST);
-
-            $this->updateLastCronTime(Constants::L1_ACTIVATION_NOT_STARTED_IN_1_DAY_CACHE_KEY);
-
-            $to = Carbon::now()->subDays(1)->getTimestamp();
-
-            $from = $lastCronTime->subDays(1)->getTimestamp();
-        }
-        else
-        {
-            // if we have to send communications for merchants created in a specific time frame.
-            // Not sent from cron to be sent when called manually
-            $to = $input[Constants::END_TIME];
-
-            $from = $input[Constants::START_TIME];
-        }
+        list($from, $to) = $this->getTimeWindowForCron($input, Constants::L1_ACTIVATION_NOT_STARTED_IN_1_DAY_CACHE_KEY,1);
 
         //Logged in but didnt start activation (L1) within 1 day
         //since cron job runs every hour query to get merchants with created date in 1 hr duration prev day and activation mile stone is null
@@ -422,6 +406,120 @@ class Core extends Base\Core
             (new OnboardingNotificationHandler($args))
                 ->sendEventNotificationForMerchant($merchantId, Events::ONBOARDING_ACTIVATION_L1_PENDING);
 
+        }
+    }
+
+    public function getTimeWindowForCron(array $input, string $cacheKey, int $days)
+    {
+        if (empty($input[Constants::START_TIME]) === true)
+        {
+            $lastCronTime = Carbon::createFromTimestamp(
+                $this->getLastCronTime($cacheKey), Timezone::IST);
+
+            $this->updateLastCronTime($cacheKey);
+
+            $to = Carbon::now()->subDays($days)->getTimestamp();
+
+            $from = $lastCronTime->subDays($days)->getTimestamp();
+        }
+        else
+        {
+            $to = $input[Constants::END_TIME];
+
+            $from = $input[Constants::START_TIME];
+        }
+
+        return [$from, $to];
+    }
+
+    public function sendOnboardingVerifyEmailNotification($input)
+    {
+        //EMAIL_NOT_VERIFIED_IN_1_DAY
+        list($from, $to) = $this->getTimeWindowForCron($input, Constants::EMAIL_NOT_VERIFIED_IN_1_DAY_CACHE_KEY,1);
+
+        $userIdList = $this->repo->user->filterEmailNotVerifiedUserIds($from, $to);
+
+        $merchantIdList = array_unique($this->repo->merchant_user->fetchMerchantIdsForUserIdsAndRole($userIdList));
+
+        $this->trace->info(TraceCode::SEND_ONBOARDING_VERFIY_EMAIL_NOTIFICATION, [
+            'merchants_count' => count($merchantIdList),
+            'type'            => 'sendNotification',
+            'to'              => $to,
+            'from'            => $from
+        ]);
+
+        if (empty($merchantIdList) === true)
+        {
+            $this->trace->info(TraceCode::SEND_ONBOARDING_VERFIY_EMAIL_NOTIFICATION_SKIPPED, [
+                'merchants_count' => count($merchantIdList),
+                'type'            => 'sendNotification',
+                'reason'          => 'no merchants found'
+            ]);
+
+            return;
+        }
+        foreach ($merchantIdList as $merchantId)
+        {
+            $args = [
+                Constants::MERCHANT => $this->repo->merchant->findOrFailPublic($merchantId)
+            ];
+
+            (new OnboardingNotificationHandler($args))
+                ->sendEventNotificationForMerchant($merchantId, Events::ONBOARDING_VERIFY_EMAIL);
+
+        }
+    }
+
+    public function sendNotificationsToCouponCodeEligibleMerchant($input)
+    {
+        //Coupon Code Eligible Merchant who have not become mtu in 2 days
+
+        list($from, $to) = $this->getTimeWindowForCron($input, Constants::NOT_MTU_IN_TWO_DAY_CACHE_KEY,2);
+
+        $merchantIdList = $this->repo->merchant->fetchAllLiveAndActivatedMerchants($from,$to);
+
+        $offerMTUCouponCode = $this->repo->coupon->fetchByCodeWithRelations(CouponCodeConstants::MTU_COUPON, MerchantAccount::SHARED_ACCOUNT);
+
+        $merchantList = $this->repo
+            ->merchant_promotion
+            ->fetchMerchantsWithPromotion(
+                $offerMTUCouponCode->getId(),
+                $from,
+                $to
+            );
+
+        $merchantList =  array_diff($merchantIdList, $merchantList);
+
+        $filteredMerchants = $this->repo->transaction->filterMerchantsWithFirstTransactionAboveTimestamp(
+            $merchantList, $from);
+
+        $merchantIdList =  array_diff($merchantList, $filteredMerchants);
+
+        $this->trace->info(TraceCode::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU_NOTIFICATION, [
+            'merchants_count' => count($merchantIdList),
+            'type'            => 'sendNotification',
+            'to'              => $to,
+            'from'            => $from
+        ]);
+
+        if (empty($merchantIdList) === true)
+        {
+            $this->trace->info(TraceCode::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU_NOTIFICATION_SKIPPED, [
+                'merchants_count' => count($merchantIdList),
+                'type'            => 'sendNotification',
+                'reason'          => 'no merchants found'
+            ]);
+            return;
+        }
+
+        foreach ($merchantIdList as $merchantId)
+        {
+            $args = [
+                Constants::MERCHANT => $this->repo->merchant->findOrFailPublic($merchantId)
+            ];
+
+            (new OnboardingNotificationHandler($args))
+                ->sendEventNotificationForMerchant($merchantId, Events::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU);
         }
     }
 }

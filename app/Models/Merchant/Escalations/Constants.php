@@ -19,6 +19,8 @@ class Constants
     const ESCALATION_CACHE_KEY                         = 'onboarding_escalation_timestamp';
     const SEGMENT_MTU_CACHE_KEY                        = 'onboarding_segment_mtu_timestamp';
     const L1_ACTIVATION_NOT_STARTED_IN_1_DAY_CACHE_KEY = 'onboarding_segment_mtu_timestamp';
+    const EMAIL_NOT_VERIFIED_IN_1_DAY_CACHE_KEY        = 'onboarding_email_not_verified_in_1_day';
+    const NOT_MTU_IN_TWO_DAY_CACHE_KEY                 = 'not_mtu_in_two_day';
     const START_TIME                                   = 'start_time';
     const END_TIME                                     = 'end_time';
     // request payload constants

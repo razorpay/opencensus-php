@@ -31,8 +31,10 @@ class Handler extends BaseHandler
         Events::FUNDS_ON_HOLD_REMINDER                      => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
         Events::ONBOARDING_ACTIVATION_L1_PENDING            => [Channel::SMS, Channel::WHATSAPP],
         Events::PAYMENTS_ENABLED                            => [Channel::SMS, Channel::WHATSAPP],
+        Events::ONBOARDING_VERIFY_EMAIL                     => [Channel::SMS, Channel::WHATSAPP],
         Events::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
-        Events::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL]
+        Events::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
+        Events::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU       => [Channel::SMS]
     ];
 
     private $activationStatus;

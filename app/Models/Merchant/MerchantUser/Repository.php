@@ -64,6 +64,17 @@ class Repository extends Base\Repository
 
     }
 
+    public function fetchMerchantIdsForUserIdsAndRole(array $userIds, string $role = Role::OWNER)
+    {
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+            ->select(Entity::MERCHANT_ID)
+            ->whereIn(Entity::USER_ID, $userIds)
+            ->where(Entity::ROLE, $role)
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
+
     public function fetchBankingSignUpTimeStampOfOwner(string $merchantId)
     {
         $query =  $this->newQuery()

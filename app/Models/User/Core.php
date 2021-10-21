@@ -8,7 +8,6 @@ use Config;
 use Carbon\Carbon;
 use Illuminate\Hashing\BcryptHasher;
 
-use RZP\Exception\BadRequestValidationFailureException;
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -24,20 +23,24 @@ use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Mail\User as UserMail;
 use RZP\Services\TokenService;
+use RZP\Constants\Environment;
 use RZP\Services\HubspotClient;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
 use RZP\Models\Admin\Admin\Token;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Http\UserRolePermissionsMap;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountService;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Notifications\Onboarding\Events;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Feature\Constants as FeatureConstant;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant\Escalations as MerchantEscalation;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 use RZP\Mail\User\ContactMobileUpdated as ContactMobileUpdatedMail;
+use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
-use RZP\Constants\Environment;
 
 class Core extends Base\Core
 {

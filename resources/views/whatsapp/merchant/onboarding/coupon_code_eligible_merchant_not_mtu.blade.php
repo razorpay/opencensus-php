@@ -1,0 +1,1 @@
+Hi {{{$merchantName}}}, we have noticed that you have not accepted your first payment yet. We have a limited time offer for you. Accept your first payment within the next 5 days and we will add INR 2 Lacs worth of Razorpay credits to your account! So visit your dashboard now and create a payment link right away at https://dashboard.razorpay.com/app/dashboard!

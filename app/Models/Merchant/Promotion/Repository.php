@@ -24,6 +24,16 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function fetchMerchantsWithPromotion(string $promotionId, $from, $to)
+    {
+        return $this->newQuery()
+            ->select(Entity::MERCHANT_ID)
+            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->where(Entity::PROMOTION_ID, $promotionId)
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
+
     public function getCountByPromotionId(string $promotionId)
     {
         $count = $this->newQuery()
