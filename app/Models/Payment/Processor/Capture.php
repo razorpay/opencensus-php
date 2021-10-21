@@ -1258,33 +1258,37 @@ trait Capture
 
             $orderId = $payment->getApiOrderId();
 
-           $transferscount =  $this->repo
-                                    ->transfer
-                                    ->updateTransferStatusBySourceTypeAndId(Constants\Entity::ORDER, $orderId, Transfer\Status::PENDING);
+            $transfersCount = Tracer::inSpan(['name' => 'order.transfer.update_status'], function() use ($orderId)
+            {
+                return $this->repo
+                            ->transfer
+                            ->updateTransferStatusBySourceTypeAndId(Constants\Entity::ORDER, $orderId, Transfer\Status::PENDING);
+            });
+
             $input = [
                 'order_id'    => $orderId,
                 'payment_id'  => $payment->getId(),
                 'mode'        => $this->mode,
             ];
 
-           if($transferscount > 0)
-           {
-               $this->trace->info(
-                   TraceCode::ORDER_TRANSFER_PROCESS_SQS_PUSH_INIT,
-                   [
-                       'input' => $input,
-                   ]);
+            if($transfersCount > 0)
+            {
+                $this->trace->info(
+                    TraceCode::ORDER_TRANSFER_PROCESS_SQS_PUSH_INIT,
+                    [
+                        'input' => $input,
+                    ]);
 
-               (new Transfer\Core())->dispatchForTransferProcessing(Transfer\Constant::ORDER, $payment);
-           }
-           else
-           {
-               $this->trace->info(
-                   TraceCode::NO_TRANSFERS_FOR_ORDERS,
-                   [
-                       'input' => $input,
-                   ]);
-           }
+                (new Transfer\Core())->dispatchForTransferProcessing(Transfer\Constant::ORDER, $payment);
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::NO_TRANSFERS_FOR_ORDERS,
+                    [
+                        'input' => $input,
+                    ]);
+            }
         }
         catch (\Throwable $e)
         {

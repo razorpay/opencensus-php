@@ -3,6 +3,7 @@
 namespace RZP\Models\Order;
 
 use RZP\Constants;
+use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer;
 use RZP\Models\Merchant\Methods;
@@ -83,9 +84,10 @@ class PostCreateHook extends Hook
         {
             $transfers = $this->repo->transaction(function() use ($order, $input)
             {
-                $transfers = (new Transfer\Core())->createForOrder($order, $input);
-
-                return $transfers;
+                return Tracer::inSpan(['name' => 'order.transfer.create'], function() use ($order, $input)
+                {
+                    return (new Transfer\Core())->createForOrder($order, $input);
+                });
             });
 
             (new Transfer\Metric())->pushCreateSuccessMetrics($input);

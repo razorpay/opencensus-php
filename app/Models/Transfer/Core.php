@@ -193,7 +193,10 @@ class Core extends Base\Core
                 $this->getLinkedAccountNotes($input);
             }
 
-            $transfer = $this->buildTransferEntity($order, $to, $input, $this->merchant);
+            $transfer = Tracer::inSpan(['name' => 'order.transfer.create.build'], function() use ($order, $to, $input)
+            {
+                return $this->buildTransferEntity($order, $to, $input, $this->merchant);
+            });
 
             $this->repo->saveOrFail($transfer);
 
@@ -607,7 +610,10 @@ class Core extends Base\Core
 
         $this->addAccountFromAccountCodeIfApplicable($transfers);
 
-        $validator->validateTransferForOrder($transfers, $orderAmount);
+        Tracer::inSpan(['name' => 'order.transfer.validate'], function() use ($validator, $transfers, $orderAmount)
+        {
+            $validator->validateTransferForOrder($transfers, $orderAmount);
+        });
 
         if ($this->checkBalanceTransfer($transfers) === true)
         {
