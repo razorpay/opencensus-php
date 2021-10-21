@@ -92,7 +92,7 @@ app
         return Object.keys(obj);
       };
 
-      const LoginCardIDs = ['login_instant_settlements', 'login_payment_buttons'];
+      const LoginCardIDs = ['login_instant_settlements', 'super_checkout_webinar_buttons'];
       const actionToCardIDMap = {};
       const COOKIE_POLICY_DOCS = {
         CHROME:

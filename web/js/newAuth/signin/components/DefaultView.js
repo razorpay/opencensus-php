@@ -18,12 +18,12 @@ const DefaultView = () => {
     }
   };
 
-  const handlePaymentButtonCtaClick = () => {
+  const handleSupercheckoutWebinarButtonCtaClick = () => {
     if (window.rzpQ.push) {
       window.rzpQ.push(
         window.rzpQ.now().onbr().initiated('login.non_login_actions', {
           action: 'click Promotion 2 CTA',
-          promotion_title: 'payment buttons',
+          promotion_title: '1ccSuperCheckout-Webinar-October',
         }),
       );
     }
@@ -68,23 +68,23 @@ const DefaultView = () => {
         </View>
         <Space margin={[3.5, 0, 0, 0]}>
           <Text size="large" color="shade.700" weight="bold" align="left">
-            Payment Buttons
+            Webinar & 50k Free credits
           </Text>
         </Space>
         <Space margin={[1, 0, 0, 0]}>
           <Text size="medium" color="shade.700">
-            Start accepting payments on your website or blog in less than 5 minutes. No coding
-            needed.
+            Join Razorpay experts to learn how you can offer your customers a world class shopping
+            experience and grow your ecommerce business.
           </Text>
         </Space>
         <Space margin={[1, 0, 3, 0]} padding={[0]}>
           <CustomLinkButton
             as="a"
-            href="https://razorpay.com/payment-buttons/?utm_source=signup&utm_medium=banner&utm_campaign=paymentbuttons"
+            href="https://lp.razorpay.com/links/ecommerce-business-growth-webinar-0-0-0?__hstc=123703508.fb5e48a6bfc64824f793da2dc9cd78f0.1631528914743.1632898070818.1634728653658.3&__hssc=123703508.1.1634728653658&__hsfp=2491448087"
             target="_blank"
-            onClick={handlePaymentButtonCtaClick}
+            onClick={handleSupercheckoutWebinarButtonCtaClick}
           >
-            Learn More
+            Register for free
             <span>→</span>
           </CustomLinkButton>
         </Space>
