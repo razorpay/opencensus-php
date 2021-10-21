@@ -105,7 +105,7 @@ class Processor extends VirtualAccount\Processor
     {
         $payeeVpa = $entity->getPayeeVpa();
 
-        $vpa = $this->repo->vpa->findByAddress($payeeVpa, true);
+        $vpa = $this->repo->vpa->findByAddress($payeeVpa);
 
         if ($vpa === null)
         {

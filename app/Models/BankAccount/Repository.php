@@ -11,7 +11,6 @@ use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
 use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Balance;
-use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
@@ -502,34 +501,5 @@ class Repository extends Base\Repository
         }
 
         return $query->first();
-    }
-
-    public function findbyPublicIdAndMerchantAlsoWithTrash(
-        string $id,
-        Merchant\Entity $merchant,
-        $withTrashed = true): PublicEntity
-    {
-
-        $entity = $this->getEntityClass();
-
-        $entity::verifyIdAndStripSign($id);
-
-        $query = $this->newQuery()
-                      ->where(Entity::ID, $id)
-                      ->where(Entity::MERCHANT_ID, $merchant->getId());
-
-        if ($withTrashed === true)
-        {
-            $query = $query->withTrashed();
-        }
-
-        $entity = $query->first();
-
-        if (method_exists($entity, 'merchant') === true)
-        {
-            $entity->merchant()->associate($merchant);
-        }
-
-        return $entity;
     }
 }

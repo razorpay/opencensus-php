@@ -664,7 +664,7 @@ class Processor extends VirtualAccount\Processor
 
         $bankAccount = $this->repo
                             ->bank_account
-                            ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode, true);
+                            ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode);
 
         return $bankAccount;
     }

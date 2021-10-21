@@ -229,20 +229,6 @@ abstract class Processor extends Base\Core
                     $paymentProcessor->autoCapturePayment($paymentProcessor->getPayment());
                 }
             }
-            else
-            {
-                if (($this->isVirtualAccountDueToBeClosed($entity) === true) or
-                    ($this->virtualAccount->isClosed() === true))
-                {
-                    $refundNotes = [
-                        'notes' => [
-                            'refund_reason' => PublicErrorDescription::BAD_REQUEST_VIRTUAL_ACCOUNT_CLOSED
-                        ]
-                    ];
-
-                    $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment(), $refundNotes);
-                }
-            }
         }
         catch(\Exception $ex)
         {
@@ -371,24 +357,6 @@ abstract class Processor extends Base\Core
     {
         $this->setVirtualAccount($entity);
 
-        if ($this->virtualAccount !== null)
-        {
-            if ($this->virtualAccount->isClosed() === true)
-            {
-                $this->setUnexpectedReason($entity, TraceCode::VIRTUAL_ACCOUNT_CLOSED);
-                $this->trace->info(
-                    TraceCode::VIRTUAL_ACCOUNT_CLOSED,
-                    $entity->toArray());
-                return false;
-            }
-
-            if ($this->isVirtualAccountDueToBeClosed($entity) === true)
-            {
-                return false;
-            }
-
-        }
-
         if ($this->useSharedVirtualAccount($entity) === true)
         {
             if (($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) and
@@ -444,7 +412,18 @@ abstract class Processor extends Base\Core
         return false;
     }
 
-    protected function isVirtualAccountDueToBeClosed (Base\PublicEntity $entity) : bool {
+    protected function useSharedVirtualAccount(Base\PublicEntity $entity): bool
+    {
+        /** @var Merchant\Entity $merchant */
+        $merchant = $this->virtualAccount->merchant;
+
+        if (($merchant->isLive() === false) and
+            ($this->isLiveMode() === true))
+        {
+            $this->setUnexpectedReason($entity, self::VIRTUAL_ACCOUNT_MERCHANT_NOT_LIVE);
+
+            return true;
+        }
 
         if ($this->virtualAccount->isDueToBeClosed() === true)
         {
@@ -468,26 +447,6 @@ abstract class Processor extends Base\Core
 
             $this->pushVaPaymentFailedDueToClosedVaEventToLake($entity);
 
-            return true;
-        }
-       return false;
-    }
-
-    protected function useSharedVirtualAccount(Base\PublicEntity $entity): bool
-    {
-        /** @var Merchant\Entity $merchant */
-        $merchant = $this->virtualAccount->merchant;
-
-        if (($merchant->isLive() === false) and
-            ($this->isLiveMode() === true))
-        {
-            $this->setUnexpectedReason($entity, self::VIRTUAL_ACCOUNT_MERCHANT_NOT_LIVE);
-
-            return true;
-        }
-
-        if ($this->isVirtualAccountDueToBeClosed($entity) === true)
-        {
             return true;
         }
 

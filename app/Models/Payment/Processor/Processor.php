@@ -6,8 +6,9 @@ use App;
 use Route;
 use Config;
 use Carbon\Carbon;
-use RZP\Base\Repository;
+
 use RZP\Error\Error;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
@@ -29,6 +30,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Currency;
 use RZP\Models\Terminal;
 use RZP\Services\Doppler;
+use RZP\Services\KafkaProducer;
+use RZP\Tests\Functional\Payment\OtpPaymentTest;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\UpiMandate;
@@ -41,7 +44,6 @@ use RZP\Models\Payment\Flow;
 use RZP\Jobs\TransferProcess;
 use RZP\Constants\Environment;
 use RZP\Models\Payment\Metric;
-use RZP\Services\KafkaProducer;
 use RZP\Models\Payment\Status;
 use RZP\Models\UpiMandate\Core;
 use RZP\Models\Payment\AuthType;
@@ -57,7 +59,6 @@ use RZP\Models\Payment\Refund\Speed;
 use RZP\Gateway\Base\CardCacheTrait;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
-use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\SubscriptionRegistration;
@@ -68,7 +69,6 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Services\NbPlus as NbPlusPaymentService;
-use RZP\Tests\Functional\Payment\OtpPaymentTest;
 use RZP\Models\Transfer\Constant as TransferConstant;
 use RZP\Models\UpiMandate\Frequency as UPIMandateFrequency;
 use RZP\Models\UpiMandate\RecurringType as UPIMandateRecurringType;
@@ -3837,16 +3837,7 @@ class Processor
 
         $entity = $receiverInput['type'];
 
-        switch ($entity)
-        {
-            case Receiver::BANK_ACCOUNT :
-            case Receiver::QR_CODE :
-            case Receiver::VPA :
-                $receiver = $this->repo->$entity->findbyPublicIdAndMerchantAlsoWithTrash($receiverInput['id'], $this->merchant);
-                break;
-            default :
-                $receiver = $this->repo->$entity->findbyPublicIdAndMerchant($receiverInput['id'], $this->merchant);
-        }
+        $receiver = $this->repo->$entity->findbyPublicIdAndMerchant($receiverInput['id'], $this->merchant);
 
         $payment->receiver()->associate($receiver);
     }

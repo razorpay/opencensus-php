@@ -353,15 +353,15 @@ class VirtualAccountTest extends TestCase
 
         $virtualAccount = $this->getLastEntity('virtual_account', true);
 
-        $this->assertEquals(10000, $virtualAccount['amount_paid']);
+        $this->assertEquals(5000, $virtualAccount['amount_paid']);
+
+        $this->assertEquals('va_ShrdVirtualAcc', $virtualAccount['id']);
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals('authorized', $payment['status']);
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
-
-        $this->assertEquals($bankTransfer['virtual_account_id'], $virtualAccount['id']);
 
         $this->assertEquals(false, $bankTransfer['expected']);
 

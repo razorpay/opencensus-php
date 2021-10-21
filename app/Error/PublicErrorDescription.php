@@ -382,7 +382,6 @@ class PublicErrorDescription
 
     const BAD_REQUEST_BUSINESS_INFRINGEMENT_PHRASES                             = 'Business infringement phrases have been identified, please review the text in the field : ';
     const BAD_REQUEST_ACCOUNT_CLOSED                                            = 'Bank Account is closed.';
-    const BAD_REQUEST_VIRTUAL_ACCOUNT_CLOSED                                    = 'Virtual Account is closed';
     const BAD_REQUEST_ACCOUNT_NUMBER_MISMATCH                                   = 'Bank Account Number does not match.';
     const BAD_REQUEST_ACCOUNT_BLOCKED                                           = 'Bank Account is blocked.';
     const BAD_REQUEST_ACCOUNT_DORMANT                                           = 'Bank account is dormant.';
