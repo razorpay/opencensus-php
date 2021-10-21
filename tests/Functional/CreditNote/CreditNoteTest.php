@@ -55,7 +55,22 @@ class CreditNoteTest extends TestCase
 
         $testData['request']['content']['invoices'][] = ['invoice_id' => $invoice->getPublicId(), 'amount' => 1000];
 
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+        }
+
         $this->startTest();
+
+        if ($flag === true)
+        {
+            $this->assertPassportKeyExists('consumer.id');
+            $this->assertNull($this->getDbLastEntity('refund')); // making sure refunds are not created in api db in new refund flow
+        }
     }
 
     public function testApplyCreditNoteWithSingleInvoiceWithoutCustomer()
@@ -77,6 +92,15 @@ class CreditNoteTest extends TestCase
         $testData['request']['url'] = '/creditnote/'.$creditNote['id'].'/apply';
 
         $testData['request']['content']['invoices'][] = ['invoice_id' => $invoice->getPublicId(), 'amount' => 1000];
+
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+        }
 
         $this->startTest();
     }
@@ -109,6 +133,15 @@ class CreditNoteTest extends TestCase
 
         $testData['request']['content']['invoices'][] = ['invoice_id' => $invoice->getPublicId(), 'amount' => 1000];
 
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+        }
+
         $this->startTest();
     }
 
@@ -139,6 +172,15 @@ class CreditNoteTest extends TestCase
         $testData['request']['url'] = '/creditnote/'.$creditNote['id'].'/apply';
 
         $testData['request']['content']['invoices'][] = ['invoice_id' => $invoice->getPublicId(), 'amount' => 1000];
+
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+        }
 
         $this->startTest();
     }

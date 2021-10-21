@@ -2755,6 +2755,25 @@ class InvoiceTest extends TestCase
                             'invoice_id' => '1000006invoice',
                         ]);
 
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+
+            $input['amount'] = $payment->getAmount();
+            $refund = $this->refundAuthorizedPayment($payment->getPublicId(), $input);
+            $this->assertPassportKeyExists('consumer.id'); // just check for presence of passport 
+
+            $this->ba->cronAuth();
+
+            $this->startTest();
+
+            return;
+        }
+
         $this->refundAuthorizedPayment($payment->getPublicId());
 
         $this->ba->cronAuth();

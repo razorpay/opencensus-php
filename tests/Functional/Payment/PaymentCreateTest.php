@@ -3805,7 +3805,21 @@ class PaymentCreateTest extends TestCase
 
         Carbon::setTestNow($after);
 
-        $this->refundOldAuthorizedPayments();
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+        }
+
+        $this->refundOldAuthorizedPayments($flag);
+
+        if ($flag === true)
+        {
+            $this->updatePaymentStatus($payment->getId(), [], true);
+        }
 
         $payment = $this->getDbLastPayment();
 

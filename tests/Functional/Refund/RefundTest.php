@@ -13,8 +13,10 @@ use RZP\Models\Settlement\Channel;
 use RZP\Services\Scrooge;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Repository;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
@@ -926,7 +928,21 @@ class RefundTest extends TestCase
 
         $payments = $this->fixtures->times(2)->create('payment:authorized');
 
-        $content = $this->refundOldAuthorizedPayments();
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+        }
+
+        $content = $this->refundOldAuthorizedPayments($flag);
+
+        if ($flag === true)
+        {
+            $this->assertPassportKeyExists('consumer.id'); // just check for presence of passport
+        }
 
         $this->assertNull($payments[0]->getRefundAt());
         $this->assertNull($payments[1]->getRefundAt());
@@ -950,7 +966,16 @@ class RefundTest extends TestCase
                 'refund_at'  => $refundAt
             ]);
 
-        $content = $this->refundOldAuthorizedPayments();
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+        }
+
+        $content = $this->refundOldAuthorizedPayments($flag);
 
         $this->assertArrayHasKey('refunded', $content);
         $this->assertEquals(1, $content['refunded']);
@@ -989,10 +1014,19 @@ class RefundTest extends TestCase
 
         $this->assertSame('authorized', $payment->getStatus());
 
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+        }
+
         // Now start refunding old authorized payments
         // Setting it to null, as it should not go through scrooge.
         $this->gateway = null;
-        $data = $this->refundOldAuthorizedPayments();
+        $data = $this->refundOldAuthorizedPayments($flag);
 
         // Should not refund this payments as delay set
         $this->assertSame(0, $data['authorized']);
@@ -1002,7 +1036,7 @@ class RefundTest extends TestCase
         $testTime = Carbon::now()->addDays(30);
         Carbon::setTestNow($testTime);
 
-        $data = $this->refundOldAuthorizedPayments();
+        $data = $this->refundOldAuthorizedPayments($flag);
 
         // Should refund this payments as already 30 days completed
         $this->assertSame(1, $data['authorized']);
@@ -1026,7 +1060,16 @@ class RefundTest extends TestCase
         // -15 days offset
         $offsetInSeconds = 1296000;
 
-        $response =  $this->refundOldAuthorizedPayments($offsetInSeconds);
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+        }
+
+        $response =  $this->refundOldAuthorizedPayments($flag, $offsetInSeconds);
 
         $this->assertArraySubset([
             'refunded' => 2
@@ -1046,7 +1089,16 @@ class RefundTest extends TestCase
                 'refund_at'  => $refundAt,
             ]);
 
-        $content = $this->refundOldAuthorizedPayments();
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+        }
+
+        $content = $this->refundOldAuthorizedPayments($flag);
 
         $this->assertArrayHasKey('refunded', $content);
         $this->assertEquals(0, $content['refunded']);
@@ -1075,7 +1127,16 @@ class RefundTest extends TestCase
                 'refund_at'  => $refundAt,
             ]);
 
-        $content = $this->refundOldAuthorizedPayments();
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+        }
+
+        $content = $this->refundOldAuthorizedPayments($flag);
 
         $this->assertArrayHasKey('refunded', $content);
         $this->assertEquals(2, $content['refunded']);
@@ -1258,7 +1319,28 @@ class RefundTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+        }
+
         $this->runRequestResponseFlow($testData);
+
+        // Since, refunds are no longer created in API DB,
+        // need to update payments explicitly.
+        if ($flag === true)
+        {
+            $this->repo = (new Repository);
+            $payments = $this->repo->getAuthorizedPaymentsOfPaidOrderForRefund();
+
+            foreach ($payments as $payment) {
+                $this->updatePaymentStatus($payment->getId(), [], true);
+            }
+        }
 
         // Assert payment counts by status
 
@@ -1304,7 +1386,16 @@ class RefundTest extends TestCase
 
         Carbon::setTestNow($now);
 
-        $content = $this->refundOldAuthorizedPayments();
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+        }
+
+        $content = $this->refundOldAuthorizedPayments($flag);
 
         $this->assertSame(1, $content['refunded']);
     }
@@ -1347,7 +1438,16 @@ class RefundTest extends TestCase
             'payment:authorized',
             ['created_at' => $createdAt]);
 
-        $content = $this->refundOldAuthorizedPayments();
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+        }
+
+        $content = $this->refundOldAuthorizedPayments($flag);
 
         $this->assertArrayHasKey('refunded', $content);
         $this->assertEquals(1, $content['refunded']);
@@ -1385,13 +1485,23 @@ class RefundTest extends TestCase
             return $content;
         });
 
-        $content = $this->refundOldAuthorizedPayments();
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = false;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+        }
+
+        $content = $this->refundOldAuthorizedPayments($flag);
 
         $this->assertArrayHasKey('refunded', $content);
         $this->assertEquals(1, $content['refunded']);
         $this->assertArrayHasKey('authorized', $content);
         $this->assertEquals(1, $content['authorized']);
 
+        // COME BACK TO THIS LATER
         $refundedEntities = $this->getEntities('hdfc', ['count' => 1], true);
 
         foreach ($refundedEntities['items'] as $entity)
@@ -1435,21 +1545,33 @@ class RefundTest extends TestCase
             return $content;
         });
 
-        $content = $this->refundOldAuthorizedPayments();
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = false;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+        }
+
+        $content = $this->refundOldAuthorizedPayments($flag);
 
         $this->assertArrayHasKey('refunded', $content);
         $this->assertEquals(1, $content['refunded']);
         $this->assertArrayHasKey('authorized', $content);
         $this->assertEquals(1, $content['authorized']);
 
+        // COME BACK TO THIS LATER
         $hdfcRefundedEntity = $this->getLastEntity('hdfc', true);
 
         $this->assertEquals('refunded', $hdfcRefundedEntity['status']);
 
-        $refund = $this->getLastEntity('refund', true);
-
-        $this->assertEquals(true, $refund['gateway_refunded']);
-        $this->assertNotNull($refund['transaction_id']);
+        if ($flag === false)
+        {
+            $refund = $this->getLastEntity('refund', true);
+            $this->assertEquals(true, $refund['gateway_refunded']);
+            $this->assertNotNull($refund['transaction_id']);
+        }
     }
 
     public function testVerifyRefund()
@@ -1479,6 +1601,9 @@ class RefundTest extends TestCase
     {
         $this->markTestSkipped('Failing occasionally - to be fixed');
         // Case where refunded payment has no entry in hdfc
+        // 
+        // Refunds flow has changed. 
+        // Before removing skip test, make sure Razorx experiment is turned ON.
 
         $authorizedAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp;
 
@@ -1531,6 +1656,8 @@ class RefundTest extends TestCase
     public function testCreateMissingRefundTransaction()
     {
         $this->markTestSkipped('Transactions are getting created now');
+        // Refunds flow has changed. 
+        // Before removing skip test, make sure Razorx experiment is turned ON.
 
         $authorizedAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp;
 
@@ -7166,5 +7293,77 @@ class RefundTest extends TestCase
         $transaction = $this->getLastEntity('transaction', true);
 
         $this->assertEquals(80000, $transaction['debit']);
+    }
+
+    public function testAuthorizedPaymentRefundOnScrooge()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                   ->setConstructorArgs([$this->app])
+                   ->setMethods(['getTreatment'])
+                   ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode)
+                              {
+                                if ($feature === RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1)
+                                  {
+                                    return 'on';
+                                  }
+                                  return 'off';
+                              }));
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $input = ['amount' => $payment['amount']];
+
+        $refund = $this->refundAuthorizedPayment($payment['id'], $input);
+        $this->assertPassportKeyExists('consumer.id'); // just check for presence of passport 
+
+        // $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertSame($payment['id'], Payment::stripDefaultSign($refund['payment_id']));
+
+
+        $this->assertSame('refunded', $payment['status']);
+    }
+
+    public function testInternalAuthorizedPaymentRefundOnScrooge()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                   ->setConstructorArgs([$this->app])
+                   ->setMethods(['getTreatment'])
+                   ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode)
+                              {
+                                if ($feature === RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1)
+                                  {
+                                    return 'on';
+                                  }
+                                  return 'off';
+                              }));
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $input = ['amount' => $payment['amount']];
+
+        $refund = $this->refundAuthorizedPayment($payment['id'], $input, true);
+        $this->assertPassportKeyExists('consumer.id'); // just check for presence of passport 
+
+        // $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertSame($payment['id'], Payment::stripDefaultSign($refund['payment_id']));
+
+
+        $this->assertSame('refunded', $payment['status']);
     }
 }

@@ -236,6 +236,7 @@ abstract class Base extends BaseProcessor
             return;
         }
 
+        // based on experiment, refund request will be routed to Scrooge
         return (new Payment\Processor\Processor($payment->merchant))->refundAuthorizedPayment($payment);
     }
 

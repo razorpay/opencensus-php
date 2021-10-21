@@ -38,6 +38,7 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
+use RZP\Models\Payment\Entity as Payment;
 
 class BankTransferTest extends TestCase
 {
@@ -1551,31 +1552,51 @@ class BankTransferTest extends TestCase
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
         $this->assertNotNull($payment['receiver_type']);
 
-        $this->refundAuthorizedPayment($payment['id']);
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+
+            $input = ['amount' => $payment['amount']];
+            $refund = $this->refundAuthorizedPayment($payment['id'], $input);
+            $this->assertPassportKeyExists('consumer.id'); // just check for presence of passport 
+
+            $this->assertEquals('processed', $refund['status']); // refunds get processed
+            $this->assertEquals(5000000, $refund['amount']);
+        }
+        else
+        {
+            $this->refundAuthorizedPayment($payment['id']);
+
+             // Refund is created
+            $refund = $this->getLastEntity('refund', true);
+            $this->assertEquals('initiated', $refund['status']);
+            $this->assertEquals(5000000, $refund['amount']);
+
+            // Transaction is created for refund
+            $transaction = $this->getLastEntity('transaction', true);
+            $this->assertEquals('refund', $transaction['type']);
+            $this->assertEquals($refund['id'], $transaction['entity_id']);
+
+            // Fund transfer attempt created for refund
+            $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+            $this->assertEquals('created', $attempt['status']);
+            $this->assertEquals($refund['id'], $attempt['source']);
+            $this->assertEquals('10000000000000', $attempt['merchant_id']);
+            $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
+            $this->assertEquals('ACC DOESNT EXIST-'.$bankTransfer['utr'], $attempt['narration']);
+
+        }
 
         // Payment is refunded
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('refunded', $payment['status']);
-
-        // Refund is created
-        $refund = $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
-        $this->assertEquals('initiated', $refund['status']);
-        $this->assertEquals(5000000, $refund['amount']);
 
-        // Transaction is created for refund
-        $transaction = $this->getLastEntity('transaction', true);
-        $this->assertEquals('refund', $transaction['type']);
-        $this->assertEquals($refund['id'], $transaction['entity_id']);
-
-        // Fund transfer attempt created for refund
-        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals('created', $attempt['status']);
-        $this->assertEquals($refund['id'], $attempt['source']);
-        $this->assertEquals('10000000000000', $attempt['merchant_id']);
-        $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
-        $this->assertEquals('ACC DOESNT EXIST-'.$bankTransfer['utr'], $attempt['narration']);
     }
 
     public function testBankTransferProcessInvalidAccount()
@@ -1622,31 +1643,52 @@ class BankTransferTest extends TestCase
         // Terminal should be 0 so fallback terminal should be assigned to this payment
         $this->assertEquals('GENERICABNKACC', $payment['terminal_id']);
 
-        $this->refundAuthorizedPayment($payment['id']);
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+
+            $input = ['amount' => $payment['amount']];
+            $refund = $this->refundAuthorizedPayment($payment['id'], $input);
+            $this->assertPassportKeyExists('consumer.id'); // just check for presence of passport 
+
+            $this->assertEquals('processed', $refund['status']); // refunds get processed
+            $this->assertEquals(5000000, $refund['amount']);
+
+            // COME BACK TO THIS LATER
+            // transactions and fta's are not asserted
+        }
+        else
+        {
+            $this->refundAuthorizedPayment($payment['id']);
+
+            // Refund is created
+            $refund = $this->getLastEntity('refund', true);
+            $this->assertEquals($payment['id'], $refund['payment_id']);
+            $this->assertEquals('initiated', $refund['status']);
+            $this->assertEquals(5000000, $refund['amount']);
+
+             // Transaction is created for refund
+            $transaction = $this->getLastEntity('transaction', true);
+            $this->assertEquals('refund', $transaction['type']);
+            $this->assertEquals($refund['id'], $transaction['entity_id']);
+
+            // Fund transfer attempt created for refund
+            $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+            $this->assertEquals('created', $attempt['status']);
+            $this->assertEquals($refund['id'], $attempt['source']);
+            $this->assertEquals('10000000000000', $attempt['merchant_id']);
+            $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
+            $this->assertEquals('ACC DOESNT EXIST-'.$bankTransfer['utr'], $attempt['narration']);
+        }
 
         // Payment is refunded
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('refunded', $payment['status']);
-
-        // Refund is created
-        $refund = $this->getLastEntity('refund', true);
-        $this->assertEquals($payment['id'], $refund['payment_id']);
-        $this->assertEquals('initiated', $refund['status']);
-        $this->assertEquals(5000000, $refund['amount']);
-
-        // Transaction is created for refund
-        $transaction = $this->getLastEntity('transaction', true);
-        $this->assertEquals('refund', $transaction['type']);
-        $this->assertEquals($refund['id'], $transaction['entity_id']);
-
-        // Fund transfer attempt created for refund
-        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals('created', $attempt['status']);
-        $this->assertEquals($refund['id'], $attempt['source']);
-        $this->assertEquals('10000000000000', $attempt['merchant_id']);
-        $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
-        $this->assertEquals('ACC DOESNT EXIST-'.$bankTransfer['utr'], $attempt['narration']);
 
         $this->runBankTransferRequestAssertions(
             true,
@@ -1664,6 +1706,9 @@ class BankTransferTest extends TestCase
     public function testBankTransferYesBankRefundsNotAllowed()
     {
         $this->markTestSkipped("Yesbank refunds are allowed now");
+
+        // Refunds flow has changed. 
+        // Before removing skip test, make sure Razorx experiment is turned ON.
 
         $accountNumber = $this->bankAccount['account_number'];
 
@@ -4246,6 +4291,16 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferValidateTpvWithInvalidPayerDetails()
     {
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+            $payment = $this->getDbLastEntityPublic('payment');
+        }
+
         $testData = $this->testData['bankTransferValidateTpv'];
         $testData['request']['content']['payer_account'] = strtoupper(random_alphanum_string(16));
 
@@ -4261,8 +4316,14 @@ class BankTransferTest extends TestCase
             'VIRTUAL_ACCOUNT_PAYMENT_TPV_FAILED'
         );
 
+        if ($flag === true)
+        {
+            $this->updatePaymentStatus($bankTransfer['payment_id'], [], true);
+        }
+
         // Payment is automatically refunded
         $payment = $this->getLastEntity('payment', true);
+
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('refunded', $payment['status']);
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);

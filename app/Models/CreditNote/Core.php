@@ -175,6 +175,7 @@ class Core extends Base\Core
 
                     if ($refundAmount <= $currentPaymentAmount)
                     {
+                        // based on experiment, refund request will be routed to Scrooge
                         $refund = $paymentProcessor->refundCapturedPayment($payment, array(Entity::AMOUNT => $refundAmount));
 
                         $this->postRefundActions($refund, $creditNote, $merchant, $invoice);
@@ -183,6 +184,7 @@ class Core extends Base\Core
                     }
                     else
                     {
+                        // based on experiment, refund request will be routed to Scrooge
                         $refund = $paymentProcessor->refundCapturedPayment($payment, array(Entity::AMOUNT => $currentPaymentAmount));
 
                         $this->postRefundActions($refund, $creditNote, $merchant, $invoice);

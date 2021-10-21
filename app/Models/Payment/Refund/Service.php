@@ -150,7 +150,14 @@ class Service extends Base\Service
         return (new Payment\Service)->refund($paymentId, $input);
     }
 
-    // scroogeRefundCreate : call create new refund v2 route on scrooge. Refund creation fully happens on scrooge
+    /**
+     * Call create new refund v2 route on scrooge. Refund creation completly occurs on scrooge
+     *
+     * @param string $paymentId: public payment id
+     * @param array $input: input params based on public RZP refund API doc
+     *
+     * @return array: returns successful response based on public RZP refund API doc
+     **/
     public function scroogeRefundCreate(string $paymentId, array $input)
     {
         $input[RefundConstants::PAYMENT_ID] = $paymentId;
@@ -165,6 +172,8 @@ class Service extends Base\Service
 
             $publicErrorMessage = $response['body']['public_error']['message'] ?? PublicErrorDescription::SERVER_ERROR;
 
+            $internalErrorCode = $response['body']['internal_error']['code'] ?? ErrorCode::SERVER_ERROR;
+
             // If errorcode is undefined, will fallback to server_error
             if (defined(ErrorCode::class . '::' . $publicErrorCode) === false)
             {
@@ -173,9 +182,36 @@ class Service extends Base\Service
                 $publicErrorMessage = PublicErrorDescription::SERVER_ERROR;
             }
 
-            $error = new Error($publicErrorCode, $publicErrorMessage);
+            if (defined(ErrorCode::class . '::' . $internalErrorCode) === false)
+            {
+                $internalErrorCode = ErrorCode::SERVER_ERROR;
+            }
 
-            return ApiResponse::generateErrorResponse($error, false)->original;
+            $exceptionType = str_replace(' ', '', ucwords(strtolower(str_replace('_', ' ', $publicErrorCode))));
+
+            if ($publicErrorCode != ErrorCode::SERVER_ERROR)
+            {
+                $exceptionType = str_replace('Error', '', $exceptionType);
+            }
+
+            switch ($publicErrorCode)
+            {
+                case ErrorCode::BAD_REQUEST_ERROR:
+                    $args = [constant(ErrorCode::class . '::' . $internalErrorCode)];
+                    break;
+
+                case ErrorCode::SERVER_ERROR:
+                    $args = [$publicErrorMessage, constant(ErrorCode::class . '::' . $internalErrorCode)];
+                    break;
+
+                default:
+                    $args = [$publicErrorMessage];
+                    break;
+            }
+
+            $class = 'RZP\Exception' . '\\' . $exceptionType . 'Exception';
+
+            throw new $class(...$args);
         }
 
         // body has the actual scrooge response
@@ -452,6 +488,20 @@ class Service extends Base\Service
         $response = $refund->toArray();
 
         return $response;
+    }
+
+    public function fetchEntityOrNull($id)
+    {
+        Entity::stripSignWithoutValidation($refundId);
+
+        $refund = $this->repo->refund->find($refundId);
+
+        if (empty($refund) === true)
+        {
+            return null;
+        }
+
+        return $refund;
     }
 
     /*

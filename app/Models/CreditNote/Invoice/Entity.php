@@ -2,6 +2,7 @@
 
 namespace RZP\Models\CreditNote\Invoice;
 
+use App;
 use RZP\Models\Base;
 use RZP\Models\Invoice;
 use RZP\Models\Payment\Refund;
@@ -85,7 +86,13 @@ class Entity extends Base\PublicEntity
 
     public function refund()
     {
-        return $this->belongsTo('RZP\Models\Payment\Refund\Entity');
+        // return $this->belongsTo('RZP\Models\Payment\Refund\Entity');
+        // 
+        // Since refund flow has changed, start fetching from Scrooge directly.
+        $app = App::getFacadeRoot();
+
+        return $app['scrooge']->getRefund($this->getAttribute(self::REFUND_ID));
+
     }
 
     public function getInvoiceId()

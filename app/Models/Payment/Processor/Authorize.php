@@ -6432,6 +6432,7 @@ trait Authorize
             $notifyOptions[Subscription\Event::REACTIVATED] = true;
         }
 
+        // based on experiment, refund request will be routed to Scrooge
         $this->refundAuthorizedPayment($payment);
 
         $this->repo->saveOrFail($subscription);
@@ -6551,6 +6552,7 @@ trait Authorize
         // There was no addon (upfront_amount) or this is not
         // being used as first charge.
         //
+        // based on experiment, refund request will be routed to Scrooge
         $this->refundAuthorizedPayment($payment);
     }
 

@@ -775,6 +775,49 @@ trait Refund
         return $this->callGatewayForCreateRefundRecord($data);
     }
 
+    // create a virtual refund model entity based on the input params
+    public function createVirtualRefundEntity(Payment\Entity $payment, array $input = [])
+    {
+        // build entity
+        $refundEntity = (new RefundEntity);
+
+        // remove public ids if any
+        $refundInput[RefundEntity::ID]              = Payment\Entity::stripDefaultSign($input[RefundEntity::ID]);
+        $refundInput[RefundEntity::BATCH_ID]        = Payment\Entity::stripDefaultSign($input[RefundEntity::BATCH_ID] ?? null);
+
+        // set other values if present
+        $refundInput[RefundEntity::AMOUNT]          = $input[RefundEntity::AMOUNT] ?? null;
+        $refundInput[RefundEntity::CURRENCY]        = $input[RefundEntity::CURRENCY] ?? null;
+        $refundInput[RefundEntity::SPEED_REQUESTED] = $input[RefundEntity::SPEED_REQUESTED] ?? $input[RefundEntity::SPEED] ?? null;
+        $refundInput[RefundEntity::SPEED_PROCESSED] = $input[RefundEntity::SPEED_PROCESSED] ?? null;
+        $refundInput[RefundEntity::STATUS]          = $input[RefundEntity::STATUS] ?? null;
+        $refundInput[RefundEntity::RECEIPT]         = $input[RefundEntity::RECEIPT] ?? null;
+        $refundInput[RefundEntity::NOTES]           = $input[RefundEntity::NOTES] ?? null;
+        $refundInput[RefundConstants::CREATED_AT]   = $input[RefundConstants::CREATED_AT] ?? null;
+        $refundInput[RefundEntity::TRANSACTION_ID]  = $input[RefundEntity::TRANSACTION_ID] ?? null;
+
+        // set isScrooge
+        $refundInput[RefundEntity::IS_SCROOGE]      = true;
+
+        // just remove what is not required,
+        // will be imp when we dont need to create virtual entity
+        unset($input[RefundEntity::TRANSACTION_ID]);
+
+        // assign values to entity
+        foreach ($refundInput as $key => $value)
+        {
+            $refundEntity[$key] = $value;
+        }
+
+        $merchant = $payment->merchant;
+
+        // add necessary associations
+        $refundEntity->payment()->associate($payment);
+        $refundEntity->merchant()->associate($merchant);
+
+        return $refundEntity;
+    }
+
     public function refundAuthorizedPayment(Payment\Entity $payment, array $input = [])
     {
         $this->trace->info(
@@ -783,6 +826,27 @@ trait Refund
                 'payment_id'    => $payment->getId(),
                 'input'         => $input,
             ]);
+
+        $variant = $this->app->razorx->getTreatment(
+                $this->merchant->getId(),
+                Merchant\RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1,
+                $this->mode);
+
+        if (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            $this->trace->info(
+            TraceCode::REFUND_FROM_AUTHORIZED_REQUEST_SCROOGE,
+            [
+                'payment_id' => $payment->getId(),
+                'input'      => $input,
+            ]);
+
+            // Refunds for authorized payments are always full, explicitly set amount
+            $input['amount'] = $payment->getAmount();
+
+            // Route refund creation to scrooge
+            return $this->newRefundV2Flow($payment, $input);
+        }
 
         // Some bank transfer payments cannot be refunded.
         if ($payment->isBankTransfer() === true)
@@ -817,6 +881,26 @@ trait Refund
         // }
 
         return $this->refund($payment, $input);
+    }
+
+    private function newRefundV2Flow(Payment\Entity $payment, array $input = [])
+    {
+        // Special case - payment pages calls refund via public auth. In Scrooge, passport will have authenticated=false. 
+        // Short term workaround to allow payment pages business flow. Long term, service mesh would help Scrooge identify and authenticate internal services with respective permissions.
+        // 
+        // pls note, in API codebase, payment link is treated as payment page. 
+        // Check - ApiEventSubscriber::onPaymentCaptured
+        if ($payment->hasPaymentLink() === true)
+        {
+            $input['payment_page'] = true;
+        }
+
+        // Route refund creation to scrooge
+        $response = (new Payment\Refund\Service())->scroogeRefundCreate($payment->getPublicId(), $input);
+
+        $virtualRefundEntity = $this->createVirtualRefundEntity($payment, $response);
+
+        return $virtualRefundEntity;
     }
 
     public function refundPaymentViaMerchant($paymentId, $input)
@@ -2754,6 +2838,27 @@ trait Refund
 
     public function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null, $batchID = null)
     {
+        $variant = $this->app->razorx->getTreatment(
+                $this->merchant->getId(),
+                Merchant\RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1,
+                $this->mode);
+
+        if (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            $this->trace->info(
+            TraceCode::REFUND_FROM_CAPTURED_REQUEST_SCROOGE,
+            [
+                'payment_id' => $payment->getId(),
+                'input'      => $input,
+            ]);
+
+            // For captured payments, refund amount either needs to be defined in $input params, or
+            // by default refund amount will be full payment amount.
+            // No need to override refund amount here.
+
+            // Route refund creation to scrooge
+            return $this->newRefundV2Flow($payment, $input);
+        }
 
         $variant = $this->app->razorx->getTreatment(
                 $this->merchant->getId(),

@@ -28,7 +28,9 @@ class Core extends Base\Core
 
         $creditNoteInvoice->customer()->associate($creditNote->customer);
 
-        $creditNoteInvoice->refund()->associate($refund);
+        // based on experiment, refunds are created on Scrooge
+        // however, all references need to come from virtual refund entity
+        $creditNoteInvoice['refund_id'] = $refund['id'];
 
         $creditNoteInvoice->creditNote()->associate($creditNote);
 

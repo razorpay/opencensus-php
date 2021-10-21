@@ -271,6 +271,7 @@ class Service extends Base\Service
         //
         $payment = $this->repo->payment->findOrFailByPublicIdWithParams($id, []);
 
+        // based on experiment, refund request will be routed to Scrooge
         $refund = $this->getNewProcessor($payment->merchant)->refundAuthorizedPayment($payment, $input);
 
         return $refund->toArrayPublic();
@@ -296,6 +297,7 @@ class Service extends Base\Service
 
             try
             {
+                // based on experiment, refund request will be routed to Scrooge
                 $refund = $this->getNewProcessor($merchant)->refundAuthorizedPayment($payment);
 
                 $success++;
@@ -2032,6 +2034,7 @@ class Service extends Base\Service
 
             try
             {
+                // based on experiment, refund request will be routed to Scrooge
                 $this->getNewProcessor($merchant)->refundAuthorizedPayment($payment);
 
                 $this->trace->info(TraceCode::ORDER_REFUNDED, $tracePayload);
@@ -2179,6 +2182,7 @@ class Service extends Base\Service
 
                 $merchant = $payment->merchant;
 
+                // based on experiment, refund request will be routed to Scrooge
                 $refund = $this->getNewProcessor($merchant)
                                ->refundAuthorizedPayment($payment);
 

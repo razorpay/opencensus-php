@@ -210,6 +210,7 @@ abstract class Processor extends Base\Core
                         ]
                     ];
 
+                    // based on experiment, refund request will be routed to Scrooge
                     $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment(), $refundNotes);
                 }
                 else if ($this->verifyPayerUsingTpv($entity) === false)
@@ -220,6 +221,7 @@ abstract class Processor extends Base\Core
                         ]
                     ];
 
+                    // based on experiment, refund request will be routed to Scrooge
                     $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment(), $refundNotes);
                 }
                 else if ($entity->payment->hasBeenCaptured() === false)

@@ -1286,18 +1286,38 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function refundAuthorizedPayment($id, array $input = [])
+    protected function refundAuthorizedPayment($id, array $input = [], $internal = false)
     {
-        $this->ba->adminAuth();
-
         $request = array(
             'method'  => 'POST',
             'url'     => '/payments/'.$id.'/authorize_refund',
             'content' => $input);
 
+        // For testing route - internal_payment_authorize_refund
+        // This route is used by PG Router.
+        if ($internal === true)
+        {
+            $this->ba->appAuth();
+            $request['url'] = '/internal' . $request['url'];
+        }
+        else
+        {
+            $this->ba->adminAuth();
+        }
+
         $refund = $this->makeRequestAndGetContent($request);
 
+        if ($internal === true)
+        {
+            $refund = $refund['data'];
+        }
+
         $this->assertEquals('refund', $refund['entity']);
+
+        if ($this->updatePaymentStatus($id, $input, true) === true)
+        {
+            return $refund;
+        }
 
         if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
         {
@@ -1307,7 +1327,35 @@ trait PaymentTrait
         return $refund;
     }
 
-    protected function refundOldAuthorizedPayments($offset = null)
+    // updatePaymentStatus: updates payment status when refunds are not created in API db
+    protected function updatePaymentStatus($id = null, array $input = [], $admin = false)
+    {
+        $refundEntity = $this->getLastEntity('refund', $admin);
+
+        if (empty($refundEntity) === true)
+        {
+            if (empty($id) === true)
+            {
+                $payment = $this->getDbLastPayment();
+                $this->assertNotEmpty($payment);
+
+                $id = $payment->getId();
+            }
+
+            $input['status']        = 'refunded';
+            $input['refund_status'] = 'full';
+            $input['refund_at']     = null;
+
+            // update payment status
+             $this->fixtures->base->editEntity('payment', $id, $input);
+
+             return true;
+        }
+
+        return false;
+    }
+
+    protected function refundOldAuthorizedPayments($razorx = false, $offset = null)
     {
         $this->ba->cronAuth();
 
@@ -1324,6 +1372,12 @@ trait PaymentTrait
             'content' => $content);
 
         $data = $this->makeRequestAndGetContent($request);
+
+        // razorx was set as flag, because to test with new refund flow, experiment is turned on
+        if ($razorx === true)
+        {
+            return $data;
+        }
 
         if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
         {
@@ -3046,6 +3100,29 @@ trait PaymentTrait
     {
         $this->mandateHQ->shouldReceive($method)
             ->andReturnUsing($callable);
+    }
+
+    // For testing new refund V2 flow.
+    // Pls contact Scrooge team for any queries.
+    protected function enableRazorXTreatmentForRefundV2()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment', 'getCachedTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode)
+                              {
+                                  if ($feature === RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1)
+                                  {
+                                      return 'on';
+                                  }
+                                  return 'off';
+                              }));
     }
 
 }

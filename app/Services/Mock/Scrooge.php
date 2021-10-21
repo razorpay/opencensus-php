@@ -341,19 +341,26 @@ class Scrooge extends BaseScrooge
 
     public function createNewRefundV2(array $input) : array
     {
+        $paymentId = $input['payment_id'] ?? 'pay_HZCakkQ4T6jV32';
+        $amount = $input['amount'] ?? 1000;
+        $notes = $input['notes'] ?? [];
+        $receipt = $input['receipt'] ?? null;
+        $speedRequested = $input['speed'] ?? "optimum";
+        $speedProcessed = $speedRequested == "normal" ? "normal" : "instant";
+
         $scroogeResponseBody = [
             "acquirer_data"   => [],
-            "amount"          => 1000,
+            "amount"          => $amount,
             "batch_id"        => "",
             "created_at"      => 1626357774,
             "currency"        => "INR",
             "entity"          => "refund",
             "id"              => "rfnd_HZETs6HPiyDr8n",
-            "notes"           => [],
-            "payment_id"      => "pay_HZCakkQ4T6jV32",
-            "receipt"         => null,
-            "speed_processed" => "instant",
-            "speed_requested" => "optimum",
+            "notes"           => $notes,
+            "payment_id"      => $paymentId,
+            "receipt"         => $receipt,
+            "speed_processed" => $speedProcessed,
+            "speed_requested" => $speedRequested,
             "status"          => "processed"
         ];
 

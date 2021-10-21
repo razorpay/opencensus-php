@@ -89,6 +89,7 @@ class Scrooge
     const X_PASSPORT_JWT_V1 = 'X-Passport-JWT-V1';
 
     const PASSPORT_AUD = 'scrooge';
+    const PAYMENT_PAGE = 'Payment-Page';
 
     /**
      * Scrooge constructor.
@@ -528,6 +529,15 @@ class Scrooge
     {
         // send passport token to Scrooge
         $this->enablePassport();
+
+        if (isset($input['payment_page']) === true)
+        {
+            $customheader = [
+                self::PAYMENT_PAGE => ($input['payment_page'] ? 'yes': 'no'),
+            ];
+            $this->setCustomHeaders($customheader);
+            unset($input['payment_page']);
+        }
 
         return $this->sendRequest(
             self::RefundsBaseURL . '/' . self::URLS['create_new_refund_v2'],

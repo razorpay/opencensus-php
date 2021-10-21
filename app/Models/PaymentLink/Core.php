@@ -1657,10 +1657,12 @@ class Core extends Base\Core
             //
             if ($payment->isAuthorized() === true)
             {
+                // based on experiment, refund request will be routed to Scrooge
                 $refund = $processor->refundAuthorizedPayment($payment->reload());
             }
             else if ($payment->isCaptured() === true)
             {
+                // based on experiment, refund request will be routed to Scrooge
                 $refund = $processor->refundCapturedPayment($payment->reload());
             }
             else
