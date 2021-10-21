@@ -2,6 +2,7 @@
 
 namespace App\MerchantDetails;
 
+use App\Trace\TraceCode;
 use Auth;
 use Mail;
 use Queue;
@@ -18,6 +19,10 @@ use Illuminate\Support\Facades\App as App;
 
 class Service extends Base\Service
 {
+    protected $trace;
+
+    protected $app;
+
     const PRE_SIGNUP_FIELDS = [
         'business_type',
         'transaction_volume',
@@ -84,6 +89,12 @@ class Service extends Base\Service
     public function __construct()
     {
         $user = Auth::user();
+
+        $app = \App::getFacadeRoot();
+
+        $this->app = $app;
+
+        $this->trace = $app['trace'];
 
         if ($user)
         {
@@ -171,6 +182,13 @@ class Service extends Base\Service
 
     public function getDetailsFromAPI($merchantId = null)
     {
+        $startTime = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::GET_MERCHANT_DETAILS_ROUTE_INFO, [
+            'action'                => 'FetchStarted',
+            'start_time'            => $startTime
+        ]);
+
         if ($merchantId === null)
         {
             $merchantId = $this->merchant->id;
@@ -203,6 +221,15 @@ class Service extends Base\Service
                     'exception' => $error,
             ]);
         }
+
+        $endTime  = microtime(true) * 1000;
+        $duration = $endTime - $startTime;
+
+        $this->trace->info(TraceCode::GET_MERCHANT_DETAILS_ROUTE_INFO, [
+            'action'              => 'FetchEnded',
+            'end_time'            => $endTime,
+            'duration'            => $duration
+        ]);
 
         return $merchantDetails;
     }

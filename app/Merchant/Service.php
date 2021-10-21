@@ -430,6 +430,13 @@ class Service extends Base\Service
 
     public function fetchPartnerConfigs()
     {
+        $startTime = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::GET_PARTNER_CONFIGS_ROUTE_INFO, [
+            'action'                => 'FetchStarted',
+            'start_time'            => $startTime
+        ]);
+
         $request = new ApiRequestAny(['client_type' => 'merchant']);
 
         list($error, $data) = $request->send('merchants/me/partner/configs', 'GET');
@@ -442,6 +449,15 @@ class Service extends Base\Service
                 400
             );
         }
+
+        $endTime  = microtime(true) * 1000;
+        $duration = round($endTime - $startTime);
+
+        $this->trace->info(TraceCode::GET_PARTNER_CONFIGS_ROUTE_INFO, [
+            'action'              => 'FetchEnded',
+            'end_time'            => $endTime,
+            'duration'            => $duration
+        ]);
 
         return $data['items'] ?? [];
     }
@@ -478,6 +494,13 @@ class Service extends Base\Service
 
     public function getTreatment($featureFlag)
     {
+        $startTime = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::GET_RAZORX_EXPERIMENTS_ROUTE_INFO, [
+            'action'                => 'FetchStarted',
+            'start_time'            => $startTime
+        ]);
+
         $request = new ApiRequestAny(['client_type' => 'merchant']);
 
         list($error, $data) = $request->send("razorx/evaluate/$featureFlag", 'GET');
@@ -491,11 +514,27 @@ class Service extends Base\Service
             );
         }
 
+        $endTime  = microtime(true) * 1000;
+        $duration = round($endTime - $startTime);
+
+        $this->trace->info(TraceCode::GET_RAZORX_EXPERIMENTS_ROUTE_INFO, [
+            'action'              => 'FetchEnded',
+            'end_time'            => $endTime,
+            'duration'            => $duration
+        ]);
+
         return $data;
     }
 
     public function getPartnerIntent()
     {
+        $startTime = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::GET_PARTNER_INTENT_ROUTE_INFO, [
+            'action'                => 'FetchStarted',
+            'start_time'            => $startTime
+        ]);
+
         $request = new ApiRequestAny(['client_type'    => 'merchant']);
 
         list($error, $data) = $request->send('merchant/partner-intent', 'GET');
@@ -509,11 +548,27 @@ class Service extends Base\Service
             );
         }
 
+        $endTime  = microtime(true) * 1000;
+        $duration = round($endTime - $startTime);
+
+        $this->trace->info(TraceCode::GET_PARTNER_INTENT_ROUTE_INFO, [
+            'action'              => 'FetchEnded',
+            'end_time'            => $endTime,
+            'duration'            => $duration
+        ]);
+
         return $data['partner_intent'] ?? null;
     }
 
     public function getMerchantTags($merchantId)
     {
+        $startTime = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::GET_TAGS_ROUTE_INFO, [
+            'action'                => 'FetchStarted',
+            'start_time'            => $startTime
+        ]);
+
         $adminUser = Auth::guard('api')->user();
 
         if (empty($adminUser) === false)
@@ -536,6 +591,15 @@ class Service extends Base\Service
             );
         }
 
+        $endTime = microtime(true) * 1000;
+        $duration = round($endTime - $startTime);
+
+        $this->trace->info(TraceCode::GET_RAZORX_EXPERIMENTS_ROUTE_INFO, [
+            'action'              => 'FetchEnded',
+            'end_time'            => $endTime,
+            'duration'            => $duration
+        ]);
+
         return $data;
     }
 
@@ -549,6 +613,13 @@ class Service extends Base\Service
      */
     public function getMerchantFeatures(): array
     {
+        $startTime = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::GET_FEATURES_ROUTE_INFO, [
+            'action'                => 'FetchStarted',
+            'start_time'            => $startTime
+        ]);
+
         $request = new ApiRequestAny(['client_type' => 'merchant']);
 
         list($error, $data) = $request->send("merchants/me/features", 'GET');
@@ -572,11 +643,27 @@ class Service extends Base\Service
             return $val['feature'];
         }, array_values($validFeatures));
 
+        $endTime  = microtime(true) * 1000;
+        $duration = round($endTime - $startTime);
+
+        $this->trace->info(TraceCode::GET_FEATURES_ROUTE_INFO, [
+            'action'              => 'FetchEnded',
+            'end_time'            => $endTime,
+            'duration'            => $duration
+        ]);
+
         return $featureNames;
     }
 
     public function getMerchantActiveCampaigns(): array
     {
+        $startTime = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::GET_CAMPAIGNS_ROUTE_INFO, [
+            'action'                => 'FetchStarted',
+            'start_time'            => $startTime
+        ]);
+
         $request = new ApiRequestAny(
             [
                 'client_type'   => 'merchant',
@@ -597,6 +684,15 @@ class Service extends Base\Service
         $campaigns = array_map(function($val) {
             return $val['campaign'];
         }, array_values($data['items']));
+
+        $endTime  = microtime(true) * 1000;
+        $duration = round($endTime - $startTime);
+
+        $this->trace->info(TraceCode::GET_CAMPAIGNS_ROUTE_INFO, [
+            'action'              => 'FetchEnded',
+            'end_time'            => $endTime,
+            'duration'            => $duration
+        ]);
 
         return $campaigns;
     }
@@ -667,6 +763,13 @@ class Service extends Base\Service
 
     public function getPayoutCount($mode)
     {
+        $startTime = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::GET_PAYOUT_ROUTE_INFO, [
+            'action'                => 'FetchStarted',
+            'start_time'            => $startTime
+        ]);
+
         $request = new ApiRequestAny(['client_type' => 'merchant', 'mode' => $mode]);
 
         list($error, $data) = $request->send("payouts?count=1&product=banking", 'GET');
@@ -679,6 +782,15 @@ class Service extends Base\Service
                 400
             );
         }
+
+        $endTime  = microtime(true) * 1000;
+        $duration = round($endTime - $startTime);
+
+        $this->trace->info(TraceCode::GET_PAYOUT_ROUTE_INFO, [
+            'action'              => 'FetchEnded',
+            'end_time'            => $endTime,
+            'duration'            => $duration
+        ]);
 
         return $data['count'];
     }

@@ -33,6 +33,13 @@ class Service extends Base\Service
 
     public function getVariantBulk($merchantId, $experimentIds)
     {
+        $startTime = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::GET_SPLITZ_EXPERIMENTS_ROUTE_INFO, [
+            'action'                => 'FetchStarted',
+            'start_time'            => $startTime
+        ]);
+
         $responseData = [];
 
         if (empty($experimentIds) === true)
@@ -82,6 +89,15 @@ class Service extends Base\Service
                 }
             }
         }
+
+        $endTime  = microtime(true) * 1000;
+        $duration = round($endTime - $startTime);
+
+        $this->trace->info(TraceCode::GET_SPLITZ_EXPERIMENTS_ROUTE_INFO, [
+            'action'              => 'FetchEnded',
+            'end_time'            => $endTime,
+            'duration'            => $duration
+        ]);
 
         return $responseData;
     }

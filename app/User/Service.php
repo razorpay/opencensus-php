@@ -918,7 +918,6 @@ class Service extends Base\Service
 
             $this->traceMerchantActivatedTruthyValue($data, __LINE__);
 
-            //$data["pre_signup"] = $merchantService->getPreSignupDetails($currentMerchantId);
             $data["pre_signup"] = (new MerchantDetails\Service)->getPresignupDetails($currentMerchantId, $data);
 
             foreach ($merchants as $merchant) {
@@ -983,17 +982,7 @@ class Service extends Base\Service
                     if ((($isBankingRequest === true) and ($data['banking_role'] === null)) or
                         (($isBankingRequest === false) and ($data['role'] === null)))
                     {
-                        $options = [
-                            'client_type' => 'merchant',
-                        ];
-
-                        $request = new \App\Admin\ApiRequestAny($options);
-
-                        list($error, $x) = $request->send("merchants/product-switch", "POST");
-
-                        $data = $this->updateUserDetails($data, $user);
-
-                        $this->traceMerchantActivatedTruthyValue($data, __LINE__);
+                        $this->switchProduct();
                     }
 
                     if (($isBankingRequest === false))
@@ -1381,6 +1370,14 @@ class Service extends Base\Service
     {
         $adminUser = Auth::guard('api')->user();
 
+        $startTime = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::GET_USER_ROUTE_INFO, [
+            'action'                => 'FetchStarted',
+            'start_time'            => $startTime
+        ]);
+
+
         if (empty($adminUser) === false)
         {
             $request = new \App\Admin\ApiRequestAny([
@@ -1396,7 +1393,7 @@ class Service extends Base\Service
             list($error, $data) = $request->send("users/$userId", "GET");
         }
 
-        $this->trace->info(TraceCode::GET_USER_FROM_API, [
+        $this->trace->info(TraceCode::GET_USER_ROUTE_INFO, [
             'action'                => 'GetUser',
             'admin_user_flow'       => empty($adminUser) === false,
             'error'                 => $error,
@@ -1431,13 +1428,22 @@ class Service extends Base\Service
                 Session::put('dashboard_user_payload', $genericUser);
             }
 
-            $this->trace->info(TraceCode::GET_USER_FROM_API, [
+            $this->trace->info(TraceCode::GET_USER_ROUTE_INFO, [
                 'action'                => 'GetCurrentMerchant',
                 'current_merchant_id'   => $currentMerchantId,
                 'error'                 => $error,
                 'user_id'               => $userId,
             ]);
         }
+
+        $endTime = microtime(true) * 1000;
+        $duration = round($endTime - $startTime);
+
+        $this->trace->info(TraceCode::GET_USER_ROUTE_INFO, [
+            'action'              => 'FetchEnded',
+            'end_time'            => $endTime,
+            'duration'            => $duration
+        ]);
 
         return [$error, $genericUser];
     }
@@ -1799,6 +1805,37 @@ class Service extends Base\Service
         return $data;
     }
 
+    protected function switchProduct()
+    {
+        $startTime = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::PRODUCT_SWITCH_ROUTE_INFO, [
+            'action'                => 'ProductSwitchInitiated',
+            'start_time'            => $startTime
+        ]);
+
+        $options = [
+            'client_type' => 'merchant',
+        ];
+
+        $request = new \App\Admin\ApiRequestAny($options);
+
+        list($error, $x) = $request->send("merchants/product-switch", "POST");
+
+        $data = $this->updateUserDetails($data, $user);
+
+        $this->traceMerchantActivatedTruthyValue($data, __LINE__);
+
+        $endTime  = microtime(true) * 1000;
+        $duration = round($endTime - $startTime);
+
+        $this->trace->info(TraceCode::PRODUCT_SWITCH_ROUTE_INFO, [
+            'action'              => 'ProductSwitchCompleted',
+            'end_time'            => $endTime,
+            'duration'            => $duration
+        ]);
+    }
+
     protected function isExperimentOnAndIsUnregisteredBusinessType(array $data): bool
     {
 
@@ -1919,6 +1956,13 @@ class Service extends Base\Service
 
     private function createLeadToSalesforce(array $payload, string $merchantId)
     {
+        $startTime = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::LEAD_TO_SALESFORCE_ROUTE_INFO, [
+            'action'                => 'LeadCreationStarted',
+            'start_time'            => $startTime
+        ]);
+
         $request = new ApiRequestAny(['client_type' => 'merchant']);
 
         list($error, $data) = $request->processInput($payload)->send("merchants/lead_to_salesforce", "POST");
@@ -1937,6 +1981,16 @@ class Service extends Base\Service
             'merchant_id'           => $merchantId,
             'payload'               => $payload
         ]);
+
+        $endTime  = microtime(true) * 1000;
+        $duration = round($endTime - $startTime);
+
+        $this->trace->info(TraceCode::LEAD_TO_SALESFORCE_ROUTE_INFO, [
+            'action'              => 'LeadCreationEnded',
+            'end_time'            => $endTime,
+            'duration'            => $duration
+        ]);
+
     }
 
     /**
@@ -1949,6 +2003,13 @@ class Service extends Base\Service
      */
     private function fireEventToHubspotViaApi(array $payload, string $merchantId)
     {
+        $startTime = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::FIRE_EVENT_TO_HUBSPOT_ROUTE_INFO, [
+            'action'                => 'FetchStarted',
+            'start_time'            => $startTime
+        ]);
+
         $request = new ApiRequestAny(['client_type' => 'merchant']);
 
         list($error, $data) = $request->processInput($payload)->send("merchants/fire_hubspot_event", "POST");
@@ -1966,6 +2027,15 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::PUSHED_HUBSPOT_EVENT_TO_API, [
             'merchant_id'           => $merchantId,
             'payload'               => $payload
+        ]);
+
+        $endTime  = microtime(true) * 1000;
+        $duration = round($endTime - $startTime);
+
+        $this->trace->info(TraceCode::FIRE_EVENT_TO_HUBSPOT_ROUTE_INFO, [
+            'action'              => 'FetchEnded',
+            'end_time'            => $endTime,
+            'duration'            => $duration
         ]);
     }
 

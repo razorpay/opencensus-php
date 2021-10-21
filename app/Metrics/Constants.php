@@ -55,7 +55,7 @@ class Constants
   const EVENT_COUNT_ONE             = 1;
 
 
-    // products
-    const PRIMARY                     = 'primary';
-    const BANKING                     = 'banking';
+  // products
+  const PRIMARY                     = 'primary';
+  const BANKING                     = 'banking';
 }

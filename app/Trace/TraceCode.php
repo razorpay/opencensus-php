@@ -98,6 +98,21 @@ class TraceCode
 
     const GRAPH_REQUEST_OPERATION_WITH_USER_ID      = 'GRAPH_REQUEST_OPERATION_WITH_USER_ID';
 
+    // User API tracecodes
+    const GET_USER_ROUTE_INFO                    = 'GET_USER_ROUTE_INFO';
+    const GET_MERCHANT_DETAILS_ROUTE_INFO        = 'GET_MERCHANT_DETAILS_ROUTE_INFO';
+    const GET_TAGS_ROUTE_INFO                    = 'GET_TAGS_ROUTE_INFO';
+    const GET_FEATURES_ROUTE_INFO                = 'GET_FEATURES_ROUTE_INFO';
+    const GET_RAZORX_EXPERIMENTS_BULK_ROUTE_INFO = 'GET_RAZORX_EXPERIMENTS_BULK_ROUTE_INFO';
+    const GET_RAZORX_EXPERIMENTS_ROUTE_INFO      = 'GET_RAZORX_EXPERIMENTS_ROUTE_INFO';
+    const GET_SPLITZ_EXPERIMENTS_ROUTE_INFO      = 'GET_SPLITZ_EXPERIMENTS_ROUTE_INFO';
+    const GET_CAMPAIGNS_ROUTE_INFO               = 'GET_CAMPAIGNS_ROUTE_INFO';
+    const GET_PARTNER_CONFIGS_ROUTE_INFO         = 'GET_PARTNER_CONFIGS_ROUTE_INFO';
+    const LEAD_TO_SALESFORCE_ROUTE_INFO          = 'LEAD_TO_SALESFORCE_ROUTE_INFO';
+    const GET_PARTNER_INTENT_ROUTE_INFO          = 'GET_PARTNER_INTENT_ROUTE_INFO';
+    const GET_PAYOUT_ROUTE_INFO                  = 'GET_PAYOUT_ROUTE_INFO';
+    const PRODUCT_SWITCH_ROUTE_INFO              = 'PRODUCT_SWITCH_ROUTE_INFO';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',

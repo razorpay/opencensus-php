@@ -211,6 +211,13 @@ class Service extends Base\Service
 
     public function getBulkTreatment(array $features)
     {
+        $startTime = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::GET_RAZORX_EXPERIMENTS_BULK_ROUTE_INFO, [
+            'action'                => 'FetchStarted',
+            'start_time'            => $startTime
+        ]);
+
         $request = new ApiRequestAny(['client_type' => 'merchant']);
 
         $featureString = implode(', ', $features);
@@ -230,6 +237,15 @@ class Service extends Base\Service
                 $data[$feature] = ['result' => 'control'];
             }
         }
+
+        $endTime  = microtime(true) * 1000;
+        $duration = $endTime - $startTime;
+
+        $this->trace->info(TraceCode::GET_RAZORX_EXPERIMENTS_BULK_ROUTE_INFO, [
+            'action'              => 'FetchEnded',
+            'end_time'            => $endTime,
+            'duration'            => $duration
+        ]);
 
         return $data;
     }
