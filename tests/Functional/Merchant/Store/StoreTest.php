@@ -4,9 +4,11 @@
 namespace Functional\Merchant\Store;
 
 
+use RZP\Constants\Mode;
 use RZP\Models\Merchant\Store;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\InvalidPermissionException;
+use RZP\Models\User\Role;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -29,14 +31,15 @@ class StoreTest extends TestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+        $user = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id'], [], 'owner', 'live');
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id'], $user->getId());
 
         $this->startTest();
     }
     public function testInvalidPermissionCreateStore()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
-
+        $this->fixtures->user->createUserMerchantMappingForDefaultUser($merchantDetail['merchant_id'], Role::OWNER, Mode::LIVE);
         $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
 
         $this->startTest();
@@ -46,7 +49,8 @@ class StoreTest extends TestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+        $user = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id'], [], 'owner', 'live');
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id'], $user->getId());
 
         $this->startTest();
     }

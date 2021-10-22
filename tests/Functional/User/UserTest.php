@@ -2364,7 +2364,7 @@ class UserTest extends TestCase
     {
         $user = $this->fixtures->create('user',
             [
-                'contact_mobile'            => '9123456789',
+                'contact_mobile'            => '9123456788',
                 'contact_mobile_verified'   => true,
             ]);
 
@@ -2381,6 +2381,12 @@ class UserTest extends TestCase
             'contact_name'=> 'Aditya',
             'business_type' => 2
         ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => $merchantId,
+            'user_id'     => $user->getId(),
+            'role'        => 'owner',
+        ], 'live');
 
         $this->ba->proxyAuth($apiKey, $user->getId());
 
@@ -2408,6 +2414,12 @@ class UserTest extends TestCase
             'business_type' => 2
         ]);
 
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => $merchantId,
+            'user_id'     => $user->getId(),
+            'role'        => 'owner',
+        ], 'live');
+
         $this->ba->proxyAuth($apiKey, $user->getId());
 
         $this->startTest();
@@ -2433,6 +2445,12 @@ class UserTest extends TestCase
             'contact_name'=> 'Aditya',
             'business_type' => 2
         ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => $merchantId,
+            'user_id'     => $user->getId(),
+            'role'        => 'owner',
+        ], 'live');
 
         $this->ba->proxyAuth($apiKey, $user->getId());
 
@@ -2831,19 +2849,10 @@ class UserTest extends TestCase
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
 
-        $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
                         [UserEntity::CONFIRM_TOKEN => 'testing123456789',UserEntity::EMAIL => 'abc@rzp.com']);
 
-        $merchant = $this->fixtures->edit('merchant','10000000000000', ['email' => 'abc@rzp.com']);
-
-        $mappingData = [
-            'user_id'     => $user->getId(),
-            'merchant_id' => $merchant->getId(),
-            'role'        => 'owner',
-            'product'     => 'banking',
-        ];
-
-        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+        $this->fixtures->edit('merchant','10000000000000', ['email' => 'abc@rzp.com']);
 
         $this->ba->proxyAuth();
 
@@ -3722,7 +3731,7 @@ class UserTest extends TestCase
 
         $this->createBankingAccount($bankingAccountAttributes);
 
-        $this->fixtures->user->createBankingUserForMerchant('10000000000000',
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000',
                                                             $attributes = ['id' => '30000000000000'],
                                                             $role = 'owner',
                                                             $mode = 'test');
@@ -3730,11 +3739,6 @@ class UserTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
 
         $data = $this->startTest();
-
-        $merchantUser = $this->getDbEntity('merchant_user', [
-            'role'    => 'owner',
-            'product' => 'banking'
-        ]);
 
         $this->assertEquals($merchantUser['created_at'], $data['merchants'][0]['business_banking_signup_at']);
 
@@ -4533,7 +4537,9 @@ class UserTest extends TestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
 
         $this->startTest();
     }

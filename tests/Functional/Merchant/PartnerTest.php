@@ -19,6 +19,7 @@ use RZP\Models\Settings\Accessor;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Merchant\MerchantApplications\Entity;
+use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
@@ -674,7 +675,7 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
 
         // Fully managed will create a user with the role:owner for the submerchant
-        $partnerUser = $partner->users()->first()->toArrayPublic();
+        $partnerUser = $partner->users()->where('product', '=', 'primary')->first()->toArrayPublic();
 
         $merchantUsers = $submerchant->users()->get()->toArrayPublic();
 
@@ -1490,13 +1491,13 @@ class PartnerTest extends OAuthTestCase
 
         $submerchantUserId = $subMerchantBankingOwners['items'][0]['id'];
 
-        $subMerchantUser = DB::table('merchant_users')->where('user_id', '=', $submerchantUserId)->get();
+        $subMerchantUser = DB::table('merchant_users')->where('user_id', '=', $submerchantUserId)->where('product', '=', 'banking')->get();
 
         $this->assertEquals('banking', $subMerchantUser[0]->product);
 
         $partnerUserId = $subMerchantBankingOwners['items'][1]['id'];
 
-        $partnerUser = DB::table('merchant_users')->where('user_id', '=', $partnerUserId)->get();
+        $partnerUser = DB::table('merchant_users')->where('user_id', '=', $partnerUserId)->where('product', '=', 'primary')->get();
 
         $this->assertEquals('primary', $partnerUser[0]->product);
     }
@@ -1702,7 +1703,7 @@ class PartnerTest extends OAuthTestCase
 
         $user = $this->fixtures->user->createEntityInTestAndLive('user', ['email' => 'testing@example.com']);
 
-        $this->ba->proxyAuth('rzp_test_' . $merchantId, $user->getId());
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $app = factory(Application\Entity::class)->create([
             'id' => random_integer(10),
@@ -1755,7 +1756,7 @@ class PartnerTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $merchantId = self::DEFAULT_MERCHANT_ID;
+        $partnerMerchantId = self::DEFAULT_MERCHANT_ID;
 
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, [
             'partner_type' => 'aggregator',
@@ -1766,10 +1767,13 @@ class PartnerTest extends OAuthTestCase
             'email' => 'testing@example.com',
         ]);
 
-        $user = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID,
-                                                             ['email' => 'testing@example.com']);
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+                                                             'user_id'     => User::MERCHANT_USER_ID,
+                                                             'role'        => 'owner',
+                                                         ]);
 
-        $this->ba->proxyAuth('rzp_test_' . $merchantId, $user->getId());
+        $this->ba->proxyAuth('rzp_test_' . $partnerMerchantId, User::MERCHANT_USER_ID);
 
         $app = factory(Application\Entity::class)->create([
            'id' => random_integer(10),
@@ -1788,9 +1792,10 @@ class PartnerTest extends OAuthTestCase
         $this->fixtures->create(
             'merchant_access_map',
             [
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+                'entity_type'     => 'application',
+                'entity_id'       => $app->getId(),
+                'entity_owner_id' => $partnerMerchantId,
+                'merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
             ]
         );
 

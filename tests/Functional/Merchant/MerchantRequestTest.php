@@ -108,7 +108,9 @@ class MerchantRequestTest extends TestCase
     {
         $this->fixtures->merchant->activate('10000000000000');
 
-        $this->ba->proxyAuth('rzp_live_10000000000000');
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], 'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $user->getId());
 
         $testData = $this->testData[__FUNCTION__];
 

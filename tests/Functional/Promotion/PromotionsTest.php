@@ -238,6 +238,9 @@ class PromotionsTest extends TestCase
 
         $request = [
             'url' => '/merchants/credits/balance/banking',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'method' => 'GET',
             'content' => []
         ];
@@ -278,6 +281,9 @@ class PromotionsTest extends TestCase
 
         $request = [
             'url' => '/merchants/credits/balance/banking',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'method' => 'GET',
             'content' => []
         ];
@@ -306,22 +312,26 @@ class PromotionsTest extends TestCase
         $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
         $merchantDetail = $this->fixtures->on('live')->create('merchant_detail');
+        $user = $this->fixtures->user->createBankingUserForMerchant($merchantDetail['merchant_id'], [], 'owner', 'live');
 
-        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id'], $user->getId());
 
         $this->mockHubSpotClient('trackPreSignupEvent');
 
         $this->startTest();
 
         $credit = $this->getDbLastEntity('credits', 'live');
-        
+
         $this->assertNull($credit);
 
         // test merchant dashboard API call to fetch credit balances of merchant
-        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id'], $user->getId());
 
         $request = [
             'url' => '/merchants/credits/balance/banking',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'method' => 'GET',
             'content' => []
         ];

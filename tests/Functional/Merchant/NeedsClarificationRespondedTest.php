@@ -163,7 +163,9 @@ class NeedsClarificationRespondedTest extends OAuthTestCase
     {
         [$merchantId, $permissionId, $admin] = $this->createFixtures();
 
-        $this->ba->proxyAuth('rzp_live_' .$merchantId);
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId, [], 'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_' .$merchantId, $merchantUser['id']);
 
         $testData = $this->testData['needsClarificationResponded'];
         $this->startTest($testData);

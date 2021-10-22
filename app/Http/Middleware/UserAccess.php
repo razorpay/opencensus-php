@@ -181,21 +181,23 @@ class UserAccess
         $routeRoles = $this->userRoleScope->getRouteUserRoles($route);
         $userRole   = $this->ba->getUserRole();
 
-        // Due to this we're effectively blacklisting and not whitelisting.
-        // This means that if there's a route which doesn't have a role
-        // mapping then all the users will get access to that by default.
-        //
-        // @todo change this to a whitelist instead of blacklist.
         if ($routeRoles === null)
         {
             $this->trace->warning(TraceCode::USER_ACCESS_MISSING_ROUTE_ROLE_MAPPING,
                 ['route' => $route, 'role' => $userRole]);
-            return;
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
 
         // If no role was sent in the headers
         if (empty($userRole) === true)
         {
+            if ($this->userRoleScope->isRouteAccessibleWithoutRole($route))
+            {
+                return;
+            }
+
+            $this->trace->warning(TraceCode::USER_ACCESS_ROLE_MISSING, ['route' => $route]);
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_USER_ROLE_MISSING);
         }
@@ -204,6 +206,7 @@ class UserAccess
         // route basis mapping fetched (above) from UserRolesScope
         if (in_array($userRole, $routeRoles, true) === false)
         {
+            $this->trace->warning(TraceCode::USER_ACCESS_AUTHZ_FAILED, ['route' => $route, 'role' => $userRole]);
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
