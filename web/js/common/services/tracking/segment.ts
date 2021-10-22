@@ -13,7 +13,7 @@ const getCommonProperties = ({ screen, properties, user }) => {
   let utm = null;
   let gclid = null; //Google click id, analytics will try to capture and save to cookie if present.
   let browser_details = {};
-  const source = getMobileDetect()?.isMobile() ? 'mweb' : 'dweb';
+  const source = getMobileDetect()?.isMobile() ? 'Mobile Dashboard' : 'Dashboard';
 
   if (typeof window.razorpayAnalytics !== 'undefined') {
     utm = window.razorpayAnalytics.utils.getLandingParams();
