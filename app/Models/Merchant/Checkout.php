@@ -110,6 +110,8 @@ class Checkout
 
         $this->filterMethodsBasedOnAmount($data, $input);
 
+        $this->filterMethodBasedOnRecurring($data, $input);
+
         $this->checkAndFillOfferDetails($merchant, $input, $data, $mode);
 
         $this->checkAndFillGatewayDowntime($merchant, $data);
@@ -348,6 +350,22 @@ class Checkout
                     unset($data[Entity::METHODS][$method][$gatewayKey]);
                 }
             }
+        }
+    }
+
+    /**
+     * Disable CRED as a payment method for recurring payments.
+     *
+     * @see https://razorpay.slack.com/archives/CB09CM13J/p1634363518234700
+     *
+     * @param array $data
+     * @param array $input
+     */
+    protected function filterMethodBasedOnRecurring(array & $data, array $input)
+    {
+        if (isset($input['recurring']) === true and ($input['recurring'] === '1' or $input['recurring'] === 'true'))
+        {
+            $data[Entity::METHODS][Payment\Method::APP]['cred'] = 0;
         }
     }
 
