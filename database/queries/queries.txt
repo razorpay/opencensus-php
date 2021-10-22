@@ -6380,3 +6380,6 @@ ALTER TABLE emi_plans
 
 ALTER TABLE merchant_banks
     ADD COLUMN cod TINYINT(1) DEFAULT 0;
+
+ALTER TABLE card_mandates
+   MODIFY COLUMN end_at bigint DEFAULT NULL;

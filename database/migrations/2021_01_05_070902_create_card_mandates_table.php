@@ -70,7 +70,7 @@ class CreateCardMandatesTable extends Migration
             $table->unsignedInteger(Entity::START_AT)
                   ->nullable();
 
-            $table->unsignedInteger(Entity::END_AT)
+            $table->bigInteger(Entity::END_AT)
                   ->nullable();
 
             $table->Integer(Entity::TOTAL_CYCLES)
