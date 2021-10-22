@@ -362,6 +362,21 @@ class Core extends Base\Core
 
         $orderMethod = $order->getMethod();
 
+        $feeConfigId = $order->getFeeConfigId();
+
+        if(isset($feeConfigId) === true)
+        {
+            $configCore = new Config\Core();
+
+            $convenienceFeeConfig = $configCore->getConvenienceFeeConfigForCheckout($order);
+
+            if(empty($convenienceFeeConfig) === false )
+            {
+              $data['convenience_fee_config'] = $convenienceFeeConfig;
+            }
+        }
+
+
         if ($merchant->isTPVRequired() === true)
         {
             // TODO: Change this after creating bank account entities for all the previous TPV orders

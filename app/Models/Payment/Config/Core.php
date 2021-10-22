@@ -458,4 +458,67 @@ class Core extends Base\Core
             $convenienceFeeConfig[$rule['method']]['fee'] = $rule['fee'];
         }
     }
+
+    public function getConvenienceFeeConfigForCheckout($order) : array
+    {
+
+        $paymentConfig = $this->repo->config->findOrFail($order->getFeeConfigId());
+
+        $feeConfig = $paymentConfig->getFormattedConfig();
+
+        if(isset($feeConfig['rules']) === false or
+            empty($feeConfig['rules']))
+        {
+            return [];
+        }
+
+        $convenienceFeeConfig = [];
+
+        $convenienceFeeConfig['label_on_checkout'] = $feeConfig['label'];
+
+        if(isset($feeConfig['message']) === true )
+        {
+            $convenienceFeeConfig['checkout_message'] = $feeConfig['message'];
+        }
+
+        foreach($feeConfig['rules'] as $method => $config)
+        {
+            if($method === 'card')
+            {
+                if(isset($config['type']) === true)
+                {
+                    foreach($config['type'] as $cardType => $typeConfig)
+                    {
+                        if($typeConfig['fee']['payee'] === 'customer' and
+                            isset($typeConfig['fee']['flat_value']) === true)
+                        {
+                            $convenienceFeeConfig['methods'][$method]['type'][$cardType]['amount'] = $typeConfig['fee']['flat_value'];
+                        }
+                        else
+                        {
+                            $convenienceFeeConfig['methods'][$method]['type'][$cardType] = [];
+                        }
+                    }
+                }
+
+                if(isset($config['fee']) === true and
+                    $config['fee']['payee'] === 'customer' and
+                    isset($config['fee']['flat_value']) === true)
+                {
+                    $convenienceFeeConfig['methods']['card']['amount'] = $config['fee']['flat_value'];
+                }
+            }
+            else
+            {
+                if($config['fee']['payee'] === 'customer' and
+                    isset($config['fee']['flat_value']) === true)
+                {
+                    $convenienceFeeConfig['methods'][$method]['amount'] = $config['fee']['flat_value'];
+                }
+            }
+        }
+
+        return $convenienceFeeConfig;
+
+    }
 }

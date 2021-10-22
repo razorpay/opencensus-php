@@ -1839,4 +1839,211 @@ class CheckoutPreferencesTest extends TestCase
 
         $this->assertEquals(true, $response[Merchant\Checkout::DYNAMIC_WALLET_FLOW]);
     }
+
+    public function testGetCheckoutPreferencesWithFeeConfigNull()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic']);
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($data);
+
+        $order = $this->getDbLastOrder();
+
+        $response = $this->getPreferences($order->getPublicId(), 'INR');
+
+        $this->assertArrayNotHasKey('convenience_fee_config', $response['order']);
+    }
+
+    public function testGetCheckoutPreferencesWithFeeConfigEmpty()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic']);
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($data);
+
+        $order = $this->getDbLastOrder();
+
+        $response = $this->getPreferences($order->getPublicId(), 'INR');
+
+        $this->assertArrayNotHasKey('convenience_fee_config', $response['order']);
+    }
+
+    public function testGetCheckoutPreferencesWithFeeConfigEmptyRules()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic']);
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($data);
+
+        $order = $this->getDbLastOrder();
+
+        $response = $this->getPreferences($order->getPublicId(), 'INR');
+
+        $this->assertArrayNotHasKey('convenience_fee_config', $response['order']);
+    }
+
+    public function testGetCheckoutPreferencesWithFeeConfigWithPayeeCustomerForUPI()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic']);
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($data);
+
+        $order = $this->getDbLastOrder();
+
+        $response = $this->getPreferences($order->getPublicId(), 'INR');
+
+        $this->assertArrayHasKey('convenience_fee_config', $response['order']);
+
+        $expectedResponse = [
+            "label_on_checkout" => "Convenience Fee",
+            "methods" => [
+                "upi" => [
+                    "amount" => 200
+                ]
+            ]
+        ];
+
+        $this->assertEquals($expectedResponse, $response['order']['convenience_fee_config']);
+    }
+
+    public function testGetCheckoutPreferencesWithFeeConfigPayeeCustomerForCardTypes()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic']);
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($data);
+
+        $order = $this->getDbLastOrder();
+
+        $response = $this->getPreferences($order->getPublicId(), 'INR');
+
+        $this->assertArrayHasKey('convenience_fee_config', $response['order']);
+        $expectedResponse = [
+            "label_on_checkout" => "Convenience Fee",
+            "methods" => [
+                "card" => [
+                    "type" => [
+                        "debit" => [
+                            "amount" => 200
+                        ],
+                        "prepaid" => [
+                            "amount" => 200
+                        ],
+                        "credit" => [
+                            "amount" => 100
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertEquals($expectedResponse, $response['order']['convenience_fee_config']);
+    }
+
+    public function testGetCheckoutPreferencesWithFeeConfigPayeeCustomerForCardAndDebitType()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic']);
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($data);
+
+        $order = $this->getDbLastOrder();
+
+        $response = $this->getPreferences($order->getPublicId(), 'INR');
+
+        $this->assertArrayHasKey('convenience_fee_config', $response['order']);
+
+        $expectedResponse = [
+            "label_on_checkout" => "Convenience Fee",
+            "methods" => [
+                "card" => [
+                    "type" => [
+                        "debit" => [
+                            "amount" => 200
+                        ],
+                        "credit" => []
+                    ],
+                    "amount" => 300
+                ]
+            ]
+        ];
+
+        $this->assertEquals($expectedResponse, $response['order']['convenience_fee_config']);
+    }
+
+    public function testGetCheckoutPreferencesWithFeeConfigWithoutPrecalculatedCustomerFee()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic']);
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($data);
+
+        $order = $this->getDbLastOrder();
+
+        $response = $this->getPreferences($order->getPublicId(), 'INR');
+
+        $this->assertArrayHasKey('convenience_fee_config', $response['order']);
+
+        $expectedResponse = [
+            "label_on_checkout" => "Convenience Fee"
+        ];
+
+        $this->assertEquals($expectedResponse, $response['order']['convenience_fee_config']);
+    }
+
+    public function testGetCheckoutPreferencesWithFeeConfigCardTypesWithoutPrecalculatedCustomerFee()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic']);
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($data);
+
+        $order = $this->getDbLastOrder();
+
+        $response = $this->getPreferences($order->getPublicId(), 'INR');
+
+        $this->assertArrayHasKey('convenience_fee_config', $response['order']);
+
+        $expectedResponse = [
+            "label_on_checkout" => "Convenience Fee",
+            "methods" => [
+                "card" => [
+                    "type" => [
+                        "credit" => [],
+                        "debit" => [],
+                        "prepaid" => []
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertEquals($expectedResponse, $response['order']['convenience_fee_config']);
+    }
+
+
 }

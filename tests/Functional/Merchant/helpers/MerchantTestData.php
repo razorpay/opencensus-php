@@ -9724,6 +9724,418 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithFeeConfigNull' =>[
+        'request' => [
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR',
+                'convenience_fee_config' => null
+
+
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'amount' => 1000,
+                'currency' => 'INR'
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithFeeConfigEmpty' =>[
+        'request' => [
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR',
+                'convenience_fee_config' => [
+
+                ]
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'amount' => 1000,
+                'currency' => 'INR'
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithFeeConfigEmptyRules' =>[
+        'request' => [
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR',
+                'convenience_fee_config' => [
+                    'rules'=>[]
+                ]
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'amount' => 1000,
+                'currency' => 'INR',
+                'convenience_fee_config' => [
+
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithFeeConfigWithPayeeCustomerForUPI' =>[
+        'request' => [
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR',
+                'convenience_fee_config' => [
+                    'rules'=>[
+                        [
+                            'method' => 'upi',
+                            'fee' => [
+                                'payee' => 'customer',
+                                'flat_value' => 200
+                            ]
+                        ],
+                        [
+                            'method' => 'netbanking',
+                            'fee' => [
+                                'payee' => 'customer',
+                                'percentage_value' => "20.98"
+                            ]
+                        ],
+                        [
+                            'method' => 'wallet',
+                            'fee' => [
+                                'payee' => 'business',
+                                'flat_value' => 100
+                            ]
+                        ],
+                        [
+                            'method' => 'card',
+                            'fee' => [
+                                'payee' => 'business',
+                                'percentage_value' => "12.00"
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'amount' => 1000,
+                'currency' => 'INR',
+                'convenience_fee_config' => [
+                    'rules'=>[
+                        [
+                            'method' => 'upi',
+                            'fee' => [
+                                'payee' => 'customer',
+                                'flat_value' => 200
+                            ]
+                        ],
+                        [
+                            'method' => 'netbanking',
+                            'fee' => [
+                                'payee' => 'customer',
+                                'percentage_value' => "20.98"
+                            ]
+                        ],
+                        [
+                            'method' => 'wallet',
+                            'fee' => [
+                                'payee' => 'business',
+                                'flat_value' => 100
+                            ]
+                        ],
+                        [
+                            'method' => 'card',
+                            'fee' => [
+                                'payee' => 'business',
+                                'percentage_value' => "12.00"
+                            ]
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithFeeConfigPayeeCustomerForCardTypes' =>[
+        'request' => [
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR',
+                'convenience_fee_config' => [
+                    'rules'=>[
+                        [
+                            'method' => 'card',
+                            'card.type' => ['debit','prepaid'],
+                            'fee' => [
+                                'payee' => 'customer',
+                                'flat_value' => 200
+                            ]
+                        ],
+                        [
+                            'method' => 'card',
+                            'card.type' => ['credit'],
+                            'fee' => [
+                                'payee' => 'customer',
+                                'flat_value' => 100
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'amount' => 1000,
+                'currency' => 'INR',
+                'convenience_fee_config' => [
+                    'rules'=>[
+                        [
+                            'method' => 'card',
+                            'card.type' => ['debit','prepaid'],
+                            'fee' => [
+                                'payee' => 'customer',
+                                'flat_value' => 200
+                            ]
+                        ],
+                        [
+                            'method' => 'card',
+                            'card.type' => ['credit'],
+                            'fee' => [
+                                'payee' => 'customer',
+                                'flat_value' => 100
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithFeeConfigPayeeCustomerForCardAndDebitType' =>[
+        'request' => [
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR',
+                'convenience_fee_config' => [
+                    'rules'=>[
+                        [
+                            'method' => 'card',
+                            'fee' => [
+                                'payee' => 'customer',
+                                'flat_value' => 300
+                            ]
+                        ],
+                        [
+                            'method' => 'card',
+                            'card.type' => ['credit'],
+                            'fee' => [
+                                'payee' => 'business',
+                                'flat_value' => 100
+                            ]
+                        ],
+                        [
+                            'method' => 'card',
+                            'card.type' => ['debit'],
+                            'fee' => [
+                                'payee' => 'customer',
+                                'flat_value' => 200
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'amount' => 1000,
+                'currency' => 'INR',
+                'convenience_fee_config' => [
+                    'rules'=>[
+                        [
+                            'method' => 'card',
+                            'fee' => [
+                                'payee' => 'customer',
+                                'flat_value' => 300
+                            ]
+                        ],
+                        [
+                            'method' => 'card',
+                            'card.type' => ['credit'],
+                            'fee' => [
+                                'payee' => 'business',
+                                'flat_value' => 100
+                            ]
+                        ],
+                        [
+                            'method' => 'card',
+                            'card.type' => ['debit'],
+                            'fee' => [
+                                'payee' => 'customer',
+                                'flat_value' => 200
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithFeeConfigWithoutPrecalculatedCustomerFee' =>[
+        'request' => [
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR',
+                'convenience_fee_config' => [
+                    'rules'=>[
+                        [
+                            'method' => 'netbanking',
+                            'fee' => [
+                                'payee' => 'customer',
+                                'percentage_value' => "20.98"
+                            ]
+                        ],
+                        [
+                            'method' => 'wallet',
+                            'fee' => [
+                                'payee' => 'business',
+                                'flat_value' => 100
+                            ]
+                        ],
+                        [
+                            'method' => 'card',
+                            'fee' => [
+                                'payee' => 'business',
+                                'percentage_value' => "12.00"
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'amount' => 1000,
+                'currency' => 'INR',
+                'convenience_fee_config' => [
+                    'rules'=>[
+                        [
+                            'method' => 'netbanking',
+                            'fee' => [
+                                'payee' => 'customer',
+                                'percentage_value' => "20.98"
+                            ]
+                        ],
+                        [
+                            'method' => 'wallet',
+                            'fee' => [
+                                'payee' => 'business',
+                                'flat_value' => 100
+                            ]
+                        ],
+                        [
+                            'method' => 'card',
+                            'fee' => [
+                                'payee' => 'business',
+                                'percentage_value' => "12.00"
+                            ]
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithFeeConfigCardTypesWithoutPrecalculatedCustomerFee' =>[
+        'request' => [
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR',
+                'convenience_fee_config' => [
+                    'rules'=>[
+                        [
+                            'method' => 'card',
+                            'card.type' => ['credit'],
+                            'fee' => [
+                                'payee' => 'customer',
+                                'percentage_value' => "20.98"
+                            ]
+                        ],
+                        [
+                            'method' => 'card',
+                            'card.type' => ['debit'],
+                            'fee' => [
+                                'payee' => 'business',
+                                'flat_value' => 100
+                            ]
+                        ],
+                        [
+                            'method' => 'card',
+                            'card.type' => ['prepaid'],
+                            'fee' => [
+                                'payee' => 'business',
+                                'percentage_value' => "12.00"
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'amount' => 1000,
+                'currency' => 'INR',
+                'convenience_fee_config' => [
+                    'rules'=>[
+                        [
+                            'method' => 'card',
+                            'card.type' => ['credit'],
+                            'fee' => [
+                                'payee' => 'customer',
+                                'percentage_value' => "20.98"
+                            ]
+                        ],
+                        [
+                            'method' => 'card',
+                            'card.type' => ['debit'],
+                            'fee' => [
+                                'payee' => 'business',
+                                'flat_value' => 100
+                            ]
+                        ],
+                        [
+                            'method' => 'card',
+                            'card.type' => ['prepaid'],
+                            'fee' => [
+                                'payee' => 'business',
+                                'percentage_value' => "12.00"
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testBulkWfActionExecution' => [
         'request'  => [
             'url'     => '/bulk-actions/execute_bulk_action',
