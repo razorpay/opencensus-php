@@ -73,9 +73,9 @@ return [
                     'merchant_id'  => '1cXSLlUU8V9sXl',
                     'hold_funds'   => false,
                     'verification' => [
-                        'activation_progress' => 40,
+                        'activation_progress' => 60,
                         'status'              => 'disabled',
-                        'required_fields'     => ['bank_account_name', 'bank_account_number', 'bank_branch_ifsc'],
+                        'required_fields'     => ['bank_account_number', 'bank_branch_ifsc'],
                     ],
                     'can_submit'   => false
                 ]

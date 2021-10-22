@@ -109,7 +109,8 @@ class ActivationTest extends OAuthTestCase
                 function($mid, $feature, $mode) {
                     if ($feature === RazorxTreatment::SELF_SERVE_AUTO_KYC or
                         $feature === RazorxTreatment::PRICING_PLAN_DEFAULT_METHODS or
-                        $feature === RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY)
+                        $feature === RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY or
+                        $feature === RazorxTreatment::LITE_ONBOARDING)
                     {
                         return 'on';
                     }
@@ -1707,6 +1708,48 @@ class ActivationTest extends OAuthTestCase
         $partnerActivation = $this->getDbEntityById('partner_activation', $merchantId);
 
         $this->assertEquals($partnerActivation->getActivationStatus(), 'under_review');
+    }
+
+    public function testKycSubmissionForInstantlyActivatedMerchantAovAbsent()
+    {
+        $this->enableRazorXTreatmentForActivation();
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $this->startTest();
+
+        $testData = $this->testData['submitKyc'];
+
+        $this->startTest($testData);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+
+        $merchantAov = $merchantDetail->avgOrderValue;
+
+        $this->assertEquals(-1, $merchantAov->getMinAov());
+
+        $this->assertEquals(-1, $merchantAov->getMaxAov());
+    }
+
+    public function testKycSubmissionForInstantlyActivatedMerchantBankAccountNameAbsent()
+    {
+        $this->enableRazorXTreatmentForActivation();
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $this->startTest();
+
+        $testData = $this->testData['submitKyc'];
+
+        $this->startTest($testData);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+
+        $this->assertNotNull($merchantDetail->getBankAccountName());
     }
 
     public function testKycSubmissionForInstantlyActivatedMerchantForRazorpayOrg()

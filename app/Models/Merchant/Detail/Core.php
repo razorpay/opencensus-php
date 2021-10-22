@@ -1601,6 +1601,17 @@ class Core extends Base\Core
             $merchantDetails->reviewer()->associate($reviewer);
         }
 
+        $liteOnboardingExpt = (new Merchant\Core)->isRazorxExperimentEnable(
+            $merchant->getId(),
+            RazorxTreatment::LITE_ONBOARDING);
+
+        if ($liteOnboardingExpt === true)
+        {
+            $promoterPanName = $merchantDetails->getPromoterPanName();
+
+            $merchantDetails->setBankAccountName($promoterPanName);
+        }
+
         $merchantDetails->edit($input);
 
         $kycClarificationReasons = $this->getUpdatedKycClarificationReasons($input, $merchantDetails->getMerchantId());
@@ -1632,6 +1643,22 @@ class Core extends Base\Core
         if (isset($input['merchant_avg_order_value']) === true)
         {
             (new AvgOrderValue\Core)->createOrEditAvgOrderValue($merchantDetails, $input['merchant_avg_order_value']);
+        }
+        else
+        {
+            $liteOnboardingExpt = (new Merchant\Core)->isRazorxExperimentEnable(
+                $merchant->getId(),
+                RazorxTreatment::LITE_ONBOARDING);
+
+            if ($liteOnboardingExpt === true)
+            {
+                $aovInput = [
+                    AvgOrderValue\Entity::MIN_AOV => -1,
+                    AvgOrderValue\Entity::MAX_AOV => -1,
+                ];
+
+                (new AvgOrderValue\Core)->createOrEditAvgOrderValue($merchantDetails, $aovInput);
+            }
         }
 
 

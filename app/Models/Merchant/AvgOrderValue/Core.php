@@ -38,11 +38,11 @@ class Core extends Base\Core
 
             else
             {
-                $avgOrderValue->edit($input, 'edit');
+                $avgOrderValue->edit($input);
 
                 $this->repo->merchant_avg_order_value->saveOrFail($avgOrderValue);
             }
-//todo: all create/update calls to be added here
+
             return $avgOrderValue;
         });
     }

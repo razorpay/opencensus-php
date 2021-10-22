@@ -657,6 +657,11 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return $this->getAttribute(self::BANK_ACCOUNT_NAME);
     }
 
+    public function setBankAccountName($bankAccountName)
+    {
+        $this->setAttribute(self::BANK_ACCOUNT_NAME, $bankAccountName);
+    }
+
     public function getBankAccountNumber()
     {
         return $this->getAttribute(self::BANK_ACCOUNT_NUMBER);

@@ -354,4 +354,7 @@ final class RazorxTreatment
 
     // Experiment to send create validation metadata to BVS
     const BVS_CREATE_VALIDATION_METADATA = 'BVS_CREATE_VALIDATION_METADATA';
+
+    // Experiment for removal of extra fields during onboarding
+    const LITE_ONBOARDING = 'lite_onboarding';
 }
