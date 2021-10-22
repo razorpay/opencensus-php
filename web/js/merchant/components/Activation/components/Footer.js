@@ -40,7 +40,7 @@ SubmitL1Form = connect(null, { ...EventActions })(SubmitL1Form);
 
 let SubmitKYCForm = ({ isAllTabsValid, tracking, toggleSubmitLayer, trackEvents }) => (
   <Button.Primary
-    disabled={!isAllTabsValid()}
+    disabled={!isAllTabsValid}
     onClick={() => {
       tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.save_documents'));
       tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.submit_form'));
@@ -193,7 +193,7 @@ const Footer = ({
   if (footerButtons.includes(FOOTER_BUTTONS.SUBMIT_KYC_FORM)) {
     buttons.push(
       <SubmitKYCForm
-        isAllTabsValid={isAllTabsValid}
+        isAllTabsValid={isAllTabsValid()}
         toggleSubmitLayer={toggleSubmitLayer}
         tracking={tracking}
       />,
