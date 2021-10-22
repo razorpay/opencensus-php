@@ -26,6 +26,8 @@ class Constants
     const RISK_SOURCE_HIGH_FTS              = 'high_fts';
     const RISK_SOURCE_HIGH_CTS              = 'high_cts';
     const RISK_SOURCE_CUSTOMER_REPORT       = 'customer_report';
+    const RISK_SOURCE_TXN_MONITORING        = 'transaction_monitoring';
+    const RISK_SOURCE_BANK_NW_ALERTS        = 'bank_or_network_alerts';
     const RISK_SOURCE_OTHERS                = 'others';
 
     //risk source allowed values
@@ -38,6 +40,8 @@ class Constants
         self::RISK_SOURCE_HIGH_FTS . ',' .
         self::RISK_SOURCE_HIGH_CTS . ',' .
         self::RISK_SOURCE_CUSTOMER_REPORT . ',' .
+        self::RISK_SOURCE_TXN_MONITORING . ',' .
+        self::RISK_SOURCE_BANK_NW_ALERTS . ',' .
         self::RISK_SOURCE_OTHERS;
 
     // Risk reasons
@@ -68,19 +72,18 @@ class Constants
         self::RISK_REASON_OTHERS;
 
     // Risk tags
-    const RISK_TAG_RISK_REVIEW_SUSPEND      = 'risk_review_suspend';
-    const RISK_TAG_RISK_REVIEW_ONHOLD       = 'risk_review_onhold';
-    const RISK_TAG_RISK_REVIEW_DISABLE_LIVE = 'risk_review_disable_live';
-    const RISK_TAG_RISK_REVIEW_WATCHLIST    = 'risk_review_watchlist';
-    const RISK_TAG_SC_RISK_REVIEW_SUSPEND   = 'sc_risk_review_suspend';
-    const RISK_TAG_SC_RISK_REVIEW_ONHOLD    = 'sc_risk_review_onhold';
-    const RISK_TAG_SC_RISK_REVIEW_WATCHLIST = 'sc_risk_review_watchlist';
-    const RISK_TAG_SC_FEATURE_BLOCKED       = 'sc_feature_blocked';
-    const RISK_TAG_MS_RISK_REVIEW_SUSPEND   = 'ms_risk_review_suspend';
-    const RISK_TAG_MS_RISK_REVIEW_WATCHLIST = 'ms_risk_review_watchlist';
-    // NOTE: not part of the latest risk tag shared by product
-    // But kept for backward compatibility
-    const RISK_TAG_MS_RISK_REVIEW_ONHOLD    = 'ms_risk_review_onhold';
+    const RISK_TAG_RISK_REVIEW_SUSPEND          = 'risk_review_suspend';
+    const RISK_TAG_RISK_REVIEW_ONHOLD           = 'risk_review_onhold';
+    const RISK_TAG_RISK_REVIEW_DISABLE_LIVE     = 'risk_review_disable_live';
+    const RISK_TAG_RISK_REVIEW_WATCHLIST        = 'risk_review_watchlist';
+    const RISK_TAG_SC_RISK_REVIEW_SUSPEND       = 'sc_risk_review_suspend';
+    const RISK_TAG_SC_RISK_REVIEW_ONHOLD        = 'sc_risk_review_onhold';
+    const RISK_TAG_SC_RISK_REVIEW_WATCHLIST     = 'sc_risk_review_watchlist';
+    const RISK_TAG_SC_FEATURE_BLOCKED           = 'sc_feature_blocked';
+    const RISK_TAG_MS_RISK_REVIEW_SUSPEND       = 'ms_risk_review_suspend';
+    const RISK_TAG_MS_RISK_REVIEW_WATCHLIST     = 'ms_risk_review_watchlist';
+    const RISK_TAG_MS_RISK_REVIEW_ONHOLD        = 'ms_risk_review_onhold';
+    const RISK_TAG_MS_RISK_REVIEW_DISABLE_LIVE  = 'ms_risk_review_disable_live';
 
     //risk tag allowed values
     const RISK_TAGS_CSV =
@@ -93,23 +96,9 @@ class Constants
         self::RISK_TAG_SC_RISK_REVIEW_WATCHLIST . ',' .
         self::RISK_TAG_SC_FEATURE_BLOCKED . ',' .
         self::RISK_TAG_MS_RISK_REVIEW_SUSPEND . ',' .
+        self::RISK_TAG_MS_RISK_REVIEW_ONHOLD . ',' .
+        self::RISK_TAG_MS_RISK_REVIEW_DISABLE_LIVE . ',' .
         self::RISK_TAG_MS_RISK_REVIEW_WATCHLIST;
-
-    const RISK_TAG_LIST = [
-        self::RISK_TAG_RISK_REVIEW_SUSPEND,
-        self::RISK_TAG_RISK_REVIEW_ONHOLD,
-        self::RISK_TAG_RISK_REVIEW_DISABLE_LIVE,
-        self::RISK_TAG_RISK_REVIEW_WATCHLIST,
-        self::RISK_TAG_SC_RISK_REVIEW_SUSPEND,
-        self::RISK_TAG_SC_RISK_REVIEW_ONHOLD,
-        self::RISK_TAG_SC_RISK_REVIEW_WATCHLIST,
-        self::RISK_TAG_SC_FEATURE_BLOCKED,
-        self::RISK_TAG_MS_RISK_REVIEW_SUSPEND,
-        self::RISK_TAG_MS_RISK_REVIEW_WATCHLIST,
-        // NOTE: not part of the latest risk tag shared by product
-        // But kept for backward compatibility
-        self::RISK_TAG_MS_RISK_REVIEW_ONHOLD,
-    ];
 
     const RISK_ACTIONS_CSV =
         Action::SUSPEND . ',' .

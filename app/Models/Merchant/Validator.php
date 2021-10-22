@@ -979,10 +979,12 @@ class Validator extends Base\Validator
 
         $taggedByRiskOps = false;
 
+        $riskTags= explode(',', RiskActionConstants::RISK_TAGS_CSV);
+
         //Check if the merchant is tagged by Risk team
         foreach ($tags as $tag)
         {
-            if (in_array(strtolower($tag), RiskActionConstants::RISK_TAG_LIST) === true)
+            if (in_array(strtolower($tag), $riskTags) === true)
             {
                 $taggedByRiskOps = true;
 

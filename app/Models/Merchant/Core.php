@@ -1097,9 +1097,11 @@ class Core extends Base\Core
 
     protected function deleteRiskTags($merchantTags, $merchant)
     {
+        $riskTags = explode(',', RiskActionConstants::RISK_TAGS_CSV);
+
         foreach ($merchantTags as $merchantTag)
         {
-            if (in_array(strtolower($merchantTag),RiskActionConstants::RISK_TAG_LIST))
+            if (in_array(strtolower($merchantTag),$riskTags))
             {
                 $this->deleteTag($merchant->getId(), $merchantTag);
             }
