@@ -2,9 +2,12 @@
 
 namespace RZP\Http\Middleware;
 
+use App;
+use RZP\Trace\TraceCode;
 use RZP\Http\RouteTeamMap;
 use Illuminate\Http\Request;
 use Razorpay\Edge\Passport\Passport;
+use Illuminate\Foundation\Application;
 use Symfony\Component\HttpFoundation\Response;
 
 use RZP\Constants\Metric;
@@ -13,7 +16,18 @@ use RZP\Http\BasicAuth\BasicAuth;
 
 final class Throttle
 {
+    protected $app;
+
+    protected $trace;
+
     const API_HOST_COOKIE_KEY = 'rzp_api_host';
+
+    public function __construct()
+    {
+        $this->app = $app = App::getFacadeRoot();;
+
+        $this->trace = $this->app['trace'];
+    }
 
     /**
      * Handles http request:
@@ -46,12 +60,22 @@ final class Throttle
      */
     public function pushHttpMetrics(Request $request, Response $response, int $duration)
     {
+        $reqSize = strlen($request);
+        $responseSize = strlen($response);
+
+        $this->trace->info(TraceCode::HTTP_REQUEST_RESPONSE_SIZE, [
+            'req'   => $reqSize,
+            'res'   => $responseSize,
+        ]);
+
         $dimensions = $this->getMetricDimensions($request, $response);
         $importantDimensions = $this->getImportantMetricDimensions($request, $response);
 
         app('trace')->count(Metric::HTTP_REQUESTS_TOTAL, $dimensions);
         app('trace')->histogram(Metric::HTTP_REQUEST_DURATION_MILLISECONDS, $duration, $dimensions);
         app('trace')->histogram(Metric::HTTP_REQUEST_LATENCY_MILLISECONDS, $duration, $importantDimensions);
+        app('trace')->histogram(Metric::HTTP_REQUEST_SIZE, $reqSize, $importantDimensions);
+        app('trace')->histogram(Metric::HTTP_RESPONSE_SIZE, $responseSize, $importantDimensions);
     }
 
     /**

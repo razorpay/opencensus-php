@@ -33,8 +33,10 @@ class Metric
     // Summary type metric names
     // Using '.histogram' as suffix for pattern match to work(refer statsd_mapping.yml) for statsd_exporter
     const HTTP_REQUEST_DURATION_MILLISECONDS    = 'http_request_duration_milliseconds.histogram';
-    const HTTP_REQUEST_LATENCY_MILLISECONDS    = 'http_request_latency_milliseconds.histogram';
+    const HTTP_REQUEST_LATENCY_MILLISECONDS     = 'http_request_latency_milliseconds.histogram';
 
+    const HTTP_REQUEST_SIZE                     = 'http_request_size.histogram';
+    const HTTP_RESPONSE_SIZE                    = 'http_response_size.histogram';
 
     const TRANSACTION_DURATION_MILLISECONDS     = 'transaction_duration_milliseconds.histogram';
 
