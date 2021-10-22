@@ -4,17 +4,18 @@ namespace RZP\Tests\Functional\Gateway\Mozart;
 
 use Carbon\Carbon;
 
-use RZP\Exception\RuntimeException;
-use RZP\Tests\Functional\TestCase;
-use RZP\Gateway\Mozart;
-use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Method;
+use RZP\Services\RazorXClient;
+use RZP\Models\Merchant\Account;
+use RZP\Tests\Functional\TestCase;
+use RZP\Exception\RuntimeException;
+use RZP\Jobs\CorePaymentServiceSync;
 use RZP\Gateway\Upi\Base as UpiBase;
+use RZP\Models\Payment\UpiMetadata\Flow;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Jobs\CorePaymentServiceSync;
 
 
 class UpiAirtelGatewayTest extends TestCase
@@ -32,6 +33,10 @@ class UpiAirtelGatewayTest extends TestCase
         parent::setUp();
 
         $this->gateway = 'mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->gateway = "upi_mozart";
 
         $this->setMockGatewayTrue();
 
@@ -56,6 +61,13 @@ class UpiAirtelGatewayTest extends TestCase
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
         $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal');
+        
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                    ->setConstructorArgs([$this->app])
+                    ->onlyMethods(['getTreatment'])
+                    ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
     }
 
     public function testPayment($status = 'created')
@@ -452,5 +464,80 @@ class UpiAirtelGatewayTest extends TestCase
 
         // Payment should be captured
         $this->assertEquals('captured', $payment['status']);
+    }
+
+    /**
+     * Test for collect payment success with pre_process action.
+     */
+    public function testCollectPaymentWithPreProcess()
+    {
+        $this->app->razorx
+        ->method('getTreatment')
+        ->will($this->returnCallback(
+            function ($mid, $feature, $mode)
+            {                
+                if ($feature == 'api_upi_airtel_pre_process_v1')
+                {
+                    return 'upi_airtel';
+                }
+
+                return 'control';
+            })
+        );
+
+        $this->testPayment();
+    }
+
+    /**
+     * Test for collect payment failure with pre_process action.
+     */
+    public function testCollectPaymentFailureWithPreProcess()
+    {
+        $this->app->razorx
+        ->method('getTreatment')
+        ->will($this->returnCallback(
+            function ($mid, $feature, $mode)
+            {   
+                if ($feature == 'api_upi_airtel_pre_process_v1')
+                {
+                    return 'upi_airtel';
+                }
+
+                return 'control';
+            })
+        );
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('async', $response['type']);
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $payment['description'] = 'payment_failed';
+
+        $content = $this->mockServer()->getAsyncCallbackContent($payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->assertEquals($response, ['success' => false]);
+
+        // The payment should now be authorized
+        $payment = $this->getEntityById('payment', $paymentId, true);
+        $this->assertEquals('failed', $payment['status']);
+
+        $upi = $this->getDbLastUpi();
+
+        $this->assertArraySubset([
+            UpiEntity::TYPE                 => Flow::COLLECT,
+            UpiEntity::ACTION               => 'authorize',
+            UpiEntity::GATEWAY              => $this->gateway,
+            UpiEntity::VPA                  => $payment['vpa'],
+            UpiEntity::STATUS_CODE          => 'U30',
+        ], $upi->toArray());
     }
 }

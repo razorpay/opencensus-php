@@ -250,15 +250,43 @@ class Server extends Base\Mock\Server
 
     public function getAsyncCallbackContent(array $payment)
     {
-        $response = [
-            'code'      => '0',
-            'errorCode' => '000',
-            'messageText' => 'success',
-            'rrn' => '987654321',
-            'txnStatus' => 'SUCCESS',
-            'amount' => $payment['amount'] / 100,
-            'hdnOrderID' => ltrim($payment['id'], 'pay_'),
-        ];
+        $gateway = $payment['gateway'] ?? '';
+
+        if ($gateway !== 'upi_airtel') 
+        {
+            return [];
+        }
+
+        $description = $payment['description'] ?? '';
+
+        switch ($description)
+        {
+            case 'payment_failed':
+                $response = [
+                    'code'      => '1',
+                    'errorCode' => 'U30',
+                    'messageText' => 'failed',
+                    'rrn' => '987654321',
+                    'txnStatus' => 'FAILED',
+                    'amount' => $payment['amount'] / 100,
+                    'hdnOrderID' => ltrim($payment['id'], 'pay_'),
+                    'payerVPA'	=> $payment['vpa'],
+                ];
+
+                break;
+            default:
+                $response = [
+                    'code'      => '0',
+                    'errorCode' => '000',
+                    'messageText' => 'success',
+                    'rrn' => '987654321',
+                    'txnStatus' => 'SUCCESS',
+                    'amount' => $payment['amount'] / 100,
+                    'hdnOrderID' => ltrim($payment['id'], 'pay_'),
+                    'payerVPA'	=> $payment['vpa'],
+                    'txnRefNo'	=> 'FT2129114821982611',
+                ];
+        }
 
         $str = implode('#', $response);
 

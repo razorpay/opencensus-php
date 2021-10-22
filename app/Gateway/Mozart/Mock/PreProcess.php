@@ -92,4 +92,55 @@ class PreProcess extends Base\Mock\Server
 
         return $response->toArray();
     }
+
+    public function mozart($entities)
+    {
+        $gateway = $entities['gateway']['gateway'] ?? 'mozart';
+
+        switch ($gateway)
+        {
+            case 'upi_airtel':
+                return $this->upi_airtel($entities);
+        }
+
+       return json_decode($entities['gateway']['payload']);
+    }
+
+    public function upi_airtel($entities)
+    {
+        $data = json_decode($entities['gateway']['payload'], true);
+        $response = MozartUpiResponse::getDefaultInstanceForV2();
+        
+        $response->mergeUpi([
+            UpiEntity::VPA                  => $data['payerVPA'] ?? '',
+            UpiEntity::STATUS_CODE          => $data['errorCode'],
+            UpiEntity::NPCI_REFERENCE_ID    => $data['rrn'],
+            UpiEntity::NPCI_TXN_ID          => $data['txnRefNo'] ?? "",
+            UpiEntity::MERCHANT_REFERENCE   => $data['hdnOrderID'],
+        ]);
+
+        $response->setPayment([
+            Payment\Entity::CURRENCY          => 'INR',
+            Payment\Entity::AMOUNT_AUTHORIZED => $data['amount']*100,
+        ]);
+
+        $response->setTerminal([
+            Terminal\Entity::GATEWAY_MERCHANT_ID => 'MER0000000548542'
+        ]);
+
+        if ($data['code'] !== '0')
+        {
+            $response->setSuccess(false);
+
+            $response->setError([
+                'description'               => 'Debit has been failed',
+                'gateway_error_code'        => 'U30',
+                'gateway_error_description' => 'Debit has been failed',
+                'gateway_status_code'       =>  200,
+                'internal_error_code'       => 'GATEWAY_ERROR_DEBIT_FAILED',
+            ]);
+        }
+
+        return $response->toArray();
+    }
 }

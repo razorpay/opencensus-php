@@ -18,6 +18,7 @@ use RZP\Gateway\Upi\Mindgate\Crypto;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Upi\Base\MandateTrait;
 use RZP\Gateway\Upi\Base\RecurringTrait;
+use RZP\Gateway\Upi\Base\CommonGatewayTrait;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Gateway\Mozart\Entity as MozartEntity;
@@ -30,6 +31,7 @@ class Gateway extends Base\Gateway
         extractPaymentsProperties as extractPaymentsPropertiesAuthorizedFailedTrait;
     }
 
+    use CommonGatewayTrait;
     protected $gateway = 'mozart';
 
     const CACHE_KEY    = 'gateway:cache_key_%s';
@@ -688,6 +690,16 @@ class Gateway extends Base\Gateway
             parent::action($input, Action::AUTH_VERIFY);
         }
 
+        if ($this->getGateway($input) === Payment\Gateway::UPI_AIRTEL)
+        {
+            $version = $input['gateway']['data']['version'] ?? '';
+
+            if ($version === 'v2') 
+            {
+                return $this->upiCallback($input);
+            }
+        }
+
         if ($this->isS2SFlow($input) === true)
         {
             parent::action($input, Action::AUTHENTICATE_VERIFY);
@@ -1062,7 +1074,7 @@ class Gateway extends Base\Gateway
         switch ($gateway)
         {
             case Payment\Gateway::UPI_AIRTEL:
-                return json_decode($input, true);
+                return $this->preProcessServerCallbackForUpiAirtel($input, $mode);
             case Payment\Gateway::UPI_JUSPAY:
             case Payment\Gateway::CRED:
             case Payment\Gateway::UPI_CITI:
@@ -1127,6 +1139,13 @@ class Gateway extends Base\Gateway
         switch ($gateway)
         {
             case Payment\Gateway::UPI_AIRTEL:
+                $version = $response['data']['version'] ?? '';
+
+                if ($version === 'v2')
+                {
+                    return $this->upiPaymentIdFromServerCallback($response);
+                }
+
                 return $response[UpiAirtelResponseFields::PAYMENT_ID];
             case Payment\Gateway::UPI_CITI:
                 return $response[UpiCiti\Fields::PUSH_NOTIFICATION_TO_SSG][UpiCiti\Fields::ORDER_NO];
@@ -3135,5 +3154,32 @@ class Gateway extends Base\Gateway
         );
 
         return $response;
+    }
+
+    /**
+     * Pre Process server callback for UPI Airtel
+     * @param string $input
+     * @return array
+     * 
+     * Splits the traffic between common gateway trait and existing API execution for pre-processing.
+     */
+    public function preProcessServerCallbackForUpiAirtel(string $input,$mode = null)
+    {
+        $data = [
+            'payload' => $input,
+            'gateway' => Payment\Gateway::UPI_AIRTEL,
+        ];
+
+        $mode = $mode === null ? Mode::LIVE : $mode ;
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
+            'api'. '_' . Payment\Gateway::UPI_AIRTEL . '_' . Action::PRE_PROCESS . '_' . 'v1',
+            $mode);
+
+        if ($variant === 'upi_airtel')
+        {
+            return $this->upiPreProcess($data);    
+        }
+
+        return json_decode($input, true);
     }
 }
