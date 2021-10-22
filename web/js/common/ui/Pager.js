@@ -1,6 +1,5 @@
 import { Component } from 'react';
 
-import { classList } from 'common/utils/rzp-utils';
 export default class Pager extends Component {
   constructor(...args) {
     super(...args);
@@ -47,7 +46,7 @@ export default class Pager extends Component {
         }}
       >
         {!(nextDisabled && prevDisabled) ? (
-          <div className={classList('btn-group pull-right', this.props.buttonClass)}>
+          <div className="btn-group pull-right">
             <button
               type="button"
               class="btn btn-default btn-sm i"
@@ -67,7 +66,7 @@ export default class Pager extends Component {
           </div>
         ) : null}
 
-        <small className={classList('text-muted', this.props.textClass)}>
+        <small className="text-muted">
           Showing {current} - {total}
         </small>
       </div>

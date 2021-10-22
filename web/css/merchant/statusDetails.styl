@@ -49,22 +49,18 @@
                     margin-left: 10px
                     line-height: 18px
                     color: #647596  
-
-                .status-refresh-icon-disabled 
-                    margin-left: 5px     
-
-                .status-refresh-icon 
+                .status-refresh-icon
                     cursor: pointer
                     margin-left: 5px 
+                .status-refresh-icon-disabled 
+                    margin-left: 5px     
 
     .SliderPanel__Body
         flex: auto
         overflow-y: scroll
-
         .panel-body
             padding: 0
             margin-bottom: 20px
-
             .status-method-summary     
                 margin: 20px 24px 24px 
                 background: #FFFFFF
@@ -103,14 +99,13 @@
                         .downtime-details 
                             margin-left: 26px
                             margin-top: 5px
-
                             span 
-                                font-size: 14px !important
+                                font-size: 14px
 
                     .status-item 
                         margin-left: 10px 
                         font-size: 15px
-                        color: rgba(22, 47, 86, 0.87)  !important
+                        color: rgba(22, 47, 86, 0.87)
 
                     .status-list 
                         margin-left: 28px 
@@ -134,7 +129,6 @@
                 font-weight: 700
                 display: flex
                 align-items: center
-                margin-top: 25px
                 justify-content: flex-start
                 text-align: center
                 color: rgba(22, 47, 86, 0.87)
@@ -145,29 +139,24 @@
 
             .scheduled-downtime 
                 padding: 16px 24px
-
                 .scheduled-downtime-heading 
                     font-weight: 700
                     font-size: 15px
                     line-height: 20px
                     color: rgba(22, 47, 86, 0.87)  
                     text-transform: capitalize
-
                 .scheduled-downtime-details 
                     font-size: 14px
                     color: rgba(22, 47, 86, 0.54)
                     margin-top: 6px
-
                     .scheduled-downtime-icon 
                         margin: 0px 10px   
-
                     .scheduled-downtime-severity 
                         text-transform: capitalize
-                        font-size: 14px !important 
-
+                        font-size: 14px 
             .no-maintenance 
                 display: flex
-                text-align: center
+                align-items: center
                 justify-content: center
                 height: 50px
                 color: rgba(22,47,86,0.87)
@@ -176,45 +165,38 @@
 
             .historical-downtime 
                 padding: 16px 24px 
-
-                .historical-downtime-heading 
+                .heading 
                     font-weight: 700
                     font-size: 15px
                     line-height: 20px
                     color: rgba(22, 47, 86, 0.87)  
                     text-transform: capitalize
-
-                .historical-downtime-details 
+                .details 
+                    display: flex
+                    align-items: center
                     font-size: 14px
                     color: rgba(22, 47, 86, 0.54)
                     margin-top: 6px
-
-                    .historical-downtime-icon 
-                        margin: 0px 10px    
-
-                    .historical-downtime-severity 
+                    .icon 
+                        margin-right: 10px    
+                    .severity 
                         text-transform: capitalize
-                        font-size: 14px !important 
+                    .divider
+                        margin: 10px
+                        color: rgba(22, 47, 86, 0.1)
                             
             .status-pager
-                height: 60px
-                position: relative
-
-                .status-pager-button
-                    position: absolute
-                    left: 180px
-                    
-                .status-pager-text 
-                    position: absolute
-                    left: 190px
-                    bottom: 8px
+                display: flex
+                justify-content: center
+                small
+                    margin: 10px
+                    line-height: 30px
                             
             .main-info 
+                display: flex
+                flex-direction: column
+                align-items: center
                 margin: 50px 
-
-                .main-tick 
-                    margin: 0px 145px 16px 
-
                 .main-status-text 
                     font-size: 20px
                     line-height: 30px
@@ -222,17 +204,18 @@
                     color: #404F6B 
                     font-style: normal
                     font-weight: 700
-
+                    margin-top: 16px
                 .date-and-time 
                     font-size: 14px
                     color: #647596
                     text-align: center
                     margin: 6px
-
+                    .status-refresh-icon 
+                        cursor: pointer
+                        margin-left: 5px 
                     .status-refresh-icon-disabled 
                         margin-left: 5px 
-    
-            .details 
+            .details-section 
                 width: 430px
                 margin: 16px
                 background: #FFFFFF
@@ -240,13 +223,11 @@
                 box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.05)
                 border-radius: 3px
                 position: relative
-
                 .payment-method 
                     height: 65px   
                     display: flex
                     align-items: center
                     padding: 0px 30px 0px 20px   
-
                     .payment-method-title 
                         font-weight: bold
                         font-size: 16px

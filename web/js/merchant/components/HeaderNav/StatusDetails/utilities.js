@@ -12,12 +12,3 @@ export const getTimeinTwelveHourFormat = (dateObj) => {
   const time = `${hours}:${minutes} ${meridian}`;
   return time;
 };
-
-export const showWarningText = () => {
-  return (
-    <div class="status-details-warning">
-      <span class="status-warning-asterix">{`* `}</span>We only detect downtime fluctuations for the
-      instruments which have sufficient payment volume
-    </div>
-  );
-};

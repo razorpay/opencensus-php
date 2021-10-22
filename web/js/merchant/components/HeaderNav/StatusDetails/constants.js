@@ -41,3 +41,13 @@ export const PSPs = [
   { code: 'phonepe', pspName: 'PhonePe' },
   { code: 'amazon_pay', pspName: 'Amazon Pay' },
 ];
+
+export const CARDS_PAYMENT_METHOD = 'Cards';
+export const UPI_PAYMENT_METHOD = 'UPI';
+export const NETBANKING_PAYMENT_METHOD = 'Net Banking';
+
+export const PAYMENT_METHOD_MAP = {
+  [CARDS_PAYMENT_METHOD]: 'card',
+  [UPI_PAYMENT_METHOD]: 'upi',
+  [NETBANKING_PAYMENT_METHOD]: 'netbanking',
+};

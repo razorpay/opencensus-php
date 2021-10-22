@@ -4,7 +4,6 @@ import { connect } from 'react-redux';
 import Slider from 'common/ui/Slider';
 import { openSlider } from 'merchant_common/reducers/slider';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import { BANKS, PSPs, CARD_ISSUERS } from './constants';
 import {
   fetchOngoingDowntimes,
   fetchScheduledDowntimes,
@@ -12,7 +11,6 @@ import {
 } from './service';
 import Spinner from 'common/ui/Spinner';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import StatusMainInfo from './StatusMainInfo';
 import CardsDetails from './CardsDetails';
 import UPIDetails from './UPIDetails';
 import NetBankingDetails from './NetBankingDetails';
@@ -21,9 +19,19 @@ import UPIInfoDetails from './UPIInfoDetails';
 import NetBankingInfoDetails from './NetBankingInfoDetails';
 import UpcomingMaintenance from './UpcomingMaintenance';
 import HistoricalDowntimes from './HistoricalDowntimes';
-import { getTimeinTwelveHourFormat, showWarningText } from './utilities';
+import { getTimeinTwelveHourFormat } from './utilities';
 import { classList } from 'common/utils/rzp-utils';
 import FailedStatus from './FailedStatus';
+import OverallStatus from './OverallStatus';
+
+const showWarningText = () => {
+  return (
+    <div class="status-details-warning">
+      <span class="status-warning-asterix">{`* `}</span>We only detect downtime fluctuations for the
+      instruments which have sufficient payment volume
+    </div>
+  );
+};
 
 class StatusDetails extends React.Component {
   constructor(props) {
@@ -119,136 +127,24 @@ class StatusDetails extends React.Component {
       .then((scheduledDowntimes) => {
         this.setState({ scheduledDowntimes });
       })
-      .catch(() => {
-        // console.log(err);
-        // console.log('scheduled not working');
+      .catch((err) => {
+        throw new Error(err);
       });
 
     this.setHistoricalDowntimes(paymentMethod);
   };
 
-  setHistoricalDowntimes = (paymentMethod) => {
-    const todayDateObj = new Date();
-    let todaymonth = Number(todayDateObj.getMonth()) + 1;
-    if (String(todaymonth).length === 1) {
-      todaymonth = `0${todaymonth}`;
-    }
-    let todayDate = todayDateObj.getDate();
-    if (String(todayDate).length === 1) {
-      todayDate = `0${todayDate}`;
-    }
-    const endDate = `${todayDateObj.getFullYear()}-${todaymonth}-${todayDate}`;
-    const priorDateObj = new Date();
-    priorDateObj.setDate(priorDateObj.getDate() - 30);
-
-    let priorMonth = Number(priorDateObj.getMonth()) + 1;
-    if (String(priorMonth).length === 1) {
-      priorMonth = `0${priorMonth}`;
-    }
-    let priorDate = priorDateObj.getDate();
-    if (String(priorDate).length === 1) {
-      priorDate = `0${priorDate}`;
-    }
-    const startDate = `${priorDateObj.getFullYear()}-${priorMonth}-${priorDate}`;
-
-    const method =
-      paymentMethod === 'Cards' ? 'card' : paymentMethod === 'UPI' ? 'upi' : 'netbanking';
-
-    fetchHistoricalDowntimes(
-      method,
-      String(this.state.skip),
-      String(this.state.count),
-      startDate,
-      endDate,
-    )
-      .then((response) => {
-        let data = [];
-        if (Array.isArray(response)) {
-          data = response;
-        } else {
-          data = response.data;
-        }
-        // const dataLength = data.length;
-        data.forEach((historicalDowntime) => {
-          switch (paymentMethod) {
-            case 'Cards':
-              {
-                const instrument = Object.keys(historicalDowntime.instrument)[0];
-                if (instrument === 'issuer') {
-                  // Mapping to card issuer name
-                  historicalDowntime.mapToName = true;
-                  const issuer = CARD_ISSUERS.find(
-                    (element) => element.code === historicalDowntime?.instrument?.issuer,
-                  );
-                  if (issuer != undefined) {
-                    const issuerName = issuer.issuerName;
-                    historicalDowntime.providerName = issuerName;
-                  }
-                }
-              }
-              break;
-            case 'UPI':
-              {
-                const instrument = Object.keys(historicalDowntime.instrument)[0];
-                if (instrument === 'psp') {
-                  // Mapping to psp name
-                  historicalDowntime.mapToName = true;
-                  const psp = PSPs.find(
-                    (element) => element.code === historicalDowntime?.instrument?.psp,
-                  );
-                  if (psp != undefined) {
-                    const pspName = psp.pspName;
-                    historicalDowntime.providerName = pspName;
-                  }
-                }
-              }
-              break;
-            case 'Net Banking':
-              {
-                // Mapping to bank name
-                historicalDowntime.mapToName = true;
-                const bank = BANKS.find(
-                  (element) => element.code === historicalDowntime?.instrument?.bank,
-                );
-                if (bank != undefined) {
-                  const bankName = bank.bankName;
-                  historicalDowntime.providerName = bankName;
-                }
-              }
-              break;
-            default:
-              break;
-          }
-        });
-        this.setState({
-          // historicalDowntimes: data,
-          isL2Loading: false,
-          // length: dataLength,
-          // isHistoricalLoading: false,
-        });
-      })
-      .catch(() => {
-        // console.log('Some error in fetching historical', err);
-        this.setState({
-          isL2Loading: false,
-          // isHistoricalLoading: false
-        });
+  setHistoricalDowntimes = async (paymentMethod) => {
+    try {
+      const params = [this.state.skip, this.state.count, paymentMethod];
+      const data = await fetchHistoricalDowntimes(...params);
+      this.setState({
+        isL2Loading: false,
       });
-  };
-
-  handleDocumentClick = (event) => {
-    const userTarget = event.target;
-    const sliderContent = document.querySelector('.content-wrapper.status-details');
-    const sliderToggle = document.querySelector('.status-details-slide-toggle');
-    const downtimeDetails = document.querySelector('.panel.panel-default.SliderPanel');
-    if (
-      (sliderToggle && sliderToggle.contains(userTarget)) ||
-      (sliderContent && sliderContent.contains(userTarget)) ||
-      (downtimeDetails && downtimeDetails.contains(userTarget))
-    ) {
-      return;
+      return data;
+    } catch (err) {
+      throw new Error(err);
     }
-    this.hideSlider();
   };
 
   componentDidMount() {
@@ -256,17 +152,14 @@ class StatusDetails extends React.Component {
       this.checkForDebounce();
     }, 1000);
     this.intervalForTime = setInterval(() => this.refreshData(), 300000);
-    document.addEventListener('click', this.handleDocumentClick, true);
   }
 
   componentWillUnmount() {
     clearInterval(this.intervalForTime);
     clearInterval(this.intervalForDebounce);
-    document.removeEventListener('click', this.handleDocumentClick, true);
   }
 
   hideSlider = () => {
-    console.log('hideSlider is called');
     this.setState({ mode: 'summary', sliderOpen: false });
   };
 
@@ -291,28 +184,28 @@ class StatusDetails extends React.Component {
         {sliderOpen ? (
           <Slider>
             <ErrorBoundary resetOnProps>
-              <div class="content-wrapper content-sm txn-details status-details">
-                <div class="panel panel-default SliderPanel">
-                  <div class="panel-heading">
-                    <div class="heading-content">
+              <div className="content-wrapper content-sm txn-details status-details">
+                <div className="panel panel-default SliderPanel">
+                  <div className="panel-heading">
+                    <div className="heading-content">
                       {this.state.mode === 'summary' ? (
-                        <div class="title">
+                        <div className="title">
                           <b>Payment Methods Status</b>
                         </div>
                       ) : (
                         <div>
                           <img
-                            class="status-back"
+                            className="status-back"
                             src={`${window.cdnBaseUrl}/static/assets/downtimes/arrow-left.svg`}
                             onClick={this.switchToSummaryView}
                           />
-                          <span class="status-heading">{this.state.paymentMethod}</span>
-                          <span class="status-heading-time">Last updated {time} today </span>
+                          <span className="status-heading">{this.state.paymentMethod}</span>
+                          <span className="status-heading-time">Last updated {time} today </span>
                           {this.state.disableRefresh ? (
                             <span>
                               <img
                                 src={`${window.cdnBaseUrl}/static/assets/downtimes/refresh-disabled.svg`}
-                                class="status-refresh-icon-disabled"
+                                className="status-refresh-icon-disabled"
                               />
                               <Popover align="bottom" theme="light">
                                 <PopoverBody>
@@ -323,7 +216,7 @@ class StatusDetails extends React.Component {
                           ) : (
                             <img
                               src={`${window.cdnBaseUrl}/static/assets/downtimes/refresh-cw.svg`}
-                              class="status-refresh-icon"
+                              className="status-refresh-icon"
                               onClick={() => {
                                 if (!this.state.disableRefresh) {
                                   this.onUserRefresh();
@@ -335,17 +228,17 @@ class StatusDetails extends React.Component {
                       )}
                     </div>
                   </div>
-                  <div class="SliderPanel__Body">
-                    <div class="panel-body ">
+                  <div className="SliderPanel__Body">
+                    <div className="panel-body ">
                       {this.state.mode === 'info' ? (
                         <div>
                           {this.state.isL2Loading ? (
-                            <div class="page-spinner-container">
+                            <div className="page-spinner-container">
                               <Spinner />
                             </div>
                           ) : (
                             <>
-                              <div class="status-method-summary">
+                              <div className="status-method-summary">
                                 {this.state.paymentMethod === 'Cards' ? (
                                   <CardsInfoDetails
                                     cardDowntimes={this.state.cardDowntimes}
@@ -377,7 +270,7 @@ class StatusDetails extends React.Component {
                       ) : (
                         <div>
                           {this.state.isL1Loading ? (
-                            <div class="page-spinner-container">
+                            <div className="page-spinner-container">
                               <Spinner />
                             </div>
                           ) : this.state.errorInFetchingData ? (
@@ -385,9 +278,9 @@ class StatusDetails extends React.Component {
                           ) : (
                             <>
                               <div className="main-info">
-                                <StatusMainInfo
-                                  overallStatus={this.state.overallStatus}
-                                  methodsDown={this.state.methodsDown}
+                                <OverallStatus
+                                  status={this.state.overallStatus}
+                                  downMethods={this.state.methodsDown}
                                 />
 
                                 <div className="date-and-time">
@@ -396,7 +289,7 @@ class StatusDetails extends React.Component {
                                     <span>
                                       <img
                                         src={`${window.cdnBaseUrl}/static/assets/downtimes/refresh-disabled.svg`}
-                                        class="status-refresh-icon-disabled"
+                                        className="status-refresh-icon-disabled"
                                       />
                                       <Popover align="bottom" theme="light">
                                         <PopoverBody>
@@ -409,7 +302,7 @@ class StatusDetails extends React.Component {
                                   ) : (
                                     <img
                                       src={`${window.cdnBaseUrl}/static/assets/downtimes/refresh-cw.svg`}
-                                      class="status-refresh-icon"
+                                      className="status-refresh-icon"
                                       onClick={() => {
                                         if (!this.state.disableRefresh) {
                                           this.onUserRefresh();
@@ -419,7 +312,7 @@ class StatusDetails extends React.Component {
                                   )}
                                 </div>
                               </div>
-                              <div className="details">
+                              <div className="details-section">
                                 <CardsDetails
                                   cardDowntimes={this.state.cardDowntimes}
                                   switchToInfoView={this.switchToInfoView}

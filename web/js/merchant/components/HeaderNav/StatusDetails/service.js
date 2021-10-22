@@ -1,6 +1,17 @@
 import { merchantFetch } from 'merchant/utils/ajax';
 import { getTimeinTwelveHourFormat } from './utilities';
-import { BANKS, VPA_HANDLES, PSPs, CARD_ISSUERS, CARD_NETWORKS } from './constants';
+import {
+  BANKS,
+  VPA_HANDLES,
+  PSPs,
+  CARD_ISSUERS,
+  CARD_NETWORKS,
+  CARDS_PAYMENT_METHOD,
+  UPI_PAYMENT_METHOD,
+  NETBANKING_PAYMENT_METHOD,
+  PAYMENT_METHOD_MAP,
+} from './constants';
+import moment from 'moment';
 
 export const fetchOngoingDowntimes = () => {
   return merchantFetch({
@@ -369,16 +380,70 @@ export const fetchScheduledDowntimes = () => {
     });
 };
 
-export const fetchHistoricalDowntimes = (method, skip, count, startDate, endDate) => {
-  return merchantFetch({
-    url: 'payments/downtimes/resolved',
-    method: 'get',
-    data: {
-      method,
-      skip,
-      count,
-      startDate,
-      endDate,
-    },
-  });
+export const fetchHistoricalDowntimes = async (skip, count, paymentMethod) => {
+  try {
+    const startDate = moment().subtract(30, 'days').format('YYYY-MM-DD');
+    const endDate = moment().format('YYYY-MM-DD');
+    const method = PAYMENT_METHOD_MAP[paymentMethod];
+    let data = [];
+    const response = await merchantFetch({
+      url: 'payments/downtimes/resolved',
+      method: 'get',
+      data: {
+        method,
+        skip,
+        count,
+        startDate,
+        endDate,
+      },
+    });
+    if (Array.isArray(response)) {
+      data = response;
+    } else {
+      data = response.data;
+    }
+    data.forEach((historicalDowntime) => {
+      let instrument = '';
+      for (const key in historicalDowntime.instrument) {
+        if (historicalDowntime.instrument.hasOwnProperty(key)) {
+          instrument = key;
+
+          switch (paymentMethod) {
+            case CARDS_PAYMENT_METHOD:
+              if (instrument === 'issuer') {
+                historicalDowntime.mapToName = true;
+                const issuer = CARD_ISSUERS.find(
+                  (element) => element.code === historicalDowntime?.instrument?.issuer,
+                );
+                historicalDowntime.providerName = issuer.issuerName;
+              }
+              break;
+            case UPI_PAYMENT_METHOD:
+              if (instrument === 'psp') {
+                historicalDowntime.mapToName = true;
+                const psp = PSPs.find(
+                  (element) => element.code === historicalDowntime?.instrument?.psp,
+                );
+                historicalDowntime.providerName = psp.pspName;
+              }
+              break;
+            case NETBANKING_PAYMENT_METHOD:
+              {
+                historicalDowntime.mapToName = true;
+                const bank = BANKS.find(
+                  (element) => element.code === historicalDowntime?.instrument?.bank,
+                );
+                historicalDowntime.providerName = bank.bankName;
+              }
+              break;
+            default:
+              break;
+          }
+        }
+      }
+    });
+    return data;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
