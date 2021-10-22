@@ -414,21 +414,6 @@ class InvoiceController extends Controller
 
         if (isset($data['invoice']) and $data['invoice']['entity_type'] === Constants\Entity::SUBSCRIPTION_REGISTRATION)
         {
-            unset($data['merchant']['pan']);
-            unset($data['merchant']['cin']);
-            unset($data['merchant']['gstin']);
-            unset($data['merchant']['support_email']);
-            unset($data['merchant']['support_mobile']);
-            unset($data['invoice']['customer_details']['email']);
-            unset($data['invoice']['customer_details']['name']);
-            unset($data['invoice']['customer_details']['contact']);
-            unset($data['invoice']['customer_details']['gstin']);
-            unset($data['invoice']['customer_details']['billing_address']);
-            unset($data['invoice']['customer_details']['shipping_address']);
-            unset($data['invoice']['customer_details']['customer_email']);
-            unset($data['invoice']['customer_details']['customer_name']);
-            unset($data['invoice']['customer_details']['customer_contact']);
-
             $view = 'invoice.auth_link';
         }
 
@@ -692,4 +677,3 @@ class InvoiceController extends Controller
         return false;
     }
 }
-
