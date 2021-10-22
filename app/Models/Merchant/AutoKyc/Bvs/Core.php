@@ -9,7 +9,10 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail\Metric;
 use RZP\Models\Merchant\BvsValidation;
+use RZP\Models\Merchant\Store\ConfigKey;
+use RZP\Models\Merchant\Store\Constants;
 use RZP\Models\Merchant\AutoKyc\Response;
+use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient\BvsProbeClient;
 use RZP\Models\Merchant\AutoKyc\Bvs\ProbeMocks\CompanySearchMock;
@@ -236,56 +239,43 @@ class Core extends Base\Core
             $getGstDetailsMock = new GetGstDetailsMock($pan, $mockStatus);
 
             $response = $getGstDetailsMock->getResponse();
+
+            $getGstDetailsBase = new GetGstDetailsBaseResponse($response);
+
+            return $getGstDetailsBase->geGstDetailsResponse();
         }
         else
         {
-            $response = (new BvsProbeClient())->getGstDetails($pan);
+            $keys = [
+                ConfigKey::GST_DETAILS_FROM_PAN
+            ];
+
+            $data = (new StoreCore())->fetchValuesFromStore($pan,
+                                                            ConfigKey::ONBOARDING_NAMESPACE,
+                                                            $keys,
+                                                            Constants::INTERNAL);
+
+            $this->trace->info(TraceCode::MERCHANT_STORE_GET_DETAILS, ['data' => $data]);
+
+            if (empty($data[ConfigKey::GST_DETAILS_FROM_PAN]))
+            {
+                $response = (new BvsProbeClient())->getGstDetails($pan);
+
+                $getGstDetailsBase = new GetGstDetailsBaseResponse($response);
+
+                $gstDetails= $getGstDetailsBase->geGstDetailsResponse();
+
+                $data = [
+                    Constants::NAMESPACE => ConfigKey::ONBOARDING_NAMESPACE,
+                    ConfigKey::GST_DETAILS_FROM_PAN                 => json_encode($gstDetails),
+                ];
+
+                $data = (new StoreCore())->updateMerchantStore($pan, $data, Constants::INTERNAL);
+            }
+
+            return json_decode($data[ConfigKey::GST_DETAILS_FROM_PAN]);
+
         }
-
-        $getGstDetailsBase = new GetGstDetailsBaseResponse($response);
-
-        return $getGstDetailsBase->geGstDetailsResponse();
     }
-
-
-    /**
-     * @param string $merchantId
-     *
-     * @return string
-     */
-    public function getGetGstDetailsRateLimiterKey(string $merchantId): string
-    {
-        return DetailConstants::GET_GST_DETAILS_ATTEMPT_COUNT_REDIS_KEY_PREFIX .
-               $merchantId;
-    }
-
-    /**
-     * @param string $merchantId
-     *
-     * @return int
-     */
-    public function getGstDetailsAttempts(string $merchantId): int
-    {
-        $getGetGstDetailsAttemptRedisKey = $this->getGetGstDetailsRateLimiterKey($merchantId);
-
-        $getGetGstDetailsCount = $this->app['cache']->get($getGetGstDetailsAttemptRedisKey) ?? 0;
-
-        return $getGetGstDetailsCount;
-    }
-
-    /**
-     * @param string $merchantId
-     */
-    public function increaseGetGstDetailsAttempt(string $merchantId)
-    {
-        $getGstDetailsAttemptRedisKey = $this->getGetGstDetailsRateLimiterKey($merchantId);
-
-        $getGstDetailsAttempt = $this->getGstDetailsAttempts($merchantId) + 1;
-
-        $this->app['cache']->put($getGstDetailsAttemptRedisKey,
-                                 $getGstDetailsAttempt,
-                                 DetailConstants::GET_GST_DETAILS_ATTEMPT_COUNT_TTL_IN_MIN);
-    }
-
 
 }

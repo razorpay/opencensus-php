@@ -20,7 +20,19 @@ return [
         ],
         'status_code' => 200,
     ],
-
+    'testGetGstDetailsSuccessFromStore' => [
+        'request'     => [
+            'method'  => 'GET',
+            'url'     => '/merchant/activation/gst_details',
+        ],
+        'response'    => [
+            'content' => ["results"=> [
+                "22AAACR5055K1ZH",
+                "03AAACR5055K2ZG"
+            ]],
+        ],
+        'status_code' => 200,
+    ],
     'testGetGstDetailsFailure' => [
         'request'  => [
             'method'  => 'GET',

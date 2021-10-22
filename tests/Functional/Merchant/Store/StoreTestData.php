@@ -28,7 +28,28 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
         ],
     ],
-
+    'testInvalidPermissionCreateStore' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchants/config/store',
+            'content' => [
+                'namespace'                 => 'onboarding',
+                'gst_details_from_pan'      => '[]'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\InvalidPermissionException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PERMISSION,
+        ],
+    ],
     'testValidCreateStore' => [
         'request'     => [
             'method'  => 'POST',
@@ -44,7 +65,7 @@ return [
         'status_code' => 200,
     ],
 
-    'fetchOnboardingStore' => [
+    'testFetchOnboardingStore' => [
         'request'   => [
             'method'  => 'GET',
             'url'     => '/merchants/config/store?namespace=onboarding',

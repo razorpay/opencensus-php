@@ -5,6 +5,8 @@ namespace Functional\Merchant\Store;
 
 
 use RZP\Models\Merchant\Store;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\InvalidPermissionException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -31,6 +33,14 @@ class StoreTest extends TestCase
 
         $this->startTest();
     }
+    public function testInvalidPermissionCreateStore()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
 
     public function testValidCreateStore()
     {
@@ -41,18 +51,46 @@ class StoreTest extends TestCase
         $this->startTest();
     }
 
-    public function fetchOnboardingStore()
+    public function testFetchOnboardingStore()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
         $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
 
         $data = [
-            'namespace'                 => 'onboarding',
-            'mtu_coupon_popup_count'    => 1
+            'namespace'              => 'onboarding',
+            'mtu_coupon_popup_count' => '1',
+            'gst_details_from_pan'      => '[]'
         ];
-        
-        (new Store\Core())->updateMerchantStore($merchantDetail['merchant_id'], $data);
+
+        (new Store\Core())->updateMerchantStore($merchantDetail['merchant_id'], $data,Store\Constants::INTERNAL);
         $this->startTest();
+
+        //test permissions in read
+        $data = [
+            'namespace' => 'onboarding'
+        ];
+        $data = (new Store\Core())->fetchMerchantStore($merchantDetail['merchant_id'], $data);
+        $this->assertArrayNotHasKey(Store\ConfigKey::GST_DETAILS_FROM_PAN, $data);
+        $this->assertArrayNotHasKey(Store\ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT, $data);
+
+        $keys = [
+            Store\ConfigKey::GST_DETAILS_FROM_PAN
+        ];
+        $data = (new Store\Core())->fetchValuesFromStore($merchantDetail['merchant_id'],
+                                                         Store\ConfigKey::ONBOARDING_NAMESPACE,$keys,Store\Constants::INTERNAL);
+        $this->assertArrayHasKey(Store\ConfigKey::GST_DETAILS_FROM_PAN, $data);
+
+        //test permissions in read
+        $this->expectException(InvalidPermissionException::class);
+
+        $keys = [
+            Store\ConfigKey::GST_DETAILS_FROM_PAN
+        ];
+        $data = (new Store\Core())->fetchValuesFromStore($merchantDetail['merchant_id'],
+                                                         Store\ConfigKey::ONBOARDING_NAMESPACE,$keys);
+
+
+
     }
 }

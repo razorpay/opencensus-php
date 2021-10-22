@@ -9,9 +9,11 @@ use Carbon\Carbon;
 use RZP\Encryption;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
+use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Trace\Tracer;
 use RZP\Models\State;
 use RZP\Models\Coupon;
@@ -4464,10 +4466,7 @@ class Core extends Base\Core
     }
 
     /**
-     * @param string $pan
-     *
      * @return array
-     * @throws BadRequestException
      */
     public function getGSTDetailsList(): array
     {
@@ -4484,13 +4483,24 @@ class Core extends Base\Core
 
             if ($isGetGstDetailsRazorxExperimentEnabled === false)
             {
-                return [Constant::RESULTS => $gstDetails];;
+                return [Constant::RESULTS => $gstDetails];
             }
+
+            $keys = [
+                ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT
+            ];
+
+            $data = (new StoreCore())->fetchValuesFromStore($this->merchant->getId(),
+                                                            ConfigKey::ONBOARDING_NAMESPACE,
+                                                            $keys,
+                                                            Merchant\Store\Constants::INTERNAL);
+
+            $this->trace->info(TraceCode::MERCHANT_STORE_GET_DETAILS, ['data' => $data]);
 
             $bvsCore = new AutoKyc\Bvs\Core();
 
             //rate limiting per merchant
-            $getGstDetailsAttempts = $bvsCore->getGstDetailsAttempts($this->merchant->getId());
+            $getGstDetailsAttempts = $data[ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT] ?? 0;
 
             if ($getGstDetailsAttempts > DetailConstants::GET_GST_DETAILS_MAX_ATTEMPT)
             {
@@ -4526,7 +4536,15 @@ class Core extends Base\Core
             //merge both with company pan associated gstin given more priority
             $gstDetails = array_unique(array_merge($gstDetailsForCompanyPan, $gstDetailsForPersonalPan));
 
-            $bvsCore->increaseGetGstDetailsAttempt($this->merchant->getId());
+            $data = [
+                Merchant\Store\Constants::NAMESPACE               => ConfigKey::ONBOARDING_NAMESPACE,
+                ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT => $getGstDetailsAttempts + 1
+            ];
+
+            $data = (new StoreCore())->updateMerchantStore($this->merchant->getId(), $data, Merchant\Store\Constants::INTERNAL);
+
+            $this->trace->info(TraceCode::MERCHANT_STORE_GET_DETAILS, ['data' => $data]);
+
         }
         catch (\Exception $e)
         {
@@ -4538,7 +4556,7 @@ class Core extends Base\Core
                                          Trace::ERROR,
                                          TraceCode::GET_GST_DETAILS_FAILED,
                                          [
-                                             DEConstants::PAN_NUMBER => $pan]);
+                                             DEConstants::MERCHANT_ID => $this->merchant->getId()]);
         }
 
         return [Constant::RESULTS => $gstDetails];

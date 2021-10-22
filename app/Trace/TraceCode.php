@@ -2811,6 +2811,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPI_CACHE_STORE_ERROR                                 = 'UPI_CACHE_STORE_ERROR';
     const UPI_CACHE_FLUSH_ERROR                                 = 'UPI_CACHE_FLUSH_ERROR';
     const UPI_CACHE_READ_ERROR                                  = 'UPI_CACHE_READ_ERROR';
+    //merchant store
+    const STORE_VALID_ACTION_REQUEST            = 'STORE_VALID_ACTION_REQUEST';
+    const STORE_GET_ALL_REQUEST                 = 'STORE_GET_ALL_REQUEST';
+    const STORE_GET_ALL_RESPONSE                ='STORE_GET_ALL_RESPONSE';
+    const FETCH_MERCHANT_STORE_REQUEST          = 'FETCH_MERCHANT_STORE_REQUEST';
+    const FETCH_VALUES_FROM_STORE_REQUEST       = 'FETCH_VALUES_FROM_STORE_REQUEST';
+    const FETCH_VALUES_FROM_STORE_RESPONSE      = 'FETCH_VALUES_FROM_STORE_RESPONSE';
 
     // Account codes
     const ACCOUNT_CREATED                                       = 'ACCOUNT_CREATED';
@@ -3032,6 +3039,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTO_POPULATE_GST_DETAILS_FAILED                      = 'AUTO_POPULATE_GST_DETAILS_FAILED';
     const BVS_GET_GST_DETAILS_RESPONSE                          = 'BVS_GET_GST_DETAILS_RESPONSE';
     const BVS_GET_GST_DETAILS_REQUEST                           = 'BVS_GET_GST_DETAILS_REQUEST';
+    const MERCHANT_STORE_GET_DETAILS                            = 'MERCHANT_STORE_GET_DETAILS';
     const BVS_GET_GST_DETAILS_ERROR                             = 'BVS_GET_GST_DETAILS_ERROR';
 
     const MERCHANT_POA_VERIFICATION_FAILED                      = 'MERCHANT_POA_VERIFICATION_FAILED';

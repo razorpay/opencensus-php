@@ -259,8 +259,6 @@ class Constants
     const COMPANY_SEARCH_ATTEMPT_COUNT_TTL_IN_SEC       = 10800;
     const COMPANY_SEARCH_MAX_ATTEMPT                    = 30;
 
-    const GET_GST_DETAILS_ATTEMPT_COUNT_REDIS_KEY_PREFIX = 'get_gst_details_attempt_count';
-    const GET_GST_DETAILS_ATTEMPT_COUNT_TTL_IN_MIN       = 180;
     const GET_GST_DETAILS_MAX_ATTEMPT                    = 30;
 
     const ACCOUNT_PREFIX    = "account_prefix";

@@ -5,15 +5,18 @@ namespace RZP\Models\Merchant\Store;
 
 use App;
 use Cache;
+use RZP\Trace\TraceCode;
 
 class RedisStore extends Store
 {
 
     const PREFIX = "merchant_store";
 
+    protected $app;
+
     public function __construct()
     {
-        $app = App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
     }
 
     public function get(string $merchantId, string $namespace, string $key)
@@ -27,35 +30,21 @@ class RedisStore extends Store
     {
         $cacheKey = $this->getCacheKey($merchantId, $namespace, $key);
 
-        Cache::forever($cacheKey, $value);
-    }
+        $config = ConfigKey::NAMESPACE_KEY_CONFIG[$namespace][$key];
 
-    public function getAll(string $merchantId, string $namespace = null)
-    {
-        $data = [];
-
-        if(empty($namespace) === false)
+        if (empty($config[Constants::TTL]))
         {
-            $configKeys = array_keys(ConfigKey::NAMESPACE_KEY_CONFIG[$namespace] ?? []);
-
-            foreach ($configKeys as $key)
-            {
-                $data[$key] = $this->get($merchantId, $namespace, $key);
-            }
+            Cache::forever($cacheKey, $value);
         }
         else
         {
-            foreach (array_keys(ConfigKey::NAMESPACE_KEY_CONFIG) as $namespace)
-            {
-                $data[$namespace] = $this->getAll($merchantId, $namespace);
-            }
+            Cache::put($cacheKey, $value, $config[Constants::TTL]);
         }
 
-        return $data;
     }
 
     protected function getCacheKey(string $merchantId, string $namespace, string $key)
     {
-        return self::PREFIX .':'. $merchantId . ':' . $namespace . ':' . $key;
+        return self::PREFIX . ':' . $merchantId . ':' . $namespace . ':' . $key;
     }
 }
