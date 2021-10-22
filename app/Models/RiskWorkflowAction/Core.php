@@ -132,8 +132,12 @@ class Core extends Base\Core
                 Constants::ACTION                                   => $riskAction,
                 'use_workflows'                                     => false,
                 Constants::RISK_ATTRIBUTES                          => $riskAttributesParams,
-                Constants::BULK_WORKFLOW_ACTION_ID                  => $bulkActionId,
             ];
+
+            if (isset($bulkActionId))
+            {
+                $input[Constants::BULK_WORKFLOW_ACTION_ID] = $bulkActionId;
+            }
 
             $diffData = [
                 'id'                                    => $merchantId,
