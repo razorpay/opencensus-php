@@ -279,14 +279,16 @@ class LeafListItem extends React.Component {
       .catch(() => {});
   };
 
-  handleRaiseRequest = (status) => {
+  handleRaiseRequest = (instrument) => {
     analyticsTrack({
-      objectName: `Raise Request ${status} Instrument Dashboard`,
+      objectName: `Raise Request from Instrument Dashboard`,
       actionName: 'clicked',
       screen: 'settings',
       properties: {
         location: 'Payment Methods',
         actionName: 'No',
+        instrumentName: instrument.name,
+        status: instrument.status,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
@@ -393,10 +395,7 @@ class LeafListItem extends React.Component {
               {instrument.description && <p>{instrument.description}</p>}
             </div>
             {[REJECTED, ACTION_REQUIRED].includes(instrument.status) && (
-              <button
-                className="btn btn-link"
-                onClick={() => this.handleRaiseRequest(instrument.status)}
-              >
+              <button className="btn btn-link" onClick={() => this.handleRaiseRequest(instrument)}>
                 Raise Request
               </button>
             )}
