@@ -541,7 +541,7 @@ class Repository extends Base\Repository
     public function fetchTotalAmountByTransactionTypeAboveThreshold(
         array $merchantIdList, string $type, int $threshold): array
     {
-        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
             ->where($this->dbColumn(Entity::TYPE), '=', $type)
             ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
             ->groupBy(Entity::MERCHANT_ID)

@@ -326,7 +326,7 @@ class Repository extends Base\Repository
 
     public function filterMerchantIdsByActivationStatus(array $mids, array $activationStatusList): array
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
                     ->select(Entity::MERCHANT_ID)
                     ->whereIn(Entity::MERCHANT_ID, $mids)
                     ->whereIn(Entity::ACTIVATION_STATUS, $activationStatusList)

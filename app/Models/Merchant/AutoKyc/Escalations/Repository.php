@@ -10,14 +10,14 @@ class Repository extends Base\Repository
     protected $entity = 'merchant_auto_kyc_escalations';
 
     public function fetchEscalationsForMerchant(string $merchantId){
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
             ->where(Entity::MERCHANT_ID, $merchantId)
             ->get();
     }
 
     public function fetchEscalationsForType(string $type)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
             ->where(Entity::ESCALATION_TYPE, $type)
             ->orderBy(Entity::CREATED_AT, 'desc')
             ->get();
@@ -25,7 +25,7 @@ class Repository extends Base\Repository
 
     public function fetchEscalationsForMerchants(array $merchantIds, string $type)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
             ->whereIn(Entity::MERCHANT_ID, $merchantIds)
             ->where(Entity::ESCALATION_TYPE, $type)
             ->get();
@@ -42,7 +42,7 @@ class Repository extends Base\Repository
                 ->toArray();
         }
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
             ->select(Entity::MERCHANT_ID)
             ->whereNotIn(Entity::MERCHANT_ID, $excludeList)
             ->whereIn(Entity::ESCALATION_TYPE, Constants::LOWER_ESCALATION_TYPE_MAP[$type])
