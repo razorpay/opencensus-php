@@ -594,7 +594,7 @@ class Service extends Base\Service
         $endTime = microtime(true) * 1000;
         $duration = round($endTime - $startTime);
 
-        $this->trace->info(TraceCode::GET_RAZORX_EXPERIMENTS_ROUTE_INFO, [
+        $this->trace->info(TraceCode::GET_TAGS_ROUTE_INFO, [
             'action'              => 'FetchEnded',
             'end_time'            => $endTime,
             'duration'            => $duration
