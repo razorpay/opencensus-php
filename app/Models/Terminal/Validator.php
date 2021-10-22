@@ -122,6 +122,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_SCB,
         Payment\Gateway::NETBANKING_AUSF,
         Payment\Gateway::NETBANKING_NSDL,
+        Payment\Gateway::NETBANKING_DCB,
         Payment\Gateway::ENACH_NPCI_NETBANKING,
         Payment\Gateway::EMI_SBI,
         Payment\Gateway::WALLET_OLAMONEY,
@@ -1105,6 +1106,14 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:netbanking_dcb',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $netbankingDcbEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,1,2',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
