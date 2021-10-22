@@ -114,6 +114,10 @@ class Core extends Base\Core
             'comment'   => sprintf(Constants::BATCH_STATUS_TPL, $batchResult['id']),
         ], Action\Entity::getSignedId($actionId));
 
+        $action->tag(Constants::BULK_WORKFLOW_IN_PROGRESS_TAG);
+
+        $this->repo->workflow_action->saveOrFail($action);
+
         return $batchResult;
     }
 }

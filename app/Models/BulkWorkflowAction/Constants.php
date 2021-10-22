@@ -36,7 +36,10 @@ class Constants
 
     const BULK_RISK_ACTION_WORKFLOW_TRIGGER_FEATURE = 'BULK_RISK_ACTION_WORKFLOW_TRIGGER';
 
-    const BATCH_STATUS_TPL = 'Bulk Workflow Action Batch Status: https://admin-dashboard.razorpay.com/admin/entity/batch.service/live/%s';
+    const BATCH_STATUS_TPL = 'BULK_WORKFLOW_ACTION_BATCH_STATUS:https://admin-dashboard.razorpay.com/admin/entity/batch.service/live/%s';
+
+    const BULK_WORKFLOW_COMPLETED_TAG   = 'bulk_workflow_completed';
+    const BULK_WORKFLOW_IN_PROGRESS_TAG = 'bulk_workflow_in_progress';
 
     const RISK_CONSTRUCTIVE_ACTION_PERMISSION_ERROR_MESSAGE = 'Merchant is tagged by risk team hence constructive action can be performed on this only by risk team';
 }

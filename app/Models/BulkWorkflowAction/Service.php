@@ -6,6 +6,7 @@ use Request;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Comment;
+use RZP\Trace\TraceCode;
 use RZP\Models\RiskWorkflowAction;
 use RZP\Models\Card\IIN\Import\XLSFileHandler;
 
@@ -18,6 +19,8 @@ class Service extends Base\Service
 
     public function addBulkRiskActionCommentPostExecution(array $input)
     {
+        $this->trace->info(TraceCode::BATCH_REQUEST_RISK_ACTION_COMMENT_POST_EXECUTION, $input);
+
         $failedMids = [];
 
         $failedMidsDueToRiskConstructiveAction = [];
@@ -68,6 +71,12 @@ class Service extends Base\Service
         (new Comment\Core())->createForWorkflowAction([
             'comment'   => sprintf('BULK_WORKFLOW_ACTION_STATUS: %s', json_encode($bulkActionResult)),
         ], $bulkAction, $riskWorkflowMaker);
+
+        $bulkAction->tag(Constants::BULK_WORKFLOW_COMPLETED_TAG);
+
+        $bulkAction->untag(Constants::BULK_WORKFLOW_IN_PROGRESS_TAG);
+
+        $this->repo->workflow_action->saveOrFail($bulkAction);
 
         return $bulkActionResult;
     }
