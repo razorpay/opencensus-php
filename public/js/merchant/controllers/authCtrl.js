@@ -92,7 +92,10 @@ app
         return Object.keys(obj);
       };
 
-      const LoginCardIDs = ['login_instant_settlements', 'super_checkout_webinar_buttons'];
+      const LoginCardIDs = [
+        'Sep22-AppStore-Zapier-GTM-LoginCard',
+        'super_checkout_webinar_buttons',
+      ];
       const actionToCardIDMap = {};
       const COOKIE_POLICY_DOCS = {
         CHROME:

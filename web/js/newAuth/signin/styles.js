@@ -13,6 +13,7 @@ export const Container = Styled(View)`
 `;
 
 export const CustomLinkButton = Styled(View)`
+  display: inline-block;
   padding: 0;
   text-decoration: none;
   font-weight: 600;
