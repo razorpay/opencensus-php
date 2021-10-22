@@ -26,9 +26,11 @@ jobs:
       - name: ESLint PR Check
         run: |
           npm ci
+          base=$base npm run validate-lint
           npx eslint \
           --ext .js,.jsx,.ts,.tsx \
           ${{ steps.changed-files.outputs.all_modified_files }}
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          base: origin/${{ github.base_ref }}

@@ -19,7 +19,8 @@
     "test:jest-watch": "cd web && npm run test:jest-watch",
     "build:e2e": "cd web && npm run e2e:build",
     "test:e2e": "cd web && npm run test:e2e",
-    "lint": "bash lint.sh"
+    "lint": "bash lint.sh",
+    "validate-lint": "bash validate-eslint.sh $base"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.4",
