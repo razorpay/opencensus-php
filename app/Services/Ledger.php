@@ -3,7 +3,7 @@
 namespace RZP\Services;
 
 use Request;
-use Requests;
+use RZP\Http\Request\Requests;
 use RZP\Exception;
 use Requests_Exception;
 use RZP\Constants\Mode;

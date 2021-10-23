@@ -2,7 +2,7 @@
 
 namespace RZP\Models\AppStore\PLOnWhatsapp;
 
-use Requests;
+use RZP\Http\Request\Requests;
 use ApiResponse;
 use RZP\Diag\EventCode;
 use RZP\Services\Stork;

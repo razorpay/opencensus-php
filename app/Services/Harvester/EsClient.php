@@ -3,7 +3,7 @@
 namespace RZP\Services\Harvester;
 
 use App;
-use Requests;
+use RZP\Http\Request\Requests;
 
 use RZP\Trace\TraceCode;
 use RZP\Exception\RuntimeException;

@@ -2,7 +2,7 @@
 
 namespace RZP\Jobs;
 
-use Requests;
+use RZP\Http\Request\Requests;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\TraceCode;

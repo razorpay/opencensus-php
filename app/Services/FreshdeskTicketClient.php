@@ -2,7 +2,7 @@
 
 namespace RZP\Services;
 
-use Requests;
+use RZP\Http\Request\Requests;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Foundation\Application;

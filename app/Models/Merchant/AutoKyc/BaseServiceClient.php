@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc;
 
-use Requests;
+use RZP\Http\Request\Requests;
 use Requests_Response;
 use Requests_Exception;
 

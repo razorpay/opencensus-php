@@ -4,7 +4,7 @@ namespace RZP\Services;
 
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
-use Requests;
+use RZP\Http\Request\Requests;
 use Requests_Exception;
 use Requests_Response;
 use RZP\Exception;

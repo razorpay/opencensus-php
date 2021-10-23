@@ -5,7 +5,7 @@ namespace RZP\Gateway\Base;
 use App;
 use Crypt;
 use Cache;
-use Requests;
+use RZP\Http\Request\Requests;
 use phpseclib\Crypt\RC4;
 use RZP\Gateway\Mpi\Base as Mpi;
 use RZP\Models\Admin\ConfigKey;

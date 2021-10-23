@@ -5,7 +5,7 @@ namespace RZP\Services;
 use Requests_Hooks;
 use Requests_Session;
 
-use Requests;
+use RZP\Http\Request\Requests;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;

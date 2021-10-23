@@ -3,7 +3,7 @@
 namespace RZP\Reconciliator\Freecharge;
 
 use Carbon\Carbon;
-use Requests;
+use RZP\Http\Request\Requests;
 use Storage;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\File\UploadedFile;

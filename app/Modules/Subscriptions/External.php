@@ -3,7 +3,7 @@
 namespace RZP\Modules\Subscriptions;
 
 use Config;
-use Requests;
+use RZP\Http\Request\Requests;
 use Requests_Session;
 use Illuminate\Support\Str;
 

@@ -4,7 +4,7 @@ namespace RZP\Models\Invoice;
 
 use Cache;
 use Config;
-use Requests;
+use RZP\Http\Request\Requests;
 use Mustache_Engine;
 use mikehaertl\wkhtmlto\Pdf;
 

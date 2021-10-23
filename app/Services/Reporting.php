@@ -4,7 +4,7 @@ namespace RZP\Services;
 
 use App;
 use Request;
-use Requests;
+use RZP\Http\Request\Requests;
 use Requests_Response;
 use Requests_Exception;
 use Razorpay\Trace\Logger as Trace;

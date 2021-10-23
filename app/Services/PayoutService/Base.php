@@ -2,7 +2,7 @@
 
 namespace RZP\Services\PayoutService;
 
-use Requests;
+use RZP\Http\Request\Requests;
 use Requests_Response;
 use Requests_Exception;
 use Razorpay\Trace\Logger;

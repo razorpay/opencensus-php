@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\MozartService;
 
-use Requests;
+use RZP\Http\Request\Requests;
 use RZP\Http\RequestHeader;
 use RZP\Models\Merchant\AutoKyc\Response;
 use RZP\Models\Merchant\Detail\Constants;

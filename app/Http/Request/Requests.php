@@ -5,7 +5,7 @@ namespace RZP\Http\Request;
 
 use Requests as Req;
 use RZP\Trace\Tracer;
-
+use RZP\Constants\Metric;
 use OpenCensus\Trace\Span;
 use OpenCensus\Trace\SpanContext;
 use OpenCensus\Trace\Propagator\ArrayHeaders;
@@ -159,6 +159,8 @@ class Requests
                         $spanOptions
                     );
 
+        self::pushMetric($url, $type, $data, $response);
+
         return $response;
     }
 
@@ -175,6 +177,8 @@ class Requests
                         array($url, $headers, $options),
                         $spanOptions
                     );
+
+        self::pushMetric($url, self::GET, array(), $response);
 
         return $response;
     }
@@ -193,6 +197,8 @@ class Requests
                         $spanOptions
                     );
 
+        self::pushMetric($url, self::HEAD, array(), $response);
+
         return $response;
     }
 
@@ -209,6 +215,8 @@ class Requests
                         array($url, $headers, $options),
                         $spanOptions
                     );
+
+        self::pushMetric($url, self::DELETE, array(), $response);
 
         return $response;
     }
@@ -227,6 +235,8 @@ class Requests
                         $spanOptions
                     );
 
+        self::pushMetric($url, self::TRACE, array(), $response);
+
         return $response;
     }
 
@@ -243,6 +253,8 @@ class Requests
                         array($url, $headers, $data, $options),
                         $spanOptions
                     );
+
+        self::pushMetric($url, self::POST, $data, $response);
 
         return $response;
     }
@@ -261,6 +273,8 @@ class Requests
                         $spanOptions
                     );
 
+        self::pushMetric($url, self::PUT, $data, $response);
+
         return $response;
     }
 
@@ -277,6 +291,8 @@ class Requests
                         array($url, $headers, $data, $options),
                         $spanOptions
                     );
+
+        self::pushMetric($url, self::OPTIONS, $data, $response);
 
         return $response;
     }
@@ -295,6 +311,24 @@ class Requests
                         $spanOptions
                     );
 
+        self::pushMetric($url, self::PATCH, $data, $response);
+
         return $response;
+    }
+
+    protected static function pushMetric($url, $method, $data, $response)
+    {
+        try {
+            $modifyUrl = parse_url($url);
+            $dimensions = [
+                Metric::LABEL_ROUTE                 => $modifyUrl['host'],
+                Metric::LABEL_METHOD                => $method
+            ];
+
+            app('trace')->histogram(Metric::HTTP_OUTGOING_REQUEST_SIZE, strlen(serialize($data)), $dimensions);
+            app('trace')->histogram(Metric::HTTP_OUTGOING_RESPONSE_SIZE, strlen($response->body), $dimensions);
+        } catch (\Throwable $e){
+            // doing nothing
+        }
     }
 }

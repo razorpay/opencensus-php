@@ -4,7 +4,7 @@ namespace RZP\Services\Mock;
 
 use GuzzleHttp\Psr7\Response;
 
-use Requests;
+use RZP\Http\Request\Requests;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;

@@ -2,7 +2,7 @@
 
 namespace RZP\Services\TaxPayments;
 
-use Requests;
+use RZP\Http\Request\Requests;
 use RZP\Base;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;

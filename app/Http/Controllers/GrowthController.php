@@ -4,7 +4,7 @@
 namespace RZP\Http\Controllers;
 
 use Request;
-use Requests;
+use RZP\Http\Request\Requests;
 use ApiResponse;
 use RZP\Exception;
 use RZP\Error\ErrorCode;

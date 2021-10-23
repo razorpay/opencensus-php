@@ -3,7 +3,7 @@
 namespace RZP\Models\Merchant\AutoKyc\KycService;
 
 use App;
-use Requests;
+use RZP\Http\Request\Requests;
 
 use RZP\Models\Merchant\AutoKyc\Core;
 use RZP\Models\Merchant\Detail\Constants;

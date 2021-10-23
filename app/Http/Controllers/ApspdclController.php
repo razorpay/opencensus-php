@@ -2,7 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
-use Requests;
+use RZP\Http\Request\Requests;
 use Request;
 use Illuminate\Http\Response;
 use Response as ResponseFactory;

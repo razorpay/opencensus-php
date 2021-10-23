@@ -2,7 +2,7 @@
 
 namespace RZP\Services;
 
-use Requests;
+use RZP\Http\Request\Requests;
 use Lib\PhoneBook;
 use Requests_Response;
 use Razorpay\Trace\Logger;

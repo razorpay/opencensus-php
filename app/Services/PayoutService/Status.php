@@ -2,7 +2,7 @@
 
 namespace RZP\Services\PayoutService;
 
-use Requests;
+use RZP\Http\Request\Requests;
 
 use RZP\Models\Payout;
 use RZP\Trace\TraceCode;

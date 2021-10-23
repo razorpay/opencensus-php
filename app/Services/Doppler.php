@@ -2,7 +2,7 @@
 
 namespace RZP\Services;
 
-use Requests;
+use RZP\Http\Request\Requests;
 use RZP\Error;
 use RZP\Exception;
 use Carbon\Carbon;

@@ -4,7 +4,7 @@ namespace RZP\Models\FundTransfer\Base\Initiator;
 
 use App;
 use Request;
-use Requests;
+use RZP\Http\Request\Requests;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Gateway;

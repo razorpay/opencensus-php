@@ -2,7 +2,7 @@
 
 namespace RZP\Models\PayoutLink;
 
-use Requests;
+use RZP\Http\Request\Requests;
 use App;
 use RZP\Base;
 use RZP\Error\ErrorCode;

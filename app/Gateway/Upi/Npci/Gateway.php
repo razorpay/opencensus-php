@@ -8,7 +8,7 @@ use RZP\Gateway\Upi\Base;
 use ErrorException;
 use RZP\Trace\TraceCode;
 use Trace;
-use Requests;
+use RZP\Http\Request\Requests;
 use AppResponse;
 
 class Gateway extends Base\Gateway

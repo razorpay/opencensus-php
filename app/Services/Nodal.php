@@ -3,7 +3,7 @@
 namespace RZP\Services;
 
 use App;
-use Requests;
+use RZP\Http\Request\Requests;
 
 use RZP\Exception;
 use RZP\Gateway\Utility;

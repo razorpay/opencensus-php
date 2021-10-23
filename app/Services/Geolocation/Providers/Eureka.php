@@ -2,7 +2,7 @@
 
 namespace RZP\Services\Geolocation\Providers;
 
-use Requests;
+use RZP\Http\Request\Requests;
 use RZP\Exception;
 use Requests_Response;
 use RZP\Trace\TraceCode;

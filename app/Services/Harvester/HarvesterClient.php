@@ -2,7 +2,7 @@
 
 namespace RZP\Services\Harvester;
 
-use Requests;
+use RZP\Http\Request\Requests;
 use Carbon\Carbon;
 
 use RZP\Error\ErrorCode;

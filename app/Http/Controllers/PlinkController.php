@@ -3,7 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use App;
-use Requests;
+use RZP\Http\Request\Requests;
 use ApiResponse;
 use Request as Req;
 use Illuminate\Http\Request;

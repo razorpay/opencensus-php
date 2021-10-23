@@ -4,7 +4,7 @@ namespace RZP\Models\FundTransfer\Kotak;
 
 use App;
 use Config;
-use Requests;
+use RZP\Http\Request\Requests;
 
 use RZP\Exception;
 use RZP\Constants\Mode;

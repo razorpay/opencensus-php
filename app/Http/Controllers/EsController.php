@@ -3,7 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use Request;
-use Requests;
+use RZP\Http\Request\Requests;
 use ApiResponse;
 use Illuminate\Http\Response;
 use Response as ResponseFactory;

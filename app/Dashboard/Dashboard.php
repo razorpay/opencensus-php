@@ -6,7 +6,7 @@ use App;
 use Queue;
 use Trace;
 use Config;
-use Requests;
+use RZP\Http\Request\Requests;
 
 use RZP\Constants;
 use RZP\Exception;

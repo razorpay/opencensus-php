@@ -3,7 +3,7 @@
 namespace RZP\Jobs;
 
 use App;
-use Requests;
+use RZP\Http\Request\Requests;
 use Illuminate\Support\Facades\Redis;
 
 use RZP\Trace\TraceCode;

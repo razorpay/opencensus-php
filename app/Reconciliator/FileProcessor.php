@@ -3,7 +3,7 @@
 namespace RZP\Reconciliator;
 
 use App;
-use Requests;
+use RZP\Http\Request\Requests;
 use SplFileInfo;
 use Symfony\Component\HttpFoundation\File\MimeType\FileBinaryMimeTypeGuesser;
 use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;

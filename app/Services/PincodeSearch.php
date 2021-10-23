@@ -3,7 +3,7 @@
 namespace RZP\Services;
 
 use Cache;
-use Requests;
+use RZP\Http\Request\Requests;
 use RZP\Exception;
 use RZP\Models\Pincode;
 use RZP\Error\ErrorCode;

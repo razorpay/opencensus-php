@@ -35,6 +35,9 @@ class Metric
     const HTTP_REQUEST_DURATION_MILLISECONDS    = 'http_request_duration_milliseconds.histogram';
     const HTTP_REQUEST_LATENCY_MILLISECONDS     = 'http_request_latency_milliseconds.histogram';
 
+    const HTTP_OUTGOING_REQUEST_SIZE            = 'http_outgoing_request_size.histogram';
+    const HTTP_OUTGOING_RESPONSE_SIZE           = 'http_outgoing_response_size.histogram';
+  
     const HTTP_REQUEST_SIZE                     = 'http_request_size.histogram';
     const HTTP_RESPONSE_SIZE                    = 'http_response_size.histogram';
 

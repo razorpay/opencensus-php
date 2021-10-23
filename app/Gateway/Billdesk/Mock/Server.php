@@ -4,7 +4,7 @@ namespace RZP\Gateway\Billdesk\Mock;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use Requests;
+use RZP\Http\Request\Requests;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
