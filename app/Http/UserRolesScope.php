@@ -68,7 +68,7 @@ class UserRolesScope
             'reports_monthly_banking_invoice' => BankingRole::getDefaultRoles(),
 
             // profile routes
-            'merchant_gst_fetch' => [Role::OWNER, Role::FINANCE, Role::MANAGER],
+            'merchant_gst_fetch' => [Role::ADMIN, Role::OWNER, Role::FINANCE, Role::MANAGER],
             'merchant_gst_edit'  => [Role::OWNER, Role::FINANCE],
 
             // merchant routes
@@ -119,7 +119,7 @@ class UserRolesScope
 
             // settlements route
             'setl_fetch_multiple' => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,
-                [Role::RBL_SUPERVISOR, Role::AGENT]),
+                [Role::RBL_SUPERVISOR, Role::AGENT, Role::SUPPORT]),
             'setl_fetch_by_id'    => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,
                 [Role::RBL_SUPERVISOR, Role::AGENT]),
 
@@ -331,7 +331,7 @@ class UserRolesScope
             'merchant_fetch_methods'                        => [Role::ADMIN, Role::OWNER, Role::FINANCE, Role::OPERATIONS, Role::MANAGER, Role::SELLERAPP,],
             'merchant_fetch_payment_failure_analysis'       => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::MANAGER, Role::FINANCE, Role::SUPPORT,],
             'merchant_fetch_schedule_tasks'                 => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::FINANCE, Role::OPERATIONS, Role::SUPPORT, Role::SELLERAPP,],
-            'merchant_get_tags'                             => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::SELLERAPP_PLUS, Role::AGENT, Role::RBL_SUPERVISOR,],
+            'merchant_get_tags'                             => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::SELLERAPP_PLUS, Role::AGENT, Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_ADMIN, Role::LINKED_ACCOUNT_OWNER],
             'merchant_instrument_status_get_by_merchant_id' => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],
             'merchant_international_enablement_preview'     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::OPERATIONS, Role::FINANCE],
             'merchant_partner_configs_fetch'                => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::RBL_SUPERVISOR,],
@@ -521,8 +521,8 @@ class UserRolesScope
             'document_download_v2'                                 => [Role::OWNER, Role::ADMIN],
             'document_get_v1'                                      => [Role::OWNER, Role::ADMIN],
             'document_get_v2'                                      => [Role::OWNER, Role::ADMIN],
-            'document_upload_v1'                                   => [Role::OWNER, Role::ADMIN],
-            'document_upload_v2'                                   => [Role::OWNER, Role::ADMIN],
+            'document_upload_v1'                                   => Role::ALL_ROLES,
+            'document_upload_v2'                                   => Role::ALL_ROLES,
             'draft_invitation_accept'                              => [Role::OWNER, Role::ADMIN],
             'draft_invitation_fetch'                               => [Role::OWNER, Role::ADMIN],
             'enable_es_scheduled'                                  => [Role::OWNER, Role::ADMIN],
