@@ -966,4 +966,173 @@ class WebhookTest extends TestCase
 
         $this->refundPayment($payment['id']);
     }
+
+    public function testWebhookPaymentCreatedForAjaxWithCustomerFee()
+    {
+        $this->expectWebhookEvent(
+            'payment.created',
+            function (array $event)
+            {
+                s($event['payload']['payment']['entity']);
+                $this->assertArrayNotHasKey('reference9', $event['payload']['payment']['entity']);
+                $this->assertArrayNotHasKey('reference5', $event['payload']['payment']['entity']);
+                $this->assertArrayNotHasKey('customer_fee', $event['payload']['payment']['entity']);
+                $this->assertArrayNotHasKey('customer_fee_gst', $event['payload']['payment']['entity']);
+
+            }
+        );
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"upi": {"fee": {"payee": "business", "flat_value": 200}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'upi',
+            'payment_method_type' => null,
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $this->gateway = 'upi_hulk';
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_hulk_terminal');
+
+        $this->gateway = 'upi_hulk';
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['amount'] = '10118';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+    }
+
+    public function testWebhookPaymentAuthorizedForAjaxWithCustomerFee()
+    {
+        $this->expectWebhookEvent(
+            'payment.authorized',
+            function (array $event)
+            {
+                $this->assertArrayNotHasKey('reference9', $event['payload']['payment']['entity']);
+                $this->assertArrayNotHasKey('reference5', $event['payload']['payment']['entity']);
+                $this->assertArrayNotHasKey('customer_fee', $event['payload']['payment']['entity']);
+                $this->assertArrayNotHasKey('customer_fee_gst', $event['payload']['payment']['entity']);
+
+            }
+        );
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"netbanking": {"fee": {"payee": "business", "flat_value": 200}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'netbanking',
+            'payment_method_type' => '',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment['amount'] = '10118';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'netbanking');
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+    }
+
+    public function testWebhookPaymentCapturedForAjaxWithCustomerFee()
+    {
+        $this->expectWebhookEvent(
+            'payment.captured',
+            function (array $event)
+            {
+                $this->assertArrayNotHasKey('reference9', $event['payload']['payment']['entity']);
+                $this->assertArrayNotHasKey('reference5', $event['payload']['payment']['entity']);
+                $this->assertArrayNotHasKey('customer_fee', $event['payload']['payment']['entity']);
+                $this->assertArrayNotHasKey('customer_fee_gst', $event['payload']['payment']['entity']);
+
+            }
+        );
+
+        $this->expectWebhookEvent(
+            'order.paid',
+            function (array $event)
+            {
+                $this->assertArrayNotHasKey('reference7', $event['payload']['order']['entity']);
+
+                $this->assertArrayNotHasKey('fee_config_id', $event['payload']['order']['entity']);
+
+
+            }
+        );
+
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"netbanking": {"fee": {"payee": "business", "flat_value": 200}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'netbanking',
+            'payment_method_type' => '',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment['amount'] = '10118';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'netbanking');
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+    }
 }

@@ -15,6 +15,7 @@ use RZP\Models\Base as BaseModel;
 use RZP\Models\Order\ProductType;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Payment as PaymentModel;
+use RZP\Constants\Entity ;
 
 class Payment extends Base
 {
@@ -616,6 +617,11 @@ class Payment extends Base
 
         $payment->setFeeBearer($feeBearer);
 
+        if($payment->getConvenienceFee() !== null)
+        {
+            $payment->setFeeBearer(FeeBearer::PLATFORM);
+        }
+
     }
 
     protected function isFeeBearerCustomer()
@@ -635,6 +641,11 @@ class Payment extends Base
             //    hence fees will be calculated on the original amount
             // 2. On validation/capture call, the fee will be set
             $amount = $amount - $this->entity->getFee();
+        }
+
+        if($this->entity->getEntity() === (Entity::PAYMENT))
+        {
+            $amount = $this->entity->getBaseAmountForFeeCalculation($amount);
         }
 
         $this->amount = $amount;

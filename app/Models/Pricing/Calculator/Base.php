@@ -19,6 +19,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base as BaseModel;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
+use RZP\Models\Payment\Processor\Processor;
 
 use Razorpay\Trace\Logger as Trace;
 
@@ -660,6 +661,18 @@ abstract class Base extends BaseModel\Core
                 $amount = $amount + $fee;
             }
 
+            //Adding fee in Amount in case merchant is on Dynamic Fee Bearer and has split the fee
+            // with customer
+            if($payment->hasOrder() === true and
+                $payment->order->getFeeConfigId() !== null )
+            {
+                $customerFee = (new Payment\Processor\Processor($this->merchant))->calculateCustomerFee($payment, $payment->order, $fee);
+
+                if($customerFee !== null)
+                {
+                    $amount = $amount + $customerFee;
+                }
+            }
             // No tax is levied on card payments of 2000 Rs. or less
 
             // For the Bajaj finserv emi payments we have to skip this condition because tax

@@ -72,6 +72,7 @@ use RZP\Services\NbPlus as NbPlusPaymentService;
 use RZP\Models\Transfer\Constant as TransferConstant;
 use RZP\Models\UpiMandate\Frequency as UPIMandateFrequency;
 use RZP\Models\UpiMandate\RecurringType as UPIMandateRecurringType;
+use RZP\Models\Payment\Method;
 
 use Razorpay\Trace\Logger as Trace;
 
@@ -419,7 +420,8 @@ class Processor
                 if ((empty($order) !== false) and
                     (($order->hasOffers() === true) or
                      ($order->isDiscountApplicable() === true) or
-                     ($order->getProductId() !== null))
+                     ($order->getProductId() !== null) or
+                     ($order->getFeeConfigId() !== null))
                     )
                 {
                     return false;
@@ -1571,6 +1573,27 @@ class Processor
         return (new Order\Core())->create($input, $merchant, false, true);
     }
 
+    public function associateOrderWithPaymentForConvenienceFee($input, Payment\Entity $payment)
+    {
+        $order = $this->repo->order->findByPublicId($input['order_id']);
+
+        //Associating order with payment here
+        //in case convenience fee associated with Order
+        if($order->getFeeConfigId() !== null) {
+
+            $payment->order()->associate($order);
+            //Setting payment amount to order amount
+            //In case of convenience fee for fee calculation
+            if(isset($input['fee']) === true and
+                $input['fee'] == 0 and
+                $payment->getConvenienceFee() === null)
+            {
+                $payment->setAmount($order->getAmount());
+            }
+        }
+        return $order;
+    }
+
     public function processAndReturnFees(array & $input)
     {
         $this->tracePaymentNewRequest($input);
@@ -1599,6 +1622,16 @@ class Processor
                 ErrorCode::BAD_REQUEST_PAYMENT_COD_NOT_ENABLED_FOR_MERCHANT);
         }
 
+        //In case of convenience fee associated with a payment
+        //we may get this field, and this field cannot be
+        // sent in input while building payment entity
+        if(isset($input['convenience_fee']) === true)
+        {
+            $convenienceFee = $input['convenience_fee'];
+
+            unset($input['convenience_fee']);
+        }
+
         //
         // We only create a dummy payment entity for purpose
         // of pre-calculating fees and returning it.
@@ -1606,16 +1639,50 @@ class Processor
         //
         $payment = $this->buildPaymentEntity($input);
 
+        if(isset($input['order_id']) === true)
+        {
+            $order = $this->associateOrderWithPaymentForConvenienceFee($input, $payment);
+        }
+
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
+
+        if( $payment->hasOrder() === true and
+            $payment->order->getFeeConfigId() !== null )
+        {
+            $rzpFee = $fee - $tax;
+
+            $customerFee = $this->calculateCustomerFee($payment, $order, $rzpFee);
+
+            $customerFeeTax = $this->calculateCustomerFeeGst($customerFee, $rzpFee, $tax);
+        }
+
+        if(isset($customerFee) === true and
+            $customerFee >= 0)
+        {
+            $payment->setFeeBearer(Merchant\FeeBearer::PLATFORM);
+        }
 
         if ($payment->getFeeBearer() === Merchant\FeeBearer::PLATFORM)
         {
             $fee = 0;
 
             $tax = 0;
+        }
+
+        //Verifying if value sent in Convenience Fee
+        //is valid or not
+        if(isset($convenienceFee) === true)
+        {
+            if(isset($customerFee) === false or
+                $customerFee > $convenienceFee)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The value sent in Convenience Fee Field is invalid ',
+                    'Convenience Fee');
+            }
         }
 
         $data = [
@@ -1627,6 +1694,18 @@ class Processor
             'amount'          => $input['amount'] + $fee,
         ];
 
+        //Adding extra fields for response in case of
+        //additional customer fee associated with Payment
+        if(isset($customerFee) === true)
+        {
+            $data['customer_fee'] = $customerFee;
+
+            $data['customer_fee_gst'] = $customerFeeTax;
+
+            $data['amount'] = $input['amount'] + $customerFee + $customerFeeTax;
+
+            $input['amount'] = $input['amount'] + $customerFee + $customerFeeTax;
+        }
         // Set new input amount and fees
         $input['amount'] = $input['amount'] + $fee;
 
@@ -3590,10 +3669,16 @@ class Processor
         // Re-calculates fees on the amount, using a dummy payment creation flow.
         // Also sets re-calculated fee and amount value (in paise) in $input.
         $feesArray = $this->processAndReturnFees($input);
-
         // The difference between the fees received from checkout and
         // and the fees re-calculated again. Ideally, this should be 0.
         $feeDifference = $input['fee'] - $payment->getFee();
+
+        if(isset($feesArray['customer_fee']) === true)
+        {
+            $payment->setConvenienceFee($feesArray['customer_fee']);
+
+            $payment->setConvenienceFeeGst($feesArray['customer_fee_gst']);
+        }
 
         if (abs($feeDifference) !== 0)
         {
@@ -4472,6 +4557,8 @@ class Processor
         }
 
         $amount = $payment->getAdjustedAmountWrtCustFeeBearer();
+
+        $amount = $payment->getAmountWithoutConvenienceFeeIfApplicable($amount, $order);
 
         if (($amount > $order->getAmountDue()) and
             ($this->merchant->isFeatureEnabled(Feature::EXCESS_ORDER_AMOUNT) === false))
@@ -5455,6 +5542,85 @@ class Processor
         (new Payment\Metric())->pushVerifyViaOldOrNewFlowMetrics(get_diff_in_millisecond($startTime), $isVerifyNewFlow, $payment->getGateway());
 
         return $isPushedToKafka;
+    }
+
+    public function calculateCustomerFee($payment, $order, $rzpFee) : ?int
+    {
+        $paymentConfig = $this->repo->config->findOrFail($order->getFeeConfigId());
+
+        $feeConfig = $paymentConfig->getFormattedConfig();
+
+        $feeConfigRules = $feeConfig['rules'];
+
+        if(isset($feeConfigRules[$payment->method]) === false)
+        {
+            return null;
+        }
+
+        if($payment->isCard() === true)
+        {
+            /* Check if its possible for card to not have any type*/
+            $cardType = $payment->card->getType();
+
+            if(isset($feeConfigRules[$payment->getMethod()]['type'][$cardType]) === true)
+            {
+                $rule = $feeConfigRules[$payment->getMethod()]['type'][$cardType]['fee'];
+
+                return $this->calculateCustomerFeeFromRule($rule, $rzpFee);
+            }
+            elseif(isset($feeConfigRules[$payment->getMethod()]['fee']) === true )
+            {
+                $rule = $feeConfigRules[$payment->getMethod()]['fee'];
+
+                return $this->calculateCustomerFeeFromRule($rule, $rzpFee);
+            }
+        }
+        else
+        {
+            $rule = $feeConfigRules[$payment->getMethod()]['fee'];
+
+            return $this->calculateCustomerFeeFromRule($rule, $rzpFee);
+        }
+        return null;
+    }
+
+    protected function calculateCustomerFeeGst($customerFee, $rzpFee, $tax) : ?int
+    {
+        if($customerFee === null)
+        {
+            return null;
+        }
+
+        if($rzpFee === 0)
+        {
+            return 0;
+        }
+
+        return ((int)round(($customerFee/($rzpFee) * $tax)));
+    }
+
+    protected function calculateCustomerFeeFromRule($rule, $rzpFee) : int
+    {
+        if($rule['payee'] === 'customer')
+        {
+            if(isset($rule['percentage_value']) === true)
+            {
+                return ((int)round($rule['percentage_value']/100 * ($rzpFee)));
+            }
+            else {
+                return $rule['flat_value'] > $rzpFee ? $rzpFee : $rule['flat_value'];
+            }
+        }
+        elseif($rule['payee'] === 'business')
+        {
+            if(isset($rule['percentage_value']) === true)
+            {
+                return ((int)round(((100 - $rule['percentage_value'])/100) * ($rzpFee)));
+            }
+            else {
+                return ($rzpFee) - $rule['flat_value'] < 0 ?  0 : ($rzpFee) - $rule['flat_value'];
+            }
+        }
     }
 
     protected function shouldCallGatewayFunction(): bool

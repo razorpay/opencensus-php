@@ -195,13 +195,13 @@ class CreatePayments extends Migration
                   ->default(Payment::API)
                   ->nullable();
 
-            $table->integer(Payment::REFERENCE5)
+            $table->integer(Payment::CONVENIENCE_FEE_GST)
                   ->nullable();
 
             $table->integer(Payment::IS_PUSHED_TO_KAFKA)
                   ->nullable();
 
-            $table->bigInteger(Payment::REFERENCE9)
+            $table->bigInteger(Payment::CONVENIENCE_FEE)
                   ->unsigned()
                   ->nullable();
 

@@ -136,9 +136,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const REFERENCE2            = 'reference2';
     const CAPTURE               = 'reference3';
     const CPS_ROUTE             = 'cps_route';
-    const REFERENCE5            = 'reference5';
+    const CONVENIENCE_FEE_GST   = 'reference5';
     const IS_PUSHED_TO_KAFKA    = 'reference6';
-    const REFERENCE9            = 'reference9';
+    const CONVENIENCE_FEE       = 'reference9';
     const FEE_BEARER            = 'fee_bearer';
     //Reference13 has been used to store detailed error fields of combination of source, step and reason.
     const REFERENCE13           = 'reference13';
@@ -428,7 +428,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::UPDATED_AT,
         self::AUTHENTICATION_GATEWAY,
         self::FEE_BEARER,
-        self::REFERENCE13,
+        self::REFERENCE13
     ];
 
     protected $public = [
@@ -557,7 +557,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::PROVIDER,
         self::DCC,
         self::MCC,
-        self::SETTLED_BY,
+        self::SETTLED_BY
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -634,6 +634,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AUTHENTICATION_GATEWAY => null,
         self::FEE_BEARER           => Merchant\FeeBearer::PLATFORM,
         self::IS_PUSHED_TO_KAFKA           => null,
+        self::CONVENIENCE_FEE      => null,
+        self::CONVENIENCE_FEE_GST  => null
     ];
 
     protected $amounts = [
@@ -3682,6 +3684,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $attributes[Entity::SETTLED_BY] = $settledBy;
 
+        $this->setConvenienceFeeAttributesForDashboard($attributes);
+
         return $attributes;
     }
 
@@ -4711,7 +4715,24 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data[self::LATE_AUTHORIZED] = $this->isLateAuthorized();
         }
 
+        $this->setConvenienceFeeAttributesForDashboard($data);
+
         return $data;
+    }
+
+    public function setConvenienceFeeAttributesForDashboard(array & $data)
+    {
+        $app = \App::getFacadeRoot();
+
+        if( ($app['basicauth']->isAdminAuth() === true or
+            $app['basicauth']->isProxyAuth() === true) and
+            $this->getConvenienceFee() !== null and
+            $this->getConvenienceFee() > 0)
+        {
+            $data['customer_fee'] = $this->getConvenienceFee();
+
+            $data['customer_fee_gst'] = $this->getConvenienceFeeGst();
+        }
     }
 
     /**
@@ -5062,5 +5083,44 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             'old_payment_method'        => $oldPaymentMethod,
             'updated_payment_method'    => $this->getMethod(),
         ]);
+    }
+
+    public function setConvenienceFee(int $fee)
+    {
+        $this->setAttribute(self::CONVENIENCE_FEE, $fee);
+    }
+
+    public function setConvenienceFeeGst(int $gst)
+    {
+        $this->setAttribute(self::CONVENIENCE_FEE_GST, $gst);
+    }
+
+    public function getConvenienceFee()
+    {
+        return $this->getAttribute(self::CONVENIENCE_FEE);
+    }
+
+    public function getConvenienceFeeGst()
+    {
+        return $this->getAttribute(self::CONVENIENCE_FEE_GST);
+    }
+
+    public function getAmountWithoutConvenienceFeeIfApplicable(int $amount, Order\Entity $order)
+    {
+        if($order->getFeeConfigId() !== null and
+            $this->getConvenienceFee() !== null)
+        {
+            return $amount - $this->getConvenienceFee() - $this->getConvenienceFeeGst();
+        }
+        return $amount;
+    }
+
+    public function getBaseAmountForFeeCalculation($amount)
+    {
+        if($this->getConvenienceFee() !== null)
+        {
+            return $amount - $this->getConvenienceFee() - $this->getConvenienceFeeGst();
+        }
+        return $amount;
     }
 }

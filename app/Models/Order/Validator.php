@@ -258,7 +258,7 @@ class Validator extends Base\Validator
     {
         $this->validateOrderNotPaid();
 
-        $this->validateOrderAmount($payment->getAdjustedAmountWrtCustFeeBearer());
+        $this->validateOrderAmount($payment);
 
         $this->validateOrderCurrency($payment->getCurrency());
 
@@ -334,14 +334,22 @@ class Validator extends Base\Validator
      * Validates given amount against order's amounts to decide if payment
      * creation should be allowed.
      *
-     * @param int $paymentAmount
+     * @param Payment\Entity $payment
+     *
      *
      * @throws Exception\BadRequestException
      */
-    protected function validateOrderAmount(int $paymentAmount)
+    protected function validateOrderAmount(Payment\Entity $payment )
     {
+        $paymentAmount = $payment->getAdjustedAmountWrtCustFeeBearer();
+
         /** @var Entity $order */
         $order = $this->entity;
+
+        //Reducing convenience fee and convenience fee gst
+        //from payment amount to get the expected order amount
+
+        $paymentAmount = $payment->getAmountWithoutConvenienceFeeIfApplicable($paymentAmount, $order);
 
         // In case of partial payment, $paymentAmount <= $orderAmountDue,
         // otherwise it should be same.

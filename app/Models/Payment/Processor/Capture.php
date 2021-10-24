@@ -1140,6 +1140,8 @@ trait Capture
 
             $amount = $payment->getAdjustedAmountWrtCustFeeBearer();
 
+            $amount = $payment->getAmountWithoutConvenienceFeeIfApplicable($amount, $order);
+
             if (($amount > $order->getAmountDue()) and
                 ($this->merchant->isFeatureEnabled(Feature\Constants::EXCESS_ORDER_AMOUNT) === false))
             {
@@ -1164,6 +1166,8 @@ trait Capture
         $order = $payment->order;
 
         $paidAmount = $payment->getAdjustedAmountWrtCustFeeBearer();
+
+        $paidAmount = $payment->getAmountWithoutConvenienceFeeIfApplicable($paidAmount, $order);
 
         $order->incrementAmountPaidBy($paidAmount);
 

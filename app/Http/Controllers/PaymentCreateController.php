@@ -429,6 +429,17 @@ class PaymentCreateController extends Controller
             $data[$key] = $value / 100;
         }
 
+        if(isset($data['customer_fee']) === true)
+        {
+            $data['razorpay_fee'] = $data['customer_fee'];
+
+            $data['tax'] = $data['customer_fee_gst'];
+
+            $data['fees'] = $data['razorpay_fee'] +  $data['tax'];
+
+            unset($data['customer_fee'], $data['customer_fee_gst']);
+        }
+
         $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
 
         if ($retHtml === true)

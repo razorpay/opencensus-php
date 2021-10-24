@@ -4595,4 +4595,2131 @@ class PaymentCreateTest extends TestCase
         //checking payment notes does not contain optimizer_identifier_1
         $this->assertNotContains('optimizer_identifier_1', $payment['notes']);
     }
+
+    public function testCreatePaymentForCardWithFeeConfigPayeeCustomerFlatValue()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "customer", "flat_value": 200}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '10200';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10200, $transaction['amount']);
+
+        $this->assertEquals(9900, $transaction['credit']);
+
+        $this->assertEquals(300, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1009900, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+
+    }
+
+    public function testCreatePaymentForCardWithFeeConfigPayeeBusinessFlatValue()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "business", "flat_value": 200}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '10100';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10100, $transaction['amount']);
+
+        $this->assertEquals(9800, $transaction['credit']);
+
+        $this->assertEquals(300, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1009800, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testCreatePaymentForCardWithFeeConfigPayeeCustomerPercentageValue()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "customer", "percentage_value": 40}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '10120';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10120, $transaction['amount']);
+
+        $this->assertEquals(9820, $transaction['credit']);
+
+        $this->assertEquals(300, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1009820, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testCreatePaymentForCardWithFeeConfigPayeeBusinessPercentageValue()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "business", "percentage_value": 40}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '10180';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10180, $transaction['amount']);
+
+        $this->assertEquals(9880, $transaction['credit']);
+
+        $this->assertEquals(300, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1009880, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testCreatePaymentForNBWithFeeConfigPayeeCustomerFlatValue()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"netbanking": {"fee": {"payee": "customer", "flat_value": 200}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'netbanking',
+            'payment_method_type' => '',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+        $payment['amount'] = '10236';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'netbanking');
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10236, $transaction['amount']);
+
+        $this->assertEquals(9882, $transaction['credit']);
+
+        $this->assertEquals(354, $transaction['fee']);
+
+        $this->assertEquals(54, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1009882, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testCreatePaymentForNBWithFeeConfigPayeeBusinessFlatValue()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"netbanking": {"fee": {"payee": "business", "flat_value": 200}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'netbanking',
+            'payment_method_type' => '',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+        $payment['amount'] = '10118';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'netbanking');
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10118, $transaction['amount']);
+
+        $this->assertEquals(9764, $transaction['credit']);
+
+        $this->assertEquals(354, $transaction['fee']);
+
+        $this->assertEquals(54, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1009764, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testCreatePaymentForNBWithFeeConfigPayeeCustomerPercentageValue()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"netbanking": {"fee": {"payee": "customer", "percentage_value": 40}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'netbanking',
+            'payment_method_type' => '',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+        $payment['amount'] = '10142';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'netbanking');
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10142, $transaction['amount']);
+
+        $this->assertEquals(9788, $transaction['credit']);
+
+        $this->assertEquals(354, $transaction['fee']);
+
+        $this->assertEquals(54, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1009788, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testCreatePaymentForNBWithFeeConfigPayeeBusinessPercentageValue()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"netbanking": {"fee": {"payee": "business", "percentage_value": 40}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'netbanking',
+            'payment_method_type' => '',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+        $payment['amount'] = '10212';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'netbanking');
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10212, $transaction['amount']);
+
+        $this->assertEquals(9858, $transaction['credit']);
+
+        $this->assertEquals(354, $transaction['fee']);
+
+        $this->assertEquals(54, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1009858, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testCreatePaymentForNBWithFeeConfigPayeeCustomerFlatValueWithAmountCredits()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"netbanking": {"fee": {"payee": "customer", "flat_value": 200}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'netbanking',
+            'payment_method_type' => '',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 100000,
+        ]);
+
+        $this->fixtures->merchant->editCredits('100000', '10000000000000');
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+        $payment['amount'] = '10236';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'netbanking');
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10236, $transaction['amount']);
+
+        $this->assertEquals(10236, $transaction['credit']);
+
+        $this->assertEquals(0, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $this->assertEquals(true, $transaction['gratis']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1010236, $balance['balance']);
+
+        $this->assertEquals(89764, $balance['credits']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+
+    public function testCreatePaymentForNBWithFeeConfigPayeeBusinessFlatValueWithAmountCredits()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"netbanking": {"fee": {"payee": "business", "flat_value": 200}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'netbanking',
+            'payment_method_type' => '',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 100000,
+        ]);
+
+        $this->fixtures->merchant->editCredits('100000', '10000000000000');
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+        $payment['amount'] = '10118';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'netbanking');
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10118, $transaction['amount']);
+
+        $this->assertEquals(10118, $transaction['credit']);
+
+        $this->assertEquals(0, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $this->assertEquals(true, $transaction['gratis']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1010118, $balance['balance']);
+
+        $this->assertEquals(89882, $balance['credits']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testCreatePaymentForNBWithFeeConfigPayeeCustomerPercentageValueWithAmountCredits()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"netbanking": {"fee": {"payee": "customer", "percentage_value": 40}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'netbanking',
+            'payment_method_type' => '',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 100000,
+        ]);
+
+        $this->fixtures->merchant->editCredits('100000', '10000000000000');
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+        $payment['amount'] = '10142';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'netbanking');
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10142, $transaction['amount']);
+
+        $this->assertEquals(10142, $transaction['credit']);
+
+        $this->assertEquals(0, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $this->assertEquals(true, $transaction['gratis']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1010142, $balance['balance']);
+
+        $this->assertEquals(89858, $balance['credits']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testCreatePaymentForNBWithFeeConfigPayeeBusinessPercentageValueWithAmountCredits()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"netbanking": {"fee": {"payee": "business", "percentage_value": 40}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'netbanking',
+            'payment_method_type' => '',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 100000,
+        ]);
+
+        $this->fixtures->merchant->editCredits('100000', '10000000000000');
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+        $payment['amount'] = '10212';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'netbanking');
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10212, $transaction['amount']);
+
+        $this->assertEquals(10212, $transaction['credit']);
+
+        $this->assertEquals(0, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $this->assertEquals(true, $transaction['gratis']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1010212, $balance['balance']);
+
+        $this->assertEquals(89788, $balance['credits']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+
+    }
+
+    public function testCreatePaymentForWalletWithFeeConfigPayeeCustomerFlatValueWithFeeCredits()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"wallet": {"fee": {"payee": "customer", "flat_value": 200}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'wallet',
+            'payment_method_type' => '',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+
+        $payment['amount'] = '10236';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 10000,
+        ]);
+
+        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10236, $transaction['amount']);
+
+        $this->assertEquals(10236, $transaction['credit']);
+
+        $this->assertEquals(354, $transaction['fee']);
+
+        $this->assertEquals(54, $transaction['tax']);
+
+        $this->assertEquals($transaction['fee_credits'], $transaction['fee']);
+
+        $this->assertEquals(false, $transaction['gratis']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1010236, $balance['balance']);
+
+        $this->assertEquals(10000 - $transaction['fee_credits'], $balance['fee_credits']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+
+    }
+
+    public function testCreatePaymentForWalletWithFeeConfigPayeeBusinessFlatValueWithFeeCredits()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"wallet": {"fee": {"payee": "business", "flat_value": 200}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'wallet',
+            'payment_method_type' => '',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 10000,
+        ]);
+
+        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+
+        $payment['amount'] = '10118';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10118, $transaction['amount']);
+
+        $this->assertEquals(10118, $transaction['credit']);
+
+        $this->assertEquals(354, $transaction['fee']);
+
+        $this->assertEquals(54, $transaction['tax']);
+
+        $this->assertEquals($transaction['fee_credits'], $transaction['fee']);
+
+        $this->assertEquals(false, $transaction['gratis']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1010118, $balance['balance']);
+
+        $this->assertEquals(10000 - $transaction['fee_credits'], $balance['fee_credits']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+}
+
+    public function testCreatePaymentForWalletWithFeeConfigPayeeCustomerPercentageValueWithFeeCredits()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"wallet": {"fee": {"payee": "customer", "percentage_value": 40}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'wallet',
+            'payment_method_type' => '',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 10000,
+        ]);
+
+        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+
+        $payment['amount'] = '10142';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10142, $transaction['amount']);
+
+        $this->assertEquals(10142, $transaction['credit']);
+
+        $this->assertEquals(354, $transaction['fee']);
+
+        $this->assertEquals(54, $transaction['tax']);
+
+        $this->assertEquals($transaction['fee_credits'], $transaction['fee']);
+
+        $this->assertEquals(false, $transaction['gratis']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1010142, $balance['balance']);
+
+        $this->assertEquals(10000 - $transaction['fee_credits'], $balance['fee_credits']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testCreatePaymentForWalletWithFeeConfigPayeeBusinessPercentageValueWithFeeCredits()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"wallet": {"fee": {"payee": "business", "percentage_value": 40}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'wallet',
+            'payment_method_type' => '',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 10000,
+        ]);
+
+        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+
+        $payment['amount'] = '10212';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10212, $transaction['amount']);
+
+        $this->assertEquals(10212, $transaction['credit']);
+
+        $this->assertEquals(354, $transaction['fee']);
+
+        $this->assertEquals(54, $transaction['tax']);
+
+        $this->assertEquals($transaction['fee_credits'], $transaction['fee']);
+
+        $this->assertEquals(false, $transaction['gratis']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1010212, $balance['balance']);
+
+        $this->assertEquals(10000 - $transaction['fee_credits'], $balance['fee_credits']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+
+    }
+
+    public function testCreatePaymentWithDSForCardWithFeeConfigPayeeCustomerPercentageValueWithPrepaid()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "customer", "percentage_value": 40}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '10120';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $paymentFromResponse = $this->doAuthPayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10120, $transaction['amount']);
+
+        $this->assertEquals(0, $transaction['credit']);
+
+        $this->assertEquals(300, $transaction['debit']);
+
+        $this->assertEquals(300, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(999700, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testCreatePaymentWithDSForCardWithFeeConfigPayeeBusinessFlatValueWithPostpaid()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "business", "flat_value": 200}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '10100';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $paymentFromResponse = $this->doAuthPayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10100, $transaction['amount']);
+
+        $this->assertEquals(0, $transaction['credit']);
+
+        $this->assertEquals(0, $transaction['debit']);
+
+        $this->assertEquals(300, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1000000, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testCreatePaymentWithDSForCardWithFeeConfigPayeeCustomerPercentageValueWithCFB()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "customer", "percentage_value": 40}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+            'fee_bearer' => 'customer'
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '10120';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $paymentFromResponse = $this->doAuthPayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10120, $transaction['amount']);
+
+        $this->assertEquals(0, $transaction['credit']);
+
+        $this->assertEquals(300, $transaction['debit']);
+
+        $this->assertEquals(300, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(999700, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testCreatePaymentWithDSForCardWithFeeConfigPayeeBusinessFlatValueWithPostpaidWithCFB()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "business", "flat_value": 200}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+            'fee_bearer' => 'customer'
+
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '10100';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $paymentFromResponse = $this->doAuthPayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10100, $transaction['amount']);
+
+        $this->assertEquals(0, $transaction['credit']);
+
+        $this->assertEquals(0, $transaction['debit']);
+
+        $this->assertEquals(300, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1000000, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testCreatePaymentWithDSForCardWithFeeConfigPayeeCustomerPercentageValueWithPrepaidAmountCredits()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "customer", "percentage_value": 40}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 100000,
+        ]);
+
+        $this->fixtures->merchant->editCredits('100000', '10000000000000');
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '10120';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $paymentFromResponse = $this->doAuthPayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10120, $transaction['amount']);
+
+        $this->assertEquals(0, $transaction['credit']);
+
+        $this->assertEquals(0, $transaction['debit']);
+
+        $this->assertEquals(0, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1000000, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+
+        $this->assertEquals(89880, $balance['credits']);
+    }
+
+    public function testCreatePaymentWithDSForCardWithFeeConfigPayeeBusinessFlatValueWithPostpaidWithAmountCredits()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "business", "flat_value": 200}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 100000,
+        ]);
+
+        $this->fixtures->merchant->editCredits('100000', '10000000000000');
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '10100';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $paymentFromResponse = $this->doAuthPayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10100, $transaction['amount']);
+
+        $this->assertEquals(0, $transaction['credit']);
+
+        $this->assertEquals(0, $transaction['debit']);
+
+        $this->assertEquals(0, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1000000, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+
+        $this->assertEquals(89900, $balance['credits']);
+    }
+
+    public function testCreatePaymentCFBWithDSForCardWithFeeConfigPayeeCustomerPercentageValueWithPrepaidAmountCredits()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "customer", "percentage_value": 40}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+            'fee_bearer' => 'customer'
+
+        ];
+
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 100000,
+        ]);
+
+        $this->fixtures->merchant->editCredits('100000', '10000000000000');
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '10120';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $paymentFromResponse = $this->doAuthPayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        s($transaction);
+
+        $this->assertEquals(10120, $transaction['amount']);
+
+        $this->assertEquals(0, $transaction['credit']);
+
+        $this->assertEquals(0, $transaction['debit']);
+
+        $this->assertEquals(0, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1000000, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+
+        $this->assertEquals(89880, $balance['credits']);
+    }
+
+    public function testCreatePaymentCFBWithDSForCardWithFeeConfigPayeeBusinessFlatValueWithPostpaidWithAmountCredits()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "business", "flat_value": 200}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 100000,
+        ]);
+
+        $this->fixtures->merchant->editCredits('100000', '10000000000000');
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '10100';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $paymentFromResponse = $this->doAuthPayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10100, $transaction['amount']);
+
+        $this->assertEquals(0, $transaction['credit']);
+
+        $this->assertEquals(0, $transaction['debit']);
+
+        $this->assertEquals(0, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1000000, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+
+        $this->assertEquals(89900, $balance['credits']);
+    }
+
+    public function testCreatePaymentWithDSForCardWithFeeConfigPayeeCustomerPercentageValueWithPrepaidFeeCredits()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "customer", "percentage_value": 40}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 10000,
+        ]);
+
+        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '10120';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $paymentFromResponse = $this->doAuthPayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10120, $transaction['amount']);
+
+        $this->assertEquals(0, $transaction['credit']);
+
+        $this->assertEquals(0, $transaction['debit']);
+
+        $this->assertEquals(300, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1000000, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+
+        $this->assertEquals(10000 - $transaction['fee_credits'], $balance['fee_credits']);
+    }
+
+    public function testCreatePaymentWithDSForCardWithFeeConfigPayeeBusinessFlatValueWithPostpaidWithFeeCredits()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "business", "flat_value": 200}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+
+        $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 10000,
+        ]);
+
+        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '10100';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $paymentFromResponse = $this->doAuthPayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10100, $transaction['amount']);
+
+        $this->assertEquals(0, $transaction['credit']);
+
+        $this->assertEquals(0, $transaction['debit']);
+
+        $this->assertEquals(300, $transaction['fee']);
+
+        $this->assertEquals(0 , $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1000000, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+
+        $this->assertEquals(10000 - $transaction['fee_credits'], $balance['fee_credits']);
+    }
+
+    public function testCreatePaymentCFBWithDSForCardWithFeeConfigPayeeCustomerPercentageValueWithPrepaidFeeCredits()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "customer", "percentage_value": 40}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+            'fee_bearer' => 'customer'
+        ];
+
+        $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 10000,
+        ]);
+
+        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '10120';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $paymentFromResponse = $this->doAuthPayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10120, $transaction['amount']);
+
+        $this->assertEquals(0, $transaction['credit']);
+
+        $this->assertEquals(0, $transaction['debit']);
+
+        $this->assertEquals(300, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1000000, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+
+        $this->assertEquals(10000 - $transaction['fee_credits'], $balance['fee_credits']);
+    }
+
+    public function testCreatePaymentCFBWithDSForCardWithFeeConfigPayeeBusinessFlatValueWithPostpaidWithFeeCredits()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "business", "flat_value": 200}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+             'fee_bearer' => 'customer'
+        ];
+
+        $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 10000,
+        ]);
+
+        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '10100';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $paymentFromResponse = $this->doAuthPayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10100, $transaction['amount']);
+
+        $this->assertEquals(0, $transaction['credit']);
+
+        $this->assertEquals(0, $transaction['debit']);
+
+        $this->assertEquals(300, $transaction['fee']);
+
+        $this->assertEquals(0, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1000000, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+
+        $this->assertEquals(10000 - $transaction['fee_credits'], $balance['fee_credits']);
+    }
+
+    public function testCreatePaymentForCardWithFeeConfigPaidByNBAndPFB()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "customer", "flat_value": 200}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'netbanking',
+            'payment_method_type' => null,
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay'
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['amount'] = '10000';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'netbanking');
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10000, $transaction['amount']);
+
+        $this->assertEquals(9646, $transaction['credit']);
+
+        $this->assertEquals(354, $transaction['fee']);
+
+        $this->assertEquals(54, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1009646, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+
+    }
+
+    public function testCreatePaymentForUPIWithFeeConfig()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"upi": {"fee": {"payee": "customer", "flat_value": 200}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'upi',
+            'payment_method_type' => null,
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay'
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId(), "payment_capture" => true]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['amount'] = '10236';
+
+        $payment['fee'] = 0;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $paymentAuth = $this->doAuthPayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10236, $transaction['amount']);
+
+        $this->assertEquals(9882, $transaction['credit']);
+
+        $this->assertEquals(354, $transaction['fee']);
+
+        $this->assertEquals(54, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1009882, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+
+    }
+
+    public function testCreatePaymentForCardWithFeeConfigPaidByNBAndCFB()
+    {
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "customer", "flat_value": 200}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'netbanking',
+            'payment_method_type' => null,
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+            'fee_bearer' => 'customer'
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId(), 'payment_capture' => true]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['fee_bearer' => 'dynamic', 'pricing_plan_id' => $plan->getPlanId()]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['amount'] = '10354';
+
+        $payment['fee'] = 354;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'netbanking');
+
+        $paymentAuth = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(10354, $transaction['amount']);
+
+        $this->assertEquals(10000, $transaction['credit']);
+
+        $this->assertEquals(354, $transaction['fee']);
+
+        $this->assertEquals(54, $transaction['tax']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1010000, $balance['balance']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(10000, $order['amount_paid']);
+
+        $this->assertEquals(0, $order['amount_due']);
+
+        $this->assertEquals('paid', $order['status']);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->assertEquals('processed', $refund['status']);
+    }
+
 }
