@@ -132,6 +132,7 @@ class Validator extends Base\Validator
         Payment\Gateway::WALLET_PHONEPESWITCH,
         Payment\Gateway::WALLET_PAYPAL,
         Payment\Gateway::WALLET_FREECHARGE,
+        Payment\Gateway::WALLET_AMAZONPAY,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::ISG,
         Payment\Gateway::PAYLATER,
@@ -1771,6 +1772,15 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_ACCESS_CODE         => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $walletAmazonpayEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
         Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
