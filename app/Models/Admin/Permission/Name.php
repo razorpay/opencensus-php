@@ -125,6 +125,7 @@ class Name
     const ASSIGN_MERCHANT_TERMINAL            = 'assign_merchant_terminal';
     const ASSIGN_MERCHANT_BANKS               = 'assign_merchant_banks';
     const ADD_MERCHANT_ADJUSTMENT             = 'add_merchant_adjustment';
+    const GET_AMAZON_DATA_PULL_STATUS         = 'get_amazon_data_pull_status';
     const EDIT_MERCHANT_EMAIL                 = 'edit_merchant_email';
     const EDIT_MERCHANT_ADDITIONAL_EMAIL      = 'edit_merchant_additional_email';
     const BULK_CREATE_ENTITY                  = 'bulk_create_entity';

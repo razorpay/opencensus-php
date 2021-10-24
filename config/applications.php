@@ -732,6 +732,13 @@ return [
         'timeout'       => env('APP_LINE_OF_CREDIT_TIMEOUT', 60),
     ],
 
+    'capital_marketplace' => [
+        'url'           => env('APP_MARKETPLACE_URL'),
+        'username'      => 'api',
+        'secret'        => env('APP_MARKETPLACE_SECRET'),
+        'timeout'       => env('APP_MARKETPLACE_TIMEOUT', 60),
+    ],
+
     'wallet' => [
         'timeout'     => env('APP_WALLET_TIMEOUT', 60),
         'url'         => [

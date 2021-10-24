@@ -432,6 +432,11 @@ class Constants
     const WITHDRAW_LOC = 'withdraw_loc';
 
     /**
+     * Gives access to loc service for es amazon merchants
+     */
+    const WITHDRAWAL_ES_AMAZON = 'withdrawal_es_amazon';
+
+    /**
      * Enables Cash Advance merchants to see lender migration specific details
      */
     const LOC_ESIGN = 'loc_esign';
@@ -1170,6 +1175,7 @@ class Constants
         self::ALLOW_ES_AMAZON                 => true,
         self::IVR_DISABLE                     => true,
         self::WITHDRAW_LOC                    => true,
+        self::WITHDRAWAL_ES_AMAZON            => true,
         self::LOC_ESIGN                       => true,
         self::LOC_FIRST_WITHDRAWAL            => true,
         self::CAPITAL_CARDS                   => true,
@@ -1422,6 +1428,11 @@ class Constants
         self::WITHDRAW_LOC              => [
             'feature'       => self::WITHDRAW_LOC,
             'display_name'  => 'Withdraw Loc',
+            'documentation' => '',
+        ],
+        self::WITHDRAWAL_ES_AMAZON              => [
+            'feature'       => self::WITHDRAWAL_ES_AMAZON,
+            'display_name'  => 'Withdraw Loc for ES Amazon',
             'documentation' => '',
         ],
         self::LOC_ESIGN              => [
