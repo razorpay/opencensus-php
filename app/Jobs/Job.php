@@ -13,6 +13,7 @@ use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Trace\Tracer;
+use RZP\Models\Payment;
 
 class Job implements ShouldQueue
 {
@@ -90,6 +91,11 @@ class Job implements ShouldQueue
      */
     public $timeout = 60;
 
+    /**
+     * Store and send passport in async requests
+     */
+    public $jobPassport;
+
     public function __construct(string $mode = null)
     {
         $this->mode = $mode;
@@ -122,6 +128,7 @@ class Job implements ShouldQueue
         $this->taskId       = $app['request']->getTaskId();
         $this->jobName      = $this->jobName ?? snake_case(class_basename($this));
         $this->appAuth      = $app['basicauth']->isAppAuth();
+        $this->jobPassport  = "";
     }
 
     public function handle()
@@ -223,6 +230,9 @@ class Job implements ShouldQueue
         //
         $app['basicauth']->setBasicAppAuth($this->appAuth ?: false);
 
+        // if any job sets passport token, assign it or clear it if prev set
+        (empty($this->jobPassport) === false) ? $app['basicauth']->setPassportFromJob($this->jobPassport): $app['basicauth']->setPassportFromJob("");
+
         $this->repoManager->resetConnectionAttributes();
 
         ConfigKey::resetFetchedKeys();
@@ -290,5 +300,20 @@ class Job implements ShouldQueue
     protected function beforeJobKillCleanUp()
     {
         $this->mutex->releaseAllAcquired();
+    }
+
+    /**
+     * Any job which needs to send passport token can call this func.
+     * Make sure to call before dispatch, since request context is unavailable in workers.
+     */
+    protected function setPassportTokenForJobs(string $merchantId = "", int $tokenExpiryInSecs = 1200)
+    {
+        if ((new Payment\Service)->isRazorxTreatmentForRefundsV1_1($merchantId) === false)
+        {
+            return;
+        }
+
+        $app = App::getFacadeRoot();
+        $this->jobPassport = $app['basicauth']->getPassportJwt(get_called_class(), $tokenExpiryInSecs);
     }
 }

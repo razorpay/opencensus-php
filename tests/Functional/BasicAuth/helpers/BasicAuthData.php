@@ -115,10 +115,10 @@ return [
             'identified'    => true,
             'authenticated' => true,
             'consumer'      => [
-                'type' => 'admin',
-                'id'   => 'RzrpySprAdmnId',
+                'type' => 'application',
+                'id'   => 'admin_dashboard',
                 'meta' => [
-                    'org_id' => '100000razorpay',
+                    'name' => 'admin_dashboard',
                 ],
             ],
             'impersonation' => [
@@ -145,10 +145,10 @@ return [
             'identified'    => true,
             'authenticated' => true,
             'consumer'      => [
-                'type' => 'admin',
-                'id'   => 'RzrpySprAdmnId',
+                'type' => 'application',
+                'id'   => 'admin_dashboard',
                 'meta' => [
-                    'org_id' => '100000razorpay',
+                    'name' => 'admin_dashboard',
                 ],
             ],
             'impersonation' => [
@@ -1268,6 +1268,23 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => 'BAD_REQUEST_ACCESS_DENIED',
+        ],
+    ],
+
+    'testPassportTokenForJob' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments',
+            'content' => [
+                'count' => 1
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'items' => [
+                ],
+            ]
         ],
     ],
 ];

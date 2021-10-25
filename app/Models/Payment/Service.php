@@ -3961,4 +3961,30 @@ class Service extends Base\Service
                 'payment_id' => $id
             ]);
     }
+
+    /**
+     * isRazorxTreatmentForRefundsV1_1: Used within jobs.
+     *
+     * @param $merchantId
+     * @return bool
+     */
+    public function isRazorxTreatmentForRefundsV1_1(string $merchantId = ""): bool
+    {
+        // handling for internal routes,
+        // where merchantId or merchant obj is empty, then just return true.
+        // 
+        $mid = (empty($this->merchant) === false) ? $this->merchant->getId() : $merchantId;  
+        if (empty($mid) === true)
+        {
+            return true;
+        }
+
+        $variant = $this->app->razorx->getTreatment(
+                $mid,
+                Merchant\RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1,
+                $this->mode
+        );
+
+        return (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON);
+    }
 }

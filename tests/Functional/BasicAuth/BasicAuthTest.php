@@ -987,4 +987,30 @@ class BasicAuthTest extends TestCase
             ->withClaim('consumer', ['id' => $consumer_id, 'type' => $consumer_type]);
         return $this->samplePassportJwt($builder);
     }
+
+    public function testPassportTokenForJob()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        // Asserts passport jwt build by api is valid.
+        $jwtToken = $this->app['basicauth']->getPassportJwt(get_class(), 600);
+
+        // Set to new passport function used for Jobs
+        $this->app['basicauth']->setPassportFromJob($jwtToken);
+        $token = $this->app['basicauth']->getPassportFromJob();
+
+        $publicKey = file_get_contents(__DIR__.'/helpers/passport-apiv1-public.key');
+        $kid1 = new Kid("apiv1", $publicKey);
+        Passport::init($kid1);
+        $passport = Passport::fromToken($token);
+
+        $this->assertTrue($passport->identified);
+        $this->assertTrue($passport->authenticated);
+        $this->assertSame('test', $passport->mode);
+        $this->assertInstanceOf(\Razorpay\Edge\Passport\ConsumerClaims::class, $passport->consumer);
+        $this->assertSame('10000000000000', $passport->consumer->id);
+        $this->assertSame('merchant', $passport->consumer->type);
+    }
 }

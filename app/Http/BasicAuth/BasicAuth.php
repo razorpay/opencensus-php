@@ -425,6 +425,13 @@ class BasicAuth
      */
     protected $reqCtx;
 
+    /**
+     * Holds passport jwt payload from a background job
+     *
+     * @var string
+     */
+    protected $passportFromJob;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -449,6 +456,7 @@ class BasicAuth
         $this->appAuth                     = false;
         $this->proxy                       = false;
         $this->passport                    = [];
+        $this->passportFromJob             = "";
     }
 
     public function setCredentials()
@@ -774,6 +782,8 @@ class BasicAuth
                 $this->authCreds->getMerchant()->getId()
             );
 
+            $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_APPLICATION, $this->internalApp, true, ['name' => $this->internalApp]);
+
             return $this->checkAndSetAccountScope();
         }
 
@@ -1009,6 +1019,8 @@ class BasicAuth
                 self::PASSPORT_IMPERSONATION_TYPE_USER_MERCHANT,
                 $this->authCreds->getMerchant()->getId()
             );
+
+            $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_APPLICATION, $this->internalApp, true, ['name' => $this->internalApp]);
 
             return $this->checkAndSetAccountScope();
         }
@@ -2919,7 +2931,7 @@ class BasicAuth
      *
      * @return string
      */
-    public function getPassportJwt(string $upstreamHost): string
+    public function getPassportJwt(string $upstreamHost, int $customExpirySecs = 0): string
     {
         $passportConfig = $this->app['config']->get('passport');
 
@@ -2928,12 +2940,18 @@ class BasicAuth
         $privateKeyId       = $passportConfig['issuer_private_key_id'];
         $passportExpirySecs = $passportConfig['issuer_passport_expire_secs'];
 
+        // set $customExpirySecs only if more than default. 
+        // using caution since not to have an extremely short lived token set by mistake.
+        $passportExpirySecs = ($customExpirySecs > $passportExpirySecs) ? $customExpirySecs : $passportExpirySecs;
+
         $now = time();
+
+        $identifier = (empty($this->request) === false) ? $this->request->getId() : substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),1,20);
 
         $builder = (new JWTBuilder)
             ->issuedBy($issuerId)
             ->permittedFor($upstreamHost)
-            ->identifiedBy($this->request->getId(), true)
+            ->identifiedBy($identifier, true)
             ->issuedAt($now)
             ->canOnlyBeUsedAfter($now)
             ->expiresAt($now + $passportExpirySecs)
@@ -2946,5 +2964,22 @@ class BasicAuth
         }
 
         return $builder->getToken(new JWTSigner\Rsa\Sha256, $privateKey);
+    }
+
+    /**
+     * Assigns passport token from an async request
+     * Thread - https://razorpay.slack.com/archives/C012ZGQQFDJ/p1632727731111400
+     */
+    public function setPassportFromJob(string $passportToken)
+    {
+        $this->passportFromJob = $passportToken;
+    }
+
+    /**
+     * Returns passport token set from an async request
+     */
+    public function getPassportFromJob()
+    {
+        return $this->passportFromJob;
     }
 }
