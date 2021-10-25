@@ -982,7 +982,7 @@ class Service extends Base\Service
                     if ((($isBankingRequest === true) and ($data['banking_role'] === null)) or
                         (($isBankingRequest === false) and ($data['role'] === null)))
                     {
-                        $this->switchProduct();
+                        $this->switchProduct($data, $user);
                     }
 
                     if (($isBankingRequest === false))
@@ -1805,7 +1805,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    protected function switchProduct()
+    protected function switchProduct($data, $user)
     {
         $startTime = microtime(true) * 1000;
 
