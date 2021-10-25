@@ -208,7 +208,6 @@ class PartnerTest extends OAuthTestCase
     public function testMerchantUnmarksSelfAsPartner()
     {
         $this->ba->proxyAuth();
-
         $this->startTest();
     }
 
