@@ -40,6 +40,7 @@ export default class ActivationContainer extends Component {
       gstinDetails: null,
       isActivationFormLoading: false,
       showWelcomeBanner: false,
+      submerchantId: props.submerchantId && props.submerchantId.replace('acc_', ''),
       shouldBlockMerchantKYC: false,
       partnerActivationData: null,
     };
@@ -244,7 +245,7 @@ export default class ActivationContainer extends Component {
   };
 
   componentWillMount() {
-    this.fetchActivationDetails(this.props.accountId);
+    this.fetchActivationDetails(this.props.accountId || this.state.submerchantId);
   }
 
   componentDidMount() {
@@ -304,12 +305,14 @@ export default class ActivationContainer extends Component {
       gstinDetails,
       isActivationFormLoading,
       showWelcomeBanner,
+      submerchantId,
       partnerActivationData,
       shouldBlockMerchantKYC,
     } = this.state;
     const { user } = this.props;
     const commonProps = {
       accountId: this.props.accountId,
+      submerchantId,
       fetchActivationDetails: this.fetchActivationDetails,
       updateActivationData: this.updateActivationData,
       data,

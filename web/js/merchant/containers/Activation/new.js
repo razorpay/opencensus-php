@@ -29,9 +29,10 @@ const successImg = '/img/activation/submit-success.svg';
  * ActivationContainer is used in:
  * 1. '/activation' route for Activation form for merchant, and
  * 2. Marketplace > Accounts for linked account (AccoundDetails)
- *
+ * 3. Partner Dashboard -> Submerchant KYC
  * @props {onClose, Function, optional}. Without this modal would not be opened. Also, this would be used to close the modal
  * @props {accountId, String, optional}. Needed if the ActivationWizard is opened for Linked Account
+ * @props {submerchantId} for Submerchant KYC from Partner dashboard
  * */
 @RTracking(() => window.rzpQ.component('ActivationContainer'))
 @withRouter
@@ -258,7 +259,9 @@ export default class ActivationContainer extends React.Component {
               : 'L1',
           ...data,
         },
-        accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
+        accountId: this.props.accountId || this.props.submerchantId, 
+        // accountId for linked_accounts. Axios auto-ignore undefined keys in options
+        // submerchantId for submerchant KYC
       })
         .then((response) => {
           this.props.trackEvents({
@@ -304,6 +307,7 @@ export default class ActivationContainer extends React.Component {
           //if poi status verified open instant activation modal otherwise reload the page.
           if (
             !this.props.accountId &&
+            !this.props.submerchantId &&
             response?.data?.activation_form_milestone === 'L1' &&
             response?.data?.poi_verification_status === 'initiated' &&
             ['11', '2'].includes(response?.data?.business_type) &&
@@ -433,7 +437,7 @@ export default class ActivationContainer extends React.Component {
         // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
         mode: !!this.props.accountId ? this.props.session.mode : 'live',
         data: { submit: 1 },
-        accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
+        accountId: this.props.accountId || this.props.submerchantId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
       })
         .then((response) => {
           if (!response.data.can_submit) {
@@ -482,7 +486,7 @@ export default class ActivationContainer extends React.Component {
       headers: {
         'content-type': 'application/json',
       },
-      accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
+      accountId: this.props.accountId || this.props.submerchantId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
       data,
     })
       .then((response) => {
@@ -555,7 +559,7 @@ export default class ActivationContainer extends React.Component {
       method: 'post',
       mode: 'live',
       data: formData,
-      accountId: this.props.accountId,
+      accountId: this.props.accountId || this.props.submerchantId,
       onUploadProgress: progressTracker,
     })
       .then((response) => {
@@ -596,6 +600,7 @@ export default class ActivationContainer extends React.Component {
         url: `merchant/documents/doc_${curDoc.id}`,
         method: 'delete',
         mode: 'live',
+        accountId: this.props.submerchantId,
       })
         .then((res) => {
           if (res.success && res.data) {

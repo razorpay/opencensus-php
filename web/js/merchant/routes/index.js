@@ -467,6 +467,10 @@ const entityModalsMap = {
     component: PartnerActivationForm,
     additionalCondition: (user) => user.isIndependentPartnerKYCEnabled,
   },
+  '/partners/submerchants/:submerchantId(acc_.+)/activation': {
+    component: ActivationContainer,
+    additionalCondition: (user) => user.isSubMerchantKycResellerEnabled,
+  },
 };
 
 export const supportHashMapping = {
@@ -533,6 +537,14 @@ const fullPageViewsMap = {
   '/partners/onboarding': {
     component: PartnerActivationFormMweb,
     additionalCondition: (user) => user.isIndependentPartnerKYCEnabled,
+  },
+  '/partners/submerchants/onboarding/:submerchantId(acc_.+)/steps': {
+    component: ActivationSteps,
+    additionalCondition: (user) => user.isSubMerchantKycResellerEnabled,
+  },
+  '/partners/submerchants/onboarding/:submerchantId(acc_.+)/form': {
+    component: ActivationForm,
+    additionalCondition: (user) => user.isSubMerchantKycResellerEnabled,
   },
 };
 
