@@ -512,19 +512,11 @@ class Service extends Base\Service
         $res = [
             'id' => $genericUser->id,
         ];
-        $merchantIds = [];
-        foreach ($genericUser->merchants as $merchant)
-        {
-            $merchantIds[] = $merchant->id;
-        }
-        $res['merchantIds'] = $merchantIds;
-
-        $currentMerchantId = $genericUser->currentMerchant() ? $genericUser->currentMerchant()->id : null;
-        $res['currentMerchantId']  = $currentMerchantId;
 
         $user = Auth::user();
 
         $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
+        $res['currentMerchantId']  = $currentMerchantId;
 
         $traceData = [
             'id'          => $user->id,
@@ -579,14 +571,6 @@ class Service extends Base\Service
         $res = [
             Constants::ID => $genericUser->id,
         ];
-
-        $merchantIds = [];
-
-        foreach ($genericUser->merchants as $merchant)
-        {
-            $merchantIds[] = $merchant->id;
-        }
-        $res[Constants::MERCHANT_IDS] = $merchantIds;
 
         $user = Auth::user();
 
