@@ -80,7 +80,8 @@ function renderAdditionalWebsites(user, handleEditWebsite, isAdditionalWebsiteIn
       </div>
       {user.business_website &&
         user.isAdditionalDomainWhitelistSelfServeOn &&
-        isAdditionalWebsiteInWorkflow === false &&
+        (isAdditionalWebsiteInWorkflow.workflow_exists === false ||
+          !['open', 'approved'].includes(isAdditionalWebsiteInWorkflow.workflow_status)) &&
         (user.role === 'owner' || user.role === 'admin') &&
         !isLimitReached && (
           <div>
@@ -151,7 +152,7 @@ const MerchantDetails = ({
   const getAdditionalWebsiteWorkflowStatus = async () => {
     try {
       const response = await merchantFetch({
-        url: `merchant/additional_website_status`,
+        url: `merchant/add_additional_website/details`,
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -550,7 +551,7 @@ const MerchantDetails = ({
                     </PopoverBody>
                   </Popover>
                 </small>
-                {isAdditionalWebsiteInWorkflow === true && (
+                {isAdditionalWebsiteInWorkflow.workflow_status === 'open' && (
                   <div class="website-self-serve__change-info">
                     Your request to add the website is under review.
                   </div>
