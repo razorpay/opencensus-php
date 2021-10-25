@@ -842,6 +842,7 @@ class App extends Component {
       isGstinMandatory: user.isGstinMandatory,
       isSyncExperimentEnabled: user.isSyncExperimentEnabled,
       isGstinAutoPopulate: user.isGstinAutoPopulate,
+      isSyncBankVerificationEnabled: user.isSyncBankVerificationEnabled,
     };
   };
 

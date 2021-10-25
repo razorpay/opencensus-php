@@ -17,6 +17,7 @@ const mockRazorXExp = {
   canGenerateTnCPage: true,
   isBDAndAovEnabled: true,
   isAadharEkycMandatory: true,
+  isSyncBankVerificationEnabled: true,
 };
 
 addParameters({

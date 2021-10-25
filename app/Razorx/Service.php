@@ -181,6 +181,7 @@ class Service extends Base\Service
             'status_page_enable',
             'pp_hostedpage_new_footer',
             'rx_gst_payments',
+            'KARZA_BANK_ACCOUNT_VERIFICATION',
             'show_L1_Form_on_login',
             'auto-open-L1-form',
             'auto-open-L2-form',

@@ -33,6 +33,8 @@ const PRIVATE_LIMITED = 4,
 const E_SIGN_AADHAR = [PROPRIETORSHIP, PARTNERSHIP, NOT_REGISTERED];
 
 const bankAccountTabName = 'Bank Account';
+const BANK_LIMIT_MESSAGE =
+  "You have already changed your account 9 times, please ensure you enter the correct details this time as you won't be able to make any more changes after this attempt";
 
 function differentAddress(activation) {
   return activation.state.same_address === '0';
@@ -537,6 +539,17 @@ const isPanVerificationFailed = (poiStatus, companyPanStatus) => {
   );
 };
 
+const getBankVerificationAtteemptError = (activation) => {
+  if (
+    activation.props.data.bank_details_verification_status &&
+    !['initiated', 'verified'].includes(activation.props.data.bank_details_verification_status) &&
+    activation.props.user.isSyncBankVerificationEnabled
+  ) {
+    if (activation.props.bvsApiCount == 9) return BANK_LIMIT_MESSAGE;
+  }
+  return '';
+};
+
 export {
   differentAddress,
   isUnregisteredBusiness,
@@ -580,4 +593,5 @@ export {
   isCompanyPANVerified,
   isPanVerificationFailed,
   canShowCustomGstinField,
+  getBankVerificationAtteemptError,
 };

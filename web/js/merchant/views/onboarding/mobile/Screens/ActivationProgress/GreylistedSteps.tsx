@@ -5,6 +5,7 @@ import View from '@razorpay/blade-old/src/atoms/View';
 import OnboardingStepCard from '../../OnboardingStepCard';
 import { isVisible, useActivationFormState } from '../../context/store';
 import useActivation from '../../hooks/useActivation';
+import useConfigDetails from '../../hooks/useConfigDetails';
 import {
   checkIfDedupe,
   getCompanyPanVerificationStatus,
@@ -20,6 +21,7 @@ const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any)
   history,
 }) => {
   const { data, postData } = useActivation();
+  const { data: configData } = useConfigDetails('onboarding');
   const { user, experiments } = useApp();
   const {
     isContactDetailsCompleted,
@@ -121,6 +123,15 @@ const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any)
     }
   };
 
+  const hasBankVerificationFailed =
+    data?.bank_details_verification_status &&
+    !['initiated', 'verified'].includes(data?.bank_details_verification_status) &&
+    experiments.isSyncBankVerificationEnabled;
+
+  const isBankFieldDisabledField =
+    experiments.isSyncBankVerificationEnabled &&
+    configData?.bank_account_verification_attempt_count == 10;
+
   const shouldShowPoiError =
     !data.submitted &&
     getPoiVerificationStatus(data?.poi_verification_status) &&
@@ -169,7 +180,7 @@ const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any)
             name: 'Business Details',
             id: 'business_details',
             onClick,
-            isComplete: isBusinessDetailsCompleted && (!shouldShowPoiError || !isCompanyPanInvalid),
+            isComplete: isBusinessDetailsCompleted && !shouldShowPoiError && !isCompanyPanInvalid,
             hasErrorText:
               shouldShowPoiError || isCompanyPanInvalid
                 ? 'Unable to verify your PAN. Please update'
@@ -179,7 +190,12 @@ const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any)
             name: 'Bank and Business Details',
             id: 'bank_details',
             onClick,
-            isComplete: isBankAndCompanyDetailsCompleted,
+            isComplete: isBankAndCompanyDetailsCompleted && !hasBankVerificationFailed,
+            hasErrorText: hasBankVerificationFailed
+              ? isBankFieldDisabledField
+                ? 'You have reached maximum limit to changed the bank account details'
+                : 'Unable to verify your Bank details. Please update'
+              : '',
           },
           {
             name: 'Documents Upload',

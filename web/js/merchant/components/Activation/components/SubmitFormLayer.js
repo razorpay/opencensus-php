@@ -15,9 +15,9 @@ class SubmitFormLayer extends React.Component {
     allowSubmit: false, // Check if checkbox is ticked
   };
 
-  submit = e => {
+  submit = (_e) => {
     if (!this.state.allowSubmit) {
-      return;
+      return null;
     }
     return this.props.submitActivationForm();
   };
@@ -38,17 +38,23 @@ class SubmitFormLayer extends React.Component {
           <div className="tnc-text">
             {/* Confirmation checkbox*/}
             <Input.Check
+              checked={this.state.allowSubmit}
+              autoRender={true}
               disabled={this.props.isFormLocked}
-              onChange={e => {
-                this.setState({
-                  allowSubmit: e.target.checked,
-                });
+              onChange={(e) => {
+                const checked = e.target.checked;
+                if (checked && this.props.isSyncBankVerificationEnabled) {
+                  this.props.fetchMerchantData().then((res) => {
+                    if (res?.data) {
+                      this.setState({ allowSubmit: checked });
+                    }
+                  });
+                } else {
+                  this.setState({ allowSubmit: checked });
+                }
 
                 // Track session for submitting form activity (non-LA account)
-                if (
-                  !this.props.isLinkedAccount &&
-                  typeof window.hj === 'function'
-                ) {
+                if (!this.props.isLinkedAccount && typeof window.hj === 'function') {
                   window.hj('tagRecording', ['activation_form_submitted']);
                 }
               }}
@@ -58,86 +64,79 @@ class SubmitFormLayer extends React.Component {
             <p>
               I have read and understood the{' '}
               <ShowWhen
-                additionalCondition={user =>
-                  user.isOrgAllowedFunctionality('external_links')
-                }
+                additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
               >
                 <a
                   href="https://razorpay.com/terms/"
                   target="_blank"
                   className="highlight"
-                  onClick={() =>
-                    trackers && trackers.trackLinkClick('Terms of use')
-                  }
+                  onClick={() => trackers && trackers.trackLinkClick('Terms of use')}
+                  rel="noreferrer"
                 >
                   Terms & Conditions
                 </a>
               </ShowWhen>
               <ShowWhen
-                additionalCondition={user =>
-                  !user.isOrgAllowedFunctionality('external_links')
-                }
+                additionalCondition={(user) => !user.isOrgAllowedFunctionality('external_links')}
               >
                 <span className="highlight">Terms & Conditions</span>
               </ShowWhen>
               ,{' '}
               <ShowWhen
-                additionalCondition={user =>
-                  user.isOrgAllowedFunctionality('external_links')
-                }
+                additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
               >
                 <a
                   href="https://razorpay.com/agreement/"
                   target="_blank"
                   className="highlight"
-                  onClick={() =>
-                    trackers && trackers.trackLinkClick('Merchant Agreement')
-                  }
+                  onClick={() => trackers && trackers.trackLinkClick('Merchant Agreement')}
+                  rel="noreferrer"
                 >
                   Merchant Agreement
                 </a>
               </ShowWhen>
               <ShowWhen
-                additionalCondition={user =>
-                  !user.isOrgAllowedFunctionality('external_links')
-                }
+                additionalCondition={(user) => !user.isOrgAllowedFunctionality('external_links')}
               >
                 <span className="highlight">Merchant Agreement</span>
               </ShowWhen>{' '}
               and the{' '}
               <ShowWhen
-                additionalCondition={user =>
-                  user.isOrgAllowedFunctionality('external_links')
-                }
+                additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
               >
                 <a
                   href="https://razorpay.com/privacy/"
                   target="_blank"
                   className="highlight"
-                  onClick={() =>
-                    trackers && trackers.trackLinkClick('Privacy Policy')
-                  }
+                  onClick={() => trackers && trackers.trackLinkClick('Privacy Policy')}
+                  rel="noreferrer"
                 >
                   Privacy Policy
                 </a>
               </ShowWhen>
               <ShowWhen
-                additionalCondition={user =>
-                  !user.isOrgAllowedFunctionality('external_links')
-                }
+                additionalCondition={(user) => !user.isOrgAllowedFunctionality('external_links')}
               >
                 <span className="highlight">Privacy Policy</span>
               </ShowWhen>
-              . By submitting the form, I agree to abide by the rules at all
-              times.
+              . By submitting the form, I agree to abide by the rules at all times.
             </p>
           </div>
 
           {/* Secondary copy */}
-          <p className="text-fade">
-            Please review the form before submitting. For any changes after
-            submission, you can write to support
-          </p>
+          {this.props.isBankVerificationFailed ? (
+            <p className="text-error">
+              {this.props.bvsApiCount == 10
+                ? 'You have reached maximum limit to changed the bank account details'
+                : 'Your bank details need to be reviewed again. Please check Bank Account tab and enter correct details'}
+              .
+            </p>
+          ) : (
+            <p className="text-fade">
+              Please review the form before submitting. For any changes after submission, you can
+              write to support
+            </p>
+          )}
 
           {/* Action button */}
           <AsyncBtn.Primary

@@ -20,6 +20,7 @@ import { trackLinkClick, trackGoToConfig } from './ga_new';
 
 import { LLPIN_BusinessTypes } from 'merchant/components/Activation/ActivationFormMap';
 import { isSourceRX, isDedupeOldFunc } from 'merchant/components/Activation/ActivationUtils';
+import { fetchModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
 import * as EventsActions from 'merchant/reducers/trackEvents';
 
 const welcomeImg = '/img/activation/welcome.svg';
@@ -75,6 +76,7 @@ export default class ActivationContainer extends React.Component {
       isFormTouched: someDetailsFilled,
       rxCaCheckboxSelect: false, // local checkbox state
       showL2Form: false,
+      bvsApiCount: null,
     };
 
     this.activationFormName = user.showInstantActivation ? 'KYC Form' : 'Activation Form';
@@ -190,6 +192,10 @@ export default class ActivationContainer extends React.Component {
       company_pan,
       promoter_pan,
       promoter_pan_name,
+      bank_details_verification_status,
+      bank_branch_ifsc,
+      bank_account_name,
+      bank_account_number,
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
@@ -213,6 +219,10 @@ export default class ActivationContainer extends React.Component {
       company_pan,
       promoter_pan,
       promoter_pan_name,
+      bank_details_verification_status,
+      bank_branch_ifsc,
+      bank_account_name,
+      bank_account_number,
     });
 
     this.props.updateSession({
@@ -656,9 +666,19 @@ export default class ActivationContainer extends React.Component {
     return this.props.handleUIUpdate && this.props.handleUIUpdate();
   };
 
+  getBankVerificationAttemptCount = () => {
+    try {
+      fetchModalConfigDetails('onboarding').then((res) => {
+        if (res?.data) {
+          this.setState({ bvsApiCount: res.data?.bank_account_verification_attempt_count });
+        }
+      });
+    } catch (err) {}
+  };
+
   componentDidMount() {
     this.handleUIUpdate();
-
+    this.getBankVerificationAttemptCount();
     this.props.sendEventsForSubMerchantView(
       window.rzpQ
         .routeActions()
@@ -755,6 +775,8 @@ export default class ActivationContainer extends React.Component {
           gstinDetails={gstinDetails}
           isModalView={isModalView && isActivationFormLoading}
           showL2Form={this.state.showL2Form}
+          bvsApiCount={this.state.bvsApiCount}
+          fetchBankVerificationAttemptCount={this.getBankVerificationAttemptCount}
           partnerActivationData={this.props.partnerActivationData}
         />
       );

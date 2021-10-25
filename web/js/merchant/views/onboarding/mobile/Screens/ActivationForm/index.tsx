@@ -521,6 +521,11 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     );
   };
 
+  const hasBankVerificationFailed =
+    data?.bank_details_verification_status &&
+    !['initiated', 'verified'].includes(data?.bank_details_verification_status) &&
+    experiments.isSyncBankVerificationEnabled;
+
   const getTabs = () => {
     const tabs = [
       <Tab
@@ -561,6 +566,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           title="Bank Details"
           tabId="bank_details"
           completed={isBankAndCompanyDetailsCompleted}
+          hasError={hasBankVerificationFailed}
         >
           <BankDetails isFormLocked={isFormLocked()} />
         </Tab>,

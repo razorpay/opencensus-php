@@ -34,6 +34,7 @@ const customRender = (
       canGenerateTnCPage: true,
       isBDAndAovEnabled: true,
       isAadharEkycMandatory: true,
+      isSyncBankVerificationEnabled: true,
     };
     return (
       <Provider store={reduxStore}>

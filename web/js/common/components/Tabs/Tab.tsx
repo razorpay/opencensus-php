@@ -18,6 +18,7 @@ const Highlight = styled(View)`
 
 interface TabProps {
   completed?: boolean;
+  hasError?: boolean;
   isActive?: boolean;
   onClick?: () => void;
   title: string;
@@ -29,6 +30,7 @@ interface TabProps {
 
 const Tab = ({
   completed = false,
+  hasError = false,
   isActive = false,
   onClick,
   title,
@@ -51,10 +53,16 @@ const Tab = ({
         <View>
           <Flex flex={1} alignItems="center">
             <StyledTabTitle ref={isActive ? activeTabRef : null} onClick={onClick}>
-              {completed ? (
+              {completed && !hasError ? (
                 <Space margin={[0, 0.5, 0, 0]}>
                   <View>
                     <Icon name="success" size="xsmall" fill="positive.960" />
+                  </View>
+                </Space>
+              ) : hasError ? (
+                <Space margin={[0, 0.5, 0, 0]}>
+                  <View>
+                    <Icon name="alertCircle" size="xsmall" fill="negative.900" />
                   </View>
                 </Space>
               ) : null}

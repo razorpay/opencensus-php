@@ -51,6 +51,7 @@ import {
   showAadharDoc,
   isCompanyPANVerified,
   canShowCustomGstinField,
+  getBankVerificationAtteemptError,
 } from './ActivationUtils';
 
 import {
@@ -851,19 +852,51 @@ const bankAccountFields = [
     info: getBeneficiaryInfo,
     maxLength: '120',
     minLength: '4',
-    validator: (val) => {
+    _autoRenderImpure: true,
+    validator: function validator(val) {
       if (val && !/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]{3,119}$/.test(val)) {
         return 'Name should contain at least 4 characters. Exclude numbers and special characters';
       }
+      return '';
     },
+    checkValidityFromAPI: getBankVerificationAtteemptError,
     description: (activation) =>
       isUnregisteredBusiness(activation) || activation.props.user.isRegAutoKYCEnabled
         ? 'We will deposit a small amount of money in your account to verify the account.'
         : '',
+    onBlur: function onBlur() {
+      if (!this.isOnKYCTab()) {
+        const { user, fetchBankVerificationAttemptCount } = this.props;
+        const { dirty } = this.state;
+        const isValidBankName =
+          dirty?.bank_account_name &&
+          !/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]{3,119}$/.test(dirty?.bank_account_name);
+
+        if (
+          user.activation_form_milestone === 'L1' &&
+          user.isSyncBankVerificationEnabled &&
+          !isValidBankName &&
+          dirty?.bank_account_name &&
+          dirty?.bank_account_name !== user?.bank_account_name
+        ) {
+          this.saveCurrentTab();
+          fetchBankVerificationAttemptCount();
+        }
+      }
+    },
+    _disabledWhen: (activation) => {
+      if (activation?.props?.user?.submitted) {
+        return false;
+      }
+      return (
+        activation?.props?.user?.isSyncBankVerificationEnabled && activation.props.bvsApiCount == 10
+      );
+    },
   },
   {
     name: 'bank_branch_ifsc',
     label: 'Branch IFSC Code',
+    _autoRenderImpure: true,
     info: function (e) {
       if (!e) {
         return null;
@@ -871,6 +904,33 @@ const bankAccountFields = [
       return getDetailsForIFSC(e.target.value);
     },
     validator: validateIFSC,
+    checkValidityFromAPI: getBankVerificationAtteemptError,
+    onBlur: function onBlur() {
+      if (!this.isOnKYCTab()) {
+        const { user, fetchBankVerificationAttemptCount } = this.props;
+        const { dirty } = this.state;
+        const isValidIFSC = validateIFSC(dirty?.bank_branch_ifsc);
+
+        if (
+          user.activation_form_milestone === 'L1' &&
+          user.isSyncBankVerificationEnabled &&
+          !isValidIFSC &&
+          dirty?.bank_branch_ifsc &&
+          dirty?.bank_branch_ifsc !== user?.bank_branch_ifsc
+        ) {
+          this.saveCurrentTab();
+          fetchBankVerificationAttemptCount();
+        }
+      }
+    },
+    _disabledWhen: (activation) => {
+      if (activation?.props?.user?.submitted) {
+        return false;
+      }
+      return (
+        activation?.props?.user?.isSyncBankVerificationEnabled && activation.props.bvsApiCount == 10
+      );
+    },
   },
   [
     {
@@ -878,17 +938,41 @@ const bankAccountFields = [
       label: 'Account Number',
       info: getAccountNumberInfo,
       autoComplete: 'new-password',
-      onBlur: function (e) {
+      _autoRenderImpure: true,
+      checkValidityFromAPI: getBankVerificationAtteemptError,
+      onBlur: function onBlur() {
         if (!this.isOnKYCTab()) {
-          const bankAccountNumber = this.state.dirty.bank_account_number;
+          const { user, fetchBankVerificationAttemptCount } = this.props;
+          const { dirty } = this.state;
+
+          const bankAccountNumber = dirty.bank_account_number;
           const accountNo = this.state.account_no;
 
           const isMatching = bankAccountNumber == accountNo;
 
+          if (
+            user.activation_form_milestone === 'L1' &&
+            user.isSyncBankVerificationEnabled &&
+            dirty?.bank_account_number &&
+            dirty?.bank_account_number !== user?.bank_account_number &&
+            isMatching
+          ) {
+            this.saveCurrentTab();
+            fetchBankVerificationAttemptCount();
+          }
           if (!!bankAccountNumber && (!accountNo || !isMatching)) {
             document.querySelector('[data-name="account_no"]')?.focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
           }
         }
+      },
+      _disabledWhen: (activation) => {
+        if (activation?.props?.user?.submitted) {
+          return false;
+        }
+        return (
+          activation?.props?.user?.isSyncBankVerificationEnabled &&
+          activation.props.bvsApiCount == 10
+        );
       },
     },
     {
@@ -912,6 +996,32 @@ const bankAccountFields = [
       _when: (activation) => {
         const isLocked = activation.props.data.locked;
         return !isLocked;
+      },
+      onBlur: function (e) {
+        if (!this.isOnKYCTab()) {
+          const { user, fetchBankVerificationAttemptCount } = this.props;
+          const { dirty } = this.state;
+
+          if (
+            user.activation_form_milestone === 'L1' &&
+            user.isSyncBankVerificationEnabled &&
+            dirty?.bank_account_number &&
+            dirty?.bank_account_number !== user?.bank_account_number &&
+            dirty.bank_account_number === this.state.account_no
+          ) {
+            this.saveCurrentTab();
+            fetchBankVerificationAttemptCount();
+          }
+        }
+      },
+      _disabledWhen: (activation) => {
+        if (activation?.props?.user?.submitted) {
+          return false;
+        }
+        return (
+          activation?.props?.user?.isSyncBankVerificationEnabled &&
+          activation.props.bvsApiCount == 10
+        );
       },
     },
   ],

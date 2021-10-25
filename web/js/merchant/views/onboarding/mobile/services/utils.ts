@@ -386,9 +386,10 @@ export function hasSelectedBlacklistCategory(context, businessCategory) {
   });
 
   return (
-    isUnregisteredBusiness(context.business_type) &&
     blacklistCategory.length &&
-    blacklistCategory[0].non_registered_activation_flow === 'blacklist'
+    (isUnregisteredBusiness(context.business_type)
+      ? blacklistCategory[0].non_registered_activation_flow === 'blacklist'
+      : blacklistCategory[0].activation_flow === 'blacklist')
   );
 }
 
@@ -475,4 +476,17 @@ export const getPanError = (isTouched, formikError, isPanInvalid: boolean): stri
 
 export const getPanNameError = (isTouched, formikError, isPanInvalid: boolean): string => {
   return isTouched ? formikError : isPanInvalid ? PAN_ERROR_MESSAGE : '';
+};
+
+export const getBankFieldError = (
+  isTouched,
+  formikError,
+  isBankVerficationFailed: undefined | string,
+  banVerificationAttemptCount: undefined | number | string,
+): string => {
+  return isTouched
+    ? formikError
+    : isBankVerficationFailed && banVerificationAttemptCount == 9
+    ? "You have already changed your account 9 times, please ensure you enter the correct details this time as you won't be able to make any more changes after this attempt"
+    : '';
 };

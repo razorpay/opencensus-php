@@ -21,8 +21,8 @@ export const ModalAsideNav = (_) => {
     activeTab,
     activeTabContdition,
     disableTabCondition,
-    isPanVerifactionFailed,
-    isBusinessDetailsTab,
+    isPanVerificationFailed = false,
+    isBankVerificationFailed = false,
   } = _;
 
   return (
@@ -38,17 +38,25 @@ export const ModalAsideNav = (_) => {
             // Is defined and is true
             isActiveClass = activeTabContdition && isActiveClass;
           }
-          const canShowSuccessCheckbox = isPanVerifactionFailed ? i !== 2 : true;
+          const canShowSuccessCheckbox =
+            isPanVerificationFailed && i === 2
+              ? i !== 2
+              : isBankVerificationFailed && i === 3
+              ? i !== 3
+              : true;
 
           const isDisabled =
             typeof disableTabCondition === 'function' ? disableTabCondition(i) : false;
+
+          const hasError =
+            (isPanVerificationFailed && i === 2) || (isBankVerificationFailed && i === 3);
 
           return (
             <li
               class={classList(
                 isActiveClass,
                 isTabValid && 'text-success',
-                isPanVerifactionFailed && isBusinessDetailsTab && i === 2 && 'text-danger',
+                hasError && 'text-danger',
                 isDisabled && 'disabled',
               )}
               key={i}
@@ -58,9 +66,7 @@ export const ModalAsideNav = (_) => {
               {!isDisabled && isTabValid && canShowSuccessCheckbox && (
                 <i className="i-check text-success" />
               )}
-              {isPanVerifactionFailed && isBusinessDetailsTab && i === 2 && (
-                <i className="i i-error text-danger" />
-              )}
+              {hasError && <i className="i i-error text-danger" />}
               {typeof t === 'object' ? (
                 <span class="li--broad">
                   {t.title}

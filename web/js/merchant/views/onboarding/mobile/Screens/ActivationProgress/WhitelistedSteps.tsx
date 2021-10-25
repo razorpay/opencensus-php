@@ -157,7 +157,7 @@ const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any
             name: 'Business Details',
             id: 'business_details',
             onClick,
-            isComplete: isBusinessDetailsCompleted && (!shouldShowPoiError || !isCompanyPanInvalid),
+            isComplete: isBusinessDetailsCompleted && !shouldShowPoiError && !isCompanyPanInvalid,
             hasErrorText:
               shouldShowPoiError || isCompanyPanInvalid
                 ? 'Unable to verify your PAN. Please update'

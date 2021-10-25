@@ -37,6 +37,7 @@ import ShopEstablishmentNumber from './ShopEstablishmentNumber';
 import { useApp } from 'common/context/App';
 import GstinAutoPopulate from '../Fields/GstinAutoPopulate';
 import useGstin from '../hooks/useGstin';
+import useConfigDetails from '../hooks/useConfigDetails';
 
 const StyledSeparator = styled(View)`
   height: 1px;
@@ -59,9 +60,10 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
   const { data, documentUpload, documentDelete, postData } = useActivation();
   const {
     user,
-    experiments: { isGstinMandatory, isGstinAutoPopulate },
+    experiments: { isGstinMandatory, isGstinAutoPopulate, isSyncBankVerificationEnabled },
   } = useApp();
   const { gstinDetails } = useGstin();
+  const { data: configData } = useConfigDetails('onboarding');
   const documents = data.documents;
   const businessDetails = data.business_details;
 
@@ -693,7 +695,15 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
             <Space margin={[2, 0, 1.5, 0]}>
               <StyledSeparator />
             </Space>
-
+            {data.bank_details_verification_status &&
+              !['initiated', 'verified'].includes(data?.bank_details_verification_status) &&
+              isSyncBankVerificationEnabled && (
+                <Text color="negative.900" size="xsmall" align="center">
+                  {configData?.bank_account_verification_attempt_count == 10
+                    ? 'You have reached maximum limit to changed the bank account details'
+                    : 'Your bank details need to be reviewed again. Please check Bank Account tab and enter correct details.'}
+                </Text>
+              )}
             <Text size="xsmall" align="center">
               By submitting these details you agree to our{' '}
               <Link href="https://razorpay.com/terms/" target="_blank" size="xsmall">

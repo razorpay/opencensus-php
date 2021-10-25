@@ -5,7 +5,13 @@ import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isTabComplete } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';
-import { getDetailsForIFSC, getBankTabHeader } from '../services/utils';
+import useConfigDetails from '../hooks/useConfigDetails';
+import {
+  getDetailsForIFSC,
+  getBankTabHeader,
+  isUnregisteredBusiness,
+  getBankFieldError,
+} from '../services/utils';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
 import usePartnerActivation from '../hooks/usePartnerActivation';
@@ -13,10 +19,16 @@ import usePartnerActivation from '../hooks/usePartnerActivation';
 interface BankDetailsProps {
   isFormLocked?: boolean;
 }
+const UNREG_BANK_ERROR =
+  'Kindly make sure you enter your Personal Bank Account details. Beneficiary Name of this bank account should match your Personal Pan Name';
+const REG_BANK_ERROR =
+  'Make sure you enter your Company Bank Account details. Beneficiary Name of this bank account should match your Company Pan Name';
 
 const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
   const { data, postData } = useActivation();
-  const { user } = useApp();
+  const { user, experiments } = useApp();
+  const { data: configData, refetch } = useConfigDetails('onboarding');
+
   const bankAndCompanyDetails = data.bank_and_company_details;
   const setBankAndCompanyDetailsCompleted = useActivationFormState(
     (state) => state.setBankAndCompanyDetailsCompleted,
@@ -67,11 +79,23 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
     }
   };
 
+  const canDisabledField =
+    experiments.isSyncBankVerificationEnabled &&
+    configData?.bank_account_verification_attempt_count == 10;
+
   useEffect(() => {
     fetchDefaultIfscInfo();
   }, []);
 
+  useEffect(() => {
+    refetch();
+  }, [bankAndCompanyDetails]);
+
   const { title, subtitle } = getBankTabHeader(Number(data.business_type));
+  const hasBankVerificationFailed =
+    data?.bank_details_verification_status &&
+    !['initiated', 'verified'].includes(data?.bank_details_verification_status) &&
+    experiments.isSyncBankVerificationEnabled;
 
   return (
     <Formik
@@ -80,6 +104,8 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
         bank_account_number: bankAndCompanyDetails.bank_account_number.value,
         re_enter_bank_account_number: bankAndCompanyDetails.bank_account_number.value,
         bank_branch_ifsc: bankAndCompanyDetails.bank_branch_ifsc.value,
+        bank_verificatio_attemp_count: configData?.bank_account_verification_attempt_count,
+        hasBankVerificationFailed,
       }}
       validationSchema={() => {
         return Yup.object().shape({
@@ -105,6 +131,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
         });
       }}
       onSubmit={() => {}}
+      enableReinitialize
     >
       {(formikProps) => (
         <form
@@ -113,16 +140,32 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
             handleBlur(e, formikProps);
           }}
         >
-          <FormSection title={title} subtitle={subtitle} disabled={isFormLocked}>
+          <FormSection
+            title={title}
+            subtitle={
+              formikProps.values.hasBankVerificationFailed
+                ? canDisabledField
+                  ? 'You have reached maximum limit to changed the bank account details'
+                  : isUnregisteredBusiness(data?.business_type)
+                  ? UNREG_BANK_ERROR
+                  : REG_BANK_ERROR
+                : subtitle
+            }
+            disabled={isFormLocked}
+            hasError={formikProps.values.hasBankVerificationFailed}
+          >
             <Field>
               <TextInput
                 width="auto"
                 name="bank_account_name"
                 label="Beneficiary Name"
                 value={formikProps.values.bank_account_name}
-                errorText={
-                  formikProps.touched.bank_account_name && formikProps.errors.bank_account_name
-                }
+                errorText={getBankFieldError(
+                  formikProps.touched.bank_account_name,
+                  formikProps.errors.bank_account_name,
+                  formikProps.values.hasBankVerificationFailed,
+                  formikProps.values.bank_verificatio_attemp_count,
+                )}
                 onBlur={() => {
                   analyticsTrack({
                     objectName: 'SignUp',
@@ -132,7 +175,9 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                     user,
                   });
                 }}
-                disabled={isFormLocked || getFieldStatus('bank_account_name').isDisabled}
+                disabled={
+                  isFormLocked || canDisabledField || getFieldStatus('bank_account_name').isDisabled
+                }
                 helpText={getFieldStatus('bank_account_name').description}
               />
             </Field>
@@ -142,9 +187,12 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                 name="bank_account_number"
                 label="Account Number"
                 value={formikProps.values.bank_account_number}
-                errorText={
-                  formikProps.touched.bank_account_number && formikProps.errors.bank_account_number
-                }
+                errorText={getBankFieldError(
+                  formikProps.touched.bank_account_number,
+                  formikProps.errors.bank_account_number,
+                  formikProps.values.hasBankVerificationFailed,
+                  formikProps.values.bank_verificatio_attemp_count,
+                )}
                 onChange={(value) => {
                   setBankAccountNumber(value);
                 }}
@@ -157,7 +205,11 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                     user,
                   });
                 }}
-                disabled={isFormLocked || getFieldStatus('bank_account_number').isDisabled}
+                disabled={
+                  isFormLocked ||
+                  canDisabledField ||
+                  getFieldStatus('bank_account_number').isDisabled
+                }
                 helpText={getFieldStatus('bank_account_number').description}
               />
             </Field>
@@ -175,7 +227,11 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                   onChange={(value) => {
                     setReAccountNumber(value);
                   }}
-                  disabled={isFormLocked || getFieldStatus('bank_account_number').isDisabled}
+                  disabled={
+                    isFormLocked ||
+                    canDisabledField ||
+                    getFieldStatus('bank_account_number').isDisabled
+                  }
                 />
               </Field>
             ) : null}
@@ -193,9 +249,12 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                   }
                 }}
                 value={formikProps.values.bank_branch_ifsc}
-                errorText={
-                  formikProps.touched.bank_branch_ifsc && formikProps.errors.bank_branch_ifsc
-                }
+                errorText={getBankFieldError(
+                  formikProps.touched.bank_branch_ifsc,
+                  formikProps.errors.bank_branch_ifsc,
+                  formikProps.values.hasBankVerificationFailed,
+                  formikProps.values.bank_verificatio_attemp_count,
+                )}
                 onBlur={() => {
                   analyticsTrack({
                     objectName: 'SignUp',
@@ -205,7 +264,9 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                     user,
                   });
                 }}
-                disabled={isFormLocked || getFieldStatus('bank_branch_ifsc').isDisabled}
+                disabled={
+                  isFormLocked || canDisabledField || getFieldStatus('bank_branch_ifsc').isDisabled
+                }
                 helpText={getFieldStatus('bank_branch_ifsc').description || branchIfscInfo}
               />
             </Field>

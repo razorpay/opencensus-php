@@ -141,7 +141,7 @@ const SAVE_BUTTON_DISABLED_STEPS = [BUSINESS_DETAILS_STEP];
     submitL1FormSuccess,
     showKYCStatusModal,
     setCurrentTab,
-    trackEventsAction
+    trackEventsAction,
   },
 )
 @RTracking(() => window.rzpQ.component('ActivationWizard'))
@@ -413,7 +413,7 @@ export default class ActivationWizard extends React.Component {
         actionName: 'Loaded',
         screen: 'KYC Document',
         properties: {
-          tab: mainFormTabs[this.state.activeTab]
+          tab: mainFormTabs[this.state.activeTab],
         },
       });
     }
@@ -451,7 +451,7 @@ export default class ActivationWizard extends React.Component {
       actionName: 'Loaded',
       screen: 'KYC Document',
       properties: {
-        tab: mainFormTabs[this.state.activeTab]
+        tab: mainFormTabs[this.state.activeTab],
       },
     });
   }
@@ -636,7 +636,7 @@ export default class ActivationWizard extends React.Component {
       actionName: 'Clicked',
       screen: 'KYC Document',
       properties: {
-        tab: mainFormTabs[tabId]
+        tab: mainFormTabs[tabId],
       },
     });
 
@@ -1874,10 +1874,33 @@ export default class ActivationWizard extends React.Component {
     const { title, subtitle } = getBankTabHeader(
       Number(this.state.dirty.business_type || this.props.data.business_type),
     );
+    const isFieldDisabled =
+      this.props.user.isSyncBankVerificationEnabled && this.props.bvsApiCount == 10;
+
+    let error = '';
+    if (
+      this.props.data.bank_details_verification_status &&
+      !['initiated', 'verified'].includes(this.props.data.bank_details_verification_status) &&
+      this.props.user.isSyncBankVerificationEnabled
+    ) {
+      if (isFieldDisabled) {
+        error = 'You have reached maximum limit to changed the bank account details';
+      } else if (this.isUnregBiz) {
+        error =
+          'Kindly make sure you enter your Personal Bank Account details. Beneficiary Name of this bank account should match your Personal Pan Name';
+      } else {
+        error =
+          'Make sure you enter your Company Bank Account details. Beneficiary Name of this bank account should match your Company Pan Name';
+      }
+    }
     return (
       <>
         {title}
-        <div className="onboarding-tab-subtitle">{subtitle}</div>
+        {error ? (
+          <div className="onboarding-tab-subtitle-error">{error}</div>
+        ) : (
+          <div className="onboarding-tab-subtitle">{subtitle}</div>
+        )}
       </>
     );
   }
@@ -1928,7 +1951,8 @@ export default class ActivationWizard extends React.Component {
       (isL1Completed(this) &&
         !isFormSubmitted &&
         isDedupe(this.props.user) !== 'blocked' &&
-        userCanSubmitForm)
+        userCanSubmitForm &&
+        this.isAllTabsValid())
     ) {
       moreTabs.push(
         <li
@@ -1996,13 +2020,22 @@ export default class ActivationWizard extends React.Component {
             tabClickHandler={this.changeTab}
             activeTab={activeTab}
             activeTabContdition={!this.state.showSubmitLayer}
-            isPanVerifactionFailed={
+            isPanVerificationFailed={
               isPanVerificationFailed(
                 this.props.user.poi_verification_status,
                 this.props.user.company_pan_verification_status,
-              ) && this.props.user.isSyncExperimentEnabled
+              ) &&
+              this.props.user.isSyncExperimentEnabled &&
+              FORM_TABS[2] === 'Business Details'
             }
-            isBusinessDetailsTab={FORM_TABS[2] === 'Business Details'}
+            isBankVerificationFailed={
+              FORM_TABS[3] === 'Bank Account' &&
+              this.props.data.bank_details_verification_status &&
+              !['initiated', 'verified'].includes(
+                this.props.data.bank_details_verification_status,
+              ) &&
+              this.props.user.isSyncBankVerificationEnabled
+            }
           />
 
           {/* Activation form Content */}
@@ -2185,7 +2218,8 @@ export default class ActivationWizard extends React.Component {
           {!isFormSubmitted &&
             this.state.showSubmitLayer &&
             (this.isLinkedAccountForm || isDedupe(this.props.user) !== 'blocked') &&
-            userCanSubmitForm && (
+            userCanSubmitForm &&
+            this.isAllTabsValid() && (
               <main className={classList('overlay-container', isFormLocked && 'main--full')}>
                 <SubmitFormLayer
                   closeActivationForm={() => {
@@ -2194,6 +2228,19 @@ export default class ActivationWizard extends React.Component {
                   isFormLocked={isFormLocked}
                   isLinkedAccount={this.isLinkedAccountForm}
                   submitActivationForm={this.submitForm}
+                  isBankVerificationFailed={
+                    !this.isLinkedAccountForm &&
+                    this.props.data.bank_details_verification_status &&
+                    !['initiated', 'verified'].includes(
+                      this.props.data.bank_details_verification_status,
+                    ) &&
+                    this.props.user.isSyncBankVerificationEnabled
+                  }
+                  fetchMerchantData={this.props.fetchMerchantDetails}
+                  isSyncBankVerificationEnabled={
+                    !this.isLinkedAccountForm && this.props.user.isSyncBankVerificationEnabled
+                  }
+                  bvsApiCount={this.props.bvsApiCount}
                 />
               </main>
             )}
@@ -2470,18 +2517,19 @@ export function ActivationField(field) {
     defaultValue = this.props.data[rest.name];
   }
 
-  const partnerActivationStatus = this.props?.partnerActivationData?.partner_activation?.activation_status;
+  const partnerActivationStatus = this.props?.partnerActivationData?.partner_activation
+    ?.activation_status;
   if (
     !this.isOnKYCTab() && // don't check for NC tab, as we need to keep fields unlocked for NC tab
-    this.props?.user?.isIndependentPartnerKYCEnabled && 
-    rest.name && 
+    this.props?.user?.isIndependentPartnerKYCEnabled &&
+    rest.name &&
     (this.props.data?.lock_common_fields || []).includes(rest.name)
   ) {
     // disable common fields which are either under review or activated in Partner KYC
     rest.disabled = true;
 
-    if(['activated', 'under_review'].includes(partnerActivationStatus)) {
-      switch(partnerActivationStatus) {
+    if (['activated', 'under_review'].includes(partnerActivationStatus)) {
+      switch (partnerActivationStatus) {
         case 'activated':
           rest.description = 'Verified under Partner KYC';
           break;
@@ -2491,7 +2539,6 @@ export function ActivationField(field) {
       }
     }
   }
-  
 
   const _Component = rest.customField ? CustomField : Component;
 
