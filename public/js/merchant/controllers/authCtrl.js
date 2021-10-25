@@ -1021,7 +1021,8 @@ app
 
             var hostname = parser.hostname || location.hostname;
 
-            if (/razorpay\.(com|dev|in)$/.test(hostname)) {
+            // eslint-disable-next-line
+            if (/razorpay\.(com|dev|in)$/.test(hostname) && parser.protocol !== 'javascript:') {
               location.href = parser.href;
               if (parser.origin === location.origin && parser.hash) {
                 parser.search = '';
@@ -2499,7 +2500,8 @@ app
 
                 var hostname = parser.hostname || location.hostname;
 
-                if (/razorpay\.(com|dev|in)$/.test(hostname)) {
+                // eslint-disable-next-line
+                if (/razorpay\.(com|dev|in)$/.test(hostname) && parser.protocol !== 'javascript:') {
                   location.href = parser.href;
                   if (parser.origin === location.origin && parser.hash) {
                     parser.search = '';
