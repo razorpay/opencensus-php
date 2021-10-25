@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import Time from 'common/ui/Time';
@@ -33,11 +34,7 @@ function renderBatchDetails({ batch }) {
           {batch.status === 'scheduled' && (
             <p>
               <em>
-                Scheduled for{' '}
-                <Time
-                  value={parseInt(batch.schedule_time / 1000)}
-                  format="lll"
-                />
+                Scheduled for <Time value={parseInt(batch.schedule_time / 1000, 10)} format="lll" />
               </em>
             </p>
           )}
@@ -79,6 +76,6 @@ function getDownloadReportText(props) {
   const { type } = props.batch || {};
 
   return `Download the report containing all ${
-    type === 'auth_link' ? 'Auth' : 'Recurring Debit'
+    type === 'auth_link' ? 'Registration' : 'Recurring Debit'
   } Links data.`;
 }
