@@ -19,6 +19,7 @@ use RZP\Models\Merchant\Preferences;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Entity as ME;
 use RZP\Models\Merchant\Detail\DeDupe;
+use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Merchant\Account\Entity as Account;
 use RZP\Models\Batch\Helpers\SubMerchant as Helper;
 use RZP\Models\Partner\Constants as PartnerConstants;
@@ -132,6 +133,8 @@ class SubMerchantBatchUtility extends Base\Core
             $this->unsetExtraOutputKeys($entry);
             return $subMerchant;
         });
+
+        $this->invalidateAffectedOwnersCache($subMerchant->getId());
 
         $subMerchantDetails = (new MerchantDetailCore)->getMerchantDetails($subMerchant);
 
@@ -516,5 +519,11 @@ class SubMerchantBatchUtility extends Base\Core
         }
 
         return false;
+    }
+
+    private function invalidateAffectedOwnersCache(string $merchantId)
+    {
+        (new Stork('live'))->invalidateAffectedOwnersCache($merchantId);
+        (new Stork('test'))->invalidateAffectedOwnersCache($merchantId);
     }
 }
