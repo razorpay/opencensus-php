@@ -91,6 +91,10 @@ class Scrooge
     const PASSPORT_AUD = 'scrooge';
     const PAYMENT_PAGE = 'Payment-Page';
 
+    const RAW_PASSPORT          = 'raw_passport';
+    const GET_PASSPORT_FROM_JOB = 'get_passport_from_job';
+    const GET_PASSPORT_JWT      = 'get_passport_jwt';
+
     /**
      * Scrooge constructor.
      *
@@ -194,6 +198,9 @@ class Scrooge
      */
     public function bulkUpdateRefundStatus(array $input,  bool $throwExceptionOnFailure = false): array
     {
+        // send passport token to Scrooge
+        $this->enablePassport();
+
         return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['bulk_status_update'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
@@ -603,8 +610,17 @@ class Scrooge
      */
     protected function enablePassport()
     {
+        $this->trace->info(TraceCode::SCROOGE_PASSPORT_TRACE, [
+            self::RAW_PASSPORT          => $this->auth->getPassport(),
+            self::GET_PASSPORT_FROM_JOB => $this->auth->getPassportFromJob(),
+            self::GET_PASSPORT_JWT      => $this->auth->getPassportJwt(self::PASSPORT_AUD),
+
+        ]);
+
+        $passportHeader = (empty($this->auth->getPassportFromJob()) === false) ? $this->auth->getPassportFromJob() : $this->auth->getPassportJwt(self::PASSPORT_AUD);
+
         $customHeader = [
-            self::X_PASSPORT_JWT_V1 => $this->auth->getPassportJwt(self::PASSPORT_AUD),
+            self::X_PASSPORT_JWT_V1 => $passportHeader,
         ];
 
         // set custom headers

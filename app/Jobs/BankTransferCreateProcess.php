@@ -17,6 +17,7 @@ class BankTransferCreateProcess extends Job
     public function __construct(string $mode = null, $bankTransferRequestId)
     {
         parent::__construct($mode);
+        parent::setPassportTokenForJobs();
 
         $this->bankTransferRequestId = $bankTransferRequestId;
     }

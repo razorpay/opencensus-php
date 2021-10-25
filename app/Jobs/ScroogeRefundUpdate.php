@@ -19,6 +19,7 @@ class ScroogeRefundUpdate extends Job
     public function __construct(array $data)
     {
         parent::__construct($data['mode']);
+        parent::setPassportTokenForJobs();
 
         $this->data = $data;
     }

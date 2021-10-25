@@ -5496,6 +5496,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUB_BALANCE_MAP_PAYOUT_BALANCE_ID    = "SUB_BALANCE_MAP_PAYOUT_BALANCE_ID";
     const SUB_BALANCE_FETCH_FROM_CONFIG_FAILED = "SUB_BALANCE_FETCH_FROM_CONFIG_FAILED";
 
+    const SCROOGE_PASSPORT_TRACE = 'SCROOGE_PASSPORT_TRACE';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
