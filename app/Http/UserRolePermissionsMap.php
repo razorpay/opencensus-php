@@ -324,6 +324,7 @@ class UserRolePermissionsMap
                  Permission::UPDATE_ACCOUNTING_INTEGRATION,
 
                  Permission::CREATE_INVITATION,
+                 Permission::VIEW_MERCHANT_PREFERENCE,
              ],
 
              BankingRole::OPERATIONS => [
@@ -376,6 +377,7 @@ class UserRolePermissionsMap
                  Permission::WAITLIST_ACCOUNTING_INTEGRATION,
                  Permission::UPDATE_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_PAYOUT_WORKFLOW_SUMMARY,
+                 Permission::VIEW_MERCHANT_PREFERENCE,
              ],
 
              BankingRole::CHARTERED_ACCOUNTANT => [
@@ -432,6 +434,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_ACCOUNTING_INTEGRATION,
                  Permission::WAITLIST_ACCOUNTING_INTEGRATION,
                  Permission::CREATE_USER_OTP,
+                 Permission::VIEW_MERCHANT_PREFERENCE,
              ],
         ];
 
