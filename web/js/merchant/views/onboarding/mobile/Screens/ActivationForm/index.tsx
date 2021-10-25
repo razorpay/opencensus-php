@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
+import startCase from 'lodash/startCase';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Heading from '@razorpay/blade-old/src/atoms/Heading';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
@@ -127,10 +128,10 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       actionName: 'Loaded',
       screen: 'home page',
       properties: {
-        tab: activeTabId,
+        tab: startCase(activeTabId),
       },
     });
-  }, [activeTabId, trackEvents, user]);
+  }, [activeTabId]);
 
   useEffect(() => {
     if (data) {
@@ -301,7 +302,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       actionName: 'clicked',
       screen: 'home page',
       properties: {
-        tab: activeTabId,
+        tab: startCase(activeTabId),
       },
     });
 
@@ -639,7 +640,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
                   actionName: 'Clicked',
                   screen: 'home page',
                   properties: {
-                    tab: tabId,
+                    tab: startCase(tabId),
                   },
                 });
               }

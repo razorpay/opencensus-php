@@ -14,7 +14,7 @@ function useTrackEvents(): (trackingData) => void {
       analyticsTrack({
         ...trackingData,
         properties: {
-          ...trackingData.propperties,
+          ...trackingData.properties,
           business_type: data?.business_type,
           activation_status: data?.activation_status,
           user_business_category: data?.business_category,

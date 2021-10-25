@@ -36,6 +36,9 @@ const getCommonProperties = ({ screen, properties, user }) => {
     user_role: user.role,
     business_type: user.business_type,
     activation_status: user.activated,
+    current_activation_status: user.activation_status,
+    previous_activation_status:
+      user.activationStatusChangeLogs?.[user.activationStatusChangeLogs.length - 1],
     is_reg_auto_kyc_enabled: user.isRegAutoKYCEnabled,
     is_instant_activation_enabled: user.isInstantActivationEnabled,
     is_aadhar_ekyc_mandatory: user.isAadharEkycMandatory,

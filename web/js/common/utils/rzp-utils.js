@@ -65,6 +65,9 @@ export function getCommonAnalyticsProperties(user, config = {}) {
     userProperties = {
       business_type: user.business_type,
       activation_status: user.activated,
+      current_activation_status: user.activation_status,
+      previous_activation_status:
+        user.activationStatusChangeLogs?.[user.activationStatusChangeLogs.length - 1],
       user_business_category: user.business_category,
       user_business_sub_category: user.business_subcategory,
     };
@@ -96,6 +99,9 @@ export const getCommonSegmentProperties = (user = window.rzp_user, config = {}) 
     userProperties = {
       business_type: user.business_type,
       activation_status: user.activated,
+      current_activation_status: user.activation_status,
+      previous_activation_status:
+        user.activationStatusChangeLogs?.[user.activationStatusChangeLogs.length - 1],
       user_business_category: user.business_category,
       user_business_sub_category: user.business_subcategory,
     };
