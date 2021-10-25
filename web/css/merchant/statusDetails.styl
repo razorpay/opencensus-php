@@ -1,11 +1,7 @@
+$base-color = #162f56 
+$base-font-weight = 600
+
 .status-details 
-    &.status-details--active 
-        .status-details-slide-toggle 
-            i
-                color: #2B83EA
-                &:after 
-                    background: rgba(11, 112, 231, 0.05)
-            
     .status-details-slide-toggle 
         display: inline-block
         color: inherit
@@ -13,324 +9,267 @@
         padding: 15px 15px 12px
     
 .content-wrapper.status-details 
+    .refresh-action
+        margin-left: 5px
+    .icon
+        cursor: pointer
+    .border
+        border: solid 1px #EDF0F5
     .panel.SliderPanel
         display: flex
         flex-direction: column
         height: 100%
         border: none
         margin-bottom: 0
-
         .panel-heading
-            border-bottom: none
-            line-height: 64px
-            background-color: #fff
-            vertical-align: middle
-            padding-top: 0
-            padding-bottom: 0
-
-            .heading-content
-                border-bottom: 1px solid #E6EBF3
-
-                .title
-                    font-size: 16px
-
-                .status-back 
-                    cursor: pointer  
-
-                .status-heading 
-                    font-size: 18px
-                    line-height: 20px
-                    color: #404F6B 
-                    margin-left: 10px
-                    font-weight: 700 
-
-                .status-heading-time 
-                    font-size: 14px
-                    margin-left: 10px
-                    line-height: 18px
-                    color: #647596  
-                .status-refresh-icon
-                    cursor: pointer
-                    margin-left: 5px 
-                .status-refresh-icon-disabled 
-                    margin-left: 5px     
-
-    .SliderPanel__Body
-        flex: auto
-        overflow-y: scroll
+            position: fixed
+            width: 100%
+            z-index: 1  
+            .title 
+                margin-left: 10px
+                font-weight: $base-font-weight 
+            .description 
+                font-size: 14px
+                margin-left: 10px
+                color: #647596
         .panel-body
-            padding: 0
-            margin-bottom: 20px
-            .status-method-summary     
-                margin: 20px 24px 24px 
-                background: #FFFFFF
-                border: 1px solid #EDF0F5
-                box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.05)
-                border-radius: 3px
-                position: relative
-                padding: 0px 12px 12px 
-                    
-                .status-method-instrument 
-                    font-size: 15px
-                    color: rgba(22, 47, 86, 0.54)    
-                    margin: 16px 0px 16px 4px
-
-                    .status-method-instrument-asterix 
-                        color: red
-                        font-size: 14px
-
-                .status-method-instrument-info 
-                    background: #FAFCFF
-                    border: 1px solid #F3F8FE
-                    box-sizing: border-box
-                    border-radius: 4px
-                    padding: 12px
-
-                    .downtime-container 
-                        margin-bottom: 10px
-
-                        .downtime-heading 
-                            font-weight: 700
-                            font-size: 15px
-                            line-height: 18px
-                            color: rgba(22, 47, 86, 0.87)
-                            margin-left: 10px 
-                        
-                        .downtime-details 
-                            margin-left: 26px
-                            margin-top: 5px
-                            span 
-                                font-size: 14px
-
-                    .status-item 
-                        margin-left: 10px 
+            margin-top: 15%
+    .status-method       
+        .summary     
+            margin: 10px
+            background: #FFFFFF
+            border: 1px solid #EDF0F5
+            box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.05)
+            border-radius: 3px
+            position: relative
+            padding: 0 12px
+            .title 
+                font-size: 14px
+                color: $base-color  
+                opacity: 54%
+                margin: 16px 0 16px 4px
+                &:after
+                    content: "*"
+                    color: red
+                    margin-left: 2px
+            .description 
+                background: #FAFCFF
+                border-radius: 4px
+                padding: 12px
+                .downtime-container 
+                    margin-bottom: 10px
+                    .heading 
+                        font-weight: $base-font-weight
                         font-size: 15px
-                        color: rgba(22, 47, 86, 0.87)
-
-                    .status-list 
-                        margin-left: 28px 
+                        line-height: 18px
+                        color:$base-color
+                        margin-left: 10px 
+                    .details 
+                        margin-left: 24px
                         margin-top: 5px
-
-                        .status-list-text 
-                            font-size: 14px 
-                            color: rgba(22, 47, 86, 0.87)                
-
-            .status-details-warning
-                margin: 24px
-                
-                .status-warning-asterix
-                    color: #D12D2D
-            
-            .upcoming-title 
-                height: 52px
-                background: #EDF0F5
+                        span 
+                            font-size: 14px
+                .status 
+                    margin-left: 10px 
+                    font-size: 15px
+                    color:$base-color
+                    font-weight: $base-font-weight
+                .status-list 
+                    margin-left: 28px 
+                    margin-top: 5px
+                p 
+                    color:$base-color              
+        .message
+            margin: 20px 5px
+            &:before
+                content: '*';
+                color: #D12D2D
+                margin-right: 2px
+                font-size: 18px
+                vertical-align: middle
+        .section-title 
+            background: #EDF0F5
+            font-size: 15px
+            font-weight: $base-font-weight
+            display: flex
+            align-items: center
+            color:$base-color
+            padding: 20px
+            .maintenance-icon 
+                margin-right: 10px
+        .scheduled-downtime 
+            padding: 16px 24px
+            .scheduled-downtime-heading 
+                font-weight: $base-font-weight
                 font-size: 15px
                 line-height: 20px
-                font-weight: 700
+                color:$base-color  
+                text-transform: capitalize
+            .scheduled-downtime-details 
+                font-size: 14px
+                color:$base-color
+                margin-top: 6px
+                .scheduled-downtime-icon 
+                    margin: 0 10px   
+                .scheduled-downtime-severity 
+                    text-transform: capitalize
+                    font-size: 14px 
+        .no-maintenance 
+            display: flex
+            align-items: center
+            justify-content: center
+            height: 50px
+            color:$base-color
+            font-size: 15px
+            padding: 20px
+        .downtime 
+            padding: 16px 20px 
+            .capitalize
+                text-transform: capitalize
+            .heading 
+                font-weight: $base-font-weight
+                font-size: 15px
+                line-height: 20px
+                color:$base-color 
+            .details 
+                display: flex
+                align-items: center
+                font-size: 14px
+                color:$base-color
+                margin-top: 6px
+                .icon 
+                    margin-right: 10px    
+                .severity 
+                    text-transform: capitalize
+                .divider
+                    margin: 10px
+                    color:$base-color
+                    opacity: 10%            
+        .status-pager
+            display: flex
+            justify-content: center
+            small
+                margin: 10px
+                line-height: 30px             
+    .main-info 
+        display: flex
+        flex-direction: column
+        align-items: center
+        margin: 50px 
+        .main-status-text 
+            font-size: 20px
+            line-height: 30px
+            text-align: center
+            color: #404F6B 
+            font-style: normal
+            font-weight: $base-font-weight
+            margin-top: 16px
+        .date-and-time 
+            font-size: 14px
+            color: #647596
+            text-align: center
+            margin: 6px  
+    .details-section 
+        margin: 16px
+        background: #FFFFFF
+        border: 1px solid #EDF0F5
+        box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.05)
+        border-radius: 3px
+        position: relative
+        .payment-method    
+            display: flex
+            align-items: center
+            padding: 20px   
+            .payment-method-title 
+                font-weight: $base-font-weight
+                font-size: 16px
+                line-height: 24px
+                color:$base-color
+                margin-left: 12px
+
+            .payment-method-title-not-operational 
+                font-weight: $base-font-weight
+                font-size: 18px
+                line-height: 24px
+                color:$base-color  
+        .status-view-button 
+            margin-left: 10px
+            position: absolute
+            right: 45px
+            font-size: 12px
+            color: #2B83EA
+
+        .status-view-arrow 
+            margin-left: 5px  
+            position: absolute
+            right: 30px  
+            cursor: pointer
+
+        .instrument-details 
+            background: #FAFCFF
+            border: 1px solid #F3F8FE
+            border-radius: 4px
+            margin: 0 10px 10px 
+
+            .instrument-title 
+                background: #EDF0F5
+                border-radius: 4px 4px 0
+                color:$base-color  
+                font-size: 15px
                 display: flex
                 align-items: center
                 justify-content: flex-start
-                text-align: center
-                color: rgba(22, 47, 86, 0.87)
-                padding-left: 25px
+                padding: 12px
 
-                .maintenance-icon 
-                    margin-right: 10px
-
-            .scheduled-downtime 
-                padding: 16px 24px
-                .scheduled-downtime-heading 
-                    font-weight: 700
-                    font-size: 15px
-                    line-height: 20px
-                    color: rgba(22, 47, 86, 0.87)  
-                    text-transform: capitalize
-                .scheduled-downtime-details 
-                    font-size: 14px
-                    color: rgba(22, 47, 86, 0.54)
-                    margin-top: 6px
-                    .scheduled-downtime-icon 
-                        margin: 0px 10px   
-                    .scheduled-downtime-severity 
-                        text-transform: capitalize
-                        font-size: 14px 
-            .no-maintenance 
-                display: flex
-                align-items: center
-                justify-content: center
-                height: 50px
-                color: rgba(22,47,86,0.87)
-                font-size: 15px
-                padding: 20px
-
-            .historical-downtime 
-                padding: 16px 24px 
+            .downtime-container 
+                padding: 12px
                 .heading 
-                    font-weight: 700
-                    font-size: 15px
-                    line-height: 20px
-                    color: rgba(22, 47, 86, 0.87)  
-                    text-transform: capitalize
+                    font-weight: $base-font-weight
+                    font-size: 14px
+                    line-height: 18px
+                    color:$base-color
+                    margin-left: 10px 
                 .details 
-                    display: flex
-                    align-items: center
+                    margin-left: 24px
                     font-size: 14px
-                    color: rgba(22, 47, 86, 0.54)
-                    margin-top: 6px
-                    .icon 
-                        margin-right: 10px    
-                    .severity 
-                        text-transform: capitalize
-                    .divider
-                        margin: 10px
-                        color: rgba(22, 47, 86, 0.1)
-                            
-            .status-pager
-                display: flex
-                justify-content: center
-                small
-                    margin: 10px
-                    line-height: 30px
-                            
-            .main-info 
-                display: flex
-                flex-direction: column
-                align-items: center
-                margin: 50px 
-                .main-status-text 
-                    font-size: 20px
-                    line-height: 30px
-                    text-align: center
-                    color: #404F6B 
-                    font-style: normal
-                    font-weight: 700
-                    margin-top: 16px
-                .date-and-time 
-                    font-size: 14px
-                    color: #647596
-                    text-align: center
-                    margin: 6px
-                    .status-refresh-icon 
-                        cursor: pointer
-                        margin-left: 5px 
-                    .status-refresh-icon-disabled 
-                        margin-left: 5px 
-            .details-section 
-                width: 430px
-                margin: 16px
-                background: #FFFFFF
-                border: 1px solid #EDF0F5
-                box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.05)
-                border-radius: 3px
-                position: relative
-                .payment-method 
-                    height: 65px   
-                    display: flex
-                    align-items: center
-                    padding: 0px 30px 0px 20px   
-                    .payment-method-title 
-                        font-weight: bold
-                        font-size: 16px
-                        line-height: 24px
-                        color: rgba(22, 47, 86, 0.87) 
-                        margin-left: 12px
 
-                    .payment-method-title-not-operational 
-                        font-weight: 700
-                        font-size: 18px
-                        line-height: 24px
-                        color: rgba(22, 47, 86, 0.87)  
+    .status-disclaimer 
+        margin: 36px 30px
+        font-size: 12px
+        text-align: center
+        color:$base-color
+    
+    .failed-status-container 
+        margin: 150px 80px 30px
 
-                .payment-method.with-bottom-border 
-                    height: 65px   
-                    display: flex
-                    align-items: center
-                    padding: 0px 30px 0px 20px  
-                    border-bottom: solid 1px #EDF0F5
+        .failed-status-icon 
+            margin: 0 125px 20px
+        
+        .failed-status-title 
+            font-weight: $base-font-weight
+            font-size: 20px
+            line-height: 30px
+            text-align: center
+            color: #515978
+        
+        .failed-status-text 
+            font-size: 16px
+            line-height: 20px
+            text-align: center
+            color: #515978
+            margin: 24px 0 16px
+        
+        .refresh
+            text-align: center
+            margin: 0 100px
 
-                .status-view-button 
-                    margin-left: 10px
-                    position: absolute
-                    right: 45px
-                    font-size: 12px
-                    color: #2B83EA
+            .refresh-icon
+                cursor: pointer
 
-                .status-view-arrow 
-                    margin-left: 5px  
-                    position: absolute
-                    right: 30px  
-                    cursor: pointer
-
-                .instrument-details 
-                    background: #FAFCFF
-                    border: 1px solid #F3F8FE
-                    box-sizing: border-box
-                    border-radius: 4px
-                    margin: 0px 10px 10px 
-
-                    .instrument-title 
-                        height: 42px
-                        background: #EDF0F5
-                        border-radius: 4px 4px 0px 0px  
-                        color: rgba(22, 47, 86, 0.54)  
-                        font-size: 15px
-                        display: flex
-                        align-items: center
-                        justify-content: flex-start
-                        padding-left: 12px
-
-                    .downtime-container 
-                        padding: 12px
-
-                        .downtime-heading 
-                            font-weight: 700
-                            font-size: 14px
-                            line-height: 18px
-                            color: rgba(22, 47, 86, 0.87)
-                            margin-left: 10px 
-
-                        .downtime-details 
-                            margin-left: 26px
-                            font-size: 14px
-
-            .status-disclaimer 
-                margin: 36px 30px
-                font-size: 12px
+            .refresh-text
+                font-weight: $base-font-weight
+                font-size: 16px
+                line-height: 24px
                 text-align: center
-                color: rgba(22, 47, 86, 0.38)
-            
-            .failed-status-container 
-                margin: 150px 80px 30px 80px
-
-                .failed-status-icon 
-                    margin: 0px 125px 20px 125px
-                
-                .failed-status-title 
-                    font-weight: 700
-                    font-size: 20px
-                    line-height: 30px
-                    text-align: center
-                    color: #515978
-                
-                .failed-status-text 
-                    font-weight: normal
-                    font-size: 16px
-                    line-height: 20px
-                    text-align: center
-                    color: #515978
-                    margin: 24px 0px 16px 0px
-                
-                .refresh
-                    text-align: center
-                    margin: 0px 100px
-
-                    .refresh-icon
-                        cursor: pointer
-
-                    .refresh-text
-                        font-weight: 700
-                        font-size: 16px
-                        line-height: 24px
-                        text-align: center
-                        color: #528FF0
-                        margin-left: 10px
+                color: #528FF0
+                margin-left: 10px

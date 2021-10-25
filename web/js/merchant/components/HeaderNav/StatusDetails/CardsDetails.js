@@ -1,46 +1,40 @@
+import React from 'react';
 import MethodNotOperational from './MethodNotOperational';
 import MethodOperational from './MethodOperational';
 import OngoingDowntime from './OngoingDowntime';
 
 const CardsDetails = (props) => {
-  return Object.keys(props.cardDowntimes).length === 0 ? (
-    <MethodOperational methodName="Cards" switchToInfoView={props.switchToInfoView} />
+  const { cardDowntimes, switchToInfoView } = props;
+  return Object.keys(cardDowntimes).length === 0 ? (
+    <MethodOperational methodName="Cards" switchToInfoView={switchToInfoView} />
   ) : (
     <>
-      <MethodNotOperational methodName="Cards" switchToInfoView={props.switchToInfoView} />
-      {/* Card Networks */}
-      {props.cardDowntimes?.network && (
-        <div class="instrument-details">
-          <div class="instrument-title">Card Networks</div>
-          {/* Low */}
-          {props.cardDowntimes?.network?.low && (
-            <OngoingDowntime downtimes={props.cardDowntimes?.network?.low} severity="low" />
+      <MethodNotOperational methodName="Cards" switchToInfoView={switchToInfoView} />
+      {cardDowntimes?.network && (
+        <div className="instrument-details">
+          <div className="instrument-title">Card Networks</div>
+          {cardDowntimes?.network?.low && (
+            <OngoingDowntime downtimes={cardDowntimes.network.low} severity="low" />
           )}
-          {/* Medium */}
-          {props.cardDowntimes?.network?.medium && (
-            <OngoingDowntime downtimes={props.cardDowntimes?.network?.medium} severity="medium" />
+          {cardDowntimes?.network?.medium && (
+            <OngoingDowntime downtimes={cardDowntimes.network.medium} severity="medium" />
           )}
-          {/* High */}
-          {props.cardDowntimes?.network?.high && (
-            <OngoingDowntime downtimes={props.cardDowntimes?.network?.high} severity="high" />
+          {cardDowntimes?.network?.high && (
+            <OngoingDowntime downtimes={cardDowntimes.network.high} severity="high" />
           )}
         </div>
       )}
-      {/* Card Issuers */}
-      {props.cardDowntimes?.issuer && (
-        <div class="instrument-details">
-          <div class="instrument-title">Card Issuers</div>
-          {/* Low */}
-          {props.cardDowntimes?.issuer?.low && (
-            <OngoingDowntime downtimes={props.cardDowntimes?.issuer?.low} severity="low" />
+      {cardDowntimes?.issuer && (
+        <div className="instrument-details">
+          <div className="instrument-title">Card Issuers</div>
+          {cardDowntimes.issuer.low && (
+            <OngoingDowntime downtimes={cardDowntimes.issuer.low} severity="low" />
           )}
-          {/* Medium */}
-          {props.cardDowntimes?.issuer?.medium && (
-            <OngoingDowntime downtimes={props.cardDowntimes?.issuer?.medium} severity="medium" />
+          {cardDowntimes.issuer.medium && (
+            <OngoingDowntime downtimes={cardDowntimes.issuer?.medium} severity="medium" />
           )}
-          {/* High */}
-          {props.cardDowntimes?.issuer?.high && (
-            <OngoingDowntime downtimes={props.cardDowntimes?.issuer?.high} severity="high" />
+          {cardDowntimes.issuer.high && (
+            <OngoingDowntime downtimes={cardDowntimes.issuer.high} severity="high" />
           )}
         </div>
       )}

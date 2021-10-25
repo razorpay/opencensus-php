@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 import { merchantFetch } from 'merchant/utils/ajax';
 import { getTimeinTwelveHourFormat } from './utilities';
 import {
@@ -11,7 +13,6 @@ import {
   NETBANKING_PAYMENT_METHOD,
   PAYMENT_METHOD_MAP,
 } from './constants';
-import moment from 'moment';
 
 export const fetchOngoingDowntimes = () => {
   return merchantFetch({

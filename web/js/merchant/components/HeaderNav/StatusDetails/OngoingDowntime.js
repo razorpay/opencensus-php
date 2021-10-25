@@ -1,18 +1,20 @@
+import React from 'react';
 import { getTimeinTwelveHourFormat } from './utilities';
 
-const OngoingDowntime = (props) => {
-  const checkWhetherStartedToday = (dateObj) => {
-    const todayDate = new Date();
-    if (
-      todayDate.getDate() === dateObj.getDate() &&
-      todayDate.getMonth() === dateObj.getMonth() &&
-      todayDate.getFullYear() === dateObj.getFullYear()
-    ) {
-      return true;
-    } else return false;
-  };
+const checkWhetherStartedToday = (dateObj) => {
+  const todayDate = new Date();
+  if (
+    todayDate.getDate() === dateObj.getDate() &&
+    todayDate.getMonth() === dateObj.getMonth() &&
+    todayDate.getFullYear() === dateObj.getFullYear()
+  ) {
+    return true;
+  } else return false;
+};
 
-  props.downtimes.forEach((downtime) => {
+const OngoingDowntime = (props) => {
+  const { downtimes, severity } = props;
+  downtimes.forEach((downtime) => {
     const begin = downtime.begin;
     const corresDateTime = new Date(begin * 1000);
     const timeInFormat = getTimeinTwelveHourFormat(corresDateTime);
@@ -27,40 +29,51 @@ const OngoingDowntime = (props) => {
       }/${corresDateTime.getFullYear()}`;
     }
   });
+
   return (
     <div class="downtime-container">
-      {props.severity === 'low' ? (
+      {severity === 'low' ? (
         <>
-          <img src={`${window.cdnBaseUrl}/static/assets/downtimes/yellow-status-tiny.svg`} />
-          <span class="downtime-heading">Low severity downtime</span>
+          <img
+            src={`${window.cdnBaseUrl}/static/assets/downtimes/yellow-status-tiny.svg`}
+            height="18px"
+            width="14px"
+            alt="Low Severity"
+          />
+          <span class="heading">Low severity downtime</span>
         </>
-      ) : props.severity === 'medium' ? (
+      ) : severity === 'medium' ? (
         <>
-          <img src={`${window.cdnBaseUrl}/static/assets/downtimes/orange-status-tiny.svg`} />
-          <span class="downtime-heading">Medium severity downtime</span>
+          <img
+            src={`${window.cdnBaseUrl}/static/assets/downtimes/orange-status-tiny.svg`}
+            height="18px"
+            width="14px"
+            alt="Medium Severity"
+          />
+          <span class="heading">Medium severity downtime</span>
         </>
       ) : (
         <>
-          <img src={`${window.cdnBaseUrl}/static/assets/downtimes/red-status-tiny.svg`} />
-          <span class="downtime-heading">High severity downtime</span>
+          <img
+            src={`${window.cdnBaseUrl}/static/assets/downtimes/red-status-tiny.svg`}
+            height="18px"
+            width="14px"
+            alt="High Severity"
+          />
+          <span class="heading">High severity downtime</span>
         </>
       )}
 
-      <div class="downtime-details">
-        {props.downtimes.map((downtime, index) => (
-          <span key={downtime.id}>
-            <b>
-              {downtime.mapToName
-                ? downtime.providerName
-                : downtime.instrument[Object.keys(downtime.instrument)[0]]}
-            </b>
-            {` (started at `}
-            {downtime.started_date
-              ? `${downtime.started_date}, ${downtime.started_at}`
-              : downtime.started_at}
-            {index === props.downtimes.length - 1 ? `)` : `), `}
-          </span>
-        ))}
+      <div class="details">
+        {downtimes.map((downtime) => {
+          const { id, mapToName, providerName, instrument, started_at, started_date } = downtime;
+          return (
+            <span key={id}>
+              <b>{mapToName ? providerName : instrument[Object.keys(instrument)[0]]}</b>
+              {`(started at ${started_date ? `${started_date}, ${started_at}` : started_at})`}
+            </span>
+          );
+        })}
       </div>
     </div>
   );

@@ -1,78 +1,50 @@
-import greenTickTiny from '../../../../../icons/merchant/greenTickTiny.svg';
+import React from 'react';
+import { NoIssuesStatus } from './NoIssuesStatus';
 import OngoingDowntime from './OngoingDowntime';
 
-const CardsInfoDetails = (props) => {
+const CardNetworks = ({ network, operationalNetworks }) => {
   return (
-    <div>
-      <div class="status-method-instrument">
-        Card Networks<span class="status-method-instrument-asterix">*</span>
+    <>
+      <p className="title">Card Networks</p>
+      <div className="description border">
+        {network?.low && <OngoingDowntime downtimes={network.low} severity="low" />}
+        {network?.medium && <OngoingDowntime downtimes={network.medium} severity="medium" />}
+        {network?.high && <OngoingDowntime downtimes={network.high} severity="high" />}
+        <NoIssuesStatus />
+        <p className="status-list">{operationalNetworks?.join(', ')}</p>
       </div>
+    </>
+  );
+};
 
-      <div class="status-method-instrument-info">
-        {/* Low */}
-        {props.cardDowntimes?.network?.low && (
-          <OngoingDowntime downtimes={props.cardDowntimes?.network?.low} severity="low" />
-        )}
-
-        {/* Medium */}
-        {props.cardDowntimes?.network?.medium && (
-          <OngoingDowntime downtimes={props.cardDowntimes?.network?.medium} severity="medium" />
-        )}
-
-        {/* High */}
-        {props.cardDowntimes?.network?.high && (
-          <OngoingDowntime downtimes={props.cardDowntimes?.network?.high} severity="high" />
-        )}
-
-        {/* No issues */}
-        <img src={greenTickTiny} />
-        <span class="status-item">
-          <b>No issues noticed</b>
-        </span>
-        <div class="status-list">
-          {props.cardNetworksOperational.map((network, index) => (
-            <span class="status-list-text" key={network}>
-              {network}
-              {index != props.cardNetworksOperational.length - 1 && ', '}
-            </span>
-          ))}
-        </div>
+const CardIssuers = ({ issuer, operationalIssuers }) => {
+  return (
+    <>
+      <p className="title">Card Issuers</p>
+      <div className="description border">
+        {issuer?.low && <OngoingDowntime downtimes={issuer.low} severity="low" />}
+        {issuer?.medium && <OngoingDowntime downtimes={issuer.medium} severity="medium" />}
+        {issuer?.high && <OngoingDowntime downtimes={issuer.high} severity="high" />}
+        <NoIssuesStatus />
+        <p className="status-list">
+          {operationalIssuers?.map(({ issuerName }) => issuerName)?.join(', ')}
+        </p>
       </div>
-      <div class="status-method-instrument">
-        Card Issuers<span class="status-method-instrument-asterix">*</span>
-      </div>
+    </>
+  );
+};
 
-      <div class="status-method-instrument-info">
-        {/* Low */}
-        {props.cardDowntimes?.issuer?.low && (
-          <OngoingDowntime downtimes={props.cardDowntimes?.issuer?.low} severity="low" />
-        )}
-
-        {/* Medium */}
-        {props.cardDowntimes?.issuer?.medium && (
-          <OngoingDowntime downtimes={props.cardDowntimes?.issuer?.medium} severity="medium" />
-        )}
-
-        {/* High */}
-        {props.cardDowntimes?.issuer?.high && (
-          <OngoingDowntime downtimes={props.cardDowntimes?.issuer?.high} severity="high" />
-        )}
-
-        {/* No Issues */}
-        <img src={greenTickTiny} />
-        <span class="status-item">
-          <b>No issues noticed</b>
-        </span>
-        <div class="status-list">
-          {props.cardIssuersOperational.map((issuer, index) => (
-            <span class="status-list-text" key={issuer.code}>
-              {issuer.issuerName}
-              {index != props.cardIssuersOperational.length - 1 && ', '}
-            </span>
-          ))}
-        </div>
-      </div>
-    </div>
+const CardsInfoDetails = (props) => {
+  const {
+    cardDowntimes: { network, issuer },
+    cardNetworksOperational,
+    cardIssuersOperational,
+  } = props;
+  return (
+    <>
+      <CardNetworks network={network} operationalNetworks={cardNetworksOperational} />
+      <CardIssuers issuer={issuer} operationalIssuers={cardIssuersOperational} />
+    </>
   );
 };
 

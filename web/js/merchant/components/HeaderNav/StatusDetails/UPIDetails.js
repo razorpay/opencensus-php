@@ -1,54 +1,40 @@
+import React from 'react';
 import MethodNotOperational from './MethodNotOperational';
 import MethodOperational from './MethodOperational';
 import OngoingDowntime from './OngoingDowntime';
 
 const UPIDetails = (props) => {
-  return Object.keys(props.upiDowntimes).length === 0 ? (
-    <MethodOperational methodName="UPI" switchToInfoView={props.switchToInfoView} />
+  const { upiDowntimes, switchToInfoView } = props;
+  return Object.keys(upiDowntimes).length === 0 ? (
+    <MethodOperational methodName="UPI" switchToInfoView={switchToInfoView} />
   ) : (
     <>
-      <MethodNotOperational methodName="UPI" switchToInfoView={props.switchToInfoView} />
-
-      {/* VPA */}
-      {props.upiDowntimes?.vpa_handle && (
-        <div class="instrument-details">
-          <div class="instrument-title">VPA</div>
-
-          {/* Low */}
-          {props.upiDowntimes?.vpa_handle?.low && (
-            <OngoingDowntime downtimes={props.upiDowntimes?.vpa_handle?.low} severity="low" />
+      <MethodNotOperational methodName="UPI" switchToInfoView={switchToInfoView} />
+      {upiDowntimes?.vpa_handle && (
+        <div className="instrument-details">
+          <div className="instrument-title">VPA</div>
+          {upiDowntimes?.vpa_handle?.low && (
+            <OngoingDowntime downtimes={upiDowntimes.vpa_handle.low} severity="low" />
           )}
-
-          {/* Medium */}
-          {props.upiDowntimes?.vpa_handle?.medium && (
-            <OngoingDowntime downtimes={props.upiDowntimes?.vpa_handle?.medium} severity="medium" />
+          {upiDowntimes?.vpa_handle?.medium && (
+            <OngoingDowntime downtimes={upiDowntimes.vpa_handle.medium} severity="medium" />
           )}
-
-          {/* High */}
-          {props.upiDowntimes?.vpa_handle?.high && (
-            <OngoingDowntime downtimes={props.upiDowntimes?.vpa_handle?.high} severity="high" />
+          {upiDowntimes?.vpa_handle?.high && (
+            <OngoingDowntime downtimes={upiDowntimes.vpa_handle.high} severity="high" />
           )}
         </div>
       )}
-
-      {/* PSP */}
-      {props.upiDowntimes?.psp && (
-        <div class="instrument-details">
-          <div class="instrument-title">PSP</div>
-
-          {/* Low */}
-          {props.upiDowntimes?.psp?.low && (
-            <OngoingDowntime downtimes={props.upiDowntimes?.psp?.low} severity="low" />
+      {upiDowntimes?.psp && (
+        <div className="instrument-details">
+          <div className="instrument-title">PSP</div>
+          {upiDowntimes?.psp?.low && (
+            <OngoingDowntime downtimes={upiDowntimes.psp.low} severity="low" />
           )}
-
-          {/* Medium */}
-          {props.upiDowntimes?.psp?.medium && (
-            <OngoingDowntime downtimes={props.upiDowntimes?.psp?.medium} severity="medium" />
+          {upiDowntimes?.psp?.medium && (
+            <OngoingDowntime downtimes={upiDowntimes.psp.medium} severity="medium" />
           )}
-
-          {/* High */}
-          {props.upiDowntimes?.psp?.high && (
-            <OngoingDowntime downtimes={props.upiDowntimes?.psp?.high} severity="high" />
+          {upiDowntimes?.psp?.high && (
+            <OngoingDowntime downtimes={upiDowntimes.psp.high} severity="high" />
           )}
         </div>
       )}

@@ -1,41 +1,18 @@
-import greenTickTiny from '../../../../../icons/merchant/greenTickTiny.svg';
+import React from 'react';
+import { NoIssuesStatus } from './NoIssuesStatus';
 import OngoingDowntime from './OngoingDowntime';
 
 const NetBankingInfoDetails = (props) => {
+  const { netBankingDowntimes: downtimes, netBankingOperational: operational } = props;
   return (
     <div>
-      <div class="status-method-instrument">
-        Banks<span class="status-method-instrument-asterix">*</span>
-      </div>
-      <div class="status-method-instrument-info">
-        {/* Low */}
-        {props.netBankingDowntimes?.low && (
-          <OngoingDowntime downtimes={props.netBankingDowntimes?.low} severity="low" />
-        )}
-
-        {/* Medium */}
-        {props.netBankingDowntimes?.medium && (
-          <OngoingDowntime downtimes={props.netBankingDowntimes?.medium} severity="medium" />
-        )}
-
-        {/* High */}
-        {props.netBankingDowntimes?.high && (
-          <OngoingDowntime downtimes={props.netBankingDowntimes?.high} severity="high" />
-        )}
-
-        {/* No issues */}
-        <img src={greenTickTiny} />
-        <span class="status-item">
-          <b>No issues noticed</b>
-        </span>
-        <div class="status-list">
-          {props.netBankingOperational.map((bank, index) => (
-            <span class="status-list-text" key={bank.code}>
-              {bank.bankName}
-              {index != props.netBankingOperational.length - 1 && ', '}
-            </span>
-          ))}
-        </div>
+      <p className="title">Banks</p>
+      <div className="description border">
+        {downtimes?.low && <OngoingDowntime downtimes={downtimes.low} severity="low" />}
+        {downtimes?.medium && <OngoingDowntime downtimes={downtimes.medium} severity="medium" />}
+        {downtimes?.high && <OngoingDowntime downtimes={downtimes.high} severity="high" />}
+        <NoIssuesStatus />
+        <p className="status-list">{operational?.map(({ bankName }) => bankName)?.join(', ')}</p>
       </div>
     </div>
   );

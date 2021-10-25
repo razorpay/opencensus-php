@@ -19,19 +19,11 @@ import UPIInfoDetails from './UPIInfoDetails';
 import NetBankingInfoDetails from './NetBankingInfoDetails';
 import UpcomingMaintenance from './UpcomingMaintenance';
 import HistoricalDowntimes from './HistoricalDowntimes';
-import { getTimeinTwelveHourFormat } from './utilities';
 import { classList } from 'common/utils/rzp-utils';
 import FailedStatus from './FailedStatus';
 import OverallStatus from './OverallStatus';
 
-const showWarningText = () => {
-  return (
-    <div class="status-details-warning">
-      <span class="status-warning-asterix">{`* `}</span>We only detect downtime fluctuations for the
-      instruments which have sufficient payment volume
-    </div>
-  );
-};
+import moment from 'moment';
 
 class StatusDetails extends React.Component {
   constructor(props) {
@@ -100,11 +92,10 @@ class StatusDetails extends React.Component {
   };
 
   componentWillMount() {
-    const now = new Date();
-    const time = getTimeinTwelveHourFormat(now);
+    const time = moment().format('hh:mm');
     this.setState({
       time,
-      timeObj: now,
+      timeObj: moment(),
     });
     this.setOngoingDowntimes();
   }
@@ -169,12 +160,32 @@ class StatusDetails extends React.Component {
   };
 
   handleSliderToggleClick = () => {
-    if (this.state.sliderOpen) this.hideSlider();
-    else this.showSlider();
+    return this.state.sliderOpen ? this.hideSlider() : this.showSlider();
   };
 
   render() {
-    const { sliderOpen, time } = this.state;
+    const {
+      sliderOpen,
+      time,
+      mode,
+      disableRefresh,
+      paymentMethod,
+      isL2Loading,
+      timeForNextAPI,
+      cardDowntimes,
+      cardNetworksOperational,
+      cardIssuersOperational,
+      upiDowntimes,
+      pspOperational,
+      vpaOperational,
+      netBankingDowntimes,
+      netBankingOperational,
+      scheduledDowntimes,
+      isL1Loading,
+      errorInFetchingData,
+      overallStatus,
+      methodsDown,
+    } = this.state;
 
     return (
       <main className={classList('status-details', sliderOpen && 'status-details--active')}>
@@ -187,142 +198,141 @@ class StatusDetails extends React.Component {
               <div className="content-wrapper content-sm txn-details status-details">
                 <div className="panel panel-default SliderPanel">
                   <div className="panel-heading">
-                    <div className="heading-content">
-                      {this.state.mode === 'summary' ? (
-                        <div className="title">
-                          <b>Payment Methods Status</b>
-                        </div>
-                      ) : (
-                        <div>
-                          <img
-                            className="status-back"
-                            src={`${window.cdnBaseUrl}/static/assets/downtimes/arrow-left.svg`}
-                            onClick={this.switchToSummaryView}
-                          />
-                          <span className="status-heading">{this.state.paymentMethod}</span>
-                          <span className="status-heading-time">Last updated {time} today </span>
-                          {this.state.disableRefresh ? (
-                            <span>
-                              <img
-                                src={`${window.cdnBaseUrl}/static/assets/downtimes/refresh-disabled.svg`}
-                                className="status-refresh-icon-disabled"
-                              />
-                              <Popover align="bottom" theme="light">
-                                <PopoverBody>
-                                  <div>Try again in {30 - this.state.timeForNextAPI} seconds</div>
-                                </PopoverBody>
-                              </Popover>
-                            </span>
-                          ) : (
+                    {mode === 'summary' ? (
+                      <b>Payment Methods Status</b>
+                    ) : (
+                      <>
+                        <img
+                          className="icon refresh-action"
+                          src={`${window.cdnBaseUrl}/static/assets/downtimes/arrow-left.svg`}
+                          onClick={this.switchToSummaryView}
+                          alt="Back button"
+                        />
+                        <span className="title">{paymentMethod}</span>
+                        <span className="description">Last updated {time} today </span>
+                        {disableRefresh ? (
+                          <span>
                             <img
-                              src={`${window.cdnBaseUrl}/static/assets/downtimes/refresh-cw.svg`}
-                              className="status-refresh-icon"
-                              onClick={() => {
-                                if (!this.state.disableRefresh) {
-                                  this.onUserRefresh();
-                                }
-                              }}
+                              src={`${window.cdnBaseUrl}/static/assets/downtimes/refresh-disabled.svg`}
+                              className="refresh-action"
+                              alt="Refresh is disabled"
                             />
-                          )}
-                        </div>
-                      )}
-                    </div>
+                            <Popover align="bottom" theme="light">
+                              <PopoverBody>
+                                <div>Try again in {30 - timeForNextAPI} seconds</div>
+                              </PopoverBody>
+                            </Popover>
+                          </span>
+                        ) : (
+                          <img
+                            src={`${window.cdnBaseUrl}/static/assets/downtimes/refresh-cw.svg`}
+                            className="icon refresh-action"
+                            onClick={() => {
+                              if (!disableRefresh) {
+                                this.onUserRefresh();
+                              }
+                            }}
+                            alt="Refresh"
+                          />
+                        )}
+                      </>
+                    )}
                   </div>
                   <div className="SliderPanel__Body">
                     <div className="panel-body ">
-                      {this.state.mode === 'info' ? (
+                      {mode === 'info' ? (
                         <div>
-                          {this.state.isL2Loading ? (
+                          {isL2Loading ? (
                             <div className="page-spinner-container">
                               <Spinner />
                             </div>
                           ) : (
-                            <>
-                              <div className="status-method-summary">
-                                {this.state.paymentMethod === 'Cards' ? (
+                            <div className="status-method">
+                              <section className="summary">
+                                {paymentMethod === 'Cards' ? (
                                   <CardsInfoDetails
-                                    cardDowntimes={this.state.cardDowntimes}
-                                    cardNetworksOperational={this.state.cardNetworksOperational}
-                                    cardIssuersOperational={this.state.cardIssuersOperational}
+                                    cardDowntimes={cardDowntimes}
+                                    cardNetworksOperational={cardNetworksOperational}
+                                    cardIssuersOperational={cardIssuersOperational}
                                   />
-                                ) : this.state.paymentMethod === 'UPI' ? (
+                                ) : paymentMethod === 'UPI' ? (
                                   <UPIInfoDetails
-                                    upiDowntimes={this.state.upiDowntimes}
-                                    pspOperational={this.state.pspOperational}
-                                    vpaOperational={this.state.vpaOperational}
+                                    upiDowntimes={upiDowntimes}
+                                    pspOperational={pspOperational}
+                                    vpaOperational={vpaOperational}
                                   />
                                 ) : (
                                   <NetBankingInfoDetails
-                                    netBankingDowntimes={this.state.netBankingDowntimes}
-                                    netBankingOperational={this.state.netBankingOperational}
+                                    netBankingDowntimes={netBankingDowntimes}
+                                    netBankingOperational={netBankingOperational}
                                   />
                                 )}
-                              </div>
-                              {showWarningText()}
+                                <p className="message">
+                                  We only detect downtime fluctuations for the instruments which
+                                  have sufficient payment volume
+                                </p>
+                              </section>
+
                               <UpcomingMaintenance
-                                paymentMethod={this.state.paymentMethod}
-                                scheduledDowntimes={this.state.scheduledDowntimes}
+                                paymentMethod={paymentMethod}
+                                scheduledDowntimes={scheduledDowntimes}
                               />
-                              <HistoricalDowntimes paymentMethod={this.state.paymentMethod} />
-                            </>
+                              <HistoricalDowntimes paymentMethod={paymentMethod} />
+                            </div>
                           )}
                         </div>
                       ) : (
                         <div>
-                          {this.state.isL1Loading ? (
+                          {isL1Loading ? (
                             <div className="page-spinner-container">
                               <Spinner />
                             </div>
-                          ) : this.state.errorInFetchingData ? (
+                          ) : errorInFetchingData ? (
                             <FailedStatus onUserRefresh={this.onUserRefresh} />
                           ) : (
                             <>
                               <div className="main-info">
-                                <OverallStatus
-                                  status={this.state.overallStatus}
-                                  downMethods={this.state.methodsDown}
-                                />
-
+                                <OverallStatus status={overallStatus} downMethods={methodsDown} />
                                 <div className="date-and-time">
                                   Last updated {time} today{' '}
-                                  {this.state.disableRefresh ? (
+                                  {disableRefresh ? (
                                     <span>
                                       <img
                                         src={`${window.cdnBaseUrl}/static/assets/downtimes/refresh-disabled.svg`}
-                                        className="status-refresh-icon-disabled"
+                                        className="refresh-action"
+                                        alt="Can't refresh"
                                       />
                                       <Popover align="bottom" theme="light">
                                         <PopoverBody>
-                                          <div>
-                                            Try again in {30 - this.state.timeForNextAPI} seconds
-                                          </div>
+                                          <div>Try again in {30 - timeForNextAPI} seconds</div>
                                         </PopoverBody>
                                       </Popover>
                                     </span>
                                   ) : (
                                     <img
                                       src={`${window.cdnBaseUrl}/static/assets/downtimes/refresh-cw.svg`}
-                                      className="status-refresh-icon"
+                                      className="icon refresh-action"
                                       onClick={() => {
-                                        if (!this.state.disableRefresh) {
+                                        if (!disableRefresh) {
                                           this.onUserRefresh();
                                         }
                                       }}
+                                      alt="Refresh"
                                     />
                                   )}
                                 </div>
                               </div>
                               <div className="details-section">
                                 <CardsDetails
-                                  cardDowntimes={this.state.cardDowntimes}
+                                  cardDowntimes={cardDowntimes}
                                   switchToInfoView={this.switchToInfoView}
                                 />
                                 <UPIDetails
-                                  upiDowntimes={this.state.upiDowntimes}
+                                  upiDowntimes={upiDowntimes}
                                   switchToInfoView={this.switchToInfoView}
                                 />
                                 <NetBankingDetails
-                                  netBankingDowntimes={this.state.netBankingDowntimes}
+                                  netBankingDowntimes={netBankingDowntimes}
                                   switchToInfoView={this.switchToInfoView}
                                 />
                               </div>

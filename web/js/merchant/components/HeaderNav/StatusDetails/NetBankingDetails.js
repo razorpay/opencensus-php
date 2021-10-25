@@ -1,32 +1,25 @@
+import React from 'react';
 import MethodNotOperational from './MethodNotOperational';
 import MethodOperational from './MethodOperational';
 import OngoingDowntime from './OngoingDowntime';
 
 const NetBankingDetails = (props) => {
-  return Object.keys(props.netBankingDowntimes).length === 0 ? (
-    <MethodOperational methodName="Net Banking" switchToInfoView={props.switchToInfoView} />
+  const { switchToInfoView, netBankingDowntimes } = props;
+  return Object.keys(netBankingDowntimes).length === 0 ? (
+    <MethodOperational methodName="Net Banking" switchToInfoView={switchToInfoView} />
   ) : (
     <>
-      <MethodNotOperational methodName="Net Banking" switchToInfoView={props.switchToInfoView} />
-
-      {/* Banks */}
-
+      <MethodNotOperational methodName="Net Banking" switchToInfoView={switchToInfoView} />
       <div class="instrument-details">
         <div class="instrument-title">Banks</div>
-
-        {/* Low */}
-        {props.netBankingDowntimes?.low && (
-          <OngoingDowntime downtimes={props.netBankingDowntimes?.low} severity="low" />
+        {netBankingDowntimes?.low && (
+          <OngoingDowntime downtimes={netBankingDowntimes.low} severity="low" />
         )}
-
-        {/* Medium */}
-        {props.netBankingDowntimes?.medium && (
-          <OngoingDowntime downtimes={props.netBankingDowntimes?.medium} severity="medium" />
+        {netBankingDowntimes?.medium && (
+          <OngoingDowntime downtimes={netBankingDowntimes.medium} severity="medium" />
         )}
-
-        {/* High */}
-        {props.netBankingDowntimes?.high && (
-          <OngoingDowntime downtimes={props.netBankingDowntimes?.high} severity="high" />
+        {netBankingDowntimes?.high && (
+          <OngoingDowntime downtimes={netBankingDowntimes.high} severity="high" />
         )}
       </div>
     </>

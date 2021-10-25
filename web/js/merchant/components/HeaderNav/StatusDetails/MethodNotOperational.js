@@ -1,11 +1,12 @@
-import Button from '../../../../common/new-ui/Button';
+import React from 'react';
+import Button from 'common/new-ui/Button';
 
 const MethodNotOperational = (props) => {
   return (
-    <div class="payment-method">
+    <div className="payment-method">
       <span className="payment-method-title-not-operational">{props.methodName}</span>
       <Button.Transparent
-        class="status-view-button"
+        className="status-view-button"
         onClick={() => {
           props.switchToInfoView(props.methodName);
         }}
@@ -14,10 +15,11 @@ const MethodNotOperational = (props) => {
       </Button.Transparent>
       <img
         src={`${window.cdnBaseUrl}/static/assets/downtimes/arrow-right-blue.svg`}
-        class="status-view-arrow"
+        className="status-view-arrow"
         onClick={() => {
           props.switchToInfoView(props.methodName);
         }}
+        alt="View Details"
       />
     </div>
   );

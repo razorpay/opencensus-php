@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useCallback } from 'react';
+import React, { useEffect, useReducer, useCallback } from 'react';
 
 import Pager from 'common/ui/Pager';
 import Spinner from 'common/ui/Spinner';
@@ -76,16 +76,16 @@ const ShowHistoricalDowntime = ({ historicalDowntime }) => {
     let title = '';
     for (const property in instrument) {
       if (instrument.hasOwnProperty(property)) {
-        title = `${property} - ${
-          ['issuer', 'bank'].includes(property) ? providerName : instrument[property]
-        }`;
+        const value = ['issuer', 'bank'].includes(property) ? providerName : instrument[property];
+        const className = !['psp', 'vpa_handle'].includes(property) ? 'capitalize' : '';
+        title = <p className={className}>{`${property} - ${value}`}</p>;
       }
     }
     return title;
   };
 
   return (
-    <div key={id} className="historical-downtime">
+    <div key={id} className="downtime">
       <div className="heading">{getTitle()}</div>
       <div className="details">
         {beginDate} <div className="divider">|</div> {`${beginTime} to ${endTime}`}
@@ -131,8 +131,8 @@ const HistoricalDowntimes = (props) => {
 
   return (
     historicalDowntimes.length > 0 && (
-      <>
-        <div className="upcoming-title">Past 30 Days Incidents</div>
+      <section>
+        <p className="section-title">Past 30 Days Incidents</p>
         {isHistoricalLoading ? (
           <div className="page-spinner-container">
             <Spinner />
@@ -147,7 +147,7 @@ const HistoricalDowntimes = (props) => {
             </div>
           </>
         )}
-      </>
+      </section>
     )
   );
 };

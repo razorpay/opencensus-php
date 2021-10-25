@@ -1,43 +1,46 @@
+import React from 'react';
 import ScheduledDowntime from './ScheduledDowntime';
 
 const UpcomingMaintenance = (props) => {
+  const { paymentMethod, scheduledDowntimes } = props;
   return (
-    <>
-      <div class="upcoming-title">
+    <section>
+      <p className="section-title">
         <img
           src={`${window.cdnBaseUrl}/static/assets/downtimes/maintenance.svg`}
-          class="maintenance-icon"
+          className="maintenance-icon"
+          alt="Maintenance"
         />{' '}
         Upcoming Maintenance
-      </div>
-      {props.paymentMethod === 'Cards' ? (
-        'card' in props.scheduledDowntimes ? (
+      </p>
+      {paymentMethod === 'Cards' ? (
+        'card' in scheduledDowntimes ? (
           <div>
-            {props.scheduledDowntimes?.card.map((scheduledDowntime) => (
+            {scheduledDowntimes?.card.map((scheduledDowntime) => (
               <ScheduledDowntime key={scheduledDowntime.id} scheduledDowntime={scheduledDowntime} />
             ))}
           </div>
         ) : (
-          <div class="no-maintenance">No Upcoming Maintenance</div>
+          <p className="no-maintenance">No Upcoming Maintenance</p>
         )
-      ) : props.paymentMethod === 'UPI' ? (
-        'upi' in props.scheduledDowntimes ? (
+      ) : paymentMethod === 'UPI' ? (
+        'upi' in scheduledDowntimes ? (
           <div>
-            {props.scheduledDowntimes?.upi.map((scheduledDowntime) => (
+            {scheduledDowntimes?.upi.map((scheduledDowntime) => (
               <ScheduledDowntime key={scheduledDowntime.id} scheduledDowntime={scheduledDowntime} />
             ))}
           </div>
         ) : (
-          <div class="no-maintenance">No Upcoming Maintenance</div>
+          <p className="no-maintenance">No Upcoming Maintenance</p>
         )
-      ) : 'netbanking' in props.scheduledDowntimes ? (
-        props.scheduledDowntimes?.netbanking.map((scheduledDowntime) => (
+      ) : 'netbanking' in scheduledDowntimes ? (
+        scheduledDowntimes?.netbanking.map((scheduledDowntime) => (
           <ScheduledDowntime key={scheduledDowntime.id} scheduledDowntime={scheduledDowntime} />
         ))
       ) : (
-        <div class="no-maintenance">No Upcoming Maintenance</div>
+        <p className="no-maintenance">No Upcoming Maintenance</p>
       )}
-    </>
+    </section>
   );
 };
 

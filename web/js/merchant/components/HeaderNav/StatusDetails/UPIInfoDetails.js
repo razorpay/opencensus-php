@@ -1,79 +1,52 @@
-import greenTickTiny from '../../../../../icons/merchant/greenTickTiny.svg';
+import React from 'react';
+import { NoIssuesStatus } from './NoIssuesStatus';
 import OngoingDowntime from './OngoingDowntime';
 
-const UPIInfoDetails = (props) => {
+const VPADetails = ({ downtimes, operational }) => {
   return (
-    <div>
-      <div class="status-method-instrument">
-        VPA<span class="status-method-instrument-asterix">*</span>
+    <>
+      <p className="title">VPA</p>
+      <div className="description border">
+        {downtimes?.vpa_handle?.low && (
+          <OngoingDowntime downtimes={downtimes.vpa_handle.low} severity="low" />
+        )}
+        {downtimes?.vpa_handle?.medium && (
+          <OngoingDowntime downtimes={downtimes.vpa_handle.medium} severity="medium" />
+        )}
+        {downtimes?.vpa_handle?.high && (
+          <OngoingDowntime downtimes={downtimes.vpa_handle.high} severity="high" />
+        )}
+        <NoIssuesStatus />
+        <p className="status-list">{operational?.join(', ')}</p>
       </div>
+    </>
+  );
+};
 
-      <div class="status-method-instrument-info">
-        {/* Low */}
-        {props.upiDowntimes?.vpa_handle?.low && (
-          <OngoingDowntime downtimes={props.upiDowntimes?.vpa_handle?.low} severity="low" />
+const PSPDetails = ({ downtimes, operational }) => {
+  return (
+    <>
+      <p className="title">PSP</p>
+      <div className="description border">
+        {downtimes?.psp?.low && <OngoingDowntime downtimes={downtimes.psp.low} severity="low" />}
+        {downtimes?.psp?.medium && (
+          <OngoingDowntime downtimes={downtimes.psp.medium} severity="medium" />
         )}
-
-        {/* Medium */}
-        {props.upiDowntimes?.vpa_handle?.medium && (
-          <OngoingDowntime downtimes={props.upiDowntimes?.vpa_handle?.medium} severity="medium" />
-        )}
-
-        {/* High */}
-        {props.upiDowntimes?.vpa_handle?.high && (
-          <OngoingDowntime downtimes={props.upiDowntimes?.vpa_handle?.high} severity="high" />
-        )}
-
-        {/* No issues */}
-        <img src={greenTickTiny} />
-        <span class="status-item">
-          <b>No issues noticed</b>
-        </span>
-        <div class="status-list">
-          {props.vpaOperational.map((vpa, index) => (
-            <span class="status-list-text" key={vpa}>
-              {vpa}
-              {index != props.vpaOperational.length - 1 && ', '}
-            </span>
-          ))}
-        </div>
+        {downtimes?.psp?.high && <OngoingDowntime downtimes={downtimes.psp.high} severity="high" />}
+        <NoIssuesStatus />
+        <p className="status-list">{operational?.map(({ pspName }) => pspName)?.join(', ')}</p>
       </div>
+    </>
+  );
+};
 
-      <div class="status-method-instrument">
-        PSP<span class="status-method-instrument-asterix">*</span>
-      </div>
-
-      <div class="status-method-instrument-info">
-        {/* Low */}
-        {props.upiDowntimes?.psp?.low && (
-          <OngoingDowntime downtimes={props.upiDowntimes?.psp?.low} severity="low" />
-        )}
-
-        {/* Medium */}
-        {props.upiDowntimes?.psp?.medium && (
-          <OngoingDowntime downtimes={props.upiDowntimes?.psp?.medium} severity="medium" />
-        )}
-
-        {/* High */}
-        {props.upiDowntimes?.psp?.high && (
-          <OngoingDowntime downtimes={props.upiDowntimes?.psp?.high} severity="high" />
-        )}
-
-        {/* No issues */}
-        <img src={greenTickTiny} />
-        <span class="status-item">
-          <b>No issues noticed</b>
-        </span>
-        <div class="status-list">
-          {props.pspOperational.map((psp, index) => (
-            <span class="status-list-text" key={psp.code}>
-              {psp.pspName}
-              {index != props.pspOperational.length - 1 && ', '}
-            </span>
-          ))}
-        </div>
-      </div>
-    </div>
+const UPIInfoDetails = (props) => {
+  const { upiDowntimes, vpaOperational, pspOperational } = props;
+  return (
+    <>
+      <VPADetails downtimes={upiDowntimes} operational={vpaOperational} />
+      <PSPDetails downtimes={upiDowntimes} operational={pspOperational} />
+    </>
   );
 };
 

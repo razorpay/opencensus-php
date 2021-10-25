@@ -1,28 +1,30 @@
-import Button from '../../../../common/new-ui/Button';
+import React from 'react';
+import Button from 'common/new-ui/Button';
 
 const MethodOperational = (props) => {
+  const { methodName, switchToInfoView } = props;
   return (
-    <div
-      class={
-        props.methodName === 'Net Banking' ? 'payment-method' : 'payment-method with-bottom-border'
-      }
-    >
-      <img src={`${window.cdnBaseUrl}/static/assets/downtimes/green-tick-small.svg`} />
-      <span className="payment-method-title"> {props.methodName}</span>
+    <div className="payment-method border">
+      <img
+        src={`${window.cdnBaseUrl}/static/assets/downtimes/green-tick-small.svg`}
+        alt="No issues found"
+      />
+      <span className="payment-method-title">{methodName}</span>
       <Button.Transparent
-        class="status-view-button"
+        className="status-view-button"
         onClick={() => {
-          props.switchToInfoView(props.methodName);
+          switchToInfoView(methodName);
         }}
       >
         View Details
       </Button.Transparent>
       <img
         src={`${window.cdnBaseUrl}/static/assets/downtimes/arrow-right-blue.svg`}
-        class="status-view-arrow"
+        className="status-view-arrow"
         onClick={() => {
-          props.switchToInfoView(props.methodName);
+          switchToInfoView(methodName);
         }}
+        alt="Refresh button"
       />
     </div>
   );
