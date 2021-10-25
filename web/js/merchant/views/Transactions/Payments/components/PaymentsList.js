@@ -129,6 +129,11 @@ export default class PaymentsListContainer extends ListContainer {
     });
   };
 
+  doShowFA = () => {
+    const { user, user_segment_data } = this.props;
+    return (user && user_segment_data?.average_monthly_transactions <= user.getMaxFAMtv) || null;
+  };
+
   render() {
     const { docUrl, quickTourFeature, isRoute, user, failureAnalysisData } = this.props;
 
@@ -191,7 +196,7 @@ export default class PaymentsListContainer extends ListContainer {
           onClearAnalytics={this.onClearAnalytics}
         />
         {/* Only Needed to show FA on Trasaction Tab not in Routes Tab */}
-        {!isRoute && user?.isFAEnabled && failureAnalysisData?.data && (
+        {!isRoute && user?.isFAEnabled && this.doShowFA() && failureAnalysisData?.data && (
           <PaymentFailureAnalysis data={failureAnalysisData?.data} user={user} />
         )}
 

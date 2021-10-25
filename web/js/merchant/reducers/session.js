@@ -11,6 +11,7 @@ const USER_FETCH = 'USER_FETCH';
 const ORG_FETCH = 'ORG_FETCH';
 export const USER_LOGOUT = 'USER_LOGOUT';
 const SHOW_HIDE_TOUR = 'SHOW_HIDE_TOUR';
+const UPDATE_USER_SEGMENT_DATA = 'UPDATE_USER_SEGMENT_DATA';
 
 const UPDATE_HIGHLIGHT_MODE = 'UPDATE_HIGHLIGHT_MODE';
 
@@ -97,6 +98,13 @@ export const showOrHideHighlightMode = (value) => {
   };
 };
 
+export const updateUserSegmentData = (segmentData) => {
+  return {
+    type: UPDATE_USER_SEGMENT_DATA,
+    payload: segmentData,
+  };
+};
+
 const initialState = {
   user: new User(),
   org: {},
@@ -107,6 +115,7 @@ const initialState = {
   highlightMode: true,
   isTourVisible: false,
   isUsingPartnerMode: false,
+  user_segment_data: null,
 };
 
 export default function sessionReducer(state = initialState, action) {
@@ -142,6 +151,11 @@ export default function sessionReducer(state = initialState, action) {
 
     case `${ORG_FETCH}::SUCCESS`:
       return set(state, 'org', action.payload.data);
+
+    case UPDATE_USER_SEGMENT_DATA:
+      return merge(state, {
+        user_segment_data: action.payload,
+      });
 
     default:
       return state;

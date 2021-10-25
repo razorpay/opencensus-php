@@ -151,6 +151,12 @@ export default {
     // prod experiment ids
     'I2Oz7zUyWdMdju',
   ],
+  failure_analysis_mtv_exp: [
+    // beta experiment ids
+    'ICQD4yGH1lPCdi',
+    // prod experiment ids
+    'ICUOfCJSNQQD15',
+  ],
 
   growth_service_rollout_experiment: [
     // prod

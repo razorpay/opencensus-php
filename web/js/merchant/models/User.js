@@ -488,6 +488,11 @@ export default class User {
     return getSplitzExperimentVariant('failure_analysis_rollout_exp')?.variables?.result === 'on';
   }
 
+  /* Method to get the maximum monthly trasaction volume for which we want to enable the FA */
+  get getMaxFAMtv() {
+    return parseInt(getSplitzExperimentVariant('failure_analysis_mtv_exp')?.variables?.result, 10);
+  }
+
   get isChargeAtWillEnabled() {
     return this.findTag('Charge_at_will');
   }

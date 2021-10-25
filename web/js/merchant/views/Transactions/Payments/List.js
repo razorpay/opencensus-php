@@ -10,6 +10,7 @@ export default connect(
       // need to make sure that the payments reducer is imported below to override loading state
       ...state.payments,
       user: state.session.user,
+      user_segment_data: state.session.user_segment_data,
     };
   },
   { fetchAll, fetchFA },

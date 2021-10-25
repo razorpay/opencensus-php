@@ -158,6 +158,7 @@ class App extends Component {
           .then((res) => {
             if (res.data) {
               dataFromAPI = res.data;
+              this.props.updateUserSegmentData(res.data);
             }
             segmentIdentiyCall(dataFromAPI);
           })
