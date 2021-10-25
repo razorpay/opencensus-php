@@ -100,7 +100,7 @@ class UserController extends Controller
                 $data['newAuthRoute'] = 'signin'; // new signin flow
             }
         }
-
+        
         // $data is used to run diferent pieces of JS
         if (isset($data['user']) === true and isset($details['linked_account']) === true and $details['linked_account'] === true)
         {
@@ -110,7 +110,7 @@ class UserController extends Controller
         {
             if (empty($details) === false)
             {
-                $oldNotification = (new Merchant\Notifications\Service)->getOldNotificationsForUser($details);
+                $oldNotification = (new Merchant\Notifications\Service)->getOldNotificationsForUser($details, $org);
                 $newNotification = (new Merchant\Notifications\Service)->getNewNotificationsForUser($details);
                 $data['old_notifications'] = json_encode($oldNotification);
                 $data['new_notifications'] = json_encode($newNotification);

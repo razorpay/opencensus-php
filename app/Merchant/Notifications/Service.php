@@ -14,10 +14,12 @@ class Service extends Base\Service
      *
      * @return array List of notifications for a user.
      */
-    public function getOldNotificationsForUser(array $user): array
+    public function getOldNotificationsForUser(array $user, array $org): array
     {
-        $notifications = Constants::getNotifications();
-
+        $notifications = [];
+        if ($this->isOrgRZP($org)) {
+            $notifications = Constants::getNotifications();
+        }
         return $this->notificationsFiltered($notifications, $user);
     }
 
@@ -500,4 +502,8 @@ class Service extends Base\Service
                 (in_array($key, $announcementExperiments));
     }
 
+    private function isOrgRZP(array $org): bool
+    {
+        return empty($org['custom_code'] === false) and ($org['custom_code'] === 'rzp');
+    }
 }
