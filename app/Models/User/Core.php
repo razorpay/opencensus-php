@@ -528,7 +528,7 @@ class Core extends Base\Core
 
         $this->trace->count(Metric::USER_LOGIN_COUNT, $dimensionsForUserLogin);
 
-        return $this->get($user);
+        return $this->get($user, true);
     }
 
     public function login(array $input)
@@ -573,8 +573,7 @@ class Core extends Base\Core
 
         $this->trace->count(Metric::USER_LOGIN_COUNT, $dimensionsForUserLogin);
 
-        return $this->get($user);
-
+        return $this->get($user, true);
     }
 
     public function getLoginOtpPayload(array $input, string $action)
@@ -1145,7 +1144,7 @@ class Core extends Base\Core
         (new Core)->trackOnboardingEvent($user->getEmail(),
                                          EventCode::MERCHANT_ONBOARDING_LOGIN_SUCCESS);
 
-        $response = array_merge($response, $this->get($user));
+        $response = array_merge($response, $this->get($user, true));
 
         return $response;
     }
@@ -1698,10 +1697,12 @@ class Core extends Base\Core
      * Serializes user along with all the merchant it has access to, it's
      * settings etcetera. Primarily consumed by internal dashboard application.
      *
-     * @param  Entity $user
+     * @param Entity $user
+     * @param bool   $optimize
+     *
      * @return array
      */
-    public function get(Entity $user): array
+    public function get(Entity $user, bool $optimize = false): array
     {
         $response = $user->toArrayPublic();
 
@@ -1715,16 +1716,20 @@ class Core extends Base\Core
 
         $userId = $user->getUserId();
 
-        $merchantsUnique = $this->appendBankingSpecificDetails($merchantsUnique, $userId);
+        if ($optimize === false)
+        {
+            $merchantsUnique = $this->appendBankingSpecificDetails($merchantsUnique, $userId);
 
-        $merchantsUnique = $this->addProductSpecificDetails($merchantsUnique);
+            $merchantsUnique = $this->addProductSpecificDetails($merchantsUnique);
 
-        $invitations     = $user->invitations->callOnEveryItem('toArrayUser');
-        $settings        = $user->getAllSettings();
+            $invitations     = $user->invitations->callOnEveryItem('toArrayUser');
+            $settings        = $user->getAllSettings();
+
+            $response[Entity::INVITATIONS] = $invitations;
+            $response[Entity::SETTINGS]    = $settings;
+        }
 
         $response[Entity::MERCHANTS]   = $merchantsUnique;
-        $response[Entity::INVITATIONS] = $invitations;
-        $response[Entity::SETTINGS]    = $settings;
 
         return $response;
     }

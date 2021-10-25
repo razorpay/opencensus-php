@@ -546,7 +546,11 @@ class UserTest extends TestCase
 
         $this->ba->dashboardGuestAppAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertFalse(isset($response['invitations']));
+        $this->assertFalse(isset($response['settings']));
+        $this->assertFalse(isset($response['merchants'][0]['methods']));
     }
 
     public function testMobileLoginWithPassword()

@@ -170,6 +170,7 @@ class Tracing
             'customer_fetch_multiple',
 
             //Login route analysis
+            'user_login',
             'merchant_features_fetch',
             'merchant_get_tags',
             'merchant_product_switch',
