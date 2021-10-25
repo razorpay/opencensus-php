@@ -935,12 +935,6 @@ class Service extends Base\Service
                         $data = $this->appendBankingDetails($data);
                     }
 
-
-                    if ((new Helper)->isOwner($currentMerchant))
-                    {
-                        $data['partner_intent'] = $merchantService->getPartnerIntent();
-                    }
-
                     $data['current'] = $currentMerchantId;
 
                     if($tags === "1")
@@ -975,6 +969,12 @@ class Service extends Base\Service
                         // which is causing validation failure
                         // refer this: https://razorpay.slack.com/archives/C6QPQKVLZ/p1599729634355800
                         $data['campaigns'] = $merchantService->getMerchantActiveCampaigns();
+
+                        // Fetch partner intent incase current merchant has owner role
+                        if ((new Helper)->isOwner($currentMerchant))
+                        {
+                            $data['partner_intent'] = $merchantService->getPartnerIntent();
+                        }
 
                         // if the merchant is a partner
                         if (empty($data['merchants'][$merchant['id']]['partner_type']) === false)
@@ -1426,7 +1426,8 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::GET_USER_ROUTE_INFO, [
             'action'              => 'FetchEnded',
             'end_time'            => $endTime,
-            'duration'            => $duration
+            'duration'            => $duration,
+            'controller'          => app('request')->route()->getAction()['controller']
         ]);
 
         return [$error, $genericUser];
@@ -1816,7 +1817,8 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::PRODUCT_SWITCH_ROUTE_INFO, [
             'action'              => 'ProductSwitchCompleted',
             'end_time'            => $endTime,
-            'duration'            => $duration
+            'duration'            => $duration,
+            'controller'          => app('request')->route()->getAction()['controller']
         ]);
     }
 
@@ -1972,7 +1974,8 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::LEAD_TO_SALESFORCE_ROUTE_INFO, [
             'action'              => 'LeadCreationEnded',
             'end_time'            => $endTime,
-            'duration'            => $duration
+            'duration'            => $duration,
+            'controller'          => app('request')->route()->getAction()['controller']
         ]);
 
     }
@@ -2019,7 +2022,8 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::FIRE_EVENT_TO_HUBSPOT_ROUTE_INFO, [
             'action'              => 'FetchEnded',
             'end_time'            => $endTime,
-            'duration'            => $duration
+            'duration'            => $duration,
+            'controller'          => app('request')->route()->getAction()['controller']
         ]);
     }
 

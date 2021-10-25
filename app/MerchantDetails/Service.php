@@ -228,7 +228,9 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::GET_MERCHANT_DETAILS_ROUTE_INFO, [
             'action'              => 'FetchEnded',
             'end_time'            => $endTime,
-            'duration'            => $duration
+            'duration'            => $duration,
+            'controller'          => app('request')->route()->getAction()['controller']
+
         ]);
 
         return $merchantDetails;

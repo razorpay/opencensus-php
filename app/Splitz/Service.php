@@ -96,7 +96,9 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::GET_SPLITZ_EXPERIMENTS_ROUTE_INFO, [
             'action'              => 'FetchEnded',
             'end_time'            => $endTime,
-            'duration'            => $duration
+            'duration'            => $duration,
+            'controller'          => app('request')->route()->getAction()['controller']
+
         ]);
 
         return $responseData;

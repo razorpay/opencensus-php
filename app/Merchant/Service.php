@@ -456,7 +456,8 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::GET_PARTNER_CONFIGS_ROUTE_INFO, [
             'action'              => 'FetchEnded',
             'end_time'            => $endTime,
-            'duration'            => $duration
+            'duration'            => $duration,
+            'controller'          => app('request')->route()->getAction()['controller']
         ]);
 
         return $data['items'] ?? [];
@@ -520,7 +521,8 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::GET_RAZORX_EXPERIMENTS_ROUTE_INFO, [
             'action'              => 'FetchEnded',
             'end_time'            => $endTime,
-            'duration'            => $duration
+            'duration'            => $duration,
+            'controller'          => app('request')->route()->getAction()['controller']
         ]);
 
         return $data;
@@ -554,7 +556,8 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::GET_PARTNER_INTENT_ROUTE_INFO, [
             'action'              => 'FetchEnded',
             'end_time'            => $endTime,
-            'duration'            => $duration
+            'duration'            => $duration,
+            'controller'          => app('request')->route()->getAction()['controller']
         ]);
 
         return $data['partner_intent'] ?? null;
@@ -591,13 +594,14 @@ class Service extends Base\Service
             );
         }
 
-        $endTime = microtime(true) * 1000;
+        $endTime  = microtime(true) * 1000;
         $duration = round($endTime - $startTime);
 
         $this->trace->info(TraceCode::GET_TAGS_ROUTE_INFO, [
             'action'              => 'FetchEnded',
             'end_time'            => $endTime,
-            'duration'            => $duration
+            'duration'            => $duration,
+            'controller'          => app('request')->route()->getAction()['controller']
         ]);
 
         return $data;
@@ -649,7 +653,8 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::GET_FEATURES_ROUTE_INFO, [
             'action'              => 'FetchEnded',
             'end_time'            => $endTime,
-            'duration'            => $duration
+            'duration'            => $duration,
+            'controller'          => app('request')->route()->getAction()['controller']
         ]);
 
         return $featureNames;
@@ -691,7 +696,9 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::GET_CAMPAIGNS_ROUTE_INFO, [
             'action'              => 'FetchEnded',
             'end_time'            => $endTime,
-            'duration'            => $duration
+            'duration'            => $duration,
+            'controller'          => app('request')->route()->getAction()['controller']
+
         ]);
 
         return $campaigns;
@@ -789,7 +796,9 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::GET_PAYOUT_ROUTE_INFO, [
             'action'              => 'FetchEnded',
             'end_time'            => $endTime,
-            'duration'            => $duration
+            'duration'            => $duration,
+            'controller'          => app('request')->route()->getAction()['controller']
+
         ]);
 
         return $data['count'];
