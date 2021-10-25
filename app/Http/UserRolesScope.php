@@ -287,7 +287,7 @@ class UserRolesScope
             'commissions_analytics'                         => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
             'credit_note_list'                              => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
             'credits_fetch_by_id'                           => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::FINANCE],
-            'credits_fetch_multiple'                        => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::SELLERAPP_PLUS, Role::AGENT, Role::RBL_SUPERVISOR,],
+            'credits_fetch_multiple'                        => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::SELLERAPP_PLUS, Role::AGENT, Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER, Role::LINKED_ACCOUNT_ADMIN],
             'currency_fetch_all_proxy'                      => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::SELLERAPP_PLUS, Role::AGENT, Role::RBL_SUPERVISOR,],
             'customer_create_address'                       => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
             'customer_fetch_addresses'                      => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::FINANCE,],
