@@ -11,6 +11,8 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 {
     const NA = 'not_applicable';
 
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getPaymentId(array $row)
     {
         return $row[ReconciliationFields::REFERENCE] ?? null;
