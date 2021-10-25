@@ -102,6 +102,8 @@ class Api extends Base
 
         $req = $this->getBankAccountCreateRequestForSettlementService($input, $via);
 
+        (new Validator)->validateInput('create_bank_account', $req);
+
         return $this->makeRequest(self::BANK_ACCOUNT_CREATE, $req, self::SERVICE_API, $mode);
     }
 

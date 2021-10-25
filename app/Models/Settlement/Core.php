@@ -745,10 +745,10 @@ class Core extends Base\Core
 
         try
         {
-            $response =  app('settlements_api')->merchantConfigGet($req, $mode);
+            $response = app('settlements_api')->migrateMerchantConfigCreate($req, $mode);
         }
         catch (\Throwable $e){
-            $response = app('settlements_api')->migrateMerchantConfigCreate($req, $mode);
+            $response =  app('settlements_api')->merchantConfigGet($req, $mode);
         }
 
         foreach ($scheduleMapping as $type => $methods)

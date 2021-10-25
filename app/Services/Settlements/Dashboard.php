@@ -302,6 +302,8 @@ class Dashboard extends Base
 
         $req = $this->getBankAccountCreateRequestForSettlementService($input);
 
+        (new Validator)->validateInput('create_bank_account', $req);
+
         return $this->bankAccountCreate($req, $mode);
     }
 
