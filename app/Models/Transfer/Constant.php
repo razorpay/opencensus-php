@@ -18,4 +18,7 @@ final class Constant
 
     // Fetch transfers by chunk for recon
     const CHUNK = 500;
+
+    // Retry transfer processing in case of DbQueryException
+    const TRANSFER_PROCESS_RETRIES = 2;
 }

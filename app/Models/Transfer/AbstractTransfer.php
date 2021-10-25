@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use Illuminate\Support\Facades\App;
+use Razorpay\Spine\Exception\DbQueryException;
 
 abstract class AbstractTransfer
 {
@@ -96,7 +97,7 @@ abstract class AbstractTransfer
                 {
                     $transferProcessStartTime = microtime(true);
 
-                    $this->processTransfers($payment, $transfer, $this->merchant);
+                    $this->processTransferWithRetry($payment, $transfer);
                 }
                 catch (\Exception $e)
                 {
@@ -141,6 +142,45 @@ abstract class AbstractTransfer
         (new Metric())->pushSourceIdProcessingTimeInWorkerMetrics($this->transfermode, ($endTime - $startTime));
 
         return $transfers;
+    }
+
+    public function processTransferWithRetry($payment, $transfer)
+    {
+        for ($i = 0; $i <= Constant::TRANSFER_PROCESS_RETRIES; $i++)
+        {
+            try
+            {
+                $this->processTransfers($payment, $transfer, $this->merchant);
+
+                break;
+            }
+            catch (DbQueryException $ex)
+            {
+                if ($transfer->isBalanceTransfer() === true)
+                {
+                    throw $ex;
+
+                    break;
+                }
+
+                $transfer->reload();
+
+                if ($i === Constant::TRANSFER_PROCESS_RETRIES)
+                {
+                    throw $ex;
+                }
+                else
+                {
+                    $this->trace->traceException($ex);
+                }
+            }
+            catch (\Throwable $ex)
+            {
+                throw $ex;
+
+                break;
+            }
+        }
     }
 
     public function processTransfers($payment, $transfer, $merchant)
