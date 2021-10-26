@@ -448,7 +448,14 @@ trait CommonGatewayTrait
         $entity->setAction($this->action);
 
         // Should be defined in the gateway
-        $entity->setAcquirer(static::ACQUIRER);
+        $acquirer = static::ACQUIRER;
+
+        if ($acquirer == null)
+        {
+            $acquirer = $input['payment']['gateway'];
+        }
+
+        $entity->setAcquirer($acquirer);
 
         $entity->setGateway($input['payment']['gateway']);
 

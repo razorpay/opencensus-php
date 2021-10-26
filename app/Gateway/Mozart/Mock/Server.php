@@ -313,6 +313,7 @@ class Server extends Base\Mock\Server
             'hdnOrderID'  => str_random(12),
             'payerVPA'    => 'unexpected@airtel',
             'payeeVPA'    => 'razorpay@mairtel',
+            'txnRefNo'	=> 'FT2129114821982611',
         ];
 
         $str = implode('#', $response);

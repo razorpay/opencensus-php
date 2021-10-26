@@ -125,7 +125,8 @@ class PreProcess extends Base\Mock\Server
         ]);
 
         $response->setTerminal([
-            Terminal\Entity::GATEWAY_MERCHANT_ID => 'MER0000000548542'
+            Terminal\Entity::GATEWAY_MERCHANT_ID2   => $data['payeeVPA'] ?? 'razorpay@mairtel',
+            Terminal\Entity::GATEWAY                => 'upi_airtel',
         ]);
 
         if ($data['code'] !== '0')

@@ -540,4 +540,27 @@ class UpiAirtelGatewayTest extends TestCase
             UpiEntity::STATUS_CODE          => 'U30',
         ], $upi->toArray());
     }
+
+    /**
+     * Test Unexpected payment success with pre_process action.
+     */
+    public function testUnexpectedPaymentSuccessWithPreProcess()
+    {
+        $this->app->razorx
+        ->method('getTreatment')
+        ->will($this->returnCallback(
+            function ($mid, $feature, $mode)
+            {
+                
+                if ($feature == 'upi_airtel_pre_process_v1')
+                {
+                    return 'upi_airtel';
+                }
+
+                return 'control';
+            })
+        );
+
+        $this->testUnexpectedPaymentSuccess();
+    }
 }

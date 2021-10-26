@@ -27,6 +27,9 @@ use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
 {
+    // set Upi Aquirer as null for all upi gateways.
+    const ACQUIRER = null;
+
     use AuthorizeFailed {
         extractPaymentsProperties as extractPaymentsPropertiesAuthorizedFailedTrait;
     }
@@ -2999,6 +3002,12 @@ class Gateway extends Base\Gateway
 
     public function getParsedDataFromUnexpectedCallback($callbackData)
     {
+        $version = $callbackData['data']['version'] ?? '';
+        if ($version === 'v2')
+        {
+            return $this->upiGetParsedDataFromUnexpectedCallback($callbackData);
+        }
+
         $payment = [
             'method'   => 'upi',
             'amount'   => (int) ($callbackData['amount'] * 100),
@@ -3026,6 +3035,11 @@ class Gateway extends Base\Gateway
 
     public function validatePush($input)
     {
+        $version = $input['data']['version'] ?? '';
+        if ($version === 'v2')
+        {
+            return $this->upiValidatePush($input);
+        }
         parent::action($input, Base\Action::VALIDATE_PUSH);
 
         $this->isDuplicateUnexpectedPayment($input);
@@ -3090,6 +3104,13 @@ class Gateway extends Base\Gateway
     public function authorizePush($input)
     {
         list($paymentId , $callbackData) = $input;
+
+        $version = $callbackData['data']['version'] ?? '';
+
+        if ($version === 'v2')
+        {
+            return $this->upiAuthorizePush($input);
+        }
 
         $gatewayInput = [
             'payment' => [
@@ -3201,7 +3222,6 @@ class Gateway extends Base\Gateway
                 'payload' => $input,
                 'gateway' => Payment\Gateway::UPI_AIRTEL,
             ];
-            
             return $this->upiPreProcess($data);
         }
 
