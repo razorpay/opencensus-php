@@ -7,6 +7,7 @@ use Config;
 use Mail;
 use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
+use RZP\Models\Merchant\BvsValidation\Repository;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Detail;
@@ -66,7 +67,7 @@ class CompanyPanVerificationTest extends TestCase
         $this->app->instance("rzp.mode", Mode::LIVE);
         $detailCore->saveMerchantDetails(["submit"=>"1"], $merchantDetail->merchant);
 
-        $bvsValidation = $this->getDbLastEntity("bvs_validation");
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantDetail->getMerchantId(),'merchant',Bvs\Constant::BUSINESS_PAN);
         $this->assertNotEmpty($bvsValidation);
 
         $this->assertEquals($bvsValidation->getArtefactType(), Bvs\Constant::BUSINESS_PAN);

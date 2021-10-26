@@ -47,7 +47,7 @@ class ConfigKey
 
             self::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT => [
                 Constants::STORE => Constants::REDIS,
-                Constants::READ  => [Constants::INTERNAL],
+                Constants::WRITE  => [Constants::INTERNAL],
                 Constants::TTL   => Constants::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT_TTL_IN_SECONDS
             ]
         ]

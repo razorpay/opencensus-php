@@ -8,6 +8,7 @@ use Config;
 use Mail;
 use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
+use RZP\Models\Merchant\BvsValidation\Repository;
 use RZP\Tests\Functional\Fixtures\Entity\Merchant;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
@@ -66,7 +67,7 @@ class PoiVerificationTest extends TestCase
         $detailCore->saveMerchantDetails(["submit"=>"1"], $merchantDetail->merchant);
 
         // Verify bvs_validation entity is created
-        $bvsValidation = $this->getDbLastEntity("bvs_validation");
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantDetail->getMerchantId(),'merchant',Bvs\Constant::PERSONAL_PAN);
         $this->assertNotEmpty($bvsValidation);
 
         $this->assertEquals($bvsValidation->getArtefactType(), Bvs\Constant::PERSONAL_PAN);

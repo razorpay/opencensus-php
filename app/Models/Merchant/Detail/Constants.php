@@ -12,6 +12,8 @@ use RZP\Models\Merchant\Constants as MerchantConstants;
 
 class Constants
 {
+    const BANK_ACCOUNT_VERIFICATION_MAX_ATTEMPT_COUNT='BANK_ACCOUNT_VERIFICATION_MAX_ATTEMPT_COUNT';
+
     const ADMIN  = 'admin';
     const SYSTEM = 'system';
 

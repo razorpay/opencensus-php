@@ -88,6 +88,8 @@ use RZP\Models\Merchant\Detail\BusinessDetailSearch\InMemoryBusinessSearch;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\Fraud\HealthChecker\Constants as HealthCheckerConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification\Constants as NCConstants;
+use RZP\Models\Merchant\Store\Constants as StoreConstants;
+
 
 class Core extends Base\Core
 {
@@ -242,6 +244,8 @@ class Core extends Base\Core
         $this->verifyShopEstbNumberIfApplicable($merchantDetails, $merchant, $input);
 
         $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
+
+        $this->verifyBankDetailsIfApplicable($merchantDetails, $merchant,$input);
 
         return $this->mutex->acquireAndRelease(
             $merchant->getId(),
@@ -1163,6 +1167,65 @@ class Core extends Base\Core
                 return true;
         }
     }
+
+    protected function verifyBankDetailsIfApplicable(Entity & $merchantDetails, Merchant\Entity $merchant,& $input)
+    {
+        $isKarzaVerificationEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
+            $merchant->getId(),
+            RazorxTreatment::KARZA_BANK_ACCOUNT_VERIFICATION);
+
+        if ($isKarzaVerificationEnabled === false)
+        {
+            $this->trace->info(TraceCode::RAZORX_DISABLED, [RazorxTreatment::KARZA_BANK_ACCOUNT_VERIFICATION,
+                                                            Entity::MERCHANT_ID => $merchant->getId()]);
+
+            return;
+        }
+
+        $bankDetailsChanged=$this->hasBankDetailsChanged($merchantDetails);
+
+        //do not save bank details after penny testing attempts limit breached
+        if ($this->hasPennyTestingAttemptsExhausted($merchantDetails)
+            and $bankDetailsChanged)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PENNY_TESTING_ATTEMPTS_EXHAUSTED);
+        }
+
+        if ($bankDetailsChanged)
+        {
+            $this->attemptPennyTesting($merchantDetails, $merchant);
+
+            //call to bvs for Bank Account before L2 submission
+            (new requestDispatcher\BankAccount($merchant, $merchantDetails))->triggerBVSRequest();
+        }
+    }
+
+    public function hasBankDetailsChanged($merchantDetails)
+    {
+        $existingMerchantDetails = $this->repo->merchant_detail->findOrFail($merchantDetails->getId());
+
+        if (empty($merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NAME)) and
+            empty($merchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC)) and
+            empty($merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NUMBER)))
+        {
+            return false;
+        }
+
+        $this->trace->info(TraceCode::BANK_ACCOUNT_DETAILS,
+                           [$merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NAME)   => $existingMerchantDetails->getAttribute(Entity::BANK_ACCOUNT_NAME),
+                            $merchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC)    => $existingMerchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC),
+                            $merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NUMBER) => $existingMerchantDetails->getAttribute(Entity::BANK_ACCOUNT_NUMBER)]);
+
+        if ($merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NAME) === $existingMerchantDetails->getAttribute(Entity::BANK_ACCOUNT_NAME) and
+            $merchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC) === $existingMerchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC) and
+            $merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NUMBER) === $existingMerchantDetails->getAttribute(Entity::BANK_ACCOUNT_NUMBER))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
 
     /**
      * @param Entity          $merchantDetails
@@ -2991,11 +3054,10 @@ class Core extends Base\Core
         if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false) {
             return;
         }
-        //
-        // if bank detail is same as previously saved then skip penny testing and send to manual queue .
-        //
 
-        if($merchantDetails->getBankDetailsVerificationStatus() === 'verified')
+        if(empty($merchantDetails->getBankAccountNumber()) === true or
+            empty($merchantDetails->getBankBranchIfsc()) === true or
+            empty($merchantDetails->getBankAccountName()) === true)
         {
             return;
         }
@@ -3057,13 +3119,41 @@ class Core extends Base\Core
             return;
         }
 
+        if($this->hasPennyTestingAttemptsExhausted($merchantDetails)){
+            return;
+        }
+
         $verifyBankDetailsThoughBvs = $this->updateDocumentVerificationStatus($merchant, Entity::BANK_ACCOUNT_NUMBER);
 
         if ($verifyBankDetailsThoughBvs === true) {
+
             return;
         }
 
         (new PennyTesting())->triggerPennyTesting($merchantDetails);
+    }
+
+    protected function hasPennyTestingAttemptsExhausted($merchantDetails): bool{
+        $keys = [
+            ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT
+        ];
+        $data = (new StoreCore())->fetchValuesFromStore($merchantDetails->getMerchantId(),
+                                                        ConfigKey::ONBOARDING_NAMESPACE,
+                                                        $keys,
+                                                        StoreConstants::INTERNAL);
+
+        $pennyTestingAttemptsCount = $data[ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT] ?? 0;
+
+        $this->trace->info(TraceCode::MERCHANT_STORE_GET_DETAILS, $data);
+
+        $maxPennyTestCountAllowed = env(DEConstants::BANK_ACCOUNT_VERIFICATION_MAX_ATTEMPT_COUNT);
+
+        //do not perform penny testing
+        if ($pennyTestingAttemptsCount >= $maxPennyTestCountAllowed)
+        {
+            return true;
+        }
+        return false;
     }
 
     public function isAdditionalFieldRequired($field)

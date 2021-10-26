@@ -64,5 +64,128 @@ return [
             'content' => ["results"=> []]
         ],
         'status_code' => 200,
-    ]
+    ],
+    'testSaveActivationDetailsWithBankDetails' => [
+        'request'  => [
+            'content' => [
+                'bank_account_name'   => 'Test',
+                'bank_account_number' => '111000',
+                'bank_branch_ifsc'    => 'SBIN0007105'
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'bank_account_name'   => 'Test',
+                'bank_account_number' => '111000',
+                'bank_branch_ifsc'    => 'SBIN0007105'
+            ],
+        ],
+        'status_code' => 200,
+    ],
+    'testSaveActivationDetailsWithDifferentBankDetails' => [
+        'request'  => [
+            'content' => [
+                'bank_account_name'   => 'Test',
+                'bank_account_number' => '111000',
+                'bank_branch_ifsc'    => 'SBIN0007105'
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'bank_account_name'   => 'Test',
+                'bank_account_number' => '111000',
+                'bank_branch_ifsc'    => 'SBIN0007105'
+            ],
+        ],
+        'status_code' => 200,
+    ],
+    'testSaveActivationDetailsWithoutBankDetails' => [
+        'request'  => [
+            'content' => [
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'bank_account_name'   => 'Test',
+                'bank_account_number' => '111001',
+                'bank_branch_ifsc'    => 'SBIN0007105',
+            ],
+        ],
+        'status_code' => 200,
+    ],
+    'testSaveActivationDetailsWithBankDetailsLimitBreached' => [
+        'request'  => [
+            'content' => [
+                'bank_account_name'   => 'Test',
+                'bank_account_number' => '111000',
+                'bank_branch_ifsc'    => 'SBIN0007105'
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PENNY_TESTING_ATTEMPTS_EXHAUSTED,
+        ],
+    ],
+    'testSaveActivationDetailsWithoutBankDetailsLimitBreached' => [
+        'request'  => [
+            'content' => [
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'bank_account_name'   => 'Test',
+                'bank_account_number' => '111001',
+                'bank_branch_ifsc'    => 'SBIN0007105',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testSubmitFormPennyTestingLimitBreached' => [
+        'request'  => [
+            'content' => [
+                'submit'=> 1,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'bank_account_name'   => 'Test1',
+                'bank_account_number' => '111001',
+                'bank_branch_ifsc'    => 'SBIN0007105'
+            ],
+        ],
+        'status_code' => 200,
+    ],
+    'testSubmitFormPennyTestingLimitNotBreached' => [
+        'request'  => [
+            'content' => [
+                'submit'=> 1,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'bank_account_name'   => 'Test1',
+                'bank_account_number' => '111001',
+                'bank_branch_ifsc'    => 'SBIN0007105'
+            ],
+        ],
+        'status_code' => 200,
+    ],
 ];

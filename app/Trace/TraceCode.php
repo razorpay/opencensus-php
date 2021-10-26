@@ -3046,6 +3046,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTO_POPULATE_GST_DETAILS_FAILED                      = 'AUTO_POPULATE_GST_DETAILS_FAILED';
     const BVS_GET_GST_DETAILS_RESPONSE                          = 'BVS_GET_GST_DETAILS_RESPONSE';
     const BVS_GET_GST_DETAILS_REQUEST                           = 'BVS_GET_GST_DETAILS_REQUEST';
+    const RAZORX_DISABLED                                       = 'RAZORX_DISABLED';
     const MERCHANT_STORE_GET_DETAILS                            = 'MERCHANT_STORE_GET_DETAILS';
     const BVS_GET_GST_DETAILS_ERROR                             = 'BVS_GET_GST_DETAILS_ERROR';
 
@@ -4917,7 +4918,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SHOW_CREATE_TICKET_POPUP_DEBUG                                 = 'SHOW_CREATE_TICKET_POPUP_DEBUG';
     // Logs for bank account update via penny testing
+    const PENNY_TESTING_LIMIT_BREACHED                                   = 'PENNY_TESTING_LIMIT_BREACHED';
     const BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_INITIATED                = 'BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_INITIATED';
+    const BANK_ACCOUNT_DETAILS                                           = 'BANK_ACCOUNT_DETAILS';
     const BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_SUCCESS                  = 'BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_SUCCESS';
     const BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_PENNY_TESTING_FAILURE    = 'BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_PENNY_TESTING_FAILURE';
     const BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_WORKFLOW_CREATED         = 'BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_WORKFLOW_CREATED';

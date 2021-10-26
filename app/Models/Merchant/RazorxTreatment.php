@@ -268,6 +268,9 @@ final class RazorxTreatment
     // experiment to enable self serving of auto kyc unregistered merchants
     const UNREG_SELF_SERVE_AUTO_KYC = 'unreg_self_serve_auto_kyc';
 
+    // Experiment to verify bank account via karza
+    const KARZA_BANK_ACCOUNT_VERIFICATION = 'KARZA_BANK_ACCOUNT_VERIFICATION';
+
     // some merchants require more attempts to fetch their whole statement. hence special attempt limit should be enabled for them.
     const BANKING_ACCOUNT_STATEMENT_SPECIAL_ATTEMPT_LIMIT = 'banking_account_statement_special_attempt_limit';
 

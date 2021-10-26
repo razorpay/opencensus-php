@@ -1246,6 +1246,7 @@ class ErrorCode
     //
     // BVS
     //
+    const BAD_REQUEST_PENNY_TESTING_ATTEMPTS_EXHAUSTED                              = 'BAD_REQUEST_PENNY_TESTING_ATTEMPTS_EXHAUSTED';
     const VENDOR_CONNECTION_ERROR                                                   = 'VENDOR_CONNECTION_ERROR';
     const BAD_REQUEST_COMPANY_SEARCH_RETRIES_EXHAUSTED                              = 'BAD_REQUEST_COMPANY_SEARCH_RETRIES_EXHAUSTED';
     const SERVER_ERROR_VALIDATION_ID_MISSING                                        = 'SERVER_ERROR_VALIDATION_ID_MISSING';

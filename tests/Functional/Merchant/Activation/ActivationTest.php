@@ -2966,7 +2966,10 @@ class ActivationTest extends OAuthTestCase
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
-
+        Config::set('applications.kyc.mock', true);
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+        Mail::fake();
         $this->startTest();
 
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
