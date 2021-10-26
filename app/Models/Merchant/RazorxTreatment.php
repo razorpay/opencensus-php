@@ -131,6 +131,9 @@ final class RazorxTreatment
     // Experiment for 2FA on critical actions
     const VALIDATE_USER_2FA_STATUS = 'validate_user_2fa_status';
 
+    // Experiment to send login email notification to user
+    const USER_LOGIN_EMAIL_NOTIFICATION = 'user_login_email_notification';
+
     // Block external transaction webhooks for RBL CA
     const BLOCK_EXTERNAL_TRANSACTION_CREATED_WEBHOOK_RBL = 'block_external_transaction_created_webhook_rbl';
 

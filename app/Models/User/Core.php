@@ -21,9 +21,9 @@ use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
+use RZP\Constants\Environment;
 use RZP\Mail\User as UserMail;
 use RZP\Services\TokenService;
-use RZP\Constants\Environment;
 use RZP\Services\HubspotClient;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
@@ -32,6 +32,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Http\UserRolePermissionsMap;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountService;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Feature\Constants as FeatureConstant;
@@ -168,6 +169,7 @@ class Core extends Base\Core
 
         return $user;
     }
+
 
     public function savePasswordResetTokenAndExpiry(Entity $user, string $token, int $expiry)
     {
@@ -533,6 +535,10 @@ class Core extends Base\Core
 
     public function login(array $input)
     {
+        $browserDetails = $input[Constants::BROWSER_DETAILS] ?? null;
+
+        unset($input[Constants::BROWSER_DETAILS]);
+
         $user = $this->mobileLoginApplicable($input);
 
         if ($user !== null)
@@ -573,7 +579,35 @@ class Core extends Base\Core
 
         $this->trace->count(Metric::USER_LOGIN_COUNT, $dimensionsForUserLogin);
 
+        $loginMailNotificationEnabled = (new Merchant\Core())->isRazorxExperimentEnable($user->getId(),
+            RazorxTreatment::USER_LOGIN_EMAIL_NOTIFICATION);
+
+        // inform the user about the login activity (only if the email is verified and Razorx exp is enabled)
+        if (($user->getConfirmedAttribute() === true) and ($loginMailNotificationEnabled === true))
+        {
+            $this->sendLoginMailToUser($user, $browserDetails);
+        }
+
         return $this->get($user, true);
+    }
+
+    private function sendLoginMailToUser(Entity $user, array $browserDetails)
+    {
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        $orgId =  Org\Entity::verifyIdAndStripSign($orgId);
+
+        $orgHostname = $this->app['basicauth']->getOrgHostName();
+
+        $loginAt = Carbon::now('UTC')->isoFormat('lll');
+
+        // send login notification for Razorpay org only
+        if ($orgId === Org\Entity::RAZORPAY_ORG_ID)
+        {
+            $loginMail = new UserMail\Login($user, $orgHostname, $browserDetails, $loginAt);
+
+            Mail::queue($loginMail);
+        }
     }
 
     public function getLoginOtpPayload(array $input, string $action)

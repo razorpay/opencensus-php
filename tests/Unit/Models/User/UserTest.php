@@ -1558,6 +1558,8 @@ class UserTest extends TestCase
 
         $this->userEntityMock->shouldReceive('isOrgEnforcedSecondFactorAuth')->andReturn(false);
 
+        $this->userEntityMock->shouldReceive('getId')->andReturn('100002Razorpay');
+
         $this->userEntityMock->shouldReceive('getEmail')->andReturn('dummy@example.com');
 
         $this->merchantEntityMock->shouldReceive('getId')->andReturn('1cXSLlUU8V9sXl');

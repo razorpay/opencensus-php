@@ -14,6 +14,7 @@ use RZP\Models\Merchant\Attribute\Type;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Mail\User\Otp;
+use RZP\Mail\User\Login;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
@@ -532,6 +533,10 @@ class UserTest extends TestCase
 
     public function testLogin()
     {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
         $user = $this->fixtures->create('user', ['password' => 'hello123']);
 
         $testData = & $this->testData[__FUNCTION__];
@@ -540,6 +545,7 @@ class UserTest extends TestCase
             'email'                 => $user['email'],
             'password'              => 'hello123',
             'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'browser_details'       => ['device' => 'Web', 'browser' => 'Chrome', 'os' => 'Windows 7']
         ];
 
         $testData['request']['content'] = $content;
@@ -547,6 +553,18 @@ class UserTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
 
         $response = $this->startTest();
+
+        Mail::assertQueued(Login::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('orgHostname', $viewData);
+            $this->assertArrayHasKey('browserDetails', $viewData);
+            $this->assertArrayHasKey('loginAt', $viewData);
+            $this->assertEquals('emails.user.login', $mail->view);
+
+            return true;
+        });
 
         $this->assertFalse(isset($response['invitations']));
         $this->assertFalse(isset($response['settings']));
@@ -2247,6 +2265,7 @@ class UserTest extends TestCase
             'email'    => $user['email'],
             'password' => 'hello123',
             'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'browser_details'       => []
         ];
 
         $testData['request']['content'] = $content;
