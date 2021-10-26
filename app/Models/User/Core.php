@@ -1432,8 +1432,13 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($user);
 
-        $this->app['module']->secondFactorAuth::make(AuthConstants::SMS_OTP_AUTH)
-            ->sendOtp($smsOtpAuthPayload);
+        $input += [
+            Entity::MEDIUM => 'sms',
+            Entity::ACTION => Entity::SECOND_FACTOR_AUTH,
+            Entity::TOKEN  => $user->getId()
+        ];
+
+        $this->sendOtp($input, null, $user);
 
         return [];
     }
