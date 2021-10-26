@@ -3975,6 +3975,7 @@ class Core extends Base\Core
 
                     $this->trace->info(TraceCode::PENDING_APPROVAL_EMAILS_PAYOUTS_QUERY_DURATION, [
                                                         'query_execution_time' => millitime() - $startAt,
+                                                        'merchant_user_data'   => $input,
                                                         'payouts_data'         => $payouts
                             ]);
 
