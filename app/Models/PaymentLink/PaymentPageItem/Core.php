@@ -173,7 +173,7 @@ class Core extends Base\Core
 
         $paymentPageItem->edit($input);
 
-        Tracer::inSpan(['name' => 'payment_page.ppi.update.upsert'], function() use($paymentPageItem)
+        Tracer::inSpan(['name' => 'payment_page.ppi.update.upsert'], function() use($paymentPageItem, $input)
         {
             $this->upsertSettings($paymentPageItem, $input[Entity::SETTINGS] ?? []);
         });
