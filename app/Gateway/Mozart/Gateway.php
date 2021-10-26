@@ -1652,13 +1652,13 @@ class Gateway extends Base\Gateway
         $url =  $baseUrl . $prefix . '/' .  $gateway . '/v1/' . $this->action;
 
         // Use access code from terminal only when it is a UPI ICICI Recurring
-        if (($gateway === Payment\Gateway::UPI_ICICI ) and
-            ($this->isUpiRecurringPayment($input['payment']) === true))
+        if ($gateway === Payment\Gateway::UPI_ICICI)
         {
-            $accessCode = trim($input['terminal']['gateway_access_code'] ?? null);
+            $version = $this->getMozartVersionForUpiIcici($input);
 
-            if ($accessCode === 'v2') {
-                $url = $baseUrl . $prefix . '/' . $gateway . '/v2/' . $this->action;
+            if ($version !== null)
+            {
+                $url = $baseUrl . $prefix . '/' . $gateway . '/' . trim($version) . '/' . $this->action;
 
                 return $url;
             }
@@ -1691,6 +1691,22 @@ class Gateway extends Base\Gateway
         }
 
         return $url;
+    }
+
+    /**
+     * @param $input
+     * @return mixed|null
+     */
+    protected function getMozartVersionForUpiIcici($input)
+    {
+        $version = null;
+
+        if ($this->isUpiRecurringPayment($input['payment']) === true)
+        {
+            $version = $input['terminal']['gateway_access_code'] ?? null;
+        }
+
+        return $version;
     }
 
     protected function getAuthenticatedMozartRequestArray($url, $content, $mode = null, $gateway = null)
