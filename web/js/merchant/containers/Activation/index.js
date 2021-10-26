@@ -123,6 +123,7 @@ export default class ActivationContainer extends Component {
   }
 
   fetchActivationDetails(accountId) {
+    const isLiteOnboarding = this.props?.user?.isLiteOnboarding;
     // Check Partner activation status for eligible users
     const shouldCheckForPartnerActivationStatus = !this.isSourceRX && this.props.user.isPartner() && this.props.user.isIndependentPartnerKYCEnabled;
     if (shouldCheckForPartnerActivationStatus) {
@@ -136,7 +137,7 @@ export default class ActivationContainer extends Component {
         accountId,
       }),
       !accountId && merchantFetch('merchant/activation/business_categories'),
-      !this.isSourceRX && merchantFetch('merchant/aov-config'),
+      !isLiteOnboarding && !this.isSourceRX && merchantFetch('merchant/aov-config'),
     ]).then(async ([data, categories, aov_list]) => {
       data = data.data;
       categories = categories && categories.data;

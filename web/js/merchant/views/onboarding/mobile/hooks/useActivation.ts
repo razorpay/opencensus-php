@@ -126,7 +126,11 @@ export default function useActivation() {
         { ...data, isInstantActivationEnabled: experiments.isInstantActivationEnabled },
         'business_details',
       );
-      const isBankAndCompanyDetailsTabComplete = isTabComplete(data, 'bank_and_company_details');
+      const isBankAndCompanyDetailsTabComplete = isTabComplete(
+        data,
+        'bank_and_company_details',
+        experiments.isLiteOnboarding,
+      );
       const isDocumentsUploadTabComplete = isDocumentTabComplete(
         {
           ...data,
@@ -136,6 +140,7 @@ export default function useActivation() {
           additionalDoc,
         },
         experiments.isGstinMandatory,
+        experiments.isLiteOnboarding,
       );
       setContactDetailsCompleted(isContactDetailsTabComplete);
       setBusinessOverviewCompleted(isBusinessOverviewTabComplete);

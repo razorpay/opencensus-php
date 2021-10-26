@@ -312,8 +312,10 @@ const businessModel = [
         );
       }
     },
-    _when: (activation) =>
-      !isSourceRX() && activation.props.user.isBDAndAovEnabled && activation.props.user.isOrgRZP,
+    _when: (activation) => {
+      const user = activation?.props?.user;
+      return !isSourceRX() && !user?.isLiteOnboarding && user?.isBDAndAovEnabled && user?.isOrgRZP;
+    },
   },
   [
     {
@@ -864,6 +866,7 @@ const bankAccountFields = [
       isUnregisteredBusiness(activation) || activation.props.user.isRegAutoKYCEnabled
         ? 'We will deposit a small amount of money in your account to verify the account.'
         : '',
+    _when: (activation) => !activation?.props?.user?.isLiteOnboarding,
     onBlur: function onBlur() {
       if (!this.isOnKYCTab()) {
         const { user, fetchBankVerificationAttemptCount } = this.props;
@@ -995,7 +998,7 @@ const bankAccountFields = [
       },
       _when: (activation) => {
         const isLocked = activation.props.data.locked;
-        return !isLocked;
+        return !isLocked && !activation?.props?.user?.isLiteOnboarding;
       },
       onBlur: function (e) {
         if (!this.isOnKYCTab()) {

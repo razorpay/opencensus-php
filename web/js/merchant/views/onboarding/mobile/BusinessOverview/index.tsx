@@ -312,7 +312,7 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                   </IconContainer>
                 </Container>
               </Field>
-              <Field>
+              <Field last={experiments.isLiteOnboarding}>
                 <Space margin={[3.7, 0, 0, 0]}>
                   <View>
                     <TextArea
@@ -333,7 +333,7 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                   </View>
                 </Space>
               </Field>
-              <Field last>
+              <Field visible={!experiments.isLiteOnboarding} last={!experiments.isLiteOnboarding}>
                 <Space margin={[3.7, 0, 0, 0]}>
                   <View>
                     <BusinessAOV

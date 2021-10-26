@@ -23,19 +23,14 @@ const REG_BANK_ERROR =
 test('should render Bank Details fields and not Company Details fields for unregistered business', async () => {
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText('Beneficiary Name')).toBeInTheDocument();
   expect(screen.getByText('Account Number')).toBeInTheDocument();
-  expect(screen.getByText('Re-Enter Account Number')).toBeInTheDocument();
   expect(screen.getByText('IFSC Code')).toBeInTheDocument();
-  const [beneficaryName, accNumber, reAccNumber]: any = screen.getAllByTestId('ds-text-input');
+  const [beneficaryName, accNumber]: any = screen.getAllByTestId('ds-text-input');
   fireEvent.change(beneficaryName, { target: { value: 'xeno' } });
   fireEvent.blur(beneficaryName);
 
   fireEvent.change(accNumber, { target: { value: '123456778' } });
   fireEvent.blur(accNumber);
-
-  fireEvent.change(reAccNumber, { target: { value: '123456778' } });
-  fireEvent.blur(reAccNumber);
 });
 
 test('should show bank verification status error for unreg type', async () => {

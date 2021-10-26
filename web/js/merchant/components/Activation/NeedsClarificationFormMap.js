@@ -16,6 +16,9 @@ export const getNeedsClarificationTabsData = (
     LLPIN_BusinessTypes.indexOf(Number(activationDetails.business_type)) !== -1;
 
   const addField = (f) => {
+    if (!f) {
+      return;
+    }
     if (!hasLLPINActive && f.label === 'LLPIN') {
       return;
     }

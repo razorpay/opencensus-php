@@ -1337,6 +1337,10 @@ export default class User {
   get autoOpenL2Form() {
     return this.getExpStatus('auto-open-L2-form') && !!this.isOrgRZP;
   }
+
+  get isLiteOnboarding() {
+    return this.getExpStatus('lite_onboarding') && !!this.isOrgRZP;
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

@@ -45,7 +45,6 @@ test('renders all the input fields of the form correctly', async () => {
     },
   });
   fireEvent.blur(businessModal);
-  expect(screen.getByText('Average Order Value')).toBeInTheDocument();
 
   fireEvent.click(AovField);
   fireEvent.change(AovField, { target: { value: { value: '₹ 1 - ₹ 150' } } });

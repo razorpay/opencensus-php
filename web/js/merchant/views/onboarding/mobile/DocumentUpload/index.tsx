@@ -60,7 +60,12 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
   const { data, documentUpload, documentDelete, postData } = useActivation();
   const {
     user,
-    experiments: { isGstinMandatory, isGstinAutoPopulate, isSyncBankVerificationEnabled },
+    experiments: {
+      isGstinMandatory,
+      isGstinAutoPopulate,
+      isSyncBankVerificationEnabled,
+      isLiteOnboarding,
+    },
   } = useApp();
   const { gstinDetails } = useGstin();
   const { data: configData } = useConfigDetails('onboarding');
@@ -142,6 +147,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
         additionalDoc,
       },
       isGstinMandatory,
+      isLiteOnboarding,
     );
     setDocumentUploadCompleted(isComplete);
   };
@@ -153,14 +159,18 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       const curDoc = file[file.length - 1];
       const response = await documentDelete(curDoc);
       setProgress(0);
-      const isComplete = isDocumentTabComplete({
-        ...data,
-        documents: { ...documents, ...response?.documents },
-        addressDoc,
-        businessDoc,
-        bankDoc,
-        additionalDoc,
-      });
+      const isComplete = isDocumentTabComplete(
+        {
+          ...data,
+          documents: { ...documents, ...response?.documents },
+          addressDoc,
+          businessDoc,
+          bankDoc,
+          additionalDoc,
+        },
+        isGstinMandatory,
+        isLiteOnboarding,
+      );
       setDocumentUploadCompleted(isComplete);
       analyticsTrack({
         objectName: 'SignUp',
@@ -196,6 +206,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
         additionalDoc,
       },
       isGstinMandatory,
+      isLiteOnboarding,
     );
     setDocumentUploadCompleted(isComplete);
   }, [addressDoc, businessDoc, bankDoc, additionalDoc]);
@@ -557,7 +568,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                 </Field>
               </FormSection>
             )}
-            {isVisible('form_12a_url', data) && (
+            {isVisible('form_12a_url', { ...data, isLiteOnboarding }) && (
               <FormSection title="Form 12A Allotment Letter">
                 <Field last>
                   <FileUpload
@@ -573,7 +584,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                 </Field>
               </FormSection>
             )}
-            {isVisible('form_80g_url', data) && (
+            {isVisible('form_80g_url', { ...data, isLiteOnboarding }) && (
               <FormSection title="Form 80G Allotment Letter">
                 <Field last>
                   <FileUpload

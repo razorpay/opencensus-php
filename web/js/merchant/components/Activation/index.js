@@ -271,7 +271,7 @@ export default class ActivationWizard extends React.Component {
             props.clarificationReasons,
           ) || [];
         FORM_TABS_CONTENT.push(ndcFields);
-        FORM_TABS_NAMES.push(ndcFields.map((f) => f.name).filter((f) => Boolean(f)));
+        FORM_TABS_NAMES.push(ndcFields.map((f) => f?.name).filter((f) => Boolean(f)));
         NEEDS_CLARIFICATION_STEP = 5;
       }
       const userCanSubmitForm = this.props.user.isUnregisteredBusiness
@@ -336,6 +336,9 @@ export default class ActivationWizard extends React.Component {
     defaultFieldProps.call(this, FORM_TABS_CONTENT); // Set the default props for all tab content views
 
     const prepareFileFields = (a) => {
+      if (!a) {
+        return;
+      }
       if (a._cmp === Input.File) {
         a._cmp = Input.File;
         a._accept = ['pdf', 'image'];
@@ -761,13 +764,12 @@ export default class ActivationWizard extends React.Component {
     );
 
     /* Check validity of 'Bank account no.' before saving */
-    if (currentActive == BANK_ACCOUNT_TAB) {
+    if (currentActive == BANK_ACCOUNT_TAB && !this.props.user?.isLiteOnboarding) {
       if (
         reqData.hasOwnProperty('bank_account_number') &&
         (!reqData.bank_account_number || reqData.bank_account_number != this.state.account_no)
       ) {
         this.handleBankAccountMismatch(newActiveTab !== currentActive); // Tab is changed
-
         return; // Don't make api call if mismatch
       }
     }
@@ -941,6 +943,9 @@ export default class ActivationWizard extends React.Component {
         },
       };
       const hasFilledEverything = FORM_TABS_NAMES[NEEDS_CLARIFICATION_STEP].every((field) => {
+        if (field === 'bank_account_name' && this.props.user?.isLiteOnboarding) {
+          return true;
+        }
         if (dynamicFieldName[field]) {
           field = dynamicFieldName[field]();
         }
@@ -2295,7 +2300,9 @@ export default class ActivationWizard extends React.Component {
 
 export function defaultFieldProps(f) {
   const self = this;
-
+  if (!f) {
+    return;
+  }
   if (Array.isArray(f)) {
     return f.forEach(defaultFieldProps.bind(self));
   }
@@ -2324,6 +2331,9 @@ export function defaultFieldProps(f) {
 }
 
 export function ActivationField(field) {
+  if (!field) {
+    return;
+  }
   const {
     _cmp: Component,
     _name,

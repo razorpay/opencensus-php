@@ -116,7 +116,10 @@ export function hasUploadedBusinessProofUrl(documents): boolean {
   );
 }
 
-export function showForOrgs(businessType): boolean {
+export function showForOrgs(businessType, isLiteOnboarding): boolean {
+  if (isLiteOnboarding) {
+    return businessType && Number(businessType) === NGO;
+  }
   return businessType && ORG_BusinessTypes.indexOf(Number(businessType)) !== -1;
 }
 
@@ -169,11 +172,11 @@ function debounce(cb, time) {
 }
 export { debounce };
 
-function onScreenDocuments(data) {
+function onScreenDocuments(data, isLiteOnboarding = false) {
   const { addressDoc, businessDoc, bankDoc, additionalDoc } = data;
 
   return Object.entries(data.documents)
-    .filter((item: any) => isVisible(item[0], data))
+    .filter((item: any) => isVisible(item[0], { ...data, isLiteOnboarding }))
     .reduce((prevValue: any, currValue: any[]) => {
       const [key, value] = currValue;
       switch (key) {
@@ -230,8 +233,8 @@ export const canShowAadharDoc = (
   );
 };
 
-export function isDocumentTabComplete(data, isGstinMandatory = false) {
-  const tabData = { ...onScreenDocuments(data) };
+export function isDocumentTabComplete(data, isGstinMandatory = false, isLiteOnboarding = false) {
+  const tabData = { ...onScreenDocuments(data, isLiteOnboarding) };
   const optionalDocumentsFields = {
     iata_certificate: 'iata_certificate',
     sla_iata_certificate: 'sla_iata_certificate',
