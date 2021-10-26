@@ -49,6 +49,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::VERIFIED => 0,
+        self::EMAIL => null
     ];
 
     protected $generateIdOnCreate = false;

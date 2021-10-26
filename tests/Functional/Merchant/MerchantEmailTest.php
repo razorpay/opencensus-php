@@ -156,4 +156,51 @@ class MerchantEmailTest extends TestCase
         $this->startTest();
     }
 
+    protected function saveMerchantSupportPhoneDetails()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant['id'];
+
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $user->id,
+            'merchant_id' => $merchantId,
+            'role'        => 'owner',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $user->id);
+
+        $this->startTest();
+    }
+
+    public function testAddMerchantSupportDetails()
+    {
+        $this->saveMerchantSupportPhoneDetails();
+
+        $supportDetails  = $this->getLastEntity('merchant_email', true);
+
+        $this->assertEquals('9732097321', $supportDetails['phone']);
+
+        $this->assertNull($supportDetails['email']);
+    }
+
+    public function testUpdateMerchantSupportDetails()
+    {
+        $this->fixtures->merchant_email->create([
+            'type'  => 'support',
+            'phone' => '9732097320'
+        ]);
+
+        $this->saveMerchantSupportPhoneDetails();
+
+        $supportDetails  = $this->getLastEntity('merchant_email', true);
+
+        $this->assertEquals('9732097321', $supportDetails['phone']);
+
+        $this->assertNull($supportDetails['email']);
+    }
+
 }
+

@@ -100,4 +100,20 @@ return [
         ],
     ],
 
+    'saveMerchantSupportPhoneDetails' => [
+        'request'  => [
+            'content' => [
+                'phone'  => '9732097321',
+            ],
+            'url'     => '/proxy/merchants/supportdetails',
+            'method'  => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'type'   => 'support',
+                'phone'  => '9732097321',
+            ],
+        ],
+    ],
+
 ];

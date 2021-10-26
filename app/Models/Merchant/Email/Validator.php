@@ -9,7 +9,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::TYPE   => 'required|string|max:255|custom',
-        Entity::EMAIL  => 'required|string|custom',
+        Entity::EMAIL  => 'sometimes|string|custom',
         Entity::PHONE  => 'sometimes|numeric|digits_between:8,11',
         Entity::POLICY => 'sometimes|string|nullable',
         Entity::URL    => 'sometimes|active_url|max:255|nullable',
@@ -17,7 +17,7 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::TYPE   => 'required|string|max:255|custom',
-        Entity::EMAIL  => 'filled|string|custom',
+        Entity::EMAIL  => 'sometimes|string|custom',
         Entity::PHONE  => 'sometimes|numeric|digits_between:8,11',
         Entity::POLICY => 'sometimes|string|nullable',
         Entity::URL    => 'sometimes|active_url|max:255|nullable',
