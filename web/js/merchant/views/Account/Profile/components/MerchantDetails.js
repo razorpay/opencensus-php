@@ -160,7 +160,7 @@ const MerchantDetails = ({
       });
 
       if (response) {
-        setisAdditionalWebsiteInWorkflow(response.data.status);
+        setisAdditionalWebsiteInWorkflow(response.data);
       }
     } catch ({ errors }) {
       showNotification({
