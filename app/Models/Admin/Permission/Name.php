@@ -460,6 +460,7 @@ class Name
     const CREATE_VENDOR_PAYMENTS              = 'create_vendor_payments';
     const CREATE_VENDOR_PAYMENTS_EMAIL        = 'create_vendor_payments_email';
     const ENABLE_EMAIL_IMPORT                 = 'enable_email_import';
+    const INVITE_VENDOR                       = 'invite_vendor';
     const EDIT_VENDOR_PAYMENTS                = 'edit_vendor_payments';
     const CANCEL_VENDOR_PAYMENTS              = 'cancel_vendor_payments';
     const VIEW_VENDOR_PAYMENTS                = 'view_vendor_payments';

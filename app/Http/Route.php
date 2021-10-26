@@ -1404,6 +1404,7 @@ class Route
         'vendor_payment_get_invoice_zip_file'      => ['get',      'vendor-payments/invoices/ufh/{id}',              'VendorPaymentController@getInvoicesFromUfh'                        ],
         'vendor_payment_get_quick_filter_amounts'  => ['get',      'vendor-payments/_meta/quick-filter-amounts',     'VendorPaymentController@getQuickFilterAmounts'                     ],
         'vendor_payment_email_integration_webhook' => ['post',     'vendor-payments/mailgun-webhook',                'VendorPaymentController@processIncomingMail'                       ],
+        'vendor_payment_send_vendor_invite_ei'     => ['post',     'vendor-payments/invite-vendor',                  'VendorPaymentController@inviteVendor'                              ],
 
         // Accounting Payouts (inside vendor payments)
         'accounting_payouts_integration_status'                 => ['get',     'accounting-payouts/integration/status',          'AccountingPayoutsController@integrationStatus'         ],
@@ -4411,6 +4412,7 @@ class Route
         'merchant_product_international_request',
 
         // Vendor Payment Routes
+        'vendor_payment_send_vendor_invite_ei',
         'vendor_payment_get_email_mapping',
         'vendor_payment_create_email_mapping',
         'vendor_payment_summary',
@@ -6697,6 +6699,7 @@ class Route
         'payout_links_merchant_settings_post'          => Permission::DASHBOARD_PAYOUT_LINKS,
         'payout_links_resend_notification'             => Permission::RESEND_PAYOUT_LINKS,
         'vendor_payment_get_email_mapping'             => Permission::ENABLE_EMAIL_IMPORT,
+        'vendor_payment_send_vendor_invite_ei'         => Permission::INVITE_VENDOR,
         'vendor_payment_create_email_mapping'          => Permission::CREATE_VENDOR_PAYMENTS_EMAIL,
         'vendor_payment_contact_list'                  => Permission::VIEW_CONTACT,
         'vendor_payment_invoice_upload'                => Permission::CREATE_VENDOR_PAYMENTS,
@@ -8085,6 +8088,7 @@ class Route
             'user_verify_through_email',
             'user_fetch_admin',
             'validate_checkout_offers',
+            'vendor_payment_send_vendor_invite_ei',
             'vendor_payment_get_email_mapping',
             'vendor_payment_create_email_mapping',
             'vendor_payment_bulk_cancel',

@@ -37,7 +37,8 @@ class GenericVendorPaymentEmail extends Mailable
     {
         if ((isset($this->data[self::ATTACHMENT_FILE_URL]) === true) and
             (isset($this->data[self::FILE_NAME]) === true) and
-            (isset($this->data[self::MIME_TYPE]) === true)) {
+            (isset($this->data[self::MIME_TYPE]) === true))
+        {
 
             $this->attach($this->data[self::ATTACHMENT_FILE_URL],
                 [
@@ -90,4 +91,5 @@ class GenericVendorPaymentEmail extends Mailable
 
         return $this;
     }
+
 }

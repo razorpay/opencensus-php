@@ -484,4 +484,33 @@ class VendorPaymentTest extends TestCase
         $vpMock->shouldHaveReceived('createMerchantEmailMapping');
 
     }
+
+    public function testSendVendorInvite()
+    {
+        $user = $this->fixtures->create('user', ['id' => '20000000000006']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => BankingRole::OWNER,
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('inviteVendor')->andReturn([
+                                                                            'success' => true
+                                                                        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('inviteVendor');
+
+    }
 }

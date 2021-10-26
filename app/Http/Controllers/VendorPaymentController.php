@@ -262,4 +262,9 @@ class VendorPaymentController extends Controller
     {
         return $this->service->createMerchantEmailMapping($this->ba->getMerchant());
     }
+
+    public function inviteVendor()
+    {
+        return $this->service->inviteVendor($this->ba->getMerchant(), $this->input);
+    }
 }

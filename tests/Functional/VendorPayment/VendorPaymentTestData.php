@@ -615,5 +615,22 @@ return [
                 'email_address' => 'invoices+abcdef@invoice.razorpay.com'
             ]
         ]
+    ],
+    'testSendVendorInvite' => [
+        'request'  => [
+            'method' => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000006',
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'    => '/vendor-payments/invite-vendor',
+            'content' => [],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'success' => true
+            ]
+        ]
     ]
 ];

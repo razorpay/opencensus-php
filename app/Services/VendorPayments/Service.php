@@ -57,6 +57,7 @@ class Service
     const GET_MERCHANT_EMAIL_ADDRESS    = 'GetMerchantEmailAddress';
     const FUND_ACCOUNT_LINKING          = 'FundAccountCreated';
     const CREATE_MERCHANT_EMAIL_MAPPING = 'CreateMerchantEmailMapping';
+    const TRIGGER_VENDOR_INVITE         = 'TriggerEiVendorInvitationEmail';
 
     const BASE_PATH = 'twirp/vendorpayments.Vendorpayments';
 
@@ -578,11 +579,14 @@ class Service
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_MERCHANT_EMAIL_MAPPING);
 
-        $data = [
-            'merchant_id' => $merchant->getMerchantId()
-        ];
+        return $this->makeRequest($merchant, $url);
+    }
 
-        return $this->makeRequest($merchant, $url, $data, [], 'POST');
+    public function inviteVendor(MerchantEntity $merchant, array $data)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::TRIGGER_VENDOR_INVITE);
+
+        return $this->makeRequest($merchant, $url, $data);
     }
 
     protected function makeRequest(MerchantEntity $merchant = null,
