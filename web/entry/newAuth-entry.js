@@ -9,7 +9,7 @@ function NewAuthEntry() {
     }
 
     const cdnDashboardUrl = window.cdnDashboardUrl || '';
-    // eslint-disable-next-line
+    /* eslint-disable-next-line */
     websiteAssets.js.forEach(function (src) {
       appendScript(cdnDashboardUrl + src, false, true);
     });
