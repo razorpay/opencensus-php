@@ -15,7 +15,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::ORDER_ID    => 'required|string|size:14',
         Entity::TYPE        => 'required|string|custom',
-        Entity::VALUE       => 'array',
+        Entity::VALUE       => 'sometimes',
     ];
 
     /* Refer - https://docs.google.com/spreadsheets/d/1efKOeRykRVfdstqJAi9URd-CvC4XptldgiBbbKhmukA/edit#gid=1767878367*/

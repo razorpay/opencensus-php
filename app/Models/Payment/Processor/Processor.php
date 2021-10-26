@@ -4560,7 +4560,7 @@ class Processor
 
         $amount = $payment->getAmountWithoutConvenienceFeeIfApplicable($amount, $order);
 
-        if (($amount > $order->getAmountDue()) and
+        if (($amount > $order->getAmountDue($payment)) and
             ($this->merchant->isFeatureEnabled(Feature::EXCESS_ORDER_AMOUNT) === false))
         {
             $response['should_auto_capture'] = false;

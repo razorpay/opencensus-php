@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Order\OrderMeta;
 
+use App;
 use RZP\Models\Base;
 
 /**
@@ -62,6 +63,18 @@ class Entity extends Base\PublicEntity
             self::VALUE,
         ]);
     }
+    /*************** Setters *******************/
+    public function setValue($value)
+    {
+        if ($this->isOneClickCheckout() === false)
+        {
+            $this->setAttribute(self::VALUE, $value);
+
+            return;
+        }
+
+        $this->setValueForOneClickCheckout($value);
+    }
 
     /*************** Getters *******************/
 
@@ -72,12 +85,42 @@ class Entity extends Base\PublicEntity
 
     public function getValue()
     {
-        return $this->getAttribute(self::VALUE);
+
+        if ($this->isOneClickCheckout() === false)
+        {
+            return $this->getAttribute(self::VALUE);
+        }
+
+        return $this->getValueForOneClickCheckout();
+
     }
 
     public function getOrderId()
     {
         return $this->getAttribute(self::ORDER_ID);
+    }
+
+    protected function isOneClickCheckout()
+    {
+        return $this->getType() === Type::ONE_CLICK_CHECKOUT;
+    }
+
+    protected function getValueForOneClickCheckout()
+    {
+        $value = $this->getAttribute(self::VALUE);
+
+        $app = App::getFacadeRoot();
+
+        return $app['encrypter']->decrypt($value);
+    }
+
+    protected function setValueForOneClickCheckout($value)
+    {
+        $app = App::getFacadeRoot();
+
+        $value = $app['encrypter']->encrypt($value);
+
+        $this->setAttribute(self::VALUE, $value);
     }
 }
 

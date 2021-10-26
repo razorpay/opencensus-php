@@ -22,6 +22,10 @@ class Entity extends Base\PublicEntity
     const STATE                 = 'state';
     const COUNTRY               = 'country';
     const DELETED_AT            = 'deleted_at';
+    const CONTACT               = 'contact';
+    const NAME                  = 'name';
+    const TAG                   = 'tag';
+    const LANDMARK              = 'landmark';
 
     protected static $sign      = 'addr';
 
@@ -38,6 +42,10 @@ class Entity extends Base\PublicEntity
         self::CITY,
         self::STATE,
         self::COUNTRY,
+        self::CONTACT,
+        self::NAME,
+        self::TAG,
+        self::LANDMARK,
     ];
 
     protected static $modifiers = [
@@ -59,6 +67,10 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
+        self::CONTACT,
+        self::NAME,
+        self::TAG,
+        self::LANDMARK,
     ];
 
     protected $public = [
@@ -71,6 +83,10 @@ class Entity extends Base\PublicEntity
         self::CITY,
         self::STATE,
         self::COUNTRY,
+        self::CONTACT,
+        self::NAME,
+        self::TAG,
+        self::LANDMARK,
     ];
 
     protected $defaults = [
@@ -191,6 +207,26 @@ class Entity extends Base\PublicEntity
         ];
     }
 
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
+    public function getTag()
+    {
+        return $this->getAttribute(self::TAG);
+    }
+
+    public function getLandmark()
+    {
+        return $this->getAttribute(self::LANDMARK);
+    }
+
+    public function getContact()
+    {
+        return $this->getAttribute(self::CONTACT);
+    }
+
     // ----------------------------------- END GETTERS -----------------------------------
 
     // ----------------------------------- SETTERS -----------------------------------
@@ -235,6 +271,21 @@ class Entity extends Base\PublicEntity
     public function setCountry($country)
     {
         return $this->setAttribute(self::COUNTRY, $country);
+    }
+
+    public function setTag($tag)
+    {
+        return $this->setAttribute(self::TAG, $tag);
+    }
+
+    public function setLandmark($landmark)
+    {
+        return $this->setAttribute(self::LANDMARK, $landmark);
+    }
+
+    public function setContact($contact)
+    {
+        return $this->setAttribute(self::CONTACT, $contact);
     }
 
     // ----------------------------------- END SETTERS -----------------------------------

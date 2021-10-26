@@ -16,8 +16,10 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Models\Order\OrderMeta\Order1cc\Fields;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 
@@ -89,7 +91,7 @@ class WebhookTest extends TestCase
         $this->doAuthPayment($payment);
     }
 
-     /**
+    /**
      * If partner parent has feature "terminal_onboarding" enabled, then only payment entity should have terminal_id key
      */
     public function testPaymentWebhookShouldHaveTerminalIdForFeaturedPartner()
@@ -228,9 +230,9 @@ class WebhookTest extends TestCase
         );
 
         $app = DB::Connection('auth')
-                 ->table('applications')
-                 ->orderBy('created_at', 'desc')
-                 ->first();
+                ->table('applications')
+                ->orderBy('created_at', 'desc')
+                ->first();
 
         // create setting for translation url
         $this->ba->adminAuth();
@@ -364,6 +366,49 @@ class WebhookTest extends TestCase
         $payment['amount'] = $order->getAmount();
 
         $this->doAuthAndCapturePayment($payment);
+    }
+
+    public function test1ccOrderPaidWebhookEventData()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+
+        $this->expectWebhookEventWithContents('order.paid', $expectedEvent);
+
+        $order = $this->createOrder(
+            [
+                'amount'           => 50000,
+                'line_items_total' => 50000,
+                'receipt'          => 'random',
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount'] = $order['amount'];
+
+        $this->doAuthAndCapturePayment($payment);
+    }
+
+    protected function createOrder(array $input = [])
+    {
+        $defaultInput = [
+            'amount'        => 50000,
+            'currency'      => 'INR',
+            'receipt'       => random_int(1000, 99999),
+        ];
+
+        $input = array_merge($defaultInput, $input);
+
+        $request = [
+            'url'       => '/orders',
+            'method'    => 'POST',
+            'content'   => $input,
+            'convertContentToString' => false,
+        ];
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     public function testOrderPaidWebhookEventDataWithTaxInvoiceBlock()

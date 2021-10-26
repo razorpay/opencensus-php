@@ -2899,6 +2899,8 @@ class Route
         'create_exec_risk_action'                   => ['post',       'risk-actions/execute',                                    'RiskActionController@createAndExecuteRiskAction'              ],
         'risk_attributes_get'                       => ['get',        'risk-actions/risk_attributes',                            'RiskActionController@getRiskAttributes'                       ],
         'bulk_risk_action_status_comment'           => ['post',       'bulk-action/comment',                                     'BulkActionController@addBulkRiskActionCommentPostExecution'   ],
+        'order_update_customer_details_1cc'         => ['patch',      'orders/1cc/{id}/customer/',                             'OrderController@updateCustomerDetailsFor1CCOrder'             ],
+        'order_reset_1cc'                           => ['post',       'orders/1cc/{id}/reset',                                 'OrderController@reset1CCOrder'                                ],
     ];
 
     public static $public = [
@@ -3001,6 +3003,8 @@ class Route
         'subscription_button_hosted_view',
         'subscription_button_create_subscription',
         'checkout_rewards',
+        'order_update_customer_details_1cc',
+        'order_reset_1cc',
         '1cc_pincode_get',
     ];
 

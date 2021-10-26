@@ -74,6 +74,49 @@ return [
         ],
     ],
 
+    'test1ccOrderPaidWebhookEventData' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'order.paid',
+            'contains' => ['payment', 'order'],
+            'payload' => [
+                'order' => [
+                    'entity' => [
+                        'entity'          => 'order',
+                        // 'partial_payment' => false,
+                        'amount'          => 50000,
+                        'amount_paid'     => 50000,
+                        'amount_due'      => 0,
+                        'receipt'         => 'random',
+                        'currency'        => 'INR',
+                        'status'          => 'paid',
+                        'attempts'        => 1,
+                        'notes'           => [],
+                        'line_items_total' => 50000
+                    ],
+                ],
+                'payment' => [
+                    'entity' => [
+                        'entity'            => 'payment',
+                        'amount'            => 50000,
+                        'currency'          => 'INR',
+                        'status'            => 'captured',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => true,
+                        'description'       => 'random description',
+                        'email'             => 'a@b.com',
+                        'contact'           => '+919918899029',
+                        'notes'             => ['merchant_order_id' => 'random order id'],
+                        'error_code'        => null,
+                        'error_description' => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testOrderPaidWebhookEventDataWithTaxInvoiceBlock' => [
         'mode' => 'test',
         'event' => [

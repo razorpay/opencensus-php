@@ -19,6 +19,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Traits\TestsWebhookEvents;
 
 class OrderTest extends TestCase
 {
@@ -26,6 +27,7 @@ class OrderTest extends TestCase
     use MocksRazorx;
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use TestsWebhookEvents;
 
     protected function setUp(): void
     {
@@ -2536,6 +2538,38 @@ class OrderTest extends TestCase
         $this->assertEquals($orderData[Order\Entity::AMOUNT], $orderEntity['amount']);
     }
 
+    public function testOrderFor1CC()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
+
+        $orderData = [
+            Order\Entity::AMOUNT                              => 10000,
+            Order\Entity::RECEIPT                             => 'R1',
+            Order\OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL => 10000,
+        ];
+
+        $this->createOrder($orderData);
+        $order = $this->getDbLastOrder();
+        $orderEntity = $this->fetchOrderById($order->getPublicId());
+
+        $this->assertNotNull($orderEntity);
+        $this->assertEquals($orderData[Order\Entity::AMOUNT], $orderEntity['amount']);
+        $this->assertEquals($orderData[Order\Entity::RECEIPT], $orderEntity['receipt']);
+        $this->assertEquals($orderData[Order\OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL],
+            $orderEntity[Order\OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL]);
+    }
+
+    protected function fetchOrderById(string $publicOrderId)
+    {
+        $request = [
+            'url'       => "/orders/$publicOrderId",
+            'method'    => 'GET',
+        ];
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+    
     public function testCreateOrderWithConvenienceFeeConfigEmpty()
     {
         $data = $this->testData[__FUNCTION__];

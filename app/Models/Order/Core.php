@@ -7,6 +7,7 @@ use Illuminate\Support\Arr;
 use RZP\Base\ConnectionType;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Offer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -56,7 +57,13 @@ class Core extends Base\Core
         // in orders create validators.
         $order->merchant()->associate($merchant);
 
+        // Extracting 1cc specific fields to not interfere with Order creation.
+        list($orderMeta1ccInput, $input) = (new OrderMeta\Core())->extract1ccFields($input);
+
         $order->build($input);
+
+        // Re-merging 1CC specific fields.
+        $input = array_merge($orderMeta1ccInput, $input);
 
         $order->setPublicKey(App::getFacadeRoot()['basicauth']->getPublicKey());
 
@@ -359,6 +366,18 @@ class Core extends Base\Core
             Entity::AMOUNT_DUE               => $order->getAmountDue(),
             Entity::FIRST_PAYMENT_MIN_AMOUNT => $order->getFirstPaymentMinAmount(),
         ];
+
+        if($merchant->isFeatureEnabled(Constants::ONE_CLICK_CHECKOUT) === true)
+        {
+            foreach ($order->orderMetas as $orderMeta)
+            {
+                if($orderMeta->getType() !== OrderMeta\Type::ONE_CLICK_CHECKOUT){
+                    continue;
+                }
+                $data[OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL] = $orderMeta->getValue()[OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL];
+                break;
+            }
+        }
 
         $orderMethod = $order->getMethod();
 

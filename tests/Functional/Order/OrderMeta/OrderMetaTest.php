@@ -2,9 +2,13 @@
 
 namespace RZP\Tests\Functional\Order\OrderMeta;
 
+use DB;
+use RZP\Models\Order;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Order\OrderMeta\Order1cc\Fields;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -19,6 +23,8 @@ class OrderMetaTest extends TestCase
 
     protected function setUp(): void
     {
+        $this->testDataFilePath = __DIR__.'/OrderMetaTestData.php';
+
         parent::setUp();
 
         $this->ba->privateAuth();
@@ -52,7 +58,7 @@ class OrderMetaTest extends TestCase
                     'business_gstin' => '123456789012345',
                     'supply_type'    => 'interstate',
                     'cess_amount'    => 12500,
-                ]
+                ],
             ]
         );
 
@@ -95,7 +101,7 @@ class OrderMetaTest extends TestCase
                     'customer_name'  => 'Gaurav',
                     'number'         => '1234',
                     'date'           => 1626286666,
-                ]
+                ],
             ]
         );
 
@@ -114,13 +120,14 @@ class OrderMetaTest extends TestCase
      * @dataProvider functionValidateOrderMetaTaxInvoiceCreate
      *
      * @param array $request
-     * @param null  $expectionClass
-     * @param null  $exceptionMessage
+     * @param null $expectionClass
+     * @param null $exceptionMessage
      */
-    public function testValidateOrderMetaTaxInvoiceCreate(array $request, $expectionClass = null, $exceptionMessage = null)
+    public function testValidateOrderMetaTaxInvoiceCreate(array $request, $expectionClass = null,
+                                                                $exceptionMessage = null)
     {
         $this->makeRequestAndCatchException(
-            function() use ($request)
+            function () use ($request)
             {
                 $this->startOrderMetaFlow($request);
             },
@@ -160,7 +167,7 @@ class OrderMetaTest extends TestCase
                     'business_gstin' => '1234345',
                     'customer_name'  => 'Gaurav',
                     'number'         => '1234',
-                ]
+                ],
             ]
         );
         $cases['invalid_gstin_length'] =
@@ -272,7 +279,7 @@ class OrderMetaTest extends TestCase
                     'customer_name'  => 'Gaurav',
                     'number'         => '1234',
                     'date'           => 1626286666,
-                ]
+                ],
             ]
         );
         $cases['supply_type_absent'] = [
@@ -291,7 +298,7 @@ class OrderMetaTest extends TestCase
                     'customer_name'  => 'Gaurav',
                     'number'         => '1234',
                     'date'           => 1626286666,
-                ]
+                ],
             ]
         );
         $cases['supply_type_present_cess_amount_missing'] = [
@@ -310,7 +317,7 @@ class OrderMetaTest extends TestCase
                     'customer_name'  => 'Gaurav',
                     'number'         => '1234',
                     'date'           => 1626286666,
-                ]
+                ],
             ]
         );
         $cases['supply_type_present_gst_amount_missing'] = [
@@ -320,6 +327,192 @@ class OrderMetaTest extends TestCase
         ];
 
         return $cases;
+    }
+
+    public function test1CCOrderCreate()
+    {
+        self::setUp1CCMerchant();
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $orderId = $response['id'];
+
+        Order\Entity::verifyIdAndSilentlyStripSign($orderId);
+
+        $orderMeta = DB::select('select * from order_meta')[0];
+
+        $this->assertEquals($orderId, $orderMeta->order_id);
+
+        $this->assertNotEmpty($orderMeta->value);
+
+        $this->assertStringNotContainsString('line', $orderMeta->value);
+    }
+
+    public function testNon1CCOrderCreateFor1CCMerchant()
+    {
+        self::setUp1CCMerchant();
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
+    public function testUpdateCustomerDetailsFor1CCOrder()
+    {
+        self::setUp1CCMerchant();
+        $orderId = self::create1CCOrder();
+        $this->ba->publicAuth();
+        $url = "/orders/1cc/$orderId/customer/";
+
+        $cacheKey = "SHIPPING_INFO_10000000000000_"
+            . $orderId
+            . "_305001_in";
+
+        $this->app['cache']->put($cacheKey, [
+            "serviceable"  => true,
+            "cod"          => true,
+            "cod_fee"      => 50,
+            "shipping_fee" => 60,
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = $url;
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testUpdateCustomerDetailsFor1CCOrderWithoutServiceabilityDetailsInCache()
+    {
+        self::setUp1CCMerchant();
+
+        $orderId = self::create1CCOrder();
+
+        $this->ba->publicAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = "/orders/1cc/$orderId/customer/";
+
+        $this->startTest();
+    }
+
+    public function testUpdateCustomerDetailsForNon1CCOrder()
+    {
+        self::setUp1CCMerchant();
+        $order = $this->fixtures->order->create();
+        $orderId = $order->getPublicId();
+
+        $this->ba->publicAuth();
+
+        $url = "/orders/1cc/$orderId/customer/";
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testUpdateCustomerDetailsForNon1CCMerchant()
+    {
+        $order = $this->fixtures->order->create();
+        $orderId = $order->getPublicId();
+
+        $this->ba->publicAuth();
+
+        $url = "/orders/1cc/$orderId/customer/";
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testUpdateCustomerDetailsForPaid1CCOrder()
+    {
+        $this->setUp1CCMerchant();
+        $orderId = $this->create1CCOrder();
+        $this->fixtures->order->edit($orderId, ['status' => 'paid']);
+        $this->ba->publicAuth();
+        $url = "/orders/1cc/$orderId/customer/";
+
+        $cacheKey = "SHIPPING_INFO_10000000000000_"
+            . $orderId
+            . "_305001_in";
+
+        $this->app['cache']->put($cacheKey, [
+            "serviceable"  => true,
+            "cod"          => true,
+            "cod_fee"      => 50,
+            "shipping_fee" => 60,
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = $url;
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testReset1CCOrder()
+    {
+        self::setUp1CCMerchant();
+        $orderId = self::create1CCOrder();
+        $url = "/orders/1cc/$orderId/reset/";
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testReset1CCOrderWithNon1CCOrder()
+    {
+        $this->setUp1CCMerchant();
+        $order = $this->fixtures->order->create();
+        $orderId = $order->getPublicId();
+        $url = "/orders/1cc/$orderId/reset/";
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testReset1CCOrderWithPaidOrder()
+    {
+        $this->setUp1CCMerchant();
+        $orderId = $this->create1CCOrder();
+        $this->fixtures->order->edit($orderId, ['status' => 'paid']);
+
+        $url = "/orders/1cc/$orderId/reset/";
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    protected function create1CCOrder()
+    {
+        $this->ba->privateAuth();
+        $payload = self::get1CCOrderCreatePayload();
+        $order = $this->startOrderMetaFlow($payload);
+        return $order['id'];
+    }
+
+    protected  function setUp1CCMerchant()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
+    }
+
+    protected  function get1CCOrderCreatePayload()
+    {
+        return [
+            'amount'           => 1000,
+            'currency'         => "INR",
+            'receipt'          => "rec1",
+            'line_items_total' => 1000,
+        ];
     }
 
     protected function startOrderMetaFlow(array $payload)
@@ -335,7 +528,7 @@ class OrderMetaTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
-    private function getOrderMetaArrayWithTaxInvoice($overrideWith = []) : array
+    private function getOrderMetaArrayWithTaxInvoice($overrideWith = []): array
     {
         $taxInvoice = [
             'amount'      => 50000,
@@ -350,7 +543,7 @@ class OrderMetaTest extends TestCase
                 'customer_name'  => 'Gaurav',
                 'number'         => '1234',
                 'date'           => 1626286666,
-            ]
+            ],
         ];
 
         return array_merge($taxInvoice, $overrideWith);

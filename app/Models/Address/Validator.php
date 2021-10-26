@@ -41,6 +41,21 @@ class Validator extends Base\Validator
         Entity::PRIMARY => 'sometimes|in:0,1',
     ];
 
+    protected static $createFor1ccOrderRules = [
+        Entity::NAME             => 'sometimes|string|between:2,64',
+        Entity::CONTACT          => 'sometimes|contact_syntax',
+        Entity::TYPE             => 'required|string',
+        Entity::LINE1            => 'required|string|between:1,255',
+        Entity::LINE2            => 'sometimes|string|between:1,255',
+        Entity::CITY             => 'sometimes|string|between:2,32',
+        Entity::ZIPCODE          => 'sometimes|string|between:2,10',
+        Entity::STATE            => 'required|string|between:2,32',
+        Entity::COUNTRY          => 'required|string|between:2,64|custom',
+        Entity::TAG              => 'sometimes|string|between:2,32',
+        Entity::LANDMARK         => 'sometimes|string|between:2,32',
+        Entity::PRIMARY          => 'sometimes|in:0,1',
+    ];
+
     protected function validateCountry($attribute, $value)
     {
         $isValid = Country::checkIfValidCountry($value);

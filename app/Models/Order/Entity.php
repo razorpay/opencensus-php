@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Order;
 
+use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Item;
@@ -18,6 +19,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Order\OrderMeta\Type;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Tests\Functional\Order\OrderMeta\OrderMetaTest;
 
 /**
  * @property Offer\Entity    $offer
@@ -164,6 +166,8 @@ class Entity extends Base\PublicEntity
 
     const TAX_INVOICE = 'tax_invoice';
 
+    const ORDER_META_1CC = 'order_meta_1cc';
+    
     const CONVENIENCE_FEE_CONFIG = 'convenience_fee_config';
 
     protected $fillable = [
@@ -239,7 +243,12 @@ class Entity extends Base\PublicEntity
         self::TOKEN,
         self::TRANSFERS,
         self::CHECKOUT_CONFIG_ID,
-        self::TAX_INVOICE
+        self::TAX_INVOICE,
+        OrderMeta\Order1cc\Fields::PROMOTIONS,
+        OrderMeta\Order1cc\Fields::COD_FEE,
+        OrderMeta\Order1cc\Fields::SHIPPING_FEE,
+        OrderMeta\Order1cc\Fields::CUSTOMER_DETAILS,
+        OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL,
     ];
 
     protected $casts = [
@@ -277,6 +286,7 @@ class Entity extends Base\PublicEntity
         // but still needs to be discussed.
         // self::DISCOUNT,
         self::TAX_INVOICE,
+        self::ORDER_META_1CC,
     ];
 
     protected $dates = [
@@ -459,6 +469,11 @@ class Entity extends Base\PublicEntity
 
     /** Setters And Getters */
 
+    public function setAmount($amount)
+    {
+        return $this->setAttribute(self::AMOUNT, $amount);
+    }
+
     public function setStatus($status)
     {
         return $this->setAttribute(self::STATUS, $status);
@@ -564,9 +579,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT_PAID);
     }
 
-    public function getAmountDue()
+    public function getAmountDue($payment = null)
     {
-        return $this->getAttribute(self::AMOUNT_DUE);
+        return $this->getAttribute(self::AMOUNT_DUE) +  $this->getCodFeeIfApplicable($payment);
     }
 
     public function getFirstPaymentMinAmount()
@@ -849,6 +864,29 @@ class Entity extends Base\PublicEntity
         unset($array[Type::TAX_INVOICE]);
     }
 
+    public function setPublicOrderMeta1ccAttribute(array & $array)
+    {
+        $orderMetaArray = $this->orderMetas;
+
+        if (($orderMetaArray !== null) and
+            (count($orderMetaArray) > 0))
+        {
+            foreach ($orderMetaArray as $orderMeta)
+            {
+                if ($orderMeta->getType() === Type::ONE_CLICK_CHECKOUT)
+                {
+                    $value = $orderMeta->getValue();
+
+                    foreach ($value as $key => $val)
+                    {
+                        $array[$key] = $val;
+                    }
+                    return;
+                }
+            }
+        }
+    }
+
     protected function modifyCheckoutConfigId(& $input)
     {
         if (empty($input[self::CHECKOUT_CONFIG_ID]) === false)
@@ -856,4 +894,43 @@ class Entity extends Base\PublicEntity
            $input[self::CHECKOUT_CONFIG_ID] =   Config\Entity::verifyIdAndStripSign($input[self::CHECKOUT_CONFIG_ID]);
         }
     }
+
+    protected function getCodFeeIfApplicable($payment)
+    {
+        $fee = 0;
+
+        if ($payment === null)
+        {
+            return $fee;
+        }
+
+        if ($payment->isCod() === false)
+        {
+            return $fee;
+        }
+
+        if ($this->orderMetas === null)
+        {
+            return $fee;
+        }
+        foreach ($this->orderMetas as $orderMeta)
+        {
+            if ($orderMeta->getType() !== OrderMeta\Type::ONE_CLICK_CHECKOUT)
+            {
+                continue;
+            }
+
+            $value = $orderMeta->getValue();
+
+            if (isset($value[OrderMeta\Order1cc\Fields::COD_FEE]) === false)
+            {
+                continue;
+            }
+
+            $fee += $value[OrderMeta\Order1cc\Fields::COD_FEE];
+        }
+
+        return $fee;
+    }
+
 }

@@ -17,5 +17,10 @@ class Repository extends Base\Repository
      */
     protected $entity = Constants\Entity::ORDER_META;
 
+    public function findByOrderIdAndType($orderId, $type): Entity
+    {
+        return $this->newQuery()
+            ->where(Entity::ORDER_ID, '=', $orderId, 'AND', Entity::TYPE, '=', $type)
+            ->first();
+    }
 }
-

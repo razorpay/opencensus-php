@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
+use RZP\Models\Order\OrderMeta;
 
 class OrderController extends Controller
 {
@@ -93,5 +94,19 @@ class OrderController extends Controller
         $data = $this->service()->internalOrderUpdate($id,$input);
 
         return ApiResponse::json($data);
+    }
+
+    public function updateCustomerDetailsFor1CCOrder(string $orderId)
+    {
+        $input = Request::all();
+
+        (new OrderMeta\Service())->updateCustomerDetailsFor1CCOrder($orderId, $input);
+        return ApiResponse::json([], 200);
+    }
+
+    public function reset1CCOrder(string $orderId)
+    {
+        (new OrderMeta\Service())->reset1CCOrder($orderId);
+        return ApiResponse::json([], 200);
     }
 }

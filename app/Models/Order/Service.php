@@ -12,7 +12,6 @@ use RZP\Constants;
 use RZP\Models\BankAccount;
 use RZP\Base\ConnectionType;
 use RZP\Models\Bank\BankCodes;
-use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class Service extends Base\Service
@@ -96,7 +95,7 @@ class Service extends Base\Service
     {
         $order = $this->createOrder($input);
 
-        $this->trace->info(TraceCode::ORDER_CREATION_INITIATED,[
+        $this->trace->info(TraceCode::ORDER_CREATION_INITIATED, [
             "merchant_id" => $this->merchant->getId(),
         ]);
 

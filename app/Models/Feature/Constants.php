@@ -908,6 +908,12 @@ class Constants
      * Initially implemented specifically for whatsapp.
      */
     const HIGH_TPS_COMPOSITE_PAYOUT = 'high_tps_composite_payout';
+    
+    /**
+     * One click checkout
+     */
+    const ONE_CLICK_CHECKOUT = 'one_click_checkout';
+
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -938,6 +944,7 @@ class Constants
         self::DIRECT_SETTLEMENT,
         self::RAAS,
         self::DISABLE_SIFT_JS,
+        self::ONE_CLICK_CHECKOUT,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -1289,6 +1296,7 @@ class Constants
         self::NETWORK_TOKENIZATION_LIVE       => true,
         self::HIGH_TPS_COMPOSITE_PAYOUT       => true,
         self::ALLOW_NETWORK_TOKENS            => true,
+        self::ONE_CLICK_CHECKOUT              => true,
         self::ENABLE_PAYPAL_AS_BACKUP         => true,
     ];
     // Entity type constants
@@ -1869,6 +1877,11 @@ class Constants
         self::NEW_SETTLEMENT_SERVICE => [
             'feature'       => self::NEW_SETTLEMENT_SERVICE,
             'display_name'  => 'Enable new flow for settlements',
+                'documentation' => '',
+        ],
+        self::ONE_CLICK_CHECKOUT => [
+            'feature'       => self::ONE_CLICK_CHECKOUT,
+            'display_name'  => 'One click checkout',
             'documentation' => '',
         ],
     ];

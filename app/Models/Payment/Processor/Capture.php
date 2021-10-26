@@ -1142,7 +1142,7 @@ trait Capture
 
             $amount = $payment->getAmountWithoutConvenienceFeeIfApplicable($amount, $order);
 
-            if (($amount > $order->getAmountDue()) and
+            if (($amount > $order->getAmountDue($payment)) and
                 ($this->merchant->isFeatureEnabled(Feature\Constants::EXCESS_ORDER_AMOUNT) === false))
             {
                 throw new Exception\BadRequestValidationFailureException(

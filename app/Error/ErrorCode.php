@@ -2342,6 +2342,9 @@ class ErrorCode
     const GATEWAY_ERROR_REFUND_LIMIT_CROSSED                                        = 'GATEWAY_ERROR_REFUND_LIMIT_CROSSED';
     const GATEWAY_ERROR_WHILE_PROCESSING_REFUND_REQUEST                             = 'GATEWAY_ERROR_WHILE_PROCESSING_REFUND_REQUEST';
     const GATEWAY_ERROR_REMITTER_BANK_NOT_AVAILABLE                                 = 'GATEWAY_ERROR_REMITTER_BANK_NOT_AVAILABLE';
+    const BAD_REQUEST_NON_1CC_MERCHANT                                              = 'BAD_REQUEST_NON_1CC_MERCHANT';
+    const BAD_REQUEST_INVALID_1CC_ORDER                                             = 'BAD_REQUEST_INVALID_1CC_ORDER';
+    const BAD_REQUEST_SHIPPING_INFO_NOT_FOUND                                       = 'BAD_REQUEST_SHIPPING_INFO_NOT_FOUND';
 
     //Dynamic Fee Bearer Error Codes
     const BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG                                = 'BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG';

@@ -356,7 +356,7 @@ class Validator extends Base\Validator
 
         $partialPaymentAllowed = $order->isPartialPaymentAllowed();
 
-        $orderAmountDue = $order->getAmountDue();
+        $orderAmountDue = $order->getAmountDue($payment);
 
         if (($partialPaymentAllowed === false) and
             ($orderAmountDue !== $paymentAmount))
