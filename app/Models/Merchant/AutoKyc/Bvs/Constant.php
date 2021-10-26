@@ -12,6 +12,8 @@ class Constant
     //
     // Request fields
     //
+    const BUSINESS_NAME     = 'business_name';
+    const NAME_OF_PARTNERS   = 'name_of_partners';
     const CONFIG_NAME       = 'config_name';
     const TYPE              = 'type';
     const DETAILS           = 'details';
@@ -73,6 +75,7 @@ class Constant
     const GST_CERTIFICATE_OCR_CONFIG = 'gst_in_ocr';
     const MSME_OCR                   = 'msme_ocr';
     const SHOP_ESTABLISHMENT_OCR     = 'shop_establishment_ocr';
+    const PARTNERSHIP_DEED_OCR       = 'partnership_deed_ocr';
 
     const CANCELLED_CHEQUE_OCR_PERSONAL_PAN             = 'cancelled_cheque_ocr_personal_pan';
     const CANCELLED_CHEQUE_OCR_BUSINESS_PAN             = 'cancelled_cheque_ocr_business_pan';
@@ -108,6 +111,7 @@ class Constant
     const SHOP_ESTABLISHMENT = 'shop_establishment';
     const GST_CERTIFICATE    = 'gst_certificate';
     const MSME               = 'msme';
+    const PARTNERSHIP_DEED   = 'partnership_deed';
 
     //
     // Company Search in BVS
@@ -139,7 +143,15 @@ class Constant
     const RAZORX_EXPERIMENT               = 'razorx_experiment';
     const AADHAR_ESIGN_SESSION_KEY_PREFIX = "aadhar_esign_session";
     const CUSTOM_CALLBACK_HANDLER         = 'custom_callback_handler';
+
     const FIELD_ARTEFACT_DETAILS_MAP      = [
+
+        self::PARTNERSHIP_DEED             => [
+            self::ARTEFACT_TYPE   => self::PARTNERSHIP_DEED,
+            self::PROOF_INDEX     => '1',
+            self::VALIDATION_UNIT => Constants::PROOF,
+            self::CONFIG_NAME     => self::PARTNERSHIP_DEED_OCR
+        ],
         Type::GST_CERTIFICATE             => [
             self::ARTEFACT_TYPE   => self::GSTIN,
             self::PROOF_INDEX     => '1',

@@ -84,6 +84,10 @@ class Factory
                 return new DefaultStatusUpdater(
                     $merchant, Entity::MSME_DOC_VERIFICATION_STATUS,
                     $validation);
+
+            case Constant::PARTNERSHIP_DEED :
+                return new PartnershipDeedOcrStatusUpdater($merchant,$validation);
+
             default :
 
                 throw new LogicException(

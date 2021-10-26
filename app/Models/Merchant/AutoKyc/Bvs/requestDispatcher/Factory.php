@@ -44,6 +44,15 @@ class Factory
             case Type::GST_CERTIFICATE:
                 return new GSTCertificateOcr($merchant, $merchantDetails, $document);
 
+            case Type::BUSINESS_PROOF_URL:
+
+                switch ($merchantDetails->getBusinessType())
+                {
+                    case Detail\BusinessType::PARTNERSHIP:
+                        return new PartnershipDeedOcr($merchant, $merchantDetails, $document);
+                }
+                break;
+
             default:
                 throw new Exception\LogicException('document type not supported in this flow: ' . $document->getDocumentType());
         }

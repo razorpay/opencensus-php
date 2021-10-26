@@ -3108,6 +3108,7 @@ class Core extends Base\Core
                     return $this->getApplicableActivationStatusForUnregisteredMerchant($merchantDetails);
 
                 case BusinessType::PROPRIETORSHIP:
+                case BusinessType::PARTNERSHIP:
                 case BusinessType::PRIVATE_LIMITED:
                 case BusinessType::PUBLIC_LIMITED:
                 case BusinessType::LLP:
@@ -3209,12 +3210,24 @@ class Core extends Base\Core
             return false;
         }
 
-        $conditions = AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType];
+        $conditions          = AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType];
 
-        return (new Parser)->parse($conditions, function ($key, $condition) use ($merchantDetails){
+        $isExperimentEnabled = true;
+
+        if ($businessType === BusinessType::PARTNERSHIP)
+        {
+            $isExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
+                                                                                 RazorxTreatment::AUTO_KYC_PARTNERSHIP);
+        }
+        if ($isExperimentEnabled === false)
+        {
+            return false;
+        }
+
+        return (new Parser)->parse($conditions, function($key, $condition) use ($merchantDetails) {
 
             $entity = $condition[AutoKyc\Constants::ENTITY];
-            $in = $condition[AutoKyc\Constants::IN];
+            $in     = $condition[AutoKyc\Constants::IN];
 
             switch ($entity)
             {
@@ -3231,25 +3244,6 @@ class Core extends Base\Core
     protected function verifyBusinessVerificationCondition(Entity $merchantDetails, string $key, array $in)
     {
         [$type, $identifier] = explode('|', $key);
-
-        $isExperimentEnabled=true;
-
-        if ($type === 'shop_establishment')
-        {
-            $isExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-                                                                                 RazorxTreatment::SHOP_ESTABLISHMENT_DOC_VERIFICATION);
-        }
-
-        elseif($type === 'gstin')
-        {
-            $isExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-                                                                                 RazorxTreatment::GST_IN_DOC_VERIFICATION);
-        }
-
-        if ($isExperimentEnabled === false)
-        {
-            return false;
-        }
 
         $verificationDetail = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifier(
             $merchantDetails->getMerchantId(),

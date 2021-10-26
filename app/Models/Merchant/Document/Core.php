@@ -397,7 +397,7 @@ class Core extends Base\Core
             $requestDispatcher = $factory->getBvsRequestDispatcherForDocument(
                 $document, $merchant, $merchantDetails);
 
-            $requestDispatcher->triggerBVSRequest();
+            if(empty($requestDispatcher)===false) $requestDispatcher->triggerBVSRequest();
         }
     }
 

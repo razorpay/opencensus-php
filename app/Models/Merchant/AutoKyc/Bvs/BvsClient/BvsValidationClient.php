@@ -67,7 +67,7 @@ class BvsValidationClient extends BaseClient
      */
     public function createValidation(array $validation)
     {
-        $this->trace->info(TraceCode::BVS_CREATE_VALIDATION_REQUEST, ['artefact' => $validation['artefact']]);
+        $this->trace->info(TraceCode::BVS_CREATE_VALIDATION_REQUEST, ['validation' => $validation]);
 
         $validationCreateRequest = $this->getCreateValidationRequest($validation);
 

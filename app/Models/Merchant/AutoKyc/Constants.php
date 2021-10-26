@@ -36,12 +36,7 @@ class Constants
 
     const MSME_DOC_VERIFICATION_CONDITION = self::DEFAULT_CONDITION;
 
-    const SHOP_ESTABLISHMENT_DOC_VERIFICATION_CONDITION = [
-        'entity' => E::MERCHANT_VERIFICATION_DETAIL,
-        'in'     => [POIStatus::VERIFIED]
-    ];
-
-    const GST_CERTIFICATE_VERIFICATION_CONDITION = [
+    const DEFAULT_VERIFICATION_DETAIL_CONDITION = [
         'entity' => E::MERCHANT_VERIFICATION_DETAIL,
         'in'     => [POIStatus::VERIFIED]
     ];
@@ -63,52 +58,52 @@ class Constants
     ];
 
     const POA_VERIFICATION_CONDITION = [
-        Operator::OR    => [
-            Operator::AND => [
-                SEntity::AADHAAR_VERIFICATION_WITH_PAN_STATUS   => self::AADHAAR_WITH_PAN_CONDITION,
+        Operator:: OR => [
+            Operator:: AND                  => [
+                SEntity::AADHAAR_VERIFICATION_WITH_PAN_STATUS => self::AADHAAR_WITH_PAN_CONDITION,
                 SEntity::AADHAAR_ESIGN_STATUS                 => self::ESIGN_AADHAAR_CONDITION,
             ],
-            Entity::POA_VERIFICATION_STATUS                 => self::POA_CONDITION,
+            Entity::POA_VERIFICATION_STATUS => self::POA_CONDITION,
         ]
     ];
 
     const AUTO_KYC_VERIFICATION_CONDITIONS = [
         BusinessType::NOT_YET_REGISTERED => [
             Operator:: AND => [
-                Entity::POI_VERIFICATION_STATUS               => self::POI_CONDITION,
-                Operator::AND   => [
-                    Operator::AND   => self::BANK_DETAILS_VERIFICATION_CONDITION,
-                    Operator::OR    => self::POA_VERIFICATION_CONDITION
+                Entity::POI_VERIFICATION_STATUS => self::POI_CONDITION,
+                Operator:: AND                  => [
+                    Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
+                    Operator:: OR  => self::POA_VERIFICATION_CONDITION
                 ]
             ]
         ],
 
         BusinessType::INDIVIDUAL => [
             Operator:: AND => [
-                Entity::POI_VERIFICATION_STATUS               => self::POI_CONDITION,
-                Operator::AND   => [
-                    Operator::AND   => self::BANK_DETAILS_VERIFICATION_CONDITION,
-                    Operator::OR    => self::POA_VERIFICATION_CONDITION
+                Entity::POI_VERIFICATION_STATUS => self::POI_CONDITION,
+                Operator:: AND                  => [
+                    Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
+                    Operator:: OR  => self::POA_VERIFICATION_CONDITION
                 ]
             ]
         ],
 
         BusinessType::PROPRIETORSHIP => [
             Operator:: AND => [
-                Entity::POI_VERIFICATION_STATUS               => self::POI_CONDITION,
-                Operator:: OR                                 => [
+                Entity::POI_VERIFICATION_STATUS => self::POI_CONDITION,
+                Operator:: OR                   => [
                     Entity::GSTIN_VERIFICATION_STATUS              => self::GSTIN_CONDITION,
                     Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS => self::SHOP_ESTABLISHMENT_CONDITION,
                     Entity::MSME_DOC_VERIFICATION_STATUS           => self::MSME_DOC_VERIFICATION_CONDITION,
                     /* added the following for handling shop establishment document in the new merchant_verification_detail table
                      * the format followed is 'artefact_type|artefact_identifier'
                      */
-                    'shop_establishment|doc'                       => self::SHOP_ESTABLISHMENT_DOC_VERIFICATION_CONDITION,
-                    'gstin|doc'                                    => self::GST_CERTIFICATE_VERIFICATION_CONDITION
+                    'shop_establishment|doc'                       => self::DEFAULT_VERIFICATION_DETAIL_CONDITION,
+                    'gstin|doc'                                    => self::DEFAULT_VERIFICATION_DETAIL_CONDITION
                 ],
-                Operator::AND   => [
-                    Operator::AND   => self::BANK_DETAILS_VERIFICATION_CONDITION,
-                    Operator::OR    => self::POA_VERIFICATION_CONDITION
+                Operator:: AND                  => [
+                    Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
+                    Operator:: OR  => self::POA_VERIFICATION_CONDITION
                 ]
             ]
         ],
@@ -132,8 +127,16 @@ class Constants
                 Operator:: AND                          => self::BANK_DETAILS_VERIFICATION_CONDITION
             ]
         ],
-
-        BusinessType::LLP => [
+        BusinessType::PARTNERSHIP    => [
+            Operator:: AND => [
+                Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
+                Entity::COMPANY_PAN_VERIFICATION_STATUS  => self::COMPANY_PAN_CONDITION,
+                Entity::BANK_DETAILS_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
+                'partnership_deed|doc'                   => self::DEFAULT_VERIFICATION_DETAIL_CONDITION,
+                Operator:: OR                            => self::POA_VERIFICATION_CONDITION,
+            ]
+        ],
+        BusinessType::LLP            => [
             Operator:: AND => [
                 Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
                 Entity::POA_VERIFICATION_STATUS         => self::POA_CONDITION,
@@ -148,15 +151,15 @@ class Constants
         BusinessType::NOT_YET_REGISTERED => [
             Operator:: AND => [
                 Entity::POI_VERIFICATION_STATUS => self::POI_CONDITION,
-                Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION
+                Operator:: AND                  => self::BANK_DETAILS_VERIFICATION_CONDITION
             ]
         ],
 
         BusinessType::PROPRIETORSHIP => [
             Operator:: AND => [
-                Entity::POI_VERIFICATION_STATUS     => self::POI_CONDITION,
-                Entity::GSTIN_VERIFICATION_STATUS   => self::GSTIN_CONDITION,
-                Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION
+                Entity::POI_VERIFICATION_STATUS   => self::POI_CONDITION,
+                Entity::GSTIN_VERIFICATION_STATUS => self::GSTIN_CONDITION,
+                Operator:: AND                    => self::BANK_DETAILS_VERIFICATION_CONDITION
             ]
         ],
 
@@ -164,7 +167,7 @@ class Constants
             Operator:: AND => [
                 Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
                 Entity::GSTIN_VERIFICATION_STATUS       => self::GSTIN_CONDITION,
-                Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION
+                Operator:: AND                          => self::BANK_DETAILS_VERIFICATION_CONDITION
             ]
         ]
     ];
