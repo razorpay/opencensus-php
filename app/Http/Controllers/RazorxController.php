@@ -127,7 +127,7 @@ class RazorxController extends Controller
 
         $validateResponse = Requests::request(
             $url,
-            null,
+            [],
             $requestParams['data'],
             $method,
             $requestParams['options']
