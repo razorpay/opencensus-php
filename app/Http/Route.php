@@ -5578,7 +5578,7 @@ class Route
         'capital_cards_dev_admin'                  => Permission::CAPITAL_DEVELOPER,
         'capital_collections_admin'                => Permission::ADD_MERCHANT_ADJUSTMENT,
         'capital_collections_dev_admin'            => Permission::CAPITAL_DEVELOPER,
-        'capital_marketplace_admin'                => Permission::GET_AMAZON_DATA_PULL_STATUS,
+        'capital_marketplace_admin'                => Permission::LOANS_EDIT,
         'merchants_risk_service'                   => Permission::VIEW_MERCHANT_DEDUPE,
         'merchants_risk_admin'                     => Permission::VIEW_MERCHANT_DEDUPE,
         'setl_ondemand_pricing'                    => Permission::CAPITAL_DEVELOPER,
