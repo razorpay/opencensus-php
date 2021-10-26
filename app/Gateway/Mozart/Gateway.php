@@ -1656,9 +1656,9 @@ class Gateway extends Base\Gateway
         {
             $version = $this->getMozartVersionForUpiIcici($input);
 
-            if ($version !== null)
+            if ($version !== '')
             {
-                $url = $baseUrl . $prefix . '/' . $gateway . '/' . trim($version) . '/' . $this->action;
+                $url = $baseUrl . $prefix . '/' . $gateway . '/' . $version . '/' . $this->action;
 
                 return $url;
             }
@@ -1695,15 +1695,24 @@ class Gateway extends Base\Gateway
 
     /**
      * @param $input
-     * @return mixed|null
+     * @return string
      */
-    protected function getMozartVersionForUpiIcici($input)
+    protected function getMozartVersionForUpiIcici($input): string
     {
-        $version = null;
+        $version = '';
 
         if ($this->isUpiRecurringPayment($input['payment']) === true)
         {
-            $version = $input['terminal']['gateway_access_code'] ?? null;
+            $gatewayAccessCode = trim($input['terminal']['gateway_access_code'] ?? null);
+
+            if ($gatewayAccessCode === 'v2')
+            {
+                $version = 'v2';
+            }
+            else if ($gatewayAccessCode === 'v4')
+            {
+                $version = 'v4';
+            }
         }
 
         return $version;
