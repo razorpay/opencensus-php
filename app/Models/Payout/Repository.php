@@ -68,6 +68,20 @@ class Repository extends Base\Repository
     {
         $this->setBaseQueryIfApplicable($merchantId);
 
+        if (array_key_exists(Entity::BALANCE_ID, $input))
+        {
+            $availableBalances = (new Balance\SubBalanceMap\Core)->getSubBalancesForParentBalance($input[Entity::BALANCE_ID]);
+
+            if (count($availableBalances) > 0)
+            {
+                array_push($availableBalances, $input[Entity::BALANCE_ID]);
+
+                $this->baseQuery->whereIn(Entity::BALANCE_ID, $availableBalances);
+
+                unset($input[Entity::BALANCE_ID]);
+            }
+        }
+
         return parent::fetch($input, $merchantId);
     }
 

@@ -14263,6 +14263,28 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotNull($payout['initiated_at']);
     }
 
+    public function testGetPayoutsForHighTpsMerchantsWithSubBalances()
+    {
+        $this->testProcessingOfCreateRequestSubmittedPayoutForHighTps();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout->getId(), ['reference_id' => 'Kurama']);
+
+        $this->ba->privateAuth();
+
+        $request = [
+            'url'     => '/payouts?account_number=2224440041626905&reference_id=Kurama',
+            'method'  => 'get',
+            'content' => []
+        ];
+
+        $payouts = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('pout_' . $payout->getId(), $payouts['items'][0]['id']);
+
+    }
+
     public function testProcessingOfCreateRequestSubmittedPayoutForHighTpsWithLowBalance()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT]);
