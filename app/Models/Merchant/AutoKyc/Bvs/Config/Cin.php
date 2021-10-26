@@ -61,4 +61,11 @@ class Cin extends BaseConfig
             ]
         ],
     ];
+
+    protected $enrichmentDetails = [
+        "online_provider.details.company_sub_category.value",
+        "online_provider.details.company_category.value",
+        "online_provider.details.registered_address.value",
+        "online_provider.details.signatory_details",
+    ];
 }

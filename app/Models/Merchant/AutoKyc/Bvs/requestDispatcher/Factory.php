@@ -17,13 +17,18 @@ class Factory
         Detail\Entity $merchantDetails
     ): Base
     {
-        switch ($artefact) {
+        switch ($artefact)
+        {
             case Merchant\AutoKyc\Bvs\Constant::BANK_ACCOUNT:
-
                 return new BankAccount($merchant, $merchantDetails);
 
-            default:
+            case Merchant\AutoKyc\Bvs\Constant::CIN:
+                return new CinAuth($merchant, $merchantDetails);
 
+            case Merchant\AutoKyc\Bvs\Constant::LLPIN:
+                return new LlpinAuth($merchant, $merchantDetails);
+
+            default:
                 throw new Exception\LogicException('artefact type not supported in this flow: ' . $artefact);
         }
     }

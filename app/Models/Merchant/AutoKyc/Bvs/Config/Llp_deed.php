@@ -61,4 +61,13 @@ class Llp_deed extends BaseConfig
             ]
         ],
     ];
+
+    protected $enrichmentDetails = [
+        "online_provider.details.llp_status.value",
+        "online_provider.details.llpin.value",
+        "online_provider.details.llp_name.value",
+        "online_provider.details.registered_address.value",
+        "online_provider.details.description_of_main_division.value",
+        "online_provider.details.signatory_details",
+    ];
 }
