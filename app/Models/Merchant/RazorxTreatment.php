@@ -168,6 +168,8 @@ final class RazorxTreatment
 
     const QR_CODE_BANK_TRANSFER = 'qr_code_bank_transfer';
 
+    const QR_CODE_DYNAMIC_VPA = 'qr_code_dynamic_vpa';
+
     // experiment for merchant when trim migration in progress
     const TRIM_MIGRATION_IN_PROGRESS = 'trim_migration_in_progress';
 

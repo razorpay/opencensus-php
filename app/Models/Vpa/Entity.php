@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
 use RZP\Models\VirtualAccount;
+use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
 
 class Entity extends Base\PublicEntity
 {
@@ -89,6 +90,11 @@ class Entity extends Base\PublicEntity
     public function virtualAccount()
     {
         return $this->hasOne(VirtualAccount\Entity::class);
+    }
+
+    public function qrCode()
+    {
+        return $this->hasOne(QrV2\Entity::class, QrV2\Entity::ID, Entity::ENTITY_ID);
     }
 
     // ----------------------- Generators ------------------

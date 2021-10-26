@@ -3,6 +3,7 @@
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
+use RZP\Models\Vpa;
 use RZP\Models\QrCode;
 use RZP\Models\Feature;
 use RZP\Models\Customer;
@@ -305,5 +306,10 @@ class Entity extends QrCode\Entity
     public function bankAccount()
     {
         return $this->hasOne('RZP\Models\BankAccount\Entity', BankAccount\Entity::ENTITY_ID, Entity::ID);
+    }
+
+    public function vpa()
+    {
+        return $this->hasOne('RZP\Models\Vpa\Entity', Vpa\Entity::ENTITY_ID, Entity::ID);
     }
 }
