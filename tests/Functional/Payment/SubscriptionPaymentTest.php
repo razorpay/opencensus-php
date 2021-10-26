@@ -461,6 +461,56 @@ class SubscriptionPaymentTest extends TestCase
         $this->assertTrue($payment->isRecurringTypeAuto());
     }
 
+    public function testAutoPaymentWithGlobalCustomerEmandate()
+    {
+        $this->fixtures->create('customer', [
+            'id' => '100002customer',
+            'global_customer_id' => '10000gcustomer',
+        ]);
+
+        $GlobalTokenAttributes = [
+            'id'               => '100000custgupi',
+            'token'            => '10000card1234',
+            'customer_id'      => '10000gcustomer',
+            'merchant_id'      => '100000Razorpay',
+            'method'           => 'emandate',
+            'recurring_status' => 'confirmed',
+            'recurring'        => true,
+        ];
+
+        $token = $this->fixtures->create('token', $GlobalTokenAttributes);
+
+        $this->subscription->setStatus(Subscription\Status::AUTHENTICATED);
+        $this->subscription->recurring_type = 'auto';
+        $this->subscription->customer_id = '100002customer';
+        $this->subscription->global_customer = true;
+
+        $this->ba->subscriptionsAuth();
+
+        $order = $this->fixtures->create(
+            'order',
+            ['amount' => $this->cardPayment['amount']]);
+
+        $paymentArray = array_merge($this->eMandatePayment, [
+            'token' => $token->getPublicId(),
+            'order_id' => $order->getPublicId(),
+        ]);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/subscriptions',
+            'content' => $paymentArray,
+        ];
+        try
+        {
+            $this->makeRequestAndGetContent($request);
+        }
+        catch(\Exception $e)
+        {
+            $this->assertEquals($e->getMessage() ,'The id provided does not exist' );
+        }
+    }
+
     public function testCreateInitialPaymentUpiWithoutCustomer()
     {
         $this->subscription->customer_id = null;

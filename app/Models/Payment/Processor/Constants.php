@@ -18,6 +18,8 @@ class Constants
 
     const CARD                          = 'card';
 
+    const EMANDATE                      = 'emandate';
+
     const CREATED                       = 'created';
 
     const SUBSCRIPTION                  = 'subscription';
