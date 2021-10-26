@@ -1,16 +1,21 @@
 function NewAuthEntry() {
   function executeJS() {
-    var cdnDashboardUrl = window.cdnDashboardUrl || '';
-    websiteAssets.js.forEach(function (src) {
-      document.write('<script src="' + cdnDashboardUrl + src + '"></script>');
-    });
-    
-    if(!window.location.hostname.includes('axis')) {
+    function appendScript(src, async, defer) {
       const script = document.createElement('script');
-      script.src = 'https://apis.google.com/js/api:client.js';
-      script.async = true;
-      script.defer = true;
+      script.src = src;
+      script.async = async;
+      script.defer = defer;
       document.documentElement.appendChild(script);
+    }
+
+    const cdnDashboardUrl = window.cdnDashboardUrl || '';
+    // eslint-disable-next-line
+    websiteAssets.js.forEach(function (src) {
+      appendScript(cdnDashboardUrl + src, false, true);
+    });
+
+    if (!window.location.hostname.includes('axis')) {
+      appendScript('https://apis.google.com/js/api:client.js', true, true);
     }
 
     window.loadHubspot = true;

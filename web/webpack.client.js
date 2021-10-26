@@ -1,7 +1,6 @@
 /* eslint-disable no-param-reassign */
 const path = require('path');
 const webpack = require('webpack');
-
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const devMode = process.env.STAGE !== 'production';
 const isProd = process.env.STAGE !== 'development';
