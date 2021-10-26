@@ -3181,11 +3181,6 @@ class Gateway extends Base\Gateway
      */
     public function preProcessServerCallbackForUpiAirtel(string $input,$mode = null)
     {
-        $data = [
-            'payload' => $input,
-            'gateway' => Payment\Gateway::UPI_AIRTEL,
-        ];
-
         $mode = $mode === null ? Mode::LIVE : $mode ;
         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
             'api'. '_' . Payment\Gateway::UPI_AIRTEL . '_' . Action::PRE_PROCESS . '_' . 'v1',
@@ -3193,7 +3188,12 @@ class Gateway extends Base\Gateway
 
         if ($variant === 'upi_airtel')
         {
-            return $this->upiPreProcess($data);    
+            $data = [
+                'payload' => $input,
+                'gateway' => Payment\Gateway::UPI_AIRTEL,
+            ];
+            
+            return $this->upiPreProcess($data);
         }
 
         return json_decode($input, true);

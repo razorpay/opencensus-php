@@ -476,7 +476,7 @@ class UpiAirtelGatewayTest extends TestCase
         ->will($this->returnCallback(
             function ($mid, $feature, $mode)
             {                
-                if ($feature == 'api_upi_airtel_pre_process_v1')
+                if ($feature === 'api_upi_airtel_pre_process_v1')
                 {
                     return 'upi_airtel';
                 }
@@ -498,7 +498,7 @@ class UpiAirtelGatewayTest extends TestCase
         ->will($this->returnCallback(
             function ($mid, $feature, $mode)
             {   
-                if ($feature == 'api_upi_airtel_pre_process_v1')
+                if ($feature === 'api_upi_airtel_pre_process_v1')
                 {
                     return 'upi_airtel';
                 }

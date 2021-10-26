@@ -55,6 +55,8 @@ class Service
 
     const METADATA = 'metadata';
 
+    const PRE_PROCESS = 'pre_process';
+
     /**
      * Initiates the app container, trace and UPS config
      */
@@ -88,6 +90,23 @@ class Service
 
         return $serviceResponse;
     }
+    /**
+     * preProcessServerCallback handles the pre processing of callback through UPS
+     * @param  array|string $input
+     * @param  string $gateway
+     * @return array
+     */
+    public function preProcessServerCallback($input, string $gateway)
+    {
+        $this->action = self::PRE_PROCESS;
+
+        $data = [
+            'payload' => $input,
+            'gateway' => $gateway,
+        ];
+
+        return $this->action(self::PRE_PROCESS, $data);
+    }
 
     /**
      * getRequest returns the request for UPS
@@ -107,7 +126,6 @@ class Service
             Request::URL        => $domain . $this->action,
             Request::METHOD     => Request::POST,
             Request::CONTENT    => $content,
-            Request::HEADERS    => $this->getRequestHeaders(),
         ];
 
         // trace the request
@@ -147,7 +165,15 @@ class Service
             case Payment\Action::AUTHORIZE:
                 $data = $this->getRequestBodyForAuthorize($input);
                 break;
-
+            case self::PRE_PROCESS:
+                $data = $input;
+                break;
+            case Payment\Action::CALLBACK:
+                $data = [
+                    'data'      => $input['gateway'],
+                    'gateway'   => $input['payment']['gateway'],
+                ];
+                break;
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',
@@ -272,6 +298,10 @@ class Service
                 }
 
                 return $response;
+            case self::PRE_PROCESS:
+                return $response['data'];
+            case Payment\Action::CALLBACK:
+                return $response;
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',
@@ -337,6 +367,7 @@ class Service
      */
     protected function traceResponse($response)
     {
+        // TODO: Add Action based tracing and response redaction
         $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_RESPONSE, $response);
     }
 
@@ -359,7 +390,12 @@ class Service
             case Payment\Action::AUTHORIZE:
                 $traceData += $this->getAuthorizeTraceData($request[Request::CONTENT]);
                 break;
-
+            case self::PRE_PROCESS:
+                $traceData += $request[Request::CONTENT];
+                break;
+            case Payment\Action::CALLBACK:
+                $traceData += $request[Request::CONTENT];
+                break;
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',

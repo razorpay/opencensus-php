@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\PaymentsUpi\Service;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Services\RazorXClient;
+use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Method;
 use RZP\Models\Merchant\Account;
@@ -210,5 +212,122 @@ class UpiPaymentServiceTest extends TestCase
             Entity::INTERNAL_ERROR_CODE => 'GATEWAY_ERROR_ENCRYPTION_ERROR'
             ], $payment->toArray()
         );
+    }
+
+    /**
+     * Test Successful Collect Payment with pre-process through UPS
+     * @return void
+     */
+    public function testCollectPaymentSuccess()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                    ->setConstructorArgs([$this->app])
+                    ->onlyMethods(['getTreatment'])
+                    ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+        ->method('getTreatment')
+        ->will($this->returnCallback(
+            function ($mid, $feature, $mode)
+            {
+                if ($feature === 'ups_upi_airtel_pre_process_v1')
+                {
+                    return 'upi_airtel';
+                }
+                return 'control';
+            })
+        );
+
+        $this->testCollectPaymentCreateSuccess();
+
+        $payment = $this->getDbLastpayment();
+
+        $content = $this->mockServer('upi_airtel')->getAsyncCallbackContent($payment->toArray());
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
+
+        $payment = $this->getDbLastPayment();
+
+        // We should have received a successful response
+        $this->assertEquals(['success' => true], $response);
+
+        $this->assertArraySubset(
+            [
+            Entity::STATUS          => Status::AUTHORIZED,
+            Entity::GATEWAY         => 'upi_airtel',
+            Entity::TERMINAL_ID     => $this->terminal->getId(),
+            Entity::CPS_ROUTE       => Entity::UPI_PAYMENT_SERVICE,
+            ], $payment->toArray()
+        );
+
+        $f = $payment->toArray();
+
+        $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
+
+        $this->assertNull($upiEntity);
+    }
+
+    /**
+     * Test Successful Collect Payment with pre-process through UPS
+     * @return void
+     */
+    public function testCollectPaymentSuccessWithApiPreProcess()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                    ->setConstructorArgs([$this->app])
+                    ->onlyMethods(['getTreatment'])
+                    ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->gateway = 'upi_airtel';
+
+        $this->app->razorx
+        ->method('getTreatment')
+        ->will($this->returnCallback(
+            function ($mid, $feature, $mode)
+            {
+                if ($feature === 'api_upi_airtel_pre_process_v1')
+                {
+                    return 'upi_airtel';
+                }
+
+                return 'control';
+            })
+        );
+
+        $this->testCollectPaymentCreateSuccess();
+
+        $payment = $this->getDbLastpayment();
+
+        $content = $this->mockServer('upi_airtel')->getAsyncCallbackContent($payment->toArray());
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
+
+        $payment = $this->getDbLastPayment();
+
+        // We should have received a successful response
+        $this->assertEquals(['success' => true], $response);
+
+        $this->assertArraySubset(
+            [
+            Entity::STATUS          => Status::AUTHORIZED,
+            Entity::GATEWAY         => 'upi_airtel',
+            Entity::TERMINAL_ID     => $this->terminal->getId(),
+            Entity::CPS_ROUTE       => Entity::UPI_PAYMENT_SERVICE,
+            ], $payment->toArray()
+        );
+
+        $f = $payment->toArray();
+
+        $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
+
+        $this->assertNull($upiEntity);
     }
 }

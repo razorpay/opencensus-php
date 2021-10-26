@@ -20,7 +20,7 @@ class Service extends UpiPaymentService
     {
         $content = json_decode($request->getBody()->getContents(),true);
 
-        $action = $this->action;
+        $action = camel_case($this->action);
 
         list($response, $code) = $this->$action($content);
 
@@ -97,5 +97,60 @@ class Service extends UpiPaymentService
         }
 
         return [$response, $code];
+    }
+
+    protected function preProcess(array $content): array
+    {
+        $payload = json_decode($content['payload'], true);
+
+        $data['data'] = [
+            'version' => 'v2',
+            'upi' => [
+                'vpa' => $payload['payerVPA'] ?? '',
+                'status_code' => $payload['errorCode'],
+                'npci_reference_id' => $payload['rrn'],
+                'merchant_reference' => $payload['hdnOrderID'],
+            ],
+            'payment' => [
+                'currency' => 'INR',
+                'amount_authorized' => $payload['amount'] * 100
+            ],
+            'terminal' => [
+                'gateway_merchant_id' => 'MER0000000548542'
+            ],
+            'error' => null
+        ];
+
+        $response = [
+            'data'      => $data,
+            'gateway'   => $content['gateway'],
+            'error'     => null,
+        ];
+
+        return [$response, 200];
+    }
+
+    protected function callback(array $content): array
+    {
+        $data = $content['data']['data'];
+
+        $upi = $data['upi'];
+        $payment = $data['payment'];
+
+        $responseData = [
+            'acquirer' => [
+                'vpa'         => $upi['vpa'] ?? null,
+                'reference16' => $upi['npci_reference_id'] ?? null,
+            ],
+            'amount_authorized' => $payment['amount_authorized'],
+            'currency'          => $payment['currency'],
+        ];
+
+        $response = [
+            'data' => $responseData,
+            'gateway' => $content['gateway'],
+        ];
+
+        return [$response, 200];
     }
 }

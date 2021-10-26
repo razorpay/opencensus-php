@@ -33,6 +33,7 @@ use RZP\Jobs\DynamicNetBankingUrlUpdater;
 use RZP\Gateway\Netbanking\Base\Repository;
 use RZP\Gateway\Enach\Npci\Netbanking as EnachNb;
 use RZP\Models\Gateway\Priority as GatewayPriority;
+use RZP\Services\UpiPayment\Service as UpiPaymentService;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
 use RZP\Models\Gateway\Downtime\Webhook\Constants\Vajra as VajraConstants;
 
@@ -82,7 +83,7 @@ class GatewayController extends Controller
         //
         // Eg: gateway request needs to be decrypted, this shouldn't be direct method call
         // TODO: change this to utilize callGatewayFunction
-        $input = $gateway->preProcessServerCallback($input, $gatewayDriver);
+        $input = $this->preProcessServerCallback($gateway, $input, $gatewayDriver);
 
         if (isset($input['upi_mandate']) === true and (isset($input['upi_mandate']['status']) === true))
         {
@@ -126,6 +127,11 @@ class GatewayController extends Controller
     {
         try
         {
+            if ($this->shouldPreProcessThroughUpiPaymentService($gatewayDriver) === true)
+            {
+                return $this->app['upi.payments']->preProcessServerCallback($input, $gatewayDriver);
+            }
+            
             return $gateway->preProcessServerCallback($input, $gatewayDriver);
         }
         catch (Exception\GatewayErrorException $exception)
@@ -1593,4 +1599,24 @@ class GatewayController extends Controller
             ]);
         }
     }
+
+    // Determines if callback should be preprocessed by UPS
+    protected function shouldPreProcessThroughUpiPaymentService($gateway, $mode = null)
+    {
+        if (Payment\Gateway::isUpiPaymentServiceGateway($gateway) === false)
+        {
+            return false;
+        }
+
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
+            'ups'. '_' . $gateway . '_' . UpiPaymentService::PRE_PROCESS . '_' . 'v1',
+            $mode === null ? Mode::LIVE : $mode);
+
+        if ($variant === $gateway)
+        {
+            return true;
+        }
+
+        return false;
+    }    
 }
