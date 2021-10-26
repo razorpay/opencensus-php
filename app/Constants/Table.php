@@ -67,6 +67,7 @@ class Table
     const PAYOUTS_DETAILS              = 'payouts_details';
     const PAYOUTS_BATCH                = 'payouts_batch';
     const SUB_BALANCE_MAP              = 'sub_balance_map';
+    const PAYOUTS_STATUS_DETAILS       = 'payouts_status_details';
 
     const PAYOUTS_INTERMEDIATE_TRANSACTIONS = 'payouts_intermediate_transactions';
 
