@@ -23,6 +23,13 @@ class Indusind extends Base
     const FILE_NAME   = 'IndusInd_Emi_File';
     const DATE_FORMAT = 'j/n/Y';
 
+    protected function getFileToWriteName()
+    {
+        $date = Carbon::now(Timezone::IST)->format('dmY');
+
+        return self::FILE_NAME . '_' . $date . '_' . $this->totalTransactions;
+    }
+
     protected function sendEmiFile($data)
     {
         try {
@@ -128,6 +135,8 @@ class Indusind extends Base
     {
         $formattedData = [];
 
+        $totalTransactions = 0;
+
         foreach ($data['items'] as $emiPayment)
         {
             $emiPlan = $emiPayment->emiPlan;
@@ -176,7 +185,11 @@ class Indusind extends Base
                 'Reward Point'                 => '',
                 'Txn Type'                     => '',
             ];
+
+            $totalTransactions++;
         }
+
+        $this->totalTransactions = $totalTransactions;
 
         return $formattedData;
     }

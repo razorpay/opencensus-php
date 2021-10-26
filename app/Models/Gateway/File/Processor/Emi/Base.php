@@ -31,6 +31,8 @@ class Base extends BaseProcessor
      */
     protected $file;
 
+    protected $totalTransactions;
+
     public function fetchEntities(): PublicCollection
     {
         $begin = $this->gatewayFile->getBegin();
