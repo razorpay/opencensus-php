@@ -401,6 +401,7 @@ class ProviderCode
         self::BOI           => ProviderPsp::BHIM_BOI_UPI,
         self::CNRB          => ProviderPsp::CANDI_CANARA_BANK,
         self::ICICI         => ProviderPsp::IMOBILE,
+        self::OKAXIS        => ProviderPsp::GOOGLE_PAY,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
