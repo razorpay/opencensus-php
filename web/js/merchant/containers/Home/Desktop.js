@@ -51,6 +51,7 @@ import CongratulatoryBanner from 'merchant/components/Announcements/Congratulato
 import ShowWhen from '../../components/ShowWhen';
 import ABCBanner from '../../components/Announcements/ABCBanner';
 import StartupCongratulationBanner from '../../components/Announcements/StartupCongratulationBanner';
+import CrossBorderPaymentsBanner from '../../components/Announcements/CrossBorderPaymentsBanner';
 
 class AnalyticsDesktop extends Component {
   state = {
@@ -510,6 +511,9 @@ class AnalyticsDesktop extends Component {
           </ShowWhen>
           <ShowWhen additionalCondition={(usr) => usr.isStartupCongratulationBannerEnabled}>
             <StartupCongratulationBanner user={user} />
+          </ShowWhen>
+          <ShowWhen additionalCondition={(usr) => usr.isCrossBorderPaymentsCampaignEnabled}>
+            <CrossBorderPaymentsBanner productName="CrossBorderPayment-Create" />
           </ShowWhen>
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}

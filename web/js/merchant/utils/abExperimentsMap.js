@@ -122,6 +122,11 @@ export default {
     'I3f68nS3BRwvuF', // Beta
   ],
 
+  cross_border_payments_campaign: [
+    'IDVMGD3fth5Dkp', // Prod
+    'I3f68nS3BRwvuF', // Beta
+  ],
+
   catalyst_campaign_experiment: [
     'HYimXrRKRI0V7y', // Prod
     'HYiqGXEBQX3oo8', // Beta

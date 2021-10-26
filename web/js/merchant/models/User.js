@@ -443,6 +443,9 @@ export default class User {
       'on'
     );
   }
+  get isCrossBorderPaymentsCampaignEnabled() {
+    return getSplitzExperimentVariant('cross_border_payments_campaign')?.variables?.result === 'on';
+  }
 
   get isCatalystCampaignEnabled() {
     return getSplitzExperimentVariant('catalyst_campaign_experiment')?.variables?.result === 'on';
