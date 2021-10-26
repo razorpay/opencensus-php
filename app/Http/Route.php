@@ -1612,11 +1612,11 @@ class Route
         'user_opt_out_whatsapp'                    => ['post',     'users/whatsapp/opt_out',                         'UserController@optOutForWhatsapp'                                  ],
         'user_details'                             => ['get',      'users',                                          'UserController@getUserDetails'                                     ],
         'user_details_unified'                     => ['get',      'users_unified',                                  'UserController@getUserDetailsUnified'                              ],
-        'user_banking_roles'                       => ['get',      'users/{user_id}/banking_roles',                  'UserController@getUserBankingRoles'                                ],
+        'user_all_roles'                           => ['get',      'users/{id}/roles/{merchant_id}',                 'UserController@getUserRoles'                                       ],
         'user_delete_incorrect_password_count'     => ['post',     'users/incorrect_password_count',                 'UserController@removeIncorrectPasswordCount'                       ],
 
         //user device details
-        'user_device_detail_save'                  => ['post',     'user/device-details',                            'UserController@postSaveDeviceDetails'                          ],
+        'user_device_detail_save'                  => ['post',     'user/device-details',                            'UserController@postSaveDeviceDetails'                              ],
 
         // mobile setup for 2fa
         'user_login_2fa_setup_mobile'              => ['patch',    'users/2fa_setup/contact_mobile',                 'UserController@setup2faContactMobile'                              ],
@@ -3769,7 +3769,7 @@ class Route
         'order_fetch_by_id_internal_admin',
         'user_details',
         'user_details_unified',
-        'user_banking_roles',
+        'user_all_roles',
 
         'reward_expire_cron',
         'trusted_badge_eligibility_cron',
@@ -10462,9 +10462,9 @@ class Route
 
         'xpayroll' => [
             'user_details',
+            'user_all_roles',
             'payout_create_internal',
             'banking_accounts_list_internal',
-            'user_banking_roles',
         ],
 
         'razorflow' => [

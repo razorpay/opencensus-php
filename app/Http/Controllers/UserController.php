@@ -419,11 +419,9 @@ class UserController extends Controller
         return $this->service()->getDetailsUnified($input);
     }
 
-    public function getUserBankingRoles($userId)
+    public function getUserRoles($Id, $merchantId)
     {
-        $input = Request::all();
-
-        return $this->service()->getUserBankingRoles($userId, $input);
+        return $this->service()->getUserRoles($Id, $merchantId);
     }
 
     public function sendXMobileAppDownloadLinkSms()

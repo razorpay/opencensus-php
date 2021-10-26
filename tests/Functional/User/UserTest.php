@@ -4189,7 +4189,7 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testUserBankingRolesInvalidMapping()
+    public function testUserRolesInvalidMapping()
     {
         $this->ba->xpayrollAuth();
 
@@ -4201,7 +4201,7 @@ class UserTest extends TestCase
         $this->testData[__FUNCTION__] = [
             'request' => [
                 'method'    => 'GET',
-                'url'       => '/users/EM6yk5JbG6L9rv/banking_roles?user_id=EM6yk5JbG6L9rv&merchant_id=' . $merchant->getId()
+                'url'       => '/users/EM6yk5JbG6L9rv/roles/' . $merchant->getId(),
             ],
             'response' => [
                 'content' => [],
@@ -4213,7 +4213,7 @@ class UserTest extends TestCase
         $this->testData[__FUNCTION__] = [
             'request' => [
                 'method'    => 'GET',
-                'url'       => '/users/' . $user->getId() . '/banking_roles?merchant_id=100000Razorpay&user_id=' . $user->getId()
+                'url'       => '/users/' . $user->getId() . '/roles/100000Razorpay',
             ],
             'response' => [
                 'content' => [],

@@ -1446,14 +1446,14 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function getUserBankingRoles(string $userID, array $input)
+    public function getUserRoles(string $userID, string $merchantID)
     {
-        $input['user_id'] = $userID;
-        (new Validator)->validateInput('get_user_roles', $input);
+        (new Validator)->validateInput('get_user_roles', [
+            'user_id'     => $userID,
+            'merchant_id' => $merchantID,
+        ]);
 
-        $response = $this->core->getUserBankingRoles($input);
-
-        return $response;
+        return $this->core->getUserAllRoles($userID, $merchantID);
     }
 
     public function removeIncorrectPasswordCount(array $input)

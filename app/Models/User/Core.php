@@ -2901,7 +2901,7 @@ class Core extends Base\Core
                      ->user
                      ->getUserFromEmailOrFail($input['email']);
 
-        $merchantDetails = $this->getPrimaryMerchantDetails($user);
+        $merchantDetails = $this->getMerchantDetails($user);
 
         return [
             'user_id'                 => $user->getId(),
@@ -2927,41 +2927,54 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getUnifiedMerchants($merchants);
 
-        $response = [
+        return [
             'id'                      => $user->getId(),
             'name'                    => $user->getName(),
             'email'                   => $user->getEmail(),
             'merchants'               => $merchantDetails,
         ];
-
-        return $response;
     }
 
-    public function getUserBankingRoles($input)
+    public function getUserAllRoles($userID, $merchantID)
     {
-        $userID     = $input['user_id'];
-        $merchantID = $input['merchant_id'];
+        $products   = [Product::BANKING, Product::PRIMARY];
 
-        return $this->getUserRoles($userID, $merchantID, Product::BANKING);
+        return $this->getUserRoles($userID, $merchantID, $products);
     }
 
-    protected function getUserRoles(string $userID, string $merchantID, string $product)
+    protected function getUserRoles(string $userID, string $merchantID, array $products)
     {
-        return $this->repo->merchant_user->getMerchantUserRoles($userID, $merchantID, $product);
+        $result = [];
+        $roles = $this->repo->merchant_user->getMerchantUserRoles($userID, $merchantID);
+        foreach ($products as $product)
+        {
+            $result = [
+                $product => [],
+            ];
+        }
+
+        foreach($roles as $role) {
+            if(in_array($role->product, $products) === true)
+            {
+                $result[$role->product][] = $role->getRole();
+            }
+        }
+
+        return $result;
     }
 
     /**
-     * it'll collect all the primary accounts (pg accounts) associated with the user
+     * it'll collect all the accounts (pg + banking accounts) associated with the user
      * along with their business details
      *
-     * we will be adding first merchant who is associated with the user (prod requirement)
+     * we will be adding first merchant who is associated with the user (product requirement)
      *
      * @param Entity $user
      * @return array
      */
-    protected function getPrimaryMerchantDetails(Entity $user): array
+    protected function getMerchantDetails(Entity $user): array
     {
-        $merchant = $user->primaryMerchants()->first();
+        $merchant = $user->merchants()->first();
 
         // if there is no merchant details then return empty result
         if ($merchant === NULL)
