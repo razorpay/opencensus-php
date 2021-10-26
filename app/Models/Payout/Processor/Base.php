@@ -859,6 +859,7 @@ class Base extends BaseCore
 
         if ($highTPSCompositePayoutFlag === true)
         {
+            /** @var PayoutsIntermediateTransactions\Entity $intermediateTxn */
             $intermediateTxn = (new PayoutsIntermediateTransactions\Core)
                                 ->fetchIntermediateTransactionForAGivenPayoutId($payout->getId());
 
@@ -868,7 +869,7 @@ class Base extends BaseCore
             {
                 // This will mean that the intermediate payout transaction is in a terminal state
                 // and hence we don't need to do any processing on it.
-                if ($intermediateTxn->getStatus !== PayoutsIntermediateTransactions\Status::PENDING)
+                if ($intermediateTxn->getStatus() !== PayoutsIntermediateTransactions\Status::PENDING)
                 {
                     return $payout;
                 }
