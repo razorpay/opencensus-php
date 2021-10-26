@@ -1195,14 +1195,20 @@ trait Authorize
             'callback_url'  => $url,
         ];
 
-        $response = $this->app['reminders']->createReminder($request, $merchantId);
+        try
+        {
+            $response = $this->app['reminders']->createReminder($request, $merchantId);
 
-        $reminderId = array_get($response, 'id');
+            $reminderId = array_get($response, 'id');
 
-        $this->trace->info(TraceCode::COD_PAYMENT_PENDING_REMINDER_CREATED, [
-            'id'          => $payment->getId(),
-            'reminder_id' => $reminderId,
-        ]);
+            $this->trace->info(TraceCode::COD_PAYMENT_PENDING_REMINDER_CREATED, [
+                'id'          => $payment->getId(),
+                'reminder_id' => $reminderId,
+            ]);
+        }
+        catch (\Throwable $exception) {
+            $this->trace->traceException($exception);
+        }
     }
 
     protected function getOtpPaymentCreatedResponse($request, $payment)
