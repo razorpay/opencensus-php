@@ -923,6 +923,10 @@ class Service extends Base\Service
                         $data = $this->updateNewUsersOnlyTypeExperiments($merchant, $data);
 
                         $data = $this->updateRXCASelfServeExperiment($merchant, $data);
+
+                        $this->trace->info(TraceCode::MERCHANT_EXPERIMENTS, [
+                            'data' => $data['experiments']
+                        ]);
                     }
 
 

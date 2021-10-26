@@ -113,6 +113,8 @@ class TraceCode
     const GET_PAYOUT_ROUTE_INFO                  = 'GET_PAYOUT_ROUTE_INFO';
     const PRODUCT_SWITCH_ROUTE_INFO              = 'PRODUCT_SWITCH_ROUTE_INFO';
 
+    const MERCHANT_EXPERIMENTS                   = 'MERCHANT_EXPERIMENTS';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',
