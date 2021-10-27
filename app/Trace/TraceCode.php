@@ -1429,8 +1429,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VIRTUAL_ACCOUNT_ALLOWED_PAYER_DELETED                 = 'VIRTUAL_ACCOUNT_ALLOWED_PAYER_DELETED';
 
 
-    // Triggered when we get incorrect payee account number for ICICI bank.
-    const BANK_TRANSFER_REQUEST_ICICI_INCORRECT_PAYEE_ACCOUNT_NUMBER = 'BANK_TRANSFER_REQUEST_ICICI_INCORRECT_PAYEE_ACCOUNT_NUMBER';
+    // Triggered when we get payee account number with invalid length for ICICI bank.
+    const BANK_TRANSFER_REQUEST_ICICI_PAYEE_ACCOUNT_NUMBER_WITH_INVALID_LENGTH = 'BANK_TRANSFER_REQUEST_ICICI_PAYEE_ACCOUNT_NUMBER_WITH_INVALID_LENGTH';
 
     // Virtual VPA Prefix
     const VIRTUAL_VPA_PREFIX_VALIDATE_REQUEST                   = 'VIRTUAL_VPA_PREFIX_VALIDATE_REQUEST';

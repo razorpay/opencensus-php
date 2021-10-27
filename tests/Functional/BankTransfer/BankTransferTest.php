@@ -1562,7 +1562,7 @@ class BankTransferTest extends TestCase
 
             $input = ['amount' => $payment['amount']];
             $refund = $this->refundAuthorizedPayment($payment['id'], $input);
-            $this->assertPassportKeyExists('consumer.id'); // just check for presence of passport 
+            $this->assertPassportKeyExists('consumer.id'); // just check for presence of passport
 
             $this->assertEquals('processed', $refund['status']); // refunds get processed
             $this->assertEquals(5000000, $refund['amount']);
@@ -1653,7 +1653,7 @@ class BankTransferTest extends TestCase
 
             $input = ['amount' => $payment['amount']];
             $refund = $this->refundAuthorizedPayment($payment['id'], $input);
-            $this->assertPassportKeyExists('consumer.id'); // just check for presence of passport 
+            $this->assertPassportKeyExists('consumer.id'); // just check for presence of passport
 
             $this->assertEquals('processed', $refund['status']); // refunds get processed
             $this->assertEquals(5000000, $refund['amount']);
@@ -1707,7 +1707,7 @@ class BankTransferTest extends TestCase
     {
         $this->markTestSkipped("Yesbank refunds are allowed now");
 
-        // Refunds flow has changed. 
+        // Refunds flow has changed.
         // Before removing skip test, make sure Razorx experiment is turned ON.
 
         $accountNumber = $this->bankAccount['account_number'];
@@ -3054,7 +3054,7 @@ class BankTransferTest extends TestCase
 
         $bankTransferRequest = $this->getDbLastEntity('bank_transfer_request', 'live');
 
-        $this->assertEquals('BANK_TRANSFER_REQUEST_ICICI_INCORRECT_PAYEE_ACCOUNT_NUMBER',
+        $this->assertEquals('BANK_TRANSFER_REQUEST_ICICI_PAYEE_ACCOUNT_NUMBER_WITH_INVALID_LENGTH',
                             $bankTransferRequest[Entity::ERROR_MESSAGE]);
         $this->assertEquals(false, $bankTransferRequest[Entity::IS_CREATED]);
 

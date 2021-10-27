@@ -5,6 +5,7 @@ namespace RZP\Models\BankTransfer;
 use Cache;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Settlement\SlackNotification;
 use Symfony\Component\HttpFoundation\File\File;
 
 use RZP\Exception;
@@ -39,8 +40,6 @@ class Service extends Base\Service
 
     // Seconds in 15 minutes
     const FIFTEEN_MINUTES = 900;
-
-    const BANK_TRANSFER_REQUEST_ICICI_INCORRECT_PAYEE_ACCOUNT_NUMBER = 'BANK_TRANSFER_REQUEST_ICICI_INCORRECT_PAYEE_ACCOUNT_NUMBER';
 
     /**
      * Service constructor. Sets provider from app auth, and
@@ -718,19 +717,31 @@ class Service extends Base\Service
 
             if ($isBankingType and strlen($payeeAccount) !== 16)
             {
-                $this->trace->info(TraceCode::BANK_TRANSFER_REQUEST_ICICI_INCORRECT_PAYEE_ACCOUNT_NUMBER,
+                $this->trace->info(TraceCode::BANK_TRANSFER_REQUEST_ICICI_PAYEE_ACCOUNT_NUMBER_WITH_INVALID_LENGTH,
                                    [
                                        $bankTransferRequest->toArrayTrace()
                                    ]);
 
                 (new BankTransferRequest\Core)->updateBankTransferRequest($bankTransferRequest->getUtr(),
                                                                           false,
-                                                                          self::BANK_TRANSFER_REQUEST_ICICI_INCORRECT_PAYEE_ACCOUNT_NUMBER,
+                                                                          TraceCode::BANK_TRANSFER_REQUEST_ICICI_PAYEE_ACCOUNT_NUMBER_WITH_INVALID_LENGTH,
                                                                           $bankTransferRequest);
+
+                $traceInfo = [
+                    'message'        => TraceCode::BANK_TRANSFER_REQUEST_ICICI_PAYEE_ACCOUNT_NUMBER_WITH_INVALID_LENGTH,
+                    'transaction_id' => $bankTransferRequest->getUtr() ?? '',
+                ];
+
+                (new SlackNotification)->send(
+                    'Received Payee Account Number with invalid length',
+                    $traceInfo,
+                    null,
+                    1,
+                    'x-finops');
 
                 return [
                     'valid'          => false,
-                    'message'        => self::BANK_TRANSFER_REQUEST_ICICI_INCORRECT_PAYEE_ACCOUNT_NUMBER,
+                    'message'        => TraceCode::BANK_TRANSFER_REQUEST_ICICI_PAYEE_ACCOUNT_NUMBER_WITH_INVALID_LENGTH,
                     'transaction_id' => $bankTransferRequest->getUtr() ?? '',
                 ];
             }

@@ -6,6 +6,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\BankTransfer\Service;
 use RZP\Error\PublicErrorDescription;
+use RZP\Trace\TraceCode;
 
 return [
     'createVirtualAccount' => [
@@ -1188,7 +1189,7 @@ return [
         'response' => [
             'content' => [
                 'valid'   => false,
-                'message' => Service::BANK_TRANSFER_REQUEST_ICICI_INCORRECT_PAYEE_ACCOUNT_NUMBER,
+                'message' => TraceCode::BANK_TRANSFER_REQUEST_ICICI_PAYEE_ACCOUNT_NUMBER_WITH_INVALID_LENGTH,
             ],
         ],
     ],
@@ -1852,7 +1853,7 @@ return [
                 'description'    => 'NEFT payment of 50,000 rupees',
             ],
     ],
-    
+
     'processBankTransferProcessWithDifferentAmount' => [
         'url' => '/ecollect/validate/test',
         'method' => 'post',
