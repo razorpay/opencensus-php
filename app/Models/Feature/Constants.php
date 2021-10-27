@@ -904,11 +904,16 @@ class Constants
     const ALLOW_NETWORK_TOKENS = 'allow_network_tokens';
 
     /**
+     * Feature flag to onboard merchants on network tokenization in live mode
+     */
+    const ONBOARD_TOKENIZATION = 'onboard_tokenization';
+
+    /**
      * Flag to enable the new composite payout flow meant for high tps merchants.
      * Initially implemented specifically for whatsapp.
      */
     const HIGH_TPS_COMPOSITE_PAYOUT = 'high_tps_composite_payout';
-    
+
     /**
      * One click checkout
      */
@@ -1310,6 +1315,7 @@ class Constants
         self::ONE_CC_MERCHANT_DASHBOARD       => true,
         self::ONE_CC_COUPONS                  => true,
         self::ENABLE_PAYPAL_AS_BACKUP         => true,
+        self::ONBOARD_TOKENIZATION            => true,
     ];
     // Entity type constants
     const ACCOUNT                       = 'account';
@@ -1916,6 +1922,11 @@ class Constants
             'display_name'  => 'One click checkout tab on merchant dashboard',
             'documentation' => '',
         ],
+        self::ONBOARD_TOKENIZATION => [
+            'feature'       => self::ONBOARD_TOKENIZATION,
+            'display_name'  => 'Enable network tokenization for merchant',
+            'documentation' => '',
+        ]
     ];
 
     /**
@@ -1968,6 +1979,7 @@ class Constants
         self::ONE_CC_COUPONS,
         self::ONE_CC_MANDATORY_LOGIN,
         self::ONE_CC_MERCHANT_DASHBOARD,
+        self::ONBOARD_TOKENIZATION,
     ];
 
     /*

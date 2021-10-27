@@ -24,6 +24,7 @@ use RZP\Models\Merchant\SlackActions;
 use RZP\Mail\Loc\CashAdvanceEligible;
 use RZP\Jobs\SkipOnboardingCommFromHubSpot;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Notify as NotifyTrait;
@@ -153,6 +154,13 @@ class Core extends Base\Core
             {
                 SkipOnboardingCommFromHubSpot::dispatch($this->mode, $entityId, $partnerEmail, $subMerchantEmailChunk);
             }
+        }
+
+        if($feature->getName() === Feature::ONBOARD_TOKENIZATION && $feature->isMerchantFeature() === true)
+        {
+           $merchant = $this->repo->merchant->findOrFailPublic($entityId);
+
+           $onboardingResponse = (new Token\Core())->onboardMerchant($merchant);
         }
 
         $this->notifyMerchantOfFeatureActivationIfApplicable($entityType, $entityId, $feature, $shouldSync);

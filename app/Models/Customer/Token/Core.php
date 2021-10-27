@@ -1438,4 +1438,11 @@ class Core extends Base\Core
 
         return $response;
     }
+
+    public function onboardMerchant($merchant)
+    {
+        $cardVault = (new Card\CardVault);
+
+        return $cardVault->onboardMerchant($merchant);
+    }
 }

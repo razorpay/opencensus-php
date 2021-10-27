@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Mail;
 use Event;
+use Mockery;
 
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -30,6 +31,7 @@ use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Base\QueryCache\Constants as CacheConstants;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
@@ -2503,4 +2505,114 @@ class FeaturesTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testOnboardMerchant()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ($route, $method, $input)
+        {
+            $response['success'] = true;
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $detailsAttributes = [
+                'business_dba'               => 'test_dba',
+                'business_operation_city'    => 'test_city',
+                'business_operation_state'   => 'test_state',
+                'business_operation_country' => 'test_country',
+                'business_operation_pin'     => 'test_pin',
+                'contact_mobile'             => 'test_mobile',
+                'business_website'           => 'test_website.com',
+                'business_type'              => '7'
+            ];
+
+        $merchant = $this->fixtures->merchant->edit('10000000000000', [
+            'org_id' => Org::RZP_ORG
+        ]);
+
+        $detailsAttributes = array_merge(['merchant_id' => '10000000000000'], $detailsAttributes);
+
+        $org = OrgEntity::find(Org::RZP_ORG);
+
+        $merchant->org()->associate($org);
+
+        $merchant->saveOrFail();
+
+        $this->fixtures->create('merchant_detail:sane', $detailsAttributes);
+
+        $this->addFeatures(Mode::TEST, false, [Constants::ONBOARD_TOKENIZATION], 'merchant', '10000000000000');
+    }
+
+    public function testOnboardMerchantVaultFailure()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ($route, $method, $input)
+        {
+            $response['success'] = false;
+
+            $response['error'] = [
+                [
+                    'code'        => 'SERVER_ERROR',
+                    'description' => 'The server encountered an error. The incident has been reported to admins.'
+                ]
+            ];
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $detailsAttributes = [
+            'business_dba'               => 'test_dba',
+            'business_operation_city'    => 'test_city',
+            'business_operation_state'   => 'test_state',
+            'business_operation_country' => 'test_country',
+            'business_operation_pin'     => 'test_pin',
+            'contact_mobile'             => 'test_mobile',
+            'business_website'           => 'test_website.com',
+            'business_type'              => '7'
+        ];
+
+        $merchant = $this->fixtures->merchant->edit('10000000000000', [
+            'org_id' => Org::RZP_ORG
+        ]);
+
+        $detailsAttributes = array_merge(['merchant_id' => '10000000000000'], $detailsAttributes);
+
+        $org = OrgEntity::find(Org::RZP_ORG);
+
+        $merchant->org()->associate($org);
+
+        $merchant->saveOrFail();
+
+        $this->fixtures->create('merchant_detail:sane', $detailsAttributes);
+
+        $this->ba->adminAuth(Mode::TEST);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['names'] = [Constants::ONBOARD_TOKENIZATION];
+
+        $testData['request']['content']['entity_type'] = 'merchant';
+
+        $testData['request']['content']['entity_id'] = '10000000000000';
+
+        $this->startTest($testData);
+    }
 }

@@ -527,4 +527,19 @@ class CardVault
 
         return $response;
     }
+
+    public function onboardMerchant($input): array
+    {
+        $this->trace->info(TraceCode::VAULT_TOKEN_ONBOARDING_REQUEST);
+
+        $response = $this->sendRequest('onboard/requestor', 'post', $input);
+
+        if ($response[self::SUCCESS] === false)
+        {
+            throw new Exception\RuntimeException(
+                'Network Tokenization Onboard request failed', ['data' => $response]);
+        }
+
+        return $response;
+    }
 }
