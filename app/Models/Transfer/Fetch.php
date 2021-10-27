@@ -18,6 +18,7 @@ class Fetch extends BaseFetch
             Entity::SOURCE                  => 'sometimes|string|min:14',
             Entity::STATUS                  => 'sometimes|array',
             Entity::SETTLEMENT_STATUS       => 'sometimes|array',
+            Entity::ERROR_CODE              => 'sometimes|string',
             Entity::ACCOUNT_CODE            => 'sometimes|string|min:3|max:20',
             Entity::ACCOUNT_CODE_USED       => 'sometimes|boolean',
         ],
@@ -34,6 +35,9 @@ class Fetch extends BaseFetch
             Entity::SOURCE,
             Entity::ACCOUNT_CODE,
             Entity::ACCOUNT_CODE_USED,
+            Entity::STATUS,
+            Entity::SETTLEMENT_STATUS,
+            Entity::ERROR_CODE,
         ],
 
         AuthType::PRIVATE_AUTH => [

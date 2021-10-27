@@ -3459,6 +3459,31 @@ class AdminFetch
                     Fetch::LABEL    => 'Account Code Used',
                     Fetch::TYPE     => Fetch::TYPE_BOOLEAN,
                 ],
+                'status' => [
+                    Fetch::LABEL    => 'Transfer Status',
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES   => [
+                        'created',
+                        'pending',
+                        'processed',
+                        'failed',
+                        'reversed',
+                        'partially_reversed',
+                    ],
+                ],
+                'settlement_status' => [
+                    Fetch::LABEL    => 'Settlement Status',
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES   => [
+                        'pending',
+                        'on_hold',
+                        'settled',
+                    ],
+                ],
+                'error_code' => [
+                    Fetch::LABEL    => 'Error Code',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
             ],
 
             Entity::TOKEN => [
