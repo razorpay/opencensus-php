@@ -25,6 +25,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\User\Service as UserService;
+use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Admin\Org\Hostname\Entity as HostNameEntity;
@@ -35,8 +36,6 @@ use RZP\Mail\Merchant\RazorpayX\InstantActivation as RazorpayXInstantActivationM
 class Activate extends Base\Core
 {
     use NotifyTrait;
-
-    const BUSINESS_BANKING_ENABLED_TOPIC = 'business-banking-enabled';
 
     /**
      * This function is used for activating merchant
@@ -639,38 +638,6 @@ class Activate extends Base\Core
         if ($sendActivationSms === true)
         {
             $this->sendBankingVaActivationSmsIfApplicable($merchant);
-        }
-
-        // publish message on the metro topic business-banking-enabled
-        $data = array(
-            Entity::MERCHANT_ID => $merchant->getPublicId()
-        );
-
-
-        $this->trace->info(TraceCode::BANKING_ENABLED_MESSAGE, [
-            'data' => $data
-        ]);
-
-        $encodedData = json_encode($data);
-
-        try
-        {
-            $response = $this->app['metro']->publish(self::BUSINESS_BANKING_ENABLED_TOPIC, $encodedData);
-
-            $this->trace->info(TraceCode::BUSINESS_BANKING_ENABLED_MESSAGE_PUBLISHED, [
-                'response' => $response
-            ]);
-
-        } catch (Throwable $exception)
-        {
-            $this->trace->count(Metric::BUSINESS_BANKING_ENABLED_TRIGGER_FAILURE);
-
-            $this->trace->traceException(
-                $exception,
-                Trace::CRITICAL,
-                TraceCode::PUBLISH_BANKING_ENABLED_MESSAGE_FAILURE);
-
-            // activation part will not fail if the message publish to metro fails
         }
 
         // Refreshing merchant here so that relations for original mode are fetched again

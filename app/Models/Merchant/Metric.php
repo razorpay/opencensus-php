@@ -50,8 +50,6 @@ final class Metric
 
     const SUBMERCHANT_TAGGING_FAILURE_TOTAL = 'submerchant_tagging_failure_total';
 
-    const BUSINESS_BANKING_ENABLED_TRIGGER_FAILURE = 'business_banking_enabled_trigger_failure';
-    
     const AFFILIATED_PARTNERS_FETCH_LATENCY = 'affiliated_partners_fetch_latency';
     const FETCH_ALL_SUBMERCHANTS_LATENCY = 'fetch_all_submerchants_latency';
     const FETCH_ALL_PARTNERS_LATENCY = 'fetch_all_partners_latency';

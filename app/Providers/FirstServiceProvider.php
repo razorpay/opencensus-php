@@ -4,7 +4,6 @@ namespace RZP\Providers;
 
 use Config;
 use Barryvdh\Debugbar;
-use RZP\Metro\MetroHandler;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
 
@@ -13,6 +12,7 @@ use RZP\Models\P2p;
 use RZP\Jobs\Context;
 use RZP\Http\RequestContext;
 use RZP\Http\RequestContextV2;
+use RZP\Trace\ApiTraceProcessor;
 
 class FirstServiceProvider extends ServiceProvider
 {
@@ -38,8 +38,6 @@ class FirstServiceProvider extends ServiceProvider
         $this->registerP2pContext();
 
         $this->registerReqContext();
-
-        $this->registerMetroClient();
     }
 
     public function boot()
@@ -152,12 +150,5 @@ class FirstServiceProvider extends ServiceProvider
     protected function registerReqContext()
     {
         $this->app->singleton('req.context', function() { return new Diag\ReqContext(); });
-    }
-
-    protected function registerMetroClient()
-    {
-        $this->app->singleton('metro', function() {
-            return new MetroHandler();
-        });
     }
 }
