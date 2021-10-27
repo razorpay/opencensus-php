@@ -310,7 +310,11 @@ class UserController extends Controller
 
         $this->checkCaptchaDisableInPayloadForLogin($input);
 
-        list($error, $data) = (new User\Service)->login($input);
+        $userService = (new User\Service());
+
+        $userService->addUserBrowserDetails($input);
+
+        list($error, $data) = $userService->login($input);
 
         if (empty($error) === true)
         {
