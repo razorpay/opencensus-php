@@ -148,6 +148,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Partner\Commission\Component\Repository        $commission_component;
  * @property Models\BankingAccountTpv\Repository                   $banking_account_tpv;
  * @property Models\Partner\Activation\Repository                  $partner_activation;
+ * @property Models\Partner\KycAccessState\Repository              $partner_kyc_access_state;
  * @property Models\Merchant\Product\Repository                    $merchant_product;
  * @property Models\Merchant\Product\Request\Repository            $merchant_product_request;
  * @property Models\Merchant\Product\TncMap\Repository             $tnc_map;

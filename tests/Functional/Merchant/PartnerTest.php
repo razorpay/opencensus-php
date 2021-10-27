@@ -133,6 +133,95 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testRequestKycAccessByPartner()
+    {
+        $this->ba->proxyAuth();
+        $this->createResellerPartnerSubmerchant();
+
+        $response1 = $this->startTest();
+
+        // running twice shouldn't give any error
+        $response2 = $this->startTest();
+        $this->assertEquals($response1['id'], $response2['id']);
+    }
+
+    public function testConfirmKycAccessRequest()
+    {
+        $this->createResellerPartnerSubmerchant();
+
+        $this->fixtures->create('partner_kyc_access_state');
+
+        $this->ba->directAuth();
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        // calling confirm again should give error
+        $this->runRequestResponseFlow($this->testData['testConfirmKycAccessRequestAgain']);
+
+        // requesting kyc access again should give error
+        $this->ba->proxyAuth();
+        $this->runRequestResponseFlow($this->testData['testRequestKycAccessByPartnerAgain']);
+    }
+
+    public function testConfirmAfterRejectKycAccessRequest()
+    {
+        $this->createResellerPartnerSubmerchant();
+
+        $this->fixtures->create('partner_kyc_access_state');
+
+        $this->ba->directAuth();
+        $this->runRequestResponseFlow($this->testData['testRejectKycAccessRequest']);
+
+        // calling confirm now should work fine
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        // revoke access
+        $user = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+        $this->ba->proxyAuth('rzp_test_'.self::DEFAULT_SUBMERCHANT_ID, $user['id']);
+        $this->runRequestResponseFlow($this->testData['testRevokeKycAccess']);
+    }
+
+    public function testRejectKycAccessRequestExceedsMaxTimes()
+    {
+        $this->createResellerPartnerSubmerchant();
+        $this->fixtures->create('partner_kyc_access_state');
+        $this->ba->directAuth();
+
+        $data = $this->testData['testRejectKycAccessRequest'];
+        $this->runRequestResponseFlow($data);
+
+        $rejectAgain = $data;
+        $rejectAgain['response']['content']['rejection_count'] = 2;
+        $this->runRequestResponseFlow($rejectAgain);
+
+        $rejectAgain = $data;
+        $rejectAgain['response']['content']['rejection_count'] = 3;
+        $this->runRequestResponseFlow($rejectAgain);
+
+        // requesting kyc access again should give error
+        $this->ba->proxyAuth();
+        $this->runRequestResponseFlow($this->testData['testRequestKycAccessAfterMaxTimesRejected']);
+    }
+
+    public function testPartnerSubmerchantFetchForKycAccess()
+    {
+        $this->createResellerPartnerSubmerchant();
+        $this->fixtures->create('partner_kyc_access_state');
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
+
+    public function testSubmerchantKYCByPartnerWithMissingFeatureFlag()
+    {
+        $this->createResellerPartnerSubmerchant();
+        $this->fixtures->create('partner_kyc_access_state');
+
+        $this->ba->directAuth();
+        $this->runRequestResponseFlow($this->testData['testConfirmKycAccessRequest']);
+
+        $this->ba->proxyAuth();
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
+
     public function testSubmerchantKYCByPartner()
     {
         $this->createResellerPartnerSubmerchant();
@@ -2464,6 +2553,7 @@ class PartnerTest extends OAuthTestCase
         $this->fixtures->create(
             'merchant_access_map',
             [
+                'id'          => 'IBb9OU2WPuCC29',
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,

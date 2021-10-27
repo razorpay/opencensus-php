@@ -3597,6 +3597,13 @@ class AdminFetch
                 ],
             ],
 
+            Entity::PARTNER_KYC_ACCESS_STATE => [
+                'partner_id' => [
+                    Fetch::LABEL => 'PartnerId',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::MERCHANT_APPLICATION => [
                 'merchant_id'     => FETCH::FIELD_MERCHANT_ID,
                 'application_id'  => [

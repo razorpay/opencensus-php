@@ -2954,7 +2954,7 @@ class Core extends Base\Core
 
         $product = $input[Entity::PRODUCT] ?? Product::PRIMARY;
 
-        $merchant = $this->getPartnerSubmerchantData($merchant, $partnerUser, $product);
+        $merchant = $this->getPartnerSubmerchantData($merchant, $partner, $partnerUser, $product);
 
         $products = $this->fetchProductUsedByMerchants([$merchant->getId()]);
 
@@ -3024,9 +3024,20 @@ class Core extends Base\Core
         return (empty($mapping) === false);
     }
 
-    public function canSkipWorkflowToAccessSubmerchantKyc(Entity $merchant)
+    public function canSkipWorkflowToAccessSubmerchantKyc(Entity $partner, Entity $merchant): bool
     {
-        return ($merchant->canSkipWorkflowToAccessSubmerchantKyc() === true);
+        // if merchant is not referred by partner, return false
+        $mapping = (new AccessMap\Repository)->fetchSubMerchantReferredByPartner($merchant->getId(), $partner->getId());
+        if (empty($mapping) === true)
+        {
+            return false;
+        }
+        if ($partner->canSkipWorkflowToAccessSubmerchantKyc() === true)
+        {
+            return true;
+        }
+
+        return ($mapping->hasKycAccess() === true);
     }
 
     /**
@@ -3132,9 +3143,9 @@ class Core extends Base\Core
 
         $partnerUser = $partner->primaryOwner();
 
-        $merchants = $merchants->map(function($submerchant) use ($partnerUser, $product)
+        $merchants = $merchants->map(function($submerchant) use ($partnerUser, $product, $partner)
         {
-            return $this->getPartnerSubmerchantData($submerchant, $partnerUser, $product);
+            return $this->getPartnerSubmerchantData($submerchant, $partner, $partnerUser, $product);
         });
 
         return $applyProductFilter ? [$merchants, 'offset' => $offset] : [$merchants];
@@ -3225,12 +3236,13 @@ class Core extends Base\Core
      * Sets the partner attributes in the instance of Merchant\Entity so that toArrayPartner() can be used later.
      *
      * @param Entity $submerchant
+     * @param Entity $partner
      * @param User\Entity $partnerUser
      *
      * @param string|null $product
      * @return Entity
      */
-    protected function getPartnerSubmerchantData(Entity $submerchant, User\Entity $partnerUser, string $product = null): Entity
+    protected function getPartnerSubmerchantData(Entity $submerchant, Entity $partner, User\Entity $partnerUser, string $product = null): Entity
     {
         $submerchant[Entity::DETAILS] = [
             Detail\Entity::ACTIVATION_STATUS => $submerchant->getAttribute(Detail\Entity::ACTIVATION_STATUS),
@@ -3245,6 +3257,13 @@ class Core extends Base\Core
         $submerchant[Entity::APPLICATION] = [
             OAuthApp\Entity::ID => $submerchant->getAttribute(Constants::APPLICATION_ID),
         ];
+
+        $submerchant[Entity::KYC_ACCESS] = null;
+        $accessRequest = $this->repo->partner_kyc_access_state->findByPartnerIdAndEntityId($partner->getId(), $submerchant->getId())->first();
+        if(empty($accessRequest) === false)
+        {
+            $submerchant[Entity::KYC_ACCESS] = $accessRequest->toArrayPublic();
+        }
 
         if($product === Product::BANKING)
         {

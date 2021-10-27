@@ -6375,6 +6375,9 @@ ALTER TABLE partner_activation
 ALTER TABLE iins
     ADD COLUMN cobranding_partner VARCHAR(20);
 
+ALTER TABLE `merchant_access_map`
+    ADD COLUMN `has_kyc_access` TINYINT(1) NOT NULL DEFAULT 0;
+
 ALTER TABLE emi_plans
     ADD COLUMN cobranding_partner VARCHAR(20);
 

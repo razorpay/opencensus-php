@@ -148,6 +148,7 @@ class Entity
     const COMMISSION_INVOICE         = 'commission_invoice';
     const SETTLEMENT_TRANSFER        = 'settlement_transfer';
     const MERCHANT_ACCESS_MAP        = 'merchant_access_map';
+    const PARTNER_KYC_ACCESS_STATE   = 'partner_kyc_access_state';
     const MERCHANT_APPLICATION       = 'merchant_application';
     const BATCH_FUND_TRANSFER        = 'batch_fund_transfer';
     const VIRTUAL_ACCOUNT_TPV        = 'virtual_account_tpv';
@@ -776,6 +777,7 @@ class Entity
         self::SETTLEMENT_DESTINATION    => \RZP\Models\Settlement\Destination::class,
         self::SETTLEMENT_TRANSFER       => \RZP\Models\Settlement\Transfer::class,
         self::MERCHANT_ACCESS_MAP       => \RZP\Models\Merchant\AccessMap::class,
+        self::PARTNER_KYC_ACCESS_STATE  => \RZP\Models\Partner\KycAccessState::class,
         self::MERCHANT_APPLICATION      => \RZP\Models\Merchant\MerchantApplications::class,
         self::MERCHANT_INHERITANCE_MAP  => \RZP\Models\Merchant\InheritanceMap::class,
         self::BATCH_FUND_TRANSFER       => \RZP\Models\FundTransfer\Batch::class,
@@ -1250,10 +1252,12 @@ class Entity
         self::SCHEDULE,
         self::PARTNER_CONFIG,
         self::MERCHANT_ACCESS_MAP,
+        self::PARTNER_KYC_ACCESS_STATE,
         self::BVS_VALIDATION,
         self::MERCHANT_APPLICATION,
         self::STAKEHOLDER,
         self::APP_STORE,
+        self::PARTNER_KYC_ACCESS_STATE,
     ];
 
     protected static $externalEntities = [

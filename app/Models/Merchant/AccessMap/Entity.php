@@ -23,6 +23,8 @@ class Entity extends Base\PublicEntity
     // to store owner of the entity mapped to the merchant
     const ENTITY_OWNER_ID = 'entity_owner_id';
 
+    const HAS_KYC_ACCESS = 'has_kyc_access';
+
     protected $entity = Constants\Entity::MERCHANT_ACCESS_MAP;
 
     protected $generateIdOnCreate = true;
@@ -36,6 +38,10 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE,
     ];
 
+    protected $defaults = [
+        self::HAS_KYC_ACCESS => 0,
+    ];
+
     protected $visible = [
         self::ID,
         self::MERCHANT_ID,
@@ -45,6 +51,11 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::DELETED_AT,
         self::ENTITY_OWNER_ID,
+        self::HAS_KYC_ACCESS,
+    ];
+
+    protected $casts = [
+        self::HAS_KYC_ACCESS => 'bool',
     ];
 
     protected $public = [
@@ -53,6 +64,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE,
         self::ENTITY_OWNER_ID,
         self::CREATED_AT,
+        self::HAS_KYC_ACCESS,
     ];
 
     protected $dates = [
@@ -94,5 +106,20 @@ class Entity extends Base\PublicEntity
     public function getEntityId()
     {
         return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function hasKycAccess(): bool
+    {
+        return $this->getAttribute(self::HAS_KYC_ACCESS);
+    }
+
+    public function setHasKycAccess()
+    {
+        $this->setAttribute(self::HAS_KYC_ACCESS, true);
+    }
+
+    public function removeKycAccess()
+    {
+        $this->setAttribute(self::HAS_KYC_ACCESS, false);
     }
 }

@@ -1211,6 +1211,20 @@ final class FactoryData
                                                              ]
         );
 
+        $factory(\RZP\Models\Partner\KycAccessState\Entity::class, [
+                'id'         => $faker->uniqueid,
+                'partner_id'      => '10000000000000',
+                'entity_type'     => 'merchant',
+                'entity_id'       => '10000000000009',
+                'approve_token'   => 'approve_token',
+                'reject_token'    => 'reject_token',
+                'rejection_count' => 0,
+                'state'           => 'pending_approval',
+                'created_at'      => Carbon::now()->getTimestamp(),
+                'updated_at'      => Carbon::now()->getTimestamp(),
+            ]
+        );
+
         $factory(\RZP\Models\Partner\Config\Entity::class, [
                                                              'id'                  => $faker->uniqueid,
                                                              'entity_type'         => 'application',

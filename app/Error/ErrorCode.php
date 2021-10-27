@@ -1243,6 +1243,10 @@ class ErrorCode
     const BAD_REQUEST_KYC_ID_MISSING                                                = 'BAD_REQUEST_KYC_ID_MISSING';
     const BAD_REQUEST_INVALID_RESPONSE_BODY                                         = 'BAD_REQUEST_INVALID_RESPONSE_BODY';
 
+    // Partner Kyc Access
+    const BAD_REQUEST_KYC_ACCESS_ALREADY_APPROVED                                   = 'BAD_REQUEST_KYC_ACCESS_ALREADY_APPROVED';
+    const BAD_REQUEST_KYC_ACCESS_ALREADY_REJECTED                                   = 'BAD_REQUEST_KYC_ACCESS_ALREADY_REJECTED';
+
     //
     // BVS
     //

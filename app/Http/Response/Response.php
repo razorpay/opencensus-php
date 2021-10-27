@@ -453,6 +453,8 @@ class Response
             'virtual_account_order_create',
             'salesforce_event_website',
             'salesforce_event_website_cors',
+            'partner_kyc_approve_reject',
+            'partner_kyc_approve_reject_cors',
             'merchant_tnc_details',
         ];
 

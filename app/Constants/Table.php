@@ -147,6 +147,7 @@ class Table
     const BANKING_ACCOUNT_TPV        = 'banking_account_tpvs';
     const NODAL_BENEFICIARY          = 'nodal_beneficiaries';
     const MERCHANT_ACCESS_MAP        = 'merchant_access_map';
+    const PARTNER_KYC_ACCESS_STATE   = 'partner_kyc_access_state';
     const MERCHANT_APPLICATION       = 'merchant_applications';
     const PAPER_MANDATE_UPLOAD       = 'paper_mandate_uploads';
     const CUSTOMER_TRANSACTION       = 'customer_transactions';

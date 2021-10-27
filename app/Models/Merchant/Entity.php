@@ -248,6 +248,7 @@ class Entity extends Base\PublicEntity
     const DETAILS                   = 'details';
     const DASHBOARD_ACCESS          = 'dashboard_access';
     const APPLICATION               = 'application';
+    const KYC_ACCESS                = 'kyc_access';
 
     const REFERRED_APPLICATION      = 'Referred application';
 
@@ -558,7 +559,8 @@ class Entity extends Base\PublicEntity
         self::DASHBOARD_ACCESS,
         self::APPLICATION,
         self::PRODUCT,
-        self::BANKING_ACCOUNT
+        self::BANKING_ACCOUNT,
+        self::KYC_ACCESS,
     ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT                  = 50000000;

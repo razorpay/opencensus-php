@@ -2437,10 +2437,10 @@ class BasicAuth
         }
 
         $route_name = $this->route->getCurrentRouteName();
+        $merchantCore = new Merchant\Core;
 
         if ((in_array($route_name, $this->whitelistRoutesForReferrerPartnerAccess, true) === true) and
-            ((new Merchant\Core)->isMerchantReferredByPartner($account->getId(), $this->authCreds->getMerchant()->getId()) === true) and
-            ((new Merchant\Core)->canSkipWorkflowToAccessSubmerchantKyc($this->authCreds->getMerchant()) === true))
+            ($merchantCore->canSkipWorkflowToAccessSubmerchantKyc($this->authCreds->getMerchant(), $account) === true))
         {
             $this->trace->info(TraceCode::PARTNER_CONTEXT_SWITCH_TO_SUBMERCHANT,
                                ['route_name'     => $route_name,

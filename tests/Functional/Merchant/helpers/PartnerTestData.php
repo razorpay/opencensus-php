@@ -100,6 +100,224 @@ return [
         ],
     ],
 
+    'testRequestKycAccessByPartner' => [
+        'request'  => [
+            'url'     => '/partner/kyc_access_request',
+            'method'  => 'POST',
+            'content' => [
+                'entity_id' => '10000000000009',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_id' => '10000000000009',
+                'entity_type' => 'merchant',
+                'partner_id' => '10000000000000',
+                'state' => 'pending_approval',
+                'rejection_count' => 0,
+            ],
+        ],
+    ],
+    'testRequestKycAccessByPartnerAgain' => [
+        'request'  => [
+            'url'     => '/partner/kyc_access_request',
+            'method'  => 'POST',
+            'content' => [
+                'entity_id' => '10000000000009',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'Request failed as kyc access already approved',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_KYC_ACCESS_ALREADY_APPROVED,
+        ],
+    ],
+    'testRequestKycAccessAfterMaxTimesRejected' => [
+        'request'  => [
+            'url'     => '/partner/kyc_access_request',
+            'method'  => 'POST',
+            'content' => [
+                'entity_id' => '10000000000009',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'Request failed as kyc access already rejected',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_KYC_ACCESS_ALREADY_REJECTED,
+        ],
+    ],
+    'testPartnerSubmerchantFetchForKycAccess' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_10000000000009',
+                'entity'           => 'merchant',
+                'email'            => 'testing@example.com',
+                'dashboard_access' => false,
+                'kyc_access'       => [
+                    'entity_id' => '10000000000009',
+                    'entity_type' => 'merchant',
+                    'partner_id' => '10000000000000',
+                    'state' => 'pending_approval',
+                    'rejection_count' => 0,
+                ],
+            ],
+        ],
+    ],
+    'testRevokeKycAccess' => [
+        'request'  => [
+            'url'     => '/partner/kyc_revoke_access',
+            'method'  => 'POST',
+            'content' => [
+                'partner_id' => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000009',
+                'entity_type' => 'application',
+                'entity_owner_id' => '10000000000000',
+                'has_kyc_access' => false,
+            ],
+        ],
+    ],
+
+    'testConfirmKycAccessRequest' => [
+        'request'  => [
+            'url'     => '/partner/kyc_approve_reject',
+            'method'  => 'POST',
+            'content' => [
+                'entity_id' => '10000000000009',
+                'partner_id' => '10000000000000',
+                'approve_token' => 'approve_token',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_id' => '10000000000009',
+                'entity_type' => 'merchant',
+                'partner_id' => '10000000000000',
+                'state' => 'approved',
+                'rejection_count' => 0,
+            ],
+        ],
+    ],
+    'testConfirmKycAccessRequestAgain' => [
+        'request'  => [
+            'url'     => '/partner/kyc_approve_reject',
+            'method'  => 'POST',
+            'content' => [
+                'entity_id' => '10000000000009',
+                'partner_id' => '10000000000000',
+                'approve_token' => 'approve_token',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_NO_RECORDS_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testRejectKycAccessRequest' => [
+        'request'  => [
+            'url'     => '/partner/kyc_approve_reject',
+            'method'  => 'POST',
+            'content' => [
+                'entity_id' => '10000000000009',
+                'partner_id' => '10000000000000',
+                'reject_token' => 'reject_token',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_id' => '10000000000009',
+                'entity_type' => 'merchant',
+                'partner_id' => '10000000000000',
+                'state' => 'rejected',
+                'rejection_count' => 1,
+            ],
+        ],
+    ],
+    'testConfirmAfterRejectKycAccessRequest' => [
+        'request'  => [
+            'url'     => '/partner/kyc_approve_reject',
+            'method'  => 'POST',
+            'content' => [
+                'entity_id' => '10000000000009',
+                'partner_id' => '10000000000000',
+                'approve_token' => 'approve_token',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_id' => '10000000000009',
+                'entity_type' => 'merchant',
+                'partner_id' => '10000000000000',
+                'state' => 'approved',
+                'rejection_count' => 1,
+            ],
+        ],
+    ],
+
+    'testSubmerchantKYCByPartnerWithMissingFeatureFlag' => [
+        'request'  => [
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+            'server'    => [
+                'HTTP_X-Razorpay-Account'    => '10000000000009',
+            ],
+            'content' => [
+                'bank_account_name'    => 'Test',
+                'bank_account_number'  => '111000',
+                'bank_branch_ifsc'     => 'SBIN0007105',
+                'bank_account_type'    => 'savings',
+                'business_name'        => 'Test',
+                'business_type'        => 1,
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'accounting',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'bank_account_name'    => 'Test',
+                'bank_account_number'  => '111000',
+                'bank_branch_ifsc'     => 'SBIN0007105',
+                'bank_account_type'    => 'savings',
+                'business_name'        => 'Test',
+                'business_type'        => '1',
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'accounting',
+            ],
+        ],
+    ],
+
     'testSubmerchantKYCByPartner' => [
         'request'  => [
             'url'     => '/merchant/activation',

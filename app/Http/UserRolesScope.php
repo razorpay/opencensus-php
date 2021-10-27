@@ -215,6 +215,8 @@ class UserRolesScope
             'fetch_partner_intent'        => [Role::OWNER],
             'update_partner_intent'       => [Role::OWNER],
             'update_partner_type'         => [Role::OWNER],
+            'partner_kyc_access_request'  => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+            'partner_kyc_revoke_access'   => [Role::OWNER, Role::MANAGER, Role::ADMIN],
 
             'loc_service'                 => [Role::OWNER, Role::ADMIN],
             'capital_cards_service'       => [Role::OWNER, Role::ADMIN],

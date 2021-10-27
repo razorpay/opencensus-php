@@ -75,6 +75,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CANCELLED_AT_WALLET_PAYMENT_PAGE                  = 'Payment processing cancelled by customer at wallet payment page';
     const BAD_REQUEST_PAYMENT_CANCELLED_AT_NETBANKING_PAYMENT_PAGE              = 'Payment processing cancelled by customer at netbanking payment page';
     const BAD_REQUEST_RATE_LIMIT_EXCEEDED                                       = 'Request failed. Please try after sometime.';
+    const BAD_REQUEST_BOTH_TOKENS_PRESENT                                       = 'Approve and Reject tokens both present.';
     const BAD_REQUEST_CONFLICT_ALREADY_EXISTS                                   = 'Duplicate request. This request has already been processed.';
     const BAD_REQUEST_PAYMENT_ALREADY_PROCESSED                                 = 'The payment has already been processed';
     const BAD_REQUEST_CARD_MANDATE_CANCELLED_BY_USER                            = 'Card mandate created for payment has been cancelled by user';
@@ -1478,6 +1479,11 @@ class PublicErrorDescription
 
     const BAD_REQUEST_ENCRYPTED_COMMENT_NOT_FOUND                                   = 'No Credentials found';
 
+    // Partner Kyc Access
+    const BAD_REQUEST_KYC_ACCESS_ALREADY_APPROVED                                   = 'Request failed as kyc access already approved';
+    const BAD_REQUEST_KYC_ACCESS_ALREADY_REJECTED                                   = 'Request failed as kyc access already rejected';
+
     // Payouts Batch
     const BAD_REQUEST_PAYOUTS_BATCH_NOT_ALLOWED = 'Creating a payouts batch request is not allowed. Please contact support for more details.';
+
 }

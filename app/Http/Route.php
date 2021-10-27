@@ -2118,7 +2118,11 @@ class Route
         'partner_activation_bulk_assign_reviewer'  => ['post',     'partner/activation/bulk_assign_reviewer',        'PartnerActivationController@bulkAssignReviewer'                    ],
 
 
-
+        // partner kyc access
+        'partner_kyc_access_request'              => ['post',     'partner/kyc_access_request',                     'PartnerKycAccessController@createRequestForKyc'                     ],
+        'partner_kyc_approve_reject'              => ['post',     'partner/kyc_approve_reject',                     'PartnerKycAccessController@confirmRequestForKyc'                    ],
+        'partner_kyc_approve_reject_cors'         => ['options',  'partner/kyc_approve_reject',                     'PartnerKycAccessController@confirmRequestForKycCors'                ],
+        'partner_kyc_revoke_access'               => ['post',     'partner/kyc_revoke_access',                      'PartnerKycAccessController@revokeKycAccess'                         ],
 
 
         'merchant_sync_stakeholder'                => ['post',     'merchants/stakeholders/sync',                    'MerchantController@syncStakeholderFromMerchant'                    ],
@@ -4603,6 +4607,10 @@ class Route
         'partner_activation_details',
         'partner_activation_save',
 
+        // Partner KYC access routes
+        'partner_kyc_access_request',
+        'partner_kyc_revoke_access',
+
         // Sub Virtual Account routes
         'sub_virtual_account_list',
         'sub_virtual_account_transfer_with_otp',
@@ -7074,6 +7082,8 @@ class Route
         'salesforce_event_website_cors',
 
         'merchant_tnc_details',
+        'partner_kyc_approve_reject',
+        'partner_kyc_approve_reject_cors',
 
         // Payout Links Shopify Integration
         'payout_links_shopify_app_install',
@@ -7306,6 +7316,8 @@ class Route
             'commissions_invoice_status_change',
             'partner_activation_details',
             'partner_activation_save',
+            'partner_kyc_access_request',
+            'partner_kyc_revoke_access',
             'consume_typeform_webhook',
             'contact_create',
             'contact_get',
