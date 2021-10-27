@@ -5339,4 +5339,55 @@ class Core extends Base\Core
 
         return $fileAttributes[Constants::TRANSACTION_LIMIT_INCREASE_INVOICE_URL][Document\Constants::FILE_ID];
     }
+
+    public function associateCodSlab(array $slabs)
+    {
+        $this->associateSlab($slabs, Slab\Type::COD_SLAB);
+    }
+
+    public function associateShippingSlab(array $slabs)
+    {
+        $this->associateSlab($slabs, Slab\Type::SHIPPING_SLAB);
+    }
+
+    protected function associateSlab(array $slabs, string $type)
+    {
+        $input = [
+            'slab' => $slabs,
+            'type' => $type,
+        ];
+        $this->repo->transaction(
+            function () use($input)
+            {
+                $slab = $this->merchant->slab($input['type']);
+                if ($slab !== null)
+                {
+                    $slab->delete();
+                }
+                (new Merchant\Slab\Core())->createAndSaveSlab($this->merchant, $input);
+            }
+        );
+    }
+
+    public function associateMerchant1ccConfig(string $type, string $value)
+    {
+        $input = [
+            'config' => $type,
+            'value'  => $value,
+        ];
+        $this->transaction(
+            function () use ($input)
+            {
+                $config = $this->repo->merchant_1cc_configs->findByMerchantAndConfigType(
+                    $this->merchant->getId(),
+                    $input['config']
+                );
+                if ($config !== null)
+                {
+                    $config->delete();
+                }
+                (new Merchant1ccConfig\Core())->createAndSaveConfig($this->merchant, $input);
+            }
+        );
+    }
 }

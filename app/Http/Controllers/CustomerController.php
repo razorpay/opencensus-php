@@ -291,6 +291,15 @@ class CustomerController extends Controller
         return ApiResponse::json($address);
     }
 
+    public function createGlobalAddress()
+    {
+        $input = Request::all();
+
+        $address = $this->service()->createGlobalAddress($input);
+
+        return ApiResponse::json($address);
+    }
+
     public function getAddresses(string $customerId)
     {
         $input = Request::all();

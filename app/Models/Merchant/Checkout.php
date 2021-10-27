@@ -572,6 +572,8 @@ class Checkout
 
             $savedTokens = $tokenCore->fetchTokensByCustomer($customer, $merchant);
 
+            $savedAddresses = $this->repo->address->fetchAddressesForEntity($customer, $input);
+
             //
             // TODO: Remove this later when we start handling the below case.
             // Currently, we do not expose any recurring NB tokens to the customer.
@@ -588,6 +590,7 @@ class Checkout
                 'email'     => $customer->getEmail(),
                 'contact'   => $customer->getContact(),
                 'tokens'    => $savedTokens->toArrayPublic(),
+                'addresses' => $savedAddresses,
             ];
 
             //
@@ -719,6 +722,19 @@ class Checkout
 
                         $data['customer']['tokens'] = $tokensWithoutCardName;
                     }
+                }
+                // add saved addresses
+                if ($response['saved_address'] === true)
+                {
+                    $merchant = $this->repo->merchant->getSharedAccount();
+
+                    $contact = Customer\Validator::validateAndParseContact($input['contact']);
+
+                    $customer = $this->repo->customer->findByContactAndMerchant($contact, $merchant);
+
+                    $addresses = $this->repo->address->fetchAddressesForEntity($customer, $input);
+
+                    $data['customer']['addresses'] = $addresses;
                 }
             }
         }

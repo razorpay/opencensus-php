@@ -4,6 +4,7 @@ namespace RZP\Models\Order\OrderMeta;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Order;
 
 /**
  * Class Repository
@@ -17,7 +18,17 @@ class Repository extends Base\Repository
      */
     protected $entity = Constants\Entity::ORDER_META;
 
-    public function findByOrderIdAndType($orderId, $type): Entity
+    public function findByPublicOrderIdAndType(string $publicOrderId, string $type)
+    {
+        $entity = (new Order\Repository())->getEntityClass();
+        $orderId = $entity::verifyIdAndStripSign($publicOrderId);
+        return $this->newQuery()
+            ->where(Entity::ORDER_ID, '=', $orderId)
+            ->where(Entity::TYPE, '=', $type)
+            ->first();
+    }
+
+    public function findByOrderIdAndType($orderId, $type)
     {
         return $this->newQuery()
             ->where(Entity::ORDER_ID, '=', $orderId, 'AND', Entity::TYPE, '=', $type)

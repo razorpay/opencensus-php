@@ -1840,6 +1840,27 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertEquals(true, $response[Merchant\Checkout::DYNAMIC_WALLET_FLOW]);
     }
 
+    public function testUpdateFetchCouponsURL()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+    
+    public function testUpdateShippingInfoURL()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateCouponValidityURL()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+    
     public function testGetCheckoutPreferencesWithFeeConfigNull()
     {
         $data = $this->testData[__FUNCTION__];

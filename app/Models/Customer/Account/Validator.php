@@ -52,6 +52,13 @@ class Validator extends Base\Validator
         'language_code'         => 'sometimes',
     ];
 
+    protected static $createGlobalAddressRules = [
+        Entity::CONTACT           => 'required|contact_syntax',
+        Entity::EMAIL             => 'sometimes|email',
+        Entity::SHIPPING_ADDRESS  => 'sometimes',
+        Entity::BILLING_ADDRESS   => 'sometimes'
+    ];
+
     protected static $contactRules = [
         Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line',
         'language_code'         => 'sometimes',
@@ -234,5 +241,10 @@ class Validator extends Base\Validator
             default:
                 return ;
         }
+    }
+
+    public static function validateCreateGlobalAddress($input)
+    {
+        (new static)->validateInput('createGlobalAddress', $input);
     }
 }

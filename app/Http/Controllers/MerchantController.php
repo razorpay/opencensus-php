@@ -2495,4 +2495,85 @@ class MerchantController extends Controller
 
         return ApiResponse::json(['status' => $status]);
     }
+
+    public function fetchCouponCodes()
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\MerchantPromotions\Service())->fetchCouponCodes($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getShippingInfo()
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\ShippingInfo\Service())->getShippingInfo($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function applyCoupon()
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\MerchantPromotions\Service())->applyCoupon($input);
+
+        return ApiResponse::json($response['data'], $response['status_code']);
+    }
+
+    public function removeCoupon()
+    {
+        $input = Request::all();
+
+        (new Merchant\MerchantPromotions\Service())->removeCoupon($input);
+
+        return ApiResponse::json([], 200);
+    }
+
+    public function updateFetchCouponsUrl()
+    {
+        $input = Request::all();
+
+        $this->service()->updateFetchCouponsUrl($input);
+
+        return ApiResponse::json([], 201);
+    }
+    
+    public function updateShippingInfoUrl()
+    {
+        $input = Request::all();
+
+        $this->service()->updateShippingInfoUrl($input);
+
+        return ApiResponse::json([], 201);
+    }
+
+    public function updateCodSlabs()
+    {
+        $input = Request::all();
+
+        $this->service()->updateCodSlabs($input);
+
+        return ApiResponse::json([], 201);
+    }
+
+    public function updateApplyCouponUrl()
+    {
+        $input = Request::all();
+
+        $this->service()->updateApplyCouponUrl($input);
+
+        return ApiResponse::json([], 201);
+    }
+    
+    public function updateShippingSlabs()
+    {
+        $input = Request::all();
+
+        $this->service()->updateShippingSlabs($input);
+
+        return ApiResponse::json([], 201);
+    }
 }

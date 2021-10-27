@@ -5,7 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Address\Entity;
-use RZP\Models\Customer;
+use RZP\Models\Contact\Entity as Contact;
 
 class CreateAddress extends Migration
 {
@@ -41,6 +41,11 @@ class CreateAddress extends Migration
 
             $table->string(Entity::TYPE, 32);
             $table->tinyInteger(Entity::PRIMARY);
+            $table->string(Entity::CONTACT, 20)
+                ->nullable();
+            $table->string(Entity::NAME, 64)->nullable();
+            $table->string(Entity::TAG, 32)->nullable();
+            $table->string(Entity::LANDMARK, 64)->nullable();
 
             $table->integer(Entity::DELETED_AT)
                   ->nullable();

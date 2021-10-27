@@ -364,4 +364,19 @@ class Entity extends Base\PublicEntity
 
         return $this;
     }
+
+    public function buildForCustomer($input)
+    {
+        $this->modify($input);
+
+        $this->validateInput('create_for_customer', $input);
+
+        $this->generate($input);
+
+        $this->unsetInput('create_for_customer', $input);
+
+        $this->fill($input);
+
+        return $this;
+    }
 }

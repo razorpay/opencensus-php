@@ -7,19 +7,13 @@ use Mail;
 use Cache;
 use Config;
 use Request;
+use Throwable;
 use Carbon\Carbon;
-use Razorpay\Trace\Logger as Trace;
-use Razorpay\OAuth\Token as OAuthToken;
-use Razorpay\Spine\DataTypes\Dictionary;
-use Razorpay\OAuth\Client as OAuthClient;
-use Razorpay\OAuth\Application as OAuthApplication;
-
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\Error;
-use RZP\Trace\Tracer;
-use RZP\Models\Terminal\Category;
 use RZP\Models\User;
+use RZP\Trace\Tracer;
 use RZP\Models\Offer;
 use RZP\Models\Payout;
 use RZP\Models\Coupon;
@@ -29,7 +23,6 @@ use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Address;
 use RZP\Models\Pricing;
-use RZP\Models\Customer;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
@@ -40,6 +33,7 @@ use RZP\Models\Promotion;
 use RZP\Models\Admin\Org;
 use RZP\Models\Settlement;
 use RZP\Http\CheckoutView;
+use RZP\Base\JitValidator;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
@@ -49,7 +43,6 @@ use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Services\DiagClient;
 use RZP\Base\RuntimeManager;
-use RZP\Base\JitValidator;
 use RZP\Models\Pricing\Plan;
 use RZP\Models\Payment\Refund;
 use RZP\Services\HubspotClient;
@@ -60,25 +53,28 @@ use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Settlement\Bucket;
 use RZP\Models\Admin as MainAdmin;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Services\SalesForceClient;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Jobs\SubMerchantTaggingJob;
 use RZP\Error\PublicErrorDescription;
 use RZP\Jobs\CallBackFillReferredApp;
+use Razorpay\OAuth\Token as OAuthToken;
 use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Partner\RateLimitBatch;
 use RZP\Jobs\CallBackFillMerchantApps;
 use RZP\Models\Merchant\BusinessDetail;
-use RZP\Models\Merchant\RazorxTreatment;
+use Razorpay\Spine\DataTypes\Dictionary;
+use Razorpay\OAuth\Client as OAuthClient;
 use RZP\Models\Comment\Core as CommentCore;
-use RZP\Mail\InstrumentRequest\StatusNotify;
 use RZP\Models\Settlement\SettlementTrait;
 use RZP\Models\Batch\Header as BatchHeader;
 use RZP\Models\Batch\Status as BatchStatus;
-use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Mail\InstrumentRequest\StatusNotify;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Schedule\Task as ScheduleTask;
@@ -90,6 +86,7 @@ use RZP\Models\Pricing\Entity as PricingEntity;
 use RZP\Models\BulkWorkflowAction as BulkAction;
 use RZP\Models\RiskWorkflowAction as RiskAction;
 use RZP\Models\Pricing\Feature as PricingFeature;
+use Razorpay\OAuth\Application as OAuthApplication;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
@@ -97,20 +94,20 @@ use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\PayoutLink\Service as PayoutLinkService;
-use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Services\Pagination\Entity as PaginationEntity;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\Merchant\Detail\Status as MerchantStatus;
+use RZP\Constants\
+{Mode, Product, Entity as CE, Environment};
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
+use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Merchant\Methods\DefaultMethodsForCategory;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
-use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Workflow\Action\Entity as WorkFlowActionEntity;
-use RZP\Constants\{Environment, Mode, Entity as CE, Product};
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Models\Batch\Helpers\SubMerchant as SubMerchantBatchHelper;
 use RZP\Models\Partner\SubMerchantBatchUtility as SubMerchantBatchUtil;
-use RZP\Models\Merchant\Detail\BusinessType as MerchantDetBusinessType;
 use RZP\Models\Merchant\Balance\BalanceConfig\Service as BalanceConfigService;
 use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerForPG;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForPG;
@@ -1156,7 +1153,7 @@ class Service extends Base\Service
 
     protected function getErrorSourceCategoryForFailureAnalysis($errorCode, $method)
     {
-        list($errorCodeJson,) = $this->app['error_mapper']->getErrorMapping($errorCode, $method);
+        [$errorCodeJson,] = $this->app['error_mapper']->getErrorMapping($errorCode, $method);
 
         if ((isset($errorCodeJson['source']) === true) and
             (key_exists($errorCodeJson['source'], MerchantConstants::ERROR_SOURCE_CATEGORY) === true))
@@ -1325,7 +1322,7 @@ class Service extends Base\Service
             $originalPricingPlan = $merchant->pricing->getPlanName();
         }
 
-        list($original, $dirty) = [
+        [$original, $dirty] = [
             // Current plan
             ['pricing_plan' => $originalPricingPlan],
             // New plan
@@ -2151,7 +2148,7 @@ class Service extends Base\Service
 
         $druidService = $this->app['druid.service'];
 
-        list($error, $data) = $druidService->getDataFromDruid($content);
+        [$error, $data] = $druidService->getDataFromDruid($content);
 
         if (empty($error) === false)
         {
@@ -2173,7 +2170,7 @@ class Service extends Base\Service
 
         $druidService = $this->app['druid.service'];
 
-        list($error, $data) = $druidService->getDataFromDruid($content);
+        [$error, $data] = $druidService->getDataFromDruid($content);
 
         if (empty($error) === false)
         {
@@ -3919,7 +3916,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        list($from, $to) = $this->getTimestamps();
+        [$from, $to] = $this->getTimestamps();
 
         $processed = $this->core()->sendPayoutMail($merchant, $from, $to, $email);
 
@@ -4620,7 +4617,7 @@ class Service extends Base\Service
 
         unset($input[User\Entity::MERCHANT_ID]);
 
-        list($subMerchantUser, $createdNew) =
+        [$subMerchantUser, $createdNew] =
             $this->createOrFetchUserAndAttachMerchant($subMerchant, $input[User\Entity::EMAIL]);
 
         // Sends Account linked communication emails to users.
@@ -4806,7 +4803,7 @@ class Service extends Base\Service
         // dashboard access is true.
         if ((($enableDashboardAccess === true) and ($isLinkedAccount === true)) or ($isLinkedAccount === false))
         {
-            list($newUser, $createdNewUser) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant, $product);
+            [$newUser, $createdNewUser] = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant, $product);
         }
 
         $this->repo->saveOrFail($subMerchant);
@@ -4848,7 +4845,7 @@ class Service extends Base\Service
 
         if($optimizeCreationFlow === false)
         {
-            list($subMerchant, $newUser, $createdNew) = $this->repo->transactionOnLiveAndTest(function() use (
+            [$subMerchant, $newUser, $createdNew] = $this->repo->transactionOnLiveAndTest(function() use (
                 $input,
                 $merchant,
                 $isLinkedAccount,
@@ -4860,7 +4857,7 @@ class Service extends Base\Service
         }
         else
         {
-            list($subMerchant, $newUser, $createdNew) = $this->createSubMerchantAndSetRelationsInternal($input, $merchant, $isLinkedAccount, $ownerId, $product, true);
+            [$subMerchant, $newUser, $createdNew] = $this->createSubMerchantAndSetRelationsInternal($input, $merchant, $isLinkedAccount, $ownerId, $product, true);
         }
 
         if ($merchant->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM) === true)
@@ -4921,7 +4918,7 @@ class Service extends Base\Service
         if ((($merchant->isPartner() === true) or ($merchant->isMarketplace() === true)) and
             ($subMerchant->getEmail() !== $merchant->getEmail()))
         {
-            list($subMerchantUser, $createdNew) =
+            [$subMerchantUser, $createdNew] =
                 $this->createOrFetchUserAndAttachMerchant($subMerchant, $subMerchant->getEmail(), $product);
         }
 
@@ -5382,7 +5379,7 @@ class Service extends Base\Service
                     ErrorCode::BAD_REQUEST_NO_EMAIL_LINKED_ACCOUNT_DASHBOARD_ACCESS);
             }
 
-            list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($merchant, $parentMerchant);
+            [$newUser, $createdNew] = $this->createAdditionalUserOrFetchIfApplicable($merchant, $parentMerchant);
 
             if (empty($newUser) === false)
             {
@@ -6146,7 +6143,7 @@ class Service extends Base\Service
 
         if ((empty($subMerchantUser) === true) or (empty($mapping) === true))
         {
-            list($subMerchantUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant,
+            [$subMerchantUser, $createdNew] = $this->createAdditionalUserOrFetchIfApplicable($subMerchant,
                                                                                                  $merchant);
         }
 
@@ -7616,5 +7613,117 @@ class Service extends Base\Service
         }
 
         return false;
+    }
+
+    /**
+     * Add/Update Merchant Fetch Coupons URL
+     * @param array $input
+     * @return void
+     */
+    public function updateFetchCouponsUrl(array $input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_FETCH_COUPONS_REQUEST, $input);
+
+        (new Validator)->validateInput('couponCodeUrlUpdateRequest', $input);
+
+        (new Merchant\Core)->associateMerchant1ccConfig(Merchant1ccConfig\Type::FETCH_COUPONS_URL, $input['url']);
+    }
+
+    /**
+     * Add/Update Merchant Coupon Validity URL
+     * @param array $input
+     * @return void
+     */
+    public function updateApplyCouponUrl(array $input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_CHECK_COUPON_VALIDITY_REQUEST, $input);
+
+        (new Validator)->validateInput('couponCodeUrlUpdateRequest', $input);
+
+        (new Merchant\Core)->associateMerchant1ccConfig(Merchant1ccConfig\Type::APPLY_COUPON_URL, $input['url']);
+    }
+
+     /**
+     * Add/Update Merchant Serviceability and COD Serviceability URL
+     * @param array $input
+     * @return void
+     * @throws \Throwable
+     */
+    public function updateShippingInfoUrl(array $input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_ADDRESS_SERVICEABILITY_REQUEST, $input);
+
+        (new Validator)->validateInput('serviceabilityUrlUpdateRequest', $input);
+
+        (new Merchant\Core)->associateMerchant1ccConfig(
+            Merchant1ccConfig\Type::SHIPPING_INFO_URL,
+            $input['url']
+        );
+    }
+
+    /**
+     * Adds/Updates COD Slabs for the merchant (1CC)
+     * @param array $input
+     * @return void
+     * @throws Throwable
+    */
+    public function updateCodSlabs(array $input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_COD_SLABS_UPDATE_REQUEST, $input);
+
+        if(!isset($input['slabs'])) {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+        $slabs = $this->validateAndSortSlabs($input['slabs']);
+
+        (new Core())->associateCodSlab($slabs);
+    }
+
+    /**
+     * @throws Throwable
+     * @throws BadRequestException
+     */
+    public function updateShippingSlabs(array $input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_SHIPPING_SLABS_UPDATE_REQUEST, $input);
+
+        if(!isset($input['slabs'])) {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+        $slabs = $this->validateAndSortSlabs($input['slabs']);
+
+        (new Core())->associateShippingSlab($slabs);
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    protected function validateAndSortSlabs(array $slabs): array
+    {
+        $validator = (new Validator);
+
+        foreach ($slabs as $slab) {
+            $validator->validateInput('updateSlabRequest', $slab);
+        }
+
+        usort(
+            $slabs,
+            function ($s1, $s2)
+            {
+                if ($s1['amount'] == $s2['amount'])
+                {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+                }
+                return ($s1['amount'] > $s2['amount']) ? 1 : -1;
+            }
+        );
+
+        if($slabs[0]['amount'] != 0){
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+        return $slabs;
     }
 }

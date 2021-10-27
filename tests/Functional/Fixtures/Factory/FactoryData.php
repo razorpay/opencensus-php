@@ -1890,5 +1890,9 @@ final class FactoryData
             'created_at'   => $faker->timestamp,
             'updated_at'   => $faker->timestamp,
         ]);
+
+        $factory(\RZP\Models\Merchant\Merchant1ccConfig\Entity::class, [
+            'id'        => $faker->uniqueid,
+        ]);
     }
 }

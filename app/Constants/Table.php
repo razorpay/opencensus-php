@@ -392,6 +392,10 @@ class Table
     // Merchant Risk Notes
     const MERCHANT_RISK_NOTE = 'merchant_risk_notes';
 
+    const MERCHANT_SLABS = 'merchant_slabs';
+
+    const MERCHANT_1CC_CONFIGS = 'merchant_1cc_configs';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                          => self::MIGS,
         Entity::AXIS_GENIUS                        => self::MIGS,
@@ -410,6 +414,8 @@ class Table
         Entity::SETTLEMENT_ONDEMAND_TRANSFER       => self::SETTLEMENT_ONDEMAND_TRANSFER,
         Entity::SETTLEMENT_ONDEMAND_ATTEMPT        => self::SETTLEMENT_ONDEMAND_ATTEMPT,
         Entity::SETTLEMENT_ONDEMAND_FEATURE_CONFIG => self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
+        Entity::MERCHANT_SLABS                     => self::MERCHANT_SLABS,
+        Entity::MERCHANT_1CC_CONFIGS               => self::MERCHANT_1CC_CONFIGS,
     ];
 
     public static function getTableNameForEntity(string $entity)

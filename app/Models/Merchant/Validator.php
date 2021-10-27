@@ -6,6 +6,7 @@ use App;
 use Hash;
 
 use RZP\Base;
+use RZP\Constants\Country;
 use RZP\Exception;
 use RZP\Models\User;
 use FuzzyWuzzy\Fuzz;
@@ -18,6 +19,7 @@ use RZP\Models\User\Role;
 use RZP\Models\Settlement;
 use RZP\Constants\Product;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Address;
 use RZP\Models\Payment\Event;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
@@ -513,6 +515,77 @@ class Validator extends Base\Validator
         Constants::NEW_TRANSACTION_LIMIT_BY_MERCHANT      => 'required|integer|min:1',
         Constants::TRANSACTION_LIMIT_INCREASE_REASON      => 'required|string|min:100',
         Constants::TRANSACTION_LIMIT_INCREASE_INVOICE_URL => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
+    ];
+
+    protected static $fetchCouponsRequestRules = [
+        'order_id'                      => 'required|string',
+        'contact'                       => 'sometimes|string',
+        'email'                         => 'sometimes|email',
+    ];
+
+    protected static $fetchCouponsResponseRules = [
+        'code'                          => 'required|string',
+        'summary'                       => 'required|string',
+        'description'                   => 'sometimes|string',
+        'tnc'                           => 'sometimes|array',
+    ];
+
+    protected static $applyCouponRequestRules = [
+        'order_id'                      => 'required|string',
+        'contact'                       => 'sometimes|string',
+        'email'                         => 'sometimes|email',
+        'code'                          => 'required|string',
+    ];
+
+    protected static $applyCouponResponseRules = [
+        'promotion'                     => 'required|array',
+        'promotion.reference_id'        => 'required|string',
+        'promotion.type'                => 'sometimes|string',
+        'promotion.code'                => 'required|string',
+        'promotion.value'               => 'required|integer',
+        'promotion.value_type'          => 'sometimes|string',
+        'promotion.description'         => 'sometimes|string',
+        'amount'                        => 'sometimes|integer',
+        'line_items'                    => 'sometimes|array',
+        'line_items.*.sku'              => 'exclude_if:line_items,null|string',
+        'line_items.*.variant_id'       => 'exclude_if:line_items,null|string',
+        'line_items.*.price'            => 'exclude_if:line_items,null|integer',
+        'line_items.*.offer_price'      => 'exclude_if:line_items,null|integer',
+        'line_items.*.tax_amount'       => 'exclude_if:line_items,null|integer',
+        'shipping_fee'                  => 'sometimes|integer',
+        'cod_fee'                       => 'sometimes|integer',
+        'line_items_total'              => 'sometimes|integer'
+    ];
+
+    protected static $applyCouponInvalidRequestResponseRules = [
+        'failure_reason'                => 'sometimes|string',
+        'failure_code'                  => 'required|string',
+    ];
+
+    protected static $couponCodeUrlUpdateRequestRules = [
+        'url'                           => 'required|active_url'
+    ];
+    
+    protected static $shippingInfoRequestRules = [
+        Address\Entity::ZIPCODE => 'required|string|between:2,10',
+        Address\Entity::COUNTRY => 'sometimes|string|between:2,64|custom',
+    ];
+
+    protected static $addressShippingInfoResponseRules = [
+        'id'                           => 'required|integer',
+        'serviceable'                  => 'required|boolean',
+        'cod'                          => 'required|boolean',
+        'cod_fee'                      => 'sometimes|integer|nullable',
+        'shipping_fee'                 => 'sometimes|integer|nullable',
+    ];
+
+    protected static $serviceabilityUrlUpdateRequestRules = [
+        'url'                          => 'required|url'
+    ];
+
+    protected static $updateSlabRequestRules = [
+        'amount' => 'required|integer',
+        'fee'    => 'required|integer',
     ];
 
     public function validateMerchantForProductInternational(Entity $merchant)
@@ -2339,6 +2412,17 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_EDIT_TRANSACTION_LIMIT_CTS_OR_FTS_MORE_THAN_5
             );
+        }
+    }
+
+    protected function validateCountry($attribute, $value)
+    {
+        $isValid = Country::checkIfValidCountry($value);
+
+        if ($isValid === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_COUNTRY, null, [$value]);
         }
     }
 }

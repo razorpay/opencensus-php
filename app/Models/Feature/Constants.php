@@ -914,6 +914,12 @@ class Constants
      */
     const ONE_CLICK_CHECKOUT = 'one_click_checkout';
 
+    const ONE_CC_MANDATORY_LOGIN = 'one_cc_mandatory_login';
+
+    const ONE_CC_MERCHANT_DASHBOARD = 'one_cc_merchant_dashboard';
+
+    const ONE_CC_COUPONS = 'one_cc_coupons';
+
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -945,6 +951,9 @@ class Constants
         self::RAAS,
         self::DISABLE_SIFT_JS,
         self::ONE_CLICK_CHECKOUT,
+        self::ONE_CC_COUPONS,
+        self::ONE_CC_MANDATORY_LOGIN,
+        self::ONE_CC_MERCHANT_DASHBOARD,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -1297,6 +1306,9 @@ class Constants
         self::HIGH_TPS_COMPOSITE_PAYOUT       => true,
         self::ALLOW_NETWORK_TOKENS            => true,
         self::ONE_CLICK_CHECKOUT              => true,
+        self::ONE_CC_MANDATORY_LOGIN          => true,
+        self::ONE_CC_MERCHANT_DASHBOARD       => true,
+        self::ONE_CC_COUPONS                  => true,
         self::ENABLE_PAYPAL_AS_BACKUP         => true,
     ];
     // Entity type constants
@@ -1884,6 +1896,26 @@ class Constants
             'display_name'  => 'One click checkout',
             'documentation' => '',
         ],
+        self::ONE_CLICK_CHECKOUT => [
+            'feature'       => self::ONE_CLICK_CHECKOUT,
+            'display_name'  => 'One click checkout',
+            'documentation' => '',
+        ],
+        self::ONE_CC_MANDATORY_LOGIN => [
+            'feature'       => self::ONE_CC_MANDATORY_LOGIN,
+            'display_name'  => '1cc mandatory login',
+            'documentation' => '',
+        ],
+        self::ONE_CC_COUPONS => [
+            'feature'       => self::ONE_CC_COUPONS,
+            'display_name'  => 'One click checkout',
+            'documentation' => '',
+        ],
+        self::ONE_CC_MERCHANT_DASHBOARD => [
+            'feature'       => self::ONE_CC_MERCHANT_DASHBOARD,
+            'display_name'  => 'One click checkout tab on merchant dashboard',
+            'documentation' => '',
+        ],
     ];
 
     /**
@@ -1932,6 +1964,10 @@ class Constants
         self::SUGGESTED_ADDRESS_OPT_IN,
         self::COVID_19_RELIEF,
         self::CRED_MERCHANT_CONSENT,
+        self::ONE_CLICK_CHECKOUT,
+        self::ONE_CC_COUPONS,
+        self::ONE_CC_MANDATORY_LOGIN,
+        self::ONE_CC_MERCHANT_DASHBOARD,
     ];
 
     /*

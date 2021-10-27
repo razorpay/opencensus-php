@@ -10153,4 +10153,231 @@ return [
             ],
         ],
     ],
+
+    'testUpdateFetchCouponsURL' => [
+        'request'     => [
+            'url'     => '/merchant/coupons/url',
+            'method'  => 'post',
+            'content' => [
+                'url' => 'https://www.example.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 201
+        ],
+    ],
+    
+    'testUpdateShippingInfoURL' => [
+        'request'     => [
+            'url'     => '/merchant/shipping_info/url',
+            'method'  => 'post',
+            'content' => [
+                'url' => 'http://fake.url',
+            ],
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 201
+        ],
+    ],
+
+    'testUpdateCouponValidityURL' => [
+        'request'     => [
+            'url'     => '/merchant/coupon/apply/url',
+            'method'  => 'post',
+            'content' => [
+                'url' => 'https://www.example.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 201
+        ],
+    ],
+
+    'testFetchCoupons' => [
+        'request'   => [
+            'url'   => '/merchant/coupons',
+            'method' => 'post',
+            'content' => [
+                'contact'   => '+92153524643',
+                'email'     => 'nin@osaga.com',
+                'mock_response'  => [
+                    'body' => [
+                        'promotions' => [
+                            [
+                                'code' => 'rqrqw',
+                                'summary' => 'short summary',
+                                'description' => 'long description- One time ',
+                                'tnc' => [
+                                    'dagdasga',
+                                    'sahhqw'
+                                ],
+                            ],
+                            [
+                                'code' => 'adgaga',
+                                'summary' => 'short summary',
+                                'description' => 'long description- TWO time ',
+                                'tnc' => [
+                                    'dagdasga',
+                                    'sahhqw'
+                                ],
+                            ],
+                        ],
+                    ]],
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'promotions' => [
+                    [
+                        'code' => 'rqrqw',
+                        'summary' => 'short summary',
+                        'description' => 'long description- One time ',
+                        'tnc' => [
+                            'dagdasga',
+                            'sahhqw'
+                        ],
+                    ],
+                    [
+                        'code' => 'adgaga',
+                        'summary' => 'short summary',
+                        'description' => 'long description- TWO time ',
+                        'tnc' => [
+                            'dagdasga',
+                            'sahhqw'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchCouponsNoCouponsAvailable' => [
+        'request'   => [
+            'url'   => '/merchant/coupons',
+            'method' => 'post',
+            'content' => [
+                'contact'   => '+92153524643',
+                'email'     => 'nin@osaga.com',
+                'mock_response'  => [
+                    'body' => ['promotions' => [],]
+                ],
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'promotions' => [],
+            ],
+        ],
+    ],
+
+    'testFetchCouponsURLNotConfigured' => [
+        'request'   => [
+            'url'   => '/merchant/coupons',
+            'method' => 'post',
+            'content' => [
+                'contact'   => '+92153524643',
+                'email'     => 'nin@osaga.com',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FETCH_COUPONS_URL_NOT_CONFIGURED,
+        ],
+    ],
+
+    'testApplyCouponValidCoupon' => [
+        'request'   => [
+            'url'   => '/merchant/coupon/apply',
+            'method' => 'post',
+            'content' => [
+                'contact'   => '1234567890',
+                'email'     => 'email@gmail.com',
+                'code'      => 'etwqyr',
+                'mock_response' => [
+                    'body' => [
+                        'promotion' => [
+                            'reference_id' => 'ref1',
+                            'code' => 'etwqyr',
+                            'value' => 200,
+                        ],
+                    ],
+                    'status_code' => 200
+                ],
+            ],
+        ],
+        'response'  => [
+            'content' =>  [
+                'promotions' => [
+                    [
+                        'reference_id' => 'ref1',
+                        'code'  => 'etwqyr',
+                        'value' => 200,
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testApplyCouponInvalidCoupon' => [
+        'request'   => [
+            'url'   => '/merchant/coupon/apply',
+            'method' => 'post',
+            'content' => [
+                'contact'   => '+92153524643',
+                'email'     => 'nin@osaga.com',
+                'code'      => 'etwqyr',
+                'mock_response' => [
+                    'body' => [
+                        'failure_code'          => 'INVALID_COUPON',
+                        'failure_reason'        => 'Coupon Code has expired',
+                    ],
+                    'status_code' => 400,
+                ]
+            ],
+        ],
+        'response'  => [
+            'content' =>  [
+                'failure_code'          => 'INVALID_COUPON',
+                'failure_reason'        => 'Coupon Code has expired',
+            ],
+            'status_code'   => 400,
+        ],
+    ],
+
+    'testCouponValidityURLNotConfigured' => [
+        'request'   => [
+            'url'   => '/merchant/coupon/apply',
+            'method' => 'post',
+            'content' => [
+                'contact'   => '+92153524643',
+                'email'     => 'nin@osaga.com',
+                'code'      => 'etwqyr'
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_COUPON_VALIDITY_URL_NOT_CONFIGURED,
+
+        ],
+    ],
+
 ];

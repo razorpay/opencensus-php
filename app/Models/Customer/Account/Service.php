@@ -222,7 +222,7 @@ class Service extends Base\Service
     {
         Customer\Validator::validateSmsHash($input);
 
-        $data = ['saved' => false];
+        $data = ['saved' => false, 'saved_address' => false];
 
         if ($sendOtp === true)
         {
@@ -354,6 +354,13 @@ class Service extends Base\Service
                 }
 
                 $this->sendOtp($otpInput);
+            }
+            // check for saved addresses
+            $savedAddress = $this->repo->address->fetchAddressesForEntity($customer, [Address\Entity::TYPE => Address\Type::SHIPPING_ADDRESS]);
+
+            if (count($savedAddress) !== 0)
+            {
+                $data['saved_address'] = true;
             }
         }
 
@@ -489,6 +496,13 @@ class Service extends Base\Service
         }
 
         return $collection->toArrayWithItems();
+    }
+
+    public function createGlobalAddress(array $input)
+    {
+        $address = $this->core->createGlobalAddress($input);
+
+        return $address;
     }
 
     public function createAddress($customerId, array $input)

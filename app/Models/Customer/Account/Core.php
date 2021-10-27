@@ -10,6 +10,7 @@ use RZP\Models\Address;
 use RZP\Models\Device;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
+use RZP\Constants;
 use RZP\Models\Payment;
 use RZP\Models\BankAccount;
 use RZP\Models\Upi;
@@ -276,6 +277,8 @@ class Core extends Base\Core
             $response['session_id'] = $this->getTemporarySessionToken();
         }
 
+        $response['addresses'] = $this->repo->address->fetchAddressesForEntity($customer, $input);
+
         return $response;
     }
 
@@ -313,6 +316,73 @@ class Core extends Base\Core
         }
 
         return $customer;
+    }
+
+    /**
+     * Used for 1 click checkout save address
+     * Creates/fetches a global customer and saves address by associating the global customer to that address
+     *
+     *
+     * @param $input
+     */
+
+    public function createGlobalAddress($input)
+    {
+        Customer\Validator::validateCreateGlobalAddress($input);
+
+        $input = Customer\Validator::validateAndParseContactInInput($input);
+
+        $customer = $this->getOrCreateGlobalCustomer($input);
+
+        $addressEntity = new Address\Core();
+
+        $address = [];
+
+        if ( isset($input[Entity::SHIPPING_ADDRESS]) ) {
+            $address[Entity::SHIPPING_ADDRESS] = $addressEntity->create($customer, Address\Type::CUSTOMER, $input[Entity::SHIPPING_ADDRESS], true);
+        }
+
+        if ( isset($input[Entity::BILLING_ADDRESS]) ) {
+            $address[Entity::BILLING_ADDRESS] = $addressEntity->create($customer, Address\Type::CUSTOMER, $input[Entity::BILLING_ADDRESS], true);
+        }
+
+        return $address;
+
+    }
+
+    /**
+     * Bulk API to add addresses for a customer.
+     * TODO: To be merged with createGlobalAddress function.
+     * @throws Exception\BadRequestException
+     */
+    public function createGlobalAddresses($input): array
+    {
+        if(isset($input['addresses']) === false)
+        {
+            throw new Exception\BadRequestException();
+        }
+
+        $input = Customer\Validator::validateAndParseContactInInput($input);
+
+        $customer = $this->getOrCreateGlobalCustomer($input);
+
+        $addresses = $input['addresses'];
+        $invalidAddresses = [];
+
+        foreach ($addresses as $addressInput)
+        {
+            $addressCore = new Address\Core();
+            try
+            {
+                $addressCore->create($customer, Constants\Entity::ONE_CLICK_CHECKOUT, $addressInput);
+            }
+            catch (\Throwable $ex)
+            {
+                array_push($invalidAddresses, $addressInput);
+            }
+        }
+
+        return $invalidAddresses;
     }
 
     protected function createCustomerAppToken($customer, $input, $merchant)

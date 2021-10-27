@@ -64,4 +64,27 @@ final class Metric
     const SUBMERCHANT_LINKING_FAILURE_TOTAL = 'submerchant_linking_failure_total';
     const SUBMERCHANT_DELINKING_SUCCESS_TOTAL = 'submerchant_delinking_success_total';
     const SUBMERCHANT_DELINKING_FAILURE_TOTAL = 'submerchant_delinking_failure_total';
+
+    // 1CC metrics
+    private const MERCHANT_EXTERNAL_PREFIX = 'merchant_external_';
+
+    const MERCHANT_COUPONS_REQUEST_TIME_MILLIS          = 'merchant_coupons_request_time_millis';
+    const MERCHANT_COUPONS_REQUEST_COUNT                = 'merchant_coupons_request_count';
+    const MERCHANT_EXTERNAL_COUPONS_REQUEST_TIME_MILLIS = self::MERCHANT_EXTERNAL_PREFIX . 'coupons_request_time_millis';
+
+    const MERCHANT_COUPON_VALIDITY_REQUEST_TIME_MILLIS                     = 'merchant_coupon_validity_request_time_millis';
+    const MERCHANT_COUPON_VALIDITY_REQUEST_COUNT                           = 'merchant_coupon_validity_check_request_count';
+    const MERCHANT_EXTERNAL_COUPON_VALIDITY_REQUEST_TIME_MILLIS            = self::MERCHANT_EXTERNAL_PREFIX . 'coupon_validity_request_time_millis';
+    const MERCHANT_EXTERNAL_COUPON_VALIDITY_REQUEST_INVALID_REQUEST_COUNT  = self::MERCHANT_EXTERNAL_PREFIX . 'coupon_validity_request_invalid_request_count';
+    const MERCHANT_EXTERNAL_COUPON_VALIDITY_REQUEST_INVALID_RESPONSE_COUNT = self::MERCHANT_EXTERNAL_PREFIX . 'coupon_validity_request_invalid_response_count';
+
+
+    const MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS = 'merchant_shipping_info_check_time_millis';
+    const MERCHANT_SHIPPING_INFO_URL_UPDATE_FAILURE = 'merchant_shipping_info_url_update_failure';
+    const MERCHANT_SHIPPING_INFO_CHECK_CALL_COUNT = 'merchant_shipping_info_check_call_count';
+    const MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_TIME_MILLIS = self::MERCHANT_EXTERNAL_PREFIX . 'shipping_info_call_time_millis';
+    const MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT = self::MERCHANT_EXTERNAL_PREFIX . 'shipping_info_call_failure_count';
+    const MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_COUNT = self::MERCHANT_EXTERNAL_PREFIX . 'shipping_info_call_count';
+    const MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT = self::MERCHANT_EXTERNAL_PREFIX . 'shipping_info_call_invalid_request_count';
+    const MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_INVALID_RESPONSE_COUNT = self::MERCHANT_EXTERNAL_PREFIX . 'shipping_info_call_invalid_response_count';
 }

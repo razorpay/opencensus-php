@@ -636,4 +636,10 @@ class CustomerTest extends TestCase
         $this->assertEquals($merchantFeeCreditTransaction->getAmount(), 600);
         $this->assertEquals($merchantFeeCreditTransaction->getBalance(), 1000);
     }
+
+    public function testCreateGlobalAddress()
+    {
+        $this->ba->publicAuth();
+        $this->startTest();
+    }
 }

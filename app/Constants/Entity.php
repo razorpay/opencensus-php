@@ -537,7 +537,12 @@ class Entity
     const MERCHANT_AVG_ORDER_VALUE      = 'merchant_avg_order_value';
     const MERCHANT_TNC                  = 'merchant_tnc';
     const MERCHANT_VERIFICATION_DETAIL  = 'merchant_verification_detail';
-    const MERCHANT_BUSINESS_DETAIL       = 'merchant_business_detail';
+    
+    const MERCHANT_BUSINESS_DETAIL      = 'merchant_business_detail';
+    const MERCHANT_CHECKOUT_DETAIL      = 'merchant_checkout_detail';
+    const MERCHANT_SLABS                = 'merchant_slabs';
+    const MERCHANT_1CC_CONFIGS          = 'merchant_1cc_configs';
+
     //api request log entity
     const REQUEST_LOG = 'request_log';
 
@@ -574,6 +579,9 @@ class Entity
     // Razorpay Trusted Badge
     const TRUSTED_BADGE         = 'trusted_badge';
     const TRUSTED_BADGE_HISTORY = 'trusted_badge_history';
+
+    const ONE_CLICK_CHECKOUT    = 'one_click_checkout';
+
 
     /**
      * Defines a map of entites which are currently
@@ -1039,6 +1047,10 @@ class Entity
         self::MERCHANT_BULK_FRAUD_NOTIFY   => \RZP\Models\Merchant\Fraud\BulkNotification::class,
 
         self::MERCHANT_RISK_NOTE       => \RZP\Models\Merchant\RiskNotes::class,
+
+        self::MERCHANT_SLABS            => \RZP\Models\Merchant\Slab::class,
+
+        self::MERCHANT_1CC_CONFIGS       => \RZP\Models\Merchant\Merchant1ccConfig::class,
     ];
 
     protected static $repository = [
@@ -1312,7 +1324,6 @@ class Entity
     public static function getEntityRepository(string $entity, $repositoryType = 'Repository')
     {
         $class = self::getEntityNamespace($entity) . '\\' . $repositoryType;
-
         if (class_exists($class) === false)
         {
             if (isset(self::$repository[$entity]))

@@ -6,6 +6,7 @@ use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -25,8 +26,9 @@ class Core extends Base\Core
      * @param array $input
      * @return Entity
      * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\InvalidArgumentException
      */
-    public function create(Base\Entity $entity, $entityType, array $input)
+    public function create(Base\Entity $entity, $entityType, array $input, bool $ignoreMaxLimit = false)
     {
         $this->trace->info(
             TraceCode::ADDRESS_CREATE_REQUEST,
@@ -45,11 +47,16 @@ class Core extends Base\Core
         $currentAddresses = $this->repo->address->fetchAddressesForEntity(
             $entity, [Entity::TYPE => $input[Entity::TYPE]]);
 
-        if ($currentAddresses->count() >= self::MAX_ALLOWED_ADDRESSES)
+        if ($currentAddresses->count() >= self::MAX_ALLOWED_ADDRESSES and $ignoreMaxLimit === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'You cannot have more than ' . self::MAX_ALLOWED_ADDRESSES . ' ' .
                 $input[Entity::TYPE] . ' for ' . $entityType);
+        }
+
+        if($entityType === Type::CUSTOMER)
+        {
+            return $this->createForCustomer($entity, $input);
         }
 
         return $this->repo->transaction(function() use ($address, $entity)
@@ -102,6 +109,17 @@ class Core extends Base\Core
         Type::validateType($input[Entity::TYPE], $payment->getEntity());
 
         $address->sourceAssociate($payment);
+
+        $this->repo->saveOrFail($address);
+
+        return $address;
+    }
+
+    protected function createForCustomer(Customer\Entity $customer, array $input)
+    {
+        $address = (new Entity)->buildForCustomer($input);
+
+        $address->sourceAssociate($customer);
 
         $this->repo->saveOrFail($address);
 

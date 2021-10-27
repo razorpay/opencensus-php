@@ -1445,6 +1445,38 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Models\Merchant\InheritanceMap\Entity');
     }
 
+    public function slab(string $type)
+    {
+        return (new  Slab\Repository())->findByMerchantIdAndType($this->getId(), $type);
+    }
+
+    public function getShippingInfoUrlConfig()
+    {
+        return (new Merchant1ccConfig\Repository())
+            ->findByMerchantAndConfigType(
+                $this->getId(),
+                Merchant1ccConfig\Type::SHIPPING_INFO_URL
+            );
+    }
+
+    public function getFetchCouponsUrlConfig()
+    {
+        return (new Merchant1ccConfig\Repository())
+            ->findByMerchantAndConfigType(
+                $this->getId(),
+                Merchant1ccConfig\Type::FETCH_COUPONS_URL
+            );
+    }
+
+    public function getApplyCouponUrlConfig()
+    {
+        return (new Merchant1ccConfig\Repository())
+            ->findByMerchantAndConfigType(
+                $this->getId(),
+                Merchant1ccConfig\Type::APPLY_COUPON_URL
+            );
+    }
+
     public function setBrandColor($brandColor)
     {
         $this->setAttribute(self::BRAND_COLOR, $brandColor);

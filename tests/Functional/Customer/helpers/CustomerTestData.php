@@ -946,5 +946,43 @@ return [
             ],
         ]
     ],
-
+    'testCreateGlobalAddress' => [
+        'request'   => [
+            'url'   => '/customers/addresses',
+            'method' => 'post',
+            'content' => [
+                'contact'   => '+919999999999',
+                'email'     => 'test@razorpay.com',
+                'shipping_address' => [
+                    'name'  => 'test_customer',
+                    'type'  => 'shipping_address',
+                    'line1' => 'some line one',
+                    'line2' => 'some line two',
+                    'zipcode' => '560078',
+                    'city'  => 'Bangalore',
+                    'state' => 'Karnataka',
+                    'tag'   => 'home',
+                    'landmark' => 'some landmark',
+                    'primary' => 0,
+                    'country' => 'in',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'shipping_address' => [
+                    'primary' => false,
+                    'type' => 'shipping_address',
+                    'name'  => 'test_customer',
+                    'line1' => 'some line one',
+                    'line2' => 'some line two',
+                    'zipcode' => '560078',
+                    'city'  => 'Bangalore',
+                    'state' => 'Karnataka',
+                    'tag'   => 'home',
+                    'landmark' => 'some landmark',
+                ],
+            ],
+        ],
+    ],
 ];

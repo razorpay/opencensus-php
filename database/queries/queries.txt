@@ -6381,5 +6381,34 @@ ALTER TABLE emi_plans
 ALTER TABLE merchant_banks
     ADD COLUMN cod TINYINT(1) DEFAULT 0;
 
+ALTER TABLE addresses
+    ADD COLUMN tag varchar(32) DEFAULT NULL,
+    ADD COLUMN landmark varchar(64) DEFAULT NULL,
+    ADD COLUMN name varchar(64) DEFAULT NULL,
+    ADD COLUMN contact varchar(20) DEFAULT NULL;
+);
+
+CREATE TABLE merchant_slabs
+(
+    id CHAR(14) collate utf8mb4_bin,
+    slab JSON,
+    type VARCHAR(64),
+    merchant_id CHAR(14) collate utf8mb4_bin,
+    created_at bigint,
+    deleted_at bigint DEFAULT NULL,
+    updated_at bigint
+);
+
+CREATE TABLE merchant_1cc_configs
+(
+  id char(14) NOT NULL collate utf8mb4_bin,
+  merchant_id char(14) NOT NULL collate utf8mb4_bin,
+  config varchar(50) NOT NULL,
+  value varchar(255) NOT NULL,
+  created_at bigint NOT NULL,
+  updated_at bigint NOT NULL,
+  deleted_at bigint DEFAULT NULL
+);
+
 ALTER TABLE card_mandates
    MODIFY COLUMN end_at bigint DEFAULT NULL;

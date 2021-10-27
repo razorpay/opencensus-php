@@ -939,6 +939,7 @@ class Route
         'customer_cancel_token'                    => ['put',      'customers/{id}/tokens/{token}/cancel',           'CustomerController@cancelToken'                                    ],
         'customer_get_saved_status'                => ['get',      'customers/status/{contact}',                     'CustomerController@fetchGlobalCustomerStatus'                      ],
         'customer_logout_global'                   => ['delete',   'apps/logout',                                    'CustomerController@logoutCustomer'                                 ],
+        'customer_create_global_address'           => ['post',     'customers/addresses',                            'CustomerController@createGlobalAddress'                            ],
         'customer_create_address'                  => ['post',     'customers/{id}/addresses',                       'CustomerController@postCreateAddress'                              ],
         'customer_delete_address'                  => ['delete',   'customers/{id}/addresses/{address_id}',          'CustomerController@deleteAddress'                                  ],
         'customer_fetch_addresses'                 => ['get',      'customers/{id}/addresses',                       'CustomerController@getAddresses'                                   ],
@@ -2899,6 +2900,16 @@ class Route
         'create_exec_risk_action'                   => ['post',       'risk-actions/execute',                                    'RiskActionController@createAndExecuteRiskAction'              ],
         'risk_attributes_get'                       => ['get',        'risk-actions/risk_attributes',                            'RiskActionController@getRiskAttributes'                       ],
         'bulk_risk_action_status_comment'           => ['post',       'bulk-action/comment',                                     'BulkActionController@addBulkRiskActionCommentPostExecution'   ],
+
+        'merchant_coupons'                        => ['post',         'merchant/coupons',                                        'MerchantController@fetchCouponCodes'                           ],
+        'merchant_coupon_validity'                => ['post',         'merchant/coupon/apply',                                   'MerchantController@applyCoupon'                              ],
+        'merchant_coupon_remove'                  => ['post',         'merchant/coupon/remove',                                  'MerchantController@removeCoupon'                              ],
+        'update_fetch_coupons_url'                => ['post',         'merchant/coupons/url',                                     'MerchantController@updateFetchCouponsUrl'                    ],
+        'update_coupon_validity_url'              => ['post',         'merchant/coupon/apply/url',                               'MerchantController@updateApplyCouponUrl'                  ],
+        'shipping_info'                             => ['post',       'merchant/shipping_info',                                'MerchantController@getShippingInfo'                          ],
+        'update_serviceability_url'                 => ['post',       'merchant/shipping_info/url',                            'MerchantController@updateShippingInfoUrl'                  ],
+        'update_cod_slabs'                          => ['post',       'merchant/slabs/cod',                                    'MerchantController@updateCodSlabs'                           ],
+        'update_shipping_slabs'                     => ['post',       'merchant/slabs/shipping',                               'MerchantController@updateShippingSlabs'                      ],
         'order_update_customer_details_1cc'         => ['patch',      'orders/1cc/{id}/customer/',                             'OrderController@updateCustomerDetailsFor1CCOrder'             ],
         'order_reset_1cc'                           => ['post',       'orders/1cc/{id}/reset',                                 'OrderController@reset1CCOrder'                                ],
     ];
@@ -3003,6 +3014,12 @@ class Route
         'subscription_button_hosted_view',
         'subscription_button_create_subscription',
         'checkout_rewards',
+        'merchant_coupons',
+        'merchant_coupon_validity',
+        'merchant_coupon_remove',
+        'shipping_info',
+        'update_serviceability_url',
+        'customer_create_global_address',
         'order_update_customer_details_1cc',
         'order_reset_1cc',
         '1cc_pincode_get',
@@ -3374,6 +3391,13 @@ class Route
         'token_fetch',
         'token_fetch_cryptogram',
         'token_delete',
+
+        // 1CC Routes
+        'update_serviceability_url',
+        'update_shipping_slabs',
+        'update_cod_slabs',
+        'update_coupon_validity_url',
+        'update_fetch_coupons_url',
     ];
 
     // Only routes defined in internalApps go here
