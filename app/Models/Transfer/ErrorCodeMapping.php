@@ -71,15 +71,27 @@ class ErrorCodeMapping
         return $error;
     }
 
-    private static $errorCode = [
-        'Keys sent in linked_account_notes must exist in notes'                                                                                                                     => self::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING,
-        'Your Negative Balance Limit has reached its maximum. Please Add funds to your account.'                                                                                    => self::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED,
-        'The fees calculated for payment is greater than the payment amount. Please provide a higher amount'                                                                        => self::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
-        'Your account does not have enough balance to carry out the transfer operation. You can add funds to your account from your Razorpay dashboard or capture new payments.'    => self::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE,
-    ];
+    /**
+     * Check getErrorCodeFromDescription() for more details.
+     *
+     * @var string[]
+     */
+//    protected static $errorCode = [
+//        'Keys sent in linked_account_notes must exist in notes'                                                                                                                     => self::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING,
+//        'Your Negative Balance Limit has reached its maximum. Please Add funds to your account.'                                                                                    => self::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED,
+//        'The fees calculated for payment is greater than the payment amount. Please provide a higher amount'                                                                        => self::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
+//        'Your account does not have enough balance to carry out the transfer operation. You can add funds to your account from your Razorpay dashboard or capture new payments.'    => self::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE,
+//    ];
 
-    public static function getErrorCodeFromDescription($description)
-    {
-        return self::$errorCode[$description] ?? null;
-    }
+    /**
+     * Was used for data backfill activity.
+     * Check updateErrorCodeIfApplicable() in Models\Transfer\Service.php for more.
+     *
+     * @param $description
+     * @return string|null
+     */
+//    public static function getErrorCodeFromDescription($description)
+//    {
+//        return self::$errorCode[$description] ?? null;
+//    }
 }

@@ -1050,163 +1050,189 @@ class Service extends Base\Service
         );
     }
 
-    public function dispatchBackfillJob(array $input)
-    {
-        $midJun     = Carbon::createFromDate(2021, 6, 16, Timezone::IST)->getTimestamp();
-        $startJul   = Carbon::createFromDate(2021, 7, 1, Timezone::IST)->getTimestamp();
-        $startAug   = Carbon::createFromDate(2021, 8, 1, Timezone::IST)->getTimestamp();
-        $startSept  = Carbon::createFromDate(2021, 9, 1, Timezone::IST)->getTimestamp();
-        $startOct   = Carbon::createFromDate(2021, 10, 1, Timezone::IST)->getTimestamp();
-        // Don't need post this since code is already live from mid September.
+    /**
+     * Dispatches async jobs to backfill settlement_status and error_code data in transfers table.
+     * This function is currently disconnected from the controller. If there is a need to use it
+     * again in the future, point a controller to it and hit from production environment.
+     * Note that hitting from the dark environment won't work since SQSs are not configured on dark.
+     *
+     * @param array $input
+     */
+//    public function dispatchBackfillJob(array $input)
+//    {
+//        $midJun     = Carbon::createFromDate(2021, 6, 16, Timezone::IST)->getTimestamp();
+//        $startJul   = Carbon::createFromDate(2021, 7, 1, Timezone::IST)->getTimestamp();
+//        $startAug   = Carbon::createFromDate(2021, 8, 1, Timezone::IST)->getTimestamp();
+//        $startSept  = Carbon::createFromDate(2021, 9, 1, Timezone::IST)->getTimestamp();
+//        $startOct   = Carbon::createFromDate(2021, 10, 1, Timezone::IST)->getTimestamp();
+//        // Don't need post this since code is already live from mid September.
+//
+//        foreach ($input['merchant_ids'] as $merchantId)
+//        {
+//            TransferBackfillJob::dispatch($this->mode, $merchantId, $midJun, $startJul);
+//            TransferBackfillJob::dispatch($this->mode, $merchantId, $startJul, $startAug);
+//            TransferBackfillJob::dispatch($this->mode, $merchantId, $startAug, $startSept);
+//            TransferBackfillJob::dispatch($this->mode, $merchantId, $startSept, $startOct);
+//
+//            $this->trace->info(
+//                TraceCode::TRANSFER_BACKFILL_JOB_ENQUEUED,
+//                [
+//                    'merchant_id' => $merchantId,
+//                ]
+//            );
+//        }
+//    }
 
-        foreach ($input['merchant_ids'] as $merchantId)
-        {
-            TransferBackfillJob::dispatch($this->mode, $merchantId, $midJun, $startJul);
-            TransferBackfillJob::dispatch($this->mode, $merchantId, $startJul, $startAug);
-            TransferBackfillJob::dispatch($this->mode, $merchantId, $startAug, $startSept);
-            TransferBackfillJob::dispatch($this->mode, $merchantId, $startSept, $startOct);
+    /**
+     * Invoked from TransferBackfillJob. Fetches transfer IDs in bulk and then fetches
+     * individual transfer to store correct values for settlement_status and error_code.
+     *
+     * @param string $merchantId
+     * @param int $startDate
+     * @param int $endDate
+     * @return int
+     */
+//    public function updateSettlementStatusAndErrorCode(string $merchantId, int $startDate, int $endDate)
+//    {
+//        $totalCount = 0;
+//        $chunk = 1000;
+//
+//        for ($skip = 0; true; $skip = $skip + $chunk)
+//        {
+//            $transferIds = $this->repo->transfer->getByMerchantId($merchantId, $startDate, $endDate, $skip, $chunk);
+//
+//            $count = count($transferIds);
+//
+//            $totalCount += $count;
+//
+//            foreach ($transferIds as $transferId)
+//            {
+//                $transfer = $this->repo->transfer->find($transferId);
+//
+//                if ($transfer->isDirectTransfer() === true)
+//                {
+//                    continue;
+//                }
+//
+//                $this->updateSettlementStatus($transfer);
+//
+//                $this->updateErrorCodeIfApplicable($transfer);
+//
+//                $this->repo->saveOrFail($transfer);
+//            }
+//
+//            $this->trace->info(
+//                TraceCode::TRANSFER_BACKFILL_DONE_FOR_CHUNK,
+//                [
+//                    'merchant_id'   => $merchantId,
+//                    'chunk_count'   => $count,
+//                    'transfer_ids'  => $transferIds,
+//                ]
+//            );
+//
+//            if ($count < $chunk)
+//            {
+//                break;
+//            }
+//        }
+//
+//        return $totalCount;
+//    }
 
-            $this->trace->info(
-                TraceCode::TRANSFER_BACKFILL_JOB_ENQUEUED,
-                [
-                    'merchant_id' => $merchantId,
-                ]
-            );
-        }
-    }
+    /**
+     * Check the calling function: updateSettlementStatusAndErrorCode() for more details.
+     *
+     * @param Entity $transfer
+     */
+//    protected function updateSettlementStatus(Entity $transfer)
+//    {
+//        if ($transfer->getSettlementStatus() !== null)
+//        {
+//            return;
+//        }
+//
+//        $recipientSettlementId = $transfer->getRecipientSettlementId();
+//
+//        if ($recipientSettlementId === null)
+//        {
+//            if (($transfer->getOnHold() === true) and
+//                (in_array($transfer->getStatus(), [Status::PROCESSED, Status::REVERSED, Status::PARTIALLY_REVERSED]) === true))
+//            {
+//                $transfer->setSettlementStatus(SettlementStatus::ON_HOLD);
+//
+//                return;
+//            }
+//            else if (($transfer->getOnHold() === false) and
+//                    (in_array($transfer->getStatus(), [Status::PROCESSED, Status::REVERSED, Status::PARTIALLY_REVERSED]) === true))
+//            {
+//                $transfer->setSettlementStatus(SettlementStatus::PENDING);
+//
+//                return;
+//            }
+//            else
+//            {
+//                return;
+//            }
+//        }
+//
+//        $settlement = $this->repo->settlement->find($recipientSettlementId);
+//
+//        if ($settlement->isStatusProcessed() === true)
+//        {
+//            if (in_array($transfer->getStatus(), [Status::PROCESSED, Status::PARTIALLY_REVERSED]) === true)
+//            {
+//                $transfer->setSettlementStatus(SettlementStatus::SETTLED);
+//
+//                return;
+//            }
+//            else if ($transfer->getStatus() === Status::REVERSED)
+//            {
+//                // If transfer was reversed before getting settled then `pending`, else `settled`.
+//
+//                $reversalId = $this->repo->reversal->getLatestReversalIdForTransfer($transfer->getId(), $transfer->getMerchantId());
+//
+//                $reversalSettlementId = $this->repo->transaction->getSettlementIdForReversal($reversalId, $transfer->getToId());
+//
+//                if ($recipientSettlementId === $reversalSettlementId)
+//                {
+//                    $transfer->setSettlementStatus(SettlementStatus::PENDING);
+//                }
+//                else
+//                {
+//                    $transfer->setSettlementStatus(SettlementStatus::SETTLED);
+//                }
+//
+//                return;
+//            }
+//            else
+//            {
+//                return;
+//            }
+//        }
+//    }
 
-    public function updateSettlementStatusAndErrorCode(string $merchantId, int $startDate, int $endDate)
-    {
-        $totalCount = 0;
-        $chunk = 1000;
-
-        for ($skip = 0; true; $skip = $skip + $chunk)
-        {
-            $transferIds = $this->repo->transfer->getByMerchantId($merchantId, $startDate, $endDate, $skip, $chunk);
-
-            $count = count($transferIds);
-
-            $totalCount += $count;
-
-            foreach ($transferIds as $transferId)
-            {
-                $transfer = $this->repo->transfer->find($transferId);
-
-                if ($transfer->isDirectTransfer() === true)
-                {
-                    continue;
-                }
-
-                $this->updateSettlementStatus($transfer);
-
-                $this->updateErrorCodeIfApplicable($transfer);
-
-                $this->repo->saveOrFail($transfer);
-            }
-
-            $this->trace->info(
-                TraceCode::TRANSFER_BACKFILL_DONE_FOR_CHUNK,
-                [
-                    'merchant_id'   => $merchantId,
-                    'chunk_count'   => $count,
-                    'transfer_ids'  => $transferIds,
-                ]
-            );
-
-            if ($count < $chunk)
-            {
-                break;
-            }
-        }
-
-        return $totalCount;
-    }
-
-    protected function updateSettlementStatus(Entity $transfer)
-    {
-        if ($transfer->getSettlementStatus() !== null)
-        {
-            return;
-        }
-
-        $recipientSettlementId = $transfer->getRecipientSettlementId();
-
-        if ($recipientSettlementId === null)
-        {
-            if (($transfer->getOnHold() === true) and
-                (in_array($transfer->getStatus(), [Status::PROCESSED, Status::REVERSED, Status::PARTIALLY_REVERSED]) === true))
-            {
-                $transfer->setSettlementStatus(SettlementStatus::ON_HOLD);
-
-                return;
-            }
-            else if (($transfer->getOnHold() === false) and
-                    (in_array($transfer->getStatus(), [Status::PROCESSED, Status::REVERSED, Status::PARTIALLY_REVERSED]) === true))
-            {
-                $transfer->setSettlementStatus(SettlementStatus::PENDING);
-
-                return;
-            }
-            else
-            {
-                return;
-            }
-        }
-
-        $settlement = $this->repo->settlement->find($recipientSettlementId);
-
-        if ($settlement->isStatusProcessed() === true)
-        {
-            if (in_array($transfer->getStatus(), [Status::PROCESSED, Status::PARTIALLY_REVERSED]) === true)
-            {
-                $transfer->setSettlementStatus(SettlementStatus::SETTLED);
-
-                return;
-            }
-            else if ($transfer->getStatus() === Status::REVERSED)
-            {
-                // If transfer was reversed before getting settled then `pending`, else `settled`.
-//                $transferSettlementId = $this->repo->transaction->getSettlementIdForTransfer($transfer->getId(), $transfer->getToId()); // Same as $recipientSettlementId.
-
-                $reversalId = $this->repo->reversal->getLatestReversalIdForTransfer($transfer->getId(), $transfer->getMerchantId());
-
-                $reversalSettlementId = $this->repo->transaction->getSettlementIdForReversal($reversalId, $transfer->getToId());
-
-                if ($recipientSettlementId === $reversalSettlementId)
-                {
-                    $transfer->setSettlementStatus(SettlementStatus::PENDING);
-                }
-                else
-                {
-                    $transfer->setSettlementStatus(SettlementStatus::SETTLED);
-                }
-
-                return;
-            }
-            else
-            {
-                return;
-            }
-        }
-    }
-
-    protected function updateErrorCodeIfApplicable(Entity $transfer)
-    {
-        if ($transfer->getErrorCode() !== null)
-        {
-            return;
-        }
-
-        if ($transfer->isFailed() === false)
-        {
-            return;
-        }
-
-        $message = $transfer->getMessage();
-
-        if ($message !== null)
-        {
-            $transfer->setErrorCode(ErrorCodeMapping::getErrorCodeFromDescription($message));
-        }
-    }
+    /**
+     * Check the calling function: updateSettlementStatusAndErrorCode() for more details.
+     *
+     * @param Entity $transfer
+     */
+//    protected function updateErrorCodeIfApplicable(Entity $transfer)
+//    {
+//        if ($transfer->getErrorCode() !== null)
+//        {
+//            return;
+//        }
+//
+//        if ($transfer->isFailed() === false)
+//        {
+//            return;
+//        }
+//
+//        $message = $transfer->getMessage();
+//
+//        if ($message !== null)
+//        {
+//            $transfer->setErrorCode(ErrorCodeMapping::getErrorCodeFromDescription($message));
+//        }
+//    }
 }

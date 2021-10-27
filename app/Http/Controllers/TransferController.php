@@ -144,9 +144,12 @@ class TransferController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->dispatchBackfillJob($input);
-
-        return ApiResponse::json($response);
+        return ApiResponse::json(
+            [
+                'msg'   => 'Transfer/Route debug route. Use this route for debugging/data corrections via dark',
+                'input' => $input
+            ]
+        );
     }
 
     public function transferRecon()

@@ -270,19 +270,30 @@ class Repository extends Base\Repository
         return $query->pluck(Entity::ID)->toArray();
     }
 
-    public function getByMerchantId(string $merchantId, int $startDate, int $endDate, int $skip, int $chunk = 1000)
-    {
-        return $this->newQuery()
-                    ->select(Entity::ID)
-                    ->where(Entity::MERCHANT_ID, $merchantId)
-                    ->whereIn(Entity::SOURCE_TYPE, [Constant::PAYMENT, Constant::ORDER])
-                    ->whereIn(Entity::STATUS, [Status::PROCESSED, Status::REVERSED, Status::PARTIALLY_REVERSED, Status::FAILED])
-                    ->whereNull(Entity::SETTLEMENT_STATUS)
-                    ->where(Entity::CREATED_AT, '>=', $startDate)
-                    ->where(Entity::CREATED_AT, '<', $endDate)
-                    ->skip($skip)
-                    ->take($chunk)
-                    ->pluck(Entity::ID)
-                    ->toArray();
-    }
+    /**
+     * Was used for data backfill activity.
+     * Check updateSettlementStatusAndErrorCode() in Models\Transfer\Service.php for more.
+     *
+     * @param string $merchantId
+     * @param int $startDate
+     * @param int $endDate
+     * @param int $skip
+     * @param int $chunk
+     * @return mixed
+     */
+//    public function getByMerchantId(string $merchantId, int $startDate, int $endDate, int $skip, int $chunk = 1000)
+//    {
+//        return $this->newQuery()
+//                    ->select(Entity::ID)
+//                    ->where(Entity::MERCHANT_ID, $merchantId)
+//                    ->whereIn(Entity::SOURCE_TYPE, [Constant::PAYMENT, Constant::ORDER])
+//                    ->whereIn(Entity::STATUS, [Status::PROCESSED, Status::REVERSED, Status::PARTIALLY_REVERSED, Status::FAILED])
+//                    ->whereNull(Entity::SETTLEMENT_STATUS)
+//                    ->where(Entity::CREATED_AT, '>=', $startDate)
+//                    ->where(Entity::CREATED_AT, '<', $endDate)
+//                    ->skip($skip)
+//                    ->take($chunk)
+//                    ->pluck(Entity::ID)
+//                    ->toArray();
+//    }
 }

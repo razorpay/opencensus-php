@@ -6,6 +6,10 @@ use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer\Service;
 
+/**
+ * Async job used to backfill settlement_status and error_code in transfers table. Not in
+ * use currently. Check dispatchBackfillJob() in Models\Transfer\Service.php for more.
+ */
 class TransferBackfillJob extends Job
 {
     protected $merchantId;
