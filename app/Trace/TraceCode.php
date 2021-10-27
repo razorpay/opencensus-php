@@ -5440,6 +5440,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_STATUS_UPDATER_FAIL                                  = 'MERCHANT_STATUS_UPDATER_FAIL';
     const MERCHANT_STATUS_UPDATER_TRY                                   = 'MERCHANT_STATUS_UPDATER_TRY';
+    const MERCHANT_CREATE_CHECKOUT_DETAIL                               = 'MERCHANT_CREATE_CHECKOUT_DETAIL';
     const ADMIN_USER_FETCH                                              = 'ADMIN_USER_FETCH';
 
     const MUTEX_REDIS_RESPONSE_NOT_NULL                             = 'MUTEX_REDIS_RESPONSE_NOT_NULL';

@@ -10167,7 +10167,7 @@ return [
             'status_code' => 201
         ],
     ],
-    
+
     'testUpdateShippingInfoURL' => [
         'request'     => [
             'url'     => '/merchant/shipping_info/url',
@@ -10380,4 +10380,54 @@ return [
         ],
     ],
 
+
+    'testOneClickCheckoutStatus' => [
+        'request'   => [
+            'url'   => '/merchant/checkout_details',
+            'method' => 'POST',
+            'content' => [
+                'status_1cc'      => 'waitlisted'
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'status_1cc'      => 'waitlisted'
+            ],
+        ],
+    ],
+    'testGetOneClickCheckoutStatus' => [
+        'request'   => [
+            'url'   => '/merchant/checkout_details',
+            'method' => 'GET',
+        ],
+        'response'  => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'status_1cc'      => 'live'
+            ],
+        ],
+    ],
+
+    'testOneClickCheckoutStatusFeatureNotPresent' => [
+        'request'   => [
+            'url'   => '/merchant/checkout_details',
+            'method' => 'POST',
+            'content' => [
+                'status_1cc'      => 'waitlisted'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ELIGIBLE_FOR_1CC,
+        ],
+    ],
 ];

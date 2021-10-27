@@ -94,6 +94,8 @@ class CheckoutPreferencesTest extends TestCase
     use MocksRedisTrait;
     use MocksRazorx;
 
+    const DEFAULT_MERCHANT_ID     = '10000000000000';
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantTestData.php';
@@ -130,6 +132,51 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertSame(true, $response['methods']['upi_otm']);
         $this->assertContains(['upi_otm'], $response['features']);
         $this->assertSame(true, $response['features']['upi_otm']);
+    }
+
+    public function testOneClickCheckoutStatus()
+    {
+        $this->fixtures->merchant->addFeatures(['one_cc_merchant_dashboard']);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => self::DEFAULT_MERCHANT_ID,
+            'business_type'     => '2',
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetOneClickCheckoutStatus()
+    {
+        $this->fixtures->merchant->addFeatures(['one_cc_merchant_dashboard']);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => self::DEFAULT_MERCHANT_ID,
+            'business_type'     => '2',
+        ]);
+
+        $this->fixtures->create('merchant_checkout_detail', [
+            'merchant_id'       => self::DEFAULT_MERCHANT_ID,
+            'status_1cc'        => 'live',
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testOneClickCheckoutStatusFeatureNotPresent()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => self::DEFAULT_MERCHANT_ID,
+            'business_type'     => '2',
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 
     public function testGetCheckoutPreferencesWithNetbankingDisabled()

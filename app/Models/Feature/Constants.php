@@ -833,6 +833,13 @@ class Constants
      */
     const DISPUTE_PRESENTMENT = 'dispute_presentment';
 
+    /**
+     * One click checkout
+     */
+    const ONE_CLICK_CHECKOUT = 'one_click_checkout';
+
+    const ONE_CC_MERCHANT_DASHBOARD = 'one_cc_merchant_dashboard';
+
     const ORG_EMAIL_UPDATE_2FA_ENABLED = 'email_update_2fa_enabled';
 
     const ORG_TPV_DISABLE    = 'axis_tpv';
@@ -917,11 +924,7 @@ class Constants
     /**
      * One click checkout
      */
-    const ONE_CLICK_CHECKOUT = 'one_click_checkout';
-
     const ONE_CC_MANDATORY_LOGIN = 'one_cc_mandatory_login';
-
-    const ONE_CC_MERCHANT_DASHBOARD = 'one_cc_merchant_dashboard';
 
     const ONE_CC_COUPONS = 'one_cc_coupons';
 
@@ -949,13 +952,14 @@ class Constants
         self::CHECKOUT_DISABLE_I18N,
         self::CHECKOUT_DISABLE_CARDSCAN,
         self::PAYPAL_CC,
+        self::ONE_CLICK_CHECKOUT,
+        self::ONE_CC_MERCHANT_DASHBOARD,
         self::SHOW_MOR_TNC,
         self::CRED_MERCHANT_CONSENT,
         self::TPV,
         self::DIRECT_SETTLEMENT,
         self::RAAS,
         self::DISABLE_SIFT_JS,
-        self::ONE_CLICK_CHECKOUT,
         self::ONE_CC_COUPONS,
         self::ONE_CC_MANDATORY_LOGIN,
         self::ONE_CC_MERCHANT_DASHBOARD,
@@ -1895,11 +1899,6 @@ class Constants
         self::NEW_SETTLEMENT_SERVICE => [
             'feature'       => self::NEW_SETTLEMENT_SERVICE,
             'display_name'  => 'Enable new flow for settlements',
-                'documentation' => '',
-        ],
-        self::ONE_CLICK_CHECKOUT => [
-            'feature'       => self::ONE_CLICK_CHECKOUT,
-            'display_name'  => 'One click checkout',
             'documentation' => '',
         ],
         self::ONE_CLICK_CHECKOUT => [

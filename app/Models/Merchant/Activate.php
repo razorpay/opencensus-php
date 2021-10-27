@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use Mail;
+use RZP\Models\Feature\Constants;
 use Throwable;
 
 use RZP\Exception;
@@ -96,6 +97,8 @@ class Activate extends Base\Core
                 ->handle();
         }
 
+        $this->enableOneClickCheckoutIfApplicable($merchant);
+
         if ($this->shouldCreateBankAccount($merchantDetail) === true)
         {
             (new Detail\Core)->setBankAccountForMerchant($merchant);
@@ -185,6 +188,8 @@ class Activate extends Base\Core
         $merchant->setDefaultMethodsBasedOnCategory();
 
         $merchant->activate();
+
+        $this->enableOneClickCheckoutIfApplicable($merchant);
 
         (new Merchant\Core)->updateInternationalIfApplicable($merchant, $merchantDetails);
 
@@ -300,6 +305,27 @@ class Activate extends Base\Core
         $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_POST_TRANSCACTION,$merchant->toArrayPublic());
 
         return $merchantDetail;
+    }
+
+    private function enableOneClickCheckoutIfApplicable(Entity $merchant)
+    {
+        if ($merchant->isBusinessBankingEnabled() === false)
+        {
+            switch ($merchant->merchantDetail->getBusinessCategory())
+            {
+                case Merchant\Detail\BusinessCategory::ECOMMERCE:
+                case Merchant\Detail\BusinessCategory::FASHION_AND_LIFESTYLE:
+
+                    $featureParams = [
+                        Feature\Entity::ENTITY_TYPE => \RZP\Constants\Entity::MERCHANT,
+                        Feature\Entity::ENTITY_ID   => $merchant->getId(),
+                        Feature\Entity::NAMES       => [Constants::ONE_CC_MERCHANT_DASHBOARD],
+                        Feature\Entity::SHOULD_SYNC => true,
+                    ];
+
+                    $this->addFeatures($featureParams);
+            }
+        }
     }
 
     /**

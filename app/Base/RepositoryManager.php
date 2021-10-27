@@ -54,6 +54,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\AvgOrderValue\Repository            $merchant_avg_order_value
  * @property Models\Merchant\Tnc\Repository                      $merchant_tnc
  * @property Models\Merchant\VerificationDetail\Repository       $merchant_verification_detail
+ * @property Models\Merchant\CheckoutDetail\Repository           $merchant_checkout_detail
  * @property Models\Merchant\BusinessDetail\Repository           $merchant_business_detail
  * @property Models\Merchant\Escalations\Repository              $merchant_onboarding_escalations
  * @property Models\Merchant\Escalations\Actions\Repository      $onboarding_escalation_actions

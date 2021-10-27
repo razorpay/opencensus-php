@@ -1474,6 +1474,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_NON_EXISTING_QR_CODE_ID                                       = 'QR Code Id provided doesn\'t exist';
     const BAD_REQUEST_MERCHANT_TNC_NOT_APPLICABLE                                   = 'Request for creation of Merchant TnC failed because it is not applicable to the current merchant';
+    const BAD_REQUEST_MERCHANT_NOT_ELIGIBLE_FOR_1CC                                 = 'Request failed because the merchant is not eligible for 1CC product';
 
     // Onboarding APIs
     const BAD_REQUEST_WALLET_INSTRUMENT_INVALID                                     = 'Invalid wallet instrument code';

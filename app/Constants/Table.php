@@ -172,6 +172,7 @@ class Table
     const MERCHANT_AVG_ORDER_VALUE      = 'merchant_avg_order_value';
     const MERCHANT_TNC                  = 'merchant_tnc';
     const MERCHANT_VERIFICATION_DETAIL  = 'merchant_verification_details';
+    const MERCHANT_CHECKOUT_DETAIL      = 'merchant_checkout_details';
 
     const MERCHANT_ONBOARDING_ESCALATIONS   = 'merchant_onboarding_escalations';
     const ONBOARDING_ESCALATION_ACTIONS     = 'onboarding_escalation_actions';

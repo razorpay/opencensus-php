@@ -568,6 +568,10 @@ final class FactoryData
          ]
        );
 
+        $factory(\RZP\Models\Merchant\CheckoutDetail\Entity::class, [
+            'id'              => $faker->uniqueid,
+        ]);
+
         $factory(\RZP\Models\Item\Entity::class, [
                                                    'id'            => '1000000000item',
                                                    'merchant_id'   => '10000000000000',

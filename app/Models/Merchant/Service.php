@@ -7302,6 +7302,34 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
+    public function saveMerchantCheckoutDetail(array $input)
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_MERCHANT_DASHBOARD) === true)
+        {
+            return (new Merchant\CheckoutDetail\Core())->createOrEditCheckoutDetail($this->merchant->merchantDetail, $input);
+        }
+        else
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ELIGIBLE_FOR_1CC
+            );
+        }
+    }
+
+    public function fetchMerchantCheckoutDetail()
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_MERCHANT_DASHBOARD) === true)
+        {
+            return $this->repo->merchant_checkout_detail->getByMerchantId($this->merchant->getId());
+        }
+        else
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ELIGIBLE_FOR_1CC
+            );
+        }
+    }
+
     private function getWebsiteSelfServeWorkflowAction()
     {
         $merchantCore = new Merchant\Core;
