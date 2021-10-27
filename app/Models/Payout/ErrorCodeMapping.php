@@ -159,7 +159,7 @@ class ErrorCodeMapping
         'Invalid_PSP'                           => 'Invalid Beneficiary PSP. Please check and retry.',
         'BENE_PSP_OFFLINE'                      => 'Beneficiary PSP is down. Please retry after 30 min.',
         'NPCI_TIMEOUT_FAILURE'                  => 'Timeout between NPCI and beneficiary bank. Please retry after 30 min.',
-        'PBANK_VALIDATION_ERROR'                => 'Invalid Beneficiary details',
+        'PBANK_VALIDATION_ERROR'                => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
         'VERIFICATION_FAILED'                   => 'Payout failed. Contact support for help.',
         'BBANK_GATEWAY_THROTTLED_FAILURE'       => 'Beneficiary bank is offline. Reinitiate transfer after 30 min.',
         'BBANK_TECHNICAL_FAILURE'               => 'Payout failed at beneficiary bank due to technical issue. Please retry',

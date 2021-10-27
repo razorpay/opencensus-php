@@ -9693,7 +9693,7 @@ class PayoutTest extends OAuthTestCase
         $payout->reload();
 
         $this->assertEquals('failed', $payout->getStatus());
-        $this->assertEquals('Invalid Beneficiary details', $payout->getFailureReason());
+        $this->assertEquals('Temporary Issue at Partner bank. Reinitiate transfer after 30 min.', $payout->getFailureReason());
     }
 
     public function testPayoutValidatePurposeForValidPurpose()
