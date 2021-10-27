@@ -32,12 +32,20 @@ class PaymentPageProcessor extends Job
      */
     protected $params;
 
+    /**
+     * @var \RZP\Models\Merchant\Entity
+     */
+    protected $merchant;
+
     protected $core;
 
     protected $event;
 
     /**
-     * Param sshould have payment key with payment object during payment capture event
+     * Params should have payment key with payment object during payment capture event
+     *
+     * Params should have refund_id key with a string value which should refer to a valid refund id during
+     * refund processed event
      *
      * @param string $mode
      * @param array  $params
@@ -49,6 +57,7 @@ class PaymentPageProcessor extends Job
         $this->params   = collect($params);
         $this->event    = $this->params->get('event', self::PAYMENT_CAPTURE_EVENT);
         $this->payment  = $this->params->get('payment');
+        $this->merchant = $this->params->get('merchant');
     }
 
     public function handle()
@@ -102,6 +111,37 @@ class PaymentPageProcessor extends Job
                     'payment_link'   => $paymentLink->getId(),
                 ]
             );
+        }
+
+        $this->delete();
+    }
+
+    protected function handleRefundProcessedEvent()
+    {
+        $this->core = new PaymentLink\Core;
+
+        $refund = $this
+            ->repoManager
+            ->refund
+            ->findByIdAndMerchant($this->params['refund_id'], $this->merchant);
+
+        $context = [
+            'refund_id'         => $refund->getId(),
+            'refund_status'     => $refund->getStatus(),
+            "refund"            => $refund->toArrayPublic(),
+            'payment_id'        => $refund->payment->getId(),
+            'payment_status'    => $refund->payment->getStatus(),
+        ];
+
+        try
+        {
+            $this->trace->info(TraceCode::PAYMENT_LINK_REFUND_PROCESS_QUEUE, $context);
+
+            $this->core->postPaymentRefundUpdatePaymentPage($refund);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, null, null, $context);
         }
 
         $this->delete();

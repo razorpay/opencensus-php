@@ -759,6 +759,11 @@ class ApiEventSubscriber extends Base\Core
 
     protected function onRefundProcessed(RefundEntity $refund)
     {
+        if ($refund->payment->hasPaymentLink() === true)
+        {
+            (new PaymentLink\Core)->postPaymentRefundUpdatePaymentPageDispatcher($refund);
+        }
+
         $payload = $this->getRefundPayload($refund);
 
         $this->dispatchEventToStork($payload);

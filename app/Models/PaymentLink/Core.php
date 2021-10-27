@@ -554,6 +554,51 @@ class Core extends Base\Core
 
         $this->postPaymentCaptureAttemptProcessing($payment);
     }
+
+    public function postPaymentRefundUpdatePaymentPageDispatcher(Payment\Refund\Entity $refund)
+    {
+        $context = $this->getRefundContext($refund);
+        $this->trace->info(TraceCode::PAYMENT_LINK_PAYMENT_REFUND_PROCESS_INIT, $context);
+
+        PaymentPageProcessor::dispatch($this->mode, [
+            'event'     => PaymentPageProcessor::REFUND_PROCESSED_EVENT,
+            'refund_id' => $refund->getId(),
+            'merchant'  => $refund->merchant,
+        ]);
+
+        $this->trace->info(TraceCode::PAYMENT_LINK_PAYMENT_REFUND_PROCESS_DISPATCHED, $context);
+    }
+
+    public function postPaymentRefundUpdatePaymentPage(Payment\Refund\Entity $refund)
+    {
+        assertTrue($refund->payment->hasPaymentLink());
+
+        $context = $this->getRefundContext($refund);
+
+        $this->trace->info(TraceCode::PAYMENT_LINK_PAYMENT_REFUND_PROCESS_START, $context);
+
+        $this->repo->transaction(function() use ($refund) {
+            $lineItems = $refund->payment->order->lineItems()->get();
+            $unitsSold  = 0;
+
+            // Partial refund is not supported, will be handling the use case in future
+            if ($refund->payment->isFullyRefunded() === true)
+            {
+                $unitsSold = $lineItems->sum(function ($item) {
+                    return $item->getQuantity();
+                });
+            }
+
+            $this->updateDonationGoalTrackerKeys($refund->payment->paymentLink,  [
+                Entity::SOLD_UNITS          => $unitsSold,
+                Entity::COLLECTED_AMOUNT    => $refund->getAmount(),
+                Entity::SUPPORTER_COUNT     => $unitsSold === 0 ? 0 : 1,
+            ], true);
+        });
+
+        $this->trace->info(TraceCode::PAYMENT_LINK_PAYMENT_REFUND_PROCESS_COMPLETED, $context);
+    }
+
     /**
      * This method is called post a payment capture is attempted (failed or success) in Processor/Authorize. Refer below
      * cases on what this method handdles.
@@ -976,17 +1021,21 @@ class Core extends Base\Core
         $this->repo->assertTransactionActive();
 
         $settings   = $paymentLink->getSettings()->toArray();
+
         if (empty(array_get($settings, Entity::GOAL_TRACKER.'.'.Entity::META_DATA, [])))
         {
             return;
         }
+
+        $computedSettings   = $paymentLink->getComputedSettings()->toArray();
 
         $context = [
             "items"     => $items,
             "entity"    => [
                 Entity::ID  => $paymentLink->getId(),
             ],
-            Entity::GOAL_TRACKER    => $settings[Entity::GOAL_TRACKER][Entity::META_DATA],
+            Entity::GOAL_TRACKER            => $settings[Entity::GOAL_TRACKER][Entity::META_DATA],
+            Entity::COMPUTED_GOAL_TRACKER   => $computedSettings,
         ];
 
         $this->trace->info(TraceCode::PAYMENT_LINK_DONATION_GOAL_TRACKER_UPDATES_START, $context);
@@ -1003,15 +1052,15 @@ class Core extends Base\Core
         $soldUnitKey        = $metadaKey.'.'.Entity::SOLD_UNITS;
         $supporterCountKey  = $metadaKey.'.'.Entity::SUPPORTER_COUNT;
 
-        $amount         = ((int) array_get($settings, $amountKey, "0")) + ($multiplier * $items[Entity::COLLECTED_AMOUNT]);
-        $soldUnit       = ((int) array_get($settings, $soldUnitKey, "0")) + ($multiplier * $items[Entity::SOLD_UNITS]);
-        $supporterCount = ((int) array_get($settings, $supporterCountKey, "0")) + ($multiplier * $items[Entity::SUPPORTER_COUNT]);
+        $amount         = ((int) array_get($computedSettings, $amountKey, "0")) + ($multiplier * $items[Entity::COLLECTED_AMOUNT]);
+        $soldUnit       = ((int) array_get($computedSettings, $soldUnitKey, "0")) + ($multiplier * $items[Entity::SOLD_UNITS]);
+        $supporterCount = ((int) array_get($computedSettings, $supporterCountKey, "0")) + ($multiplier * $items[Entity::SUPPORTER_COUNT]);
 
-        array_set($settings, $amountKey, $amount < 0 ? 0 : $amount);
-        array_set($settings, $soldUnitKey, $soldUnit < 0 ? 0 : $soldUnit);
-        array_set($settings, $supporterCountKey, $supporterCount < 0 ? 0 : $supporterCount);
+        array_set($computedSettings, $amountKey, $amount < 0 ? 0 : $amount);
+        array_set($computedSettings, $soldUnitKey, $soldUnit < 0 ? 0 : $soldUnit);
+        array_set($computedSettings, $supporterCountKey, $supporterCount < 0 ? 0 : $supporterCount);
 
-        $paymentLink->getSettingsAccessor()->upsert($settings)->save();
+        $paymentLink->getComputedSettingsAccessor()->upsert($computedSettings)->save();
 
         $this->trace->info(TraceCode::PAYMENT_LINK_DONATION_GOAL_TRACKER_UPDATES_COMPLETED, $context);
     }
@@ -2069,6 +2118,17 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::PAYMENT_PAGE_FIRE_WEBHOOK, $payload);
 
         return $payload;
+    }
+
+    protected function getRefundContext(Payment\Refund\Entity $refund): array
+    {
+        return [
+            'refund_id'         => $refund->getId(),
+            'refund_status'     => $refund->getStatus(),
+            "refund"            => $refund->toArrayPublic(),
+            'payment_id'        => $refund->payment->getId(),
+            'payment_status'    => $refund->payment->getStatus(),
+        ];
     }
 
     private function dispatchAppRiskCheck(Entity $paymentLink)

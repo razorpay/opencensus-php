@@ -113,6 +113,7 @@ class Entity extends Base\PublicEntity
 
     // settings applicable for donation goal tracker
     const GOAL_TRACKER                  = 'goal_tracker';
+    const COMPUTED_GOAL_TRACKER         = 'computed_goal_tracker';
     const TRACKER_TYPE                  = 'tracker_type';
     const GOAL_IS_ACTIVE                = 'is_active';
     const META_DATA                     = 'meta_data';
@@ -632,6 +633,18 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * Get computed settings associated with payment link entity.
+     * @param  string|null $key
+     * @return \Razorpay\Spine\DataTypes\Dictionary|string
+     */
+    public function getComputedSettings(string $key = null)
+    {
+        $accessor = $this->getComputedSettingsAccessor();
+
+        return $key === null ? $accessor->all() : $accessor->get($key);
+    }
+
+    /**
      * Used when expecting either a scalar string value against settings key or null(instead of Dictionary).
      * In case of 'null', above call returns instance of Dictionary for some reason.
      *
@@ -643,6 +656,11 @@ class Entity extends Base\PublicEntity
         $resp = $this->getSettings($key);
 
         return (is_string($resp) === true) ? $resp : null;
+    }
+
+    public function getComputedSettingsAccessor(): Settings\Accessor
+    {
+        return Settings\Accessor::for($this, Settings\Module::PAYMENT_LINK_COMPUTED);
     }
 
     public function getSettingsAccessor(): Settings\Accessor

@@ -1636,7 +1636,7 @@ class PaymentLinkTest extends TestCase
      */
     public function testDonationGoalTrackerAmountBasedOnMakePaymentShouldIncrementKeys()
     {
-        [$pl, $_] = $this->createDonationGoalTrackerWithSinglePayment(
+        [$pl, $_, $payment] = $this->createDonationGoalTrackerWithSinglePayment(
             ['view_type' => 'page']
         );
         $pl = $this->getDbEntityById('payment_link', $pl->getId());
@@ -1656,6 +1656,16 @@ class PaymentLinkTest extends TestCase
         ];
 
         $this->assertDonationGoalTracker($pl, $resDataSubSet);
+
+
+        $resDataSubSet[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::SOLD_UNITS]         = "0";
+        $resDataSubSet[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::SUPPORTER_COUNT]    = "0";
+        $resDataSubSet[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::COLLECTED_AMOUNT]   = "0";
+
+        $this->assertDonationGoalTrackerRefundFlow($pl, $resDataSubSet, [
+            'pay_id'    => $payment['id'],
+            'amount'    => 15000
+        ]);
     }
 
     /**
@@ -1663,7 +1673,7 @@ class PaymentLinkTest extends TestCase
      */
     public function testDonationGoalTrackerAmountBasedOnMultipleOrderMakePaymentShouldIncrementKeys()
     {
-        [$pl, $order] = $this->createDonationGoalTrackerWithSinglePayment(
+        [$pl, $order, $_] = $this->createDonationGoalTrackerWithSinglePayment(
             ['view_type' => 'page']
         );
 
@@ -1672,7 +1682,7 @@ class PaymentLinkTest extends TestCase
         {
             $orderRes   = $this->startTest();
             $orderId    = $order->stripDefaultSign($orderRes['order']['id']);
-            $this->makePaymentForPaymentLinkWithOrderAndAssert($pl, $this->getDbEntityById('order', $orderId));
+            $payment    = $this->makePaymentForPaymentLinkWithOrderAndAssert($pl, $this->getDbEntityById('order', $orderId));
         }
 
         $pl = $this->getDbEntityById('payment_link', $pl->getId());
@@ -1692,6 +1702,15 @@ class PaymentLinkTest extends TestCase
         ];
 
         $this->assertDonationGoalTracker($pl, $resDataSubSet);
+
+        $resDataSubSet[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::SOLD_UNITS]         = "14";
+        $resDataSubSet[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::SUPPORTER_COUNT]    = "5";
+        $resDataSubSet[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::COLLECTED_AMOUNT]   = stringify(15000 + (5000 * 4) + (10000 * 4 * 2));
+
+        $this->assertDonationGoalTrackerRefundFlow($pl, $resDataSubSet, [
+            'pay_id'    => $payment['id'],
+            'amount'    => 25000
+        ]);
     }
 
     /**
@@ -1699,7 +1718,7 @@ class PaymentLinkTest extends TestCase
      */
     public function testDonationGoalTrackerSupporterBasedOnMakePaymentShouldIncrementKeys()
     {
-        [$pl, $_] = $this->createDonationGoalTrackerWithSinglePayment(
+        [$pl, $_, $payment] = $this->createDonationGoalTrackerWithSinglePayment(
             ['view_type' => 'page'],
             [
                 Entity::AVALIABLE_UNITS         => "10000",
@@ -1726,6 +1745,15 @@ class PaymentLinkTest extends TestCase
         ];
 
         $this->assertDonationGoalTracker($pl, $resDataSubSet);
+
+        $resDataSubSet[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::SOLD_UNITS]         = "0";
+        $resDataSubSet[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::SUPPORTER_COUNT]    = "0";
+        $resDataSubSet[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::COLLECTED_AMOUNT]   = "0";
+
+        $this->assertDonationGoalTrackerRefundFlow($pl, $resDataSubSet, [
+            'pay_id'    => $payment['id'],
+            'amount'    => 15000
+        ]);
     }
 
     /**
@@ -1733,7 +1761,7 @@ class PaymentLinkTest extends TestCase
      */
     public function testDonationGoalTrackerSupporterBasedOnMultipleOrderMakePaymentShouldIncrementKeys()
     {
-        [$pl, $order] = $this->createDonationGoalTrackerWithSinglePayment(
+        [$pl, $order, $_] = $this->createDonationGoalTrackerWithSinglePayment(
             ['view_type' => 'page'],
             [
                 Entity::AVALIABLE_UNITS         => "10000",
@@ -1750,7 +1778,7 @@ class PaymentLinkTest extends TestCase
         {
             $orderRes   = $this->startTest();
             $orderId    = $order->stripDefaultSign($orderRes['order']['id']);
-            $this->makePaymentForPaymentLinkWithOrderAndAssert($pl, $this->getDbEntityById('order', $orderId));
+            $payment    = $this->makePaymentForPaymentLinkWithOrderAndAssert($pl, $this->getDbEntityById('order', $orderId));
         }
 
         $pl = $this->getDbEntityById('payment_link', $pl->getId());
@@ -1769,9 +1797,32 @@ class PaymentLinkTest extends TestCase
         ];
 
         $this->assertDonationGoalTracker($pl, $resDataSubSet);
+
+        $resDataSubSet[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::SOLD_UNITS]         = "22";
+        $resDataSubSet[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::SUPPORTER_COUNT]    = "5";
+        $resDataSubSet[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::COLLECTED_AMOUNT]   = stringify(15000 + (5000 * 4 * 3) + (10000 * 4 * 2));
+
+        $this->assertDonationGoalTrackerRefundFlow($pl, $resDataSubSet, [
+            'pay_id'    => $payment['id'],
+            'amount'    => 35000
+        ]);
     }
 
     // -------------------- Protected methods --------------------
+
+    protected function assertDonationGoalTrackerRefundFlow(Entity $paymentLink, array $goalTrackerSubset, array $refundInput): void
+    {
+        $this->refundPayment(
+            $refundInput['pay_id'],
+            $refundInput['amount'],
+            [],
+            [],
+            ($refundInput['reverse_all'] ?? "1") === "1"
+        );
+        $pl = $this->getDbEntityById('payment_link', $paymentLink->getId());
+
+        $this->assertDonationGoalTracker($pl, $goalTrackerSubset);
+    }
 
     protected function createDonationGoalTrackerWithSinglePayment(
         array $paymentLinkAttribute = [],
@@ -1803,9 +1854,9 @@ class PaymentLinkTest extends TestCase
 
         $pl->getSettingsAccessor()->upsert($settings)->save();
 
-        $this->makePaymentForPaymentLinkWithOrderAndAssert($pl, $order);
+        $payment = $this->makePaymentForPaymentLinkWithOrderAndAssert($pl, $order);
 
-        return [$pl, $order];
+        return [$pl, $order, $payment];
     }
 
     protected function assertDonationGoalTracker(Entity $paymentLink, array $goalTrackerSubArray)

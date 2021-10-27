@@ -240,10 +240,25 @@ class ViewSerializer extends Base\Core
         foreach (self::$epochs as $key)
         {
             $value     = $serialized[$key];
-            $formatted = ($value === null ? null : Carbon::createFromTimestamp($value, Timezone::IST)->format('j M Y'));
+            $formatted = $this->formatPaymentPageEpoch($value);
 
-            $serialized[$key . '_formatted'] = $formatted;
+            $serialized[$this->getEpochFormattedKey($key)] = $formatted;
         }
+    }
+
+    protected function getEpochFormattedKey(string $key): string
+    {
+        return $key . '_formatted';
+    }
+
+    protected function formatPaymentPageEpoch($value): ?string
+    {
+        if ($value === null)
+        {
+            return null;
+        }
+
+        return Carbon::createFromTimestamp($value, Timezone::IST)->format('j M Y');
     }
 
     protected function serializeOrgPropertiesForHosted()
@@ -348,8 +363,11 @@ class ViewSerializer extends Base\Core
 
     protected function populateDonationGoalTrackerWithAdditionalKeys(array & $settings): void
     {
-        $metaData = array_get($settings, Entity::GOAL_TRACKER.'.'.Entity::META_DATA, []);
-        if (empty($metaData))
+        $computedSettings       = $this->paymentLink->getComputedSettings()->toArray();
+        $metaData               = array_get($computedSettings, Entity::GOAL_TRACKER.'.'.Entity::META_DATA, []);
+        $goalTrackerMetaData    = array_get($settings, Entity::GOAL_TRACKER.'.'.Entity::META_DATA, []);
+
+        if (empty($goalTrackerMetaData) === true)
         {
             return;
         }
@@ -362,5 +380,11 @@ class ViewSerializer extends Base\Core
         $settings[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::COLLECTED_AMOUNT]    = $collectedAmount;
         $settings[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::SUPPORTER_COUNT]     = $supporterCount;
         $settings[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::SOLD_UNITS]          = $soldUnits;
+
+        $expiryKey      = $this->getEpochFormattedKey(Entity::GOAL_END_TIMESTAMP);
+        $expiryValue    = array_get($settings, Entity::GOAL_TRACKER.'.'.Entity::META_DATA .'.'.Entity::GOAL_END_TIMESTAMP);
+        $diffInDays     = stringify(Carbon::createFromTimestamp($expiryValue, Timezone::IST)->diffInDays());
+
+        $settings[Entity::GOAL_TRACKER][Entity::META_DATA][$expiryKey] = $diffInDays;
     }
 }
