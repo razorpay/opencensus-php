@@ -129,6 +129,8 @@ return [
         //Cross Border Payments Announcement
         'CROSS_BORDER_PAYMENTS_ANNOUNCEMENT' => env('CROSS_BORDER_PAYMENTS_ANNOUNCEMENT', ''),
 
+        //QR Code Announcement
+        'QR_CODE_ANNOUNCEMENT' => env('QR_CODE_ANNOUNCEMENT', ''),
 
     ]
 ];

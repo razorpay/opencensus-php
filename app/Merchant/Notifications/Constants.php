@@ -1046,6 +1046,29 @@ class Constants
             'filters'     => ['splitz_experiments' => ['RTB_ANNOUNCEMENT']],
         ],
         [
+            'id'          => 'OCT21-QR-GTM',
+            'title'       => 'Get Razorpay MultiQR today!',
+            'description' => 'Create unlimited QR codes with your business branding and start collecting payments via UPI and cards.',
+            'start_ts'    => 1632960000,
+            'end_ts'      => 1640822400,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/qr-code.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Get QR',
+                    'url'   => '/qr_codes',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Learn More',
+                    'url'   => 'https://razorpay.com/docs/qr-codes/'
+                ],
+            ],
+            'filters'     => [
+                'splitz_experiments' => ['QR_CODE_ANNOUNCEMENT'],
+            ]
+        ],
+        [
             'title'       => 'Avail Reduced Transaction Fee!',
             'description' => 'Reduce transaction fee to 1.65% & get a corporate card by switching to Razorpay Current Accounts!',
             'start_ts'    => 1626159840,
