@@ -3,29 +3,27 @@
 namespace RZP\Tests\Unit\Models\PaymentLink;
 
 use Carbon\Carbon;
-use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\PaymentLink\Version;
 use RZP\Models\PaymentLink\Validator;
-use RZP\Tests\Functional\TestCase;
 use RZP\Models\PaymentLink\Entity as E;
 use RZP\Models\Payment\Entity as PE;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\PaymentLinkTestTrait;
 use RZP\Exception\BadRequestValidationFailureException;
 
-class ValidatorTest extends TestCase
+class ValidatorTest extends BaseTest
 {
     use PaymentLinkTestTrait;
 
     const TEST_PL_ID    = '100000000000pl';
 
+    protected $datahelperPath   = '/Helpers/ValidatorTestData.php';
+
     /**
      * @var \RZP\Models\PaymentLink\Validator
      */
     protected $paymentLinkvalidator;
-
-    protected $data = [];
 
     /**
      * @inheritDoc
@@ -37,33 +35,23 @@ class ValidatorTest extends TestCase
         $this->paymentLinkvalidator = new Validator();
     }
 
-    public function getData()
-    {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5);
-        $name = $trace[4]['args'][1];
-        if (empty($this->data)) {
-            $this->data = require(__DIR__ . '/Helpers/ValidatorTestData.php');
-        }
-        return $this->data[$name];
-    }
-
     /**
      * @dataProvider getData
      * @group nocode_pp_validator
      */
-    public function testValidateGoalTracker($data)
+    public function testValidateGoalTracker($data, $exceptionClass=null, $exceptionMessage=null)
     {
-        if (isset($data['exception_class']))
+        if (empty($exceptionClass) === false)
         {
-            $this->expectException($data['exception_class']);
+            $this->expectException($exceptionClass);
         }
 
-        if (isset($data['exception_message']))
+        if (empty($exceptionMessage) === false)
         {
-            $this->expectExceptionMessage($data['exception_message']);
+            $this->expectExceptionMessage($exceptionMessage);
         }
 
-        $this->assertNull($this->paymentLinkvalidator->validateGoalTracker($data['item']));
+        $this->assertNull($this->paymentLinkvalidator->validateGoalTracker($data));
     }
 
     /**
@@ -71,12 +59,12 @@ class ValidatorTest extends TestCase
      *
      * @param $method
      * @param $value
-     * @param $isInvalid
+     * @param bool $isInvalid
      *
-     * @dataProvider generalValidatorDataProvider
+     * @dataProvider getData
      *
      */
-    public function testGeneralValidateMethods($method, $value, $isInvalid)
+    public function testGeneralValidateMethods($method, $value, bool $isInvalid=false)
     {
         if ($isInvalid == true)
         {
@@ -85,30 +73,8 @@ class ValidatorTest extends TestCase
         $this->assertNull($this->paymentLinkvalidator->$method("name", $value));
     }
 
-    public function generalValidatorDataProvider(): array
-    {
-        return [
-            'Empty slug in validateSlug'                => ['validateSlug', " ", true],
-            'Dollar sign slug in validateSlug'          => ['validateSlug', '$slug', true],
-            'Normal Valid slug in validateSlug'         => ['validateSlug', 'slug', false],
-            'Invalid slug with space in validateSlug'   => ['validateSlug', 'slug slug', true],
-            'Valid slug with _ in validateSlug'         => ['validateSlug', 'slug_slug', false],
-            'Valid slug with - in validateSlug'         => ['validateSlug', 'slug-slug', false],
-            'Invalid slug with a dot in validateSlug'   => ['validateSlug', 'slug.slug', true],
-            'Valid slug with - and int in validateSlug' => ['validateSlug', 'slug-slug111', false],
-            'Valid slug with only int in validateSlug'  => ['validateSlug', '12312313131', false],
-
-            'Valid slug with only int and _ in validateSlug'    => ['validateSlug', '12312_13131', false],
-            'Valid slug with only int and - in validateSlug'    => ['validateSlug', '12312-13131', false],
-            'Invalid slug with only int and . in validateSlug'  => ['validateSlug', '12312.13131', true],
-
-            'Timestamp less than 15 minutes in validateExpireBy'    => ['validateExpireBy', Carbon::now(Timezone::IST)->getTimestamp(), true],
-            'Timestamp more than 15 minutes in validateExpireBy'    => ['validateExpireBy', Carbon::now(Timezone::IST)->addMinutes(30)->getTimestamp(), false],
-        ];
-    }
-
     /**
-     * @dataProvider validateTimesPayableInternalDataProvider
+     * @dataProvider getData
      * @group nocode_pp_validator
      */
     public function testValidateTimesPayable($value, $isInvalid)
@@ -124,7 +90,7 @@ class ValidatorTest extends TestCase
     }
 
     /**
-     * @dataProvider validateAmountInternalDataProvider
+     * @dataProvider getData
      * @group nocode_pp_validator
      */
     public function testValidateAmount($value, $isInvalid)
@@ -142,7 +108,7 @@ class ValidatorTest extends TestCase
     }
 
     /**
-     * @dataProvider validateSettingsDataProvider
+     * @dataProvider getData
      * @group nocode_pp_validator
      */
     public function testValidateSettings($inputArr, $msg)
@@ -161,7 +127,7 @@ class ValidatorTest extends TestCase
     }
 
     /**
-     * @dataProvider validateTimesPayableForActivationDataProvider
+     * @dataProvider getData
      * @group nocode_pp_validator
      */
     public function testValidateTimesPayableForActivation($value, $isInvalid)
@@ -242,7 +208,7 @@ class ValidatorTest extends TestCase
     }
 
     /**
-     * @dataProvider validateMinAmountDataProvider
+     * @dataProvider getData
      * @group nocode_pp_validator
      */
     public function testValidateMinAmount($paise, $isinvalid)
@@ -255,68 +221,6 @@ class ValidatorTest extends TestCase
         }
 
         $this->assertNull($this->paymentLinkvalidator->validateMinAmount([E::AMOUNT => $paise]));
-    }
-
-    public function validateMinAmountDataProvider(): array
-    {
-        return [
-            "Min Amount of negative value throws error" => [-1, true],
-            "Min Amount of 50 paise throws error"       => [50, true],
-            "Min Amount of 99 paise throws error"       => [99, true],
-            "Min Amount of 100 paise no error thrown"   => [100, false],
-            "Min Amount of 200 paise no error thrown"   => [200, false],
-        ];
-    }
-
-    public function validateTimesPayableForActivationDataProvider(): array
-    {
-        return [
-            "Times payable less than a value should throw exception"        =>  [1, true],
-            "Times payable equal to a value should throw exception"         =>  [3, true],
-            "Times payable greater than a value should not throw exception" =>  [10, false],
-            "Times payable with null value should not throw exception"      =>  [null, false],
-        ];
-    }
-
-    public function validateAmountInternalDataProvider(): array
-    {
-        return [
-            "Validate Amount with larger than limit should throw exception"     => [50000001, true],
-            "Validate Amount with less than limit should not throw exception"   => [1, false],
-            "Validate Amount with null should not throw exception"              => [null, false],
-        ];
-    }
-
-    public function validateTimesPayableInternalDataProvider(): array
-    {
-        return [
-            "Times Payble less then the actual value should throw exception"        => [1, true],
-            "Times Payble greater then the actual value should not throw exception" => [10, false],
-            "Times Payble with null value should not throw exception"               => [10, false],
-        ];
-    }
-
-    public function validateSettingsDataProvider(): array
-    {
-        return [
-            "Validate Settings With Empty AllowMultipleUnits Should Throw Exception"    => [
-                [
-                    E::AMOUNT   => 0,
-                    E::SETTINGS => [
-                        E::ALLOW_MULTIPLE_UNITS  => true
-                    ],
-                ],
-                "amount is required with settings.allow_multiple_units."
-            ],
-            "Validate Settings With Empty Extra Settings Should Throw Exception"    => [
-                [
-                    E::SETTINGS => [
-                        "some_setting"  => false
-                    ]
-                ],
-                'Extra settings keys must not be sent - ' . implode(', ', ["some_setting"]) . '.'
-            ]
-        ];
     }
 
     protected function assignEntityValueThroughReflection(E $entity): void

@@ -3,23 +3,32 @@
 namespace RZP\Tests\Unit\Models\PaymentLink;
 
 use RZP\Models\Item;
-use RZP\Models\Currency\Currency;
 use RZP\Models\Base\PublicEntity;
-use RZP\Tests\Functional\TestCase;
 use RZP\Models\PaymentLink\Entity;
-use RZP\Models\PaymentLink\Status;
-use RZP\Models\PaymentLink\StatusReason;
 use RZP\Models\PaymentLink\PaymentPageItem;
 use RZP\Tests\Traits\PaymentLinkTestTrait;
 
-class EntityTest extends TestCase
+class EntityTest extends BaseTest
 {
     use PaymentLinkTestTrait;
 
     const TEST_PL_ID    = '100000000000pl';
+    const TEST_PL_ID_2  = '100000000001pl';
+    const TEST_PPI_ID   = '10000000000ppi';
+    const TEST_PPI_ID_2 = '10000000001ppi';
+    const TEST_ORDER_ID = '10000000000ord';
+
+    protected $datahelperPath   = '/Helpers/EntityTestData.php';
+
+    protected function setUp(): void
+    {
+        $this->testDataFilePath = __DIR__ . $this->datahelperPath;
+
+        parent::setUp();
+    }
 
     /**
-     * @dataProvider getCurrencyDataProvider
+     * @dataProvider getData
      * @group nocode_pp_entity
      */
     public function testGetCurrency($currency, $expected)
@@ -31,7 +40,7 @@ class EntityTest extends TestCase
     }
 
     /**
-     * @dataProvider getDescriptionAndMetaDescriptionDataProvider
+     * @dataProvider getData
      * @group nocode_pp_entity
      */
     public function testGetDescriptionAndMetaDescription($description, $expected, $meta)
@@ -44,7 +53,7 @@ class EntityTest extends TestCase
     }
 
     /**
-     * @dataProvider getGeneralDataProvider
+     * @dataProvider getData
      * @group nocode_pp_entity
      */
     public function testGetTitle($text, $expected)
@@ -56,7 +65,7 @@ class EntityTest extends TestCase
     }
 
     /**
-     * @dataProvider getGeneralDataProvider
+     * @dataProvider getData
      * @group nocode_pp_entity
      */
     public function testGetTerms($text, $expected)
@@ -68,7 +77,7 @@ class EntityTest extends TestCase
     }
 
     /**
-     * @dataProvider isExpiredDataProvider
+     * @dataProvider getData
      * @group nocode_pp_entity
      */
     public function testIsExpired($status, $reason, $assertBool)
@@ -81,7 +90,7 @@ class EntityTest extends TestCase
     }
 
     /**
-     * @dataProvider isCompletedDataProvider
+     * @dataProvider getData
      * @group nocode_pp_entity
      */
     public function testIsCompleted($status, $reason, $assertBool)
@@ -94,7 +103,7 @@ class EntityTest extends TestCase
     }
 
     /**
-     * @dataProvider getSelectedInputFieldDataProvider
+     * @dataProvider getData
      * @group nocode_pp_entity
      */
     public function testGetSelectedInputField($udfField)
@@ -159,65 +168,5 @@ class EntityTest extends TestCase
 
         $paymentLink->setUdfJsonschemaId("someID");
         $this->assertEquals("someID", $paymentLink->getUdfJsonschemaId());
-    }
-
-    public function getSelectedInputFieldDataProvider(): array
-    {
-        return [
-            ["phone"],
-            ["email"]
-        ];
-    }
-
-    public function isCompletedDataProvider(): array
-    {
-        return [
-            [Status::INACTIVE, StatusReason::EXPIRED, false],
-            [Status::INACTIVE, StatusReason::COMPLETED, true],
-            [Status::ACTIVE, StatusReason::COMPLETED, false],
-            [Status::ACTIVE, StatusReason::EXPIRED, false],
-            ["asdad", "asdad", false],
-        ];
-    }
-
-    public function isExpiredDataProvider(): array
-    {
-        return [
-            [Status::INACTIVE, StatusReason::EXPIRED, true],
-            [Status::INACTIVE, StatusReason::COMPLETED, false],
-            [Status::ACTIVE, StatusReason::COMPLETED, false],
-            [Status::ACTIVE, StatusReason::EXPIRED, false],
-            ["asdad", "asdad", false],
-        ];
-    }
-
-    public function getGeneralDataProvider(): array
-    {
-        return [
-            ["Some Text", "Some Text"],
-            [null, null],
-        ];
-    }
-
-    public function getDescriptionAndMetaDescriptionDataProvider(): array
-    {
-        $desc = "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Suscipit quibusdam laborum distinctio officiis quos dolor placeat. Reiciendis modi ut delectus.";
-        $meta = "Meta Description";
-        $json = '{"metaText": "'.$meta.'"}';
-        return [
-            [$desc, $desc, $desc],
-            [null, null, null],
-            [$json, $json, $meta],
-            ['{"a":"b"}', '{"a":"b"}', '{"a":"b"}'],
-        ];
-    }
-
-    public function getCurrencyDataProvider(): array
-    {
-        return [
-            [Currency::INR, Currency::INR],
-            [null, Currency::INR],
-            [Currency::AED, Currency::AED]
-        ];
     }
 }

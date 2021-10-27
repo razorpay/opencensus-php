@@ -628,7 +628,8 @@ class Core extends Base\Core
 
         if ($shouldRefundPayment === true)
         {
-            return $this->refundPayment($paymentLink, $payment);
+            $this->refundPayment($paymentLink, $payment);
+            return;
         }
 
         $this->repo->transaction(function() use ($paymentLink, $payment, & $shouldRefundPayment)
@@ -669,7 +670,8 @@ class Core extends Base\Core
         // Follow up to Case 3 (Refer above ^ comment)
         if ($shouldRefundPayment === true)
         {
-            return $this->refundPayment($paymentLink, $payment);
+            $this->refundPayment($paymentLink, $payment);
+            return;
         }
 
         try
