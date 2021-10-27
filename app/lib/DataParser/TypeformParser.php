@@ -157,7 +157,9 @@ class TypeformParser extends Base implements DataParserInterface
         {
             $referenceId = $question['id'];
 
-            $questionIdToQuestion[$referenceId]['question'] = str_replace(".", "", $question["title"]);
+            // Replace all spaces with underscores in the questions as we create columns with these names in our table in Query book
+            // and column names with spaces are not allowed
+            $questionIdToQuestion[$referenceId]['question'] = str_replace(" ", "_", str_replace(".", "", $question["title"]));
         }
 
         return $questionIdToQuestion;
