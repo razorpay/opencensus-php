@@ -25,35 +25,36 @@ class LOCController extends Controller
     const MERCHANT = 'MERCHANT';
     const OPS      = 'ops';
 
-    const SEED_DATA_REGEX                        = 'SEED_DATA_REGEX';
-    const CREATE_WITHDRAWAL_REGEX                = 'CREATE_WITHDRAWAL_REGEX';
-    const GET_WITHDRAWAL_REGEX                   = 'GET_WITHDRAWAL_REGEX';
-    const LIST_OR_SEARCH_WITHDRAWAL_REGEX        = 'LIST_OR_SEARCH_WITHDRAWAL_REGEX';
-    const UPDATE_WITHDRAWAL_REGEX                = 'UPDATE_WITHDRAWAL_REGEX';
-    const ADD_REPAYMENT_REGEX                    = 'ADD_REPAYMENT_REGEX';
-    const CREATE_WITHDRAWAL_CONFIG_REGEX         = 'CREATE_WITHDRAWAL_CONFIG_REGEX';
-    const GET_WITHDRAWAL_CONFIG_REGEX            = 'GET_WITHDRAWAL_CONFIG_REGEX';
-    const UPDATE_WITHDRAWAL_CONFIG_REGEX         = 'UPDATE_WITHDRAWAL_CONFIG_REGEX';
-    const GET_FUNCTIONAL_WITHDRAWAL_CONFIG_REGEX = 'GET_FUNCTIONAL_WITHDRAWAL_CONFIG_REGEX';
-    const LIST_OR_SEARCH_WITHDRAWAL_CONFIG_REGEX = 'LIST_OR_SEARCH_WITHDRAWAL_CONFIG_REGEX';
-    const CREATE_SOURCE_ACCOUNT_REGEX            = 'CREATE_SOURCE_ACCOUNT_REGEX';
-    const GET_SOURCE_ACCOUNT_REGEX               = 'GET_SOURCE_ACCOUNT_REGEX';
-    const UPDATE_SOURCE_ACCOUNT_REGEX            = 'UPDATE_SOURCE_ACCOUNT_REGEX';
-    const CREATE_DESTINATION_ACCOUNT_REGEX       = 'CREATE_DESTINATION_ACCOUNT_REGEX';
-    const GET_DESTINATION_ACCOUNT_REGEX          = 'GET_DESTINATION_ACCOUNT_REGEX';
-    const UPDATE_DESTINATION_ACCOUNT_REGEX       = 'UPDATE_DESTINATION_ACCOUNT_REGEX';
-    const POSIDEX_ACCESS_TOKEN                   = 'POSIDEX_ACCESS_TOKEN';
-    const POSIDEX_CRN                            = 'POSIDEX_CRN';
-    const BULK_UPDATE_WITHDRAWAL                 = 'BULK_UPDATE_WITHDRAWAL';
-    const REPAYMENTS_SCHEDULE                    = 'REPAYMENTS_SCHEDULE';
-    const WITHDRAWAL_ENGAGEMENT_MAILER_CRON      = 'WITHDRAWAL_ENGAGEMENT_MAILER_CRON';
-    const GET_AUTOMATED_LOC                      = 'GET_AUTOMATED_LOC';
-    const SET_AUTOMATED_LOC                      = 'SET_AUTOMATED_LOC';
-    const CREATE_MERCHANT_DETAILS                = 'CREATE_MERCHANT_DETAILS';
-    const GET_MERCHANT_DETAILS                   = 'GET_MERCHANT_DETAILS';
-    const UPDATE_MERCHANT_DETAILS                = 'UPDATE_MERCHANT_DETAILS';
-    const GET_ONHOLD_STATUS_REASONS              = 'GET_ONHOLD_STATUS_REASONS';
-    const SCHEDULE_LATE_REPAYMENT_NOTIFICATION   = 'SCHEDULE_LATE_REPAYMENT_NOTIFICATION';
+    const SEED_DATA_REGEX                                = 'SEED_DATA_REGEX';
+    const CREATE_WITHDRAWAL_REGEX                        = 'CREATE_WITHDRAWAL_REGEX';
+    const GET_WITHDRAWAL_REGEX                           = 'GET_WITHDRAWAL_REGEX';
+    const LIST_OR_SEARCH_WITHDRAWAL_REGEX                = 'LIST_OR_SEARCH_WITHDRAWAL_REGEX';
+    const UPDATE_WITHDRAWAL_REGEX                        = 'UPDATE_WITHDRAWAL_REGEX';
+    const ADD_REPAYMENT_REGEX                            = 'ADD_REPAYMENT_REGEX';
+    const CREATE_WITHDRAWAL_CONFIG_REGEX                 = 'CREATE_WITHDRAWAL_CONFIG_REGEX';
+    const GET_WITHDRAWAL_CONFIG_REGEX                    = 'GET_WITHDRAWAL_CONFIG_REGEX';
+    const UPDATE_WITHDRAWAL_CONFIG_REGEX                 = 'UPDATE_WITHDRAWAL_CONFIG_REGEX';
+    const GET_FUNCTIONAL_WITHDRAWAL_CONFIG_REGEX         = 'GET_FUNCTIONAL_WITHDRAWAL_CONFIG_REGEX';
+    const LIST_OR_SEARCH_WITHDRAWAL_CONFIG_REGEX         = 'LIST_OR_SEARCH_WITHDRAWAL_CONFIG_REGEX';
+    const CREATE_SOURCE_ACCOUNT_REGEX                    = 'CREATE_SOURCE_ACCOUNT_REGEX';
+    const GET_SOURCE_ACCOUNT_REGEX                       = 'GET_SOURCE_ACCOUNT_REGEX';
+    const UPDATE_SOURCE_ACCOUNT_REGEX                    = 'UPDATE_SOURCE_ACCOUNT_REGEX';
+    const CREATE_DESTINATION_ACCOUNT_REGEX               = 'CREATE_DESTINATION_ACCOUNT_REGEX';
+    const GET_DESTINATION_ACCOUNT_REGEX                  = 'GET_DESTINATION_ACCOUNT_REGEX';
+    const UPDATE_DESTINATION_ACCOUNT_REGEX               = 'UPDATE_DESTINATION_ACCOUNT_REGEX';
+    const POSIDEX_ACCESS_TOKEN                           = 'POSIDEX_ACCESS_TOKEN';
+    const POSIDEX_CRN                                    = 'POSIDEX_CRN';
+    const BULK_UPDATE_WITHDRAWAL                         = 'BULK_UPDATE_WITHDRAWAL';
+    const REPAYMENTS_SCHEDULE                            = 'REPAYMENTS_SCHEDULE';
+    const WITHDRAWAL_ENGAGEMENT_MAILER_CRON              = 'WITHDRAWAL_ENGAGEMENT_MAILER_CRON';
+    const GET_AUTOMATED_LOC                              = 'GET_AUTOMATED_LOC';
+    const SET_AUTOMATED_LOC                              = 'SET_AUTOMATED_LOC';
+    const CREATE_MERCHANT_DETAILS                        = 'CREATE_MERCHANT_DETAILS';
+    const GET_MERCHANT_DETAILS                           = 'GET_MERCHANT_DETAILS';
+    const UPDATE_MERCHANT_DETAILS                        = 'UPDATE_MERCHANT_DETAILS';
+    const GET_ONHOLD_STATUS_REASONS                      = 'GET_ONHOLD_STATUS_REASONS';
+    const SCHEDULE_LATE_REPAYMENT_NOTIFICATION           = 'SCHEDULE_LATE_REPAYMENT_NOTIFICATION';
+    const WITHDRAWAL_CONFIG_UPDATE_DELAYED_REPAYMENTS    = 'WITHDRAWAL_CONFIG_DELAYED_REPAYMENT';
 
     const ROUTES_URL_MAP = [
         self::SEED_DATA_REGEX                        => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalAPI/SeedData',
@@ -86,8 +87,9 @@ class LOCController extends Controller
     ];
 
     const CRON_URL_MAP = [
-        self::WITHDRAWAL_ENGAGEMENT_MAILER_CRON      => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/WithdrawalEngagementMail',
-        self::SCHEDULE_LATE_REPAYMENT_NOTIFICATION   => 'twirp/rzp.capital.loc.withdrawal.v1.RepaymentAPI/ScheduleLateRepaymentNotificationToPartnerCron',
+        self::WITHDRAWAL_ENGAGEMENT_MAILER_CRON              => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/WithdrawalEngagementMail',
+        self::SCHEDULE_LATE_REPAYMENT_NOTIFICATION           => 'twirp/rzp.capital.loc.withdrawal.v1.RepaymentAPI/ScheduleLateRepaymentNotificationToPartnerCron',
+        self::WITHDRAWAL_CONFIG_UPDATE_DELAYED_REPAYMENTS    => 'twirp/rzp.capital.loc.withdrawal.v1.RepaymentAPI/SetOnHoldStatusForDelayedWithdrawalRepaymentsCron'
     ];
 
     const MERCHANT_ROUTES = [
@@ -106,32 +108,34 @@ class LOCController extends Controller
     ];
 
     const ROUTE_PERMISSION_MAP = [
-        self::SEED_DATA_REGEX                        => Name::LOC,
-        self::GET_ONHOLD_STATUS_REASONS              => Name::LOC_CONFIG_VIEW,
-        self::CREATE_MERCHANT_DETAILS                => Name::LOC_CONFIG_EDIT,
-        self::GET_MERCHANT_DETAILS                   => Name::LOC_CONFIG_EDIT,
-        self::UPDATE_MERCHANT_DETAILS                => Name::LOC_CONFIG_EDIT,
-        self::CREATE_WITHDRAWAL_CONFIG_REGEX         => Name::LOC_CONFIG_EDIT,
-        self::UPDATE_WITHDRAWAL_CONFIG_REGEX         => Name::LOC_CONFIG_EDIT,
-        self::CREATE_SOURCE_ACCOUNT_REGEX            => Name::LOC_CONFIG_EDIT,
-        self::UPDATE_SOURCE_ACCOUNT_REGEX            => Name::LOC_CONFIG_EDIT,
-        self::CREATE_DESTINATION_ACCOUNT_REGEX       => Name::LOC_CONFIG_EDIT,
-        self::UPDATE_DESTINATION_ACCOUNT_REGEX       => Name::LOC_CONFIG_EDIT,
-        self::POSIDEX_ACCESS_TOKEN                   => Name::LOC_CONFIG_EDIT,
-        self::POSIDEX_CRN                            => Name::LOC_CONFIG_EDIT,
-        self::GET_AUTOMATED_LOC                      => Name::LOC_CONFIG_VIEW,
-        self::SET_AUTOMATED_LOC                      => Name::LOC_CONFIG_EDIT,
-        self::GET_WITHDRAWAL_CONFIG_REGEX            => Name::LOC_CONFIG_VIEW,
-        self::LIST_OR_SEARCH_WITHDRAWAL_CONFIG_REGEX => Name::LOC_CONFIG_VIEW,
-        self::GET_DESTINATION_ACCOUNT_REGEX          => Name::LOC_CONFIG_VIEW,
-        self::GET_SOURCE_ACCOUNT_REGEX               => Name::LOC_CONFIG_VIEW,
-        self::CREATE_WITHDRAWAL_REGEX                => Name::LOC_WITHDRAWAL_EDIT,
-        self::UPDATE_WITHDRAWAL_REGEX                => Name::LOC_WITHDRAWAL_EDIT,
-        self::ADD_REPAYMENT_REGEX                    => Name::LOC_WITHDRAWAL_EDIT,
-        self::GET_WITHDRAWAL_REGEX                   => Name::LOC_WITHDRAWAL_VIEW,
-        self::GET_FUNCTIONAL_WITHDRAWAL_CONFIG_REGEX => Name:: LOC_CONFIG_VIEW,
-        self::LIST_OR_SEARCH_WITHDRAWAL_REGEX        => Name::LOC_WITHDRAWAL_VIEW,
-        self::REPAYMENTS_SCHEDULE                    => Name::LOC_WITHDRAWAL_VIEW,
+        self::SEED_DATA_REGEX                              => Name::LOC,
+        self::GET_ONHOLD_STATUS_REASONS                    => Name::LOC_CONFIG_VIEW,
+        self::CREATE_MERCHANT_DETAILS                      => Name::LOC_CONFIG_EDIT,
+        self::GET_MERCHANT_DETAILS                         => Name::LOC_CONFIG_EDIT,
+        self::UPDATE_MERCHANT_DETAILS                      => Name::LOC_CONFIG_EDIT,
+        self::CREATE_WITHDRAWAL_CONFIG_REGEX               => Name::LOC_CONFIG_EDIT,
+        self::UPDATE_WITHDRAWAL_CONFIG_REGEX               => Name::LOC_CONFIG_EDIT,
+        self::CREATE_SOURCE_ACCOUNT_REGEX                  => Name::LOC_CONFIG_EDIT,
+        self::UPDATE_SOURCE_ACCOUNT_REGEX                  => Name::LOC_CONFIG_EDIT,
+        self::CREATE_DESTINATION_ACCOUNT_REGEX             => Name::LOC_CONFIG_EDIT,
+        self::UPDATE_DESTINATION_ACCOUNT_REGEX             => Name::LOC_CONFIG_EDIT,
+        self::POSIDEX_ACCESS_TOKEN                         => Name::LOC_CONFIG_EDIT,
+        self::POSIDEX_CRN                                  => Name::LOC_CONFIG_EDIT,
+        self::GET_AUTOMATED_LOC                            => Name::LOC_CONFIG_VIEW,
+        self::SET_AUTOMATED_LOC                            => Name::LOC_CONFIG_EDIT,
+        self::GET_WITHDRAWAL_CONFIG_REGEX                  => Name::LOC_CONFIG_VIEW,
+        self::LIST_OR_SEARCH_WITHDRAWAL_CONFIG_REGEX       => Name::LOC_CONFIG_VIEW,
+        self::GET_DESTINATION_ACCOUNT_REGEX                => Name::LOC_CONFIG_VIEW,
+        self::GET_SOURCE_ACCOUNT_REGEX                     => Name::LOC_CONFIG_VIEW,
+        self::CREATE_WITHDRAWAL_REGEX                      => Name::LOC_WITHDRAWAL_EDIT,
+        self::UPDATE_WITHDRAWAL_REGEX                      => Name::LOC_WITHDRAWAL_EDIT,
+        self::ADD_REPAYMENT_REGEX                          => Name::LOC_WITHDRAWAL_EDIT,
+        self::GET_WITHDRAWAL_REGEX                         => Name::LOC_WITHDRAWAL_VIEW,
+        self::GET_FUNCTIONAL_WITHDRAWAL_CONFIG_REGEX       => Name:: LOC_CONFIG_VIEW,
+        self::LIST_OR_SEARCH_WITHDRAWAL_REGEX              => Name::LOC_WITHDRAWAL_VIEW,
+        self::REPAYMENTS_SCHEDULE                          => Name::LOC_WITHDRAWAL_VIEW,
+        self::WITHDRAWAL_CONFIG_UPDATE_DELAYED_REPAYMENTS  => Name::LOC_CONFIG_EDIT,
+
     ];
 
     const MAIL_ERROR_REGEX = '/View \[emails.loc.(?:\w+)?\] not found./';
