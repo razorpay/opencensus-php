@@ -260,8 +260,6 @@ class MerchantActionNotification
 
             $this->sendWhatsappMessage($merchant, $templates[Constants::WHATSAPP_TEMPLATE_NAME],
                                        $templates[Constants::WHATSAPP_TEMPLATE], $params);
-
-            $this->sendDashboardNotification($merchant, $templates[Constants::DASHBOARD_TEMPLATE_TAG]);
         }
         catch (\Throwable $e)
         {

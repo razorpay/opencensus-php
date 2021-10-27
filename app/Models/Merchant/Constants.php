@@ -596,7 +596,6 @@ final class Constants
             self::EMAIL_SUBJECT             => self::DISABLE_LIVE_EMAIL_SUBJECT,
             self::WHATSAPP_TEMPLATE_NAME    => self::SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE_NAME,
             self::WHATSAPP_TEMPLATE         => self::SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE,
-            self::DASHBOARD_TEMPLATE_TAG    => '',
         ],
 
         Action::HOLD_FUNDS => [
@@ -605,7 +604,6 @@ final class Constants
             self::EMAIL_SUBJECT              => self::FOH_EMAIL_SUBJECT,
             self::WHATSAPP_TEMPLATE_NAME     => self::FOH_WHATSAPP_TEMPLATE_NAME,
             self::WHATSAPP_TEMPLATE          => self::FOH_WHATSAPP_TEMPLATE,
-            self::DASHBOARD_TEMPLATE_TAG     => self::FOH_DASHBOARD_TEMPLATE_TAG,
         ],
 
         Action::LIVE_DISABLE => [
@@ -614,7 +612,6 @@ final class Constants
             self::EMAIL_SUBJECT              => self::DISABLE_LIVE_EMAIL_SUBJECT,
             self::WHATSAPP_TEMPLATE_NAME     => self::DISABLE_LIVE_WHATSAPP_TEMPLATE_NAME,
             self::WHATSAPP_TEMPLATE          => self::DISABLE_LIVE_WHATSAPP_TEMPLATE,
-            self::DASHBOARD_TEMPLATE_TAG     => self::DISABLE_LIVE_DASHBOARD_TEMPLATE_TAG,
         ],
     ];
 
