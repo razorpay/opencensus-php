@@ -27,7 +27,6 @@ use Illuminate\Support\Facades\Crypt;
 use App\Splitz\Service as SplitzService;
 use Lcobucci\JWT\ValidationData as JWTValidation;
 use Illuminate\Auth\Access\AuthorizationException;
-use hisorange\BrowserDetect\Parser as BrowserDetect;
 
 class Service extends Base\Service
 {
@@ -818,32 +817,6 @@ class Service extends Base\Service
     private function getOAuthSessionTokenCacheKey(string $token): string
     {
         return self::OAUTH_SESSION_TOKEN . '.' . $token;
-    }
-
-    public function addUserBrowserDetails(array &$input)
-    {
-        try
-        {
-            $browser = (new BrowserDetect())->detect();
-
-            $browserDetails = [
-                Constants::DEVICE   => (new Helper())->getUserDevice($browser),
-                Constants::BROWSER  => $browser->browserFamily(),
-                Constants::OS       => $browser->platformName(),
-            ];
-
-            $input[Constants::BROWSER_DETAILS] = $browserDetails;
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->info(
-                TraceCode::USER_FETCH_BROWSER_DETAILS_FAILURE,
-                [
-                    Constants::ERROR => $e,
-                    Constants::EMAIL => $input[Constants::EMAIL],
-                ]
-            );
-        }
     }
 
     public function getUserDetails(array $params = [])

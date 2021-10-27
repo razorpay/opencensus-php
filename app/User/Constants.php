@@ -98,12 +98,6 @@ class Constants
         "annapurna.pal+008@razorpay.com"
     ];
 
-    // browser details of the user logging in
-    const BROWSER_DETAILS = 'browser_details';
-    const DEVICE = 'device';
-    const BROWSER = 'browser';
-    const OS = 'os';
-
     const BANKING_DEMO_USER_EMAIL = "acmecorporation2021@gmail.com";
 
     const FAKE_CAPTCHA = "FAKE_CAPTCHA";
