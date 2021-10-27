@@ -11,14 +11,28 @@ import {
   getDefaultSelectedDocs,
 } from '../services/utils';
 
-export const fetchActivationData = async () => {
-  const data = await fetch<any>({ url: 'merchant/activation', mode: 'live' });
+export const fetchActivationData = async ({ accountId }) => {
+  const data = await fetch<any>({
+    url: 'merchant/activation',
+    mode: 'live',
+    headers: {
+      'X-Razorpay-Account': accountId,
+    },
+  });
   const formattedData = activationFormatter(data);
   return formattedData;
 };
 
 export const postActivation = (data) =>
-  fetch<any>({ url: 'merchant/activation', method: 'POST', data, mode: 'live' });
+  fetch<any>({
+    url: 'merchant/activation',
+    method: 'POST',
+    data,
+    mode: 'live',
+    headers: {
+      'X-Razorpay-Account': data?.accountId,
+    },
+  });
 
 export const getRequestData = (prevDetails, updatedDetails) => {
   const filteredFields = Object.keys(updatedDetails).filter(
@@ -36,59 +50,108 @@ export const getRequestData = (prevDetails, updatedDetails) => {
   return reqData;
 };
 
-export const saveFile = ({ formData, progressTracker }) =>
+export const saveFile = ({ formData, progressTracker, accountId }) =>
   fetch<any>({
     url: 'merchant/documents/upload',
     method: 'POST',
     mode: 'live',
     data: formData,
     onUploadProgress: progressTracker,
+    headers: {
+      'X-Razorpay-Account': accountId,
+    },
   });
 
-export const deleteFile = (curDoc) =>
-  fetch<any>({ url: `merchant/documents/doc_${curDoc.id}`, method: 'DELETE', mode: 'live' });
+export const deleteFile = (curDoc, accountId) =>
+  fetch<any>({
+    url: `merchant/documents/doc_${curDoc.id}`,
+    method: 'DELETE',
+    mode: 'live',
+    headers: {
+      'X-Razorpay-Account': accountId,
+    },
+  });
+
+const getSubmerchantId = (location: string) => {
+  const regex = /\/partners\/submerchants\/onboarding\/acc_(.+)\//g;
+  const found = regex.exec(location);
+  return found && found[1] ? found[1] : '';
+};
 
 export default function useActivation() {
   const snackbar = useSnackbar();
   const { experiments } = useApp();
-  const { status, data, refetch } = useQuery('activation', fetchActivationData, {
-    refetchOnMount: 'always',
-    staleTime: Infinity,
-    onError: (err: any) => {
-      if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+  // TODO: replace this window.location with useParams hooks once react-router is updated to v5
+  // passing account id in headers to load submerchant's activation form in partner's dashboard account
+  const accountId = getSubmerchantId(window.location.href);
+  const { status, data, refetch } = useQuery(
+    'activation',
+    async () => {
+      return fetchActivationData({
+        accountId,
+      });
     },
-  });
+    {
+      refetchOnMount: 'always',
+      staleTime: Infinity,
+      onError: (err: any) => {
+        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+      },
+    },
+  );
 
   const queryCache = useQueryCache();
-  const [postData] = useMutation(postActivation, {
-    onSuccess: (result) => {
-      const formattedData = activationFormatter(result);
-      queryCache.setQueryData('activation', formattedData);
+  const [postData] = useMutation(
+    (formData: any) => {
+      return postActivation({
+        ...(formData || {}),
+        accountId,
+      });
     },
-    onError: (err: any) => {
-      if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+    {
+      onSuccess: (result) => {
+        const formattedData = activationFormatter(result);
+        queryCache.setQueryData('activation', formattedData);
+      },
+      onError: (err: any) => {
+        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+      },
     },
-  });
+  );
 
-  const [documentUpload] = useMutation(saveFile, {
-    onSuccess: (result) => {
-      const formattedData = activationFormatter(result);
-      queryCache.setQueryData('activation', formattedData);
+  const [documentUpload] = useMutation(
+    ({ formData, progressTracker }: any) => {
+      return saveFile({
+        formData,
+        progressTracker,
+        accountId,
+      });
     },
-    onError: (err: any) => {
-      if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+    {
+      onSuccess: (result) => {
+        const formattedData = activationFormatter(result);
+        queryCache.setQueryData('activation', formattedData);
+      },
+      onError: (err: any) => {
+        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+      },
     },
-  });
+  );
 
-  const [documentDelete] = useMutation(deleteFile, {
-    onSuccess: (result) => {
-      const formattedData = activationFormatter(result);
-      queryCache.setQueryData('activation', formattedData);
+  const [documentDelete] = useMutation(
+    (curDoc: any) => {
+      return deleteFile(curDoc, accountId);
     },
-    onError: (err: any) => {
-      if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+    {
+      onSuccess: (result) => {
+        const formattedData = activationFormatter(result);
+        queryCache.setQueryData('activation', formattedData);
+      },
+      onError: (err: any) => {
+        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+      },
     },
-  });
+  );
 
   const setContactDetailsCompleted = useActivationFormState(
     (state) => state.setContactDetailsCompleted,
