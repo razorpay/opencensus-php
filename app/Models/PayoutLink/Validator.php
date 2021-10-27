@@ -341,7 +341,7 @@ class Validator extends Base\Validator
 
         $url = self::GOOGLE_CAPTCHA_VERIFICATION_ENDPOINT;
 
-        $response = Requests::request($url, null, $input, Requests::GET, null);
+        $response = Requests::request($url, [], $input, Requests::GET);
 
         $output = json_decode($response->body);
 

@@ -975,9 +975,9 @@ class Route
         'capital_collections_admin'                => ['any',      'capital_collections/admin/{path?}',              'CapitalCollectionsController@handleAdminRequests'                  ],
         'capital_collections_dev_admin'            => ['any',      'capital_collections/dev_admin/{path?}',          'CapitalCollectionsController@handleAdminRequests'                  ],
         'capital_collections_webhook'              => ['any',      'capital_collections/orders/{path?}',             'CapitalCollectionsController@handleDirectRequests'                 ],
-        'capital_marketplace_oauth'                => ['any',      'marketplace/oauth/{path?}',                      'CapitalMarketplaceController@handleDirectRequests'                        ],
-        'capital_marketplace_service'              => ['any',      'marketplace/service/{path?}',                    'CapitalMarketplaceController@handleProxyRequests'                         ],
-        'capital_marketplace_admin'                => ['any',      'marketplace/admin/{path?}',                      'CapitalMarketplaceController@handleAdminRequests'                         ],
+        'capital_marketplace_oauth'                => ['any',      'marketplace/oauth/{path?}',                      'CapitalMarketplaceController@handleDirectRequests'                 ],
+        'capital_marketplace_service'              => ['any',      'marketplace/service/{path?}',                    'CapitalMarketplaceController@handleProxyRequests'                  ],
+        'capital_marketplace_admin'                => ['any',      'marketplace/admin/{path?}',                      'CapitalMarketplaceController@handleAdminRequests'                  ],
 
         'merchants_risk_service'                   => ['any',      'merchants-risk/service/{path?}',                 'MerchantsRiskController@handleProxyRequests'                       ],
         'merchants_risk_admin'                     => ['any',      'merchants-risk/admin/{path?}',                   'MerchantsRiskController@handleAdminRequests'                       ],
