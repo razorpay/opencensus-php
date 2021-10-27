@@ -14332,4 +14332,50 @@ return [
             ],
         ],
     ],
+
+    'testProcessingOfCreateRequestSubmittedPayoutForHighTpsForDirectAccounts' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 2000000,
+                'currency'       => 'INR',
+                'purpose'        => 'refund',
+                'narration'      => 'Batman',
+                'mode'           => 'UPI',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'vpa',
+                    'vpa' => [
+                        'address'  => 'mehulisa10xdev@razorpay',
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'High tps not supported for direct accounts',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
 ];

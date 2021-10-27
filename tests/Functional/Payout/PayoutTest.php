@@ -14532,4 +14532,19 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('payout', $reversal->getEntityType());
         $this->assertEquals($payout->getAmount() + $payout->getFees(), $reversal->getAmount());
     }
+
+    public function testProcessingOfCreateRequestSubmittedPayoutForHighTpsForDirectAccounts()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_PROCESS_ASYNC]);
+
+        $this->ba->privateAuth();
+
+        $balance = $this->getDbEntityById('balance', $this->bankingBalance->getId());
+
+        $this->fixtures->edit('balance', $balance->getId(), ['account_type' => 'direct']);
+
+        $this->startTest();
+    }
 }

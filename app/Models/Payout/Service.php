@@ -179,6 +179,15 @@ class Service extends Base\Service
 
             if ($newFlowFlag === true)
             {
+                if ($balance->isAccountTypeDirect() === true)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, [
+                        Payout\Entity::BALANCE_ID             => $balance->getId(),
+                        Merchant\Balance\Entity::ACCOUNT_TYPE => $balance->getAccountType()
+                    ],
+                    'High tps not supported for direct accounts');
+                }
+
                 $payout = $this->newCompositePayoutFlow($input, $balance);
 
                 $compositePayoutResponse = $this->postCreationProcessingForCompositePayout($payout);
