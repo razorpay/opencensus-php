@@ -421,11 +421,11 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function verifyOtpVerifyUser(array $input)
+    public function verifyVerificationOtp(array $input)
     {
         $res = null;
 
-        list($error, $genericUser) = $this->verifyOtpVerifyUserApi($input);
+        list($error, $genericUser) = $this->verifyVerificationOtpOnApi($input);
 
         return $this->handleLoginResponse($error, $genericUser);
     }
@@ -497,9 +497,19 @@ class Service extends Base\Service
                 return [['Contact mobile is not verified.', self::LOGIN_UNAUTHENTICATED], null];
             }
 
-            if (in_array('BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED', $error) === true)
+            if (in_array('BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED', $error) === true)
             {
-                return [['Either multiple or no accounts associated with the contact mobile/email.', self::LOGIN_UNAUTHENTICATED], null];
+                return [['No accounts associated with the contact mobile/email.', self::LOGIN_UNAUTHENTICATED], null];
+            }
+
+            if (in_array('BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED', $error) === true)
+            {
+                return [['Multiple accounts associated with the contact mobile/email.', self::LOGIN_UNAUTHENTICATED], null];
+            }
+
+            if (in_array('BAD_REQUEST_INCORRECT_OTP', $error) === true)
+            {
+                return [['Verification failed because of incorrect OTP.', self::LOGIN_UNAUTHENTICATED], null];
             }
 
             return [['Incorrect email/contact mobile or password. To reset, click on "Forgot?" link.', self::LOGIN_UNAUTHENTICATED], null];
@@ -1332,17 +1342,34 @@ class Service extends Base\Service
 
     public function otpLoginForVerifyUser(array $input)
     {
-        return $this->userVerificationRoute($input,'users/login/otp/sendVerificationOtp', 'POST');
+        return $this->userVerificationRoute($input, 'users/login/verification-otp', 'POST');
     }
 
     public function verifyOtpLoginOnApi(array $input)
     {
-        return $this->loginOnApiOnRoute($input,'users/login/otp/verify', 'POST');
+        $headers = [
+            self::CAPTCHA_MODE_HEADER   => Request::header(self::CAPTCHA_MODE_HEADER),
+        ];
+
+        return $this->loginOnApiOnRoute(
+            $input,'users/login/otp/verify',
+            'POST',
+            [ 'headers' => $headers ]
+        );
     }
 
-    public function verifyOtpVerifyUserApi(array $input)
+    public function verifyVerificationOtpOnApi(array $input)
     {
-        return $this->loginOnApiOnRoute($input,'users/login/otp/verifyVerificationOtp', 'POST');
+        $headers = [
+            self::CAPTCHA_MODE_HEADER   => Request::header(self::CAPTCHA_MODE_HEADER),
+        ];
+
+        return $this->loginOnApiOnRoute(
+            $input,
+            'users/login/verification-otp/verify',
+            'POST',
+            [ 'headers' => $headers ]
+        );
     }
 
     // Another route for a successful login. If a uses 2fa is not setup

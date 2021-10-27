@@ -456,7 +456,7 @@ class UserController extends Controller
             $input['email'] = mb_strtolower($input['email']);
         }
 
-        list($error, $data) = (new User\Service)->verifyOtpVerifyUser($input);
+        list($error, $data) = (new User\Service)->verifyVerificationOtp($input);
 
         if (empty($error) === true)
         {
