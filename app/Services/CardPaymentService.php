@@ -812,7 +812,16 @@ class CardPaymentService
         if (($verify->apiSuccess === false) and ($verify->gatewaySuccess === true))
         {
             // The update of gateway entities are handled in the cps.
-            return $verify->getDataToTrace();
+            $authDetails = $verify->getDataToTrace();
+            
+            if (isset($response['payment']['reference2']) === true) 
+            {
+                $authDetails['acquirer'] = [
+                    'reference2' => $response['payment']['reference2']
+                ];
+            }
+            
+            return  $authDetails;
         }
 
         throw new Exception\LogicException(

@@ -2323,6 +2323,7 @@ class CardPaymentServiceTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('test111', $payment['reference2']);
     }
 
      /**
