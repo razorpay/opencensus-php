@@ -33,7 +33,8 @@ final class Metric
     const USER_SMS_OTP_SENT                   = 'user_sms_otp_sent';
     const USER_EMAIL_OTP_SEND_FAILED          = 'user_email_otp_send_failed';
     const USER_SMS_OTP_SEND_FAILED            = 'user_sms_otp_send_failed';
-    const MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED  = 'multiple_or_no_accounts_associated';
+    const NO_ACCOUNTS_ASSOCIATED              = 'no_accounts_associated';
+    const MULTIPLE_ACCOUNTS_ASSOCIATED        = 'multiple_accounts_associated';
     const VERIFY_LOGIN_INCORRECT_OTP          = 'verify_login_incorrect_otp';
     const USER_NOT_AUTHENTICATED              = 'user_not_authenticated';
 

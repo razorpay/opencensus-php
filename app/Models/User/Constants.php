@@ -82,6 +82,21 @@ class Constants
 
     const INCORRECT_LOGIN_TTL = 7200; // 2 hours
 
+    // email otp login send ttl and threshold
+    const EMAIL_LOGIN_OTP_SEND_TTL = 1800; // 30 mins
+    const EMAIL_LOGIN_OTP_SEND_THRESHOLD = 5; // 5 times in 30 mins
+
+    // login otp verification threshold
+    const LOGIN_OTP_VERIFICATION_THRESHOLD = 9;
+
+    // email verification otp send ttl and threshold
+    const EMAIL_VERIFICATION_OTP_SEND_TTL = 1800; // 30 mins
+    const EMAIL_VERIFICATION_OTP_SEND_THRESHOLD = 5; // 5 times in 30 mins
+
+    // verification otp verification ttl and threshold
+    const VERIFICATION_OTP_VERIFICATION_TTL = 1800; // 30 mins
+    const VERIFICATION_OTP_VERIFICATION_THRESHOLD = 9; // 9 times in 30 mins
+
     const INCORRECT_LOGIN_THRESHOLD_COUNT = 5;
 
     public static $attributionList = [
@@ -245,6 +260,8 @@ class Constants
         Constants::BANKING_DEMO_USER_EMAILS[0],
         Constants::BANKING_DEMO_USER_EMAILS[1]
     ];
+
+    const WHITELIST_CAPTCHA_CONTACT_MOBILE = [];
 
     // Only in these environments we will verify the captcha repsonse with google
     const WHITELIST_ENVIRONMENT_CAPTCHA_VALIDATION = [

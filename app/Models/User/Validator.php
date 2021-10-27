@@ -117,6 +117,8 @@ class Validator extends Base\Validator
         Entity::EMAIL           => 'required_without:contact_mobile|email',
         Entity::TOKEN           => 'required|string',
         Entity::OTP             => 'required|string|between:4,6',
+        Entity::CAPTCHA         => 'required_without:captcha_disable',
+        Entity::CAPTCHA_DISABLE => 'sometimes|string',
     ];
 
     protected static $loginOauthRules = [
@@ -139,6 +141,8 @@ class Validator extends Base\Validator
         Entity::EMAIL           => 'required_without:contact_mobile|email',
         Entity::TOKEN           => 'required|string',
         Entity::OTP             => 'required|string|between:4,6',
+        Entity::CAPTCHA         => 'required_without:captcha_disable',
+        Entity::CAPTCHA_DISABLE => 'sometimes|string',
     ];
 
     protected static $verifyUserSecondFactorRules = [
@@ -326,6 +330,14 @@ class Validator extends Base\Validator
         'captcha'
     ];
 
+    protected static $verifyLoginOtpValidators = [
+        'captcha_only'
+    ];
+
+    protected static $verifyVerificationOtpValidators = [
+        'captcha_only'
+    ];
+
     protected static $changePasswordValidators = [
         'old_password'
     ];
@@ -465,25 +477,17 @@ class Validator extends Base\Validator
     }
 
     /**
-     * Google captcha validation.
-     *
-     * @param array $input
-     *
      * @throws BadRequestException
      */
-    protected function validateCaptcha(array $input)
+    protected function checkCaptchaWithGoogle(
+        $app, $input, $emailData,
+        $verificationSuccessEventCode = null,
+        $verificationFailedEventCode = null)
     {
-        $app = App::getFacadeRoot();
-
-        if ($this->isCaptchaDisabled($input) === true and isset($input[Entity::EMAIL]) === true)
-        {
-            return $this->handleCaptchaDisabled($input);
-        }
-
-        $emailData['email'] = $input[Entity::EMAIL] ?? null;
 
         if ((in_array($app->environment(), Constants::WHITELIST_ENVIRONMENT_CAPTCHA_VALIDATION, true) === true) and
-            (in_array($emailData['email'], Constants::WHITELIST_CAPTCHA_EMAILS, true) === false))
+            (in_array($emailData['email'], Constants::WHITELIST_CAPTCHA_EMAILS, true) === false) and
+            (in_array($input[Entity::CONTACT_MOBILE] ?? null, Constants::WHITELIST_CAPTCHA_CONTACT_MOBILE, true) === false))
         {
             $captchaResponse = $input[Entity::CAPTCHA] ?? null;
 
@@ -509,7 +513,10 @@ class Validator extends Base\Validator
 
             if($output->success !== true)
             {
-                $app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CAPTCH_VERIFICATION_FAILED, null, null, $emailData);
+                if (empty($verificationFailedEventCode) == false)
+                {
+                    $app['diag']->trackOnboardingEvent($verificationFailedEventCode, null, null, $emailData);
+                }
 
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_CAPTCHA_FAILED,
@@ -551,10 +558,75 @@ class Validator extends Base\Validator
                         'threshold'                 => $threshold,
 
                     ];
-                    $app['diag']->trackOnboardingEvent(EventCode::CAPTCHA_TOKEN_VERIFICATION_SUCCESS, null, null, $payload);
+                    if (empty($verificationSuccessEventCode) == false)
+                    {
+                        $app['diag']->trackOnboardingEvent($verificationSuccessEventCode, null, null, $payload);
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * @param array $input
+     * @throws BadRequestException
+     */
+    protected function validateCaptchaOnly(array $input)
+    {
+        $app = App::getFacadeRoot();
+
+        if ($this->isCaptchaDisabledAndReceiverSet($input))
+        {
+            return;
+        }
+
+        $emailData['email'] = $input[Entity::EMAIL] ?? null;
+        $emailData['masked_contact_mobile'] = isset($input[Entity::CONTACT_MOBILE]) ? mask_phone($input[Entity::CONTACT_MOBILE]) : null;
+
+        $this->checkCaptchaWithGoogle($app, $input, $emailData);
+    }
+
+    protected function isCaptchaDisabledAndReceiverSet($input): bool
+    {
+        if( $this->isCaptchaDisabled($input) === true )
+        {
+            if (isset($input[Entity::EMAIL]) === true
+                or isset($input[Entity::CONTACT_MOBILE]) === true)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Google captcha validation.
+     *
+     * @param array $input
+     *
+     * @throws BadRequestException
+     */
+    protected function validateCaptcha(array $input)
+    {
+        $app = App::getFacadeRoot();
+
+        if ($this->isCaptchaDisabledAndReceiverSet($input))
+        {
+            $this->handleCaptchaDisabled($input[Entity::EMAIL] ?? $input[Entity::CONTACT_MOBILE]);
+            return;
+        }
+
+        $emailData['email'] = $input[Entity::EMAIL] ?? null;
+        $emailData['masked_contact_mobile'] = isset($input[Entity::CONTACT_MOBILE]) ? mask_phone($input[Entity::CONTACT_MOBILE]) : null;
+
+        $this->checkCaptchaWithGoogle(
+            $app,
+            $input,
+            $emailData,
+            EventCode::CAPTCHA_TOKEN_VERIFICATION_SUCCESS,
+            EventCode::SIGNUP_CAPTCH_VERIFICATION_FAILED
+        );
 
         $app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CAPTCHA_VERIFICATION_SUCCESS, null, null, $emailData);
     }
@@ -603,26 +675,26 @@ class Validator extends Base\Validator
         return $response;
     }
 
-    protected function handleCaptchaDisabled($input)
+    protected function handleCaptchaDisabled($loginMedium)
     {
         $app = App::getFacadeRoot();
 
-        $this->incrementRequestCount($input[Entity::EMAIL]);
+        $this->incrementRequestCount($loginMedium);
 
         // check if attempts is greater than threshold
         // if yes throw error captcha is required.
-        $count = $this->getIncorrectPasswordCount($input[Entity::EMAIL]);
+        $count = $this->getIncorrectPasswordCount($loginMedium);
 
         if ($count > Constants::INCORRECT_LOGIN_THRESHOLD_COUNT)
         {
-            $app['trace']->info(TraceCode::USER_LOGIN_INCORRECT_PASSWORD_EXHAUSTED, [$input[Entity::EMAIL]]);
+            $app['trace']->info(TraceCode::USER_LOGIN_INCORRECT_PASSWORD_EXHAUSTED, [$loginMedium]);
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INCORRECT_LOGIN_ATTEMPT
             );
         }
 
-        $app['trace']->info(TraceCode::USER_LOGIN_CAPTCHA_DISABLED, [$input[Entity::EMAIL]]);
+        $app['trace']->info(TraceCode::USER_LOGIN_CAPTCHA_DISABLED, [$loginMedium]);
 
         return;
     }

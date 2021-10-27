@@ -851,6 +851,275 @@ class UserTest extends TestCase
         });
     }
 
+    public function testEmailLoginOtpSendThresholdExceeded()
+    {
+        Mail::fake();
+
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:login_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+            ->willReturn($smsPayload);
+
+        $user = $this->fixtures->create('user');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redis->set($user['email'].'_login_otp_send_count', Constants::EMAIL_LOGIN_OTP_SEND_THRESHOLD);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $redis->del($user['email'].'_login_otp_send_count');
+
+    }
+
+    public function testEmailVerificationOtpSendThresholdExceeded()
+    {
+        Mail::fake();
+
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:verify_user:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+            ->willReturn($smsPayload);
+
+        $user = $this->fixtures->create('user', ['email' => 'hello123@gmail.com', 'password' => 'hello123', 'confirm_token' => '0123456789']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redis->set($user['email'].'_verification_otp_send_count', Constants::EMAIL_VERIFICATION_OTP_SEND_THRESHOLD);
+
+        $this->startTest();
+
+        $redis->del($user['email'].'_verification_otp_send_count');
+    }
+
+    public function testLoginOtpVerificationThresholdCounter()
+    {
+        Mail::fake();
+
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:login_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+            ->willReturn($smsPayload);
+
+        $user = $this->fixtures->create('user');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'token'                 => 'Gvt61zZ3Iwzcqy',
+            'otp'                   => '0008',
+            'captcha'               => 'faked',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redis->set($user['email'].'_login_otp_verification_count', 1);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $count = $redis->get($user['email'].'_login_otp_verification_count');
+        self::assertEquals(2, $count);
+        $redis->del($user['email'].'_login_otp_verification_count');
+
+
+    }
+
+    public function testLoginOtpVerificationThresholdExceeded()
+    {
+        Mail::fake();
+
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:login_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+            ->willReturn($smsPayload);
+
+        $user = $this->fixtures->create('user');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'token'                 => 'Gvt61zZ3Iwzcqy',
+            'otp'                   => '0008',
+            'captcha'               => 'faked',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redis->set($user['email'].'_login_otp_verification_count', Constants::LOGIN_OTP_VERIFICATION_THRESHOLD);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $redis->del($user['email'].'_login_otp_verification_count');
+
+    }
+
+    public function testVerificationOtpVerificationThresholdCounter()
+    {
+        Mail::fake();
+
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:login_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+            ->willReturn($smsPayload);
+
+        $user = $this->fixtures->create('user', ['confirm_token'=>'non-null-value']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'token'                 => 'Gvt61zZ3Iwzcqy',
+            'otp'                   => '0008',
+            'captcha'               => 'faked',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redis->set($user['email'].'_verification_otp_verification_count', 1);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $count = $redis->get($user['email'].'_verification_otp_verification_count');
+        self::assertEquals(2, $count);
+        $redis->del($user['email'].'_verification_otp_verification_count');
+
+
+    }
+
+    public function testVerificationOtpVerificationThresholdExceeded()
+    {
+        Mail::fake();
+
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:login_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+            ->willReturn($smsPayload);
+
+        $user = $this->fixtures->create('user', ['confirm_token'=>'non-null-value']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'token'                 => 'Gvt61zZ3Iwzcqy',
+            'otp'                   => '0008',
+            'captcha'               => 'faked',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redis->set($user['email'].'_verification_otp_verification_count', Constants::VERIFICATION_OTP_VERIFICATION_THRESHOLD);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $redis->del($user['email'].'_verification_otp_verification_count');
+    }
+
     public function testMailVerifyOtp()
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
@@ -2226,6 +2495,32 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testMobileLoginWithIncorrectPasswordCountCaptchaDisabled()
+    {
+        $user = $this->fixtures->create('user', [
+            'contact_mobile' => '0123456789',
+            'password'         => 'P@ssw0rd',
+            'contact_mobile_verified' => true
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '0123456789',
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $counter = $redis->set($user['contact_mobile'], Constants::INCORRECT_LOGIN_THRESHOLD_COUNT);
+
+        $this->startTest();
+    }
+
     public function testLoginWithIncorrectPasswordCount()
     {
         $user = $this->fixtures->create('user', [
@@ -2269,11 +2564,6 @@ class UserTest extends TestCase
         ];
 
         $testData['request']['content'] = $content;
-
-        $testData['response']['content'] = [
-            'email'     => $user->getEmail(),
-            'id'        => $user->getId(),
-        ];
 
         $this->ba->dashboardGuestAppAuth();
 

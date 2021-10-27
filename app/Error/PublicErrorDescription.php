@@ -661,12 +661,23 @@ class PublicErrorDescription
     const BAD_REQUEST_CUSTOMER_DUPLICATE_NOT_GLOBAL                             = 'Customer cannot be created';
     const BAD_REQUEST_GLOBAL_CUSTOMER_MISMATCH                                  = 'Global customer does not match with the customer found';
 
-    const BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED                              = 'OTP verification failed because attempt threshold has been reached';
+    const BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED                              = 'OTP verification failed because attempt threshold has been reached. Please regenerate OTP.';
     const BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED                                 = 'SMS sending failed because threshold has been reached. Please try again later.';
+    const SERVER_ERROR_EMAIL_LOGIN_OTP_REDIS_ERROR                              = 'An error occurred with redis during email login otp flow.';
+    const SERVER_ERROR_EMAIL_VERIFICATION_OTP_REDIS_ERROR                       = 'An error occurred with redis during email verification otp flow.';
+    const BAD_REQUEST_EMAIL_LOGIN_OTP_SEND_THRESHOLD_EXHAUSTED                  = 'Email OTP could not be sent because threshold has been reached. Please try again later.';
+    const BAD_REQUEST_EMAIL_VERIFICATION_OTP_SEND_THRESHOLD_EXHAUSTED           = 'Email Verification OTP could not be sent because threshold has been reached. Please try again later.';
+
+    const BAD_REQUEST_LOGIN_OTP_VERIFICATION_THRESHOLD_EXHAUSTED                = 'Login OTP verification attempt limit reached. Your account has been locked. Please contact support.';
+    const SERVER_ERROR_LOGIN_OTP_VERIFICATION_REDIS_ERROR                       = 'An error occurred with redis during login otp verification flow.';
+    const SERVER_ERROR_VERIFY_OTP_VERIFICATION_REDIS_ERROR                      = 'An error occurred with redis during otp verification flow.';
+    const BAD_REQUEST_OTP_LOGIN_LOCKED                                          = 'User account is locked due to too many incorrect OTP login attempts.';
+    const BAD_REQUEST_VERIFICATION_OTP_VERIFICATION_THRESHOLD_EXHAUSTED         = 'OTP verification attempt limit reached. Please try again later.';
     const BAD_REQUEST_INCORRECT_OTP                                             = 'Verification failed because of incorrect OTP.';
     const BAD_REQUEST_SMS_FAILED                                                = 'SMS sending failed.';
 
     const BAD_REQUEST_SMS_OTP_FAILED                                            = 'SMS delivery failed, please try after sometime';
+    const BAD_REQUEST_EMAIL_OTP_FAILED                                          = 'Email delivery failed, please try after sometime';
     const BAD_REQUEST_LOGO_NOT_PRESENT                                          = 'The input does not contain a file named logo';
     const BAD_REQUEST_MERCHANT_LOGO_TOO_BIG                                     = 'Size of the logo is too big. Upload a smaller file size.';
     const BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE                                  = 'The height and width of the logo are not the same. Upload a square image.';
@@ -809,7 +820,8 @@ class PublicErrorDescription
     const BAD_REQUEST_INCORRECT_LOGIN_ATTEMPT                                   = 'Incorrect Password login attempt exhausted. Please contact support or login via dashboard';
     const BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT                        = 'Token absent for recurring payment';
     const BAD_REQUEST_TOKEN_NOT_FOUND                                           = 'Token not found.';
-    const BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED                        = 'Multiple or no accounts associated with this contact mobile.';
+    const BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED                              = 'Multiple accounts associated with this contact mobile.';
+    const BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED                                    = 'No accounts associated with this contact mobile.';
     const BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED                               = 'The contact mobile is not verified.';
     const BAD_REQUEST_EMAIL_NOT_VERIFIED                                        = 'The email address is not verified.';
 

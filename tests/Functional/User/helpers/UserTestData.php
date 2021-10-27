@@ -495,14 +495,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED,
+                    'description' => PublicErrorDescription::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED,
         ],
     ],
 
@@ -516,14 +516,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED,
         ],
     ],
 
@@ -593,14 +593,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED,
         ],
     ],
 
@@ -632,7 +632,8 @@ return [
             'content' => [
                 'otp'            => '0007',
                 'token'          => 'Gvt61zZ3Iwzcqy',
-                'contact_mobile' => '0123456789'
+                'contact_mobile' => '0123456789',
+                'captcha'        => 'faked'
             ],
         ],
         'response' => [
@@ -669,7 +670,8 @@ return [
             'content' => [
                 'otp'            => '0007',
                 'token'          => 'Gvt61zZ3Iwzcqy',
-                'email'          => 'a@gmail.com'
+                'email'          => 'a@gmail.com',
+                'captcha'        => 'faked'
             ],
         ],
         'response' => [
@@ -687,9 +689,135 @@ return [
         ],
     ],
 
+    'testEmailVerificationOtpSendThresholdExceeded' => [
+        'request' => [
+            'url'     => '/users/login/verification-otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_EMAIL_VERIFICATION_OTP_SEND_THRESHOLD_EXHAUSTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_VERIFICATION_OTP_SEND_THRESHOLD_EXHAUSTED,
+        ]
+    ],
+
+    'testEmailLoginOtpSendThresholdExceeded' => [
+        'request' => [
+            'url'     => '/users/login/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_EMAIL_LOGIN_OTP_SEND_THRESHOLD_EXHAUSTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_LOGIN_OTP_SEND_THRESHOLD_EXHAUSTED,
+        ],
+    ],
+
+    'testLoginOtpVerificationThresholdCounter' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INCORRECT_OTP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ],
+    ],
+
+    'testLoginOtpVerificationThresholdExceeded' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_LOGIN_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LOGIN_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
+        ],
+    ],
+
+    'testVerificationOtpVerificationThresholdExceeded' => [
+        'request' => [
+            'url'     => '/users/login/verification-otp/verify',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_VERIFICATION_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VERIFICATION_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
+        ],
+    ],
+
+    'testVerificationOtpVerificationThresholdCounter' => [
+        'request' => [
+            'url'     => '/users/login/verification-otp/verify',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INCORRECT_OTP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ],
+    ],
+
     'testMailSendVerificationOtp' => [
         'request' => [
-            'url'     => '/users/login/otp/sendVerificationOtp',
+            'url'     => '/users/login/verification-otp',
             'method'  => 'POST',
             'content' => [],
         ],
@@ -701,7 +829,7 @@ return [
 
     'testMobileResendVerificationOtp' => [
         'request' => [
-            'url'     => '/users/login/otp/sendVerificationOtp',
+            'url'     => '/users/login/verification-otp',
             'method'  => 'POST',
             'content' => [],
         ],
@@ -714,7 +842,7 @@ return [
 
     'testMailResendVerificationOtp' => [
         'request' => [
-            'url'     => '/users/login/otp/sendVerificationOtp',
+            'url'     => '/users/login/verification-otp',
             'method'  => 'POST',
             'content' => [],
         ],
@@ -727,7 +855,7 @@ return [
 
     'testMailSendVerificationOtpVerifiedUser' => [
         'request' => [
-            'url'     => '/users/login/otp/sendVerificationOtp',
+            'url'     => '/users/login/verification-otp',
             'method'  => 'POST',
             'content' => [],
         ],
@@ -749,7 +877,7 @@ return [
 
     'testMailSendVerificationOtpWrongPassword' => [
         'request' => [
-            'url'     => '/users/login/otp/sendVerificationOtp',
+            'url'     => '/users/login/verification-otp',
             'method'  => 'POST',
             'content' => [],
         ],
@@ -770,7 +898,7 @@ return [
 
     'testMobileSendVerificationOtp' => [
         'request' => [
-            'url'     => '/users/login/otp/sendVerificationOtp',
+            'url'     => '/users/login/verification-otp',
             'method'  => 'POST',
             'content' => [],
         ],
@@ -782,7 +910,7 @@ return [
 
     'testMobileSendVerificationOtpVerifiedUser' => [
         'request' => [
-            'url'     => '/users/login/otp/sendVerificationOtp',
+            'url'     => '/users/login/verification-otp',
             'method'  => 'POST',
             'content' => [],
         ],
@@ -804,7 +932,7 @@ return [
 
     'testMobileSendVerificationOtpWrongPassword' => [
         'request' => [
-            'url'     => '/users/login/otp/sendVerificationOtp',
+            'url'     => '/users/login/verification-otp',
             'method'  => 'POST',
             'content' => [],
         ],
@@ -833,25 +961,26 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED,
         ],
     ],
 
     'testVerificationMailVerifyOtp' => [
         'request' => [
-            'url'     => '/users/login/otp/verifyVerificationOtp',
+            'url'     => '/users/login/verification-otp/verify',
             'method'  => 'POST',
             'content' => [
                 'otp'            => '0007',
                 'token'          => 'Gvt61zZ3Iwzcqy',
-                'email'          => 'a@gmail.com'
+                'email'          => 'a@gmail.com',
+                'captcha'        => 'faked',
             ],
         ],
         'response' => [
@@ -871,12 +1000,13 @@ return [
 
     'testVerificationMobileVerifyOtp' => [
         'request' => [
-            'url'     => '/users/login/otp/verifyVerificationOtp',
+            'url'     => '/users/login/verification-otp/verify',
             'method'  => 'POST',
             'content' => [
                 'otp'            => '0007',
                 'token'          => 'Gvt61zZ3Iwzcqy',
-                'contact_mobile' => '0123456789'
+                'contact_mobile' => '0123456789',
+                'captcha'        => 'faked',
             ],
         ],
         'response' => [
@@ -1758,14 +1888,14 @@ return [
             'content'   => [
                 'error'     => [
                     'code'          => ErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_USER_2FA_LOCKED,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_LOCKED_USER_LOGIN,
                 ],
             ],
             'status_code'   => 400,
         ],
         'exception' => [
             'class'                 => 'RZP\exception\BadRequestException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_USER_2FA_LOCKED,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_LOCKED_USER_LOGIN,
         ],
     ],
 
@@ -1775,12 +1905,43 @@ return [
             'method'  => 'POST',
             'content' => [],
         ],
-        'response' => [
-            'status_code'   => 200,
+        'response'  => [
+            'content'   => [
+                'error'     => [
+                    'code'          => ErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_LOCKED_USER_LOGIN,
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_LOCKED_USER_LOGIN,
         ],
     ],
 
     'testLoginWithIncorrectPasswordCount' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INCORRECT_LOGIN_ATTEMPT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_LOGIN_ATTEMPT,
+        ],
+    ],
+
+    'testMobileLoginWithIncorrectPasswordCountCaptchaDisabled' => [
         'request' => [
             'url'     => '/users/login',
             'method'  => 'POST',

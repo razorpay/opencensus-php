@@ -263,11 +263,11 @@ class Core extends Base\Core
     {
         if ($user->isAccountLocked() === true)
         {
-            $this->trace->info(TraceCode::USER_2FA_LOCKED, ['user_id' => $user->getId()]);
+            $this->trace->info(TraceCode::LOCKED_USER_LOGIN, ['user_id' => $user->getId()]);
 
-            $this->trace->count(Metric::USER_2FA_LOCKED);
+            $this->trace->count(Metric::LOCKED_USER_LOGIN);
 
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_2FA_LOCKED,
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_LOCKED_USER_LOGIN,
                     null,
                     [
                     'internal_error_code'  => ErrorCode::BAD_REQUEST_LOCKED_USER_LOGIN,
@@ -488,19 +488,9 @@ class Core extends Base\Core
         return $this->getUserEntity()->getValidator()->isCaptchaDisabled($input);
     }
 
-    public function isMobileLoginAllowed(): bool
+    public function loginWithMobilePassword(array $input)
     {
-        if ($this->app['env'] === Environment::PRODUCTION)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    public function mobileLoginApplicable(array $input)
-    {
-        if ($this->isMobileLoginAllowed() === false)
+        if ($this->isEnvironmentProduction() === true)
         {
             return null;
         }
@@ -515,6 +505,8 @@ class Core extends Base\Core
         $user = $this->getUserByMobile($input[Entity::CONTACT_MOBILE]);
 
         $this->verifyPassword($user, $input[Entity::PASSWORD]);
+
+        $this->checkUserAccountNotLockedOrThrowException($user);
 
         $maskedInput[Entity::CONTACT_MOBILE] = $user->getMaskedContactMobile();
 
@@ -539,7 +531,7 @@ class Core extends Base\Core
 
         unset($input[Constants::BROWSER_DETAILS]);
 
-        $user = $this->mobileLoginApplicable($input);
+        $user = $this->loginWithMobilePassword($input);
 
         if ($user !== null)
         {
@@ -566,6 +558,8 @@ class Core extends Base\Core
         if ($incorrectPasswordCountTrack === true) {
             $this->delIncorrectPasswordCount($input[Entity::EMAIL]);
         }
+
+        $this->checkUserAccountNotLockedOrThrowException($user);
 
         $this->checkSecondFactorAuthAndSendOtp($user);
 
@@ -657,7 +651,7 @@ class Core extends Base\Core
 
         $otp = $this->app->raven->generateOtp($payload);
 
-        $otp = $otp + compact('token');
+        $otp = $otp + array_only($payload, 'context') + compact('token');
 
         return $otp;
     }
@@ -700,8 +694,40 @@ class Core extends Base\Core
         return $payload;
     }
 
-    public function sendLoginOtpViaSms(array $input, Entity $user)
+    /**
+     * @param Entity $user
+     * @throws BadRequestException
+     */
+    protected function checkIfOtpLoginLocked(Entity $user)
     {
+        if ($user->isAccountLocked() === true)
+        {
+            $this->trace->info(TraceCode::USER_OTP_LOGIN_LOCKED, ['user_id' => $user->getId()]);
+//            $this->trace->count(Metric::USER_2FA_LOCKED);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OTP_LOGIN_LOCKED,
+                null,
+                [
+                    'internal_error_code'  => ErrorCode::BAD_REQUEST_OTP_LOGIN_LOCKED,
+                    'user_details'         => [
+                        'restricted'     => $user->restricted,
+                        'account_locked' => true,
+                        'user_id'        => $user->getId(),
+                        'is_owner'       => $user->isOwner()
+                    ],
+                ]);
+        }
+    }
+
+    /**
+     * @param array $input
+     * @param Entity $user
+     * @return array
+     * @throws BadRequestException
+     */
+    public function sendLoginOtpViaSms(array $input, Entity $user): array
+    {
+        $this->checkIfOtpLoginLocked($user);
+
         $input += $this->getLoginOtpPayload($input, 'login_otp');
 
         $otp = $this->generateOtpForLogin($user, $input);
@@ -721,6 +747,13 @@ class Core extends Base\Core
                 null,
                 TraceCode::USERS_SEND_SMS_OTP_FAILED,
                 compact('input'));
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SMS_OTP_FAILED,
+                null,
+                null,
+                $e->getMessage()
+            );
         }
 
         $maskedInput[Entity::CONTACT_MOBILE] = $user->getMaskedContactMobile();
@@ -732,8 +765,107 @@ class Core extends Base\Core
         return array_only($otp, 'token');
     }
 
-    public function sendLoginOtpViaEmail(array $input, Entity $user)
+    /**
+     * On successful verification of email otp for login, delete the email key.
+     * @param $email
+     * @throws Exception\ServerErrorException
+     */
+    protected function resetEmailLoginOtpSendLimit($email)
     {
+        try
+        {
+            $email = $email . '_login_otp_send_count';
+            $redis = $this->app->redis->Connection('mutex_redis');
+            $redis->del($email);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::EMAIL_LOGIN_OTP_REDIS_ERROR,
+                ['key' => $email]);
+
+            throw new Exception\ServerErrorException(
+                'An error occurred while interacting with redis on email otp login verify route.',
+                ErrorCode::SERVER_ERROR_EMAIL_LOGIN_OTP_REDIS_ERROR
+            );
+        }
+    }
+
+    /**
+     * In redis set key=email & value=no. of otp sent to the email
+     * Expire the key in 30 mins.
+     * @param $email
+     * @return int
+     * @throws Exception\ServerErrorException
+     */
+    protected function incrementAndGetEmailLoginOtpSendCount($email): int
+    {
+        try
+        {
+            $email = $email . '_login_otp_send_count';
+            $redis = $this->app->redis->Connection('mutex_redis');
+            $index = $redis->incr($email);
+
+            if ($index === 1)
+            {
+                $redis->expire($email, Constants::EMAIL_LOGIN_OTP_SEND_TTL);
+            }
+
+            return $index;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::EMAIL_LOGIN_OTP_REDIS_ERROR,
+                ['key' => $email]);
+
+            throw new Exception\ServerErrorException(
+                'An error occurred while interacting with redis on email otp login route.',
+                ErrorCode::SERVER_ERROR_EMAIL_LOGIN_OTP_REDIS_ERROR
+            );
+        }
+    }
+
+    /**
+     * Check if no. of OTP emails sent to user for logging in has exceeded a threshold and throw an exception.
+     * User will not be sent another OTP email for 30 mins.
+     * @param $email
+     * @throws Exception\ServerErrorException
+     * @throws BadRequestException
+     */
+    protected function checkEmailLoginOtpSendLimitExceeded($email)
+    {
+        $count = $this->incrementAndGetEmailLoginOtpSendCount($email);
+
+        if ($count > Constants::EMAIL_LOGIN_OTP_SEND_THRESHOLD)
+        {
+            $this->trace->info(TraceCode::EMAIL_LOGIN_OTP_SEND_THRESHOLD_EXHAUSTED, ['email'=>$email]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_EMAIL_LOGIN_OTP_SEND_THRESHOLD_EXHAUSTED
+            );
+        }
+
+    }
+
+    /**
+     * Send Login OTP to user Email
+     * @param array $input
+     * @param Entity $user
+     * @return array
+     * @throws BadRequestException
+     * @throws Exception\ServerErrorException
+     */
+    public function sendLoginOtpViaEmail(array $input, Entity $user): array
+    {
+        $this->checkIfOtpLoginLocked($user);
+
+        $this->checkEmailLoginOtpSendLimitExceeded($input[Entity::EMAIL]);
+
         $input += $this->getLoginOtpPayload($input, 'login_otp');
 
         $otp = $this->generateOtpForLogin($user, $input);
@@ -755,6 +887,13 @@ class Core extends Base\Core
                 null,
                 TraceCode::USERS_SEND_EMAIL_OTP_FAILED,
                 compact('input'));
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_EMAIL_OTP_FAILED,
+                null,
+                null,
+                $e->getMessage()
+            );
         }
 
         $this->trace->count(Metric::USER_EMAIL_OTP_SENT);
@@ -766,7 +905,7 @@ class Core extends Base\Core
 
     public function mobileOtpLogin(array $input)
     {
-        if ($this->isMobileLoginAllowed() === false)
+        if ($this->isEnvironmentProduction() === true)
         {
             return null;
         }
@@ -796,6 +935,11 @@ class Core extends Base\Core
             return $token;
         }
 
+        if ($this->isEnvironmentProduction() === true)
+        {
+            return null;
+        }
+
         $receiver = $this->repo->user->findByEmail($input[Entity::EMAIL]);
 
         $receiver = $this->isEmailVerified($receiver);
@@ -823,7 +967,150 @@ class Core extends Base\Core
         return $user;
     }
 
-    public function verifyLoginOtp(array $input)
+    /**
+     * Verify OTP with Raven service
+     * @param $receiver
+     * @param $input
+     * @param $user
+     * @param $dimensionsForUserLogin
+     * @throws BadRequestException on incorrect OTP
+     */
+    private function verifyOtpWithRaven($receiver, $input, $user, $dimensionsForUserLogin)
+    {
+        $payload = [
+            'receiver' => $receiver,
+            'source'   => "api.user.{$input['action']}"
+        ];
+
+        $payload += $this->getToken($user, $input);
+
+        $payload = array_only($payload, ['context', 'receiver', 'source']) + array_only($input, 'otp');
+
+        try
+        {
+            $this->app->raven->verifyOtp($payload);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->count(Metric::VERIFY_LOGIN_INCORRECT_OTP, $dimensionsForUserLogin);
+
+            throw new Exception\BadRequestException($e->getCode());
+        }
+    }
+
+    /**
+     * On successful verification of email otp for login, delete the email key.
+     * @param $receiver
+     * @throws Exception\ServerErrorException
+     */
+    protected function resetLoginOtpVerificationLimit($receiver)
+    {
+        try
+        {
+            $receiver = $receiver . '_login_otp_verification_count';
+            $redis = $this->app->redis->Connection('mutex_redis');
+            $redis->del($receiver);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::LOGIN_OTP_VERIFICATION_REDIS_ERROR,
+                ['key' => $receiver]);
+
+            throw new Exception\ServerErrorException(
+                'An error occurred while interacting with redis on email otp login verify route.',
+                ErrorCode::SERVER_ERROR_LOGIN_OTP_VERIFICATION_REDIS_ERROR
+            );
+        }
+    }
+
+
+    /**
+     * In redis set key=email & value=no. of otp sent to the email
+     * Expire the key in 30 mins.
+     * @param $receiver
+     * @return int
+     * @throws Exception\ServerErrorException
+     */
+    protected function incrementAndGetLoginOtpVerificationCount($receiver): int
+    {
+        try
+        {
+            $receiver = $receiver . '_login_otp_verification_count';
+            $redis = $this->app->redis->Connection('mutex_redis');
+            return $redis->incr($receiver);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::LOGIN_OTP_VERIFICATION_REDIS_ERROR,
+                ['key' => $receiver]);
+
+            throw new Exception\ServerErrorException(
+                'An error occurred while interacting with redis on login otp verification route.',
+                ErrorCode::SERVER_ERROR_LOGIN_OTP_VERIFICATION_REDIS_ERROR
+            );
+        }
+    }
+
+    /**
+     * Check if no. of OTP emails sent to user for logging in has exceeded a threshold and throw an exception.
+     * User will not be sent another OTP email for 30 mins.
+     * @param $email
+     * @throws Exception\ServerErrorException
+     * @throws BadRequestException
+     */
+    protected function checkLoginOtpVerificationLimitExceeded($receiver, $loginMedium, $user)
+    {
+        $count = $this->incrementAndGetLoginOtpVerificationCount($receiver);
+
+        if ($count > Constants::LOGIN_OTP_VERIFICATION_THRESHOLD)
+        {
+            if ($loginMedium === Constants::EMAIL)
+            {
+                $traceData = ['email'=>$receiver];
+            }
+            else
+            {
+                $traceData = ['contact_mobile'=>mask_phone($receiver)];
+            }
+            $this->trace->info(TraceCode::LOGIN_OTP_VERIFICATION_THRESHOLD_EXHAUSTED, $traceData);
+
+            // Lock account
+            $user->setAccountLocked(true);
+
+            $this->repo->saveOrFail($user);
+
+            $this->trace->info(TraceCode::USER_LOGIN_2FA_ACCOUNT_LOCKED, ['user_id' => $user->getId()]);
+
+            if (
+                ($user->isAccountLocked() === true) and
+                (isset($user[Entity::EMAIL])) and
+                ($user->getConfirmedAttribute() === true))
+            {
+                $this->notifyUserAboutAccountLocked($user);
+            }
+
+            $this->resetLoginOtpVerificationLimit($receiver);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LOGIN_OTP_VERIFICATION_THRESHOLD_EXHAUSTED
+            );
+        }
+
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     * @throws BadRequestException
+     * @throws Exception\ServerErrorException
+     */
+    public function verifyLoginOtp(array $input): array
     {
         $this->getUserEntity()->getValidator()->validateInput('verifyLoginOtp', $input);
 
@@ -842,35 +1129,23 @@ class Core extends Base\Core
 
         $user = $this->fetchUser($input);
 
+        $this->checkLoginOtpVerificationLimitExceeded($receiver, $loginMedium, $user);
+
         $input += $this->getLoginOtpPayload($input, 'login_otp');
-
-        $payload = [
-            'receiver' => $receiver,
-            'source'   => "api.user.{$input['action']}"
-        ];
-
-        $payload += $this->getToken($user, $input);
-
-        $payload = array_only($payload, ['context', 'receiver', 'source']) + array_only($input, 'otp');
 
         $dimensionsForUserLogin = [
             Constants::LOGIN_METHOD => Constants::OTP,
             Constants::LOGIN_MEDIUM => $loginMedium,
         ];
 
-        try
-        {
-            $this->app->raven->verifyOtp($payload);
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->count(Metric::VERIFY_LOGIN_INCORRECT_OTP, $dimensionsForUserLogin);
+        $this->verifyOtpWithRaven($receiver, $input, $user, $dimensionsForUserLogin);
 
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INCORRECT_OTP);
-        }
+        $this->resetLoginOtpVerificationLimit($receiver);
 
-        $loginMedium = null;
+        if ($loginMedium === Constants::EMAIL)
+        {
+            $this->resetEmailLoginOtpSendLimit($receiver);
+        }
 
         if (isset($input[Entity::CONTACT_MOBILE]) === true)
         {
@@ -888,12 +1163,109 @@ class Core extends Base\Core
         return $this->get($user);
     }
 
-    public function sendVerificationOtpViaEmail(array $input, Entity $user)
+    /**
+     * On successful verification of email otp for login, delete the email key.
+     * @param $email
+     * @throws Exception\ServerErrorException
+     */
+    protected function resetEmailVerificationOtpSendLimit($email)
+    {
+        try
+        {
+            $email = $email . '_verification_otp_send_count';
+            $redis = $this->app->redis->Connection('mutex_redis');
+            $redis->del($email);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::EMAIL_VERIFICATION_OTP_REDIS_ERROR,
+                ['key' => $email]);
+
+            throw new Exception\ServerErrorException(
+                'An error occurred while interacting with redis on email verification otp route.',
+                ErrorCode::SERVER_ERROR_EMAIL_VERIFICATION_OTP_REDIS_ERROR
+            );
+        }
+    }
+
+    /**
+     * In redis set key=email & value=no. of otp sent to the email
+     * Expire the key in 30 mins.
+     * @param $email
+     * @return int
+     * @throws Exception\ServerErrorException
+     */
+    protected function incrementAndGetEmailVerificationOtpSendCount($email): int
+    {
+        try
+        {
+            $email = $email . '_verification_otp_send_count';
+            $redis = $this->app->redis->Connection('mutex_redis');
+            $index = $redis->incr($email);
+
+            if ($index === 1)
+            {
+                $redis->expire($email, Constants::EMAIL_VERIFICATION_OTP_SEND_TTL);
+            }
+
+            return $index;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::EMAIL_VERIFICATION_OTP_REDIS_ERROR,
+                ['key' => $email]);
+
+            throw new Exception\ServerErrorException(
+                'An error occurred while interacting with redis on email otp login route.',
+                ErrorCode::SERVER_ERROR_EMAIL_VERIFICATION_OTP_REDIS_ERROR
+            );
+        }
+    }
+
+    /**
+     * Check if no. of OTP emails sent to user for logging in has exceeded a threshold and throw an exception.
+     * User will not be sent another OTP email for 30 mins.
+     * @param $email
+     * @throws Exception\ServerErrorException
+     * @throws BadRequestException
+     */
+    protected function checkEmailVerificationOtpSendLimitExceeded($email)
+    {
+        $count = $this->incrementAndGetEmailVerificationOtpSendCount($email);
+
+        if ($count > Constants::EMAIL_VERIFICATION_OTP_SEND_THRESHOLD)
+        {
+            $this->trace->info(TraceCode::EMAIL_VERIFICATION_OTP_SEND_THRESHOLD_EXHAUSTED, ['email'=>$email]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_EMAIL_VERIFICATION_OTP_SEND_THRESHOLD_EXHAUSTED
+            );
+        }
+
+    }
+
+    /** Send an otp to an email to verify it.
+     * @param array $input
+     * @param Entity $user
+     * @return array
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
+     * @throws Exception\ServerErrorException
+     */
+    public function sendVerificationOtpViaEmail(array $input, Entity $user): array
     {
         if ($user->getConfirmedAttribute() === true)
         {
             throw new BadRequestValidationFailureException('Email is already verified');
         }
+
+        $this->checkEmailVerificationOtpSendLimitExceeded($input[Entity::EMAIL]);
 
         $input += $this->getLoginOtpPayload($input, 'verify_user');
 
@@ -916,6 +1288,8 @@ class Core extends Base\Core
                 null,
                 TraceCode::USER_SEND_VERIFICATION_EMAIL_OTP_FAILED,
                 compact('input'));
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_OTP_FAILED);
         }
 
         $this->traceEmailOtpLoginRoute($input, TraceCode::USER_SEND_EMAIL_OTP_FOR_VERIFICATION);
@@ -949,6 +1323,8 @@ class Core extends Base\Core
                 null,
                 TraceCode::USER_SEND_VERIFICATION_SMS_OTP_FAILED,
                 compact('input'));
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_SMS_OTP_FAILED);
         }
 
         $maskedInput[Entity::CONTACT_MOBILE] = $user->getMaskedContactMobile();
@@ -1067,14 +1443,112 @@ class Core extends Base\Core
     }
 
     /**
+     * On successful verification of email otp for login, delete the email key.
+     * @param $receiver
+     * @throws Exception\ServerErrorException
+     */
+    protected function resetVerifyOtpVerificationLimit($receiver)
+    {
+        try
+        {
+            $receiver = $receiver . '_verification_otp_verification_count';
+            $redis = $this->app->redis->Connection('mutex_redis');
+            $redis->del($receiver);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::VERIFY_OTP_VERIFICATION_REDIS_ERROR,
+                ['key' => $receiver]);
+
+            throw new Exception\ServerErrorException(
+                'An error occurred while interacting with redis on email otp login verify route.',
+                ErrorCode::SERVER_ERROR_VERIFY_OTP_VERIFICATION_REDIS_ERROR
+            );
+        }
+    }
+
+
+    /**
+     * In redis set key=email & value=no. of otp sent to the email
+     * Expire the key in 30 mins.
+     * @param $receiver
+     * @return int
+     * @throws Exception\ServerErrorException
+     */
+    protected function incrementAndGetVerifyOtpVerificationCount($receiver): int
+    {
+        try
+        {
+            $receiver = $receiver . '_verification_otp_verification_count';
+            $redis = $this->app->redis->Connection('mutex_redis');
+            $index = $redis->incr($receiver);
+            if ($index === 1)
+            {
+                $redis->expire($receiver, Constants::VERIFICATION_OTP_VERIFICATION_TTL);
+            }
+
+            return $index;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::VERIFY_OTP_VERIFICATION_REDIS_ERROR,
+                ['key' => $receiver]);
+
+            throw new Exception\ServerErrorException(
+                'An error occurred while interacting with redis on login otp verification route.',
+                ErrorCode::SERVER_ERROR_VERIFY_OTP_VERIFICATION_REDIS_ERROR
+            );
+        }
+    }
+
+    /**
+     * Check if no. of OTP emails sent to user for logging in has exceeded a threshold and throw an exception.
+     * User will not be sent another OTP email for 30 mins.
+     * @param $email
+     * @throws Exception\ServerErrorException
+     * @throws BadRequestException
+     */
+    protected function checkVerifyOtpVerificationLimitExceeded($receiver, $loginMedium, $user)
+    {
+        $count = $this->incrementAndGetVerifyOtpVerificationCount($receiver);
+
+        if ($count > Constants::VERIFICATION_OTP_VERIFICATION_THRESHOLD)
+        {
+            if ($loginMedium === Constants::EMAIL)
+            {
+                $traceData = ['email'=>$receiver];
+            }
+            else
+            {
+                $traceData = ['contact_mobile'=>mask_phone($receiver)];
+            }
+            $this->trace->info(TraceCode::VERIFICATION_OTP_VERIFICATION_THRESHOLD_EXHAUSTED, $traceData);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VERIFICATION_OTP_VERIFICATION_THRESHOLD_EXHAUSTED
+            );
+        }
+
+    }
+
+    /**
      * verifyVerificationOtp fetches the user based on email or mobile. Based on the token, it verifies the OTP and
      * returns the user on successful verification.
      *
      * @param array $input
      *
-     * @return Entity
+     * @return array
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
+     * @throws Exception\ServerErrorException
      */
-    public function verifyVerificationOtp(array $input)
+    public function verifyVerificationOtp(array $input): array
     {
         $this->getUserEntity()->getValidator()->validateInput('verifyVerificationOtp', $input);
 
@@ -1082,35 +1556,35 @@ class Core extends Base\Core
 
         $receiver = $this->checkIfContactMobileOrEmailIsVerified($input, $user);
 
+        if (isset($input[Entity::CONTACT_MOBILE]) === true)
+        {
+            $dimensionsForUserLogin = [
+                Constants::LOGIN_METHOD => Constants::OTP,
+                Constants::LOGIN_MEDIUM => Constants::CONTACT_MOBILE,
+            ];
+        }
+        else
+        {
+            $dimensionsForUserLogin = [
+                Constants::LOGIN_METHOD => Constants::OTP,
+                Constants::LOGIN_MEDIUM => Constants::EMAIL,
+            ];
+        }
+
+        $this->checkVerifyOtpVerificationLimitExceeded($receiver, $dimensionsForUserLogin[Constants::LOGIN_MEDIUM], $user);
+
         $input += $this->getLoginOtpPayload($input, 'verify_user');
 
-        $payload = [
-            'receiver' => $receiver,
-            'source'   => "api.user.{$input['action']}"
-        ];
+        $this->verifyOtpWithRaven($receiver, $input, $user, $dimensionsForUserLogin);
 
-        $payload += $this->getToken($user, $input);
-
-        $payload = array_only($payload, ['context', 'receiver', 'source']) + array_only($input, 'otp');
-
-        $loginMedium = $this->setContactMobileOrEmailVerify($input, $user);
-
-        $dimensionsForUserLogin = [
-            Constants::LOGIN_METHOD => Constants::OTP,
-            Constants::LOGIN_MEDIUM => $loginMedium,
-        ];
-
-        try
+        if (isset($input[Entity::EMAIL]))
         {
-            $this->app->raven->verifyOtp($payload);
+            $this->resetEmailVerificationOtpSendLimit($receiver);
         }
-        catch (\Exception $e)
-        {
-            $this->trace->count(Metric::VERIFY_LOGIN_INCORRECT_OTP, $dimensionsForUserLogin);
 
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INCORRECT_OTP);
-        }
+        $this->resetVerifyOtpVerificationLimit($receiver);
+
+        $this->setContactMobileOrEmailVerify($input, $user);
 
         $this->trace->count(Metric::USER_LOGIN_COUNT, $dimensionsForUserLogin);
 
@@ -1716,6 +2190,7 @@ class Core extends Base\Core
      * @param string $mobile
      *
      * @return Entity
+     * @throws BadRequestException
      */
     protected function getUserByMobile(string $mobile):Entity
     {
@@ -1726,10 +2201,20 @@ class Core extends Base\Core
             return $user->firstOrFail();
         }
 
-        $this->trace->count(Metric::MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED);
-
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED);
+        if ($user->count() < 1)
+        {
+            $this->trace->count(Metric::NO_ACCOUNTS_ASSOCIATED);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED
+            );
+        }
+        else
+        {
+            $this->trace->count(Metric::MULTIPLE_ACCOUNTS_ASSOCIATED);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED
+            );
+        }
     }
 
     /**
@@ -2698,7 +3183,7 @@ class Core extends Base\Core
      * This function checks if
      * the current user has an access on a certain merchant
      *
-     * @param user\Entity $user
+     * @param ser\Entity $user
      * @param String      $merchantId
      * @param String      $product
      * @throws Exception\BadRequestException
