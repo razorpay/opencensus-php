@@ -360,6 +360,17 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    public function getBalanceSumFromSubBalances(array $balanceIdList)
+    {
+        $idColumn = $this->dbColumn(Entity::ID);
+
+        $balanceColumn = $this->dbColumn(Entity::BALANCE);
+
+        return $this->newQuery()
+                    ->whereIn($idColumn, $balanceIdList)
+                    ->sum($balanceColumn);
+    }
+
     public function getCANpsCohortList(int $startTime, int $endTime)
     {
         $balanceIdColumn                    = $this->dbColumn(Entity::ID);

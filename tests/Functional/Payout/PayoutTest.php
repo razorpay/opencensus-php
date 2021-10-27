@@ -14263,7 +14263,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotNull($payout['initiated_at']);
     }
 
-    public function testGetPayoutsForHighTpsMerchantsWithSubBalances()
+    public function testGetPayoutsAndGetBalanceForHighTpsMerchantsWithSubBalances()
     {
         $this->testProcessingOfCreateRequestSubmittedPayoutForHighTps();
 
@@ -14283,6 +14283,50 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals('pout_' . $payout->getId(), $payouts['items'][0]['id']);
 
+        /** @var Balance\Entity $subBalance */
+        $subBalance = $this->getDbEntity('balance', ['id' => $payout->getBalanceId()]);
+
+        $balance = $this->getDbEntity('balance', ['account_number' => '2224440041626905', 'account_type' => 'shared']);
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => 1]);
+
+        $balance->reload();
+
+        $merhcantUser = $this->getDbEntity('merchant_user', ['merchant_id' => $payout->getMerchantId(), 'product' => 'banking'])->toArray();
+
+        $request = [
+            'url'     => '/users/' . $merhcantUser['user_id'],
+            'method'  => 'get',
+            'content' => []
+        ];
+
+        $request['server']['HTTP_X-Dashboard-User-id'] = $merhcantUser['user_id'];
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $count = 0;
+
+        foreach ($response['merchants'] as $merchant)
+        {
+            if (array_key_exists('accounts', $merchant) === true)
+            {
+                foreach ($merchant['accounts'] as $account)
+                {
+                    if ($account['banking_balance'] !== null)
+                    {
+                        if ($account['banking_balance']['id'] === $balance->getId())
+                        {
+                            $this->assertEquals($balance->getBalance() + $subBalance->getBalance(), $account['banking_balance']['balance']);
+
+                            $count++;
+                        }
+                    }
+                }
+            }
+        }
+
+        $this->assertGreaterThan(0, $count);
     }
 
     public function testProcessingOfCreateRequestSubmittedPayoutForHighTpsWithLowBalance()

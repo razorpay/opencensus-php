@@ -174,6 +174,18 @@ class Entity extends Base\PublicEntity
                 }
             }
         }
+
+        if ($accountType === AccountType::SHARED)
+        {
+            $availableSubBalances = (new SubBalanceMap\Core)->getSubBalancesForParentBalance($attributes[self::ID]);
+
+            if (count($availableSubBalances) > 0)
+            {
+                $subBalancesBalance = (new Repository)->getBalanceSumFromSubBalances($availableSubBalances);
+
+                $attributes[self::BALANCE] += $subBalancesBalance;
+            }
+        }
     }
 
     protected function setPublicLastFetchedAtAttribute(array & $attributes)
