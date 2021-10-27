@@ -93,6 +93,7 @@ class Entity extends Base\PublicEntity
         self::LINE2   => null,
         self::ZIPCODE => null,
         self::PRIMARY => true,
+        self::COUNTRY => Constants\Country::IN,
     ];
 
     protected $publicSetters = [

@@ -174,6 +174,9 @@ return [
         'secret'  => env('THIRDWATCH_SERVICE_SECRET')
     ],
 
+    'thirdwatch_cod_score' => [
+      'secret'  => env('THIRDWATCH_COD_SCORE_SERVICE_SECRET')
+    ],
 
     'xpayroll' => [
         // the secret used by the Opfin to call apis under internal auth

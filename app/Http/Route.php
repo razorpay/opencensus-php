@@ -2899,6 +2899,10 @@ class Route
 
        'token_pause_not_supported_card_tokens'    => ['post',        'tokens/pause_not_supported/card',                          'TokenController@pauseNotSupportedCardTokens'                                                         ],
 
+       // 1 click checkout
+       'third_watch_address_check'               => ['post',       'tw/address/check_cod_eligibility',                      'ThirdWatchController@checkAddressServiceability'   ],
+       'third_watch_address_cod_score'           => ['post',       'tw/address/cod_score',                                  'ThirdWatchController@saveCodScoreForAddress'                  ],
+
         // Risk Actions
         'create_risk_action'                        => ['post',       'risk-actions/create',                                     'RiskActionController@createRiskAction'                        ],
         'create_exec_risk_action'                   => ['post',       'risk-actions/execute',                                    'RiskActionController@createAndExecuteRiskAction'              ],
@@ -3027,6 +3031,7 @@ class Route
         'order_update_customer_details_1cc',
         'order_reset_1cc',
         '1cc_pincode_get',
+        'third_watch_address_check',
     ];
 
     public static $device = [
@@ -3932,7 +3937,9 @@ class Route
 
         // Optimizer settlements cron
         'setl_optimizer_settlement_cron',
-];
+
+        'third_watch_address_cod_score',
+    ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
     // User context is taken from the provided header.
@@ -10498,6 +10505,10 @@ class Route
 
         'thirdwatch' => [
             'user_details',
+        ],
+
+        'thirdwatch_cod_score' => [
+            'third_watch_address_cod_score',
         ],
 
         'xpayroll' => [
