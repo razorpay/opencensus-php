@@ -165,11 +165,11 @@ class TypeformParser extends Base implements DataParserInterface
         return $questionIdToQuestion;
     }
 
-    public function parseTypeformCompleteResponses($formData, $formId): array
+    public function parseTypeformCompleteResponses($formData, $formId)
     {
         if (array_key_exists('items', $this->input))
         {
-            $completeResponses = [];
+            $completeResponses = '';
 
             $responses = $this->input['items'];
 
@@ -213,7 +213,7 @@ class TypeformParser extends Base implements DataParserInterface
                     }
                 }
 
-                $completeResponses[] = $result;
+                $completeResponses  .= json_encode($result, JSON_FORCE_OBJECT) . ', ' . "\n";
             }
 
             return $completeResponses;
@@ -224,11 +224,11 @@ class TypeformParser extends Base implements DataParserInterface
         }
     }
 
-    public function parseTypeformIncompleteResponses($formData, $formId): array
+    public function parseTypeformIncompleteResponses($formData, $formId)
     {
         if (array_key_exists('items', $this->input))
         {
-            $incompleteResponses = [];
+            $incompleteResponses = '';
 
             $responses = $this->input['items'];
 
@@ -237,7 +237,7 @@ class TypeformParser extends Base implements DataParserInterface
                 $metadata['initiated_at'] = $response['landed_at'];
                 $metadata['survey_id']    = $formId;
 
-                $result['completed'] = [false];
+                $result['completed'] = false;
 
                 $result['metadata'] = $metadata;
 
@@ -247,7 +247,7 @@ class TypeformParser extends Base implements DataParserInterface
                     $result['response']['survey_score'] = $this->getSurveyScoreForIncompleteResponses($response['metadata']['referer']);
                 }
 
-                $incompleteResponses[] = $result;
+                $incompleteResponses .= json_encode($result, JSON_FORCE_OBJECT) . ', ' . "\n";
             }
 
             return $incompleteResponses;

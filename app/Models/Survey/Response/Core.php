@@ -158,10 +158,10 @@ class Core extends Base\Core
 
             $parsedResponses = $this->getTypeformParsedResponses($typeformQuestionToQuestionId, $typeformResponses, $formId);
 
-            if(empty($parsedResponses[0]) === false or empty($parsedResponses[1]) === false)
+            if(empty($parsedResponses) === false)
             {
                 //Final data in the proposed template to be pushed to datalake
-                $data = json_encode($parsedResponses);
+                $data = $parsedResponses;
 
                 $tempFileName = "nps_response" . '_' . $formId . '.txt';
 
@@ -206,7 +206,7 @@ class Core extends Base\Core
         $typeformParsedDataForIncompleteResponses = $this->getTypeformParser($typeformResponses[1])
                                                          ->parseTypeformIncompleteResponses($typeformQuestionToQuestionId, $formId);
 
-        return array($typeformParsedDataForCompleteResponses, $typeformParsedDataForIncompleteResponses);
+        return $typeformParsedDataForCompleteResponses . $typeformParsedDataForIncompleteResponses;
     }
 
     public function getTypeformResponses($formId){
@@ -216,7 +216,7 @@ class Core extends Base\Core
 
         $headers = $this->getHeaders();
 
-        $headers['Authorization'] = 'Bearer ' . Config::get('applications.typeform.typeform_api_key');;
+        $headers['Authorization'] = 'Bearer ' . Config::get('applications.typeform.typeform_api_key');
 
         $options = [
             'timeout' => self::API_TIMEOUT,
