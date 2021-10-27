@@ -204,4 +204,11 @@ class FTSController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function fetchAccountBalance()
+    {
+        $response = $this->app['fts_fund_transfer']->fetchAccountBalance($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
 }

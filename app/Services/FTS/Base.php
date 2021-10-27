@@ -86,6 +86,8 @@ class Base
 
     const SEND_LOW_BALANCE_ALERT = '/source_account/balance';
 
+    const FETCH_ACCOUNT_BALANCE = '/source_account/fetch_balance';
+
     const CHANNEL_HEALTH_EVENT = '/channel_health_events';
 
     const FTS_TEST_TRANSACTIONS_TRIGGER = '/channel_health_events/trigger_test_transactions';

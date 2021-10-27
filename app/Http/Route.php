@@ -542,6 +542,7 @@ class Route
         'fts_bulk_transfer_publish'                         => ['post',     'fts/publish/transfer',                                             'FTSController@publishBulkTransfers'                                ],
         'fts_channel_notification'                          => ['post',     'fts/channel/notify',                                               'FTSController@channelNotify'                                       ],
         'fts_account_balance_alert'                         => ['post',     'fts/account/balance',                                              'FTSController@lowBalanceAlert'                                     ],
+        'fts_dashboard_fetch_account_balance'               => ['post',     'fts/dashboard/account/fetch_balance',                              'FTSController@fetchAccountBalance'                                 ],
 
         'nodal_file_upload_retry'                  => ['post',     'nodal_file_upload/retry',                        'FundTransferAttemptController@nodalFileUploadThroughBeam',         ],
         'channel_health_check'                     => ['post',     'channel_health_check/{channel}',                 'FundTransferAttemptController@healthCheck',                        ],
@@ -5323,6 +5324,7 @@ class Route
         'fts_dashboard_account_mappings_create',
         'fts_dashboard_account_mappings_delete',
         'fts_dashboard_pending_transfers_get',
+        'fts_dashboard_fetch_account_balance',
 
         'create_merchant_options_admin',
         'read_merchant_options_admin',
@@ -6371,6 +6373,7 @@ class Route
         'fts_dashboard_fund_transfer_check_status'          => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_bulk_status_get'                     => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_test_transactions_trigger'           => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
+        'fts_dashboard_fetch_account_balance'               => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_channel_health_stats'                => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_channel_health_create'               => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_channel_health_delete'               => Permission::FTS_ROUTING_RULES_UPDATE,
@@ -8664,6 +8667,7 @@ class Route
             'fts_dashboard_fund_transfer_update',
             'fts_dashboard_pending_transfers_get',
             'fts_dashboard_raw_bank_status',
+            'fts_dashboard_fetch_account_balance',
             'fts_dashboard_sa_mappings_create',
             'fts_dashboard_sa_mappings_delete',
             'fts_dashboard_direct_account_routing_rules_delete',

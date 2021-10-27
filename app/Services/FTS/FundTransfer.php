@@ -1071,6 +1071,17 @@ class FundTransfer extends Base
         );
     }
 
+    public function fetchAccountBalance(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FETCH_ACCOUNT_BALANCE,
+            Requests::POST,
+            $input
+        );
+    }
+
     public function getBulkStatus(array $input)
     {
         (new Validator)->validateInput('fetch_transfer_status', $input);
