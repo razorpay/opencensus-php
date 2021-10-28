@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
@@ -12,24 +13,22 @@ import {
   setOnBoardingDataInLocalState,
   getOnBoardingDataFromLocalState,
 } from './utils';
+import track from './track';
 
-import {
-  NextButton,
-  SkipAndGetStartedButton,
-  FeatureEnableSliderButton,
-} from './utilButtons';
+import { NextButton, SkipAndGetStartedButton, FeatureEnableSliderButton } from './utilButtons';
 
-export default params => {
+export default (params) => {
   const { feature: FEATURE } = params;
 
-  let _WrappedComponent;
+  let WrappedComponent;
+  @RTracking(() => window.rzpQ.component('OnboardingContainer'))
   @connect(
-    state => ({
+    (state) => ({
       currentOnboarding: getCurrentProductOnBoardingDetails(state, FEATURE),
     }),
     {
       handleProductQuickGuide,
-    }
+    },
   )
   class OnBoardingHOC extends React.Component {
     constructor(props) {
@@ -45,9 +44,11 @@ export default params => {
         window.hj('trigger', 'product_onboarding_intro');
         window.hj('tagRecording', [`${FEATURE}_onboarding`]);
       }
+
+      track.init(this.props.tracking.trackEvent);
     }
 
-    goTo = active => {
+    goTo = (active) => {
       this.setState({ active });
     };
 
@@ -68,7 +69,7 @@ export default params => {
 
     render() {
       return (
-        <_WrappedComponent
+        <WrappedComponent
           active={Number(this.state.active)}
           goTo={this.goTo}
           closeOnboarding={this.closeOnboarding}
@@ -78,8 +79,8 @@ export default params => {
     }
   }
 
-  return function(WrappedComponent) {
-    _WrappedComponent = WrappedComponent;
+  return (_WrappedComponent) => {
+    WrappedComponent = _WrappedComponent;
 
     return OnBoardingHOC;
   };
