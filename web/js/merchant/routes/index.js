@@ -266,6 +266,10 @@ const PartnerActivationFormMweb = lazy(() =>
   ),
 );
 
+const StoresProductsCreate = lazy(() =>
+  import(/* webpackChunkName: "StoresProductsCreate" */ 'merchant/views/Stores/Create/'),
+);
+
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
  * */
@@ -466,6 +470,14 @@ const entityModalsMap = {
   '/partners/activation': {
     component: PartnerActivationForm,
     additionalCondition: (user) => user.isIndependentPartnerKYCEnabled,
+  },
+  '/stores/products/new': {
+    component: StoresProductsCreate,
+    additionalCondition: (user) => user.isAllowedView('stores') && user.isStoresEnabled,
+  },
+  '/stores/products/:product_id': {
+    component: StoresProductsCreate,
+    additionalCondition: (user) => user.isAllowedView('stores') && user.isStoresEnabled,
   },
   '/partners/submerchants/:submerchantId(acc_.+)/activation': {
     component: ActivationContainer,

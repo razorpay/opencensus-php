@@ -53,6 +53,7 @@ import remindersReducer from 'merchant/reducers/reminders';
 import commissionInvoices from 'merchant/reducers/commissionInvoices/list';
 import commissionInvoice from 'merchant/reducers/commissionInvoices/details';
 import rewardsReducer from 'merchant/reducers/checkoutRewards';
+import storefrontReducer from 'merchant/reducers/storefront';
 
 import {
   refundBatchesReducer,
@@ -160,6 +161,7 @@ export default combineReducers({
   mpPayments: mpPaymentsReducer,
   scPayments: smartCollectPaymentsReducer,
   qrCodePayments: qrCodePaymentsReducer,
+  storefront: storefrontReducer,
   transfers: transfersReducer,
   navigator: navigatorReducer,
   transfer: transferReducer,

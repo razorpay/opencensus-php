@@ -282,3 +282,8 @@ export const amountReceived = {
   title: 'Amount Received',
   value: getAmount('payments_amount_received'),
 };
+
+export const storeProductId = {
+  title: 'Product Id',
+  value: id.storeProduct,
+};

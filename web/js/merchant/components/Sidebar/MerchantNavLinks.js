@@ -138,6 +138,15 @@ function MerchantNavLinks(props) {
         }
       />
       <MainNavLink
+        label="Stores"
+        icon="i i-store-product text-danger"
+        type="product"
+        to={routes.stores}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('stores') && currentUser.isStoresEnabled
+        }
+      />
+      <MainNavLink
         type="product"
         label="Payment Button"
         icon="i i-payment-button"
@@ -263,7 +272,7 @@ function MerchantNavLinks(props) {
       />
 
       <MainNavLink
-        label={'Loans'}
+        label="Loans"
         icon="i fa fa-inr text-warm"
         to="/capital/loans/apply"
         isNew={!isRecommendProduct}

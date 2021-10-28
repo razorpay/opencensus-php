@@ -132,6 +132,7 @@ export const RZPFeatures = {
   OFFERS: 'offers',
   REWARDS: 'rewards',
   QR_CODES: 'qr_codes',
+  STORES: 'stores',
 };
 
 export const UPI_AVL_LIMIT = 20000000;

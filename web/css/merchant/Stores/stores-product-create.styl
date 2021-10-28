@@ -1,0 +1,126 @@
+$formHeight = 568px
+
+.Stores--ProductCreate
+
+  .loader-container
+    display: flex
+    align-items: center
+    justify-content: center
+    height: 100%
+
+  .Modal-container
+    width: 90%
+    max-width: 400px
+    height: $formHeight
+    overflow: initial
+
+    @media screen and (max-width: 600px)
+      height: 100vh
+      width: 100%
+
+  .Form
+    height: $formHeight;
+    overflow-y: scroll;
+
+  .title
+    padding: 24px
+    font-weight: 600
+    font-size: 18px
+    position: absolute
+    top: 0
+    left: 0
+    background: white
+    z-index: 1
+    width: 100%
+
+    &-underline 
+      width: 28px;
+      border-bottom: 5px solid;
+      margin-top: 5px;
+      border-color: #528ff0;
+
+  main
+    padding: 70px 24px 132px 24px;
+    overflow: auto;
+
+    .product-images 
+      .Input-content
+        margin-top: 20px
+        display: flex
+
+      .info
+        color: grey
+        margin-top: 5px
+        font-size: 12
+
+      .add
+        height: 56px
+        width: 56px
+        border: 1px dashed #528ff0
+        color: #528ff0;
+        border-radius: 2px
+        display: flex
+        justify-content: center
+        align-items: center
+        cursor: pointer
+
+        .i-plus 
+          font-size: 25px
+
+      .image-container
+        position: relative
+
+        img 
+          margin-right: 10px
+          margin-bottom: 10px
+
+        .remove-button
+          position: absolute
+          top: -8px
+          right: 3px 
+          border: 1px solid #D12D2D
+          border-radius: 12px
+          padding: 0px 2px
+          color: #D12D2D
+          background: #f7c4bf
+
+    .price
+      display: inline-block
+      width: 49%
+
+      .Input-content
+        margin-right: 0
+
+    .status-field
+      display: flex
+      align-items: flex-end
+
+  footer
+    position: absolute
+    left: 0
+    right: 0
+    bottom: 0
+    padding: 24px
+    background: #F6F6F6
+    border-top: 1px solid #e0e0e0
+    text-align: center
+
+    .Button
+      width: 168px
+      padding: 9px 12px
+
+      @media screen and (max-width: 600px)
+        width: 120px;
+
+      &:first-child
+        margin: 0 16px 0 0
+
+      &:last-child
+        margin: 0
+
+  .StandaloneContainer
+    max-height: $formHeight
+    background: white
+    position: relative
+    height: $formHeight
+    max-width: 400px

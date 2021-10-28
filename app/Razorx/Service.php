@@ -199,6 +199,7 @@ class Service extends Base\Service
             'rx_non_self_serve_ca_flow',
             'add_on_card_onboarding',
             'lite_onboarding',
+            'stores',
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);

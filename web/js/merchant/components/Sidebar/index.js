@@ -45,6 +45,7 @@ const BASE_ROUTES = {
   partnerDashboard: '/submerchants',
   smartCollect: '/smartcollect/virtualaccounts',
   bbps: '/bbps',
+  stores: '/stores/products',
 };
 
 @withRouter

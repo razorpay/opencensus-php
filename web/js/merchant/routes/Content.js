@@ -56,6 +56,9 @@ const Subscriptions = lazy(() =>
   import(/* webpackChunkName: "Subscriptions" */ 'merchant/views/Subscriptions'),
 );
 const QRCodes = lazy(() => import(/* webpackChunkName: "QRCodes" */ 'merchant/views/QRCodes'));
+
+const Stores = lazy(() => import(/* webpackChunkName: "Stores" */ 'merchant/views/Stores'));
+
 const Customers = lazy(() =>
   import(/* webpackChunkName: "Customers" */ 'merchant/views/Customers/List'),
 );
@@ -412,6 +415,12 @@ export default class Content extends Component {
             path="/qr_codes"
             component={QRCodes}
             additionalCondition={(user) => user.isAllowedView('qr_codes') && user.isQRCodesEnabled}
+          />
+
+          <ShowWhenRoute
+            path="/stores"
+            component={Stores}
+            additionalCondition={(_user) => _user.isAllowedView('stores') && _user.isStoresEnabled}
           />
 
           <ShowWhenRoute

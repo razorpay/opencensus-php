@@ -27,6 +27,7 @@ const PRODUCT_KEY_MAPS = [
   'marketplace',
   'subscriptions',
   'qr_codes',
+  'stores',
   'virtual_accounts',
   'offers',
   'checkoutrewards',
@@ -341,6 +342,10 @@ export default class User {
     const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.PB);
 
     return isEnabled;
+  }
+
+  get isStoresEnabled() {
+    return this.getExpStatus('stores');
   }
 
   get isQRCodeProductEnabled() {

@@ -188,6 +188,11 @@ const entityMap = {
   commissionInvoice: commissionInvoiceStatusMap,
 };
 
+export const storeProductsStatusMap = {
+  active: 'label-info',
+  inactive: 'label-muted',
+};
+
 export const InvoiceStatusLabel = statusLabel(invoiceStatusMap);
 export const PaymentPagesStatusLabel = statusLabel(paymentPagesStatusMap);
 export const RouteTransfersStatusLabel = statusLabel(routeTransfersStatusMap);
@@ -208,4 +213,5 @@ export const SubmerchantSettlementLabel = statusLabel(SubmerchantSettlementStatu
 export const QRCodeStatusLabel = statusLabel(qrCOdeStatusMap);
 export const XSubmerchantCAStatusLabel = statusLabel(XSubmerchantCAStatusMap);
 export const XSubmerchantVAStatusLabel = statusLabel(XSubmerchantVAStatusMap);
+export const StoreProductsStatusLabel = statusLabel(storeProductsStatusMap);
 export default (item) => statusLabel(entityMap[item.entity])(item);

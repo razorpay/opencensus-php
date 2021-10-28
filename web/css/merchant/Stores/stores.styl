@@ -1,0 +1,295 @@
+// Main container
+.StorefrontContainer
+
+  .loader-container
+    height: 300px
+    display: flex
+
+  .store-header 
+    display: flex
+    justify-content: space-between
+    background: white
+    padding: 24px
+
+    .Button--primary
+      padding: 5px 10px
+      border: 1px solid #528ff0;
+      display: inline-block
+
+    @media screen and (max-width: 600px)
+      flex-direction: column
+      padding: 50px 12px 24px 12px
+
+      .actions-group
+        display: inline-block
+        margin-top: 15px
+
+      button
+        margin-bottom: 10px
+
+      div:first-child
+        margin-bottom: 8px
+
+    h3
+      font-weight: bold
+      display: inline-block
+
+    .tag
+      background: #dcedc8
+      color: #1F890E
+      padding: 5px
+      border-radius: 8px
+      margin-left: 6px
+      font-size: 12px;
+      font-weight: bold;
+      display: inline-block;
+
+  // onboarding page
+  .store--onboarding
+    &-container
+      display: flex
+      padding: 100px 120px 30px;
+
+      @media screen and (max-width: 1300px)
+        justify-content: center;
+        padding: 32px 16px;
+
+    &-left
+      flex: 1
+
+      .store--onboarding-bypass-button
+        display: none
+        margin-top: 32px;
+        width: 100%;
+
+      @media screen and (max-width: 1300px)
+        max-width: 410px
+
+        &.store--onboarding-bypass
+          display: none
+
+        .store--onboarding-bypass-button
+          display block;
+
+      @media screen and (max-width: 500px)
+        max-width: 100%
+
+
+      .store--onboarding-description
+        color: rgba(22, 47, 86, 0.76);
+        font-size: 16px
+        line-height: 24px
+        margin-bottom: 16px
+      
+        div:first-child
+          font-weight: 600
+
+      h1
+        font-weight: 900;
+        font-size: 40px;
+        line-height: 48px;
+        color: rgba(22, 47, 86, 0.87);
+
+      .divider
+        height: 3px
+        width: 28px
+        background-color: #2CCA74
+        margin-top: 12px
+        margin-bottom: 20px
+
+
+      .store--onboarding-preheading
+        color: #2B4486;
+        font-size: 16px;
+        line-height: 20px;
+
+      a
+        display: flex
+        color: rgba(11, 112, 231, 0.9);
+        font-weight: bold
+
+      img
+        margin-left: -7px
+
+    &-right
+      display: flex
+      flex-direction: column
+      background: #FFFFFF;
+      box-shadow: 2px 0px 3px rgba(0, 0, 0, 0.05);
+      border-radius: 2px;
+      width: 100%;
+      max-width: 400px;
+      padding: 24px 0px
+      min-height: 450px;
+
+      @media screen and (max-width: 1300px)
+        display none;
+
+        &.store--onboarding-bypass
+          display: flex
+
+      @media screen and (max-width: 600px)
+        max-width: 100%
+
+      &-bottom
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        flex: 1;
+        position: relative
+
+        .Button--transparent
+          position: absolute;
+          bottom: -65px;
+          width: 100%;
+
+      .Button--primary
+        width: 100%
+
+      .store--onboarding-header
+        display: flex
+        justify-content: space-between
+        line-height: 20px;
+        color: #344A6C;
+        padding: 0px 24px;
+        padding-bottom: 8px
+        border-bottom: 1px solid rgba(22, 47, 86, 0.05);
+
+        span:last-child
+          font-weight: bold;
+          font-size: 12px;
+          line-height: 18px;
+          color: rgba(22, 47, 86, 0.54);
+
+      .store--onboarding-body
+        padding: 27px 24px 0px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+
+        .Input--stores-slug
+          .Input-valueBefore + .Input-el
+            padding-left: 182px;
+
+        .Input-desc
+          text-align: right
+
+        .store--onboarding-title
+          font-weight: bold;
+          font-size: 20px;
+          line-height: 30px;
+          color: #0D2366;
+
+        .store--onboarding-subtitle
+          margin-top: 8px
+          font-size: 14px;
+          line-height: 20px;
+          color: #536582;
+
+  .Modal-container--store-success
+    max-width: 345px;
+    width: 100%;
+    margin-top: 30px;
+    overflow: visible
+
+    @media screen and (max-width: 450px)
+      max-width: none;
+      width: calc(100% - 32px);
+
+    .store-succcess--image-container
+      position: relative
+
+    .store--success-bg
+      width: 100%
+
+    .store--preview
+      transform: translate(-50%, 0%);
+      width: auto;
+      position: absolute;
+      left: 50%;
+      bottom: 0%;
+
+    .divider
+      height: 3px
+      width: 28px
+      background-color: #2CCA74
+      margin-top: 12px
+      margin-bottom: 20px
+      margin-left: auto;
+      margin-right: auto;
+
+    .store-succcess--text-container
+      padding: 35px 32px 32px
+
+      h1
+        font-weight: bold;
+        font-size: 20px;
+        line-height: 30px;
+        text-align: center;
+        color: #0D2366;
+      
+      div
+        font-size: 14px;
+        line-height: 20px;
+        color: #536582;
+
+      .Button
+        width: 100%
+
+      .Button--primary
+        margin-top: 32px;
+        margin-bottom: 18px;
+
+  .Modal-container--store-settings
+
+    .Input--stores-slug
+      .Input-valueBefore + .Input-el
+        padding-left: 182px;
+
+    @media screen and (max-width: 600px)
+      width: calc(100% - 32px);
+
+    .Input-label
+      margin-bottom: 4px
+
+    .title
+      padding: 20px 24px 15px
+      border-bottom: 1px solid #ECECEC;
+
+      span
+        font-weight: bold;
+        font-size: 18px;
+        line-height: 23px;
+        color: #58666E;
+    
+    main
+      padding: 0px 24px;
+      overflow: auto;
+      height: 469px;
+
+      .label-link-section
+        margin: 24px 0 8px;
+
+        a.btn-link
+          font-weight: bold;
+          font-size: 12px;
+          line-height: 15px;
+          color: #2B83EA;
+          padding: 0px;
+
+        .Input-desc
+          margin: 0px
+
+    footer
+      padding: 16px 24px;
+      background: #f6f6f6;
+      border-top: 1px solid #e0e0e0;
+      text-align: right;
+
+      .Button--primary
+        margin-right: 0px
+
+  .StoreProducts--List
+      
+      .table > tbody > tr > td
+        vertical-align: middle
