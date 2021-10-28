@@ -50,7 +50,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_CANCELLED_AT_NETBANKING_PAYMENT_PAGE,
+                    'description'   => "Your payment has been cancelled. Try again or complete the payment later.",
                 ],
             ],
             'status_code' => 400,

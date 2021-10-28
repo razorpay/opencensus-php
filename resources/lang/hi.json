@@ -11,5 +11,6 @@
   "The gateway request to submit payment information timed out. Please submit your details again": "गेटवे के पेमेंट जानकारी प्रस्तुत करने के अनुरोध का समय समाप्त हो गया है। कृपया अपना विवरण फिर से दर्ज करें",
   "Payment declined because it didn't pass all risk checks": "पेमेंट अस्वीकार कर दिया गया क्योंकि यह सभी जोखिम जांचों को पास नहीं कर सका",
   "Payment processing failed because cardholder's card was blocked": "पेमेंट प्रक्रिया असफल रही क्योंकि कार्डधारक का कार्ड ब्लॉक्ड था",
-  "Invalid VPA. Please enter a valid Virtual Payment Address": "दर्ज किया गया वीपीए गलत है, कृपया सही वीपीए से पुनः प्रयास करें"
+  "Invalid VPA. Please enter a valid Virtual Payment Address": "दर्ज किया गया वीपीए गलत है, कृपया सही वीपीए से पुनः प्रयास करें",
+  "Your payment has been cancelled. Try again or complete the payment later.": "उपयोगकर्ता द्वारा पेमेंट प्रोसेसिंग को रद्द किया गया"
 }

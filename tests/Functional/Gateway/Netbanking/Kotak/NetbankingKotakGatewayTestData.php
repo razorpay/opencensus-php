@@ -95,7 +95,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                    'description'   => "Your payment has been cancelled. Try again or complete the payment later.",
                 ],
             ],
             'status_code' => 400,
@@ -111,7 +111,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    'description'   => "Your payment didn't go through as it was declined by the bank. Try another payment method or contact your bank.",
                 ],
             ],
             'status_code' => 400,

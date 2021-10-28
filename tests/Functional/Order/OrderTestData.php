@@ -1365,7 +1365,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
+                    'description' => "Your payment could not be completed due to a temporary technical issue. To complete the payment, use another payment method.",
                 ],
             ],
             'status_code' => 400,

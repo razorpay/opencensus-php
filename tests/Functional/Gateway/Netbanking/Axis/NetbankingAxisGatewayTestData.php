@@ -77,7 +77,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION,
+                    'description'   => "Your payment is pending approval. You will be notified by the bank once payment is complete.",
                 ],
             ],
             'status_code' => 400,
@@ -109,7 +109,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    'description'   => "Your payment didn't go through as it was declined by the bank. Try another payment method or contact your bank.",
                 ],
             ],
             'status_code' => 400,
@@ -228,7 +228,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    'description'   => "Your payment didn't go through as it was declined by the bank. Try another payment method or contact your bank.",
                     'reason'   => 'payment_failed',
                     'source'   => 'bank',
                     'step'     => 'payment_authorization'

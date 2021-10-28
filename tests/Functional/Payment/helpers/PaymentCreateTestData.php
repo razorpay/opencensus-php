@@ -122,7 +122,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT,
+                    'description' => "Your payment could not be completed as this bank is not enabled by the business. To complete the payment, use another account.",
                 ],
             ],
             'status_code' => 400,

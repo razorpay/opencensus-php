@@ -359,7 +359,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_CANCELLED_AT_NETBANKING_PAYMENT_PAGE,
+                    'description'   => "Your payment has been cancelled. Try again or complete the payment later.",
                 ],
             ],
             'status_code' => 400,
@@ -374,7 +374,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
+                    'description'   => "Your payment could not be completed due to insufficient account balance. Try again with another account.",
                 ],
             ],
             'status_code' => 400,
