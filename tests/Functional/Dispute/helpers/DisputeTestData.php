@@ -1,5 +1,6 @@
 <?php
 
+use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -2028,6 +2029,215 @@ return [
                 'total_disputes' => 1,
             ],
         ],
+    ],
+
+    'testPaymentIdNotFound' => [
+        'request'  => [
+            'url'     => '/dispute/chargeback_automation/hitachi',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    "network"               => "mastercard",
+                    "arn"                   => "741107512600331562950201",
+                    "rrn"                   => "7411075126003315629502",
+                    "amt"                   => "4224",
+                    "txn_date"              => "04/09/2021",
+                    "reason_code"           => "4855",
+                    "fulfilment_tat"        => "04/09/2021",
+                    "currency"              => "356",
+                    "dispute_type"          => "ARB",
+                ]
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'items' =>
+                    [
+                        [
+                            'success' => false,
+                            'error'   => [
+                                Error::DESCRIPTION => 'payment Id not found',
+                            ],
+                        ]
+                    ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testDisputeTypeGoodFaith' => [
+        'request'  => [
+            'url'     => '/dispute/chargeback_automation/hitachi',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    "network"               => "Mastercard",
+                    "arn"                   => "741107512600331562950201",
+                    "rrn"                   => "7411075126003315629502",
+                    "amt"                   => "4224",
+                    "txn_date"              => "04/09/2021",
+                    "reason_code"           => "10.3",
+                    "fulfilment_tat"        => "04/09/2021",
+                    "currency"              => "356",
+                    "dispute_type"          => "GOODFAITH",
+                ]
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'items' =>
+                    [
+                        [
+                            'success' => false,
+                            'error'   => [
+                                Error::DESCRIPTION => 'dispute type GOODFAITH is not processed',
+                            ],
+                        ]
+                    ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testChargebackSuccess' => [
+        'request'     => [
+            'url'     => '/dispute/chargeback_automation/hitachi',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    "network"               => "Mastercard",
+                    "arn"                   => "741107512600331562950201",
+                    "rrn"                   => "7411075126003315629502",
+                    "amt"                   => "4224",
+                    "txn_date"              => "04/09/2021",
+                    "reason_code"           => "10.3",
+                    "fulfilment_tat"        => "04/09/2021",
+                    "currency"              => "356",
+                    "dispute_type"          => "ARB",
+                ]
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'items' =>
+                    [
+                        [
+                            'Merchant deadline'                  => "03/02/2021",
+                            'Initiation Date'                    => "01/02/2021",
+                            'Initiation Status'                  => "",
+                            'Representment Amount'               => "4224",
+                            'Currency'                           => "INR",
+                            'Merchant Name'                      => "enim",
+                            'Upfront Debit [finops to update]'   => "",
+                            'STATUS'                             => "",
+                            'Status date'                        => "",
+                            'Agent'                              => "",
+                            'Ticket'                             => "",
+                            'Chargeback Type'                    => "",
+                            'Prearb approval status - Checker'   => "",
+                            'Prearb approval Comments - Checker' => "",
+                            'Comments'                           => "",
+                            'Key Account'                        => "TempName",
+                            'merchant_id'                        => "10000000000000",
+                            'International Transaction'          => false,
+                            'Transaction Status' => "captured",
+                            'Base Amount'        => 1000000,
+                            'Website'            => null,
+                            'ME Deadline'        => "",
+                            'Initiation date'    => "",
+                            'Reason Category'    => "",
+                            'No Debit list'      => "",
+                            'ARN'                => "741107512600331562950201",
+                            'Txn Date'           => "04/09/2021",
+                            'RRN'                => "7411075126003315629502",
+                            'Fullfilment date'   => "04/09/2021",
+                            'Reason Code'        => "10.3",
+                            'idempotent_id'      => null,
+                            'success'            => true,
+                        ]
+                    ]
+            ]
+        ],
+        'status_code' => 200,
+    ],
+
+    'testChargebackSuccessAndFailure' => [
+        'request'     => [
+            'url'     => '/dispute/chargeback_automation/hitachi',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    "network"        => "Visa",
+                    "arn"            => "741107512600331562950201",
+                    "rrn"            => "7411075126003315629502",
+                    "amt"            => "4224",
+                    "txn_date"       => "04/09/2021",
+                    "reason_code"    => "10.3",
+                    "fulfilment_tat" => "04/09/2021",
+                    "currency"       => "356",
+                    "dispute_type"   => "ARB",
+                ],
+                [
+                    "network"        => "Mastercard",
+                    "arn"            => "741107512600331562950201",
+                    "rrn"            => "7411075126003315629502",
+                    "amt"            => "4224",
+                    "txn_date"       => "04/09/2021",
+                    "reason_code"    => "10.3",
+                    "fulfilment_tat" => "04/09/2021",
+                    "currency"       => "356",
+                    "dispute_type"   => "GOODFAITH",
+                ]
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'items' =>
+                    [
+                        [
+                            'Merchant deadline'                  => "03/02/2021",
+                            'Initiation Date'                    => "01/02/2021",
+                            'Initiation Status'                  => "",
+                            'Representment Amount'               => "4224",
+                            'Currency'                           => "INR",
+                            'Merchant Name'                      => "enim",
+                            'Upfront Debit [finops to update]'   => "",
+                            'STATUS'                             => "",
+                            'Status date'                        => "",
+                            'Agent'                              => "",
+                            'Ticket'                             => "",
+                            'Chargeback Type'                    => "",
+                            'Prearb approval status - Checker'   => "",
+                            'Prearb approval Comments - Checker' => "",
+                            'Comments'                           => "",
+                            'Key Account'                        => "TempName",
+                            'merchant_id'                        => "10000000000000",
+                            'International Transaction'          => false,
+                            'Transaction Status'                 => "captured",
+                            'Base Amount'                        => 1000000,
+                            'Website'                            => null,
+                            'ME Deadline'                        => "",
+                            'Initiation date'                    => "",
+                            'Reason Category'                    => "",
+                            'No Debit list'                      => "",
+                            'ARN'                                => "741107512600331562950201",
+                            'Txn Date'                           => "04/09/2021",
+                            'RRN'                                => "7411075126003315629502",
+                            'Fullfilment date'                   => "04/09/2021",
+                            'Reason Code'                        => "10.3",
+                            'idempotent_id'                      => null,
+                            'success'                            => true,
+                        ],
+                        [
+                            'success' => false,
+                            'error'   => [
+                                Error::DESCRIPTION => 'dispute type GOODFAITH is not processed',
+                            ],
+                        ]
+                    ]
+            ]
+        ],
+        'status_code' => 200,
     ],
 ];
 

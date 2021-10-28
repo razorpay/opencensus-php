@@ -191,51 +191,7 @@ class Service extends Base\Service
 
         $data = $this->validateAndGetFileData($input, self::BULK_CREATE_ACTION);
 
-        $orderKeys = $data[0];
-
-        $outputFileData = [];
-
-        $outputKeys   = $orderKeys;
-        $outputKeys[] = self::RZP_DISPUTE_ID;
-        $outputKeys[] = Constants::ERRORS;
-
-        $outputFileData[] = $outputKeys;
-
-        for ($i = 1; $i < count($data); $i++)
-        {
-            $row = $data[$i];
-
-            try
-            {
-                $input = $this->convertFileRowToMap($row, $orderKeys);
-
-                $paymentId = $input[Entity::PAYMENT_ID];
-
-                $payment = $this->repo->payment->findByPublicId($paymentId);
-
-                $disputeReason = $this->getDisputeReasonEntity(
-                    $input[Reason\Entity::NETWORK],
-                    $input[Reason\Entity::NETWORK_CODE],
-                    $input[Reason\Entity::REASON_CODE]
-                );
-
-                $disputeReasonId = $disputeReason['id'];
-
-                $createInput = $this->prepareInputForCreate($disputeReasonId, $input);
-
-                $disputeEntity = $this->create($createInput, $paymentId, $payment);
-
-                $row[] = $disputeEntity[Entity::ID];
-                $row[] = '';
-            }
-            catch (\Exception $e)
-            {
-                $row[] = '';
-                $row[] = $e->getMessage();
-            }
-
-            $outputFileData[] = $row;
-        }
+        $outputFileData = $this->createDisputes($data);
 
         $url = (new File\Service)->generateFile($outputFileData, self::BULK_DISPUTE_CREATE_FILE_NAME);
 
@@ -871,6 +827,57 @@ class Service extends Base\Service
     public function postDisputeAcceptById($disputeId, $input)
     {
         return $this->core()->postDisputeAcceptById($disputeId, $input)->toArrayPublic();
+    }
+
+    public function createDisputes(array $data)
+    {
+        $orderKeys = $data[0];
+
+        $outputFileData = [];
+
+        $outputKeys   = $orderKeys;
+        $outputKeys[] = self::RZP_DISPUTE_ID;
+        $outputKeys[] = Constants::ERRORS;
+
+        $outputFileData[] = $outputKeys;
+
+        for ($i = 1; $i < count($data); $i++)
+        {
+            $row = $data[$i];
+
+            try
+            {
+                $input = $this->convertFileRowToMap($row, $orderKeys);
+
+                $paymentId = $input[Entity::PAYMENT_ID];
+
+                $payment = $this->repo->payment->findByPublicId($paymentId);
+
+                $disputeReason = $this->getDisputeReasonEntity(
+                    $input[Reason\Entity::NETWORK],
+                    $input[Reason\Entity::NETWORK_CODE],
+                    $input[Reason\Entity::REASON_CODE]
+                );
+
+                $disputeReasonId = $disputeReason['id'];
+
+                $createInput = $this->prepareInputForCreate($disputeReasonId, $input);
+
+                $disputeEntity = $this->create($createInput, $paymentId, $payment);
+
+                $row[] = $disputeEntity[Entity::ID];
+                $row[] = '';
+            }
+            catch (\Exception $e)
+            {
+                $row[] = '';
+                $row[] = $e->getMessage();
+            }
+
+            $outputFileData[] = $row;
+        }
+
+        return $outputFileData;
     }
 
 }

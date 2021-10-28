@@ -813,6 +813,12 @@ class DetailServiceTest extends TestCase
                     'https://www.website34.com',
                 ]
             ],
+            [
+                'business_website_has_mswipe.com'     => false,
+                'additional_websites_have_mswipe.com' => false,
+                'business_website'                    => 'https://www.website44.com',
+                'additional_websites'                 => null
+            ],
         ];
 
         return $testcases;

@@ -22,9 +22,11 @@ use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\Dispute\EmailNotificationStatus;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Dispute\File\Service as DisputeFileService;
 use RZP\Models\Dispute\Customer\FreshdeskTicket\ReasonCode;
 use RZP\Models\Dispute\Customer\FreshdeskTicket\Subcategory;
@@ -38,6 +40,12 @@ class DisputeTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
+
+    use DbEntityFetchTrait;
+
+    protected $druidMock;
+
+    protected $salesforceMock;
 
     const SECONDS_IN_DAY = 24 * 60 * 60;
 
@@ -54,6 +62,10 @@ class DisputeTest extends TestCase
         parent::setUp();
 
         $this->ba->adminAuth();
+
+        $this->setUpDruidMock();
+
+        $this->setUpSalesforceMock();
     }
 
     protected function mockRazorxTreatment(string $returnValue = 'On')
@@ -2808,5 +2820,282 @@ class DisputeTest extends TestCase
         $testData = $this->updateFetchTestData();
 
         $this->runRequestResponseFlow($testData);
+    }
+
+    public function testPaymentIdNotFound()
+    {
+        $this->mockDruidRequest(['query' => "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('741107512600331562950201')"],
+                                [null, []]);
+
+        $this->mockDruidRequest(['query' => "select authorization_rrn, authorization_payment_id, payments_merchant_id  from druid.payments_fact where authorization_rrn in ('7411075126003315629502')"],
+                                [null, []]);
+
+        $this->mockSalesforceRequest([], []);
+
+        $this->ba->batchAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testChargebackSuccess()
+    {
+        $past = Carbon::create(2021, 2, 1, 12, null, null, Timezone::IST);
+
+        Carbon::setTestNow($past);
+
+        $this->fixtures->create('dispute_reason', [
+            'id'                  => str_random(14),
+            'network'             => 'RZP',
+            'gateway_code'        => 'RZP00',
+            'gateway_description' => '',
+            'code'                => 'card_holder_not_recognised',
+            'description'         => '',
+        ]);
+
+        $this->fixtures->edit('merchant','10000000000000',['name' => 'enim']);
+
+        $this->fixtures->create('merchant_detail', [
+            DetailEntity::MERCHANT_ID   => '10000000000000',
+        ]);
+
+        $testCases = [
+            [
+                'network' => 'Visa'
+            ],
+            [
+                'network' => 'Mastercard'
+            ],
+            [
+                'network' => 'RuPay',
+            ]
+        ];
+
+        foreach ($testCases as $testCase)
+        {
+            $this->testData[__FUNCTION__]['request']['content'][0]['network'] = $testCase['network'];
+
+            $paymentAttributes = [
+                'merchant_id' => '10000000000000',
+            ];
+
+            $payment           = $this->fixtures->create('payment:captured', $paymentAttributes);
+
+            $this->fixtures->create('dispute_reason', [
+                'id'                  => str_random(14),
+                'network'             => $testCase['network'],
+                'gateway_code'        => '10.3',
+                'gateway_description' => '',
+                'code'                => 'this_is_the_code',
+                'description'         => '',
+            ]);
+
+            $this->mockDruidRequest(['query' => "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('741107512600331562950201')"],
+                                    [null, [['payments_reference1' => '741107512600331562950201', 'payments_id' => $payment['id'], 'payments_merchant_id' => '10000000000000']]]);
+
+            $this->mockSalesforceRequest(['10000000000000'], ['10000000000000' => 'TempName']);
+
+            $this->ba->batchAppAuth();
+
+            $response = $this->startTest();
+
+            $dispute = $this->getLastEntity('dispute', true);
+
+            $this->assertEquals('pay_' . $payment['id'], $dispute['payment_id']);
+
+            $this->assertEquals($payment['id'], $response['items'][0]['Payment Id']);
+        }
+    }
+
+    public function testChargebackSuccessAndFailure()
+    {
+        $past = Carbon::create(2021, 2, 1, 12, null, null, Timezone::IST);
+
+        Carbon::setTestNow($past);
+
+        $this->fixtures->create('dispute_reason', [
+            'id'                  => str_random(14),
+            'network'             => 'RZP',
+            'gateway_code'        => 'RZP00',
+            'gateway_description' => '',
+            'code'                => 'card_holder_not_recognised',
+            'description'         => '',
+        ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['name' => 'enim']);
+
+        $this->fixtures->create('merchant_detail', [
+            DetailEntity::MERCHANT_ID => '10000000000000',
+        ]);
+
+        $paymentAttributes = [
+            'merchant_id' => '10000000000000',
+        ];
+
+        $payment = $this->fixtures->create('payment:captured', $paymentAttributes);
+
+        $this->fixtures->create('dispute_reason', [
+            'id'                  => str_random(14),
+            'network'             => 'Visa',
+            'gateway_code'        => '10.3',
+            'gateway_description' => '',
+            'code'                => 'this_is_the_code',
+            'description'         => '',
+        ]);
+
+        $this->mockDruidRequest(['query' => "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('741107512600331562950201')"],
+                                [null, [['payments_reference1' => '741107512600331562950201', 'payments_id' => $payment['id'], 'payments_merchant_id' => '10000000000000']]]);
+
+        $this->mockSalesforceRequest(['10000000000000'], ['10000000000000' => 'TempName']);
+
+        $this->ba->batchAppAuth();
+
+        $response = $this->startTest();
+        
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertEquals('pay_' . $payment['id'], $dispute['payment_id']);
+
+        $this->assertEquals($payment['id'], $response['items'][0]['Payment Id']);
+    }
+
+    public function testDisputeTypeGoodFaith()
+    {
+        $this->mockDruidRequest(['query' => "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('741107512600331562950201')"],
+                                [null, [['payments_reference1' => '741107512600331562950201', 'payments_id' => '123', 'payments_merchant_id' => '123']]]);
+
+        $this->mockSalesforceRequest(['123'], ['123' => 'TempName']);
+
+        $this->ba->batchAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testTxnDateBefore120NotProcessed()
+    {
+        $paymentAttributes = [
+            'merchant_id' => '10000000000000',
+        ];
+
+        $payment  = $this->fixtures->create('payment:captured', $paymentAttributes);
+
+        $this->testData[__FUNCTION__]['request'] = $this->testData['testDisputeTypeGoodFaith']['request'];
+
+        $this->testData[__FUNCTION__]['request']['content'][0]['dispute_type'] = 'ARB';
+
+        $this->testData[__FUNCTION__]['response'] = $this->testData['testDisputeTypeGoodFaith']['response'];
+
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['error']['description'] = 'transaction older that 120 days';
+
+        $past = Carbon::create(2022, 2, 1, 12, null, null, Timezone::IST);
+
+        Carbon::setTestNow($past);
+
+        $this->mockDruidRequest(['query' => "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('741107512600331562950201')"],
+                                [null, [['payments_reference1' => '741107512600331562950201', 'payments_id' => $payment['id'], 'payments_merchant_id' => '10000000000000']]]);
+
+        $this->mockSalesforceRequest(['10000000000000'], ['10000000000000' => 'TempName']);
+
+        $this->ba->batchAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testPaymentNotInCaptured()
+    {
+        $this->testData[__FUNCTION__]['request'] = $this->testData['testDisputeTypeGoodFaith']['request'];
+
+        $this->testData[__FUNCTION__]['request']['content'][0]['txn_date'] = '01/02/2022';
+
+        $this->testData[__FUNCTION__]['request']['content'][0]['dispute_type'] = 'ARB';
+
+        $this->testData[__FUNCTION__]['response'] = $this->testData['testDisputeTypeGoodFaith']['response'];
+
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['error']['description'] = 'payment not in captured state';
+
+        $past = Carbon::create(2022, 2, 1, 12, null, null, Timezone::IST);
+
+        Carbon::setTestNow($past);
+
+        $payment = $this->fixtures->create('payment:authorized', [
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->mockDruidRequest(['query' => "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('741107512600331562950201')"],
+                                [null, [['payments_reference1' => '741107512600331562950201', 'payments_id' => $payment['id'], 'payments_merchant_id' => '10000000000000']]]);
+
+        $this->mockSalesforceRequest(['10000000000000'], ['10000000000000' => 'TempName']);
+
+        $this->ba->batchAppAuth();
+
+        $this->startTest();
+    }
+
+    protected function mockSalesforceRequest($expectedMerchantIds, $expectedResponse): void
+    {
+        $this->salesforceMock->shouldReceive('getSalesForceTeamNameForMerchantID')
+                             ->times(1)
+                             ->with(Mockery::on(function($actualMerchantIds) use ($expectedMerchantIds) {
+                                 return $this->validateMethodAndContentForChargebackAutomation($actualMerchantIds, 'POST', $expectedMerchantIds);
+                             }))
+                             ->andReturnUsing(function() use ($expectedResponse) {
+
+                                 return $expectedResponse;
+                             });
+
+    }
+
+    protected function mockDruidRequest($expectedContent, $response): void
+    {
+        $this->druidMock->shouldReceive('getDataFromDruid')
+                        ->times(1)
+                        ->with(Mockery::on(function($request) use ($expectedContent) {
+                            return $this->validateMethodAndContentForChargebackAutomation($request, 'POST', $expectedContent);
+                        }))
+                        ->andReturnUsing(function() use ($response) {
+                            return $response;
+                        });
+
+    }
+
+    protected function validateMethodAndContentForChargebackAutomation($actualContent, $expectedMethod, $expectedContent): bool
+    {
+        if ($expectedMethod != 'POST')
+        {
+            return false;
+        }
+        foreach ($expectedContent as $key => $value)
+        {
+            if (isset($actualContent[$key]) === false)
+            {
+                return false;
+            }
+
+            if ($expectedContent[$key] !== $actualContent[$key])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected function setUpDruidMock(): void
+    {
+        $this->druidMock = Mockery::mock('RZP\Services\DruidService')->makePartial();
+
+        $this->druidMock->shouldAllowMockingProtectedMethods();
+
+        $this->app['druid.service'] = $this->druidMock;
+    }
+
+    protected function setUpSalesforceMock(): void
+    {
+        $this->salesforceMock = Mockery::mock('RZP\Services\SalesForceClient', $this->app)->makePartial();
+
+        $this->salesforceMock->shouldAllowMockingProtectedMethods();
+
+        $this->app['salesforce'] = $this->salesforceMock;
     }
 }

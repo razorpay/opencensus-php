@@ -3962,6 +3962,160 @@ class Service extends Base\Service
             ]);
     }
 
+    public function getPaymentIdFromARNorRRN(array $allArn,array $arnVsRrn)
+    {
+        // the resultant array
+        $arnVsPaymentDetail = [];
+
+        // the arn from first query
+        $arnFromQuery = [];
+
+        /*
+         *  For ARN
+         *  way to fetch Data from Druid table payments
+        */
+        $query1 = "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('" . implode("','", $allArn) . "')";
+
+        $druidService = $this->app['druid.service'];
+
+        $content1 = [
+            'query' => $query1
+        ];
+
+        // extract data from druid service
+        list($error1, $data1) = $druidService->getDataFromDruid($content1);
+
+        $this->trace->info(TraceCode::DISPUTE_CHARGEBACK_DRUID_RESPONSE, [
+            'error1'    => $error1,
+            'data1'      => $data1,
+        ]);
+
+        if (empty($error1) === false)
+        {
+            $this->trace->info(TraceCode::DRUID_REQUEST_FAILURE, [
+                'query'   => $query1,
+                'message' => $error1
+            ]);
+        }
+        else
+        {
+            if (isset($data1) === false || array_key_exists(0, $data1) === false)
+            {
+                $this->trace->info(TraceCode::PAYMENT_DATA_NOT_FOUND_ON_DRUID, [
+                    'arn-data' => $allArn,
+                    'data'     => $data1,
+                ]);
+            }
+        }
+
+        foreach ($data1 as $item)
+        {
+            //  data entered for payment ids array
+            if (empty($item['payments_reference1']) === false and
+                $item ['payments_id'] !== null)
+            {
+                $arnVsPaymentDetail[$item['payments_reference1']] = [
+                    'payment_id'  => $item ['payments_id'],
+                    'merchant_id' => $item ['payments_merchant_id']
+                ];
+            }
+        }
+
+        // required arn for the second query
+        $requiredArn = array_diff($allArn, array_keys($arnVsPaymentDetail));
+
+        // required rrn for the second query
+        $requiredRrn = [];
+
+        foreach ($arnVsRrn as $arn => $rrn)
+        {
+            if (in_array($arn, $requiredArn) === true)
+            {
+                array_push($requiredRrn, $rrn);
+            }
+        }
+
+        // we got all payments ids
+        if (sizeof($requiredRrn) === 0)
+        {
+            return $arnVsPaymentDetail;
+        }
+
+        /*
+         *  For RRN
+         *  way to fetch Data from Druid table authorization
+        */
+        $query2 = "select authorization_rrn, authorization_payment_id, payments_merchant_id  from druid.payments_fact where authorization_rrn in ('" . implode("','", $requiredRrn) . "')";
+
+        $content2 = [
+            'query' => $query2
+        ];
+
+        list($error2, $data2) = $druidService->getDataFromDruid($content2);
+
+        $this->trace->info(TraceCode::DISPUTE_CHARGEBACK_DRUID_RESPONSE, [
+            'error2'    => $error2,
+            'data2'     => $data2,
+        ]);
+
+        if (empty($error2) === false)
+        {
+            $this->trace->info(TraceCode::DRUID_REQUEST_FAILURE, [
+                'query'   => $query2,
+                'message' => $error2
+            ]);
+        }
+        else
+        {
+            if (isset($data2) === false || array_key_exists(0, $data2) === false)
+            {
+                $this->trace->info(TraceCode::PAYMENT_DATA_NOT_FOUND_ON_DRUID, [
+                    'rrn-data' => $requiredRrn,
+                    'data'     => $data2,
+                ]);
+            }
+        }
+
+        $rrnVsPaymentData =  [];
+
+        foreach ($data2 as $dataItem)
+        {
+            // match the rrn with the input arn
+            //  data entered for payment ids array
+            if (empty($dataItem['authorization_rrn']) === false and
+                empty($dataItem['authorization_payment_id']) === false)
+            {
+                // insert the data in arn vs payments from second query
+                $rrnVsPaymentData[$dataItem['authorization_rrn']] = [
+                    'payment_id'  => $dataItem['authorization_payment_id'],
+                    'merchant_id' => $dataItem['payments_merchant_id']
+                ];
+            }
+        }
+        // add arn values for the second query
+        foreach ($arnVsRrn as $arn => $rrn)
+        {
+            if (array_key_exists($rrn,$rrnVsPaymentData)){
+
+                $arnVsPaymentDetail[$arn] = $rrnVsPaymentData[$rrn];
+            }
+        }
+
+        foreach ($allArn as $arn)
+        {
+            // at last put null for the arns we didn't find a value for
+            if (array_key_exists($arn, $arnVsPaymentDetail) === false)
+            {
+                $arnVsPaymentDetail[$arn] = [
+                    'payment_id'  => null,
+                    'merchant_id' => null
+                ];
+            }
+        }
+
+        return $arnVsPaymentDetail;
+    }
+
     /**
      * isRazorxTreatmentForRefundsV1_1: Used within jobs.
      *
@@ -3972,8 +4126,8 @@ class Service extends Base\Service
     {
         // handling for internal routes,
         // where merchantId or merchant obj is empty, then just return true.
-        // 
-        $mid = (empty($this->merchant) === false) ? $this->merchant->getId() : $merchantId;  
+        //
+        $mid = (empty($this->merchant) === false) ? $this->merchant->getId() : $merchantId;
         if (empty($mid) === true)
         {
             return true;

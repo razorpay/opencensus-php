@@ -2581,6 +2581,8 @@ class Route
         'fd_reserve_balance_ticket'               => ['post',      'fd/reserve_balance/tickets',                                 'FreshdeskTicketController@postReserveBalanceTicketDetails'   ],
         'fd_reserve_balance_ticket_status'        => ['get',       'fd/reserve_balance/tickets/status',                          'FreshdeskTicketController@getReserveBalanceTicketStatus'     ],
 
+        'dispute_automation'                      => ['post',      'dispute/chargeback_automation/{gateway}',                   'DisputeController@postBatchChargebackAutomation',                                ],
+
         'fd_create_ticket'                        => ['post',      'fd/{type}/ticket',                                          'FreshdeskTicketController@postTicketV2',                      ],
         'internal_fd_create_ticket'               => ['post',      'internal/fd/ticket',                                        'FreshdeskTicketController@internalPostTicketV2',              ],
         'fd_fetch_tickets'                        => ['get',       'fd/{type}/ticket',                                          'FreshdeskTicketController@getTickets'                         ],
@@ -3878,6 +3880,7 @@ class Route
         'internal_payment_authorize_refund',
         'freshdesk_update_ticket_internal',
         'internal_fd_create_ticket',
+        'dispute_automation',
         'care_service_cron_proxy',
         'internal_order_update',
 
@@ -10711,6 +10714,7 @@ class Route
             'nach_batch_process',
             'emandate_batch_process',
             'health_checker',
+            'dispute_automation',
             'create_exec_risk_action',
             'bulk_risk_action_status_comment',
         ],

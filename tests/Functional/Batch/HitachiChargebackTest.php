@@ -40,7 +40,7 @@ class HitachiChargebackTest extends TestCase
                         "Billing currency (149)" => "random value",
                         "Txn Date (12)"          => "random value",
                         "Settelment Date"        => "random value",
-                        " MID (42)"              => "random value",
+                        "MID (42)"              => "random value",
                         "TID (41)"               => "random value",
                         "ME Name (43)"           => "random value",
                         "Auth Code (38)"         => "random value",

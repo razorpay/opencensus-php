@@ -1089,7 +1089,7 @@ class Header
     const HITACHI_MASTERCARD_BILLING_CURRENCY  = "Billing currency (149)";
     const HITACHI_MASTERCARD_TXN_DATE          = "Txn Date (12)";
     const HITACHI_MASTERCARD_SETTLEMENT_DATE   = "Settelment Date";
-    const HITACHI_MASTERCARD_MID               = " MID (42)";
+    const HITACHI_MASTERCARD_MID               = "MID (42)";
     const HITACHI_MASTERCARD_TID               = "TID (41)";
     const HITACHI_MASTERCARD_ME_NAME           = "ME Name (43)";
     const HITACHI_MASTERCARD_AUTH_CODE         = "Auth Code (38)";

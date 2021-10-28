@@ -486,6 +486,9 @@ class Type
         self::RECURRING_CHARGE_AXIS,
         self::WEBSITE_CHECKER,
         self::EMANDATE_DEBIT_HDFC,
+        self::HITACHI_CBK_MASTERCARD,
+        self::HITACHI_CBK_RUPAY,
+        self::HITACHI_CBK_VISA,
         self::CREATE_EXEC_RISK_ACTION,
     ];
 

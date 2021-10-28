@@ -362,11 +362,14 @@ class SalesForceClient
 
          $response = $this->makeRequestAndGetResponse($request);
 
-         foreach ($response["records"] as $entity )
-         {
-             $teamNameArray[$entity["Merchant_ID__c"]] = $entity["Owner"]["Name"];
-         }
+        if (empty($response["records"]) === false)
+        {
+            foreach ($response["records"] as $entity)
+            {
+                $teamNameArray[$entity["Merchant_ID__c"]] = $entity["Owner"]["Name"];
+            }
 
+        }
          return $teamNameArray;
 
     }

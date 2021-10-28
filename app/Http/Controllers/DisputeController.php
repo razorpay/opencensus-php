@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use RZP\Exception;
+use RZP\Models\Dispute\Chargeback\Service as DisputeChargebackService;
 
 class DisputeController extends Controller
 {
@@ -158,6 +159,15 @@ class DisputeController extends Controller
         $input = Request::all();
 
         $response = $this->service()->postDisputeAcceptById($disputeId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postBatchChargebackAutomation($gateway)
+    {
+        $input = Request::all();
+
+        $response = (new DisputeChargebackService())->postBatchChargebackAutomation($input, $gateway);
 
         return ApiResponse::json($response);
     }

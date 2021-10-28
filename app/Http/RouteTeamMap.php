@@ -137,6 +137,7 @@ class RouteTeamMap
         'admin_delete'                             => [self::TEAM_PAYMENTS_CARE],
         'admin_lead_put'                           => [self::TEAM_PAYMENTS_CARE],
         'group_create'                             => [self::TEAM_PAYMENTS_CARE],
+        'dispute_automation'                       => [self::TEAM_PAYMENTS_CARE],
 
         'invitation_create'                        => [self::TEAM_PAYMENTS_DASHBOARD],
         'invitation_delete'                        => [self::TEAM_PAYMENTS_DASHBOARD],

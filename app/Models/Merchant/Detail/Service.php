@@ -58,6 +58,8 @@ class Service extends Base\Service
 {
     use NotifyTrait;
 
+    const PAYMENT_DATA_NOT_FOUND_ON_DRUID = 'payment data not found on druid';
+
     protected $core;
 
     protected $methodsCore;
@@ -1872,12 +1874,14 @@ class Service extends Base\Service
         }
 
         $additionalWebsites = $merchantDetails->getAdditionalWebsites();
-
-        foreach ($additionalWebsites as $additionalWebsite)
+        if (empty($additionalWebsites) === false)
         {
-            if (preg_match($pattern, $additionalWebsite))
+            foreach ($additionalWebsites as $additionalWebsite)
             {
-                return true;
+                if (preg_match($pattern, $additionalWebsite))
+                {
+                    return true;
+                }
             }
         }
 
@@ -1949,162 +1953,5 @@ class Service extends Base\Service
         {
             return $differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA][WorkflowObserver\Constants::APPROVED_TRANSACTION_LIMIT];
         }
-    }
-
-    /**
-     * This function is used to find the payment_id from the payment table using the ARN Number column.
-     * If no entry is found for arn Number, RRN Number is used
-     * @param array $input
-     *
-     * @return array
-     */
-    public function getPaymentIdFromARNorRRN(array $input)
-    {
-        // the resultant array
-        $arnVsPaymentDetail = [];
-        // the arn from input
-        $allArn = [];
-        // the arn from first query
-        $arnFromQuery =[];
-
-        foreach ($input as $item)
-        {
-            array_push( $allArn, $item['arn']);
-        }
-
-        /*
-         *  For ARN
-         *  way to fetch Data from Druid table payments
-        */
-        $query1 = "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact where payments_reference1 in ('".implode("','",$allArn)."')";
-
-        $druidService = $this->app['druid.service'];
-
-        $content1 = [
-            'query' => $query1
-        ];
-
-        // extract data from druid service
-        list($error1, $data1) = $druidService->getDataFromDruid($content1);
-
-        if (empty($error1) === false)
-        {
-            $this->trace->info(TraceCode::DRUID_REQUEST_FAILURE, [
-                'query'   => $query1,
-                'message' => $error1
-            ]);
-        }
-        else if (isset($data1[0]) === false)
-        {
-            $this->trace->info(TraceCode::PAYMENT_DATA_NOT_FOUND_ON_DRUID, [
-                'arn-data' => $allArn
-            ]);
-        }
-
-        foreach ($data1 as $item)
-        {
-            //  data entered for payment ids array
-            $arnVsPaymentDetail[$item['payments_reference1']] = [
-                'payment_id'  => $item ['payments_id'],
-                'merchant_id' => $item ['payments_merchant_id']
-            ];
-
-            // data required for query rrn table
-            if ($item ['payments_id'] !== null)
-            {
-                array_push($arnFromQuery, $item ['payments_reference1']);
-            }
-        }
-
-        // required arn for the second query
-        $requiredArn = array_diff($allArn,  $arnFromQuery);
-
-        // required rrn for the second query
-        $requiredRrn = [];
-
-        foreach ($input as $item)
-        {
-            if(in_array( $item['arn'],  $requiredArn) === true)
-            {
-                array_push( $requiredRrn, $item['rrn']);
-            }
-        }
-
-        // we got all payments ids
-        if(sizeof( $requiredRrn) === 0)
-        {
-            return $arnVsPaymentDetail;
-        }
-
-        /*
-         *  For RRN
-         *  way to fetch Data from Druid table authorization
-        */
-        $query2 = "select authorization_rrn, authorization_payment_id, payments_merchant_id  from druid.payments_fact where authorization_rrn in ('".implode("','", $requiredRrn)."')";
-
-        $content2 = [
-            'query' => $query2
-        ];
-
-        list($error2, $data2) = $druidService->getDataFromDruid($content2);
-
-        if (empty($error2) === false)
-        {
-            $this->trace->info(TraceCode::DRUID_REQUEST_FAILURE, [
-                'query'   => $query2,
-                'message' => $error2
-            ]);
-        }
-        else if (isset($data2[0]) === false)
-        {
-            $this->trace->info(TraceCode::PAYMENT_DATA_NOT_FOUND_ON_DRUID, [
-                'rrn-data' =>  $requiredRrn,
-            ]);
-        }
-
-        // check for null details
-        $foundRrn = [];
-
-        foreach ($data2 as $dataItem )
-        {
-            array_push( $foundRrn, $dataItem['authorization_rrn']);
-        }
-
-        // rrn with no payment details
-        $dataWithNoPID = array_diff($requiredRrn, $foundRrn);
-
-        // add arn values for the second query
-        foreach ($input as $inputItem)
-        {
-            // data with payment details
-            foreach ($data2 as $dataItem )
-            {
-                // match the rrn with the input arn
-                if($inputItem['rrn'] === $dataItem['authorization_rrn'])
-                {
-                    // insert the data in arn vs payments from second query
-                    $arnVsPaymentDetail[$inputItem['arn']] = [
-                        'payment_id'  => $dataItem['authorization_payment_id'],
-                        'merchant_id' => $dataItem['payments_merchant_id']
-                    ];
-                }
-            }
-
-            // data without payment details
-            foreach ($dataWithNoPID as $dataItem )
-            {
-                // match the rrn with the input arn
-                if($inputItem['rrn'] === $dataItem)
-                {
-                    // insert the data in arn vs payments from second query
-                    $arnVsPaymentDetail[$inputItem['arn']] = [
-                        'payment_id'  => null,
-                        'merchant_id' => null
-                    ];
-                }
-            }
-        }
-
-        return $arnVsPaymentDetail;
     }
 }

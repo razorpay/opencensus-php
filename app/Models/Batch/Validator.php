@@ -243,17 +243,17 @@ class Validator extends Base\Validator
         Entity::SCHEDULE    => 'sometimes|numeric',
     ];
 
-    protected static $hitachiChargebackMastercardCreateRules = [
+    protected static $hitachiCbkMastercardCreateRules = [
         Entity::FILE        => 'required|file',
         Entity::TYPE        => 'required|string|in:hitachi_cbk_mastercard',
     ];
 
-    protected static $hitachiChargebackVisaCreateRules = [
+    protected static $hitachiCbkVisaCreateRules = [
         Entity::FILE        => 'required|file',
         Entity::TYPE        => 'required|string|in:hitachi_cbk_visa',
     ];
 
-    protected static $hitachiChargebackRupayCreateRules = [
+    protected static $hitachiCbkRupayCreateRules = [
         Entity::FILE        => 'required|file',
         Entity::TYPE        => 'required|string|in:hitachi_cbk_rupay',
     ];
