@@ -388,7 +388,7 @@ class UserRolesScope
             'subscription_fetch_changes'                    => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
             'subscription_fetch_due_addons'                 => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
             'subscription_registration_cancel_link'         => [Role::ADMIN, Role::OWNER, Role::OPERATIONS,],
-            'subscription_registration_charge_token'        => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::FINANCE,],
+            'subscription_registration_charge_token'        => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::FINANCE, Role::MANAGER,],
             'subscription_registration_create_links'        => [Role::ADMIN, Role::OWNER, Role::FINANCE, Role::OPERATIONS, Role::MANAGER,],
             'subscription_registration_delete_token'        => [Role::ADMIN, Role::OWNER, Role::OPERATIONS,],
             'subscription_registration_fetch_link_internal' => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::MANAGER, Role::FINANCE, Role::SUPPORT,],
