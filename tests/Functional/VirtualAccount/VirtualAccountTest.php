@@ -31,7 +31,6 @@ class VirtualAccountTest extends TestCase
 {
     protected $t1;
     protected $t2;
-    private $vpaTerminal;
     use PaymentTrait;
     use TestsWebhookEvents;
     use VirtualAccountTrait;
@@ -80,7 +79,7 @@ class VirtualAccountTest extends TestCase
 
         $this->fixtures->on('test');
 
-        $this->vpaTerminal = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
+        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
 
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
@@ -2286,37 +2285,5 @@ class VirtualAccountTest extends TestCase
         $method->invokeArgs($vaEntity, array(&$input));
 
         return $input;
-    }
-
-    public function testVirtualAccountVpaVerification()
-    {
-        $this->createVirtualAccount([], true, null, false, true);
-
-        $vpa    = $this->getLastEntity('vpa', true);
-
-        $address = explode('.', $vpa['username'])[1];
-
-        $input = '<XML><Source>ICICI-EAZYPAY</Source><SubscriberId>' . $address . '</SubscriberId><TxnId>YBL457b50e1fa8b452ab996560a0c9bc8be</TxnId></XML>';
-        $virtualUpiRoot = explode('.', $this->vpaTerminal['virtual_upi_root'])[0];
-
-        $rawResponse = $this->ecollectValidateVirtualAccountVpa('upi_icici', $virtualUpiRoot, $input);
-        $response = (array) simplexml_load_string($rawResponse->content());
-
-        $this->assertEquals($response['ActCode'], '0');
-        $this->assertEquals($response['Message'], 'VALID');
-        $this->assertEquals($response['CustName'], 'Test Merchant');
-        $this->assertEquals($response['TxnId'], 'YBL457b50e1fa8b452ab996560a0c9bc8be');
-    }
-
-    public function testInvalidVpaVerification()
-    {
-        $input = '<XML><Source>ICICI-EAZYPAY</Source><SubscriberId>upitestaccount123456</SubscriberId><TxnId>YBL457b50e1fa8b452ab996560a0c9bc8be</TxnId></XML>';
-        $virtualUpiRoot = explode('.', $this->vpaTerminal['virtual_upi_root'])[0];
-
-        $rawResponse = $this->ecollectValidateVirtualAccountVpa('upi_icici', $virtualUpiRoot, $input);
-        $response = (array) simplexml_load_string($rawResponse->content());
-
-        $this->assertEquals($response['ActCode'], '1');
-        $this->assertEquals($response['Message'], 'INVALID');
     }
 }

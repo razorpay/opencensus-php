@@ -142,19 +142,4 @@ trait NonVirtualAccountQrCodeTrait
     {
         return (array) simplexml_load_string(trim($response));
     }
-
-    public function ecollectValidateVpa($gateway, $vpaPrefix, $input)
-    {
-        $url = '/test/ecollect/validate/' . $gateway . '/' . $vpaPrefix;
-
-        $request = [
-            'method'  => 'POST',
-            'url'     => $url,
-            'raw'     => $input
-        ];
-
-        $response = $this->makeRequestAndGetRawContent($request);
-
-        return $response;
-    }
 }

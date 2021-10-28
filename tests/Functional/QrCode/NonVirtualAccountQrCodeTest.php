@@ -27,8 +27,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
     use DbEntityFetchTrait;
     use NonVirtualAccountQrCodeTrait;
 
-    private $vpaTerminal;
-
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/NonVirtualAccountQrCodeTestData.php';
@@ -64,7 +62,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal');
 
-        $this->vpaTerminal = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
+        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
 
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
@@ -934,23 +932,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
                });
     }
 
-    protected function enableRazorXTreatmentForQrDynamicVpa()
-    {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-               ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-               {
-                   if ($featureFlag === (RazorxTreatment::QR_CODE_DYNAMIC_VPA))
-                   {
-                       return 'on';
-                   }
-                   return 'control';
-               });
-    }
-
     private function runUpiQrV2Assertion($response, string $usageType)
     {
         $this->assertStringContainsString('ver=01', $response['image_content']);
@@ -964,80 +945,5 @@ class NonVirtualAccountQrCodeTest extends TestCase
         {
             $this->assertStringContainsString('mode=15', $response['image_content']);
         }
-    }
-
-    public function testDynamicVpaAdditionToQrCode()
-    {
-        $this->enableRazorXTreatmentForQrDynamicVpa();
-
-        $this->createQrCode();
-
-        $vpa    = $this->getLastEntity('vpa', true);
-        $qrCode = $this->getLastEntity('qr_code', true);
-
-        $this->assertEquals('qr_' . $vpa['entity_id'], $qrCode['id']);
-        $this->assertStringContainsString($vpa['username'], $qrCode['qr_string']);
-    }
-
-    public function testSettingsVpaAdditionToQrCode()
-    {
-        $response = $this->createQrCode();
-
-        $vpa    = $this->getLastEntity('vpa', true);
-
-        $this->assertNull($vpa['entity_id']);
-        $this->runEntityAssertions($response);
-    }
-
-    public function testVpaVerification()
-    {
-        $this->enableRazorXTreatmentForQrDynamicVpa();
-
-        $this->createQrCode();
-
-        $vpa    = $this->getLastEntity('vpa', true);
-        $qrCode = $this->getLastEntity('qr_code', true);
-
-        $this->assertEquals('qr_' . $vpa['entity_id'], $qrCode['id']);
-        $this->assertStringContainsString($vpa['username'], $qrCode['qr_string']);
-
-        $address = explode('.', $vpa['username'])[1];
-
-        $input = '<XML><Source>ICICI-EAZYPAY</Source><SubscriberId>' . $address . '</SubscriberId><TxnId>YBL457b50e1fa8b452ab996560a0c9bc8be</TxnId></XML>';
-        $virtualUpiRoot = explode('.', $this->vpaTerminal['virtual_upi_root'])[0];
-
-        $rawResponse = $this->ecollectValidateVpa('upi_icici', $virtualUpiRoot, $input);
-        $response = (array) simplexml_load_string($rawResponse->content());
-
-        $this->assertEquals($response['ActCode'], '0');
-        $this->assertEquals($response['Message'], 'VALID');
-        $this->assertEquals($response['CustName'], 'more-megastore-account');
-        $this->assertEquals($response['TxnId'], 'YBL457b50e1fa8b452ab996560a0c9bc8be');
-    }
-
-    public function testVpaVerificationForQrPrefixedVpa()
-    {
-        $input = '<XML><Source>ICICI-EAZYPAY</Source><SubscriberId>qrtestaccount1234567</SubscriberId><TxnId>YBL457b50e1fa8b452ab996560a0c9bc8be</TxnId></XML>';
-        $virtualUpiRoot = explode('.', $this->vpaTerminal['virtual_upi_root'])[0];
-
-        $rawResponse = $this->ecollectValidateVpa('upi_icici', $virtualUpiRoot, $input);
-        $response = (array) simplexml_load_string($rawResponse->content());
-
-        $this->assertEquals($response['ActCode'], '0');
-        $this->assertEquals($response['Message'], 'VALID');
-        $this->assertEquals($response['CustName'], 'Razorpay QR Payment');
-        $this->assertEquals($response['TxnId'], 'YBL457b50e1fa8b452ab996560a0c9bc8be');
-    }
-
-    public function testInvalidVpaVerification()
-    {
-        $input = '<XML><Source>ICICI-EAZYPAY</Source><SubscriberId>upitestaccount123456</SubscriberId><TxnId>YBL457b50e1fa8b452ab996560a0c9bc8be</TxnId></XML>';
-        $virtualUpiRoot = explode('.', $this->vpaTerminal['virtual_upi_root'])[0];
-
-        $rawResponse = $this->ecollectValidateVpa('upi_icici', $virtualUpiRoot, $input);
-        $response = (array) simplexml_load_string($rawResponse->content());
-
-        $this->assertEquals($response['ActCode'], '1');
-        $this->assertEquals($response['Message'], 'INVALID');
     }
 }

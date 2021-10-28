@@ -870,7 +870,7 @@ class Service extends Base\Service
         );
     }
 
-    public function ecollectValidateVpa(string $vpa, $input)
+    public function ecollectValidateVpa(string $vpa)
     {
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_ECOLLECT_VALIDATE_VPA_PROCESSING,
@@ -882,28 +882,16 @@ class Service extends Base\Service
 
         $this->determineAndSetMode();
 
-        $vpa = $this->repo->vpa->findByAddress($vpa, true);
+        $vpa = $this->repo->vpa->findByAddress($vpa);
 
         if ($vpa === null)
         {
-            if (str_starts_with($input['SubscriberId'], 'qr'))
-            {
-                $response['valid'] = true;
-
-                $response['merchantName'] = 'Razorpay QR Payment';
-            }
-
             return $response;
         }
 
-        $vpaSource = $vpa->virtualAccount;
+        $virtualAccount = $vpa->virtualAccount;
 
-        if ($vpaSource === null)
-        {
-            $vpaSource = $vpa->qrCode;
-        }
-
-        if ($vpaSource->getStatus() === Status::ACTIVE)
+        if ($virtualAccount->getStatus() === Status::ACTIVE)
         {
             $response['valid'] = true;
 

@@ -126,7 +126,6 @@ class VirtualAccountController extends Controller
 
         $response = null;
         $vpa      = '';
-        $input    = [];
 
         try
         {
@@ -144,7 +143,16 @@ class VirtualAccountController extends Controller
                 }
             }
 
-            $data = $this->service()->ecollectValidateVpa($vpa, $input);
+            if (str_starts_with($input['SubscriberId'], 'qr'))
+            {
+                $data['valid'] = true;
+
+                $data['merchantName'] = 'Razorpay QR Payment';
+            }
+            else
+            {
+                $data = $this->service()->ecollectValidateVpa($vpa);
+            }
         }
         catch (\Exception $e)
         {

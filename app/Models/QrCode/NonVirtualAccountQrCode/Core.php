@@ -92,11 +92,6 @@ class Core extends QrCode\Core
             {
                 $this->repo->deleteOrFail($qrCode->bankAccount);
             }
-
-            if ($qrCode->vpa !== null)
-            {
-                $this->repo->deleteOrFail($qrCode->vpa);
-            }
         });
 
         return $qrCode;
