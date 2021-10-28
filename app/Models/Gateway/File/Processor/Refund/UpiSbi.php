@@ -12,6 +12,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\File\Status;
 use RZP\Gateway\Upi\Sbi\RefundFile;
 use Razorpay\Trace\Logger as Trace;
@@ -259,5 +260,18 @@ class UpiSbi extends Base
             'mtime' => Carbon::now()->getTimestamp(),
             'mode'  => '33188'
         ];
+    }
+
+    /**
+     * Function to increase system limits for kubernetes pod.
+     * This is done to fix the gateway file refund issue due to huge volume of refunds.
+     */
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('8192');
+
+        RuntimeManager::setTimeLimit(7200);
+
+        RuntimeManager::setMaxExecTime(7200);
     }
 }
