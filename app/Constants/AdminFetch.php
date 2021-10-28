@@ -4200,6 +4200,40 @@ class AdminFetch
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
             ],
+
+            Entity::QR_PAYMENT => [
+                'qr_code_id'            => [
+                    Fetch::LABEL => 'Qr Code ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'payment_id'            => [
+                    Fetch::LABEL => 'Payment ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'gateway'               => [
+                    Fetch::LABEL => 'Gateway',
+                    Fetch::TYPE  => Fetch::TYPE_STRING
+                ],
+                'transaction_reference' => [
+                    Fetch::LABEL => 'NPCI Reference Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING
+                ],
+            ],
+
+            Entity::QR_PAYMENT_REQUEST => [
+                'qr_code_id'            => [
+                    Fetch::LABEL => 'Qr Code ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'transaction_reference' => [
+                    Fetch::LABEL => 'NPCI Reference Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING
+                ],
+                'is_created'            => [
+                    Fetch::LABEL => 'Is Created',
+                    Fetch::TYPE  => Fetch::TYPE_BOOLEAN,
+                ],
+            ],
         ];
 
         //
