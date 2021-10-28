@@ -10,5 +10,7 @@ lerna-debug.log*
 node_modules
 
 public/dist
+web/entry/merchantLA-entry.js
+web/entry/merchant-entry.js
 web/js/merchant/containers/App.js
 web/js/merchantLA/containers/App.js

@@ -1,3 +1,5 @@
+// Comments are not supported inside merchantEntry function have to disable the eslint for this file
+
 function MerchantLAEntry() {
   function executeJS() {
     const cdnDashboardUrl = window.cdnDashboardUrl || '';
@@ -42,11 +44,10 @@ function MerchantLAEntry() {
       document.documentElement.appendChild(link);
     };
 
-    // eslint-disable-next-line no-undef
     websiteAssets.js.forEach((src) => {
       document.write(`<script src="${cdnDashboardUrl}${src}"></script>`);
     });
-    // eslint-disable-next-line no-undef
+
     websiteAssets.css.forEach((src) => {
       appendLink(cdnDashboardUrl + src);
     });
