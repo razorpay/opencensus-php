@@ -450,7 +450,7 @@ trait CommonGatewayTrait
         // Should be defined in the gateway
         $acquirer = static::ACQUIRER;
 
-        if ($acquirer == null)
+        if ($acquirer === null)
         {
             $acquirer = $input['payment']['gateway'];
         }

@@ -13,12 +13,12 @@ class Service extends UpiPaymentService
     /**
      * Mocks the request to the UPS server
      *
-     * @param RequestInterface $request
+     * @param  RequestInterface $request
      * @return array
      */
     protected function sendRequest(RequestInterface $request): array
     {
-        $content = json_decode($request->getBody()->getContents(),true);
+        $content = json_decode($request->getBody()->getContents(), true);
 
         $action = camel_case($this->action);
 
@@ -30,7 +30,7 @@ class Service extends UpiPaymentService
     /**
      * Authorize returns the authorize response
      *
-     * @param array $content
+     * @param  array $content
      * @return array
      */
     protected function authorize(array $content): array
@@ -39,27 +39,35 @@ class Service extends UpiPaymentService
 
         $response = [];
 
+        $error = null;
+
         $code = 500;
 
         switch ($description)
         {
             case 'create_collect_success':
-                $response = ['data' => ['vpa' => 'razorpay@airtel']];
+                $response['data'] = [
+                    'data' => [
+                        'vpa' => 'razorpay@airtel'
+                    ],
+                    'gateway' => $content['payment']['gateway'],
+                ];
                 $code = 200;
 
                 break;
             case 'create_intent_success':
-                $response = [
+                $response['data'] = [
                     'data' => [
                         'intent_url' => 'upi://pay?am=100.00&cu=INR&mc=5411&pa=upi@razorpay
-                                            &pn=merchantname&tn=PayviaRazorpay&tr=pay_someid'
-                        ]
-                    ];
+                                                &pn=merchantname&tn=PayviaRazorpay&tr=pay_someid'
+                    ],
+                    'gateway' => $content['payment']['gateway'],
+                ];
                 $code = 200;
 
                 break;
             case 'validation_failure_collect_vpa':
-                $response = [
+                $error = [
                     'details' => [[
                         'internal' => [
                             'code'          => 'BAD_REQUEST_INPUT_VALIDATION_FAILURE',
@@ -71,34 +79,50 @@ class Service extends UpiPaymentService
 
                 break;
             case 'service_failure':
-                $response = [
+                $error = [
                     'error' => 'internal server error',
                 ];
                 $code = 500;
 
                 break;
             case 'mozart_failure':
-                $response = [
-                    'error' => [
-                        'internal' => [
-                            'code'          => 'GATEWAY_ERROR_REQUEST_ERROR',
-                            'description'   => 'GATEWAY_ERROR: received false response with status
-                                                     200 from mozart',
-                            'metadata'      => [
-                                'description'               => 'Encryption error',
-                                'gateway_error_code'        => 'U14',
-                                'gateway_error_description' => 'Encryption error',
-                                'internal_error_code'       => 'GATEWAY_ERROR_ENCRYPTION_ERROR'
-                            ]
+                $response['error'] = [
+                    'internal' => [
+                        'code'          => 'GATEWAY_ERROR_REQUEST_ERROR',
+                        'description'   => 'GATEWAY_ERROR: received false response with status
+                                                        200 from mozart',
+                        'metadata'      => [
+                            'description'               => 'Encryption error',
+                            'gateway_error_code'        => 'U14',
+                            'gateway_error_description' => 'Encryption error',
+                            'internal_error_code'       => 'GATEWAY_ERROR_ENCRYPTION_ERROR'
                         ]
                     ]
                 ];
                 $code = 200;
+
+                break;
+            default:
+                $response['data'] = [
+                    'data' => [
+                        'vpa' => 'razorpay@airtel'
+                    ],
+                    'gateway' => $content['payment']['gateway'],
+                ];
+                $code = 200;
+        }
+
+        if ($error != null)
+        {
+            return [$error, $code];
         }
 
         return [$response, $code];
     }
 
+    /**
+     * Pre process returns pre-process response.
+     */
     protected function preProcess(array $content): array
     {
         $payload = json_decode($content['payload'], true);
@@ -118,8 +142,11 @@ class Service extends UpiPaymentService
             'terminal' => [
                 'gateway_merchant_id' => 'MER0000000548542'
             ],
-            'error' => null
         ];
+
+        $data['success'] = true;
+        $data['error'] = null;
+        $data['next'] = null;
 
         $response = [
             'data'      => $data,
@@ -133,24 +160,40 @@ class Service extends UpiPaymentService
     protected function callback(array $content): array
     {
         $data = $content['data']['data'];
+        $error = $content['data']['error'];
+        $gateway = $content['gateway'];
+        $statusCode = 200;
 
         $upi = $data['upi'];
         $payment = $data['payment'];
 
         $responseData = [
             'acquirer' => [
-                'vpa'         => $upi['vpa'] ?? null,
-                'reference16' => $upi['npci_reference_id'] ?? null,
+                'vpa'         => $upi['vpa'],
+                'reference16' => $upi['npci_reference_id'],
             ],
             'amount_authorized' => $payment['amount_authorized'],
             'currency'          => $payment['currency'],
         ];
 
+        $responseError = $this->content($error);
+
         $response = [
-            'data' => $responseData,
-            'gateway' => $content['gateway'],
+            'data'      => $responseData,
+            'gateway'   => $gateway,
+            'error'     => $responseError,
         ];
 
-        return [$response, 200];
+        return [$response, $statusCode];
+    }
+
+    public function content(&$content)
+    {
+        return $content;
+    }
+
+    public function request(&$content)
+    {
+        return $content;
     }
 }

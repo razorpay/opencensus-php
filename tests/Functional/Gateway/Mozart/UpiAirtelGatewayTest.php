@@ -552,7 +552,7 @@ class UpiAirtelGatewayTest extends TestCase
             function ($mid, $feature, $mode)
             {
                 
-                if ($feature == 'upi_airtel_pre_process_v1')
+                if ($feature === 'upi_airtel_pre_process_v1')
                 {
                     return 'upi_airtel';
                 }

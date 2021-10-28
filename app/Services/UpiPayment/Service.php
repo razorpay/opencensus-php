@@ -12,7 +12,6 @@ use RZP\Constants\Entity;
 use RZP\Gateway\Upi\Base;
 use RZP\Models\Base\PublicEntity;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Payment\UpiMetadata;
 use Psr\Http\Message\RequestInterface;
 use Http\Discovery\Psr18ClientDiscovery;
 use Http\Discovery\Psr17FactoryDiscovery;
@@ -92,6 +91,7 @@ class Service
     }
     /**
      * preProcessServerCallback handles the pre processing of callback through UPS
+     *
      * @param  array|string $input
      * @param  string $gateway
      * @return array
@@ -111,7 +111,7 @@ class Service
     /**
      * getRequest returns the request for UPS
      *
-     * @param  array  $input
+     * @param  array $input
      * @return RequestInterface
      */
     protected function getRequest(array $input): RequestInterface
@@ -153,7 +153,7 @@ class Service
     /**
     * buildRequestBody builds the request body for UPS
     *
-    * @param  array  $input
+    * @param  array $input
     * @return array
     */
     protected function buildRequestBody(array $input): array
@@ -187,7 +187,7 @@ class Service
     /**
      * Sends the request to UPS
      *
-     * @param RequestInterface $request
+     * @param  RequestInterface $request
      * @return array
      */
     protected function sendRequest(RequestInterface $request): array
@@ -289,7 +289,7 @@ class Service
         switch ($this->action)
         {
             case Payment\Action::AUTHORIZE:
-                if (isset($response[Response::DATA]) === false)
+                if (isset($response[Response::DATA][Response::DATA]) === false)
                 {
                     throw new Exception\LogicException(
                         'data should be present in successful authorize response.',
@@ -297,6 +297,10 @@ class Service
                         ['response' => $response]);
                 }
 
+                return $response[Response::DATA];
+            case self::PRE_PROCESS:
+                return $response['data'];
+            case Payment\Action::CALLBACK:
                 return $response;
             case self::PRE_PROCESS:
                 return $response['data'];
@@ -313,33 +317,15 @@ class Service
     /**
      * Check for response errors
      *
-     * @param array $response
-     * @param integer $code
+     * @param  array   $response
+     * @param  integer $code
      * @return void
      */
     protected function checkForErrors(array $response, int $code)
     {
         if ($code === 200)
         {
-            if (isset($response['error']) === false)
-            {
-                return;
-            }
-
-            // Add processing for Mozart Gateway failures
-            $error = $response['error']['internal']['metadata'];
-
-            $internalErrorCode = $error['internal_error_code'];
-            $gatewayErrorCode = $error['gateway_error_code'];
-            $gatewayErrorDesc = $error['gateway_error_description'];
-
-            throw new Exception\GatewayErrorException(
-                $internalErrorCode,
-                $gatewayErrorCode,
-                $gatewayErrorDesc,
-                [],
-                null,
-                $this->action);
+            $this->checkGatewayFailure($response);
         }
         else if ($code >= 400 and $code < 500)
         {
@@ -359,10 +345,42 @@ class Service
         }
     }
 
+    protected function checkGatewayFailure($response)
+    {
+        if ($this->action === self::PRE_PROCESS)
+        {
+            // gateway error handling for pre-process will be handled else where
+            return;
+        }
+
+        $error = $response['error'] ?? null;
+
+        if ((isset($error) === false) or
+            (empty($error) === true))
+        {
+            return;
+        }
+
+        // Add processing for Mozart Gateway failures
+        $metadata = $error['internal']['metadata'];
+
+        $internalErrorCode = $metadata['internal_error_code'];
+        $gatewayErrorCode = $metadata['gateway_error_code'];
+        $gatewayErrorDesc = $metadata['gateway_error_description'];
+
+        throw new Exception\GatewayErrorException(
+            $internalErrorCode,
+            $gatewayErrorCode,
+            $gatewayErrorDesc,
+            [],
+            null,
+            $this->action);
+    }
+
     /**
      * Traces the response received from UPS
      *
-     * @param mixed $response
+     * @param  mixed $response
      * @return void
      */
     protected function traceResponse($response)
@@ -374,7 +392,7 @@ class Service
     /**
      * Traces the request sent to UPS
      *
-     * @param mixed $request
+     * @param  mixed $request
      * @return void
      */
     protected function traceRequest(array $request)
@@ -413,7 +431,7 @@ class Service
      */
     protected function getRequestHeaders(): array
     {
-        $authString = 'Basic '. base64_encode( $this->config['username'] . ':' .  $this->config['password']);
+        $authString = 'Basic '. base64_encode($this->config['username'] . ':' .  $this->config['password']);
 
         $headers = [
             Request::CONTENT_TYPE_HEADER      => Request::APPLICATION_JSON,
@@ -428,7 +446,9 @@ class Service
         return $headers;
     }
 
-    /********************************* Helpers **************************************/
+    /*********************************
+     * Helpers
+     **************************************/
 
     /**
      * converts the input object array to array
@@ -498,6 +518,7 @@ class Service
             json_last_error_msg(),
             ['array' => $data],
             null,
-            ErrorCode::SERVER_ERROR_FAILED_TO_CONVERT_ARRAY_TO_JSON);
+            ErrorCode::SERVER_ERROR_FAILED_TO_CONVERT_ARRAY_TO_JSON
+        );
     }
 }

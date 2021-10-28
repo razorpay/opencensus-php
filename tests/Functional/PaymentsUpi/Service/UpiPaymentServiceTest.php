@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\PaymentsUpi\Service;
 
+use Mockery;
+
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
@@ -22,6 +24,8 @@ class UpiPaymentServiceTest extends TestCase
 
     protected $terminal;
 
+    protected $upiPaymentService;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -30,6 +34,10 @@ class UpiPaymentServiceTest extends TestCase
 
         // Enable UPI payment service in config
         $this->app['config']->set(['applications.upi_payment_service.enabled' => true]);
+
+        $this->upiPaymentService =  Mockery::mock('RZP\Services\UpiPayment\Mock\Service', [$this->app])->makePartial();
+
+        $this->app->instance('upi.payments', $this->upiPaymentService);
 
         // We have Airtel Gateway Enabled for Service
         $this->terminal = $this->fixtures->create('terminal:shared_upi_airtel_terminal');
@@ -46,11 +54,11 @@ class UpiPaymentServiceTest extends TestCase
      *
      * @return void
      */
-    public function testCollectPaymentCreateSuccess()
+    public function testCollectPaymentCreateSuccess($description = 'create_collect_success')
     {
         $payment = $this->payment;
 
-        $payment['description'] = 'create_collect_success';
+        $payment['description'] = $description;
 
         $response = $this->doAuthPaymentViaAjaxRoute($payment);
 
@@ -271,6 +279,7 @@ class UpiPaymentServiceTest extends TestCase
 
     /**
      * Test Successful Collect Payment with pre-process through UPS
+     *
      * @return void
      */
     public function testCollectPaymentSuccessWithApiPreProcess()
@@ -329,5 +338,98 @@ class UpiPaymentServiceTest extends TestCase
         $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
 
         $this->assertNull($upiEntity);
+    }
+
+    /**
+     * Test Failed Collect Payment with pre-process through API
+     *
+     * @return void
+     */
+    public function testCollectPaymentFailureWithApiPreProcess()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                    ->setConstructorArgs([$this->app])
+                    ->onlyMethods(['getTreatment'])
+                    ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->gateway = 'upi_airtel';
+
+        $this->app->razorx
+        ->method('getTreatment')
+        ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'api_upi_airtel_pre_process_v1')
+                    {
+                        return 'upi_airtel';
+                    }
+
+                    return 'control';
+                }
+            )
+        );
+
+        $this->testCollectPaymentCreateSuccess('payment_failed');
+
+        $this->mockServerContentFunction(
+            function (&$error)
+            {
+                $responseError = [
+                'internal' => [
+                    'code'          => 'GATEWAY_ERROR_DEBIT_FAILED',
+                    'description'   => 'GATEWAY_ERROR',
+                    'metadata'      => [
+                        'description'               => $error['description'],
+                        'gateway_error_code'        => $error['gateway_error_code'],
+                        'gateway_error_description' => $error['gateway_error_description'],
+                        'internal_error_code'       => $error['internal_error_code']
+                    ]
+                ]
+                ];
+
+                return $responseError;
+            }
+        );
+
+        $payment = $this->getDbLastpayment();
+
+        $content = $this->mockServer('upi_airtel')->getAsyncCallbackContent($payment->toArray());
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
+
+        $payment = $this->getDbLastPayment();
+
+        // We should have received a successful response
+        $this->assertEquals(['success' => false], $response);
+
+        $this->assertArraySubset(
+            [
+            Entity::STATUS          => Status::FAILED,
+            Entity::GATEWAY         => 'upi_airtel',
+            Entity::TERMINAL_ID     => $this->terminal->getId(),
+            Entity::CPS_ROUTE       => Entity::UPI_PAYMENT_SERVICE,
+            Entity::ERROR_CODE      => 'GATEWAY_ERROR',
+            ], $payment->toArray()
+        );
+
+        $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
+
+        $this->assertNull($upiEntity);
+    }
+
+    protected function mockServerRequestFunction($closure)
+    {
+        $this->upiPaymentService->shouldReceive('request')->andReturnUsing($closure);
+    }
+
+    protected function mockServerContentFunction($closure)
+    {
+        $this->upiPaymentService->shouldReceive('content')->andReturnUsing($closure);
     }
 }
