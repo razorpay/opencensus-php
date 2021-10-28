@@ -585,7 +585,7 @@ class Core extends Base\Core
         return $this->get($user, true);
     }
 
-    private function sendLoginMailToUser(Entity $user, array $browserDetails)
+    private function sendLoginMailToUser(Entity $user, ?array $browserDetails)
     {
         $orgId = $this->app['basicauth']->getOrgId();
 
@@ -598,6 +598,8 @@ class Core extends Base\Core
         // send login notification for Razorpay org only
         if ($orgId === Org\Entity::RAZORPAY_ORG_ID)
         {
+            $this->trace->info(TraceCode::SEND_USER_LOGIN_EMAIL_ATTEMPT, [Entity::USER_ID => $user->getId()]);
+
             $loginMail = new UserMail\Login($user, $orgHostname, $browserDetails, $loginAt);
 
             Mail::queue($loginMail);
