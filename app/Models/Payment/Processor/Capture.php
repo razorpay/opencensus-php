@@ -677,6 +677,7 @@ trait Capture
         {
             case Payment\Gateway::HDFC:
                 return (($ex instanceof Exception\GatewayTimeoutException) === true);
+            case Payment\Gateway::FULCRUM:
             case Payment\Gateway::PAYSECURE:
                 return true;
         }
