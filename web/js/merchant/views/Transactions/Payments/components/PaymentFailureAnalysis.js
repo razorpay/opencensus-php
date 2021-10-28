@@ -74,13 +74,21 @@ export default ({ data, user }) => {
           ))}
         </div>
       </div>
-      {mismatchCount && (
-        <div className="failure-analysis-mismatch-desc">
-          <i className="fa fa-exclamation-circle text-fade" /> {mismatchCount} payments are in
-          created state and are yet to be processed. They are counted in total attempts but not in
-          successful or failed payments.
-        </div>
-      )}
+      <div className="failure-analysis-mismatch-desc">
+        {mismatchCount && (
+          <span>
+            <i className="fa fa-exclamation-circle text-fade" /> {mismatchCount} payments are in
+            created state and are yet to be processed. They are counted in total attempts but not in
+            successful or failed payments.{/* Needed these spaces for proper alignment */} |{' '}
+          </span>
+        )}
+        <span>
+          Need more help?{' '}
+          <a href="https://razorpay.com/docs/payments/payments/failure-analysis/">
+            <b>View Documentation</b>
+          </a>
+        </span>
+      </div>
     </>
   ) : null;
 };
