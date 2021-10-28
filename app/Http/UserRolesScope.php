@@ -68,7 +68,7 @@ class UserRolesScope
             'reports_monthly_banking_invoice' => BankingRole::getDefaultRoles(),
 
             // profile routes
-            'merchant_gst_fetch' => [Role::ADMIN, Role::OWNER, Role::FINANCE, Role::MANAGER],
+            'merchant_gst_fetch' => [Role::ADMIN, Role::OWNER, Role::FINANCE, Role::MANAGER, Role::OPERATIONS],
             'merchant_gst_edit'  => [Role::OWNER, Role::FINANCE],
 
             // merchant routes
