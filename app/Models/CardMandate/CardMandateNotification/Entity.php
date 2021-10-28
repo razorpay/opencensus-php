@@ -161,7 +161,7 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            $time->addDay();
+            $time->addDay()->addMinutes(5);
         }
 
         return $time->timestamp;

@@ -1010,7 +1010,17 @@ trait Authorize
 
     protected function processCardRecurringMandateInitialPaymentCreated(Payment\Entity $payment)
     {
-        $cardMandate = (new CardMandate\Core)->create($payment);
+        try
+        {
+            $cardMandate = (new CardMandate\Core)->create($payment);
+        }
+        catch (\Exception $e)
+        {
+            $this->failMandateCreationFailedCardInitialRecurringPayment($payment, $e);
+
+            throw $e;
+        }
+
 
         $token = $payment->localToken;
 

@@ -2806,6 +2806,15 @@ class Processor
         $this->updatePaymentFailed($exception, $traceCode);
     }
 
+    public function failMandateCreationFailedCardInitialRecurringPayment(Payment\Entity $payment, $exception)
+    {
+        $this->payment = $payment;
+
+        $traceCode = TraceCode::PAYMENT_CARD_MANDATE_CREATION_FAILED;
+
+        $this->updatePaymentFailed($exception, $traceCode);
+    }
+
     protected function updatePaymentFailed($exception, $traceCode)
     {
         $error = $exception->getError();

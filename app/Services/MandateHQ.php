@@ -19,6 +19,11 @@ class MandateHQ
         'cancel_mandate'                => 'v1/mandates/%s/cancel',
     ];
 
+    const VALID_400_ERROR_DESCRIPTIONS = [
+        'invalid card number'                         => ErrorCode::BAD_REQUEST_CARD_MANDATE_CARD_NOT_SUPPORTED,
+        'Pre-debit notification daily limit exceeds ' => ErrorCode::BAD_REQUEST_CARD_MANDATE_PRE_DEBIT_NOTIFICATION_MAXIMUM_LIMIT_REACHED,
+    ];
+
     protected $app;
 
     protected $baseUrl;
@@ -134,6 +139,23 @@ class MandateHQ
 
         if ($response->status_code !== 200)
         {
+            if (($response->status_code === 400) and
+                (empty($response->body) === false))
+            {
+                $data = json_decode($response->body, true);
+                if (isset(self::VALID_400_ERROR_DESCRIPTIONS[$data['error']['description'] ?? '']))
+                {
+                    throw new Exception\BadRequestException(
+                        self::VALID_400_ERROR_DESCRIPTIONS[$data['error']['description'] ?? ''],
+                        null,
+                        [
+                            'response_body'        => $response->body ?? null,
+                            'response_status_code' => $response->status_code,
+                        ]
+                    );
+                }
+            }
+
             throw new Exception\ServerErrorException(
                 'Mandate HQ error',
                 ErrorCode::SERVER_ERROR_MANDATE_HQ_REQUEST_FAILED,
@@ -142,7 +164,7 @@ class MandateHQ
                     'response_status_code' => $response->status_code,
                 ]
             );
-        }
+    }
 
         $decodedResponse = json_decode($response->body, true);
 

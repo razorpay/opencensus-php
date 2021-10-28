@@ -7,6 +7,7 @@ use Mockery;
 use Queue;
 use Carbon\Carbon;
 use RZP\Constants\Entity;
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Entity as E;
 use RZP\Models\Currency\Currency;
@@ -104,6 +105,43 @@ class CardMandateTest extends TestCase
         $this->assertNotEmpty($cardMandate->getMandateSummaryUrl());
         $this->assertEquals('active', $cardMandate->getStatus());
         $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
+    }
+
+    public function testCreateCardMandatePaymentWithMandateRegisterNotSupportingCard()
+    {
+        $this->mockCheckBin();
+
+        $callable = function ($input)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_CARD_MANDATE_CARD_NOT_SUPPORTED);
+        };
+
+        $this->mockRegisterMandate($callable);
+
+        $this->mockReportPayment();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->paymentInput,
+        ];
+
+        $exception = false;
+        try
+        {
+            $this->makeRequestAndGetContent($request);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertEquals(ErrorCode::BAD_REQUEST_CARD_MANDATE_CARD_NOT_SUPPORTED, $e->getCode());
+            $exception = true;
+        }
+
+        $this->assertTrue($exception);
+
+        $payment = $this->getDbLastEntity(E::PAYMENT);
+        $this->assertEquals('failed', $payment->getStatus());
+        $this->assertEquals('BAD_REQUEST_CARD_MANDATE_CARD_NOT_SUPPORTED', $payment->internal_error_code);
     }
 
     public function testCreateCardMandatePaymentWithAuthLink()
@@ -856,17 +894,20 @@ class CardMandateTest extends TestCase
         return $this->mockMandateHQ($callable, 'postDebitNotify');
     }
 
-    protected function mockRegisterMandate()
+    protected function mockRegisterMandate($callable = null)
     {
-        $callable = function ($input)
+        if ($callable === null)
         {
-            return [
-                'redirect_url' => "https://mandate-manager.stage.razorpay.in/issuer/hdfc_GX3VC146gmBVNe/hostedpage",
-                'id' => "ratn_PP3VC146gmBVGG",
-                'status' => "created",
-                'max_amount' => $input['max_amount'],
-            ];
-        };
+            $callable = function ($input)
+            {
+                return [
+                    'redirect_url' => "https://mandate-manager.stage.razorpay.in/issuer/hdfc_GX3VC146gmBVNe/hostedpage",
+                    'id' => "ratn_PP3VC146gmBVGG",
+                    'status' => "created",
+                    'max_amount' => $input['max_amount'],
+                ];
+            };
+        }
 
         return $this->mockMandateHQ($callable);
     }
