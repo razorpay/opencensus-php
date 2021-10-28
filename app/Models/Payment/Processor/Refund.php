@@ -885,10 +885,10 @@ trait Refund
 
     private function newRefundV2Flow(Payment\Entity $payment, array $input = [])
     {
-        // Special case - payment pages calls refund via public auth. In Scrooge, passport will have authenticated=false. 
+        // Special case - payment pages calls refund via public auth. In Scrooge, passport will have authenticated=false.
         // Short term workaround to allow payment pages business flow. Long term, service mesh would help Scrooge identify and authenticate internal services with respective permissions.
-        // 
-        // pls note, in API codebase, payment link is treated as payment page. 
+        //
+        // pls note, in API codebase, payment link is treated as payment page.
         // Check - ApiEventSubscriber::onPaymentCaptured
         if ($payment->hasPaymentLink() === true)
         {
@@ -1687,7 +1687,7 @@ trait Refund
     {
         $refund->balance()->associate($refund->merchant->primaryBalance);
 
-        if ($refund->payment->isCaptured() === true)
+        if ($refund->payment->hasBeenCaptured() === true)
         {
             //
             // Merchant balance / refund credits checks are not applicable in case of a normal refund on a
@@ -1828,8 +1828,8 @@ trait Refund
             $refund->setModeRequested($refundInput[RefundConstants::MODE]);
         }
 
-        // Validates and throws exception in case of insufficient balance
-        $this->validateMerchantBalance($refund, 'refund');
+        // Validates and throws exception in case of insufficient balance for applicable refunds
+        $this->refundBalanceChecks($refund);
 
         // Updates payment attributes. Throws exception on failure
         $this->handlePaymentUpdate($payment, $refundId, $amount, $baseAmount);

@@ -390,4 +390,74 @@ class ScroogeRefundCreationTest extends TestCase
         $this->assertEquals(350, $feesBreakup[0]['amount']);
         $this->assertEquals(64, $feesBreakup[1]['amount']);
     }
+
+    public function testCapturedPaymentScroogeRefundBalanceCheck()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        // set balance to 0
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 0]);
+
+        $dummyRefundId = 'dummyRefundId0';
+        $internalPaymentId = substr($payment['id'], 4);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->ba->scroogeAuth();
+
+        // full refund
+        $this->testData['callScroogeRefundTransactionCreate']['request']['content'] = [
+            'id'               => $dummyRefundId,
+            'payment_id'       => $internalPaymentId,
+            'amount'           => '50000',
+            'base_amount'      => '50000',
+            'gateway'          => $payment['gateway'],
+            'speed_decisioned' => 'normal',
+        ];
+
+        $response = $this->runRequestResponseFlow($this->testData['callScroogeRefundTransactionCreate']);
+
+        $this->assertEquals('BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE', $response['error']['code']);
+        $this->assertEquals('Your account does not have enough balance to carry out the refund operation. You can add funds to your account from your Razorpay dashboard or capture new payments.', $response['error']['message']);
+    }
+
+    public function testAuthorisedPaymentScroogeRefundBalanceCheck()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        // set balance to 0
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 0]);
+
+        $dummyRefundId = 'dummyRefundId0';
+        $internalPaymentId = substr($payment['id'], 4);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->ba->scroogeAuth();
+
+        // full refund
+        $this->testData['callScroogeRefundTransactionCreate']['request']['content'] = [
+            'id'               => $dummyRefundId,
+            'payment_id'       => $internalPaymentId,
+            'amount'           => '50000',
+            'base_amount'      => '50000',
+            'gateway'          => $payment['gateway'],
+            'speed_decisioned' => 'normal',
+        ];
+
+        $response = $this->runRequestResponseFlow($this->testData['callScroogeRefundTransactionCreate']);
+
+        $this->assertNull($response['error']);
+
+        $this->assertNull($response['data']['transaction_id']);
+        $this->assertFalse($response['data']['compensate_payment']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals(50000, $payment['amount_refunded']);
+        $this->assertEquals(50000, $payment['base_amount_refunded']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals('full', $payment['refund_status']);
+    }
 }
