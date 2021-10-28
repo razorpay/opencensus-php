@@ -5,7 +5,7 @@
   xmlns:o="urn:schemas-microsoft-com:office:office"
 >
   <head>
-    <title> </title>
+    <title>{{ $merchant['billing_label'] }}</title>
     <!--[if !mso]><!-- -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <!--<![endif]-->
@@ -76,6 +76,7 @@
         }
       </style>
     <![endif]-->
+
     <style type="text/css">
       @media only screen and (min-width: 480px) {
         .mj-column-per-100 {
@@ -84,10 +85,11 @@
         }
       }
     </style>
+
     <style type="text/css"></style>
   </head>
-  <body style="background-color: #1e2442">
-    <div style="background-color: #1e2442">
+  <body style="background-color: #f0f0f0">
+    <div style="background-color: #f0f0f0">
       <!--[if mso | IE]>
     <table
             align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
@@ -95,14 +97,10 @@
         <tr>
             <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
     <![endif]-->
+
       <div
         class="max-width-override"
-        style="
-          background: #171b2f;
-          background-color: #171b2f;
-          margin: 0px auto;
-          max-width: unset;
-        "
+        style="background: {{ $merchant['brand_color'] }}; background-color: {{ $merchant['brand_color'] }}; Margin: 0px auto; max-width: unset;"
       >
         <table
           align="center"
@@ -110,7 +108,7 @@
           cellpadding="0"
           cellspacing="0"
           role="presentation"
-          style="background: #171b2f; background-color: #171b2f; width: 100%"
+          style="background:{{ $merchant['brand_color'] }};background-color:{{ $merchant['brand_color'] }};width:100%;"
         >
           <tbody>
             <tr>
@@ -125,11 +123,14 @@
               >
                 <!--[if mso | IE]>
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+
                         <tr>
+
                             <td
                                     class="" style="vertical-align:top;width:600px;"
                             >
                     <![endif]-->
+
                 <div
                   class="mj-column-per-100 outlook-group-fix"
                   style="
@@ -186,7 +187,7 @@
                                     "
                                   >
                                     <div
-                                      class="content branding rzp"
+                                      class="content branding merchant"
                                       style="
                                         width: 85%;
                                         width: calc(46000% - 211600px);
@@ -206,8 +207,9 @@
                                           text-align: center;
                                           width: fit-content;
                                           margin: 0 auto;
-                                          font-size: 12px;
+                                          font-size: 16px;
                                           line-height: 1.5;
+                                          color: #0d2366;
                                         "
                                       >
                                         <div
@@ -215,15 +217,29 @@
                                           style="
                                             display: inline-block;
                                             vertical-align: middle;
-                                            height: 18px;
-                                            width: 85px;
+                                            background-color: #ffffff;
+                                            box-sizing: border-box;
+                                            line-height: 0;
                                           "
                                         >
+                                          @isset($merchant['brand_logo'])
                                           <img
-                                            src="https://cdn.razorpay.com/static/assets/logo/rzpX.png"
-                                            width="100px"
-                                            style="height: 100%; width: 100%"
+                                            src="{{ $merchant['brand_logo'] }}"
+                                            style="
+                                              height: 38px;
+                                              width: 38px;
+                                              margin: 5px;
+                                            "
+                                            width="38"
+                                            height="38"
                                           />
+                                          @endisset
+                                        </div>
+                                        <div
+                                          class="content-element"
+                                          style="display: inline-block; vertical-align: middle; margin-left: 10px; color: {{ $merchant['contrast_color'] }};"
+                                        >
+                                          {{ $merchant['billing_label'] }}
                                         </div>
                                       </div>
                                     </div>
@@ -239,7 +255,7 @@
                                         box-sizing: border-box;
                                         padding-left: 16px;
                                         padding-right: 16px;
-                                        background-color: #242b4d;
+                                        background-color: #ffffff;
                                         padding-top: 24px;
                                       "
                                     >
@@ -257,7 +273,7 @@
                                         >
                                           <img
                                             class="image small"
-                                            src="https://cdn.razorpay.com/x/error-icon.png"
+                                            src="https://cdn.razorpay.com/static/assets/email/payment-warning-icon.png"
                                             style="
                                               margin: 8px;
                                               background: transparent;
@@ -268,197 +284,90 @@
                                         </div>
                                       </div>
                                     </div>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <!--[if mso | IE]>
-                    </td>
-                    </tr>
-                    </table>
-                    <![endif]-->
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <!--[if mso | IE]>
-    </td>
-    </tr>
-    </table>
-    <table
-            align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
-    >
-        <tr>
-            <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-    <![endif]-->
-      <div
-        class="max-width-override"
-        style="margin: 0px auto; max-width: unset"
-      >
-        <table
-          align="center"
-          border="0"
-          cellpadding="0"
-          cellspacing="0"
-          role="presentation"
-          style="width: 100%"
-        >
-          <tbody>
-            <tr>
-              <td
-                style="
-                  direction: ltr;
-                  font-size: 0px;
-                  padding: 0px;
-                  text-align: center;
-                  vertical-align: top;
-                "
-              >
-                <!--[if mso | IE]>
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                        <tr>
-                            <td
-                                    class="" style="vertical-align:top;width:600px;"
-                            >
-                    <![endif]-->
-                <div
-                  class="mj-column-per-100 outlook-group-fix"
-                  style="
-                    font-size: 13px;
-                    text-align: left;
-                    direction: ltr;
-                    display: inline-block;
-                    vertical-align: top;
-                    width: 100%;
-                  "
-                >
-                  <table
-                    border="0"
-                    cellpadding="0"
-                    cellspacing="0"
-                    role="presentation"
-                    width="100%"
-                  >
-                    <tbody>
-                      <tr>
-                        <td style="vertical-align: top; padding: 0px">
-                          <table
-                            border="0"
-                            cellpadding="0"
-                            cellspacing="0"
-                            role="presentation"
-                            style=""
-                            width="100%"
-                          >
-                            <tr>
-                              <td
-                                align="left"
-                                style="
-                                  font-size: 0px;
-                                  padding: 0px;
-                                  word-break: break-word;
-                                "
-                              >
-                                <div
-                                  style="
-                                    font-family: Trebuchet MS;
-                                    font-size: 13px;
-                                    line-height: 1;
-                                    text-align: left;
-                                    color: #000000;
-                                  "
-                                >
-                                  <div
-                                    class="card secondary title informative"
-                                    style="
-                                      width: 85%;
-                                      width: calc(46000% - 211600px);
-                                      max-width: 460px;
-                                      min-width: 308px;
-                                      margin-left: auto;
-                                      margin-right: auto;
-                                      box-sizing: border-box;
-                                      background-color: #242b4d;
-                                      padding-bottom: 16px;
-                                      padding-left: 24px;
-                                      padding-right: 24px;
-                                    "
-                                  >
                                     <div
-                                      class="
-                                        center-align
-                                        font-size-18 font-color-primary
-                                        margin-bottom-8
-                                        line-height-26
-                                      "
+                                      class="content title"
                                       style="
-                                        text-align: center;
-                                        font-size: 18px;
-                                        color: #fff;
-                                        line-height: 26px;
-                                        margin-bottom: 8px;
+                                        width: 85%;
+                                        width: calc(46000% - 211600px);
+                                        max-width: 460px;
+                                        min-width: 308px;
+                                        margin-left: auto;
+                                        margin-right: auto;
+                                        box-sizing: border-box;
+                                        padding-left: 16px;
+                                        padding-right: 16px;
+                                        background-color: #ffffff;
+                                        padding-top: 0px;
+                                        padding-bottom: 46px;
                                       "
-                                    >
-                                      Invoice attachment(s) to
-                                      {{$merchant['name']}} couldn’t be uploaded
-                                      to RazorpayX
-                                    </div>
-                                    <div
-                                      class="center-align"
-                                      style="text-align: center"
                                     >
                                       <div
-                                        class="puck para"
-                                        style="margin: 0; padding: 12px 0"
+                                        class="title-content"
+                                        style="
+                                          text-align: center;
+                                          width: fit-content;
+                                          margin: 0 auto;
+                                        "
                                       >
                                         <div
-                                          class="bar"
+                                          class="font-color-otp font-size-large"
                                           style="
-                                            margin: 0px auto;
-                                            width: 24px;
-                                            height: 4px;
-                                            background-color: #08ca73;
+                                            font-weight: bold;
+                                            font-size: 16px;
+                                            line-height: 24px;
+                                            text-align: center;
+                                            color: #7b8199;
                                           "
-                                        ></div>
+                                        >
+                                          {{ $merchant['billing_label'] }} has received {{ $total_attachments - count($failed_file_details) }} of {{ $total_attachments }}
+                                          invoices.
+                                        </div>
+                                        <div
+                                          class="center-align"
+                                          style="text-align: center"
+                                        >
+                                          <div
+                                            class="puck para"
+                                            style="
+                                              margin: 0;
+                                              padding-top: 8px;
+                                              padding-bottom: 16px;
+                                            "
+                                          >
+                                            <div
+                                              class="bar"
+                                              style="
+                                                margin: 0px auto;
+                                                width: 24px;
+                                                height: 4px;
+                                                background-color: #08ca73;
+                                              "
+                                            ></div>
+                                          </div>
+                                        </div>
                                       </div>
-                                    </div>
-                                    <div
-                                      class="para-dark center"
-                                      style="
-                                        color: #9195a6;
-                                        font-size: 14px;
-                                        line-height: 1.5;
-                                        text-align: center;
-                                      "
-                                    >
-                                      The following attachment(s) failed to
-                                      upload on RazorpayX due to errors
-                                      mentioned in the details below.
-                                    </div>
-                                    <br /><br />
-                                    <div
-                                      class="para-dark center"
-                                      style="
-                                        color: #9195a6;
-                                        font-size: 14px;
-                                        line-height: 1.5;
-                                        text-align: center;
-                                      "
-                                    >
-                                      Make sure the file type is “.pdf , .png ,
-                                      .jpeg or .jpg” and size is not larger than
-                                      10 MB and upto 20 attachments. If the
-                                      attachment could not be added due to
-                                      integration failure, try again after
-                                      sometime. If the error prolongs, kindly
-                                      contact the business.
+                                      <div
+                                        class="left"
+                                        style="
+                                          text-align: left;
+                                          font-size: 14px;
+                                          line-height: 20px;
+                                          color: #7b8199;
+                                        "
+                                      >
+                                        @if($total_attachments - count($failed_file_details) > 0)
+                                        {{ $merchant['billing_label'] }} will review the received
+                                        invoices and pay them on the due date.
+                                        Once the payment is approved, the vendor
+                                        will be notified via email.
+                                        <br />
+                                        <br />
+                                        @endif
+                                        Some of your invoices could not be
+                                        accepted, please see the details below.
+                                        For any queries regarding the invoice,
+                                        contact the merchant directly.
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
@@ -470,9 +379,12 @@
                     </tbody>
                   </table>
                 </div>
+
                 <!--[if mso | IE]>
                     </td>
+
                     </tr>
+
                     </table>
                     <![endif]-->
               </td>
@@ -480,10 +392,36 @@
           </tbody>
         </table>
       </div>
+
       <!--[if mso | IE]>
     </td>
     </tr>
     </table>
+
+    <table
+            align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
+    >
+        <tr>
+            <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
+    <![endif]-->
+
+      <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+
+    <table
+            align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
+    >
+        <tr>
+            <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
+    <![endif]-->
+
+      <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+
     <table
             align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
     >
@@ -514,12 +452,12 @@
                 "
               >
                 <!--[if mso | IE]>
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                        <tr>
-                            <td
-                                    class="" style="vertical-align:top;width:600px;"
-                            >
-                    <![endif]-->
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td
+                                class="" style="vertical-align:top;width:600px;"
+                        >
+                <![endif]-->
                 <div
                   class="mj-column-per-100 outlook-group-fix"
                   style="
@@ -583,7 +521,7 @@
                                       margin-left: auto;
                                       margin-right: auto;
                                       box-sizing: border-box;
-                                      background-color: #242b4d;
+                                      background-color: #ffffff;
                                       border-top: 2px solid #3281ff;
                                       padding-left: 24px;
                                       padding-right: 24px;
@@ -598,7 +536,7 @@
                                       style="
                                         font-size: 16px;
                                         line-height: 1.5;
-                                        color: #bdbfc9;
+                                        color: #7b8199;
                                         margin-bottom: 8px;
                                       "
                                     >
@@ -637,7 +575,7 @@
                                         <div
                                           class="value left-align"
                                           style="
-                                            color: #bdbfc9;
+                                            color: #7b8199;
                                             display: inline-block;
                                             width: 75%;
                                             text-align: right;
@@ -684,7 +622,10 @@
                                     <div class="divider">
                                       <div
                                         class="divider-line"
-                                        style="height: 1px; background: #3a405f"
+                                        style="
+                                          height: 1px;
+                                          background: rgba(129, 126, 126, 0.1);
+                                        "
                                       ></div>
                                     </div>
                                     @endforeach
@@ -699,34 +640,30 @@
                   </table>
                 </div>
                 <!--[if mso | IE]>
-                    </td>
-                    </tr>
-                    </table>
-                    <![endif]-->
+                </td>
+                </tr>
+                </table>
+                <![endif]-->
               </td>
             </tr>
           </tbody>
         </table>
       </div>
       <!--[if mso | IE]>
-    </td>
-    </tr>
-    </table>
+</td>
+</tr>
+</table>
+
     <table
-            align="center" border="0" cellpadding="0" cellspacing="0" class="footer-outlook" style="width:600px;" width="600"
+            align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
     >
         <tr>
             <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
     <![endif]-->
+
       <div
-        class="footer"
-        style="
-          width: 100%;
-          margin: 0px auto;
-          max-width: 600px;
-          margin-top: 8px;
-          margin-bottom: 8px;
-        "
+        class="max-width-override"
+        style="margin: 0px auto; max-width: unset"
       >
         <table
           align="center"
@@ -749,11 +686,14 @@
               >
                 <!--[if mso | IE]>
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+
                         <tr>
+
                             <td
                                     class="" style="vertical-align:top;width:600px;"
                             >
                     <![endif]-->
+
                 <div
                   class="mj-column-per-100 outlook-group-fix"
                   style="
@@ -801,57 +741,91 @@
                                     color: #000000;
                                   "
                                 >
-                                  <mj-section css-class="max-width-override">
-                                    <mj-column>
-                                      <mj-text>
+                                  <div
+                                    class="card footer-card"
+                                    style="
+                                      width: 85%;
+                                      width: calc(46000% - 211600px);
+                                      max-width: 460px;
+                                      min-width: 308px;
+                                      margin-left: auto;
+                                      margin-right: auto;
+                                      box-sizing: border-box;
+                                      padding-left: 16px;
+                                      padding-right: 16px;
+                                      background-color: #ffffff;
+                                      padding: 0px;
+                                      margin-top: 8px;
+                                    "
+                                  >
+                                    <div
+                                      class="information-row"
+                                      style="
+                                        width: 100%;
+                                        box-sizing: border-box;
+                                        margin-bottom: 10px;
+                                        padding-left: 44px;
+                                        padding-right: 44px;
+                                        padding-top: 16px;
+                                        padding-bottom: 18px;
+                                      "
+                                    >
+                                      <div
+                                        class="label half-width"
+                                        style="
+                                          color: #bdbfc9;
+                                          display: inline-block;
+                                          width: 65%;
+                                          vertical-align: top;
+                                          margin-top: 12px;
+                                        "
+                                      >
                                         <div
-                                          class="
-                                            card
-                                            secondary
-                                            informative informative
-                                            footer-card-dark
-                                          "
                                           style="
-                                            width: 85%;
-                                            width: calc(46000% - 211600px);
-                                            max-width: 460px;
-                                            min-width: 308px;
-                                            margin-left: auto;
-                                            margin-right: auto;
-                                            box-sizing: border-box;
-                                            background-color: #242b4d;
-                                            padding-left: 24px;
-                                            padding-right: 24px;
-                                            padding: 0px;
-                                            margin-top: 0px;
+                                            font-size: 12px;
+                                            line-height: 14px;
+                                            color: #7b8199;
+                                            vertical-align: middle;
                                           "
                                         >
-                                          <div
-                                            class="footer-text"
-                                            style="
-                                              font-size: 12px;
-                                              line-height: 1.5;
-                                              color: #9195a6;
-                                              text-align: center;
-                                              padding: 8px 0;
-                                            "
-                                          >
-                                            In case of any concerns with this
-                                            email<br /><a
-                                              class="link"
-                                              href="https://x.razorpay.com/?support=ticket"
-                                              target="_blank"
-                                              style="
-                                                text-decoration: none;
-                                                color: #528ff0;
-                                              "
-                                              >Contact Support</a
-                                            >
-                                          </div>
+                                          Collect Vendor Invoices via Email
                                         </div>
-                                      </mj-text>
-                                    </mj-column>
-                                  </mj-section>
+                                      </div>
+                                      <div
+                                        class="value"
+                                        style="
+                                          display: inline-block;
+                                          width: 20%;
+                                          text-align: left;
+                                          padding-left: 24px;
+                                          border-left: 2px solid
+                                            rgba(0, 0, 0, 0.1); ;
+                                        "
+                                      >
+                                        <div
+                                          style="
+                                            font-weight: bold;
+                                            font-size: 10px;
+                                            line-height: 12px;
+                                            color: #7b8199;
+                                            margin-bottom: 6px;
+                                            padding-left: 2px;
+                                          "
+                                        >
+                                          Sign up on
+                                        </div>
+                                        <div
+                                          class="content-element logo"
+                                          style="height: 18px; width: 85px"
+                                        >
+                                          <img
+                                            src="https://cdn.razorpay.com/static/assets/razorpayx/logos/rx-dark-logo.png"
+                                            style="height: 100%; width: 100%"
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
                               </td>
                             </tr>
@@ -861,9 +835,12 @@
                     </tbody>
                   </table>
                 </div>
+
                 <!--[if mso | IE]>
                     </td>
+
                     </tr>
+
                     </table>
                     <![endif]-->
               </td>
@@ -871,6 +848,192 @@
           </tbody>
         </table>
       </div>
+
+      <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+
+    <table
+            align="center" border="0" cellpadding="0" cellspacing="0" class="footer-outlook" style="width:600px;" width="600"
+    >
+        <tr>
+            <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
+    <![endif]-->
+
+      <div
+        class="footer"
+        style="
+          width: 100%;
+          margin: 0px auto;
+          max-width: 600px;
+          margin-top: 8px;
+          margin-bottom: 8px;
+        "
+      >
+        <table
+          align="center"
+          border="0"
+          cellpadding="0"
+          cellspacing="0"
+          role="presentation"
+          style="width: 100%"
+        >
+          <tbody>
+            <tr>
+              <td
+                style="
+                  direction: ltr;
+                  font-size: 0px;
+                  padding: 0px;
+                  text-align: center;
+                  vertical-align: top;
+                "
+              >
+                <!--[if mso | IE]>
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+
+                        <tr>
+
+                            <td
+                                    class="" style="vertical-align:top;width:600px;"
+                            >
+                    <![endif]-->
+
+                <div
+                  class="mj-column-per-100 outlook-group-fix"
+                  style="
+                    font-size: 13px;
+                    text-align: left;
+                    direction: ltr;
+                    display: inline-block;
+                    vertical-align: top;
+                    width: 100%;
+                  "
+                >
+                  <table
+                    border="0"
+                    cellpadding="0"
+                    cellspacing="0"
+                    role="presentation"
+                    width="100%"
+                  >
+                    <tbody>
+                      <tr>
+                        <td style="vertical-align: top; padding: 0px">
+                          <table
+                            border="0"
+                            cellpadding="0"
+                            cellspacing="0"
+                            role="presentation"
+                            style=""
+                            width="100%"
+                          >
+                            <tr>
+                              <td
+                                align="left"
+                                style="
+                                  font-size: 0px;
+                                  padding: 0px;
+                                  word-break: break-word;
+                                "
+                              >
+                                <div
+                                  style="
+                                    font-family: Trebuchet MS;
+                                    font-size: 13px;
+                                    line-height: 1;
+                                    text-align: left;
+                                    color: #000000;
+                                  "
+                                >
+                                  <div
+                                    class="footer-text"
+                                    style="
+                                      font-size: 12px;
+                                      line-height: 1.5;
+                                      color: #7b8199;
+                                      text-align: center;
+                                      padding: 8px 0;
+                                    "
+                                  >
+                                    <div
+                                      class="test"
+                                      style="
+                                        width: 100%;
+                                        box-sizing: border-box;
+                                      "
+                                    >
+                                      @isset($merchant['support_url'])
+                                      <div
+                                        class="value"
+                                        style="
+                                          display: inline-block;
+                                          width: 25%;
+                                        "
+                                      >
+                                        {{ $merchant['support_url'] }}
+                                      </div>
+                                      <div
+                                        class="line"
+                                        style="display: inline-block; width: 2%"
+                                      >
+                                        |
+                                      </div>
+                                      @endisset
+                                      @isset($merchant['support_contact'])
+                                      <div
+                                        class="value"
+                                        style="
+                                          display: inline-block;
+                                          width: 25%;
+                                        "
+                                      >
+                                        {{ $merchant['support_contact'] }}
+                                      </div>
+                                      <div
+                                        class="line"
+                                        style="display: inline-block; width: 2%"
+                                      >
+                                        |
+                                      </div>
+                                      @endisset
+                                      @isset($merchant['support_email'])
+                                      <div
+                                        class="value"
+                                        style="
+                                          display: inline-block;
+                                          width: 25%;
+                                        "
+                                      >
+                                        {{ $merchant['support_email'] }}
+                                      </div>
+                                      @endisset
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!--[if mso | IE]>
+                    </td>
+
+                    </tr>
+
+                    </table>
+                    <![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       <!--[if mso | IE]>
     </td>
     </tr>
