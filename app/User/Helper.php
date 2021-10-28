@@ -134,4 +134,20 @@ class Helper
     {
         return $user->role === 'owner';
     }
+
+    public function getUserDevice($browser): string
+    {
+        if ($browser->isMobile())
+        {
+            return 'Mobile';
+        }
+        else if ($browser->isTablet())
+        {
+            return 'Tablet';
+        }
+        else
+        {
+            return 'Web';
+        }
+    }
 }
