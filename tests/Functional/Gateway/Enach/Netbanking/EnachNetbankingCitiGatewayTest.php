@@ -212,7 +212,7 @@ class EnachNetbankingCitiGatewayTest extends EnachNetbankingNpciGatewayTest
 
         $payment = $this->getDbEntityById('payment', $payment['id']);
 
-        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('captured', $payment['status']);
 
         $this->assertEquals('emandate', $payment['method']);
 

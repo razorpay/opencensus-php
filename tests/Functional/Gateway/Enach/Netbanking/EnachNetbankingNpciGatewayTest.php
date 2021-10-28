@@ -533,7 +533,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->authorizeFailedPayment($payment['id']);
 
         $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('captured', $payment['status']);
 
         $enach = $this->getLastEntity('enach', true);
         $this->assertNotNull($enach['gateway_reference_id']);

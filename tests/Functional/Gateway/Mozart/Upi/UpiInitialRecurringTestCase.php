@@ -500,7 +500,7 @@ class UpiInitialRecurringTestCase extends TestCase
         $this->assertArraySubset([
             Payment\Entity::ORDER_ID        => substr($orderId, 6),
             Payment\Entity::CUSTOMER_ID     => '100000customer',
-            Payment\Entity::STATUS          => 'authorized',
+            Payment\Entity::STATUS          => 'captured',
             Payment\Entity::LATE_AUTHORIZED  => true,
         ], $payment->toArray());
 
@@ -558,7 +558,7 @@ class UpiInitialRecurringTestCase extends TestCase
         $this->assertArraySubset([
             Payment\Entity::ORDER_ID         => substr($orderId, 6),
             Payment\Entity::CUSTOMER_ID      => '100000customer',
-            Payment\Entity::STATUS           => 'authorized',
+            Payment\Entity::STATUS           => 'captured',
             Payment\Entity::LATE_AUTHORIZED  => true,
         ], $payment->toArray());
     }

@@ -4602,6 +4602,20 @@ class Processor
             return $response;
         }
 
+        if ($order->getPaymentCapture() === true)
+        {
+            $isLateAuthInvoicePayment = ($payment->isLateAuthorized() === true and $payment->hasInvoice() === true);
+
+            if ($isLateAuthInvoicePayment === false)
+            {
+                $response['should_auto_capture'] = true;
+
+                $response['reason'] = Constants::ORDER_PAYMENT_CAPTURE_TRUE;
+
+                return $response;
+            }
+        }
+
         if ($order->getPaymentCapture() !== true)
         {
             $response['should_auto_capture'] = false;

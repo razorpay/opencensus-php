@@ -545,7 +545,7 @@ class NetbankingSbiEmandateTest extends TestCase
         $this->assertEquals('emandate', $batch['type']);
         $this->assertEquals('created', $batch['status']);
 
-        $this->assertDebitDetails($debitPayments, 'authorized', 'ACCT HAS HOLD. INSUFFICIENT FREE BAL FOR TXN');
+        $this->assertDebitDetails($debitPayments, 'captured', 'ACCT HAS HOLD. INSUFFICIENT FREE BAL FOR TXN');
     }
 
     // Use case where sbi appends additional 0s to the account number
