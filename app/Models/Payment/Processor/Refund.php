@@ -1808,6 +1808,14 @@ trait Refund
             RefundEntity::AMOUNT => $amount,
         ];
 
+        // For emandate Rs0 registration refunds
+        if (($payment->isEmandate() === true) && (empty($refundCreateInput[RefundEntity::AMOUNT]) === true))
+        {
+            // unsetting it since validator on amount would execute and build will fail, if input has amount.
+            // also, emandate raises refund requests by NOT supplying the amount. keeping it uniform.
+            unset($refundCreateInput[RefundEntity::AMOUNT]);
+        }
+
         $refund = (new Payment\Refund\Entity)->build($refundCreateInput, $payment);
 
         $refund->merchant()->associate($this->merchant);

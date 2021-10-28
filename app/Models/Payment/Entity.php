@@ -2920,6 +2920,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $paymentAmount = $this->getAmount();
 
+        if ($paymentAmount === 0)
+        {
+            return 0;
+        }
+
         return $baseAmount / $paymentAmount;
     }
 

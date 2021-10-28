@@ -587,6 +587,15 @@ class EnachRblGatewayTest extends TestCase
 
         $this->ba->adminAuth();
 
+        // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
+        // This will only assert what is necessary.
+        $flag = true;
+
+        if ($flag === true)
+        {
+            $this->enableRazorXTreatmentForRefundV2();
+        }
+
         $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
 
         $enach = $this->getDbLastEntityToArray('enach');
@@ -602,6 +611,26 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals(PublicErrorDescription::GATEWAY_ERROR, $token['recurring_failure_reason']);
 
         $payment = $this->getDbLastEntityToArray('payment');
+
+        // Since, refunds are no longer created in API DB,
+        // need to update payments and transactions explicitly.
+        if ($flag === true)
+        {
+            $input = [
+                'payment_id'       => $payment['id'],
+                'refund_id'        => 'HZETs6HPiyDr8n',
+                'amount'           => '0',
+                'base_amount'      => '0',
+                'gateway'          => $payment['gateway'],
+                'speed_decisioned' => 'normal'
+            ];
+
+            // create transaction entity, reconcile it as per '/Processor/Emandate/Base.php' and do assertions
+            $this->createTransactionForRefunds($input, true);
+
+            $this->updatePaymentStatus($payment['id'], [], true);
+            $payment = $this->getDbLastEntityToArray('payment');
+        }
 
         $this->assertEquals('refunded', $payment['status']);
     }

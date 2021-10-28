@@ -3125,4 +3125,47 @@ trait PaymentTrait
                               }));
     }
 
+    // For testing new refund V2 flow.
+    // Create transaction entity.
+    public function createTransactionForRefunds($input = [], $reconcile = false)
+    {
+        $this->ba->scroogeAuth();
+
+        $requestData = [
+            'request' => [
+                'method'  => 'post',
+                'url'     => '/refunds/transaction_create',
+                'content' => [
+                        'id'               => $input['refund_id'],
+                        'payment_id'       => $input['payment_id'],
+                        'amount'           => $input['amount'],
+                        'base_amount'      => $input['base_amount'],
+                        'gateway'          => $input['gateway'],
+                        'speed_decisioned' => $input['speed_decisioned'],
+                        'mode'             => $input['mode'] ?? null,
+                ],
+            ],
+            'response' => [
+                'content' => []
+            ],
+        ];
+
+        $response = $this->runRequestResponseFlow($requestData);
+
+        $this->assertNull($response['error']);
+
+        $this->assertNotNull($response['data']['transaction_id']);
+
+        if ($reconcile === true)
+        {
+            $this->fixtures->edit('transaction', $response['data']['transaction_id'], [
+                'reconciled_at' => Carbon::now(Timezone::IST)->getTimestamp(),
+            ]);
+
+            $transaction = $this->getDbLastEntityToArray('transaction');
+
+            $this->assertNotNull($transaction['reconciled_at']);
+        }
+    }
+
 }
