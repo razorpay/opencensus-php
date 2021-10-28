@@ -3,7 +3,11 @@
 namespace RZP\Models\PaymentLink\PaymentPageItem;
 
 use RZP\Models\Base;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\PaymentLink;
+use RZP\Models\Item;
+use RZP\Models\Store;
+use RZP\Models\Merchant;
 use RZP\Trace\Tracer;
 
 class Repository extends Base\Repository
@@ -24,5 +28,47 @@ class Repository extends Base\Repository
                     ->where(Entity::PAYMENT_LINK_ID, $paymentLink->getId())
                     ->findOrFailPublic($id);
         });
+    }
+
+    public function fetchAllItemsOfPaymentLink(
+        Store\Entity $paymentLink,
+        Merchant\Entity $merchant,
+        bool $avoidTrashed = true)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::PAYMENT_LINK_ID, $paymentLink->getId())
+                      ->where(Entity::MERCHANT_ID, $merchant->getId());
+
+        if($avoidTrashed === false)
+        {
+            $query->withTrashed();
+        }
+
+        return $query->get();
+    }
+
+    public function findByIdAndPaymentLinkEntityAndMerchantOrFail(
+        string $id,
+        Store\Entity $paymentLink,
+        Merchant\Entity $merchant): Entity
+    {
+        return $this->newQuery()
+            ->where(Entity::PAYMENT_LINK_ID, $paymentLink->getId())
+            ->where(Entity::MERCHANT_ID, $merchant->getId())
+            ->withTrashed()
+            ->findOrFailPublic($id);
+    }
+
+    protected function serializeForIndexing(PublicEntity $entity): array
+    {
+        $serialized = parent::serializeForIndexing($entity);
+
+        $serialized[Item\Entity::NAME] = $entity->item->getName();
+
+        $serialized[Item\Entity::DESCRIPTION] = $entity->item->getDescription();
+
+        $serialized[Entity::ITEM_DELETED_AT] = $entity->item->getDeletedAt();
+
+        return $serialized;
     }
 }

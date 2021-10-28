@@ -42,6 +42,9 @@ class Validator extends Base\Validator
         Entity::PRODUCT_CONFIG . '.' . Entity::SUBSCRIPTION_DETAILS . '.' . Entity::SUBSCRIPTION_QUANTITY => 'nullable|int|min:1|max:1000',
         Entity::PRODUCT_CONFIG . '.' . Entity::SUBSCRIPTION_DETAILS . '.' . Entity::SUBSCRIPTION_TOTAL_COUNT => 'int|min:1|max:1000',
         Entity::PRODUCT_CONFIG . '.' . Entity::SUBSCRIPTION_DETAILS . '.' . Entity::SUBSCRIPTION_CUSTOMER_NOTIFY => 'nullable|boolean',
+        Entity::PRODUCT_CONFIG . '.' . Entity::PRODUCT_IMAGES => 'nullable|array',
+        Entity::PRODUCT_CONFIG . '.' . Entity::SELLING_PRICE  => 'sometimes|nullable|mysql_unsigned_int',
+
         Entity::SETTINGS . '.' . Entity::POSITION => 'nullable|int|min:0|max:1000',
     ];
 
@@ -67,6 +70,9 @@ class Validator extends Base\Validator
         Entity::MIN_AMOUNT      => 'sometimes|nullable|mysql_unsigned_int',
         Entity::MAX_AMOUNT      => 'sometimes|nullable|mysql_unsigned_int',
         Entity::SETTINGS        => 'nullable|array',
+        Entity::PRODUCT_CONFIG  => 'nullable|array|custom',
+        Entity::PRODUCT_CONFIG . '.' . Entity::PRODUCT_IMAGES => 'nullable|array',
+        Entity::PRODUCT_CONFIG . '.' . Entity::SELLING_PRICE  => 'sometimes|nullable|mysql_unsigned_int',
 
         Entity::SETTINGS . '.' . Entity::POSITION => 'nullable|int|min:0|max:1000',
     ];
@@ -423,7 +429,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateItemCurrency(Item\Entity $item, PaymentLink\Entity $paymentLink)
+    public function validateItemCurrency(Item\Entity $item, $paymentLink)
     {
         if ($item->getCurrency() !== $paymentLink->getCurrency())
         {

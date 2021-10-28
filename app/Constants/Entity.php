@@ -200,6 +200,8 @@ class Entity
     const VIRTUAL_VPA_PREFIX            = 'virtual_vpa_prefix';
     const VIRTUAL_VPA_PREFIX_HISTORY    = 'virtual_vpa_prefix_history';
 
+    const STORE = 'store';
+
     // Banking Account Entities
     const BANKING_ACCOUNT                   = 'banking_account';
     const BANKING_ACCOUNT_STATE             = 'banking_account_state';

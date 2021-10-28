@@ -34,6 +34,7 @@ class Module
     const VIRTUAL_ACCOUNT       = 'virtual_account';
     const M2P_TRANSFER          = 'm2p_transfer';
     const QR_CODE               = 'qr_code';
+    const PAYMENT_STORE         = 'payment_store';
 
     const PAYMENT_LINK_COMPUTED = 'payment_link_computed';
 

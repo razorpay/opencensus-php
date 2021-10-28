@@ -456,6 +456,10 @@ class Response
             'partner_kyc_approve_reject',
             'partner_kyc_approve_reject_cors',
             'merchant_tnc_details',
+            'store_hosted_page_data',
+            'store_hosted_page_data_options',
+            'store_create_order',
+            'store_create_order_options',
         ];
 
         if (in_array($route, $routes, true) === true)

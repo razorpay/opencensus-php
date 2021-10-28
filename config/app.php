@@ -331,9 +331,15 @@ return array(
         env('PAYMENT_PAGE_AXIS_HOSTED_BASE_URL'),
     ],
 
+    'payment_store_allowed_cors_url' => [
+        env('PAYMENT_STORE_HOSTED_BASE_URL'),
+    ],
+
     'apps_default_sender_email_address' => env('APPS_DEFAULT_SENDER_EMAIL_ADDRESS'),
 
     'amount_difference_allowed_authorized' => ['EQ8AzfZip2meDu', 'FBYspBmKlWefX9'],
 
     'customer_flagging_report_url' => env('CUSTOMER_FLAGGING_REPORT_URL'),
+
+    'payment_store_hosted_base_url' => env('PAYMENT_STORE_HOSTED_BASE_URL'),
 );

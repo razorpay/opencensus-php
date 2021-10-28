@@ -237,6 +237,10 @@ class Entity extends Base\PublicEntity
         return ($this->isOfType($type) === false);
     }
 
+    public function getDeletedAt()
+    {
+        return $this->getAttribute(self::DELETED_AT);
+    }
 
     // -------------------------- End Getters ------------------------
 
@@ -291,4 +295,9 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------- End Relations ----------------------------
+
+    public function setDeletedAt($timestamp)
+    {
+        $this->attributes[self::DELETED_AT] = $timestamp;
+    }
 }

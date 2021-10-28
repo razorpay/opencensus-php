@@ -142,6 +142,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\TrustedBadge\Repository                        $trusted_badge;
  * @property Models\TrustedBadge\TrustedBadgeHistory\Repository    $trusted_badge_history;
  * @property Models\AppStore\Repository                            $app_store;
+ * @property Models\Store\Repository                               $store;
  * @property Models\Survey\Tracker\Repository                      $survey_tracker;
  * @property Models\Survey\Repository                              $survey;
  * @property Models\Survey\Response\Repository                     $survey_response;

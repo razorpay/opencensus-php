@@ -377,6 +377,38 @@ return [
         ]
     ],
 
+    'payment_page_item_mapping' => [
+        'properties' => [
+            'id' => [
+                'type' => 'keyword',
+            ],
+            'name' => [
+                'type' => 'text',
+            ],
+            'description' => [
+                'type' => 'text',
+            ],
+            'item_deleted_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+            'created_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+            'updated_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+            'payment_link_id' => [
+                'type' => 'keyword',
+            ],
+            'merchant_id' => [
+                'type' => 'keyword',
+            ],
+        ]
+    ],
+
     'merchant_mapping'        => [
         '_all' => [
             'enabled' => false

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\PaymentLink\PaymentPageItem;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
@@ -9,6 +10,7 @@ use RZP\Models\Item;
 use RZP\Models\Settings;
 use RZP\Models\Merchant;
 use RZP\Models\PaymentLink;
+use RZP\Models\Store\Entity as StoreEntity;
 
 /**
  * @property PaymentLink\Entity $paymentLink
@@ -37,9 +39,13 @@ class Entity extends Base\PublicEntity
     const SUBSCRIPTION_QUANTITY     = 'quantity';
     const SUBSCRIPTION_CUSTOMER_NOTIFY = 'customer_notify';
 
+    const PRODUCT_IMAGES = 'images';
+    const SELLING_PRICE = 'selling_price';
+
     // Input keys
     const ITEM               = 'item';
     const PAYMENT_PAGE_ITEMS = 'payment_page_items';
+    const ITEM_DELETED_AT    = 'item_deleted_at';
 
     // List of keys stored against entity's settings.
     const SETTINGS  = 'settings';
@@ -174,7 +180,25 @@ class Entity extends Base\PublicEntity
 
    const ALLOWED_PRODUCT_CONFIG_CREATE_KEYS = [
        self::SUBSCRIPTION_DETAILS,
+       self::PRODUCT_IMAGES,
+       self::SELLING_PRICE,
    ];
+
+   public function toStoreProductArrayPublic(): array
+   {
+       return [
+           Entity::ID                              => $this->getPublicId(),
+           StoreEntity::PRODUCT_NAME               => $this->itemWithTrashed->getName(),
+           StoreEntity::PRODUCT_DESCRIPTION        => $this->itemWithTrashed->getDescription(),
+           StoreEntity::PRODUCT_IMAGES             => $this->getProductConfig(StoreEntity::PRODUCT_IMAGES),
+           StoreEntity::PRODUCT_SELLING_PRICE      => $this->getProductConfigAsInt(StoreEntity::PRODUCT_SELLING_PRICE),
+           StoreEntity::PRODUCT_DISCOUNTED_PRICE   => $this->itemWithTrashed->getAmount(),
+           StoreEntity::PRODUCT_STOCK              => $this->getStock(),
+           StoreEntity::PRODUCT_STOCK_AVAILABLE    => $this->getQuantityAvailable(),
+           StoreEntity::PRODUCT_STOCK_SOLD         => $this->getQuantitySold(),
+           StoreEntity::STATUS                     => $this->itemWithTrashed->getDeletedAt() === null ? StoreEntity::PRODUCT_STATUS_ACTIVE : StoreEntity::PRODUCT_STATUS_INACTIVE,
+       ];
+   }
 
     public function getQuantitySold(): int
     {
@@ -211,6 +235,11 @@ class Entity extends Base\PublicEntity
         $accessor = $this->getSettingsAccessor();
 
         return $key === null ? $accessor->all() : $accessor->get($key);
+    }
+
+    public function getDeletedAt()
+    {
+        return $this->getAttribute(self::DELETED_AT);
     }
 
     public function getMinAmount()
@@ -297,6 +326,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PRODUCT_CONFIG, $productConfig);
     }
 
+    public function setDeletedAt($timestamp)
+    {
+        $this->attributes[self::DELETED_AT] = $timestamp;
+    }
+
     public function getProductConfig($key = null)
     {
         $productConfig = $this->getAttribute(self::PRODUCT_CONFIG);
@@ -315,7 +349,31 @@ class Entity extends Base\PublicEntity
 
         return $productConfigArray[$key] ?? null;
     }
+    public function getProductConfigAsInt($key)
+    {
+        if ($key === null)
+        {
+            return null;
+        }
 
+        $productConfig = $this->getAttribute(self::PRODUCT_CONFIG);
+
+        if (empty($productConfig) === true)
+        {
+            return null;
+        }
+
+        $productConfigArray = json_decode($productConfig, true);
+
+        $value = $productConfigArray[$key]?? null;
+
+        if ($value !== null)
+        {
+            return (int)$value;
+        }
+
+        return null;
+    }
 
     public function incrementQuantitySold(int $incrementValue)
     {
@@ -376,5 +434,10 @@ class Entity extends Base\PublicEntity
     public function item()
     {
         return $this->belongsTo(Item\Entity::class);
+    }
+
+    public function itemWithTrashed()
+    {
+        return $this->belongsTo(Item\Entity::class, self::ITEM_ID)->withTrashed();
     }
 }

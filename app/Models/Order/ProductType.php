@@ -14,6 +14,7 @@ class ProductType
     const SUBSCRIPTION       = 'subscription';
     const VIRTUAL_ACCOUNT    = 'virtual_account';
     const PAYMENT_BUTTON     = 'payment_button';
+    const PAYMENT_STORE      = 'payment_store';
 
 
     public static function isTypeValid(string $type): bool

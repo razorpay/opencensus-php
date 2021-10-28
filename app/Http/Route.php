@@ -1063,16 +1063,41 @@ class Route
         'payment_page_get_invoice_details'         => ['get',      'payment_pages/{payment_id}/receipt',             'PaymentLinkController@getInvoiceDetails'                           ],
         'payment_page_send_receipt'                => ['post',     'payment_pages/{payment_id}/send_receipt',        'PaymentLinkController@sendReceipt'                                 ],
         'payment_page_save_receipt_for_payment'    => ['post',     'payment_pages/{payment_id}/save_receipt',        'PaymentLinkController@saveReceiptForPayment'                       ],
-        'payment_page_hosted_button_details'       => ['get',      'payment_buttons/{x_entity_id}/button_details',    'PaymentLinkController@getHostedButtonDetails'                     ],
+        'payment_page_hosted_button_details'       => ['get',      'payment_buttons/{x_entity_id}/button_details',   'PaymentLinkController@getHostedButtonDetails'                      ],
 
-        'payment_page_hosted_button_preferences'   => ['get',      'payment_buttons/{x_entity_id}/button_preferences','PaymentLinkController@getHostedButtonPreferences'                 ],
-        'payment_button_hosted_view'               => ['get,post', 'payment_buttons/{x_entity_id}/view',              'PaymentLinkController@buttonHostedView'                           ],
-        'subscription_button_hosted_view'          => ['get,post', 'subscription_buttons/{x_entity_id}/view',         'PaymentLinkController@subscriptionButtonHostedView'               ],
+        'payment_page_hosted_button_preferences'   => ['get',      'payment_buttons/{x_entity_id}/button_preferences', 'PaymentLinkController@getHostedButtonPreferences'                ],
+        'payment_button_hosted_view'               => ['get,post', 'payment_buttons/{x_entity_id}/view',               'PaymentLinkController@buttonHostedView'                          ],
+        'subscription_button_hosted_view'          => ['get,post', 'subscription_buttons/{x_entity_id}/view',          'PaymentLinkController@subscriptionButtonHostedView'              ],
 
         'hosted_subscription_button_details'       => ['get',      'subscription_buttons/{x_entity_id}/button_details',       'PaymentLinkController@getHostedButtonDetails'             ],
         'subscription_button_create_subscription'  => ['post',     'subscription_buttons/{x_entity_id}/create_subscription',  'PaymentLinkController@createSubscription'                 ],
 
         // end of payment page section
+
+        //Store Dashboard section
+        'store_create'                             => ['post',     'store',                                         'StoreController@create'                                             ],
+        'store_get_by_merchant'                    => ['get',      'store',                                         'StoreController@getByMerchant'                                      ],
+        'store_update'                             => ['put',      'store',                                         'StoreController@update'                                             ],
+        'store_delete'                             => ['delete',   'store',                                         'StoreController@delete'                                             ],
+        'store_validate_slug'                      => ['post',     'store/validate_slug',                           'StoreController@validateSlug'                                       ],
+
+        'store_add_product'                        => ['post',     'store/products',                                'StoreController@addProduct'                                         ],
+        'store_fetch_products'                     => ['get',      'store/products',                                'StoreController@fetchProducts'                                      ],
+        'store_get_product'                        => ['get',      'store/products/{id}',                           'StoreController@getProduct'                                         ],
+        'store_update_product'                     => ['put',      'store/products/{id}',                           'StoreController@updateProduct'                                      ],
+        'store_patch_product'                      => ['patch',    'store/products/{id}',                           'StoreController@patchProduct'                                       ],
+        'store_upload_image'                       => ['post',     'store/upload_image',                            'StoreController@uploadImage'                                        ],
+
+        //Store Hosted section
+        'store_hosted_page_by_slug'                => ['get',      'store/hosted/{slug}',                           'StoreController@getHostedPage'                                      ],
+        'store_hosted_page_data'                   => ['get',      'store/public/{slug}',                           'StoreController@getHostedPageData'                                  ],
+        'store_hosted_page_data_options'           => ['options',  'store/public/{slug}',                           'StoreController@getHostedPageDataOptions'                           ],
+
+        'store_create_order'                       => ['post',     'store/{id}/order',                              'StoreController@createOrder'                                        ],
+        'store_create_order_options'               => ['options',  'store/{id}/order',                              'StoreController@createOrderOptions'                                 ],
+        'store_hosted_page_by_slug_detail_page'    => ['any',      'store/hosted/{slug}/{path?}',                   'StoreController@getHostedPage'                                      ],
+
+        //End of store section
         // payment link service end points
         'payment_links_service_hosted_page'        => ['get,post',        'hosted/payment_links/{path?}',                   'PlinkController@sendRequest'                                       ],
         'payment_links_get'                        => ['get',             'payment_links/{id}',                             'PlinkController@sendRequest'                                       ],
@@ -4051,6 +4076,17 @@ class Route
     ];
 
     public static $proxy = [
+        'store_update_product',
+        'store_upload_image',
+        'store_create',
+        'store_get_by_merchant',
+        'store_validate_slug',
+        'store_update',
+        'store_delete',
+        'store_add_product',
+        'store_fetch_products',
+        'store_get_product',
+        'store_patch_product',
         'fetch_payments_ongoing_downtimes',
         'fetch_payments_resolved_downtimes',
         'fetch_payments_scheduled_downtimes',
@@ -6952,6 +6988,10 @@ class Route
     ];
 
     public static $direct = [
+        'store_hosted_page_data_options',
+        'store_hosted_page_by_slug',
+        'store_hosted_page_by_slug_detail_page',
+        'store_hosted_page_data',
         'customer_flagging_entity_details',
         'customer_flagging_post_grievance',
         'customer_flagging_post_grievance_options',
@@ -7049,7 +7089,9 @@ class Route
         'payment_redirect_to_authenticate_post',
         'gateway_payment_callback_upi_airtel',
         'payment_page_create_order',
+        'store_create_order',
         'payment_page_create_order_option',
+        'store_create_order_options',
         'payment_links_demo',
         'payment_links_demo_cors',
 
@@ -7200,6 +7242,17 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'store_create',
+            'store_get_by_merchant',
+            'store_update',
+            'store_delete',
+            'store_validate_slug',
+            'store_add_product',
+            'store_fetch_products',
+            'store_get_product',
+            'store_update_product',
+            'store_patch_product',
+            'store_upload_image',
             'merchant_store_add',
             'merchant_store_fetch',
             'merchant_edit_email_self_serve',
@@ -7803,7 +7856,9 @@ class Route
             'payment_page_activate',
             'payment_page_create',
             'payment_page_create_order',
+            'store_create_order' ,
             'payment_page_create_order_option',
+            'store_create_order_options',
             'payment_page_deactivate',
             'payment_page_fetch_merchant_details',
             'payment_page_get',
@@ -9277,7 +9332,9 @@ class Route
             'payment_page_activate',
             'payment_page_create',
             'payment_page_create_order',
+            'store_create_order',
             'payment_page_create_order_option',
+            'store_create_order_options',
             'payment_page_deactivate',
             'payment_page_fetch_merchant_details',
             'payment_page_get',

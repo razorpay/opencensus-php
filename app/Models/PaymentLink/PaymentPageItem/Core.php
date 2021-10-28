@@ -14,7 +14,7 @@ class Core extends Base\Core
     public function create(
         array $input,
         Merchant\Entity $merchant,
-        PaymentLink\Entity $paymentLink
+        $paymentLink
     ): Entity
     {
         $paymentPageItem = (new Entity)->generateId();
@@ -43,7 +43,7 @@ class Core extends Base\Core
     protected function addItemAsRequired(
         array & $input,
         Merchant\Entity $merchant,
-        PaymentLink\Entity $paymentLink,
+        $paymentLink,
         Entity & $paymentPageItem)
     {
         $validator = new Validator;
