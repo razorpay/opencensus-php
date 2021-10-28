@@ -1,4 +1,15 @@
 export const partnerProducts = {
+  slack: {
+    slug: 'slack',
+    title: 'Slack',
+    url: 'https://rzp-labs-slack.razorpay.com/slack-connect',
+    category: 'Workflow Automation',
+    description:
+      'Now get notified of critical updates from Razorpay right within your favourite communication tool, Slack. ',
+    logo: 'slack.png', // relative to web/css/assets/app-store/partner-logo/
+    brandColor: '#441B49',
+    isNew: true,
+  },
   zapier: {
     slug: 'zapier',
     title: 'Zapier',

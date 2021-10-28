@@ -128,6 +128,7 @@ function BecomePartner(props) {
 function PartnerAppCard(props) {
   const product = props.product;
   const [cardHoverBgColor, setCardHoverBgColor] = useState(``);
+  if (product.slug === 'slack') return null; // hiding listing for slack.
   return (
     <div className="product-col">
       {product.isNew ? <div className="new-offer-ribbon">NEW!</div> : null}
