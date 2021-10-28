@@ -1,11 +1,13 @@
 function merchantEntry() {
   function executeJS() {
-    var cdnDashboardUrl = window.cdnDashboardUrl || '';
-    if (typeof Sentry !== 'undefined') {
-      Sentry.onLoad(() => {
-        Sentry.init({
+    const cdnDashboardUrl = window.cdnDashboardUrl || '';
+    if (typeof window.Sentry !== 'undefined') {
+      const environment = window.INSTANCE_TYPE === 'canary' ? 'canary' : window.APP_ENV;
+
+      window.Sentry.onLoad(() => {
+        window.Sentry.init({
           release: __VERSION__,
-          environment: window.APP_ENV,
+          environment,
           dsn: window.SENTRY_DSN,
           beforeSend: (event, hint) => {
             if (
@@ -21,9 +23,9 @@ function merchantEntry() {
         });
 
         if (window.rzp_user && window.rzp_user.current) {
-          Sentry.configureScope((scope) => {
-            Sentry.setTag('app', 'Merchant');
-            Sentry.setTag('role', window.rzp_user.role);
+          window.Sentry.configureScope((scope) => {
+            window.Sentry.setTag('app', 'Merchant');
+            window.Sentry.setTag('role', window.rzp_user.role);
 
             scope.setUser({
               id: window.rzp_user.current,
@@ -33,21 +35,20 @@ function merchantEntry() {
       });
     }
 
-    var base = Array.prototype.slice
-      .call(document.querySelectorAll('script[src]'), -1)[0]
-      .src.replace(/[^\/]+$/, '');
-
-    var appendLink = function (src) {
-      var link = document.createElement('link');
+    const appendLink = (src) => {
+      const link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = src;
       document.documentElement.appendChild(link);
     };
 
-    websiteAssets.js.forEach(function (src) {
-      document.write('<script src="' + cdnDashboardUrl + src + '"></script>');
+    // eslint-disable-next-line no-undef
+    websiteAssets.js.forEach((src) => {
+      document.write(`<script src="${cdnDashboardUrl}${src}"></script>`);
     });
-    websiteAssets.css.forEach(function (src) {
+
+    // eslint-disable-next-line no-undef
+    websiteAssets.css.forEach((src) => {
       appendLink(cdnDashboardUrl + src);
     });
 

@@ -68,7 +68,7 @@ jobs:
       - name: Deploy - Prod
         if: ${{ github.event.deployment.environment == 'prod' }}
         env:
-          # CDN_PATH can be skipped for prod it's default to "dashboard"
+          CDN_PATH: ${{ github.event.deployment.payload.CDN_PATH }}
           AWS_KEY: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
           AWS_SECRET: ${{ secrets.PROD_AWS_ACCESS_SECRET }}
           AWS_CDN_BUCKET: "checkout-live"

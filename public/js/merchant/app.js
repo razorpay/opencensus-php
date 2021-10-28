@@ -1,14 +1,19 @@
+// eslint-disable-next-line strict
 'use strict';
-if (typeof Sentry !== 'undefined') {
-  Sentry.onLoad(function () {
-    Sentry.init({
-      environment: window.APP_ENV,
+
+if (typeof window.Sentry !== 'undefined') {
+  // eslint-disable-next-line no-undef
+  window.Sentry.onLoad(() => {
+    const environment = window.INSTANCE_TYPE === 'canary' ? 'canary' : window.APP_ENV;
+    window.Sentry.init({
+      environment,
       release: __VERSION__,
       dsn: window.SENTRY_DSN,
     });
   });
 }
 // Declare app level module which depends on filters, and services
+// eslint-disable-next-line
 var app = angular
   .module('app', [
     'ngAnimate',
@@ -29,7 +34,9 @@ var app = angular
     '$stateParams',
     'user',
     'authorization',
+    // eslint-disable-next-line
     function ($rootScope, $state, $stateParams, user, authorization) {
+      // eslint-disable-next-line
       $rootScope.$on('$stateChangeStart', function (event, toState, toStateParams) {
         // track the state the user wants to go to; authorization service needs this
         $rootScope.toState = toState;
@@ -39,12 +46,14 @@ var app = angular
         if (user.isIdentityResolved()) {
           authorization.authorize();
         }
+        // eslint-disable-next-line
         user.identity(true).then(function (data) {
           if (data) {
             $rootScope.role = data.merchants[data.id].role;
           }
         });
       });
+      // eslint-disable-next-line
       $rootScope.$on('$stateChangeError', function () {
         $state.go('500');
       });
@@ -60,6 +69,7 @@ var app = angular
     '$httpProvider',
     'isHostedInBB',
     'appHost',
+    // eslint-disable-next-line
     function (
       $stateProvider,
       $urlRouterProvider,
@@ -94,6 +104,7 @@ var app = angular
           resolve: {
             authorize: [
               'authorization',
+              // eslint-disable-next-line
               function (authorization) {
                 return authorization.authorize();
               },
@@ -108,6 +119,7 @@ var app = angular
           resolve: {
             authorize: [
               'authorization',
+              // eslint-disable-next-line
               function (authorization) {
                 return authorization.authorize();
               },
@@ -173,6 +185,7 @@ var app = angular
   .config([
     '$keepaliveProvider',
     '$idleProvider',
+    // eslint-disable-next-line
     function ($keepaliveProvider, $idleProvider) {
       // Lock out Duration = 15 minutes
       $idleProvider.idleDuration(15 * 60);

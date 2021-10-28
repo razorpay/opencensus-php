@@ -14,5 +14,6 @@
 
     // Sentry related configs
     window.APP_ENV = "{!! env('APP_ENV') !!}";
+    window.INSTANCE_TYPE = "{!! env('INSTANCE_TYPE') !!}";
     window.SENTRY_DSN = "{!! env('SENTRY_DSN') !!}";
 </script>

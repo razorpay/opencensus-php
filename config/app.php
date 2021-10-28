@@ -1,5 +1,13 @@
 <?php
 
+$cdn_dashboard_url = env('CDN_DASHBOARD_URL');
+
+// Add canary inside dashboard CDN URL if instance type is `canary`
+if (env('INSTANCE_TYPE') === 'canary')
+{
+    $cdn_dashboard_url = $cdn_dashboard_url . '/canary';
+}
+
 return array(
 
     /*
@@ -189,7 +197,7 @@ return array(
     |
     */
 
-    'manifest' => storage_path().'/meta',
+    'manifest' => storage_path() . '/meta',
 
     /*
     |--------------------------------------------------------------------------
@@ -252,7 +260,7 @@ return array(
         'Metrics'         => Razorpay\Metrics\Facade::class,
     ),
 
-    'cdn_dashboard_url'          => env('CDN_DASHBOARD_URL'),
+    'cdn_dashboard_url'          => $cdn_dashboard_url,
     'cdn_base_url'               => env('CDN_BASE_URL'),
     'lj_key'                     => env('LJ_KEY'),
     'banking_service_url'        => env('BANKING_SERVICE_URL'),
