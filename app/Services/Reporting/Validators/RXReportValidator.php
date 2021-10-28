@@ -1,6 +1,5 @@
 <?php
 
-
 namespace RZP\Services\Reporting\Validators;
 
 use RZP\Trace\TraceCode;
@@ -14,12 +13,22 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
  */
 class RXReportValidator extends BaseValidator
 {
-    //Allowed Report-ids (fetched for prod and hard coded) to skip email validation
-    const ALLOWED_REPORT_CONFIG_IDS_TO_SKIP_VALIDATION = ["config_EeJ5H48IDnU0DE", "config_EWkl7gyPYK5ET2", "config_H14EVTdd8PfHKv"];
-
     protected function validateEmails(array $emails)
     {
-        if (in_array(array_get($this->input,'config_id',''), self::ALLOWED_REPORT_CONFIG_IDS_TO_SKIP_VALIDATION) === true) {
+        $configsToSkipValidation = $this->app['config']->get('reporting.config_ids_to_skip_email_validation');
+
+        $configPassed = array_get($this->input,'config_id','');
+
+        $this->app->trace->info(
+            TraceCode::REPORTING_CONFIGS_TO_SKIP_VALIDATION,
+            [
+                "configs_to_skip_validation" => $configsToSkipValidation,
+                "config_passed"              => $configPassed
+            ]);
+
+        if (empty($configPassed) === false &&
+            in_array($configPassed, $configsToSkipValidation) === true)
+        {
             return;
         }
 

@@ -109,6 +109,19 @@ class ReportingTest extends TestCase
         $this->startTest();
     }
 
+    public function testRXReportLogSkipEmailValidation()
+    {
+        $user = (new User())->createBankingUserForMerchant('10000000000000', [
+            'email' => 'test2@razorpay.com',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest();
+    }
+
     public function testRXReportLogForValidEmails()
     {
         $user = (new User())->createBankingUserForMerchant('10000000000000', [

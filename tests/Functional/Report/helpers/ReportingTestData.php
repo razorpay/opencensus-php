@@ -460,12 +460,52 @@ return [
         ]
     ],
 
+    'testRXReportLogSkipEmailValidation' => [
+    'request' => [
+        'url'     => '/reporting/logs',
+        'method'  => 'POST',
+        'content' => [
+            "config_id"     => "config_G8AP5UeeaLLWj6",
+            "start_time"    => "1614537000",
+            "end_time"      => "1617215399",
+            "send_email"    => true,
+            "emails"        => ["test3@razorpay.com"],
+        ],
+        'server' => [
+            'HTTP_X-Report-Type' => 'razorpayx',
+        ],
+    ],
+        'response' => [
+            'content'   => [
+                "entity" => "collection",
+                "count" => 3,
+                "items" => [
+                    [
+                        "id" => "config_D5RAgPWrrUgP9K",
+                        "consumer" => "100000Razorpay",
+                        "report_type" => "merchant"
+                    ],
+                    [
+                        "id" => "config_CC39ZQphE0ox5U",
+                        "consumer" => "100000Razorpay",
+                        "report_type" => "merchant"
+                    ],
+                    [
+                        "id" => "config_C1eAjMzFDEU074",
+                        "consumer" => "10000000000000",
+                        "report_type" => "merchant"
+                    ]
+                ]
+            ]
+        ]
+],
+
     'testRXReportLogForInvalidEmails' => [
         'request' => [
             'url'     => '/reporting/logs',
             'method'  => 'POST',
             'content' => [
-                "config_id"     => "config_D5RAgPWrrUgP9K",
+                "config_id"     => "config_HABdF4z6EKiBth",
                 "start_time"    => "1614537000",
                 "end_time"      => "1617215399",
                 "send_email"    => true,
@@ -495,7 +535,7 @@ return [
             'url'     => '/reporting/logs',
             'method'  => 'POST',
             'content' => [
-                "config_id"     => "config_D5RAgPWrrUgP9K",
+                "config_id"     => "config_HABdF4z6EKiBth",
                 "start_time"    => "1614537000",
                 "end_time"      => "1617215399",
                 "send_email"    => true,
