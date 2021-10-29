@@ -50,22 +50,44 @@ class Service extends Base\Service
      * @return mixed
      * @throws \RZP\Exception\BadRequestValidationFailureException
      */
-    public function upsert(string $group, array $input)
+    public function upsert(string $group, array $input, string $saveProduct = null)
     {
         $merchant = $this->merchant;
-        $product = $this->auth->getRequestOriginProduct();
+        $product =  $saveProduct ?? $this->auth->getRequestOriginProduct();
         $attributeInputValidator = new Validator();
+
+        $this->trace->info(TraceCode::MERCHANT_ATTRIBUTES, [
+            'merchant' => $merchant ,
+            'received_input' => $input,
+            'tracer' => '48ab2638-318e-11ec-908f-e60a7e5b4d6f',
+        ]);
 
         if(empty($merchant) === true and
            $this->app['basicauth']->isAdminAuth() === true)
         {
+            $this->trace->info(TraceCode::MERCHANT_ATTRIBUTES, [
+                'coming_inside_admin_auth' => true,
+                'merchant' => $merchant ,
+                'received_input' => $input,
+                'tracer' => '48ab2638-318e-11ec-908f-e60a7e5b4d6f',
+            ]);
             $attributeInputValidator->validateInput('admin_upsert', $input);
             $merchant = $this->repo->merchant->findOrFail($input[Common::MERCHANT_ID]);
             $product = $input['product'] ?? Product::BANKING;
             $input = array_pull($input, Validator::PREFERENCES);
         }
 
+        $this->trace->info(TraceCode::MERCHANT_ATTRIBUTES, [
+            'input_after_admin_auth_thing' => $input ,
+            'tracer' => '48ab2638-318e-11ec-908f-e60a7e5b4d6f',
+        ]);
+
         foreach ($input as $item){
+            $this->trace->info(TraceCode::MERCHANT_ATTRIBUTES, [
+                'item_for_validation' => $item,
+                'complete_input' => $input,
+                'tracer' => '48ab2638-318e-11ec-908f-e60a7e5b4d6f',
+            ]);
             //Validate input for group & type
             $attributeInputValidator->validateInput('upsert_input_validation', $item);
             $item[Entity::GROUP] = $group;
@@ -93,6 +115,34 @@ class Service extends Base\Service
         }
 
         return $this->core->fetchKeyValues($merchant, $product, $group, $types);
+    }
+
+    public function upsertPreferencesNitroHack(array $input){
+        $merchant = $this->merchant;
+        $product = Product::BANKING;
+
+        $createdInput = array([
+            'type' => Type::CA_ALLOCATED_BANK,
+            'value' => $input['allocated_bank']
+                              ], [
+            'type' => Type::CA_ONBOARDING_FLOW,
+            'value' => $input['onboarding_flow']
+        ], [
+            'type' => Type::CA_CAMPAIGN_ID,
+            'value' => $input['campaign_id']
+        ]);
+
+
+        $this->trace->info(TraceCode::MERCHANT_ATTRIBUTES, [
+            'inside_upsert_nitro_hack' => 'true',
+            'tracer' => '48ab2638-318e-11ec-908f-e60a7e5b4d6f',
+            'merchant' => $merchant ,
+            'request_origin' => $this->auth->getRequestOriginProduct(),
+            'received_input' => $input,
+            'created_input' => $createdInput,
+        ]);
+
+        return $this->upsert(Group::X_MERCHANT_CURRENT_ACCOUNTS, $createdInput, $product);
     }
 
     /**

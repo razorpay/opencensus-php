@@ -22,7 +22,9 @@ class GroupType
 
         Group::X_MERCHANT_CURRENT_ACCOUNTS => [
             Type::CA_ALLOCATED_BANK,
-            Type::CA_PROCEEDED_BANK
+            Type::CA_PROCEEDED_BANK,
+            Type::CA_ONBOARDING_FLOW,
+            Type::CA_CAMPAIGN_ID,
         ],
 
         Group::X_MERCHANT_INTENT => [

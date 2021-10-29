@@ -18,6 +18,9 @@ class Type
     // CA Account Status Types
     const CA_ALLOCATED_BANK             = 'ca_allocated_bank';
     const CA_PROCEEDED_BANK             = 'ca_proceeded_bank';
+    const CA_ONBOARDING_FLOW            = 'ca_onboarding_flow';
+    const CA_CAMPAIGN_ID                = 'ca_campaign_id';
+
 
     //INTENT Types
     const CURRENT_ACCOUNT               = 'current_account';

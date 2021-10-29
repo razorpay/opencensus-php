@@ -2066,6 +2066,18 @@ class MerchantController extends Controller
     }
 
     /**
+     *This is clearly a hack which was done just for nitro, since it was really really required to store
+     * this preference in the merchant attributes and the post merchant preferences was unwrapping the array being sent
+     * Spent fair time on debugging, but DeADLiNe 🤷‍♂️
+     */
+    public function postMerchantPreferencesNitroHack()
+    {
+        $input = Request::all();
+        $response = $this->service(E::MERCHANT_ATTRIBUTE)->upsertPreferencesNitroHack($input);
+        return ApiResponse::json($response);
+    }
+
+    /**
      * Get Merchant preferences by group & type
      * @param string $group
      * @param string|null $type

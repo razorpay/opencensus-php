@@ -637,6 +637,7 @@ class UserRolesScope
             'merchant_one_time_token'                              => [Role::OWNER, Role::ADMIN],
             'merchant_patch_purpose_code'                          => [Role::OWNER, Role::ADMIN],
             'merchant_post_preferences'                            => [Role::OWNER, Role::ADMIN],
+            'merchant_bank_allocation'                             => [Role::OWNER, Role::ADMIN],
             'merchant_pre_signup_details'                          => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_primary_balance_fetch'                       => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS, Role::FINANCE, Role::SUPPORT],
             'merchant_product_international_request'               => [Role::OWNER, Role::ADMIN],
