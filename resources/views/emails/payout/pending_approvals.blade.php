@@ -242,8 +242,7 @@
                                                         </div>
                                                         <div class="para-dark left font-new-blue-7" style="font-size: 14px; line-height: 1.5; opacity: 0.7; color: #162f56;">
                                                             Hi {{ $name }}!!<br />
-                                                            There are {{ $total_count }} payouts worth ₹{{ amount_format_IN($amount_total) }} that are pending on you for approval before they can be processed. You can go to the dashboard to
-                                                            review and approve the payouts.
+                                                            {{ $total_count }} payout(s) worth ₹{{ amount_format_IN($amount_total) }} waiting for your approval before they can be processed. You can review & approve the payouts from dashboard or mobile app.
                                                         </div>
                                                         <div class="center-align" style="text-align: center;">
                                                             <a
@@ -402,7 +401,7 @@
                                                                 target="_blank"
                                                                 style="text-decoration: none; color: #528ff0;"
                                                             >
-                                                                View more on dashboard
+                                                                View more
                                                             </a>
                                                         </div>
                                                     </div>
