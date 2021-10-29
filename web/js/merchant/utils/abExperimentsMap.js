@@ -127,6 +127,11 @@ export default {
     'I3f68nS3BRwvuF', // Beta
   ],
 
+  diwali_festive_offer_experiment: [
+    'IEioyLUBiQVgGt', // Prod
+    'IEKWVAyw0f0Liy', // Beta
+  ],
+
   catalyst_campaign_experiment: [
     'HYimXrRKRI0V7y', // Prod
     'HYiqGXEBQX3oo8', // Beta

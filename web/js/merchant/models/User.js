@@ -459,6 +459,12 @@ export default class User {
     return getSplitzExperimentVariant('cross_border_payments_campaign')?.variables?.result === 'on';
   }
 
+  get isDiwaliFestiveOfferEnabled() {
+    return (
+      getSplitzExperimentVariant('diwali_festive_offer_experiment')?.variables?.result === 'on'
+    );
+  }
+
   get isCatalystCampaignEnabled() {
     return getSplitzExperimentVariant('catalyst_campaign_experiment')?.variables?.result === 'on';
   }

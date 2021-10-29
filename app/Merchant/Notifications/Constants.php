@@ -1009,6 +1009,25 @@ class Constants
             ],
         ],
         [
+            'title'       => 'Our festive offer is here! 🪔',
+            'description' => 'Accept payments before 31st October and get 2 lakh free credits* to your Razorpay account! Hurry, valid for limited time only.',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/rzp_icon.svg',
+            'id'          => 'festive-offer-oct-2021',
+            'campaign'    => 'growth',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Avail our offer 🎉',
+                    'url'   => 'https://bit.ly/2ZtaJLC',
+                ],
+            ],
+            'start_ts'    => 1634187296,
+            'end_ts'      => 1642136096,
+            'filters'     => [
+                'splitz_experiments'         => ['DIWALI_FESTIVE_OFFER_ANNOUNCEMENT'],
+            ],
+        ],
+        [
             'title'       => 'Razorpay Trusted Business badge is now Live!',
             'description' => 'Congratulations, you are now a Razorpay Trusted Business! 🚀',
             'start_ts'    => 1632421145,
