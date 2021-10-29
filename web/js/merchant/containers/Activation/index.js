@@ -20,11 +20,14 @@ const SOURCE_RAZORPAY_X = 'x';
 
 @withRouter
 @RTracking(() => window.rzpQ.component('ActivationContainer'))
-@connect((state) => ({
-  user: state.session.user,
-  session: state.session,
-  current_tab_name: state.activationWizard.current_tab_name,
-}), { ...EventsActions, })
+@connect(
+  (state) => ({
+    user: state.session.user,
+    session: state.session,
+    current_tab_name: state.activationWizard.current_tab_name,
+  }),
+  { ...EventsActions },
+)
 export default class ActivationContainer extends Component {
   constructor(props) {
     super(props);
@@ -125,7 +128,10 @@ export default class ActivationContainer extends Component {
   fetchActivationDetails(accountId) {
     const isLiteOnboarding = this.props?.user?.isLiteOnboarding;
     // Check Partner activation status for eligible users
-    const shouldCheckForPartnerActivationStatus = !this.isSourceRX && this.props.user.isPartner() && this.props.user.isIndependentPartnerKYCEnabled;
+    const shouldCheckForPartnerActivationStatus =
+      !this.isSourceRX &&
+      this.props.user.isPartner() &&
+      this.props.user.isIndependentPartnerKYCEnabled;
     if (shouldCheckForPartnerActivationStatus) {
       this.fetchPartnerActivationDetails();
     }
@@ -195,13 +201,16 @@ export default class ActivationContainer extends Component {
       const data = res?.data || {};
       let shouldBlockMerchantKYC = false;
       // block the merchant KYC if Partner KYC is in NC and Merchant KYC form is not submitted
-      if (data?.partner_activation?.activation_status === 'needs_clarification' && data.submitted === false) {
-          shouldBlockMerchantKYC = true;
+      if (
+        data?.partner_activation?.activation_status === 'needs_clarification' &&
+        data.submitted === false
+      ) {
+        shouldBlockMerchantKYC = true;
       }
       this.setState({
         partnerActivationData: data,
-        shouldBlockMerchantKYC
-      })
+        shouldBlockMerchantKYC,
+      });
     });
   };
 
@@ -344,15 +353,16 @@ export default class ActivationContainer extends Component {
       );
     } else if (shouldBlockMerchantKYC) {
       // show modal to complete the Partner KYC first before proceeding to Merchant KYC
-      content = <KYCStatusModal
-        onGoToDashboard={() => {
-          this.props.history.push('/partners');
-        }}
-        activationStatus={'needs_clarification'}
-        modalType={'MERCHANT_KYC_BLOCKED_MODAL'}
-      />
-    }
-     else {
+      content = (
+        <KYCStatusModal
+          onGoToDashboard={() => {
+            this.props.history.push('/partners');
+          }}
+          activationStatus={'needs_clarification'}
+          modalType={'MERCHANT_KYC_BLOCKED_MODAL'}
+        />
+      );
+    } else {
       content = (
         <KycForm
           {...commonProps}

@@ -308,6 +308,13 @@ export default class User {
     return this.isFeatureEnabled('covid');
   }
 
+  get isSuperCheckoutEnabled() {
+    return (
+      this.isFeatureEnabled('one_cc_merchant_dashboard') &&
+      getSplitzExperimentVariant('dashboard_super_checkout')?.variables?.result === 'on'
+    );
+  }
+
   get isPaymentPagesEnabled() {
     const { isEnabled } = getOnBoardingDataFromLocalState('payment_pages');
 

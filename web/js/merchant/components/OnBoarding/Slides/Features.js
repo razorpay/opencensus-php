@@ -14,13 +14,12 @@ export default class OnBoardingFeatures extends React.PureComponent {
         eventCategory: `Onboarding Card (${this.props.feature})`,
         eventAction: `Page ${this.props.active} - Back CTA`,
       });
-
       track.onFeatureBack(this.props.feature);
     });
   };
 
   render() {
-    const { title, nextBtn: NextButton, active, feature, features, featureLinks } = this.props;
+    const { title, nextBtn, active, feature, features, featureLinks } = this.props;
 
     return (
       <div class="OnBoarding--Slide OnBoarding--Features" key="FeatureSlide">
@@ -54,7 +53,8 @@ export default class OnBoardingFeatures extends React.PureComponent {
             Back
           </Button.Transparent>
 
-          <NextButton />
+          {typeof nextBtn === 'function' ? nextBtn() : nextBtn}
+          {/* {NextButton && <NextButton />} */}
         </div>
       </div>
     );
@@ -70,13 +70,11 @@ class FeatureLink extends React.PureComponent {
       eventCategory: `Onboarding Card (${feature})`,
       eventAction: `Page ${page} - ${ga}`,
     });
-
     track.featuresHyperlink(this.props.feature);
-
     if (onClick) onClick();
-
     window.open(getCustomURL(url));
   };
+
   render() {
     return (
       <a class="external-link" onClick={this.handleFeatureLink}>

@@ -46,7 +46,7 @@ import LogoutDialog from 'merchant/components/LogoutDialog';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { fetchInstantSettlements } from 'merchant/reducers/collection';
 import { bindActionCreators, compose } from 'redux';
-import PartnerActivationRequiredModal from 'merchant/views/PartnerDashboard/Activation/Components/ActivationRequiredModal'
+import PartnerActivationRequiredModal from 'merchant/views/PartnerDashboard/Activation/Components/ActivationRequiredModal';
 
 @RTracking()
 class App extends Component {
@@ -80,7 +80,9 @@ class App extends Component {
       isLoading: true,
       goLiveNPSSurveyPopup: false,
       nonGoLiveNPSSurveyPopup: false,
-      isPartnerModeEnabled: this.props.location.pathname.startsWith('/partners/') && this.props?.user?.isIndependentPartnerKYCEnabled,
+      isPartnerModeEnabled:
+        this.props.location.pathname.startsWith('/partners/') &&
+        this.props?.user?.isIndependentPartnerKYCEnabled,
       isPartnerKYCActivated: false,
     };
 
@@ -115,11 +117,7 @@ class App extends Component {
   };
 
   canPartnerMoveToLiveMode = (currentMode, isPartnerKYCActivated, isAlreadyActivated) => {
-    return (
-      isPartnerKYCActivated &&
-      currentMode === 'test' &&
-      !isAlreadyActivated
-    );
+    return isPartnerKYCActivated && currentMode === 'test' && !isAlreadyActivated;
   };
 
   componentWillMount() {
@@ -197,7 +195,9 @@ class App extends Component {
     const isUnregBiz = ['2', '11'].indexOf(user?.business_type) !== -1;
 
     let currentPartnerMode = LocalStorageService.getItem(this.partnerModeToken);
-    let isPartnerKYCActivated = LocalStorageService.getItem(`is_partner_activated--${user?.current}`);
+    let isPartnerKYCActivated = LocalStorageService.getItem(
+      `is_partner_activated--${user?.current}`,
+    );
 
     if (
       user &&
@@ -283,8 +283,9 @@ class App extends Component {
 
         // use partner mode if merchant kyc is not activated and it's enabled
         if (!user.isActivated && this.state.isPartnerModeEnabled) {
-          this.fetchPartnerActivationStatus().then(({data}) =>{
-            const isCurrentPartnerKYCActivated = data?.partner_activation?.activation_status === 'activated';
+          this.fetchPartnerActivationStatus().then(({ data }) => {
+            const isCurrentPartnerKYCActivated =
+              data?.partner_activation?.activation_status === 'activated';
             if (user && isCurrentPartnerKYCActivated) {
               LocalStorageService.setItem(`is_partner_activated--${user.current}`, 'true');
               isPartnerKYCActivated = 'true';
@@ -295,16 +296,23 @@ class App extends Component {
             });
             if (!currentPartnerMode) {
               currentPartnerMode = isPartnerKYCActivated ? 'live' : 'test';
-            } else if (this.canPartnerMoveToLiveMode(currentMode, isCurrentPartnerKYCActivated, isPartnerKYCActivated)) {
+            } else if (
+              this.canPartnerMoveToLiveMode(
+                currentMode,
+                isCurrentPartnerKYCActivated,
+                isPartnerKYCActivated,
+              )
+            ) {
               currentPartnerMode = 'live';
             } else if (!isPartnerKYCActivated) {
               currentPartnerMode = 'test';
             }
             LocalStorageService.setItem(this.partnerModeToken, currentPartnerMode);
-            this.props.updateSession({ 
-              partnerMode: currentPartnerMode, isUsingPartnerMode: this.state.isPartnerModeEnabled 
+            this.props.updateSession({
+              partnerMode: currentPartnerMode,
+              isUsingPartnerMode: this.state.isPartnerModeEnabled,
             });
-          })
+          });
         }
       })
       .catch(() => {
@@ -434,11 +442,12 @@ class App extends Component {
         ]);
         this.setState({ nonGoLiveNPSSurveyPopup: takeNonGoLiveNPSSurvey });
       }
-      
-      const newIsPartnerModeEnabled = location.pathname.startsWith('/partners/') && user.isIndependentPartnerKYCEnabled;
+
+      const newIsPartnerModeEnabled =
+        location.pathname.startsWith('/partners/') && user.isIndependentPartnerKYCEnabled;
       if (this.state.isPartnerModeEnabled !== newIsPartnerModeEnabled) {
         this.setState({
-          isPartnerModeEnabled: newIsPartnerModeEnabled
+          isPartnerModeEnabled: newIsPartnerModeEnabled,
         });
       }
     }
@@ -667,8 +676,8 @@ class App extends Component {
   }
 
   fetchPartnerActivationStatus = () => {
-    return merchantFetch({ url: 'partner/activation', mode: 'live' })
-  }
+    return merchantFetch({ url: 'partner/activation', mode: 'live' });
+  };
 
   switchMode = (mode, callback = () => {}) => {
     window.rzpAnalytics({
@@ -687,7 +696,7 @@ class App extends Component {
       },
     });
     if (this.state.isPartnerModeEnabled) {
-      return this.handlePartnerModeSwitch(mode);   
+      return this.handlePartnerModeSwitch(mode);
     }
     const user = this.props.user;
     if (mode === 'live' && !user.isActivated) {
@@ -733,7 +742,10 @@ class App extends Component {
         this.props.openModal({
           size: 'small',
           component: (
-            <PartnerActivationRequiredModal partnerActivationStatus={this.state.partnerActivationStatus} onCloseClick={this.props.closeModal} />
+            <PartnerActivationRequiredModal
+              partnerActivationStatus={this.state.partnerActivationStatus}
+              onCloseClick={this.props.closeModal}
+            />
           ),
         });
       }
@@ -741,7 +753,7 @@ class App extends Component {
       LocalStorageService.setItem(this.partnerModeToken, mode);
       location.reload();
     }
-  }
+  };
 
   switchMerchant = (merchant) => {
     analyticsTrack({
@@ -848,7 +860,16 @@ class App extends Component {
   };
 
   render() {
-    const { user, config, org, mode, modeFormatted, partnerModeFormatted, merchant_gst, partnerMode } = this.props;
+    const {
+      user,
+      config,
+      org,
+      mode,
+      modeFormatted,
+      partnerModeFormatted,
+      merchant_gst,
+      partnerMode,
+    } = this.props;
 
     const hasGSTIN = this.props.merchant_gst.p_gstin || this.props.merchant_gst.gstin;
     const isPartnerModeEnabled = this.state.isPartnerModeEnabled;

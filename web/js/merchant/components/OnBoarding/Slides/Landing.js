@@ -21,16 +21,41 @@ export default class OnBoardingLanding extends React.PureComponent {
   };
 
   render() {
-    const { title, desc, pros, imageUrl, callout, className = '' } = this.props;
+    const {
+      title,
+      desc,
+      pros,
+      heading,
+      imageUrl,
+      ytVideoUrl,
+      callout,
+      className = '',
+    } = this.props;
 
     return (
       <div
         class={`OnBoarding--Slide OnBoarding--ImageSlide OnBoarding--Landing ${className}`}
         key="LandingSlide"
       >
-        <div class="Landing--Image">
-          <img src={imageUrl} alt="landing-image" />
-        </div>
+        {ytVideoUrl && (
+          <div class="Landing--Video">
+            <iframe
+              width="560"
+              height="315"
+              src={ytVideoUrl}
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        )}
+
+        {imageUrl && (
+          <div class="Landing--Image">
+            <img src={imageUrl} alt="landing-image" />
+          </div>
+        )}
 
         <div class="Product--Details">
           <div class="Details-heading">
@@ -38,6 +63,8 @@ export default class OnBoardingLanding extends React.PureComponent {
           </div>
 
           <div class="Details-title">{title}</div>
+
+          <div class="Details-heading">{heading}</div>
 
           <div class="Details-desc">{desc}</div>
 

@@ -86,6 +86,9 @@
 .OnBoarding
   padding: 24px
 
+  .callout-button
+    margin-right: 156px
+
   .Slider
     border-radius: 3px
     background-color: #FFFFFF
@@ -171,6 +174,14 @@
   display: flex
   align-items: center
 
+  .Landing--Video
+    width: 50%
+    display: inline-flex;
+    align-items: center;
+    
+    @media (max-width: 1024px) 
+      display: none
+
   .Landing--Image
     width: 50%
     align-self: stretch
@@ -199,6 +210,17 @@
 
       @media(max-width: 1024px)
         font-size: 28px
+    
+    .Details-heading
+      font-size: 16px
+      line-height: 21px
+      margin: 8px 0 24px
+      font-weight: bold
+      color: #0D2366
+
+      i
+        margin-right: 4px
+        margin-top: 4px
 
     .Details-desc
       font-size: 18px
@@ -385,6 +407,7 @@
 .OnBoarding--Subscription,
 .OnBoarding--Route,
 .OnBoarding--PaymentPages,
+.OnBoarding--SuperCheckout,
 .OnBoarding--PaymentLinks,
 .OnBoarding--PaymentButtons,
 .OnBoarding--Invoices,

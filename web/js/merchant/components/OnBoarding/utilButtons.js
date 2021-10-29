@@ -13,11 +13,12 @@ class FeatureEnableSliderButton extends React.PureComponent {
       eventAction: `Page ${props.page} - Get Started CTA`,
     });
 
+    // eslint-disable-next-line
     props.onClick && props.onClick(args);
   };
 
   render() {
-    const { isLocalEnabler, feature } = this.props;
+    const { isLocalEnabler, feature, buttonText } = this.props;
 
     const extraProps = {
       feature,
@@ -35,7 +36,7 @@ class FeatureEnableSliderButton extends React.PureComponent {
         pendingText="Enabling..."
         onClick={this.onClickFeatureEnableSliderButton}
       >
-        Get Started
+        {buttonText || 'Get Started'}
       </FeatureEnableButton.Primary>
     );
   }
@@ -50,6 +51,7 @@ class NextButton extends React.PureComponent {
       eventAction: `Page ${props.page} - Next CTA`,
     });
 
+    // eslint-disable-next-line
     props.onClick && props.onClick(args);
   };
 
@@ -84,6 +86,7 @@ class SkipAndGetStartedButton extends React.PureComponent {
       }),
     );
 
+    // eslint-disable-next-line
     props.onClick && props.onClick(args);
   };
 

@@ -1,8 +1,18 @@
 import { titleCase } from 'common/utils/rzp-utils';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
-const statusLabel = (statusMap) => ({ status = '', className }) => (
+const statusLabel = (statusMap, statusDescriptionMap) => ({ status = '', className }) => (
   <span class={`status-label label ${statusMap[status?.toLowerCase()]} ${className}`}>
     {status === 'activated_mcc_pending' ? 'Activated' : titleCase(status)}
+    {statusDescriptionMap && statusDescriptionMap[status] && (
+      <i class="i i-info-circle status-label-info-icon">
+        <Popover persistent={false} theme="dark">
+          <PopoverBody>
+            <p>{statusDescriptionMap[status]}</p>
+          </PopoverBody>
+        </Popover>
+      </i>
+    )}
   </span>
 );
 
@@ -37,6 +47,13 @@ export const orderStatusMap = {
   created: 'bg-light',
   attempted: 'label-info',
   paid: 'label-success',
+  placed: 'label-success',
+  pending: 'label-pending',
+};
+
+export const orderStatusDescMap = {
+  placed: 'order is placed via COD',
+  pending: 'order is placed via COD',
 };
 
 export const paymentStatusMap = {
@@ -196,7 +213,7 @@ export const storeProductsStatusMap = {
 export const InvoiceStatusLabel = statusLabel(invoiceStatusMap);
 export const PaymentPagesStatusLabel = statusLabel(paymentPagesStatusMap);
 export const RouteTransfersStatusLabel = statusLabel(routeTransfersStatusMap);
-export const OrderStatusLabel = statusLabel(orderStatusMap);
+export const OrderStatusLabel = statusLabel(orderStatusMap, orderStatusDescMap);
 export const PaymentStatusLabel = statusLabel(paymentStatusMap);
 export const SettlementStatusLabel = statusLabel(settlementStatusMap);
 export const BatchUploadStatusLabel = statusLabel(batchUploadStatusMap);

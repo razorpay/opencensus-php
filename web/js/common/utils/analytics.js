@@ -1,7 +1,7 @@
 import { titleCase } from './rzp-utils';
 import { getCookie } from 'common/utils/cookies';
 
-const sendToLumberjack = ({ eventName, properties = {} }) => {
+export const sendToLumberjack = ({ eventName, properties = {} }) => {
   const body = {
     mode: 'live',
     key: window.LUMBERJACK_API_KEY,

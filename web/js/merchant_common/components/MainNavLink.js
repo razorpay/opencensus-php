@@ -93,6 +93,10 @@ class MainNavLink extends Component {
       );
     }
 
+    if (this.props.onClick) {
+      this.props.onClick();
+    }
+
     return this.props.isMobileResolution && this.props.toggleMobileMenu();
   }
 

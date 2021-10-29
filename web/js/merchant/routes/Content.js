@@ -125,6 +125,10 @@ const LoansCollections = lazy(() =>
   import(/* webpackChunkName: "Loans" */ 'merchant/views/Capital/Loans/LoansCollections'),
 );
 
+const SuperCheckout = lazy(() =>
+  import(/* webpackChunkName: "SuperCheckout" */ 'merchant/views/SuperCheckout'),
+);
+
 // Can be removed with old navigation removal
 const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
   return (
@@ -353,6 +357,12 @@ export default class Content extends Component {
             path="/paymentpages"
             component={PaymentPages}
             additionalCondition={(user) => user.isAllowedView('payment_pages')}
+          />
+
+          <ShowWhenRoute
+            path="/super-checkout"
+            component={SuperCheckout}
+            additionalCondition={(user) => user.isSuperCheckoutEnabled}
           />
 
           <ShowWhenRoute

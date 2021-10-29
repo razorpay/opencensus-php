@@ -5,6 +5,7 @@ import MainNavLink from 'merchant_common/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import * as LocalStorageService from 'common/utils/localStorage';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
+import SuperCheckoutNavLink from 'merchant/components/Sidebar/SuperCheckoutNavLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
@@ -217,6 +218,19 @@ function MerchantNavLinks(props) {
             : ''
         }
       />
+
+      <SuperCheckoutNavLink>
+        {(onClick) => (
+          <MainNavLink
+            label="Super Checkout"
+            icon="i i-super-checkout"
+            type="product"
+            to={routes.superCheckout}
+            isNew={true}
+            onClick={onClick}
+          />
+        )}
+      </SuperCheckoutNavLink>
 
       <MainNavLink
         label="BBPS"
