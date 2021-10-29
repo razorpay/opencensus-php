@@ -1897,6 +1897,38 @@ export default class ActivationWizard extends React.Component {
         error =
           'Make sure you enter your Company Bank Account details. Beneficiary Name of this bank account should match your Company Pan Name';
       }
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().failed('kyc.karza_bank_verification', {
+          bvs_attempt_count: this.props.bvsApiCount,
+        }),
+      );
+      this.props.trackEventsAction({
+        objectName: 'Insync Karza Bank Verification',
+        actionName: 'Failed',
+        screen: 'KYC Bank screen',
+        properties: {
+          bvs_attempt_count: this.props.bvsApiCount,
+        },
+        toLumberjack: false,
+      });
+    } else if (
+      this.props.data?.bank_details_verification_status === 'verified' &&
+      this.props.user.isSyncBankVerificationEnabled
+    ) {
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().success('kyc.karza_bank_verification', {
+          bvs_attempt_count: this.props.bvsApiCount,
+        }),
+      );
+      this.props.trackEventsAction({
+        objectName: 'Insync Karza Bank Verification',
+        actionName: 'success',
+        screen: 'submit screen',
+        properties: {
+          bvs_attempt_count: this.props.bvsApiCount,
+        },
+        toLumberjack: false,
+      });
     }
     return (
       <>
@@ -2246,6 +2278,8 @@ export default class ActivationWizard extends React.Component {
                     !this.isLinkedAccountForm && this.props.user.isSyncBankVerificationEnabled
                   }
                   bvsApiCount={this.props.bvsApiCount}
+                  tracking={this.props.tracking}
+                  trackEventsAction={this.props.trackEventsAction}
                 />
               </main>
             )}

@@ -97,6 +97,35 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
     !['initiated', 'verified'].includes(data?.bank_details_verification_status) &&
     experiments.isSyncBankVerificationEnabled;
 
+  useEffect(() => {
+    if (hasBankVerificationFailed) {
+      analyticsTrack({
+        objectName: 'insync',
+        actionName: 'karza bank verification',
+        screen: 'home page',
+        eventAction: 'failed',
+        user,
+        properties: {
+          bvs_attempt_count: configData?.bank_account_verification_attempt_count,
+        },
+      });
+    } else if (
+      data?.bank_details_verification_status === 'verified' &&
+      experiments.isSyncBankVerificationEnabled
+    ) {
+      analyticsTrack({
+        objectName: 'insync',
+        actionName: 'karza bank verification',
+        screen: 'home page',
+        eventAction: 'success',
+        user,
+        properties: {
+          bvs_attempt_count: configData?.bank_account_verification_attempt_count,
+        },
+      });
+    }
+  }, [hasBankVerificationFailed]);
+
   return (
     <Formik
       initialValues={{

@@ -46,6 +46,37 @@ class SubmitFormLayer extends React.Component {
                 if (checked && this.props.isSyncBankVerificationEnabled) {
                   this.props.fetchMerchantData().then((res) => {
                     if (res?.data) {
+                      if (this.props.isBankVerificationFailed) {
+                        this.props.tracking.trackEvent(
+                          window.rzpQ.onbr().failed('kyc.karza_bank_verification', {
+                            bvs_attempt_count: this.props.bvsApiCount,
+                          }),
+                        );
+                        this.props.trackEventsAction({
+                          objectName: 'Insync Karza Bank Verification',
+                          actionName: 'Failed',
+                          screen: 'submit screen',
+                          properties: {
+                            bvs_attempt_count: this.props.bvsApiCount,
+                          },
+                          toLumberjack: false,
+                        });
+                      } else if (res.data?.bank_details_verification_status === 'verified') {
+                        this.props.tracking.trackEvent(
+                          window.rzpQ.onbr().success('kyc.karza_bank_verification', {
+                            bvs_attempt_count: this.props.bvsApiCount,
+                          }),
+                        );
+                        this.props.trackEventsAction({
+                          objectName: 'Insync Karza Bank Verification',
+                          actionName: 'success',
+                          screen: 'submit screen',
+                          properties: {
+                            bvs_attempt_count: this.props.bvsApiCount,
+                          },
+                          toLumberjack: false,
+                        });
+                      }
                       this.setState({ allowSubmit: checked });
                     }
                   });

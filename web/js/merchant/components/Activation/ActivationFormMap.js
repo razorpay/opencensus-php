@@ -951,7 +951,7 @@ const bankAccountFields = [
           const bankAccountNumber = dirty.bank_account_number;
           const accountNo = this.state.account_no;
 
-          const isMatching = bankAccountNumber == accountNo;
+          const isMatching = bankAccountNumber == accountNo || this?.props?.user?.isLiteOnboarding;
 
           if (
             user.activation_form_milestone === 'L1' &&

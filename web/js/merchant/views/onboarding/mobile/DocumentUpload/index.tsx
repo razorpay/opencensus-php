@@ -211,6 +211,38 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
     setDocumentUploadCompleted(isComplete);
   }, [addressDoc, businessDoc, bankDoc, additionalDoc]);
 
+  const hasBankVerificationFailed =
+    data?.bank_details_verification_status &&
+    !['initiated', 'verified'].includes(data?.bank_details_verification_status);
+
+  useEffect(() => {
+    if (isSyncBankVerificationEnabled) {
+      if (hasBankVerificationFailed) {
+        analyticsTrack({
+          objectName: 'insync',
+          actionName: 'karza bank verification',
+          screen: 'home page',
+          eventAction: 'failed',
+          user,
+          properties: {
+            bvs_attempt_count: configData?.bank_account_verification_attempt_count,
+          },
+        });
+      } else if (data?.bank_details_verification_status === 'verified') {
+        analyticsTrack({
+          objectName: 'insync',
+          actionName: 'karza bank verification',
+          screen: 'home page',
+          eventAction: 'success',
+          user,
+          properties: {
+            bvs_attempt_count: configData?.bank_account_verification_attempt_count,
+          },
+        });
+      }
+    }
+  }, [hasBankVerificationFailed]);
+
   const getMsmeDownloadLinksView = (header, cerificates) => {
     return (
       <View>
