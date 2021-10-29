@@ -50,6 +50,7 @@ class Core extends Base\Core
             $kycAccessState->setExpiryTime($this->generateExpiryTime());
         }
 
+        $kycAccessState->setState(State::PENDING_APPROVAL);
         $this->repo->saveOrFail($kycAccessState);
 
         return $kycAccessState;
