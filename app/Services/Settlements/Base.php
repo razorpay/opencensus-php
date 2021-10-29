@@ -282,12 +282,12 @@ class Base
             'account_type'        => $ba->getAccountType() !== null ? $ba->getAccountType() : 'current',
             'ifsc_code'           => $ba->getIfscCode(),
             'beneficiary_name'    => trim($ba->getBeneficiaryName()),
-            'beneficiary_address' => $ba->getBeneficiaryAddress1(),
-            'beneficiary_city'    => $ba->getBeneficiaryCity(),
-            'beneficiary_state'   => $ba->getBeneficiaryState(),
-            'beneficiary_country' => $ba->getBeneficiaryCountry(),
-            'beneficiary_email'   => $ba->getBeneficiaryEmail(),
-            'beneficiary_mobile'  => $ba->getBeneficiaryMobile(),
+            'beneficiary_address' => $ba->getBeneficiaryAddress1() ?? '',
+            'beneficiary_city'    => $ba->getBeneficiaryCity() ?? '',
+            'beneficiary_state'   => $ba->getBeneficiaryState() ?? '',
+            'beneficiary_country' => $ba->getBeneficiaryCountry() ?? '',
+            'beneficiary_email'   => $ba->getBeneficiaryEmail() ?? '',
+            'beneficiary_mobile'  => $ba->getBeneficiaryMobile() ?? '',
             'accepted_currency'   => Currency::INR,
             'extra_info'          => [
                 'via' => $via
