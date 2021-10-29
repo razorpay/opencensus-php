@@ -3478,4 +3478,104 @@ return [
             ],
         ],
     ],
+
+    'testOtpLoginVerifyWith2FA' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'Gvt61zZ3Iwzcqy',
+                'contact_mobile' => '0123456789',
+                'captcha'        => 'faked'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_LOGIN_PASSWORD_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_PASSWORD_REQUIRED,
+        ],
+    ],
+
+    'test2faWithPassword' => [
+        'request' => [
+            'url'     => '/users/login/otp/2fa',
+            'method'  => 'POST',
+            'content' => [
+                'password'      => 'hello123',
+                'captcha'       => 'faked'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => '0123456789',
+                'contact_mobile_verified' => true,
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'test2faWithPasswordIncorrectPassword' => [
+        'request' => [
+            'url'     => '/users/login/otp/2fa',
+            'method'  => 'POST',
+            'content' => [
+                'password'      => 'hello1234',
+                'captcha'       => 'faked'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_2FA_LOGIN_INCORRECT_PASSWORD,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_PASSWORD,
+        ],
+    ],
+
+    'test2faWithPasswordTooManyIncorrectPassword' => [
+        'request' => [
+            'url'     => '/users/login/otp/2fa',
+            'method'  => 'POST',
+            'content' => [
+                'password'      => 'hello1234',
+                'captcha'       => 'faked'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_2FA_LOGIN_PASSWORD_SUSPENDED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_2FA_LOGIN_PASSWORD_SUSPENDED,
+        ],
+    ],
 ];

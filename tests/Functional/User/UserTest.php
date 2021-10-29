@@ -4856,4 +4856,98 @@ class UserTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testOtpLoginVerifyWith2FA()
+    {
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['verifyOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->once())->method('verifyOtp');
+
+        $user = $this->fixtures->create(
+            'user',
+            [
+                'contact_mobile' => '0123456789',
+                'contact_mobile_verified' => true,
+                UserEntity::SECOND_FACTOR_AUTH => 1
+            ]
+        );
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function test2faWithPassword()
+    {
+        $user = $this->fixtures->create(
+            'user',
+            [
+                'contact_mobile' => '0123456789',
+                'contact_mobile_verified' => true,
+                'password' => 'hello123',
+                UserEntity::SECOND_FACTOR_AUTH => 1
+            ]
+        );
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function test2faWithPasswordIncorrectPassword()
+    {
+        $user = $this->fixtures->create(
+            'user',
+            [
+                'contact_mobile' => '0123456789',
+                'contact_mobile_verified' => true,
+                'password' => 'hello123',
+                UserEntity::SECOND_FACTOR_AUTH => 1
+            ]
+        );
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function test2faWithPasswordTooManyIncorrectPassword()
+    {
+        $user = $this->fixtures->create(
+            'user',
+            [
+                'contact_mobile' => '0123456789',
+                'contact_mobile_verified' => true,
+                'password' => 'hello123',
+                UserEntity::SECOND_FACTOR_AUTH => 1
+            ]
+        );
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redis->set($user['id'].'_2fa_password_count', Constants::INCORRECT_LOGIN_2FA_PASSWORD_THRESHOLD_COUNT);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+    }
+
 }

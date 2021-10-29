@@ -5570,6 +5570,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VERIFICATION_OTP_VERIFICATION_THRESHOLD_EXHAUSTED   = 'VERIFICATION_OTP_VERIFICATION_THRESHOLD_EXHAUSTED';
     const VERIFY_OTP_VERIFICATION_REDIS_ERROR                 = 'VERIFY_OTP_VERIFICATION_REDIS_ERROR';
 
+    const INCORRECT_2FA_PASSWORD_REDIS_ERROR                = 'INCORRECT_2FA_PASSWORD_REDIS_ERROR';
+    const LOGIN_2FA_PASSWORD_SUSPENDED                      = 'LOGIN_2FA_PASSWORD_SUSPENDED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

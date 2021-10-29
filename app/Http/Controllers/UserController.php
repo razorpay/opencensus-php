@@ -142,6 +142,16 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function loginOtp2faPassword()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->loginOtp2faPassword($input);
+
+        return ApiResponse::json($data);
+    }
+
+
     public function sendVerificationOtp()
     {
         $input = Request::all();

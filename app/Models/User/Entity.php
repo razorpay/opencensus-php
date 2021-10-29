@@ -450,6 +450,18 @@ class Entity extends Base\PublicEntity
         return $mobile;
     }
 
+    public function getMaskedEmail()
+    {
+        $email = $this->getEmail();
+
+        if (empty($email) === false)
+        {
+            return mask_email($email);
+        }
+
+        return $email;
+    }
+
     protected function getRestrictedAttribute(): bool
     {
         $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 2);

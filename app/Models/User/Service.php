@@ -571,6 +571,14 @@ class Service extends Base\Service
         return $user;
     }
 
+    public function loginOtp2faPassword(array $input): array
+    {
+        $user = $this->auth->getUser();
+
+        return $this->core->loginOtp2faPassword($user, $input);
+
+    }
+
     public function sendVerificationOtp(array $input): array
     {
         $data = $this->core->sendVerificationOtp($input);

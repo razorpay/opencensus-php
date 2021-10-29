@@ -2377,6 +2377,12 @@ class ErrorCode
     //Dynamic Fee Bearer Error Codes
     const BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG                                = 'BAD_REQUEST_INVALID_CONVENIENCE_FEE_CONFIG';
 
+    //2FA with password error codes
+    const BAD_REQUEST_2FA_LOGIN_INCORRECT_PASSWORD                                  = 'BAD_REQUEST_2FA_LOGIN_INCORRECT_PASSWORD';
+    const BAD_REQUEST_USER_2FA_LOGIN_PASSWORD_REQUIRED                              = 'BAD_REQUEST_USER_2FA_LOGIN_PASSWORD_REQUIRED';
+    const BAD_REQUEST_2FA_LOGIN_PASSWORD_SUSPENDED                                  = 'BAD_REQUEST_2FA_LOGIN_PASSWORD_SUSPENDED';
+    const SERVER_ERROR_2FA_INCORRECT_PASSWORD_REDIS_ERROR                           = 'SERVER_ERROR_2FA_INCORRECT_PASSWORD_REDIS_ERROR';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);

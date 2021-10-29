@@ -97,6 +97,9 @@ class Constants
     const VERIFICATION_OTP_VERIFICATION_TTL = 1800; // 30 mins
     const VERIFICATION_OTP_VERIFICATION_THRESHOLD = 9; // 9 times in 30 mins
 
+    // no. of incorrect password allowed on 2fa with password
+    const INCORRECT_LOGIN_2FA_PASSWORD_THRESHOLD_COUNT = 5;
+
     const INCORRECT_LOGIN_THRESHOLD_COUNT = 5;
 
     public static $attributionList = [

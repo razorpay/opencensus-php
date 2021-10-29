@@ -1106,6 +1106,37 @@ class Core extends Base\Core
 
     }
 
+    protected function checkSecondFactorAuthForOtpLogin(Entity $user)
+    {
+        if (($user->isSecondFactorAuth() === true) or
+            ($user->isSecondFactorAuthEnforced() === true))
+        {
+            $this->trace->info(TraceCode::USER_LOGIN_2FA_ENABLED, ['user_id' => $user->getId()]);
+
+            $this->trace->count(Metric::LOGIN_USER_2FA_ENABLED);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_PASSWORD_REQUIRED,
+                null,
+                [
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_PASSWORD_REQUIRED,
+                    'user_details'        => [
+                        'user_id'                   => $user->getId(),
+                        'account_locked'            => $user->isAccountLocked(),
+                        'user_mobile'               => $user->getMaskedContactMobile(),
+                        'email'                     => $user->getMaskedEmail(),
+                        'confirmed'                 => $user->getConfirmedAttribute(),
+                    ],
+                ]);
+        }
+        // TODO: what about this? this is the same as 2FA with OTP
+        if ($user->isOrgEnforcedSecondFactorAuth() === true)
+        {
+            $this->trace->info(TraceCode::LOGIN_ORG_ENFORCED_2FA_SUCCESS, ['user_id' => $user->getId()]);
+
+            $this->trace->count(Metric::LOGIN_ORG_ENFORCED_2FA_SUCCESS);
+        }
+    }
+
     /**
      * @param array $input
      * @return array
@@ -1161,6 +1192,128 @@ class Core extends Base\Core
         }
 
         $this->trace->count(Metric::USER_LOGIN_COUNT, $dimensionsForUserLogin);
+
+        $this->checkSecondFactorAuthForOtpLogin($user);
+
+        return $this->get($user);
+    }
+
+    /**
+     * On successful verification of email otp for login, delete the email key.
+     * @param $userId
+     * @throws Exception\ServerErrorException
+     */
+    protected function resetIncorrect2faPasswordAttempts($userId)
+    {
+        try
+        {
+            $user2FAPasswordCount = $userId . '_2fa_password_count';
+            $redis = $this->app->redis->Connection('mutex_redis');
+            $redis->del($user2FAPasswordCount);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::INCORRECT_2FA_PASSWORD_REDIS_ERROR,
+                ['key' => $userId]);
+
+            throw new Exception\ServerErrorException(
+                'An error occurred while interacting with redis on 2fa with password route.',
+                ErrorCode::SERVER_ERROR_2FA_INCORRECT_PASSWORD_REDIS_ERROR
+            );
+        }
+    }
+
+    /**
+     * @param $userId
+     * @return int|mixed
+     * @throws Exception\ServerErrorException
+     */
+    protected function incrementAndGetIncorrectPasswordCount($userId)
+    {
+        try
+        {
+            $user2FAPasswordCount = $userId . '_2fa_password_count';
+            $redis = $this->app->redis->Connection('mutex_redis');
+            $index = $redis->incr($user2FAPasswordCount);
+
+            if ($index === 1)
+            {
+                $redis->expire($user2FAPasswordCount, Constants::INCORRECT_LOGIN_TTL);
+            }
+
+            return $index;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::INCORRECT_2FA_PASSWORD_REDIS_ERROR,
+                ['key' => $userId]);
+
+            throw new Exception\ServerErrorException(
+                'An error occurred while interacting with redis on 2fa with password route.',
+                ErrorCode::SERVER_ERROR_2FA_INCORRECT_PASSWORD_REDIS_ERROR
+            );
+        }
+    }
+
+    /**
+     * @param $userId
+     * @throws Exception\ServerErrorException|BadRequestException
+     */
+    protected function check2faWithPasswordAttemptsExhausted($userId)
+    {
+        $count = $this->incrementAndGetIncorrectPasswordCount($userId);
+
+        if ($count > Constants::INCORRECT_LOGIN_2FA_PASSWORD_THRESHOLD_COUNT)
+        {
+            $this->trace->info(TraceCode::LOGIN_2FA_PASSWORD_SUSPENDED, ['userId'=>$userId]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_2FA_LOGIN_PASSWORD_SUSPENDED
+            );
+        }
+    }
+
+    /**
+     * @param Entity $user
+     * @param array $input
+     * @return array
+     * @throws BadRequestException|Exception\ServerErrorException
+     */
+    public function loginOtp2faPassword(Entity $user, array $input): array
+    {
+        $this->getUserEntity()->getValidator()->validateInput('login_otp_2fa_password', $input);
+
+        $this->checkUserAccountNotLockedOrThrowException($user);
+
+        $userId = $user->getId();
+
+        if ((new BcryptHasher)->check($input[Entity::PASSWORD], $user->getPassword()) == false)
+        {
+            $this->trace->count(Metric::LOGIN_2FA_INCORRECT_PASSWORD);
+
+            $this->check2faWithPasswordAttemptsExhausted($userId);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_PASSWORD,
+                null,
+                [
+                    'internal_error_code'    => ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_PASSWORD,
+                    'user_details'           => [
+                        'user_id' => $userId,
+                        'restricted' => $user->restricted,
+                        'account_locked' => $user->isAccountLocked()
+                    ],
+                ]);
+        }
+
+        $this->resetIncorrect2faPasswordAttempts($userId);
+
+        $this->trace->count(Metric::LOGIN_2FA_CORRECT_PASSWORD);
 
         return $this->get($user);
     }
@@ -1771,7 +1924,7 @@ class Core extends Base\Core
         }
         else
         {
-            $this->trace->count(Metric::LOGIN_2FA_CORRECT_OTP);
+            $this->trace->count(Metric::LOGIN_2FA_INCORRECT_OTP);
 
             //if the otp is incorrect, increment the number of wrong 2fa attempts.
             $this->incrementWrong2faAttempts($user);
@@ -1872,6 +2025,7 @@ class Core extends Base\Core
                             'user_id'        => $user->getId(),
                             'account_locked' => $user->isAccountLocked(),
                             'user_mobile'    => $user->getMaskedContactMobile(),
+                            'email'          => $user->getMaskedEmail(),
                             'confirmed'      => $user->getConfirmedAttribute(),
                         ],
                     ]);

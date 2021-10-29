@@ -1499,4 +1499,9 @@ class PublicErrorDescription
     // Payouts Batch
     const BAD_REQUEST_PAYOUTS_BATCH_NOT_ALLOWED = 'Creating a payouts batch request is not allowed. Please contact support for more details.';
 
+    //2FA with password error codes
+    const BAD_REQUEST_2FA_LOGIN_INCORRECT_PASSWORD                                  = 'Verification failed because of incorrect password.';
+    const BAD_REQUEST_USER_2FA_LOGIN_PASSWORD_REQUIRED                              = 'Second factor authentication is enabled for user. Password is required';
+    const BAD_REQUEST_2FA_LOGIN_PASSWORD_SUSPENDED                                  = '2FA with password suspended due to too many incorrect attempts. Please try after some time.';
+    const SERVER_ERROR_2FA_INCORRECT_PASSWORD_REDIS_ERROR                           = 'An error occurred with redis during 2fa with password flow.';
 }

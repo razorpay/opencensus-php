@@ -14,7 +14,9 @@ final class Metric
     const LOGIN_2FA_SUCCESS                   = 'login_2fa_success';
     const LOCKED_USER_LOGIN                   = 'locked_user_login';
     const LOGIN_2FA_CORRECT_OTP               = 'login_2fa_correct_otp';
+    const LOGIN_2FA_CORRECT_PASSWORD          = 'login_2fa_correct_password';
     const LOGIN_2FA_INCORRECT_OTP             = 'login_2fa_incorrect_otp';
+    const LOGIN_2FA_INCORRECT_PASSWORD        = 'login_2fa_incorrect_password';
     const LOGIN_2FA_MAX_WRONG_OTP_ATTEMPTS    = 'login_2fa_max_wrong_otp_attempts';
     const LOGIN_USER_2FA_ENABLED              = 'login_user_2fa_enabled';
     const LOGIN_USER_2FA_NOT_SETUP            = 'login_user_2fa_not_setup';
