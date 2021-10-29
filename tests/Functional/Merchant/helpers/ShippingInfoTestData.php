@@ -55,6 +55,58 @@ return [
             'status_code' => 200
         ],
     ],
+
+    'testGetShippingInfoWithFailedZipcodeSearch' => [
+        'request' => [
+            'url' => '/merchant/shipping_info',
+            'method' => 'post',
+            'content' => [
+                'addresses' => [
+                    [
+                        'zipcode' => '560102',
+                        'country' => 'in'
+                    ],
+                ],
+                'mock_response' => [
+                    'body' => [
+                        'addresses' => [
+                            [
+                                'id' => 0,
+                                'zipcode' => '560102',
+                                'state' => '',
+                                'state_code' => '',
+                                'city' => '',
+                                'country' => 'in',
+                                'serviceable' => true,
+                                'cod' => true,
+                                'cod_fee' => 50,
+                                'shipping_fee' => 90,
+                            ]
+                        ],
+                    ],
+                    'status_code' => 200,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'addresses' => [
+                    [
+                        'zipcode' => '560102',
+                        'state' => '',
+                        'state_code' => '',
+                        'city'  => '',
+                        'country' => 'in',
+                        'serviceable' => true,
+                        'cod' => true,
+                        'cod_fee' => 50,
+                        'shipping_fee' => 90,
+                    ]
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
     'testGetShippingInfoWithoutValidOrderId' => [
         'request' => [
             'url' => '/merchant/shipping_info',

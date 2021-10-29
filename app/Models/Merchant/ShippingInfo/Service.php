@@ -484,7 +484,15 @@ class Service extends Base\Service
             {
                 if ($address['country'] === Country::IN)
                 {
-                    $response = $this->app['pincodesearch']->fetchCityAndStateFromPincode($address['zipcode']);
+                    try
+                    {
+                        $response = $this->app['pincodesearch']->fetchCityAndStateFromPincode($address['zipcode']);
+                    }
+                    catch (Throwable $e)
+                    {
+                        $this->trace->error(TraceCode::PINCODE_SEARCH_ERROR, $e->getTrace());
+                        $response = ['city' => '', 'state' => '', 'state_code' => ''];
+                    }
 
                     $address['city'] = $response['city'];
 
