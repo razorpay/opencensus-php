@@ -1990,8 +1990,7 @@ class Core extends Base\Core
      */
     protected function processLedgerPayout(Entity $payout,
                                            Reversal\Entity $reversal = null,
-                                           array $ftsSourceAccountInformation = [],
-                                           string $previousStatus = null)
+                                           array $ftsSourceAccountInformation = [])
     {
         // Currently only shared fundAccount payout is pushed to ledger. So in case of direct, return.
         // In case env variable ledger.enabled is false, return.
@@ -2008,23 +2007,10 @@ class Core extends Base\Core
             return;
         }
 
-        // If a payout goes from initiated to reversed, we wish to move the status
-        // from initiated -> processed -> reversed, hence we are forcing a call to ledger with processed status
-        if (($payout->getStatus() === Status::REVERSED) and
-            ($previousStatus === Status::INITIATED or $previousStatus === Status::CREATED))
-        {
-            $clonedPayout = clone $payout;
-
-            $clonedPayout->setStatus(Status::PROCESSED);
-
-            $event = Status::getLedgerEventFromPayoutStatus($clonedPayout->getStatus());
-
-            (new Transaction\Processor\Ledger\Payout)->pushTransactionToLedger($clonedPayout, $event, $reversal, $ftsSourceAccountInformation);
-        }
-
         $event = Status::getLedgerEventFromPayoutStatus($payout->getStatus());
 
-        (new Transaction\Processor\Ledger\Payout)->pushTransactionToLedger($payout, $event, $reversal, $ftsSourceAccountInformation);
+        (new Transaction\Processor\Ledger\Payout)
+            ->pushTransactionToLedger($payout, $event, $reversal, $ftsSourceAccountInformation);
     }
 
     /**
@@ -2450,6 +2436,25 @@ class Core extends Base\Core
 
         $previousStatus = $payout->getStatus();
 
+        // If a payout goes from initiated to directly reversed, we will still wish to move the status
+        // from initiated -> processed -> reversed for proper journal writes,
+        // hence we are forcing a call to ledger with processed status.
+        if ($previousStatus === Status::INITIATED or
+            $previousStatus === Status::CREATED)
+        {
+            $clonedPayout = clone $payout;
+
+            $clonedPayout->setStatus(Status::PROCESSED);
+
+            // Sending null for reversal here.
+            // We are trying to push an event for the transactor type payout_processed, which doesn't require a
+            // reversal object. Anyways, the $reversal variable is currently null anyways.
+            // If we try to create a cloned payout after $reversal var is initialised, that is, after the $payout object
+            // has its status set to reversed, cloning the payout and then trying to mark it as processed will throw an
+            // exception, as the state machine for payout status will prohibit this change.
+            $this->processLedgerPayout($clonedPayout, null, $ftsSourceAccountInformation);
+        }
+
         // check using service
         if ($payout->getIsPayoutService() === true)
         {
@@ -2465,7 +2470,7 @@ class Core extends Base\Core
             $this->app->events->dispatch('api.payout.reversed', [$payout]);
         }
 
-        $this->processLedgerPayout($payout, $reversal, $ftsSourceAccountInformation, $previousStatus);
+        $this->processLedgerPayout($payout, $reversal, $ftsSourceAccountInformation);
     }
 
     public function handlePayoutReversedForHighTpsMerchants(Entity $payout,
@@ -2485,7 +2490,7 @@ class Core extends Base\Core
 
         $this->app->events->dispatch('api.payout.reversed', [$payout]);
 
-        $this->processLedgerPayout($payout, $reversal, $ftsSourceAccountInformation, $previousStatus);
+        $this->processLedgerPayout($payout, $reversal, $ftsSourceAccountInformation);
     }
 
     protected function handlePayoutFailed(Entity $payout,
