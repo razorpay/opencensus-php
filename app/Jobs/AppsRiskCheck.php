@@ -84,6 +84,7 @@ class AppsRiskCheck extends Job
         $url = $this->getPaymentPageUrl();
 
         $response = (new MerchantRiskClient())->enqueueProfanityCheckerRequest(
+            $this->params['merchant_id'],
             self::MRS_MODERATION_TYPE,
             self::MRS_ENTITY_TYPE,
             $this->params['entity_id'],

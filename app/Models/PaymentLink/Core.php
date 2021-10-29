@@ -2152,6 +2152,7 @@ class Core extends Base\Core
             'entity_id'         => $paymentLink->getId(),
             'checks'            => ['profanity_check'],
             'payment_page_id'   => $paymentLink->getPublicId(),
+            'merchant_id'       => $paymentLink->getMerchantId(),
         ];
         try {
             $this->trace->info(

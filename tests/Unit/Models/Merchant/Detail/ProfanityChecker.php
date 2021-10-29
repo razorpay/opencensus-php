@@ -33,7 +33,10 @@ class ProfanityChecker extends TestCase
 
         $caller = 'test_caller';
 
+        $merchantId = '100000Razorpay';
+
         $expectedRequestPayload = [
+            'MerchantId'     => $merchantId,
             'ModerationType' => $moderationType,
             'EntityType'     => $entityType,
             'EntityId'       => $entityId,
@@ -69,7 +72,7 @@ class ProfanityChecker extends TestCase
 
         $mrsMock = $this->getMrsRequestMock($expectedRequestPayload);
 
-        $res = $mrsMock->enqueueProfanityCheckerRequest($moderationType, $entityType, $entityId, $target, $depth, $caller);
+        $res = $mrsMock->enqueueProfanityCheckerRequest($merchantId, $moderationType, $entityType, $entityId, $target, $depth, $caller);
 
         $this->assertEquals(true, $res['success']);
     }

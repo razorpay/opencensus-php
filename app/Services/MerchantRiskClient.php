@@ -176,11 +176,12 @@ class MerchantRiskClient
         }
     }
 
-    public function enqueueProfanityCheckerRequest(string $moderationType, string $entityType, string $entityId, string $target, int $depth, string $caller = null): array
+    public function enqueueProfanityCheckerRequest(string $merchantId, string $moderationType, string $entityType, string $entityId, string $target, int $depth, string $caller = null): array
     {
         $this->init();
 
         $requestPayload = [
+            'MerchantId'     => $merchantId,
             'ModerationType' => $moderationType,
             'EntityType'     => $entityType,
             'EntityId'       => $entityId,
