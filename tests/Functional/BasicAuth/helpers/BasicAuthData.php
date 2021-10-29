@@ -648,6 +648,41 @@ return [
         ],
     ],
 
+    'testBalancesApiOnPrivateAuth' => [
+        'request' => [
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                    'entity' => 'collection',
+                    'count' => 1,
+                    'items' =>
+                        [
+                                [
+                                    'type' => 'banking',
+                                    'currency' => 'INR',
+                                    'balance' => 300000,
+                                    'account_number' => 'XXXXXXXXXXXX6903',
+                                    'account_type' => 'shared',
+                                ],
+                        ],
+            ]
+        ],
+        'expected_passport' => [
+            'mode'          => 'test',
+            'identified'    => true,
+            'authenticated' => true,
+            'consumer'      => [
+                'type' => 'merchant',
+                'id'   => '10000000000000',
+            ],
+            'credential' => [
+                'username'   => 'rzp_test_TheTestAuthKey',
+                'public_key' => 'rzp_test_TheTestAuthKey',
+            ],
+        ],
+    ],
+
     'testPrivateAuthAndPassportJwtIssuedByApi' => [
         'request' => [
             'method' => 'GET',

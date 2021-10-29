@@ -579,10 +579,20 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
-
+    
     public function getAccountBalances()
     {
         $input = Request::all();
+
+        $data = $this->service()->fetchAccountBalances($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getAccountBalancesByAccountNumberSuffix($accountSuffix)
+    {
+        $input = Request::all();
+        $input['account_number_suffix'] = $accountSuffix;
 
         $data = $this->service()->fetchAccountBalances($input);
 

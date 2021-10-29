@@ -15,11 +15,17 @@ class Fetch extends BaseFetch
         ],
         AuthType::ADMIN_AUTH => [
             Entity::ACCOUNT_TYPE   =>    'sometimes|string|custom',
-        ]
+        ],
+        AuthType::PRIVATE_AUTH => [
+            Entity::ACCOUNT_NUMBER_SUFFIX  => 'filled|int|digits:4',
+        ],
     ];
     const ACCESSES = [
         AuthType::PROXY_AUTH => [
             Entity::TYPE,
+        ],
+        AuthType::PRIVATE_AUTH => [
+            Entity::ACCOUNT_NUMBER_SUFFIX,
         ],
         AuthType::ADMIN_AUTH =>  [
             Entity::MERCHANT_ID,

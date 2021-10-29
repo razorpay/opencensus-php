@@ -988,6 +988,70 @@ class BasicAuthTest extends TestCase
         return $this->samplePassportJwt($builder);
     }
 
+    public function testBalancesApiOnPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->create('balance',
+            [
+                'type'           => 'banking',
+                'account_type'   => 'shared',
+                'account_number' => '2224440041626903',
+                'merchant_id'    => '10000000000000',
+                'balance'        => 300000
+            ]);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCdf',
+            'account_number'        =>  '2224440041626907',
+            'balance_id'            =>  $balance['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/balance/account/6903';
+
+        $this->fixtures->create('balance',
+            [
+                'type'           => 'banking',
+                'account_type'   => 'direct',
+                'account_number' => '2224440041626905',
+                'merchant_id'    => '10000000000000',
+                'balance'        => 800000
+            ]);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->createBankingAccount();
+
+        $this->fixtures->edit('key', 'TheTestAuthKey', ['expired_at' => time() + 12000]);
+
+        $this->startTest();
+
+        $this->assertPassport();
+    }
+
+    protected function createBankingAccount(array $attributes = [], string $mode = 'test')
+    {
+        $bankingAccount = $this->fixtures->on($mode)->create('banking_account', [
+            'id'                    => $attributes["id"] ?? 'ABCde1234ABCde',
+            'account_number'        => $attributes["account_number"] ?? '2224440041626905',
+            'account_ifsc'          => $attributes["account_ifsc"] ?? 'RATN0000088',
+            'account_type'          => $attributes["account_type"] ?? 'current',
+            'merchant_id'           => $attributes["merchant_id"] ?? '10000000000000',
+            'channel'               => $attributes["channel"] ?? 'rbl',
+            'pincode'               => $attributes["pincode"] ?? '1',
+            'bank_reference_number' => $attributes["bank_reference_number"] ?? '',
+            'balance_id'            => $attributes["balance_id"] ?? '',
+            'status'                => 'activated',
+        ]);
+
+        return $bankingAccount;
+    }
+
     public function testPassportTokenForJob()
     {
         $this->ba->privateAuth();

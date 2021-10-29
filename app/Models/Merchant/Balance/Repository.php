@@ -479,4 +479,12 @@ class Repository extends Base\Repository
                     ->pluck(Entity::ID)
                     ->toArray();
     }
+
+    public function addQueryParamAccountNumberSuffix($query, $param)
+    {
+        $accountNumber          = $this->dbColumn(Entity::ACCOUNT_NUMBER);
+        $accountNumberSuffix    = $param[Entity::ACCOUNT_NUMBER_SUFFIX];
+
+        $query->where($accountNumber, 'like', '%'.$accountNumberSuffix);
+    }
 }

@@ -46,6 +46,8 @@ class Entity extends Base\PublicEntity
     //
     const ACCOUNT_NUMBER = 'account_number';
 
+    const ACCOUNT_NUMBER_SUFFIX = 'account_number_suffix';
+
     //
     // account_type can be shared (for Virtual Accounts) or direct (for Current Accounts)
     //

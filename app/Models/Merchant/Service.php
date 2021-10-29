@@ -1219,9 +1219,16 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getId();
 
-        $balance = $this->repo->balance->fetch($input, $merchantId);
+        $balance = $this->repo->balance->fetch($input, $merchantId)->toArrayPublic();
 
-        return $balance->toArrayPublic();
+        if ($this->auth->isStrictPrivateAuth() === true)
+        {
+            array_walk($balance['items'], function(& $b){
+                $b[Balance\Entity::ACCOUNT_NUMBER] = mask_except_last4($b[Balance\Entity::ACCOUNT_NUMBER]);
+            });
+        }
+
+        return $balance;
     }
 
     public function updateLockedBalance(array $input, string $balanceId)
