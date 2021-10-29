@@ -65,24 +65,25 @@ class ThirdWatchService
 
         $key = $this->getCacheKey($address);
 
-        $response = $this->cache->get($key);
+        $cacheResponse = $this->cache->get($key);
 
-        // push to Kafka if address is not cached
-        if (empty($response))
+        if (empty($cacheResponse) === false)
         {
-            $kafkaResult = (new ThirdWatchClient())->sendAddressToKafka($key, $address);
+           return ['cod' => $cacheResponse['label'] === 'green'];
+        }
 
-            if ($kafkaResult === false)
-            {
-                return ['cod' => false];
-            }
+        $kafkaResult = (new ThirdWatchClient())->sendAddressToKafka($key, $address);
 
-            $response = $this->pollCacheForThirdWatchResponse($key);
+        if ($kafkaResult === false)
+        {
+            return ['cod' => false];
+        }
 
-            if (empty($response) === true)
-            {
-                return ['cod' => false ];
-            }
+        $response = $this->pollCacheForThirdWatchResponse($key);
+
+        if (empty($response) === true)
+        {
+            return ['cod' => false ];
         }
 
         $this->trace->count(
@@ -90,7 +91,7 @@ class ThirdWatchService
             ['time_taken' => $this->getCurrentTimeInMillis() - $serviceStart]
         );
 
-        return ['cod' => $response['label'] === 'green'];
+        return $response;
     }
 
     /**
@@ -112,7 +113,7 @@ class ThirdWatchService
         return round(microtime(true) * 1000);
     }
 
-    protected function pollCacheForThirdWatchResponse($key)
+    protected function pollCacheForThirdWatchResponse($key): array
     {
         $response = ['cod' => false];
 
@@ -133,14 +134,10 @@ class ThirdWatchService
             }
         }
 
-        // no API call received from TW
+        // API call received from TW
         $this->trace->count(
               TraceCode::TW_ADDRESS_COD_VALIDITY_POLL_TIME_TAKEN, [
                   'time_taken' => $newTime - $time
-        ]);
-
-        $this->trace->debug(TraceCode::TW_ADDRESS_COD_VALIDITY_RESPONSE_TIMEOUT, [
-            'cod' => $response['cod']
         ]);
 
         return $response;
