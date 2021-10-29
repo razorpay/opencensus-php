@@ -1001,7 +1001,7 @@ class Service extends Base\Service
                     if ((($isBankingRequest === true) and ($data['banking_role'] === null)) or
                         (($isBankingRequest === false) and ($data['role'] === null)))
                     {
-                        $this->switchProduct($data, $user);
+                        $data = $this->switchProduct($data, $user);
                     }
 
                     if (($isBankingRequest === false))
@@ -1878,6 +1878,8 @@ class Service extends Base\Service
             'duration'            => $duration,
             'controller'          => app('request')->route()->getAction()['controller']
         ]);
+
+        return $data;
     }
 
     protected function isExperimentOnAndIsUnregisteredBusinessType(array $data): bool
