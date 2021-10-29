@@ -23,9 +23,10 @@ const Screen = styled(View)`
   background-color: #f9fbfe;
 `;
 
-const WhitelistedSteps: React.FC<
-  RouteComponentProps & { showL1Modal: (data: any) => void; submerchantId: any }
-> = ({ history, showL1Modal, submerchantId }) => {
+const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any) => void }> = ({
+  history,
+  showL1Modal,
+}) => {
   const { data, postData } = useActivation();
   const { user, experiments } = useApp();
   const [status, businessCategoriesData] = useBusinessCategory('');
@@ -61,11 +62,7 @@ const WhitelistedSteps: React.FC<
 
   const onClick = (step) => {
     setActiveTabId(step);
-    if (submerchantId) {
-      history.push(`/partners/submerchants/onboarding/${submerchantId}/form`);
-    } else {
-      history.push('/onboarding/form');
-    }
+    history.push('/onboarding/form');
   };
 
   const submitL1 = () => {

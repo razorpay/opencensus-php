@@ -71,10 +71,7 @@ const TnCLink = styled(Link)`
   bottom: 6.55px;
 `;
 
-const ActivationForm: React.FC<RouteComponentProps & { submerchantId?: string }> = ({
-  history,
-  submerchantId,
-}) => {
+const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   const { status: activationStatus, data, postData, refetch } = useActivation();
   const { user, experiments } = useApp();
   const [status, businessCategoriesData] = useBusinessCategory('');
@@ -414,11 +411,7 @@ const ActivationForm: React.FC<RouteComponentProps & { submerchantId?: string }>
     }
   };
   const onBack = () => {
-    if (submerchantId) {
-      history.push(`/partners/submerchants/onboarding/${submerchantId}/steps`);
-    } else {
-      history.push('/onboarding/steps');
-    }
+    history.push('/onboarding/steps');
   };
 
   const isL1AllTabComplete =

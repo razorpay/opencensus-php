@@ -16,13 +16,10 @@ import { ActivationModal, ModalTypeT } from '../../ActivationModals';
 import { useApp } from 'common/context/App';
 import { getMode, switchMode } from 'common/services/mode';
 
-const GreylistedSteps: React.FC<
-  RouteComponentProps & {
-    // eslint-disable-next-line react/no-unused-prop-types
-    showL1Modal: (data: any) => void;
-    submerchantId: any;
-  }
-> = ({ history, submerchantId }) => {
+// eslint-disable-next-line react/no-unused-prop-types
+const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any) => void }> = ({
+  history,
+}) => {
   const { data, postData } = useActivation();
   const { data: configData } = useConfigDetails('onboarding');
   const { user, experiments } = useApp();
@@ -51,11 +48,7 @@ const GreylistedSteps: React.FC<
 
   const onClick = (step: string) => {
     setActiveTabId(step);
-    if (submerchantId) {
-      history.push(`/partners/submerchants/onboarding/${submerchantId}/form`);
-    } else {
-      history.push('/onboarding/form');
-    }
+    history.push('/onboarding/form');
   };
 
   const goToNcFlow = () => {

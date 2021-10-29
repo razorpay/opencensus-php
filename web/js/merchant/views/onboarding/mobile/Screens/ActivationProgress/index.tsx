@@ -4,7 +4,6 @@ import View from '@razorpay/blade-old/src/atoms/View';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import { Motion, spring, presets } from 'react-motion';
 import { FullPageLoader } from 'common/components/Loader';
-import { withRouter, RouteComponentProps } from 'react-router-dom';
 import useActivation from '../../hooks/useActivation';
 import WhitelistedSteps from './WhitelistedSteps';
 import GreylistedSteps from './GreylistedSteps';
@@ -36,9 +35,7 @@ const ScreenContainer = styled.div.attrs((props) => ({
   min-height: 100%;
 `;
 
-const ActivationProgress: React.FC<RouteComponentProps & { submerchantId?: string }> = ({
-  submerchantId,
-}) => {
+const ActivationProgress: React.FC = () => {
   const { status, data } = useActivation();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalType, setModalType] = useState<ModalTypeT>('');
@@ -111,10 +108,7 @@ const ActivationProgress: React.FC<RouteComponentProps & { submerchantId?: strin
                 {shouldBlockMerchantKYC() ? (
                   <AccessBlockedSteps />
                 ) : (
-                  <Steps
-                    showL1Modal={(activationData) => openModal(activationData)}
-                    submerchantId={submerchantId}
-                  />
+                  <Steps showL1Modal={(activationData) => openModal(activationData)} />
                 )}
               </Screen>
             </Space>
@@ -131,4 +125,4 @@ const ActivationProgress: React.FC<RouteComponentProps & { submerchantId?: strin
   );
 };
 
-export default withRouter(ActivationProgress);
+export default ActivationProgress;
