@@ -1888,6 +1888,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HARVESTER_RETRY                                       = 'HARVESTER_RETRY';
     const HARVESTER_FAILURE                                     = 'HARVESTER_FAILURE';
     const HARVESTER_RESPONSE                                    = 'HARVESTER_RESPONSE';
+    const HARVESTER_RESPONSE_TIME                               = 'HARVESTER_RESPONSE_TIME';
 
     const SHIELD_INTEGRATION_ERROR                              = 'SHIELD_INTEGRATION_ERROR';
     const SHIELD_SLACK_REQUEST_INITIATED                        = 'SHIELD_SLACK_REQUEST_INITIATED';
@@ -4781,6 +4782,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STUCK_PAYOUTS_NOTIFY_EMAIL_FAILURE                      = 'STUCK_PAYOUTS_NOTIFY_EMAIL_FAILURE';
 
     const DRUID_REQUEST_FAILURE                                   = 'DRUID_REQUEST_FAILURE';
+    const GET_MERCHANT_DATA_FOR_SEGMENT                           = 'GET_MERCHANT_DATA_FOR_SEGMENT';
+    const DRUID_RESPONSE_TIME                                     = 'DRUID_RESPONSE_TIME';
     const PAYMENT_DATA_NOT_FOUND_ON_DRUID                         = 'PAYMENT_DATA_NOT_FOUND_ON_DRUID';
     const DISPUTE_CHARGEBACK_DRUID_RESPONSE                       = 'DISPUTE_CHARGEBACK_DRUID_RESPONSE';
 

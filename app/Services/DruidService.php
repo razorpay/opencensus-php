@@ -13,7 +13,7 @@ class DruidService
     const ACCEPT_HEADER    = 'Accept';
     const APPLICATION_JSON = 'application/json';
     const CONTENT_TYPE     = 'Content-Type';
-    const REQUEST_TIMEOUT  = 75; // timeout in seconds
+    const REQUEST_TIMEOUT  = 10; // timeout in seconds
 
     protected $trace;
     protected $app;
@@ -34,7 +34,7 @@ class DruidService
     }
 
 
-    public function getDataFromDruid(array $content)
+    public function getDataFromDruid(array $content, $timeout = self::REQUEST_TIMEOUT)
     {
         $method = 'POST';
 
@@ -43,12 +43,14 @@ class DruidService
         $headers[self::CONTENT_TYPE] = self::APPLICATION_JSON;
 
         $options = [
-            'timeout' => self::REQUEST_TIMEOUT,
+            'timeout' => $timeout,
             'auth' => [
                 $this->config['auth']['key'],
                 $this->config['auth']['secret']
             ],
         ];
+
+        $start_time = microtime(true);
 
         try
         {
@@ -62,6 +64,10 @@ class DruidService
 
         } catch (\Throwable $e)
         {
+           $this->trace->info(TraceCode::DRUID_RESPONSE_TIME, [
+               'response_time' => microtime(true) - $start_time
+           ]);
+
             $this->trace->error(TraceCode::DRUID_REQUEST_FAILURE, [
                 'message' => $e->getMessage(),
                 'code'    => $e->getCode(),
@@ -70,6 +76,10 @@ class DruidService
 
             return [$e->getMessage(), null];
         }
+
+        $this->trace->info(TraceCode::DRUID_RESPONSE_TIME, [
+            'response_time' => microtime(true) - $start_time
+        ]);
 
         $data = json_decode($response->body, true);
 

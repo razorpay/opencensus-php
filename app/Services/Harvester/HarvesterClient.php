@@ -134,13 +134,15 @@ class HarvesterClient extends AbstractEventClient
         return $eventChunksData;
     }
 
-    public function query($data = '')
+    public function query($data = '', $timeout = self::REQUEST_TIMEOUT)
     {
-        return $this->sendRequest(self::QUERY_API_PATH, $data, self::RETRY, self::RETRY_TIMES);
+        return $this->sendRequest(self::QUERY_API_PATH, $data, self::RETRY, self::RETRY_TIMES, $timeout);
     }
 
-    protected function sendRequest(string $urlPath, $data, bool $retry = false, int $maxRetryTimes = 0)
+    protected function sendRequest(string $urlPath, $data, bool $retry = false, int $maxRetryTimes = 0, $timeout = self::REQUEST_TIMEOUT)
     {
+        $startTime = microtime(true);
+
         $request = [
             'url'           => $this->queryBaseUrl . $urlPath,
             'method'        => 'POST',
@@ -163,7 +165,7 @@ class HarvesterClient extends AbstractEventClient
             'Accept'        => 'application/json'
         ];
 
-        $options['timeout'] = self::REQUEST_TIMEOUT;
+        $options['timeout'] = $timeout;
 
         $request['headers'] = $headers;
 
@@ -200,6 +202,12 @@ class HarvesterClient extends AbstractEventClient
         }
 
         $this->checkErrors($urlPath, $data ,$response);
+
+        $this->trace->info(
+        TraceCode::HARVESTER_RESPONSE_TIME,
+        [
+            'response_time' => microtime(true)- $startTime,
+        ]);
 
         return json_decode($response->body, true);
     }

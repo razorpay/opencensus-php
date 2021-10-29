@@ -6,7 +6,7 @@ use RZP\Services\DruidService as BaseDruidService;
 
 class DruidService extends BaseDruidService
 {
-    public function getDataFromDruid(array $content)
+    public function getDataFromDruid(array $content, $timeout = 2)
     {
         $data = [
             'user_days_till_last_transaction' => 45,

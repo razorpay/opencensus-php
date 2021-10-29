@@ -134,6 +134,9 @@ class Service extends Base\Service
     const MINUTE    = 60 * self::SECOND;
     const HOUR      = 60 * self::MINUTE;
 
+    const REQUEST_TIMEOUT_MERCHANT_ANALYTICS = 2;  // in seconds
+    const REQUEST_TIMEOUT_GET_DATA_FOR_SEGMENT = 2;  // in seconds
+
     const BOOTSTRAP_ACCESS_MAPS_CACHE_REQUEST_RULES = [
         'source'        => 'array',
         'source.mids'   => 'array|min:1|max:10000',
@@ -2096,6 +2099,7 @@ class Service extends Base\Service
 
     public function getMerchantDataForSegmentAnalysis()
     {
+        $this->trace->info(TraceCode::GET_MERCHANT_DATA_FOR_SEGMENT,[]);
 
         $merchant = $this->app['basicauth']->getMerchant();
 
@@ -2170,7 +2174,7 @@ class Service extends Base\Service
 
         $druidService = $this->app['druid.service'];
 
-        [$error, $data] = $druidService->getDataFromDruid($content);
+        [$error, $data] = $druidService->getDataFromDruid($content, self::REQUEST_TIMEOUT_GET_DATA_FOR_SEGMENT);
 
         if (empty($error) === false)
         {
@@ -4591,7 +4595,7 @@ class Service extends Base\Service
     {
         $input = (new Core())->processMerchantAnalyticsQuery($this->merchant->getId(), $input);
 
-        return $this->app['eventManager']->query($input);
+        return $this->app['eventManager']->query($input, self::REQUEST_TIMEOUT_MERCHANT_ANALYTICS);
     }
 
     /**
