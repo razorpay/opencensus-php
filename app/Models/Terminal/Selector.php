@@ -1097,6 +1097,7 @@ class Selector extends Base\Core
         $merchantData['fee_bearer']        = $merchant->getFeeBearer();
         $merchantData['org_id']            = $merchant->getOrgId();
         $merchantData['methods']           = $merchant->getMethods()->toArray();
+        $merchantData['purpose_code']      = $merchant->getPurposeCode();
 
         return $merchantData;
     }
