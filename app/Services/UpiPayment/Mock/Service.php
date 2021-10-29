@@ -148,6 +148,19 @@ class Service extends UpiPaymentService
         $data['error'] = null;
         $data['next'] = null;
 
+        if ($payload['code'] !== '0')
+        {
+            $data['error'] = [
+                'description'               => 'Debit has been failed',
+                'gateway_error_code'        => 'U30',
+                'gateway_error_description' => 'Debit has been failed',
+                'gateway_status_code'       => 200,
+                'internal_error_code'       => 'GATEWAY_ERROR_DEBIT_FAILED',
+            ];
+
+            $data['success'] = false;
+        }
+
         $response = [
             'data'      => $data,
             'gateway'   => $content['gateway'],

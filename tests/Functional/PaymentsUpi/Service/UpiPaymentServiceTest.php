@@ -223,6 +223,83 @@ class UpiPaymentServiceTest extends TestCase
     }
 
     /**
+     * Test Failed Collect Payment with pre-process through UPS
+     * @return void
+     */
+    public function testCollectPaymentFailure()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                    ->setConstructorArgs([$this->app])
+                    ->onlyMethods(['getTreatment'])
+                    ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+        ->method('getTreatment')
+        ->will($this->returnCallback(
+            function ($mid, $feature, $mode)
+            {
+                if ($feature === 'ups_upi_airtel_pre_process_v1')
+                {
+                    return 'upi_airtel';
+                }
+                return 'control';
+            })
+        );
+
+        $this->testCollectPaymentCreateSuccess('payment_failed');
+
+        $this->mockServerContentFunction(
+            function (&$error)
+            {
+                $responseError = [
+                'internal' => [
+                    'code'          => 'GATEWAY_ERROR_DEBIT_FAILED',
+                    'description'   => 'GATEWAY_ERROR',
+                    'metadata'      => [
+                        'description'               => $error['description'],
+                        'gateway_error_code'        => $error['gateway_error_code'],
+                        'gateway_error_description' => $error['gateway_error_description'],
+                        'internal_error_code'       => $error['internal_error_code']
+                    ]
+                ]
+                ];
+
+                return $responseError;
+            }
+        );
+
+        $payment = $this->getDbLastpayment();
+
+        $content = $this->mockServer('upi_airtel')->getAsyncCallbackContent($payment->toArray());
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
+
+        $payment = $this->getDbLastPayment();
+
+        // We should have received a successful response
+        $this->assertEquals(['success' => false], $response);
+
+        $this->assertArraySubset(
+            [
+            Entity::STATUS              => Status::FAILED,
+            Entity::GATEWAY             => 'upi_airtel',
+            Entity::TERMINAL_ID         => $this->terminal->getId(),
+            Entity::CPS_ROUTE           => Entity::UPI_PAYMENT_SERVICE,
+            Entity::ERROR_CODE          => 'GATEWAY_ERROR',
+            Entity::INTERNAL_ERROR_CODE => 'GATEWAY_ERROR_DEBIT_FAILED',
+            ], $payment->toArray()
+        );
+
+        $f = $payment->toArray();
+
+        $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
+
+        $this->assertNull($upiEntity);
+    }
+
+    /**
      * Test Successful Collect Payment with pre-process through UPS
      * @return void
      */
@@ -410,11 +487,12 @@ class UpiPaymentServiceTest extends TestCase
 
         $this->assertArraySubset(
             [
-            Entity::STATUS          => Status::FAILED,
-            Entity::GATEWAY         => 'upi_airtel',
-            Entity::TERMINAL_ID     => $this->terminal->getId(),
-            Entity::CPS_ROUTE       => Entity::UPI_PAYMENT_SERVICE,
-            Entity::ERROR_CODE      => 'GATEWAY_ERROR',
+            Entity::STATUS              => Status::FAILED,
+            Entity::GATEWAY             => 'upi_airtel',
+            Entity::TERMINAL_ID         => $this->terminal->getId(),
+            Entity::CPS_ROUTE           => Entity::UPI_PAYMENT_SERVICE,
+            Entity::ERROR_CODE          => 'GATEWAY_ERROR',
+            Entity::INTERNAL_ERROR_CODE => 'GATEWAY_ERROR_DEBIT_FAILED',
             ], $payment->toArray()
         );
 
