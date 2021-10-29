@@ -84,8 +84,8 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::MISC_TRACE_CODE,
                 [
-                    'new' => $newBankAccount->toArray(),
-                    'old' => $oldBankAccount->toArray(),
+                    'new' => $newBankAccount->toArrayTrace(),
+                    'old' => $oldBankAccount->toArrayTrace(),
                 ]);
 
             return $oldBankAccount;

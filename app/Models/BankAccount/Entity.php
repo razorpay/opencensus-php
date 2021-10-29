@@ -188,6 +188,10 @@ class Entity extends Base\PublicEntity
         self::NOTES => [],
     ];
 
+    protected $pii = [
+        self::ACCOUNT_NUMBER,
+    ];
+    
     protected $generateIdOnCreate = true;
 
     public function build(array $input = [], string $operation = 'addBankAccount')
@@ -644,6 +648,23 @@ class Entity extends Base\PublicEntity
         $data[self::BENEFICIARY_EMAIL] = $this->getBeneficiaryEmail();
 
         $data[self::BENEFICIARY_MOBILE] = $this->getBeneficiaryMobile();
+
+        return $data;
+    }
+
+    public function toArrayTrace()
+    {
+        $data = $this->toArray();
+
+        foreach($this->pii as $pii)
+        {
+            if(isset($data[$pii]) === false)
+            {
+                continue;
+            }
+
+            unset($data[$pii]);
+        }
 
         return $data;
     }
