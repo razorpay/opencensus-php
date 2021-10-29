@@ -3632,6 +3632,70 @@ class BankingAccountTest extends TestCase
         $this->assertNull($bankingAccount);
     }
 
+    public function testBankingAccountFetchOnPrivateAuth()
+    {
+        $xBalance1 = $this->fixtures->create('balance',
+            [
+                'merchant_id'       => '10000000000000',
+                'type'              => 'banking',
+                'account_type'      => 'shared',
+                'account_number'    => '2224440041626905',
+                'balance'           => 200,
+            ]);
+
+        $xBalance2 = $this->fixtures->create('balance',
+            [
+                'merchant_id'       => '10000000000000',
+                'type'              => 'banking',
+                'account_type'      => 'shared',
+                'account_number'    => '1234567808',
+                'balance'           => 100000,
+            ]);
+
+        $ba1 = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'yesbank',
+            'status'                => 'activated',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $ba2 = $this->createBankingAccount();
+
+        $this->fixtures->edit('banking_account', $ba1->getId(), [
+            'account_number' => '2224440041626905',
+            'balance_id'     => $xBalance1->getId(),
+        ]);
+
+        $this->fixtures->edit('banking_account', $ba2['id'], [
+            'account_number' => '1234567808',
+            'balance_id'     => $xBalance2->getId(),
+        ]);
+
+        $this->fixtures->create('balance',
+            [
+                'merchant_id'    => '10000000000000',
+                'type'           => 'banking',
+                'account_type'   => 'direct',
+                'account_number' => '567890362718193',
+                'balance'        => 20000,
+                'channel'        => 'icici',
+            ]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $bankingAccount = $this->getDbEntity('banking_account', [
+            'account_number'    => '567890362718193',
+        ]);
+
+        $this->assertNull($bankingAccount);
+    }
+
     public function testBankingAccountFetchCheckFieldLastFetchedAtInBalance()
     {
         $attribute = ['activation_status' => 'activated'];

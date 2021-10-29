@@ -218,4 +218,13 @@ class BankingAccountController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function fetchActivatedAccounts()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchActivatedAccounts($input);
+
+        return $response;
+    }
 }

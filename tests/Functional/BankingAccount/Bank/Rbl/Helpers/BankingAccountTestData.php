@@ -2260,6 +2260,27 @@ return [
         ],
     ],
 
+    'testBankingAccountFetchOnPrivateAuth' => [
+        'request'  => [
+            'url'     => '/banking_accounts/activated',
+            'method'  => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'account_number'    => 'XXXXXXXXXXXX6905',
+                        'status'            => 'activated',
+                    ],
+                ],
+            ],
+        ],
+    ],
 
     'testBankingAccountFetchCheckFieldLastFetchedAtInBalance' => [
         'request'  => [

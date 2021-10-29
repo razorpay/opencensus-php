@@ -314,6 +314,13 @@ class Service extends Base\Service
         return $bankingAccounts->load(Entity::BALANCE)->toArrayPublic();
     }
 
+    public function fetchActivatedAccounts()
+    {
+        $bankingAccounts = $this->fetchMultiple();
+
+        return $this->core->filterActivatedAccountsAndMaskAccountNumber($bankingAccounts);
+    }
+
     public function processAccountInfoWebhook(string $channel, array $input)
     {
         $response = $this->core->processAccountInfoWebhook($channel, $input);

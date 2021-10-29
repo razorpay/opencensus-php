@@ -2390,6 +2390,7 @@ class Route
         'banking_account_activate'                => ['post',     'banking_accounts/{id}/activate',                            'BankingAccountController@activate'                         ],
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
+        'activated_banking_accounts_list'         => ['get',      'banking_accounts/activated',                                'BankingAccountController@fetchActivatedAccounts'           ],
         'banking_accounts_list_internal'          => ['get',      'banking_accounts_internal',                                 'BankingAccountController@list'                             ],
         'banking_accounts_get'                    => ['get',      'banking_accounts/{id}',                                     'BankingAccountController@get'                               ],
         'banking_account_update'                  => ['patch',    'banking_accounts/{id}',                                     'BankingAccountController@update'                           ],
@@ -3110,6 +3111,7 @@ class Route
     ];
 
     public static $private = [
+        'activated_banking_accounts_list',
         'payment_page_get_payments',
         'qr_code_fetch_multiple',
         'qr_payments_fetch_multiple',

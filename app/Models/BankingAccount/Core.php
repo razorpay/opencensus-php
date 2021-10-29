@@ -1849,4 +1849,23 @@ class Core extends Base\Core
             Mail::queue($mailable);
         }
     }
+
+    public function filterActivatedAccountsAndMaskAccountNumber(array $bankingAccounts)
+    {
+        $activatedBankingAccounts = $bankingAccounts;
+        $activatedBankingAccounts['items'] = [];
+
+        foreach ($bankingAccounts['items'] as $bankingAccount)
+        {
+            if ($bankingAccount[Entity::STATUS] === Status::ACTIVATED)
+            {
+                $bankingAccount[Entity::ACCOUNT_NUMBER] = mask_except_last4($bankingAccount[Entity::ACCOUNT_NUMBER]);
+                $activatedBankingAccounts['items'][] =  $bankingAccount;
+            }
+        }
+
+        $activatedBankingAccounts['count'] = count($activatedBankingAccounts['items']);
+
+        return $activatedBankingAccounts;
+    }
 }
