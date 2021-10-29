@@ -240,7 +240,7 @@ class PublicController extends Controller
             'checkout'              => 'required|array',
             'url.cancel'            => 'sometimes|url',
             'url.callback'          => 'required|url',
-            'checkout.key'          => 'required|string|size:23',
+            'checkout.key'          => 'required|string|min:23',
             'checkout.order_id'     => 'sometimes|string|size:20',
             'checkout.amount'       => 'required_without:checkout.order_id|integer',
             'checkout.image'        => 'sometimes|url',
