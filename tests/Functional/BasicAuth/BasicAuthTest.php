@@ -1013,4 +1013,15 @@ class BasicAuthTest extends TestCase
         $this->assertSame('10000000000000', $passport->consumer->id);
         $this->assertSame('merchant', $passport->consumer->type);
     }
+
+    public function testGetPayoutsPurposeApiOnPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->edit('key', 'TheTestAuthKey', ['expired_at' => time() + 12000]);
+
+        $this->startTest();
+
+        $this->assertPassport();
+    }
 }

@@ -1287,4 +1287,57 @@ return [
             ]
         ],
     ],
+
+    'testGetPayoutsPurposeApiOnPrivateAuth' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payouts/purposes',
+        ],
+        'response' => [
+            'content' => [
+                    'entity' => 'collection',
+                    'count' => 6,
+                    'items' =>
+                                [
+                                    [
+                                        'purpose' => 'refund',
+                                        'purpose_type' => 'refund',
+                                    ],
+                                    [
+                                            'purpose' => 'cashback',
+                                            'purpose_type' => 'refund',
+                                    ],
+                                    [
+                                            'purpose' => 'payout',
+                                            'purpose_type' => 'settlement',
+                                    ],
+                                    [
+                                            'purpose' => 'salary',
+                                            'purpose_type' => 'settlement',
+                                    ],
+                                    [
+                                            'purpose' => 'utility bill',
+                                            'purpose_type' => 'settlement',
+                                    ],
+                                    [
+                                            'purpose' => 'vendor bill',
+                                            'purpose_type' => 'settlement',
+                                    ]
+                                ]
+            ]
+        ],
+        'expected_passport' => [
+            'mode'          => 'test',
+            'identified'    => true,
+            'authenticated' => true,
+            'consumer'      => [
+                'type' => 'merchant',
+                'id'   => '10000000000000',
+            ],
+            'credential' => [
+                'username'   => 'rzp_test_TheTestAuthKey',
+                'public_key' => 'rzp_test_TheTestAuthKey',
+            ],
+        ],
+    ],
 ];
