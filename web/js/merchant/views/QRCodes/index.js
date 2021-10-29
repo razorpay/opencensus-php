@@ -65,14 +65,11 @@ class QRCodeContainer extends React.Component {
   };
 
   render() {
-    const { isTestMode, user, productOnBoarding, mode } = this.props;
+    const { isTestMode, productOnBoarding } = this.props;
 
     const { showOnboarding, isQuickGuideOpen } = productOnBoarding;
 
-    if (
-      showOnboarding ||
-      (user.isQRCodeComingSoonExpEnabled && !user.isQRCodeComingSoonEnabled(mode))
-    ) {
+    if (showOnboarding) {
       return <OnBoarding />;
     }
 

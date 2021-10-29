@@ -198,11 +198,9 @@ function MerchantNavLinks(props) {
         label="QR Codes"
         type="product"
         icon="i i-qr-code text-warm"
-        additionalCondition={(currentUser) =>
-          currentUser.isAllowedView('qr_codes') && currentUser.isQRCodesEnabled
-        }
+        additionalCondition={(currentUser) => currentUser.isAllowedView('qr_codes')}
         to={routes.qrCodes}
-        isNew={user.isQRCodeProductEnabled && !isRecommendProduct}
+        isNew={!isRecommendProduct}
       />
 
       <MainNavLink
