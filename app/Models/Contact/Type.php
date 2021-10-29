@@ -20,12 +20,13 @@ final class Type
 {
     use TrimSpace;
 
-    const CUSTOMER = 'customer';
-    const EMPLOYEE = 'employee';
-    const VENDOR   = 'vendor';
-    const SELF     = 'self';
-    const RZP_FEES = 'rzp_fees';
+    const CUSTOMER                     = 'customer';
+    const EMPLOYEE                     = 'employee';
+    const VENDOR                       = 'vendor';
+    const SELF                         = 'self';
+    const RZP_FEES                     = 'rzp_fees';
     const TAX_PAYMENT_INTERNAL_CONTACT = 'rzp_tax_pay';
+    const XPAYROLL_INTERNAL            = 'rzp_xpayroll';
 
     // Settings module key
     const TYPES = 'types';
@@ -40,11 +41,15 @@ final class Type
     public static $internal = [
         self::RZP_FEES,
         self::TAX_PAYMENT_INTERNAL_CONTACT,
+        self::XPAYROLL_INTERNAL,
     ];
 
     public static $internalAppToAllowedInternalContact = [
         'vendor_payments' => [
             self::TAX_PAYMENT_INTERNAL_CONTACT,
+        ],
+        'xpayroll' => [
+            self::XPAYROLL_INTERNAL,
         ],
     ];
 
@@ -56,6 +61,12 @@ final class Type
     public static function isInInternal(string $type = null): bool
     {
         return (in_array($type, self::$internal, true) === true);
+    }
+
+    //to check whether a contact type is internal and not rzp_fees
+    public static function isInInternalNonRZPFees(string $type = null): bool
+    {
+        return ($type !== self::RZP_FEES) and self::isInInternal($type);
     }
 
     public function setTypeForContact(Entity $contact, string $type)
@@ -224,5 +235,18 @@ final class Type
                 ]
             );
         }
+    }
+
+    //checks in "$internalAppToAllowedInternalContact" map whether given contact type is allowed for given app name
+    public static function validateInternalAppAllowedContactType(string $contactType, string $internalAppName = null): bool
+    {
+        $listOfValidContactTypes = self::$internalAppToAllowedInternalContact[$internalAppName] ?? null;
+
+        if ((empty($listOfValidContactTypes) === true) or
+            (in_array($contactType, $listOfValidContactTypes, true) === false))
+        {
+            return false;
+        }
+        return true;
     }
 }

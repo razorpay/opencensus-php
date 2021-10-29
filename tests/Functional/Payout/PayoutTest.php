@@ -14163,6 +14163,70 @@ class PayoutTest extends OAuthTestCase
         $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED);
     }
 
+    public function testPayoutCreateOnInternalContactByXpayroll()
+    {
+        $this->ba->xPayrollAuth();
+
+        $contact = $this->fixtures->create('contact',
+            [
+                'name' => 'test name',
+                'type' => \RZP\Models\Contact\Type::XPAYROLL_INTERNAL
+            ]);
+
+        $contactDb = $this->getDbLastEntity('contact');
+
+        $fundAccount = $this->fixtures->fund_account->createBankAccount(
+            [
+                'source_type' => 'contact',
+                'source_id'   => $contact->getId(),
+            ],
+            [
+                'name'           => 'test',
+                'ifsc'           => 'SBIN0007105',
+                'account_number' => '111000',
+            ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+
+        $this->startTest();
+
+        $this->assertEquals($contactDb['type'], 'rzp_xpayroll');
+
+        $this->assertEquals($contactDb['id'], $contact['id']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals($payout['fund_account_id'], $fundAccount['id']);
+    }
+
+    public function testPayoutCreateOnXpayrollInternalContactByOtherAppFailure()
+    {
+        $this->ba->xPayrollAuth();
+
+        $contact = $this->fixtures->create('contact',
+            [
+                'name' => 'test name',
+                'type' => \RZP\Models\Contact\Type::XPAYROLL_INTERNAL
+            ]);
+
+        $fundAccount = $this->fixtures->fund_account->createBankAccount(
+            [
+                'source_type' => 'contact',
+                'source_id'   => $contact->getId(),
+            ],
+            [
+                'name'           => 'test',
+                'ifsc'           => 'SBIN0007105',
+                'account_number' => '111000',
+            ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+
+        $this->ba->payoutLinksAppAuth();
+
+        $this->startTest();
+    }
+
     public function testCompositePayoutCreationViaNewCompositeFlow()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT]);

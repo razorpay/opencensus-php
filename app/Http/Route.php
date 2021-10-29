@@ -10587,6 +10587,9 @@ class Route
             'user_details',
             'user_all_roles',
             'payout_create_internal',
+            'payout_create_on_internal_contact',
+            'contact_create_internal',
+            'fund_account_create_internal',
             'banking_accounts_list_internal',
         ],
 

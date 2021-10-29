@@ -2006,4 +2006,48 @@ class FundAccountsTest extends TestCase
 
         Queue::assertPushed(FundAccountDetailsPropagatorJob::class,1);
     }
+
+    public function testXpayrollInternalContactFundaccountCreation()
+    {
+        $this->ba->xPayrollAuth();
+
+        $contact = $this->fixtures->create('contact',
+            [
+                'name' => 'test name',
+                'type' => Type::XPAYROLL_INTERNAL
+            ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['contact_id'] = $contact->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['content']['contact_id'] = $contact->getPublicId();
+
+        $this->startTest();
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $contactDb = $this->getDbLastEntity('contact');
+
+        $this->assertEquals($contactDb['type'],'rzp_xpayroll');
+
+        $this->assertEquals($contactDb['id'],$contact['id']);
+
+        $this->assertEquals($fundAccount->contact['id'],$contact['id']);
+    }
+
+    public function testXpayrollInternalContactFundaccountCreationByOtherInternalAppFailure()
+    {
+        $this->ba->xPayrollAuth();
+
+        $contact = $this->fixtures->create('contact',
+            [
+                'name' => 'test name',
+                'type' => Type::XPAYROLL_INTERNAL
+            ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['contact_id'] = $contact->getPublicId();
+
+        $this->ba->payoutLinksAppAuth();
+
+        $this->startTest();
+    }
 }

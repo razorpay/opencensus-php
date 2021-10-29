@@ -2346,4 +2346,66 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED,
         ],
     ],
+
+    'testCreateRZPXpayrollTypeContact' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test Contact',
+                'type'         => 'rzp_xpayroll',
+                'reference_id' => '123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts_internal',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test Contact',
+                'type'         => 'rzp_xpayroll',
+                'reference_id' => '123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testCreateRZPXpayrolltypeContactByOtherInternalAppFailure' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test Contact',
+                'type'         => 'rzp_xpayroll',
+                'reference_id' => '123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts_internal',
+            'method'  => 'POST'
+        ],
+
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Creating/Updating an internal Razorpay Contact is not permitted',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED,
+        ],
+    ],
 ];

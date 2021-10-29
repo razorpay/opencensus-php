@@ -14262,6 +14262,79 @@ return [
         ],
     ],
 
+    'testPayoutCreateOnInternalContactByXpayroll'=> [
+        'request'  => [
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'method'  => 'POST',
+            'url'     => '/internalContactPayout',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'payout',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => '',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'payout',
+                'amount'    => 2000000,
+                'currency'  => 'INR',
+                'narration' => 'Batman',
+                'purpose'   => 'payout',
+                'status'    => 'processing',
+                'mode'      => 'IMPS',
+                'tax'       => 162,
+                'fees'      => 1062,
+                'notes'     => [
+                    'abc' => 'xyz',
+                ],
+            ]
+        ],
+    ],
+
+    'testPayoutCreateOnXpayrollInternalContactByOtherAppFailure'=> [
+        'request'  => [
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'payout',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => '',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Creating a payout to an internal Razorpay Fund Account is not permitted',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_TO_INTERNAL_FUND_ACCOUNT_NOT_PERMITTED,
+        ],
+    ],
+
     'testCompositePayoutCreationViaNewCompositeFlow' => [
         'request'  => [
             'method'  => 'POST',

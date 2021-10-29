@@ -6,6 +6,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Contact;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -92,8 +93,15 @@ class Core extends Base\Core
 
         $contact->merchant()->associate($merchant);
 
+        // Contact of type rzp_fees can be created by all internal requests.
+        // So we approve it by simply looking at "$allowRZPFeesContactCreation".
+
+        // Here "isInInternalNonRZPFees" checks whether the type of contact is internal and
+        // if it is internal type, we check whether current app is allowed to create that type of contact.
+
         if (($allowRZPFeesContactCreation === true) or
-            ($this->isTaxPaymentContactRequest($contact) === true))
+            ((Contact\Type::isInInternalNonRZPFees($contact->getType()) === true) and
+             Contact\Type::validateInternalAppAllowedContactType($contact->getType(),$this->app['basicauth']->getInternalApp()) === true))
         {
             (new Type)->setTypeForInternalContact($contact, $input[Entity::TYPE]);
         }
@@ -177,6 +185,24 @@ class Core extends Base\Core
     {
         if (($contact->getType() === Type::TAX_PAYMENT_INTERNAL_CONTACT) and
             ($this->app['basicauth']->isVendorPaymentApp() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * This function will check that this is trying to create the XPayroll internal contact
+     * Also checks if the request source is valid
+     *
+     * @param Entity $contact
+     * @return bool
+     */
+    protected function isXpayrollContactRequest(Entity $contact): bool
+    {
+        if (($contact->getType() === Type::XPAYROLL_INTERNAL) and
+            ($this->app['basicauth']->isXPayrollApp() === true))
         {
             return true;
         }
@@ -715,5 +741,19 @@ class Core extends Base\Core
         }
 
         return $contacts;
+    }
+
+    public function isInternalAppInternalContactRequest(Entity $contact)
+    {
+        if($this->isTaxPaymentContactRequest($contact) === true)
+        {
+            return true;
+        }
+
+        if($this->isXpayrollContactRequest($contact) === true)
+        {
+            return true;
+        }
+        return false;
     }
 }

@@ -555,8 +555,8 @@ class Core extends Base\Core
     protected function internalContactChecks(Base\PublicEntity $source = null, array $traceRequest = [])
     {
         // we have to validate that this operation is allowed
-        if (($source->getType() === Contact\Type::TAX_PAYMENT_INTERNAL_CONTACT) and
-            ($this->app['basicauth']->isVendorPaymentApp() === false))
+        if ((Contact\Type::isInInternalNonRZPFees($source->getType()) === true) and
+            Contact\Type::validateInternalAppAllowedContactType($source->getType(),$this->app['basicauth']->getInternalApp()) === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_INTERNAL_FUND_ACCOUNT_CREATION_NOT_PERMITTED,
