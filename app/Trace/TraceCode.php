@@ -3753,6 +3753,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SALESFORCE_EVENT_ERROR                                = 'SALESFORCE_EVENT_ERROR';
     const BAS_SALESFORCE_REQUEST                                = 'BAS_SALESFORCE_REQUEST';
     const BAS_SALESFORCE_RBL_DETAIL                             = 'BAS_SALESFORCE_RBL_DETAIL';
+    const RBL_NITRO_SALESFORCE_PUSH                             = 'RBL_NITRO_SALESFORCE_PUSH';
     // This is for tracing any other error that happens during the event raise request to salesforce
     const SALESFORCE_EVENT_REQUEST_FAILED                       = 'SALESFORCE_EVENT_REQUEST_FAILED';
 

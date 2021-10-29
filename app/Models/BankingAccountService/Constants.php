@@ -71,6 +71,10 @@ class Constants
 
     const CA_PREFERRED_PHONE            = 'CA_Preferred_Phone';
 
+    const X_ONBOARDING_CATEGORY         = 'x_onboarding_category';
+
+    const CAMPAIGN_ID                   = 'Campaign_ID';
+
     const PRODUCT_NAME                  = 'product_name';
 
     const SOURCE                        = 'source';
@@ -79,5 +83,9 @@ class Constants
 
     const X_CA_UNIFIED                  = 'X-CA-Unified';
 
+    const X_CA_UNIFIED_NITRO            = 'X-CA-Unified-Nitro';
+
     const CURRENT_ACCOUNT               = 'Current_Account';
+
+    const CA_CHANNEL_NITRO              = 'NITRO';
 }

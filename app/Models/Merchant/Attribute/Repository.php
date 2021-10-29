@@ -24,6 +24,20 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    public function getKeyValuesForAllProduct(string $merchantId, string $group, array $types = [])
+    {
+        $query = $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::GROUP, $group);
+
+        if (empty($types) === false)
+        {
+            $query->whereIn(Entity::TYPE, $types);
+        }
+
+        return $query->get();
+    }
+
     public function getKeyValues(string $merchantId, string $product, string $group, array $types = [], string $column = null, string $orderType = 'asc')
     {
         $query = $this->newQuery()

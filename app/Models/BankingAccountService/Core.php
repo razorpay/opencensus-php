@@ -16,6 +16,7 @@ use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Detail;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountStatement;
+use RZP\Models\Merchant\Attribute\Group;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
@@ -382,7 +383,7 @@ class Core extends Base\Core
         return ['success' => true];
     }
 
-    public function sendRblApplicationInProgressLeadsToSalesForce()
+    public function sendRblApplicationInProgressLeadsToSalesForce(): array
     {
         $config = app('config')->get('applications.banking_account_service');
 
@@ -409,29 +410,75 @@ class Core extends Base\Core
             /* @var BankingAccountEntity $bankingAccount*/
             $bankingAccount = $this->repo->banking_account->findOrFail($bankingAccountId);
 
+            $merchantId = $bankingAccount->getMerchantId();
+
+            $merchantAttributes = $this->repo->merchant_attribute->getKeyValuesForAllProduct($merchantId, Group::X_MERCHANT_CURRENT_ACCOUNTS);
+
+            $merchantChannel = null;
+
+            $merchantCaCampaignId = null;
+
+            foreach ($merchantAttributes as $merchantAttribute)
+            {
+                if ($merchantAttribute->type == Merchant\Attribute\Type::CA_ONBOARDING_FLOW) {
+                    $merchantChannel = $merchantAttribute->value;
+                }
+
+                if ($merchantAttribute->type == Merchant\Attribute\Type::CA_CAMPAIGN_ID) {
+                    $merchantCaCampaignId = $merchantAttribute->value;
+                }
+            }
+
             //check is required since declaration_step property added recently. Relying on it will lead to sending of applications irrespective of the state.
             if($bankingAccount->getStatus() === BankingAccount\Status::CREATED)
             {
-                $input = [
-                    Constants::CA_PARTNER_BANK    => Constants::RBL,
-                    Constants::CA_PREFERRED_EMAIL => $detail->getMerchantPocEmail(),
-                    Constants::CA_PREFERRED_PHONE => $detail->getMerchantPocPhoneNumber(),
-                    Constants::SOURCE             => Constants::X_CA_UNIFIED,
-                    Constants::MERCHANT_ID        => $bankingAccount->getMerchantId(),
-                    Constants::PRODUCT_NAME       => Constants::CURRENT_ACCOUNT,
-                ];
+                if ($merchantChannel === null)
+                {
+                    $input = [
+                        Constants::CA_PARTNER_BANK    => Constants::RBL,
+                        Constants::CA_PREFERRED_EMAIL => $detail->getMerchantPocEmail(),
+                        Constants::CA_PREFERRED_PHONE => $detail->getMerchantPocPhoneNumber(),
+                        Constants::SOURCE             => Constants::X_CA_UNIFIED,
+                        Constants::MERCHANT_ID        => $bankingAccount->getMerchantId(),
+                        Constants::PRODUCT_NAME       => Constants::CURRENT_ACCOUNT,
+                    ];
 
-                //details contain senstive details so id is logged
-                $this->trace->info(TraceCode::BAS_SALESFORCE_RBL_DETAIL, [
-                    'banking_account_activation_detail_id' => $detail->getId(),
-                ]);
+                    //details contain senstive details so id is logged
+                    $this->trace->info(TraceCode::BAS_SALESFORCE_RBL_DETAIL, [
+                        'banking_account_activation_detail_id' => $detail->getId(),
+                    ]);
 
-                $this->sendCaLeadToSalesForce($input);
+                    $this->sendCaLeadToSalesForce($input);
 
-                //front end converts SME to X-SME at the admin dashboard.
-                $detail->setSalesTeam(BankingAccount\Activation\Detail\Validator::SME);
+                    //front end converts SME to X-SME at the admin dashboard.
+                    $detail->setSalesTeam(BankingAccount\Activation\Detail\Validator::SME);
 
-                $this->repo->banking_account_detail->saveOrFail($detail);
+                    $this->repo->banking_account_detail->saveOrFail($detail);
+                }
+                elseif ($merchantChannel === Constants::CA_CHANNEL_NITRO and $merchantCaCampaignId !== null)
+                {
+                    $input = [
+                        Constants::SOURCE                => Constants::X_CA_UNIFIED_NITRO,
+                        Constants::MERCHANT_ID           => $merchantId,
+                        Constants::CAMPAIGN_ID           => $merchantCaCampaignId,
+                        Constants::PRODUCT_NAME          => Constants::CURRENT_ACCOUNT,
+                        Constants::CA_PARTNER_BANK       => Constants::RBL,
+                        Constants::CA_PREFERRED_EMAIL    => $detail->getMerchantPocEmail(),
+                        Constants::CA_PREFERRED_PHONE    => $detail->getMerchantPocPhoneNumber(),
+                        Constants::X_ONBOARDING_CATEGORY => 'normal'
+                    ];
+
+                    $this->trace->info(TraceCode::RBL_NITRO_SALESFORCE_PUSH, [
+                        'banking_account_id' => $bankingAccountId,
+                    ]);
+
+                    $this->sendCaLeadToSalesForce($input);
+
+                    //front end converts SME to X-SME at the admin dashboard.
+                    $detail->setSalesTeam(BankingAccount\Activation\Detail\Validator::SME);
+
+                    $this->repo->banking_account_detail->saveOrFail($detail);
+                }
             }
         }
 

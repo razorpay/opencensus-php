@@ -21,7 +21,6 @@ class Type
     const CA_ONBOARDING_FLOW            = 'ca_onboarding_flow';
     const CA_CAMPAIGN_ID                = 'ca_campaign_id';
 
-
     //INTENT Types
     const CURRENT_ACCOUNT               = 'current_account';
     const PAYOUTS                       = 'payouts';

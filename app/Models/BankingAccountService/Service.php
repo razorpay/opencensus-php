@@ -638,7 +638,7 @@ class Service extends Base\Service
         return $this->core()->sendCaLeadToSalesForce($input);
     }
 
-    public function sendRblApplicationInProgressLeadsToSalesForce()
+    public function sendRblApplicationInProgressLeadsToSalesForce(): array
     {
         return $this->core()->sendRblApplicationInProgressLeadsToSalesForce();
     }

@@ -10396,7 +10396,6 @@ class Route
             'refresh_payments_scheduled_downtimes_cron',
             'push_to_datalake',
             'rbl_in_progress_lead_to_sales_force',
-
             // Optimizer settlements cron
             'setl_optimizer_settlement_cron',
         ],
