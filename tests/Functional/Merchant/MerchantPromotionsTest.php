@@ -36,7 +36,7 @@ class MerchantPromotionsTest extends TestCase
         $this->fixtures->create('order_meta',
             [
                 'order_id' => $order->getId(),
-                'value'    => $this->app['encrypter']->encrypt(['line_items_total' => $order->getAmount()]),
+                'value'    => ['line_items_total' => $order->getAmount()],
                 'type'     => 'one_click_checkout',
             ]);
 
@@ -65,7 +65,7 @@ class MerchantPromotionsTest extends TestCase
         $this->fixtures->create('order_meta',
             [
                 'order_id' => $order->getId(),
-                'value'    => $this->app['encrypter']->encrypt(['line_items_total' => $order->getAmount()]),
+                'value'    => ['line_items_total' => $order->getAmount()],
                 'type'     => 'one_click_checkout',
             ]);
 
@@ -94,7 +94,7 @@ class MerchantPromotionsTest extends TestCase
         $this->fixtures->create('order_meta',
             [
                 'order_id' => $order->getId(),
-                'value'    => $this->app['encrypter']->encrypt(['line_items_total' => $order->getAmount()]),
+                'value'    => ['line_items_total' => $order->getAmount()],
                 'type'     => 'one_click_checkout',
             ]);
         $this->ba->publicAuth();
@@ -113,7 +113,7 @@ class MerchantPromotionsTest extends TestCase
         $this->fixtures->create('order_meta',
             [
                 'order_id' => $order->getId(),
-                'value'    => $this->app['encrypter']->encrypt(['line_items_total' => $order->getAmount()]),
+                'value'    => ['line_items_total' => $order->getAmount()],
                 'type'     => 'one_click_checkout',
             ]);
 
@@ -141,7 +141,7 @@ class MerchantPromotionsTest extends TestCase
         $this->fixtures->create('order_meta',
             [
                 'order_id' => $order->getId(),
-                'value'    => $this->app['encrypter']->encrypt(['line_items_total' => $order->getAmount()]),
+                'value'    => ['line_items_total' => $order->getAmount()],
                 'type'     => 'one_click_checkout',
             ]);
 
@@ -170,7 +170,7 @@ class MerchantPromotionsTest extends TestCase
         $this->fixtures->create('order_meta',
             [
                 'order_id' => $order->getId(),
-                'value'    => $this->app['encrypter']->encrypt(['line_items_total' => $order->getAmount()]),
+                'value'    => ['line_items_total' => $order->getAmount()],
                 'type'     => 'one_click_checkout',
             ]);
 

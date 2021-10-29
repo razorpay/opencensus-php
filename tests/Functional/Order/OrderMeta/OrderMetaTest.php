@@ -345,8 +345,6 @@ class OrderMetaTest extends TestCase
         $this->assertEquals($orderId, $orderMeta->order_id);
 
         $this->assertNotEmpty($orderMeta->value);
-
-        $this->assertStringNotContainsString('line', $orderMeta->value);
     }
 
     public function testNon1CCOrderCreateFor1CCMerchant()

@@ -32,7 +32,7 @@ class ShippingInfoTest extends TestCase
         $this->fixtures->create('order_meta',
             [
                 'order_id' => $order->getId(),
-                'value'    => $this->app['encrypter']->encrypt(['line_items_total' => $order->getAmount()]),
+                'value'    => ['line_items_total' => $order->getAmount()],
                 'type'     => 'one_click_checkout',
             ]);
         $testData = $this->testData[__FUNCTION__];
@@ -57,7 +57,7 @@ class ShippingInfoTest extends TestCase
         $this->fixtures->create('order_meta',
             [
                 'order_id' => $order->getId(),
-                'value'    => $this->app['encrypter']->encrypt(['line_items_total' => $order->getAmount()]),
+                'value'    => ['line_items_total' => $order->getAmount()],
                 'type'     => 'one_click_checkout',
             ]);
         $testData = $this->testData[__FUNCTION__];

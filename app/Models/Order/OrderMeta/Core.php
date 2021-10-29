@@ -49,7 +49,7 @@ class Core extends Base\Core
         $orderMetaInput = [
             Entity::ORDER_ID => $order->getId(),
             Entity::TYPE     => Order\OrderMeta\Type::ONE_CLICK_CHECKOUT,
-            Entity::VALUE    => $this->app['encrypter']->encrypt($order1ccData),
+            Entity::VALUE    => $order1ccData,
         ];
 
         return $this->saveOrderMeta($orderMetaInput);
@@ -120,6 +120,17 @@ class Core extends Base\Core
      */
     protected function saveOrderMeta(array $orderMetaInput): Entity
     {
+        if ($orderMetaInput[Entity::TYPE] === Type::ONE_CLICK_CHECKOUT)
+        {
+            foreach ($orderMetaInput[Entity::VALUE] as $key => $value)
+            {
+                if ($key === Order1cc\Fields::CUSTOMER_DETAILS)
+                {
+                    $orderMetaInput[Entity::VALUE][$key] = $this->app['encrypter']->encrypt($value);
+                }
+            }
+        }
+
         $orderMeta = (new Entity)->build($orderMetaInput);
 
         $this->repo->order_meta->saveOrFail($orderMeta);

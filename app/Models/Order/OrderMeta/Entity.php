@@ -4,6 +4,7 @@ namespace RZP\Models\Order\OrderMeta;
 
 use App;
 use RZP\Models\Base;
+use RZP\Models\Order\OrderMeta\Order1cc\Fields;
 
 /**
  * Class Entity
@@ -111,15 +112,26 @@ class Entity extends Base\PublicEntity
 
         $app = App::getFacadeRoot();
 
-        return $app['encrypter']->decrypt($value);
+        foreach ($value as $key => $val)
+        {
+            if($key === Fields::CUSTOMER_DETAILS)
+            {
+                $value[$key] = $app['encrypter']->decrypt($val);
+            }
+        }
+        return $value;
     }
 
     protected function setValueForOneClickCheckout($value)
     {
         $app = App::getFacadeRoot();
-
-        $value = $app['encrypter']->encrypt($value);
-
+        foreach ($value as $key => $val)
+        {
+            if($key === Fields::CUSTOMER_DETAILS)
+            {
+                $value[$key] = $app['encrypter']->encrypt($val);
+            }
+        }
         $this->setAttribute(self::VALUE, $value);
     }
 }
