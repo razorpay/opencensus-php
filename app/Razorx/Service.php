@@ -200,7 +200,8 @@ class Service extends Base\Service
             'add_on_card_onboarding',
             'dashboard_super_checkout',
             'lite_onboarding',
-            'stores'
+            'stores',
+            'stores_url',
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);

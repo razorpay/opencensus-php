@@ -355,6 +355,10 @@ export default class User {
     return this.getExpStatus('stores');
   }
 
+  get isStoresUrlEnabled() {
+    return this.getExpStatus('stores_url');
+  }
+
   get isQRCodeProductEnabled() {
     return this.isFeatureEnabled('qr_codes');
   }

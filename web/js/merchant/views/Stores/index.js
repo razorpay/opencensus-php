@@ -17,6 +17,7 @@ import Spinner from 'common/ui/Spinner';
 @connect(
   (state) => ({
     store: state.storefront,
+    user: state.session.user,
   }),
   {
     closeModal,
@@ -57,6 +58,12 @@ export default class StoresContainer extends React.Component {
     const { store } = this.props;
     let content;
 
+    // store url creation
+    let storeUrl = `https://api.razorpay.com/v1/store/hosted/${store.entity.data.slug}`;
+    if (this.props.user.isStoresUrlEnabled) {
+      storeUrl = store.entity.data.store_url;
+    }
+
     if (store.entity.loading) {
       content = (
         <div class="loader-container">
@@ -78,7 +85,7 @@ export default class StoresContainer extends React.Component {
                 <span class="tag">LIVE</span>
               </div>
               <div>
-                <a class="m-r" target="_blank" href={store.entity.data.store_url} rel="noreferrer">
+                <a class="m-r" target="_blank" href={storeUrl} rel="noreferrer">
                   <span class="mr-5">
                     stores.razorpay.com/ <strong>{store.entity.data.slug}</strong>
                   </span>
