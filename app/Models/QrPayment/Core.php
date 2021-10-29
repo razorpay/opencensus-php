@@ -60,6 +60,8 @@ class Core extends Base\Core
         }
         catch (\Throwable $ex)
         {
+            $this->trace->traceException($ex);
+
             $errorMessage = $ex->getMessage();
 
             switch ($errorMessage)
