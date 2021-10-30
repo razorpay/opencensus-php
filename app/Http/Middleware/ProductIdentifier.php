@@ -139,23 +139,25 @@ class ProductIdentifier
 
         // If route is a banking_route, tag it as banking
         // Excluding dashboard routes as in that case, the requestOriginProduct is the source of truth
-        if (($isDashboardRoute === false) and
-            (array_key_exists($routeName, $bankingRoutes) === true))
+        if (($isDashboardRoute === false and
+            array_key_exists($routeName, $bankingRoutes) === true) or
+            in_array($this->internalAppName, self::bankingApps, true) === true)
         {
             $product = ProductType::BANKING;
-
-            $this->ba->setProduct($product);
-
-            return;
         }
 
-        if (in_array($this->internalAppName, self::bankingApps, true) === true)
+        /*
+         * We pull the user role in UserAccess middleware based on requestOriginProduct.
+         * It's required after the 22nd Oct changes as we have a strict check for every route tagged to a defined roles.
+         * batch -> api calls like payout_bulk_approve, payout_bulk_create etc authorized on the user roles
+         * Todo: Is this required for the internal banking apps in the future?
+         */
+        if($this->internalAppName === 'batch' and
+           $this->request->headers->get(RequestHeader::X_Creator_Type) == 'user' and
+           array_key_exists($routeName, $bankingRoutes) === true)
         {
             $product = ProductType::BANKING;
-
-            $this->ba->setProduct($product);
-
-            return;
+            $this->ba->setRequestOriginProduct($product);
         }
 
         $this->ba->setProduct($product);
