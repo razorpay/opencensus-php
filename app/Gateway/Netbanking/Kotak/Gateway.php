@@ -32,6 +32,8 @@ class Gateway extends Base\Gateway
 
     protected $sortRequestContent = false;
 
+    const newIntegration = 'kotak_new_integration';
+
     protected $fields = array(
         'MessageCode',
         'DateTimeInGMT',
@@ -63,6 +65,12 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRequestData($input);
 
+        $featureFlag = "nb_" . $input['payment']['gateway'] . "_api_merchant_whitelisting";
+
+        $variant = $this->app->razorx->getTreatment($input['payment']['merchant_id'], $featureFlag, $this->mode);
+
+        $merchantId = $this->getMerchantId($variant, $input['merchant']->isTPVRequired());
+
         //checking verification_id and payment_id before adding to entity for excluding duplicates.
         $gatewayPayment = $this->checkTraceIdAndPaymentIdPresent($content, $input);
 
@@ -70,8 +78,6 @@ class Gateway extends Base\Gateway
         {
             $gatewayPayment = $this->createGatewayPaymentEntity($content);
         }
-
-        $merchantId = $this->getMerchantId();
 
         $content['TraceNumber'] = $gatewayPayment['verification_id'];
 
@@ -85,9 +91,12 @@ class Gateway extends Base\Gateway
 
         $traceContent = $content;
 
-        if ($this->isPaymentTpvEnabled($gatewayPayment, $input['merchant']) === true)
+        if ($variant !== self::newIntegration)
         {
-            unset($traceContent['TransactionDescription']);
+            if ($this->isPaymentTpvEnabled($gatewayPayment, $input['merchant']) === true)
+            {
+                unset($traceContent['TransactionDescription']);
+            }
         }
 
         $content = [
@@ -301,28 +310,56 @@ class Gateway extends Base\Gateway
         // Kotak asks for date in IST
         $date = Carbon::now(Timezone::IST)->format('dmYHis');
 
-        $data = array(
-            'MessageCode'            => MessageCodes::AUTHORIZE,
-            'DateTimeInGMT'          => $date,
-            'MerchantId'             => $input['terminal']['gateway_merchant_id'],
-            'TraceNumber'            => $this->getTraceNumber($input),
-            'Amount'                 => $input['payment']['amount'] / 100,
-            'TransactionDescription' => $this->getDynamicMerchantName($input['merchant'], 50),
-        );
+        //Check for new integration whitelisted merchant
+        $featureFlag = "nb_" . $input['payment']['gateway'] . "_api_merchant_whitelisting";
 
-        if ($this->mode === Mode::TEST)
+        $variant = $this->app->razorx->getTreatment($input['payment']['merchant_id'], $featureFlag, $this->mode);
+
+        if ($variant === self::newIntegration)
         {
-            $data['MerchantId'] = $this->getTestMerchantId();
+            $data = array(
+                'MessageCode'            => MessageCodes::AUTHORIZE,
+                'DateTimeInGMT'          => $date,
+                'MerchantId'             => $this->getMerchantId($variant, $input['merchant']->isTPVRequired()),
+                'TraceNumber'            => $input['payment']['id'],
+                'Amount'                 => $input['payment']['amount'] / 100,
+                'TransactionDescription' => $this->getSubMerchantId($input['merchant']->isTPVRequired()),
+                'FUP-1'                  => '',
+                'FUP-2'                  => '',
+                'FUP-3'                  => '',
+            );
+
+            if ($input['merchant']->isTPVRequired() === true)
+            {
+                    $data['FUP-2']                  =  $input['order']['account_number'];
+            }
         }
 
-        // Change Content for Merchants with TPV Required
-        if ($input['merchant']->isTPVRequired())
+        else
         {
-            $data['TransactionDescription'] = $input['order']['account_number'];
+            $data = array(
+                'MessageCode'            => MessageCodes::AUTHORIZE,
+                'DateTimeInGMT'          => $date,
+                'MerchantId'             => $input['terminal']['gateway_merchant_id'],
+                'TraceNumber'            => $this->getTraceNumber($input),
+                'Amount'                 => $input['payment']['amount'] / 100,
+                'TransactionDescription' => $this->getDynamicMerchantName($input['merchant'], 50),
+            );
 
             if ($this->mode === Mode::TEST)
             {
-                $data['MerchantId'] = $this->getTestTpvMerchantId();
+                $data['MerchantId'] = $this->getTestMerchantId();
+            }
+
+            // Change Content for Merchants with TPV Required
+            if ($input['merchant']->isTPVRequired() === true)
+            {
+                $data['TransactionDescription'] = $input['order']['account_number'];
+
+                if ($this->mode === Mode::TEST)
+                {
+                    $data['MerchantId'] = $this->getTestTpvMerchantId();
+                }
             }
         }
 
@@ -429,7 +466,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getMerchantId()
+    protected function getMerchantId($variant, $tpvReq)
     {
         if ($this->mode === Mode::LIVE)
         {
@@ -437,7 +474,37 @@ class Gateway extends Base\Gateway
         }
         elseif ($this->mode === Mode::TEST)
         {
-            return $this->getTestMerchantId();
+            if ($variant !== self::newIntegration)
+            {
+                return $this->getTestMerchantId();
+            }
+            else if ($tpvReq === true)
+            {
+                return 'OTIND';
+            }
+            else
+            {
+                return 'OSIND';
+            }
+        }
+    }
+
+    protected function getSubMerchantId($tpvReq)
+    {
+        if ($this->mode === Mode::LIVE)
+        {
+            return $this->getLiveMerchantId2();
+        }
+        elseif ($this->mode === Mode::TEST)
+        {
+            if ($tpvReq === true)
+            {
+                return 'OTIND';
+            }
+            else
+            {
+                return 'IND15';
+            }
         }
     }
 

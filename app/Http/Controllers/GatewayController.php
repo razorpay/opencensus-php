@@ -582,31 +582,53 @@ class GatewayController extends Controller
 
         $app = \App::getFacadeRoot();
 
-        $result = $this->getNetbankingEntityAndModeByTraceId($input[3]);
+        $paymentOrTraceId = $input[3];
 
-        $nb = $result['nb'];
+        $paymentIDpresent = $this->app['repo']->netbanking->find($paymentOrTraceId);
 
-        $mode = $result['mode'];
-
-        $trace = $app['trace'];
-
-        // check mode before search
-        $trace->info(
-            TraceCode::NETBANKING_PAYMENT_CALLBACK,
-            [
-                'input_all' => Request::all(),
-                'input_msg' => Request::input('msg'),
-                'input_arr' => $input
-            ]);
-
-        if ($nb === null)
+        if (isset($paymentIDpresent) === true)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Failed to find requisite trace id: ' . $input[3]);
+            $paymentId = $input[3];
+
+            $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+            $this->app['config']->set('database.default', $mode);
+
+            $this->app['basicauth']->setModeAndDbConnection($mode);
+
+            $payment = $this->app['repo']->payment->findOrFail($paymentId);
+
+            $publicPaymentId = $payment->getpublicID();
         }
 
-        $paymentId = $nb->getPaymentId();
-        $publicPaymentId = $nb->getPublicPaymentId();
+        else
+        {
+            $result = $this->getNetbankingEntityAndModeByTraceId($input[3]);
+
+            $nb = $result['nb'];
+
+            $mode = $result['mode'];
+
+            $trace = $app['trace'];
+
+            // check mode before search
+            $trace->info(
+                TraceCode::NETBANKING_PAYMENT_CALLBACK,
+                [
+                    'input_all' => Request::all(),
+                    'input_msg' => Request::input('msg'),
+                    'input_arr' => $input
+                ]);
+
+            if ($nb === null)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Failed to find requisite trace id: ' . $input[3]);
+            }
+
+            $paymentId = $nb->getPaymentId();
+            $publicPaymentId = $nb->getPublicPaymentId();
+        }
 
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
 

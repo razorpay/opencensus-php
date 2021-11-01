@@ -43,14 +43,24 @@ class Server extends Base\Mock\Server
 
         $content = explode('|',$decryptedData);
 
-        unset($content[7]);
+        $featureFlag = "nb_netbanking_kotak_api_merchant_whitelisting";
+
+        $variant = $this->app->razorx->getTreatment('10000000000000', $featureFlag, 'test');
+
+        if ($variant !== Gateway::newIntegration)
+        {
+            unset($content[7]);
+        }
 
         $input['msg'] = implode('|',$content);
         $input = $this->getContentFromInput($input, 'authorize');
 
         parent::authorize($input);
 
-        $this->validateAuthorizeInput($input);
+        if ($variant !== Gateway::newIntegration)
+        {
+            $this->validateAuthorizeInput($input);
+        }
 
         $content = array(
             'MessageCode'         => $input['MessageCode'],
@@ -145,7 +155,11 @@ class Server extends Base\Mock\Server
             $action = $trace[1]['function'];
         }
 
-        $fields = $this->getGatewayInstance()->getFields($action, 'request');
+        $featureFlag = "nb_netbanking_kotak_api_merchant_whitelisting";
+
+        $variant = $this->app->razorx->getTreatment('10000000000000', $featureFlag, 'test');
+
+        $fields = $this->getGatewayInstance()->getFields($action, 'request', $variant);
 
         $msg = $input;
 

@@ -18,6 +18,19 @@ trait ResponseFieldsTrait
         'Checksum',
     );
 
+    protected static $authorizeNewRequestFields = array(
+        'MessageCode',
+        'DateTimeInGMT',
+        'MerchantId',
+        'TraceNumber',
+        'Amount',
+        'TransactionDescription',
+        'FUP-1',
+        'FUP-2',
+        'FUP-3',
+        'Checksum',
+    );
+
     protected static $callbackResponseFields = array(
         'MessageCode',
         'DateTimeInGMT',
@@ -57,7 +70,7 @@ trait ResponseFieldsTrait
         return self::$$var;
     }
 
-    public function getFields($action, $type = 'response')
+    public function getFields($action, $type = 'response', $variant)
     {
         if ($type === 'response')
         {
@@ -65,7 +78,15 @@ trait ResponseFieldsTrait
         }
         else
         {
-            $var = $action . 'RequestFields';
+            if ($variant === Gateway::newIntegration and $action === 'authorize')
+            {
+                $var = $action . 'NewRequestFields';
+            }
+
+            else
+            {
+                $var = $action . 'RequestFields';
+            }
 
             return self::$$var;
         }

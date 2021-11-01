@@ -39,12 +39,30 @@ return [
         'entity' => 'netbanking',
     ],
 
+    'testPaymentNewNetbankingEntity' => [
+        'action' => 'authorize',
+        'amount' => 500,
+        'bank' => 'KKBK',
+        'received' => true,
+        'merchant_code' => 'OSIND',
+        'entity' => 'netbanking',
+    ],
+
     'testPaymentTpvNetbankingEntity' => [
         'action' => 'authorize',
         'amount' => 500,
         'bank' => 'KKBK',
         'received' => true,
         'merchant_code' => 'OTTEST',
+        'entity' => 'netbanking',
+    ],
+
+    'testPaymentTpvNewNetbankingEntity' => [
+        'action' => 'authorize',
+        'amount' => 500,
+        'bank' => 'KKBK',
+        'received' => true,
+        'merchant_code' => 'OTIND',
         'entity' => 'netbanking',
     ],
 
