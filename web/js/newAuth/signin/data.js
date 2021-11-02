@@ -10,12 +10,12 @@ export const LoginCardArray = [
   },
   {
     type: 'default',
-    title: 'Webinar & 50k Free credits',
+    title: 'Payment Buttons',
     desc:
-      'Join Razorpay experts to learn how you can offer your customers a world class shopping experience and grow your ecommerce business.',
+      'Start accepting payments on your website or blog in less than 5 minutes. No coding needed.',
     ctaURL:
-      'https://lp.razorpay.com/links/ecommerce-business-growth-webinar-0-0-0?__hstc=123703508.fb5e48a6bfc64824f793da2dc9cd78f0.1631528914743.1632898070818.1634728653658.3&__hssc=123703508.1.1634728653658&__hsfp=2491448087',
-    ctaText: 'Register for free',
-    id: 'super_checkout_webinar_buttons',
+      'https://razorpay.com/payment-buttons/?utm_source=signup&utm_medium=banner&utm_campaign=paymentbuttons',
+    ctaText: 'Learn More',
+    id: 'login_payment_buttons',
   },
 ];
