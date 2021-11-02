@@ -417,6 +417,37 @@ class Service extends Base\Service
         return $this->handleLoginResponse($error, $genericUser);
     }
 
+    public function verifyOtpLogin2faPassword(array $input)
+    {
+        $userFromGuard = Auth::guard('user')->user();
+
+        $userIdFromSession = Session::get('user_id', "");
+
+        if (empty($userFromGuard) === false)
+        {
+            $options['headers']['X-Dashboard-User-Id'] = $userFromGuard->id;
+        }
+        else if (empty($userIdFromSession) === false)
+        {
+            $options['headers']['X-Dashboard-User-Id'] = $userIdFromSession;
+        }
+        else
+        {
+            return [["User Not authenticated, please login"], []];
+        }
+
+        $options['headers']['X-Dashboard-User-Session-Id'] = Session::getId();
+
+        list($error, $genericUser) = $this->verifyOtpLogin2faPasswordOnApi($input, $options);
+
+        if (empty($error) === true)
+        {
+            $this->markUserTwoFactorVerified();
+        }
+
+        return $this->handleLoginResponse($error, $genericUser);
+    }
+
     /**
      * @param  array  $input [description]
      *
@@ -1370,6 +1401,14 @@ class Service extends Base\Service
     public function otpLoginForVerifyUser(array $input)
     {
         return $this->userVerificationRoute($input, 'users/login/verification-otp', 'POST');
+    }
+
+    public function verifyOtpLogin2faPasswordOnApi(array $input, $options)
+    {
+
+        $options['headers'][self::CAPTCHA_MODE_HEADER] = Request::header(self::CAPTCHA_MODE_HEADER);
+
+        return $this->loginOnApiOnRoute($input,'users/login/otp/2fa', 'POST', $options);
     }
 
     public function verifyOtpLoginOnApi(array $input)

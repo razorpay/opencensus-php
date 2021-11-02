@@ -70,6 +70,8 @@ Route::group(['middleware' => ['web']], function () {
         // allow users with verified email/mobile to login with otp
         Route::post('/signin/otp', 'UserController@postSendLoginOtp');
         Route::post('/signin/otp/verify', 'UserController@postVerifyLoginOtp');
+        // users need to enter their password after otp login if 2fa is enabled/enforced
+        Route::post('/signin/otp/2fa', 'UserController@postOtpLogin2faPassword');
         // allow users with unverified email/mobile to login with password and then verify email/mobile
         Route::post('/signin/verify-user/otp', 'UserController@postSendVerifyUserOtp');
         Route::post('/signin/verify-user/otp/verify', 'UserController@postVerifyUserOtp');

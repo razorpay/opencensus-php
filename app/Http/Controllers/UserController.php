@@ -444,6 +444,30 @@ class UserController extends Controller
     }
 
     /**
+     * Handle the 2FA with password on OTP based login
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function postOtpLogin2faPassword()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new User\Service)->verifyOtpLogin2faPassword($input);
+
+        if (empty($error) === true)
+        {
+            $this->metrics->count(MetricConstants::USER_LOGIN_COUNT,
+                EVENT_TRIGGER_COUNT,
+                [
+                    MetricConstants::LOGIN_METHOD => MetricConstants::OTP,
+                    MetricConstants::LOGIN_ACTION => MetricConstants::TWO_FA_PASSWORD_VERIFICATION,
+                ]);
+        }
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    /**
      * Handle the authentication request from the user for OTP logins and send OTP.
      *
      * @return \Illuminate\Http\Response

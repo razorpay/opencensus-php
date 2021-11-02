@@ -39,7 +39,9 @@ class Constants
 
   /* Possible Login actions */
   //when user sigin after enterin OTP
-  const TWO_FA_OTP_VERIFICATION     = 'two_fa_verificiation';
+  const TWO_FA_OTP_VERIFICATION         = 'two_fa_verificiation';
+  const TWO_FA_PASSWORD_VERIFICATION    = 'two_fa_password_verificiation';
+
    //when user does a normal login
   const NORMAL_LOGIN                = 'normal_login';
   const OTP_LOGIN                   = 'otp_login';
