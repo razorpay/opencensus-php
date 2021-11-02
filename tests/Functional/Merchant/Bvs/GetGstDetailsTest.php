@@ -312,6 +312,15 @@ class GetGstDetailsTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
+        $data = [
+            StoreConstants::NAMESPACE                          => ConfigKey::ONBOARDING_NAMESPACE,
+            ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT => 1
+        ];
+
+        $data = (new StoreCore())->updateMerchantStore($merchantId,
+                                                       $data,
+                                                       StoreConstants::INTERNAL);
+
         $this->startTest();
 
         $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantId,'merchant','bank_account');
@@ -327,7 +336,7 @@ class GetGstDetailsTest extends TestCase
 
         $pennyTestingAttemptsCount = $data[ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT] ?? 0;
 
-        $this->assertEquals(0, $pennyTestingAttemptsCount);
+        $this->assertEquals(1, $pennyTestingAttemptsCount);
 
     }
 
@@ -495,7 +504,7 @@ class GetGstDetailsTest extends TestCase
         $this->assertEquals(10, $pennyTestingAttemptsCount);
     }
 
-    public function testSubmitFormPennyTestingLimitNotBreached()
+    public function testSubmitFormPennyTestingLimitNotBreachedWithoutPreviousInSyncBVSCall()
     {
         Config::set('applications.kyc.mock', true);
         Config::set('services.bvs.mock', true);
@@ -530,6 +539,61 @@ class GetGstDetailsTest extends TestCase
 
         $this->assertEquals(Constant::BANK_ACCOUNT, $bvsValidation->getArtefactType());
         $this->assertEquals("captured", $bvsValidation->getValidationStatus());
+
+        $keys = [
+            ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT
+        ];
+        $data = (new StoreCore())->fetchValuesFromStore($merchantId,
+                                                        ConfigKey::ONBOARDING_NAMESPACE,
+                                                        $keys,
+                                                        StoreConstants::INTERNAL);
+
+        $pennyTestingAttemptsCount = $data[ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT] ?? 0;
+
+        $this->assertEquals(1, $pennyTestingAttemptsCount);
+    }
+
+    public function testSubmitFormPennyTestingLimitNotBreachedWithPreviousInSyncBVSCall()
+    {
+        Config::set('applications.kyc.mock', true);
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+        Mail::fake();
+
+        $merchantDetails = $this->fixtures->create('merchant_detail:valid_fields', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L1',
+            'poi_verification_status'   => 'pending',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'instantly_activated',
+            'bank_account_name'         => 'Test1',
+            'bank_account_number'       => '111001',
+            'bank_branch_ifsc'          => 'SBIN0007105',
+            'bank_details_verification_status'=>'failed'
+        ]);
+
+        $merchantId = $merchantDetails['merchant_id'];
+
+        $this->fixtures->on('live')->edit('merchant', $merchantId);
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantId);
+
+        $data = [
+            StoreConstants::NAMESPACE                          => ConfigKey::ONBOARDING_NAMESPACE,
+            ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT => 1
+        ];
+
+        $data = (new StoreCore())->updateMerchantStore($merchantId,
+                                                       $data,
+                                                       StoreConstants::INTERNAL);
+
+        $this->startTest();
+
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantId,'merchant','bank_account');
+        $this->assertEmpty($bvsValidation);
 
         $keys = [
             ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT

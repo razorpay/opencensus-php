@@ -245,7 +245,7 @@ class Core extends Base\Core
 
         $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
 
-        $this->verifyBankDetailsIfApplicable($merchantDetails, $merchant,$input);
+        $this->attemptPennyTesting($merchantDetails, $merchant);
 
         return $this->mutex->acquireAndRelease(
             $merchant->getId(),
@@ -1168,63 +1168,6 @@ class Core extends Base\Core
         }
     }
 
-    protected function verifyBankDetailsIfApplicable(Entity & $merchantDetails, Merchant\Entity $merchant,& $input)
-    {
-        $isKarzaVerificationEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
-            $merchant->getId(),
-            RazorxTreatment::KARZA_BANK_ACCOUNT_VERIFICATION);
-
-        if ($isKarzaVerificationEnabled === false)
-        {
-            $this->trace->info(TraceCode::RAZORX_DISABLED, [RazorxTreatment::KARZA_BANK_ACCOUNT_VERIFICATION,
-                                                            Entity::MERCHANT_ID => $merchant->getId()]);
-
-            return;
-        }
-
-        $bankDetailsChanged=$this->hasBankDetailsChanged($merchantDetails);
-
-        //do not save bank details after penny testing attempts limit breached
-        if ($this->hasPennyTestingAttemptsExhausted($merchantDetails)
-            and $bankDetailsChanged)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PENNY_TESTING_ATTEMPTS_EXHAUSTED);
-        }
-
-        if ($bankDetailsChanged)
-        {
-            $this->attemptPennyTesting($merchantDetails, $merchant);
-
-            //call to bvs for Bank Account before L2 submission
-            (new requestDispatcher\BankAccount($merchant, $merchantDetails))->triggerBVSRequest();
-        }
-    }
-
-    public function hasBankDetailsChanged($merchantDetails)
-    {
-        $existingMerchantDetails = $this->repo->merchant_detail->findOrFail($merchantDetails->getId());
-
-        if (empty($merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NAME)) and
-            empty($merchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC)) and
-            empty($merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NUMBER)))
-        {
-            return false;
-        }
-
-        $this->trace->info(TraceCode::BANK_ACCOUNT_DETAILS,
-                           [$merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NAME)   => $existingMerchantDetails->getAttribute(Entity::BANK_ACCOUNT_NAME),
-                            $merchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC)    => $existingMerchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC),
-                            $merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NUMBER) => $existingMerchantDetails->getAttribute(Entity::BANK_ACCOUNT_NUMBER)]);
-
-        if ($merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NAME) === $existingMerchantDetails->getAttribute(Entity::BANK_ACCOUNT_NAME) and
-            $merchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC) === $existingMerchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC) and
-            $merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NUMBER) === $existingMerchantDetails->getAttribute(Entity::BANK_ACCOUNT_NUMBER))
-        {
-            return false;
-        }
-
-        return true;
-    }
 
 
     /**
@@ -3051,92 +2994,33 @@ class Core extends Base\Core
      */
     protected function attemptPennyTesting(Entity $merchantDetails, Merchant\Entity $merchant)
     {
-        if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false) {
+        if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false)
+        {
             return;
         }
 
-        if(empty($merchantDetails->getBankAccountNumber()) === true or
+        if (empty($merchantDetails->getBankAccountNumber()) === true or
             empty($merchantDetails->getBankBranchIfsc()) === true or
             empty($merchantDetails->getBankAccountName()) === true)
         {
             return;
         }
 
-        $kycClarifications = $merchantDetails->getKycClarificationReasons() ?? [];
-        if(empty($kycClarifications)===false) {
-            $ncCount = $kycClarifications[Constants::NC_COUNT];
-            $additionalDetails = $kycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
-            $clarificationReasons = $kycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
-            $bank_account_name = "";
-            $bank_account_number = "";
-            $bank_branch_ifsc = "";
-            if (empty($clarificationReasons) === false) {
-                foreach ($clarificationReasons as $key => $values) {
-                    foreach ($values as $val) {
-                        if ($val[Merchant\Constants::NC_COUNT] === $ncCount) {
-                            if ($key == Entity::BANK_ACCOUNT_NAME) $bank_account_name = $val[Constants::FIELD_VALUE];
-                            if ($key == Entity::BANK_ACCOUNT_NUMBER) $bank_account_number = $val[Constants::FIELD_VALUE];
-                            if ($key == Entity::BANK_BRANCH_IFSC) $bank_branch_ifsc = $val[Constants::FIELD_VALUE];
-                        }
-                    }
-                }
-            }
-            $allowValidation=false;
-            if (empty($additionalDetails) === false) {
-                foreach ($additionalDetails as $key => $values) {
-                    foreach ($values as $val) {
-                        //for backward compatibility allow bank account validation
-                        if (isset($val[Merchant\Constants::NC_COUNT])==false) {
-                            $allowValidation=true; break;
-                        }
-                        if($val[Merchant\Constants::NC_COUNT] === $ncCount) {
-                            if ($key == Entity::BANK_ACCOUNT_NAME) $bank_account_name = $val[Constants::FIELD_VALUE];
-                            if ($key == Entity::BANK_ACCOUNT_NUMBER) $bank_account_number = $val[Constants::FIELD_VALUE];
-                            if ($key == Entity::BANK_BRANCH_IFSC) $bank_branch_ifsc = $val[Constants::FIELD_VALUE];
-                        }
-                    }
-                }
-            }
-
-            if(empty($bank_account_number) === true or $allowValidation=== true)
-            {
-                return; // since clarifications were not asked for bank account
-            }
-
-            if ($merchantDetails->getBankBranchIfsc() == $bank_branch_ifsc and
-                $merchantDetails->getBankAccountNumber() == $bank_account_number and
-                $merchantDetails->getBankAccountName() == $bank_account_name)
-            {
-                return;
-            }
-        }
         // no penny testing for linked accounts
-        if ($merchant->isLinkedAccount() === true) {
+        if ($merchant->isLinkedAccount() === true)
+        {
             return;
         }
 
-        if ($this->shouldSkipBankAccountRegistration() == true) {
+        if ($this->shouldSkipBankAccountRegistration() == true)
+        {
             return;
         }
 
-        if($this->hasPennyTestingAttemptsExhausted($merchantDetails)){
-            return;
-        }
-
-        $verifyBankDetailsThoughBvs = $this->updateDocumentVerificationStatus($merchant, Entity::BANK_ACCOUNT_NUMBER);
-
-        if ($verifyBankDetailsThoughBvs === true) {
-
-            return;
-        }
-
-        (new PennyTesting())->triggerPennyTesting($merchantDetails);
-    }
-
-    protected function hasPennyTestingAttemptsExhausted($merchantDetails): bool{
         $keys = [
             ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT
         ];
+
         $data = (new StoreCore())->fetchValuesFromStore($merchantDetails->getMerchantId(),
                                                         ConfigKey::ONBOARDING_NAMESPACE,
                                                         $keys,
@@ -3144,17 +3028,45 @@ class Core extends Base\Core
 
         $pennyTestingAttemptsCount = $data[ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT] ?? 0;
 
-        $this->trace->info(TraceCode::MERCHANT_STORE_GET_DETAILS, $data);
-
         $maxPennyTestCountAllowed = env(DEConstants::BANK_ACCOUNT_VERIFICATION_MAX_ATTEMPT_COUNT);
 
         //do not perform penny testing
         if ($pennyTestingAttemptsCount >= $maxPennyTestCountAllowed)
         {
-            return true;
+            return;
         }
-        return false;
+
+        if ($this->hasBankDetailsChanged($merchantDetails) or $pennyTestingAttemptsCount == 0)
+        {
+            $this->updateDocumentVerificationStatus($merchant, Entity::BANK_ACCOUNT_NUMBER);
+        }
+
+        $isKarzaVerificationEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
+            $merchant->getId(),
+            RazorxTreatment::KARZA_BANK_ACCOUNT_VERIFICATION);
+
+        if ($isKarzaVerificationEnabled === true)
+        {
+            //call to bvs for Bank Account before L2 submission
+            (new requestDispatcher\BankAccount($merchant, $merchantDetails))->triggerBVSRequest();
+
+        }
     }
+
+    public function hasBankDetailsChanged($merchantDetails)
+    {
+        $existingMerchantDetails = $this->repo->merchant_detail->findOrFail($merchantDetails->getId());
+
+        if ($merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NAME) === $existingMerchantDetails->getAttribute(Entity::BANK_ACCOUNT_NAME) and
+            $merchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC) === $existingMerchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC) and
+            $merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NUMBER) === $existingMerchantDetails->getAttribute(Entity::BANK_ACCOUNT_NUMBER))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
 
     public function isAdditionalFieldRequired($field)
     {

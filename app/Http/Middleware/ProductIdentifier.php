@@ -98,7 +98,7 @@ class ProductIdentifier
 
         $product = ProductType::PRIMARY;
 
-        if ($bankingOriginHost === $requestOriginHost)
+        if (empty($requestOriginHost)===false and $bankingOriginHost === $requestOriginHost)
         {
             $product = ProductType::BANKING;
         }

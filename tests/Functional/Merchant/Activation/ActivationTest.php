@@ -2940,6 +2940,8 @@ class ActivationTest extends OAuthTestCase
 
     public function testBankDetailsVerificationStatusForUnRegisteredBusiness()
     {
+        $this->setUpRazorxMock();
+
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
                                                   [
                                                       'business_type'           => 2,
@@ -2966,16 +2968,18 @@ class ActivationTest extends OAuthTestCase
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
         Config::set('applications.kyc.mock', true);
         Config::set('services.bvs.mock', true);
         Config::set('services.bvs.response', 'success');
         Mail::fake();
+
         $this->startTest();
 
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
 
         $this->assertEquals($merchantDetails->getBankDetailsVerificationStatus(), 'initiated');
-        $this->assertNotNull($merchantDetails->getFundAccountValidationId());
+
     }
 
     public function testSuccessBankDetailsVerificationForUnregistered()

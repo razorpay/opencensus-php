@@ -131,11 +131,11 @@ return [
         ],
         'response'  => [
             'content'     => [
+                'bank_account_name'   => 'Test',
+                'bank_account_number' => '111000',
+                'bank_branch_ifsc'    => 'SBIN0007105'
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PENNY_TESTING_ATTEMPTS_EXHAUSTED,
+            'status_code' => 200,
         ],
     ],
     'testSaveActivationDetailsWithoutBankDetailsLimitBreached' => [
@@ -171,7 +171,24 @@ return [
         ],
         'status_code' => 200,
     ],
-    'testSubmitFormPennyTestingLimitNotBreached' => [
+    'testSubmitFormPennyTestingLimitNotBreachedWithoutPreviousInSyncBVSCall' => [
+        'request'  => [
+            'content' => [
+                'submit'=> 1,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'bank_account_name'   => 'Test1',
+                'bank_account_number' => '111001',
+                'bank_branch_ifsc'    => 'SBIN0007105'
+            ],
+        ],
+        'status_code' => 200,
+    ],
+    'testSubmitFormPennyTestingLimitNotBreachedWithPreviousInSyncBVSCall' => [
         'request'  => [
             'content' => [
                 'submit'=> 1,

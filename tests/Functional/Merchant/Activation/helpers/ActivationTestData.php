@@ -3267,7 +3267,7 @@ return [
     'testBankDetailsVerificationStatusForUnRegisteredBusiness' => [
         'request'  => [
             'content' => [
-                'submit' => true
+                'submit' => '1'
             ],
             'url'     => '/merchant/activation',
             'method'  => 'POST',
@@ -3275,12 +3275,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'submitted'    => true,
-                'verification' => [
-                    'status' => 'pending'
-                ],
-                'can_submit'   => true,
-                'locked'       => true,
+
             ],
         ],
     ],
