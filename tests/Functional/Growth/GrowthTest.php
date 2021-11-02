@@ -136,8 +136,42 @@ class GrowthTest extends TestCase
             ]
         ];
 
-        $this->mockGrowthTreatment($input, $output);
+        $this->mockGrowthTreatment($input, $output, 'getAssetDetails');
 
+        $this->startTest();
+    }
+    
+    public function testEnableDowntimeNotificationForXDashboard()
+    {
+        $input = [
+            "template" =>  [
+                "id"            => "124",
+                "asset"         => "X_TOP_BANNER",
+                "data"          => [
+                    "description"   => "test 123",
+                    "isCloseable"   => false,
+                    "priority"      => 1,
+                    "bgColour"      => "rgba(243, 105, 105, 0.54)",
+                    "bgImage"       => "",
+                    "textColor"     => "rgba(255, 255, 255, 0.87)",
+                    "start_at"      => "123456",
+                    "end_at"        => "456789",
+                ]
+            ],
+            "subcampaign" => [
+                "sub_campaign_id" => "IBcO8lQk6hqy0W",
+                "action" => "ACTIVATED"
+            ]
+        ];
+        
+        $output = [
+            "status_code" => "200",
+        ];
+        
+        $this->mockGrowthTreatment($input, $output, 'editTemplateAndEnableDowntimeNotificationForXDashboard');
+        
+        $this->ba->adminAuth();
+        
         $this->startTest();
     }
 

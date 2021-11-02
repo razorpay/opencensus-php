@@ -954,6 +954,10 @@ return [
                 'description' => 'Allows read operation on Ledger Dashboard to fetch accounts etc',
                 'assignable'  => true,
             ],
+            Permission::ENABLE_DOWNTIME_NOTIFICATION_X_DASHBOARD => [
+                'description' => 'To be used by X Ops Team to create notifications on X Dashboard',
+                'assignable'  => true,
+            ]
         ],
 
         // Permissions

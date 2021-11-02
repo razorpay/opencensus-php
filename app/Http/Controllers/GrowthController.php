@@ -37,4 +37,27 @@ class GrowthController extends Controller
 
         return $response;
     }
+    
+    
+    public function enableDowntimeNotificationForXDashboard()
+    {
+        $parameters = Request::all();
+        $response = [];
+
+        try {
+            if (empty($parameters) === false)
+            {
+
+                $response = $this->app->growthService->editTemplateAndEnableDowntimeNotificationForXDashboard($parameters);
+
+                $response = ApiResponse::json($response);
+
+            }
+        } catch (\Throwable $e)
+        {
+            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
+        }
+
+        return $response;
+    }
 }

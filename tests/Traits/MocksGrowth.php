@@ -12,7 +12,7 @@ trait MocksGrowth
 
     protected $growthMock;
 
-    protected function mockGrowthTreatment($input = [], $output = [])
+    protected function mockGrowthTreatment($input = [], $output = [], $methodName)
     {
         if ($this->growthMock === null)
         {
@@ -22,7 +22,7 @@ trait MocksGrowth
         }
 
         $this->growthMock
-            ->shouldReceive('getAssetDetails')
+            ->shouldReceive($methodName)
             ->atLeast()
             ->once()
             ->with($input)

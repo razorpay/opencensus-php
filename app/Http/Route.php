@@ -2033,6 +2033,7 @@ class Route
 
         // Growth service
         'growth_get_asset_details'                          => ['post',     'growth/assets',                                  'GrowthController@getAssetDetails'                                  ],
+        'growth_downtime_for_x'                             => ['post',     'growth/assets/enable_downtime_for_x',                     'GrowthController@enableDowntimeNotificationForXDashboard' ],
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@createLinkedAccount'                             ],
         'beta_account_fetch'                       => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
@@ -5652,6 +5653,9 @@ class Route
         'risk_attributes_get',
 
         'create_risk_action',
+        
+        //growth service
+        'growth_downtime_for_x',
     ];
 
     public static $routePermission = [
@@ -6697,6 +6701,9 @@ class Route
         'trusted_badge_blacklist'                         => Permission::TRUSTED_BADGE_BLACKLIST,
         'risk_attributes_get'                             => Permission::MERCHANT_ACTIONS,
         'create_risk_action'                              => Permission::MERCHANT_ACTIONS,
+        
+        // growth service
+        'growth_downtime_for_x'                           => Permission::ENABLE_DOWNTIME_NOTIFICATION_X_DASHBOARD,
     ];
 
     public static $bankingRoutePermissions = [
@@ -8891,6 +8898,7 @@ class Route
             'group_get',
             'group_get_allowed_groups',
             'group_get_multiple',
+            'growth_downtime_for_x',
             'hosted_subscription_button_details',
             'iin_add',
             'iin_edit',

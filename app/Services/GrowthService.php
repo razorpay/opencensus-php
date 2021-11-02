@@ -18,6 +18,14 @@ class GrowthService extends Base\Service
 
     const GET_ASSET_URL              = 'twirp/rzp.growth.asset.v1.AssetAPI/Get';
 
+    const EDIT_TEMPLATE_URL          = 'twirp/rzp.growth.template.v1.TemplateAPI/Update';
+
+    const GET_SUBCAMPAIGN_URL        = 'twirp/rzp.growth.subcampaign.v1.SubCampaignAPI/Get';
+
+    const SUBCAMPAIGN_ACTION_URL     = 'twirp/rzp.growth.subcampaign.v1.SubCampaignAPI/Action';
+
+    const ACTIVATED                  = 'ACTIVATED';
+
     // Tells the client what the content type of the returned content actually is
     const CONTENT_TYPE = 'Content-Type';
 
@@ -66,6 +74,26 @@ class GrowthService extends Base\Service
     public function getAssetDetails($parameters)
     {
         return $this->sendRequest($parameters, self::GET_ASSET_URL, Requests::POST);
+    }
+    
+    public function editTemplateAndEnableDowntimeNotificationForXDashboard($parameters)
+    {
+        $templateParameters = ["template" => $parameters['template']];
+
+        $this->sendRequest($templateParameters, self::EDIT_TEMPLATE_URL, Requests::POST);
+
+        $subCampaignGetParams = [ "sub_campaign_id"  => $parameters['subcampaign']["sub_campaign_id"]];
+
+        $subCampaignGetResponse = $this->sendRequest($subCampaignGetParams, self::GET_SUBCAMPAIGN_URL, Requests::POST);
+
+        if($subCampaignGetResponse["response"]["sub_campaign"]["status"] != self::ACTIVATED)
+        {
+            $subCampaignActionParams = $parameters['subcampaign'];
+
+            $this->sendRequest($subCampaignActionParams, self::SUBCAMPAIGN_ACTION_URL, Requests::POST);
+        }
+
+        return ["status_code" => "200"];
     }
 
 

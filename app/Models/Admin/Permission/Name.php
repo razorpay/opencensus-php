@@ -754,6 +754,9 @@ class Name
     const ECOLLECT_ICICI_BATCH_UPLOAD                = 'ecollect_icici_batch_upload';
     const ECOLLECT_RBL_BATCH_UPLOAD                  = 'ecollect_rbl_batch_upload';
     const VIRTUAL_BANK_ACCOUNT_BATCH_UPLOAD          = 'virtual_bank_account_batch_upload';
+    
+    // Admin action permission for X Ops Team
+    const ENABLE_DOWNTIME_NOTIFICATION_X_DASHBOARD   = 'enable_downtime_notification_x_dashboard';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
