@@ -1074,8 +1074,8 @@ trait Refund
         if (($refund->isStatusReversed() === true) or
             (($feeOnlyReversal === true) and ($refund->getFee() === 0)))
         {
-            throw new Exception\LogicException(
-                'Attempted to reverse an already reversed refund amount/fee',
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
                 null,
                 [
                     'refund_id'  => $refund->getId(),
@@ -1083,7 +1083,8 @@ trait Refund
                     'payment_id' => $refund->getPaymentId(),
                     'gateway'    => $refund->getGateway(),
                     'fee'        => $refund->getFee(),
-                ]);
+                ],
+            'Attempted to reverse an already reversed refund amount/fee');
         }
 
         try
