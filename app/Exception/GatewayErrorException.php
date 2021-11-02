@@ -22,6 +22,10 @@ class GatewayErrorException extends RecoverableException
         ErrorCode::BAD_REQUEST_PAYMENT_OTP_EXPIRED,
     ];
 
+    public static $safeRetryErrorCodes = [
+        ErrorCode::GATEWAY_ERROR_VALIDATION_ERROR,
+    ];
+
     public function __construct(
         $code,
         $gatewayErrorCode = null,

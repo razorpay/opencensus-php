@@ -534,6 +534,59 @@ class CardPaymentServiceTest extends TestCase
         $this->disbaleCpsConfig();
     }
 
+    public function testAuthenticationRetryNotEnrolled()
+    {
+        $this->enableCpsConfig();
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $terminal1 = $this->fixtures->create('terminal:shared_first_data_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+        $terminal2 = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $terminal=[$terminal1,$terminal2];
+
+        $this->ba->privateAuth();
+        $this->mockCardVault();
+
+        $this->mockCps($terminal,"not_enrolled_retry_gateway");
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockCanAuthorizeViaCPS();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $payment
+        ];
+
+        $this->fixtures->merchant->addFeatures(['s2s','auth_split']);
+
+        $response = $this->makeRequestParent($request);
+
+        $targetUrl =$this->getMetaRefreshUrl($response);
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($targetUrl));
+
+        $this->makeRedirectToAuthorize($targetUrl);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals('mpi_blade', $payment['authentication_gateway']);
+        $this->assertEquals('authenticated', $payment['status']);
+        $this->assertEquals('hitachi',$payment['gateway']);
+
+        $this->assertEquals(2, $payment['cps_route']);
+
+    }
+
     public function testAuthorizationWithHeadlessViaCps()
     {
         $this->razorxValue = "cardps";
@@ -1965,6 +2018,36 @@ class CardPaymentServiceTest extends TestCase
         }
     }
 
+    private function mockCpsNotEnrolledRetryGateway($url,$input,$terminal)
+    {
+        switch($url){
+            case 'action/authorize':
+                if (in_array($input['gateway'],Payment\Gateway::$safeRetryGateways) === true){
+                    return [
+                        'data' => null,
+                        'payment' => [
+                        ],
+                        'error' => [
+                            'internal_error_code'       =>"GATEWAY_ERROR_VALIDATION_ERROR",
+                            'gateway_error_code'        =>"400",
+                            'gateway_error_description' =>"GATEWAY_ERROR_VALIDATION_ERROR",
+                            'description'               =>"GATEWAY_ERROR_VALIDATION_ERROR",
+                        ],
+                        'headless' => [
+                            'disable_iin'   => true,
+                        ]
+                    ];
+                } else{
+                    return [
+                        'data' => [
+                            'status' => 'authenticated',
+                        ],
+                    ];
+                }
+        }
+    }
+
+
     protected function mockCpsEmptyAuthCode($url, $input, $terminal)
     {
         $input = $input['input'];
@@ -2110,6 +2193,8 @@ class CardPaymentServiceTest extends TestCase
                         return $this->mockCpsEmptyAuthCode($url, $input, $terminal);
                     case 'not_enrolled_auth_split':
                         return $this->mockCpsNotEnrolledSplit($url, $input, $terminal);
+                    case 'not_enrolled_retry_gateway':
+                        return $this->mockCpsNotEnrolledRetryGateway($url,$input,$terminal);
                 }
             });
 
@@ -2342,5 +2427,11 @@ class CardPaymentServiceTest extends TestCase
         $paymentArray['save'] = 1;
 
         return $paymentArray;
+    }
+
+    protected function mockCanAuthorizeViaCPS(){
+        $processor = \Mockery::mock(Payment\Processor\Processor::class)->makePartial();
+        $this->app->instance('processor.cps',$processor);
+        $processor->shouldReceive('canAuthorizeViaCps')->withAnyArgs()->andReturn(false);
     }
 }

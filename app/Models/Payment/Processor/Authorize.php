@@ -656,6 +656,15 @@ trait Authorize
 
                 $retryAttempts++;
 
+                /* The below condition check is to handle softRetry for certain gateways.
+                The changes will be removed once international is onboarded in the Rearch Flow as it would be handled by the method microservice.
+                */
+                if((in_array($payment->getGateway(), Payment\Gateway::$safeRetryGateways) === true) and
+                   (in_array($internalErrorCode, Exception\GatewayErrorException::$safeRetryErrorCodes) === true))
+                {
+                    $e->markSafeRetryTrue();
+                }
+
                 $retry = $this->logAndCheckForAuthRetry($e, $payment);
 
                 $this->disableIinFlowIfApplicable($payment, $internalErrorCode);

@@ -65,6 +65,19 @@ trait CardPaymentService
             return false;
         }
 
+        //Added app['processor.cps'] to make canAuthorizeViaCps false for testcases as this flow is abandoned in production
+        try
+        {
+            if($this->app['processor.cps']!=null)
+            {
+                return $this->app['processor.cps']->canAuthorizeViaCps($payment);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            return true;
+        }
+
         return true;
     }
 

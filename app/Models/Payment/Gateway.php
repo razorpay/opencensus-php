@@ -2569,6 +2569,15 @@ class Gateway
         Network::DICL
     ];
 
+  /**
+     * Gateways which will be allowed a safeRetry.
+     *
+     * @var array
+     */
+    public static $safeRetryGateways = [
+        Payment\Gateway::FIRST_DATA
+    ];
+
     /**
      * For the banks we have direct tie-ups with,
      * here we list down the mapping from bank to netbanking gateway name.
