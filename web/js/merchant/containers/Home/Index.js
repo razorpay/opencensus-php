@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
@@ -61,7 +60,7 @@ const DATE_RANGE_PRESETS = [
   ['Past 7 Days', -7, 'days'],
   ['Past 30 Days', -30, 'days'],
   ['Past 90 Days', -90, 'days'],
-  ['All Time', -10, 'years'],
+  // ['All Time', -10, 'years'],
 ];
 const defaultPreset = 1;
 

@@ -11,57 +11,45 @@ import {
   groupByPlatform,
   OTHERS,
 } from 'common/utils/pokedex';
-import LocalStorageService from 'common/utils/localStorage';
+import { getItem, setItem, removeItem } from 'common/utils/localStorage';
 import debounce from 'common/utils/debounce';
 import rolesList from 'merchantLA/helpers/permissions/roles-list';
 
 import * as HomeActions from 'merchantLA/reducers/home';
 import { fetch } from 'merchantLA/reducers/pokedex';
 import { fetchTransfers } from 'merchantLA/reducers/collection';
-import {
-  API_ERROR,
-  API_INVALID_RESP,
-  isMobileDevice,
-} from 'merchantLA/components/Home/data';
+import { API_ERROR, API_INVALID_RESP, isMobileDevice } from 'merchantLA/components/Home/data';
 
-import {
-  trackError,
-  trackDatesChange,
-  trackPlatformAnalyticsHidden,
-} from './ga';
+import { trackError, trackDatesChange, trackPlatformAnalyticsHidden } from './ga';
 import Desktop from './Desktop';
 import Mobile from './Mobile';
 
-const dateRangePresets = [
-    ['Past 7 Days', -7, 'days'],
-    ['Past 30 Days', -30, 'days'],
-    ['Past 90 Days', -90, 'days'],
-    ['All Time', -10, 'years'],
-  ],
-  defaultPreset = 1;
+const DATE_RANGE_PRESETS = [
+  ['Past 7 Days', -7, 'days'],
+  ['Past 30 Days', -30, 'days'],
+  ['Past 90 Days', -90, 'days'],
+  // ['All Time', -10, 'years'],
+];
+const defaultPreset = 1;
 
 const getPreviousDates = ({ startDate, endDate }) => {
   const diff = endDate.diff(startDate);
 
   return {
     startDate: startDate.clone().subtract(diff, 'ms'),
-    endDate: endDate
-      .clone()
-      .subtract(1, 'day')
-      .subtract(diff, 'ms')
-      .endOf('day'),
+    endDate: endDate.clone().subtract(1, 'day').subtract(diff, 'ms').endOf('day'),
   };
 };
 
 const bodyClass = ' analytics-v2-active';
 
 // used to show titles for sections and also GA
-const keymetricsSectionTitle = 'Transactions Overview',
-  trafficSectionTitle = 'Traffic split on platforms',
-  recentActivityTitle = 'Recent Activity';
+const keymetricsSectionTitle = 'Transactions Overview';
+const trafficSectionTitle = 'Traffic split on platforms';
+const recentActivityTitle = 'Recent Activity';
 
 @connect(
-  state => {
+  (state) => {
     return {
       user: state.session.user,
       mode: state.session.mode,
@@ -72,7 +60,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
     ...HomeActions,
     showNotification,
     fetchTransfers,
-  }
+  },
 )
 export default class HomeContainer extends Component {
   constructor(props) {
@@ -84,16 +72,16 @@ export default class HomeContainer extends Component {
       window.hj('tagRecording', ['new_analytics']);
     }
 
-    let endDate = moment().endOf('day'),
-      startDate = endDate.clone().startOf('day');
+    const endDate = moment().endOf('day');
+    const startDate = endDate.clone().startOf('day');
 
-    startDate.add(...dateRangePresets[defaultPreset].slice(1));
+    startDate.add(...DATE_RANGE_PRESETS[defaultPreset].slice(1));
 
-    const { user, mode, isAdmin } = props,
-      // onboarding card is shown if this is present in localstorage
-      onboardingCardToken = 'show_onboarding_card',
-      // onboarding card first step is shown if this is present in localstorage
-      firstStepToken = 'onboarding_first_step';
+    const { user, mode } = props;
+    // onboarding card is shown if this is present in localstorage
+    const onboardingCardToken = 'show_onboarding_card';
+    // onboarding card first step is shown if this is present in localstorage
+    const firstStepToken = 'onboarding_first_step';
 
     // tokens particular for the current merchant
     this.onboardingBannerToken = `${onboardingCardToken}--${user.current}`;
@@ -103,33 +91,27 @@ export default class HomeContainer extends Component {
      * Earlier , the tokens apply at browser level, if old tokens are present
      * converting them specific to the merchants the current user can switch to
      */
-    if (LocalStorageService.getItem(onboardingCardToken)) {
-      Object.keys(user.merchants).forEach(key => {
-        LocalStorageService.setItem(`${onboardingCardToken}--${key}`, 'true');
+    if (getItem(onboardingCardToken)) {
+      Object.keys(user.merchants).forEach((key) => {
+        setItem(`${onboardingCardToken}--${key}`, 'true');
       });
 
-      LocalStorageService.removeItem(onboardingCardToken);
+      removeItem(onboardingCardToken);
     }
 
-    if (LocalStorageService.getItem(firstStepToken)) {
-      Object.keys(user.merchants).forEach(key => {
-        LocalStorageService.setItem(`${firstStepToken}--${key}`, 'true');
+    if (getItem(firstStepToken)) {
+      Object.keys(user.merchants).forEach((key) => {
+        setItem(`${firstStepToken}--${key}`, 'true');
       });
 
-      LocalStorageService.removeItem(firstStepToken);
+      removeItem(firstStepToken);
     }
+    this.hasAccessToOnboardingBanner =
+      [rolesList.MANAGER, rolesList.OWNER, rolesList.ADMIN].indexOf(user.role) >= 0;
+    const hasAccessToOnboardingBanner = this.hasAccessToOnboardingBanner;
 
-    const hasAccessToOnboardingBanner = (this.hasAccessToOnboardingBanner =
-      [rolesList.MANAGER, rolesList.OWNER, rolesList.ADMIN].indexOf(
-        user.role
-      ) >= 0);
-
-    const showOnboardingBanner =
-        hasAccessToOnboardingBanner &&
-        LocalStorageService.getItem(this.onboardingBannerToken),
-      showOnboardingBannerFirstStep = LocalStorageService.getItem(
-        this.firstStepToken
-      );
+    const showOnboardingBanner = hasAccessToOnboardingBanner && getItem(this.onboardingBannerToken);
+    const showOnboardingBannerFirstStep = getItem(this.firstStepToken);
 
     this.state = {
       startDate,
@@ -141,7 +123,7 @@ export default class HomeContainer extends Component {
         ...getPreviousDates({ startDate, endDate }),
       },
       isMobile: isMobileDevice(),
-      dateRangePresets,
+      dateRangePresets: DATE_RANGE_PRESETS,
       showGroupingByPtfm: false,
       scrollAmountToStickHeader: 0,
       expandOnboardingBanner: showOnboardingBanner, // used for transition
@@ -172,10 +154,10 @@ export default class HomeContainer extends Component {
           expandOnboardingBanner: true,
         };
 
-        LocalStorageService.setItem(this.onboardingBannerToken, 'true');
-        LocalStorageService.setItem(this.firstStepToken, 'true');
+        setItem(this.onboardingBannerToken, 'true');
+        setItem(this.firstStepToken, 'true');
       } else if (mode !== 'live') {
-        this.props.fetchTransfers({ mode: 'live' }).then(data => {
+        this.props.fetchTransfers({ mode: 'live' }).then((data) => {
           data = data.data;
 
           if (data && data.items && data.items.length === 0) {
@@ -188,9 +170,7 @@ export default class HomeContainer extends Component {
     this.oldestTxnReqId = 0;
     this.onDatesChange = this.onDatesChange.bind(this);
     this.onFetchTransfers = this.onFetchTransfers.bind(this);
-    this.setScrollAmountToStickHeader = this.setScrollAmountToStickHeader.bind(
-      this
-    );
+    this.setScrollAmountToStickHeader = this.setScrollAmountToStickHeader.bind(this);
     this.onHideOnboardingBanner = this.onHideOnboardingBanner.bind(this);
     this.onFirstStepClose = this.onFirstStepClose.bind(this);
     this.onExtraContentMount = this.onExtraContentMount.bind(this);
@@ -205,8 +185,8 @@ export default class HomeContainer extends Component {
     // need to figureout whether we should show group by platform
     // or not
 
-    const { startDate, endDate } = this.state,
-      { isAdmin, analyticsFetch } = this.props;
+    const { startDate, endDate } = this.state;
+    const { isAdmin, analyticsFetch } = this.props;
 
     const query = {
       filters: {
@@ -224,7 +204,7 @@ export default class HomeContainer extends Component {
     };
 
     return (analyticsFetch || fetch)(query, this.props.mode)
-      .then(data => {
+      .then((data) => {
         if (!data.success) {
           return API_ERROR;
         }
@@ -237,12 +217,13 @@ export default class HomeContainer extends Component {
 
         return data;
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
 
         return API_ERROR;
-      })
-      .then(data => {
+      }) /* eslint-disable */
+      .then((data) => {
+        /* eslint-enable */
         if (data.error) {
           trackError(`While Fetching Txns Grouped by Ptfm`);
 
@@ -259,7 +240,7 @@ export default class HomeContainer extends Component {
           // if we do not get platforms for given daterange
           // do not show grouping
           if (platforms.length === 0) {
-            return;
+            return false;
           }
 
           let grandTotal = 0;
@@ -277,7 +258,7 @@ export default class HomeContainer extends Component {
           // if the txn count of platforms for given daterange
           // do not show grouping
           if (grandTotal === 0) {
-            return;
+            return false;
           }
 
           const ratio = (totalByPlatform[OTHERS] || 0) / grandTotal;
@@ -286,7 +267,7 @@ export default class HomeContainer extends Component {
           // do not show grouping
           if (ratio > 0.3) {
             trackPlatformAnalyticsHidden(ratio * 100);
-            return;
+            return false;
           }
         }
 
@@ -303,7 +284,7 @@ export default class HomeContainer extends Component {
 
     const { onFirstTxnDate, analyticsFetch } = this.props;
 
-    var oldestTxnReqId = ++this.oldestTxnReqId;
+    const oldestTxnReqId = ++this.oldestTxnReqId;
 
     oldestTransactionDate = { ...oldestTransactionDate };
 
@@ -315,7 +296,7 @@ export default class HomeContainer extends Component {
     });
 
     return (analyticsFetch || fetch)(oldestTransactionQuery, this.props.mode)
-      .then(data => {
+      .then((data) => {
         if (oldestTxnReqId !== this.oldestTxnReqId) {
           return null;
         }
@@ -328,17 +309,17 @@ export default class HomeContainer extends Component {
           return API_INVALID_RESP;
         }
 
-        const records = data.data.records.result[0],
-          value = records && records.created_at;
+        const records = data.data.records.result[0];
+        const value = records && records.created_at;
 
         return { value };
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
 
         return API_ERROR;
       })
-      .then(data => {
+      .then((data) => {
         oldestTransactionDate.loading = false;
 
         if (!data || data.error) {
@@ -361,8 +342,8 @@ export default class HomeContainer extends Component {
           return onFirstTxnDate && onFirstTxnDate();
         }
 
-        const presetsLastIndex = dateRangePresets.length - 1,
-          presetsLastItem = dateRangePresets[presetsLastIndex];
+        const presetsLastIndex = dateRangePresets.length - 1;
+        const presetsLastItem = dateRangePresets[presetsLastIndex];
 
         // updates All Time present in daterange picker
         dateRangePresets = [...dateRangePresets];
@@ -417,9 +398,7 @@ export default class HomeContainer extends Component {
   }
 
   setScrollAmountToStickHeader() {
-    const scrollAmountToStickHeader = this.extraContent
-      ? this.extraContent.clientHeight
-      : 0;
+    const scrollAmountToStickHeader = this.extraContent ? this.extraContent.clientHeight : 0;
 
     this.setState({ scrollAmountToStickHeader });
   }
@@ -448,10 +427,10 @@ export default class HomeContainer extends Component {
         // adjusting the scroll amount when the datepicker bar should stick
         // on top of the page
         this.setScrollAmountToStickHeader();
-      }
+      },
     );
 
-    LocalStorageService.removeItem(this.firstStepToken);
+    removeItem(this.firstStepToken);
   }
 
   onHideOnboardingBanner() {
@@ -465,10 +444,10 @@ export default class HomeContainer extends Component {
         });
 
         this.setScrollAmountToStickHeader();
-      }
+      },
     );
 
-    LocalStorageService.removeItem(this.onboardingBannerToken);
+    removeItem(this.onboardingBannerToken);
   }
 
   setShowOnboardingBanner() {
@@ -484,13 +463,13 @@ export default class HomeContainer extends Component {
           },
           () => {
             this.setScrollAmountToStickHeader();
-          }
+          },
         );
-      }
+      },
     );
 
-    LocalStorageService.setItem(this.onboardingBannerToken, 'true');
-    LocalStorageService.setItem(this.firstStepToken, 'true');
+    setItem(this.onboardingBannerToken, 'true');
+    setItem(this.firstStepToken, 'true');
   }
 
   onFetchTransfers(data) {
@@ -512,18 +491,14 @@ export default class HomeContainer extends Component {
      * we use it to show the banner , if there are no trasaction
      */
     if (user.isActivated && mode === 'live') {
-      if (
-        this.hasAccessToOnboardingBanner &&
-        !this.state.showOnboardingBanner &&
-        items.length === 0
-      ) {
+      if (this.hasAccessToOnboardingBanner && !showOnboardingBanner && items.length === 0) {
         this.setShowOnboardingBanner();
       }
     }
   }
 
   render() {
-    let {
+    const {
       mode,
       current_balance,
       tabsMeta,
