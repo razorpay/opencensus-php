@@ -25,6 +25,8 @@ COPY --chown=nginx:nginx . /app/
 # This step can't run without some classes from above step
 RUN composer dump-autoload && php artisan optimize
 
+STOPSIGNAL SIGQUIT
+
 EXPOSE 80
 
 ENTRYPOINT ["/app/dockerconf/entrypoint.sh"]

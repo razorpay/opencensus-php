@@ -30,4 +30,6 @@ RUN composer dump-autoload && php artisan optimize
 
 EXPOSE 80
 
+STOPSIGNAL SIGQUIT
+
 ENTRYPOINT ["/app/dockerconf/entrypoint.sh"]
