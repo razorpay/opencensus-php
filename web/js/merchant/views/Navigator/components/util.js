@@ -244,37 +244,78 @@ const walletPrameter = [
   },
 ];
 
-const emiDurationParameter = getExpStatus('optimizer_emi_duration')
+const emiDurationParameter = [
+  {
+    name: 'EMI Duration',
+    value: '$payment.optimizer_emi_duration',
+    description: 'In months',
+    id: 13,
+    values: [
+      {
+        value: '3',
+      },
+      {
+        value: '6',
+      },
+      {
+        value: '9',
+      },
+      {
+        value: '12',
+      },
+      {
+        value: '15',
+      },
+      {
+        value: '18',
+      },
+      {
+        value: '24',
+      },
+      {
+        value: '36',
+      },
+    ],
+    operators: {
+      '==': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      '>': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      '<': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      '>=': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      '<=': {
+        multiple: false,
+        type: 'dropdown',
+      },
+    },
+    type: 'numeric',
+  },
+];
+
+// using the same experiment created for emi as it is enabled and not required for emi now.
+const internationalParameter = getExpStatus('optimizer_emi_duration')
   ? [
       {
-        name: 'EMI Duration',
-        value: '$payment.optimizer_emi_duration',
-        description: 'In months',
-        id: 13,
+        name: 'International',
+        value: '$payment.optimizer_international',
+        description: 'International payment',
+        id: 15,
         values: [
           {
-            value: '3',
+            value: 'true',
           },
           {
-            value: '6',
-          },
-          {
-            value: '9',
-          },
-          {
-            value: '12',
-          },
-          {
-            value: '15',
-          },
-          {
-            value: '18',
-          },
-          {
-            value: '24',
-          },
-          {
-            value: '36',
+            value: 'false',
           },
         ],
         operators: {
@@ -282,29 +323,15 @@ const emiDurationParameter = getExpStatus('optimizer_emi_duration')
             multiple: false,
             type: 'dropdown',
           },
-          '>': {
-            multiple: false,
-            type: 'dropdown',
-          },
-          '<': {
-            multiple: false,
-            type: 'dropdown',
-          },
-          '>=': {
-            multiple: false,
-            type: 'dropdown',
-          },
-          '<=': {
+          '!=': {
             multiple: false,
             type: 'dropdown',
           },
         },
-        type: 'numeric',
+        type: 'boolean',
       },
     ]
   : [];
-
-const emiMethod = getExpStatus('optimizer_emi_duration') ? [{ value: 'emi' }] : [];
 
 export const parameters = [
   {
@@ -360,7 +387,9 @@ export const parameters = [
       {
         value: 'wallet',
       },
-      ...emiMethod,
+      {
+        value: 'emi',
+      },
     ],
     operators: {
       '==': {
@@ -710,6 +739,7 @@ export const parameters = [
   ...customIdentifierParameter,
   ...emiDurationParameter,
   ...walletPrameter,
+  ...internationalParameter,
 ];
 export const PROVIDERS = [
   { name: 'Smart Router1', id: 1, value: 'smartrouter' },

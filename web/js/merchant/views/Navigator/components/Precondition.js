@@ -1,18 +1,6 @@
-import { connect } from 'react-redux';
-import { Route, Switch, NavLink } from 'react-router-dom';
-import { Fragment } from 'react';
-import Input, { Description, Label } from 'common/new-ui/Input';
-import Field, {
-  TextAreaField,
-  SwitchField,
-  SelectField,
-  SearchableSelectField,
-} from 'razorx/components/ui/Field';
-import { PowerSelect } from 'react-power-select';
-
-import { titleCase, deepClone } from 'common/utils/rzp-utils';
+import React from 'react';
+import { deepClone } from 'common/utils/rzp-utils';
 import Select from './Select';
-import SelectConfig from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectConfig';
 import Expression from './Expression';
 import { isExpressionValid, logical_operators } from './util';
 import { Operand } from '../models/Operand';
@@ -42,6 +30,7 @@ export default class Precondition extends React.Component {
         type: 'logical',
       };
     }
+    // eslint-disable-next-line react/no-unused-state
     this.setState({ precondition }, () => {
       this.props.update(precondition);
     });
@@ -71,6 +60,7 @@ export default class Precondition extends React.Component {
             }, 200);
           }
         }}
+        // eslint-disable-next-line no-shadow
         update={(expression) => {
           let precondition = { ...this.props.precondition };
           if (precondition.type === 'logical') {
@@ -106,7 +96,7 @@ export default class Precondition extends React.Component {
             }`}
           >
             <div className="row">
-              <div className="col-xs-12" style={{ paddingRight: 0 }}>
+              <div className="col-xs-12" style={{ paddingRight: 0, paddingLeft: 0 }}>
                 {this.props.precondition.type == 'logical'
                   ? this.props.precondition.operands.map((p, index) => {
                       return this.getExp(p, index);
@@ -123,6 +113,7 @@ export default class Precondition extends React.Component {
                     <div
                       style={{ height: '54px' }}
                       class={this.props.precondition.type == 'logical' ? 'expression-row-end' : ''}
+                      key={index}
                     />
                   );
                 })
@@ -148,7 +139,7 @@ export default class Precondition extends React.Component {
                   options={logical_operators}
                   select={(values) => {
                     const value = values.map((v) => v.value).join(',');
-                    let precondition = { ...this.props.precondition };
+                    const precondition = { ...this.props.precondition };
                     precondition.value = value;
                     if (this.props.update) {
                       this.props.update(precondition);
