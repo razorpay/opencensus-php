@@ -3,8 +3,12 @@ import qs from 'query-string';
 
 const LogoutDialog = ({ user }) => {
   const sendLjData = (state, event) => {
-    let utm, gclid, browserDetails, source;
-    const mode = localStorage.getItem(`rzp_mode--${user.id}`);
+    let utm, gclid, browserDetails, source, mode;
+    try {
+      mode = localStorage.getItem(`rzp_mode--${user?.id}`);
+    } catch (e) {
+      // ignore silently
+    }
     const query = qs.parse(window.location.search);
 
     if (query.merchant) {
@@ -19,10 +23,10 @@ const LogoutDialog = ({ user }) => {
     }
 
     const properties = {
-      email_id: user.user.email,
-      user_id: user.user.id,
-      mid: user.current,
-      user_role: user.role,
+      email_id: user?.user?.email,
+      user_id: user?.user?.id,
+      mid: user?.current,
+      user_role: user?.role,
       component: 'Session expire',
       utm_params: utm,
       gclid,
