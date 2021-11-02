@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 export default ({ line_items }) => {
-  const [isSkuCollapsed, setSkuCollapsed] = useState(true);
+  const [isSkuCollapsed, setSkuCollapsed] = useState(false);
   const [skuList, setSkuList] = useState([]);
 
   /**
@@ -16,7 +16,7 @@ export default ({ line_items }) => {
         list.push(line_items.slice(index, index + 3));
       }
     } else {
-      list = [line_items.splice(0, 3)];
+      list = [line_items.slice(0, 3)];
     }
     setSkuList(list);
   }, [isSkuCollapsed, line_items]);
@@ -29,21 +29,23 @@ export default ({ line_items }) => {
             <div key={index}>{row.map((item) => item.sku).join(',')}</div>
           ))}
       </div>
-      <button
-        type="button"
-        class="super-checkout-collapse-btn"
-        onClick={(_) => setSkuCollapsed((visible) => !visible)}
-      >
-        {isSkuCollapsed ? (
-          <span>
-            <i class="i i-chevron-up" />
-          </span>
-        ) : (
-          <span>
-            <i class="i i-chevron-down" />
-          </span>
-        )}
-      </button>
+      {skuList.length > 3 && (
+        <button
+          type="button"
+          class="super-checkout-collapse-btn"
+          onClick={(_) => setSkuCollapsed((visible) => !visible)}
+        >
+          {isSkuCollapsed ? (
+            <span>
+              <i class="i i-chevron-up" />
+            </span>
+          ) : (
+            <span>
+              <i class="i i-chevron-down" />
+            </span>
+          )}
+        </button>
+      )}
     </div>
   );
 };

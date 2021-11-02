@@ -109,7 +109,7 @@ export default (props) => {
             <div class="panel-body">
               <EntityDetailRow label="Customer Details">
                 {order.customer_details ? (
-                  <Definition customClass="notes">
+                  <Definition>
                     {order.customer_details?.contact}
                     {order.customer_details?.email}
                   </Definition>
@@ -119,13 +119,12 @@ export default (props) => {
               </EntityDetailRow>
               <EntityDetailRow label="Shipping Address">
                 {order.customer_details ? (
-                  <Definition customClass="notes">
+                  <Definition>
                     {order.customer_details?.shipping_address?.name}
-                    {`${order.customer_details?.shipping_address?.line1}
-                          ${order.customer_details?.shipping_address?.line2}
-                          ${order.customer_details?.shipping_address?.city},${order.customer_details?.shipping_address?.state}-${order.customer_details?.shipping_address?.zipcode}
-                          Phone Number: ${order.customer_details?.shipping_address?.conatct}
-                        `}
+                    {order.customer_details?.shipping_address?.line1}
+                    {order.customer_details?.shipping_address?.line2}
+                    {`${order.customer_details?.shipping_address?.city},${order.customer_details?.shipping_address?.state}-${order.customer_details?.shipping_address?.zipcode}`}
+                    {`Phone Number: ${order.customer_details?.shipping_address?.contact}`}
                   </Definition>
                 ) : (
                   '--'
@@ -133,13 +132,12 @@ export default (props) => {
               </EntityDetailRow>
               <EntityDetailRow label="Billing Address">
                 {order.customer_details ? (
-                  <Definition customClass="notes">
+                  <Definition>
                     {order.customer_details?.billing_address?.name}
-                    {`${order.customer_details?.billing_address?.line1}
-                          ${order.customer_details?.billing_address?.line2}
-                          ${order.customer_details?.billing_address?.city},${order.customer_details?.billing_address?.state}-${order.customer_details?.billing_address?.zipcode}
-                          Phone Number: ${order.customer_details?.billing_address?.conatct}
-                        `}
+                    {order.customer_details?.billing_address?.line1}
+                    {order.customer_details?.billing_address?.line2}
+                    {`${order.customer_details?.billing_address?.city},${order.customer_details?.billing_address?.state}-${order.customer_details?.billing_address?.zipcode}`}
+                    {`Phone Number: ${order.customer_details?.billing_address?.contact}`}
                   </Definition>
                 ) : (
                   '--'

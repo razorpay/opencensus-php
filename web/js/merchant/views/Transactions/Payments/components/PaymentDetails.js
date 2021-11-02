@@ -188,14 +188,16 @@ function PaymentDetails(props) {
                   </EntityDetailRow>
                 </ShowWhen>
 
-                <EntityDetailRow label="Refunds">
-                  <PaymentRefund
-                    payment={payment}
-                    refunds={refunds}
-                    openRefundModal={openRefundModal}
-                    onToggleClick={onRefundDetailsToggleClick}
-                  />
-                </EntityDetailRow>
+                {payment.method !== 'cod' && (
+                  <EntityDetailRow label="Refunds">
+                    <PaymentRefund
+                      payment={payment}
+                      refunds={refunds}
+                      openRefundModal={openRefundModal}
+                      onToggleClick={onRefundDetailsToggleClick}
+                    />
+                  </EntityDetailRow>
+                )}
 
                 <EntityDetailRow label="Payment Method">
                   <PaymentMethod

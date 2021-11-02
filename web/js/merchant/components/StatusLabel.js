@@ -48,12 +48,10 @@ export const orderStatusMap = {
   attempted: 'label-info',
   paid: 'label-success',
   placed: 'label-success',
-  pending: 'label-pending',
 };
 
 export const orderStatusDescMap = {
   placed: 'order is placed via COD',
-  pending: 'order is placed via COD',
 };
 
 export const paymentStatusMap = {
@@ -62,6 +60,11 @@ export const paymentStatusMap = {
   captured: 'label-success',
   failed: 'label-danger',
   refunded: 'bg-primary',
+  pending: 'label-pending',
+};
+
+export const paymentStatusDescMap = {
+  pending: 'order is placed via COD',
 };
 
 export const refundStatusMap = {
@@ -214,7 +217,7 @@ export const InvoiceStatusLabel = statusLabel(invoiceStatusMap);
 export const PaymentPagesStatusLabel = statusLabel(paymentPagesStatusMap);
 export const RouteTransfersStatusLabel = statusLabel(routeTransfersStatusMap);
 export const OrderStatusLabel = statusLabel(orderStatusMap, orderStatusDescMap);
-export const PaymentStatusLabel = statusLabel(paymentStatusMap);
+export const PaymentStatusLabel = statusLabel(paymentStatusMap, paymentStatusDescMap);
 export const SettlementStatusLabel = statusLabel(settlementStatusMap);
 export const BatchUploadStatusLabel = statusLabel(batchUploadStatusMap);
 export const VirtualAccountStatusLabel = statusLabel(virtualAccountStatusMap);

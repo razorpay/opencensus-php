@@ -214,6 +214,12 @@ export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {} }) => 
         <span>Application</span>
       </Definition>
     );
+  } else if (paymentMethod === 'cod') {
+    el = (
+      <Definition>
+        <span>Cash on Delivery</span>
+      </Definition>
+    );
   } else if (paymentMethod === 'unselected') {
     el = (
       <Definition>

@@ -30,19 +30,19 @@ export default ({ order }) => {
           <div class="super-checkout-row">
             <div>Order Amount</div>
             <div>
-              <Amount value={order.amount} currency={order.currency} />
+              <Amount value={order.line_items_total} currency={order.currency} />
             </div>
           </div>
-          <div class="super-checkout-row">
+          {/* <div class="super-checkout-row">
             <div>COD Charges</div>
             <div>
-              + <Amount value={order.cod_fee} currency={order.currency} />
+              + <Amount value={order.cod_fee || 0} currency={order.currency} />
             </div>
-          </div>
+          </div> */}
           <div class="super-checkout-row">
             <div>Shipping Charges</div>
             <div>
-              + <Amount value={order.shipping_fee} currency={order.currency} />
+              + <Amount value={order.shipping_fee || 0} currency={order.currency} />
             </div>
           </div>
           {order.promotions?.length > 0 && (
