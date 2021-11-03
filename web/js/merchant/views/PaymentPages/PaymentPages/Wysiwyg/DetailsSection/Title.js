@@ -59,6 +59,7 @@ export default class extends React.Component {
   render() {
     const ele = document.body.querySelector('#title textarea[name="title"]');
     const hasVal = ele ? ele.value : this.props.title;
+    const { isPPDonationGoalTracker } = this.props;
 
     return (
       <div id="title" class={classList('title title--big', !hasVal && 'Input-highlight')}>
@@ -86,7 +87,7 @@ export default class extends React.Component {
           }}
           onBlur={callTrackers()}
         />
-        <div class="title-underline" />
+        {!isPPDonationGoalTracker && <div class="title-underline" />}
       </div>
     );
   }

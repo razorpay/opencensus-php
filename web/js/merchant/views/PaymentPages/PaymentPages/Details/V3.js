@@ -1,8 +1,8 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
-import { updatePPInReduxList } from 'merchant/reducers/invoices/list';
 import { classList } from 'common/utils/rzp-utils';
 
 import TestModeBanner from 'merchant/components/TestModeBanner';
@@ -13,7 +13,6 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Time from 'common/ui/Time';
 import Amount from 'common/ui/Amount';
 import CopyLink from 'merchant/components/CopyLink';
-import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { addPollInstance, saveReportConfigs } from 'merchant/reducers/reports';
@@ -37,6 +36,9 @@ import PaymentsList from './PaymentsList';
 import Button from 'common/new-ui/Button';
 import Tooltip from 'common/ui/Tooltip';
 import DropdownSettings from './DropdownSettings';
+import DonationGoalTrackerPreview from '../Wysiwyg/DetailsSection/DonationGoalTrackerPreview';
+import moment from 'moment';
+import { parseGoalTrackerAmountValues } from '../Wysiwyg/DetailsSection/helpers';
 
 // import mockPaymentPage from '../../Wysiwyg/data-mock';
 
@@ -130,6 +132,7 @@ export default class PaymentPagesV3Entity extends React.Component {
         message: 'Your report will download shortly',
       });
 
+      // eslint-disable-next-line consistent-return
       promise.then((data) => {
         this.setState({
           isExportInProgress: false,
@@ -159,7 +162,7 @@ export default class PaymentPagesV3Entity extends React.Component {
         <CreateEmbedButton
           id={this.props.paymentPageEntity.id}
           handleClose={this.props.closeModal}
-          trackerFn={function () {}}
+          trackerFn={noop}
           url={this.props.paymentPageEntity.short_url}
           color={this.props.merchantColor}
         />
@@ -219,30 +222,23 @@ export default class PaymentPagesV3Entity extends React.Component {
   };
 
   render() {
-    let {
+    const {
       createdByUser,
       paymentPageEntity,
       editPaymentPage,
       toggleManualActivation,
       reActivateLink,
-      reportConfigs,
-      isMobileResolution,
     } = this.props;
 
     // paymentPageEntity = mockPaymentPage;
 
     const isRoleAllowedEdit = this.props.user.isAllowedEdit('payment_pages');
 
-    let status = paymentPageEntity.status;
-    let statusReason = paymentPageEntity.status_reason;
+    const status = paymentPageEntity.status;
+    const statusReason = paymentPageEntity.status_reason;
 
     const isActive = status === 'active';
     const isExpired = !isActive && statusReason.toLowerCase() === 'expired';
-
-    const isCompleted = !isActive && statusReason.toLowerCase() === 'completed';
-
-    const isSmsOrEmailSent =
-      paymentPageEntity.sms_status === 'sent' || paymentPageEntity.email_status === 'sent';
 
     return (
       <React.Fragment>
@@ -388,6 +384,19 @@ export default class PaymentPagesV3Entity extends React.Component {
               </div>
 
               <div class="item-details">
+                {this.props.user.isPPDonationGoalTracker &&
+                  paymentPageEntity.settings.goal_tracker &&
+                  paymentPageEntity.settings.goal_tracker.is_active === '1' && (
+                    <DonationGoalTrackerPreview
+                      {...paymentPageEntity.settings.goal_tracker}
+                      meta_data={parseGoalTrackerAmountValues(
+                        paymentPageEntity.settings.goal_tracker.meta_data,
+                      )}
+                      endDate={moment.unix(
+                        paymentPageEntity.settings.goal_tracker.meta_data.goal_end_timestamp,
+                      )}
+                    />
+                  )}
                 <table>
                   <tbody>
                     {paymentPageEntity.payment_page_items.map((pi, ix) => (
@@ -435,7 +444,9 @@ export default class PaymentPagesV3Entity extends React.Component {
           <button
             type="button"
             class="btn-primary btn-sm panel-collapser"
-            onClick={(_) => this.setState({ detailsCollapse: !this.state.detailsCollapse })}
+            onClick={() =>
+              this.setState((prevState) => ({ detailsCollapse: !prevState.detailsCollapse }))
+            }
           >
             {this.state.detailsCollapse ? (
               <span>
@@ -493,3 +504,5 @@ export default class PaymentPagesV3Entity extends React.Component {
     );
   }
 }
+
+function noop() {}

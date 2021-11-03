@@ -212,6 +212,26 @@ function _track() {
         sendToLumberjack('description.video_upload.fail', { video_url });
         sendToSegment('description video upload', 'fail', { video_url });
       },
+      addGoalTrackerBtn: () => {
+        sendToLumberjack('goal_tracker.add_button');
+        sendToSegment('goal tracker', 'add button');
+      },
+      addGoalTrackerBtnType: (type) => {
+        sendToLumberjack('goal_tracker.add_button_type', { type });
+        sendToSegment('goal tracker', 'add button type', { type });
+      },
+      saveGoalTracker: (isExisting) => {
+        sendToLumberjack('goal_tracker.save_button', { is_new: !isExisting ? '1' : '0' });
+        sendToSegment('goal tracker', 'save button', { is_new: !isExisting ? '1' : '0' });
+      },
+      editGoalTrackerBtn: (isExisting) => {
+        sendToLumberjack('goal_tracker.edit_button', { is_new: !isExisting ? '1' : '0' });
+        sendToSegment('goal tracker', 'edit button', { is_new: !isExisting ? '1' : '0' });
+      },
+      deleteGoalTracker: (isExisting) => {
+        sendToLumberjack('goal_tracker.delete_button', { is_new: !isExisting ? '1' : '0' });
+        sendToSegment('goal tracker', 'delete button', { is_new: !isExisting ? '1' : '0' });
+      },
     },
 
     init(_lumberjackTrack, _config) {

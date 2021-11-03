@@ -6,6 +6,7 @@ import Description from './Description';
 import Share from './Share';
 import Support from './Support';
 import Terms from './Terms';
+import DonationGoalTracker from './DonationGoalTracker';
 
 @connect(
   (state) => ({
@@ -30,7 +31,7 @@ export default class View extends React.PureComponent {
       [name]: value,
     };
 
-    if (['allow_social_share'].indexOf(target.name) > -1) {
+    if (['allow_social_share', 'goal_tracker'].indexOf(target.name) > -1) {
       // Fields with settings
       this.props.updateData({ settings: { ...dataToUpdate } });
     } else {
@@ -58,13 +59,20 @@ export default class View extends React.PureComponent {
     const settings = paymentPageEntity.settings || {};
 
     return (
-      <React.Fragment>
+      <div className="details-container">
         <div id="description-details">
           <Title
             title={paymentPageEntity.title}
             key={paymentPageEntity.id ? `${paymentPageEntity.id}-title` : 'title'}
             updateData={this.updateData}
+            isPPDonationGoalTracker={user.isPPDonationGoalTracker}
           />
+          {user.isPPDonationGoalTracker && (
+            <DonationGoalTracker
+              goal_tracker={paymentPageEntity.settings.goal_tracker}
+              updateData={this.updateData}
+            />
+          )}
           <Description
             description={paymentPageEntity.description}
             isPageDirty={isPageDirty}
@@ -89,7 +97,7 @@ export default class View extends React.PureComponent {
           updateData={this.updateData}
           isPPNewFooterUX={user.isPPNewFooterUX}
         />
-      </React.Fragment>
+      </div>
     );
   }
 }

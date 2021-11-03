@@ -33,6 +33,11 @@
       line-height: 18px
       margin-top: 12px
 
+  // added to styling bug due to confirm modal empty divs
+  .details-container
+    > div
+      margin-bottom: 40px
+
 .TemplateCard
   border-radius: 4px
   background: #fff
@@ -505,7 +510,7 @@
       white-space: inherit
 
       #description
-        margin: 24px -6px 0
+        margin: 24px 0px 0px
 
     label
       display: inherit
@@ -553,7 +558,7 @@
 
     .title--big
       .Input
-        margin-bottom: -16px
+        margin: -4px 0px -16px; // avoid left, right spacing, for alignment between sections
 
       .Input-el
         min-height: 42px
@@ -899,3 +904,266 @@
 
     #details-view, #header-details
       width: 45%
+
+// goal tracker main container
+.paymentpage-container-goal-tracker
+  .rzp-tooltip-donation-tracking
+    margin-top: 10px
+    
+    .rzp-tooltip-title
+      font-weight: 700
+      margin-bottom: 4px
+
+  .btn-goal-tracker
+    margin-top: 24px
+    text-decoration: none
+  
+  .bg-success
+    background: #1F890E
+    border-radius: 2px
+    font-weight: bold
+    font-size: 10px
+    line-height: 12px
+
+  .FieldsDropdown--goal-tracker
+    .OptionsDropdown-list
+      min-height: 170px !important
+      width: 240px
+      margin-top: -12px
+      top: 0%
+
+      .OptionsDropdown-item
+        line-height: 18px;
+
+        i
+          min-width: 20px
+
+    .OptionsDropdown-item--short-description
+      font-size: 10px
+      color: #515978
+      margin-left: 30px;
+      display: inline-block;
+      line-height: 16px;
+
+    .info
+      margin-top: -12px;
+      bottom: unset !important
+      left: 235px
+      z-index: 2
+      height: 170px !important;
+      min-height: 170px !important;
+
+  #goal-tracker-details.is-active
+    margin: 0px -12px;
+    position: relative;
+    padding: 1px 0px;
+
+    &:hover
+      box-shadow: 2px 4px 12px rgba(23, 31, 37, 0.25);
+      border-radius: 4px;
+      padding: 1px 0px 18px;
+
+      .goal-tracker--main
+        margin: 12px;
+
+      .goal--tracker-action-buttons
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        position: absolute;
+        bottom: 5px;
+        right: 10px;
+
+  // Goal Tracker Preview
+  .Modal-container--goal-tracker-preview
+    width: 416px;
+    transform: none
+
+  // Goal tracker create/edit modal
+  .Modal-container--goal-tracker
+    width: 375px;
+    // transform: none
+    transform: translate(0%, -25%)
+    overflow: visible
+
+    .main-title
+      font-weight: bold;
+      padding: 16px 24px;
+      font-size: 18px;
+
+    .end-date-picker 
+      padding-top: 8px
+      
+      & > .Input-content
+        display: flex
+
+        & > div.Input
+          & > .Input-content
+            margin-right: 12px
+      
+        .Input-elWrapper
+          width: 100% !important
+
+    .modal-section
+      padding: 12px 0px
+
+      &:last-child
+        padding: 0px 0px 12px
+
+      .Input-desc
+        font-size: 12px
+
+    .Input--custom
+      padding-left: 26px;
+
+      &:before
+        left: 7px;
+
+      .Input--stock-limit
+        margin-left: 24px
+
+        input
+          max-width: 175px
+
+    form
+      padding: 0px 24px
+
+      .Input
+        margin: 0px !important
+
+      .supporter-checkbox
+        margin-top: 12px !important
+
+      .Input-el
+        background: #fff !important
+        border: 1px solid #e2e2e2 !important
+      
+      .Input-label
+        margin-bottom: 8px
+
+    footer
+      padding: 16px 24px;
+      background: #f6f6f6;
+      border-top: 1px solid #e0e0e0;
+      text-align: right;
+
+      .Button--transparent
+        padding: 8px 20px;
+      
+      .Button--primary
+        margin-right: 0px;
+
+  .goal-tracker--blank-preview
+    min-height: 100px
+
+  .goal--tracker-action-buttons
+    display: none
+    text-align: right
+
+    .Button--transparent
+      text-transform: uppercase;
+      font-weight: bold;
+      color: #2b83ea;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+
+      .i-edit-outline
+        margin-right: 5px;
+        padding-bottom: 2px;
+        border-bottom: 1px solid #2b83ea;
+
+      .i-delete-outline
+        margin-right: 5px;
+    
+    .vertical-divider
+      height: 0px;
+      width: 18px;
+      border: 1px solid #58666e;
+      transform: rotate(90deg);
+  
+  .goal-tracker--main
+    margin: 12px;
+    background: rgba(11, 112, 231, 0.05) !important;
+    border-radius: 3px !important;
+    border: 1.4px solid #E7F1FD !important;
+
+// amount based modal (create/edit/details)
+.goal-tracker--amount-based
+  color: #515978
+  padding: 12px
+  background: none !important;
+  border: 0px !important;
+
+  .goal-tracker--amount-based-top
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 20px;
+    color: #515978;
+
+    span
+      color: #1B226A;
+      font-weight: bold;
+      font-size: 16px;
+      line-height: 24px;
+
+  .goal-tracker--amount-based-bottom
+    display: flex
+    color: #2B4486;
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 20px;
+    justify-content: space-between;
+
+    .goal-tracker--supporter-count
+      margin-right: 32px
+
+  footer
+    right: 60px;
+
+// supporter based modal (create/edit/details)
+.goal-tracker--supporter-based
+  padding: 12px
+  background: none !important;
+  border: 0px !important;
+
+  &.goal-tracker--supporter-based-noslider
+    min-height: 75px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+
+    .goal-tracker--supporter-based-bottom
+      justify-content: flex-start
+
+      .goal-tracker--supporter-count, .goal-tracker--sold-count
+        margin-right: 32px
+
+  .support-common-error
+    margin-bottom: 12px;
+    margin-top: -4px;
+
+  .goal-tracker--supporter-based-top
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 20px;
+    color: #515978;
+
+    span
+      font-size: 16px;
+      line-height: 24px;
+      font-weight: bold;
+      color: #1B226A;
+
+  .goal-tracker--supporter-based-bottom
+    display: flex
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 20px;
+    color: #2B4486;
+    justify-content: space-between;
+
+    .goal-tracker--sold-count
+      span
+        font-weight: bold;
+        color: #1B226A;

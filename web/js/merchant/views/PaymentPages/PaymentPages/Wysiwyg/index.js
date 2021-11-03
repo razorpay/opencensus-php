@@ -545,6 +545,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         pp_fb_event_add_to_cart_enabled: settings.pp_fb_event_add_to_cart_enabled,
         pp_fb_event_initiate_payment_enabled: settings.pp_fb_event_initiate_payment_enabled,
         pp_fb_event_payment_complete_enabled: settings.pp_fb_event_payment_complete_enabled,
+        goal_tracker: settings.goal_tracker ? pruneGoalTracker(settings.goal_tracker) : undefined,
       },
       slug,
     };
@@ -815,7 +816,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     return (
       <div
         id="paymentpage-container"
-        class="payment-pages-v2 payment-pages-v3 desktop-view"
+        class={`payment-pages-v2 payment-pages-v3 desktop-view ${
+          user.isPPDonationGoalTracker ? 'paymentpage-container-goal-tracker' : ''
+        }`}
         style={{ backgroundColor: themeColor }}
       >
         {this.state.isTemplatesViewOpened && (
@@ -884,3 +887,22 @@ const Header = ({ title, actionBtns, handleClose, isPageReady, children }) => {
 };
 
 function noop() {}
+
+function pruneGoalTracker(goal_tracker) {
+  const newGoalTracker = { ...goal_tracker };
+  if (newGoalTracker.meta_data) {
+    if (newGoalTracker.meta_data.hasOwnProperty('sold_units')) {
+      delete newGoalTracker.meta_data.sold_units;
+    }
+    if (newGoalTracker.meta_data.hasOwnProperty('supporter_count')) {
+      delete newGoalTracker.meta_data.supporter_count;
+    }
+    if (newGoalTracker.meta_data.hasOwnProperty('collected_amount')) {
+      delete newGoalTracker.meta_data.collected_amount;
+    }
+    if (newGoalTracker.meta_data.hasOwnProperty('goal_end_timestamp_formatted')) {
+      delete newGoalTracker.meta_data.goal_end_timestamp_formatted;
+    }
+  }
+  return newGoalTracker;
+}

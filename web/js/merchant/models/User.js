@@ -608,6 +608,10 @@ export default class User {
     return this.getExpStatus('pp_hostedpage_new_footer');
   }
 
+  get isPPDonationGoalTracker() {
+    return this.getExpStatus('pp_donation_goal_tracker');
+  }
+
   /* Check case-insensitive tag check existence */
   findTag(tag) {
     return this.tags.some((t) => t.toLowerCase() === tag.toLowerCase());
