@@ -30,6 +30,7 @@ class Batch extends Job
     public function __construct(string $mode, string $id, string $type = null, array $params = [])
     {
         parent::__construct($mode);
+        parent::setPassportTokenForJobs();
 
         $this->id     = $id;
         $this->params = $params;
