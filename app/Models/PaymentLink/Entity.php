@@ -51,6 +51,7 @@ class Entity extends Base\PublicEntity
 
     const VIEW_TYPE_BUTTON     = 'button';
     const VIEW_TYPE_PAGE       = 'page';
+    const VIEW_TYPE_STORE      = 'store';
 
     /**
      * Optional attribute: allows a custom view template ID to be defined

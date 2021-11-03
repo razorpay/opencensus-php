@@ -994,7 +994,8 @@ class Core extends Base\Core
             $paymentPageItem->saveOrFail();
         }
 
-        if ($paymentLink->isTimesPayableExhausted() === true)
+        if (($paymentLink->isTimesPayableExhausted() === true) and
+            ($paymentLink->getViewType() !== Entity::VIEW_TYPE_STORE))
         {
             $this->changeStatus($paymentLink, Status::INACTIVE, StatusReason::COMPLETED);
         }

@@ -38,7 +38,7 @@ class Core extends Base\Core
 
         $this->entityRepo      = $this->repo->store;
 
-        $this->elfin = $this->app['elfin'];
+        $this->elfin           = $this->app['elfin'];
     }
 
     /**
