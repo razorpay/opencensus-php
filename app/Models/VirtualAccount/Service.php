@@ -17,6 +17,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\Settings;
+use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\BankTransfer;
 use RZP\Base\ConnectionType;
@@ -50,7 +51,8 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
-        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CREATE_REQUEST, $input);
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CREATE_REQUEST,
+                           $this->removePiiForLogging($input));
 
         $this->verifyMerchantCategory();
 
@@ -1101,5 +1103,30 @@ class Service extends Base\Service
         );
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ALLOWED_PAYER_DELETED);
 
+    }
+
+    public function removePiiForLogging(array $input)
+    {
+        if(isset($input['allowed_payers']) == false)
+        {
+            return $input;
+        }
+
+        foreach($input['allowed_payers'] as &$allowed_payer)
+        {
+            if ((isset($allowed_payer['bank_account']) === false) or
+                (isset($allowed_payer['bank_account']['account_number']) === false))
+            {
+                continue;
+            }
+
+            $account_number = $allowed_payer['bank_account']['account_number'];
+
+            $repeat = ceil((strlen($account_number) - 4) / 4);
+
+            $allowed_payer['bank_account']['account_number'] = str_repeat('XXXX-', $repeat) . substr($account_number, -4);
+        }
+
+        return $input;
     }
 }
