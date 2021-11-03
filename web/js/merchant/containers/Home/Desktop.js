@@ -53,6 +53,7 @@ import ABCBanner from '../../components/Announcements/ABCBanner';
 import StartupCongratulationBanner from '../../components/Announcements/StartupCongratulationBanner';
 import CrossBorderPaymentsBanner from '../../components/Announcements/CrossBorderPaymentsBanner';
 import DiwaliFestiveOfferBanner from '../../components/Announcements/DiwaliFestiveOfferBanner';
+import NitroFestiveBonanza from '../../components/Announcements/NitroFestiveBonanza';
 
 class AnalyticsDesktop extends Component {
   state = {
@@ -518,6 +519,9 @@ class AnalyticsDesktop extends Component {
           </ShowWhen>
           <ShowWhen additionalCondition={(usr) => usr.isDiwaliFestiveOfferEnabled}>
             <DiwaliFestiveOfferBanner productName="home" />
+          </ShowWhen>
+          <ShowWhen additionalCondition={(usr) => usr.isProjectNitroEnabled}>
+            <NitroFestiveBonanza productName="home" />
           </ShowWhen>
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}

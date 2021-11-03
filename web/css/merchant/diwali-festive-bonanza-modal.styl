@@ -1,0 +1,222 @@
+@import "mixin/diwali-festive-bonanz-Mixin";
+
+#nitro-self-serve{
+    background: $nitro-dark-bg;
+    .xcaHeader {
+        height: 92px;
+        xcaHeaderText ();
+        flexProp(row,space-between);
+
+        &__image {
+            margin-right: 8px;
+
+            img:first-of-type {
+                margin-right: 20px;
+                margin-left: 26px;
+            }
+            img:last-of-type {
+                margin-right: 8px;
+            }
+        }
+
+        &__text{
+            flex-grow:.9;
+            & > span {
+                    background: linear-gradient(98.56deg, #FFC13E 0%, #FF650F 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+            }
+        }
+        &__close{
+            background: transparent;
+            border: none;
+            margin-right: 26px;
+            color: #FFFFFF;
+        }
+    }
+    .headerBottomBorder {
+        height: 2px;
+        background: linear-gradient(98.56deg, #FFC13E 0%, #FF650F 100%);
+        margin-bottom: 30px;
+    }
+}
+#nss-details {
+    background-color: $nitro-dark-bg;
+    display:flex;
+    
+    #main-section {
+        flexProp(row,space-between, flex-start);
+        padding: 0 64px;
+        padding-bottom: 30px;
+        // min-height: 520px;
+        .xcaMainSection {
+            flex: 1 0 auto;
+            h3 {
+                font-family: "Lato";
+                font-style: normal;
+                font-weight: bold;
+                font-size: $ft28;
+                line-height: 40px;
+                color: #FFFFFF;
+
+                & > span {
+                    background: linear-gradient(98.56deg, #FFC13E 0%, #FF650F 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                }
+            }
+            &--strike {
+                width: 16px;
+                height: 2px;
+                border-radius: 4px;
+                background-color: #FFB20F;
+                margin: 24px 0 20px 0;
+                &::before {
+                    content: "";
+                    width: 8px;
+                    height: 2px;
+                    display: block;
+                    background: #ffb20f;
+                    position: absolute;
+                    left: 85px;
+                    border-radius: 4px;
+                }
+                &::after{
+                    content: "";
+                    width: 2px;
+                    height: 2px;
+                    display: block;
+                    background: #ffb20f;
+                    position: absolute;
+                    left: 97px;
+                    border-radius: 4px;
+                }
+
+            }
+            & > p {
+                color: #FFFFFF;
+                font-family: "Lato";
+                font-size: $ft16;
+                line-height: 24px;
+            }
+            .btn-wrapper {
+                margin: 28px 0 16px 0;
+            }
+        }
+        .mainDivider {
+            height: 419px;
+            width: 2px;
+            margin-left: 40px;
+        }
+        .xcaSteps {
+            // padding-top: 20px;
+            &__detail {
+                font-family: "Lato";
+                font-size: $ft16;
+                line-height: 24px;
+                margin-bottom: 20px;
+                flexProp(row, flex-start);
+
+                div {
+                    background: radial-gradient(50% 50% at 50% 50%, rgba(255, 178, 15, 0.32) 0%, rgba(255, 178, 15, 0) 100%);
+                    padding: 16px;
+                    margin: 0 24px;
+                }
+                p {
+                    color: rgba(255, 255, 255, 0.5);
+                    width:200px
+                    span {
+                        color: #fff;
+                        font-weight: bold;
+                    }
+                }
+
+            }
+        }
+        .xcaToolTip {
+            flexProp(row,flex-start);
+            p {
+                margin: 0 8px;
+                color: rgba(255, 255, 255, 0.74);
+                font-style: italic;
+            }
+            &__modal{
+                z-index : 2;
+                position: absolute;
+                color: white;
+                background-color: #242B4D;
+                width: 360px;
+                height: 390px;
+                border-radius: 8px;
+                padding: 20px;
+                padding-bottom: 0;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12);
+                left: 370px;
+                bottom: -40px;
+
+                &--close{
+                    background: transparent;
+                    border: none;
+                    position: absolute;
+                    right: 20px;
+                    font-size: $ft18;
+                }
+
+                &::before {
+                    content: "";
+                    width: 20px;
+                    height: 20px;
+                    position: absolute;
+                    left: -8px;
+                    top: 42%;
+                    background-color: #242b4d;
+                    transform: rotate(135deg);
+                }
+                h6 {
+                    font-family: "Lato";
+                    font-weight: bold;
+                    font-size: $ft14;
+                    line-height: 18px;
+                    color: #FFFFFF;
+                }
+                ul {
+
+                    li {
+                        font-family: "Lato";
+                        font-style: normal;
+                        font-size: 12px;
+                        line-height: 16px;
+                        margin-bottom: 20px;
+                        list-style-image: url('https://betacdn.np.razorpay.in/static/assets/neostone-exclusive-offer/tooltip-req.svg');
+                    }
+                }
+            }
+        }
+        .xcaTrust {
+            h4 {
+                font-family: "Mulish";
+                font-weight: bold;
+                font-size: $ft16;
+                color: #fff;
+                margin-top: 48px;
+                margin-bottom: 20px;
+            }
+            &__carousel {
+                flexProp(row, flex-start);
+                width: 420px;
+                overflow: hidden;
+                &--brand {
+                    min-width: 96px;
+                    height: 32px;
+                    border-radius: 50px;
+                    background-color: #fff;
+                    flexProp(row);
+                    margin-right: 32px;
+                    padding: 16px;
+                }
+            }
+        }
+
+    }
+
+}

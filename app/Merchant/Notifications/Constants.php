@@ -1272,6 +1272,25 @@ class Constants
             ]
         ],
         [
+            'id'          => 'OCT-DA-NITRO-FESTIVEBONANZA',
+            'title'       => 'Festive Bonanza!',
+            'description' => "This festive season enjoy the benefits of RazorpayX current account along with a reduced pricing of 1.65% on payments 🎉",
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro_festive_bonanza_icon.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Try now',
+                    'url'   => '',
+                    'id'    => 'announcement-projectNitro-cta1',
+                ],
+            ],
+            'start_ts'    => 1632960000,
+            'end_ts'      => 1638517904,
+            'filters'     => [
+                'splitz_experiments'         => self::nitroSplitzExperimentsList,
+            ],
+        ],
+        [
             'id'          => 'May21-PLMApp-GTM',
             'title'       => 'Accept and track your payments on the go!',
             'description' => 'With the Payments Mobile App, create and share payment links instantly, track payments on the go and issue refunds with a single click from anywhere.',

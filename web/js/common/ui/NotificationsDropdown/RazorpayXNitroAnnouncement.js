@@ -18,6 +18,7 @@ import { RadioGroup } from 'common/ui/Forms/RadioGroup';
 import InputField from 'common/ui/Forms/InputField';
 import Textarea from 'common/ui/Forms/AutoResizeTextarea';
 import KeystoneModal from 'common/ui/OffersForYou/components/KeystoneModal';
+import NitroFestiveBonanzaModal from '../../../merchant/components/Announcements/NitroFestiveBonanza/NitroFestiveBonanzaModal';
 
 const BENEFITS = {
   other: [
@@ -591,7 +592,7 @@ class DetailView extends React.Component {
     if (user.isProjectKeystoneCorporateCardsEnabled) return 'Nitro_Keystone_Card';
     if (user.isProjectKeystoneCashAdvanceEnabled) return 'Nitro_Keystone_CashAdvance';
     if (user.isProjectNitroCorporateCard) return 'Nitro_Capital';
-
+    if (!user.isProjectNitroCorporateCard) return 'Nitro_FestiveBonanza';
     return nitroCampaignId(user).version;
   };
 
@@ -769,6 +770,7 @@ class DetailView extends React.Component {
         <KeystoneModal user={this.props.user} save={this.save} tracking={this.props.tracking} />
       );
     if (showNitroFormFields) return <InfoForm save={this.save} tracking={this.props.tracking} />;
+    if (!isProjectNitroCorporateCard) return <NitroFestiveBonanzaModal save={this.save} />;
 
     return (
       <div className="razorpayx-announcement-details">
@@ -847,9 +849,11 @@ const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking, user }) =>
   if (activeView === 'detail-view') {
     return (
       <div ariaHideApp={false} id="hubspot-ca-form-modal">
-        <button type="button" class="close" onClick={handleClose}>
-          <i class="i i-close" />
-        </button>
+        {user.isProjectNitroCorporateCard ? (
+          <button type="button" class="close" onClick={handleClose}>
+            <i class="i i-close" />
+          </button>
+        ) : null}
         <div className="razorpayx-announcement">
           <DetailView
             onOfferAccept={onOfferAccept}
