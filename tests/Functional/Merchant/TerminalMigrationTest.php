@@ -373,6 +373,38 @@ class TerminalMigrationTest extends TestCase
             }) );
     }
 
+    public function testCreateTokenisationTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->mockTerminalsServiceSendRequest(function($a, $b, $c) {
+
+            return $this->getTokenisedTerminalServiceResponse($a, $b, $c);
+
+        }, 3);
+
+        $this->startTest();
+
+        $this->testData[__FUNCTION__]['request']['content']['gateway'] = 'tokenisation_mastercard';
+
+        $this->testData[__FUNCTION__]['response']['content']['gateway'] = 'tokenisation_mastercard';
+
+        $this->startTest();
+
+        $this->testData[__FUNCTION__]['request']['content']['gateway'] = 'tokenisation_rupay';
+
+        $this->testData[__FUNCTION__]['response']['content']['gateway'] = 'tokenisation_rupay';
+
+        $this->startTest();
+
+        // aassert terminals are not present on api
+        $terminal = $this->terminalRepository->findByGatewayMerchantId("tokenisation_rupay", "100000Razorpay");
+
+        $this->assertNull($terminal);
+    }
+
     public function testGetEntityFromTerminalServiceResponseShouldUseOrgKeyForEncryption()
     {
         // Enabling razorx mock on so that BYOK encryption of attributes when we get terminal from TS also gets tested in this test only.

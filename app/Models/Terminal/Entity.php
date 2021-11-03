@@ -1462,7 +1462,6 @@ class Entity extends Base\PublicEntity
     {
         $terminal = $this->toArray();
 
-        $terminalId = $terminal['id'];
 
         $apiTerminalPassword = $this->getGatewayTerminalPasswordAttribute();
         $apiTerminalPassword2 = $this->getGatewayTerminalPassword2Attribute();
@@ -1487,6 +1486,8 @@ class Entity extends Base\PublicEntity
             {
                 try
                 {
+                    $terminalId = $terminal['id'];
+
                     $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_FETCH_REQUEST, ["Id" => $terminalId]);
 
                     $path = "v2/terminals/credentials/" . $terminal[Entity::ID];

@@ -618,6 +618,7 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+
     public function testTpvValidationRule()
     {
         $validator = new Terminal\Validator();

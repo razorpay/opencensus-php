@@ -61,6 +61,9 @@ class Type
     // Terminals for Upi One time mandates, Collect
     const OTM_COLLECT                        = 'otm_collect';
 
+      // Terminals for tokenisation
+    const TOKENISATION                        = 'tokenisation';
+
     protected static $types = [
         self::NON_RECURRING,
         self::RECURRING_3DS,
@@ -81,6 +84,7 @@ class Type
         self::UPI_TRANSFER,
         self::OTM_PAY,
         self::OTM_COLLECT,
+        self::TOKENISATION,
     ];
 
     protected static $bitPosition = [
@@ -103,6 +107,7 @@ class Type
         self::UPI_TRANSFER                     => 17,
         self::OTM_PAY                          => 18,
         self::OTM_COLLECT                      => 19,
+        self::TOKENISATION                     => 20,
     ];
 
     /**

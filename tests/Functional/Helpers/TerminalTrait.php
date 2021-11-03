@@ -75,6 +75,24 @@ trait TerminalTrait
         return $response;
     }
 
+    protected function getTokenisedTerminalServiceResponse($a, $b, $c) : \Requests_Response
+    {
+        $data = json_decode($b, true);
+
+        if (isset($data["id"]) === false)
+        {
+            $data["id"] = "10000000000011";
+        }
+
+        $response =  new \Requests_Response;
+
+        $responseData = ['data' => $data];
+
+        $response->body = json_encode($responseData);
+
+        return $response;
+    }
+
     protected function getTerminalServiceCheckSecretResponse() : \Requests_Response
     {
         $data = [

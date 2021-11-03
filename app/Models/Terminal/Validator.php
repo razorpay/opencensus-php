@@ -2101,6 +2101,51 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_TYPE,
     ];
 
+    protected static $tokenisationVisaTerminalRules = [
+        Entity::GATEWAY                                 => 'required|in:tokenisation_visa',
+        Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2                    => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'sometimes|string',
+        Entity::TYPE                                    => 'required|array',
+        Entity::TYPE . '.tokenisation'                  => 'required|in:1',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::GATEWAY_TERMINAL_PASSWORD               => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2              => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2                  => 'sometimes|string',
+    ];
+
+    protected static $tokenisationMastercardTerminalRules = [
+        Entity::GATEWAY                                 => 'required|in:tokenisation_mastercard',
+        Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2                    => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'sometimes|string',
+        Entity::TYPE                                    => 'required|array',
+        Entity::TYPE . '.tokenisation'                  => 'required|in:1',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::GATEWAY_TERMINAL_PASSWORD               => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2              => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2                  => 'sometimes|string',
+    ];
+
+    protected static $tokenisationRupayTerminalRules = [
+        Entity::GATEWAY                                 => 'required|in:tokenisation_rupay',
+        Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2                    => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'sometimes|string',
+        Entity::TYPE                                    => 'required|array',
+        Entity::TYPE . '.tokenisation'                  => 'required|in:1',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::GATEWAY_TERMINAL_PASSWORD               => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2              => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2                  => 'sometimes|string',
+    ];
+
     protected static $tokenizeExistingMpansRules = [
         'count'         => 'sometimes|numeric|min:1|max:500',
         'terminal_ids'  => 'sometimes|array',

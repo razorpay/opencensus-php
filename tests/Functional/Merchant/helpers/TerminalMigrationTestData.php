@@ -156,6 +156,29 @@ return [
         ],
     ],
 
+    'testCreateTokenisationTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'tokenisation_visa',
+                'gateway_merchant_id'       => '12345',
+                'gateway_merchant_id2'      => '12345678',
+                'gateway_terminal_password' => '12345678',
+                'type'                      => [
+                    'tokenisation'          => 1,
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => '12345678',
+                'enabled'              => true,
+                'gateway'              => 'tokenisation_visa',
+            ]
+        ]
+    ],
+
     'testAssignTerminalServiceSuccessResponseBadValuesMigrateTerminalVariant' => [
         'request' => [
             'content' => [

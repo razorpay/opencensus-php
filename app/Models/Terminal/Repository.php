@@ -76,10 +76,19 @@ class Repository extends Base\Repository
             unset($options['shouldSync']);
         }
 
-        if ($shouldSync === false)
+        $shouldSaveOnApi = $this->shouldSaveEntityOnApi($entity);
+
+        $client = $this->app['terminals_service'];
+
+        if ($shouldSaveOnApi === false)
+        {
+            $res = $client->migrateTerminal($entity);
+
+            return Terminal\Service::getEntityFromTerminalServiceResponse($res);
+        }
+        else if ($shouldSync === false)
         {
             parent::saveOrFail($entity, $options);
-
         }
         else
         {
@@ -2099,5 +2108,17 @@ class Repository extends Base\Repository
         }
 
         return $query;
+    }
+
+    private function shouldSaveEntityOnApi(Entity $entity) : bool
+    {
+        $gateway = $entity->getGateway();
+
+        if (in_array($gateway, Payment\Gateway::TOKENISATION_GATEWAYS) === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

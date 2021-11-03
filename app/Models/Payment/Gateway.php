@@ -210,6 +210,11 @@ class Gateway
     const NPCI      = 'NPCI';
     const PAYPAL    = 'paypal';
 
+    // tokenisation gateways
+    const TOKENISATION_VISA        = 'tokenisation_visa';
+    const TOKENISATION_MASTERCARD  = 'tokenisation_mastercard';
+    const TOKENISATION_RUPAY       = 'tokenisation_rupay';
+
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
         self::HDFC         => [self::ACQUIRER_HDFC],
@@ -235,6 +240,12 @@ class Gateway
         // Wallet::OLAMONEY,
         Wallet::FREECHARGE,
         // Wallet::MPESA,
+    ];
+
+    const TOKENISATION_GATEWAYS = [
+        self::TOKENISATION_VISA,
+        self::TOKENISATION_MASTERCARD,
+        self::TOKENISATION_RUPAY,
     ];
 
     //
