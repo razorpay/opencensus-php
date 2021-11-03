@@ -11,6 +11,6 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
 
     protected function getRefundId(array $row)
     {
-        return $row[Reconciliate::AGGREGATOR_REFERENCE_NUMBER] ?? null;
+        return $row[Reconciliate::PG_TXN_NO] ?? null;
     }
 }

@@ -82,7 +82,7 @@ class NbplusPaylaterLazypayReconciliationTest extends NbPlusPaymentServicePaylat
         $data[1] = $this->testData['testLazypaySuccessRecon'];
 
         $data[0]['Merchant reference number'] = $payment['id'];
-        $data[1]['Aggregator_txn_no'] = $refund['id'];
+        $data[1]['pg_txn_no'] = $refund['id'];
         $data[1]['Transaction Type'] = 'Refund';
 
         $file = $this->writeToExcelFile($data, 'lazypay_recon_file', 'files/filestore');
