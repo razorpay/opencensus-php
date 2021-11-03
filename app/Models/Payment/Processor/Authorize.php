@@ -9300,6 +9300,18 @@ trait Authorize
             $key = $payment->getCacheRedirectInputKey();
         }
 
+        $token = $payment->localToken;
+
+        if (($payment->isRecurring() === true) and
+            (($token !== null) and (empty($token->getCardMandateId()) === false)))
+        {
+            if (($payment->getAuthType() !== null) and
+                (in_array($payment->getAuthType(), Payment\AuthType::$otpAuthTypes, true) === true))
+           {
+               $key = $payment->getCacheInputKey();
+           }
+        }
+
         $inputDetails = $this->cache->get($key);
 
         if ($inputDetails === null)
