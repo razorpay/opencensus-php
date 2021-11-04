@@ -163,7 +163,7 @@ class Core extends Base\Core
                 //Final data in the proposed template to be pushed to datalake
                 $data = $parsedResponses;
 
-                $tempFileName = "nps_response" . '_' . $formId . '.txt';
+                $tempFileName = "nps_response" . '_' . $formId . Carbon::now(Timezone::IST)->getTimestamp() . '.txt';
 
                 $tempFileFullPath = self::TEMP_PATH . $tempFileName;
 
