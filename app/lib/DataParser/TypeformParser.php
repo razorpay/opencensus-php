@@ -159,10 +159,19 @@ class TypeformParser extends Base implements DataParserInterface
 
             // Replace all spaces with underscores in the questions as we create columns with these names in our table in Query book
             // and column names with spaces are not allowed
-            $questionIdToQuestion[$referenceId]['question'] = str_replace(" ", "_", str_replace(".", "", $question["title"]));
+            $questionIdToQuestion[$referenceId]['question'] = $this->getQuestionTitleAsColumnName($question['title']);
         }
 
         return $questionIdToQuestion;
+    }
+
+    private function getQuestionTitleAsColumnName($questionTitle)
+    {
+        $question = str_replace(" ", "_", $questionTitle);
+
+        $pattern = "/[@\.\-\;\:\)\(\?\'\’\,\"]+/";
+
+        return preg_replace($pattern, '', $question);
     }
 
     public function parseTypeformCompleteResponses($formData, $formId)
