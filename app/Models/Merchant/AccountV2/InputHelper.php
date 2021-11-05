@@ -129,22 +129,12 @@ class InputHelper
 
                 $subCategory = $input[Constants::PROFILE][Constants::SUBCATEGORY];
 
-                $subCategoryMetaData = Detail\BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subCategory);
+                $categoryData = [
+                    DE::BUSINESS_CATEGORY    => $category,
+                    DE::BUSINESS_SUBCATEGORY => $subCategory,
+                ];
 
-                if ($subCategoryMetaData[Entity::CATEGORY2] === $category)
-                {
-                    $mcc = $subCategoryMetaData[Entity::CATEGORY];
-
-                    $categoryData = [
-                        DE::BUSINESS_CATEGORY    => $category,
-                        DE::BUSINESS_SUBCATEGORY => $subCategory,
-                    ];
-                }
-                else
-                {
-                    throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_INVALID_MCC_CODE,
-                                                  [Constants::SUBCATEGORY => $subCategory, Constants::CATEGORY => $category]);
-                }
+                (new Detail\Validator())->validateBusinessSubcategoryForCategory($categoryData);
             }
 
             $detailInput = array_merge($detailInput, $categoryData);
