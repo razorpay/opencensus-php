@@ -7007,6 +7007,11 @@ class Route
         'coupon_validate'                              => Permission::COUPON_VALIDATE,
         'user_resend_verification_otp'                 => '*',
         'user_verify_email'                            => '*',
+
+        //Purpose code routes permission
+        'purpose_code_fetch'                  => Permission::VIEW_MERCHANT,
+        'merchant_patch_purpose_code'         => Permission::EDIT_MERCHANT,
+        'user_fetch_purpose_code'             => '*',
     ];
 
     public static $direct = [
