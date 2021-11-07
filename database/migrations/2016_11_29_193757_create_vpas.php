@@ -64,6 +64,8 @@ class CreateVpas extends Migration
             $table->index(Entity::CREATED_AT);
 
             $table->index(Entity::FTS_FUND_ACCOUNT_ID);
+
+            $table->index([Entity::ENTITY_ID, Entity::ENTITY_TYPE]);
         });
     }
 

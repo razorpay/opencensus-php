@@ -6415,3 +6415,6 @@ CREATE TABLE merchant_1cc_configs
 
 ALTER TABLE card_mandates
    MODIFY COLUMN end_at bigint DEFAULT NULL;
+
+ALTER TABLE vpas
+    ADD INDEX vpa_entity_id_entity_type_index (entity_id, entity_type);
