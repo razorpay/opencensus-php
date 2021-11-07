@@ -2151,8 +2151,9 @@ class Validator extends Base\Validator
         'terminal_ids'  => 'sometimes|array',
     ];
 
-    protected static $editTerminalStatusRules = [
+    protected static $editTerminalDefaultRules = [
         Entity::STATUS  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::PLAN_ID => 'sometimes|alpha_num|size:14'
     ];
 
     public function validateType()
@@ -2557,18 +2558,17 @@ class Validator extends Base\Validator
 
     public function editTerminalValidator($terminal, $input)
     {
-        unset($input[Entity::PLAN_ID]);
-
         if (in_array($terminal->getGateway(), self::$editTerminalGateways))
         {
+            unset($input[Entity::PLAN_ID]);
             $gateway = $terminal->getGateway();
             $this->validateInput($gateway . '_edit_terminal', $input);
         }
         else
         {
-            if (isset($input[Entity::STATUS]) === true)
+            if (isset($input[Entity::STATUS]) === true or isset($input[Entity::PLAN_ID]) === true)
             {
-                $this->validateInput('edit_terminal_status', $input);
+                $this->validateInput('edit_terminal_default', $input);
 
                 return;
             }
