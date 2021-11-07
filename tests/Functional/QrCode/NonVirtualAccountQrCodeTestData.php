@@ -167,5 +167,87 @@ return [
         'gst_amount'     => 4010,
         'cess_amount'    => 200,
         'supply_type'    => 'intrastate'
+    ],
+
+    'processOrNotifyRblBankTransfer' => [
+        'request'  => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken' => 'RANDOM_RBL_SECRET',
+            ],
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action'      => 'VirtualAccountTransaction',
+                'Data'        => [
+                    [
+                        'messageType'              => 'ft',
+                        'amount'                   => '3439.46',
+                        'UTRNumber'                => 'CMS480098890',
+                        'senderIFSC'               => 'ICIC0000104',
+                        'senderAccountNumber'      => '010405000010',
+                        'senderAccountType'        => 'Current Account',
+                        'senderName'               => 'CREDIT CARD OPERATIONS',
+                        'beneficiaryAccountType'   => 'Current Account',
+                        'beneficiaryAccountNumber' => '00010469876543210',
+                        'creditDate'               => '13-10-2016 1929',
+                        'creditAccountNumber'      => '409000404030',
+                        'corporateCode'            => 'CAFLT',
+                        'clientCodeMaster'         => '02405',
+                        'senderInformation'        => 'MID 74256975 ICICI PYT 121016',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'Status' => 'Success',
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+
+    'processOrNotifyIciciBankTransfer' => [
+        'request' => [
+            'url'     => '/ecollect/validate/icici',
+            'method'  => 'post',
+            'content' => [
+                'Virtual_Account_Number_Verification_IN' =>  [
+                    [
+                        'client_code'     => '2233',
+                        'payee_account'   =>  null,
+                        'amount'          => '1000.00',
+                        'mode'            => 'N',
+                        'transaction_id'  => 'ICICI123',
+                        'payer_name'      => 'ABCD Limited',
+                        'payer_account'   => '22233303415693401',
+                        'payer_ifsc'      => 'ICIC0000104',
+                        'description'     => 'some info',
+                        'date'            => '2019-03-19 20:00:11',
+                    ],
+                ],
+            ],
+        ],
+
+        'response' => [
+            'content' => [
+                'Virtual_Account_Number_Verification_OUT' => [
+                    [
+                        'client_code'    => '2233',
+                        'amount'         => '1000.00',
+                        'mode'           => 'N',
+                        'transaction_id' => 'ICICI123',
+                        'payer_name'     => 'ABCD Limited',
+                        'payer_account'  => '22233303415693401',
+                        'payer_ifsc'     => 'ICIC0000104',
+                        'status'         => 'ACCEPT',
+                        'reject_reason'  => '',
+                        'date'           => '2019-03-19 20:00:11'
+                    ]
+                ]
+            ],
+            'status_code' => 200,
+        ]
     ]
 ];

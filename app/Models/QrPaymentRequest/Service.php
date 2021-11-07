@@ -4,6 +4,7 @@ namespace RZP\Models\QrPaymentRequest;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Method;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 
@@ -24,7 +25,18 @@ class Service extends Base\Service
         {
             $input = $this->getInputFromGatewayResponse($gatewayResponse['qr_data'], $type);
 
-            return $this->core->create($input, $gatewayResponse['callback_data']);
+            switch ($gatewayResponse['qr_data']['method'])
+            {
+                case Method::BANK_TRANSFER:
+                    $callbackData = $gatewayResponse['original_callback_data'];
+
+                    break;
+
+                default:
+                    $callbackData = $gatewayResponse['callback_data'];
+            }
+
+            return $this->core->create($input, $callbackData);
         }
         catch (\Exception $ex)
         {

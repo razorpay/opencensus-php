@@ -52,6 +52,8 @@ class Service extends Base\Service
     {
         try
         {
+            (new BankTransfer\Validator())->validateInput('create' ,$input);
+
             $gatewayResponse = $this->modifyBankTransferInput($input, $bankAccount, $provider, $requestPayload);
 
             $qrPaymentRequest = (new QrPaymentRequest\Service())->create($gatewayResponse, Type::BHARAT_QR);
@@ -74,17 +76,21 @@ class Service extends Base\Service
         ];
     }
 
-    private function modifyBankTransferInput(array $input, $bankAccount, $provider, $requestPayload)
+    private function modifyBankTransferInput(array $modifiedInput, $bankAccount, $provider, $requestPayload)
     {
         $qrCodeId = $bankAccount->qrCode->getId();
 
-        $gatewayResponse['callback_data'] = $requestPayload;
+        $gatewayResponse['callback_data'] = $modifiedInput;
+
+        $gatewayResponse['original_callback_data'] = $requestPayload;
+
+        $amount = (int) number_format(($modifiedInput['amount'] * 100), 0, '.', '');
 
         $gatewayResponse['qr_data'] = [
-            BharatQr\GatewayResponseParams::AMOUNT                => $input['amount'],
+            BharatQr\GatewayResponseParams::AMOUNT                => $amount,
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::BANK_TRANSFER,
             BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $qrCodeId,
-            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[BankTransfer\Entity::REQ_UTR],
+            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $modifiedInput[BankTransfer\Entity::REQ_UTR],
             BharatQr\GatewayResponseParams::GATEWAY               => Payment\Gateway::$bankTransferProviderGateway[$provider],
         ];
 

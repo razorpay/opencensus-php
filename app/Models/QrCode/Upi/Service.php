@@ -43,7 +43,8 @@ class Service extends Base\Service
 
         $gatewayResponse['qr_data'] = [
             QrPaymentRequest\Entity::QR_CODE_ID            => $input['payment_id'],
-            QrPaymentRequest\Entity::TRANSACTION_REFERENCE => $input['npci_upi_txn_id']
+            QrPaymentRequest\Entity::TRANSACTION_REFERENCE => $input['npci_upi_txn_id'],
+            Payment\Entity::METHOD                         => Payment\Method::UPI
         ];
 
         $gatewayResponse['callback_data'] = $input;

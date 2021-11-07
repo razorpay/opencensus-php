@@ -4,6 +4,7 @@ namespace Functional\QrCode;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\QrCode\Type;
 use RZP\Services\RazorXClient;
@@ -132,7 +133,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals($qrPayment['payer_bank_account_id'], $bankAccount['id']);
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals(50000, $payment['amount']);
+        $this->assertEquals(5000000, $payment['amount']);
         $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
         $this->assertEquals(1, $qrPayment['expected']);
 
@@ -142,8 +143,109 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('refunded', $payment['status']);
-        $this->assertEquals(50000, $payment['amount']);
+        $this->assertEquals(5000000, $payment['amount']);
         $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+    }
+
+    public function testProcessBqrRblBankTransferAndRefund()
+    {
+        $qrCode = $this->getQrCodeForBankTransfer(Gateway::BT_RBL, '222333');
+
+        $qrBankAccount = $this->getDbLastEntity('bank_account');
+
+        $this->assertEquals('qr_' . $qrBankAccount['entity_id'], $qrCode['id']);
+        $this->assertEquals('qr_code', $qrBankAccount['type']);
+
+        $accountNumberPos = strpos($qrCode['image_content'], '0827');
+        $accountNumber = substr($qrCode['image_content'], $accountNumberPos + 15, 16);
+        $ifsc = substr($qrCode['image_content'], $accountNumberPos + 4, 11);
+
+        $this->assertEquals($accountNumber, $qrBankAccount['account_number']);
+        $this->assertEquals($ifsc, $qrBankAccount['ifsc_code']);
+
+        $this->processOrNotifyRblBankTransfer($accountNumber, 'utr12345');
+
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $payment = $this->getDbLastEntity('payment');
+        $bankAccount = $this->getDbLastEntity('bank_account');
+
+        $this->assertEquals($qrPayment['payer_bank_account_id'], $bankAccount['id']);
+        $this->assertEquals('utr12345', $qrPayment['provider_reference_id']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(343946, $payment['amount']);
+        $this->assertEquals(343946, $qrPayment['amount']);
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(1, $qrPayment['expected']);
+
+        $this->runQrPaymentRequestAssertions(true, true, 'utr12345', null, null);
+
+        $this->processRefund('pay_' . $payment['id']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals(343946, $payment['amount']);
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+    }
+
+    public function testProcessBqrIciciBankTransferAndRefund()
+    {
+        $qrCode = $this->getQrCodeForBankTransfer(Gateway::BT_ICICI, '111222');
+
+        $qrBankAccount = $this->getDbLastEntity('bank_account');
+
+        $this->assertEquals('qr_' . $qrBankAccount['entity_id'], $qrCode['id']);
+        $this->assertEquals('qr_code', $qrBankAccount['type']);
+
+        $accountNumberPos = strpos($qrCode['image_content'], '0827');
+        $accountNumber = substr($qrCode['image_content'], $accountNumberPos + 15, 16);
+        $ifsc = substr($qrCode['image_content'], $accountNumberPos + 4, 11);
+
+        $this->assertEquals($accountNumber, $qrBankAccount['account_number']);
+        $this->assertEquals($ifsc, $qrBankAccount['ifsc_code']);
+
+        $this->processOrNotifyIciciBankTransfer($accountNumber);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $payment = $this->getDbLastEntity('payment');
+        $bankAccount = $this->getDbLastEntity('bank_account');
+
+        $this->assertEquals($qrPayment['payer_bank_account_id'], $bankAccount['id']);
+        $this->assertEquals('ICICI123', $qrPayment['provider_reference_id']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals(100000, $qrPayment['amount']);
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(1, $qrPayment['expected']);
+
+        $this->runQrPaymentRequestAssertions(true, true, 'ICICI123', null, null);
+
+        $this->processRefund('pay_' . $payment['id']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+    }
+
+    private function getQrCodeForBankTransfer($gateway, $gatewayMerchantId)
+    {
+        $terminalAttributes = [ 'id' =>'BankTransTermi', 'gateway' => $gateway, 'gateway_merchant_id' => $gatewayMerchantId ];
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+
+        $this->enableRazorXTreatmentForQrBankTransfer();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->merchant->addFeatures(['qr_image_content']);
+
+        return $this->createQrCode();
     }
 
     public function testProcessBqrBankTransferRefund()
@@ -169,7 +271,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('refunded', $payment['status']);
-        $this->assertEquals(50000, $payment['amount']);
+        $this->assertEquals(5000000, $payment['amount']);
         $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
         $this->assertEquals(0, $qrPayment['expected']);
     }
@@ -205,6 +307,29 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals(true, $response['valid']);
 
         return $response;
+    }
+
+    protected function processOrNotifyRblBankTransfer($accountNumber, $utr, $amount = null, $mode = 'test')
+    {
+        $this->ba->directAuth();
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $accountNumber;
+        $request['request']['content']['Data'][0]['UTRNumber'] = $utr;
+
+        $this->startTest($request);
+    }
+
+    protected function processOrNotifyIciciBankTransfer($accountNumber)
+    {
+        $this->ba->iciciAuth();
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['request']['content']['Virtual_Account_Number_Verification_IN'][0]['payee_account'] = $accountNumber;
+
+        $this->startTest($request);
     }
 
     public function testCreateUpiQrCode()
@@ -588,7 +713,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $payment = $this->getDbLastEntity('payment');
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('refunded', $payment['status']);
-        $this->assertEquals(50000, $payment['amount']);
+        $this->assertEquals(5000000, $payment['amount']);
         $this->assertEquals($qrPayment['payment_id'], $payment['id']);
         $this->assertEquals($qrCodeId, $qrPayment['qr_code_id']);
 
@@ -945,5 +1070,21 @@ class NonVirtualAccountQrCodeTest extends TestCase
         {
             $this->assertStringContainsString('mode=15', $response['image_content']);
         }
+    }
+
+    protected function runQrPaymentRequestAssertions(bool $isCreated, $expected, string $transactionReference, $errorMessage = null,
+                                                     $upiId = null)
+    {
+        $qrPaymentRequest = $this->getDbLastEntity('qr_payment_request');
+
+        $this->assertNotNull($qrPaymentRequest['request_payload']);
+        $this->assertNotNull($qrPaymentRequest['bharat_qr_id']);
+        $this->assertEquals($isCreated, $qrPaymentRequest['is_created']);
+        $this->assertEquals($expected, $qrPaymentRequest['expected']);
+        if ($errorMessage !== null)
+        {
+            $this->assertNotNull($qrPaymentRequest['failure_reason']);
+        }
+        $this->assertEquals($transactionReference, $qrPaymentRequest['transaction_reference']);
     }
 }
