@@ -1438,15 +1438,17 @@ class Core extends Base\Core
 
         $this->trace->info(
             TraceCode::MERCHANT_UPDATE_KEY_ACCESS,
-            ['input' => $input]);
+            ['input'       => $input,
+             'merchant_id' => $merchant->getId()
+            ]);
 
         $oldMerchant = clone $merchant;
 
         $merchant->setHasKeyAccess($input[Entity::HAS_KEY_ACCESS]);
 
         $this->app['workflow']
-             ->setEntity($merchant->getEntity())
-             ->handle($oldMerchant, $merchant);
+            ->setEntity($merchant->getEntity())
+            ->handle($oldMerchant, $merchant);
 
         $this->repo->saveOrFail($merchant);
 

@@ -1916,7 +1916,8 @@ class Core extends Base\Core
             TraceCode::MERCHANT_MARK_HAS_KEY_ACCESS,
             [
                 'business_website' => $merchantDetails->getWebsite(),
-                'has_key_access'   => $merchant->getHasKeyAccess()
+                'has_key_access'   => $merchant->getHasKeyAccess(),
+                'merchant_id' => $merchant->getId()
             ]);
 
         if (empty($merchantDetails->getWebsite()) === true)
@@ -3372,7 +3373,8 @@ class Core extends Base\Core
                 TraceCode::MERCHANT_MARK_HAS_KEY_ACCESS,
                 [
                     'Additional_website' => $input[Entity::ADDITIONAL_WEBSITE],
-                    'has_key_access'     => $merchant->getHasKeyAccess()
+                    'has_key_access'     => $merchant->getHasKeyAccess(),
+                    'merchant_id' => $merchant->getId()
                 ]);
 
             $merchant->setHasKeyAccess(true);
@@ -4779,7 +4781,7 @@ class Core extends Base\Core
                 return false;
             }
 
-            $this->trace->info(TraceCode::ONBOARDING_FIELD_VERIFICATION_REQUEST_RECEIVED, ['field' => $field]);
+            $this->trace->info(TraceCode::ONBOARDING_FIELD_VERIFICATION_REQUEST_RECEIVED, ['field' => $field,"merchant_id"=>$merchant->getId()]);
 
             $artefactDetails = Constant::FIELD_ARTEFACT_DETAILS_MAP[$field];
 

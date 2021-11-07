@@ -743,7 +743,7 @@ class Core extends Base\Core
 
         $this->createOrChangeBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, false, false);
 
-        $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_SUCCESS, []);
+        $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_SUCCESS, ["merchant_id"=>$merchant->getId(),"status"=>$status]);
     }
 
     protected function handleBankAccountUpdateCallbackFailure($merchant, $data, $status)
