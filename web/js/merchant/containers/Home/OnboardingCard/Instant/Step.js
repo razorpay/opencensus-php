@@ -4,44 +4,36 @@ import PropTypes from 'prop-types';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { isChildSameType, checkChildrenType } from 'common/utils/react-utils';
 
-const loading = 'loading',
-  progress = 'progress',
-  locked = 'locked',
-  done = 'done',
-  active = 'active',
-  blocked = 'blocked',
-  warning = 'warning';
+const loading = 'loading';
+const progress = 'progress';
+const locked = 'locked';
+const done = 'done';
+const active = 'active';
+const blocked = 'blocked';
+const warning = 'warning';
 
 const possibleStatuses = { loading, progress, locked, done, active, blocked, warning };
 
 class StepTitle extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     return <div className="step-title">{this.props.children}</div>;
   }
 }
 
 class StepContent extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
-    return <div className={`step-content ${this.props.isInstantActivationEnabled ? 'align-left' : ''}`}>{this.props.children}</div>;
+    return (
+      <div className={`step-content ${this.props.isInstantActivationEnabled ? 'align-left' : ''}`}>
+        {this.props.children}
+      </div>
+    );
   }
 }
 
 class Step extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
-    let stepTitle = null,
-      stepContent = null;
+    let stepTitle = null;
+    let stepContent = null;
 
     React.Children.forEach(this.props.children, (child) => {
       if (!stepTitle && isChildSameType(child, StepTitle)) {
@@ -53,8 +45,8 @@ class Step extends Component {
       }
     });
 
-    const { status } = this.props,
-      isLoading = status === loading;
+    const { status } = this.props;
+    const isLoading = status === loading;
 
     return (
       <div
@@ -80,7 +72,9 @@ class Step extends Component {
             />
           )}
         </div>
-        <div className={`step-content ${this.props.isInstantActivationEnabled ? 'align-left' : ''}`}>
+        <div
+          className={`step-content ${this.props.isInstantActivationEnabled ? 'align-left' : ''}`}
+        >
           <div className="step-content-title">
             {stepTitle && (
               <stepTitle.type>
@@ -90,16 +84,16 @@ class Step extends Component {
           </div>
           <div className="step-content-body">
             {stepContent && (
-                <stepContent.type>
-                  {isLoading ? (
-                    <div>
-                      <PlaceholderLoader />
-                      <PlaceholderLoader />
-                    </div>
-                  ) : (
-                    stepContent.props.children
-                  )}
-                </stepContent.type>
+              <stepContent.type>
+                {isLoading ? (
+                  <div>
+                    <PlaceholderLoader />
+                    <PlaceholderLoader />
+                  </div>
+                ) : (
+                  stepContent.props.children
+                )}
+              </stepContent.type>
             )}
           </div>
         </div>

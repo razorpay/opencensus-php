@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { LOGOS } from 'merchant_common/helpers/themes';
 
@@ -7,7 +8,7 @@ export default class Svelte extends React.Component {
     return false; // No need to re-render again, all 3 React apps are working independently bridged via store
   }
 
-  initialize = node => {
+  initialize = (node) => {
     if (!node) return;
 
     const { payment_page_id, user } = this.props;
@@ -17,7 +18,7 @@ export default class Svelte extends React.Component {
       merchant: this.props.merchantData,
       context: {
         page_title: payment_page_id
-          ? 'Edit Payment Page - ' + payment_page_id
+          ? `Edit Payment Page - ${payment_page_id}`
           : 'Create New Payment Page',
         form_title: 'Payment Details',
         isWYSIWYGMode: true,
@@ -35,13 +36,14 @@ export default class Svelte extends React.Component {
   };
 
   componentWillUnmount() {
+    // eslint-disable-next-line babel/no-unused-expressions
     this._svelteInstance && this._svelteInstance.destroy();
   }
 
-  componentWillReceiveProps(nextProps) {
-    // const newData = {}; // Update application data
-    // this._svelteInstanceinstance.set(newData);
-  }
+  // componentWillReceiveProps() {
+  //   // const newData = {}; // Update application data
+  //   // this._svelteInstanceinstance.set(newData);
+  // }
 
   componentDidMount() {
     this.props.onMount();

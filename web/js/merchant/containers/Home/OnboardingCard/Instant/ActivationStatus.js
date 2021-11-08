@@ -117,14 +117,12 @@ class ActivationCard extends Component {
       case 'L1_dedupe_blocked': {
         title = 'Live payments and Settlements';
         status = possibleStatuses.blocked;
-        content =
-          'We can’t support your business to accept payments. Please reach out to support for any queriest';
-        // eslint-disable-next-line no-lone-blocks
-        {
-          // eslint-disable-next-line babel/no-unused-expressions
-          L2_dedupe_blocked &&
-            'In case you have pending settlements, you can raise a ticket and get your funds settled to your account.';
-        }
+        content = `We can’t support your business to accept payments. Please reach out to support for any queriest.
+        ${
+          L2_dedupe_blocked
+            ? 'In case you have pending settlements, you can raise a ticket and get your funds settled to your account.'
+            : ''
+        }`;
         break;
       }
       case 'payment_disabled':
@@ -786,7 +784,7 @@ class ActivationCard extends Component {
 
   render() {
     const { status, content, title } = this.state;
-    const { showProducts, hideProductsModal } = this.props;
+    const { showProducts, hideProductsModal: _hideProductsModal } = this.props;
 
     return (
       <>
@@ -798,7 +796,7 @@ class ActivationCard extends Component {
           <StepContent>{content}</StepContent>
         </Step>
         {showProducts ? (
-          <ProductsModal onClose={hideProductsModal} track={trackProductsModal} />
+          <ProductsModal onClose={_hideProductsModal} track={trackProductsModal} />
         ) : null}
       </>
     );

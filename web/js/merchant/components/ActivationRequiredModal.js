@@ -3,7 +3,7 @@ import ModalHeader from 'common/ui/ModalHeader';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 export default ({ onCloseClick, user }) => {
-  let activationName =
+  const activationName =
     !user.showInstantActivation || !user.instantActivation.isL1Submitted ? 'Activation' : 'KYC';
 
   let modalTitle;
@@ -16,13 +16,17 @@ export default ({ onCloseClick, user }) => {
   let modalBody = (
     <div>
       You can only use Razorpay in test mode until your account is activated. <br />
-      <ShowWhen additionalCondition={(user) => user.isAllowedEdit('activation')}>
-        Please fill and submit the {activationName} Form to access live mode.
-        <div class="Modal__actions text-right">
-          <NavLink to="/activation" onClick={onCloseClick}>
-            <button class="btn btn-primary btn-block">Fill {activationName} Form</button>
-          </NavLink>
-        </div>
+      <ShowWhen additionalCondition={(_user) => _user.isAllowedEdit('activation')}>
+        {user.isOrgAxis
+          ? 'Please reach out to the Axis Bank to get yourself activated'
+          : `Please fill and submit the ${activationName} Form to access live mode.`}
+        {!user.isOrgAxis ? (
+          <div class="Modal__actions text-right">
+            <NavLink to="/activation" onClick={onCloseClick}>
+              <button class="btn btn-primary btn-block">Fill {activationName} Form</button>
+            </NavLink>
+          </div>
+        ) : null}
       </ShowWhen>
     </div>
   );
@@ -48,7 +52,7 @@ export default ({ onCloseClick, user }) => {
     } else if (user.needsClarification) {
       modalBody = (
         <div>
-          You cannot switch to live mode as your account isn't activated yet.
+          You cannot switch to live mode as your account isn&apos;t activated yet.
           {modalAction}
         </div>
       );
@@ -56,14 +60,15 @@ export default ({ onCloseClick, user }) => {
       modalBody = (
         <div>
           Our compliance team and partner banks carry out routine audits of your KYC documents. We
-          might temporarily pause your settlements during this time, but don't worry, just look for
-          clarifications asked by our team on your registered email. Once we receive the
+          might temporarily pause your settlements during this time, but don&apos;t worry, just look
+          for clarifications asked by our team on your registered email. Once we receive the
           clarifications, we will resume your settlements. Upon receiving your response, we will be
           able to process the application within 2 days and re enable settlements for you. Please
           note, you can still accept payments from your customers.{' '}
           <a
             href="https://knowledgebase.razorpay.com/support/solutions/articles/11000103841-why-is-my-settle[%E2%80%A6]ld-and-my-account-under-review-after-getting-activated"
             target="_blank"
+            rel="noreferrer"
           >
             More details
           </a>

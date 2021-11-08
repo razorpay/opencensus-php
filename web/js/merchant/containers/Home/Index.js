@@ -80,8 +80,6 @@ const keymetricsSectionTitle = 'Transactions Overview';
 const paymentInsightsTitle = 'Payment Insights';
 const trafficSectionTitle = 'Traffic split on platforms';
 const recentActivityTitle = 'Recent Activity';
-
-const { fetchOndemandRestrictions, hideTnC } = HomeActions;
 @connect(
   (state) => {
     return {
@@ -113,8 +111,6 @@ const { fetchOndemandRestrictions, hideTnC } = HomeActions;
     fetchVirtualAccounts,
     fetchLateAuthConfig,
     fetchSupportDetail,
-    fetchOndemandRestrictions,
-    hideTnC,
     showOrHideHighlightMode,
     updateSession,
   },
@@ -241,7 +237,7 @@ export default class HomeContainer extends Component {
      * RecentActivity component, which will be done using `onFetchPayments`
      * below
      */
-    if (hasAccessToOnboardingBanner && !showOnboardingBanner) {
+    if (this.hasAccessToOnboardingBanner && !showOnboardingBanner) {
       if (user.activation_status !== 'activated' || !user.isActivated) {
         this.state = {
           ...this.state,
@@ -362,9 +358,7 @@ export default class HomeContainer extends Component {
         max_amount_limit,
         true,
       )} for the day.`;
-      /* eslint-disable */
-    } else return;
-    /* eslint-enable */
+    } else return '';
   }
 
   fetchRestrictionsIfAny() {
@@ -426,7 +420,6 @@ export default class HomeContainer extends Component {
         /* eslint-enable */
         if (data.error) {
           trackError(`While Fetching Txns Grouped by Ptfm`);
-
           return this.props.showNotification({
             type: 'error',
             message: data.error,
@@ -476,6 +469,8 @@ export default class HomeContainer extends Component {
         this.setState({
           showGroupingByPtfm: true,
         });
+
+        return false;
       });
   }
 
@@ -498,7 +493,7 @@ export default class HomeContainer extends Component {
     return (analyticsFetch || fetch)(oldestTransactionQuery, this.props.mode)
       .then((data) => {
         if (oldestTxnReqId !== this.oldestTxnReqId) {
-          return null;
+          return false;
         }
 
         if (!data.success) {
@@ -546,7 +541,7 @@ export default class HomeContainer extends Component {
         const presetsLastItem = dateRangePresets[presetsLastIndex];
 
         // updates All Time present in daterange picker
-        dateRangePresets = [...dateRangePresets];
+        dateRangePresets = [...DATE_RANGE_PRESETS];
 
         dateRangePresets.splice(presetsLastIndex, 1, [
           presetsLastItem[0],
@@ -991,6 +986,8 @@ export default class HomeContainer extends Component {
       roleToShowSupportDetailForm,
     };
 
+    commonProps.showOnboardingBanner = user.isOrgAxis ? null : commonProps.showOnboardingBanner;
+
     const { dismissDiwaliPromotion, hideDiwaliPromotion } = this.state;
 
     const isPartnerOnBoardingModalShown = getItem(this.partnerOnBoardingToken);
@@ -1039,10 +1036,12 @@ export default class HomeContainer extends Component {
                     </span>
                     <span class="m-l btn-link">
                       <ShowWhen
-                        additionalCondition={() => user.isOrgAllowedFunctionality('external_links')}
+                        additionalCondition={(_user) =>
+                          _user.isOrgAllowedFunctionality('external_links')
+                        }
                       >
                         <a href="https://razorpay.com/pricing" target="_blank" rel="noreferrer">
-                          <b>View T&Cs</b>
+                          <b>View T&#38;Cs</b>
                         </a>
                       </ShowWhen>
                     </span>
@@ -1096,6 +1095,7 @@ export default class HomeContainer extends Component {
                     }}
                     isFestive={this.isFestive}
                     isOnboardingV2Enabled={user.isOnboardingV2Enabled}
+                    isOrgAxis={user.isOrgAxis}
                     isProductRecommendationEnabled={user.isProductRecommendationEnabled}
                     hideCTAs={this.hideWelcomeModalCTAs}
                   />

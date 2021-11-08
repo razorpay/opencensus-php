@@ -1,5 +1,4 @@
-import { Component } from 'react';
-import { findBy } from 'common/utils/rzp-utils';
+import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
 
 function convertToArray(arrayOrString) {
@@ -10,20 +9,15 @@ function convertToArray(arrayOrString) {
   return arrayOrString;
 }
 
-export default store =>
-  function(props) {
-    return showWhenUtil(store)(props) ? props.children : null;
-  };
+export default (store) => (props) => {
+  return showWhenUtil(store)(props) ? props.children : null;
+};
 
 export function showWhenUtil(store) {
-  return function(props) {
-    let {
-      notMyRole = '',
-      myRole = '',
-      featureEnabled,
-      apiFeatureEnabled,
-      additionalCondition,
-    } = props;
+  return (props) => {
+    const { notMyRole = '', myRole = '', additionalCondition } = props;
+
+    let { apiFeatureEnabled, featureEnabled } = props;
 
     const user = store && store.getState().session.user;
 
@@ -32,16 +26,14 @@ export function showWhenUtil(store) {
     }
 
     if (myRole && notMyRole) {
-      throw new Error(
-        "myRole and notMyRole can't coexist for component ShowWhen"
-      );
+      throw new Error("myRole and notMyRole can't coexist for component ShowWhen");
     }
 
-    let myRoles = myRole.split(' ');
-    let notMyRoles = notMyRole.split(' ');
+    const myRoles = myRole.split(' ');
+    const notMyRoles = notMyRole.split(' ');
     let tags = (user.isAuthenticated && user.tags) || [];
-    let features = (user.isAuthenticated && user.features) || [];
-    tags = tags.map(tag => tag.toLowerCase());
+    // const features = (user.isAuthenticated && user.features) || [];
+    tags = tags.map((tag) => tag.toLowerCase());
     let userRole;
 
     let isContentVisible = false;
@@ -69,15 +61,9 @@ export function showWhenUtil(store) {
 
     if (!apiFeatureEnabled && !featureEnabled) {
       isContentVisible = true;
-    } else if (
-      apiFeatureEnabled &&
-      apiFeatureEnabled.some(r => user.isFeatureEnabled(r))
-    ) {
+    } else if (apiFeatureEnabled && apiFeatureEnabled.some((r) => user.isFeatureEnabled(r))) {
       isContentVisible = true;
-    } else if (
-      featureEnabled &&
-      featureEnabled.some(r => tags.includes(r.toLowerCase()))
-    ) {
+    } else if (featureEnabled && featureEnabled.some((r) => tags.includes(r.toLowerCase()))) {
       isContentVisible = true;
     }
 
@@ -100,7 +86,7 @@ export function ShowWhenRoute(store, defaultPath = '/dashboard') {
   return ({ component: Component, ...rest }) => (
     <Route
       {...rest}
-      render={props =>
+      render={() =>
         showWhenUtil(store)(rest) ? (
           <Component {...rest} />
         ) : (

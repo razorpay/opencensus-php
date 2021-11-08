@@ -25,6 +25,8 @@ class TestModeBanner extends Component {
       return null;
     }
 
+    if (user.isOrgAxis) return null;
+
     return (
       <div className="TestModeBanner">
         <Banner>
@@ -36,7 +38,7 @@ class TestModeBanner extends Component {
             </span>
           ) : null}
           {!user.isActivated && (
-            <ShowWhen additionalCondition={(user) => user.isAllowedEdit('activation')}>
+            <ShowWhen additionalCondition={(_user) => _user.isAllowedEdit('activation')}>
               <span>
                 {' '}
                 <Link

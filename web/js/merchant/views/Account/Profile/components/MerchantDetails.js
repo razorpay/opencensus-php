@@ -111,6 +111,7 @@ const MerchantDetails = ({
   const [transactionLimitWorkflowStatus, settransactionLimitWorkflowStatus] = useState(false);
   const [isAdditionalWebsiteInWorkflow, setisAdditionalWebsiteInWorkflow] = useState(false);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const getWebsiteWorkflowStatus = async () => {
     try {
       const response = await merchantFetch({
@@ -130,6 +131,7 @@ const MerchantDetails = ({
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const getTransactionLimitWorkflowStatus = async () => {
     try {
       const response = await merchantFetch({
@@ -149,6 +151,7 @@ const MerchantDetails = ({
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const getAdditionalWebsiteWorkflowStatus = async () => {
     try {
       const response = await merchantFetch({
@@ -173,17 +176,17 @@ const MerchantDetails = ({
   useEffect(() => {
     // Only fetch request if user is owner, other users shouldn't see the error
     if (user.role === 'owner') getWebsiteWorkflowStatus();
-  }, []);
+  }, [getWebsiteWorkflowStatus, user.role]);
 
   useEffect(() => {
     // Only fetch request if user is owner, other users shouldn't see the error
     if (user.role === 'owner') getTransactionLimitWorkflowStatus();
-  }, []);
+  }, [getTransactionLimitWorkflowStatus, user.role]);
 
   useEffect(() => {
     // Only fetch request if user is owner, other users shouldn't see the error
     if (user.role === 'owner' || user.role === 'admin') getAdditionalWebsiteWorkflowStatus();
-  }, []);
+  }, [getAdditionalWebsiteWorkflowStatus, user.role]);
 
   let activationName = 'KYC';
   let trackerName = 'kyc.form_fill';
@@ -416,7 +419,7 @@ const MerchantDetails = ({
 
       <DetailRow label="Registered By" value={user.marketplace_merchant_name} />
 
-      <ShowWhen additionalCondition={(usr) => usr.isAllowedEdit('activation')}>
+      <ShowWhen additionalCondition={(_user) => _user.isAllowedEdit('activation')}>
         <DetailRow
           label={() => <b>Account Activation</b>}
           value={() => (

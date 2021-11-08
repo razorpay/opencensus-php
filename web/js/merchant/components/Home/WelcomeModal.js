@@ -4,7 +4,8 @@ import { compose } from 'redux';
 import { Link } from 'react-router-dom';
 import rTracking from 'react-tracking';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import * as LocalStorageService from 'common/utils/localStorage';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { getItem } from 'common/utils/localStorage';
 import * as EventsActions from 'merchant/reducers/trackEvents';
 
 const RECOMMANDED_PRODUCT_LIST = [
@@ -24,12 +25,11 @@ const WelcomeModal = ({
   isFestive,
   isOnboardingV2Enabled,
   isProductRecommendationEnabled,
+  isOrgAxis,
   hideCTAs,
   trackEvents,
 }) => {
-  const getLandingProduct =
-    LocalStorageService.getItem('merchant_landing_page') ||
-    LocalStorageService.getItem('default_product_page');
+  const getLandingProduct = getItem('merchant_landing_page') || getItem('default_product_page');
 
   const isRecommendProduct =
     RECOMMANDED_PRODUCT_LIST.includes(getLandingProduct) && isProductRecommendationEnabled;
@@ -90,7 +90,7 @@ const WelcomeModal = ({
           ID: 'NOV20-PGFESTIVEMODAL',
         }),
       );
-  }, []);
+  }, [isFestive, tracking]);
 
   return (
     <div className="welcome-modal-content">
@@ -98,7 +98,7 @@ const WelcomeModal = ({
         <React.Fragment>
           <h1 className="welcome-title">Congratulations on</h1>
           <h1 className="welcome-title welcome-subtitle">making the move to Razorpay.</h1>
-          <p class="welcome-para">We're excited to have you &amp; even more excited to help</p>
+          <p class="welcome-para">We&apos;re excited to have you &amp; even more excited to help</p>
           <p class="welcome-para">you grow your business this festive season.</p>
           <br />
           <p class="welcome-para">
@@ -170,9 +170,14 @@ const WelcomeModal = ({
             your basic details to get you started.
           </p>
           <br />
-          <p>Activate your account to start accepting payments from customers.</p>
+          <p>
+            {isOrgAxis
+              ? 'Please reach out to Axis Bank to get yourself activated.'
+              : 'Activate your account to start accepting payments from customers.'}
+          </p>
         </React.Fragment>
       )}
+
       {hideCTAs ? (
         <React.Fragment>
           <br />
@@ -180,14 +185,19 @@ const WelcomeModal = ({
         </React.Fragment>
       ) : (
         <div className="welcome-modal-actions">
-          <Link
-            to={isOnboardingV2Enabled && isMobileDevice() ? '/onboarding/steps' : '/activation'}
-            onClick={handleActivationClick}
-            className="btn btn-primary"
+          <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
+            <Link
+              to={isOnboardingV2Enabled && isMobileDevice() ? '/onboarding/steps' : '/activation'}
+              onClick={handleActivationClick}
+              className="btn btn-primary"
+            >
+              Activate your account
+            </Link>
+          </ShowWhen>
+          <span
+            className={`btn-link cursor-pointer ${isOrgAxis ? 'shift-right' : null}`}
+            onClick={handleTryOutClick}
           >
-            Activate your account
-          </Link>
-          <span className="btn-link m-l cursor-pointer" onClick={handleTryOutClick}>
             Try out the Dashboard
           </span>
         </div>
