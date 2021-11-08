@@ -1,16 +1,15 @@
-import { Link, NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import { prefixEntityValue } from 'merchant_common/helpers/data';
 
-import Time from 'common/ui/Time';
 import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
-import { classList } from 'common/utils/rzp-utils';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import SwitchField from 'common/ui/Forms/SwitchField';
 
 import { getUser } from 'merchant/store';
+import { AccountStatusListView as AccountStatusLabel } from './AccountStatusLabel';
 
 export const ToggleField = ({ children, onEdit, isDisabled, isDashboard }) => {
   if (isDisabled) {
@@ -44,10 +43,9 @@ const AccountsListItem = ({
   onToggleDashboardAccess,
   onToggleAllowRefunds,
   isRouteCodeSupportEnabled,
-  isDirectTransferEnabled,
 }) => {
-  let status = account.activation_details ? account.activation_details.status : account.activated;
-  let timeStamp = account.activation_details
+  const status = account.activation_details ? account.activation_details.status : account.activated;
+  const timeStamp = account.activation_details
     ? account.activation_details.activated_at
     : account.activated_at;
 
@@ -73,34 +71,12 @@ const AccountsListItem = ({
       <td>{account.name}</td>
       {isRouteCodeSupportEnabled && <td>{account.code || '-'}</td>}
       <td>
-        <small class="help-content">
-          <span>
-            <span
-              class={classList(
-                'ModeIndicator',
-                status == 'activated' ? 'ModeIndicator--live' : 'ModeIndicator--inactive',
-              )}
-            />
-            {status === 'activated' ? 'Activated' : 'Not Activated'}
-          </span>
-          <Popover align="top" theme="dark">
-            <PopoverBody>
-              {status === 'activated' ? (
-                <div>
-                  Activated on <Time value={timeStamp} format="DD MMM YYYY, hh:mm:A" />
-                </div>
-              ) : (
-                <div>
-                  Please fill the Activation form to activate this account.
-                  <br />
-                  <button class="btn-link pull-right" onClick={onEdit}>
-                    Add Details
-                  </button>
-                </div>
-              )}
-            </PopoverBody>
-          </Popover>
-        </small>
+        <AccountStatusLabel
+          activationStatus={status}
+          timeStamp={timeStamp}
+          showActivationForm={onEdit}
+          errorDetails={account.activation_details?.bank_details_verification_error_details}
+        />
       </td>
       {onToggleDashboardAccess && (
         <td style={{ textAlign: 'center' }}>

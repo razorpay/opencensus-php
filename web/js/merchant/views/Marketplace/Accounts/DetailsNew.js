@@ -1,24 +1,23 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
+import PropTypes from 'prop-types';
+
 import ActivationForm from 'merchant/containers/Activation';
-import { fetchAccountApi } from 'merchant/reducers/marketplace/accounts';
 import Spinner from 'common/ui/Spinner';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import AccountCreation from 'merchant/views/Marketplace/Accounts/New';
-import { getUser } from 'merchant/store';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
+import { ModalMask } from 'common/new-ui/Modal';
+import Amount from 'common/ui/Amount';
+import SwitchField from 'common/ui/Forms/SwitchField';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import { AccountStatusDetailsView as AccountStatus } from './components/AccountStatusLabel';
+
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { ToggleField } from 'merchant/views/Marketplace/Accounts/components/AccountsList';
 import { fetchBalance } from 'merchant/reducers/credits';
-import SwitchField from 'common/ui/Forms/SwitchField';
 import * as AccountActions from 'merchant/reducers/marketplace/accounts';
 import * as ModalActions from 'merchant_common/reducers/modals';
-import { showWhenUtil } from 'merchant/components/ShowWhen';
-import { ModalMask } from 'common/new-ui/Modal';
-import Button from 'common/new-ui/Button';
-import Amount from 'common/ui/Amount';
-
 import { validateDashboardAccess, validateAllowRefundsMessages } from './List';
 
 @connect(
@@ -48,9 +47,9 @@ export default class Details extends Component {
   }
 
   onToggleDashboardAccess = (isChecked, cb) => {
-    const { account } = this.state,
-      checked = !account.dashboard_access,
-      { header, message, data } = validateDashboardAccess(account, checked);
+    const { account } = this.state;
+    const checked = !account.dashboard_access;
+    const { header, message, data } = validateDashboardAccess(account, checked);
 
     return this.context
       .confirm({
@@ -90,7 +89,7 @@ export default class Details extends Component {
 
                 return resp;
               } else {
-                throw 'Some network error has occurred';
+                throw new Error('Some network error has occurred');
               }
             })
             .catch(({ errors }) => {
@@ -115,9 +114,9 @@ export default class Details extends Component {
   };
 
   onToggleAllowRefunds = (isChecked, cb) => {
-    const { account } = this.state,
-      checked = !account.allow_reversals,
-      { header, message, data } = validateAllowRefundsMessages(account, checked);
+    const { account } = this.state;
+    const checked = !account.allow_reversals;
+    const { header, message, data } = validateAllowRefundsMessages(account, checked);
 
     return this.context
       .confirm({
@@ -156,7 +155,7 @@ export default class Details extends Component {
                 );
                 return resp;
               } else {
-                throw 'Some network error has occurred';
+                throw new Error('Some network error has occurred');
               }
             })
             .catch(({ errors }) => {
@@ -185,7 +184,7 @@ export default class Details extends Component {
       isLoading: true,
     });
 
-    return fetchAccountApi(id)
+    return AccountActions.fetchAccountApi(id)
       .then((resp) => {
         this.setState({
           account: resp.data,
@@ -193,16 +192,18 @@ export default class Details extends Component {
         return fetchBalance(id);
       })
       .then((resp) => {
-        this.setState({
-          account: {
-            ...this.state.account,
-            refund_credits: resp.data.refund_credits,
-            currency: resp.data.currency,
-          },
-          isLoading: false,
+        this.setState((prevState) => {
+          return {
+            account: {
+              ...prevState.account,
+              refund_credits: resp.data.refund_credits,
+              currency: resp.data.currency,
+            },
+            isLoading: false,
+          };
         });
       })
-      .catch((e) => {
+      .catch(() => {
         this.setState({
           isLoading: false,
         });
@@ -226,21 +227,23 @@ export default class Details extends Component {
     });
   };
 
-  showActivationForm = () => this.setState({ showActivationForm: !this.state.showActivationForm });
+  showActivationForm = () =>
+    this.setState((prevState) => {
+      return { showActivationForm: !prevState.showActivationForm };
+    });
 
   render() {
-    const { onClose, id } = this.props,
-      { isLoading, account = {}, showActivationForm } = this.state,
-      status =
-        !isLoading &&
-        (account.activation_details
-          ? account.activation_details && account.activation_details.status
-          : account.activated),
-      user = getUser(),
-      noLAEmail = user.merchants[user.current].email === account.email,
-      isAllowToEdit = showWhenUtil({
-        additionalCondition: (user) => user.isAllowedEdit('accounts'),
-      });
+    const { onClose, id, user } = this.props;
+    const { isLoading, account = {}, showActivationForm } = this.state;
+    const status =
+      !isLoading &&
+      (account.activation_details
+        ? account.activation_details && account.activation_details.status
+        : account.activated);
+    const noLAEmail = user.merchants[user.current].email === account.email;
+    const isAllowToEdit = showWhenUtil({
+      additionalCondition: (_user) => _user.isAllowedEdit('accounts'),
+    });
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -289,25 +292,13 @@ export default class Details extends Component {
                 )}
 
                 <EntityDetailRow label="Account Status">
-                  <span
-                    class={`status-label label ${
-                      status === 'activated' ? 'label-success' : 'label-danger'
-                    }`}
-                  >
-                    {status === 'activated' ? 'Activated' : 'Not Activated'}
-                  </span>{' '}
-                  {account.activation_details &&
-                  account.activation_details.status == 'activated' ? (
-                    <a class="m-l" onClick={this.showActivationForm}>
-                      Show Activation Form
-                    </a>
-                  ) : (
-                    <div>
-                      <Button class="m-t" onClick={this.showActivationForm}>
-                        Complete Activation Form
-                      </Button>
-                    </div>
-                  )}
+                  <AccountStatus
+                    activationStatus={status}
+                    showActivationForm={this.showActivationForm}
+                    errorDetails={
+                      account.activation_details?.bank_details_verification_error_details
+                    }
+                  />
                 </EntityDetailRow>
                 <EntityDetailRow label="Refund Credits">
                   <Amount value={account.refund_credits} currency={account.currency} />
@@ -371,7 +362,7 @@ export default class Details extends Component {
           <ModalMask
             maskClosable={true}
             onClose={this.showActivationForm}
-            class={'Account-Activation'}
+            class="Account-Activation"
           >
             <ActivationForm
               onClose={this.showActivationForm}

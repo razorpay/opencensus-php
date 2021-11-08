@@ -1,4 +1,5 @@
 import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 
@@ -42,8 +43,8 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   onToggleDashboardAccess = (account, cb) => {
-    const checked = !account.dashboard_access,
-      { header, message, data } = validateDashboardAccess(account, checked);
+    const checked = !account.dashboard_access;
+    const { header, message, data } = validateDashboardAccess(account, checked);
 
     return this.context
       .confirm({
@@ -73,7 +74,7 @@ export default class AccountsListContainer extends ListContainer {
 
                 return resp;
               } else {
-                throw 'Some network error has occurred';
+                throw new Error('Some network error has occurred');
               }
             })
             .catch(({ errors }) => {
@@ -98,8 +99,8 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   onToggleAllowRefunds = (account, cb) => {
-    const checked = !account.allow_reversals,
-      { header, message, data } = validateAllowRefundsMessages(account, checked);
+    const checked = !account.allow_reversals;
+    const { header, message, data } = validateAllowRefundsMessages(account, checked);
 
     return this.context
       .confirm({
@@ -129,7 +130,7 @@ export default class AccountsListContainer extends ListContainer {
 
                 return resp;
               } else {
-                throw 'Some network error has occurred';
+                throw new Error('Some network error has occurred');
               }
             })
             .catch(({ errors }) => {
@@ -169,7 +170,7 @@ export default class AccountsListContainer extends ListContainer {
     this.showAccountDetailsModal(account); // Open activation modal
   };
 
-  resetPagination = (account) => {
+  resetPagination = () => {
     // Reset pagination and fetch results of updated pagination
     const paginationSkip = 0;
     this.setState({ skip: paginationSkip });
@@ -223,11 +224,11 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, accounts, user } = this.props;
-    let status = this.state.status;
+    const { loading, accounts, user } = this.props;
+    const status = this.state.status;
 
     return (
-      <div class="content-wrapper">
+      <div class="LinkedAccountsList content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
             <TakeATourButton feature={RZPFeatures.ROUTE} />
@@ -240,7 +241,7 @@ export default class AccountsListContainer extends ListContainer {
             </button>
 
             <ShowWhen
-              additionalCondition={(user) => user.isAllowedEdit('accounts') && !user.isOrgAxis}
+              additionalCondition={(_user) => _user.isAllowedEdit('accounts') && !_user.isOrgAxis}
             >
               <button class="btn btn-primary" onClick={this.showAddAccountModal}>
                 <i class="i i-plus" />
@@ -268,14 +269,14 @@ export default class AccountsListContainer extends ListContainer {
           isRouteCodeSupportEnabled={user.isRouteCodeSupportEnabled}
           onToggleDashboardAccess={
             showWhenUtil({
-              additionalCondition: (user) => user.isAllowedEdit('accounts'),
+              additionalCondition: (_user) => _user.isAllowedEdit('accounts'),
             })
               ? this.onToggleDashboardAccess
               : undefined
           }
           onToggleAllowRefunds={
             showWhenUtil({
-              additionalCondition: (user) => user.isAllowedEdit('accounts'),
+              additionalCondition: (_user) => _user.isAllowedEdit('accounts'),
             })
               ? this.onToggleAllowRefunds
               : undefined
@@ -307,15 +308,15 @@ export default class AccountsListContainer extends ListContainer {
   }
 }
 
-export const validateDashboardAccess = (account, checked) => {
-  let header = `${checked ? 'Enable' : 'Disable'} Dashboard Access?`,
-    message = `Are you sure you want to ${
-      checked ? 'Enable' : 'Disable'
-    } dashboard access for this linked account`,
-    data = {
-      dashboard_access: checked,
-      accountId: account.id,
-    };
+export function validateDashboardAccess(account, checked) {
+  let header = `${checked ? 'Enable' : 'Disable'} Dashboard Access?`;
+  let message = `Are you sure you want to ${
+    checked ? 'Enable' : 'Disable'
+  } dashboard access for this linked account`;
+  let data = {
+    dashboard_access: checked,
+    accountId: account.id,
+  };
 
   if (account.allow_reversals && !checked) {
     header = 'Also Disable Customer Refunds?';
@@ -333,17 +334,17 @@ export const validateDashboardAccess = (account, checked) => {
     message,
     data,
   };
-};
+}
 
-export const validateAllowRefundsMessages = (account, checked) => {
-  let header = `${checked ? 'Enable' : 'Disable'} Allow Refunds`,
-    message = `Are you sure you want to ${
-      checked ? 'Enable' : 'Disable'
-    } allow refunds for this linked account`,
-    data = {
-      allow_reversals: checked,
-      accountId: account.id,
-    };
+export function validateAllowRefundsMessages(account, checked) {
+  let header = `${checked ? 'Enable' : 'Disable'} Allow Refunds`;
+  let message = `Are you sure you want to ${
+    checked ? 'Enable' : 'Disable'
+  } allow refunds for this linked account`;
+  let data = {
+    allow_reversals: checked,
+    accountId: account.id,
+  };
 
   if (!account.dashboard_access && checked) {
     header = 'Also enable Dashboard Access?';
@@ -361,4 +362,4 @@ export const validateAllowRefundsMessages = (account, checked) => {
     message,
     data,
   };
-};
+}

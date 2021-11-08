@@ -2032,6 +2032,11 @@ export default class ActivationWizard extends React.Component {
       });
     }
 
+    // penny testing changes for Linked Accounts
+    const isFormVerificationPending = this.props.data?.activation_status === 'verification_pending';
+    const isFormVerificationFailed = this.props.data?.activation_status === 'verification_failed';
+    const verificationFailureError = this.props.data?.bank_details_verification_error_details;
+
     return (
       <div className="Activation--wizard Wizard">
         {/* Activation form tabs */}
@@ -2127,10 +2132,16 @@ export default class ActivationWizard extends React.Component {
               </span>
             )}
 
-            {/* Alert: For linked account if activated */}
-            {this.isLinkedAccountForm && isFormActivated && (
-              <Alert.Info iconBefore="i-done-all">The account has been activated</Alert.Info>
-            )}
+            {/* Alerts: For linked account */}
+            {this.isLinkedAccountForm && 
+              (isFormActivated && (
+                <Alert.Info iconBefore="i-done-all">The account has been activated</Alert.Info>
+              )) || (isFormVerificationPending && (
+                <Alert.Warning iconBefore="i-info-outline">Bank account verification is in process</Alert.Warning>
+              )) || (isFormVerificationFailed && (
+                <Alert.Warning iconBefore="i-info-outline">{verificationFailureError || 'Bank account verification failed'}</Alert.Warning>
+              ))
+            }
 
             {/* Alerts: for MAIN activation form */}
             {do {
