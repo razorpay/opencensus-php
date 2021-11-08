@@ -134,8 +134,8 @@ class Service extends Base\Service
     const MINUTE    = 60 * self::SECOND;
     const HOUR      = 60 * self::MINUTE;
 
-    const REQUEST_TIMEOUT_MERCHANT_ANALYTICS = 2;  // in seconds
-    const REQUEST_TIMEOUT_GET_DATA_FOR_SEGMENT = 2;  // in seconds
+    const REQUEST_TIMEOUT_MERCHANT_ANALYTICS = 5;  // in seconds
+    const REQUEST_TIMEOUT_GET_DATA_FOR_SEGMENT = 5;  // in seconds
 
     const BOOTSTRAP_ACCESS_MAPS_CACHE_REQUEST_RULES = [
         'source'        => 'array',
