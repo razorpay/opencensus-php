@@ -3925,7 +3925,7 @@ class Core extends Base\Core
     {
         $activationProgress = 10;
 
-        if ($merchantDetails->avgOrderValue !== null)
+        if (empty($merchantDetails->getBusinessModel()) === false)
         {
             $activationProgress = 40;
         }
