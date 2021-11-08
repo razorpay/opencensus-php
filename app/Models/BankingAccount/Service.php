@@ -63,7 +63,7 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_CREATE,
             [
-                'input' => $input,
+                'input' => $this->core->scrubBankingAccountSensitiveDetails($input),
             ]);
 
         $this->validateOrgForBankingAccount($input[Entity::CHANNEL]);

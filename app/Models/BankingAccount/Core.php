@@ -1253,7 +1253,7 @@ class Core extends Base\Core
             TraceCode::BANKING_ACCOUNT_CREATE,
             [
                 'channel' => $input[Entity::CHANNEL],
-                'input'   => $input,
+                'input'   => $this->scrubBankingAccountSensitiveDetails($input),
             ]);
 
         (new Validator)->validateInput(Validator::SHARED_CREATE, $input);
@@ -1272,6 +1272,26 @@ class Core extends Base\Core
         $this->repo->saveOrFail($bankingAccount);
 
         return $bankingAccount;
+    }
+
+    public function scrubBankingAccountSensitiveDetails($input)
+    {
+        $scrubbedData = [];
+
+        $sensitiveKeys = ['account_number','beneficiary_email','beneficiary_mobile','beneficiary_name','beneficiary_pin'];
+
+        foreach ($input as $key => $value)
+        {
+            if (in_array($key, $sensitiveKeys, true) === true and
+                empty($value) === false)
+            {
+                $value = 'SCRUBBED' . '(' . strlen($value) . ')';
+            }
+
+            $scrubbedData[$key] = $value;
+        }
+
+        return $scrubbedData;
     }
 
     public function getProcessor(string $channel, array $processorParams = []): Gateway\Processor
