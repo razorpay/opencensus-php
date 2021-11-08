@@ -1410,5 +1410,90 @@ class PayoutLinkMicroserviceTest extends TestCase
         $this->assertEmpty($data['support_email'], 'support email present in data');
     }
 
+    public function testExpireByForGetHostedPageForPayoutLinkWithExpiry()
+    {
+        $newMerchant = $this->fixtures->create('merchant');
+
+        $this->prepareBankingAccountData($newMerchant->getId());
+
+        $response = $this->mockGetHostedResponseForPLWithExpiry();
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($response);
+        $mock->method('allowUpi')->willReturn(false);
+        $mock->method('allowAmazonPay')->willReturn(false);
+        $mock->method('getEnvironment')->willReturn(Environment::TESTING);
+
+        $data = $mock->getHostedPageData('poutlk_1000000000', $newMerchant);
+
+        $this->assertNotEmpty($data['expire_by'], 'expire_by not present in data');
+    }
+
+    public function testExpireByForGetHostedPageForPayoutLinkWithoutExpiry()
+    {
+        $newMerchant = $this->fixtures->create('merchant');
+
+        $this->prepareBankingAccountData($newMerchant->getId());
+
+        $response = $this->mockGetHostedResponseForPLWithoutExpiry();
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($response);
+        $mock->method('allowUpi')->willReturn(false);
+        $mock->method('allowAmazonPay')->willReturn(false);
+        $mock->method('getEnvironment')->willReturn(Environment::TESTING);
+
+        $data = $mock->getHostedPageData('poutlk_1000000000', $newMerchant);
+
+        $this->assertEquals(0, $data['expire_by'], 'expire_by not present in data');
+    }
+
+    private function mockGetHostedResponseForPLWithExpiry()
+    {
+        $mode['AMAZONPAY'] = 1;
+        $mode['UPI'] = 1;
+        $mode['support_contact'] = '9040434917';
+        $mode['support_email'] = 'test@razorpay';
+        $response['settings'] = ['mode' => $mode];
+        $response['payout_link_response']['amount'] = 1000;
+        $response['payout_link_response']['id'] = 'poutlk_123456';
+        $response['payout_link_response']['status'] = 'processed';
+        $response["payout_link_response"]["account_number"] = "2224440041626905";
+        $response['payout_link_response']['currency'] = 'INR';
+        $response['payout_link_response']['description'] = 'testing';
+        $response['payout_link_response']['contact']['name'] = 'test';
+        $response['payout_link_response']['contact']['email'] = 'test@gmail.com';
+        $response['payout_link_response']['contact']['contact'] = '+919090990909';
+        $response['payout_link_response']['expire_by'] = 1571656972;
+        return $response;
+    }
+
+    private function mockGetHostedResponseForPLWithoutExpiry()
+    {
+        $mode['AMAZONPAY'] = 1;
+        $mode['UPI'] = 1;
+        $mode['support_contact'] = '9040434917';
+        $mode['support_email'] = 'test@razorpay';
+        $response['settings'] = ['mode' => $mode];
+        $response['payout_link_response']['amount'] = 1000;
+        $response['payout_link_response']['id'] = 'poutlk_123456';
+        $response['payout_link_response']['status'] = 'processed';
+        $response["payout_link_response"]["account_number"] = "2224440041626905";
+        $response['payout_link_response']['currency'] = 'INR';
+        $response['payout_link_response']['description'] = 'testing';
+        $response['payout_link_response']['contact']['name'] = 'test';
+        $response['payout_link_response']['contact']['email'] = 'test@gmail.com';
+        $response['payout_link_response']['contact']['contact'] = '+919090990909';
+        return $response;
+    }
+
 }
 

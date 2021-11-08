@@ -466,6 +466,8 @@ class PayoutLinks
             $description = mask_by_percentage($description);
         }
 
+        $expireBy = array_pull($payoutLinkInfo, self::EXPIRE_BY, 0);
+
         $expiredAt = array_pull($payoutLinkInfo, self::EXPIRED_AT, 0);
 
         $supportPhone = '';
@@ -504,6 +506,7 @@ class PayoutLinks
             'payout_utr'                  => $payoutUtr,
             'payout_mode'                 => $payoutMode,
             'payout_links_custom_message' => $settings[Entity::CUSTOM_MESSAGE] ?? null,
+            'expire_by'                   => $expireBy,
             'expired_at'                  => $expiredAt,
             'support_phone'               => $supportPhone,
             'support_email'               => $supportMail,
@@ -1538,6 +1541,7 @@ class PayoutLinks
             'support_contact'             => $settings[Entity::SUPPORT_CONTACT] ?? null,
             'support_email'               => $settings[Entity::SUPPORT_EMAIL] ?? null,
             'support_url'                 => $settings[Entity::SUPPORT_URL] ?? null,
+            'expire_by'                   => 0,
             'expired_at'                  => 0,
             'support_phone'               => '',
 

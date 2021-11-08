@@ -183,6 +183,7 @@
         payoutUtr : '{{ $payout_utr }}',
         payoutMode : '{{ $payout_mode }}',
         payoutLinksCustomMessage : `{{ $payout_links_custom_message }}`,
+        expireBy : {{ $expire_by }},
         expiredAt: {{ $expired_at }},
         supportDetails: {
             supportPhone: '{{ $support_phone }}',
