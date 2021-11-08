@@ -3116,6 +3116,8 @@ class Route
     ];
 
     public static $private = [
+        'payout_create_with_otp',
+        'user_otp_create',
         'balance_fetch_by_account_suffix',
         'activated_banking_accounts_list',
         'payment_page_get_payments',

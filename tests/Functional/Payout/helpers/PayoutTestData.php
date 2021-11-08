@@ -14451,4 +14451,60 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
         ],
     ],
+
+    'testCreatePayoutWithOtpBearerAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_with_otp',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'expected_passport' => [
+            'mode'          => 'test',
+            'identified'    => true,
+            'authenticated' => true,
+            'consumer'      => [
+                'type' => 'merchant',
+                'id'   => '10000000000000',
+            ],
+            'oauth' => [
+                'owner_type' => 'merchant',
+                'owner_id'   => '10000000000000',
+                // 'client_id'  => '<CLIENT_ID>',
+                // 'app_id'     => '<APP_ID>',
+                'env'        => 'dev',
+            ],
+            'credential' => [
+                'username'   => 'rzp_test_oauth_TheTestAuthKey',
+                'public_key' => 'rzp_test_oauth_TheTestAuthKey',
+            ],
+            'roles' => [
+                'oauth::scope::read_write',
+            ],
+        ],
+    ],
 ];

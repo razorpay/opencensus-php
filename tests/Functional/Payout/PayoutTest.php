@@ -49,6 +49,7 @@ use RZP\Models\Merchant\Webhook\Event;
 use RZP\Models\Payout\ErrorCodeMapping;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Merchant\Balance as Balance;
 use RZP\Models\Merchant\Balance\AccountType;
@@ -72,6 +73,7 @@ use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class PayoutTest extends OAuthTestCase
 {
+    use OAuthTrait;
     use PayoutTrait;
     use WebhookTrait;
     use PaymentTrait;
@@ -2136,6 +2138,35 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getLastEntity('payout', true);
 
         $this->assertEquals("MerchantUser01", $payout['user_id']);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
+    }
+
+
+    public function testCreatePayoutWithOtpBearerAuth()
+    {
+        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['read_write']]);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999]);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->startTest();
+
+        $this->assertPassport();
+        $this->assertPassportKeyExists('oauth.client_id');
+        $this->assertPassportKeyExists('oauth.app_id');
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals("20000000000000", $payout['user_id']);
 
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 

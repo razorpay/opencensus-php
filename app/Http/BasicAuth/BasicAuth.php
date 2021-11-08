@@ -2633,6 +2633,19 @@ class BasicAuth
     }
 
     /**
+     * Sets $user instance var value by given $userId.
+     * Called by OAuth flow. OAuth server response contains the same($userId).
+     *
+     * @param string $userId
+     */
+    public function setUserById(string $userId)
+    {
+        $user = $this->repo->user->findOrFail($userId);
+
+        $this->setUser($user);
+    }
+
+    /**
      * Sets User Entity
      *
      * @param \RZP\Models\User\Entity $user

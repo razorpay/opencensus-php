@@ -861,4 +861,24 @@ class OAuthBearerAuthTest extends OAuthTestCase
             return true;
         });
     }
+
+    //Testing oauth related functionality to support slack app for X
+    public function testSendOtpWithBearerAuth()
+    {
+        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['read_write']]);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->fixtures->create('user', ['id' => '20000000000000', 'contact_mobile' => 9999999999]);
+
+        $this->fixtures->create('payment', ['id' => '10000000000000']);
+
+        $response = $this->startTest();
+
+        $this->assertArrayKeysExist($response,['token']);
+
+        $this->assertPassport();
+        $this->assertPassportKeyExists('oauth.client_id');
+        $this->assertPassportKeyExists('oauth.app_id');
+    }
 }

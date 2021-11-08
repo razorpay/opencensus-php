@@ -355,6 +355,22 @@ class OAuth
 
         try
         {
+            $userId = $response[OAuthToken::USER_ID];
+
+            //
+            // Set user for the current request
+            // TODO: Move this to a common auth class
+            //
+            $this->ba->setUserById($userId);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->info(TraceCode::USER_CONTEXT_NOT_PRESENT_FOR_OAUTH_REQUEST, [OAuthToken::MERCHANT_ID => $merchantId, 'error' => $ex]);
+        }
+
+
+        try
+        {
             $this->ba->authCreds->checkMerchantActivatedForLive();
         }
         catch (Exception\LogicException $e)

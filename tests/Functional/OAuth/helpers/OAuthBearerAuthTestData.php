@@ -631,4 +631,41 @@ return [
             ],
         ],
     ],
+
+    'testSendOtpWithBearerAuth' => [
+        'request'  => [
+            'url'    => '/users/otp/send',
+            'method' => 'POST',
+            'content' => [
+                'medium' => 'sms',
+                'action' => 'verify_contact',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ],
+        'expected_passport' => [
+            'mode'          => 'test',
+            'identified'    => true,
+            'authenticated' => true,
+            'consumer'      => [
+                'type' => 'merchant',
+                'id'   => '10000000000000',
+            ],
+            'oauth' => [
+                'owner_type' => 'merchant',
+                'owner_id'   => '10000000000000',
+                // 'client_id'  => '<CLIENT_ID>',
+                // 'app_id'     => '<APP_ID>',
+                'env'        => 'dev',
+            ],
+            'credential' => [
+                'username'   => 'rzp_test_oauth_TheTestAuthKey',
+                'public_key' => 'rzp_test_oauth_TheTestAuthKey',
+            ],
+            'roles' => [
+                'oauth::scope::read_write',
+            ],
+        ],
+    ],
 ];
