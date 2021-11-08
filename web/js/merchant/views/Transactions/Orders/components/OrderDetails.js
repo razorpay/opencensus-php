@@ -84,7 +84,7 @@ export default (props) => {
               )}
 
               <EntityDetailRow label="Notes">
-                {!(order.notes instanceof Array)
+                {order.notes && !Array.isArray(order.notes)
                   ? Object.keys(order.notes).map((key, index) => (
                       <Definition key={index} customClass="notes">
                         {key}
