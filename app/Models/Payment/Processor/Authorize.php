@@ -1902,7 +1902,8 @@ trait Authorize
                 ErrorCode::BAD_REQUEST_PAYMENT_CARDLESS_EMI_INVALID_PAYMENT_ID,
                 null,
                 [
-                    'payment_id'        => $input['payment_id'] ?? null,
+                    'input_payment_id'      => $input['payment_id'] ?? null,
+                    'cached_payment_id'     => $cardlessEmiData['payment_id'] ?? null,
                 ]);
         }
 
