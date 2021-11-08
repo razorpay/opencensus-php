@@ -23,9 +23,13 @@ use RZP\Constants\Product;
 use RZP\Mail\Invitation\Invite as InvitationMail;
 use RZP\Mail\Invitation\Razorpayx\Invite as RazorpayXInvitationMail;
 use RZP\Trace\Tracer;
+use RZP\Tests\P2p\Service\Base\Traits;
 
 class Core extends Base\Core
 {
+    use Traits\ExceptionTrait;
+    use Traits\DbEntityFetchTrait;
+
     public function create(array $input): Entity
     {
         $input[Entity::TOKEN] = str_random(40);
@@ -99,7 +103,11 @@ class Core extends Base\Core
 
         $invitation = (new Entity);
 
+        $this->merchant = $this->getDbMerchantById($input[Entity::MERCHANT_ID]);
+
         $invitation->merchant()->associate($this->merchant);
+
+        unset($input[Entity::MERCHANT_ID]);
 
         $invitation->build($input);
 

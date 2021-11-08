@@ -3069,6 +3069,7 @@ class Route
         'order_reset_1cc',
         '1cc_pincode_get',
         'third_watch_address_check',
+        'banking_draft_invitations_create',
     ];
 
     public static $device = [
@@ -3448,6 +3449,7 @@ class Route
         'update_cod_slabs',
         'update_coupon_validity_url',
         'update_fetch_coupons_url',
+        'banking_draft_invitations_create',
     ];
 
     // Only routes defined in internalApps go here
@@ -3982,6 +3984,7 @@ class Route
         'setl_optimizer_settlement_cron',
 
         'third_watch_address_cod_score',
+        'banking_draft_invitations_create'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -4696,7 +4699,6 @@ class Route
         'dispute_fetch_multiple_count',
 
         //Axis bank changes
-        'banking_draft_invitations_create',
         'draft_invitation_fetch',
         'draft_invitation_accept',
     ];
@@ -5655,7 +5657,9 @@ class Route
         'risk_attributes_get',
 
         'create_risk_action',
-        
+
+        'banking_draft_invitations_create',
+
         //growth service
         'growth_downtime_for_x',
     ];
@@ -6703,7 +6707,9 @@ class Route
         'trusted_badge_blacklist'                         => Permission::TRUSTED_BADGE_BLACKLIST,
         'risk_attributes_get'                             => Permission::MERCHANT_ACTIONS,
         'create_risk_action'                              => Permission::MERCHANT_ACTIONS,
-        
+
+        'banking_draft_invitations_create'                => Permission::REJECT_PAYOUT,
+
         // growth service
         'growth_downtime_for_x'                           => Permission::ENABLE_DOWNTIME_NOTIFICATION_X_DASHBOARD,
     ];
@@ -7009,6 +7015,7 @@ class Route
         'coupon_validate'                              => Permission::COUPON_VALIDATE,
         'user_resend_verification_otp'                 => '*',
         'user_verify_email'                            => '*',
+        'banking_draft_invitations_create'             => Permission::REJECT_PAYOUT,
 
         //Purpose code routes permission
         'purpose_code_fetch'                  => Permission::VIEW_MERCHANT,

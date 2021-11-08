@@ -56,7 +56,8 @@ return [
                 'content' => [
                     'email'       => 'testnonexistentuserinvite@razorpay.com',
                     'role'        => 'admin',
-                    'sender_name' => 'sender_name'
+                    'sender_name' => 'sender_name',
+                    'merchant_id' => '100XInviteMerc',
                 ],
                 'server'  => [
                     'HTTP_X-Request-Origin'    => config('applications.banking_service_url')

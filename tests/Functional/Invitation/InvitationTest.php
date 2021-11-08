@@ -896,7 +896,7 @@ class InvitationTest extends TestCase
 
         $xMerchantUser = $this->createXMerchantUser();
 
-        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $xMerchantUser->getId());
+        $this->ba->adminAuth();
 
         $this->startTest();
 
