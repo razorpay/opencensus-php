@@ -28,6 +28,7 @@ class BusinessPanForBankingAccount extends Base
     public function getRequestPayload(): array
     {
         $payload = [
+            Constant::PLATFORM                => Constant::RX,
             Constant::ARTEFACT_TYPE           => Constant::BUSINESS_PAN,
             Constant::CONFIG_NAME             => Constant::BUSINESS_PAN,
             Constant::VALIDATION_UNIT         => BvsValidationConstants::IDENTIFIER,

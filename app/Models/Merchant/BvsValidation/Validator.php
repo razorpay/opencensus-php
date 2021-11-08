@@ -11,7 +11,7 @@ class Validator extends Base\Validator
         Entity::ARTEFACT_TYPE     => 'required|string|max:255',//todo validate Artefact type -> add custom validator
         Entity::OWNER_ID          => 'required|string|max:14',
         Entity::OWNER_TYPE        => 'required|string|in:merchant,banking_account,bas_document',
-        Entity::PLATFORM          => 'required|string|in:pg,capital',
+        Entity::PLATFORM          => 'required|string|in:pg,capital,rx',
         Entity::VALIDATION_STATUS => 'required|string|in:success,failed,captured',
         Entity::VALIDATION_UNIT   => 'required|string|in:identifier,proof',
         Entity::ERROR_DESCRIPTION => 'sometimes|string|max:255',
@@ -23,7 +23,7 @@ class Validator extends Base\Validator
         Entity::ARTEFACT_TYPE           => 'sometimes|string|max:255',//todo validate Artefact type
         Entity::OWNER_ID                => 'sometimes|string|max:14',
         Entity::OWNER_TYPE              => 'sometimes|string|in:merchant,banking_account,bas_document',
-        Entity::PLATFORM                => 'sometimes|string|in:pg,capital',
+        Entity::PLATFORM                => 'sometimes|string|in:pg,capital,rx',
         Entity::VALIDATION_STATUS       => 'required|string|in:success,failed,captured',
         Entity::ERROR_DESCRIPTION       => 'sometimes|string|max:255',
         Entity::ERROR_CODE              => 'sometimes|string|max:255',

@@ -26,13 +26,14 @@ class BusinessPanForExternalRequest extends BaseForExternalRequest
     public function getRequestPayload(): array
     {
         $payload = [
-            Constant::ARTEFACT_TYPE   => Constant::BUSINESS_PAN,
-            Constant::CONFIG_NAME     => Constant::BUSINESS_PAN,
-            Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
+            Constant::PLATFORM                => Constant::RX,
+            Constant::ARTEFACT_TYPE           => Constant::BUSINESS_PAN,
+            Constant::CONFIG_NAME             => Constant::BUSINESS_PAN,
+            Constant::VALIDATION_UNIT         => BvsValidationConstants::IDENTIFIER,
             Constant::CUSTOM_CALLBACK_HANDLER => 'updateValidationStatusForBAS',
-            Constant::OWNER_TYPE => Constant::BAS_DOCUMENT,
-            Constant::OWNER_ID => $this->ownerId,
-            Constant::DETAILS         => [
+            Constant::OWNER_TYPE              => Constant::BAS_DOCUMENT,
+            Constant::OWNER_ID                => $this->ownerId,
+            Constant::DETAILS                 => [
                 Constant::PAN_NUMBER => $this->panNumber,
                 Constant::NAME       => $this->name,
             ],

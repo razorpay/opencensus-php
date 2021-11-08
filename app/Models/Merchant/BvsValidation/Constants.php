@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\BvsValidation;
 
 class Constants
 {
+    const RX      = 'rx';
     const PG      = 'pg';
     const CAPITAL = 'capital';
 
@@ -33,6 +34,7 @@ class Constants
     const RESPONSE_TIME_MILLI_SECONDS       = 'response_time_milli_seconds';
 
     const PLATFORMS = [
+        self::RX,
         self::PG,
         self::CAPITAL,
     ];

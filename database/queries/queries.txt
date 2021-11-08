@@ -6366,6 +6366,9 @@ ALTER TABLE card_mandate_notifications
     ADD COLUMN afa_status VARCHAR(20),
     ADD COLUMN afa_completed_at INTEGER UNSIGNED;
 
+ALTER TABLE bvs_validation
+MODIFY COLUMN platform enum('pg', 'capital', 'rx') NOT NULL;
+
 ALTER TABLE virtual_account_tpv
     ADD COLUMN deleted_at INTEGER DEFAULT NULL;
 

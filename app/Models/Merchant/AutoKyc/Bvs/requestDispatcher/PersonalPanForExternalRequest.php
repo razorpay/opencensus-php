@@ -29,6 +29,7 @@ class PersonalPanForExternalRequest extends BaseForExternalRequest
     public function getRequestPayload(): array
     {
         $payload = [
+            Constant::PLATFORM                => Constant::RX,
             Constant::ARTEFACT_TYPE           => Constant::PERSONAL_PAN,
             Constant::CONFIG_NAME             => Constant::PERSONAL_PAN,
             Constant::VALIDATION_UNIT         => BvsValidationConstants::IDENTIFIER,

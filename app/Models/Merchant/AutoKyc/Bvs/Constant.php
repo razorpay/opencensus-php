@@ -130,6 +130,7 @@ class Constant
 
     // Platform
     const PG = 'pg';
+    const RX = 'rx';
 
     // Owner Types
     const BANKING_ACCOUNT = 'banking_account';
