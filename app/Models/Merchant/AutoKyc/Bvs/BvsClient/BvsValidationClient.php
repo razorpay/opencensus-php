@@ -140,7 +140,9 @@ class BvsValidationClient extends BaseClient
 
         $createValidation->setRules($rules);
 
-        $metadata = $this->newMetadata($artefact->getOwnerId());
+        if($artefact->getPlatform() === Constant::PG) {
+            $metadata = $this->newMetadata($artefact->getOwnerId());
+        }
 
         if (isset($metadata)) $createValidation->setMetadata($metadata);
 

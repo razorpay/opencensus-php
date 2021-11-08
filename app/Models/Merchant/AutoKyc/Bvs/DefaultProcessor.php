@@ -51,7 +51,7 @@ class DefaultProcessor implements Processor
     public function getOwnerInput(): array
     {
         return [
-            Constant::PLATFORM   => Constant::PG,
+            Constant::PLATFORM   => $this->input[Constant::PLATFORM] ?? Constant::PG,
             Constant::OWNER_ID   => $this->input[Constant::OWNER_ID] ?? '',
             Constant::OWNER_TYPE => Constant::MERCHANT,
         ];

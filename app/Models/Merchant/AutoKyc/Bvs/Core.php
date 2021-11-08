@@ -210,6 +210,11 @@ class Core extends Base\Core
             $validationObject[BvsValidation\Entity::OWNER_TYPE] = $input[BvsValidation\Entity::OWNER_TYPE];
         }
 
+        if (array_key_exists(Constant::PLATFORM, $input) === true)
+        {
+            $validationObject[BvsValidation\Entity::PLATFORM] = $input[BvsValidation\Entity::PLATFORM];
+        }
+
         $validationObject = array_merge($validationObject, $response->getResponseData());
 
         return $validationObject;
