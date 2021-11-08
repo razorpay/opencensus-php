@@ -45,7 +45,7 @@ class Partnership_deed_ocr extends BaseConfig
                             "var"=> "enrichments.ocr.details.1.name_of_partners"
                         ],
                         [
-                            "var"=> "artefact.details.name_of partners"
+                            "var"=> "artefact.details.name_of_partners"
                         ],
                         [
                             "fuzzy_suzzy"=> [
