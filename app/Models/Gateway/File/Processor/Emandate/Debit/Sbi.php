@@ -7,6 +7,7 @@ use RZP\error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\File;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\Processor\FileHandler;
@@ -168,5 +169,14 @@ class Sbi extends Base
         }
 
         return $id;
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('4096M');
+
+        RuntimeManager::setTimeLimit(7200);
+
+        RuntimeManager::setMaxExecTime(7200);
     }
 }
