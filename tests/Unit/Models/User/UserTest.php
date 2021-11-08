@@ -2550,23 +2550,6 @@ class UserTest extends TestCase
         $this->assertNotNull($response);
     }
 
-    public function testDummy()
-    {
-        $input = [
-            'helloWorld'
-        ];
-
-        $request = Mockery::mock('Illuminate\Http\Request')->makePartial();
-
-        $this->app->instance('request', $request);
-
-        $request->shouldReceive('cookie')->withAnyArgs()->andReturn(true);
-
-        $response = (new UserService())->addUtmParameters($input);
-
-        $this->assertNotNull($input);
-    }
-
     public function testNotifyUserAboutAccountLocked()
     {
         Mail::fake();

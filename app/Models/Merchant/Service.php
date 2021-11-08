@@ -175,6 +175,16 @@ class Service extends Base\Service
         [User\Constants::UTM_CAMPAIGN => 'Facebook_RZPx_CA_Conv_NewAcquisItion_India_Entrepreneurship_2555_M_All_07092021', User\Constants::UTM_SOURCE => 'Facebook', User\Constants::UTM_MEDIUM => 'CPC'],
     ];
 
+    const LINKED_ACCOUNT_CREATE = 'linked_account_create_%s';
+
+    protected $mutex;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
 
     /**
      * Creates a merchant and saves in database
@@ -369,8 +379,19 @@ class Service extends Base\Service
 
         $submerchantInput = $this->extractSubmerchantInput($input);
 
-        $linkedAccountArray = $this->createSubMerchantAndSetRelations($this->merchant, true, $submerchantInput);
+        $mutexKey = sprintf(self::LINKED_ACCOUNT_CREATE, strtolower($submerchantInput[Entity::EMAIL]));
 
+        $linkedAccountArray = $this->mutex->acquireAndReleaseStrict(
+            $mutexKey,
+            function() use ($submerchantInput)
+            {
+                return $this->createSubMerchantAndSetRelations($this->merchant, true, $submerchantInput);
+            },
+            Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+            Constants::MERCHANT_MUTEX_RETRY_COUNT
+        );
+        
         if (isset($linkedAccountArray['id']) === false)
         {
             throw new Exception\LogicException(
