@@ -22,6 +22,7 @@ import {
 } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import DualDetailView, { PrimaryView, SecondaryView } from 'common/new-ui/DualDetailView';
+import { updateItemInPayments } from 'merchant/reducers/collection';
 
 class PaymentDetailsContainer extends Component {
   constructor(props) {
@@ -234,22 +235,28 @@ class PaymentDetailsContainer extends Component {
   onCreateTransfer = () => {
     this.secClose();
     this.props.fetchItem(this.props.id).then((payment) => {
+      this.props.updateItemInPayments(payment);
       this.props.fetchTransfers(payment);
     });
   };
 
   onTransferReverse = () => {
-    this.props.fetchItem(this.props.id);
+    this.props.fetchItem(this.props.id).then((payment) => {
+      this.props.updateItemInPayments(payment);
+    });
   };
 
   onPaymentRefund = () => {
     this.props.fetchItem(this.props.id).then((payment) => {
+      this.props.updateItemInPayments(payment);
       this.props.fetchRefunds(payment);
     });
   };
 
   onUpdateReferenceId = () => {
-    this.props.fetchItem(this.props.id);
+    this.props.fetchItem(this.props.id).then((payment) => {
+      this.props.updateItemInPayments(payment);
+    });
   };
 
   openRefundModal = (payment, refunds) => {
@@ -407,6 +414,7 @@ export default compose(
       fetchSettlementAmount,
       expandSlider,
       compactSlider: fnCompactSlider,
+      updateItemInPayments,
       ...ModalActions,
       ...PaymentActions,
       ...NotificationsActions,

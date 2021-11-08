@@ -68,6 +68,7 @@ export const appendEntityToList = (state, action) => {
 
 export const updateEntityInList = (state, action) => {
   const itemIndex = state.items.findIndex((item) => item.id === action.payload.id);
+  if (itemIndex < 0) return state;
   return set(state, `items.${itemIndex}`, action.payload);
 };
 
@@ -116,7 +117,7 @@ export const makeActionCollectionReducer = (
 // TODO: Below things should be moved to individual files
 
 export const fetchPayments = (params) => fetchAll(params, Payment, 'PAYMENTS');
-export const paymentsReducer = makeCollectionReducer(
+export const paymentsReducer = makeActionCollectionReducer(
   'PAYMENTS',
   {},
   // ignore( do not send to API ) "ref" param if seen present the url
@@ -193,4 +194,12 @@ export const smartCollectPaymentsReducer = makeCollectionReducer('SC_PAYMENTS');
 export const fetchQRCodesPayments = (params) => {
   return fetchAll(params, QRPayment, 'QR_CODE_PAYMENTS');
 };
+
+export const updateItemInPayments = (item) => {
+  return {
+    type: 'PAYMENT_EDIT::SUCCESS',
+    payload: item,
+  };
+};
+
 export const qrCodePaymentsReducer = makeCollectionReducer('QR_CODE_PAYMENTS');
