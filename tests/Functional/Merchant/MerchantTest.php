@@ -249,6 +249,32 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testIfMerchantOrgAxisCC()
+    {
+        $this->ba->privateAuth();
+
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $org = $this->getLastEntity('org', true);
+
+        $this->fixtures->org->edit($org['id'], ['custom_code' => 'axis_cc']);
+
+        $org = $this->getLastEntity('org', true);
+
+        $orgId = trim($org['id'],"org_");
+
+        $this->fixtures->merchant->edit('10000000000000',['org_id' => $orgId]);
+
+        $merchant = (new Merchant\Repository)->findOrFail('10000000000000');
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $this->assertTrue($this->app['basicauth']->authCreds->checkIfOrgAxisCC());
+    }
+
+
     public function testCreateKey()
     {
         $this->createMerchant();

@@ -11,6 +11,9 @@ use RZP\Trace\TraceCode;
 
 class KeyAuthCreds extends AuthCreds
 {
+
+    protected $orgCustomCode = null;
+
     public function isKeyExisting()
     {
         $keyId = $this->getKey();
@@ -96,6 +99,30 @@ class KeyAuthCreds extends AuthCreds
         $this->setAndCheckMerchantActivatedForLive($merchant);
 
         return $this->merchant;
+    }
+
+    public function setMerchant($merchant)
+    {
+        if ($merchant !== null)
+        {
+            /** @var Org\Entity $org */
+            $org = $merchant->org;
+
+            $this->setOrgCustomCode($org->getCustomCode());
+        }
+        parent::setMerchant($merchant);
+    }
+
+    public function setOrgCustomCode($orgCustomCode)
+    {
+        $this->orgCustomCode = $orgCustomCode;
+
+        return $this;
+    }
+
+    public function getOrgCustomCode()
+    {
+        return $this->orgCustomCode;
     }
 
     public function getKeyEntity()

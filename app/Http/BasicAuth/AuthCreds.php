@@ -22,11 +22,12 @@ use RZP\Models\Merchant\RazorxTreatment;
 
 abstract class AuthCreds
 {
-    const KEY          = 'key';
-    const KEY_ID       = 'key_id';
-    const ACCOUNT_ID   = 'account_id';
-    const SECRET       = 'secret';
-    const PUBLIC_KEY   = 'public_key';
+    const KEY                     = 'key';
+    const KEY_ID                  = 'key_id';
+    const ACCOUNT_ID              = 'account_id';
+    const SECRET                  = 'secret';
+    const PUBLIC_KEY              = 'public_key';
+    const AXIS_CC_ORG_CUSTOM_CODE = 'axis_cc';
 
     protected $keyId = '';
 
@@ -331,4 +332,11 @@ abstract class AuthCreds
         return ApiResponse::unauthorized(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
     }
+
+    //function to check if org custom code is axis cc
+    public function checkIfOrgAxisCC(): bool
+    {
+        return $this->orgCustomCode === self::AXIS_CC_ORG_CUSTOM_CODE;
+    }
+
 }

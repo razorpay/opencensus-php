@@ -12,7 +12,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     /*
      * Payment component error messages
      */
-
     const PAYOUT_BULK_AMOUNT_TYPE_UPDATE_SUCCESSFUL             = 'PAYOUT_BULK_AMOUNT_TYPE_UPDATE_SUCCESSFUL';
     const PAYOUT_BULK_AMOUNT_TYPE_UPDATE_FAILED                 = 'PAYOUT_BULK_AMOUNT_TYPE_UPDATE_FAILED';
 
