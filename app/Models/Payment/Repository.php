@@ -385,15 +385,10 @@ class Repository extends Base\Repository
         }
         else
         {
-
             $connection = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
             $query = $this->newQueryWithConnection($connection);
         }
-
-        $query = $query->with($expands);
-
-        $this->addCommonQueryParamMerchantId($query, $merchantId);
 
         $this->setEsRepoIfExist();
 
@@ -409,6 +404,21 @@ class Repository extends Base\Repository
         {
             return $this->runEsFetch($esParams, $merchantId, $expands);
         }
+
+        // Found a bug where Merchant SDK intg private auth calls were
+        // going to admin cluster, returning the same result for private
+        // auth and paginated result for proxy auth.
+        if (($this->auth->isPrivateAuth() === true) or
+            ($this->auth->isProxyAuth() === true))
+        {
+            $connection = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $query = $this->newQueryWithConnection($connection);
+        }
+
+        $query = $query->with($expands);
+
+        $this->addCommonQueryParamMerchantId($query, $merchantId);
 
         // If above doesn't happen we build query for mysql fetch and return the
         // result.
@@ -430,6 +440,7 @@ class Repository extends Base\Repository
 
             return $result;
         }
+
         try
         {
             $startTimeMs = round(microtime(true) * 1000);
