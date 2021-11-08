@@ -10,7 +10,7 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { StoreProductsStatusLabel } from 'merchant/components/StatusLabel';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { fetchProducts, updateProductsList } from 'merchant/reducers/storefront';
+import { addToProductsList, updateProductsList } from 'merchant/reducers/storefront';
 
 import { uploadProductImage, saveProduct, fetchProduct, patchProduct } from '../model';
 
@@ -25,7 +25,7 @@ const WRAPPER_CLASS = 'Stores--ProductCreate';
 @withRouter
 @connect(null, {
   showNotification,
-  fetchProducts,
+  addToProductsList,
   updateProductsList,
 })
 export default class ProductCreate extends React.Component {
@@ -140,7 +140,7 @@ export default class ProductCreate extends React.Component {
         if (product_id) {
           this.props.updateProductsList(response.data);
         } else {
-          this.props.fetchProducts();
+          this.props.addToProductsList(response.data);
         }
 
         this.props.onClose();

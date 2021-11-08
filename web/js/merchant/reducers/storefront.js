@@ -1,4 +1,4 @@
-import { set } from 'common/utils/immutable';
+import { set, unshift } from 'common/utils/immutable';
 
 import {
   fetchStore as fetchStoreApi,
@@ -14,6 +14,7 @@ const FETCH_PRODUCTS = 'FETCH_PRODUCTS';
 const DELETE_STORE = 'DELETE_STORE';
 const HIDE_SUCCESS_MODAL = 'HIDE_SUCCESS_MODAL';
 const UPDATE_PRODUCTS_LIST = 'UPDATE_PRODUCTS_LIST';
+const ADD_TO_PRODUCTS_LIST = 'ADD_TO_PRODUCTS_LIST';
 
 // Actions creators
 
@@ -60,6 +61,13 @@ export const hideSuccessModal = () => {
 export const updateProductsList = (payload) => {
   return {
     type: UPDATE_PRODUCTS_LIST,
+    payload,
+  };
+};
+
+export const addToProductsList = (payload) => {
+  return {
+    type: ADD_TO_PRODUCTS_LIST,
     payload,
   };
 };
@@ -164,6 +172,9 @@ export default (state = initialState, action) => {
       index = state.products.items.findIndex((product) => product.id === action.payload.id);
 
       return set(state, `products.items.${index}`, action.payload);
+
+    case ADD_TO_PRODUCTS_LIST:
+      return set(state, `products.items`, unshift(state.products.items, action.payload));
 
     default:
       return state;
