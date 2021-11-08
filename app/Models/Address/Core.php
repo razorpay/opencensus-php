@@ -40,8 +40,6 @@ class Core extends Base\Core
             return $this->createForPayment($entity, $input);
         }
 
-        $address = (new Entity)->build($input);
-
         Type::validateType($input[Entity::TYPE], $entityType);
 
         $currentAddresses = $this->repo->address->fetchAddressesForEntity(
@@ -58,6 +56,8 @@ class Core extends Base\Core
         {
             return $this->createForCustomer($entity, $input);
         }
+
+        $address = (new Entity)->build($input);
 
         return $this->repo->transaction(function() use ($address, $entity)
         {
