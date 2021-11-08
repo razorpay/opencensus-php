@@ -67,7 +67,13 @@ class BvsValidationClient extends BaseClient
      */
     public function createValidation(array $validation)
     {
-        $this->trace->info(TraceCode::BVS_CREATE_VALIDATION_REQUEST, ['validation' => $validation]);
+        $ownerId = $validation[Constant::OWNER_ID] ?? '';
+        $artefactType = $validation[Constant::ARTEFACT][Constant::TYPE] ?? '';
+
+        $this->trace->info(TraceCode::BVS_CREATE_VALIDATION_REQUEST, [
+            'owner'         => $ownerId,
+            'artefact_type' => $artefactType
+        ]);
 
         $validationCreateRequest = $this->getCreateValidationRequest($validation);
 
@@ -78,7 +84,6 @@ class BvsValidationClient extends BaseClient
         else
             $this->trace->info(TraceCode::BVS_CREATE_VALIDATION_METADATA, [Constant::META_DATA => null]);
 
-        $artefactType = $validation[Constant::ARTEFACT][Constant::TYPE] ?? '';
 
         try {
             $response = $this->ValidationApiClient->CreateValidation($this->apiClientCtx, $validationCreateRequest);

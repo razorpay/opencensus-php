@@ -151,6 +151,15 @@ class Constants
         Entity::BANK_BRANCH_IFSC
     ];
 
+    const SENSITIVE_FIELDS_FOR_LOGGING = [
+        Entity::BANK_ACCOUNT_NUMBER,
+        Entity::BANK_ACCOUNT_NAME,
+        Entity::PROMOTER_PAN,
+        Entity::COMPANY_PAN,
+        Entity::PROMOTER_PAN_NAME,
+        Entity::COMPANY_PAN_NAME
+    ];
+
     // Using this blacked listed banks to block bank account details
     // update in merchant details
     const BLACKLISTED_BANKS = [];

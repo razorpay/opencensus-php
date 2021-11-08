@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use Illuminate\Support\Arr;
 use RZP\Models\Merchant\Detail\Metric;
 use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\Store\ConfigKey;
@@ -59,7 +60,9 @@ class Core extends Base\Core
     {
         $input[Constant::OWNER_ID] = $ownerId;
 
-        $this->trace->info(TraceCode::BVS_VERIFICATION_REQUEST, ['input' => $input]);
+        $this->trace->info(TraceCode::BVS_VERIFICATION_REQUEST, [
+            'owner_id'  => $ownerId,
+            'input'     => Arr::except($input, Constant::MASKED_KEYS_FOR_LOGGING)]);
 
         $validation                  = null;
         $validationTriggeringSuccess = true;

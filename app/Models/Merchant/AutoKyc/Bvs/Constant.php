@@ -233,4 +233,8 @@ class Constant
         ],
         Constant::BUSINESS_PAN            => [],
     ];
+
+    const MASKED_KEYS_FOR_LOGGING = [
+        self::DETAILS
+    ];
 }

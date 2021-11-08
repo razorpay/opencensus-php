@@ -165,6 +165,23 @@ class Core extends Base\Core
         }
     }
 
+    protected function getMaskedDataForLogging(array $input)
+    {
+        $maskedInput = [];
+
+        foreach ($input as $key => $value)
+        {
+            $maskedInput[$key] = $value;
+
+            if(empty($value) === false and in_array($key, DEConstants::SENSITIVE_FIELDS_FOR_LOGGING, true) === true)
+            {
+                $maskedInput[$key] = mask_except_last4($value);
+            }
+        }
+
+        return $maskedInput;
+    }
+
     public function saveMerchantDetails(array $input,
                                         Merchant\Entity $merchant,
                                         string $originProduct = Product::PRIMARY)
@@ -172,7 +189,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS,
             [
-                'input'       => $input,
+                'input'       => $this->getMaskedDataForLogging($input),
                 'merchant_id' => $merchant->getId(),
             ]);
 
