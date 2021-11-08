@@ -318,7 +318,18 @@ class Core extends Base\Core
 
     public function fetchMultiple($merchant, $input = [])
     {
+        $startTimeMs = round(microtime(true) * 1000);
+
         $contact = $this->repo->contact->fetch($input, $merchant->getId());
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $totalFetchTime = $endTimeMs - $startTimeMs;
+
+        $this->trace->info(TraceCode::DATA_WAREHOUSE_RESPONSE_DURATION, [
+            'duration_ms'    => $totalFetchTime,
+        ]);
+
 
         return $this->getBulkAppSpecificInformation($contact);
     }

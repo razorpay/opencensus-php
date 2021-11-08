@@ -203,7 +203,7 @@ trait RepositoryFetch
 
         $queryDuration = $endTimeMs - $startTimeMs;
 
-        if ($queryDuration > 3000)
+        if ($queryDuration > 100)
         {
             $this->trace->info(TraceCode::DATA_WAREHOUSE_RESPONSE_DURATION, [
                 'data_warehouse' => in_array($connection , Connection::DATA_WAREHOUSE_CONNECTIONS),
