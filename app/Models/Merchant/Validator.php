@@ -565,7 +565,7 @@ class Validator extends Base\Validator
     protected static $couponCodeUrlUpdateRequestRules = [
         'url'                           => 'required|active_url'
     ];
-    
+
     protected static $shippingInfoRequestRules = [
         Address\Entity::ZIPCODE => 'required|string|between:2,10',
         Address\Entity::COUNTRY => 'sometimes|string|between:2,64|custom',
@@ -2406,8 +2406,24 @@ class Validator extends Base\Validator
 
         $resultArray =(new Core())->getMerchantRiskData($merchantId);
 
-        if(($resultArray['domestic_merchant_chargeback_to_sale_ratio_(%)'][0]['lifetime'] > 5.0) or
-            ($resultArray['domestic_merchant_fraud_to_sale_ratio_(%)'][0]['lifetime'] > 5.0))
+        if(empty($resultArray['domestic_merchant_chargeback_to_sale_ratio_(%)'][0]['lifetime']) === true)
+        {
+            $this->getTrace()->info(TraceCode::TRANSACTION_LIMIT_CTS_RATIO_NOT_FOUND, [
+                Constants::MERCHANT_ID => $merchantId
+            ]);
+        }
+
+        if(empty($resultArray['domestic_merchant_fraud_to_sale_ratio_(%)'][0]['lifetime']) === true)
+        {
+            $this->getTrace()->info(TraceCode::TRANSACTION_LIMIT_FTS_RATIO_NOT_FOUND, [
+                Constants::MERCHANT_ID => $merchantId
+            ]);
+        }
+
+        if (((empty($resultArray['domestic_merchant_chargeback_to_sale_ratio_(%)'][0]['lifetime']) === false) and
+             ($resultArray['domestic_merchant_chargeback_to_sale_ratio_(%)'][0]['lifetime'] > 5.0)) or
+            ((empty($resultArray['domestic_merchant_fraud_to_sale_ratio_(%)'][0]['lifetime']) === false) and
+             ($resultArray['domestic_merchant_fraud_to_sale_ratio_(%)'][0]['lifetime'] > 5.0)))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_EDIT_TRANSACTION_LIMIT_CTS_OR_FTS_MORE_THAN_5
