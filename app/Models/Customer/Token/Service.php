@@ -7,11 +7,13 @@ use RZP\Models\Card;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Feature;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
 use RZP\Models\Customer\GatewayToken;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
+use RZP\Models\Mpan;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -627,14 +629,16 @@ class Service extends Base\Service
 
         $cardNumber = (new Card\CardVault)->getCardNumber($cardToken);
 
-        $response['provider'] = [
-                'type'  => 'network',
-                'name'  => $token->card->getNetwork(),
-                'data'  => [
+        $response['service_provider_tokens'] = [[
+                'provider_type'  => 'network',
+                'provider_name'  => $token->card->getNetwork(),
+                'interoperable'  => true,
+                'provider_data'  => [
                     'token_number'           => $token->card->getIin() .  strrev(substr($cardNumber, 7, strlen($cardNumber))),
                     'cryptogram_value'       => str_shuffle('1122334AWEQOELASRESAasdblqwer83446778899'),
-                    'expiry_month'           => $token->card->getExpiryMonth(),
-                    'expiry_year'            => $token->card->getExpiryYear(),
+                    'token_expiry_month'           => $token->card->getExpiryMonth(),
+                    'token_expiry_year'            => $token->card->getExpiryYear(),
+                ]
             ]];
 
         return $response;
@@ -659,26 +663,47 @@ class Service extends Base\Service
             $response[Token\Entity::CUSTOMER_ID] = $token->customer->getPublicId();
         }
 
-        $response['card']['token_iin']       = $token->card->getIin();
-
-        $response[Card\Entity::EXPIRY_MONTH] = $token->card->getExpiryMonth();
-
-        $response[Card\Entity::EXPIRY_YEAR]  = $token->card->getExpiryYear();
-
-        $response['status'] = ($token->isExpired() === true) ? 'deactivated' : 'activated';
-
         if ($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NETWORK_TOKENS) === true)
         {
-            $response['service_providers'] = [[
-                'type'  => 'network',
-                'name'  => $token->card->getNetwork(),
-                'data'  => [
-                    'token_reference_number' => $token->card->getVaultToken(),
-                    'card_reference_number'  => $token->card->getGlobalFingerPrint(),
-                    'interoperable'          => true,
-                ],
+            $response['compliant_with_tokenisation_guidelines'] = true;
+
+            $response['service_provider_tokens'] = [[
+                'id'             => 'spt_' . substr(UniqueIdEntity::generateUniqueId() ?? null, 0, 8),
+                'entity'         => 'service_provider_token',
+                'provider_type'  => 'network',
+                'provider_name'  => $token->card->getNetwork(),
+                'status'         => 'created',
+                'interoperable'  => true,
             ]];
 
+            if ($token->card->getNetwork() === Mpan\Constants::MASTERCARD)
+            {
+                $response['status'] = 'created';
+
+                $response['expired_at'] = null;
+
+                $response['notes'] = [];
+
+                $response['service_provider_tokens'][0]['provider_data'] = [
+                    'token_reference_number' => $token->card->getVaultToken(),
+                    'card_reference_number'  => $token->card->getGlobalFingerPrint(),
+                    'token_iin'              => null,
+                    'token_expiry_month'     => null,
+                    'token_expiry_year'      => null,
+                ];
+            }
+            else
+            {
+                $response['status'] = ($token->isExpired() === true) ? 'deactivated' : 'activated';
+
+                $response['service_provider_tokens'][0]['provider_data'] = [
+                    'token_reference_number' => $token->card->getVaultToken(),
+                    'card_reference_number'  => $token->card->getGlobalFingerPrint(),
+                    'token_iin'              => $token->card->getIin(),
+                    'token_expiry_month'     => $token->card->getExpiryMonth(),
+                    'token_expiry_year'      => $token->card->getExpiryYear(),
+                ];
+            }
         }
 
         return $response;

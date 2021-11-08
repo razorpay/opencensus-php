@@ -40,7 +40,7 @@ return [
 
     'testFetchCryptogram' => [
         'request' => [
-            'url' => '/tokens/cryptogram',
+            'url' => '/tokens/get_payment_data',
             'method' => 'post',
             'content' => [
             ],
@@ -132,7 +132,7 @@ return [
 
     'testFetchCryptogramLive' => [
         'request' => [
-            'url' => '/tokens/cryptogram',
+            'url' => '/tokens/get_payment_data',
             'method' => 'post',
             'content' => [
             ],
@@ -145,7 +145,7 @@ return [
 
     'testFetchCryptogramLiveInvalidTokenId' => [
         'request' => [
-            'url' => '/tokens/cryptogram',
+            'url' => '/tokens/get_payment_data',
             'method' => 'post',
             'content' => [
             ],
@@ -163,7 +163,7 @@ return [
 
     'testFetchCryptogramLiveVaultFailure' => [
         'request' => [
-            'url' => '/tokens/cryptogram',
+            'url' => '/tokens/get_payment_data',
             'method' => 'post',
             'content' => [
             ],

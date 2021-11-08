@@ -291,6 +291,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_ADDRESS,
         self::USED_AT,
         self::RECURRING_DETAILS,
+        self::CREATED_AT,
     ];
 
     public function customer()
