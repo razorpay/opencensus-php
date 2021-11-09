@@ -33,8 +33,12 @@ import QuickGuide, {
 } from 'merchant/views/Subscriptions/QuickGuide';
 import SubscriptionSettings from 'merchant/views/Subscriptions/Settings';
 import Announcement from 'merchant/components/Announcements';
-import { CardsGoLiveBanner } from './components/banners/';
-import { CAW_CARDS_BANNER, SUBSCRIPTION_CARDS_BANNER } from './constants';
+import { CardsGoLiveBanner, PaperNachBanner } from './components/banners/';
+import {
+  CAW_CARDS_BANNER,
+  SUBSCRIPTION_CARDS_BANNER,
+  PAPER_NACH_CARD_BANNER_URL,
+} from './constants';
 import RTracking from 'react-tracking';
 import analytics from './analytics';
 
@@ -144,6 +148,7 @@ class SubscriptionsController extends React.Component {
     const cardsGoLiveBannerUrl = userInfo.isChargeAtWillEnabled
       ? CAW_CARDS_BANNER
       : SUBSCRIPTION_CARDS_BANNER;
+    const showPaperNachBanner = userInfo.methods?.nach ?? false;
 
     if (subscriptionProductOnBoarding.showOnboarding) {
       return <OnBoarding />;
@@ -151,7 +156,7 @@ class SubscriptionsController extends React.Component {
 
     return (
       <div class={classList('Subscriptions-Container')}>
-        {userInfo.isChargeAtWillEnabled && (
+        {userInfo.isChargeAtWillEnabled && !showPaperNachBanner && (
           <Announcement
             title="UPI Mandate Update"
             canBeClosed={true}
@@ -161,6 +166,7 @@ class SubscriptionsController extends React.Component {
             message="You can now charge customers on UPI Autopay any time as per your business requirement and not just monthly basis"
           />
         )}
+        {showPaperNachBanner && <PaperNachBanner url={PAPER_NACH_CARD_BANNER_URL} />}
         <CardsGoLiveBanner url={cardsGoLiveBannerUrl} />
 
         <tabbed-container>
