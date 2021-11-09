@@ -1,14 +1,9 @@
+import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import Definition from 'common/ui/Definition';
 import Spinner from 'common/ui/Spinner';
-import Banner from 'common/ui/Banner';
-import DataTable from 'common/ui/Table/DataTable';
-import { paymentId, amount, paidOn } from 'common/ui/item/pair';
-import ContentToggler from 'common/ui/Toggler/ContentToggler';
-import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -36,13 +31,13 @@ import {
   trackTogglePartialPayment,
   trackClickDuplicatePaymentLink,
 } from 'merchant/views/PaymentLinks/PaymentLinks/ga';
+import track from './track';
 
 export default (props) => {
-  let {
+  const {
     user,
     paymentlink,
     isLoading,
-    statusMsg,
     nextReminders,
     editPaymentLink,
     isRoleAllowedEdit,
@@ -52,7 +47,7 @@ export default (props) => {
     isPaymentLinksRemindersEnabled,
   } = props;
 
-  let status = paymentlink.status ? paymentlink.status.toLowerCase() : null;
+  const status = paymentlink.status ? paymentlink.status.toLowerCase() : null;
   const isDraft = status === 'draft';
   const isIssued = status && ['issued', 'created'].indexOf(status.toLowerCase()) > -1;
   const isPaid = status === 'paid';
@@ -60,7 +55,7 @@ export default (props) => {
   const isCancelled = status === 'cancelled';
   const isExpired = status === 'expired';
 
-  let isSmsOrEmailSent = paymentlink.sms_status === 'sent' || paymentlink.email_status === 'sent';
+  const isSmsOrEmailSent = paymentlink.sms_status === 'sent' || paymentlink.email_status === 'sent';
 
   const isRemindersEnabled =
     paymentlink.reminder_status &&
@@ -75,7 +70,28 @@ export default (props) => {
     );
 
   const isUPILink = paymentlink.upi_link;
-
+  const isPartialPayment = paymentlink.partial_payment;
+  const generateCreatedBy = () => {
+    if (!!paymentlink.user_id) {
+      if (!!paymentlink.user) {
+        return (
+          <Definition>
+            {paymentlink.user.name}
+            {paymentlink.user.email}
+          </Definition>
+        );
+      } else {
+        return (
+          <Definition>
+            <span>User Id</span>
+            <span>{paymentlink.user_id}</span>
+          </Definition>
+        );
+      }
+    } else {
+      return <span>API</span>;
+    }
+  };
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -123,13 +139,11 @@ export default (props) => {
                     )}
                   </EntityDetailRow>
                 )}
-
                 <EntityDetailRow
                   label="Payment For"
                   pairClass="description"
                   value={paymentlink.description || '--'}
                 />
-
                 <EntityDetailRow
                   label="Status"
                   value={() => (
@@ -149,60 +163,50 @@ export default (props) => {
                     </div>
                   )}
                 />
+                {!isUPILink && (
+                  <EntityDetailRow
+                    label="Partial Payment"
+                    value={() => (
+                      <div>
+                        {isPartialPayment ? 'Enabled' : 'Disabled'}
+                        {isRoleAllowedEdit && isIssued && (
+                          <AsyncBtn.Transparent
+                            onClick={() => {
+                              const toEnablePartialPayment = +!isPartialPayment;
 
-                <React.Fragment>
-                  {do {
-                    const isPartialPayment = paymentlink.partial_payment;
+                              editPaymentLink({
+                                partial_payment: toEnablePartialPayment,
+                              });
 
-                    {
-                      !isUPILink && (
-                        <EntityDetailRow
-                          label="Partial Payment"
-                          value={() => (
-                            <div>
-                              {isPartialPayment ? 'Enabled' : 'Disabled'}
-                              {isRoleAllowedEdit && isIssued && (
-                                <AsyncBtn.Transparent
-                                  onClick={() => {
-                                    const toEnablePartialPayment = +!isPartialPayment;
-
-                                    editPaymentLink({
-                                      partial_payment: toEnablePartialPayment,
-                                    });
-
-                                    trackTogglePartialPayment(
-                                      paymentlink.id,
-                                      'Toggle Partial Payment',
-                                      toEnablePartialPayment,
-                                    );
-                                  }}
-                                  class="Button--Link"
-                                  style={{ marginLeft: 12 }}
-                                  pendingState={isPartialPayment ? 'Disabling' : 'Enabling'}
-                                >
-                                  {isPartialPayment ? 'Disable' : 'Enable'}
-                                </AsyncBtn.Transparent>
-                              )}
-                              {isMinimumFirstPaymentEnabled && isPartialPayment && (
-                                <EditMinimumAmount
-                                  isIssued={isIssued}
-                                  value={paymentlink.first_payment_min_amount}
-                                  maximum={paymentlink.amount}
-                                  currency={paymentlink.currency}
-                                  entityId={paymentlink.id}
-                                  editFn={editPaymentLink}
-                                  trackerFn={() => {}}
-                                  isRoleAllowedEdit={isRoleAllowedEdit}
-                                />
-                              )}
-                            </div>
-                          )}
-                        />
-                      );
-                    }
-                  }}
-                </React.Fragment>
-
+                              trackTogglePartialPayment(
+                                paymentlink.id,
+                                'Toggle Partial Payment',
+                                toEnablePartialPayment,
+                              );
+                            }}
+                            class="Button--Link"
+                            style={{ marginLeft: 12 }}
+                            pendingState={isPartialPayment ? 'Disabling' : 'Enabling'}
+                          >
+                            {isPartialPayment ? 'Disable' : 'Enable'}
+                          </AsyncBtn.Transparent>
+                        )}
+                        {isMinimumFirstPaymentEnabled && isPartialPayment && (
+                          <EditMinimumAmount
+                            isIssued={isIssued}
+                            value={paymentlink.first_payment_min_amount}
+                            maximum={paymentlink.amount}
+                            currency={paymentlink.currency}
+                            entityId={paymentlink.id}
+                            editFn={editPaymentLink}
+                            trackerFn={() => {}}
+                            isRoleAllowedEdit={isRoleAllowedEdit}
+                          />
+                        )}
+                      </div>
+                    )}
+                  />
+                )}
                 <EntityDetailRow
                   label="Amount"
                   value={() => (
@@ -215,7 +219,6 @@ export default (props) => {
                     isPaymentlinksV2Enabled={user.isPaymentlinksV2Enabled}
                   />
                 </EntityDetailRow>
-
                 <EntityDetailRow
                   label="Link Url"
                   value={() => (
@@ -227,6 +230,7 @@ export default (props) => {
                           eventAction: 'Copy - Payment Link',
                           eventLabel: `payment_link_id=${paymentlink.id}`,
                         });
+                        track.onCopyClick();
                       }}
                     />
                   )}
@@ -241,7 +245,6 @@ export default (props) => {
                     smsStatus={paymentlink.customer_details.sms_status}
                   />
                 </EntityDetailRow>
-
                 {isPaymentLinksRemindersEnabled && (
                   <EntityDetailRow label="Reminders">
                     <React.Fragment>
@@ -276,7 +279,6 @@ export default (props) => {
                     </React.Fragment>
                   </EntityDetailRow>
                 )}
-
                 {!isPaymentLinksRemindersEnabled && (
                   <EntityDetailRow label="Reminders">
                     <div class="Input-content">
@@ -289,7 +291,6 @@ export default (props) => {
                     </div>
                   </EntityDetailRow>
                 )}
-
                 <EntityDetailRow
                   label={user.isPaymentlinksV2Enabled ? 'Reference Id' : 'Receipt No.'}
                   value={
@@ -312,27 +313,7 @@ export default (props) => {
                       : paymentlink.receipt || '--'
                   }
                 />
-
-                <EntityDetailRow label="Created By">
-                  {do {
-                    if (!!paymentlink.user_id) {
-                      if (!!paymentlink.user) {
-                        <Definition>
-                          {paymentlink.user.name}
-                          {paymentlink.user.email}
-                        </Definition>;
-                      } else {
-                        <Definition>
-                          <span>User Id</span>
-                          <span>{paymentlink.user_id}</span>
-                        </Definition>;
-                      }
-                    } else {
-                      <span>API</span>;
-                    }
-                  }}
-                </EntityDetailRow>
-
+                <EntityDetailRow label="Created By">{generateCreatedBy()}</EntityDetailRow>
                 <EntityDetailRow
                   label="Created At"
                   value={() => <Time value={paymentlink.date || paymentlink.created_at} />}
@@ -369,7 +350,6 @@ export default (props) => {
                           )
                   }
                 />
-
                 {!user.isCustomNotesDropdownEnabled ? (
                   <EntityDetailRow label="Notes">
                     <EditNotes

@@ -46,6 +46,11 @@ function _track() {
       sendToSegment(`${titleCase(featureName)} doucmentation`, 'clicked', `payment link`);
     },
 
+    onReminderSettingClick: (featureName) => {
+      sendToLumberjack(`${featureName}.reminder_setting.clicked`);
+      sendToSegment(`${titleCase(featureName)} reminder setting`, 'clicked', `payment link`);
+    },
+
     init(_lumberjackTrack) {
       lumberjackTrack = _lumberjackTrack;
     },

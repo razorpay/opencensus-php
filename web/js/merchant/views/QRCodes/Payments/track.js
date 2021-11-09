@@ -1,10 +1,10 @@
 import { trackLJ, trackSegment } from 'merchant/views/QRCodes/track';
 
 function _track() {
-  let track;
+  let lumberjackTrack = () => {};
 
   function send(event, options) {
-    track(trackLJ(`payments.${event}`, options));
+    lumberjackTrack(trackLJ(`payments.${event}`, options));
 
     trackSegment({
       event,
@@ -34,14 +34,15 @@ function _track() {
 
     tour: () => send('tour'),
 
-    tourStatus: (success) => send('tour_response', {
-      success
-    }),
+    tourStatus: (success) =>
+      send('tour_response', {
+        success,
+      }),
 
     docs: () => send('docs'),
 
-    init: ({ track: _track }) => {
-      track = _track;
+    init: (_lumberjackTrack) => {
+      lumberjackTrack = _lumberjackTrack;
     },
   };
 }

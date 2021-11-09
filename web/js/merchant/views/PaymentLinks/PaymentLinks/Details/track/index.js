@@ -51,6 +51,11 @@ function _track() {
       sendToSegment('resend success toast', 'click', property);
       sendToLumberjack('pl.resend.issue.success', property);
     },
+
+    onCopyClick: () => {
+      sendToLumberjack(`pl.create.copy`);
+      sendToSegment(`payment link create copy`, 'clicked', `payment link`);
+    },
   };
 }
 

@@ -1,26 +1,25 @@
 import { trackLJ, trackSegment } from 'merchant/views/QRCodes/track';
 
 function _track() {
-  let track = () => {};
+  let lumberjackTrack = () => {};
 
   function send(event, options) {
-    track(
-      trackLJ(`create.${event}`, options)
-    );
+    lumberjackTrack(trackLJ(`qr.create.${event}`, options));
 
     trackSegment({
       event,
-      screen: 'create',
-      options
-    })
+      screen: 'qr create',
+      options,
+    });
   }
 
   return {
     open: () => send('open'),
 
-    field: (name, value) => send(`field.${name}`, {
-      value
-    }),
+    field: (name, value) =>
+      send(`field.${name}`, {
+        value,
+      }),
 
     advancedOptions: (isShow) => send('advance', { show: isShow }),
 
@@ -28,21 +27,25 @@ function _track() {
 
     cancel: () => send('cancel'),
 
-    submitSuccess: (success) => send('submit_success', {
-      success: true
-    }),
+    submitSuccess: () =>
+      send('submit_success', {
+        success: true,
+      }),
 
-    downloadImage: () => send('image_preview.download'),
+    downloadImage: () => send('_submit_success_download'),
 
-    backToDashboard: () => send('image_preview.back_to_dashboard'),
+    backToDashboard: () => send('_submit_success_close'),
 
-    submitFail: (reason) => send('submit_fail', {
-      fail: true,
-      reason
-    }),
+    needHelp: () => send('need_help.clicked'),
 
-    init: ({ track: _track }) => {
-      track = _track;
+    submitFail: (reason) =>
+      send('submit_fail', {
+        fail: true,
+        reason,
+      }),
+
+    init: (_lumberjackTrack) => {
+      lumberjackTrack = _lumberjackTrack;
     },
   };
 }

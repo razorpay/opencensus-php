@@ -208,6 +208,10 @@ export default class PaymentLinksContainer extends ListContainer {
     track.onDocumentClick(RZPFeatures.PL);
   };
 
+  trackReminderSetting = () => {
+    track.onReminderSettingClick(RZPFeatures.PL);
+  };
+
   render() {
     const { loading, paymentlinks, user: users, mode, tracking } = this.props;
     const status = this.state.status;
@@ -239,7 +243,9 @@ export default class PaymentLinksContainer extends ListContainer {
             <span class="btn btn-link">
               <span class="badge bg-success m-r">new</span>
 
-              <Link to="/reminders">Reminder Settings</Link>
+              <Link to="/reminders" onClick={this.trackReminderSetting}>
+                Reminder Settings
+              </Link>
             </span>
             <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
               <TakeATourButton feature={RZPFeatures.PL} />

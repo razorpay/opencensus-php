@@ -70,7 +70,7 @@ class FeatureLink extends React.PureComponent {
       eventCategory: `Onboarding Card (${feature})`,
       eventAction: `Page ${page} - ${ga}`,
     });
-    track.featuresHyperlink(this.props.feature);
+    track.introductionHyperlink(this.props.feature);
     if (onClick) onClick();
     window.open(getCustomURL(url));
   };

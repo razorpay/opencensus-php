@@ -63,10 +63,19 @@ function _track() {
       );
     },
 
+    introductionHyperlink: (featureName, eventType) => {
+      sendToLumberjack(`${featureName}.onboarding.introduction_hyperlink`);
+      sendToSegment(
+        `${titleCase(featureName)} onboarding introduction hyperlink success`,
+        eventType || 'click',
+        `${featureName} onboarding screen`,
+      );
+    },
+
     featuresHyperlink: (featureName, eventType) => {
       sendToLumberjack(`${featureName}.onboarding.features_hyperlink`);
       sendToSegment(
-        `${titleCase(featureName)} onboarding features hyperlink`,
+        `${titleCase(featureName)} onboarding features hyperlink success`,
         eventType || 'click',
         `${featureName} onboarding screen`,
       );
@@ -93,7 +102,7 @@ function _track() {
     onBoardingGetFailed: (featureName, eventType) => {
       sendToLumberjack(`${featureName}.onboarding.get_started`, FAILED);
       sendToSegment(
-        `${titleCase(featureName)} onboarding get started failure`,
+        `${titleCase(featureName)} onboarding get started failed`,
         eventType || 'click',
         `${featureName} onboarding screen`,
       );

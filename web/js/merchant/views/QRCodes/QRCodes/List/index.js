@@ -1,5 +1,6 @@
+import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter, NavLink, Link } from 'react-router-dom';
+import { withRouter, NavLink } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import HeaderAction from 'common/ui/HeaderAction';
 import DataTable from 'common/ui/Table/DataTable';
@@ -13,7 +14,6 @@ import { qrCodeId, description, qrUsage, amountReceived, createdAt } from 'commo
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
-import List from 'merchant/views/Invoices/Invoices/components/List';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 
 import ListContainer from 'merchant/containers/ListContainer';
@@ -25,6 +25,23 @@ import track from './track';
 const QR_CODE_CREATE_HOTJAR = {
   trigger: 'QR_Creation',
   tags: ['QR_Creation'],
+};
+
+// TODO: Update colSpan if no of columns are changes
+const EmptyComponent = () => (
+  <EmptyList
+    description={
+      <React.Fragment>
+        <div>There are no QR codes yet!!</div>
+        <div>Start creating new QR code now.</div>
+      </React.Fragment>
+    }
+  />
+);
+
+export const status = {
+  title: 'Status',
+  value: (item) => <QRCodeStatusLabel status={item.status} />,
 };
 
 @withRouter
@@ -114,20 +131,3 @@ export default class QRCodesListContainer extends ListContainer {
     );
   }
 }
-
-// TODO: Update colSpan if no of columns are changes
-const EmptyComponent = () => (
-  <EmptyList
-    description={
-      <React.Fragment>
-        <div>There are no QR codes yet!!</div>
-        <div>Start creating new QR code now.</div>
-      </React.Fragment>
-    }
-  />
-);
-
-export const status = {
-  title: 'Status',
-  value: (item) => <QRCodeStatusLabel status={item.status} />,
-};

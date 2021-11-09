@@ -1,3 +1,4 @@
+import React from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
@@ -30,14 +31,11 @@ export default class CreateQRCode extends React.Component {
   }
 
   onSubmit = (reqPayload) => {
-
     track.submit();
 
     return this.props
       .saveQRCode(reqPayload)
       .then((resp) => {
-        const entityId = resp.data.id;
-
         this.showPreview(resp.data);
 
         this.props.showNotification({
@@ -55,7 +53,7 @@ export default class CreateQRCode extends React.Component {
           message: error,
         });
 
-        track.submitFail(error)
+        track.submitFail(error);
       });
   };
 
@@ -78,13 +76,13 @@ export default class CreateQRCode extends React.Component {
         />
       ),
     });
-  }
+  };
 
   onClose = () => {
     this.props.onClose();
 
     track.cancel();
-  }
+  };
 
   render() {
     const content = (
