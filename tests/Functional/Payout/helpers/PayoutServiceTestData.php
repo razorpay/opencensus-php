@@ -133,6 +133,56 @@ return [
         ],
     ],
 
+
+    'testValidatePayout' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/validate_payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'OK'
+            ],
+        ],
+    ],
+
+    'testValidatePayoutFailCase' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/validate_payouts',
+            'content' => [
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The account number field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreatePayoutServiceFailure' => [
         'request'   => [
             'method'  => 'POST',

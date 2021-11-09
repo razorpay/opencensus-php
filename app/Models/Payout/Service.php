@@ -141,6 +141,24 @@ class Service extends Base\Service
         return $this->fundAccountPayout($input, true);
     }
 
+    public function validatePayout(array $input): array
+    {
+        // Only allow access over strictly private auth, for proxy auth: OTP auth flow is mandated.
+        if ($this->auth->isStrictPrivateAuth() === false and
+            ($this->isAllowedInternalApp() === false)) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
+
+        // Only allowed for Rx payouts, mandates account number
+        // TODO: Cache the Balance ID
+        $balance = $this->processAccountNumber($input);
+
+        (new Validator)->setStrictFalse()
+            ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT, $input);
+
+        return ['OK'];
+    }
+
     public function fundAccountPayout(array $input, bool $internal = false): array
     {
         // Only allow access over strictly private auth, for proxy auth: OTP auth flow is mandated.

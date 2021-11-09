@@ -56,6 +56,15 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function validatePayout()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->validatePayout($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postFundAccountOnInternalContact()
     {
         $input = Request::all();

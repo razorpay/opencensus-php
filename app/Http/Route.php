@@ -1352,6 +1352,7 @@ class Route
         'upi_psp_allow'                            => ['post',     'upi/psp/allow',                                  'UpiController@postPspAllow'                                        ],
         'mock_event_tracker'                       => ['post',     'mock/track',                                     'MockLumberjackController@mockEventTrack'                           ],
         'payout_create'                            => ['post',     'payouts',                                        'PayoutController@postFundAccountPayout'                            ],
+        'payout_validate'                          => ['post',     'validate_payouts',                               'PayoutController@validatePayout'                            ],
         'payout_create_internal'                   => ['post',     'payouts_internal',                               'PayoutController@postFundAccountPayout'                            ],
         'payout_create_on_internal_contact'        => ['post',     'internalContactPayout',                          'PayoutController@postFundAccountOnInternalContact'                 ],
         'payouts_batch_create'                     => ['post',     'payouts_batch',                                  'PayoutsBatchController@create'                                     ],
@@ -3273,6 +3274,7 @@ class Route
         'payout_fetch_by_id',
         'payout_fetch_multiple',
         'payout_create',
+        'payout_validate',
         'payouts_batch_create',
         'payout_cancel',
         'customer_get_wallet_balance',
@@ -6354,6 +6356,7 @@ class Route
 
         //Enable maker/checker for payouts
         'payout_create'                            => Permission::CREATE_PAYOUT,
+        'payout_validate'                          => Permission::CREATE_PAYOUT,
         'payouts_batch_create'                     => Permission::CREATE_PAYOUT,
         'payout_create_with_otp'                   => Permission::CREATE_PAYOUT,
 
@@ -6773,6 +6776,7 @@ class Route
         'reporting_log_update'                         => Permission::UPDATE_REPORTING,
         'ufh_get_file_signed_url'                      => '*',
         'payout_create'                                => Permission::CREATE_PAYOUT,
+        'payout_validate'                              => Permission::CREATE_PAYOUT,
         'payouts_batch_create'                         => Permission::CREATE_PAYOUT,
         'payout_create_with_otp'                       => Permission::CREATE_PAYOUT,
         'currency_fetch_all_proxy'                     => '*',
@@ -7943,6 +7947,7 @@ class Route
             'payout_bulk_create',
             'payout_cancel',
             'payout_create',
+            'payout_validate',
             'payout_create_with_otp',
             'payout_fetch_by_id',
             'payout_fetch_multiple',
@@ -9424,6 +9429,7 @@ class Route
             'payout_bulk_create',
             'payout_cancel',
             'payout_create',
+            'payout_validate',
             'payout_create_with_otp',
             'payout_fetch_by_id',
             'payout_fetch_multiple',
@@ -11006,6 +11012,7 @@ class Route
         'reports_order_rpp'                    => [Feature::RPP_REPORT],
         'payment_payout'                       => [Feature::PAYOUT],
         'payout_create'                        => [Feature::PAYOUT],
+        'payout_validate'                      => [Feature::PAYOUT],
         'payouts_batch_create'                 => [Feature::PAYOUT, Feature::PAYOUTS_BATCH],
         'payout_approve_bulk'                  => [Feature::PAYOUT],
         'payout_reject_bulk'                   => [Feature::PAYOUT],
@@ -11370,6 +11377,7 @@ class Route
 
         //payout related routes
         'payout_create',
+        'payout_validate',
         'payouts_batch_create',
         'payout_fetch_multiple',
         'payout_fetch_by_id',
@@ -11402,6 +11410,7 @@ class Route
     const BANKING_SPECIFIC_ROUTES = [
         'merchant_activation_needs_clarification',
         'payout_create',
+        'payout_validate',
         'payouts_batch_create',
         'payout_create_with_otp',
         'payout_bulk_create',

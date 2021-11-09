@@ -373,6 +373,24 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals($payment['merchant_id'], '10000000000000');
     }
 
+    public function testValidatePayout()
+    {
+        $this->mockPayoutServiceCreate();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testValidatePayoutFailCase()
+    {
+        $this->mockPayoutServiceCreate();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
     public function testCreatePayout(): array
     {
         $this->mockPayoutServiceCreate();
