@@ -96,6 +96,7 @@ export default class View extends React.PureComponent {
           terms={paymentPageEntity.terms}
           updateData={this.updateData}
           isPPNewFooterUX={user.isPPNewFooterUX}
+          merchantName={user.billing_label || user.name}
         />
       </div>
     );

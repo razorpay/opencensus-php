@@ -32,7 +32,7 @@ export default class extends React.PureComponent {
 
   render() {
     const isEditable = this.state.isEditable || this.props.terms;
-    const { isPPNewFooterUX } = this.props;
+    const { isPPNewFooterUX, merchantName } = this.props;
 
     const content = (
       <div id="terms-details">
@@ -132,8 +132,8 @@ export default class extends React.PureComponent {
         )}
         <div>
           <p>
-            You agree to share information entered on this page with Better Experience (owner of
-            this page) and Razorpay, adhering to applicable laws.
+            You agree to share information entered on this page with {merchantName} (owner of this
+            page) and Razorpay, adhering to applicable laws.
           </p>
           <Tooltip theme="dark" align="top" className="rzp-tooltip-tnc">
             These terms and conditions are mandatory and cannot be removed.
