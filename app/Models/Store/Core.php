@@ -323,9 +323,8 @@ class Core extends Base\Core
 
         foreach ($input['images'] as $image)
         {
-            $filenameWithoutExt = str_before($image->getClientOriginalName(), '.' . $image->getClientOriginalExtension());
 
-            $uploadFilename = 'payment-link/description/' . $filenameWithoutExt . '_' . UniqueIdEntity::generateUniqueId();
+            $uploadFilename = 'payment-link/description/' . UniqueIdEntity::generateUniqueId();
 
             $ufhService = $this->app['ufh.service'];
 
