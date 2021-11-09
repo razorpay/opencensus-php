@@ -22,7 +22,7 @@ const statusMap = {
     tooltipCta: 'Open Activation Form',
     tooltipMessage: 'Please complete and submit the activation form to activate this account.',
   },
-  verfication_pending: {
+  verification_pending: {
     labelClass: 'label-pending',
     ctaText: 'View Activation Form',
     showCtaAsButton: false,
