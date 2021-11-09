@@ -439,5 +439,12 @@
       "reason": "gateway_technical_error",
       "description": "Payout failed at partner bank. Please retry after 30 min."
     }
+  },
+  "PARTNER_BANK_DOWN": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_down",
+      "description": "Payout failed as the partner bank is facing technical issues. Please retry"
+    }
   }
 }
