@@ -176,17 +176,17 @@ const MerchantDetails = ({
   useEffect(() => {
     // Only fetch request if user is owner, other users shouldn't see the error
     if (user.role === 'owner') getWebsiteWorkflowStatus();
-  }, [getWebsiteWorkflowStatus, user.role]);
+  }, []);
 
   useEffect(() => {
     // Only fetch request if user is owner, other users shouldn't see the error
     if (user.role === 'owner') getTransactionLimitWorkflowStatus();
-  }, [getTransactionLimitWorkflowStatus, user.role]);
+  }, []);
 
   useEffect(() => {
     // Only fetch request if user is owner, other users shouldn't see the error
     if (user.role === 'owner' || user.role === 'admin') getAdditionalWebsiteWorkflowStatus();
-  }, [getAdditionalWebsiteWorkflowStatus, user.role]);
+  }, []);
 
   let activationName = 'KYC';
   let trackerName = 'kyc.form_fill';
