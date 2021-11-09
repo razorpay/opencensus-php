@@ -1737,6 +1737,76 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertArrayNotHasKey('preferred_methods', $response);
     }
 
+    public function testGetCheckoutPersonalisationForContactDifferentFromLogInContact()
+    {
+        $appToken = 'capp_1000000custapp';
+
+        $this->mockSession($appToken);
+        
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals($testData['response']['content'], $response);
+    }
+
+    public function testGetCheckoutPersonalisationForContactSameWithLogInContact()
+    {
+        $appToken = 'capp_1000000custapp';
+        
+        $this->mockSession($appToken);
+
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals($testData['response']['content'], $response);
+    }
+    
+    // Scenario for below test case is:
+    // CustomerId is passed in the input and there is already a user is logged in
+    // The p13n response will be of that of the customerId
+    public function testGetCheckoutPersonalisationWithCustomerIdAndLogInContact()
+    {
+        $appToken = 'capp_1000000custapp';
+        
+        $this->mockSession($appToken);
+
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+        
+        $this->assertEquals($testData['response']['content'], $response);
+    }
+
+    protected function mockSession($appToken = 'capp_1000000custapp')
+    {
+        $data = array(
+            'test_app_token'   => $appToken,
+            'test_checkcookie' => '1'
+        );
+
+        $this->session($data);
+    }
+
     public function testGetCheckoutPreferencesWithRTB(): void
     {
         $this->ba->publicAuth();

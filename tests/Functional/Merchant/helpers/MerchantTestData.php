@@ -8180,6 +8180,123 @@ return [
 
     ],
 
+    'testGetCheckoutPersonalisationForContactDifferentFromLogInContact' => [
+        'request' => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id'  => 'null',
+                'contact' => '+918888888888'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'preferred_methods' => [
+                    '+918888888888' => [
+                        'instruments' => [
+                            [
+                                'instrument' => 'paytm',
+                                'method'     => 'wallet',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'netbanking',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
+                            ],
+                        ],
+                        'is_customer_identified' => false,
+                        'user_aggregates_available' => false,
+                        'versionID' => 'v2'
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPersonalisationForContactSameWithLogInContact' => [
+        'request' => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id'  => 'null',
+                'contact' => '+919988776655'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'preferred_methods' => [
+                    '+919988776655' => [
+                        'instruments' =>[
+                            [
+                                'instrument' => 'paytm',
+                                'method'     => 'wallet',
+                            ],
+                            [
+                                'instrument' => 'SBIN',
+                                'method'     => 'netbanking',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
+                            ],
+                        ],
+                        'is_customer_identified' => true,
+                        'user_aggregates_available' => false,
+                        'versionID' => 'v2'
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPersonalisationWithCustomerIdAndLogInContact' => [
+        'request' => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id'  => 'null',
+                'customer_id' => 'cust_100000customer'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'preferred_methods' => [
+                    '1234567890' => [
+                        'instruments' =>[
+                            [
+                                'instrument' => 'paytm',
+                                'method'     => 'wallet',
+                            ],
+                            [
+                                'instrument' => 'SBIN',
+                                'method'     => 'netbanking',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
+                            ],
+                        ],
+                        'is_customer_identified' => true,
+                        'user_aggregates_available' => false,
+                        'versionID' => 'v2'
+                    ],
+                ]
+            ],
+        ],
+    ],
+
     'testGetCheckoutPersonalisationForContact' => [
         'request' => [
             'url'     => '/personalisation',
@@ -8213,6 +8330,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
+    
     'testGetCheckoutPersonalisationWithCustomerIdAndInputContact' => [
         'request' => [
             'url'     => '/personalisation',
