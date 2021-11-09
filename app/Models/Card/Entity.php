@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Card;
 
+use App;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
@@ -942,6 +943,8 @@ class Entity extends Base\PublicEntity
 
         $attributes = array_merge($attributes, $this->getTokenRelevantAttributes());
 
+        $this->setCardCountryInTokenResponse($attributes);
+
         unset($attributes[self::ID]);
 
         return $attributes;
@@ -1072,5 +1075,18 @@ class Entity extends Base\PublicEntity
         }
 
         return null;
+    }
+    
+    // Card Country would be set as part of token object only for the preferences API.
+    protected function setCardCountryInTokenResponse(& $attributes)
+    {
+        $app = App::getFacadeRoot();
+
+        $routeName = $app['api.route']->getCurrentRouteName();
+
+         if($routeName == 'merchant_checkout_preferences')
+         {
+            $attributes[self::COUNTRY] = $this->getCountry()!==null?$this->getCountry():null;
+         }
     }
 }
