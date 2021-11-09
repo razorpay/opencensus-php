@@ -348,6 +348,9 @@ traffic-responsive() {
           display: flex;
           width: 1900px;
           animation: 6s autoplay2 infinite ease-in-out;
+          @media (max-width: 767px) {
+            height 76px
+          }
 
           @keyframes autoplay2 {
             0%, 17% {
@@ -375,7 +378,13 @@ traffic-responsive() {
 
             .active-product {
               margin-left: 12px;
-              width: 280px;
+              width 280px
+              @media (max-width: 399px) {
+                width: 51%;
+              }
+              @media (max-width: 359px) {
+                width 47%
+              }
               text-align: left;
 
               .title {
@@ -408,7 +417,7 @@ traffic-responsive() {
       }
     }
 
-    @media (max-width: 386px) {
+    @media (max-width: 424px) {
       background-image: none;
 
       .welcome-modal-content {
