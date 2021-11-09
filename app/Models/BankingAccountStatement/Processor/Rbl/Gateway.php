@@ -46,6 +46,8 @@ class Gateway extends BaseProcessor
 
     const DEFAULT_RBL_ACCOUNT_STATEMENT_V2_MAX_NUMBER_OF_RECORDS = 5000;
 
+    const PAGINATION_KEY_TTL_IN_WEEKS = 4;
+
     // regex to fetch utr from description
     const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|UPI\/|R\/UPI\/|R-)(.*?)(\/|-)/';
 
@@ -73,7 +75,6 @@ class Gateway extends BaseProcessor
         Entity::CHANNEL,
         Entity::POSTED_DATE,
         Entity::TYPE,
-        Entity::DESCRIPTION,
         Entity::BANK_SERIAL_NUMBER,
         Entity::AMOUNT,
         Entity::BANK_TRANSACTION_ID
@@ -421,6 +422,13 @@ class Gateway extends BaseProcessor
         do
         {
             $paginationKey = $this->basDetails->getPaginationKey();
+
+            // We can fetch upto 1 month using pagination key. So when merchant doesn't have transactions in more than a 4 weeks, we will not use pagination key to fetch statement.
+            if (($attemptCount === 0) and
+                ($this->basDetails->getStatementClosingBalanceChangeAt() < Carbon::today(Timezone::IST)->subWeeks(self::PAGINATION_KEY_TTL_IN_WEEKS)->getTimestamp()))
+            {
+                $paginationKey = null;
+            }
 
             // Rbl api supports 2 formats of requests.
             //     1. using from_date and to_date in api request
