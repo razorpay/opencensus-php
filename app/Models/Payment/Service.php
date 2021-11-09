@@ -3817,6 +3817,14 @@ class Service extends Base\Service
             return $data;
         }
 
+        if((in_array($payment->getGateway(),Payment\Gateway::$fileBasedEMandateDebitGateways)=== true) and
+            ($payment->getRecurringType() === Payment\RecurringType::AUTO))
+        {
+            $this->traceRetryVerifyFalse($id, TraceCode::PAYMENT_VERIFY_STOPPED_FOR_FILE_BASED_DEBITS, $data);
+
+            return;
+        }
+
         $extraProperties = [
             'is_pushed_to_kafka'  => $payment->getIsPushedToKafka(),
         ];

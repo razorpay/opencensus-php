@@ -1947,6 +1947,8 @@ class Gateway
         self::NETBANKING_FSB,
         self::NETBANKING_DCB,
         self::NETBANKING_IBK,
+        self::NACH_CITI,
+        self::NACH_ICICI,
     ];
 
     public static $captureVerifyEnabled = [
