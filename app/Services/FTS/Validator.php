@@ -16,7 +16,7 @@ class Validator extends Base\Validator
       'channel'                     => 'filled|string|required|in:yesbank,icici,citi,m2p,axis,rbl,amazon_pay',
       'credentials'                 => 'required|array',
       'fund_account_id'             => 'sometimes|integer',
-      'mozartIdentifier'            => 'filled|string|required|in:V1,V2,V3',
+      'mozartIdentifier'            => 'filled|string|required|in:V1,V2,V3,V4',
       'sourceAccountType'           => 'filled|string|required|in:current,nodal',
       'sourceAccountTypeIdentifier' => 'sometimes|string|in:pool,direct',
     ];
