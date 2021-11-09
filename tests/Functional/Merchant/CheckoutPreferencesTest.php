@@ -925,6 +925,26 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertEquals(true, $response['methods']['wallet']['paytm']);
     }
 
+    public function testGetCheckoutPreferencesForPrepaidRecurringEnabled()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::CHARGE_AT_WILL]);
+
+        $request = [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'currency' => [
+                    'INR'
+                ],
+            ],
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals(["MasterCard","Visa"], $response['methods']['recurring']['card']['prepaid']);
+    }
+
     public function testGetCheckoutPreferencesAfterFilterForMinimumAmount()
     {
         $this->fixtures->merchant->enablePayLater();
@@ -1963,7 +1983,7 @@ class CheckoutPreferencesTest extends TestCase
 
         $this->startTest();
     }
-    
+
     public function testUpdateShippingInfoURL()
     {
         $this->ba->privateAuth();
@@ -1977,7 +1997,7 @@ class CheckoutPreferencesTest extends TestCase
 
         $this->startTest();
     }
-    
+
     public function testGetCheckoutPreferencesWithFeeConfigNull()
     {
         $data = $this->testData[__FUNCTION__];

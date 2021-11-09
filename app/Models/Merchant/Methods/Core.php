@@ -316,7 +316,7 @@ class Core extends Base\Core
         Methods\Entity $methods,
         array & $recurringData)
     {
-        if ($methods->isCreditCardEnabled() === true)
+        if (($methods->isCreditCardEnabled() === true) or ($methods->isPrepaidCardEnabled() === true))
         {
 
             // If atleast 1 3ds Amex recurring type terminal is present, it will send Amex Recurring in Preferences
@@ -328,7 +328,15 @@ class Core extends Base\Core
                 unset($supportedNetworksForCreditCardRecurring[array_search(Network::AMEX, $supportedNetworksForCreditCardRecurring)]);
             }
 
-            $recurringData['card']['credit'] = Network::getFullNames($supportedNetworksForCreditCardRecurring);
+            if ($methods->isCreditCardEnabled() === true)
+            {
+                $recurringData['card']['credit'] = Network::getFullNames($supportedNetworksForCreditCardRecurring);
+            }
+
+            if ($methods->isPrepaidCardEnabled() === true)
+            {
+                $recurringData['card']['prepaid'] = Network::getFullNames($supportedNetworksForCreditCardRecurring);
+            }
         }
 
         if ($merchant->isDebitRecurringEnabled() === true)
