@@ -374,7 +374,7 @@ class PaymentMarketplaceTransferTest extends TestCase
 
     public function testTransferFailedWebhook()
     {
-        $this->fixtures->merchant->addFeatures(['marketplace', 'transfer_failed_webhook']);
+        $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $this->fixtures->merchant->editBalance(100);
 
@@ -395,6 +395,8 @@ class PaymentMarketplaceTransferTest extends TestCase
 
     public function testNoTransferFailedWebhookWithoutFeatureFlag()
     {
+        $this->markTestSkipped('The feature flag is now permanently removed.');
+
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $this->fixtures->merchant->editBalance(100);
