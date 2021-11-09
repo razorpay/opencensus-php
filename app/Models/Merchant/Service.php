@@ -369,6 +369,8 @@ class Service extends Base\Service
 
     public function createLinkedAccount(array $input)
     {
+        $this->core()->setModeAndDefaultConnection(Mode::LIVE);
+
         $this->trace->info(
             TraceCode::LINKED_ACCOUNT_CREATE_REQUEST_VIA_BATCH,
             [
