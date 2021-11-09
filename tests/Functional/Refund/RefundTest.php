@@ -913,6 +913,19 @@ class RefundTest extends TestCase
         $this->startTest($this->payment['public_id'], 100.1);
     }
 
+    public function testRefundWithAmountLessThanINR1()
+    {
+        $refund = $this->refund(
+            [
+                'payment_id' => $this->payment['public_id'],
+                'amount'     => $this->payment['amount'] - 50,
+            ]);
+
+        $this->assertNotNull($refund['id']);
+
+        $this->startTest($this->payment['public_id']); // attempt remaining amount less than INR 1
+    }
+
     public function testRefundOfOldAuthorizedPayments()
     {
         $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;

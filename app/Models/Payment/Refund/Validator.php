@@ -320,9 +320,11 @@ class Validator extends Base\Validator
 
     protected function validateMinRefundAmount($input)
     {
+        $payment = $this->payment;
+
         if (isset($input['amount']) === false)
         {
-            return;
+            $input['amount'] = $payment->getAmountUnrefunded();
         }
 
         $amountCheckInput = [];
@@ -336,8 +338,6 @@ class Validator extends Base\Validator
                 'amount' => $input['reversals']['amount'],
             ];
         }
-
-        $payment = $this->payment;
 
         // currency will not be available here. But we need to validate amount based
         // on the existing currency.
