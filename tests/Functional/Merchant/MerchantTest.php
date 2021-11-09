@@ -8012,7 +8012,7 @@ class MerchantTest extends TestCase
         $this->assertContains(Features::NEW_BANKING_ERROR, $liveFeaturesArray);
 
         // Assert that the ledger_journal_writes feature is enabled for live mode
-        $this->assertNotContains('ledger_journal_writes', $testFeaturesArray);
+        $this->assertContains('ledger_journal_writes', $testFeaturesArray);
         $this->assertContains('ledger_journal_writes', $liveFeaturesArray);
     }
 
