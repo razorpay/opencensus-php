@@ -27,7 +27,7 @@ function renderBatchDetails({ batch }) {
       </div>
 
       <div class="equal-margin">
-        <EntityDetailRow label="Batch Type" value={titleCase(batch.type)} />
+        <EntityDetailRow label="Batch Type" value={getBatchType(batch)} />
         <EntityDetailRow label="Batch Name" value={batch.name} />
         <EntityDetailRow label="Status">
           <BatchUploadStatusLabel status={batch.status} />
@@ -78,4 +78,10 @@ function getDownloadReportText(props) {
   return `Download the report containing all ${
     type === 'auth_link' ? 'Registration' : 'Recurring Debit'
   } Links data.`;
+}
+
+function getBatchType(batch) {
+  const { type } = batch;
+  const linkType = type.includes('auth') ? type.replace('auth', 'registration') : type;
+  return titleCase(linkType);
 }
