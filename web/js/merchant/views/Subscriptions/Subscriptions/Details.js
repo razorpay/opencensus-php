@@ -1,3 +1,4 @@
+// eslintdisabled for this file in .eslintignore
 import PropTypes from 'prop-types';
 import { findDOMNode } from 'react-dom';
 import { connect } from 'react-redux';
@@ -35,6 +36,7 @@ import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 
 import CancellationModal from './components/CancellationModal';
 import TestPaymentModal from './components/TestPaymentModal';
+import analytics from '../analytics';
 /*
  * Invoice (Upfront?) |    Subscription(Start?)     | Type
  * --------------------------------------------------------------------
@@ -419,6 +421,13 @@ export default class SubscriptionDetailsContainer extends React.Component {
       eventAction: 'Submit Form - Cancel Subscription',
       eventLabel: `cancel_option=${type}`,
     });
+
+    if (type === '1') {
+      analytics.track('subscription.cancel.end_of_cycle');
+    } else {
+      analytics.track('subscription.cancel.immediate');
+    }
+    analytics.track('subscription.cancel.confirm');
   };
 
   cancelSubscription = () => {
@@ -433,6 +442,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
       ),
       size: 'small',
     });
+    analytics.track('subscription.cancel.initiate');
   };
 
   secClose = () => {

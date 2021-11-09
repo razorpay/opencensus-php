@@ -1,6 +1,8 @@
+import React from 'react';
 import Datetime from 'react-datetime';
 import { classList } from 'common/utils/rzp-utils';
 
+// eslint-disable-next-line import/no-cycle
 import { Label, inputClass, separateDomProps } from './index';
 
 export default class TimePicker extends React.Component {
@@ -9,23 +11,17 @@ export default class TimePicker extends React.Component {
     value: this.props.defaultValue, // Moment object
   };
 
-  focus = e => {
-    this.setState({ focus: true });
-  };
-
-  blur = e => {
-    this.setState({ focus: false });
-  };
-
-  onChange = value => {
+  onChange = (value) => {
     this.setState({ value });
 
-    this.props.onChange && this.props.onChange(value, this.props.name);
+    if (this.props.onChange) {
+      this.props.onChange(value, this.props.name);
+    }
   };
 
   render() {
     const allProps = separateDomProps(this.props);
-    const { onFocus, onBlur, ...restDOMProps } = allProps.props; // onFocus and onBlur are not to be controllled by <input> here
+    const { onFocus, onBlur, ...restDOMProps } = allProps.props;
 
     return (
       <div class={inputClass(this)}>
@@ -38,20 +34,15 @@ export default class TimePicker extends React.Component {
               onChange={this.onChange}
               inputProps={{
                 ...restDOMProps,
-                className: classList(
-                  'Input-el',
-                  this.props.addonAfter && 'Input-el--after'
-                ),
+                className: classList('Input-el', this.props.addonAfter && 'Input-el--after'),
               }}
               dateFormat={false}
               timeFormat="h:mm a"
-              onFocus={this.focus}
-              onBlur={this.blur}
+              onFocus={onFocus}
+              onBlur={onBlur}
             />
             {this.props.addonAfter && (
-              <span class="Input-addons  Input-addons--after">
-                {this.props.addonAfter}
-              </span>
+              <span class="Input-addons  Input-addons--after">{this.props.addonAfter}</span>
             )}
           </div>
         </div>

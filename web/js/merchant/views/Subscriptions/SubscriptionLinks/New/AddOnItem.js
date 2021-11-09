@@ -11,19 +11,23 @@ import { isPresent } from 'common/utils/rzp-utils';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import QuantitySelector from './QuantitySelector';
+import analytics from '../../analytics';
 
 @connect(null, { openModal, closeModal })
 export default class AddOnItem extends Component {
   addNewItem = () => {
-    const { closeModal, currency } = this.props;
+    const { closeModal: closeModalcb, currency, cloneOptions } = this.props;
 
     this.props.openModal({
       size: 'small',
       overlayStyles: { zIndex: 100001 },
       component: (
         <NewItem
-          closeModal={closeModal}
-          onSave={closeModal}
+          closeModal={closeModalcb}
+          onSave={() => {
+            analytics.track('subscription.create.addon_create', cloneOptions);
+            closeModalcb();
+          }}
           currency={currency}
           disableCurrencySelect
           type="addon"
@@ -31,6 +35,7 @@ export default class AddOnItem extends Component {
         />
       ),
     });
+    analytics.track('subscription.create.addon_new', cloneOptions);
   };
 
   render() {
@@ -48,9 +53,7 @@ export default class AddOnItem extends Component {
           onChange={props.onSelectItem}
           selected={props.selectedItem.item}
           class="ps-in-modal"
-          afterOptionsComponent={select => (
-            <QuickAdd {...select} onClick={this.addNewItem} />
-          )}
+          afterOptionsComponent={(select) => <QuickAdd {...select} onClick={this.addNewItem} />}
         />
 
         {isPresent(props.selectedItem.item) && (
@@ -79,12 +82,7 @@ function ItemOption({ option }) {
 function getInformativeMessage(totalAmount, currency) {
   return (
     <p>
-      Total:{' '}
-      <Amount
-        value={totalAmount}
-        currency={currency}
-        parentQuerySelector=".Modal-body"
-      />
+      Total: <Amount value={totalAmount} currency={currency} parentQuerySelector=".Modal-body" />
     </p>
   );
 }
