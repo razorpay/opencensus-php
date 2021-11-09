@@ -3685,6 +3685,8 @@ trait Authorize
 
         try
         {
+            $this->postPaymentAuthorizeOfferProcessing($payment);
+
             $this->autoCapturePaymentIfApplicable($payment);
         }
         catch (Exception\BaseException $e)
