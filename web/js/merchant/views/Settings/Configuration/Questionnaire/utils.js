@@ -70,7 +70,7 @@ export const tabsData = [
 ];
 
 export const modelFormData = (data) => {
-  if (data.business_txn_size_min && data.business_txn_size_max) {
+  if (data.business_txn_size_min != undefined && data.business_txn_size_max != undefined) {
     data.business_txn_size = `${data.business_txn_size_min}=${data.business_txn_size_max}`;
   }
 
