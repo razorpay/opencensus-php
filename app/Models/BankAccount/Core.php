@@ -34,7 +34,9 @@ use RZP\Models\Merchant\Detail\DeDupe\Core as DedupeCore;
 use RZP\Models\Contact\Validator as fundAccountValidator;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstant;
+use RZP\Notifications\Dashboard\Events as MerchantDashboardEvent;
 use RZP\Models\Merchant\Detail\PennyTesting as DetailsPennyTesting;
+use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater\BankAccount as BankAccountStatusUpdater;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\BankAccount as BankAccountRequestDispatcher;
@@ -256,7 +258,7 @@ class Core extends Base\Core
                 if (($this->app['api.route']->isWorkflowExecuteOrApproveCall() === false) and
                     ($sendAccountChangeRequestMail === true))
                 {
-                    $this->sendBankAccountChangeEmail($ba, $merchant, Constants::BANK_ACCOUNT_CHANGE_REQUEST_EMAIL);
+                    $this->sendBankAccountChangeNotification($ba, $merchant, MerchantDashboardEvent::BANK_ACCOUNT_CHANGE_REQUEST);
                 }
 
                 if ($isWorkflowRequired === true)
@@ -269,7 +271,7 @@ class Core extends Base\Core
 
                 $this->repo->delete($oldBankAccount);
 
-                $this->sendBankAccountChangeEmail($ba, $merchant);
+                $this->sendBankAccountChangeNotification($ba, $merchant);
 
                 $merchantDetails = $merchant->merchantDetail;
 
@@ -480,7 +482,7 @@ class Core extends Base\Core
         return $ba;
     }
 
-    protected function sendBankAccountChangeEmail($newBankAccount, $merchant, $emailClass = Constants::BANK_ACCOUNT_CHANGED_EMAIL)
+    protected function sendBankAccountChangeNotification($newBankAccount, $merchant, $event = MerchantDashboardEvent::BANK_ACCOUNT_CHANGE_SUCCESSFUL)
     {
         if ($this->shouldNotifyViaEmail($merchant) === false)
         {
@@ -489,13 +491,15 @@ class Core extends Base\Core
 
         $newBankAccount = $newBankAccount->toArray();
 
-        $recipients = (new Merchant\Core)->getEmailsOfOwnersAndAdmins($merchant);
+        $args = [
+            Merchant\Constants::MERCHANT  => $merchant,
+            MerchantDashboardEvent::EVENT => $event,
+            Merchant\Constants::PARAMS    => array_merge($newBankAccount, [
+                Entity::NAME => $merchant->getName()
+            ]),
+        ];
 
-        $merchant = $merchant->toArray();
-
-        $bankAccountChangeMail = new $emailClass($newBankAccount, $merchant, $recipients);
-
-        Mail::queue($bankAccountChangeMail);
+        (new DashboardNotificationHandler($args))->send();
     }
 
     public function buildBankAccountArrayFromMerchantDetail(DetailEntity $detail, bool $linkedAccount = false): array
@@ -644,7 +648,7 @@ class Core extends Base\Core
 
         $this->saveBankAccountUpdatePennyTestingData($merchant, $data);
 
-        $this->sendBankAccountChangeEmail($newBankAccount, $merchant, Constants::BANK_ACCOUNT_CHANGE_REQUEST_EMAIL);
+        $this->sendBankAccountChangeNotification($newBankAccount, $merchant, MerchantDashboardEvent::BANK_ACCOUNT_CHANGE_REQUEST);
 
         $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_INITIATED, [
             Merchant\BvsValidation\Entity::VALIDATION_ID => $validationId
@@ -766,7 +770,7 @@ class Core extends Base\Core
             return $this->createBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, $this->mode);
         });
 
-        $this->sendBankAccountChangeEmail($newBankAccount, $merchant, Constants::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE_EMAIL);
+        $this->sendBankAccountChangeNotification($newBankAccount, $merchant, MerchantDashboardEvent::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE);
 
         try
         {

@@ -38,7 +38,7 @@ abstract class BaseHandler
      *
      * @throws LogicException
      */
-    public function sendForEvent(string $event)
+    public function sendForEvent(string $event, bool $traceArguments = true)
     {
         $channels = $this->getSupportedchannels($event);
 
@@ -48,11 +48,19 @@ abstract class BaseHandler
 
             $serviceInstance->send();
 
-            $this->trace->info(TraceCode::SEND_NOTIFICATION, [
-                'merchant' => $this->args,
+            $traceData = [
                 'type'     => 'sendForEvent',
                 'channel'  => $channel
-            ]);
+            ];
+
+            if ($traceArguments === true)
+            {
+                $traceData = array_merge($traceData, [
+                    'merchant' => $this->args,
+                ]);
+            }
+
+            $this->trace->info(TraceCode::SEND_NOTIFICATION, $traceData);
         }
     }
 

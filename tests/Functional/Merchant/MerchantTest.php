@@ -14,6 +14,7 @@ use RZP\Services\Mock;
 use RZP\Models\Comment;
 use RZP\Models\User\Role;
 use RZP\Models\Base\EsDao;
+use RZP\Services\Mock\Raven;
 use RZP\Services\UfhService;
 use RZP\Error\PublicErrorCode;
 use Functional\Helpers\BvsTrait;
@@ -102,7 +103,6 @@ use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Models\Merchant\Methods\Repository as MethodRepo;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
-use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 use RZP\Mail\InstrumentRequest\StatusNotify as StatusNotifyMail;
 use RZP\Mail\User\PasswordAndEmailReset as PasswordAndEmailResetMail;
 
@@ -2724,11 +2724,13 @@ class MerchantTest extends TestCase
     {
         Mail::fake();
 
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->startTest();
 
-        Mail::assertQueued(BankAccountChangeMail::class, function ($mail)
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail)
         {
             $this->assertEquals($mail->originProduct, 'primary');
 
@@ -2762,11 +2764,13 @@ class MerchantTest extends TestCase
     {
         Mail::fake();
 
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->startTest();
 
-        Mail::assertQueued(BankAccountChangeMail::class, function ($mail)
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail)
         {
             $testData = $this->testData['testAddBankAccount']['response']['content'];
 
@@ -2794,11 +2798,13 @@ class MerchantTest extends TestCase
     {
         Mail::fake();
 
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->startTest();
 
-        Mail::assertQueued(BankAccountChangeMail::class, function ($mail)
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail)
         {
             $testData = $this->testData['testAddBankAccountWithMerchantIdInURL']['response']['content'];
 
@@ -2829,7 +2835,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(BankAccountChangeMail::class, function ($mail) {
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) {
             $testData = $this->testData['testAddBankAccount']['response']['content'];
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
@@ -2976,7 +2982,10 @@ class MerchantTest extends TestCase
             'account_number'    => '10010101011',
         ]);
 
-        Mail::assertQueued(MerchantMail\AccountChangeRequest::class, function ($mail) {
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) {
+
+            $this->assertEquals('emails.merchant.bankaccount_change_request', $mail->view);
+
             return true;
         });
 
@@ -3073,7 +3082,10 @@ class MerchantTest extends TestCase
             'account_number'    => '10010101011',
         ]);
 
-        Mail::assertQueued(MerchantMail\AccountChangeRequest::class, function ($mail) {
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) {
+
+            $this->assertEquals('emails.merchant.bankaccount_change_request', $mail->view);
+
             return true;
         });
 
@@ -3090,7 +3102,10 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertNotQueued(MerchantMail\AccountChangeRequest::class, function ($mail) {
+        Mail::assertNotQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) {
+
+            $this->assertEquals('emails.merchant.bankaccount_change_request', $mail->view);
+
             return true;
         });
 
@@ -3105,7 +3120,10 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertNotQueued(MerchantMail\AccountChangeRequest::class, function ($mail) {
+        Mail::assertNotQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) {
+
+            $this->assertEquals('emails.merchant.bankaccount_change_request', $mail->view);
+
             return true;
         });
 
@@ -3147,33 +3165,11 @@ class MerchantTest extends TestCase
             'name'             => 'Test R4zorpay:',
         ]);
 
-        $changeRequestMailCount = 0;
-
-        Mail::assertQueued(MerchantMail\AccountChangeRequest::class, function ($mail) use (& $changeRequestMailCount)
-        {
-            $changeRequestMailCount += 1;
-
-            $viewData = $mail->viewData;
-
-            $this->assertRazorpayOrgMailData($viewData);
-
-            return true;
-        });
-
-        Mail::assertQueued(MerchantMail\AccountChange::class, function ($mail)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertRazorpayOrgMailData($viewData);
-
-            return true;
-        });
+        $this->assertBankAccountUpdateRequestAndAccountChangedMailQueued();
 
         $afterCount = $this->getBankAccountsCount($merchantId);
 
         $this->assertEquals($beforeCount, $afterCount);
-
-        $this->assertEquals($changeRequestMailCount, 1);
 
         $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
     }
@@ -3202,24 +3198,7 @@ class MerchantTest extends TestCase
             'name'             => 'Test R4zorpay:',
         ]);
 
-        Mail::assertQueued(MerchantMail\AccountChangeRequest::class, function ($mail) use ($org)
-        {
-
-            $viewData = $mail->viewData;
-
-            $this->assertCustomBrandingMailViewData($org, $viewData);
-
-            return true;
-        });
-
-        Mail::assertQueued(MerchantMail\AccountChange::class, function ($mail) use ($org)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertCustomBrandingMailViewData($org, $viewData);
-
-            return true;
-        });
+       $this->assertBankAccountUpdateRequestAndAccountChangedMailQueued($org);
     }
 
     public function testUpdateBankAccountPennyTestingEventNameMismatch()
@@ -3251,8 +3230,14 @@ class MerchantTest extends TestCase
             'account_number'    => '10010101011',
         ]);
 
-        Mail::assertNotQueued(MerchantMail\AccountChange::class, function ($mail) {
-            return true;
+        Mail::assertNotQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail)
+        {
+            if ($mail->view === 'emails.merchant.bankaccount_change')
+            {
+                return true;
+            }
+
+            return false;
         });
 
         $workflowAction = $this->getLastEntity('workflow_action', true);
@@ -3327,9 +3312,11 @@ class MerchantTest extends TestCase
 
         $this->assertTrue($this->getBankAccountChangeStatusForMerchant($merchantId));
 
-        Mail::assertQueued(MerchantMail\AccountChangePennyTestingFailure::class, function($mail) {
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function($mail) {
             return true;
         });
+
+        $this->assertBankAccountUpdateRequestAndPennyTestingFailedMailQueued();
     }
 
     public function testAddCommentForBankAccountUpdateWorkflow()
@@ -3398,9 +3385,23 @@ class MerchantTest extends TestCase
 
         $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
 
+        $this->enableRazorXTreatmentForFeature('whatsapp_notifications');
+
+        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.bank_account_change_request', '1234567890');
+
+        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.bank_account_change_penny_testing_failure', '1234567890');
+
+        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.bank_account_change_successful', '1234567890');
+
         $this->setupWorkflowForBankAccountUpdate();
 
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $this->mockStorkForBankAccountUpdate($merchantId);
 
         $beforeCount = $this->getBankAccountsCount($merchantId);
 
@@ -3424,24 +3425,253 @@ class MerchantTest extends TestCase
             'name'             => 'Test R4zorpay:',
         ]);
 
-        Mail::assertQueued(MerchantMail\AccountChangePennyTestingFailure::class, function ($mail)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertRazorpayOrgMailData($viewData);
-
-            return true;
-        });
-
-        Mail::assertQueued(MerchantMail\AccountChange::class, function ($mail) {
-            return true;
-        });
+        $this->assertBankAccountUpdateAllMailQueued();
 
         $afterCount = $this->getBankAccountsCount($merchantId);
 
         $this->assertEquals($beforeCount, $afterCount);
 
         $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
+    protected function mockStorkForBankAccountUpdate($merchantId)
+    {
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkWhatsappRequest($storkMock,
+            'We have received a request for changing the bank account for testname. The details for the request are as follows :
+Beneficiary Name Test R4zorpay:
+Account Number 0000009999999999999
+IFSC Code ICIC0001206
+We will update you once the changes have been approved.
+-Team Razorpay',
+            '1234567890',
+            $merchantId
+        );
+
+        $this->expectStorkWhatsappRequest($storkMock,
+            'Thank you for raising a request from your dashboard to update your bank account details.
+We checked and see that the penny drop testing for the mentioned bank account has failed. Our experts are looking into this and will get back to you with an update within the next 24 hours.
+-Team Razorpay',
+            '1234567890',
+            $merchantId
+        );
+
+        $this->expectStorkWhatsappRequest($storkMock,
+            'Your Bank Account details have been updated successfully. The details are provided below.
+Beneficiary Name Test R4zorpay:
+Account Number 0000009999999999999
+IFSC Code  ICIC0001206
+-Team Razorpay',
+            '1234567890',
+            $merchantId
+        );
+    }
+
+    protected function expectStorkWhatsappRequest($storkMock, $text, $destination = '9876543210', $ownerId = '10000000000000'): void
+    {
+        $storkMock->shouldReceive('sendWhatsappMessage')
+            ->times(1)
+            ->with(
+                Mockery::on(function ($mode)
+                {
+                    return true;
+                }),
+                Mockery::on(function ($actualText) use($text)
+                {
+
+                    $actualText = trim(preg_replace('/\s+/', ' ', $actualText));
+
+                    $text = trim(preg_replace('/\s+/', ' ', $text));
+
+                    if ($actualText !== $text)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }),
+                Mockery::on(function ($actualReceiver) use($destination)
+                {
+                    if ($actualReceiver !== $destination)
+                    {
+                        return false;
+                    }
+                    return true;
+                }),
+                Mockery::on(function ($input) use ($ownerId)
+                {
+                    if ($input['ownerId'] !== $ownerId)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }))
+            ->andReturnUsing(function ()
+            {
+                $response = new \Requests_Response;
+
+                $response->body = json_encode(['key' => 'value']);
+
+                return $response;
+            });
+    }
+
+    protected function expectRavenSendSmsRequest($ravenMock, $templateName, $receiver)
+    {
+        $ravenMock->shouldReceive('sendSms')
+            ->times(1)
+            ->with(
+                Mockery::on(function ($actualPayload) use ($templateName, $receiver)
+                {
+                    if (($templateName !== $actualPayload['template']) or
+                        ($receiver !== $actualPayload['receiver']))
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }),  Mockery::on(function ($mockInTestMode)
+            {
+                if ($mockInTestMode === true)
+                {
+                    return false;
+                }
+                return true;
+            }))
+            ->andReturnUsing(function ()
+            {
+                return ['success' => true];
+            });
+    }
+
+    protected function assertBankAccountUpdateRequestAndPennyTestingFailedMailQueued($org = null)
+    {
+        $accountChangeRequestMailCount = 0;
+
+        $pennyTestingFailMailCount     = 0;
+
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) use ($org, & $accountChangeRequestMailCount, & $pennyTestingFailMailCount)
+        {
+            $viewData = $mail->viewData;
+
+            $view = $mail->view;
+
+            $this->assertTrue(in_array($view, ['emails.merchant.bankaccount_change_request', 'emails.merchant.bankaccount_change_penny_testing_failure']));
+
+            if ($view === 'emails.merchant.bankaccount_change_request')
+            {
+                $accountChangeRequestMailCount = $accountChangeRequestMailCount + 1;
+            }
+            elseif ($view === 'emails.merchant.bankaccount_change_penny_testing_failure')
+            {
+                $pennyTestingFailMailCount = $pennyTestingFailMailCount + 1;
+            }
+
+            $this->assertOrgDataForBankAccountUpdateMail($org, $viewData);
+
+            return true;
+        });
+
+        $this->assertEquals(1, $accountChangeRequestMailCount);
+
+        $this->assertEquals(1, $pennyTestingFailMailCount);
+    }
+
+    protected function assertBankAccountUpdateRequestAndAccountChangedMailQueued($org = null)
+    {
+        $accountChangeRequestMailCount = 0;
+
+        $accountChangedMailCount       = 0;
+
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) use ($org, & $accountChangeRequestMailCount, & $accountChangedMailCount)
+        {
+            $viewData = $mail->viewData;
+
+            $view = $mail->view;
+
+            $this->assertTrue(in_array($view, ['emails.merchant.bankaccount_change_request', 'emails.merchant.bankaccount_change']));
+
+            if ($view === 'emails.merchant.bankaccount_change_request')
+            {
+                $accountChangeRequestMailCount = $accountChangeRequestMailCount + 1;
+            }
+            elseif ($view === 'emails.merchant.bankaccount_change')
+            {
+                $accountChangedMailCount = $accountChangedMailCount + 1;
+            }
+
+            $this->assertOrgDataForBankAccountUpdateMail($org, $viewData);
+
+            return true;
+        });
+
+        $this->assertEquals(1, $accountChangedMailCount);
+
+        $this->assertEquals(1, $accountChangeRequestMailCount);
+    }
+
+    protected function assertBankAccountUpdateAllMailQueued($org = null)
+    {
+        $accountChangeRequestMailCount = 0;
+
+        $pennyTestingFailMailCount     = 0;
+
+        $accountChangedMailCount       = 0;
+
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) use ($org, & $accountChangeRequestMailCount, & $pennyTestingFailMailCount ,& $accountChangedMailCount)
+        {
+            $viewData = $mail->viewData;
+
+            $view = $mail->view;
+
+            $this->assertTrue(in_array($view, ['emails.merchant.bankaccount_change_request', 'emails.merchant.bankaccount_change', 'emails.merchant.bankaccount_change_penny_testing_failure']));
+
+            if ($view === 'emails.merchant.bankaccount_change_request')
+            {
+                $accountChangeRequestMailCount = $accountChangeRequestMailCount + 1;
+                $this->assertEquals('testname', $viewData['name']);
+                $this->assertEquals('Test R4zorpay:', $viewData['beneficiary_name']);
+                $this->assertEquals('0000009999999999999', $viewData['account_number']);
+                $this->assertEquals('ICIC0001206', $viewData['ifsc_code']);
+            }
+            elseif ($view === 'emails.merchant.bankaccount_change_penny_testing_failure')
+            {
+                $pennyTestingFailMailCount = $pennyTestingFailMailCount + 1;
+            }
+            elseif ($view === 'emails.merchant.bankaccount_change')
+            {
+                $accountChangedMailCount = $accountChangedMailCount + 1;
+                $this->assertEquals('Test R4zorpay:', $viewData['beneficiary_name']);
+                $this->assertEquals('0000009999999999999', $viewData['account_number']);
+                $this->assertEquals('ICIC0001206', $viewData['ifsc_code']);
+            }
+
+            $this->assertOrgDataForBankAccountUpdateMail($org, $viewData);
+
+            return true;
+        });
+
+        $this->assertEquals(1, $accountChangedMailCount);
+
+        $this->assertEquals(1, $accountChangeRequestMailCount);
+
+        $this->assertEquals(1, $pennyTestingFailMailCount);
+    }
+
+    protected function assertOrgDataForBankAccountUpdateMail($org, $viewData)
+    {
+        if (is_null($org) === true)
+        {
+            $this->assertRazorpayOrgMailData($viewData);
+        }
+        else
+        {
+            $this->assertCustomBrandingMailViewData($org, $viewData);
+        }
     }
 
     public function testUpdateBankAccountPennyTestingFailMailForCustomBrandingOrg()
@@ -3464,14 +3694,7 @@ class MerchantTest extends TestCase
 
         $this->processBvsResponse($bvsResponse);
 
-        Mail::assertQueued(MerchantMail\AccountChangePennyTestingFailure::class, function ($mail) use ($org)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertCustomBrandingMailViewData($org, $viewData);
-
-            return true;
-        });
+        $this->assertBankAccountUpdateRequestAndPennyTestingFailedMailQueued($org);
     }
 
     public function testUpdateBankAccountPennyTestingFailWorkflowReject()
@@ -3506,8 +3729,14 @@ class MerchantTest extends TestCase
             'account_number'    => '10010101011',
         ]);
 
-        Mail::assertNotQueued(MerchantMail\AccountChange::class, function ($mail) {
-            return true;
+        Mail::assertNotQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) {
+
+            if ($mail->view === 'emails.merchant.bankaccount_change')
+            {
+                return true;
+            }
+
+            return false;
         });
 
         $afterCount = $this->getBankAccountsCount($merchantId);
@@ -10329,7 +10558,8 @@ class MerchantTest extends TestCase
 
         $this->updateUploadDocumentData($testcasename, 'address_proof_url');
 
-        $merchant = $this->fixtures->create('merchant');
+        $merchant = $this->fixtures->create('merchant', ['name' => 'testname']);
+
         $this->fixtures->user->createUserMerchantMappingForDefaultUser($merchant->id);
 
         $merchantId = $merchant['id'];
@@ -10345,6 +10575,10 @@ class MerchantTest extends TestCase
         {
             $this->fixtures->merchant->createBankAccount(['merchant_id' => $merchantId, 'entity_id' => $merchantId]);
         }
+
+        $user = $this->fixtures->create('user', ['email' => 'testingemail@gmail.com', 'contact_mobile' => '1234567890', 'contact_mobile_verified' => true]);
+
+        $this->createMerchantUserMapping($user['id'], $merchantId, 'admin');
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
@@ -12283,7 +12517,10 @@ class MerchantTest extends TestCase
 
         $merchantId = $merchant['id'];
 
-        $user = $this->fixtures->create('user');
+        $user = $this->fixtures->create('user', [
+            'contact_mobile'          => '1234567890',
+            'contact_mobile_verified' => true,
+        ]);
 
         $this->fixtures->user->createUserMerchantMapping([
             'user_id'     => $user->id,
@@ -12300,7 +12537,10 @@ class MerchantTest extends TestCase
 
     public function testUnregisteredIncreaseTransactionLimitWorkflowApprove()
     {
+        Mail::fake();
+
         $predefinedMerchant = [
+            'name'               => 'testname',
             'activated'          => 1,
             'max_payment_amount' => 10000
         ];
@@ -12311,6 +12551,8 @@ class MerchantTest extends TestCase
         ];
 
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $this->mockRavenAndStorkForTransactionLimitSelfServe($merchantId);
 
         $this->setupWorkflow('increase_transaction_limit', PermissionName::INCREASE_TRANSACTION_LIMIT, 'test');
 
@@ -12343,11 +12585,27 @@ class MerchantTest extends TestCase
         $merchant = $this->getDbEntityById('merchant', $merchantId);
 
         $this->assertEquals(800000 , $merchant->getMaxPaymentAmount());
+
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('8000', $data['updated_transaction_limit']);
+
+            $this->assertEquals('testname', $data['merchant_name']);
+
+            $this->assertEquals('emails.merchant.increase_transaction_limit_request_approve', $mail->view);
+
+            return true;
+        });
     }
 
     public function testRegisteredIncreaseTransactionLimitWorkflowApprove()
     {
+        Mail::fake();
+
         $predefinedMerchant = [
+            'name'               => 'testname',
             'activated'          => 1,
             'max_payment_amount' => 10000
         ];
@@ -12358,6 +12616,8 @@ class MerchantTest extends TestCase
         ];
 
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $this->mockRavenAndStorkForTransactionLimitSelfServe($merchantId);
 
         $druidService = $this->getMockBuilder(MockDruidService::class)
             ->setConstructorArgs([$this->app])
@@ -12410,6 +12670,19 @@ class MerchantTest extends TestCase
         $merchant = $this->getDbEntityById('merchant', $merchantId);
 
         $this->assertEquals(800000 , $merchant->getMaxPaymentAmount());
+
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('8000', $data['updated_transaction_limit']);
+
+            $this->assertEquals('testname', $data['merchant_name']);
+
+            $this->assertEquals('emails.merchant.increase_transaction_limit_request_approve', $mail->view);
+
+            return true;
+        });
     }
 
     public function testIncreaseTransactionLimitRoleFailure()
@@ -12582,9 +12855,39 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    protected function mockRavenAndStorkForTransactionLimitSelfServe($merchantId)
+    {
+        $this->enableRazorXTreatmentForFeature('whatsapp_notifications');
+
+        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $expectedRavenParametersForTemplate = [
+            'updated_transaction_limit' => '8000'
+        ];
+
+        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.increase_transaction_limit_request_approve', '1234567890', $expectedRavenParametersForTemplate);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkWhatsappRequest($storkMock,
+            'With regards to the request we received an update from the partner banks to increase the transaction limit to ₹8000
+The same has been enabled for the account.
+-Team Razorpay',
+            '1234567890',
+            $merchantId
+        );
+    }
+
     public function testKAMMerchantIncreaseTransactionLimitWorkflowApprove()
     {
+        Mail::fake();
+
         $predefinedMerchant = [
+            'name'               => 'testname',
             'activated'          => 1,
             'max_payment_amount' => 10000
         ];
@@ -12595,6 +12898,8 @@ class MerchantTest extends TestCase
         ];
 
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $this->mockRavenAndStorkForTransactionLimitSelfServe($merchantId);
 
         $prestoService = $this->getMockBuilder(Mock\DataLakePresto::class)
             ->setConstructorArgs([$this->app])
@@ -12616,12 +12921,7 @@ class MerchantTest extends TestCase
 
         $testData = $this->testData['testUnregisteredIncreaseTransactionLimitWorkflowApprove'];
 
-        $content = [
-            'new_transaction_limit_by_merchant' => 999999999999,
-            'transaction_limit_increase_reason' => 'comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason'
-        ];
-
-        $testData['request']['content'] = $content;
+        $testData['request']['content']['new_transaction_limit_by_merchant'] = 999999999999;
 
         $this->testData[__FUNCTION__] = $testData;
 
@@ -12637,7 +12937,7 @@ class MerchantTest extends TestCase
 
         $this->esClient->indices()->refresh();
 
-        $observerData = ['approved_transaction_limit' => '100000000'];
+        $observerData = ['approved_transaction_limit' => '800000'];
 
         $this->updateObserverData($workflowActionId, $observerData);
 
@@ -12653,7 +12953,20 @@ class MerchantTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', $merchantId);
 
-        $this->assertEquals(100000000 , $merchant->getMaxPaymentAmount());
+        $this->assertEquals(800000 , $merchant->getMaxPaymentAmount());
+
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('8000', $data['updated_transaction_limit']);
+
+            $this->assertEquals('testname', $data['merchant_name']);
+
+            $this->assertEquals('emails.merchant.increase_transaction_limit_request_approve', $mail->view);
+
+            return true;
+        });
     }
 
     protected function testRejectionReasonNotificationForMerchantWorkflowType(string $merchantId, string $workflowType)
@@ -12688,7 +13001,7 @@ class MerchantTest extends TestCase
 
         $this->performWorkflowAction($workflowActionId, false);
 
-        Mail::assertQueued(RejectionReasonNotification::class, function ($mail) use($user)
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) use($user)
         {
             $data = $mail->viewData;
 
@@ -12840,7 +13153,7 @@ class MerchantTest extends TestCase
         $tokens = $responseContent['customer']['tokens'];
 
         $this->assertTrue($tokens['count'] > 0);
-        
+
         $this->assertTrue(array_key_exists('country', $tokens['items'][0]['card']) === true);
     }
 

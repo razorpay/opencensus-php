@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use DB;
 use Mail;
 use Config;
+use Mockery;
 
 use RZP\Constants;
 use RZP\Constants\Mode;
@@ -20,10 +21,12 @@ use Functional\Helpers\BvsTrait;
 use Illuminate\Http\UploadedFile;
 use RZP\Services\SalesForceClient;
 use RZP\Error\PublicErrorDescription;
+use RZP\Mail\Merchant as MerchantMail;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\Document\Source;
+use RZP\Mail\Merchant\MerchantDashboardEmail;
 use RZP\Services\Segment\SegmentAnalyticsClient;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
@@ -858,9 +861,11 @@ class MerchantDetailTest extends OAuthTestCase
     {
         Mail::fake();
 
+        $this->setupWorkflow("update_website", PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails([], ['activation_status' => 'activated']);
 
-        $this->setupWorkflow("update_website", PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+        $this->mockRavenAndStorkForBusinessWebsiteAdd();
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
 
@@ -874,7 +879,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $user = $this->getDbLastEntity('user');
 
-        Mail::assertQueued(MerchantBusinessWebsiteAdd::class, function ($mail) use($user)
+        Mail::assertQueued(MerchantDashboardEmail::class, function ($mail) use($user)
         {
             $data = $mail->viewData;
 
@@ -886,6 +891,32 @@ class MerchantDetailTest extends OAuthTestCase
 
             return true;
         });
+    }
+
+    protected function mockRavenAndStorkForBusinessWebsiteAdd()
+    {
+        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $expectedRavenParametersForTemplate = [
+            'updated_business_website' => 'https://www.example.com'
+        ];
+
+        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.merchant_business_website_add', '1234567890', $expectedRavenParametersForTemplate);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkWhatsappRequest($storkMock,
+            'As per your request, we have granted the API keys for the website https://www.example.com
+You can follow these simple steps in the below URL to generate API keys.
+https://razorpay.com/docs/api/#generate-api-key
+We look forward to transacting with you!
+-Team Razorpay',
+            '1234567890'
+        );
     }
 
     public function testMerchantDetailsFetchWithCustomText()
@@ -3659,11 +3690,16 @@ class MerchantDetailTest extends OAuthTestCase
 
    private function setupMerchantWithMerchantDetails(array $predefinedMerchant = [], array $predefinedMerchantDetails = [], string $role = Role::OWNER)
     {
+        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
+
         $merchant = $this->fixtures->create('merchant', $predefinedMerchant);
 
         $merchantId = $merchant['id'];
 
-        $user = $this->fixtures->create('user');
+        $user = $this->fixtures->create('user', [
+            'contact_mobile'          => '1234567890',
+            'contact_mobile_verified' => true,
+        ]);
 
         $this->fixtures->user->createUserMerchantMapping([
             'user_id'     => $user->id,
@@ -3779,6 +3815,28 @@ class MerchantDetailTest extends OAuthTestCase
     {
         Mail::fake();
 
+        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $expectedRavenParametersForTemplate = [
+            'updated_business_website'  => 'https://www.example.com',
+            'previous_business_website' => 'https://www.sample.com'
+        ];
+
+        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.merchant_business_website_update', '1234567890', $expectedRavenParametersForTemplate);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkWhatsappRequest($storkMock,
+            'As per your request, we have changed your website from https://www.sample.com to https://www.example.com
+You can now start accepting payments from https://www.example.com.
+-Team Razorpay',
+            '1234567890'
+        );
+
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
             ->setConstructorArgs([$this->app])
             ->setMethods(['pushIdentifyAndTrackEvent'])
@@ -3798,7 +3856,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $user = $this->getDbLastEntity('user');
 
-        Mail::assertQueued(MerchantBusinessWebsiteUpdate::class, function ($mail) use($user)
+        Mail::assertQueued(MerchantDashboardEmail::class, function ($mail) use($user)
         {
             $data = $mail->viewData;
 
@@ -3822,11 +3880,13 @@ class MerchantDetailTest extends OAuthTestCase
 
         [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId);
 
+        $this->mockRavenAndStorkForBusinessWebsiteAdd();
+
         $this->validateBusinessWebsiteWorkflowApprove($merchantId, $workflowActionId);
 
         $user = $this->getDbLastEntity('user');
 
-        Mail::assertQueued(MerchantBusinessWebsiteAdd::class, function ($mail) use($user)
+        Mail::assertQueued(MerchantDashboardEmail::class, function ($mail) use($user)
         {
             $data = $mail->viewData;
 
@@ -3850,7 +3910,14 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->validateBusinessWebsiteWorkflowReject($merchantId, $workflowActionId);
 
-        Mail::assertNotQueued(MerchantBusinessWebsiteUpdate::class);
+        Mail::assertNotQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail)
+        {
+            if ($mail->view === 'emails.merchant.merchant_business_website_update')
+            {
+                return true;
+            }
+            return false;
+        });
     }
 
     public function testBusinessWebsiteOpenWorkflowStatus()
@@ -3911,6 +3978,11 @@ class MerchantDetailTest extends OAuthTestCase
     {
         Mail::fake();
 
+
+        // will uncomment once SMS and Whatsapp templates are approved
+
+        //$this->mockRavenAndStorkForRejectionReason();
+
         $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated'], PermissionName::UPDATE_MERCHANT_WEBSITE);
 
         [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::UPDATE_MERCHANT_WEBSITE);
@@ -3919,7 +3991,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $user = $this->getDbLastEntity('user');
 
-        Mail::assertQueued(RejectionReasonNotification::class, function ($mail) use($user)
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) use($user)
         {
             $data = $mail->viewData;
 
@@ -3938,6 +4010,104 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+    protected function mockRavenAndStorkForRejectionReason()
+    {
+        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $expectedRavenParametersForTemplate = [
+            'messageBody' => 'Test body'
+        ];
+
+        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.rejection_reason_notification', '1234567890', $expectedRavenParametersForTemplate);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkWhatsappRequest($storkMock,
+            'Test body
+-Team Razorpay',
+            '1234567890'
+        );
+    }
+
+    protected function expectStorkWhatsappRequest($storkMock, $text, $destination): void
+    {
+        $storkMock->shouldReceive('sendWhatsappMessage')
+            ->times(1)
+            ->with(
+                Mockery::on(function ($mode)
+                {
+                    return true;
+                }),
+                Mockery::on(function ($actualText) use($text)
+                {
+                    $actualText = trim(preg_replace('/\s+/', ' ', $actualText));
+
+                    $text = trim(preg_replace('/\s+/', ' ', $text));
+
+                    if ($actualText !== $text)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }),
+                Mockery::on(function ($actualReceiver) use($destination)
+                {
+                    if ($actualReceiver !== $destination)
+                    {
+                        return false;
+                    }
+                    return true;
+                }),
+                Mockery::on(function ($input)
+                {
+                    return true;
+                }))
+            ->andReturnUsing(function ()
+            {
+                $response = new \Requests_Response;
+
+                $response->body = json_encode(['key' => 'value']);
+
+                return $response;
+            });
+    }
+
+    protected function expectRavenSendSmsRequest($ravenMock, $templateName, $receiver, $expectedParms = [])
+    {
+        $ravenMock->shouldReceive('sendSms')
+            ->times(1)
+            ->with(
+                Mockery::on(function ($actualPayload) use ($templateName, $receiver, $expectedParms)
+                {
+                    $this->assertArraySelectiveEquals($expectedParms, $actualPayload['params']);
+
+                    if (($templateName !== $actualPayload['template']) or
+                        ($receiver !== $actualPayload['receiver']))
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }),  Mockery::on(function ($mockInTestMode)
+            {
+                if ($mockInTestMode === true)
+                {
+                    return false;
+                }
+                return true;
+            }))
+            ->andReturnUsing(function ()
+            {
+                return ['sms_id' => '10000000000sms'];
+            });
+    }
+
     public function testAddAdditionalWebsiteSelfServeWorkflowApprove()
     {
         $predefinedMerchant = [

@@ -82,10 +82,13 @@ use RZP\Models\Workflow\Action\Entity as WorkFlowActionEntity;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Models\Merchant\Request\Constants as RequestConstants;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
+use RZP\Notifications\Dashboard\Events as DashboardNotificationEvent;
 use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
+use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Models\Merchant\Detail\BusinessDetailSearch\InMemoryBusinessSearch;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
+use RZP\Notifications\Dashboard\Constants as DashboardNotificationConstants;
 use RZP\Models\Merchant\Fraud\HealthChecker\Constants as HealthCheckerConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification\Constants as NCConstants;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
@@ -2469,11 +2472,15 @@ class Core extends Base\Core
             if ((empty($this->merchant->primaryOwner()) === false) and
                 ($merchantDetails->getActivationStatus() === Status::ACTIVATED))
             {
-                $merchantPrimaryOwner = $this->merchant->primaryOwner()->toArrayPublic();
+                $args = [
+                    Constants::MERCHANT         => $this->merchant,
+                    DashboardNotificationEvent::EVENT     => DashboardNotificationEvent::MERCHANT_BUSINESS_WEBSITE_ADD,
+                    Constants::PARAMS           => [
+                        DashboardNotificationConstants::UPDATED_BUSINESS_WEBSITE   => $input[Entity::BUSINESS_WEBSITE]
+                    ]
+                ];
 
-                $mailClassInstance = (new MerchantBusinessWebsiteAdd($this->merchant->toArrayPublic(), $merchantPrimaryOwner));
-
-                Mail::queue($mailClassInstance);
+                (new DashboardNotificationHandler($args))->send();
             }
 
             $response = $merchantDetails->toArrayPublic();

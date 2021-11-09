@@ -66,6 +66,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Partner\RateLimitBatch;
 use RZP\Jobs\CallBackFillMerchantApps;
 use RZP\Models\Merchant\BusinessDetail;
+use RZP\Models\Merchant\RazorxTreatment;
 use Razorpay\Spine\DataTypes\Dictionary;
 use Razorpay\OAuth\Client as OAuthClient;
 use RZP\Models\Comment\Core as CommentCore;
@@ -102,17 +103,19 @@ use RZP\Constants\
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Merchant\Methods\DefaultMethodsForCategory;
+use RZP\Notifications\Dashboard\Events as DashboardEvents;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Models\Workflow\Action\Entity as WorkFlowActionEntity;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Models\Batch\Helpers\SubMerchant as SubMerchantBatchHelper;
 use RZP\Models\Partner\SubMerchantBatchUtility as SubMerchantBatchUtil;
+use RZP\Models\Merchant\Detail\BusinessType as MerchantDetBusinessType;
+use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 use RZP\Models\Merchant\Balance\BalanceConfig\Service as BalanceConfigService;
 use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerForPG;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForPG;
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantPartner as CreateSubMerchantPartnerForX;
-use RZP\Mail\Merchant\IncreaseTransactionLimitRequestApprove as TransactionLimitMerchantMail;
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForX;
 
 class Service extends Base\Service
@@ -7631,15 +7634,24 @@ class Service extends Base\Service
 
         $this->repo->merchant->saveOrFail($this->merchant);
 
-        $this->trace->info(TraceCode::MERCHANT_TRANSACTION_LIMIT_UPDATE_SUCCESS,[
-            Constants::UPDATED_TRANSACTION_LIMIT => $newTransactionLimit
-        ]);
+        $this->trace->info(TraceCode::MERCHANT_TRANSACTION_LIMIT_UPDATE_SUCCESS,
+            [
+               Constants::UPDATED_TRANSACTION_LIMIT => $newTransactionLimit
+            ]
+        );
 
-        $merchantPrimaryOwner = $this->merchant->primaryOwner()->toArrayPublic();
+        // $newTransactionLimit is in paise. We have to show it in INR in the notification, hence dividing by 100
+        // to get $newTransactionLimit in INR.
+        $args = [
+            Constants::MERCHANT         => $merchant,
+            DashboardEvents::EVENT      => DashboardEvents::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE,
+            Constants::PARAMS           => [
+                Constants::UPDATED_TRANSACTION_LIMIT  => $newTransactionLimit/100,
+                'merchant_name'                       => $merchant[Entity::NAME],
+            ]
+        ];
 
-        $mailInstance = new TransactionLimitMerchantMail($this->merchant->toArray(), $newTransactionLimit, $merchantPrimaryOwner);
-
-        Mail::queue($mailInstance);
+        (new DashboardNotificationHandler($args))->send();
     }
 
     public function getMerchantWorkflowDetails(string $workflowType)

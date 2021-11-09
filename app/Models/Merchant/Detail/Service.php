@@ -45,6 +45,7 @@ use RZP\Models\Merchant\Document\Core as DocumentCore;
 use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Workflow\Action\Differ\Core as DifferCore;
+use RZP\Notifications\Dashboard\Events as DashboardEvents;
 use RZP\Models\Merchant\Detail\BusinessSubcategory as Sub;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstant;
@@ -52,7 +53,9 @@ use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
+use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
+use RZP\Notifications\Dashboard\Constants as DashboardNotificationConstants;
 
 class Service extends Base\Service
 {
@@ -755,13 +758,22 @@ class Service extends Base\Service
 
         $this->core()->updateBusinessWebsite($this->merchant , $newUrl);
 
-        $merchantPrimaryOwner = $this->merchant->primaryOwner()->toArrayPublic();
+        $event = $previousWebsite ? DashboardEvents::MERCHANT_BUSINESS_WEBSITE_UPDATE : DashboardEvents::MERCHANT_BUSINESS_WEBSITE_ADD;
 
-        $mailClassInstance   =  $previousWebsite ?
-            (new MerchantMail\MerchantBusinessWebsiteUpdate($this->merchant->toArrayPublic(), $previousWebsite, $merchantPrimaryOwner)) :
-            (new MerchantMail\MerchantBusinessWebsiteAdd($this->merchant->toArrayPublic(), $merchantPrimaryOwner));
+        $args = [
+            Constants::MERCHANT         => $this->merchant,
+            DashboardEvents::EVENT      => $event,
+            Constants::PARAMS           => [
+                DashboardNotificationConstants::UPDATED_BUSINESS_WEBSITE   => $newUrl
+            ]
+        ];
 
-        Mail::queue($mailClassInstance);
+        if($event === DashboardEvents::MERCHANT_BUSINESS_WEBSITE_UPDATE)
+        {
+            $args[Constants::PARAMS][DashboardNotificationConstants::PREVIOUS_BUSINESS_WEBSITE] = $previousWebsite;
+        }
+
+        (new DashboardNotificationHandler($args))->send();
     }
 
     /**

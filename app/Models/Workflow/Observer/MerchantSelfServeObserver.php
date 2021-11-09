@@ -4,12 +4,15 @@
 namespace RZP\Models\Workflow\Observer;
 
 use App;
-use Illuminate\Support\Facades\Mail;
-use RZP\Mail\Merchant as MerchantMail;
+use RZP\Models\Merchant;
 use RZP\Models\State\Name as StateName;
+use RZP\Notifications\Dashboard\Events;
 use RZP\Models\Workflow\Action\Differ\Entity;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Admin\Permission\Name as PermissionName;
+use RZP\Notifications\Dashboard\Constants as DashboardConstants;
+use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
+
 
 class MerchantSelfServeObserver implements WorkflowObserverInterface
 {
@@ -61,17 +64,18 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
         {
             $rejectionReason      = json_decode($observerData[Constants::REJECTION_REASON], true);
 
-            $messageBody          = $rejectionReason[Constants::MESSAGE_BODY];
-
-            $messageSubject       = $rejectionReason[Constants::MESSAGE_SUBJECT];
-
             $merchant             = $this->getMerchant();
 
-            $merchantPrimaryOwner = $merchant->primaryOwner()->toArrayPublic();
+            $args = [
+                Merchant\Constants::MERCHANT     => $merchant,
+                Events::EVENT                    => Events::REJECTION_REASON_NOTIFICATION,
+                Merchant\Constants::PARAMS       => [
+                    DashboardConstants::MESSAGE_BODY      => $rejectionReason[Constants::MESSAGE_BODY],
+                    DashboardConstants::MESSAGE_SUBJECT   => $rejectionReason[Constants::MESSAGE_SUBJECT],
+                ]
+            ];
 
-            $mailClassInstance    = (new MerchantMail\RejectionReasonNotification($merchantPrimaryOwner, $messageSubject, $messageBody));
-
-            Mail::queue($mailClassInstance);
+            (new DashboardNotificationHandler($args))->send();
 
             $segmentProperties[Constants::REJECTION_REASON] = $rejectionReason[Constants::MESSAGE_BODY];
         }
