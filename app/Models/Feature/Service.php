@@ -478,7 +478,8 @@ class Service extends Base\Service
         //Allowing Banking account service to add the feature
         if (($this->app['basicauth']->isAdminAuth() === true) or
             ($this->app['basicauth']->isBankingAccountServiceApp() === true) or
-            ($this->app['basicauth']->isCapitalCollectionsApp() === true) )
+            ($this->app['basicauth']->isCapitalCollectionsApp() === true) or
+            ($this->app['basicauth']->isCapitalCardsApp() === true))
         {
             $entityType = $entityType ?? $input[Entity::ENTITY_TYPE];
 

@@ -10548,6 +10548,7 @@ class Route
             'merchant_fetch_internal_users',
             'internal_merchant_fetch',
             'capital_cards_mail',
+            'feature_add_internal'
         ],
 
         'capital_collections_client' => [
