@@ -38,6 +38,8 @@ class Activate extends Base\Core
 {
     use NotifyTrait;
 
+    const BUSINESS_BANKING_ENABLED_TOPIC = 'business-banking-enabled';
+
     /**
      * This function is used for activating merchant
      *
@@ -664,6 +666,40 @@ class Activate extends Base\Core
         if ($sendActivationSms === true)
         {
             $this->sendBankingVaActivationSmsIfApplicable($merchant);
+        }
+
+        // publish message on the metro topic business-banking-enabled
+        $data = array(
+            Entity::MERCHANT_ID => $merchant->getPublicId()
+        );
+
+
+        $this->trace->info(TraceCode::BANKING_ENABLED_MESSAGE, [
+            'data' => $data
+        ]);
+
+        $encodedData = [
+            'data' => json_encode($data)
+        ];
+
+        try
+        {
+            $response = $this->app['metro']->publish(self::BUSINESS_BANKING_ENABLED_TOPIC, $encodedData);
+
+            $this->trace->info(TraceCode::BUSINESS_BANKING_ENABLED_MESSAGE_PUBLISHED, [
+                'response' => $response
+            ]);
+
+        } catch (Throwable $exception)
+        {
+            $this->trace->count(Metric::BUSINESS_BANKING_ENABLED_TRIGGER_FAILURE);
+
+            $this->trace->traceException(
+                $exception,
+                Trace::CRITICAL,
+                TraceCode::PUBLISH_BANKING_ENABLED_MESSAGE_FAILURE);
+
+            // activation part will not fail if the message publish to metro fails
         }
 
         // Refreshing merchant here so that relations for original mode are fetched again
