@@ -636,8 +636,8 @@ class Service extends Base\Service
                 'provider_data'  => [
                     'token_number'           => $token->card->getIin() .  strrev(substr($cardNumber, 7, strlen($cardNumber))),
                     'cryptogram_value'       => str_shuffle('1122334AWEQOELASRESAasdblqwer83446778899'),
-                    'token_expiry_month'           => $token->card->getExpiryMonth(),
-                    'token_expiry_year'            => $token->card->getExpiryYear(),
+                    'token_expiry_month'     => $token->card->getExpiryMonth(),
+                    'token_expiry_year'      => $token->card->getExpiryYear(),
                 ]
             ]];
 
@@ -682,8 +682,6 @@ class Service extends Base\Service
 
                 $response['expired_at'] = null;
 
-                $response['notes'] = [];
-
                 $response['service_provider_tokens'][0]['provider_data'] = [
                     'token_reference_number' => $token->card->getVaultToken(),
                     'card_reference_number'  => $token->card->getGlobalFingerPrint(),
@@ -705,6 +703,8 @@ class Service extends Base\Service
                 ];
             }
         }
+
+        $response['notes'] = [];
 
         return $response;
     }

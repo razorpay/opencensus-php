@@ -2932,7 +2932,7 @@ class Route
         // network tokenization
         'token_create'                            => ['post',        'tokens',                                                   'TokenController@create'                                   ],
         'token_fetch'                             => ['post',        'tokens/fetch',                                             'TokenController@fetch'                                    ],
-        'token_fetch_cryptogram'                  => ['post',        'tokens/get_payment_data',                                  'TokenController@fetchCryptoGram'                          ],
+        'token_fetch_cryptogram'                  => ['post',        'tokens/payment_data',                                      'TokenController@fetchCryptoGram'                          ],
         'token_delete'                            => ['post',        'tokens/delete',                                            'TokenController@delete'                                   ],
 
        'token_pause_not_supported_card_tokens'    => ['post',        'tokens/pause_not_supported/card',                          'TokenController@pauseNotSupportedCardTokens'                                                         ],
