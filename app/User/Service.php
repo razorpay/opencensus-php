@@ -202,7 +202,7 @@ class Service extends Base\Service
                                                                    Constants::OAUTH_LOGIN_ROUTE,
                                                                    Constants::POST_METHOD);
 
-        return $this->handleOauthLoginResponse($error, $genericUser);
+        return $this->handleOauthLoginResponse($error, $genericUser, "email");
     }
 
     /**
@@ -210,11 +210,13 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function postSetup2faVerifyOtp(array $input)
+    public function verify2FAMode(array $input, string $mode = Constants::LOGIN_2FA_WITH_OTP)
     {
         $userFromGuard = Auth::guard('user')->user();
 
         $userIdFromSession = Session::get('user_id', "");
+
+        $logged_in_via = Session::get('logged_in_via', null);
 
         if (empty($userFromGuard) === false)
         {
@@ -231,14 +233,22 @@ class Service extends Base\Service
 
         $options['headers']['X-Dashboard-User-Session-Id'] = Session::getId();
 
-        list($error, $genericUser) = $this->verify2faOtp($input, $options);
+        switch ($mode)
+        {
+            case Constants::LOGIN_2FA_WITH_OTP:
+                list($error, $genericUser) = $this->verify2faOtp($input, $options);
+                break;
+            case Constants::LOGIN_2FA_WITH_PASSWORD:
+                list($error, $genericUser) = $this->verifyOtpLogin2faPasswordOnApi($input, $options);
+                break;
+        }
 
         if (empty($error) === true)
         {
             $this->markUserTwoFactorVerified();
         }
 
-        return $this->handleLoginResponse($error, $genericUser);
+        return $this->handleLoginResponse($error, $genericUser, $logged_in_via);
     }
 
     public function verifyOtpAndMarkUserTwoFactorVerified(array $input)
@@ -358,11 +368,18 @@ class Service extends Base\Service
      */
     public function login(array $input)
     {
-        $res = null;
-
         list($error, $genericUser) = $this->loginOnApi($input);
 
-        return $this->handleLoginResponse($error, $genericUser);
+        if(isset($input["email"]) === true)
+        {
+            $logged_in_via = "email";
+        }
+        else
+        {
+            $logged_in_via = "contact_mobile";
+        }
+
+        return $this->handleLoginResponse($error, $genericUser, $logged_in_via);
     }
 
     /**
@@ -410,42 +427,18 @@ class Service extends Base\Service
      */
     public function verifyOtpLogin(array $input)
     {
-        $res = null;
-
         list($error, $genericUser) = $this->verifyOtpLoginOnApi($input);
 
-        return $this->handleLoginResponse($error, $genericUser);
-    }
-
-    public function verifyOtpLogin2faPassword(array $input)
-    {
-        $userFromGuard = Auth::guard('user')->user();
-
-        $userIdFromSession = Session::get('user_id', "");
-
-        if (empty($userFromGuard) === false)
+        if(isset($input["email"]) === true)
         {
-            $options['headers']['X-Dashboard-User-Id'] = $userFromGuard->id;
-        }
-        else if (empty($userIdFromSession) === false)
-        {
-            $options['headers']['X-Dashboard-User-Id'] = $userIdFromSession;
+            $logged_in_via = "email";
         }
         else
         {
-            return [["User Not authenticated, please login"], []];
+            $logged_in_via = "contact_mobile";
         }
 
-        $options['headers']['X-Dashboard-User-Session-Id'] = Session::getId();
-
-        list($error, $genericUser) = $this->verifyOtpLogin2faPasswordOnApi($input, $options);
-
-        if (empty($error) === true)
-        {
-            $this->markUserTwoFactorVerified();
-        }
-
-        return $this->handleLoginResponse($error, $genericUser);
+        return $this->handleLoginResponse($error, $genericUser, $logged_in_via);
     }
 
     /**
@@ -455,14 +448,21 @@ class Service extends Base\Service
      */
     public function verifyVerificationOtp(array $input)
     {
-        $res = null;
-
         list($error, $genericUser) = $this->verifyVerificationOtpOnApi($input);
 
-        return $this->handleLoginResponse($error, $genericUser);
+        if(isset($input["email"]) === true)
+        {
+            $logged_in_via = "email";
+        }
+        else
+        {
+            $logged_in_via = "contact_mobile";
+        }
+
+        return $this->handleLoginResponse($error, $genericUser, $logged_in_via);
     }
 
-    protected function handleLoginResponse($error, $genericUser)
+    protected function handleLoginResponse($error, $genericUser, $logged_in_via=null)
     {
         if (empty($error) === false)
         {
@@ -474,6 +474,7 @@ class Service extends Base\Service
                 if (empty($userId) === false)
                 {
                     Session::set('user_id', $userId);
+                    Session::set('logged_in_via', $logged_in_via);
                 }
                 else
                 {
@@ -560,6 +561,11 @@ class Service extends Base\Service
         $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
         $res['currentMerchantId']  = $currentMerchantId;
 
+        if(isset($logged_in_via))
+        {
+            $res["logged_in_via"] = $logged_in_via;
+        }
+
         $traceData = [
             'id'          => $user->id,
             'merchant_id' => $currentMerchantId,
@@ -570,7 +576,7 @@ class Service extends Base\Service
         return [$error, $res];
     }
 
-    protected function handleOauthLoginResponse($error, $genericUser)
+    protected function handleOauthLoginResponse($error, $genericUser, $logged_in_via=null)
     {
         if (empty($error) === false)
         {
@@ -618,6 +624,11 @@ class Service extends Base\Service
 
         $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
         $res['currentMerchantId'] = $currentMerchantId;
+
+        if(isset($logged_in_via))
+        {
+            $res["logged_in_via"] = $logged_in_via;
+        }
 
         $traceData = [
             Constants::ID          => $user->id,

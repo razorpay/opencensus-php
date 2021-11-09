@@ -18,6 +18,7 @@ use App\Http\AppResponse;
 use App\User\RecoverableException;
 use App\Metrics\Constants as MetricConstants;
 use App\Merchant\Constants as MerchantConstants;
+use App\User\Constants as UserConstants;
 
 const EVENT_TRIGGER_COUNT = 1;
 class UserController extends Controller
@@ -452,7 +453,7 @@ class UserController extends Controller
     {
         $input = Input::all();
 
-        list($error, $data) = (new User\Service)->verifyOtpLogin2faPassword($input);
+        list($error, $data) = (new User\Service)->verify2FAMode($input, UserConstants::LOGIN_2FA_WITH_PASSWORD);
 
         if (empty($error) === true)
         {
@@ -541,7 +542,7 @@ class UserController extends Controller
     {
         $input = Input::all();
 
-        list($error, $data) = (new User\Service)->postSetup2faVerifyOtp($input);
+        list($error, $data) = (new User\Service)->verify2FAMode($input, UserConstants::LOGIN_2FA_WITH_OTP);
 
         if (empty($error) === true)
         {

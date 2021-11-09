@@ -114,4 +114,8 @@ class Constants
     const TAGS               = 'tags';
     const PAYOUTS            = 'payouts';
     const FEATURES           = 'features';
+
+    const LOGIN_2FA_WITH_OTP = "otp";
+
+    const LOGIN_2FA_WITH_PASSWORD = "password";
 }
