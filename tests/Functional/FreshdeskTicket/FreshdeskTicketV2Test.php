@@ -560,12 +560,12 @@ class FreshdeskTicketV2Test extends TestCase
             [
                 'fd_instance' => 'rzpsol',
                 'razorx'      => 'control',
-                'group_id'      => 42000097450,
+                'group_id'      => 14000000007644,
             ],
             [
                 'fd_instance' => 'rzpind',
                 'razorx'      => 'on',
-                'group_id'      => 42000097444,
+                'group_id'      => 14000000007644,
             ]];
 
         foreach ($testCases as $testCase)
@@ -644,7 +644,7 @@ class FreshdeskTicketV2Test extends TestCase
                 'email' =>  'test@razorpay.com',
                 'phone' => '9876543210',
                 'priority' =>  1,
-                'group_id' => 42000102216,
+                'group_id' => 14000000007642,
             ],
             [
                 'id'            => '99',
