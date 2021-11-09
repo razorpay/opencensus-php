@@ -186,7 +186,7 @@ class Repository extends Base\Repository
     public function getActiveVirtualAccountFromVpaId(string $vpaId)
     {
         return $this->newQuery()
-                    ->where(Entity::STATUS, '=', Status::ACTIVE)
+                    ->where(Entity::STATUS, '!=', Status::PAID)
                     ->where(Entity::VPA_ID, '=', $vpaId)
                     ->first();
     }

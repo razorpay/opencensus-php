@@ -3842,11 +3842,18 @@ class BankTransferTest extends TestCase
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals(false, $bankTransfer['expected']);
-        $this->assertEquals('VIRTUAL_ACCOUNT_NOT_FOUND', $bankTransfer['unexpected_reason']);
+        $this->assertEquals('VIRTUAL_ACCOUNT_CLOSED', $bankTransfer['unexpected_reason']);
+
+        // Payment is automatically refunded
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
 
         $this->runBankTransferRequestAssertions(
             true,
-            'VIRTUAL_ACCOUNT_NOT_FOUND',
+            'VIRTUAL_ACCOUNT_CLOSED',
             [
                 'intended_virtual_account_id'   => $this->virtualAccountId,
                 'actual_virtual_account_id'     => $bankTransfer['virtual_account_id'],
@@ -3854,6 +3861,7 @@ class BankTransferTest extends TestCase
                 'bank_transfer_id'              => $bankTransfer['id'],
             ]
         );
+
     }
 
     /**

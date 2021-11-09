@@ -4,6 +4,9 @@ namespace RZP\Models\QrCode;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use Rzp\Models\Merchant;
+use RZP\Models\Base\PublicEntity;
+
 
 class Repository extends Base\Repository
 {
@@ -54,13 +57,36 @@ class Repository extends Base\Repository
         $provider = $this->dbColumn(Entity::PROVIDER);
 
         $createdAt = $this->dbColumn(Entity::CREATED_AT);
-        
+
         return $this->newQuery()
                      ->take($count)
                      ->where($provider, '=', 'bharat_qr')
                      ->whereNotNull($qrString)
                      ->whereNull($mpanTokenized)
-                     ->where($createdAt, '>', 1552500000) // picking only after 13 mar 2019, as before this date 16 digit mc mpan was stored. https://github.com/razorpay/api/commit/34e9256fc94dc9c61e75f60b993f30a48ef48186 
+                     ->where($createdAt, '>', 1552500000) // picking only after 13 mar 2019, as before this date 16 digit mc mpan was stored. https://github.com/razorpay/api/commit/34e9256fc94dc9c61e75f60b993f30a48ef48186
                      ->get();
+    }
+
+    public function findbyPublicIdAndMerchantAlsoWithTrash(
+        string $id,
+        Merchant\Entity $merchant,
+        $withTrashed = true): PublicEntity
+    {
+        $entity = $this->getEntityClass();
+
+        $entity::verifyIdAndStripSign($id);
+
+        $query = $this->newQuery()
+                      ->where(Entity::ID, $id)
+                      ->where(Entity::MERCHANT_ID, $merchant->getId());
+
+        $entity = $query->first();
+
+        if (method_exists($entity, 'merchant') === true)
+        {
+            $entity->merchant()->associate($merchant);
+        }
+
+        return $entity;
     }
 }
