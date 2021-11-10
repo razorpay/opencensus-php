@@ -431,13 +431,44 @@ class Core extends Base\Core
 
         if (($skipDeduct === false) and ($dispute->isLost() === true))
         {
-            $this->handleLostDisputeAdjustments($dispute, $input);
+            $this->handleDeduction($input, $dispute);
         }
 
         if ($this->shouldReverse($dispute) === true)
         {
             $this->createPositiveAdjustmentAndUpdateDispute($dispute);
         }
+    }
+
+    protected function handleDeduction(array $input, Entity $dispute): void
+    {
+        $recoveryMethod = (isset($input[Entity::RECOVERY_METHOD])) ? $input[Entity::RECOVERY_METHOD] : RecoveryMethod::ADJUSTMENT;
+
+        if ($recoveryMethod === RecoveryMethod::ADJUSTMENT)
+        {
+            $this->handleLostDisputeAdjustments($dispute, $input);
+
+        }
+        else
+        {
+            if ($recoveryMethod === RecoveryMethod::REFUND)
+            {
+                $this->handleLostDisputeRefunds($dispute, $input);
+            }
+        }
+    }
+
+    public function handleLostDisputeRefunds(Entity $dispute, array $input)
+    {
+        $payment = $this->repo->payment->findOrFail($dispute->getPaymentId());
+
+        // need to explicitly set and save here because if a payment is already in disputed state
+        // we dont allow refunds on it. in case of an error, this is in a txn block and the txn will be rolled back
+        $payment->setDisputed(false);
+
+        $this->repo->payment->saveOrFail($payment);
+
+        $this->createRefundAndUpdateDispute($dispute);
     }
 
     protected function handleLostDisputeAdjustments(Entity $dispute, array $input)
@@ -488,15 +519,13 @@ class Core extends Base\Core
 
         $refundId = (new Payment\Service)->refund(Payment\Entity::getSignedId($dispute->getPaymentId()), $refundCreateInput)[Refund\Entity::ID];
 
-        $dispute->setAmountDeducted($dispute->getBaseAmount());
+        $dispute->setAmountDeducted($dispute->getBaseAmount() ?? $dispute->getAmount());
 
         $dispute->setInternalStatus(InternalStatus::LOST_MERCHANT_DEBITED);
 
         $this->updateDeductionSourceTypeAndId($dispute,
             EntityConstants::REFUND,
         Refund\Entity::verifyIdAndStripSign($refundId));
-
-        $this->repo->dispute->saveOrFail($dispute);
     }
 
     protected function createNegativeAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0)
@@ -1588,4 +1617,6 @@ class Core extends Base\Core
 
         return $input;
     }
+
+
 }

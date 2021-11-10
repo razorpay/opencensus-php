@@ -1305,7 +1305,32 @@ class DisputeTest extends TestCase
         $this->assertEquals(false, $payment['disputed']);
     }
 
-    public function testDisputeEditLostWithDeduction()
+    /**
+     * If deduction type is not specified, then it has to be via adjustment
+     */
+    public function testDisputeEditLostWithDeductionWithDeductionTypeNotSpecified()
+    {
+        $data = $this->updateEditTestData();
+
+        $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(false, $payment['disputed']);
+    }
+
+    public function testDisputeEditLostWithDeductionViaAdjustment()
+    {
+        $data = $this->updateEditTestData();
+
+        $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(false, $payment['disputed']);
+    }
+
+    public function testDisputeEditLostWithDeductionViaRefund()
     {
         $data = $this->updateEditTestData();
 

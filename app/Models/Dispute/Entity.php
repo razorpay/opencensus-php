@@ -96,13 +96,16 @@ class Entity extends Base\PublicEntity
     const TRANSACTION             = 'transaction';
     const EVIDENCE                = 'evidence';
 
-    const SKIP_DEDUCTION          = 'skip_deduction';
+    const SKIP_DEDUCTION  = 'skip_deduction';
+    const RECOVERY_METHOD = 'recovery_method';
+
     const CONTACT                 = 'contact';
 
     const DISPUTE_PRECISION_FACTOR = 1000000;
-
     const DEDUCTION_SOURCE_TYPE_LENGTH = 30;
+
     const DEDUCTION_SOURCE_ID_LENGTH   = 14;
+
 
     //Lifecycle related constants
     const ADMIN_ID      = 'admin_id';

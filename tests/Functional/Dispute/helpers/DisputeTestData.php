@@ -1772,7 +1772,7 @@ return [
         ],
     ],
 
-    'testDisputeEditLostWithDeduction' => [
+    'testDisputeEditLostWithDeductionWithDeductionTypeNotSpecified' => [
         'request' => [
             'method'  => 'post',
             'content' => [
@@ -1787,6 +1787,48 @@ return [
                 'phase'           => 'chargeback',
                 'status'          => 'lost',
                 'internal_status' => 'lost_merchant_debited',
+            ],
+        ],
+    ],
+
+    'testDisputeEditLostWithDeductionViaAdjustment' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'status'             => 'lost',
+                'skip_deduction'     => false,
+                'recovery_method'    => 'adjustment',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'currency'              => 'INR',
+                'phase'                 => 'chargeback',
+                'status'                => 'lost',
+                'internal_status'       => 'lost_merchant_debited',
+                'deduction_source_type' => 'adjustment',
+            ],
+        ],
+    ],
+
+    'testDisputeEditLostWithDeductionViaRefund' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'status'             => 'lost',
+                'skip_deduction'     => false,
+                'recovery_method'    => 'refund',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+                'currency'        => 'INR',
+                'phase'           => 'chargeback',
+                'status'          => 'lost',
+                'internal_status' => 'lost_merchant_debited',
+                'deduction_source_type' => 'refund',
+
             ],
         ],
     ],

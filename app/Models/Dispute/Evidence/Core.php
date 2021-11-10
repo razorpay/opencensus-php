@@ -342,26 +342,17 @@ class Core extends Base\Core
             Dispute\Entity::BACKFILL        => false,
             Dispute\Entity::STATUS          => Dispute\Status::LOST,
             Dispute\Entity::INTERNAL_STATUS => Dispute\InternalStatus::LOST_MERCHANT_DEBITED,
+            Dispute\Entity::RECOVERY_METHOD => RecoveryMethod::ADJUSTMENT,
         ]);
     }
 
     protected function recoverAmountFromMerchantOnDisputeAcceptViaRefund(Dispute\Entity $dispute)
     {
-        $payment = $this->repo->payment->findOrFail($dispute->getPaymentId());
-
-        // need to explicitly set and save here because if a payment is already in disputed state
-        // we dont allow refunds on it. in case of an error, this is in a txn block and the txn will be rolled back
-        $payment->setDisputed(false);
-
-        $this->repo->payment->saveOrFail($payment);
-
-        (new Dispute\Core)->createRefundAndUpdateDispute($dispute);
-
         (new Dispute\Core)->update($dispute, [
-            Dispute\Entity::BACKFILL       => false,
-            Dispute\Entity::STATUS         => Dispute\Status::LOST,
-            Dispute\Entity::SKIP_DEDUCTION => true,
-            Dispute\Entity::INTERNAL_STATUS=> Dispute\InternalStatus::LOST_MERCHANT_DEBITED,
+            Dispute\Entity::BACKFILL        => false,
+            Dispute\Entity::STATUS          => Dispute\Status::LOST,
+            Dispute\Entity::INTERNAL_STATUS => Dispute\InternalStatus::LOST_MERCHANT_DEBITED,
+            Dispute\Entity::RECOVERY_METHOD => RecoveryMethod::REFUND,
         ]);
     }
 

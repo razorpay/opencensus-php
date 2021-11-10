@@ -58,6 +58,7 @@ class Validator extends Base\Validator
         Entity::COMMENTS               => 'sometimes|string|min:5|max:255|utf8',
         Entity::BACKFILL               => 'sometimes|boolean',
         Entity::DEDUCTION_REVERSAL_AT  => 'sometimes|epoch',
+        Entity::RECOVERY_METHOD        => 'sometimes|in:adjustment,refund',
     ];
 
     protected static $processDisputeRefundRules = [
