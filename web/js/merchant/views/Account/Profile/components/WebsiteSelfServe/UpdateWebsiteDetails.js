@@ -42,7 +42,23 @@ function WebsiteFields({
 
       <Input
         required
-        label="Pricing details"
+        label={
+          <>
+            Pricing details{' '}
+            <small class="help-content">
+              <i class="i i-info-circle" />
+              <Popover align="top" theme="dark" parentQuerySelector=".modal-body">
+                <PopoverBody>
+                  <div>
+                    In case of multiple product pricing pages, please share a URL for any one of
+                    them
+                  </div>
+                </PopoverBody>
+              </Popover>
+            </small>
+            {}
+          </>
+        }
         name="pricing_details"
         validator={(input) => {
           return validator('pricing_details', input);
@@ -51,7 +67,15 @@ function WebsiteFields({
 
       <Input
         required
-        label="Terms and conditions"
+        label={
+          <a
+            target="_blank"
+            href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
+            rel="noreferrer"
+          >
+            Terms and conditions
+          </a>
+        }
         name="tnc"
         validator={(input) => {
           return validator('tnc', input);
@@ -60,7 +84,15 @@ function WebsiteFields({
 
       <Input
         required
-        label="Privacy policy"
+        label={
+          <a
+            target="_blank"
+            href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
+            rel="noreferrer"
+          >
+            Privacy policy
+          </a>
+        }
         name="privacy_policy"
         validator={(input) => {
           return validator('privacy_policy', input);
@@ -69,7 +101,15 @@ function WebsiteFields({
 
       <Input
         required
-        label="Refund policy"
+        label={
+          <a
+            target="_blank"
+            href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
+            rel="noreferrer"
+          >
+            Cancellation/Refund Policy
+          </a>
+        }
         name="refund_policy"
         validator={(input) => {
           return validator('refund_policy', input);
@@ -484,7 +524,7 @@ function UpdateWebsiteDetails(props) {
               <strong>Test account credentials</strong>
               <small class="help-content">
                 <i class="i i-info-circle" />
-                <Popover align="top" theme="dark">
+                <Popover align="top" theme="dark" parentQuerySelector=".modal-body">
                   <PopoverBody>
                     <div>
                       Please provide credentials of a demo account in case your {type} requires the
