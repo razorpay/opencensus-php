@@ -52,6 +52,10 @@ class Dashboard extends Base
     const PREFERENCES = 'preferences';
     const ZERO_DS_IGNORE = 'zero_ds_ignore';
     const DEFAULT = 'default';
+    const FEATURES = 'features';
+    const BLOCK = 'block';
+    const DISABLE = 'disable';
+    const STATUS = 'status';
 
     public function __construct($app)
     {
@@ -220,6 +224,14 @@ class Dashboard extends Base
         if (isset($input[self::ENTITIES][self::PREFERENCES][self::ZERO_DS_IGNORE]) === true)
         {
             $input[self::ENTITIES][self::PREFERENCES][self::ZERO_DS_IGNORE]  = ($input[self::ENTITIES][self::PREFERENCES][self::ZERO_DS_IGNORE] == true);
+        }
+        if (isset($input[self::ENTITIES][self::FEATURES][self::BLOCK][self::STATUS]) === true)
+        {
+            $input[self::ENTITIES][self::FEATURES][self::BLOCK][self::STATUS]  = ($input[self::ENTITIES][self::FEATURES][self::BLOCK][self::STATUS] == true);
+        }
+        if (isset($input[self::ENTITIES][self::FEATURES][self::DISABLE][self::STATUS]) === true)
+        {
+            $input[self::ENTITIES][self::FEATURES][self::DISABLE][self::STATUS]  = ($input[self::ENTITIES][self::FEATURES][self::DISABLE][self::STATUS] == true);
         }
         return $this->makeRequest(self::MERCHANT_CONFIG_BULK_UPDATE, $input, self::SERVICE_DASHBOARD, $mode);
     }
