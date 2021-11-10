@@ -18,6 +18,7 @@ import { RadioGroup } from 'common/ui/Forms/RadioGroup';
 import InputField from 'common/ui/Forms/InputField';
 import Textarea from 'common/ui/Forms/AutoResizeTextarea';
 import KeystoneModal from 'common/ui/OffersForYou/components/KeystoneModal';
+import NitroCCCampaignModal from 'common/ui/OffersForYou/components/NitroCCCampaignModal';
 import NitroFestiveBonanzaModal from '../../../merchant/components/Announcements/NitroFestiveBonanza/NitroFestiveBonanzaModal';
 
 const BENEFITS = {
@@ -592,6 +593,7 @@ class DetailView extends React.Component {
     if (user.isProjectKeystoneCorporateCardsEnabled) return 'Nitro_Keystone_Card';
     if (user.isProjectKeystoneCashAdvanceEnabled) return 'Nitro_Keystone_CashAdvance';
     if (user.isProjectNitroCorporateCard) return 'Nitro_Capital';
+    if (user.isNitroCCCampaignEnabled) return 'Nitro_CardOffer';
     if (!user.isProjectNitroCorporateCard) return 'Nitro_FestiveBonanza';
     return nitroCampaignId(user).version;
   };
@@ -770,8 +772,15 @@ class DetailView extends React.Component {
         <KeystoneModal user={this.props.user} save={this.save} tracking={this.props.tracking} />
       );
     if (showNitroFormFields) return <InfoForm save={this.save} tracking={this.props.tracking} />;
+    if (this.props.user.isNitroCCCampaignEnabled)
+      return (
+        <NitroCCCampaignModal
+          user={this.props.user}
+          save={this.save}
+          tracking={this.props.tracking}
+        />
+      );
     if (!isProjectNitroCorporateCard) return <NitroFestiveBonanzaModal save={this.save} />;
-
     return (
       <div className="razorpayx-announcement-details">
         <div className="section">

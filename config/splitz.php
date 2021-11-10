@@ -135,5 +135,8 @@ return [
         //QR Code Announcement
         'QR_CODE_ANNOUNCEMENT' => env('QR_CODE_ANNOUNCEMENT', ''),
 
+        //Nitro CC Announcement
+        'NITRO_CC_ANNOUNCEMENT' => env('NITRO_CC_ANNOUNCEMENT', ''),
+
     ]
 ];

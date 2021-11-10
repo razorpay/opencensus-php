@@ -1088,6 +1088,25 @@ class Constants
             ]
         ],
         [
+            'id'          => 'OCT-DA-NITRO-CARDOFFER',
+            'title'       => 'Free Corporate Card! Festive Bonanza!',
+            'description' => 'Yes, you heard it right. Get a Razorpay corporate card in less than 3 days  along with 25,000 free credits 🎉 .This festive season enjoy the benefits of a pre-approved RazorpayX corporate card with upto 5 lakhs credit limit 🎉',
+            'start_ts'    => 1632960000,
+            'end_ts'      => 1640822400,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro_festive_bonanza_icon.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Know More',
+                    'url'   => '',
+                    'id'    => 'announcement-projectNitro-cta1',
+                ],
+            ],
+            'filters'     => [
+                'splitz_experiments' => ['NITRO_CC_ANNOUNCEMENT'],
+            ]
+        ],
+        [
             'title'       => 'Avail Reduced Transaction Fee!',
             'description' => 'Reduce transaction fee to 1.65% & get a corporate card by switching to Razorpay Current Accounts!',
             'start_ts'    => 1626159840,

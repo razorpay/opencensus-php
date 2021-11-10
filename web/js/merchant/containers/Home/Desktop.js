@@ -54,6 +54,7 @@ import StartupCongratulationBanner from '../../components/Announcements/StartupC
 import CrossBorderPaymentsBanner from '../../components/Announcements/CrossBorderPaymentsBanner';
 import DiwaliFestiveOfferBanner from '../../components/Announcements/DiwaliFestiveOfferBanner';
 import NitroFestiveBonanza from '../../components/Announcements/NitroFestiveBonanza';
+import NitroCCCampaign from '../../components/Announcements/NitroCCCampaign';
 
 class AnalyticsDesktop extends Component {
   state = {
@@ -522,6 +523,9 @@ class AnalyticsDesktop extends Component {
           </ShowWhen>
           <ShowWhen additionalCondition={(usr) => usr.isProjectNitroEnabled}>
             <NitroFestiveBonanza productName="home" />
+          </ShowWhen>
+          <ShowWhen additionalCondition={(usr) => usr.isNitroCCCampaignEnabled}>
+            <NitroCCCampaign productName="home" />
           </ShowWhen>
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}

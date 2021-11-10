@@ -469,6 +469,10 @@ export default class User {
     );
   }
 
+  get isNitroCCCampaignEnabled() {
+    return getSplitzExperimentVariant('nitro_CC_experiment')?.variables?.result === 'on';
+  }
+
   get isCatalystCampaignEnabled() {
     return getSplitzExperimentVariant('catalyst_campaign_experiment')?.variables?.result === 'on';
   }
