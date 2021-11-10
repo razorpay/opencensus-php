@@ -18,13 +18,16 @@ use RZP\Trace\Tracer;
 class MerchantsRiskController extends Controller
 {
     const RISK_DETAILS  = 'RISK_DETAILS';
+    const FRAUD_DETAILS = 'FRAUD_DETAILS';
 
     const ROUTES_URL_MAP = [
         self::RISK_DETAILS          => '/twirp\/rzp.merchants_risk.impersonation.v1.ImpersonationService\/GetDetails/',
+        self::FRAUD_DETAILS         => '/twirp\/rzp.merchants_risk.fraudlist.v1.FraudlistService\/GetFraudList/'
     ];
 
     const MERCHANT_ROUTES = [
-        self::RISK_DETAILS
+        self::RISK_DETAILS,
+        self::FRAUD_DETAILS
     ];
 
     protected function handleProxyRequests($path = null)

@@ -4710,6 +4710,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'merchant_update_fraud_type',
         'admin_merchant_post_preferences',
         'merchant_risk_alerts_foh_workflow_trigger_nc',
         'rbl_current_account_serviceability_get_admin',
@@ -5692,6 +5693,7 @@ class Route
         'capital_marketplace_admin'                => Permission::LOANS_EDIT,
         'merchants_risk_service'                   => Permission::VIEW_MERCHANT_DEDUPE,
         'merchants_risk_admin'                     => Permission::VIEW_MERCHANT_DEDUPE,
+        'merchant_update_fraud_type'               => Permission::EDIT_MERCHANT_DEDUPE,
         'setl_ondemand_pricing'                    => Permission::CAPITAL_DEVELOPER,
         'setl_ondemand_fund_accounts'              => Permission::CAPITAL_DEVELOPER,
         'settlement_ondemand_enqueue'              => Permission::CAPITAL_DEVELOPER,
@@ -8325,6 +8327,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'merchant_update_fraud_type',
             'admin_merchant_post_preferences',
             'merchant_activation_gst_details',
             'merchant_upload',
