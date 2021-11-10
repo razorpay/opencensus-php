@@ -3141,6 +3141,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_SERVICE_CALL_FOR_TXN_ON_HOLD_CLEAR_FAILED  = 'SETTLEMENT_SERVICE_CALL_FOR_TXN_ON_HOLD_CLEAR_FAILED';
     const SETTLEMENT_NOTIFICATION_SKIPPED                       = 'SETTLEMENT_NOTIFICATION_SKIPPED';
     const SETTLEMENT_NOTIFICATION_FAILED                        = 'SETTLEMENT_NOTIFICATION_FAILED';
+    const SETTLEMENTS_RETRY_SKIPPED                             = 'SETTLEMENTS_RETRY_SKIPPED';
 
     // instant async beneficiary registration trace codes
     const ATTEMPTING_BENEFICIARY_REGISTRATION                   = 'ATTEMPTING_BENEFICIARY_REGISTRATION';

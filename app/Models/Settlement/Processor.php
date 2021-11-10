@@ -287,6 +287,17 @@ class Processor extends Base\Core
 
         foreach ($settlements as $setl)
         {
+            if($setl->getIsNewService() === 1)
+            {
+                $this->trace->info(
+                    TraceCode::SETTLEMENTS_RETRY_SKIPPED,
+                    [
+                        'settlement_id' => $setl->getId(),
+                        'reason'        => "settlement is created in new service",
+                    ]
+                );
+                continue;
+            }
             $channel = $setl->getChannel();
 
             $destinationMerchantId = $this->settlementToPartner($setl->merchant->getId());

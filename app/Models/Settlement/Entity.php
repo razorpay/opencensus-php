@@ -185,6 +185,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
+    public function getIsNewService()
+    {
+        return $this->getAttribute(self::IS_NEW_SERVICE);
+    }
+
     public function getTax()
     {
         return $this->getAttribute(self::TAX);
