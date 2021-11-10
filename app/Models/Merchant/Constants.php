@@ -135,8 +135,8 @@ final class Constants
     const REATTACH_CURRENT_OWNER                        = 'reattach_current_owner';
     const SET_CONTACT_EMAIL                             = 'set_contact_email';
 
-    const OLD_FEE_BEARER                                = 'old_fee_bearer';
-    const NEW_FEE_BEARER                                = 'new_fee_bearer';
+    const OLD_PRICING_PLAN_ID                           = 'old_pricing_plan_id';
+    const NEW_PRICING_PLAN_ID                           = 'new_pricing_plan_id';
     const SELF_SERVE_FOR_FEE_BEARER                     = 'SelfServe';
 
     const COMMENT                                       = 'comment';

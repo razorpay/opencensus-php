@@ -7456,8 +7456,8 @@ class Service extends Base\Service
             $this->trace->info(TraceCode::PRICING_PLAN_ASSIGN_SUCCESS,
                 [
                     Entity::FEE_BEARER              => $merchant->getFeeBearer(),
-                    Constants::OLD_FEE_BEARER       => $oldPlanId,
-                    Constants::NEW_FEE_BEARER       => $newPlanId
+                    Constants::OLD_PRICING_PLAN_ID  => $oldPlanId,
+                    Constants::NEW_PRICING_PLAN_ID  => $newPlanId
                 ]);
 
             return $newPlanId;
