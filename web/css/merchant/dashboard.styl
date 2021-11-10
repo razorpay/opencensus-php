@@ -2981,9 +2981,17 @@ p.small-txt{
   background-repeat: no-repeat;
   background-size: cover;
 
+  @media (max-width: $screen-xs-max){
+    display block
+  }
+
   .recommend-product {
     width: 50%;
     padding: 25px 0 0 40px;
+    @media (max-width: $screen-xs-max){
+      width 100%;
+      padding 16px
+    }
 
     .title {
       color: rgba(22, 47, 86, 0.74);
@@ -3000,9 +3008,17 @@ p.small-txt{
       box-shadow: 0px 2px 12px -8px;
       padding: 25px 42px 30px 40px;
       cursor: pointer;
+      @media (max-width: $screen-xs-max){
+        display block
+        padding 16px
+      }
 
       &__container {
         margin-left: 18px;
+        @media (max-width: $screen-xs-max){
+          margin-left 0
+          margin-top 16px
+        }
         .name {
           color: #58666E;
           font-size: 16px;
@@ -3044,6 +3060,13 @@ p.small-txt{
     background-repeat: no-repeat;
     background-size: auto;
 
+    @media (max-width: $screen-xs-max){
+      margin-top 0
+      width 100%
+      padding 0 16px
+      background-image none
+    }
+
     &__title {
       color: #162f568a;
       font-size: 13px;
@@ -3052,10 +3075,17 @@ p.small-txt{
     .product-container {
       width: 55%;
       margin-top: 35px;
+      @media (max-width: $screen-xs-max){
+        margin-top 16px
+        width 100%
+      }
       .prd-one, .prd-two {
         display: flex;
         margin-top: 25px;
         cursor: pointer;
+        @media (max-width: $screen-xs-max){
+          margin-top 0
+        }
 
         .container {
           margin-left: 18px;
@@ -3080,6 +3110,9 @@ p.small-txt{
       }
       .prd-two {
         margin-top: 20px;
+        @media (max-width: $screen-xs-max){
+          margin-top 10px
+        }
       }
     }
   }
@@ -3104,12 +3137,23 @@ p.small-txt{
   background: rgb(255, 255, 255);
   display: flex;
   border-radius: 4px;
+  @media (max-width: $screen-xs-max){
+    display block
+    margin 0 16px 16px
+    padding 16px
+    max-height unset
+    height 260px
+  }
   
   .primary-shimmer {
     padding-left: 40px;
     display: flex;
     width: 50%;
     margin: auto 0px;
+    @media (max-width: $screen-xs-max){
+      padding-left 0
+      width 100%
+    }
   
     .primary-icon {
       width: 90px;
@@ -3119,22 +3163,35 @@ p.small-txt{
     .first-cta {
       width: 260px;
       height: 12px;
+      @media (max-width: $screen-xs-max){
+        width 200px
+      }
     }
     .sec-cta {
       width: 330px;
       height: 10px;
       margin: 16px 0;
+      @media (max-width: $screen-xs-max){
+        width 260px
+      }
     }
     .last-cta {
       width: 150px;
       height: 10px;
       margin-top: 24px;
+      @media (max-width: $screen-xs-max){
+        width 100px
+      }
     }
   }
 
   .secondary-shimmer {
     width: 50%;
     margin: auto 0;
+    @media (max-width: $screen-xs-max){
+      margin-top 30px
+      width 100%
+    }
 
     .more-content {
       display: flex;
@@ -3176,6 +3233,9 @@ p.small-txt{
 
   .side-space {
     margin-left: 20px;
+    @media (max-width: $screen-xs-max){
+      margin-left 10px
+    }
   }
 }
 .hideShimer {

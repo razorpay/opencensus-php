@@ -9,6 +9,7 @@ import DateRangePicker from 'common/ui/DateRangePicker';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
+import ProductRecommendationnCard from 'merchant/containers/Home/ProductRecommendationnCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
@@ -83,6 +84,14 @@ class AnalyticsMobile extends Component {
       disableClose: true,
     });
   }
+
+  renderRecommendationWidget = () => {
+    const { user } = this.props;
+    const ProductRecommendationWidget = user.isProductRecommendationEnabled && (
+      <ProductRecommendationnCard user={user} />
+    );
+    return ProductRecommendationWidget;
+  };
 
   render() {
     const { settlementExists } = this.state;
@@ -160,13 +169,13 @@ class AnalyticsMobile extends Component {
               )}
             </div>
           ) : null}
-
           {user.isOnboardingV2Enabled ? <OnboardingCard /> : null}
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">
               <PersonaliseBanner track={trackPersonaliseBanner} />
             </div>
           )}
+          {this.renderRecommendationWidget()}
           <Header className="clearfix" title="" showMode={false}>
             <div className={`pull-left ${this.props.user.isOndemandSettlementEnabled && 'm-t'}`}>
               Balance:{' '}
