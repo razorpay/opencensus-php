@@ -122,9 +122,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $loginOtp2faPasswordRules = [
-        Entity::PASSWORD        => 'required|between:6,50',
-        Entity::CAPTCHA         => 'required_without:captcha_disable',
-        Entity::CAPTCHA_DISABLE => 'sometimes|string',
+        Entity::PASSWORD        => 'required|between:6,50'
     ];
 
     protected static $loginOauthRules = [
@@ -342,10 +340,6 @@ class Validator extends Base\Validator
 
     protected static $verifyVerificationOtpValidators = [
         'captcha_only'
-    ];
-
-    protected static $loginOtp2faPasswordValidators = [
-        'captcha_only',
     ];
 
     protected static $changePasswordValidators = [

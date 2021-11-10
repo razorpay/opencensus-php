@@ -748,14 +748,28 @@ class Core extends Base\Core
                 $e,
                 null,
                 TraceCode::USERS_SEND_SMS_OTP_FAILED,
-                compact('input'));
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SMS_OTP_FAILED,
-                null,
-                null,
-                $e->getMessage()
+                compact('input')
             );
+
+            switch ($e->getCode())
+            {
+                case ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED:
+                    throw new Exception\BadRequestException(
+                        $e->getCode(),
+                        null,
+                        [
+                            "internal_error_code" => $e->getCode()
+                        ],
+                        $e->getMessage()
+                    );
+                default:
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_SMS_OTP_FAILED,
+                        null,
+                        null,
+                        $e->getMessage()
+                    );
+            }
         }
 
         $maskedInput[Entity::CONTACT_MOBILE] = $user->getMaskedContactMobile();
@@ -848,7 +862,11 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::EMAIL_LOGIN_OTP_SEND_THRESHOLD_EXHAUSTED, ['email'=>$email]);
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_EMAIL_LOGIN_OTP_SEND_THRESHOLD_EXHAUSTED
+                ErrorCode::BAD_REQUEST_EMAIL_LOGIN_OTP_SEND_THRESHOLD_EXHAUSTED,
+                null,
+                [
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_LOGIN_OTP_SEND_THRESHOLD_EXHAUSTED,
+                ]
             );
         }
 
@@ -992,11 +1010,23 @@ class Core extends Base\Core
         {
             $this->app->raven->verifyOtp($payload);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->count(Metric::VERIFY_LOGIN_INCORRECT_OTP, $dimensionsForUserLogin);
 
-            throw new Exception\BadRequestException($e->getCode());
+            switch ($e->getCode())
+            {
+                case ErrorCode::BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED:
+                    throw new Exception\BadRequestException(
+                        $e->getCode(),
+                        null,
+                        [
+                            "internal_error_code"=>$e->getCode()
+                        ]
+                    );
+                default:
+                    throw new Exception\BadRequestException($e->getCode());
+            }
         }
     }
 
@@ -1100,7 +1130,17 @@ class Core extends Base\Core
             $this->resetLoginOtpVerificationLimit($receiver);
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_LOGIN_OTP_VERIFICATION_THRESHOLD_EXHAUSTED
+                ErrorCode::BAD_REQUEST_LOGIN_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
+                null,
+                [
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_LOGIN_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
+                    'user_details'        => [
+                        'user_id'   => $user->getId(),
+                        'account_locked' => true,
+                        'is_owner'       => $user->isOwner()
+                    ]
+                ]
+
             );
         }
 
@@ -1161,6 +1201,9 @@ class Core extends Base\Core
         }
 
         $user = $this->fetchUser($input);
+
+        // check if account is locked before checking for limits
+        $this->checkIfOtpLoginLocked($user);
 
         $this->checkLoginOtpVerificationLimitExceeded($receiver, $loginMedium, $user);
 
@@ -1274,7 +1317,14 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::LOGIN_2FA_PASSWORD_SUSPENDED, ['userId'=>$userId]);
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_2FA_LOGIN_PASSWORD_SUSPENDED
+                ErrorCode::BAD_REQUEST_2FA_LOGIN_PASSWORD_SUSPENDED,
+                null,
+                [
+                    'internal_error_code'    => ErrorCode::BAD_REQUEST_2FA_LOGIN_PASSWORD_SUSPENDED,
+                    'user_details'           => [
+                        'user_id' => $userId
+                    ],
+                ]
             );
         }
     }
@@ -1399,7 +1449,11 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::EMAIL_VERIFICATION_OTP_SEND_THRESHOLD_EXHAUSTED, ['email'=>$email]);
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_EMAIL_VERIFICATION_OTP_SEND_THRESHOLD_EXHAUSTED
+                ErrorCode::BAD_REQUEST_EMAIL_VERIFICATION_OTP_SEND_THRESHOLD_EXHAUSTED,
+                null,
+                [
+                    'internal_error_code'    => ErrorCode::BAD_REQUEST_EMAIL_VERIFICATION_OTP_SEND_THRESHOLD_EXHAUSTED
+                ]
             );
         }
 
@@ -1417,7 +1471,12 @@ class Core extends Base\Core
     {
         if ($user->getConfirmedAttribute() === true)
         {
-            throw new BadRequestValidationFailureException('Email is already verified');
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_EMAIL_ALREADY_VERIFIED,
+                null,
+                [
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_ALREADY_VERIFIED
+                ]);
         }
 
         $this->checkEmailVerificationOtpSendLimitExceeded($input[Entity::EMAIL]);
@@ -1456,7 +1515,12 @@ class Core extends Base\Core
     {
         if ($user->isContactMobileVerified() === true)
         {
-            throw new BadRequestValidationFailureException('Contact mobile is already verified');
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_VERIFIED,
+                null,
+                [
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_VERIFIED
+                ]);
         }
 
         $input += $this->getLoginOtpPayload($input, 'verify_user');
@@ -1476,10 +1540,29 @@ class Core extends Base\Core
             $this->trace->traceException(
                 $e,
                 null,
-                TraceCode::USER_SEND_VERIFICATION_SMS_OTP_FAILED,
-                compact('input'));
+                TraceCode::USERS_SEND_SMS_OTP_FAILED,
+                compact('input')
+            );
 
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_SMS_OTP_FAILED);
+            switch ($e->getCode())
+            {
+                case ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED:
+                    throw new Exception\BadRequestException(
+                        $e->getCode(),
+                        null,
+                        [
+                            "internal_error_code" => $e->getCode()
+                        ],
+                        $e->getMessage()
+                    );
+                default:
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_SMS_OTP_FAILED,
+                        null,
+                        null,
+                        $e->getMessage()
+                    );
+            }
         }
 
         $maskedInput[Entity::CONTACT_MOBILE] = $user->getMaskedContactMobile();
@@ -1665,11 +1748,13 @@ class Core extends Base\Core
     /**
      * Check if no. of OTP emails sent to user for logging in has exceeded a threshold and throw an exception.
      * User will not be sent another OTP email for 30 mins.
-     * @param $email
-     * @throws Exception\ServerErrorException
+     * @param $receiver
+     * @param $loginMedium
+     * @param $userId
      * @throws BadRequestException
+     * @throws Exception\ServerErrorException
      */
-    protected function checkVerifyOtpVerificationLimitExceeded($receiver, $loginMedium, $user)
+    protected function checkVerifyOtpVerificationLimitExceeded($receiver, $loginMedium, $userId)
     {
         $count = $this->incrementAndGetVerifyOtpVerificationCount($receiver);
 
@@ -1686,7 +1771,14 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::VERIFICATION_OTP_VERIFICATION_THRESHOLD_EXHAUSTED, $traceData);
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_VERIFICATION_OTP_VERIFICATION_THRESHOLD_EXHAUSTED
+                ErrorCode::BAD_REQUEST_VERIFICATION_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
+                null,
+                [
+                    'internal_error_code'   => ErrorCode::BAD_REQUEST_VERIFICATION_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
+                    'user_details'          => [
+                        'user_id'   => $userId
+                    ]
+                ]
             );
         }
 
@@ -1726,7 +1818,7 @@ class Core extends Base\Core
             ];
         }
 
-        $this->checkVerifyOtpVerificationLimitExceeded($receiver, $dimensionsForUserLogin[Constants::LOGIN_MEDIUM], $user);
+        $this->checkVerifyOtpVerificationLimitExceeded($receiver, $dimensionsForUserLogin[Constants::LOGIN_MEDIUM], $user->getId());
 
         $input += $this->getLoginOtpPayload($input, 'verify_user');
 
@@ -2294,7 +2386,11 @@ class Core extends Base\Core
         $this->trace->count(Metric::USER_MOBILE_NOT_VERIFIED);
 
         throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED);
+            ErrorCode::BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED,
+            null,
+            [
+                'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED,
+            ]);
     }
 
     /**
@@ -2315,7 +2411,12 @@ class Core extends Base\Core
         $this->trace->count(Metric::USER_EMAIL_NOT_VERIFIED);
 
         throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_EMAIL_NOT_VERIFIED);
+            ErrorCode::BAD_REQUEST_EMAIL_NOT_VERIFIED,
+            null,
+            [
+                'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_NOT_VERIFIED,
+            ]
+        );
     }
 
     /**
@@ -2361,14 +2462,22 @@ class Core extends Base\Core
         {
             $this->trace->count(Metric::NO_ACCOUNTS_ASSOCIATED);
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED
+                ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED,
+                null,
+                [
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED,
+                ]
             );
         }
         else
         {
             $this->trace->count(Metric::MULTIPLE_ACCOUNTS_ASSOCIATED);
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED
+                ErrorCode::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED,
+                null,
+                [
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED,
+                ]
             );
         }
     }

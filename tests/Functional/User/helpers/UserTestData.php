@@ -862,15 +862,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Email is already verified',
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_EMAIL_ALREADY_VERIFIED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_ALREADY_VERIFIED,
         ],
     ],
 
@@ -917,15 +917,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Contact mobile is already verified',
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CONTACT_MOBILE_ALREADY_VERIFIED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_VERIFIED,
         ],
     ],
 
@@ -3510,8 +3510,7 @@ return [
             'url'     => '/users/login/otp/2fa',
             'method'  => 'POST',
             'content' => [
-                'password'      => 'hello123',
-                'captcha'       => 'faked'
+                'password'      => 'hello123'
             ],
         ],
         'response' => [
@@ -3536,8 +3535,7 @@ return [
             'url'     => '/users/login/otp/2fa',
             'method'  => 'POST',
             'content' => [
-                'password'      => 'hello1234',
-                'captcha'       => 'faked'
+                'password'      => 'hello1234'
             ],
         ],
         'response' => [
@@ -3560,8 +3558,7 @@ return [
             'url'     => '/users/login/otp/2fa',
             'method'  => 'POST',
             'content' => [
-                'password'      => 'hello1234',
-                'captcha'       => 'faked'
+                'password'      => 'hello1234'
             ],
         ],
         'response' => [
