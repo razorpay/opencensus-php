@@ -1460,17 +1460,59 @@ return [
     ],
 
     'testEnqueueJob' => [
-        'request'  => [
-            'url'     => '/settlements/ondemand/enqueue/12345678910234',
-            'method'  => 'post',
+        'request' => [
+            'url' => '/settlements/ondemand/enqueue/12345678910234',
+            'method' => 'post',
             'content' => [
 
             ],
         ],
         'response' => [
-            'content' => [
+            'content' => [],
+        ],
+    ],
 
+    'testOndemandFeatureWithoutRequiredPermission' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/admin/batches',
+            'content' => [
+                'type' => 'settlement_ondemand_feature_config',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'Required permission not found',
                 ],
             ],
-        ]
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND
+        ],
+    ],
+
+    'testOndemandFeatureWithPermission' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/admin/batches',
+            'content' => [
+                'type' => 'settlement_ondemand_feature_config',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'The file field is required when file id is not present.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
 ];

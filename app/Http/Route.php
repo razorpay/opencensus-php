@@ -5703,6 +5703,7 @@ class Route
         'setl_ondemand_transfer_processed'         => Permission::CAPITAL_DEVELOPER,
         'setl_ondemand_transfer_trigger'           => Permission::CAPITAL_DEVELOPER,
         'setl_ondemand_transfer_payout_update'     => Permission::CAPITAL_DEVELOPER,
+        'settlement_ondemand_feature_enable'       => Permission::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
         'd2c_bureau_report_delete'                 => Permission::CAPITAL_DEVELOPER,
         'merchant_balance_create'                  => Permission::CAPITAL_DEVELOPER,
         'internal_balance_fetch_by_merchant_id'    => Permission::CAPITAL_DEVELOPER,

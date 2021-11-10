@@ -4,13 +4,12 @@ namespace RZP\Tests\Functional\SettlementOndemand;
 
 use Queue;
 use Config;
+use Hash;
 
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Constants\HashAlgo;
-use RZP\Models\Base\Entity;
 use RZP\Constants\Timezone;
-use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Services\Mock\RazorpayXClient;
 use RZP\Models\Settlement\OndemandPayout;
@@ -19,6 +18,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Jobs\SettlementOndemand\RequestOndemandPayout;
+use RZP\Models\Admin\Permission\Name as AdminPermission;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutJobs;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer;
 
@@ -1315,6 +1315,91 @@ class SettlementOndemandTest extends TestCase
                         // 'fund_account_id'  => 'fa_EuNd48DKKaIlcV',
             //                'created_at'        => 1591602865
                     ], $fundAccount);
+    }
+
+    public function testOndemandFeatureWithoutRequiredPermission()
+    {
+        $org = $this->fixtures->create('org', [
+            'email' => 'random@rzp.com',
+            'email_domains' => 'rzp.com',
+            'auth_type' => 'password',
+        ]);
+
+        $admin = $this->fixtures->create('admin', [
+            'org_id' => $org->getId(),
+            'username' => 'auth admin',
+            'password' => 'Heimdall!234',
+        ]);
+
+        $role = $this->fixtures->create('role', [
+            'org_id' => $org->getId(),
+            'name' => 'Test Role',
+        ]);
+
+        $adminBatchPerm = $this->fixtures->create('permission', [
+            'name' => AdminPermission::ADMIN_BATCH_CREATE,
+        ]);
+
+        $role->permissions()->attach($adminBatchPerm->getId());
+        $admin->roles()->attach($role);
+
+        $authToken = $this->getAuthTokenForAdmin($admin);
+        $this->ba->adminAuth('test', $authToken, $org->getPublicId());
+
+        $this->startTest();
+    }
+
+    public function testOndemandFeatureWithPermission()
+    {
+        $org = $this->fixtures->create('org', [
+            'email' => 'random@rzp.com',
+            'email_domains' => 'rzp.com',
+            'auth_type' => 'password',
+        ]);
+
+        $admin = $this->fixtures->create('admin', [
+            'org_id' => $org->getId(),
+            'username' => 'auth admin',
+            'password' => 'Heimdall!234',
+        ]);
+
+        $role = $this->fixtures->create('role', [
+            'org_id' => $org->getId(),
+            'name' => 'Test Role',
+        ]);
+
+        $adminBatchPerm = $this->fixtures->create('permission', [
+            'name' => AdminPermission::ADMIN_BATCH_CREATE,
+        ]);
+        $role->permissions()->attach($adminBatchPerm->getId());
+
+        $plBatchPerm = $this->fixtures->create('permission',[
+            'name'   => AdminPermission::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
+        ]);
+        $role->permissions()->attach($plBatchPerm->getId());
+
+        $admin->roles()->attach($role);
+
+        $authToken = $this->getAuthTokenForAdmin($admin);
+        $this->ba->adminAuth('test', $authToken, $org->getPublicId());
+
+        $this->startTest();
+    }
+
+    protected function getAuthTokenForAdmin($admin): string
+    {
+        $now = Carbon::now();
+
+        $bearerToken = 'ThisIsATokenFORAdmin';
+
+        $adminToken = $this->fixtures->create('admin_token', [
+            'admin_id' => $admin->getId(),
+            'token' => Hash::make($bearerToken),
+            'created_at' => $now->timestamp,
+            'expires_at' => $now->addDays(2)->timestamp,
+        ]);
+
+        return $bearerToken . $adminToken->getId();
     }
 
     public function testOndemandFeatureValidationSuccess()
