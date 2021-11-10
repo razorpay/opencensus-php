@@ -63,6 +63,7 @@ class Repository extends Base\Repository
         Entity::NETWORK,
         Entity::VPA_HANDLE,
         Entity::MERCHANT_ID,
+        Entity::CARD_TYPE,
     ];
 
     public function saveOrFail($entity, array $options = [])

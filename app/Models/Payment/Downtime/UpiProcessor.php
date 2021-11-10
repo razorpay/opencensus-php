@@ -217,6 +217,8 @@ class UpiProcessor extends BaseProcessor
             $status = Status::STARTED;
         }
 
+        $flow = $gatewayDowntimes->pluck(GatewayDowntime::CARD_TYPE)[0];
+
         $input = [
             Entity::METHOD      => $this->method,
             Entity::BEGIN       => $begin,
@@ -224,6 +226,7 @@ class UpiProcessor extends BaseProcessor
             Entity::STATUS      => $status,
             Entity::SCHEDULED   => $scheduled,
             Entity::SEVERITY    => $severity,
+            Entity::TYPE        => $flow,
         ];
 
         switch ($instrumentType)

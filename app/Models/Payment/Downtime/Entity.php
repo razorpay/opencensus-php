@@ -42,6 +42,8 @@ class Entity extends Base\PublicEntity
     const BANK       = 'bank';
     const WALLET     = 'wallet';
 
+    const FLOW       = 'flow';
+
     protected $fillable = [
         self::BEGIN,
         self::END,
@@ -212,6 +214,11 @@ class Entity extends Base\PublicEntity
     public function getNetwork()
     {
         return $this->getAttribute(self::NETWORK);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
     }
 
     public function getBegin()

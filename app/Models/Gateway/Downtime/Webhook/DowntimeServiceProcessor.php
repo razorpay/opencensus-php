@@ -164,6 +164,8 @@ class DowntimeServiceProcessor implements ProcessorInterface
 
         $mutexKey .= isset($data[Entity::MERCHANT_ID]) ? $data[Entity::MERCHANT_ID] : "platform";
 
+        $mutexKey .= isset($data[Entity::CARD_TYPE]) ? $data[Entity::CARD_TYPE] : "all";
+
         $this->trace->info(
             TraceCode::GATEWAY_DOWNTIME_SERVICE_MUTEX_KEY,
             [
@@ -245,7 +247,7 @@ class DowntimeServiceProcessor implements ProcessorInterface
 
     protected function resolveDowntime(array $data)
     {
-        $downtime = $this->core->fetchMostRecentActive($data, DowntimeService::UNIQUE_KEYS);
+        $downtime = $this->core->fetchMostRecentActive($data, DowntimeService::getUniqueKeys());
 
         if(is_null($downtime) === true)
         {
@@ -321,6 +323,15 @@ class DowntimeServiceProcessor implements ProcessorInterface
 
         $comment = 'RuleId :' . $input[DowntimeService::RULE_ID] . ', Strategy :' . $input[DowntimeService::STRATEGY];
         $buildInput[Entity::COMMENT] = $comment;
+
+        if($input[Entity::METHOD] === Method::CARD)
+        {
+            $buildInput[Entity::CARD_TYPE] = isset($input[DowntimeService::CARD_TYPE]) ? $input[DowntimeService::CARD_TYPE] : null;
+        }
+        else if($input[Entity::METHOD] == Method::UPI)
+        {
+            $buildInput[Entity::CARD_TYPE] = isset($input[DowntimeService::FLOW]) ? $input[DowntimeService::FLOW] : null;
+        }
 
         return $buildInput;
     }

@@ -274,6 +274,8 @@ class CardProcessor extends BaseProcessor
             $status = Status::STARTED;
         }
 
+        $type = $gatewayDowntimes->pluck(GatewayDowntime::CARD_TYPE)[0];
+
         $input = [
             Entity::METHOD    => $this->method,
             Entity::BEGIN     => $begin,
@@ -281,6 +283,7 @@ class CardProcessor extends BaseProcessor
             Entity::STATUS    => $status,
             Entity::SCHEDULED => $scheduled,
             Entity::SEVERITY  => $severity,
+            Entity::TYPE      => $type,
         ];
 
         if ($issuer === true)
