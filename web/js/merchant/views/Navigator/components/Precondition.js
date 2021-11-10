@@ -96,7 +96,7 @@ export default class Precondition extends React.Component {
             }`}
           >
             <div className="row">
-              <div className="col-xs-12" style={{ paddingRight: 0, paddingLeft: 0 }}>
+              <div className="col-xs-12" style={{ paddingRight: 0 }}>
                 {this.props.precondition.type == 'logical'
                   ? this.props.precondition.operands.map((p, index) => {
                       return this.getExp(p, index);

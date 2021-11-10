@@ -1066,7 +1066,7 @@ export const createMappedProviders = (isAddProviderEnabled, providers, terminalP
       }
       return {
         id: `${p.Gateway}_${p.Terminal_id}`,
-        name: p.Provider_name,
+        name: p.Provider_name || p.Gateway,
         value: `${p.Gateway}_${p.Terminal_id}`,
       };
     });
