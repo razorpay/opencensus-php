@@ -515,6 +515,28 @@ return [
         ],
     ],
 
+    E::SETTLEMENT_ONDEMAND_ATTEMPT => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'settlement_ondemand_transfer_id' => 'stid000001'
+            ],
+        ],
+    ],
+    E::SETTLEMENT_ONDEMAND_BULK => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'settlement_ondemand_id' => 'sid000001'
+            ],
+        ],
+    ],
+    E::SETTLEMENT_ONDEMAND_TRANSFER => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'payout_id' => 'pid000001'
+            ],
+        ],
+    ],
+
     E::SETTLEMENT_ONDEMAND_PAYOUT => [
         Type::ADMIN_AUTH => [
             [
