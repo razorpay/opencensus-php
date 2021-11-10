@@ -1,10 +1,10 @@
 import { trackLJ, trackSegment } from 'merchant/views/QRCodes/track';
 
 function _track() {
-  let lumberjackTrack = () => {};
+  let track;
 
   function send(event, options) {
-    lumberjackTrack(trackLJ(`qr.create.${event}`, options));
+    track(trackLJ(`qr.create.${event}`, options));
 
     trackSegment({
       event,
@@ -44,8 +44,9 @@ function _track() {
         reason,
       }),
 
-    init: (_lumberjackTrack) => {
-      lumberjackTrack = _lumberjackTrack;
+    // eslint-disable-next-line no-shadow
+    init: ({ track: _track }) => {
+      track = _track;
     },
   };
 }
