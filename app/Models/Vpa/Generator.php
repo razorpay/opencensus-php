@@ -13,6 +13,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Processor\TerminalProcessor;
+use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
 
 class Generator extends Base\Core
 {
@@ -25,6 +26,10 @@ class Generator extends Base\Core
     const VPA_NUM_CHAR_SPACE = '0123456789';
 
     const VA_VPA_GENERATION = 'VA_VPA_GENERATION';
+
+    const VPA_QR_PREFIX = 'qr';
+
+    const VPA_QR_BILLING_LABEL_LENGTH = 10;
 
     protected $mutex;
 
@@ -59,7 +64,7 @@ class Generator extends Base\Core
     protected function setConfigForVpa(
         Terminal\Entity $terminal,
         $merchantPrefix = null,
-        VirtualAccount\Entity $virtualAccount
+        Base\PublicEntity $entity
     )
     {
         $this->trace->info(
@@ -72,13 +77,22 @@ class Generator extends Base\Core
 
         $this->handle              = $terminal->getVirtualUpiHandle();
 
-        if ($virtualAccount->getSourceType() === VirtualAccount\SourceType::PAYMENT_LINKS_V2)
+        if ($entity instanceof QrV2\Entity)
+        {
+            $merchantIdentifier = preg_replace('/[^A-Za-z0-9]/', '', $this->merchant->getBillingLabel());
+
+            $this->merchantIdentifier = self::VPA_QR_PREFIX . substr($merchantIdentifier, 0, self::VPA_QR_BILLING_LABEL_LENGTH);
+
+            return;
+        }
+
+        if ($entity->getSourceType() === VirtualAccount\SourceType::PAYMENT_LINKS_V2)
         {
             $this->merchantIdentifier = Entity::PAYMENT_LINK_VPA_PREFIX;
         }
         else
         {
-            $this->merchantIdentifier  = $merchantPrefix ?: $terminal->getVirtualUpiMerchantPrefix();
+            $this->merchantIdentifier = $merchantPrefix ?: $terminal->getVirtualUpiMerchantPrefix();
         }
 
         //Custom descriptor was allowed only to merchants who have registered for custom prefix.
@@ -86,11 +100,11 @@ class Generator extends Base\Core
         $this->isDescriptorEnabled = true;
     }
 
-    public function generate(VirtualAccount\Entity $virtualAccount): Entity
+    public function generate(Base\PublicEntity $entity): Entity
     {
-        $vpa = $this->buildVpaEntity($virtualAccount);
+        $vpa = $this->buildVpaEntity($entity);
 
-        $this->setTerminalConfigsForVpa($vpa, $virtualAccount);
+        $this->setTerminalConfigsForVpa($vpa, $entity);
 
         $attempts = 0;
 
@@ -198,18 +212,18 @@ class Generator extends Base\Core
         }
     }
 
-    protected function buildVpaEntity(VirtualAccount\Entity $virtualAccount): Entity
+    protected function buildVpaEntity(Base\PublicEntity $entity): Entity
     {
         $vpa = new Entity();
 
         $vpa->merchant()->associate($this->merchant);
 
-        $vpa->source()->associate($virtualAccount);
+        $vpa->source()->associate($entity);
 
         return $vpa;
     }
 
-    protected function setTerminalConfigsForVpa(Entity $vpa, VirtualAccount\Entity $virtualAccount): Terminal\Entity
+    protected function setTerminalConfigsForVpa(Entity $vpa, Base\PublicEntity $entity): Terminal\Entity
     {
         $virtualVpaPrefix = $this->repo
                                  ->virtual_vpa_prefix
@@ -221,7 +235,7 @@ class Generator extends Base\Core
                              ->terminal
                              ->getById($virtualVpaPrefix->getTerminalId());
 
-            $this->setConfigForVpa($terminal, $virtualVpaPrefix->getPrefix(), $virtualAccount);
+            $this->setConfigForVpa($terminal, $virtualVpaPrefix->getPrefix(), $entity);
 
             return $terminal;
         }
@@ -242,7 +256,7 @@ class Generator extends Base\Core
                 ]);
         }
 
-        $this->setConfigForVpa($terminal, null, $virtualAccount);
+        $this->setConfigForVpa($terminal, null, $entity);
 
         return $terminal;
     }

@@ -84,13 +84,20 @@ class Core extends QrCode\Core
 
         $qrCode->setCloseReason($closeReason);
 
-        $this->repo->transaction(function() use ($qrCode)
+        $vpaId = $this->repo->vpa->findVpaByEntityIdAndEntityType($qrCode->getId(), $qrCode->getEntityName());
+
+        $this->repo->transaction(function() use ($qrCode, $vpaId)
         {
             $this->repo->saveOrFail($qrCode);
 
             if ($qrCode->bankAccount !== null)
             {
                 $this->repo->deleteOrFail($qrCode->bankAccount);
+            }
+
+            if ($vpaId !== null)
+            {
+                $this->repo->vpa->deleteById($vpaId, $qrCode->merchant->getId());
             }
         });
 

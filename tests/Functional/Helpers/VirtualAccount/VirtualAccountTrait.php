@@ -431,4 +431,19 @@ trait VirtualAccountTrait
 
         return $response;
     }
+
+    public function ecollectValidateVirtualAccountVpa($gateway, $vpaPrefix, $input)
+    {
+        $url = '/test/ecollect/validate/' . $gateway . '/' . $vpaPrefix;
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => $url,
+            'raw'     => $input
+        ];
+
+        $response = $this->makeRequestAndGetRawContent($request);
+
+        return $response;
+    }
 }

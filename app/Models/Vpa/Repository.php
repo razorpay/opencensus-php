@@ -37,6 +37,22 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findVpaByEntityIdAndEntityType(string $entityId, $entityType)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->where(Entity::ENTITY_ID, '=', $entityId)
+                    ->where(Entity::ENTITY_TYPE, '=', $entityType)
+                    ->pluck(Entity::ID)
+                    ->first();
+    }
+
+    public function deleteById($vpaId, $merchantId)
+    {
+        $vpa = $this->findByIdAndMerchantId($vpaId, $merchantId);
+
+        $this->repo->deleteOrFail($vpa);
+    }
+
     public function findbyPublicIdAndMerchantAlsoWithTrash(
         string $id,
         Merchant\Entity $merchant,
