@@ -7,6 +7,7 @@ use DB;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Contact;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
@@ -43,7 +44,7 @@ class Repository extends Base\Repository
         switch ($input[Entity::ACCOUNT_TYPE])
         {
             case Type::BANK_ACCOUNT:
-               $account = $this->fetchFundAccountOfTypeBankAccountForContact($merchant, $contact, $input);
+                $account = $this->fetchFundAccountOfTypeBankAccountForContact($merchant, $contact, $input);
 
                 break;
 
@@ -144,17 +145,34 @@ class Repository extends Base\Repository
 
         $bankAccountCreatedAtColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::CREATED_AT);
 
-        return $this->newQuery()
-                    ->select($allFundAccountAttributes)
-                    ->join($bankAccountTable, $faAccountIdColumn, '=', $bankAccountIdColumn)
-                    ->where($faSourceIdColumn, '=', $contact->getId())
-                    ->where($bankAccountTypeColumn, '=', E::CONTACT)
-                    ->where($bankAccountAccountNumberColumn, '=', $bankAccount[BankAccount\Entity::ACCOUNT_NUMBER])
+        if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_CONTACT_DEDUP_FA_BA))
+        {
             // TODO: Can remove strtoupper() if collation for ifsc column is made case insensitive
-                    ->where($bankAccountIfscCodeColumn, '=', strtoupper($bankAccount[BankAccount\Entity::IFSC]))
-                    ->where($bankAccountBeneficiaryName, '=', $bankAccount[BankAccount\Entity::NAME])
-                    ->where($bankAccountMerchantIdColumn, '=', $merchant->getId())
-                    ->first();
+            $ifsc = substr(strtoupper($bankAccount[BankAccount\Entity::IFSC]), 0, 4);
+
+            return $this->newQuery()
+                        ->select($allFundAccountAttributes)
+                        ->join($bankAccountTable, $faAccountIdColumn, '=', $bankAccountIdColumn)
+                        ->where($bankAccountTypeColumn, '=', E::CONTACT)
+                        ->where($bankAccountAccountNumberColumn, '=', $bankAccount[BankAccount\Entity::ACCOUNT_NUMBER])
+                        ->where($bankAccountIfscCodeColumn, 'LIKE', $ifsc . '%')
+                        ->where($bankAccountMerchantIdColumn, '=', $merchant->getId())
+                        ->first();
+        }
+        else
+        {
+            return $this->newQuery()
+                        ->select($allFundAccountAttributes)
+                        ->join($bankAccountTable, $faAccountIdColumn, '=', $bankAccountIdColumn)
+                        ->where($faSourceIdColumn, '=', $contact->getId())
+                        ->where($bankAccountTypeColumn, '=', E::CONTACT)
+                        ->where($bankAccountAccountNumberColumn, '=', $bankAccount[BankAccount\Entity::ACCOUNT_NUMBER])
+                // TODO: Can remove strtoupper() if collation for ifsc column is made case insensitive
+                        ->where($bankAccountIfscCodeColumn, '=', strtoupper($bankAccount[BankAccount\Entity::IFSC]))
+                        ->where($bankAccountBeneficiaryName, '=', $bankAccount[BankAccount\Entity::NAME])
+                        ->where($bankAccountMerchantIdColumn, '=', $merchant->getId())
+                        ->first();
+        }
     }
 
     public function fetchFundAccountOfTypeVpaForContact(Merchant\Entity $merchant,

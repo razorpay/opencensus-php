@@ -784,6 +784,13 @@ class Constants
     const PAYOUTS_ON_HOLD = 'payouts_on_hold';
 
     /**
+     * Merchant feature used to not allow deduplication of fund accounts by changing the way
+     * unique hashcode is computed. The unique hash computed now excludes beneficiary_name and
+     *
+     */
+    const SKIP_CONTACT_DEDUP_FA_BA = 'skip_contact_dedup_fa_ba';
+
+    /**
     * Merchant feature used to control visibility of dcc markup on frontend
      */
     const PAYMENT_SHOW_DCC_MARKUP   =   'payment_show_dcc_markup';
@@ -1276,6 +1283,7 @@ class Constants
         self::COVID_19_RELIEF                 => true,
         self::BENE_NAME_IN_PAYOUT             => true,
         self::PAYOUTS_ON_HOLD                 => true,
+        self::SKIP_CONTACT_DEDUP_FA_BA        => true,
         self::PL_BLOCK_CUSTOMER_PREFILL       => true,
         self::ALLOW_VA_TO_VA_PAYOUTS          => true,
         self::PAYMENT_SHOW_DCC_MARKUP         => true,

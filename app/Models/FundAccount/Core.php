@@ -9,6 +9,7 @@ use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Contact;
+use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -133,27 +134,38 @@ class Core extends Base\Core
 
         $uniqueHash = null;
 
+        $uniqueConsistentHash = null;
+
         $variant = $this->app->razorx->getTreatment($merchant->getId(),
                                                     RazorxTreatment::FUND_ACCOUNT_DUPLICATE_CHECK_VIA_UNIQUE_HASH,
                                                     $this->mode,
                                                     Entity::FUND_ACCOUNT_RX_RETRY_COUNT);
 
-        if(strtolower($variant) === 'on')
+        if (strtolower($variant) === 'on')
         {
-            $uniqueHash = $this->generateUniqueHashForFundAccount($input[Entity::ACCOUNT_TYPE],
-                                                                  $merchant,
-                                                                  $accountDetails,
-                                                                  $source);
+            if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_CONTACT_DEDUP_FA_BA))
+            {
+                $uniqueConsistentHash = $this->generateUniqueHashForConsistentFundAccount($input[Entity::ACCOUNT_TYPE],
+                                                                                $merchant,
+                                                                                $accountDetails,
+                                                                                $source);
+            }
+                $uniqueHash = $this->generateUniqueHashForFundAccount($input[Entity::ACCOUNT_TYPE],
+                                                                      $merchant,
+                                                                      $accountDetails,
+                                                                      $source);
         }
+
+        $hash = (empty($uniqueConsistentHash) === true)? $uniqueHash : $uniqueConsistentHash;
 
         if (($source instanceof Contact\Entity) and
             ($createDuplicate === false))
         {
             $fundAccount = null;
 
-            if (empty($uniqueHash) === false)
+            if(empty($uniqueConsistentHash) === false)
             {
-                $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetailsFromHash($uniqueHash);
+                $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetailsFromHash($uniqueConsistentHash);
 
                 if (empty($fundAccount) === false)
                 {
@@ -162,11 +174,51 @@ class Core extends Base\Core
                         [
                             Entity::ID          => $fundAccount->getId(),
                             Entity::BATCH_ID    => $batchId,
-                            Entity::UNIQUE_HASH => $uniqueHash,
+                            Entity::UNIQUE_HASH => $uniqueConsistentHash,
                         ]);
 
                     return $fundAccount;
                 }
+
+                $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetailsFromHash($uniqueHash);
+
+                if (empty($fundAccount) === false)
+                {
+                    $this->trace->info(
+                        TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND_USING_HASH,
+                        [
+                            Entity::ID                            => $fundAccount->getId(),
+                            Entity::BATCH_ID                      => $batchId,
+                            Entity::UNIQUE_HASH . 'expected'      => $uniqueConsistentHash,
+                            Entity::UNIQUE_HASH . '_of_duplicate' => $fundAccount->getUniqueHash(),
+                        ]);
+
+                    $fundAccount = $this->updateDuplicateFundAccountWithHash($fundAccount,
+                                                                             $uniqueConsistentHash,
+                                                                             $merchant,
+                                                                             $source);
+                    return $fundAccount;
+                }
+
+            }
+
+            if ((empty($uniqueHash) === false) and
+                (empty($uniqueConsistentHash) === true))
+            {
+                    $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetailsFromHash($uniqueHash);
+
+                    if (empty($fundAccount) === false)
+                    {
+                        $this->trace->info(
+                            TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND_USING_HASH,
+                            [
+                                Entity::ID          => $fundAccount->getId(),
+                                Entity::BATCH_ID    => $batchId,
+                                Entity::UNIQUE_HASH => $uniqueHash,
+                            ]);
+
+                        return $fundAccount;
+                    }
             }
 
             if (empty($fundAccount) === true)
@@ -180,14 +232,14 @@ class Core extends Base\Core
                         [
                             Entity::ID                            => $fundAccount->getId(),
                             Entity::BATCH_ID                      => $batchId,
-                            Entity::UNIQUE_HASH . '_of_input'     => $uniqueHash,
+                            Entity::UNIQUE_HASH . '_of_input'     => $hash,
                             Entity::UNIQUE_HASH . '_of_duplicate' => $fundAccount->getUniqueHash(),
                         ]);
 
-                    if (empty($uniqueHash) === false)
+                    if (empty($hash) === false)
                     {
                         $fundAccount = $this->updateDuplicateFundAccountWithHash($fundAccount,
-                                                                                 $uniqueHash,
+                                                                                 $hash,
                                                                                  $merchant,
                                                                                  $source);
                     }
@@ -216,9 +268,9 @@ class Core extends Base\Core
             $fundAccount->setBatchId($batchId);
         }
 
-        if (empty($uniqueHash) === false)
+        if (empty($hash) === false)
         {
-            $fundAccount->setUniqueHash($uniqueHash);
+            $fundAccount->setUniqueHash($hash);
         }
 
         $this->repo->saveOrFail($fundAccount);
@@ -778,6 +830,54 @@ class Core extends Base\Core
     /*
      * $accountDetails should have different keys for different account types
      * Bank account => name, account number, name
+     */
+    protected function generateUniqueHashForConsistentFundAccount(string $accountType,
+                                                                  Merchant\Entity $merchant,
+                                                                  array $accountDetails,
+                                                                  $source)
+    {
+        $merchantId = $merchant->getId();
+
+        $sourceEntityName = (empty($source) === false) ? $source->getEntityName() : '';
+
+        /*
+         * Hash input structure for bank account type fund accounts -
+         * {merchant_id}|{source_entity_name}|{account_input_suffix}
+         *
+         * In case (empty(source) === true) hash input reduces to -
+         * {merchant_id}|||bank_account|{account_input_suffix}
+         * We use '' as source_entity_name in that case.
+         */
+        $uniqueHashInput = $merchantId . '|' . $sourceEntityName;
+
+        switch ($accountType)
+        {
+            case Type::BANK_ACCOUNT:
+                $uniqueHashInputBankAccountSuffix = $this->getUniqueConsistentHashInputSuffixForBankAccount($accountDetails);
+
+                $uniqueHashInput = $uniqueHashInput . '|' . $uniqueHashInputBankAccountSuffix;
+
+                break;
+
+            default:
+                $uniqueHashInput = null;
+
+                break;
+        }
+
+        $uniqueHash = $uniqueHashInput;
+
+        if (empty($uniqueHash) === false)
+        {
+            $uniqueHash = hash('sha3-256', $uniqueHash);
+        }
+
+        return $uniqueHash;
+    }
+
+    /*
+     * $accountDetails should have different keys for different account types
+     * Bank account => name, account number, name
      * Vpa => address
      * Card => we won't be creating hash for it so even empty array works
      */
@@ -832,6 +932,23 @@ class Core extends Base\Core
         }
 
         return $uniqueHash;
+    }
+
+    /*
+     * Hash input suffix structure for bank account type fund accounts -
+     * bank_account|{account_number}|{ifsc} (first 4 characters of ifsc)
+     */
+    protected function getUniqueConsistentHashInputSuffixForBankAccount(array $bankAccountDetails) : string
+    {
+        $accountNumber =
+            $this->removeWhitespacesAndSpecialCharacters($bankAccountDetails[BankAccount\Entity::ACCOUNT_NUMBER]);
+
+        $ifsc = substr(strtoupper(
+            $this->removeWhitespacesAndSpecialCharacters($bankAccountDetails[BankAccount\Entity::IFSC])),0,4);
+
+        $uniqueHashInput = Type::BANK_ACCOUNT . '|' . $accountNumber . '|' . $ifsc;
+
+        return $uniqueHashInput;
     }
 
     /*
@@ -932,10 +1049,20 @@ class Core extends Base\Core
 
         $accountDetails = $this->getAccountDetailsForFundAccount($fundAccount);
 
-        $uniqueHashForExistingFundAccount = $this->generateUniqueHashForFundAccount($accountType,
-                                                                                    $merchant,
-                                                                                    $accountDetails,
-                                                                                    $source);
+        if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_CONTACT_DEDUP_FA_BA))
+        {
+            $uniqueHashForExistingFundAccount = $this->generateUniqueHashForConsistentFundAccount($accountType,
+                                                                                                  $merchant,
+                                                                                                  $accountDetails,
+                                                                                                  $source);
+        }
+        else
+        {
+            $uniqueHashForExistingFundAccount = $this->generateUniqueHashForFundAccount($accountType,
+                                                                                        $merchant,
+                                                                                        $accountDetails,
+                                                                                        $source);
+        }
 
         if ($uniqueHash === $uniqueHashForExistingFundAccount)
         {

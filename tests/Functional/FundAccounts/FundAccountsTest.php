@@ -97,6 +97,178 @@ class FundAccountsTest extends TestCase
         Queue::assertPushed(CreateAccount::class);
     }
 
+    public function testCreateFundAccountBankAccountWithFeatureFlagEnabled()
+    {
+        Queue::fake();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::SKIP_CONTACT_DEDUP_FA_BA]);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->mockRazorxTreatment();
+
+        $response = $this->startTest();
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $expectedBankAccount = [
+            'type'             => 'contact',
+            'entity_id'        => '1000000contact',
+            'ifsc_code'        => 'SBIN0000011',
+            'account_number'   => '111000371',
+            'beneficiary_name' => 'Chirag C',
+            'merchant_id'      => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $expectedHashInput = '10000000000000|contact|bank_account|111000371|SBIN';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
+    /*
+     * Test if the dedup logic is working for merchants with feature flag enabled
+     */
+    public function testDuplicateFundAccountCreationWithFeatureFlagEnabled()
+    {
+        $this->testCreateFundAccountBankAccountWithFeatureFlagEnabled();
+
+        $this->fixtures->create('contact', ['id' => '1000001contact']);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $this->assertEquals($fundAccount->getPublicId(), $response['id']);
+    }
+
+    /*
+     * Tests the case where there is an attempt to create a duplicate fund account
+     * which was stored earlier with old dedup logic.
+     * Applicable for merchants with feature flag enabled.
+     */
+    public function testDuplicateFundAccountCreationOfOldHashWithFeatureFlagEnabled()
+    {
+        $this->testCreateFundAccountBankAccount();
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::SKIP_CONTACT_DEDUP_FA_BA]);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $this->assertEquals($fundAccount->getPublicId(), $response['id']);
+
+        $expectedHashInput = '10000000000000|contact|bank_account|111000111|SBIN';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+    }
+
+    /*
+     * Tests the case where there is an attempt to create a duplicate fund account
+     * which was stored earlier with no unique hash.
+     * Applicable for merchants with feature flag enabled.
+     */
+    public function testDuplicateFundAccountCreationWithNoHashAndFeatureFlagEnabled()
+    {
+        Queue::fake();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::SKIP_CONTACT_DEDUP_FA_BA]);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->create('fund_account:bank_account'
+            , ['id'          => '100000000000fa',
+               'source_type' => 'contact',
+               'source_id'   => '1000000contact']);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->fixtures->edit('bank_account', $fundAccount->getAccountId()
+            , ['ifsc_code'        => 'SBIN0000011',
+               'beneficiary_name' => 'Chirag C',
+               'account_number'   => '111000371',
+               'account_type'     => 'bank_account',
+               'type'             => 'contact']);
+
+        $this->mockRazorxTreatment();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $this->assertEquals($fundAccount->getPublicId(), $response['id']);
+
+        $expectedHashInput = '10000000000000|contact|bank_account|111000371|SBIN';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount->reload();
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+    }
+
+    /*
+     * Tests the case where there is an attempt to create a duplicate fund account
+     * by a different contact ID which was stored earlier with different unique hash.
+     * Applicable for merchants with feature flag enabled.
+     */
+    public function testDuplicateFundAccountCreationWithDifferentContactsAndFeatureFlagEnabled()
+    {
+        $this->testCreateFundAccountBankAccount();
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::SKIP_CONTACT_DEDUP_FA_BA]);
+
+        $this->fixtures->create('contact', ['id' => '1000001contact']);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $this->assertEquals($fundAccount->getPublicId(), $response['id']);
+
+        $expectedHashInput = '10000000000000|contact|bank_account|111000111|SBIN';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount->reload();
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+    }
+
     public function testCreateFundAccountBankAccountThreeCharName()
     {
         Queue::fake();

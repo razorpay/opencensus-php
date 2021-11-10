@@ -120,6 +120,151 @@ return [
         ],
     ],
 
+    'testCreateFundAccountBankAccountWithFeatureFlagEnabled' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0000011',
+                    'name'           => 'Chirag C',
+                    'account_number' => '111000371',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0000011',
+                    'name'           => 'Chirag C',
+                    'account_number' => '111000371',
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testDuplicateFundAccountCreationWithFeatureFlagEnabled' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000001contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0000011',
+                    'name'           => 'Chirag Chiranjib',
+                    'account_number' => '111000371',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0000011',
+                    'name'           => 'Chirag C',
+                    'account_number' => '111000371',
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testDuplicateFundAccountCreationOfOldHashWithFeatureFlagEnabled' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testDuplicateFundAccountCreationWithNoHashAndFeatureFlagEnabled' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0000011',
+                    'name'           => 'Chirag C',
+                    'account_number' => '111000371',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0000011',
+                    'name'           => 'Chirag C',
+                    'account_number' => '111000371',
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testDuplicateFundAccountCreationWithDifferentContactsAndFeatureFlagEnabled' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000001contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit jain',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
     'testCreateFundAccountBankAccountThreeCharName' => [
         'request'  => [
             'content' => [
