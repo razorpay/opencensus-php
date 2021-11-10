@@ -170,6 +170,8 @@ class Plan extends PublicCollection
         {
             $item[Entity::IS_BUY_PRICING_ALLOWED] = true;
 
+            $item[Entity::AMOUNT_RANGE_ACTIVE] = true;
+
             $item[Entity::TYPE] = Type::BUY_PRICING;
 
             $formattedRules[] = array_merge($rule, $item);

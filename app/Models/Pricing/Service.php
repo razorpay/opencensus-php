@@ -265,12 +265,7 @@ class Service extends Base\Service
 
     private function redactBulkInput($input)
     {
-        foreach ($input as $row)
-        {
-            unset($row[Entity::FIXED_RATE], $input[Entity::PERCENT_RATE]);
-        }
-
-        return $input;
+        return [];
     }
 
     protected function processAddBulkBuyPricingRules($item)
@@ -328,11 +323,6 @@ class Service extends Base\Service
             if ($key === Entity::AMOUNT_RANGE_MAX and $value === '0')
             {
                 $value = null;
-            }
-
-            if ($key === Entity::AMOUNT_RANGE_ACTIVE)
-            {
-                $value = '1';
             }
 
         });
