@@ -163,6 +163,13 @@ class DisputeController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function deductionReversalCron()
+    {
+        $response = $this->service()->deductionReversalCron();
+
+         return ApiResponse::json($response);
+     }
+
     public function postBatchChargebackAutomation($gateway)
     {
         $input = Request::all();

@@ -57,6 +57,7 @@ class Validator extends Base\Validator
         Entity::SKIP_DEDUCTION         => 'sometimes|boolean',
         Entity::COMMENTS               => 'sometimes|string|min:5|max:255|utf8',
         Entity::BACKFILL               => 'sometimes|boolean',
+        Entity::DEDUCTION_REVERSAL_AT  => 'sometimes|epoch',
     ];
 
     protected static $processDisputeRefundRules = [
@@ -66,12 +67,14 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         'deduct_onset_for_non_transactional_phases',
+        'deduct_onset_recovery_method',
         'amount'
     ];
 
     protected static $editValidators = [
         'non_transactional_disputes_closure',
         'internal_status_transition',
+        'deduction_reversal_at',
     ];
 
     protected static $merchantEditRules = [
@@ -208,6 +211,32 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateDeductOnsetRecoveryMethod($input)
+    {
+        if ((isset($input[Entity::DEDUCT_AT_ONSET]) === false) or
+            ($input[Entity::DEDUCT_AT_ONSET]) === false)
+        {
+            return;
+        }
+
+        $tempEntity = clone  $this->entity;
+
+        $tempEntity->fill($input);
+
+        $recoveryMethod = (new Core)->getRecoveryMethodForDisputeAccept($tempEntity);
+
+        if ($recoveryMethod === RecoveryMethod::ADJUSTMENT)
+        {
+            return;
+        }
+
+        throw new BadRequestValidationFailureException('Deduct at onset not supported when recovery method is not adjustment',
+        'deduct_at_onset',
+        [
+            'mapped_recovery_method' => $recoveryMethod
+        ]);
+    }
+
     protected function validateNonTransactionalDisputesClosure($input)
     {
         if (isset($input[Entity::STATUS]) === false)
@@ -257,25 +286,14 @@ class Validator extends Base\Validator
             return;
         }
 
-        $shouldThrowException = $this->shouldThrowExceptionOnInvalidInternalStatusTransition($input);
-
-        $currentInternalStatus = $this->entity->getInternalStatus();
-
-        $nextInternalStatus = $input[Entity::INTERNAL_STATUS];
-
-        try
+        if (($input[Entity::INTERNAL_STATUS] === InternalStatus::LOST_MERCHANT_NOT_DEBITED) and
+            ($this->entity->getDeductAtOnset() === true))
         {
-            InternalStatus::validateNextInternalStatusForCurrentInternalStatus($currentInternalStatus, $nextInternalStatus);
+            throw new BadRequestValidationFailureException('Invalid internal status provided as merchant is already debited for dispute');
         }
-        catch (BadRequestValidationFailureException $exception)
-        {
-            if ($shouldThrowException === true)
-            {
-                throw  $exception;
-            }
 
-            $this->getTrace()->traceException($exception);
-        }
+
+        $this->validateInternalStatusTransitionByStateMachine($input);
 
     }
 
@@ -376,6 +394,30 @@ class Validator extends Base\Validator
         InternalStatus::validate($value);
     }
 
+    protected function validateDeductionReversalAt($input)
+    {
+        if (isset($input[Entity::DEDUCTION_REVERSAL_AT]) === false)
+        {
+            return;
+        }
+
+        $tempEntity = clone  $this->entity;
+
+        $tempEntity->fill($input);
+
+        if ($tempEntity->getInternalStatus() !== InternalStatus::REPRESENTED)
+        {
+            throw new BadRequestValidationFailureException('cannot set deduction_reversal_at when internal_status is not represented');
+        }
+
+        if ($tempEntity->getDeductAtOnset() === false)
+        {
+            throw new BadRequestValidationFailureException('cannot set deduction_reversal_at for dispute which is not deducted at onset');
+        }
+
+
+    }
+
     protected function shouldThrowExceptionOnInvalidInternalStatusTransition($input): bool
     {
         $app = App::getFacadeRoot();
@@ -387,5 +429,28 @@ class Validator extends Base\Validator
 
 
         return ($variant !== 'control');
+    }
+
+    protected function validateInternalStatusTransitionByStateMachine($input): void
+    {
+        $shouldThrowException = $this->shouldThrowExceptionOnInvalidInternalStatusTransition($input);
+
+        $currentInternalStatus = $this->entity->getInternalStatus();
+
+        $nextInternalStatus = $input[Entity::INTERNAL_STATUS];
+
+        try
+        {
+            InternalStatus::validateNextInternalStatusForCurrentInternalStatus($currentInternalStatus, $nextInternalStatus);
+        }
+        catch (BadRequestValidationFailureException $exception)
+        {
+            if ($shouldThrowException === true)
+            {
+                throw  $exception;
+            }
+
+            $this->getTrace()->traceException($exception);
+        }
     }
 }

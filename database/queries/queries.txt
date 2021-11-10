@@ -6387,6 +6387,9 @@ ALTER TABLE emi_plans
 ALTER TABLE merchant_banks
     ADD COLUMN cod TINYINT(1) DEFAULT 0;
 
+ALTER TABLE disputes
+    ADD COLUMN deduction_reversal_at INTEGER DEFAULT NULL;
+
 ALTER TABLE addresses
     ADD COLUMN tag varchar(32) DEFAULT NULL,
     ADD COLUMN landmark varchar(64) DEFAULT NULL,

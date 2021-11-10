@@ -27,6 +27,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_DEDUCTED         = 'amount_deducted';
     const DEDUCTION_SOURCE_TYPE   = 'deduction_source_type';
     const DEDUCTION_SOURCE_ID     = 'deduction_source_id';
+    const DEDUCTION_REVERSAL_AT   = 'deduction_reversal_at';
     const AMOUNT_REVERSED         = 'amount_reversed';
     const CURRENCY                = 'currency';
     const DEDUCT_AT_ONSET         = 'deduct_at_onset';
@@ -63,10 +64,16 @@ class Entity extends Base\PublicEntity
     const CONVERSION_RATE         = 'conversion_rate';
 
     // Filter params constants
-    const INTERNAL_RESPOND_BY_FROM = 'internal_respond_by_from';
-    const INTERNAL_RESPOND_BY_TO   = 'internal_respond_by_to';
-    const ORDER_BY_INTERNAL_RESPOND= 'order_by_internal_respond';
-    const GATEWAY_DISPUTE_SOURCE     = 'gateway_dispute_source';
+    const INTERNAL_RESPOND_BY_FROM      = 'internal_respond_by_from';
+    const INTERNAL_RESPOND_BY_TO        = 'internal_respond_by_to';
+    const ORDER_BY_INTERNAL_RESPOND     = 'order_by_internal_respond';
+    const GATEWAY_DISPUTE_SOURCE        = 'gateway_dispute_source';
+    const DEDUCTION_REVERSAL_AT_SET     = 'deduction_reversal_at_set';
+    const DEDUCTION_REVERSAL_AT_FROM    = 'deduction_reversal_at_from';
+    const DEDUCTION_REVERSAL_AT_TO      = 'deduction_reversal_at_to';
+
+    // Bulk file constants
+    const DEDUCTION_REVERSAL_DELAY_IN_DAYS = 'deduction_reversal_delay_in_days';
 
     /**
      *  Field for edit input, when accepted chargeback amount
@@ -138,6 +145,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REVERSED,
         self::COMMENTS,
         self::EMAIL_NOTIFICATION_STATUS,
+        self::DEDUCTION_REVERSAL_AT,
     ];
 
     protected $visible = [
@@ -158,6 +166,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DEDUCTED,
         self::DEDUCTION_SOURCE_TYPE,
         self::DEDUCTION_SOURCE_ID,
+        self::DEDUCTION_REVERSAL_AT,
         self::AMOUNT_REVERSED,
         self::DEDUCT_AT_ONSET,
         self::GATEWAY_DISPUTE_ID,
@@ -215,13 +224,14 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::AMOUNT              => 'int',
-        self::BASE_AMOUNT         => 'int',
-        self::GATEWAY_AMOUNT      => 'int',
-        self::AMOUNT_DEDUCTED     => 'int',
-        self::AMOUNT_REVERSED     => 'int',
-        self::DEDUCT_AT_ONSET     => 'bool',
-        self::LIFECYCLE           => 'json',
+        self::AMOUNT                => 'int',
+        self::BASE_AMOUNT           => 'int',
+        self::GATEWAY_AMOUNT        => 'int',
+        self::AMOUNT_DEDUCTED       => 'int',
+        self::AMOUNT_REVERSED       => 'int',
+        self::DEDUCT_AT_ONSET       => 'bool',
+        self::LIFECYCLE             => 'json',
+        self::DEDUCTION_REVERSAL_AT => 'int',
     ];
 
     protected $guarded = [self::ID];
@@ -234,6 +244,7 @@ class Entity extends Base\PublicEntity
         self::EXPIRES_ON,
         self::RESPOND_BY,
         self::INTERNAL_RESPOND_BY,
+        self::DEDUCTION_REVERSAL_AT,
     ];
 
     protected $defaults = [
@@ -244,6 +255,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REVERSED       => 0,
         self::DEDUCTION_SOURCE_TYPE => null,
         self::DEDUCTION_SOURCE_ID   => null,
+        self::DEDUCTION_REVERSAL_AT => null,
     ];
 
     protected static $generators = [
@@ -368,14 +380,21 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_DEDUCTED, $amount);
     }
 
-    public function setDeductionSourceType(string $deductionSourceType)
+    public function setDeductionSourceType($deductionSourceType)
     {
         $this->setAttribute(self::DEDUCTION_SOURCE_TYPE, $deductionSourceType);
     }
 
-    public function setDeductionSourceId(string $deductionSourceId)
+    public function setDeductionSourceId($deductionSourceId)
     {
         $this->setAttribute(self::DEDUCTION_SOURCE_ID, $deductionSourceId);
+    }
+
+    public function resetDeductionSourceAttributes()
+    {
+        $this->setDeductionSourceId(null);
+
+        $this->setDeductionSourceType(null);
     }
 
     public function setPaymentId($paymentId)
@@ -431,6 +450,11 @@ class Entity extends Base\PublicEntity
     public function setResolvedAt(int $time)
     {
         $this->setAttribute(self::RESOLVED_AT, $time);
+    }
+
+    public function setDeductionReversalAt($deductionReversalAt)
+    {
+        $this->setAttribute(self::DEDUCTION_REVERSAL_AT, $deductionReversalAt);
     }
 
     public function setExpiresOn(int $time)

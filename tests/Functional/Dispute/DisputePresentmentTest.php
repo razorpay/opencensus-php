@@ -4,6 +4,7 @@
 namespace Functional\Dispute;
 
 use DB;
+use Queue;
 use Config;
 use RZP\Models\Dispute;
 use RZP\Models\User\Role;
@@ -13,14 +14,13 @@ use RZP\Models\Payment\Refund;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Mail;
 use RZP\Tests\Traits\TestsWebhookEvents;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Mail\Dispute\Admin\DisputePresentmentRiskOpsReview;
 
 class DisputePresentmentTest extends TestCase
 {
-    use PaymentTrait;
-    use WorkflowTrait;
+    use DisputeTrait;
     use TestsWebhookEvents;
 
     public function setUp(): void
@@ -28,58 +28,14 @@ class DisputePresentmentTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/helpers/DisputePresentmentTestData.php';
 
         parent::setUp();
+
+        $this->addPermissionToBaAdmin('edit_dispute');
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
     }
 
-    protected function setUpForInitiateDraftEvidenceTest(array $disputeAttributes = [],
-                                                         string $paymentResource = 'payment:captured',
-                                                         array $paymentAttributes = []): void
-    {
-        $this->setUpFixtures($disputeAttributes, $paymentResource, $paymentAttributes);
-
-        $this->fixtures->merchant->addFeatures(['dispute_presentment']);
-
-        $this->ba->privateAuth();
-    }
-
-    protected function setUpFixtures(array $disputeAttributes = [], string $paymentResource = 'payment:captured',
-                                     array $paymentAttributes = []): void
-    {
-        $this->setUpPaymentFixtures($paymentResource, $paymentAttributes);
-
-        $this->setUpDisputeFixtures($disputeAttributes);
-    }
-
-    protected function setUpPaymentFixtures($paymentResource, $paymentAttributes = [])
-    {
-        $defaultPaymentAttributes = [
-            'id' => 'randomPayId123',
-        ];
-
-        $paymentAttributes = array_merge($defaultPaymentAttributes, $paymentAttributes);
-
-        $this->fixtures->create($paymentResource, $paymentAttributes);
-    }
-
-    protected function setUpDisputeFixtures($disputeAttributes = [])
-    {
-        $defaultDisputeAttributes = [
-            'id'               => '0123456789abcd',
-            'payment_id'       => 'randomPayId123',
-            'reason_code'      => 'chargeback',
-            'created_at'       => 1600000000,
-            'expires_on'       => time() + 10000,
-            'base_amount'      => 1000000,
-            'base_currency'    => 'INR',
-            'amount'           => 1000000,
-            'currency'         => 'INR',
-            'gateway_amount'   => 1000000,
-            'gateway_currency' => 'INR',
-        ];
-
-        $disputeAttributes = array_merge($defaultDisputeAttributes, $disputeAttributes);
-
-        $this->fixtures->create('dispute', $disputeAttributes);
-    }
 
     public function testGetDisputeDocumentTypesMetadata()
     {
@@ -149,9 +105,9 @@ class DisputePresentmentTest extends TestCase
         $featureFound = false;
 
         $expectedFeature = [
-            'feature'       => 'dispute_presentment',
-            'value'         => true,
-            'display_name'  => 'Enable dispute presentment',
+            'feature'      => 'dispute_presentment',
+            'value'        => true,
+            'display_name' => 'Enable dispute presentment',
         ];
 
         foreach ($features['features'] as $feature)
@@ -216,6 +172,17 @@ class DisputePresentmentTest extends TestCase
         $this->assertEquals(1, count($lifecycle));
     }
 
+    protected function acceptDispute(string $disputeId)
+    {
+        return $this->makeRequestAndGetContent([
+            'url'     => "/disputes/{$disputeId}/accept",
+            'method'  => 'POST',
+            'content' => [
+
+            ],
+        ]);
+    }
+
     /**
      * Ensure that only those actions performed in proxy/private auth are displayed to merchant in proxy auth
      * Only those fields should be displayed in diff which are public fields in the dispute entity
@@ -242,9 +209,6 @@ class DisputePresentmentTest extends TestCase
         $this->assertArrayNotHasKey('internal_status', $entry['change']['old']);
     }
 
-
-
-
     /**
      * Only the following user roles should be able to accept/contest dispute in proxy auth from merchant dashboard
      * Owner
@@ -267,12 +231,12 @@ class DisputePresentmentTest extends TestCase
 
             DB::table('merchant_users')
                 ->insert([
-                    'merchant_id'    => '10000000000000',
-                    'user_id'        => $user->getId(),
-                    'product'        => 'primary',
-                    'role'           => $blockedRole,
-                    'created_at'     => time(),
-                    'updated_at'     => time(),
+                    'merchant_id' => '10000000000000',
+                    'user_id'     => $user->getId(),
+                    'product'     => 'primary',
+                    'role'        => $blockedRole,
+                    'created_at'  => time(),
+                    'updated_at'  => time(),
                 ]);
 
             $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
@@ -388,14 +352,12 @@ class DisputePresentmentTest extends TestCase
         $this->startTest();
     }
 
-
     public function testInitiateDraftEvidenceInvalidDocumentTypeSubmittedAsEvidence()
     {
         $this->setUpForInitiateDraftEvidenceTest();
 
         $this->startTest();
     }
-
 
     public function testInitiateDraftEvidenceDisputeDoesntBelongToMerchant()
     {
@@ -408,34 +370,6 @@ class DisputePresentmentTest extends TestCase
         $this->ba->privateAuth();
 
         $this->startTest();
-    }
-
-    protected function setUpForUpdateDraftEvidenceTest(): void
-    {
-        $this->setUpForInitiateDraftEvidenceTest();
-
-        $this->makeRequestAndGetContent([
-            'url'     => '/disputes/disp_0123456789abcd/contest',
-            'method'  => 'PATCH',
-            'content' => [
-                'amount'             => 1000,
-                'summary'            => 'sample contest summary',
-                'shipping_proof'     => ['doc_shippingProfId'],
-                'billing_proof'      => ['doc_billingProfId1'], //these fileids are hardcoded as valid files in ufh mock
-                'cancellation_proof' => ['doc_cancelProofId1'],
-                'others'             => [
-                    [
-                        'type'         => 'custom_proof_type_1',
-                        'document_ids' => ['file_customType1Id1'],
-                    ],
-                    [
-                        'type'         => 'custom_proof_type_2',
-                        'document_ids' => ['file_customType2Id1'],
-                    ],
-                ],
-                'action'             => 'draft',
-            ],
-        ]);
     }
 
     /**
@@ -482,7 +416,6 @@ class DisputePresentmentTest extends TestCase
         $this->startTest();
     }
 
-
     public function testContestDispute()
     {
         $this->setUpForUpdateDraftEvidenceTest();
@@ -490,6 +423,13 @@ class DisputePresentmentTest extends TestCase
         $this->expectDisputeWebhook('under_review');
 
         $this->startTest();
+    }
+
+    protected function expectDisputeWebhook(string $event)
+    {
+        $testCase = $this->getName();
+
+        $this->expectWebhookEventWithContents("payment.dispute.{$event}", "{$testCase}EventData");
     }
 
     public function testContestDisputePartialAmount()
@@ -535,13 +475,7 @@ class DisputePresentmentTest extends TestCase
     {
         $this->setUpFixtures(['status' => 'under_review']);
 
-        $this->addPermissionToBaAdmin('edit_dispute');
-
         $this->ba->adminProxyAuth('10000000000000', 'rzp_test_' . '10000000000000');
-
-        $admin = $this->ba->getAdmin();
-
-        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
 
         $this->expectDisputeWebhook('action_required');
 
@@ -632,7 +566,7 @@ class DisputePresentmentTest extends TestCase
     {
         $this->setUpForInitiateDraftEvidenceTest();
 
-        $evidenceCore = (new Dispute\Evidence\Core);
+        $disputeCore = (new Dispute\Core);
 
         $disputeEntity = (new Dispute\Repository)->findOrFail('0123456789abcd');
 
@@ -662,7 +596,7 @@ class DisputePresentmentTest extends TestCase
 
             $disputeEntity->refresh();
 
-            $actualRecoveryOption = $evidenceCore->getRecoveryMethodForDisputeAccept($disputeEntity);
+            $actualRecoveryOption = $disputeCore->getRecoveryMethodForDisputeAccept($disputeEntity);
 
             $this->assertEquals('refund', $actualRecoveryOption, 'Test recovery option for ' . json_encode($testcase));
         }
@@ -675,7 +609,7 @@ class DisputePresentmentTest extends TestCase
     {
         $this->setUpForInitiateDraftEvidenceTest();
 
-        $evidenceCore = (new Dispute\Evidence\Core);
+        $disputeCore = (new Dispute\Core);
 
         $disputeEntity = (new Dispute\Repository)->findOrFail('0123456789abcd');
 
@@ -782,7 +716,7 @@ class DisputePresentmentTest extends TestCase
 
             $disputeEntity->refresh();
 
-            $actualRecoveryOption = $evidenceCore->getRecoveryMethodForDisputeAccept($disputeEntity);
+            $actualRecoveryOption = $disputeCore->getRecoveryMethodForDisputeAccept($disputeEntity);
 
 
             $this->assertEquals($expectedRecoveryOption, $actualRecoveryOption, 'Test recovery option for ' . json_encode($testcase));
@@ -851,6 +785,7 @@ class DisputePresentmentTest extends TestCase
             'entity_id' => 'adj_' . $adjustment['id'],
         ], $transaction);
     }
+
 
     public function testAcceptDisputeRecoveryViaAdjustmentFail()
     {
@@ -1034,6 +969,17 @@ class DisputePresentmentTest extends TestCase
         });
     }
 
+    protected function setUpForAcceptDisputeViaRefundTest($refundAmount, $disputeAmount): void
+    {
+        $this->setUpPaymentFixtures('payment:netbanking_captured', ['gateway' => 'netbanking_hdfc']);
+
+        $this->refundPayment('pay_randomPayId123', $refundAmount);
+
+        $this->setUpDisputeFixtures(['amount' => $disputeAmount, 'base_amount' => $disputeAmount]);
+
+        $this->fixtures->merchant->addFeatures(['dispute_presentment']);
+    }
+
     public function testAcceptDisputeRecoveryViaRefundWithDisputeAmountLesserThanUnrefundedAmount()
     {
         Mail::fake();
@@ -1193,62 +1139,4 @@ class DisputePresentmentTest extends TestCase
 
         $this->assertArrayKeysExist($disputeEvidenceDocument, ['id', 'dispute_id', 'type', 'custom_type', 'document_id', 'created_at', 'updated_at', 'admin', 'entity']);
     }
-
-    protected function expectDisputeWebhook(string $event)
-    {
-        $testCase = $this->getName();
-
-        $this->expectWebhookEventWithContents("payment.dispute.{$event}", "{$testCase}EventData");
-    }
-
-    protected function acceptDispute(string $disputeId)
-    {
-        return $this->makeRequestAndGetContent([
-            'url'     => "/disputes/{$disputeId}/accept",
-            'method'  => 'POST',
-            'content' => [
-
-            ],
-        ]);
-    }
-
-    protected function setUpForAcceptDisputeViaRefundTest($refundAmount, $disputeAmount): void
-    {
-        $this->setUpPaymentFixtures('payment:netbanking_captured', ['gateway' => 'netbanking_hdfc']);
-
-        $this->refundPayment('pay_randomPayId123', $refundAmount);
-
-        $this->setUpDisputeFixtures(['amount' => $disputeAmount, 'base_amount' => $disputeAmount]);
-
-        $this->fixtures->merchant->addFeatures(['dispute_presentment']);
-    }
-
-    /**
-     * @param ...$params
-     * in the format arg1=entityName arg2=entityId
-     * A helper function to avoid repeated code to fetch different types of entitites before/after test scenario
-     */
-    protected function getEntitiesByTypeAndIdMultiple(...$params)
-    {
-        $result = [];
-
-        for ($i = 0; $i < count($params); $i += 2)
-        {
-            $entityType = $params[$i];
-
-            $entityId = $params[$i + 1];
-
-            if ($entityId === null)
-            {
-                $entity = $this->getLastEntity($entityType, true);
-            }
-            else
-            {
-                $entity = $this->getEntityById($entityType, $entityId, true);
-            }
-            array_push($result, $entity);
-        }
-        return $result;
-    }
-
 }

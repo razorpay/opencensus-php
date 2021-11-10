@@ -77,9 +77,15 @@ class InternalStatus
     /**
      * @throws BadRequestValidationFailureException
      */
-    public static function getInternalStatusCorrespondingToStatus(string $status): string
+    public static function getInternalStatusCorrespondingToStatus(string $status, Entity $dispute): string
     {
         Status::validate($status);
+
+        if (($dispute->getDeductAtOnset() === true) and
+            ($status === Status::LOST))
+        {
+            return InternalStatus::LOST_MERCHANT_DEBITED;
+        }
 
         return self::$defaultInternalStatusForStatus[$status];
     }

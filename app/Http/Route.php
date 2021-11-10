@@ -1863,6 +1863,7 @@ class Route
         'dispute_bulk_create'                      => ['post',     'disputes/bulk-create',                           'DisputeController@bulkCreate'                                      ],
         'dispute_bulk_edit'                        => ['post',     'disputes/bulk-edit',                             'DisputeController@bulkUpdate'                                      ],
         'dispute_reason_create'                    => ['post',     'disputes/reasons',                               'DisputeController@createReason'                                    ],
+        'dispute_deduction_reversal_cron'          => ['post',     'disputes/deduction_reversal_cron',               'DisputeController@deductionReversalCron'                           ],
         'dispute_fetch_multiple'                   => ['get',      'disputes',                                       'DisputeController@fetchMultiple'                                   ],
         'dispute_fetch_multiple_count'             => ['get',      'disputes-count',                                 'DisputeController@getCountForFetchMultiple',                             ],
         'dispute_fetch'                            => ['get',      'disputes/{id}',                                  'DisputeController@get'                                             ],
@@ -3752,6 +3753,8 @@ class Route
 
         'feature_add_internal',
         'feature_delete_internal',
+
+        'dispute_deduction_reversal_cron',
 
         // Capital LOC
         'feature_delete_entity_internal',
@@ -10433,6 +10436,8 @@ class Route
             'rbl_in_progress_lead_to_sales_force',
             // Optimizer settlements cron
             'setl_optimizer_settlement_cron',
+
+            'dispute_deduction_reversal_cron',
         ],
 
         'subscriptions' => [

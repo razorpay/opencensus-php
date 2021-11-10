@@ -338,7 +338,33 @@ return [
         ],
     ],
 
-    'testDisputeCreateWithDeduct' => [
+    'testDisputeCreateWithDeductRefundRecoveryMethod' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 1,
+                'phase'                => 'chargeback',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDisputeCreateWithDeductAdjustmentRecoveryMethod' => [
         'request' => [
             'method'  => 'post',
             'content' => [
@@ -362,7 +388,7 @@ return [
         ],
     ],
 
-    'testDisputeCreateWithDeductWithoutEnoughBalance' => [
+    'testDisputeCreateWithDeductAdjustmentRecoveryMethodWithoutEnoughBalance' => [
         'request' => [
             'method'  => 'post',
             'content' => [
@@ -927,6 +953,28 @@ return [
         ],
     ],
 
+    'testDisputeEditWithDeductAtOnsetToInternalStatusLostMerchantNotDebited' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'internal_status'        => 'lost_merchant_not_debited',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid internal status provided as merchant is already debited for dispute',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testDisputeEditClosed' => [
         'request' => [
             'method'  => 'post',
@@ -1371,6 +1419,23 @@ return [
         ],
     ],
 
+    'testDisputeFetchDeductionReversalSetFilter'    => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/admin/dispute?deduction_reversal_at_set=1',
+        ],
+        'response'  => [
+            'content'       => [
+                'count'         => 1,
+                'items'         => [
+                    [
+
+                    ],
+                ]
+            ],
+        ],
+    ],
+
     'testDisputeFetchCountProxyAuth'    => [
         'request'   => [
             'method'        => 'get',
@@ -1394,6 +1459,23 @@ return [
                 'items'         => [
                     [
                         'internal_status'     => 'open',
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testDisputeFetchForAdminDeductionReversalAtParam'    => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/admin/dispute?deduction_reversal_at_from=1550000000&deduction_reversal_at_to=1650000000',
+        ],
+        'response'  => [
+            'content'       => [
+                'count'         => 1,
+                'items'         => [
+                    [
+                        'deduction_reversal_at' => 1600000000
                     ],
                 ]
             ],
@@ -2027,6 +2109,19 @@ return [
             'content' => [
                 'success'        => true,
                 'total_disputes' => 1,
+            ],
+        ],
+    ],
+
+
+    'testDeductionReversalCron' => [
+        'request' => [
+            'url'    => '/disputes/deduction_reversal_cron',
+            'method' => 'post',
+        ],
+        'response' => [
+            'content' => [
+
             ],
         ],
     ],

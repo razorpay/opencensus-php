@@ -25,7 +25,8 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\{Entity as E, Timezone, Table};
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
-use RZP\Models\{Base, Payment, Merchant, Adjustment, Currency};
+use RZP\Models\
+{Base, Payment, Merchant, Adjustment, Currency, Payment\Method};
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 use RZP\Models\Merchant\{Email as MerchantEmail, Entity as MerchantEntity};
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
@@ -108,7 +109,6 @@ class Core extends Base\Core
                 'payment_id' => $payment->getId()
             ]);
 
-        unset($input[Entity::DEDUCT_AT_ONSET]);
 
         return $this->mutex->acquireAndRelease(
             $payment->getId(),
@@ -421,6 +421,8 @@ class Core extends Base\Core
 
         $dispute->setResolvedAt(Carbon::now()->getTimestamp());
 
+        $dispute->setDeductionReversalAt(null);
+
         $payment->setDisputed(false);
 
         $this->repo->saveOrFail($payment);
@@ -541,6 +543,10 @@ class Core extends Base\Core
         }
 
         $dispute->setAmountReversed($amount);
+
+        $this->reversePaymentRefundAttributesDueToPositiveAdjustment($dispute);
+
+        $dispute->resetDeductionSourceAttributes();
     }
 
     protected function getAcceptedDisputeAmount(Entity $dispute, array $input)
@@ -1102,6 +1108,30 @@ class Core extends Base\Core
         $this->repo->saveOrFail($payment);
     }
 
+    private function reversePaymentRefundAttributesDueToPositiveAdjustment(Entity  $dispute)
+    {
+        $payment = $dispute->payment;
+
+        $newAmountRefunded = max($payment->getAmountRefunded() - $dispute->getAmount(), 0);
+
+        $newBaseAmountRefunded = max($payment->getBaseAmountRefunded() - $dispute->getBaseAmount(), 0);
+
+        $payment->setAmountRefunded($newAmountRefunded);
+
+        $payment->setBaseAmountRefunded($newBaseAmountRefunded);
+
+        if ($payment->getAmountUnrefunded() === $payment->getAmount())
+        {
+            $payment->setRefundStatus(null);
+        }
+        else if ($payment->getAmountUnrefunded() < $payment->getAmount())
+        {
+            $payment->setRefundStatus(Payment\RefundStatus::PARTIAL);
+        }
+
+        $this->repo->saveOrFail($payment);
+    }
+
     private function getTotalRefundAmount($disputes, Payment\Entity $payment): array
     {
         $totalRefundAmount = 0;
@@ -1281,6 +1311,51 @@ class Core extends Base\Core
         return $dispute;
     }
 
+    public function deductionReversalCron()
+    {
+        $this->trace->info(TraceCode::DISPUTE_DEDUCTION_REVERSAL_CRON, [
+            'message' => 'started',
+        ]);
+
+        $disputes = $this->repo->dispute->getDisputesForDeductionReversal();
+
+        $this->trace->info(TraceCode::DISPUTE_DEDUCTION_REVERSAL_CRON, [
+            'message'       => 'retrieved disputes',
+            'dispute_ids'   => $disputes->pluck('id'),
+        ]);
+
+        $result = [];
+
+        foreach ($disputes as $dispute)
+        {
+            try
+            {
+                $this->update($dispute, [
+                    Entity::STATUS      => Status::WON,
+                    Entity::BACKFILL    => false,
+                ]);
+
+                $result[] = [
+                    'id'        => $dispute->getId(),
+                    'success'   => true,
+                ];
+            }
+            catch (\Exception $exception)
+            {
+                $this->trace->traceException($exception);
+
+                $result[] = [
+                    'id'        => $dispute->getId(),
+                    'success'   => false,
+                    'exception' => $exception->getMessage(),
+                ];
+            }
+        }
+
+
+        return $result;
+    }
+
     private function doRiskAnalysisAndNotifyRas()
     {
         $yesterdayTimestamp = Carbon::yesterday(Timezone::IST)->getTimestamp();
@@ -1368,6 +1443,84 @@ class Core extends Base\Core
         return $data;
     }
 
+    /**
+     *  Reference: https://docs.google.com/spreadsheets/d/1Uh_s0rm3PO9GOdiNVo6xRWdaG13wsD6W_YwJMZ_4OEE/edit?ts=60f15177#gid=0
+     * Tldr:
+     * 1. if its customer dispute -> refund
+     * 2. if not, follow above spreadsheet
+     */
+    public function getRecoveryMethodForDisputeAccept(Entity $dispute): string
+    {
+        $payment = $dispute->payment;
+
+        if (($payment === null) or
+            ($payment->isInternational() === true)
+        )
+        {
+            return RecoveryMethod::RISK_OPS_REVIEW;
+        }
+
+        if ($dispute->isCustomerDispute() === true)
+        {
+            return RecoveryMethod::REFUND;
+        }
+
+        switch ($payment->getMethod())
+        {
+            case Method::CARD:
+                return $this->getRecoveryMethodForCardDispute($dispute);
+            case Method::NETBANKING:
+                return $this->getRecoveryMethodForNetbankingDispute($dispute);
+            case Method::UPI:
+                return $this->getRecoveryMethodForUpiDispute($dispute);
+            case Method::WALLET:
+                return $this->getRecoveryMethodForWalletDispute($dispute);
+        }
+
+        return RecoveryMethod::RISK_OPS_REVIEW;
+    }
+
+    protected function getRecoveryMethodForCardDispute(Entity $dispute): string
+    {
+        return RecoveryMethod::ADJUSTMENT;
+    }
+
+    protected function getRecoveryMethodForNetbankingDispute(Entity $dispute): string
+    {
+        if (in_array($dispute->payment->getGateway(), RecoveryMethod::NETBANKING_RECOVER_VIA_REFUND_GATEWAYS, true) === true)
+        {
+            return RecoveryMethod::REFUND;
+        }
+
+        return RecoveryMethod::RISK_OPS_REVIEW;
+    }
+
+    protected function getRecoveryMethodForUpiDispute(Entity $dispute): string
+    {
+        if (in_array($dispute->payment->getGateway(), RecoveryMethod::UPI_RECOVER_VIA_ADJUSTMENT_GATEWAYS, true) === true)
+        {
+            return RecoveryMethod::ADJUSTMENT;
+        }
+
+        return RecoveryMethod::RISK_OPS_REVIEW;
+    }
+
+    protected function getRecoveryMethodForWalletDispute(Entity $dispute): string
+    {
+        if (in_array($dispute->payment->getGateway(), RecoveryMethod::WALLET_RECOVER_VIA_ADJUSTMENT_GATEWAYS, true) === true)
+        {
+            return RecoveryMethod::ADJUSTMENT;
+        }
+
+        if (in_array($dispute->payment->getGateway(), RecoveryMethod::WALLET_RECOVER_VIA_REFUND_GATEWAYS, true) === true)
+        {
+            return RecoveryMethod::REFUND;
+        }
+
+
+        return RecoveryMethod::RISK_OPS_REVIEW;
+    }
+
     protected function updateDeductionSourceTypeAndId(Entity $dispute, string $entityType, string $entityId)
     {
         $dispute->setDeductionSourceType($entityType);
@@ -1418,7 +1571,7 @@ class Core extends Base\Core
         {
             $newStatus = $input[Entity::STATUS];
 
-            $input[Entity::INTERNAL_STATUS] = InternalStatus::getInternalStatusCorrespondingToStatus($newStatus);
+            $input[Entity::INTERNAL_STATUS] = InternalStatus::getInternalStatusCorrespondingToStatus($newStatus, $dispute);
 
             return $input;
         }

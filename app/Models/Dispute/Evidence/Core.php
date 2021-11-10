@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Dispute;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
+use RZP\Models\Dispute\RecoveryMethod;
 use RZP\Mail\Dispute\Admin\DisputePresentmentRiskOpsReview;
 
 class Core extends Base\Core
@@ -284,7 +285,7 @@ class Core extends Base\Core
      */
     protected function recoverAmountFromMerchantOnDisputeAccept(Dispute\Entity $dispute)
     {
-        $recoveryOption = $this->getRecoveryMethodForDisputeAccept($dispute);
+        $recoveryOption = (new Dispute\Core)->getRecoveryMethodForDisputeAccept($dispute);
 
         $traceData = [
             'recovery_method' => $recoveryOption,
@@ -333,84 +334,6 @@ class Core extends Base\Core
 
 
         $this->trace->info(TraceCode::DISPUTE_RECOVER_FROM_MERCHANT_ON_ACCEPT_COMPLETE, $traceData);
-    }
-
-    /**
-     *  Reference: https://docs.google.com/spreadsheets/d/1Uh_s0rm3PO9GOdiNVo6xRWdaG13wsD6W_YwJMZ_4OEE/edit?ts=60f15177#gid=0
-     * Tldr:
-     * 1. if its customer dispute -> refund
-     * 2. if not, follow above spreadsheet
-     */
-    public function getRecoveryMethodForDisputeAccept(Dispute\Entity $dispute): string
-    {
-        $payment = $dispute->payment;
-
-        if (($payment === null) or
-            ($payment->isInternational() === true)
-        )
-        {
-            return RecoveryMethod::RISK_OPS_REVIEW;
-        }
-
-        if ($dispute->isCustomerDispute() === true)
-        {
-            return RecoveryMethod::REFUND;
-        }
-
-        switch ($payment->getMethod())
-        {
-            case Method::CARD:
-                return $this->getRecoveryMethodForCardDispute($dispute);
-            case Method::NETBANKING:
-                return $this->getRecoveryMethodForNetbankingDispute($dispute);
-            case Method::UPI:
-                return $this->getRecoveryMethodForUpiDispute($dispute);
-            case Method::WALLET:
-                return $this->getRecoveryMethodForWalletDispute($dispute);
-        }
-
-        return RecoveryMethod::RISK_OPS_REVIEW;
-    }
-
-    protected function getRecoveryMethodForCardDispute(Dispute\Entity $dispute): string
-    {
-        return RecoveryMethod::ADJUSTMENT;
-    }
-
-    protected function getRecoveryMethodForNetbankingDispute(Dispute\Entity $dispute): string
-    {
-        if (in_array($dispute->payment->getGateway(), RecoveryMethod::NETBANKING_RECOVER_VIA_REFUND_GATEWAYS, true) === true)
-        {
-            return RecoveryMethod::REFUND;
-        }
-
-        return RecoveryMethod::RISK_OPS_REVIEW;
-    }
-
-    protected function getRecoveryMethodForUpiDispute(Dispute\Entity $dispute): string
-    {
-        if (in_array($dispute->payment->getGateway(), RecoveryMethod::UPI_RECOVER_VIA_ADJUSTMENT_GATEWAYS, true) === true)
-        {
-            return RecoveryMethod::ADJUSTMENT;
-        }
-
-        return RecoveryMethod::RISK_OPS_REVIEW;
-    }
-
-    protected function getRecoveryMethodForWalletDispute(Dispute\Entity $dispute): string
-    {
-        if (in_array($dispute->payment->getGateway(), RecoveryMethod::WALLET_RECOVER_VIA_ADJUSTMENT_GATEWAYS, true) === true)
-        {
-            return RecoveryMethod::ADJUSTMENT;
-        }
-
-        if (in_array($dispute->payment->getGateway(), RecoveryMethod::WALLET_RECOVER_VIA_REFUND_GATEWAYS, true) === true)
-        {
-            return RecoveryMethod::REFUND;
-        }
-
-
-        return RecoveryMethod::RISK_OPS_REVIEW;
     }
 
     protected function recoverAmountFromMerchantOnDisputeAcceptViaAdjustment(Dispute\Entity $dispute)

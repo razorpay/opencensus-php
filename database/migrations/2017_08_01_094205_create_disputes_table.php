@@ -108,6 +108,9 @@ class CreateDisputesTable extends Migration
             $table->string(Dispute::DEDUCTION_SOURCE_TYPE, Dispute::DEDUCTION_SOURCE_TYPE_LENGTH)
                    ->nullable();
 
+            $table->integer(Dispute::DEDUCTION_REVERSAL_AT)
+                   ->nullable();
+
             $table->integer(Dispute::CREATED_AT);
 
             $table->integer(Dispute::UPDATED_AT);

@@ -33,6 +33,7 @@ class CashOnDeliveryTest extends TestCase
 
         $this->fixtures->merchant->enableCoD();
 
+
         $this->fixtures->pricing->create([
             'plan_id'        => 'DefaltCodRleId',
             'payment_method' => 'cod',

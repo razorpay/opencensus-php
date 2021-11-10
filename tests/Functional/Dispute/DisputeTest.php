@@ -7,6 +7,7 @@ use Mail;
 use Cache;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Models\Dispute;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Models\Dispute\Phase;
@@ -15,6 +16,7 @@ use RZP\Services\RazorXClient;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Dispute\BulkCreation;
+use Functional\Dispute\DisputeTrait;
 use RZP\Models\Dispute\Reason\Network;
 use RZP\Services\FreshdeskTicketClient;
 use RZP\Tests\Traits\TestsWebhookEvents;
@@ -26,6 +28,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Dispute\File\Service as DisputeFileService;
 use RZP\Models\Dispute\Customer\FreshdeskTicket\ReasonCode;
@@ -37,7 +40,7 @@ use RZP\Models\Dispute\Customer\FreshdeskTicket\Constants as FreshdeskConstants;
 
 class DisputeTest extends TestCase
 {
-    use PaymentTrait;
+    use DisputeTrait;
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
 
@@ -254,10 +257,19 @@ class DisputeTest extends TestCase
         $this->startTest($testData);
     }
 
-    public function testDisputeCreateWithDeduct()
+    public function testDisputeCreateWithDeductRefundRecoveryMethod()
     {
-        $this->markTestSkipped('Skipped as deduct_at_set is ignored');
+        $payment = $this->fixtures->create('payment', [
+            'method' => 'netbanking',
+        ]);
 
+        $testData = $this->updateCreateTestData($payment->getPublicId());
+
+        $this->startTest($testData);
+    }
+
+    public function testDisputeCreateWithDeductAdjustmentRecoveryMethod()
+    {
         $testData = $this->updateCreateTestData();
 
         $testData['response']['content']['payment_id'] = $this->payment->getPublicId();
@@ -266,7 +278,10 @@ class DisputeTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals(true, $payment['disputed']);
+        $this->assertArraySelectiveEquals([
+            'disputed'          => true,
+            'amount_refunded'   => 100,
+        ], $payment);
 
         $transaction = $this->getLastEntity('transaction', true);
 
@@ -278,15 +293,20 @@ class DisputeTest extends TestCase
 
         $this->assertEquals(0, $transaction['credit']);
 
+        $adjustment = $this->getDbLastEntity('adjustment');
+
         $dispute = $this->getLastEntity('dispute', true);
 
-        $this->assertEquals(100, $dispute['amount_deducted']);
+        $this->assertArraySelectiveEquals([
+            'deduct_at_onset'       => true,
+            'amount_deducted'       => 100,
+            'deduction_source_type' => 'adjustment',
+            'deduction_source_id'   => $adjustment['id'],
+        ], $dispute);
     }
 
-    public function testDisputeCreateWithDeductWithoutEnoughBalance()
+    public function testDisputeCreateWithDeductAdjustmentRecoveryMethodWithoutEnoughBalance()
     {
-        $this->markTestSkipped('Skipped as deduct_at_set is ignored');
-
         $payment = $this->fixtures->create('payment:captured');
 
         $this->fixtures->refund->createFromPayment(['payment' => $payment]);
@@ -382,8 +402,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeCreateNonTransactionalPhaseDeductAtOnset()
     {
-        $this->markTestSkipped('Skipped as deduct_at_set is ignored');
-
         $this->updateCreateTestData();
 
         $this->startTest();
@@ -434,9 +452,8 @@ class DisputeTest extends TestCase
 
     public function testDisputeEditWonPostDeduct()
     {
-        $this->markTestSkipped('Skipped as deduct_at_set is ignored');
-
-        $data = $this->updateEditTestData(['deduct_at_onset' => 1, 'amount' => 1000000]);
+        $data = $this->updateEditTestData(['deduct_at_onset' => 1, 'amount' => 1000000,
+            'deduction_source_type' => 'adjustment', 'deduction_source_id' => 'randomAdjstId1']);
 
         $eventTestDataKey = 'testDisputeWonEventPostDeductData';
 
@@ -447,6 +464,13 @@ class DisputeTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals(false, $payment['disputed']);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertArraySelectiveEquals([
+            'deduction_source_type' => null,
+            'deduction_source_id'   => null,
+        ], $dispute);
     }
 
     public function testDisputeEditClose()
@@ -501,6 +525,14 @@ class DisputeTest extends TestCase
         $this->assertEquals(1000000, $txn['debit']);
 
         $this->assertEquals(0, $txn['credit']);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertNotNull($dispute['deduction_source_type']);
+
+        $this->assertNotNull($dispute['deduction_source_id']);
+
+        $this->assertEquals('lost_merchant_debited', $dispute['internal_status']);
     }
 
     public function testMerchantEditWhenDisputeUnderReview()
@@ -529,9 +561,8 @@ class DisputeTest extends TestCase
 
     public function testDisputeEditDoNotDeductOnLostIfDeducted()
     {
-        $this->markTestSkipped('Skipped as deduct_at_set is ignored');
-
-        $data = $this->updateEditTestData(['deduct_at_onset' => 1]);
+        $data = $this->updateEditTestData(['deduct_at_onset' => 1, 'amount' => 1000000,
+                                           'deduction_source_type' => 'adjustment', 'deduction_source_id' => 'randomAdjstId1']);
 
         $txn = $this->getLastEntity('transaction', true);
 
@@ -560,6 +591,25 @@ class DisputeTest extends TestCase
         $this->assertEquals(0, $txn['credit']);
 
         $this->assertEquals(false, $payment['disputed']);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertNotNull($dispute['deduction_source_type']);
+
+        $this->assertNotNull($dispute['deduction_source_id']);
+
+        $this->assertEquals('lost_merchant_debited', $dispute['internal_status']);
+    }
+
+    public function testDisputeEditWithDeductAtOnsetToInternalStatusLostMerchantNotDebited()
+    {
+        $data = $this->updateEditTestData(['status'=> 'under_review',
+                                           'deduct_at_onset' => 1,
+                                           'amount' => 1000000,
+                                           'deduction_source_type' => 'adjustment',
+                                           'deduction_source_id' => 'randomAdjstId1']);
+
+        $this->startTest($data);
     }
 
     public function testDisputeEditClosed()
@@ -585,8 +635,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeReversalWinLogic()
     {
-        $this->markTestSkipped('Skipped as deduct_at_set is ignored');
-
         $input = [
             'amount'                => 10100,
             'deduct_at_onset'       => 1,
@@ -616,8 +664,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeReversalLostLogic()
     {
-        $this->markTestSkipped('Skipped as deduct_at_set is ignored');
-
         $input = [
             'amount'                => 10100,
             'deduct_at_onset'       => 1,
@@ -940,6 +986,19 @@ class DisputeTest extends TestCase
 
         $this->fixtures->create('dispute', ['internal_respond_by' => 1500000000]);
 
+
+        $testData = $this->updateFetchTestData();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testDisputeFetchForAdminDeductionReversalAtParam()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('dispute', ['deduction_reversal_at' => 1600000000, 'status' => 'under_review']);
+
+        $this->fixtures->create('dispute', ['deduction_reversal_at' => 1500000000, 'status' => 'under_review']);
 
         $testData = $this->updateFetchTestData();
 
@@ -1522,16 +1581,18 @@ class DisputeTest extends TestCase
         $dispute = $this->fixtures->create('dispute', [
             'status'              => 'open',
             'internal_status'     => 'open',
+            'deduct_at_onset'     => true,
         ]);
 
         $fileData = [
               [
-                   'id'                     => $dispute->getId(),
-                   'gateway_dispute_status' => 'open',
-                   'skip_deduction'         => 'Y',
-                   'comments'               => 'test comment',
-                   'status'                 => 'under_review',
-                   'internal_status'        => 'contested',
+                   'id'                                 => $dispute->getId(),
+                   'gateway_dispute_status'             => 'open',
+                   'skip_deduction'                     => 'Y',
+                   'comments'                           => 'test comment',
+                   'status'                             => 'under_review',
+                   'internal_status'                    => 'represented',
+                   'deduction_reversal_delay_in_days'   => 50,
               ],
         ];
 
@@ -1546,9 +1607,11 @@ class DisputeTest extends TestCase
         $disputeArray = $this->getEntityById('dispute', $dispute->getId(), true);
 
         $this->assertArraySelectiveEquals([
-            'internal_status' => 'contested',
+            'internal_status' => 'represented',
             'status'          => 'under_review',
         ], $disputeArray);
+
+        $this->assertNotNull($disputeArray['deduction_reversal_at']);
 
         $this->assertNotEquals(1300000000, $disputeArray['internal_respond_by']);
     }
@@ -2822,6 +2885,17 @@ class DisputeTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testDisputeFetchDeductionReversalSetFilter()
+    {
+        $this->fixtures->create('dispute', ['deduction_reversal_at' => time(), 'status' => 'under_review']);
+
+        $this->fixtures->create('dispute', ['deduction_reversal_at' => null, 'status' => 'under_review']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testPaymentIdNotFound()
     {
         $this->mockDruidRequest(['query' => "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('741107512600331562950201')"],
@@ -2836,6 +2910,271 @@ class DisputeTest extends TestCase
 
         $this->startTest();
     }
+
+
+    public function testMerchantContestsDeductAtOnsetDispute()
+    {
+        [$payment, $dispute] = $this->setupForDisputePresentmentWithDeductAtOnsetScenarios(['internal_status' => 'represented']);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'       => 1000000,
+            'deduction_source_type' => 'adjustment',
+            'deduction_source_id'   => 'randomAdjId123',
+            'status'                => 'under_review',
+            'internal_status'       => 'represented',
+            'amount_reversed'       => 0,
+            'deduction_reversal_at' => null,
+        ], $dispute);
+
+
+        $this->assertArraySelectiveEquals([
+            'amount_refunded'      => 1000000,
+            'base_amount_refunded' => 1000000,
+            'disputed'             => true,
+        ], $payment);
+    }
+
+    public function testMerchantContestsDeductAtOnsetDisputeAndWins()
+    {
+        [$payment, $dispute] = $this->setupForDisputePresentmentWithDeductAtOnsetScenarios(['status' => 'won']);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'       => 1000000,
+            'deduction_source_type' => null,
+            'deduction_source_id'   => null,
+            'status'                => 'won',
+            'internal_status'       => 'won',
+            'amount_reversed'       => 1000000,
+            'deduction_reversal_at' => null,
+        ], $dispute);
+
+
+        $this->assertArraySelectiveEquals([
+            'amount_refunded'      => 0,
+            'base_amount_refunded' => 0,
+            'disputed'             => false,
+            'refund_status'        => null,
+        ], $payment);
+    }
+
+    public function testMerchantContestsDeductAtOnsetDisputeWithScheduledDeductionReversal()
+    {
+        $tPlusSixty = time() + 60 * 86400;
+
+        [$payment, $dispute] = $this->setupForDisputePresentmentWithDeductAtOnsetScenarios([
+            'internal_status'       => 'represented',
+            'deduction_reversal_at' => $tPlusSixty,
+        ]);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'       => 1000000,
+            'deduction_source_type' => 'adjustment',
+            'deduction_source_id'   => 'randomAdjId123',
+            'status'                => 'under_review',
+            'internal_status'       => 'represented',
+            'amount_reversed'       => 0,
+            'deduction_reversal_at' => $tPlusSixty,
+        ], $dispute);
+
+
+        $this->assertArraySelectiveEquals([
+            'amount_refunded'      => 1000000,
+            'base_amount_refunded' => 1000000,
+            'disputed'             => true,
+            'refund_status'        => 'FULL',
+        ], $payment);
+    }
+
+    public function testMerchantContestsDeductAtOnsetDisputeWithScheduledDeductionReversalOverride()
+    {
+        $tPlusSixty = time() + 60 * 86400;
+
+        [$payment, $dispute] = $this->setupForDisputePresentmentWithDeductAtOnsetScenarios([
+            'internal_status'       => 'represented',
+            'deduction_reversal_at' => $tPlusSixty,
+        ]);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'       => 1000000,
+            'deduction_source_type' => 'adjustment',
+            'deduction_source_id'   => 'randomAdjId123',
+            'status'                => 'under_review',
+            'internal_status'       => 'represented',
+            'amount_reversed'       => 0,
+            'deduction_reversal_at' => $tPlusSixty,
+        ], $dispute);
+
+        $this->performAdminActionOnDispute(['status' => 'won']);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertArraySelectiveEquals([
+            'deduction_source_type' => null,
+            'deduction_source_id'   => null,
+            'status'                => 'won',
+            'internal_status'       => 'won',
+            'amount_reversed'       => 1000000,
+            'deduction_reversal_at' => null,
+        ], $dispute);
+    }
+
+    /**
+     * @dataProvider functionDeductionReversalInputValidationProvider
+     */
+    public function testDeductionReversalInputValidation($disputeInput)
+    {
+        $dispute = new Dispute\Entity();
+
+        $dispute->fill($disputeInput);
+
+        try
+        {
+            $dispute->edit(['deduction_reversal_at' => time()]);
+
+            $this->fail('expected exception:');
+        }
+        catch (BadRequestValidationFailureException $exception)
+        {
+            $this->app['trace']->traceException($exception);
+        }
+    }
+
+    public function functionDeductionReversalInputValidationProvider()
+    {
+        return [
+            'cannot set deduction_reversal_at when internal_status is not represented' => [
+                'disputeInput' =>  [
+                    'status'=>'won'
+                ],
+            ],
+            'cannot set deduction_reversal_at without deduct at onset' => [
+                'disputeInput' => [
+                    'internal_status' => 'represented',
+                    'deduct_at_onset' => 0,
+                ],
+            ],
+        ];
+    }
+
+    public function testDeductionReversalCron()
+    {
+        $this->ba->cronAuth();
+
+        $disputeToBeReversed = $this->fixtures->create('dispute', [
+           'deduct_at_onset'            => 1,
+           'deduction_reversal_at'      => time() - 500,
+           'internal_status'            => 'represented',
+           'status'                     => 'under_review',
+           'deduction_source_type'      => 'adjustment',
+           'deduction_source_id'        => 'rndAdjstmentId'
+        ]);
+
+        //dont reverse this because deduct at onset is false
+        $this->fixtures->create('dispute', [
+            'deduct_at_onset'            => 0,
+            'deduction_reversal_at'      => time() - 500,
+            'internal_status'            => 'represented',
+            'status'                     => 'under_review',
+            'deduction_source_type'      => 'adjustment',
+            'deduction_source_id'        => 'rndAdjstmentId'
+        ]);
+
+        //dont reverse this because adjustment type is refund
+        $this->fixtures->create('dispute', [
+            'deduct_at_onset'            => 1,
+            'deduction_reversal_at'      => time() - 500,
+            'internal_status'            => 'represented',
+            'status'                     => 'under_review',
+            'deduction_source_type'      => 'refund',
+            'deduction_source_id'        => 'randomRefundId'
+        ]);
+
+        //dont reverse this because wrong internal status
+        $this->fixtures->create('dispute', [
+            'deduct_at_onset'            => 1,
+            'deduction_reversal_at'      => time() - 500,
+            'internal_status'            => 'won',
+            'status'                     => 'won',
+            'deduction_source_type'      => 'refund',
+            'deduction_source_id'        => 'randomRefundId'
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'deduct_at_onset'            => 1,
+            'deduction_reversal_at'      => time() - 500,
+            'internal_status'            => 'lost',
+            'status'                     => 'lost',
+            'deduction_source_type'      => 'refund',
+            'deduction_source_id'        => 'randomRefundId'
+        ]);
+
+        $response = $this->startTest();
+
+        $this->assertEquals([
+           [
+               'id'             => $disputeToBeReversed->getId(),
+               'success'        => true,
+           ],
+        ], $response);
+
+        $disputeToBeReversed->reload();
+
+        $this->assertArraySelectiveEquals([
+            'internal_status'            => 'won',
+            'status'                     => 'won',
+            'deduction_source_type'      => null,
+            'deduction_source_id'        => null
+        ], $disputeToBeReversed->toArray());
+
+        $adjustment = $this->getLastEntity('adjustment', true);
+
+        $this->assertArraySelectiveEquals([
+            'entity_id'         => $disputeToBeReversed->getId(),
+            'entity_type'       => 'dispute',
+            'description'       => 'Credit to reverse a previous dispute debit',
+        ], $adjustment);
+
+    }
+
+    /*
+   * https://docs.google.com/spreadsheets/d/1cUe13Fw5yif4C54T1Y3t0h-Bb8Dpwdp1Wq71129a7IY/edit#gid=641351782
+   */
+    protected function setupForDisputePresentmentWithDeductAtOnsetScenarios($adminDisputeEditInput): array
+    {
+        $this->addPermissionToBaAdmin('edit_dispute');
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->setUpForDisputePresentmentDeductAtOnsetTest();
+
+        $this->contestDispute();
+
+        $this->performAdminActionOnDispute($adminDisputeEditInput);
+
+        [$payment, $dispute] = $this->getEntitiesByTypeAndIdMultiple(
+            'payment', 'randomPayId123',
+            'dispute', '0123456789abcd'
+        );
+
+        return array($payment, $dispute);
+    }
+
+    protected function setUpForDisputePresentmentDeductAtOnsetTest()
+    {
+        $this->setUpForInitiateDraftEvidenceTest([
+            'deduct_at_onset'       => true,
+            'deduction_source_type' => 'adjustment',
+            'deduction_source_id'   => 'randomAdjId123',
+        ], 'payment:captured', [
+                'amount_refunded'      => 1000000,
+                'base_amount_refunded' => 1000000,
+                'refund_status'        => 'FULL',
+            ]
+        );
+    }
+
 
     public function testChargebackSuccess()
     {
@@ -3097,5 +3436,6 @@ class DisputeTest extends TestCase
         $this->salesforceMock->shouldAllowMockingProtectedMethods();
 
         $this->app['salesforce'] = $this->salesforceMock;
+
     }
 }

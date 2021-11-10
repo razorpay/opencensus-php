@@ -71,6 +71,7 @@ class Service extends Base\Service
         Entity::SKIP_DEDUCTION,
         Entity::COMMENTS,
         Entity::INTERNAL_STATUS,
+        Entity::DEDUCTION_REVERSAL_DELAY_IN_DAYS,
     ];
 
     // The 3 bulk dispute column name constants defined below BULK_CREATE_DISPUTES_COLUMNS_SILENT,
@@ -116,6 +117,7 @@ class Service extends Base\Service
         Entity::COMMENTS,
         Entity::BACKFILL,
         Entity::INTERNAL_STATUS,
+        Entity::DEDUCTION_REVERSAL_DELAY_IN_DAYS,
     ];
 
     // mapping of bulk action to file header values
@@ -259,6 +261,8 @@ class Service extends Base\Service
             catch (\Exception $e)
             {
                 $row[] = $e->getMessage();
+
+                $this->trace->traceException($e);
             }
 
             $outputFileData[] = $row;
@@ -681,6 +685,19 @@ class Service extends Base\Service
         return $res;
     }
 
+    public function formatValueDeductionReversalDelayInDays($res, array &$input, array &$fileInput)
+    {
+        if (empty($res) === true)
+        {
+            return $res;
+        }
+
+        $input[Entity::DEDUCTION_REVERSAL_AT] = time() + (84600* (int)$res);
+
+        return null;
+
+    }
+
     public function formatValueInternalRespondBy($res, array &$input, array &$fileInput)
     {
         if (empty($res) === true)
@@ -829,6 +846,11 @@ class Service extends Base\Service
         return $this->core()->postDisputeAcceptById($disputeId, $input)->toArrayPublic();
     }
 
+    public function deductionReversalCron()
+    {
+        return $this->core()->deductionReversalCron();
+    }
+
     public function createDisputes(array $data)
     {
         $orderKeys = $data[0];
@@ -878,6 +900,7 @@ class Service extends Base\Service
         }
 
         return $outputFileData;
+
     }
 
 }

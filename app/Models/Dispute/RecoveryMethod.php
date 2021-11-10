@@ -1,7 +1,7 @@
 <?php
 
 
-namespace RZP\Models\Dispute\Evidence;
+namespace RZP\Models\Dispute;
 
 
 use RZP\Models\Payment\Gateway;

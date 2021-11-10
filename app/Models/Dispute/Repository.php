@@ -8,6 +8,7 @@ use RZP\Constants\Table;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Payment\Method as Method;
+use function Aws\boolean_value;
 
 class Repository extends Base\Repository
 {
@@ -286,6 +287,37 @@ class Repository extends Base\Repository
             ->where($dbColumn, $param);
     }
 
+    protected function addQueryParamDeductionReversalAtSet($query, $params)
+    {
+        if (boolval($params[Entity::DEDUCTION_REVERSAL_AT_SET]) === false)
+        {
+            return;
+        }
+
+        $query->where(Entity::DEDUCTION_REVERSAL_AT, '!=', null)
+              ->where(Entity::STATUS, '=', Status::UNDER_REVIEW);
+    }
+
+    protected function addQueryParamDeductionReversalAtFrom($query, $params)
+    {
+        $dbColumn = $this->dbColumn(Entity::DEDUCTION_REVERSAL_AT);
+
+        $param = $params[Entity::DEDUCTION_REVERSAL_AT_FROM];
+
+        $query->where($dbColumn, '>=', $param)
+              ->where(Entity::STATUS, '=', Status::UNDER_REVIEW);
+    }
+
+    protected function addQueryParamDeductionReversalAtTo($query, $params)
+    {
+        $dbColumn = $this->dbColumn(Entity::DEDUCTION_REVERSAL_AT);
+
+        $param = $params[Entity::DEDUCTION_REVERSAL_AT_TO];
+
+        $query->where($dbColumn, '<', $param)
+            ->where(Entity::STATUS, '=', Status::UNDER_REVIEW);
+    }
+
     protected function addQueryParamInternalRespondByFrom($query, $params)
     {
         $dbColumn = $this->dbColumn(Entity::INTERNAL_RESPOND_BY);
@@ -346,5 +378,17 @@ class Repository extends Base\Repository
             ->get();
 
         return $query->pluck(Entity::MERCHANT_ID)->toArray();
+    }
+
+
+    public function getDisputesForDeductionReversal()
+    {
+         return $this->newQueryOnSlave()
+                      ->where(Entity::STATUS, '=', Status::UNDER_REVIEW)
+                      ->where(Entity::INTERNAL_STATUS, '=', InternalStatus::REPRESENTED)
+                      ->where(Entity::DEDUCTION_REVERSAL_AT, '<', time())
+                      ->where(Entity::DEDUCT_AT_ONSET, '=', true)
+                      ->where(Entity::DEDUCTION_SOURCE_TYPE, '=', 'adjustment')
+                      ->get();
     }
 }

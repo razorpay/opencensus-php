@@ -24,7 +24,9 @@ class Fetch extends BaseFetch
             Entity::ORDER_BY_INTERNAL_RESPOND   => 'sometimes|boolean',
             Payment::GATEWAY                    => 'sometimes|string',
             Entity::GATEWAY_DISPUTE_SOURCE      => 'sometimes|string|in:customer,network',
-
+            Entity::DEDUCTION_REVERSAL_AT_SET   => 'sometimes|boolean',
+            Entity::DEDUCTION_REVERSAL_AT_FROM  => 'sometimes|epoch',
+            Entity::DEDUCTION_REVERSAL_AT_TO    => 'sometimes|epoch',
         ],
     ];
 
@@ -46,6 +48,9 @@ class Fetch extends BaseFetch
             Entity::ORDER_BY_INTERNAL_RESPOND,
             Payment::GATEWAY,
             Entity::GATEWAY_DISPUTE_SOURCE,
+            Entity::DEDUCTION_REVERSAL_AT_SET,
+            Entity::DEDUCTION_REVERSAL_AT_FROM,
+            Entity::DEDUCTION_REVERSAL_AT_TO,
         ],
         AuthType::PROXY_AUTH => [
             self::EXPAND_EACH,
