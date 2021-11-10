@@ -9096,6 +9096,7 @@ class Route
             'merchant_gst_fetch',
             'merchant_gstin_self_serve_status',
             'merchant_gstin_self_serve_update',
+            'merchant_fetch_payment_failure_analysis',
             'merchant_inheritance_parent_delete',
             'merchant_inheritance_parent_fetch',
             'merchant_inheritance_parent_set',
