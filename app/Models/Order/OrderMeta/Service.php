@@ -28,7 +28,8 @@ class Service extends \RZP\Models\Base\Service
             )
         );
 
-        if ($shippingInfo === null)
+        if ($shippingInfo === null or
+            $shippingInfo['serviceable'] === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_SHIPPING_INFO_NOT_FOUND);
         }

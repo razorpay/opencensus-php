@@ -66,6 +66,37 @@ return [
             'content'     => [],
         ],
     ],
+    'testUpdateCustomerDetailsFor1CCOrderForNonServiceableAddress'           => [
+        'request'  => [
+            'convertContentToString' => false,
+            'method'                 => 'PATCH',
+            'content'                => [
+                'customer_details' => [
+                    'contact'          => '+919954246991',
+                    'shipping_address' => [
+                        'type'    => 'shipping_address',
+                        'line1'   => 'line123',
+                        'zipcode' => '305001',
+                        'city'    => 'Ajmer',
+                        'state'   => 'Rajasthan',
+                        'country' => 'in',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'code' => \RZP\Error\PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SHIPPING_INFO_NOT_FOUND,
+        ]
+    ],
     'testUpdateCustomerDetailsFor1CCOrderWithoutServiceabilityDetailsInCache'           => [
         'request'  => [
             'convertContentToString' => false,

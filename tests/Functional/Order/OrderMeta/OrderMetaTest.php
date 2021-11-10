@@ -377,6 +377,29 @@ class OrderMetaTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testUpdateCustomerDetailsFor1CCOrderForNonServiceableAddress()
+    {
+        self::setUp1CCMerchant();
+        $orderId = self::create1CCOrder();
+        $this->ba->publicAuth();
+        $url = "/orders/1cc/$orderId/customer/";
+
+        $cacheKey = "SHIPPING_INFO_10000000000000_"
+            . $orderId
+            . "_305001_in";
+
+        $this->app['cache']->put($cacheKey, [
+            "serviceable"  => false,
+            "cod"          => true,
+            "cod_fee"      => 50,
+            "shipping_fee" => 60,
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = $url;
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testUpdateCustomerDetailsFor1CCOrderWithoutServiceabilityDetailsInCache()
     {
         self::setUp1CCMerchant();
