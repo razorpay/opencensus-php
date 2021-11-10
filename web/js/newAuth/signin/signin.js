@@ -15,6 +15,7 @@ import { Container, AbsoluteView, RelativeView, Image, ContentContainer } from '
 import DefaultView from './components/DefaultView';
 import OrgView from './components/OrgView';
 import Header from './components/Header';
+import { FullPageLoader } from '../../common/components/Loader';
 
 const Signin = () => {
   const [oneTapInfo, setOneTapInfo] = useState({
@@ -22,14 +23,19 @@ const Signin = () => {
     isScriptFailed: window.isOneTapScriptFailed,
   });
   const [orgData, setOrgData] = useState({});
+  const [isFetchingOrgData, setFetchingOrgData] = useState(true);
 
   useEffect(() => {
+    setFetchingOrgData(true);
     fetchOrg()
       .then((res) => {
         const response = transformFetchOrgData(res.data);
         setOrgData(response);
+        setFetchingOrgData(false);
       })
-      .catch(() => {});
+      .catch(() => {
+        setFetchingOrgData(false);
+      });
   }, []);
 
   useEffect(() => {
@@ -62,74 +68,78 @@ const Signin = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Size height="100%">
-        <Container org={orgData.orgName}>
-          {orgData.backgroundImgUrl && <Image src={orgData.backgroundImgUrl} />}
-          <Size maxWidth="830px">
-            <Flex flexDirection="column">
-              <ContentContainer>
-                {!orgData.backgroundImgUrl && (
-                  <Header handleOnClick={handleSignUpClick} orgData={orgData} /> // dont show logo as header when background url is present
-                )}
-                <RelativeView>
-                  <DesktopOnlyView>
-                    <Space padding={[5]}>
-                      <View>
-                        {orgData.isOrgRZP ? <DefaultView /> : <OrgView orgData={orgData} />}
-                      </View>
-                    </Space>
-                  </DesktopOnlyView>
-
-                  <AbsoluteView>
-                    <Auth
-                      appName="dashboard"
-                      authClientId={window.OAUTH_CLIENT_ID}
-                      oneTapInfo={oneTapInfo}
-                      theme={getTheme(orgData.orgName)}
-                      isGoogleOauthEnabled={orgData.orgName !== BANK_NAMES.AXIS}
-                    />
+      {isFetchingOrgData ? (
+        <FullPageLoader />
+      ) : (
+        <Size height="100%">
+          <Container org={orgData.orgName}>
+            {orgData.backgroundImgUrl && <Image src={orgData.backgroundImgUrl} />}
+            <Size maxWidth="830px">
+              <Flex flexDirection="column">
+                <ContentContainer>
+                  {!orgData.backgroundImgUrl && (
+                    <Header handleOnClick={handleSignUpClick} orgData={orgData} /> // dont show logo as header when background url is present
+                  )}
+                  <RelativeView>
                     <DesktopOnlyView>
-                      <Flex>
-                        <Space padding={[2, 0]} margin="auto">
-                          <Size maxWidth="232px">
-                            <Flex flexWrap="wrap" justifyContent="center">
-                              <View>
-                                <Text color="light.970" size="xsmall">
-                                  Protected by reCAPTCHA. Google
-                                </Text>
-                                <Space padding={[0, 0.25]}>
-                                  <Text color="primary.900" size="xsmall">
-                                    Privacy Policy
-                                  </Text>
-                                </Space>
-                                <Space padding={[0, 0.25]}>
-                                  <Text color="light.970" size="xsmall">
-                                    &
-                                  </Text>
-                                </Space>
-                                <Space padding={[0, 0.25]}>
-                                  <Text color="primary.900" size="xsmall">
-                                    Terms of Service
-                                  </Text>
-                                </Space>
-                                <Space padding={[0, 0.25]}>
-                                  <Text color="light.970" size="xsmall">
-                                    apply.
-                                  </Text>
-                                </Space>
-                              </View>
-                            </Flex>
-                          </Size>
-                        </Space>
-                      </Flex>
+                      <Space padding={[5]}>
+                        <View>
+                          {orgData.isOrgRZP ? <DefaultView /> : <OrgView orgData={orgData} />}
+                        </View>
+                      </Space>
                     </DesktopOnlyView>
-                  </AbsoluteView>
-                </RelativeView>
-              </ContentContainer>
-            </Flex>
-          </Size>
-        </Container>
-      </Size>
+
+                    <AbsoluteView>
+                      <Auth
+                        appName="dashboard"
+                        authClientId={window.OAUTH_CLIENT_ID}
+                        oneTapInfo={oneTapInfo}
+                        theme={getTheme(orgData.orgName)}
+                        isGoogleOauthEnabled={orgData.orgName !== BANK_NAMES.AXIS}
+                      />
+                      <DesktopOnlyView>
+                        <Flex>
+                          <Space padding={[2, 0]} margin="auto">
+                            <Size maxWidth="232px">
+                              <Flex flexWrap="wrap" justifyContent="center">
+                                <View>
+                                  <Text color="light.970" size="xsmall">
+                                    Protected by reCAPTCHA. Google
+                                  </Text>
+                                  <Space padding={[0, 0.25]}>
+                                    <Text color="primary.900" size="xsmall">
+                                      Privacy Policy
+                                    </Text>
+                                  </Space>
+                                  <Space padding={[0, 0.25]}>
+                                    <Text color="light.970" size="xsmall">
+                                      &
+                                    </Text>
+                                  </Space>
+                                  <Space padding={[0, 0.25]}>
+                                    <Text color="primary.900" size="xsmall">
+                                      Terms of Service
+                                    </Text>
+                                  </Space>
+                                  <Space padding={[0, 0.25]}>
+                                    <Text color="light.970" size="xsmall">
+                                      apply.
+                                    </Text>
+                                  </Space>
+                                </View>
+                              </Flex>
+                            </Size>
+                          </Space>
+                        </Flex>
+                      </DesktopOnlyView>
+                    </AbsoluteView>
+                  </RelativeView>
+                </ContentContainer>
+              </Flex>
+            </Size>
+          </Container>
+        </Size>
+      )}
     </ThemeProvider>
   );
 };
