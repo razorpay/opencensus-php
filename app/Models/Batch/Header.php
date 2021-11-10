@@ -1050,7 +1050,7 @@ class Header
     const BUSINESS_REGISTERED_PIN  = Detail\Entity::BUSINESS_REGISTERED_PIN;
     const SEND_ACTIVATION_EMAIL    = 'send_activation_email';
 
-    // CA Activation
+    // RBL CA Activation
     const RZP_REF_NO                = 'RZP Ref No';
     const COMMENT                   = 'Comment';
     const NEW_STATUS                = 'New Status';
@@ -1065,6 +1065,8 @@ class Header
     const SALES_POC_EMAIL           = 'Sales POC Email';
     const API_ONBOARDED_DATE        = 'API Onboarded Date';
     const API_ONBOARDING_LOGIN_DATE = 'API Onboarding Login Date';
+    const MID_OFFICE_POC_NAME       = 'Called By';
+
 
     //ICICI CA Activation
     const APPLICATION_NO            = 'APPLICATION_NO';
@@ -3748,6 +3750,7 @@ class Header
                 self::SALES_POC_EMAIL,
                 self::API_ONBOARDED_DATE,
                 self::API_ONBOARDING_LOGIN_DATE,
+                self::MID_OFFICE_POC_NAME,
             ],
         ],
 

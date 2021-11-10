@@ -67,6 +67,7 @@ class BankingAccountActivationCommentsTest extends TestCase
                     Batch\Header::SALES_POC_EMAIL => '',
                     Batch\Header::API_ONBOARDED_DATE => '20/7/2020 12:00:00 AM',
                     Batch\Header::API_ONBOARDING_LOGIN_DATE => '20/7/2020 12:00:00 AM',
+                    Batch\Header::MID_OFFICE_POC_NAME => 'Name2',
                 ],
                 [
                     Batch\Header::RZP_REF_NO => "102020", // non-existent
@@ -82,6 +83,7 @@ class BankingAccountActivationCommentsTest extends TestCase
                     Batch\Header::SALES_POC_EMAIL => '',
                     Batch\Header::API_ONBOARDED_DATE => '20/7/2020 12:00:00 AM',
                     Batch\Header::API_ONBOARDING_LOGIN_DATE => '20/7/2020 12:00:00 AM',
+                    Batch\Header::MID_OFFICE_POC_NAME => 'Name3',
                 ]
             ];
         }
