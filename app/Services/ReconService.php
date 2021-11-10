@@ -319,6 +319,6 @@ class ReconService
         if ($method === 'GET') return $data;
         if ($method === 'DELETE') return $data;
 
-        return json_encode($data, JSON_FORCE_OBJECT);
+        return json_encode($data);
     }
 }

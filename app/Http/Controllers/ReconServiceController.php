@@ -38,6 +38,8 @@ class ReconServiceController extends Controller
 
     const WHITELISTED_ADMIN_ROUTES_REGEX = [
         self::GET => [
+            '^ping$',
+            '^status$',
             '^merchants$',
             '^merchants\/[[:alnum:]]{14}$',
             '^workspaces$',
@@ -63,6 +65,11 @@ class ReconServiceController extends Controller
             '^ingestion_runs\/\d+$',
             '^journal_voucher$',
             '^signed_url$',
+            '^file\/[[:alnum:]]{14}$',
+            '^workflow_config$',
+            '^workflow_config\/[[:alnum:]]{14}$',
+            '^workflow_file_detail$',
+            '^workflow_file_detail\/[[:alnum:]]{14}$',
         ],
         self::POST => [
             '^merchants$',
@@ -81,6 +88,15 @@ class ReconServiceController extends Controller
             '^notification_types$',
             '^notification_channels$',
             '^default_notification_channels$',
+            '^recon_rules_download$',
+            '^file$',
+            '^file\/[[:alnum:]]{14}$',
+            '^send_notification$',
+            '^output_email$',
+            '^workflow_file$',
+            '^ingestion_runs$',
+            '^recon_runs$',
+            '^workflow_config$',
         ],
         self::PUT => [
             '^notifications$',
@@ -110,6 +126,8 @@ class ReconServiceController extends Controller
             '^bulk_delete$',
             '^recon_runs\/\d+$',
             '^ingestion_runs\/\d+$',
+            '^file\/[[:alnum:]]{14}$',
+            '^workflow_config\/[[:alnum:]]{14}$',
         ],
     ];
 
