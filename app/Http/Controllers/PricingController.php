@@ -27,6 +27,15 @@ class PricingController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postCalculateBuyPricingCost()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->processBuyPricingCostCalculation($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getPlan($id)
     {
         $data = $this->service()->getPlanById($id);

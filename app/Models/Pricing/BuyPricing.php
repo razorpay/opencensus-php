@@ -2,11 +2,20 @@
 
 namespace RZP\Models\Pricing;
 
-use RZP\Models\Payment\Gateway;
+use RZP\Models\Card;
+use RZP\Models\Emi;
+use RZP\Models\Merchant;
+use RZP\Models\Payment;
 use RZP\Models\Payment\Method;
 
 class BuyPricing
 {
+    const PAYMENT   = 'payment';
+    const MERCHANT  = 'merchant';
+    const TERMINALS = 'terminals';
+    const PLAN_ID   = 'plan_id';
+    const ISSUER    = 'issuer';
+
     const HDFC                  = 'hdfc';
     const AXIS                  = 'axis';
     const CITI                  = 'citi';
@@ -362,5 +371,32 @@ class BuyPricing
     public static function isValidBuyPricingIssuer($method, $issuer)
     {
         return in_array($issuer, self::issuerForMethod($method));
+    }
+
+    public static function getPaymentFromBuyPricingCostInput($input)
+    {
+        $payment = new Payment\Entity;
+
+        $payment->fill($input);
+
+        $payment->merchant()->associate(new Merchant\Entity);
+
+        $methodEntity = $input[$payment->getMethod()] ?? [];
+
+        // associating method entities for rule filtering.
+        if (in_array($payment->getMethod(), [Method::CARD, Method::EMI]))
+        {
+            $card = (new Card\Entity)->fill($methodEntity);
+
+            $payment->card()->associate($card);
+        }
+        if ($payment->getMethod() === Method::EMI)
+        {
+            $emi = (new Emi\Entity)->fill($methodEntity);
+
+            $payment->emi()->associate($emi);
+        }
+
+        return $payment;
     }
 }

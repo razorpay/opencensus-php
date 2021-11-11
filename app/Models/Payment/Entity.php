@@ -303,6 +303,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     protected $forceTerminalId    = null;
 
+    protected $issuer;
+
     protected $googlePayMethods   = [];
 
     protected $googlePayCardNetworks   = [];
@@ -3005,7 +3007,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $issuer = null;
 
-        if ($this->hasCard() === true)
+        if (isset($this->issuer))
+        {
+            return $this->issuer;
+        }
+        else if ($this->hasCard() === true)
         {
             $issuer = $this->card->getIssuer();
         }
@@ -3032,6 +3038,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         return $issuer;
+    }
+
+    public function setIssuer($issuer)
+    {
+        $this->issuer = $issuer;
     }
 
     public function getErrorDetails()

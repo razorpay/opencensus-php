@@ -184,6 +184,30 @@ class Repository extends Base\Repository
         return $pricing;
     }
 
+    public function getBuyPricingPlansByIds($ids)
+    {
+        sort($ids);
+
+        $cacheTags = [];
+
+        foreach ($ids as $id)
+        {
+            $tag = Entity::getCacheTags($this->entity, $id, Type::BUY_PRICING);
+
+            array_push($cacheTags, $tag);
+        }
+
+        return $this->onlyBuyPricing()
+                    ->newQueryOnSlave()
+                    ->whereIn(Entity::PLAN_ID, $ids)
+                    ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
+                    ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
+                    ->orderBy(Pricing\Entity::ID, 'desc')
+                    ->remember($this->getCacheTtl())
+                    ->cacheTags($cacheTags)
+                    ->get();
+    }
+
     public function getPricingPlanByIdAndOrgId($id, $orgId)
     {
         $pricing = $this->newQuery()

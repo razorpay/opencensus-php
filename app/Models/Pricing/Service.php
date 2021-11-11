@@ -53,6 +53,63 @@ class Service extends Base\Service
         return $plan->toArrayPublic();
     }
 
+    public function processBuyPricingCostCalculation($input)
+    {
+        (new Validator())->validateInput("buyPricingCost", $input);
+
+        $this->trace->info(
+            TraceCode::BUY_PRICING_PROCESS_COST_CALCULATION,
+            [
+                'payment_id' => $input[BuyPricing::PAYMENT]['id'],
+                'terminals'  => $input[BuyPricing::TERMINALS]
+            ]);
+
+        $result = [];
+
+        $payment = BuyPricing::getPaymentFromBuyPricingCostInput($input[BuyPricing::PAYMENT]);
+
+        $terminals = $input[BuyPricing::TERMINALS];
+
+        $planIds = [];
+
+        foreach ($terminals as $terminal)
+        {
+            array_push($planIds, $terminal[Entity::PLAN_ID]);
+        }
+
+        $buyPricingPlans = $this->repo->pricing->getBuyPricingPlansByIds(array_unique($planIds))->groupBy(Entity::PLAN_ID);
+
+        foreach ($terminals as $terminal)
+        {
+            // For buy pricing cost, gateway of terminal is the payment issuer.
+            $payment->setIssuer($terminal['gateway']);
+
+            try
+            {
+                $cost = (new Pricing\Fee)->calculateTerminalFees($payment, $buyPricingPlans[$terminal[Entity::PLAN_ID]]);
+
+                $result[] = array_merge($terminal, [
+                    'cost'    => $cost[0],
+                    'success' => true
+                ]);
+            }
+            catch (\Throwable $e)
+            {
+                $result[] = array_merge($terminal, [
+                    'cost'    => 0,
+                    'success' => false,
+                    'error'             => [
+                        Error::DESCRIPTION       => $e->getMessage(),
+                        Error::PUBLIC_ERROR_CODE => $e->getCode(),
+                    ]
+                ]);
+            }
+
+        }
+
+        return ['terminals' => $result];
+    }
+
     public function addPlanRule($id, $input, $orgId = null, $isBuyPricingRule = false)
     {
         if ($isBuyPricingRule === true)

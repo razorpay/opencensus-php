@@ -129,6 +129,13 @@ class Fee extends Base\Core
         return [$totalFee, $totalTax, $feeSplit];
     }
 
+    public function calculateTerminalFees($entity, $pricing): array
+    {
+        list($rzpFee, $rzpTax, $rzpFeeSplit) = $this->calculateTerminalRZPFees($entity, $pricing);
+
+        return [$rzpFee, $rzpTax, $rzpFeeSplit];
+    }
+
     /**
      * Returns merchant RZP fees for entity
      *
@@ -150,6 +157,13 @@ class Fee extends Base\Core
         $pricing = $this->repo->getPricingPlanByIdWithoutOrgId($pricingPlanId, $merchant);
 
         $pricing = $this->addFallbackPricingRules($pricing, $entity);
+
+        return $calculator->calculate($pricing);
+    }
+
+    public function calculateTerminalRZPFees(Payment\Entity $entity, Pricing\Plan $pricing): array
+    {
+        $calculator = Calculator\Base::make($entity, Product::PRIMARY, 'terminal');
 
         return $calculator->calculate($pricing);
     }

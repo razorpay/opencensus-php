@@ -658,6 +658,7 @@ class Route
         'merchant_toggle_fee_bearer'               => ['post',     'merchant/toggle_fee_bearer',                     'MerchantController@toggleFeeBearer'                                ],
         'pricing_create_plan'                      => ['post',     'pricing',                                        'PricingController@postCreatePlan'                                  ],
         'buy_pricing_create_plan'                  => ['post',     'buy_pricing',                                    'PricingController@postCreateBuyPlan'                               ],
+        'buy_pricing_terminal_cost'                => ['post',     'buy_pricing/terminal_cost',                      'PricingController@postCalculateBuyPricingCost'                     ],
         'pricing_get_plans'                        => ['get',      'pricing',                                        'PricingController@getPlans'                                        ],
         'pricing_get_merchant_plans'               => ['get',      'pricing/merchants',                              'PricingController@getMerchantPricingPlans'                         ],
         'buy_pricing_get_terminal_plans'           => ['get',      'buy_pricing/terminals',                          'PricingController@getTerminalBuyPricingPlans'                      ],
@@ -3989,7 +3990,9 @@ class Route
         'setl_optimizer_settlement_cron',
 
         'third_watch_address_cod_score',
-        'banking_draft_invitations_create'
+        'banking_draft_invitations_create',
+
+        'buy_pricing_terminal_cost',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -10879,6 +10882,7 @@ class Route
 
         'smart_routing' => [
             'gateway_downtime_for_payment',
+            'buy_pricing_terminal_cost',
         ],
 
         'gupshup' => [

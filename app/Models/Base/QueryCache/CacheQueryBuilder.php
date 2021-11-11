@@ -153,6 +153,11 @@ class CacheQueryBuilder extends RememberableQueryBuilder
 
     protected function getKeyPrefix(): string
     {
+        if (is_string($this->cacheTags) === false)
+        {
+            return $this->cachePrefix;
+        }
+
         // this is needed to ensure all query cache keys related to a entity
         // go to one hash slot, so that while flushing all the keys, RedisTaggedCache
         // can delete all keys in 1 command

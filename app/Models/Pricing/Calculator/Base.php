@@ -109,13 +109,18 @@ abstract class Base extends BaseModel\Core
      * Gets pricing calculator for entity
      */
 
-    public static function make(BaseModel\PublicEntity $entity, string $product): Base
+    public static function make(BaseModel\PublicEntity $entity, string $product, string $type = ""): Base
     {
         $entityType = $entity->getEntity();
 
         if (strpos($entityType, '.') !== false)
         {
             $entityType = str_replace('.', '_', $entityType);
+        }
+
+        if (empty($type) === false)
+        {
+            $entityType = $type;
         }
 
         $calculator = __NAMESPACE__. '\\' .studly_case($entityType);
@@ -445,6 +450,14 @@ abstract class Base extends BaseModel\Core
                     $relevantRule = $rule;
                     break;
                 }
+
+                if (($rule->getAmountRangeMin() < $amount) and
+                    ($rule->getAmountRangeMax() === null) and
+                    ($rule->getType() === Pricing\Type::BUY_PRICING))
+                {
+                    $relevantRule = $rule;
+                    break;
+                }
             }
 
         }
@@ -540,7 +553,7 @@ abstract class Base extends BaseModel\Core
 
         $this->trace->info(
             TraceCode::PAYMENT_PRICING_RULE_SELECTION,
-            ['rules' => $array]);
+            ['rules' => $this->redactSensitiveInfo($array)]);
     }
 
     /**
@@ -566,6 +579,11 @@ abstract class Base extends BaseModel\Core
 
         return $verbose;
         */
+    }
+
+    protected function redactSensitiveInfo(array $input)
+    {
+        return $input;
     }
 
     protected function createFeeBreakup($name, $percent, $amount, $pricingRule = null)

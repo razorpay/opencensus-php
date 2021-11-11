@@ -17,6 +17,7 @@ use RZP\Models\Merchant\FeeBearer;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
+use Illuminate\Cache\Events\KeyForgotten;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -1361,6 +1362,146 @@ class PricingTest extends TestCase
         }
 
         $this->assertEquals($response['items'][0]['plan_id'],$content['id']);
+    }
+
+    public function testCalculateBuyPricingCost()
+    {
+        $plan = $this->createBuyPricingPlan();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = array_merge($payment, [
+            'id'     => 'fourteenDigits',
+            'method' => 'card',
+            'card'   => array_merge($payment['card'], [
+                'network' => 'Visa',
+                'type'    => 'debit',
+            ])
+        ]);
+
+        $testData['request']['content'] = [
+            'terminals' => [
+                [
+                    'terminal_id' => 'fourteenDigits',
+                    'plan_id'     => $plan['id'],
+                    'gateway'     => 'hdfc',
+                ],
+                [
+                    'terminal_id' => 'fourteenDigits',
+                    'plan_id'     => $plan['id'],
+                    'gateway'     => 'fulcrum',
+                ],
+            ],
+            'payment' => $payment,
+        ];
+
+        $testData['response']['content']['terminals'][0]['plan_id'] = $plan['id'];
+
+        $testData['response']['content']['terminals'][1]['plan_id'] = $plan['id'];
+
+        $this->ba->appAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testGetBuyPricingPlansByIds()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        Event::fake(false);
+
+        $plan = $this->createBuyPricingPlan();
+
+        $planId = $plan['id'];
+
+        $pricingRepo = new Pricing\Repository();
+
+        Event::assertDispatched(KeyForgotten::class);
+
+        // setting cache.
+        $currentPlans = $pricingRepo->getBuyPricingPlansByIds([$planId])->toArray();
+
+        //
+        // Asserts that key is not present initially in cache
+        //
+        Event::assertDispatched(CacheMissed::class, function ($e) use ($planId)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, E::PRICING) === true)
+                {
+                    $this->assertEquals('pricing_' . $planId . '_buy_pricing', $tag);
+                }
+            }
+            return true;
+        });
+
+        //
+        // Asserts that key is not present initially in cache
+        //
+        Event::assertDispatched(KeyWritten::class, function ($e) use ($planId)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, E::PRICING) === true)
+                {
+                    $this->assertEquals('pricing_' . $planId . '_buy_pricing', $tag);
+                }
+            }
+            return true;
+        });
+
+        //
+        // Asserts cache should not have been hit the first time
+        //
+        Event::assertNotDispatched(CacheHit::class, function ($e) use ($planId)
+        {
+            foreach ($e->tags as $tag)
+            {
+                $this->assertNotEquals($tag, 'pricing_' . $planId . '_buy_pricing');
+            }
+            return false;
+        });
+
+        $this->assertEquals($currentPlans[0]['percent_rate'], 10);
+
+        $pricingRepo->getBuyPricingPlansByIds([$planId])->toArray();
+
+        //
+        // Asserts that key is found in cache on subsequent attempts
+        //
+        Event::assertDispatched(CacheHit::class, function ($e) use ($planId)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, E::PRICING) === true)
+                {
+                    $this->assertEquals('pricing_' . $planId . '_buy_pricing', $tag);
+                }
+            }
+            return true;
+        });
+
+        (new Pricing\Core())->editPlanRule($planId, $plan['rules']['0']['id'], ['percent_rate' => 450]);
+
+        $updatedPlan = $pricingRepo->getBuyPricingPlansByIds([$planId])->toArray();
+
+        $this->assertEquals($updatedPlan[0]['percent_rate'], 450);
+
+        //
+        // Asserts that key is cleared in cache after update
+        //
+        Event::assertDispatched(CacheMissed::class, function ($e) use ($planId)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, E::PRICING) === true)
+                {
+                    $this->assertStringContainsString($planId, $tag);
+                }
+            }
+            return true;
+        });
     }
 
     public function testAddBulkBuyPlanRules()

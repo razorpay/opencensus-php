@@ -470,6 +470,31 @@ return [
         ]
     ],
 
+    'testCalculateBuyPricingCost' => [
+        'request'  => [
+            'url'     => '/buy_pricing/terminal_cost',
+            'method'  => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'terminals' => [
+                    [
+                        'terminal_id' => 'fourteenDigits',
+                        'gateway'     => 'hdfc',
+                        'cost'        => 50,
+                        'success'     => true,
+                    ],
+                    [
+                        'terminal_id' => 'fourteenDigits',
+                        'gateway'     => 'fulcrum',
+                        'cost'        => 0,
+                        'success'     => false,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testAddBulkBuyPlanRules' => [
         'request'  => [
             'content' => [

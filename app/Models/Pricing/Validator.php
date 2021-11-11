@@ -129,6 +129,14 @@ class Validator extends Base\Validator
         Entity::RULES       => 'required|array|min:1',
     ];
 
+    protected static $buyPricingCostRules = [
+        'terminals'               => 'required|array|min:1',
+        'terminals.*.terminal_id' => 'required|alpha_num',
+        'terminals.*.plan_id'     => 'required|alpha_num',
+        'terminals.*.gateway'     => 'required|string',
+        'payment'                 => 'required|array',
+    ];
+
     protected function validatePlanName($input)
     {
         // If no plan name, then set it to null

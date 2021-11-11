@@ -17,6 +17,8 @@ use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Payment as PaymentModel;
 use RZP\Constants\Entity ;
 
+// Terminal Calculator extends Payment Calculator.
+// Take extra care while modifying existing logic.
 class Payment extends Base
 {
 
