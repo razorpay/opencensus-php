@@ -76,6 +76,7 @@ const KYCStatusModal = ({
       activationState === 'needs_clarification' ||
       activationState === 'poi_verified' ||
       activationState === 'L1_instantly_activated' ||
+      activationState === 'funds_on_hold' ||
       activationState === 'rejected';
     if (!shouldShowModal) {
       onGoToDashboard();

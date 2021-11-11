@@ -2,7 +2,7 @@ import { getActivationState } from 'merchant/components/Activation/ActivationUti
 import SupportButton from './SupportButton';
 
 import { Link } from 'react-router-dom';
-
+import { SAMPLE_TICKET } from 'merchant/views/TicketSupport/components/data';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, getCommonSegmentProperties } from 'common/utils/rzp-utils';
 
@@ -409,13 +409,23 @@ export const kycModalContent = (args = {}) => {
           <div>
             Our compliance team and banking partners are reviewing your KYC and your payments have
             been temporarily paused. We will review your KYC and reach out to you for any
-            clarifications within 3-4 days.
+            clarifications within 3-4 days. Meanwhile, you can request a call from our team.
           </div>
         ),
         background: 'pending',
         button: (
-          <button className="btn btn-primary" onClick={args.onGoToDashboard}>
-            Back to Dashboard
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              if (window.rzpTicketSystem) {
+                window.rzpTicketSystem.openModal(`#schedule-call`, {
+                  ticket: SAMPLE_TICKET,
+                });
+              }
+              args.onClose();
+            }}
+          >
+            Request a call
           </button>
         ),
       };

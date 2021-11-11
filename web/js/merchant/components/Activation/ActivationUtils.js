@@ -457,7 +457,7 @@ function getActivationState(activationData = {}, isUnregisteredBusiness) {
 
   const dedupeStatus = isDedupe(activationData);
 
-  if (activation_status === 'activated') {
+  if (activation_status === 'activated' && !isHardLimitReached) {
     activationState = 'account_activated';
   } else if (!activation_form_milestone) {
     activationState = 'L1_Start';

@@ -100,6 +100,7 @@ class AnalyticsDesktop extends Component {
       isDedupe(user) === 'blocked' ||
       activationState === 'needs_clarification_mcc_pending' ||
       activationState === 'needs_clarification' ||
+      activationState === 'funds_on_hold' ||
       activationState === 'rejected';
 
     if (user.isInstantActivationEnabled && shouldShowModal) {

@@ -14,6 +14,7 @@ import PaymentLimitRemoved from './icons/LimitRemoved.svg';
 import FillKyc from './icons/FillKyc.svg';
 import PaymentPaused from './icons/PaymentPaused.svg';
 import * as Message from './Constant';
+import { SAMPLE_TICKET } from '../Constants/OnboardingConstants';
 
 export type ModalTypeT =
   | 'dedupe'
@@ -229,12 +230,23 @@ export const getModalContent = (
           clarifications asked by our team on your registered email. <br /> <br /> Once we receive
           the clarifications, we will resume your settlements. Upon receiving your response, we will
           be able to process the application within 2 days and re enable settlements for you. Please
-          note, you can still accept payments from your customers.
+          note, you can still accept payments from your customers. Meanwhile, you can request a call
+          from our team.
         </>
       );
       button = (
-        <Button onClick={closeModal} block>
-          Okay, Got It
+        <Button
+          onClick={() => {
+            if (window.rzpTicketSystem) {
+              window.rzpTicketSystem.openModal(`#schedule-call`, {
+                ticket: SAMPLE_TICKET,
+              });
+            }
+            closeModal();
+          }}
+          block
+        >
+          Request a call
         </Button>
       );
       return { title, description, image, button };
