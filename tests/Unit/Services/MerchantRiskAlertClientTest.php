@@ -40,6 +40,8 @@ class MerchantRiskAlertClientTest extends TestCase
 
     public function testNonRiskyMerchantWithRasFailureAndFallback()
     {
+        $this->markTestSkipped('As we are switching off fallback on failure');
+
         $this->mockRazorx('notify_risky_merchant');
 
         $this->app['rzp.mode'] = 'test';
@@ -92,6 +94,8 @@ class MerchantRiskAlertClientTest extends TestCase
 
     public function testBlacklistCountryAlertsWithRasFailureAndFallback()
     {
+        $this->markTestSkipped('As we are switching off fallback on failure');
+
         $this->mockRazorx('blacklist_country_cron');
 
         $this->app['rzp.mode'] = 'test';
@@ -173,6 +177,8 @@ class MerchantRiskAlertClientTest extends TestCase
 
     public function testCreateMerchantAlertWithRasFailureAndFallback()
     {
+        $this->markTestSkipped('As we are switching off fallback on failure');
+
         $payload = [
             'merchant_id' => '1232134',
             'entity_type' => 'payment',

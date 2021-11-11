@@ -36,7 +36,7 @@ class MerchantRiskAlertClient
 
     const SVC_NEW_CONFIG_KEY = 'services.merchant_risk_alerts.new';
 
-    const FALLBACK_ENABLED = true;
+    const FALLBACK_ENABLED = false;
 
     /**
      * @var Requests_Session
@@ -130,10 +130,7 @@ class MerchantRiskAlertClient
         $retryWithFallbackRoute = false;
 
         do {
-            $configKey = $this->getRasConfigKey(
-                'notify_risky_merchant', $merchantId , $retryWithFallbackRoute,
-                ['merchant_id' => $merchantId]
-            );
+            $configKey = self::SVC_NEW_CONFIG_KEY;
 
             $this->init($configKey);
 
@@ -170,10 +167,7 @@ class MerchantRiskAlertClient
         $retryWithFallbackRoute = false;
 
         do {
-            $configKey = $this->getRasConfigKey(
-                $category, $entityId , $retryWithFallbackRoute,
-                ['entity_type' => $entityType, 'entity_id' => $entityId]
-            );
+            $configKey = self::SVC_NEW_CONFIG_KEY;
 
             $this->init($configKey);
 
@@ -228,8 +222,7 @@ class MerchantRiskAlertClient
         $retryWithFallbackRoute = false;
 
         do {
-            $configKey = $this->getRasConfigKey(
-                'blacklist_country_cron', 'blacklist_country_cron', $retryWithFallbackRoute, []);
+            $configKey = self::SVC_NEW_CONFIG_KEY;
 
             $this->init($configKey, self::IDENTIFY_BLACKLIST_COUNTRY_ALERTS_REQUEST_TIMEOUT);
 
