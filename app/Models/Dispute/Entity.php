@@ -148,6 +148,8 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REVERSED,
         self::COMMENTS,
         self::EMAIL_NOTIFICATION_STATUS,
+        self::DEDUCTION_SOURCE_ID,
+        self::DEDUCTION_SOURCE_TYPE,
         self::DEDUCTION_REVERSAL_AT,
     ];
 

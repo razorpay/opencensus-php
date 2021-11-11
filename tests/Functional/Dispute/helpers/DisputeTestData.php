@@ -1718,6 +1718,39 @@ return [
         ],
     ],
 
+    'testDisputeEditDeductionSourceTypeAndId' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'deduction_source_type' => 'adjustment',
+                'deduction_source_id'   => '',
+                'skip_deduction'        => true,
+                'internal_status'       => 'lost_merchant_debited',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'deduction_source_type' => 'adjustment',
+                'deduction_source_id'   => '',
+                'internal_status'       => 'lost_merchant_debited'
+            ],
+        ],
+    ],
+
+    'testDisputeEditDeductionSourceTypeAndIdValidationFailures' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+
+            ],
+        ],
+
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testDisputeEditWithStatusAndInternalStatusValidCombinations' => [
         'request'  => [
             'method'  => 'post',

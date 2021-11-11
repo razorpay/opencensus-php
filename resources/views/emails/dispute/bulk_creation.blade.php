@@ -130,6 +130,11 @@
                             Note: Kindly reply to this email with the requested documents in the required format by the deadline, failing which the corresponding amount will be debited from your account.
                         @break
                     @endswitch
+
+                    @if( $hasDeductAtOnset === true )
+                        Alternatively, if a debit has already been made at the time of the dispute creation, no further debits will be allowed. In this case, the corresponding amount would be reversed if our banking partner resolves dispute in your favour.
+
+                    @endif
                     <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                 </div>
             </td>

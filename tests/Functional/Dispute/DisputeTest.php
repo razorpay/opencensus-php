@@ -9,6 +9,9 @@ use Mockery;
 use Carbon\Carbon;
 use RZP\Models\Dispute;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
 use RZP\Models\Dispute\Phase;
 use RZP\Models\Dispute\Entity;
@@ -18,6 +21,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Dispute\BulkCreation;
 use Functional\Dispute\DisputeTrait;
 use RZP\Models\Dispute\Reason\Network;
+use RZP\Exception\BadRequestException;
 use RZP\Services\FreshdeskTicketClient;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -1240,6 +1244,100 @@ class DisputeTest extends TestCase
         $this->startTest();
     }
 
+    public function testDisputeEditDeductionSourceTypeAndId()
+    {
+        $this->updateEditTestData(['status' => 'lost', 'internal_status' => 'lost_merchant_not_debited']);
+
+        $merchantEntity = (new Merchant\Repository)->findOrFail('10000000000000');
+
+        $this->app['basicauth']->setModeAndDbConnection('test');
+
+        $adjustment = (new Adjustment\Core)->createAdjustment([
+            'amount'        => 1000,
+            'currency'      => 'INR',
+            'description'   => 'test description',
+        ], $merchantEntity);
+
+        $this->testData[__FUNCTION__]['request']['content']['deduction_source_id'] = $adjustment->getId();
+        $this->testData[__FUNCTION__]['response']['content']['deduction_source_id'] = $adjustment->getId();
+
+
+        $this->startTest();
+    }
+
+    /**
+     * @dataProvider disputeEditDeductionSourceTypeAndIdValidationFailuresDataProvider
+     */
+    public function testDisputeEditDeductionSourceTypeAndIdValidationFailures($disputeAttributes, $editInput, $expectedError, $expectedException = [])
+    {
+        $this->updateEditTestData();
+
+        $this->startTest([
+            'request'       => ['content' => $editInput,],
+            'response'      => ['content' => ['error' => $expectedError], 'status_code' => 400],
+            'exception'     => $expectedException,
+        ]);
+    }
+
+    public function disputeEditDeductionSourceTypeAndIdValidationFailuresDataProvider(): array
+    {
+        return [
+            'invalid internal_status'           => [
+                'dispute_attributes' => [],
+                'edit_input'         => [
+                    'deduction_source_type' => 'refund',
+                    'deduction_source_id'   => 'randomRefundId',
+                    'internal_status'       => 'lost_merchant_not_debited',
+                    'skip_deduction'        => true,
+                ],
+                'error'              => [
+                    'description' => 'deduction_source_type/deduction_source_id can be set
+        only when internal_status is "lost_merchant_not_debited"',
+                ],
+            ],
+            'field_missing'           => [
+                'dispute_attributes' => [],
+                'edit_input'         => [
+                    'deduction_source_type' => 'refund',
+                ],
+                'error'              => [
+                    'description' => 'The deduction source id field is required when deduction source type is present.',
+                ],
+            ],
+
+            'invalid deduction source id' => [
+                'dispute_attributes' => [],
+                'edit_input'         => [
+                    'deduction_source_type' => 'refund',
+                    'deduction_source_id'   => 'randomRefundId',
+                    'internal_status'       => 'lost_merchant_debited',
+                    'skip_deduction'        => true,
+                ],
+                'error'              => [
+                    'description' => 'The id provided does not exist',
+                ],
+                'expected_exception' => [
+                    'class'               => BadRequestException::class,
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+
+            'skip deduction evaluates to false' => [
+                'dispute_attributes' => [],
+                'edit_input'         => [
+                    'deduction_source_type' => 'refund',
+                    'deduction_source_id'   => 'randomRefundId',
+                    'internal_status'       => 'lost_merchant_debited',
+                ],
+                'error'              => [
+                    'description' => 'skip_deduction should be true if overriding deduction_source_id
+        and deduction_source_type',
+                ],
+            ],
+
+        ];
+    }
+
     public function testDisputeEditWithStatusAndInternalStatusValidCombinations()
     {
         $this->updateEditTestData();
@@ -1588,6 +1686,7 @@ class DisputeTest extends TestCase
             'gateway_currency'       => 'USD',
             'skip_email'             => 'N',
             'internal_respond_by'    => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
+            'deduct_at_onset'        => 'Y',
         ];
 
         $fileData[] = $row;
@@ -2081,21 +2180,51 @@ class DisputeTest extends TestCase
         $this->freshdeskFlow(false, false, ['updateTicketV2', 'postTicketReply'], ['updateTicketV2', 'postTicketReply'], false, false, false, false, false, Subcategory::REPORT_FRAUD_FD, $payment);
     }
 
-    public function testBulkDisputeCreateMailSubjectWithDisputePresentmentEnabled()
-    {
-        $this->fixtures->merchant->addFeatures('dispute_presentment');
 
-        $this->runTestBulkDisputeCreateMailSubject('bulk_creation_dispute_presentment_enabled');
+    /**
+     * @dataProvider functionTestBulkDisputeCreateMailProvider
+     */
+    public function testBulkDisputeCreateMail($features, $disputeCreateInput, $expectedMailView, $expectedMailViewData = [])
+    {
+        $this->fixtures->merchant->addFeatures($features);
+
+        $this->runTestBulkDisputeCreateMailSubject($disputeCreateInput, $expectedMailView, $expectedMailViewData);
+
     }
 
-    public function testBulkDisputeCreateMailSubject()
+    public function functionTestBulkDisputeCreateMailProvider()
     {
-        $this->runTestBulkDisputeCreateMailSubject('bulk_creation');
+        return [
+            'dispute_presentment_and_no_deduct_at_onset' => [
+                'features'                 => ['dispute_presentment'],
+                'dispute_create_input'     => [],
+                'expected_mail_view'       => 'bulk_creation_dispute_presentment_enabled',
+                'expected_mail_view_data'  => ['hasDeductAtOnset' => false],
+            ],
+            'no_dispute_presentment_and_no_deduct_at_onset' => [
+                'features'                 => [],
+                'dispute_create_input'     => [],
+                'expected_mail_view'       => 'bulk_creation',
+                'expected_mail_view_data'  => ['hasDeductAtOnset' => false],
+            ],
+            'dispute_presentment_and_deduct_at_onset' => [
+                'features'                 => ['dispute_presentment'],
+                'dispute_create_input'     => ['deduct_at_onset' => true],
+                'expected_mail_view'       => 'bulk_creation_dispute_presentment_enabled',
+                'expected_mail_view_data'  => ['hasDeductAtOnset' => true],
+            ],
+            'no_dispute_presentment_deduct_at_onset' => [
+                'features'                 => [],
+                'dispute_create_input'     => ['deduct_at_onset' => true],
+                'expected_mail_view'       => 'bulk_creation',
+                'expected_mail_view_data'  => ['hasDeductAtOnset' => true],
+            ],
+        ];
     }
 
     // ---------------------------- helper methods-------------------------------
 
-    protected function runTestBulkDisputeCreateMailSubject($expectedMailView)
+    protected function runTestBulkDisputeCreateMailSubject($disputeCreateInput, $expectedMailView, $expectedMailViewData = [])
     {
         Mail::fake();
 
@@ -2128,6 +2257,8 @@ class DisputeTest extends TestCase
                 'email_notification_status' => EmailNotificationStatus::SCHEDULED,
             ];
 
+            $attributes = array_merge($attributes, $disputeCreateInput);
+
             $this->fixtures->create('dispute', $attributes);
 
             $testData = &$this->testData['testBulkDisputeCreateMailSubject'];
@@ -2145,7 +2276,6 @@ class DisputeTest extends TestCase
         }
 
     }
-
     protected function freshdeskFlow(
         bool $needAutomationGroupConst,
         bool $needCustomerSupportGroupConst,
@@ -2433,6 +2563,7 @@ class DisputeTest extends TestCase
             'amount'                 => 10000,
             'skip_email'             => 'N',
             'internal_respond_by'    => date('d/m/Y', (strtotime('+10 day', strtotime('now')))),
+            'deduct_at_onset'        => 'N',
         ];
 
         $fileData[] = $row;
@@ -2448,6 +2579,8 @@ class DisputeTest extends TestCase
             'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
             'amount'                 => 20000,
             'skip_email'             => 'N',
+            'internal_respond_by'    => date('d/m/Y', (strtotime('+10 day', strtotime('now')))),
+            'deduct_at_onset'        => 'N',
         ];
 
         $fileData[] = $row;
@@ -2464,6 +2597,7 @@ class DisputeTest extends TestCase
             'amount'                 => 30000,
             'skip_email'             => 'N',
             'internal_respond_by'    => date('d/m/Y', (strtotime('+10 day', strtotime('now')))),
+            'deduct_at_onset'        => 'N',
         ];
 
         $fileData[] = $row;
@@ -2479,6 +2613,8 @@ class DisputeTest extends TestCase
             'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
             'amount'                 => 40000,
             'skip_email'             => 'N',
+            'internal_respond_by'    => date('d/m/Y', (strtotime('+10 day', strtotime('now')))),
+            'deduct_at_onset'        => 'N',
         ];
 
         $fileData[] = $row;
@@ -2495,6 +2631,7 @@ class DisputeTest extends TestCase
             'amount'                 => 50000,
             'skip_email'             => 'N',
             'internal_respond_by'    => date('d/m/Y', (strtotime('+10 day', strtotime('now')))),
+            'deduct_at_onset'        => 'N',
         ];
 
         $fileData[] = $row;
@@ -2510,6 +2647,8 @@ class DisputeTest extends TestCase
             'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
             'amount'                 => 60000,
             'skip_email'             => 'N',
+            'internal_respond_by'    => date('d/m/Y', (strtotime('+10 day', strtotime('now')))),
+            'deduct_at_onset'        => 'N',
         ];
 
         $fileData[] = $row;

@@ -57,6 +57,8 @@ class Validator extends Base\Validator
         Entity::SKIP_DEDUCTION         => 'sometimes|boolean',
         Entity::COMMENTS               => 'sometimes|string|min:5|max:255|utf8',
         Entity::BACKFILL               => 'sometimes|boolean',
+        Entity::DEDUCTION_SOURCE_TYPE  => 'required_with:deduction_source_id',
+        Entity::DEDUCTION_SOURCE_ID    => 'required_with:deduction_source_type',
         Entity::DEDUCTION_REVERSAL_AT  => 'sometimes|epoch',
         Entity::RECOVERY_METHOD        => 'sometimes|in:adjustment,refund',
     ];
@@ -75,6 +77,7 @@ class Validator extends Base\Validator
     protected static $editValidators = [
         'non_transactional_disputes_closure',
         'internal_status_transition',
+        'deduction_source_type_and_id',
         'deduction_reversal_at',
     ];
 
@@ -99,6 +102,17 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid dispute status: ' . $value);
+        }
+
+        /** there is a usecase to support dispute edit in lost state
+         * where internal_status moves from lost_merchant_not_debited to lost_merchant_debited
+         *this if condition is to support for that case
+         */
+        if (($value === $this->entity->getStatus() and
+            ($value === Status::LOST)) and
+            ($this->entity->getInternalStatus() === InternalStatus::LOST_MERCHANT_NOT_DEBITED))
+        {
+            return;
         }
 
         if ($this->entity->isClosed() === true)
@@ -257,6 +271,23 @@ class Validator extends Base\Validator
                 Entity::STATUS,
                 $input);
         }
+    }
+
+    public function validateDeductionSourceTypeAndId(array $input)
+    {
+        if ((isset($input[Entity::DEDUCTION_SOURCE_ID]) === false) or
+            (isset($input[Entity::DEDUCTION_SOURCE_TYPE])) === false)
+        {
+            return;
+        }
+
+        $tempEntity = (clone $this->entity)->fill($input);
+
+        $this->validateStatusForDeductionSourceTypeAndId($tempEntity);
+
+        $this->validateSkipDeductionForDeductionSourceTypeAndId($input);
+
+        $this->validateReferentialIntegrityForDeductionSourceTypeAndID($input);
     }
 
     public function validateDeductOnsetForNonTransactionalPhases(array $input)
@@ -430,6 +461,40 @@ class Validator extends Base\Validator
 
 
         return ($variant !== 'control');
+    }
+
+    protected function validateStatusForDeductionSourceTypeAndId($tempEntity): void
+    {
+        if ($tempEntity->getInternalStatus() === InternalStatus::LOST_MERCHANT_DEBITED)
+        {
+            return;
+        }
+
+        throw new BadRequestValidationFailureException('deduction_source_type/deduction_source_id can be set
+        only when internal_status is "lost_merchant_not_debited"');
+    }
+
+    protected function validateReferentialIntegrityForDeductionSourceTypeAndID(array $input)
+    {
+        $app = App::getFacadeRoot();
+
+        $entityType = $input[Entity::DEDUCTION_SOURCE_TYPE];
+
+        $entityId = $input[Entity::DEDUCTION_SOURCE_ID];
+
+        $app['repo']->$entityType->findOrFailPublic($entityId);
+    }
+
+    protected function validateSkipDeductionForDeductionSourceTypeAndId(array $input)
+    {
+        if ((isset($input[Entity::SKIP_DEDUCTION]) === true) and
+            (boolval($input[Entity::SKIP_DEDUCTION]) === true))
+        {
+            return;
+        }
+
+        throw new BadRequestValidationFailureException('skip_deduction should be true if overriding deduction_source_id
+        and deduction_source_type');
     }
 
     protected function validateInternalStatusTransitionByStateMachine($input): void

@@ -47,6 +47,7 @@ class Service extends Base\Service
         Entity::AMOUNT,
         Entity::SKIP_EMAIL,
         Entity::INTERNAL_RESPOND_BY,
+        Entity::DEDUCT_AT_ONSET,
     ];
 
     const BULK_CREATE_DISPUTES_COLUMNS_NEW = [
@@ -62,6 +63,7 @@ class Service extends Base\Service
         Entity::GATEWAY_CURRENCY,
         Entity::SKIP_EMAIL,
         Entity::INTERNAL_RESPOND_BY,
+        Entity::DEDUCT_AT_ONSET,
     ];
 
     const BULK_EDIT_DISPUTES_COLUMNS = [
@@ -91,6 +93,7 @@ class Service extends Base\Service
         Entity::SKIP_EMAIL,
         Entity::BACKFILL,
         Entity::INTERNAL_RESPOND_BY,
+        Entity::DEDUCT_AT_ONSET,
     ];
 
     const BULK_CREATE_DISPUTES_COLUMNS_NEW_SILENT = [
@@ -107,6 +110,7 @@ class Service extends Base\Service
         Entity::SKIP_EMAIL,
         Entity::BACKFILL,
         Entity::INTERNAL_RESPOND_BY,
+        Entity::DEDUCT_AT_ONSET,
     ];
 
     const BULK_EDIT_DISPUTES_COLUMNS_SILENT = [
@@ -696,6 +700,11 @@ class Service extends Base\Service
 
         return null;
 
+    }
+
+    public function formatValueDeductAtOnset($res, array &$input, array &$fileInput)
+    {
+        return (new Validator)->validateCustomBoolean($res);
     }
 
     public function formatValueInternalRespondBy($res, array &$input, array &$fileInput)

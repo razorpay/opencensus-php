@@ -99,8 +99,10 @@
                         @case('chargeback')
                             We have received chargeback(s) against {{ $totalPayments }} payment(s) mentioned above.  Kindly upload all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute by visiting your <a href="https://dashboard.razorpay.com/"> Razorpay dashboard</a>.
                             The failure to do so can lead to  the corresponding amount getting debited from the current balance.
-
-                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                            @if($hasDeductAtOnset === true)
+                            As per guidelines from our banking partner, one or more of the above payments have been debited from your current balance. The corresponding amount would be reversed if our banking partner resolves dispute in your favour.
+                            @endif
+                        <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                             To provide you a seamless experience of sharing the required information,  we have moved all dispute management correspondence to the Razorpay dashboard.
                             Henceforth, responses received via email will not be considered.
 
@@ -112,7 +114,9 @@
                         @case('retrieval')
                             We have received dispute(s) against {{ $totalPayments }} payment(s) mentioned above.  Kindly upload all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute by visiting your <a href="https://dashboard.razorpay.com/"> Razorpay dashboard</a>.
                             The failure to do so can lead to  the corresponding amount getting debited from the current balance.
-
+                            @if($hasDeductAtOnset === true)
+                                As per guidelines from our banking partner, one or more of the above payments have been debited from your current balance. The corresponding amount would be reversed if our banking partner resolves dispute in your favour.
+                            @endif
                             <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                             To provide you a seamless experience of sharing the required information,  we have moved all dispute management correspondence to the Razorpay dashboard.
                             Henceforth, responses received via email will not be considered.
@@ -136,6 +140,9 @@
                             <a href="https://razorpay.com/docs/payments/disputes/presentments/dashboard/">Click here</a> to know  how to respond to chargebacks on the Razorpay Dashboard.
                             <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                             Note: If the documents are rejected in Pre-Arbitration as well and Arbitration Chargeback is received, the complete liability of the payment/transaction and Arbitration fee that may be imposed by the card networks (Visa/Mastercard) will be passed on to you and an immediate debit will be made to your account.
+                            @if( $hasDeductAtOnset === true )
+                                Alternatively, if a debit has already been made at the time of the dispute creation, no further debits will be allowed. In this case, the corresponding amount would be reversed if our banking partner resolves dispute in your favour.
+                            @endif
                         @break
                         @case('arbitration')
                             We have received arbitration chargeback(s) for the above mentioned payments, that is, the cardholder has disputed the transaction for the third time under the same chargeback reason.
@@ -144,6 +151,9 @@
                             <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                             We request you to update us within the deadline. Kindly upload all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute by visiting your <a href="https://dashboard.razorpay.com/"> Razorpay dashboard</a>.
                             The failure to do so can lead to  the corresponding amount getting debited from the current balance.
+                            @if($hasDeductAtOnset === true)
+                                As per guidelines from our banking partner, one or more of the above payments have been debited from your current balance. The corresponding amount would be reversed if our banking partner resolves dispute in your favour.
+                            @endif
                             <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                             To provide you a seamless experience of sharing the required information,  we have moved all dispute management correspondence to the Razorpay dashboard.
                             Henceforth, responses received via email will not be considered.
@@ -155,7 +165,9 @@
                             <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                             Kindly upload all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute by visiting your <a href="https://dashboard.razorpay.com/"> Razorpay dashboard</a>.
                             The failure to do so can lead to  the corresponding amount getting debited from the current balance.
-
+                            @if($hasDeductAtOnset === true)
+                                As per guidelines from our banking partner, one or more of the above payments have been debited from your current balance. The corresponding amount would be reversed if our banking partner resolves dispute in your favour.
+                            @endif
                             <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                             To provide you a seamless experience of sharing the required information,  we have moved all dispute management correspondence to the Razorpay dashboard.
                             Henceforth, responses received via email will not be considered.

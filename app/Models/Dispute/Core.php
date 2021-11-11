@@ -68,6 +68,7 @@ class Core extends Base\Core
         Entity::GATEWAY_DISPUTE_ID,
         Entity::PHASE,
         Entity::RESPOND_BY,
+        Entity::DEDUCT_AT_ONSET,
     ];
 
     const BULK_CREATE_DISPUTES_MAIL_REASON_DATA = [
@@ -755,12 +756,22 @@ class Core extends Base\Core
             {
                 $bulkMailData[Entity::PHASE] = $disputePhase;
 
+                $bulkMailData['hasDeductAtOnset'] = false;
+
                 $bulkMailData[Constants::DISPUTES] = [];
 
                 $disputeIds = [];
                 foreach ($publicDisputeIds as $publicDisputeId)
                 {
-                    $bulkMailData[Constants::DISPUTES][] = $disputeData[$publicDisputeId];
+                    $dispute = $disputeData[$publicDisputeId];
+
+                    if ((isset($dispute[Entity::DEDUCT_AT_ONSET]) === true) and
+                        (boolval($dispute[Entity::DEDUCT_AT_ONSET]) === true))
+                    {
+                        $bulkMailData['hasDeductAtOnset'] = true;
+                    }
+
+                    $bulkMailData[Constants::DISPUTES][] = $dispute;
 
                     $disputeIds[] = Entity::stripDefaultSign($publicDisputeId);
                 }
