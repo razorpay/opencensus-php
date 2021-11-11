@@ -3,25 +3,26 @@ import AutoResizeTextarea from 'common/ui/Forms/AutoResizeTextarea';
 import InputField from 'common/ui/Forms/InputField';
 import { isPresent } from 'common/utils/rzp-utils';
 
-const required = (index) => {
-  return (_, allProps) => {
-    if (allProps.notes[index]) {
-      const key = allProps.notes[index].key;
-      const value = allProps.notes[index].value;
-      if (isPresent(value) && !isPresent(key)) {
-        return 'Key is required';
-      }
+const required = index => {
+  return (currentValue, allProps) => {
+    if (!allProps.notes[index]) {
+      return;
     }
-    return '';
+
+    let key = allProps.notes[index].key;
+    let value = allProps.notes[index].value;
+    if (isPresent(value) && !isPresent(key)) {
+      return 'Key is required';
+    }
   };
 };
 
 export default ({
   fields,
+  onAdd,
   nonEditableUptilIndex = -1,
   showLinkedAccountOpt,
   customAddMsg = null,
-  onAddNotesClick = () => {},
 }) => {
   return (
     <ul class="list-unstyled notes">
@@ -79,10 +80,7 @@ export default ({
           <button
             class="btn btn-link add-note"
             type="button"
-            onClick={() => {
-              fields.push({});
-              onAddNotesClick();
-            }}
+            onClick={() => fields.push({})}
           >
             {customAddMsg || 'Add Internal Note'}
           </button>

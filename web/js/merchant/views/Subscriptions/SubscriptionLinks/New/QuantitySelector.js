@@ -11,7 +11,7 @@ export default function QuantitySelector(props) {
             <Amount
               value={props.rate}
               currency={props.currency}
-              parentQuerySelector=".Modal-body .SubscriptionLinks--new"
+              parentQuerySelector={`.Modal-body .SubscriptionLinks--new`}
             />
             <span class="m-l">x</span>
           </>
@@ -21,10 +21,11 @@ export default function QuantitySelector(props) {
         size="half"
         value={props.quantity}
         min={1}
-        onBlur={props.onBlur}
       />
       <span>(Quantity)</span>
-      <div class="m-t">{props.informativeMessage(props.rate * props.quantity, props.currency)}</div>
+      <div class="m-t">
+        {props.informativeMessage(props.rate * props.quantity, props.currency)}
+      </div>
     </div>
   );
 }

@@ -9,10 +9,11 @@ import InputField from 'common/ui/Forms/InputField';
 import InputGroupField from 'common/ui/Forms/InputField/InputGroupField';
 import Alert from 'common/ui/Forms/Alert';
 import { required } from 'common/utils/validators';
-import { fetchPlan, savePlan } from 'merchant/reducers/plans';
+import { savePlan } from 'merchant/reducers/plans';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import FormItem from 'merchant/components/FormItem';
+import { fetchPlan } from 'merchant/reducers/plans';
 import { trackSaveDuplicatePlan, trackSelectCurrency } from './ga';
 
 import {
@@ -21,12 +22,11 @@ import {
   getURLQueryParams,
   paiseToRupees,
 } from 'common/utils/rzp-utils';
-import analytics from '../analytics';
 
 const selector = formValueSelector('newPlan');
 
-const Label = ({ text, htmlFor, required: isRequired }) => {
-  const classes = typeof isRequired !== 'undefined' ? 'label-required' : '';
+let Label = ({ text, htmlFor, required }) => {
+  var classes = typeof required !== 'undefined' ? 'label-required' : '';
 
   return (
     <div class="pair-label">
@@ -69,7 +69,7 @@ export default class AddPlan extends Component {
   };
 
   state = {};
-  cloneOptions = { clone: '0' };
+
   componentWillMount() {
     if (this.props.plan) {
       this.props.initialize(this.props.plan);
@@ -83,9 +83,6 @@ export default class AddPlan extends Component {
     if (searchQuery.duplicate_id) {
       this.props.fetchPlan(searchQuery.duplicate_id).then((data) => {
         this.isIntentDuplicate = true;
-        this.cloneOptions = {
-          clone: '1',
-        };
 
         const newPlan = {};
 
@@ -110,25 +107,23 @@ export default class AddPlan extends Component {
   }
 
   componentDidMount() {
-    const { closeUrl } = this.props;
-    const eventCategory = getEventCategoryFromPath(closeUrl);
-    if (eventCategory) {
+    const { closeUrl } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
       window.rzpAnalytics({
-        eventCategory,
+        eventCategory: eventCategory,
         eventAction: 'Open Form - New Plan',
       });
-    }
   }
 
   componentWillUnmount() {
-    const { closeUrl } = this.props;
-    const eventCategory = getEventCategoryFromPath(closeUrl);
-    if (eventCategory) {
+    const { closeUrl } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
       window.rzpAnalytics({
-        eventCategory,
+        eventCategory: eventCategory,
         eventAction: 'Close Form - New Plan',
       });
-    }
   }
 
   save = (props) => {
@@ -139,29 +134,25 @@ export default class AddPlan extends Component {
     return this.props
       .savePlan(props)
       .then((plan) => {
-        const { closeUrl } = this.props;
-        const eventCategory = getEventCategoryFromPath(closeUrl);
-
-        if (eventCategory) {
+        const { closeUrl } = this.props,
+          eventCategory = getEventCategoryFromPath(closeUrl);
+        eventCategory &&
           window.rzpAnalytics({
-            eventCategory,
+            eventCategory: eventCategory,
             eventAction: 'Submit Form - New Plan',
             eventLabel: getKeysSeparatedByPipe(props),
           });
-        }
         this.props.onSave(plan);
         this.props.history.push(`/plans/${plan[plan.resourceIdField]}`);
         this.props.showNotification({
           type: 'success',
           message: 'Plan saved successfully',
         });
-        analytics.track('plan.create.success', this.cloneOptions);
       })
       .catch((err) => {
         this.setState({
           errors: err.errors,
         });
-        analytics.track('plan.create.fail', this.cloneOptions);
       });
   };
 
@@ -171,28 +162,9 @@ export default class AddPlan extends Component {
     this.props.change('item[currency]', option.name);
   };
 
-  onAddNotesClick = () => {
-    analytics.track('plan.create.internal_notes', this.cloneOptions);
-  };
-
   render() {
-    const { handleSubmit, plan, currency } = this.props;
-    let actionLabel = {};
-    if (this.isIntentDuplicate) {
-      actionLabel = {
-        cancelInitiate: 'plan.clone.cancel.initiate',
-        cancelStay: 'plan.clone.cancel.stay',
-        cancelLeave: 'plan.clone.cancel.leave',
-        createPlan: 'plan.clone.complete',
-      };
-    } else {
-      actionLabel = {
-        cancelInitiate: 'plan.create.cancel.initiate',
-        cancelStay: 'plan.create.cancel.stay',
-        cancelLeave: 'plan.create.cancel.leave',
-        createPlan: 'plan.create.issue',
-      };
-    }
+    const { handleSubmit, invalid, plan, currency } = this.props;
+
     return (
       <div class="content-wrapper content-sm txn-details plan-fields-wrapper">
         <div class="panel panel-default SliderPanel">
@@ -209,9 +181,9 @@ export default class AddPlan extends Component {
                     name="item[name]"
                     component={InputField}
                     class="form-control"
+                    autoFocus={true}
                     validate={required('Plan name is required')}
                     placeholder="The name known to your customers"
-                    onBlur={() => analytics.track('plan.create.name', this.cloneOptions)}
                   />
                 )}
               />
@@ -224,11 +196,11 @@ export default class AddPlan extends Component {
                       component="textarea"
                       class="form-control"
                       placeholder="Optional"
-                      onBlur={() => analytics.track('plan.create.description', this.cloneOptions)}
                     />
                     <span class="help-block label--secondary">
-                      <i class="i i-info-outline" /> The <b>Plan Name</b> and{' '}
-                      <b>Plan Description</b> will appear on the invoice as entered above
+                      <i class="i i-info-outline" />
+                      The <b>Plan Name</b> and <b>Plan Description</b> will appear on the invoice as
+                      entered above
                     </span>
                   </div>
                 )}
@@ -249,7 +221,6 @@ export default class AddPlan extends Component {
                         marginLeft: '8px',
                       }}
                       validate={required('Time period is required')}
-                      onBlur={() => analytics.track('plan.create.interval', this.cloneOptions)}
                     />
                     <Field
                       name="period"
@@ -261,7 +232,6 @@ export default class AddPlan extends Component {
                         display: 'inline-block',
                         marginLeft: '8px',
                       }}
-                      onBlur={() => analytics.track('plan.create.period', this.cloneOptions)}
                     >
                       <option value="daily">Days(s)</option>
                       <option value="weekly">Week(s)</option>
@@ -270,8 +240,9 @@ export default class AddPlan extends Component {
                     </Field>
 
                     <span class="help-block label--secondary">
-                      <i class="i i-info-outline" /> You can set <b>billing cycle</b> (start date
-                      and end date) and <b>trial period</b> later while, creating a subscription.
+                      <i class="i i-info-outline" />
+                      You can set <b>billing cycle</b> (start date and end date) and{' '}
+                      <b>trial period</b> later while, creating a subscription.
                     </span>
                   </div>
                 )}
@@ -293,7 +264,6 @@ export default class AddPlan extends Component {
                       class="form-control"
                       validate={required('Billing amount is required')}
                       placeholder="0.00"
-                      onBlur={() => analytics.track('plan.create.amount', this.cloneOptions)}
                     />
                     <span class="help-block label--secondary">
                       <i class="i i-info-outline" />
@@ -305,16 +275,7 @@ export default class AddPlan extends Component {
 
               <FormItem
                 label={(_) => <Label text="Internal Notes" />}
-                field={(_) => (
-                  <FieldArray
-                    name="notes"
-                    props={{
-                      onAddNotesClick: this.onAddNotesClick,
-                    }}
-                    component={NotesFieldArray}
-                    required
-                  />
-                )}
+                field={(_) => <FieldArray name="notes" component={NotesFieldArray} required />}
               />
 
               <div>
@@ -327,16 +288,12 @@ export default class AddPlan extends Component {
                   class="btn btn-primary btn-half"
                   text="Create Plan"
                   pendingText="Creating..."
-                  onClick={() => {
-                    analytics.track(actionLabel.createPlan, this.cloneOptions);
-                    handleSubmit(this.save);
-                  }}
+                  onClick={handleSubmit(this.save)}
                 />
                 <button
                   type="button"
                   class="btn btn-default btn-half"
                   onClick={() => {
-                    analytics.track(actionLabel.cancelInitiate, this.cloneOptions);
                     this.context
                       .confirm({
                         header: 'Do you want to close this panel?',
@@ -344,15 +301,11 @@ export default class AddPlan extends Component {
                         affirmativeLabel: 'Leave',
                         abortLabel: 'Stay',
                         action: () => {
-                          analytics.track(actionLabel.cancelLeave, this.cloneOptions);
                           if (this.props.baseLocation) {
                             this.props.history.goBack();
                           } else {
                             this.props.history.push(`/plans`);
                           }
-                        },
-                        abort: () => {
-                          analytics.track(actionLabel.cancelStay, this.cloneOptions);
                         },
                       })
                       .catch(() => {});

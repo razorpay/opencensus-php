@@ -30,7 +30,6 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import Review from './Review';
 import PlanDetails from './PlanDetails';
 import moment from 'moment';
-import analytics from '../../analytics';
 
 const tabsMeta = {
   'Subscription Details': {
@@ -79,9 +78,6 @@ export default class UpdateSubscription extends React.Component {
         items: [],
         loading: this.props.user.isSubscriptionOffersEnabled,
       },
-    };
-    this.cloneOptions = {
-      clone: '0',
     };
   }
 
@@ -201,7 +197,7 @@ export default class UpdateSubscription extends React.Component {
       });
   };
 
-  changeTab = (step) => {
+  changeTab = (step) => () => {
     this.setState((prevState) => {
       const currentTab = prevState.currentTab + step;
       const validTabs = [...prevState.validTabs];
@@ -361,7 +357,6 @@ export default class UpdateSubscription extends React.Component {
   };
 
   handleCreate = () => {
-    analytics.track('subscription.update.issue', this.cloneOptions);
     const data = this.prepareForSave();
 
     return this.props
@@ -372,7 +367,6 @@ export default class UpdateSubscription extends React.Component {
             type: 'success',
             message: 'Subscription Updates Successfully',
           });
-          analytics.track('subscription.update.success', this.cloneOptions);
 
           if (this.props.onClose) return this.props.onClose();
 
@@ -387,7 +381,6 @@ export default class UpdateSubscription extends React.Component {
           type: 'error',
           message: errors,
         });
-        analytics.track('subscription.update.fail', this.cloneOptions);
       });
   };
 
@@ -431,7 +424,6 @@ export default class UpdateSubscription extends React.Component {
             offers={this.state.subscriptionOffers}
             showOffers={this.props.user.isSubscriptionOffersEnabled}
             onChangeInOffer={this.handleChangeInOffer}
-            cloneOptions={this.cloneOptions}
           />
         );
       }
@@ -522,22 +514,13 @@ export default class UpdateSubscription extends React.Component {
           )}
           {showUPIUnAvlBanner && <UPIBanner />}
           {currentTab > 0 && (
-            <Button
-              onClick={() => {
-                analytics.track('subscription.update.previous', this.cloneOptions);
-                this.changeTab(-1);
-              }}
-              type="button"
-            >
+            <Button onClick={this.changeTab(-1)} type="button">
               Previous
             </Button>
           )}
           {!isLastTab ? (
             <Button.Primary
-              onClick={() => {
-                analytics.track('subscription.update.next', this.cloneOptions);
-                this.changeTab(1);
-              }}
+              onClick={this.changeTab(1)}
               type="button"
               disabled={!this.isFormValid()}
             >

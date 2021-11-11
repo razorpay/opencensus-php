@@ -4,7 +4,7 @@ import Alert from 'common/ui/Forms/Alert';
 import { fetchSubscriptionsOverview } from 'merchant/reducers/subscriptions';
 import { classList, stringifyQueryParams } from 'common/utils/rzp-utils';
 import moment from 'moment';
-import analytics from '../../analytics';
+import trackEvent from '../../analytics';
 
 const next7Days = moment().add(7, 'days').unix();
 
@@ -21,7 +21,7 @@ const CARDS = [
       key: 'status',
       value: 'active',
     },
-    eventLabel: 'subscription.filter.active',
+    actionLabel: 'subscription.filter.active',
   },
   {
     getTitle: () => (
@@ -35,7 +35,7 @@ const CARDS = [
       key: 'status',
       value: 'halted',
     },
-    eventLabel: 'subscription.filter.halted',
+    actionLabel: 'subscription.filter.halted',
   },
   {
     getTitle: () => (
@@ -49,7 +49,7 @@ const CARDS = [
       key: 'complete_before',
       value: next7Days,
     },
-    eventLabel: 'subscription.filter.comp_7_days',
+    actionLabel: 'subscription.filter.comp_7_days',
   },
   {
     getTitle: () => (
@@ -63,7 +63,7 @@ const CARDS = [
       key: 'token_expire_before',
       value: next7Days,
     },
-    eventLabel: 'subscription.filter.exp_7_days',
+    actionLabel: 'subscription.filter.exp_7_days',
   },
 ];
 
@@ -143,7 +143,7 @@ export default class ExpirySubscriptions extends React.Component {
 
     this.lastAppliedFilter = key;
 
-    analytics.track(card.eventLabel);
+    trackEvent.track(card.actionLabel, { mode: 'dashboard' });
   };
 
   render() {

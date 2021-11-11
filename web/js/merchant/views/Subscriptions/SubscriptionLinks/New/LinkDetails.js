@@ -1,11 +1,15 @@
 import { isEmail, isPhone } from 'common/utils/validators';
-import moment from 'moment';
-import Input from 'common/new-ui/Input';
-import analytics from '../../analytics';
 
-export default function NewSubscriptionLinkLinkDetails(props) {
-  const { fields, internals, cloneOptions, onDateChange, onTimeChange } = props;
-  const dateInMoment = fields.expire_by ? moment(fields.expire_by, 'X') : undefined;
+import Input from 'common/new-ui/Input';
+
+export default function NewSubscriptionLinkLinkDetails({
+  fields,
+  internals,
+  ...props
+}) {
+  const dateInMoment = fields.expire_by
+    ? moment(fields.expire_by, 'X')
+    : undefined;
 
   return (
     <>
@@ -20,11 +24,8 @@ export default function NewSubscriptionLinkLinkDetails(props) {
             name="notify_info.notify_email"
             type="email"
             size="half"
-            validator={(val) => !isEmail(val) && 'Invalid Email'}
+            validator={val => !isEmail(val) && 'Invalid Email'}
             defaultValue={(fields.notify_info || {}).notify_email}
-            onBlur={() => {
-              analytics.track('subscription.create.authlink_email', cloneOptions);
-            }}
           />
 
           <Input
@@ -32,11 +33,8 @@ export default function NewSubscriptionLinkLinkDetails(props) {
             name="notify_info.notify_phone"
             type="tel"
             size="half"
-            validator={(val) => !isPhone(val) && 'Invalid Phone'}
+            validator={val => !isPhone(val) && 'Invalid Phone'}
             defaultValue={(fields.notify_info || {}).notify_phone}
-            onBlur={() => {
-              analytics.track('subscription.create.authlink_mobile', cloneOptions);
-            }}
           />
         </div>
       </Input.Group>
@@ -46,9 +44,6 @@ export default function NewSubscriptionLinkLinkDetails(props) {
           fieldLabel="Notify Customer"
           name="customer_notify"
           checked={fields.customer_notify}
-          onBlur={() => {
-            analytics.track('subscription.create.authlink_notify', cloneOptions);
-          }}
         />
       </Input.Group>
 
@@ -58,9 +53,6 @@ export default function NewSubscriptionLinkLinkDetails(props) {
         data-name="_isNonExpiringLink"
         checked={internals._isNonExpiringLink}
         required
-        onBlur={() => {
-          analytics.track('subscription.create.authlink_expiry_no', cloneOptions);
-        }}
       />
       <Input.Group class="InputGroup--inline InputGroup--near">
         <div class="Input-content">
@@ -72,13 +64,10 @@ export default function NewSubscriptionLinkLinkDetails(props) {
             addonAfter={<i class="i i-date-range" />}
             placement="topLeft"
             name="expire_by"
-            onChange={onDateChange('expire_by')}
+            onChange={props.onDateChange('expire_by')}
             disabled={internals._isNonExpiringLink}
             defaultValue={dateInMoment}
             readOnly
-            onBlur={() => {
-              analytics.track('subscription.create.authlink_expiry_date', cloneOptions);
-            }}
           />
 
           {!!fields.expire_by && (
@@ -86,13 +75,10 @@ export default function NewSubscriptionLinkLinkDetails(props) {
               placeholder="HH:MM A"
               addonAfter={<i class="i i-time" />}
               name="expire_by_time"
-              onChange={onTimeChange('expire_by_time')}
+              onChange={props.onTimeChange('expire_by_time')}
               disabled={internals._isNonExpiringLink}
               defaultValue={dateInMoment}
               readOnly
-              onBlur={() => {
-                analytics.track('subscription.create.authlink_expiry_time', cloneOptions);
-              }}
             />
           )}
         </div>
@@ -103,17 +89,7 @@ export default function NewSubscriptionLinkLinkDetails(props) {
         label="Internal Notes"
         class="Input--vTop"
         defaultValue={fields.notes}
-        onChange={(_, field) => {
-          analytics.track(
-            `subscription.create.${
-              field === 'key' ? 'authlink_notes_key' : 'authlink_notes_value'
-            }`,
-            cloneOptions,
-          );
-        }}
-        onAddNew={() => {
-          analytics.track('subscription.create.authlink_add_notes', cloneOptions);
-        }}
+        onChange={() => {}}
       />
     </>
   );

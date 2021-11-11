@@ -174,23 +174,12 @@ class SubscriptionsController extends React.Component {
 
           <header id="subscriptions-header">
             <ShowWhen additionalCondition={(user) => !user.isChargeAtWillEnabled}>
-              <NavLink
-                exact
-                to="/subscriptions"
-                onClick={() => analytics.track('subscription.subscriptions.click')}
-              >
+              <NavLink exact to="/subscriptions">
                 Subscriptions
               </NavLink>
-              <NavLink to="/plans" onClick={() => analytics.track('subscription.plans.click')}>
-                Plans
-              </NavLink>
+              <NavLink to="/plans">Plans</NavLink>
               <ShowWhen additionalCondition={(user) => !user.isChargeAtWillEnabled}>
-                <NavLink
-                  to="/subscriptions/settings"
-                  onClick={() => analytics.track('subscription.settings.click')}
-                >
-                  Settings
-                </NavLink>
+                <NavLink to="/subscriptions/settings">Settings</NavLink>
               </ShowWhen>
             </ShowWhen>
 
@@ -198,20 +187,10 @@ class SubscriptionsController extends React.Component {
               <ShowWhen
                 additionalCondition={(user) => user.isRegistrationLinkTokenAndPaymentsEnabled}
               >
-                <NavLink
-                  to="/recurring_payments"
-                  onClick={() => analytics.track('subscription.recurring_payments.click')}
-                >
-                  Payments
-                </NavLink>
-                <NavLink to="/tokens" onClick={() => analytics.track('subscription.tokens.click')}>
-                  Tokens
-                </NavLink>
+                <NavLink to="/recurring_payments">Payments</NavLink>
+                <NavLink to="/tokens">Tokens</NavLink>
               </ShowWhen>
-              <NavLink
-                to="/registration_links"
-                onClick={() => analytics.track('subscription.registration_links.click')}
-              >
+              <NavLink to="/registration_links">
                 Registration Links{' '}
                 <span>
                   <i class="i i-info-circle" />
@@ -221,11 +200,7 @@ class SubscriptionsController extends React.Component {
                 </span>
               </NavLink>
               <ShowWhen additionalCondition={(user) => user.isRegistrationLinkBatchUploadEnabled}>
-                <NavLink
-                  exact
-                  to="/subscriptions/batchuploads"
-                  onClick={() => analytics.track('subscription.batchuploads.click')}
-                >
+                <NavLink exact to="/subscriptions/batchuploads">
                   Batch Upload
                 </NavLink>
               </ShowWhen>

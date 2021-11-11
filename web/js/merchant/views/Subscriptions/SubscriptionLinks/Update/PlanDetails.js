@@ -1,11 +1,10 @@
 import React from 'react';
 import PlanDetails from '../components/PlanDetails';
 import Input from 'common/new-ui/Input';
-import analytics from '../../analytics';
 
 const CHANGES_OPTIONS = [
-  { label: 'Immediately', value: 'now', eventLabel: 'immediate' },
-  { label: 'End of Cycle', value: 'cycle_end', eventLabel: 'end_of_cycle' },
+  { label: 'Immediately', value: 'now' },
+  { label: 'End of Cycle', value: 'cycle_end' },
 ];
 
 export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
@@ -27,7 +26,6 @@ export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
           offers={props.offers}
           showOffers={props.showOffers}
           onChangeInOffer={props.onChangeInOffer}
-          cloneOptions={props.cloneOptions}
         />
 
         <Input.Check
@@ -36,9 +34,6 @@ export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
           name="customer_notify"
           checked={props.fields.customer_notify}
           fieldLabel="Notify customer for this update and future charges."
-          onBlur={() => {
-            analytics.track('subscription.update.notify', props.cloneOptions);
-          }}
         />
 
         {showScheduleChange && (
@@ -47,14 +42,7 @@ export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
             class="Input--vTop"
             options={CHANGES_OPTIONS}
             name="schedule_change_at"
-            onChange={(e) => {
-              const selectedOption = CHANGES_OPTIONS.find((opt) => opt.value === e.target.value);
-              analytics.track(
-                `subscription.update.${selectedOption.eventLabel}`,
-                props.cloneOptions,
-              );
-              props.onRadioChange(e);
-            }}
+            onChange={props.onRadioChange}
             defaultValue={props.fields.schedule_change_at}
           />
         )}

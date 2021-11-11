@@ -1,16 +1,22 @@
-import React from 'react';
 import { connect } from 'react-redux';
 import { change } from 'redux-form';
-import { NavLink, withRouter } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
+
 import { RZPFeatures } from 'merchant/helpers/data';
+
 import DataTable from 'common/ui/Table/DataTable';
 import HeaderAction from 'common/ui/HeaderAction';
+
 import { fetchSubscriptions as fetchAll } from 'merchant/reducers/subscriptions';
+
 import DocsLink from 'merchant/components/DocsLink';
 import EmptyList from 'merchant/components/EmptyList';
 import CopyLink from 'merchant/components/CopyLink';
 import SubscriptionsListFilter from 'merchant/views/Subscriptions/Subscriptions/components/ListFilter';
+
 import ListContainer from 'merchant/containers/ListContainer';
+
 import {
   subscriptionId,
   planId,
@@ -22,12 +28,6 @@ import {
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import ExpirySubscriptions from './ExpirySubscriptions';
-import analytics from '../../analytics';
-
-const link = {
-  title: 'Subscription Link',
-  value: (item) => <CopyLink url={item.short_url} />,
-};
 
 @connect(
   (state) => ({
@@ -60,7 +60,6 @@ export default class SubscriptionsListContainer extends ListContainer {
         eventAction: 'Search - Subscriptions',
         eventLabel: label,
       });
-      analytics.track(`subscription.search.${label}`);
     }
   };
 
@@ -69,7 +68,7 @@ export default class SubscriptionsListContainer extends ListContainer {
       eventCategory: 'Dashboard - Subscriptions',
       eventAction: 'Clear Search Params - Subscriptions',
     });
-    analytics.track('subscription.search.clear');
+
     this.onFilterChange();
   };
 
@@ -77,12 +76,6 @@ export default class SubscriptionsListContainer extends ListContainer {
     if (this.quickFilterEle && this.quickFilterEle.state.selectedQuickFilter) {
       this.quickFilterEle.setState({ selectedQuickFilter: null });
     }
-  };
-
-  onClickPaginate = (params, type) => {
-    analytics.track(`subscription.browse.${type}`);
-
-    this.paginate(params);
   };
 
   render() {
@@ -102,23 +95,11 @@ export default class SubscriptionsListContainer extends ListContainer {
         <div class="content-wrapper">
           <HeaderAction>
             <div class="btn-toolbar pull-right">
-              <TakeATourButton
-                feature={RZPFeatures.SUBSCRIPTIONS}
-                onClick={() => analytics.track('subscription.search.help')}
-              />
+              <TakeATourButton feature={RZPFeatures.SUBSCRIPTIONS} />
 
-              <DocsLink
-                url="https://razorpay.com/docs/subscriptions/"
-                onClick={() => {
-                  analytics.track('subscription.search.documentation');
-                }}
-              />
+              <DocsLink url="https://razorpay.com/docs/subscriptions/" />
 
-              <NavLink
-                class="btn btn-primary"
-                to="/subscriptions/new"
-                onClick={() => analytics.track('subscription.create.initiate')}
-              >
+              <NavLink class="btn btn-primary" to="/subscriptions/new">
                 <i class="i i-plus" />
                 <span>Create New Subscription</span>
               </NavLink>
@@ -140,7 +121,7 @@ export default class SubscriptionsListContainer extends ListContainer {
             columns={[subscriptionId, planId, ...link, customerId, nextDueOn, createdAt, status]}
             count={this.state.count}
             skip={this.state.skip}
-            paginate={this.onClickPaginate}
+            paginate={this.paginate}
             EmptyComponent={EmptyComponent}
             {...this.props}
           />
@@ -150,15 +131,18 @@ export default class SubscriptionsListContainer extends ListContainer {
   }
 }
 
-function EmptyComponent() {
-  return (
-    <EmptyList
-      description={
-        <React.Fragment>
-          <div>There are no subscriptions yet!!</div>
-          <div>Create a plan first to create a subscription.</div>
-        </React.Fragment>
-      }
-    />
-  );
-}
+const EmptyComponent = () => (
+  <EmptyList
+    description={
+      <React.Fragment>
+        <div>There are no subscriptions yet!!</div>
+        <div>Create a plan first to create a subscription.</div>
+      </React.Fragment>
+    }
+  />
+);
+
+const link = {
+  title: 'Subscription Link',
+  value: (item) => <CopyLink url={item.short_url} />,
+};

@@ -1,5 +1,3 @@
-import React from 'react';
-// eslint-disable-next-line import/no-cycle
 import { Label, inputClass } from './index';
 import debounce from 'common/utils/debounce';
 import { classList } from 'common/utils/rzp-utils';
@@ -16,30 +14,23 @@ export default class PairList extends React.PureComponent {
 
   onChange = debounce(this.props.onChange, 250); // Optimization to avoid parent re-render on every key press
 
-  onAddNew = () => {
-    this.setState((prevState) => {
-      const freshPairs = [...prevState.pairs];
-      freshPairs.push({
-        key: '',
-        value: '',
-      });
-
-      setTimeout(
-        () =>
-          document
-            .getElementsByName(`${this.props.name}[${freshPairs.length - 1}][key]`)[0]
-            .focus(),
-        10,
-      );
-
-      if (this.props.onAddNew) {
-        this.props.onAddNew(freshPairs);
-      }
-
-      return {
-        pairs: freshPairs,
-      };
+  onAddNew = (e) => {
+    const freshPairs = [...this.state.pairs];
+    freshPairs.push({
+      key: '',
+      value: '',
     });
+
+    this.setState({
+      pairs: freshPairs,
+    });
+
+    setTimeout(
+      () =>
+        document.getElementsByName(`${this.props.name}[${freshPairs.length - 1}][key]`)[0].focus(),
+      10,
+    );
+    this.props.onAddNew && this.props.onAddNew(freshPairs);
   };
 
   updateField = (e, field) => {
@@ -47,14 +38,12 @@ export default class PairList extends React.PureComponent {
     const pairId = e.currentTarget.dataset.id;
 
     if (pairId > -1) {
-      this.setState((prevState) => {
-        const freshPairs = [...prevState.pairs];
-        freshPairs[pairId][field] = e.target.value;
+      const freshPairs = [...this.state.pairs];
+      freshPairs[pairId][field] = e.target.value;
 
-        this.onChange(freshPairs, field);
-        return {
-          pairs: freshPairs,
-        };
+      this.onChange(freshPairs);
+      this.setState({
+        pairs: freshPairs,
       });
     }
   };
@@ -70,14 +59,13 @@ export default class PairList extends React.PureComponent {
     const pairId = e.currentTarget.dataset.id;
 
     if (pairId > -1) {
-      this.setState((prevState) => {
-        const freshPairs = [...prevState.pairs];
-        freshPairs.splice(pairId, 1);
+      const freshPairs = [...this.state.pairs];
+      freshPairs.splice(pairId, 1);
 
-        this.onChange(freshPairs);
-        return {
-          pairs: freshPairs,
-        };
+      this.onChange(freshPairs);
+
+      this.setState({
+        pairs: freshPairs,
       });
     }
   };
@@ -114,7 +102,7 @@ export default class PairList extends React.PureComponent {
 class Pair extends React.Component {
   state = {};
 
-  onFocusTitle = () => {
+  onFocusTitle = (e) => {
     this.setState({
       focusTitle: true,
     });
@@ -125,12 +113,10 @@ class Pair extends React.Component {
       focusTitle: false,
     });
 
-    if (this.props.onBlurTitle) {
-      this.props.onBlurTitle(e);
-    }
+    this.props.onBlurTitle && this.props.onBlurTitle(e);
   };
 
-  onFocusDesc = () => {
+  onFocusDesc = (e) => {
     this.setState({
       focusDesc: true,
     });
@@ -141,9 +127,7 @@ class Pair extends React.Component {
       focusDesc: false,
     });
 
-    if (this.props.onBlurDesc) {
-      this.props.onBlurDesc(e);
-    }
+    this.props.onBlurDesc && this.props.onBlurDesc(e);
   };
 
   render() {

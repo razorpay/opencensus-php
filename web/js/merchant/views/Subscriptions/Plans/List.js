@@ -4,7 +4,13 @@ import { NavLink } from 'react-router-dom';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import { RZPFeatures } from 'merchant/helpers/data';
 
-import { planId, planName, planAmount, planBillingCycle, createdAt } from 'common/ui/item/pair';
+import {
+  planId,
+  planName,
+  planAmount,
+  planBillingCycle,
+  createdAt,
+} from 'common/ui/item/pair';
 import HeaderAction from 'common/ui/HeaderAction';
 import DataTable from 'common/ui/Table/DataTable';
 
@@ -21,10 +27,9 @@ import { getSubscriptionQuickGuideIsClosed } from 'merchant/views/Subscriptions/
 
 import PlansListFilter from 'merchant/views/Subscriptions/Plans/components/ListFilter';
 import ListContainer from 'merchant/containers/ListContainer';
-import analytics from '../analytics';
 
 @connect(
-  (state) => ({
+  state => ({
     ...state.plans,
     user: state.session.user,
     subscriptions: state.subscriptions,
@@ -33,7 +38,7 @@ import analytics from '../analytics';
     ...ModalActions,
     fetchAll,
     fetchSubscriptions,
-  },
+  }
 )
 export default class PlansListContainer extends ListContainer {
   componentDidMount() {
@@ -42,14 +47,14 @@ export default class PlansListContainer extends ListContainer {
       eventAction: 'Go To - Plans',
     });
 
-    const isQuickGuideClosed = getSubscriptionQuickGuideIsClosed(this.props);
+    let isQuickGuideClosed = getSubscriptionQuickGuideIsClosed(this.props);
 
     if (!this.props.subscriptions.items.length && !isQuickGuideClosed) {
       this.props.fetchSubscriptions({ count: 1 });
     }
   }
 
-  onSearchAnalytics = (params) => {
+  onSearchAnalytics = params => {
     const label = getKeysSeparatedByPipe(params);
 
     if (label && label.length > 0) {
@@ -58,7 +63,6 @@ export default class PlansListContainer extends ListContainer {
         eventAction: 'Search - Plans',
         eventLabel: label,
       });
-      analytics.track(`plan.search.${label}`);
     }
   };
 
@@ -67,38 +71,23 @@ export default class PlansListContainer extends ListContainer {
       eventCategory: 'Dashboard - Subscriptions',
       eventAction: 'Clear Search Params - Plans',
     });
-    analytics.track('plan.search.clear');
-  };
-
-  onClickPaginate = (params, type) => {
-    analytics.track(`plan.browse.${type}`);
-
-    this.paginate(params);
   };
 
   render() {
-    const { docUrl } = this.props;
+    let { docUrl } = this.props;
 
     return (
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <TakeATourButton
-              feature={RZPFeatures.SUBSCRIPTIONS}
-              onClick={() => analytics.track('plan.search.help')}
-            />
+            <TakeATourButton feature={RZPFeatures.SUBSCRIPTIONS} />
 
-            {docUrl && (
-              <DocsLink url={docUrl} onClick={() => analytics.track('plan.search.documentation')} />
-            )}
+            {docUrl && <DocsLink url={docUrl} />}
 
-            <ShowWhen additionalCondition={(user) => user.isAllowedEdit('subscriptions')}>
-              <NavLink
-                to="/plans/new"
-                onClick={() => {
-                  analytics.track('plan.create.initiate');
-                }}
-              >
+            <ShowWhen
+              additionalCondition={user => user.isAllowedEdit('subscriptions')}
+            >
+              <NavLink to="/plans/new">
                 <button class="pull-right btn btn-primary">
                   <i class="i i-plus" />
                   <span>New Plan</span>
@@ -121,7 +110,7 @@ export default class PlansListContainer extends ListContainer {
           columns={[planId, planName, planAmount, planBillingCycle, createdAt]}
           count={this.state.count}
           skip={this.state.skip}
-          paginate={this.onClickPaginate}
+          paginate={this.paginate}
           EmptyComponent={EmptyComponent}
           {...this.props}
         />
@@ -130,13 +119,13 @@ export default class PlansListContainer extends ListContainer {
   }
 }
 
-function EmptyComponent() {
+const EmptyComponent = () => (
   <EmptyList
     description={
-      <>
+      <React.Fragment>
         <div>There are no plans yet!!</div>
         <div>Create new plans.</div>
-      </>
+      </React.Fragment>
     }
-  />;
-}
+  />
+);

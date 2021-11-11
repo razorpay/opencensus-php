@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
@@ -8,11 +8,11 @@ import {
   fetchSubscription,
   saveSubscription,
   fetchSubscriptionOffers,
-  fetchSettings,
 } from 'merchant/reducers/subscriptions';
 import { fetchAddOns } from 'merchant/reducers/addons';
 import { fetchCustomer } from 'merchant/reducers/customers';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { fetchSettings } from 'merchant/reducers/subscriptions';
 import DocsLink from 'merchant/components/DocsLink';
 
 import { ModalAsideNav } from 'common/new-ui/Wizard';
@@ -39,9 +39,7 @@ import Spinner from 'common/ui/Spinner';
 import moment from 'moment';
 
 import { trackSaveDuplicateSubscription, trackAddAddon, trackAddPlans } from '../ga';
-import analytics from '../../analytics';
-
-const tabs = ['Plan Details', 'Add Ons', 'Link Details', 'Review'];
+import React from 'react';
 
 @withRouter
 @connect(
@@ -93,7 +91,7 @@ export default class NewSubscriptionLink extends Component {
 
         this.props
           .fetchSubscriptionOffers(['card', ...paymentMethods])
-          .then((res) => this.initializeOffer(res.data));
+          .then((resp) => this.initializeOffer(resp.data));
       });
     }
 
@@ -134,101 +132,94 @@ export default class NewSubscriptionLink extends Component {
         isFetchingSubscription: true,
       });
 
-      this.props
-        .fetchSubscription(searchQuery.duplicate_id)
-        .then((data) => {
-          this.isIntentDuplicate = true;
+      this.props.fetchSubscription(searchQuery.duplicate_id).then((data) => {
+        this.isIntentDuplicate = true;
 
-          let expire_by = data.expire_by && moment(data.expire_by * 1000);
-          let start_at = data.start_at && moment(data.start_at * 1000);
+        let expire_by = data.expire_by && moment(data.expire_by * 1000);
+        let start_at = data.start_at && moment(data.start_at * 1000);
 
-          // If null or is before current time
-          if (!expire_by || expire_by.diff(moment()) < 0) {
-            expire_by = '';
-          } else {
-            expire_by = data.expire_by;
-          }
+        // If null or is before current time
+        if (!expire_by || expire_by.diff(moment()) < 0) {
+          expire_by = '';
+        } else {
+          expire_by = data.expire_by;
+        }
 
-          // If null or is before current time
-          if (!start_at || start_at.diff(moment()) < 0) {
-            start_at = '';
-          } else {
-            start_at = data.start_at;
-          }
+        // If null or is before current time
+        if (!start_at || start_at.diff(moment()) < 0) {
+          start_at = '';
+        } else {
+          start_at = data.start_at;
+        }
 
-          const newSubscription = {
-            customer_notify: data.customer_notify,
-            plan_id: data.plan_id,
-            quantity: data.quantity,
-            start_at,
-            total_count: data.total_count,
-            expire_by,
-          };
+        const newSubscription = {
+          customer_notify: data.customer_notify,
+          plan_id: data.plan_id,
+          quantity: data.quantity,
+          start_at,
+          total_count: data.total_count,
+          expire_by,
+        };
 
-          newSubscription.notes = Object.keys(data.notes).map((key) => ({
-            key,
-            value: data.notes[key],
+        newSubscription.notes = Object.keys(data.notes).map((key) => ({
+          key,
+          value: data.notes[key],
+        }));
+
+        this.setState(
+          {
+            fields: newSubscription,
+            internals: {
+              _startsImmediately: !start_at,
+              _isNonExpiringLink: !expire_by,
+            },
+          },
+          (_) => this.initializePlan(),
+        );
+
+        // Fetch addons
+        fetchAddOns({
+          subscription_id: searchQuery.duplicate_id,
+        }).then(({ data }) => {
+          const addons = data.items.map((a) => ({
+            item_id: a.item.id,
+            quantity: a.quantity,
+            item: {
+              name: a.item.name,
+              description: a.item.description,
+              amount: a.item.amount,
+              currency: a.item.currency,
+              type: 'addon',
+            },
           }));
 
-          this.setState(
-            {
-              fields: newSubscription,
-              internals: {
-                _startsImmediately: !start_at,
-                _isNonExpiringLink: !expire_by,
-              },
-            },
-            (_) => this.initializePlan(),
-          );
-
-          // Fetch addons
-          fetchAddOns({
-            subscription_id: searchQuery.duplicate_id,
-          }).then(({ data: respData }) => {
-            const addons = respData.items.map((a) => ({
-              item_id: a.item.id,
-              quantity: a.quantity,
-              item: {
-                name: a.item.name,
-                description: a.item.description,
-                amount: a.item.amount,
-                currency: a.item.currency,
-                type: 'addon',
-              },
-            }));
-
-            this.setState((prevState) => ({
-              fields: {
-                ...prevState.fields,
-                addons,
-              },
-              internals: {
-                ...prevState.internals,
-                _addOnPresent: isPresent(addons),
-              },
-            }));
-          });
-
-          // Fetch customer details
-          if (data.customer_notify && data.customer_id) {
-            this.props.fetchCustomer(data.customer_id).then((resData) => {
-              this.setState((prevState) => ({
-                fields: {
-                  ...prevState.fields,
-                  notify_info: {
-                    notify_email: resData.email,
-                    notify_phone: resData.contact,
-                  },
-                },
-              }));
-            });
-          }
-        })
-        .finally(() => {
           this.setState({
-            isFetchingSubscription: false,
+            fields: {
+              ...this.state.fields,
+              addons,
+            },
+            internals: {
+              ...this.state.internals,
+              _addOnPresent: isPresent(addons),
+            },
           });
         });
+
+        // Fetch customer details
+        if (data.customer_notify) {
+          this.props.fetchCustomer(data.customer_id).then((data) => {
+            this.setState({
+              fields: {
+                ...this.state.fields,
+                notify_info: {
+                  notify_email: data.email,
+                  notify_phone: data.contact,
+                },
+              },
+            });
+          });
+        }
+      });
     }
   }
 
@@ -241,43 +232,37 @@ export default class NewSubscriptionLink extends Component {
     let value = target.value;
     const name = target.name || target.dataset.name;
     const stateKey = target.name ? 'fields' : 'internals';
+    let values = { ...this.state[stateKey] };
+
     if (!name || name.match(/_time/)) {
       return;
+    } else if (target.type === 'number') {
+      value = Number(value);
+    } else if (target.type === 'checkbox') {
+      value = target.checked;
     }
 
-    this.setState(
-      (prevState) => {
-        let values = { ...prevState[stateKey] };
+    values = stringToObj(name, value, values);
 
-        if (target.type === 'number') {
-          value = Number(value);
-        } else if (target.type === 'checkbox') {
-          value = target.checked;
-        }
-
-        values = stringToObj(name, value, values);
-        return { [stateKey]: values };
-      },
-      () => {
-        if (name === '_addOnPresent') {
-          this.setState((prevState) => ({
-            fields: {
-              ...prevState.fields,
-              addons: target.checked ? [{}] : [],
-            },
-          }));
-        }
-      },
-    );
+    this.setState({ [stateKey]: values }, () => {
+      if (name === '_addOnPresent') {
+        this.setState({
+          fields: {
+            ...this.state.fields,
+            addons: target.checked ? [{}] : [],
+          },
+        });
+      }
+    });
   };
 
   handleChangeInOffer = ({ option = {} } = {}) => {
-    this.setState((prevState) => ({
+    this.setState({
       fields: {
-        ...prevState.fields,
+        ...this.state.fields,
         offer_id: option.id,
       },
-    }));
+    });
   };
 
   handleChangeInPlan = ({ option }) => {
@@ -333,22 +318,21 @@ export default class NewSubscriptionLink extends Component {
   handleSelectAddonItem = (addonIndex) => ({ option }) => {
     trackAddAddon(option.currency);
 
-    this.setState((prevState) => {
-      const fields = { ...prevState.fields };
-      fields.addons[addonIndex] = {
-        item: {
-          name: option.name,
-          description: option.description,
-          amount: option.amount,
-          currency: option.currency,
-          type: 'addon',
-        },
-        item_id: option.id,
-        quantity: 1,
-      };
-      return {
-        fields,
-      };
+    const fields = { ...this.state.fields };
+    fields.addons[addonIndex] = {
+      item: {
+        name: option.name,
+        description: option.description,
+        amount: option.amount,
+        currency: option.currency,
+        type: 'addon',
+      },
+      item_id: option.id,
+      quantity: 1,
+    };
+
+    this.setState({
+      fields,
     });
   };
 
@@ -383,22 +367,18 @@ export default class NewSubscriptionLink extends Component {
   };
 
   handleAddaddon = () => {
-    this.setState((prevState) => {
-      const fields = { ...prevState.fields };
-      fields.addons.push({});
-      return { fields };
-    });
+    const fields = { ...this.state.fields };
+    fields.addons.push({});
+    this.setState({ fields });
   };
 
   handleCreate = () => {
-    analytics.track('subscription.create.issue');
     if (this.isIntentDuplicate) {
       trackSaveDuplicateSubscription();
-      analytics.track('subscription.clone.complete');
     }
 
-    const { fields: fieldsData, internals } = this.state;
-    const data = deepClone(fieldsData);
+    let { fields: data, internals } = this.state;
+    data = deepClone(data);
     data.source = 'dashboard';
 
     if (internals._startsImmediately) {
@@ -427,19 +407,18 @@ export default class NewSubscriptionLink extends Component {
 
     return this.props
       .saveSubscription(data)
-      .then((resData) => {
-        if (resData) {
+      .then((data) => {
+        if (data) {
           this.props.showNotification({
             type: 'success',
             message: 'Subscription Created Successfully',
           });
-          analytics.track('subscription.create.success');
 
           if (this.props.onClose) {
             this.props.onClose();
           } else {
-            const entityId = resData.id;
-            const redirectUrl = `/subscriptions/${entityId}`;
+            const entityId = data.id;
+            const redirectUrl = '/subscriptions/' + entityId;
             this.props.history.push(redirectUrl);
           }
         }
@@ -449,35 +428,32 @@ export default class NewSubscriptionLink extends Component {
           type: 'error',
           message: errors,
         });
-        analytics.track('subscription.create.fail');
       });
   };
 
   handleRemoveBtn = (addonIndex) => () => {
     const addons = this.state.fields.addons.filter((_, index) => addonIndex !== index);
 
-    this.setState((prevState) => {
-      const fields = {
-        ...prevState.fields,
-        addons,
-      };
+    const fields = {
+      ...this.state.fields,
+      addons,
+    };
 
-      const internals = {
-        ...prevState.internals,
-        _addOnPresent: isPresent(addons),
-      };
-      return { fields, internals };
-    });
+    const internals = {
+      ...this.state.internals,
+      _addOnPresent: isPresent(addons),
+    };
+
+    this.setState({ fields, internals });
   };
 
-  changeTab = (step) => {
-    this.setState((prevState) => {
-      const currentTab = prevState.currentTab + step;
+  changeTab = (step) => () => {
+    const currentTab = this.state.currentTab + step;
 
-      const validTabs = [...prevState.validTabs];
-      validTabs[prevState.currentTab] = true;
-      return { currentTab, validTabs };
-    });
+    const validTabs = [...this.state.validTabs];
+    validTabs[this.state.currentTab] = true;
+
+    this.setState({ currentTab, validTabs });
   };
 
   isFormValid = () => {
@@ -487,10 +463,6 @@ export default class NewSubscriptionLink extends Component {
   };
 
   renderForm() {
-    const cloneOptions = {
-      clone: this.isIntentDuplicate ? '1' : '0',
-    };
-
     switch (this.state.currentTab) {
       case 0:
         return (
@@ -505,7 +477,6 @@ export default class NewSubscriptionLink extends Component {
             fields={this.state.fields}
             internals={this.state.internals}
             ref={(form) => (this.planDetailsForm = form)}
-            cloneOptions={cloneOptions}
           />
         );
       case 1:
@@ -518,7 +489,6 @@ export default class NewSubscriptionLink extends Component {
             internals={this.state.internals}
             removeAddOn={this.handleRemoveBtn}
             currency={this.state.currencyOfSelectedPlan}
-            cloneOptions={cloneOptions}
           />
         );
       case 2:
@@ -528,7 +498,6 @@ export default class NewSubscriptionLink extends Component {
             onTimeChange={this.handleTimeChange}
             fields={this.state.fields}
             internals={this.state.internals}
-            cloneOptions={cloneOptions}
           />
         );
       case 3:
@@ -541,8 +510,6 @@ export default class NewSubscriptionLink extends Component {
             getCurrencyList={this.props.user.getCurrencyList}
           />
         );
-      default:
-        return null;
     }
   }
 
@@ -550,12 +517,11 @@ export default class NewSubscriptionLink extends Component {
     const { isFetchingSubscription, currentTab, _selectedPlanAmount, fields } = this.state;
     const isLastTab = currentTab === tabs.length - 1;
 
-    const sumOfAddons =
-      fields.addons?.reduce((previous, addonItem) => {
-        const totalAmount = addonItem.item && addonItem.item.amount * addonItem.quantity;
+    const sumOfAddons = fields.addons.reduce((previous, addonItem) => {
+      const totalAmount = addonItem.item && addonItem.item.amount * addonItem.quantity;
 
-        return totalAmount + previous;
-      }, 0) ?? 0;
+      return totalAmount + previous;
+    }, 0);
 
     const showUPIUnAvlBanner = _selectedPlanAmount > UPI_AVL_LIMIT || sumOfAddons > UPI_AVL_LIMIT;
 
@@ -613,22 +579,13 @@ export default class NewSubscriptionLink extends Component {
               {showUPIUnAvlBanner && <UPIBanner />}
 
               {currentTab > 0 && (
-                <Button
-                  onClick={() => {
-                    analytics.track(`subscription.create.previous${currentTab}`);
-                    this.changeTab(-1);
-                  }}
-                  type="button"
-                >
+                <Button onClick={this.changeTab(-1)} type="button">
                   Previous
                 </Button>
               )}
               {!isLastTab ? (
                 <Button.Primary
-                  onClick={() => {
-                    analytics.track(`subscription.create.next${currentTab + 1}`);
-                    this.changeTab(1);
-                  }}
+                  onClick={this.changeTab(1)}
                   type="button"
                   disabled={!this.isFormValid()}
                 >
@@ -684,7 +641,7 @@ function isFormValid(formIndex, fields, internals, validateTotalCount = () => {}
         (internals._isNonExpiringLink || !!fields.expire_by)
       );
     }
-    default:
-      return false;
   }
 }
+
+const tabs = ['Plan Details', 'Add Ons', 'Link Details', 'Review'];

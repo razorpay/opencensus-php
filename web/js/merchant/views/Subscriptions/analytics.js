@@ -28,14 +28,10 @@ function analytics() {
     init: function init(_lumberjack) {
       lumberjackTrack = _lumberjack;
     },
-    track: function track(eventLabel, options = {}, eventAction = 'click') {
-      const newOptions = {
-        mode: 'dashboard',
-        ...options,
-      };
+    track: function track(eventLabel, options, eventAction = 'click') {
       const segmentLabel = eventLabel.split(/_|\./).join(' ');
-      sendToLumberjack(eventLabel, newOptions);
-      sendToSegment(segmentLabel, eventAction, newOptions);
+      sendToLumberjack(eventLabel, options);
+      sendToSegment(segmentLabel, eventAction, options);
     },
   };
 }

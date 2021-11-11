@@ -1,11 +1,14 @@
-import React from 'react';
 import moment from 'moment';
 import { TypeAhead } from 'react-power-select';
+
 import QuantitySelector from '../New/QuantitySelector';
+
+import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
+
 import Amount from 'common/ui/Amount';
 import Input, { Label, Description } from 'common/new-ui/Input';
+
 import { getIntervalCycle, classList } from 'common/utils/rzp-utils';
-import analytics from '../../analytics';
 
 const planPeriodToMaxCycleMap = {
   daily: 36500,
@@ -45,47 +48,36 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
     if (val > planPeriodToMaxCycleMap[(this.selectedPlan || {}).period]) {
       return 'Billing cycles cannot exceed the period of 100 years';
     }
-
-    return '';
   };
 
   removeSelectedOffer = () => {
     this.props.onChangeInOffer();
-    analytics.track('subscription.create.removeoffer', this.props.cloneOptions);
   };
 
   render() {
     const { fields, internals, ...props } = this.props;
     const plans = this.plans;
     const selectedPlan = this.selectedPlan;
+
     const dateInMoment = !!fields.start_at ? moment(fields.start_at, 'X') : undefined;
-    const totalCountLabel = 'No of remaining cycles';
-    const isAuthenticatedSubscription = props.isEdit && props.status === 'authenticated';
+
     let showStartDate = !props.isEdit;
+    const totalCountLabel = 'No of remaining cycles';
+
+    const isAuthenticatedSubscription = props.isEdit && props.status === 'authenticated';
 
     if (isAuthenticatedSubscription) {
       showStartDate = true;
     }
 
     const planPlaceholder = props.plans.loading ? 'Loading...' : 'Select a plan';
+
     const offerPlaceholder = props.offers.loading
       ? 'Loading...'
       : 'Select an offer to provide discounts to consumers';
 
-    let eventLabel = {};
-    if (props.isEdit) {
-      eventLabel = {
-        selectedPlan: 'subscription.update.plan',
-        quantity: 'subscription.update.quantity',
-        billingCycles: 'subscription.update.remaining_cycles',
-      };
-    } else {
-      eventLabel = {
-        selectedPlan: 'subscription.create.select_plan',
-        quantity: 'subscription.create.quantity',
-        billingCycles: 'subscription.create.total_cycles',
-      };
-    }
+    const showUPIUnAvlBanner = selectedPlan.amount > UPI_AVL_LIMIT;
+
     return (
       <>
         <div class={classList('Input', !props.isEdit && 'Input--required')}>
@@ -99,10 +91,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
                 optionComponent={PlanOption}
                 placeholder={planPlaceholder}
                 disabled={props.plans.loading}
-                onChange={(...args) => {
-                  props.onChangeInPlan(...args);
-                  analytics.track(eventLabel.selectedPlan, this.props.cloneOptions);
-                }}
+                onChange={props.onChangeInPlan}
                 selectedOptionLabelPath="name"
                 searchIndices={['id', 'name', 'description']}
               />
@@ -113,9 +102,6 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
                 quantity={fields.quantity}
                 currency={selectedPlan.currency}
                 informativeMessage={getInformativeMessage(selectedPlan)}
-                onBlur={() => {
-                  analytics.track(eventLabel.quantity, this.props.cloneOptions);
-                }}
               />
             )}
           </div>
@@ -131,12 +117,6 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
               disabled={props.isEdit && dateInMoment}
               checked={internals._startsImmediately}
               fieldLabel="Immediate, subscriptions starts with the first payment"
-              onBlur={() => {
-                analytics.track(
-                  'subscription.create.start_date_immediate',
-                  this.props.cloneOptions,
-                );
-              }}
             />
 
             <Input.Group class="InputGroup--inline InputGroup--near">
@@ -153,12 +133,6 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
                   disabled={internals._startsImmediately}
                   onChange={props.onDateChange('start_at')}
                   addonAfter={<i class="i i-date-range" />}
-                  onBlur={() => {
-                    analytics.track(
-                      'subscription.create.start_date_trial',
-                      this.props.cloneOptions,
-                    );
-                  }}
                 />
 
                 {!!fields.start_at && (
@@ -171,12 +145,6 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
                     addonAfter={<i class="i i-time" />}
                     disabled={internals._startsImmediately}
                     onChange={props.onTimeChange('start_at_time')}
-                    onBlur={() => {
-                      analytics.track(
-                        'subscription.create.start_time_trial',
-                        this.props.cloneOptions,
-                      );
-                    }}
                   />
                 )}
                 <Description text="Date from which subscription should start" />
@@ -195,11 +163,9 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
           description="No. of billing cycles to be charged"
           max={planPeriodToMaxCycleMap[(selectedPlan || {}).period]}
           name={props.isEdit ? 'remaining_count' : 'total_count'}
+          const
           label={props.isEdit && !isAuthenticatedSubscription ? totalCountLabel : 'Total Count'}
           defaultValue={props.isEdit ? fields.remaining_count : fields.total_count}
-          onBlur={() => {
-            analytics.track(eventLabel.billingCycles, this.props.cloneOptions);
-          }}
         />
 
         {props.showOffers && (
@@ -214,10 +180,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
                   optionComponent={OfferOption}
                   placeholder={offerPlaceholder}
                   disabled={props.offers.loading}
-                  onChange={(...args) => {
-                    props.onChangeInOffer(...args);
-                    analytics.track('subscription.create.addoffer', this.props.cloneOptions);
-                  }}
+                  onChange={props.onChangeInOffer}
                   selectedOptionLabelPath="name"
                   searchIndices={['id', 'name', 'terms']}
                 />

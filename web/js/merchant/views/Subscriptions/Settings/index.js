@@ -14,7 +14,6 @@ import Spinner from 'common/ui/Spinner';
 
 import { fetchSettings, saveSettings } from 'merchant/reducers/subscriptions';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import analytics from '../analytics';
 
 const PAYMENT_METHODS = {
   UPI: 'upi',
@@ -25,10 +24,6 @@ const PAYMENT_METHODS = {
 const GATEWAY_MAX_LIMIT = 20000000;
 const UPI_MAX_LIMIT = 10000000;
 const EMANDATE_MAX_LIMIT = 100000000;
-const enableDisableMap = {
-  '1': 'enable',
-  '0': 'disable',
-};
 
 const isEnabled = (methodName) => (settings) => {
   const paymentMethod = findBy(settings.items, 'name', methodName) || {};
@@ -63,11 +58,6 @@ export default class SubscriptionsSettings extends React.Component {
     if (paymentMethod.id) {
       data.id = paymentMethod.id;
     }
-
-    const eventLabel = `subscription.setting.${
-      enableDisableMap[data.setting_enabled]
-    }_${methodName}`;
-    analytics.track(eventLabel);
 
     return this.props
       .saveSettings(data)
@@ -104,15 +94,9 @@ export default class SubscriptionsSettings extends React.Component {
       <div class="Subscriptions--Settings content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <TakeATourButton
-              feature={RZPFeatures.SUBSCRIPTIONS}
-              onClick={() => analytics.track('setting.search.help')}
-            />
+            <TakeATourButton feature={RZPFeatures.SUBSCRIPTIONS} />
 
-            <DocsLink
-              url="https://razorpay.com/docs/subscriptions/"
-              onClick={() => analytics.track('setting.search.documentation')}
-            />
+            <DocsLink url="https://razorpay.com/docs/subscriptions/" />
           </div>
         </HeaderAction>
 
@@ -161,7 +145,7 @@ export default class SubscriptionsSettings extends React.Component {
                       )}
                       info={() => (
                         <>
-                          Accept payments upto{' '}
+                          Accept payments upto
                           <strong>
                             {' '}
                             <Amount value={GATEWAY_MAX_LIMIT} />
@@ -207,7 +191,7 @@ export default class SubscriptionsSettings extends React.Component {
                       }
                       info={() => (
                         <>
-                          Accept payments upto{' '}
+                          Accept payments upto
                           <strong>
                             {' '}
                             <Amount value={UPI_MAX_LIMIT} />

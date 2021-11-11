@@ -23,8 +23,15 @@ jobs:
           files: |
             .(js|json|jsx|ts|tsx)$
 
+      - name: Get branch names
+        id: branch-name
+        uses: tj-actions/branch-names@v5
+
       - name: ESLint PR Check
+        # Don't run check on revert PRs
+        if: ${{ !startsWith(steps.branch-name.outputs.current_branch, 'revert-') }}
         run: |
+          echo 'PR Branch: ${{ steps.branch-name.outputs.current_branch }}'
           npm ci
           base=$base npm run validate-lint
           npx eslint \
