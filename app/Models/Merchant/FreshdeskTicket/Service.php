@@ -417,7 +417,7 @@ class Service extends Base\Service
         }
 
 
-        return $this->rewriteFreshdeskTicket($ticketCreateResponse, $ticketEntity);
+        return $this->rewriteFreshdeskTicket($ticketCreateResponse, $ticketEntity, $type);
     }
 
     public function getTicket($id, array $input, $type): array
@@ -440,7 +440,7 @@ class Service extends Base\Service
 
         $response = $ticketWithStats ?? [];
 
-        return $this->rewriteFreshdeskTicket($response, $ticketEntity);
+        return $this->rewriteFreshdeskTicket($response, $ticketEntity, $type);
     }
 
     public function getTickets(array $input, $type)
@@ -575,7 +575,7 @@ class Service extends Base\Service
         $this->app[Constants::FRESHDESK_CLIENT]->postTicketReply($ticketEntity->getTicketId(), $replyRequest, $url);
 
 
-        return $this->rewriteFreshdeskTicket($ticket, $ticketEntity);
+        return $this->rewriteFreshdeskTicket($ticket, $ticketEntity, $type);
     }
 
     public function processWebhook($event, $input)
@@ -1015,7 +1015,7 @@ class Service extends Base\Service
         return $finalFields;
     }
 
-    protected function rewriteFreshdeskTicket(array $response, Entity $ticket)
+    protected function rewriteFreshdeskTicket(array $response, Entity $ticket, $type = Type::SUPPORT_DASHBOARD)
     {
         if (isset($response[Entity::ID]) === true)
         {
@@ -1024,6 +1024,13 @@ class Service extends Base\Service
             $response[Entity::TICKET_ID] = $ticket->getTicketId();
 
             $response[Constants::FR_DUE_BY] = $ticket->getTicketDetails()[Constants::FR_DUE_BY] ?? $response[Constants::FR_DUE_BY];
+
+            if( $type === Type::SUPPORT_DASHBOARD && $ticket->getFdInstance() === Constants::RZPCAP)
+            {
+                $response[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_ITEM] = $response[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY];
+
+                $response[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY] = Constants::SUBCATEGORY_CAPITAL;
+            }
         }
 
         return $response;
@@ -1123,7 +1130,7 @@ class Service extends Base\Service
                 continue;
             }
 
-            $rewrittenTicket = $this->rewriteFreshdeskTicket($ticket, $freshdeskTicketIdRazorpayTicketMap[$ticket['id']]);
+            $rewrittenTicket = $this->rewriteFreshdeskTicket($ticket, $freshdeskTicketIdRazorpayTicketMap[$ticket['id']], $type);
 
 
             array_push($response, $rewrittenTicket);

@@ -131,4 +131,6 @@ class Constants
     const PAYMENT_GATEWAY_CF_PRODUCT    = 'Payment Gateway';
 
     const NOTIFICATION_EVENT = 'event';
+
+    const SUBCATEGORY_CAPITAL = 'Capital';
 }

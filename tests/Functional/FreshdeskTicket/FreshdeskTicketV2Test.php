@@ -671,6 +671,10 @@ class FreshdeskTicketV2Test extends TestCase
         $this->assertEquals($ticket['id'], $response['id']);
 
         $this->assertEquals('rzpcap', $fdInstance);
+
+        $this->assertEquals('Cash Advance', $response['custom_fields']['cf_requester_item']);
+
+        $this->assertEquals('Capital', $response['custom_fields']['cf_requestor_subcategory']);
     }
 
     public function testCreateTicketRzpCapViaX()
@@ -1674,12 +1678,14 @@ Team Razorpay',
 
     protected function createTicketsToFetch()
     {
+        $ticketDetails["fd_instance"] = "rzpind";
+
         $this->fixtures->create('merchant_freshdesk_tickets', [
             'id'             => 'razorpayid0034',
             'ticket_id'      => '34',
             'merchant_id'    => '10000000000000',
             'type'           => 'support_dashboard',
-
+            'ticket_details' => $ticketDetails,
         ]);
 
         $this->fixtures->create('merchant_freshdesk_tickets', [
@@ -1687,7 +1693,7 @@ Team Razorpay',
             'ticket_id'      => '56',
             'merchant_id'    => '20000000000000',
             'type'           => 'support_dashboard',
-
+            'ticket_details' => $ticketDetails,
         ]);
 
         $this->fixtures->create('merchant_freshdesk_tickets', [
@@ -1695,7 +1701,7 @@ Team Razorpay',
             'ticket_id'      => '78',
             'merchant_id'    => '10000000000000',
             'type'           => 'reserve_balance_activate',
-
+            'ticket_details' => $ticketDetails,
         ]);
     }
 }
