@@ -984,10 +984,15 @@ trait Callback
             $mdr        = (float) $callbackData['additional_data']['mdr'];
             $subvention = (float) $callbackData['additional_data']['subvention'];
 
-            if(($mdr === 0.0) and ($subvention === 0.0))
+            // Removing this check as there is use case for insurance merchants when they can have 0% mdr and
+            // such merchants are charged with the fee later at the end of the month
+            // edge case: for SOURCED_BY_WALNUT369 we remove the fee during transaction enitity creation,
+            // hence after removing this check it will not be possible to detect human errors untill finops figures it out
+            // at the end of the month
+            /* if(($mdr === 0.0) and ($subvention === 0.0))
             {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_RESPONSE_BODY);
-            }
+            }*/
 
             $discountAmount = 0;
 
