@@ -322,7 +322,7 @@ class Core extends Base\Core
                         'info_code'     => InfoCode::REFUND_AUTO_RECON_PAYMENT_REFERENCE_ID_EMPTY,
                         'refund_id'     => $refund->getId(),
                         'payment_id'    => $refund->payment->getId(),
-                        'gateway'       => $refund->getGateway()
+                        'gateway'       => $refund->payment->getGateway()
                     ]);
             }
 
