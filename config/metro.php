@@ -5,5 +5,5 @@ return [
     'projectId'   => env('API_METRO_PROJECTID', 'stage-api'),
     'username'    => env('API_METRO_USERNAME', 'username'),
     'password'    => env('API_METRO_PASSWORD', 'password'),
-    'mock'        => env('API_METRO_MOCK', false),
+    'mock'        => env('API_METRO_MOCK', true),
 ];

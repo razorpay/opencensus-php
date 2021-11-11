@@ -24,7 +24,11 @@ class MetroHandlerTest extends TestCase
         $reflection_property = $reflection->getProperty('pubSubClient');
         $reflection_property->setAccessible(true);
 
+        $reflection_property_mock = $reflection->getProperty('mock');
+        $reflection_property_mock->setAccessible(true);
+
         $reflection_property->setValue($metroHandler, $pubSubClientMock);
+        $reflection_property_mock->setValue($metroHandler, false);
         $metroHandler->publish('dummyTopic', ['data' => 'dummyMessage']);
     }
 }
