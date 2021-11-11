@@ -43,6 +43,7 @@ export default class PairList extends React.PureComponent {
   };
 
   updateField = (e, field) => {
+    e.persist();
     const pairId = e.currentTarget.dataset.id;
 
     if (pairId > -1) {
