@@ -114,7 +114,13 @@ class Service extends Base\Service
 
         $lastTriggeredSurvey[Entity::SURVEY_URL] = $fullUrl;
 
-        $lastTriggeredSurvey[Entity::SURVEY_TYPE] = $survey[Survey\Entity::TYPE];
+        $survey_type = $survey[Survey\Entity::TYPE];
+
+        if($survey_type === 'nps_payouts_api' || $survey_type === 'nps_payouts_dashboard'){
+            $lastTriggeredSurvey[Entity::SURVEY_TYPE] = 'nps_payouts';
+        } else {
+            $lastTriggeredSurvey[Entity::SURVEY_TYPE] = $survey[Survey\Entity::TYPE];
+        }
 
         return (empty($surveyResponse) === true) ? $lastTriggeredSurvey->toArrayPublic() : null;
     }
