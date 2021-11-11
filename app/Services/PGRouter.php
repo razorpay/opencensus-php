@@ -141,9 +141,14 @@ class PGRouter
      *
      * @return array
      */
-    public function paymentCancel(string $id, bool $throwExceptionOnFailure = false): array
+    public function paymentCancel(string $id, string $merchantId, bool $throwExceptionOnFailure = false): array
     {
         $url = sprintf(self::PGRouterPaymentCancel, $id);
+
+        if (empty($merchantId) === false)
+        {
+            $url .= '?merchant_id='.$merchantId;
+        }
 
         $output = $this->sendRequest($url, Requests::GET, [], $throwExceptionOnFailure);
 
@@ -220,8 +225,12 @@ class PGRouter
             $endpoint = 'v1/payments/' . $id;
         }
 
-
         $card = null;
+
+        if (empty($merchantId) === false)
+        {
+            $endpoint .= '?merchant_id='.$merchantId;
+        }
 
         $response = $this->sendRequest($endpoint, Requests::GET, [], false);
 
