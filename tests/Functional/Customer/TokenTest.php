@@ -196,17 +196,15 @@ class TokenTest extends TestCase
         $callable = function ($route, $method, $input)
         {
             $response['success'] = true;
-            $response['provider'] = $input['provider']['network'];
             $token = base64_encode($input['card']['number']);
 
             $response['success'] = true;
             $response['token']  = $token;
             $response['fingerprint'] = strrev($token);
             $response['token_iin'] = substr($input['card']['number'] ?? null, 0, 6);
-            $response['last4'] = substr($input['card']['number'] ?? null, 0, 4);
             $response['expiry_month'] = $input['card']['expiry_month'];
             $response['expiry_year'] = $input['card']['expiry_year'];
-            $response['length'] = strlen($input['card']['number']);
+            $response['status'] = 'activated';
 
             if (strlen($response['expiry_year']) == 2)
             {
@@ -216,7 +214,7 @@ class TokenTest extends TestCase
             $response['service_providers'] = [
                 [
                     'type'  => 'network',
-                    'name'  => $input['provider']['network'],
+                    'name'  => 'visa',
                     'data'  => [
                         'token_reference_number' => $token,
                         'card_reference_number'  => strrev($token),
@@ -231,6 +229,82 @@ class TokenTest extends TestCase
         $cardVault->shouldReceive('sendRequest')
                   ->with(Mockery::type('string'), 'post', Mockery::type('array'))
                   ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'headless_otp'  => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('card', $response['method']);
+
+        $this->assertEquals('12', $response['expiry_month']);
+
+        $this->assertEquals('2023', $response['expiry_year']);
+
+        $this->assertNotNull($response['service_providers']);
+
+        $this->assertArrayNotHasKey('customer_id', $response);
+    }
+
+    public function testCreateTokenAndTokenizeCardMC()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ($route, $method, $input)
+        {
+            $response['success'] = true;
+            $token = base64_encode($input['card']['number']);
+
+            $response['success'] = true;
+            $response['token']  = $token;
+            $response['fingerprint'] = strrev($token);
+            $response['token_iin'] = "";
+            $response['expiry_month'] = "";
+            $response['expiry_year'] = "";
+            $response['status'] = 'created';
+
+            if (strlen($response['expiry_year']) == 2)
+            {
+                $response['expiry_year'] = '20' . $response['expiry_year'];
+            }
+
+            $response['service_providers'] = [
+                [
+                    'type'  => 'network',
+                    'name'  => 'mastercard',
+                    'data'  => [
+                        'token_reference_number' => $token,
+                        'card_reference_number'  => strrev($token),
+                        'token_iin' => "",
+                        'expiry_month' => 0,
+                        'expiry_year' => 0,
+                        'interoperable' => true,
+                    ],
+                ]
+            ];
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
 
         $this->app->instance('card.cardVault', $cardVault);
 

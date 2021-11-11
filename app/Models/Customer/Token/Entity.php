@@ -853,7 +853,7 @@ class Entity extends Base\PublicEntity
         return $publicArray;
     }
 
-    public function toArrayPublicTokenizedCard($serviceProviders)
+    public function toArrayPublicTokenizedCard($serviceProviders, $tokenStatus)
     {
         $publicArray = parent::toArrayPublic();
 
@@ -878,7 +878,7 @@ class Entity extends Base\PublicEntity
 
         $publicArray[Card\Entity::EXPIRY_YEAR]  = $this->card->getExpiryYear();
 
-        $publicArray['status'] = ($this->isExpired() === true) ? 'deactivated' : 'activated';
+        $publicArray['status'] = ($this->isExpired() === true) ? 'deactivated' : $tokenStatus;
 
         if (empty($serviceProviders) === false)
         {

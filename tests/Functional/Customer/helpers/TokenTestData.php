@@ -85,6 +85,27 @@ return [
         ],
     ],
 
+    'testCreateTokenAndTokenizeCardMC' => [
+        'request' => [
+            'url' => '/tokens',
+            'method' => 'post',
+            'content' => [
+                'method' => 'card',
+                'card' => [
+                    'number' => '4143667057540458',
+                    'cvv' => '123',
+                    'expiry_month' => '12',
+                    'expiry_year' => '23',
+                    'name' => 'Gaurav Kumar',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testCreateTokenAndTokenizeCardValidationFailure' => [
         'request' => [
             'url' => '/tokens',

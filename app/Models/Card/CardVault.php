@@ -167,13 +167,12 @@ class CardVault extends Base\Core
         }
     }
 
-    public function createTokenizedCard($card, $merchant, $providerInfo)
+    public function createTokenizedCard($card, $merchant, $iinInfo)
     {
-        $input['card'] = $card;
-        $input['provider'] = $providerInfo;
-        $input['merchant'] = [
-            'id' => $merchant->getId()
-        ];
+        $input['card']     = $card;
+        $input['iin']      = $iinInfo;
+
+        $input = $this->setMerchantDetails($input, $merchant);
 
         $input['features'] = $merchant->getEnabledFeatures();
 

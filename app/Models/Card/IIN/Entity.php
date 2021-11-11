@@ -497,4 +497,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->editFormatKeys;
     }
+
+    public function getCategory()
+    {
+        return $this->getAttribute(self::CATEGORY);
+    }
 }

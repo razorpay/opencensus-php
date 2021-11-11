@@ -515,9 +515,9 @@ class Service extends Base\Service
     {
         if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
         {
-            list($token, $serviceProviders) = $this->core->createTokenAndTokenizedCard($input);
+            list($token, $serviceProviders, $tokenStatus) = $this->core->createTokenAndTokenizedCard($input);
 
-            return $token->toArrayPublicTokenizedCard($serviceProviders);
+            return $token->toArrayPublicTokenizedCard($serviceProviders, $tokenStatus);
         }
 
         $this->validateMode();
@@ -537,12 +537,14 @@ class Service extends Base\Service
 
             $serviceProviders = [];
 
+            $tokenStatus = null;
+
             if ($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NETWORK_TOKENS) === true)
             {
-                $serviceProviders = $this->core->fetchToken($token);
+                [$serviceProviders, $tokenStatus] = $this->core->fetchToken($token);
             }
 
-            return $token->toArrayPublicTokenizedCard($serviceProviders);
+            return $token->toArrayPublicTokenizedCard($serviceProviders, $tokenStatus);
         }
 
         $this->validateMode();

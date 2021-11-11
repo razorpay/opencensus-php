@@ -50,15 +50,24 @@ class Core extends Base\Core
     {
         $response = $this->getTokenizedCardResponseFromVault($input, $merchant);
 
+        $expiry_year = $input['expiry_year'];
+
+        $expiry_month = $input['expiry_month'];
+
+        if($input['expiry_year'] !== null && strlen($expiry_year) == 2)
+        {
+            $expiry_year = '20' . $expiry_year;
+        }
+
         $createInput = [
-            Card\Entity::IIN                => $response['token_iin'],
             Card\Entity::VAULT_TOKEN        => $response['token'],
             Card\Entity::GLOBAL_FINGERPRINT => $response['fingerprint'],
-            Card\Entity::VAULT              => $response['provider'],
-            Card\Entity::EXPIRY_MONTH       => $response['expiry_month'],
-            Card\Entity::EXPIRY_YEAR        => $response['expiry_year'],
-            Card\Entity::LAST4              => $response['last4'],
-            Card\Entity::LENGTH             => $response['length'],
+            Card\Entity::EXPIRY_MONTH       => $expiry_month,
+            Card\Entity::EXPIRY_YEAR        => $expiry_year,
+            Card\Entity::VAULT              => $response['service_providers'][0]['name'],
+            Card\Entity::LENGTH             => strlen($input['number']),
+            Card\Entity::LAST4              => substr($input['number'] ?? null, 0, 4),
+            Card\Entity::IIN                => substr($input['number'] ?? null, 0, 6)
         ];
 
         $card = (new Card\Entity)->buildCard($createInput, 'tokenizedCard');
@@ -72,7 +81,9 @@ class Core extends Base\Core
             $card->iinRelation()->associate($iin);
         }
 
-        return [$card, $response['service_providers']];
+        $tokenStatus = $response['status'];
+
+        return [$card, $response['service_providers'], $tokenStatus];
     }
 
     public function fetchCryptogram($card, $merchant)
@@ -586,15 +597,20 @@ class Core extends Base\Core
 
         $iin = $this->repo->card->retrieveIinDetails($iinNumber);
 
-        $providerInfo = [
+        $iinInfo = [
             'issuer'       => $iin->getIssuer(),
             'network'      => $iin->getNetwork(),
             'network_code' => $iin->getNetworkCode(),
+            'iin'          => $iinNumber,
+            'category'     => $iin->getCategory(),
+            'type'         => $iin->getType(),
+            'country'      => $iin->getCountry(),
+            'issuer_name'  => $iin->getIssuerName(),
         ];
 
         $cardVault = (new Card\CardVault);
 
-        return $cardVault ->createTokenizedCard($input, $merchant, $providerInfo);
+        return $cardVault ->createTokenizedCard($input, $merchant, $iinInfo);
     }
 
     protected function getCryptogramResponseFromVault($card, $merchant)

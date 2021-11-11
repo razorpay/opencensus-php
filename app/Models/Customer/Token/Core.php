@@ -1317,7 +1317,7 @@ class Core extends Base\Core
             $customer = $this->repo->customer->findOrFailByPublicIdAndMerchant($input[Token\Entity::CUSTOMER_ID], $this->merchant);
         }
 
-        list($card, $serviceProviders) = (new Card\Core)->createTokenizedCard($input['card'], $this->merchant);
+        list($card, $serviceProviders, $tokenStatus) = (new Card\Core)->createTokenizedCard($input['card'], $this->merchant);
 
          $this->trace->info(
             TraceCode::TOKEN_CREATE_FOR_TOKENIZED_CARD
@@ -1347,14 +1347,14 @@ class Core extends Base\Core
 
         if (empty($existingToken) === false)
         {
-            return $existingToken;
+            return [$existingToken, $serviceProviders, $tokenStatus];
         }
 
         $this->repo->saveOrFail($card);
 
         $this->repo->saveOrFail($token);
 
-        return [$token, $serviceProviders];
+        return [$token, $serviceProviders, $tokenStatus];
     }
 
     public function createNetworkToken($input)
@@ -1425,7 +1425,7 @@ class Core extends Base\Core
     {
         $response = (new Card\Core)->fetchToken($token->card);
 
-        return $response['service_providers'];
+        return [$response['service_providers'], $response['status']] ;
     }
 
     public function deleteToken($token)
