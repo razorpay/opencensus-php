@@ -911,10 +911,6 @@ export default class User {
     return this.getExpStatus('va_search');
   }
 
-  get isNewSmartCollectSearchFeatureEnabled() {
-    return this.getExpStatus('smart_collect_search_v1');
-  }
-
   get isPaymentsExtraRefundDetailsEnabled() {
     return this.getExpStatus('payments_extra_refund_details');
   }
