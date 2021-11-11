@@ -442,8 +442,7 @@ export default class CreateNewContainer extends React.Component {
 
   onBlur = (event) => {
     if (!event) return;
-
-    const fieldName = event.target.name;
+    const fieldName = event?.target?.name;
 
     if (!fieldName) return;
 
