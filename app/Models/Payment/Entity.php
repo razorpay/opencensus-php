@@ -241,7 +241,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
     const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 604800;   // 7 Days
     const BASE_CURRENCY                     = 'base_currency';
-    const PAYMENT_TIMEOUT_NACH              = 86400 * 180;  // 180 Days
+    const PAYMENT_TIMEOUT_NACH              = 86400 * 30;  // 30 Days
     const PAYMENT_TIMEOUT_UPI_RECURRING     = 259200;   // 3 Days
     const PAYMENT_TIMEOUT_CARD_RECURRING_MANDATE = 259200;   // 3 Days
     const PAYMENT_TIMEOUT_CARD_RECURRING_MANDATE_WITH_AFA = 345600;   // 4 Days
