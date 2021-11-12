@@ -3124,6 +3124,7 @@ class Route
 
     public static $private = [
         'payout_create_with_otp',
+        'payout_validate',
         'user_otp_create',
         'balance_fetch_by_account_suffix',
         'activated_banking_accounts_list',
@@ -4017,6 +4018,7 @@ class Route
         'user_verify_email',
         'user_verify_through_email',
         'payout_create_with_otp',
+        'payout_validate',
         // payouts approve reject routes
         'payout_approve_bulk',
         'payout_reject_bulk',
@@ -4417,6 +4419,7 @@ class Route
         'user_verify_contact',
         'user_verify_email',
         'payout_create_with_otp',
+        'payout_validate',
         'user_send_x_mobile_app_link',
         'payout_approve_bulk',
         'payout_reject_bulk',

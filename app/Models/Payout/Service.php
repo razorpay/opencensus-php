@@ -143,18 +143,20 @@ class Service extends Base\Service
 
     public function validatePayout(array $input): array
     {
-        // Only allow access over strictly private auth, for proxy auth: OTP auth flow is mandated.
-        if ($this->auth->isStrictPrivateAuth() === false and
-            ($this->isAllowedInternalApp() === false)) {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
-        }
+        $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
+
+        (new User\Core)->verifyOtp($input + ['action' => 'create_payout'],
+            $this->merchant,
+            $this->user,
+            $this->mode === Constants\Mode::TEST);
+
+        $payoutInput = array_except($input, ['otp', 'token']);
 
         // Only allowed for Rx payouts, mandates account number
-        // TODO: Cache the Balance ID
-        $balance = $this->processAccountNumber($input);
+        $this->processAccountNumber($payoutInput);
 
         (new Validator)->setStrictFalse()
-            ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT, $input);
+            ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT_WITH_OTP, $input);
 
         return ['OK'];
     }
