@@ -1,0 +1,226 @@
+
+@import "mixin/NeoStoneMixin";
+
+.nss-tracker-wrapper {
+    padding: 20px 20px 0 20px;
+}
+
+#nss-tracker {
+
+    // min-height: 174px;
+    // margin: 20px 20px 20px 20px;
+    border-radius: 4px;
+    border-top: 4px solid;
+    border-top-color: #4662EE;
+    flexProp(row,flex-start,flex-start);
+    transition: min-height 0.15s ease-out;
+    background: url("https://cdn.razorpay.com/static/assets/neostone/left-illustration-bg.svg")
+    background-repeat: no-repeat;
+    background-position: bottom left;
+    background-color: white
+
+    .tracker-left-illus {
+        width: 226px;
+        font-weight: 700;
+        padding: 24px 32px 20px;
+
+        .illustr--title {
+            font-size: 20px;
+            line-height: 30px;
+        }
+
+        .illustr--desc {
+            font-size: 12px;
+            line-height: 18px;
+            color: rgba(22, 47, 86, 0.38);
+        }
+    }
+    .tracker {
+        flexProp(row,flex-start,flex-start);
+        width: calc(100% - 225px);
+        background: url("https://cdn.razorpay.com/static/assets/neostone/right-illustration-bg.png")
+        background-position: top right;
+        background-repeat: no-repeat;
+        background-size: 34%;
+        // min-height: 170px;
+        padding: 20px 0 20px 28px;
+
+        a.btn-primary, a.btn-grayed {
+            margin-left: 70px;
+            padding-left: 18px;
+            padding-right: 18px;
+        }
+
+        a.btn-grayed {
+            background: rgba(22, 47, 86, 0.1);
+            border: none;
+            color: rgba(22, 47, 86, 0.74);
+            font-weight: bold;
+        }
+
+        .trackerStatus {
+            width: 350px;
+            position: relative;
+
+            &--highlight {
+                flexProp(row, space-between, flex-start);
+
+                .trackerStatus__statusList p {
+                    color: rgba(22, 47, 86, 0.72);
+                }
+            }
+
+            .gStatus{
+                &::before {
+                    content: url("https://cdn.razorpay.com/static/assets/neostone/green-tick.svg")
+                    background: #E7FBF3;
+                }
+
+                h5 {
+                    color: rgba(22, 47, 86, 0.38);
+                    font-weight: 700;
+                }
+            }
+            .bStatus{
+                &::before {
+                    border: 4px solid #F0F7FF;
+                    background: #5A99E8;
+                }
+            }
+            .gyStatus{
+                &::before {
+                    content: "";
+                    background-image: url('https://cdn.razorpay.com/static/assets/neostone/gray-lock.png');
+                    background-size: 100%;
+                    background-repeat: no-repeat;
+                }
+
+                h5 {
+                    color: rgba(22, 47, 86, 0.38);
+                    font-weight: 400;
+                }
+            }
+            .rStatus{
+                &::before {
+                    border: 4px solid #FEF0F0;
+                    background: #F36969;
+                }
+            }
+
+            &__statusList {
+                border-left: 1px solid #dde3eb;
+                padding-bottom: 20px;
+                padding-left: 20px;
+                min-width: 100%;
+
+                &::before {
+                    content: "";
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 10px;
+                    display: block;
+                    position: absolute;
+                    left: -7.2px;
+                }
+
+                h5 {
+                    font-family: "Mulish";
+                    font-size: $ft16;
+                    line-height: 15px;
+                    color: #162F56;
+                    margin-top: 0;
+                }
+                p {
+                    font-family: Mulish;
+                    font-size: $ft14;
+                    line-height: 20px;
+                    color: rgba(22, 47, 86, 0.38);
+                }
+
+            }
+            .removeBorder {
+                border: none;
+            }
+            .neoBoldStatus {
+                font-weight: bold;
+            }
+            &__viewMore {
+                padding-left: 20px;
+                font-family: "Mulish";
+                font-weight: bold;
+                font-size: $ft14;
+                line-height: 20px;
+                text-transform: capitalize;
+                color: #5A99E8;
+                cursor: pointer;
+            }
+            .footer-cta {
+                flexProp(row, flex-start, center);
+                margin-left: 20px;
+
+                a:not(:first-child) {
+                    margin-left: 24px;
+                }
+            }
+        }
+    }
+
+}
+
+.nss-tracker-shimmer {
+    // margin: 20px 20px 0 20px;
+    height: 174px;
+    background: white;
+    display: flex;
+    border-radius: 4px;
+
+    > div {
+        margin: 20px 32px 40px;
+
+        > span, > div > span {
+            margin-bottom: 10px;
+        }
+    }
+
+    .left-shimmer {
+        width: 220px;
+
+        #razorpay-x-status {
+            loader-shimmer(70%, 30px);
+        }
+        #bank-status {
+            loader-shimmer(100%, 30px);
+        }
+    }
+
+    .info-section {
+        flexProp(row, space-between, flex-start);
+        width: 100%;
+
+        .middle-shimmer {
+            width: 50%;
+
+            #tracker-status {
+                loader-shimmer(50%, 30px);
+            }
+            #desc-status {
+                loader-shimmer(75%, 30px);
+            }
+            #footer-status {
+                loader-shimmer(60%, 30px);
+            }
+        }
+
+        .right-shimmer {
+            flexProp(column, flex-start, flex-end);
+            width: 50%;
+
+            #bg-1-status {
+                loader-shimmer(45%, 30px);
+            }
+            #bg-2-status {
+                loader-shimmer(70%, 30px);
+            }
+        }
+    }
+}

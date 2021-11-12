@@ -47,11 +47,14 @@ import { showKYCStatusModal, fetchEscalations } from 'merchant/reducers/home';
 import { isDedupe, getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import NCModal from 'merchant/components/Activation/NCModal';
 import DedupeModal from 'merchant/components/Home/DedupeModal';
+import NeoStoneTracker from 'common/ui/NotificationsDropdown/Neostone/Tracker';
 import CongratulatoryBanner from 'merchant/components/Announcements/CongratulatoryBanner';
+import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
 import ShowWhen from '../../components/ShowWhen';
 import ABCBanner from '../../components/Announcements/ABCBanner';
 import StartupCongratulationBanner from '../../components/Announcements/StartupCongratulationBanner';
 import CrossBorderPaymentsBanner from '../../components/Announcements/CrossBorderPaymentsBanner';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DiwaliFestiveOfferBanner from '../../components/Announcements/DiwaliFestiveOfferBanner';
 import NitroFestiveBonanza from '../../components/Announcements/NitroFestiveBonanza';
 import NitroCCCampaign from '../../components/Announcements/NitroCCCampaign';
@@ -531,6 +534,14 @@ class AnalyticsDesktop extends Component {
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
           {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}
+
+          {user.isNeostoneFlowEnabled('neostone-tracker') && (
+            <div className="nss-tracker-wrapper">
+              <ErrorBoundary FallbackComponent={null}>
+                <NeoStoneTracker proceededBank={getXCAStatus(user).proceededBank} user={user} />
+              </ErrorBoundary>
+            </div>
+          )}
 
           {user.canSwitchOnboardingCard ? (
             this.renderOnboardingAndRecommendationWidget()

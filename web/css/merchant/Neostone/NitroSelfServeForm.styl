@@ -1,0 +1,202 @@
+$form-title-color = rgba(255, 255, 255, 0.87)
+$input-label-color = rgba(255, 255, 255, 0.54)
+$input-bg-color = rgba(0, 0, 0, 0.1)
+$input-border-color = transparent
+$select-border-bottom-color = rgba(255, 255, 255, 0.1)
+$input-border-bottom-color = #3C5B91
+$input-color = rgba(255, 255, 255, 0.87)
+$description-color = rgba(255, 255, 255, 0.74)
+
+.nss-form, .nss-error
+  padding: 62px 64px 75px;
+  height: 523px
+  background: url('https://cdn.razorpay.com/static/assets/neostone/neostone-x-bg.svg');
+  background-repeat: no-repeat;
+  background-position: right;
+
+.nss-form
+  display: flex
+  flex-direction: column
+  justify-content: center
+
+  &__title
+    color: $form-title-color
+    font-size: 20px
+    font-weight: bold
+    line-height: 30px 
+  
+  &__input-form
+    margin-top: 44px
+
+    &>div:not(:first-child)
+      margin-top: 48px
+
+    &__input-group, &__input-group--operational-pin
+      display: flex
+
+      &__input
+        width: 240px
+        margin-left: 45px
+        margin-right: 45px
+
+        label
+          display: block;
+          color: $input-label-color
+          font-size: 12px;
+          line-height: 18px;
+
+        select, input
+          width: 100%;
+          height: 36px;
+          background: $input-bg-color
+          border-top-color: $input-border-color
+          border-right-color: $input-border-color
+          border-left-color: $input-border-color
+          border-radius: 2px 2px 0px 0px;
+          padding: 8px;
+          color: $input-color
+          font-size: 14px;
+          line-height: 20px;
+          border-bottom: 1px solid $select-border-bottom-color
+        
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button
+          -webkit-appearance: none;
+          margin: 0;
+
+        input[type=number]
+          -moz-appearance:textfield
+
+        .dropdown
+          width: 100%;
+          height: 36px;
+          background: rgba(0,0,0,0.1);
+          border-top-color: transparent;
+          border-right-color: transparent;
+          border-left-color: transparent;
+          border-radius: 2px 2px 0px 0px;
+          padding: 8px 12px;
+          color: rgba(255,255,255,0.87);
+          font-size: 14px;
+          line-height: 20px;
+          border-bottom: 1px solid rgba(255,255,255,0.1);
+
+          .dropdown-toggle
+            color: rgba(255,255,255,0.87)
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            i
+              color: inherit
+
+          &__content
+            ul.dropdown-menu
+              background-color: #323a5f;
+              max-height: 40vh;
+              border: none;
+              width: 100%;
+              overflow: scroll;
+
+              li
+                color: #fff;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                font-size: 14px;
+                padding: 8px 12px;
+                cursor: pointer;
+                outline: none;
+
+                &.selected
+                  background-color: rgba(0, 0, 0, .1)
+
+                &:hover
+                  background-color: rgba(0, 0, 0, .1)
+        
+        &:first-child
+          margin-left: 0
+          margin-right: 45px
+
+        &:last-child
+          margin-left: 45px
+          margin-right: 0
+      
+      &--operational-pin
+        display: block
+
+        &__input
+          width: 260px
+          
+          label
+            font-size: 14px
+            display: flex
+
+        &__input-pin-list
+          display: flex
+          justify-content: space-between
+          
+          &__input-pin
+            width: 37px !important
+            padding: 8px 12px !important
+            border-bottom: 1px solid $input-border-bottom-color !important
+        
+        &__desc
+          font-size: 14px
+          line-height: 20px
+          color: $description-color
+          margin-top: 8px
+    
+    &__button-group
+      display: flex
+      justify-content: flex-start
+      margin-top: 80px !important
+
+      &>*:not(:first-child)
+        margin-left: 48px
+
+.loader-content
+  height: 523px
+
+  .nss-loader
+    width: 150px;
+    height: 85px;
+    overflow: hidden;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    @-webkit-keyframes play-nss-loader
+      100%
+        transform: translate(-100%, 0);
+
+    @keyframes play-nss-loader
+      100%
+        transform: translate(-100%, 0);
+
+    img
+      will-change: transform;
+      transform: translate(0, 0);
+      -webkit-animation: play 1.5s steps(60) infinite;
+      animation: play-nss-loader 1.5s steps(60) infinite;
+
+.nss-error
+  .error-content
+    padding: 32px
+    width: 45%
+
+    &__title
+      color: $form-title-color
+      font-size: 20px
+      font-weight: bold
+      line-height: 30px 
+    
+    &__desc
+      font-size: 14px
+      line-height: 24px
+      color: $description-color
+      margin-top: 8px
+    
+    .btn-primary.submit-btn
+      display: block
+      margin-top: 24px

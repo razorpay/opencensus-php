@@ -1,0 +1,38 @@
+xcaHeaderText()
+    font-family: $mullish-font;
+    font-size: $ft20;
+    font-style: normal;
+    font-weight: $fw7;
+    line-height: 30px;
+    letter-spacing: 0px;
+    text-align: left;
+    color: $text;
+
+
+flexProp(direction = column, justify = center, alignitem = center)
+    display: flex;
+    flex-direction: direction;
+    justify-content: justify;
+    align-items: alignitem;
+
+loader-shimmer(shimmerWidth = 100px, shimmerHeight = 30px)
+    position: relative;
+    display: block;
+    background: #ebecf2;
+    background: linear-gradient(to right, #ebecf2 0%, #dfe1ea 10%, #ebecf2 20%);
+    background-size: 800px 100px;
+    animation: loaderShimmer 1.2s forwards infinite linear;
+    height: shimmerHeight;
+    width: shimmerWidth;
+    border-radius: 4px;
+
+    @keyframes loaderShimmer {
+        0% {
+            background-position: -300px 0;
+        }
+        100% {
+            background-position: 300px 0;
+        }
+    }
+
+

@@ -235,4 +235,12 @@ export default {
     // prod experiment ids
     'HpmgNbhHWmh3BS',
   ],
+
+  neostone_experiment: [
+    // beta experiment ids
+    'IIBFZGhWVgRPR7',
+
+    // prod experiment ids,
+    'IJsF9QOizHHLXC',
+  ],
 };

@@ -9,6 +9,7 @@ import { getOrg } from 'merchant/store';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { getItem } from 'common/utils/localStorage';
+import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
 
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import {
@@ -363,6 +364,14 @@ export default class User {
     return this.isFeatureEnabled('qr_codes');
   }
 
+  get isOwner() {
+    return this.userRole === rolesList.OWNER;
+  }
+
+  get isRazorxRXCASelfServeFlowEnabled() {
+    return this.getExpStatus('rx_ca_self_serve_flow');
+  }
+
   get isRewardsPageEnabled() {
     return this.isFeatureEnabled('reward_merchant_dashboard');
   }
@@ -452,6 +461,20 @@ export default class User {
   get isAbcBannerEnabled() {
     return getSplitzExperimentVariant('abc_banner_experiment')?.variables?.result === 'on';
   }
+
+  get isPartOfNeostone() {
+    return getSplitzExperimentVariant('neostone_experiment')?.variables?.result === 'on';
+  }
+
+  isNeostoneFlowEnabled = (showState = '') => {
+    return (
+      this.isProjectNitroEnabled &&
+      this.isPartOfNeostone &&
+      getXCAStatus(this).showState === showState &&
+      this.isOwner &&
+      !this.isRazorxRXCASelfServeFlowEnabled
+    );
+  };
 
   get isStartupCongratulationBannerEnabled() {
     return (
@@ -1399,6 +1422,5 @@ function getSplitzExperimentVariant(experimentName) {
       }
     });
   }
-
   return splitzExperimentVariant || {};
 }

@@ -37,8 +37,10 @@ export default class ErrorBoundary extends Component {
     const lastEventId = eventId || (window.Raven && window.Raven.lastEventId());
 
     if (error) {
-      if (FallbackComponent) {
-        return <FallbackComponent eventId={lastEventId} error={error} info={info} />;
+      if (FallbackComponent !== undefined) {
+        return FallbackComponent ? (
+          <FallbackComponent eventId={lastEventId} error={error} info={info} />
+        ) : null;
       } else {
         return (
           <div

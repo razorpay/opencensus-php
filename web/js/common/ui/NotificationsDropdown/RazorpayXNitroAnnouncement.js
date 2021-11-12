@@ -18,6 +18,7 @@ import { RadioGroup } from 'common/ui/Forms/RadioGroup';
 import InputField from 'common/ui/Forms/InputField';
 import Textarea from 'common/ui/Forms/AutoResizeTextarea';
 import KeystoneModal from 'common/ui/OffersForYou/components/KeystoneModal';
+import NitroSelfServe from './Neostone/index';
 import NitroCCCampaignModal from 'common/ui/OffersForYou/components/NitroCCCampaignModal';
 import NitroFestiveBonanzaModal from '../../../merchant/components/Announcements/NitroFestiveBonanza/NitroFestiveBonanzaModal';
 
@@ -854,6 +855,9 @@ const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking, user }) =>
     setActiveView('detail-view');
     hideModal();
   };
+
+  if (user.isPartOfNeostone)
+    return <NitroSelfServe user={user} handleClose={handleClose} tracking={tracking} />;
 
   if (activeView === 'detail-view') {
     return (

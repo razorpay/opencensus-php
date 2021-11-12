@@ -181,14 +181,17 @@ class NavFragment extends Component {
     } = this.state;
 
     const canShowOnboardingOffers = this.canShowOnboardingOffers && transactionAmount == 0;
+    const showOFYNitroFlow = user.isPartOfNeostone
+      ? user.isNeostoneFlowEnabled('offers-for-you')
+      : user.isProjectNitroEnabled;
 
     return (
       <React.Fragment>
         <ShowWhen
           // eslint-disable-next-line no-shadow
           additionalCondition={(user) =>
+            showOFYNitroFlow ||
             canShowOnboardingOffers ||
-            user.isProjectNitroEnabled ||
             user.isProjectNitroCorporateCard ||
             user.isProjectMoonshineEnabled ||
             user.isProjectKeystoneCorporateCardsEnabled ||

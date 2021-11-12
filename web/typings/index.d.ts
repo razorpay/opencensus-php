@@ -12,4 +12,5 @@ interface Window {
   LUMBERJACK_API_KEY: string;
   APP_ENV: string;
   SENTRY_DSN: string;
+  cdnBaseUrl: string;
 }
