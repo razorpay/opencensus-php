@@ -173,6 +173,16 @@ const DisputeDetails = (props) => {
                       </strong>
                       <span>&nbsp; with corresponding proofs to avoid losing the dispute.</span>
                     </p>
+                  ) : dispute.amount_deducted > 0 ? (
+                    <p>
+                      Your customer has raised a dispute for&nbsp;
+                      <Amount value={dispute.amount} currency={dispute.currency} />. As per banking
+                      guidelines, we have debited the amount from your Razorpay balance. Kindly
+                      respond before <Time value={dispute.respond_by} format="ll" /> and help us
+                      represent the case in your favour. If no response is received before the
+                      deadline, the dispute will be deemed accepted. Upon winning the dispute, the
+                      dispute amount will be added back to your Razorpay balance
+                    </p>
                   ) : (
                     <p>
                       Your customer has raised a dispute for&nbsp;
@@ -224,7 +234,7 @@ const DisputeDetails = (props) => {
                 {/* status of dispute */}
                 <EntityDetailRow label="Status">
                   <DisputeStatusLabel status={dispute.status} />
-                  {dispute.status === 'lost' && dispute.amount_deducted > 0 && (
+                  {dispute.amount_deducted > 0 && (
                     <div class="alert alert-info status-alert">
                       <div class="rzp-banner-text">
                         <p>

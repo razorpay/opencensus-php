@@ -10,10 +10,18 @@ const StatusBanner = (props) => {
     case 'under_review':
       message =
         'We have received the evidences for the dispute from you and the dispute is under review.';
+      if (amount_deducted > 0) {
+        message =
+          'We have received the evidences for the dispute from you and the dispute is under review. As per banking guidelines, we have debited the dispute amount from your Razorpay balance. Upon winning the dispute, the dispute amount will be added back to your Razorpay balance. This may take upto 45 days from the date of evidence submission';
+      }
       break;
     case 'won':
       message =
         'Post evaluation of the documents submitted, the dispute has been marked as won in your favour by our banking partners';
+      if (amount_deducted > 0) {
+        message =
+          'Post evaluation of the documents submitted, the dispute has been marked as won in your favour by our banking partners. Any amount deducted earlier as a part of this dispute has been credited back to your Razorpay balance';
+      }
       break;
     case 'lost':
       if (evidence?.amount === 0) {
