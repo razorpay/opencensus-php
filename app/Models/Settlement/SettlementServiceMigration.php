@@ -239,6 +239,9 @@ class SettlementServiceMigration
         'EZdvsF1SJ4fQ2s','Cr5PN8DFcCrosQ','EZe131Pviu19kf','CaTMnDC4WEZ86R','EZdsGl9wXWJVWu','EjR2V6HTDimML8',
         'CqJaDXUzdQrfVv','EcIeUFX04IvFLo','EZdXyuTeL5e9OW','EZdoan59NTBydX','3qIOThYDLRB4W4','EZdqqYyoTO11tb',
         'EZdQQ2LvKbigY3','CDZvVwsQsJ79qS','EZdxJ43uewoEgE','GRRpOWPJlrea32','CqLpX9WWLyomO3','EZdznLvBNJCxem',
-        'EcJXIcUJqYptho','CZlf3XM7wZSjgt','EcIgOzkAQjxtxc','D2AZxA5xOgH06A'
+        'EcJXIcUJqYptho','CZlf3XM7wZSjgt','EcIgOzkAQjxtxc','D2AZxA5xOgH06A',
+        //internal mids
+        '9KmKJncCnrvko6','EegSBrCa8CXW0U','9KmLPrgmHhqjri','9KmPH3HU8XjHrq', '9KmMiCZ2rN1Bms','EegSCHnAG28ZRB',
+        'EOriM2QWvzSBrO','EOs9InFtjbiVjv','CIHACFS1pQkdpF','HBnQvKYDg8X7dE',
     ];
 }
