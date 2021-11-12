@@ -466,10 +466,10 @@ class Service extends Base\Service
     {
         if (empty($error) === false)
         {
-            if ((array_key_exists('internal_error_code', $error) === true) and
-                (empty($error['internal_error_code']) === false))
+            if ((array_key_exists(Constants::INTERNAL_ERROR_CODE, $error) === true) and
+                (empty($error[Constants::INTERNAL_ERROR_CODE]) === false))
             {
-                $userId = $error['_internal']['user_details']['user_id'] ??  "";
+                $userId = $error[Constants::INTERNAL]['user_details']['user_id'] ??  "";
 
                 if (empty($userId) === false)
                 {
@@ -478,11 +478,15 @@ class Service extends Base\Service
                 }
                 else
                 {
+                    if(in_array($error[Constants::INTERNAL][Constants::INTERNAL_ERROR_CODE], ApiRequestAny::INTERNAL_ERROR_CODES) === true)
+                    {
+                        return [[$error, self::LOGIN_UNAUTHENTICATED], null];
+                    }
                     return [['User Login Failed, Please check your login credentials.', self::LOGIN_UNAUTHENTICATED], null];
                 }
 
                 // very very nasty dirty hack to not to write lot of code.
-                if ($error['internal_error_code'] === self::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP)
+                if ($error[Constants::INTERNAL_ERROR_CODE] === self::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP)
                 {
                     $error = $error['description'];
                 }

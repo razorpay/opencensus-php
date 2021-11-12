@@ -244,8 +244,8 @@ class UserController extends Controller
                     list($error, $data) = (new User\Service)->login($credentials);
 
                     if (empty($error) === false and
-                        isset($error['internal_error_code']) === true and
-                        $error['internal_error_code'] === 'BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED')
+                        isset($error[UserConstants::INTERNAL_ERROR_CODE]) === true and
+                        $error[UserConstants::INTERNAL_ERROR_CODE] === 'BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED')
                     {
                         $twoFaDuringSignup = true;
                     }
@@ -375,6 +375,12 @@ class UserController extends Controller
 
         $this->traceDuration($timeTaken, TraceCode::SEND_LOGIN_OTP_DURATION);
 
+        if((isset($error[UserConstants::INTERNAL_ERROR_CODE]) === true) and
+            (in_array($error[UserConstants::INTERNAL_ERROR_CODE], Admin\ApiRequestAny::INTERNAL_ERROR_CODES) === true))
+        {
+            $error = [$error];
+        }
+
         return AppResponse::jsonResponse($error, $data);
     }
 
@@ -402,6 +408,12 @@ class UserController extends Controller
         $timeTaken = $timeEnd - $timeStarted;
 
         $this->traceDuration($timeTaken, TraceCode::SEND_USER_VERIFY_OTP_DURATION);
+
+        if((isset($error[UserConstants::INTERNAL_ERROR_CODE]) === true) and
+            (in_array($error[UserConstants::INTERNAL_ERROR_CODE], Admin\ApiRequestAny::INTERNAL_ERROR_CODES) === true))
+        {
+            $error = [$error];
+        }
 
         return AppResponse::jsonResponse($error, $data);
     }
