@@ -147,8 +147,14 @@ class Core extends Base\Core
 
         $fields = [];
 
+        $isSubMerchant = $this->repo->merchant_access_map->fetchSubMerchantOnMerchantId($merchant->getId());
+
         foreach (Constants::MERCHANT_RISK_CONFIG as $key => $value)
         {
+            if( $isSubMerchant !=null && $key == 'business_website' ) {
+                continue;
+            }
+
             foreach ($value['lists'] as $list)
             {
 

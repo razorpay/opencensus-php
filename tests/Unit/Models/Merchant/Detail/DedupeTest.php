@@ -22,7 +22,7 @@ class DedupeTest extends OAuthTestCase
         $mockMR = $this->getMockBuilder(MerchantRiskClient::class)
             ->setMethods(['getMerchantRiskScores'])
             ->getMock();
-        
+
         $mockMR->expects($this->any())
             ->method('getMerchantRiskScores')
             ->willReturn([
@@ -178,6 +178,48 @@ class DedupeTest extends OAuthTestCase
 
             $this->assertTrue($isImpersonated);
             $this->assertEquals($action[Constants::ACTION] ?? null, $actionToExecute);
+        }
+    }
+
+    public function testDedupeSkipForSubMerchantOnBusinessWebsite()
+    {
+        $subMerchant = $this->createSubmerchantAndRelatedEntities('aggregator');
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',['merchant_id'=>$subMerchant->getId()]);
+
+        $mocks = $this->createAndFetchMocks(true);
+        $dedupeCore = $mocks['dedupeCoreMock'];
+
+        foreach (Constants::MERCHANT_RISK_ACTIONS as $action)
+        {
+            $mockedResponse = [];
+
+            foreach ($action['keysToCheck'] as $fieldName => $data)
+            {
+                if($fieldName == 'business_website')
+                    continue;
+
+                $mockedResponse[] = [
+                    'field'     => $fieldName,
+                    'list'      => $data['list'],
+                    'score'     => 900  // some random score
+                ];
+            }
+
+            $merchantRiskClientMock = $this->mockMerchantRiskClient($subMerchant->getId(), $mockedResponse);
+
+            $dedupeCore->setMerchantRiskClient($merchantRiskClientMock);
+
+            [$isImpersonated, $actionToExecute] = $dedupeCore->match($subMerchant);
+
+            if( $fieldName == 'business_website')
+            {
+                $this->assertFalse($isImpersonated);
+            }
+            else
+            {
+                $this->assertTrue($isImpersonated);
+            }
+
         }
     }
 
