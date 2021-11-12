@@ -178,9 +178,33 @@ class NetbankingErrorCodes
     const R481 = '481';
     const R486 = '486';
     const R487 = '487';
+    const R535 = '535';
+    const R536 = '536';
+    const R539 = '539';
+    const R543 = '543';
+    const R601 = '601';
+    const R602 = '602';
+    const R603 = '603';
+    const R604 = '604';
+    const R605 = '605';
     const R606 = '606';
     const R607 = '607';
     const R608 = '608';
+
+    const R263264 = '263,264';
+    const R270277 = '270,277';
+    const R274275 = '274,275';
+    const R282283 = '282,283';
+    const R302303 = '302,303';
+    const R302306 = '302,306';
+    const R303308 = '303,308';
+    const R306303 = '306,303';
+    const R306308 = '306,308';
+    const R470471 = '470,471';
+
+    const R263264265 = '263,264,265';
+    const R282283284 = '282,283,284';
+    const R306303308 = '306,303,308';
 
     const AP01 = 'AP01';
     const AP02 = 'AP02';
@@ -402,6 +426,30 @@ class NetbankingErrorCodes
         self::R606 => 'Duplicate Request',
         self::R607 => 'Previous Request in Progress',
         self::R608 => 'Bank Restricts Duplicate request',
+        self::R535 => 'Mandate Verification API Url null',
+        self::R536 => 'Error in Posting Mandate Details',
+        self::R539 => 'Mandate Verify Details Response is null',
+        self::R543 => 'Otp Verification API Url null',
+        self::R601 => 'Invalid Debit Card Number',
+        self::R602 => 'Invalid Expiry / Validity',
+        self::R603 => 'Invalid CVV',
+        self::R604 => 'Account Details Does not Match',
+        self::R605 => 'Otp Verification Failure',
+
+        self::R263264 => 'Error code not available in Error Xml,Error description not available in Error Xml',
+        self::R270277 => 'Bank MsgId empty or incorrect,Bank AccptRefNo empty or incorrect',
+        self::R274275 => 'Bank MndtReqId empty or incorrect,Bank UndrlygAccptncDtls CreDtTm empty or incorrect',
+        self::R282283 => 'Bank RjctRsn ReasonCode empty or incorrect,Bank RjctRsn ReasonDesc empty or incorrect',
+        self::R302303 => 'Bank MsgId is duplicate,Bank Accepted Ref number is duplicate',
+        self::R302306 => 'Bank MsgId is duplicate,Bank Mandate id is duplicate',
+        self::R303308 => 'Bank Accepted Ref number is duplicate,Bank Reason code and description not in approved list',
+        self::R306303 => 'Bank Mandate id is duplicate,Bank Accepted Ref number is duplicate',
+        self::R306308 => 'Bank Mandate id is duplicate,Bank Reason code and description not in approved list',
+        self::R470471 => 'Bank Mndt ReqId not same as NpciReq,Bank NpciRefId not same as NpciReq',
+
+        self::R263264265 => 'Multiple errors occured',
+        self::R282283284 => 'Multiple errors occured',
+        self::R306303308 => 'Multiple errors occured',
 
         self::AP01 => 'Account blocked',
         self::AP02 => 'Account closed',
@@ -568,6 +616,30 @@ class NetbankingErrorCodes
         self::R606 => ErrorCode::BAD_REQUEST_EMANDATE_REGISTRATION_DUPLICATE_REQUEST,
         self::R607 => ErrorCode::BAD_REQUEST_EMANDATE_REGISTRATION_ALREADY_IN_PROGRESS,
         self::R608 => ErrorCode::BAD_REQUEST_EMANDATE_REGISTRATION_ALREADY_DECLINED_BY_BANK,
+        self::R535 => ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED,
+        self::R536 => ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED,
+        self::R539 => ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED,
+        self::R543 => ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED,
+        self::R601 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID,
+        self::R602 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
+        self::R603 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
+        self::R604 => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        self::R605 => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+
+        self::R263264 => ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED,
+        self::R270277 => ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED,
+        self::R274275 => ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED,
+        self::R282283 => ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED,
+        self::R302303 => ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
+        self::R302306 => ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
+        self::R303308 => ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
+        self::R306303 => ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
+        self::R306308 => ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
+        self::R470471 => ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
+
+        self::R263264265 => ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED,
+        self::R282283284 => ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED,
+        self::R306303308 => ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED,
 
         self::AP01 => ErrorCode::BAD_REQUEST_ACCOUNT_BLOCKED,
         self::AP02 => ErrorCode::BAD_REQUEST_ACCOUNT_CLOSED,
