@@ -18,7 +18,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE,
+                    'description' => "Your payment could not be completed due to insufficient wallet balance. Try another payment method.",
                 ],
             ],
             'status_code' => 400,

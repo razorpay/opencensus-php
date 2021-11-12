@@ -22,7 +22,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => \RZP\Error\PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => \RZP\Error\PublicErrorDescription::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+                    'description' => "You've entered an incorrect OTP. Try again.",
                 ],
             ],
             'status_code' => 400,

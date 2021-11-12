@@ -39,7 +39,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    'description' => "Your payment didn't go through due to a temporary issue. Any debited amount will be refunded in 4-5 business days.",
                 ],
             ],
             'status_code' => 400,
@@ -193,7 +193,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
+                    'description' => "You've entered an incorrect OTP too many times. Try again in sometime.",
                 ],
             ],
             'status_code' => 400,
@@ -209,7 +209,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE,
+                    'description' => "Your payment could not be completed due to insufficient wallet balance. Try another payment method.",
                     'action'      => 'TOPUP'
                 ],
             ],
@@ -340,7 +340,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_OLA_MONEY_ACCOUNT_DOES_NOT_EXIST_FOR_NUMBER,
+                    'description' => "We could not find an OlaMoney wallet linked to this mobile number. Try another payment method. ",
                 ],
             ],
             'status_code' => 400,
