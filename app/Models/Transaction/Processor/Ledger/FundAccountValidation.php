@@ -96,6 +96,12 @@ class FundAccountValidation extends Base
                     throw new LogicException(self::TRANSACTOR_EVENT . ' not implemented at ledger : ' . $transactorEvent);
             }
 
+            $identifiers = [
+                self::BANKING_ACCOUNT_ID => $fundAccountValidation->balance->bankingAccount->getPublicId(),
+            ];
+
+            $additional_params = [];
+
             $payload = [
                 self::TENANT             => self::X,
                 self::MODE               => $this->mode,
@@ -110,7 +116,8 @@ class FundAccountValidation extends Base
                 self::TRANSACTOR_ID      => $transactorId,
                 self::TRANSACTOR_EVENT   => $transactorEvent,
                 self::TRANSACTION_DATE   => $transactorDate,
-                self::BANKING_ACCOUNT_ID => $fundAccountValidation->balance->bankingAccount->getPublicId(),
+                self::ADDITIONAL_PARAMS  => json_encode($additional_params),
+                self::IDENTIFIERS        => $identifiers,
             ];
 
             if (empty($apiTransactionId) === false)
@@ -118,7 +125,8 @@ class FundAccountValidation extends Base
                 $payload[self::API_TRANSACTION_ID] = $apiTransactionId;
             }
 
-            $payload = array_merge($payload, $ftsSourceAccountData);
+            $payload[self::IDENTIFIERS] = array_merge($payload[self::IDENTIFIERS], $ftsSourceAccountData);
+            $payload[self::IDENTIFIERS] = json_encode($payload[self::IDENTIFIERS]);
 
             $this->pushToLedgerSns($payload);
         }

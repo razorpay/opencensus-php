@@ -33,6 +33,8 @@ class Base extends Core
     const IDEMPOTENCY_KEY       = 'idempotency_key';
     const BANKING_ACCOUNT_ID    = 'banking_account_id';
     const API_TRANSACTION_ID    = 'api_transaction_id';
+    const IDENTIFIERS           = 'identifiers';
+    const ADDITIONAL_PARAMS     = 'additional_params';
 
     // For Fee Credit accounting
     const FEE_ACCOUNTING        = 'fee_accounting';

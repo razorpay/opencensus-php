@@ -15,6 +15,13 @@ class LedgerController extends Controller
         return ApiResponse::json($response['body'], $response['code']);
     }
 
+    public function createAccountsOnEvent()
+    {
+        $response = $this->app['ledger']->createAccountsOnEvent($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
     public function createAccountsInBulk()
     {
         $response = $this->app['ledger']->createAccountsInBulk($this->input);

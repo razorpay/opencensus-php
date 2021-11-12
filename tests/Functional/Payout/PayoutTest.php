@@ -492,6 +492,9 @@ class PayoutTest extends OAuthTestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($payoutsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -500,9 +503,9 @@ class PayoutTest extends OAuthTestCase
             $this->assertEquals('1062', $ledgerRequestPayload['commission']);
             $this->assertEquals('162', $ledgerRequestPayload['tax']);
             $this->assertEquals('payout_initiated', $ledgerRequestPayload['transactor_event']);
-            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload['identifiers']);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload['identifiers']);
         }
     }
 
@@ -690,6 +693,9 @@ class PayoutTest extends OAuthTestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
@@ -698,24 +704,27 @@ class PayoutTest extends OAuthTestCase
             $this->assertEquals('900', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
-            $this->assertEquals('reward', $ledgerRequestPayload['fee_accounting']);
+            $this->assertEquals('reward', $ledgerRequestPayload['additional_params']['fee_accounting']);
         }
 
         //
         // Assertions for fts_fund_account_id and fts_account_type
         //
 
+        $ledgerSnsPayloadArray[0]['identifiers'] = json_decode($ledgerSnsPayloadArray[0]['identifiers'], true);
+        $ledgerSnsPayloadArray[1]['identifiers'] = json_decode($ledgerSnsPayloadArray[1]['identifiers'], true);
+
         // Not passed in payout initiated payload
-        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]);
-        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]);
+        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]['identifiers']);
+        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]['identifiers']);
 
         // Passed in payout processed payload
-        $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['fts_fund_account_id']);
-        $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['fts_account_type']);
+        $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['identifiers']['fts_fund_account_id']);
+        $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['identifiers']['fts_account_type']);
 
         // Passed in payout reversed payload
-        $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['fts_fund_account_id']);
-        $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['fts_account_type']);
+        $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['identifiers']['fts_fund_account_id']);
+        $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['identifiers']['fts_account_type']);
     }
 
     public function testPayoutReversalWithMultipleRewards()
@@ -1356,6 +1365,9 @@ class PayoutTest extends OAuthTestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($payoutsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -1364,9 +1376,9 @@ class PayoutTest extends OAuthTestCase
             $this->assertEquals('1770', $ledgerRequestPayload['commission']);
             $this->assertEquals('270', $ledgerRequestPayload['tax']);
             $this->assertEquals('payout_initiated', $ledgerRequestPayload['transactor_event']);
-            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload['identifiers']);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload['identifiers']);
         }
     }
 
@@ -1516,20 +1528,25 @@ class PayoutTest extends OAuthTestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($payoutsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
             $this->assertEquals('INR', $ledgerRequestPayload['currency']);
             $this->assertEquals('payout_initiated', $ledgerRequestPayload['transactor_event']);
-            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload['identifiers']);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload['identifiers']);
         }
+
+        $ledgerSnsPayloadArray[0]['additional_params'] = json_decode($ledgerSnsPayloadArray[0]['additional_params'], true);
+        $ledgerSnsPayloadArray[1]['additional_params'] = json_decode($ledgerSnsPayloadArray[1]['additional_params'], true);
 
         // One payout gets processed via rewards whereas the other does not. Reward balance is 2000,
         // fees on first payout: 1500, fees on second payout: 1770
-        $this->assertEquals('reward', $ledgerSnsPayloadArray[0]['fee_accounting']);
-        $this->assertNotContains('fee_accounting', $ledgerSnsPayloadArray[1]);
+        $this->assertEquals('reward', $ledgerSnsPayloadArray[0]['additional_params']['fee_accounting']);
+        $this->assertNotContains('fee_accounting', $ledgerSnsPayloadArray[1]['additional_params']);
     }
 
     public function testCreateQueuedPayout()
@@ -1775,6 +1792,9 @@ class PayoutTest extends OAuthTestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($payoutsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -1783,9 +1803,9 @@ class PayoutTest extends OAuthTestCase
             $this->assertEquals('1770', $ledgerRequestPayload['commission']);
             $this->assertEquals('270', $ledgerRequestPayload['tax']);
             $this->assertEquals('payout_initiated', $ledgerRequestPayload['transactor_event']);
-            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload['identifiers']);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload['identifiers']);
         }
     }
 
@@ -1913,6 +1933,9 @@ class PayoutTest extends OAuthTestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($payoutsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -1922,9 +1945,9 @@ class PayoutTest extends OAuthTestCase
             $this->assertEquals('0', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals('payout_initiated', $ledgerRequestPayload['transactor_event']);
-            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload['identifiers']);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload['identifiers']);
         }
     }
 
@@ -2263,6 +2286,8 @@ class PayoutTest extends OAuthTestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('live', $ledgerRequestPayload['mode']);
             $this->assertEquals($payoutCreated->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -2271,20 +2296,23 @@ class PayoutTest extends OAuthTestCase
             $this->assertEquals('590', $ledgerRequestPayload['commission']);
             $this->assertEquals('90', $ledgerRequestPayload['tax']);
             $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
-            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
         }
 
         //
         // Assertions for fts_fund_account_id and fts_account_type
         //
 
+        $ledgerSnsPayloadArray[0]['identifiers'] = json_decode($ledgerSnsPayloadArray[0]['identifiers'], true);
+        $ledgerSnsPayloadArray[1]['identifiers'] = json_decode($ledgerSnsPayloadArray[1]['identifiers'], true);
+
         // Not passed in payout initiated payload
-        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]);
-        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]);
+        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]['identifiers']);
+        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]['identifiers']);
 
         // Passed in payout processed payload, and is equal to what is being sent by FTS
-        $this->assertEquals('111111111', $ledgerSnsPayloadArray[1]['fts_fund_account_id']);
-        $this->assertEquals('current', $ledgerSnsPayloadArray[1]['fts_account_type']);
+        $this->assertEquals('111111111', $ledgerSnsPayloadArray[1]['identifiers']['fts_fund_account_id']);
+        $this->assertEquals('current', $ledgerSnsPayloadArray[1]['identifiers']['fts_account_type']);
     }
 
     public function testPayoutRejectWhenWorkflowEdit()
@@ -4697,6 +4725,9 @@ class PayoutTest extends OAuthTestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($payoutCreated->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -4705,9 +4736,9 @@ class PayoutTest extends OAuthTestCase
             $this->assertEquals('590', $ledgerRequestPayload['commission']);
             $this->assertEquals('90', $ledgerRequestPayload['tax']);
             $this->assertEquals('payout_processed', $ledgerRequestPayload['transactor_event']);
-            $this->assertEquals('100000000', $ledgerRequestPayload['fts_fund_account_id']);
-            $this->assertEquals('nodal', $ledgerRequestPayload['fts_account_type']);
-            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
+            $this->assertEquals('100000000', $ledgerRequestPayload['identifiers']['fts_fund_account_id']);
+            $this->assertEquals('nodal', $ledgerRequestPayload['identifiers']['fts_account_type']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
         }
     }
 
@@ -7430,6 +7461,9 @@ class PayoutTest extends OAuthTestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
@@ -7438,7 +7472,7 @@ class PayoutTest extends OAuthTestCase
             $this->assertEquals('1062', $ledgerRequestPayload['commission']);
             $this->assertEquals('162', $ledgerRequestPayload['tax']);
             $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
-            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
         }
 
         //
@@ -7446,26 +7480,30 @@ class PayoutTest extends OAuthTestCase
         // also for banking_account_id and api_transaction_id
         //
 
+        $ledgerSnsPayloadArray[0]['identifiers'] = json_decode($ledgerSnsPayloadArray[0]['identifiers'], true);
+        $ledgerSnsPayloadArray[1]['identifiers'] = json_decode($ledgerSnsPayloadArray[1]['identifiers'], true);
+        $ledgerSnsPayloadArray[2]['identifiers'] = json_decode($ledgerSnsPayloadArray[2]['identifiers'], true);
+
         // fts_fund_account_id and fts_account_type are not passed in payout initiated payload
         // We send the payout's transaction ID as api_transaction_id
-        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]);
-        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]);
+        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]['identifiers']);
+        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]['identifiers']);
         $this->assertEquals($payoutCreated->transaction->getId(), $ledgerSnsPayloadArray[0]['api_transaction_id']);
-        $this->assertEquals($this->bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[0]['banking_account_id']);
+        $this->assertEquals($this->bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[0]['identifiers']['banking_account_id']);
 
         // fts_fund_account_id and fts_account_type are passed in payout processed payload
         // We don't send the `api_transaction_id` key at all
-        $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['fts_fund_account_id']);
-        $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['fts_account_type']);
+        $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['identifiers']['fts_fund_account_id']);
+        $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['identifiers']['fts_account_type']);
         $this->assertArrayNotHasKey('api_transaction_id', $ledgerSnsPayloadArray[1]);
-        $this->assertEquals($this->bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[1]['banking_account_id']);
+        $this->assertEquals($this->bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[1]['identifiers']['banking_account_id']);
 
         // fts_fund_account_id and fts_account_type are passed in payout reversed payload
         // We send the reversal's transaction ID as api_transaction_id
-        $this->assertEquals('100000000', $ledgerSnsPayloadArray[2]['fts_fund_account_id']);
-        $this->assertEquals('nodal', $ledgerSnsPayloadArray[2]['fts_account_type']);
+        $this->assertEquals('100000000', $ledgerSnsPayloadArray[2]['identifiers']['fts_fund_account_id']);
+        $this->assertEquals('nodal', $ledgerSnsPayloadArray[2]['identifiers']['fts_account_type']);
         $this->assertEquals($reversalCreated->transaction->getId(), $ledgerSnsPayloadArray[2]['api_transaction_id']);
-        $this->assertEquals($this->bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[2]['banking_account_id']);
+        $this->assertEquals($this->bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[2]['identifiers']['banking_account_id']);
     }
 
     // check trimming in payout creation.
@@ -11405,6 +11443,9 @@ class PayoutTest extends OAuthTestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($payoutCreated->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -11413,16 +11454,19 @@ class PayoutTest extends OAuthTestCase
             $this->assertEquals('590', $ledgerRequestPayload['commission']);
             $this->assertEquals('90', $ledgerRequestPayload['tax']);
             $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
-            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
         }
 
+        $ledgerSnsPayloadArray[0]['identifiers'] = json_decode($ledgerSnsPayloadArray[0]['identifiers'], true);
+        $ledgerSnsPayloadArray[1]['identifiers'] = json_decode($ledgerSnsPayloadArray[1]['identifiers'], true);
+
         // Not passed in payout initiated payload
-        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]);
-        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]);
+        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]['identifiers']);
+        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]['identifiers']);
 
         // Passed in payout processed payload and equal to the amazonpay account
-        $this->assertEquals('100000001', $ledgerSnsPayloadArray[1]['fts_fund_account_id']);
-        $this->assertEquals('amazonpay', $ledgerSnsPayloadArray[1]['fts_account_type']);
+        $this->assertEquals('100000001', $ledgerSnsPayloadArray[1]['identifiers']['fts_fund_account_id']);
+        $this->assertEquals('amazonpay', $ledgerSnsPayloadArray[1]['identifiers']['fts_account_type']);
     }
 
     // Handles the case where merchant is disabled after creating a wallet fund account.
@@ -12960,6 +13004,9 @@ class PayoutTest extends OAuthTestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($payoutCreated->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -12968,16 +13015,19 @@ class PayoutTest extends OAuthTestCase
             $this->assertEquals('590', $ledgerRequestPayload['commission']);
             $this->assertEquals('90', $ledgerRequestPayload['tax']);
             $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
-            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
         }
 
+        $ledgerSnsPayloadArray[0]['identifiers'] = json_decode($ledgerSnsPayloadArray[0]['identifiers'], true);
+        $ledgerSnsPayloadArray[1]['identifiers'] = json_decode($ledgerSnsPayloadArray[1]['identifiers'], true);
+
         // Not passed in payout initiated payload
-        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]);
-        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]);
+        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]['identifiers']);
+        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]['identifiers']);
 
         // Passed in payout processed payload and equal to the m2p account
-        $this->assertEquals('100000002', $ledgerSnsPayloadArray[1]['fts_fund_account_id']);
-        $this->assertEquals('m2p', $ledgerSnsPayloadArray[1]['fts_account_type']);
+        $this->assertEquals('100000002', $ledgerSnsPayloadArray[1]['identifiers']['fts_fund_account_id']);
+        $this->assertEquals('m2p', $ledgerSnsPayloadArray[1]['identifiers']['fts_account_type']);
     }
 
     // Following test depends on configs. Adding/removing configs defined in Models/FundTransfer/M2P/M2PConfigs file can fail these.

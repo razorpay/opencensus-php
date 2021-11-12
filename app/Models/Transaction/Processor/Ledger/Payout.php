@@ -101,11 +101,14 @@ class Payout extends Base
                 $payload[self::API_TRANSACTION_ID] = $apiTransactionId;
             }
 
-            $payload = array_merge($payload, $ftsSourceAccountData);
+            $payload[self::IDENTIFIERS] = array_merge($payload[self::IDENTIFIERS], $ftsSourceAccountData);
 
             $this->updatePayloadForPrePaidSourceAccounts($payload, $payout);
 
             $this->updatePayloadForFeeCredits($payload, $payout);
+
+            $payload[self::IDENTIFIERS] = json_encode($payload[self::IDENTIFIERS]);
+            $payload[self::ADDITIONAL_PARAMS] = json_encode($payload[self::ADDITIONAL_PARAMS]);
 
             $this->pushToLedgerSns($payload);
         }
@@ -141,27 +144,31 @@ class Payout extends Base
 
         if ($payout->getMode() === Mode::AMAZONPAY)
         {
-            $payload[self::FTS_ACCOUNT_TYPE] = self::DEFAULT_AMAZON_PAY_FTS_FUND_ACCOUNT_TYPE;
+            $payload[self::IDENTIFIERS][self::FTS_ACCOUNT_TYPE] = self::DEFAULT_AMAZON_PAY_FTS_FUND_ACCOUNT_TYPE;
 
             if ($this->mode === \RZP\Constants\Mode::TEST)
             {
-                $payload[self::FTS_FUND_ACCOUNT_ID] = self::DEFAULT_AMAZON_PAY_FTS_FUND_ACCOUNT_ID;
+                $payload[self::IDENTIFIERS][self::FTS_FUND_ACCOUNT_ID] = self::DEFAULT_AMAZON_PAY_FTS_FUND_ACCOUNT_ID;
             }
         }
 
         if ($payout->getChannel() === Channel::M2P)
         {
-            $payload[self::FTS_ACCOUNT_TYPE] = self::DEFAULT_M2P_FTS_FUND_ACCOUNT_TYPE;
+            $payload[self::IDENTIFIERS][self::FTS_ACCOUNT_TYPE] = self::DEFAULT_M2P_FTS_FUND_ACCOUNT_TYPE;
 
             if ($this->mode === \RZP\Constants\Mode::TEST)
             {
-                $payload[self::FTS_FUND_ACCOUNT_ID] = self::DEFAULT_M2P_FTS_FUND_ACCOUNT_ID;
+                $payload[self::IDENTIFIERS][self::FTS_FUND_ACCOUNT_ID] = self::DEFAULT_M2P_FTS_FUND_ACCOUNT_ID;
             }
         }
     }
 
     protected function getDefaultPayload(Entity $payout)
     {
+        $identifiers = [
+            self::BANKING_ACCOUNT_ID  => (string) $payout->bankingAccount->getPublicId(),
+        ];
+        $additional_params = [];
         return [
             self::TENANT              => self::X,
             self::MODE                => $this->mode,
@@ -172,7 +179,8 @@ class Payout extends Base
             self::BASE_AMOUNT         => (string) $payout->getBaseAmount(),
             self::COMMISSION          => (string) $payout->getFee(),
             self::TAX                 => (string) $payout->getTax(),
-            self::BANKING_ACCOUNT_ID  => (string) $payout->bankingAccount->getPublicId(),
+            self::IDENTIFIERS         => $identifiers,
+            self::ADDITIONAL_PARAMS   => $additional_params,
         ];
     }
 
@@ -204,7 +212,7 @@ class Payout extends Base
     {
         if ($payout->getFeeType() === Credits\Balance\Type::REWARD_FEE)
         {
-            $payload[self::FEE_ACCOUNTING] = self::REWARD;
+            $payload[self::ADDITIONAL_PARAMS][self::FEE_ACCOUNTING] = self::REWARD;
         }
     }
 }

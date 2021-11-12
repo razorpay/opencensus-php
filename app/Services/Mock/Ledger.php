@@ -40,6 +40,63 @@ class Ledger extends BaseLedger
      *
      * @return array
      */
+    public function createAccountsOnEvent($input, bool $throwExceptionOnFailure = false): array
+    {
+        $response = [
+            "accounts" => [
+                "shared_account_onboarding" => [
+                    [
+                        "AccountDetail" => [
+                            "account_category"  => "asset",
+                            "account_id"        => "GZu5smDfbM0xhV",
+                            "account_name"      => "test name 4",
+                            "business_category" => "nominal",
+                            "created_at"        => 1612967233,
+                            "currency"          => "INR",
+                            "deleted_at"        => [
+                                "Int64" => 0,
+                                "Valid" => false
+                            ],
+                            "description"       => "sample description",
+                            "entities"          => [
+                                "product" => ["card"]
+                            ],
+                            "id"                => "GZu5smNQhUwQoA",
+                            "merchant_id"       => "sampleMerchant",
+                            "parent_account_id" => "Parent00000001",
+                            "updated_at"        => 1612967233
+                        ],
+                        "balance"           => 0,
+                        "created_at"        => 1612967233,
+                        "deleted_at"        => [
+                            "Int64" => 0,
+                            "Valid" => false
+                        ],
+                        "id"                => "GZu5smDfbM0xhV",
+                        "merchant_id"       => "sampleMerchant",
+                        "min_balance"       => null,
+                        "negative_balance"  => null,
+                        "state"             => "",
+                        "state_change_logs" => null,
+                        "status"            => "ACTIVATED",
+                        "updated_at"        => 1612967233
+                    ],
+                ],
+            ],
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     */
     public function createAccountsInBulk($input, bool $throwExceptionOnFailure = false): array
     {
         $response = [
@@ -585,41 +642,118 @@ class Ledger extends BaseLedger
     {
         $response = [
             "status" => [
-                "LIVE",
-                "IN_REVIEW",
-                "ARCHIVED",
-                "SUSPENDED"
+                "label" => "Status",
+                "type" => "array",
+                "values" => [
+                    [
+                        "name" => "ACTIVATED"
+                    ],
+                    [
+                        "name" => "IN_REVIEW"
+                    ],
+                    [
+                        "name" => "ARCHIVED"
+                    ],
+                    [
+                        "name" => "SUSPENDED"
+                    ],
+                ]
             ],
             "account_category" => [
-                "asset",
-                "liability",
-                "revenue",
-                "equity",
-                "gain",
-                "loss",
-                "expense"
+                "label" => "Account Category",
+                "type" => "array",
+                "values" => [
+                    [
+                        "name" => "asset"
+                    ],
+                    [
+                        "name" => "liability"
+                    ],
+                    [
+                        "name" => "revenue"
+                    ],
+                    [
+                        "name" => "equity"
+                    ],
+                    [
+                        "name" => "gain"
+                    ],
+                    [
+                        "name" => "loss"
+                    ],
+                    [
+                        "name" => "expense"
+                    ],
+                ]
             ],
             "business_category" => [
-                "real",
-                "nominal",
-                "personal"
+                "label" => "Business Category",
+                "type" => "array",
+                "values" => [
+                    [
+                        "name" => "real"
+                    ],
+                    [
+                        "name" => "nominal"
+                    ],
+                    [
+                        "name" => "personal"
+                    ],
+                ]
             ],
             "transactor_events" => [
-                "fund_loading_processed",
-                "fund_loading_expired",
-                "payout_initiated",
-                "payout_processed",
-                "payout_failed",
-                "payout_reversed",
-                "fav_initiated",
-                "fav_processed",
-                "fav_reversed",
-                "fav_failed",
-                "positive_adjustment_processed",
-                "negative_adjustment_processed"
+                "label" => "Transactor Event",
+                "type" => "array",
+                "values" => [
+                    [
+                        "name" => "fund_loading_processed"
+                    ],
+                    [
+                        "name" => "fund_loading_expired"
+                    ],
+                    [
+                        "name" => "payout_initiated"
+                    ],
+                    [
+                        "name" => "payout_processed"
+                    ],
+                    [
+                        "name" => "payout_failed"
+                    ],
+                    [
+                        "name" => "payout_reversed"
+                    ],
+                    [
+                        "name" => "fav_initiated"
+                    ],
+                    [
+                        "name" => "fav_processed"
+                    ],
+                    [
+                        "name" => "fav_reversed"
+                    ],
+                    [
+                        "name" => "fav_failed"
+                    ],
+                    [
+                        "name" => "positive_adjustment_processed"
+                    ],
+                    [
+                        "name" => "negative_adjustment_processed"
+                    ],
+                    [
+                        "name" => "penny_expense_settlement"
+                    ],
+                ]
             ],
             "currency" => [
-                "INR"
+                "label" => "Currency",
+                "type" => "array",
+                "values" => [
+                    [
+                        "name" => "INR"
+                    ],
+                ]
             ],
         ];
 

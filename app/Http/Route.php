@@ -2892,6 +2892,7 @@ class Route
 
         // Ledger Routes
         'create_ledger_account'                           => ['post',      'ledger_service/create_account',                         'LedgerController@createAccount'],
+        'create_ledger_accounts_on_event'                 => ['post',      'ledger_service/create_accounts_on_event',               'LedgerController@createAccountsOnEvent'],
         'create_ledger_accounts_in_bulk'                  => ['post',      'ledger_service/create_accounts_in_bulk',                'LedgerController@createAccountsInBulk'],
         'activate_ledger_account'                         => ['post',      'ledger_service/activate_account',                       'LedgerController@activateAccount'],
         'deactivate_ledger_account'                       => ['post',      'ledger_service/deactivate_account',                     'LedgerController@deactivateAccount'],
@@ -5617,6 +5618,7 @@ class Route
         'list_low_balance_config_admin',
 
         'create_ledger_account',
+        'create_ledger_accounts_on_event',
         'create_ledger_accounts_in_bulk',
         'activate_ledger_account',
         'deactivate_ledger_account',
@@ -6679,6 +6681,7 @@ class Route
 
         // Ledger Service Routes
         'create_ledger_account'                           => Permission::LEDGER_SERVICE_ACTIONS,
+        'create_ledger_accounts_on_event'                  => Permission::LEDGER_SERVICE_ACTIONS,
         'create_ledger_accounts_in_bulk'                  => Permission::LEDGER_SERVICE_ACTIONS,
         'activate_ledger_account'                         => Permission::LEDGER_SERVICE_ACTIONS,
         'deactivate_ledger_account'                       => Permission::LEDGER_SERVICE_ACTIONS,
@@ -10084,6 +10087,7 @@ class Route
 
             // ledger service
             'create_ledger_account',
+            'create_ledger_accounts_on_event',
             'create_ledger_accounts_in_bulk',
             'activate_ledger_account',
             'deactivate_ledger_account',
@@ -10964,6 +10968,7 @@ class Route
             'deactivate_ledger_account',
             'archive_ledger_account',
             'create_ledger_account',
+            'create_ledger_accounts_on_event',
             'create_ledger_accounts_in_bulk',
             'update_ledger_account',
             'update_ledger_account_detail',

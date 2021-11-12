@@ -50,6 +50,7 @@ class Ledger
 
     const URLS = [
         'create'                            => 'Create',
+        'createOnEvent'                     => 'CreateOnEvent',
         'createInBulk'                      => 'CreateInBulk',
         'activate'                          => 'Activate',
         'deactivate'                        => 'Deactivate',
@@ -121,6 +122,20 @@ class Ledger
     public function createAccount($input, bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['create'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function createAccountsOnEvent($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['createOnEvent'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 

@@ -595,6 +595,9 @@ class AdjustmentTest extends TestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($adjustmentsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -603,9 +606,9 @@ class AdjustmentTest extends TestCase
             $this->assertEquals('0', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals('positive_adjustment_processed', $ledgerRequestPayload['transactor_event']);
-            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload['identifiers']);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload['identifiers']);
         }
     }
 
@@ -734,6 +737,9 @@ class AdjustmentTest extends TestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($adjustmentsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -742,9 +748,9 @@ class AdjustmentTest extends TestCase
             $this->assertEquals('0', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals('negative_adjustment_processed', $ledgerRequestPayload['transactor_event']);
-            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload['identifiers']);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload['identifiers']);
         }
     }
 
@@ -1029,6 +1035,9 @@ class AdjustmentTest extends TestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('live', $ledgerRequestPayload['mode']);
             $this->assertEquals($adjustmentsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -1037,9 +1046,9 @@ class AdjustmentTest extends TestCase
             $this->assertEquals('0', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals('positive_adjustment_processed', $ledgerRequestPayload['transactor_event']);
-            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload['identifiers']);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload['identifiers']);
         }
     }
 
@@ -1117,6 +1126,9 @@ class AdjustmentTest extends TestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('live', $ledgerRequestPayload['mode']);
             $this->assertEquals($adjustmentsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -1125,9 +1137,9 @@ class AdjustmentTest extends TestCase
             $this->assertEquals('0', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals('negative_adjustment_processed', $ledgerRequestPayload['transactor_event']);
-            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload['identifiers']);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload['identifiers']);
         }
     }
 

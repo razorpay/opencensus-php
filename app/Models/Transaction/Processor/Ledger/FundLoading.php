@@ -47,6 +47,14 @@ class FundLoading extends Base
 
             $terminalAccountType = $terminalAccountType ?? self::DEFAULT_TERMINAL_ACCOUNT_TYPE;
 
+            $additional_params = [];
+
+            $identifiers = [
+                self::TERMINAL_ID           => $terminalId,
+                self::TERMINAL_ACCOUNT_TYPE => $terminalAccountType,
+                self::BANKING_ACCOUNT_ID    => $bankTransfer->balance->bankingAccount->getPublicId(),
+            ];
+
             $payload = [
                 self::TENANT                => self::X,
                 self::MODE                  => $this->mode,
@@ -58,13 +66,12 @@ class FundLoading extends Base
                 self::COMMISSION            => (string) $bankTransfer->getTransactionFee(),
                 self::TAX                   => (string) $bankTransfer->getTransactionTax(),
                 self::NOTES                 => json_encode($notes),
-                self::TERMINAL_ID           => $terminalId,
-                self::TERMINAL_ACCOUNT_TYPE => $terminalAccountType,
                 self::TRANSACTOR_ID         => $bankTransfer->getPublicId(),
                 self::TRANSACTOR_EVENT      => $transactorEvent,
                 self::TRANSACTION_DATE      => $bankTransfer->getCreatedAt(),
-                self::BANKING_ACCOUNT_ID    => $bankTransfer->balance->bankingAccount->getPublicId(),
                 self::API_TRANSACTION_ID    => $bankTransfer->getTransactionId(),
+                self::ADDITIONAL_PARAMS     => json_encode($additional_params),
+                self::IDENTIFIERS           => json_encode($identifiers),
             ];
 
             $this->pushToLedgerSns($payload);

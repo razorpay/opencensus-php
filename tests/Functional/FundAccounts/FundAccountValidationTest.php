@@ -445,6 +445,9 @@ class FundAccountValidationTest extends TestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
@@ -453,24 +456,27 @@ class FundAccountValidationTest extends TestCase
             $this->assertEquals('3', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
-            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
         }
 
         //
         // Assertions for fts_fund_account_id and fts_account_type
         //
 
+        $ledgerSnsPayloadArray[0]['identifiers'] = json_decode($ledgerSnsPayloadArray[0]['identifiers'], true);
+        $ledgerSnsPayloadArray[1]['identifiers'] = json_decode($ledgerSnsPayloadArray[1]['identifiers'], true);
+
         // Not passed in fund account validation initiated payload
-        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]);
-        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]);
+        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]['identifiers']);
+        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]['identifiers']);
         $this->assertEquals($favCreated->transaction->getId(), $ledgerSnsPayloadArray[0]['api_transaction_id']);
-        $this->assertEquals('bacc_ABCde1234ABCde', $ledgerSnsPayloadArray[0]['banking_account_id']);
+        $this->assertEquals('bacc_ABCde1234ABCde', $ledgerSnsPayloadArray[0]['identifiers']['banking_account_id']);
 
         // Passed in fund account validation failed payload
-        $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['fts_fund_account_id']);
-        $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['fts_account_type']);
+        $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['identifiers']['fts_fund_account_id']);
+        $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['identifiers']['fts_account_type']);
         $this->assertEquals($reversalCreated->transaction->getId(), $ledgerSnsPayloadArray[1]['api_transaction_id']);
-        $this->assertEquals('bacc_ABCde1234ABCde', $ledgerSnsPayloadArray[1]['banking_account_id']);
+        $this->assertEquals('bacc_ABCde1234ABCde', $ledgerSnsPayloadArray[1]['identifiers']['banking_account_id']);
     }
 
     public function testIfFundAccountValidationAlreadyInFinalStateBeforeFTAUpdate()
@@ -516,6 +522,9 @@ class FundAccountValidationTest extends TestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($fundAccountValidationsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -524,9 +533,9 @@ class FundAccountValidationTest extends TestCase
             $this->assertEquals('3', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals('fav_initiated', $ledgerRequestPayload['transactor_event']);
-            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload['identifiers']);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload['identifiers']);
         }
     }
 
@@ -572,6 +581,9 @@ class FundAccountValidationTest extends TestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($fundAccountValidationsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -580,9 +592,9 @@ class FundAccountValidationTest extends TestCase
             $this->assertEquals('3', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals('fav_initiated', $ledgerRequestPayload['transactor_event']);
-            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
-            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload['identifiers']);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload['identifiers']);
         }
     }
 
@@ -1645,6 +1657,9 @@ class FundAccountValidationTest extends TestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($fundAccountValidationCreated->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -1653,24 +1668,28 @@ class FundAccountValidationTest extends TestCase
             $this->assertEquals('3', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
-            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
         }
 
         //
         // Assertions for fts_fund_account_id and fts_account_type
         //
 
+        $ledgerSnsPayloadArray[0]['identifiers'] = json_decode($ledgerSnsPayloadArray[0]['identifiers'], true);
+        $ledgerSnsPayloadArray[1]['identifiers'] = json_decode($ledgerSnsPayloadArray[1]['identifiers'], true);
+        $ledgerSnsPayloadArray[2]['identifiers'] = json_decode($ledgerSnsPayloadArray[2]['identifiers'], true);
+
         // Not passed in fund account validation initiated payload
-        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]);
-        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]);
+        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]['identifiers']);
+        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]['identifiers']);
 
         // Passed in fund account validation processed payload
-        $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['fts_fund_account_id']);
-        $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['fts_account_type']);
+        $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['identifiers']['fts_fund_account_id']);
+        $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['identifiers']['fts_account_type']);
 
         // Passed in fund account validation reversed payload
-        $this->assertEquals('100000000', $ledgerSnsPayloadArray[2]['fts_fund_account_id']);
-        $this->assertEquals('nodal', $ledgerSnsPayloadArray[2]['fts_account_type']);
+        $this->assertEquals('100000000', $ledgerSnsPayloadArray[2]['identifiers']['fts_fund_account_id']);
+        $this->assertEquals('nodal', $ledgerSnsPayloadArray[2]['identifiers']['fts_account_type']);
     }
 
     public function testFundAccountValidationReversedOnLiveMode()
@@ -1758,6 +1777,9 @@ class FundAccountValidationTest extends TestCase
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('live', $ledgerRequestPayload['mode']);
             $this->assertEquals($fundAccountValidationCreated->getPublicId(), $ledgerRequestPayload['transactor_id']);
@@ -1766,23 +1788,27 @@ class FundAccountValidationTest extends TestCase
             $this->assertEquals('3', $ledgerRequestPayload['commission']);
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
-            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
         }
 
         //
         // Assertions for fts_fund_account_id and fts_account_type
         //
 
+        $ledgerSnsPayloadArray[0]['identifiers'] = json_decode($ledgerSnsPayloadArray[0]['identifiers'], true);
+        $ledgerSnsPayloadArray[1]['identifiers'] = json_decode($ledgerSnsPayloadArray[1]['identifiers'], true);
+        $ledgerSnsPayloadArray[2]['identifiers'] = json_decode($ledgerSnsPayloadArray[2]['identifiers'], true);
+
         // Not passed in fund account validation initiated payload
-        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]);
-        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]);
+        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]['identifiers']);
+        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]['identifiers']);
 
         // Passed in fund account validation processed payload
-        $this->assertEquals('1111111', $ledgerSnsPayloadArray[1]['fts_fund_account_id']);
-        $this->assertEquals('current', $ledgerSnsPayloadArray[1]['fts_account_type']);
+        $this->assertEquals('1111111', $ledgerSnsPayloadArray[1]['identifiers']['fts_fund_account_id']);
+        $this->assertEquals('current', $ledgerSnsPayloadArray[1]['identifiers']['fts_account_type']);
 
         // Passed in fund account validation reversed payload
-        $this->assertEquals('1111111', $ledgerSnsPayloadArray[2]['fts_fund_account_id']);
-        $this->assertEquals('current', $ledgerSnsPayloadArray[2]['fts_account_type']);
+        $this->assertEquals('1111111', $ledgerSnsPayloadArray[2]['identifiers']['fts_fund_account_id']);
+        $this->assertEquals('current', $ledgerSnsPayloadArray[2]['identifiers']['fts_account_type']);
     }
 }

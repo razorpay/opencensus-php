@@ -44,6 +44,12 @@ class Adjustment extends Base
                 self::TRANSACTION_ID => TransactionEntity::getSignedIdOrNull($adjustment->getTransactionId())
             ];
 
+            $identifiers = [
+                self::BANKING_ACCOUNT_ID => $adjustment->balance->bankingAccount->getPublicId(),
+            ];
+
+            $additional_params = [];
+
             $payload = [
                 self::TENANT             => self::X,
                 self::MODE               => $this->mode,
@@ -58,8 +64,9 @@ class Adjustment extends Base
                 self::NOTES              => json_encode($notes),
                 self::TRANSACTOR_EVENT   => $transactorEvent,
                 self::TRANSACTION_DATE   => $adjustment->getCreatedAt(),
-                self::BANKING_ACCOUNT_ID => $adjustment->balance->bankingAccount->getPublicId(),
                 self::API_TRANSACTION_ID => $adjustment->getTransactionId(),
+                self::ADDITIONAL_PARAMS  => json_encode($additional_params),
+                self::IDENTIFIERS        => json_encode($identifiers),
             ];
 
             $this->pushToLedgerSns($payload);

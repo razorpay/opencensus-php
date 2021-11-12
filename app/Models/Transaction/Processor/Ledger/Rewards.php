@@ -44,6 +44,14 @@ class Rewards extends Base
                 self::BALANCE_ID     => BalanceEntity::getSignedIdOrNull($credits->getBalanceId()),
             ];
 
+            $additional_params = [
+                self::FEE_ACCOUNTING => self::REWARD,
+            ];
+
+            $identifiers = [
+                self::BANKING_ACCOUNT_ID    => $credits->merchant->sharedBankingBalance->bankingAccount->getPublicId(),
+            ];
+
             $payload = [
                 self::TENANT                => self::X,
                 self::MODE                  => $this->mode,
@@ -58,9 +66,9 @@ class Rewards extends Base
                 self::NOTES                 => json_encode($notes),
                 self::TRANSACTOR_ID         => $credits->getPublicId(),
                 self::TRANSACTOR_EVENT      => $transactorEvent,
-                self::FEE_ACCOUNTING        => self::REWARD,
+                self::ADDITIONAL_PARAMS     => json_encode($additional_params),
                 self::TRANSACTION_DATE      => $credits->getCreatedAt(),
-                self::BANKING_ACCOUNT_ID    => $credits->merchant->sharedBankingBalance->bankingAccount->getPublicId(),
+                self::IDENTIFIERS           => json_encode($identifiers),
             ];
 
             $this->pushToLedgerSns($payload);
