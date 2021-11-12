@@ -539,6 +539,8 @@ class Route
         'fts_dashboard_pr_weights_delete'                   => ['delete',   'fts/dashboard/preferred_routing_weights',                          'FTSController@deletePreferredRoutingWeights'                       ],
         'fts_dashboard_account_mappings_create'             => ['post',     'fts/dashboard/account_type_mappings',                              'FTSController@createAccountTypeMappings'                           ],
         'fts_dashboard_account_mappings_delete'             => ['delete',   'fts/dashboard/account_type_mappings',                              'FTSController@deleteAccountTypeMappings'                           ],
+        'fts_dashboard_fail_queued_transfer_bulk'           => ['patch',     'fts/dashboard/fail_queued_transfer/bulk',                         'FTSController@failQueuedTransferBulk'                              ],
+        'fts_dashboard_fail_queued_transfer'                => ['patch',     'fts/dashboard/fail_queued_transfer',                              'FTSController@failQueuedTransfer'                                  ],
         'fts_bulk_attempts_initiate'                        => ['post',     'fts/initiate/attempts',                                            'FTSController@initiateBulkFtsAttempts'                             ],
         'fts_bulk_beneficiary_initiate'                     => ['post',     'fts/initiate/beneficiary',                                         'FTSController@initiateBulkBeneficiary'                             ],
         'fts_one_off_db_migrate_cron'                       => ['patch',    'fts/one_off_db_migrate_cron',                                      'FTSController@oneOffDbMigrateCron'                                 ],
@@ -5393,6 +5395,8 @@ class Route
         'fts_dashboard_account_mappings_delete',
         'fts_dashboard_pending_transfers_get',
         'fts_dashboard_fetch_account_balance',
+        'fts_dashboard_fail_queued_transfer',
+        'fts_dashboard_fail_queued_transfer_bulk',
 
         'create_merchant_options_admin',
         'read_merchant_options_admin',
@@ -6467,6 +6471,8 @@ class Route
         'fts_dashboard_source_account_copy'                 => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_source_account_delete'               => Permission::GATEWAY_PVT,
         'mozart_gateway_action'                             => Permission::GATEWAY_PVT,
+        'fts_dashboard_fail_queued_transfer'                => Permission::FTS_FAIL_QUEUED_TRANSFER,
+        'fts_dashboard_fail_queued_transfer_bulk'           => Permission::FTS_FAIL_QUEUED_TRANSFER,
 
         'reports_monthly_banking_invoice_admin'     => Permission::VIEW_MERCHANT_REPORT,
 
@@ -8792,6 +8798,8 @@ class Route
             'fts_dashboard_source_account_update',
             'fts_dashboard_source_account_graceful_update',
             'fts_dashboard_test_transactions_trigger',
+            'fts_dashboard_fail_queued_transfer',
+            'fts_dashboard_fail_queued_transfer_bulk',
             'fund_account_bulk_create',
             'fund_account_create',
             'fund_account_create_public',

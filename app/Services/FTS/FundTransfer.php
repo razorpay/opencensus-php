@@ -1340,4 +1340,21 @@ class FundTransfer extends Base
             Requests::POST,
             $input);
     }
+
+    public function failQueuedTransfer(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::FAIL_QUEUED_TRANSFER_URI,
+            Requests::PATCH,
+            $input);
+    }
+
+    public function failQueuedTransferBulk(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::FAIL_QUEUED_TRANSFER_URI_BULK,
+            Requests::PATCH,
+            $input);
+    }
+
 }

@@ -211,4 +211,18 @@ class FTSController extends Controller
         return ApiResponse::json($response['body'], $response['code']);
     }
 
+    public function failQueuedTransfer()
+    {
+        $response = $this->app['fts_fund_transfer']->failQueuedTransfer($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function failQueuedTransferBulk()
+    {
+        $response = $this->app['fts_fund_transfer']->failQueuedTransferBulk($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
 }

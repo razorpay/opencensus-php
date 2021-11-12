@@ -50,6 +50,8 @@ class Base
 
     // Transfer related URIs
     const FUND_TRANSFER_CREATE_URI = '/transfer';
+    const FAIL_QUEUED_TRANSFER_URI = '/transfer/fail';
+    const FAIL_QUEUED_TRANSFER_URI_BULK = '/transfers/fail';
 
     // Source Account related URIs
     const SOURCE_ACCOUNT_CREATE_URI = '/source_account';
