@@ -16,6 +16,7 @@ use RZP\Models\Payment\Downtime\Constants;
 use RZP\Constants\Entity as EntityConstants;
 use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Gateway\Downtime\Entity as GatewayDowntime;
+use RZP\Services\RazorpayLabs\SlackApp as SlackAppService;
 
 class BaseProcessor extends Base\Core
 {
@@ -65,8 +66,7 @@ class BaseProcessor extends Base\Core
 
     protected function endDowntime($ongoingDowntimes)
     {
-        foreach ($ongoingDowntimes as $downtime)
-        {
+        foreach ($ongoingDowntimes as $downtime) {
             $downtime->setEndNow();
 
             $downtime->setStatus(Status::RESOLVED);
@@ -85,6 +85,8 @@ class BaseProcessor extends Base\Core
             (new Service())->emailDowntime(Constants::RESOLVED, $downtime);
 
             PaymentDowntimeEvent::dispatch($this->mode, Status::RESOLVED, serialize($downtime));
+
+            (new SlackAppService($this->app))->sendRequestToSlack($downtime, Status::RESOLVED);
         }
     }
 

@@ -11,6 +11,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\PaymentDowntimeEvent;
 use Illuminate\Support\Facades\Redis;
+use RZP\Services\RazorpayLabs\SlackApp as SlackAppService;
 use RZP\Models\Gateway\Downtime\Source;
 use RZP\Models\Payment\Downtime\Repository;
 use RZP\Models\Gateway\Downtime\Entity as GatewayDowntime;
@@ -47,6 +48,9 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::TRIGGER_WEBHOOK_NOTIFICATIONS, ["state"=> Status::STARTED, "downtime" => $downtime]);
 
             PaymentDowntimeEvent::dispatch($this->mode, Status::STARTED, serialize($downtime));
+
+            (new SlackAppService($this->app))
+                ->sendRequestToSlack($downtime, Status::STARTED);
         }
 
         $this->refreshOngoingDowntimesCache($downtime);
@@ -73,6 +77,8 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::TRIGGER_WEBHOOK_NOTIFICATIONS, ["state"=> Status::STARTED, "downtime" => $downtime]);
 
             PaymentDowntimeEvent::dispatch($this->mode, Status::STARTED, serialize($downtime), $lastSeverity);
+
+            (new SlackAppService($this->app))->sendRequestToSlack($downtime, Status::STARTED);
         }
 
         $this->refreshOngoingDowntimesCache($downtime);

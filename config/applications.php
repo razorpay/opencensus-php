@@ -1065,6 +1065,14 @@ return [
         'url'           => env('TEMPLATING_SERVICE_URL'),
     ],
 
+    'rzp_labs'  => [
+        'slack_app' =>  [
+            'user'      => env('SLACK_APP_USERNAME'),
+            'password'  => env('SLACK_APP_PASSWORD'),
+            'url'       => env('SLACK_APP_URL'),
+        ],
+    ],
+
     'ledger' => [
         'enabled'   => env('LEDGER_ENABLED', false),
         'url'       => [
