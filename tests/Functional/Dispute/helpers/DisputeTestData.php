@@ -1084,11 +1084,24 @@ return [
         ],
     ],
 
-    'testDisputeLostPartiallyAccepted' => [
+    'testDisputeLostPartiallyAcceptedAdjustmentRecoveryMethod' => [
         'request' => [
             'method'  => 'post',
             'content' => [
                 'status'                    => 'lost',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testDisputeLostPartiallyAcceptedRefundRecoveryMethod' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'status'                    => 'lost',
+                'recovery_method'           => 'refund',
             ],
         ],
         'response' => [
@@ -1143,6 +1156,29 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The accepted amount must be at least 100.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDisputeLostPartiallyAcceptedWithNonInrPayment' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'status'                    => 'lost',
+                'accepted_amount'           => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Partial dispute accept not supported for non-inr payments.',
                 ],
             ],
             'status_code' => 400,

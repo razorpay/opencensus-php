@@ -751,10 +751,8 @@ class DisputeTest extends TestCase
         $this->startTest($testData);
     }
 
-    public function testDisputeLostPartiallyAccepted()
+    public function testDisputeLostPartiallyAcceptedAdjustmentRecoveryMethod()
     {
-        $this->markTestSkipped('Partial dispute are not supported');
-
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 1,
@@ -785,10 +783,38 @@ class DisputeTest extends TestCase
         $this->assertEquals(0 - $input['amount'], $adjustments['items'][1]['amount']);
     }
 
+    public function testDisputeLostPartiallyAcceptedRefundRecoveryMethod()
+    {
+        $input = [
+            'amount'                => 10000,
+            'deduct_at_onset'       => 0,
+        ];
+
+        $testdata = $this->updateEditTestData($input);
+
+        $this->assertNull($this->getDbLastEntity('refund'));
+
+        $testdata['request']['content'][Entity::ACCEPTED_AMOUNT] = 7000;
+
+
+        $content = $this->runRequestResponseFlow($testdata);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+
+        $this->assertEquals($input['amount'], $dispute['amount']);
+
+        $this->assertEquals($input['amount'], $dispute['amount_deducted']);
+
+        $this->assertEquals($dispute['payment_id'], $refund['payment_id']);
+
+        $this->assertEquals(7000, $refund['amount']);
+    }
+
     public function testDisputeLostPartiallyAcceptedForNoOnsetDeduct()
     {
-        $this->markTestSkipped('Partial dispute are not supported');
-
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 0,
@@ -820,8 +846,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeLostPartiallyAcceptedWithInvalidAcceptedAmount()
     {
-        $this->markTestSkipped('Partial dispute are not supported');
-
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 0,
@@ -835,8 +859,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeLostPartiallyAcceptedWithZeroAcceptedAmount()
     {
-        $this->markTestSkipped('Partial dispute are not supported');
-
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 0,
@@ -844,6 +866,27 @@ class DisputeTest extends TestCase
         $testdata = $this->updateEditTestData($input);
 
         $testdata['request']['content'][Entity::ACCEPTED_AMOUNT] = 0;
+
+        $this->startTest($testdata);
+    }
+    public function testDisputeLostPartiallyAcceptedWithNonInrPayment()
+    {
+        $createInput  = [
+            'amount'                => 10000,
+            'deduct_at_onset'       => 1,
+        ];
+
+        $testdata = $this->updateEditTestData($createInput);
+
+        $dispute = $this->getDbLastEntity('dispute');
+
+        $payment = $dispute->payment;
+
+        $this->fixtures->edit('payment', $payment->getId(), [
+            'currency' => 'USD',
+        ]);
+
+        $testdata['request']['content'][Entity::ACCEPTED_AMOUNT] = 100;
 
         $this->startTest($testdata);
     }
@@ -3075,29 +3118,6 @@ class DisputeTest extends TestCase
         $this->startTest();
     }
 
-
-    public function testMerchantContestsDeductAtOnsetDispute()
-    {
-        [$payment, $dispute] = $this->setupForDisputePresentmentWithDeductAtOnsetScenarios(['internal_status' => 'represented']);
-
-        $this->assertArraySelectiveEquals([
-            'amount_deducted'       => 1000000,
-            'deduction_source_type' => 'adjustment',
-            'deduction_source_id'   => 'randomAdjId123',
-            'status'                => 'under_review',
-            'internal_status'       => 'represented',
-            'amount_reversed'       => 0,
-            'deduction_reversal_at' => null,
-        ], $dispute);
-
-
-        $this->assertArraySelectiveEquals([
-            'amount_refunded'      => 1000000,
-            'base_amount_refunded' => 1000000,
-            'disputed'             => true,
-        ], $payment);
-    }
-
     public function testMerchantContestsDeductAtOnsetDisputeAndWins()
     {
         [$payment, $dispute] = $this->setupForDisputePresentmentWithDeductAtOnsetScenarios(['status' => 'won']);
@@ -3147,6 +3167,38 @@ class DisputeTest extends TestCase
             'disputed'             => true,
             'refund_status'        => 'FULL',
         ], $payment);
+    }
+
+    /**
+     *  While marking a dispute internal_status to `represented` for deduct at onset dispute,
+     * if no default schedule is specified, then a schedule of t+45 is to be created.
+     */
+    public function testMerchantContestsDeductAtOnsetDisputeWithDefaultScheduleNotSpecified()
+    {
+        $tPlusFortyFive = time() + 45 * 86400;
+
+        [$payment, $dispute] = $this->setupForDisputePresentmentWithDeductAtOnsetScenarios([
+            'internal_status'       => 'represented', // not specifiying deduction_reversal_at in this testcase
+        ]);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'       => 1000000,
+            'deduction_source_type' => 'adjustment',
+            'deduction_source_id'   => 'randomAdjId123',
+            'status'                => 'under_review',
+            'internal_status'       => 'represented',
+            'amount_reversed'       => 0,
+        ], $dispute);
+
+
+        $this->assertArraySelectiveEquals([
+            'amount_refunded'      => 1000000,
+            'base_amount_refunded' => 1000000,
+            'disputed'             => true,
+            'refund_status'        => 'FULL',
+        ], $payment);
+
+        $this->assertGreaterThanOrEqual($tPlusFortyFive, $dispute['deduction_reversal_at']);
     }
 
     public function testMerchantContestsDeductAtOnsetDisputeWithScheduledDeductionReversalOverride()

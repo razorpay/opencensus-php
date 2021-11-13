@@ -61,6 +61,7 @@ class Validator extends Base\Validator
         Entity::DEDUCTION_SOURCE_ID    => 'required_with:deduction_source_type',
         Entity::DEDUCTION_REVERSAL_AT  => 'sometimes|epoch',
         Entity::RECOVERY_METHOD        => 'sometimes|in:adjustment,refund',
+        Entity::ACCEPTED_AMOUNT        => 'sometimes|integer|min:100',
     ];
 
     protected static $processDisputeRefundRules = [
@@ -195,6 +196,15 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Accepted chargeback amount cannot be greater than disputed amount.',
+                Entity::ACCEPTED_AMOUNT,
+                $input);
+        }
+
+        if (($this->entity->payment->isInternational() === true) or
+            ($this->entity->payment->getCurrency() !== Currency::INR))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Partial dispute accept not supported for non-inr payments.',
                 Entity::ACCEPTED_AMOUNT,
                 $input);
         }

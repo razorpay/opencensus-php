@@ -15,4 +15,6 @@ class Constants
     const GATEWAY_DISPUTE_SOURCE_CUSTOMER = 'customer';
 
     const GATEWAY_DISPUTE_SOURCE_NETWORK = 'network';
+
+    const DEFAULT_DEDUCTION_REVERSAL_AT_IN_SECONDS = (24 * 60 * 60) * 45;
 }

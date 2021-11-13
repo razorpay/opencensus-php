@@ -461,6 +461,8 @@ class Core extends Base\Core
 
     public function handleLostDisputeRefunds(Entity $dispute, array $input)
     {
+        $acceptedDisputeAmount = $this->getAcceptedDisputeAmount($dispute, $input);
+
         $payment = $this->repo->payment->findOrFail($dispute->getPaymentId());
 
         // need to explicitly set and save here because if a payment is already in disputed state
@@ -469,7 +471,7 @@ class Core extends Base\Core
 
         $this->repo->payment->saveOrFail($payment);
 
-        $this->createRefundAndUpdateDispute($dispute);
+        $this->createRefundAndUpdateDispute($dispute, $acceptedDisputeAmount);
     }
 
     protected function handleLostDisputeAdjustments(Entity $dispute, array $input)
@@ -501,10 +503,16 @@ class Core extends Base\Core
                 ($dispute->getAmountReversed() === 0));
     }
 
-    public function createRefundAndUpdateDispute(Entity $dispute)
+    /**
+     * @param Entity $dispute
+     * @param $acceptedAmount is in INR always. Hence, compare against baseAmount
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function createRefundAndUpdateDispute(Entity $dispute, $acceptedAmount)
     {
         // https://docs.google.com/spreadsheets/d/1znRQjMiV7WFywAo1a7qb5WCHky96D6iycCbcYulyD7s/edit#gid=1471838983&range=C16
-        if ($dispute->getBaseAmount() > $dispute->payment->getBaseAmountUnRefunded())
+        if ($acceptedAmount > $dispute->payment->getBaseAmountUnRefunded())
         {
             $message = 'Cannot create refund for dispute accept because dispute amount is greater than unrefunded amount';
 
@@ -512,7 +520,7 @@ class Core extends Base\Core
         }
 
         $refundCreateInput = [
-            Refund\Entity::AMOUNT => $dispute->getAmount(),
+            Refund\Entity::AMOUNT  => $acceptedAmount, //there is a validation that accept_amount does not support non INR
             Refund\Entity::NOTES  => [
                 'reason' => $dispute->getPublicId(),
             ],
@@ -1590,9 +1598,11 @@ class Core extends Base\Core
     /**
      * @throws Exception\BadRequestValidationFailureException
      */
-    protected function preProcessInputForUpdate(Entity $dispute, array $input): array
+    protected function preProcessInputForUpdate(Entity $dispute, array $input)
     {
-       return $this->preProcessInputForUpdateStatusAndInternalStatusAttributes($dispute, $input);
+       $input = $this->preProcessInputForUpdateStatusAndInternalStatusAttributes($dispute, $input);
+
+        return $this->preProcessInputForDefaultDeductionReversalSchedule($dispute, $input);
     }
 
     /**
@@ -1625,6 +1635,29 @@ class Core extends Base\Core
 
             return $input;
         }
+
+        return $input;
+    }
+
+    protected function preProcessInputForDefaultDeductionReversalSchedule(Entity $dispute, array $input)
+    {
+        if ($dispute->getDeductAtOnset() === false)
+        {
+            return $input;
+        }
+
+        if (isset($input[Entity::DEDUCTION_REVERSAL_AT]) === true)
+        {
+            return $input;
+        }
+
+        if ((isset($input[Entity::INTERNAL_STATUS]) === false) or
+            ($input[Entity::INTERNAL_STATUS] !== InternalStatus::REPRESENTED))
+        {
+            return $input;
+        }
+
+        $input[Entity::DEDUCTION_REVERSAL_AT] = time() + DisputeConstants::DEFAULT_DEDUCTION_REVERSAL_AT_IN_SECONDS;
 
         return $input;
     }
