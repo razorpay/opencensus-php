@@ -112,7 +112,7 @@ class MerchantRiskAlertsServiceTest extends TestCase
                 'tags'            => ['RAS_FOH', 'RAS_NC_FLOW_FOH'],
                 'priority'        => 1,
                 'email'           => 'merchant.email@gmail.com',
-                'email_config_id' => 82000078541,
+                'email_config_id' => 82000098661,
                 'custom_fields'   => [
                     'cf_ticket_queue' => 'Merchant',
                     'cf_category'     => 'Risk Report_Merchant',
