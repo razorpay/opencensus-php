@@ -146,19 +146,29 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     };
   }, [data]);
 
+  const canShowTncCheckbox = autoScrollRef.current;
+
   useEffect(() => {
-    if (autoScrollRef.current && activeTabId === 'business_details' && data) {
-      const thresholdToScroll = 890;
+    if (
+      autoScrollRef.current &&
+      activeTabId === 'business_details' &&
+      isBusinessDetailsCompleted &&
+      data
+    ) {
+      const thresholdToScroll = 1300;
       const top = autoScrollRef.current.getBoundingClientRect().top;
-      if (top < thresholdToScroll && !isUnregisteredBusiness(data.business_type)) {
-        autoScrollRef.current.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-          inline: 'end',
-        });
-      }
+      // merchant should not scroll instantly.
+      setTimeout(() => {
+        if (autoScrollRef.current && top < thresholdToScroll) {
+          autoScrollRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'end',
+          });
+        }
+      }, 800);
     }
-  }, [data, activeTabId, isBusinessDetailsCompleted]);
+  }, [data, activeTabId, isBusinessDetailsCompleted, canShowTncCheckbox]);
 
   if (activationStatus === 'loading') {
     return <FullPageLoader />;
