@@ -449,8 +449,7 @@ class Processor
                 Card\Network::VISA,
             ];
 
-            if (($iin->getIssuer() !== Card\Issuer::SBIN) or
-                ($iin->isInternational() === true) or
+            if (($iin->isInternational() === true) or
                 (in_array($iin->getNetworkCode(), $supportedNetworks, true) === false))
             {
                 return false;
