@@ -75,7 +75,7 @@ const AccountsListItem = ({
           activationStatus={status}
           timeStamp={timeStamp}
           showActivationForm={onEdit}
-          errorDetails={account.activation_details?.bank_details_verification_error_details}
+          errorDetails={account.activation_details?.bank_details_verification_error}
         />
       </td>
       {onToggleDashboardAccess && (

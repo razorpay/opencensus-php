@@ -295,9 +295,7 @@ export default class Details extends Component {
                   <AccountStatus
                     activationStatus={status}
                     showActivationForm={this.showActivationForm}
-                    errorDetails={
-                      account.activation_details?.bank_details_verification_error_details
-                    }
+                    errorDetails={account.activation_details?.bank_details_verification_error}
                   />
                 </EntityDetailRow>
                 <EntityDetailRow label="Refund Credits">
