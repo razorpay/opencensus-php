@@ -229,6 +229,11 @@ class CardPaymentService
             $action = Action::VERIFY;
         }
 
+        if ($action === Action::VERIFY)
+        {
+            unset($input['payment']['billing_address']);
+        }
+
         $content = [
             self::ACTION  => $action,
             self::GATEWAY => $gateway,
