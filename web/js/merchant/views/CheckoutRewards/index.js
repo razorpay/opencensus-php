@@ -17,6 +17,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import OnBoarding, { getIsRewardsEnabled, getIsAllowedResetRewardsOnBoarding } from './OnBoarding';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 import {
   handleProductQuickGuide,
@@ -114,33 +115,36 @@ export default class CheckoutRewardsIndex extends Component {
 
           <TestModeBanner />
 
-          <Switch>
-            <Route path="/checkout-rewards">
-              <content>
-                <div className="content-wrapper">
-                  <HeaderAction>
-                    <div className="btn-toolbar pull-right">
-                      <a
-                        href="https://razorpay.com/checkout-rewards-merchant-terms/"
-                        target="_blank"
-                        className="btn btn-link"
-                      >
-                        Merchant Terms
-                      </a>
+          <ErrorBoundary resetOnProps>
+            <Switch>
+              <Route path="/checkout-rewards">
+                <content>
+                  <div className="content-wrapper">
+                    <HeaderAction>
+                      <div className="btn-toolbar pull-right">
+                        <a
+                          href="https://razorpay.com/checkout-rewards-merchant-terms/"
+                          target="_blank"
+                          className="btn btn-link"
+                          rel="noreferrer"
+                        >
+                          Merchant Terms
+                        </a>
 
-                      <TakeATourButton feature={RZPFeatures.REWARDS} />
-                      <DocsLink
-                        url="https://razorpay.com/docs/payment-gateway/checkout-rewards/"
-                        onClick={this.documentationClicked}
-                      />
-                    </div>
-                  </HeaderAction>
-                  <Alert type={status.type} message={status.message} />
-                  <Rewards {...this.props} />
-                </div>
-              </content>
-            </Route>
-          </Switch>
+                        <TakeATourButton feature={RZPFeatures.REWARDS} />
+                        <DocsLink
+                          url="https://razorpay.com/docs/payment-gateway/checkout-rewards/"
+                          onClick={this.documentationClicked}
+                        />
+                      </div>
+                    </HeaderAction>
+                    <Alert type={status.type} message={status.message} />
+                    <Rewards {...this.props} />
+                  </div>
+                </content>
+              </Route>
+            </Switch>
+          </ErrorBoundary>
         </tabbed-container>
       </div>
     );

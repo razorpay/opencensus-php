@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 
@@ -15,6 +16,8 @@ import QuickGuide from './QuickGuide';
 import PaymentsList from './Payments/List';
 import VirtualAccountsList from './VirtualAccounts/List';
 import BlockOnBoarding from './BlockOnBoarding';
+
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 @connect(
   (state) => {
@@ -68,13 +71,15 @@ export default class SmartCollectContainer extends React.Component {
           <TestModeBanner />
 
           <content>
-            <Switch>
-              <Route
-                path={['/smartcollect/virtualaccounts', '/virtualaccounts']}
-                component={VirtualAccountsList}
-              />
-              <Route path="/smartcollect/payments" component={PaymentsList} />
-            </Switch>
+            <ErrorBoundary resetOnProps>
+              <Switch>
+                <Route
+                  path={['/smartcollect/virtualaccounts', '/virtualaccounts']}
+                  component={VirtualAccountsList}
+                />
+                <Route path="/smartcollect/payments" component={PaymentsList} />
+              </Switch>
+            </ErrorBoundary>
           </content>
         </tabbed-container>
       </div>

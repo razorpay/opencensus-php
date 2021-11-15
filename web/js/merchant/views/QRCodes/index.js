@@ -16,6 +16,8 @@ import PaymentsList from './Payments/List';
 import QuickGuide, { getQRCodeQuickGuideIsClosed } from './QuickGuide';
 import OnBoarding, { getIsQRCodesEnabled, getIsAllowedResetQRCodesOnBoarding } from './OnBoarding';
 
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+
 class QRCodeContainer extends React.Component {
   componentWillReceiveProps(nextProps) {
     if (nextProps.qr_codes.loading !== this.props.qr_codes.loading) {
@@ -87,18 +89,20 @@ class QRCodeContainer extends React.Component {
         {isTestMode && <TestModeBanner />}
 
         <content>
-          <Switch>
-            <ShowWhenRoute
-              path="/qr_codes/payments"
-              component={PaymentsList}
-              additionalCondition={(currentUser) => currentUser.isAllowedView('qr_codes')}
-            />
-            <ShowWhenRoute
-              additionalCondition={(currentUser) => currentUser.isAllowedView('qr_codes')}
-              path="/qr_codes"
-              component={QRCodesList}
-            />
-          </Switch>
+          <ErrorBoundary resetOnProps>
+            <Switch>
+              <ShowWhenRoute
+                path="/qr_codes/payments"
+                component={PaymentsList}
+                additionalCondition={(currentUser) => currentUser.isAllowedView('qr_codes')}
+              />
+              <ShowWhenRoute
+                additionalCondition={(currentUser) => currentUser.isAllowedView('qr_codes')}
+                path="/qr_codes"
+                component={QRCodesList}
+              />
+            </Switch>
+          </ErrorBoundary>
         </content>
       </tabbed-container>
     );

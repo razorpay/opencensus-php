@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import Lottie from 'react-lottie';
 import { NOOP } from 'merchant/views/Capital/Loans/constants';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 const CustomLottie = ({
   animationData,
@@ -16,7 +17,7 @@ const CustomLottie = ({
   eventListeners = [],
 }) => {
   useEffect(() => {
-    trackInitialRenderImpression && trackInitialRenderImpression(merchantId, fromWhere);
+    trackInitialRenderImpression?.(merchantId, fromWhere);
   }, []);
 
   const config = {
@@ -29,18 +30,20 @@ const CustomLottie = ({
   };
 
   return (
-    <div
-      onClick={!disabled ? onClick : NOOP}
-      className={`lottie-wrapper ${disabled ? 'lottie-disabled' : ''}`}
-    >
-      <Lottie
-        options={config}
-        width={width ? width : '100%'}
-        isStopped={isStopped ? isStopped : false}
-        isClickToPauseDisabled={true}
-        eventListeners={eventListeners}
-      />
-    </div>
+    <ErrorBoundary resetOnProps>
+      <div
+        onClick={!disabled ? onClick : NOOP}
+        className={`lottie-wrapper ${disabled ? 'lottie-disabled' : ''}`}
+      >
+        <Lottie
+          options={config}
+          width={width ? width : '100%'}
+          isStopped={isStopped ? isStopped : false}
+          isClickToPauseDisabled={true}
+          eventListeners={eventListeners}
+        />
+      </div>
+    </ErrorBoundary>
   );
 };
 

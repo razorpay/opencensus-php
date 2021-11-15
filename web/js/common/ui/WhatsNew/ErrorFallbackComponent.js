@@ -2,18 +2,16 @@ import { compose } from 'redux';
 import { connect } from 'react-redux';
 import { pushSlider as pushSliderx } from 'merchant_common/reducers/multiSlider';
 
-const ErrorFallbackComponent = ({ eventId, pushSlider, error, info }) => {
+const ErrorFallbackComponent = ({ eventId, pushSlider }) => {
   const handleClick = () => {
     pushSlider({
       component: (
         <div className="js-error-details">
           <banner className="warning">
             <p>
-              <b>An Error Occured</b>
+              <b>An error occured, please try again later!</b>
             </p>
-            <pre>{eventId}</pre>
-            <pre>{error?.toString()}</pre>
-            <pre>{info?.componentStack?.replace(/^\n/gm, '')}</pre>
+            <pre>Error Code: {eventId || 'NA'}</pre>
           </banner>
         </div>
       ),

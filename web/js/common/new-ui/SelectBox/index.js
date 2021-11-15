@@ -1,9 +1,12 @@
+import React from 'react';
+
 import Input, { Description, Label } from 'common/new-ui/Input';
+import ErrorBoundary, { InlineFallbackComponent } from 'common/new-ui/ErrorBoundary';
 import { classList } from 'common/utils/rzp-utils';
 
 export default class SelectBox extends React.Component {
   static defaultProps = {
-    onClick: function() {},
+    onClick: () => {},
   };
 
   constructor(props) {
@@ -27,11 +30,12 @@ export default class SelectBox extends React.Component {
 
     this.setState(
       {
+        // eslint-disable-next-line react/no-access-state-in-setstate
         checked: !this.state.checked,
       },
-      function() {
+      () => {
         this.props.onClick(this.state.checked);
-      }
+      },
     );
   };
 
@@ -47,28 +51,30 @@ export default class SelectBox extends React.Component {
     const checked = this.isControlled ? props.checked : this.state.checked;
 
     return (
-      <div
-        class={classList('SelectBox', props.className, checked && 'checked')}
-        {...otherProps}
-      >
-        <div class="SelectBox-content">
-          <Label text={props.label} />
+      <ErrorBoundary FallbackComponent={InlineFallbackComponent} resetOnProps>
+        <div
+          className={classList('SelectBox', props.className, checked && 'checked')}
+          {...otherProps}
+        >
+          <div className="SelectBox-content">
+            <Label text={props.label} />
 
-          {props.children}
+            {props.children}
 
-          <Description text={props.description} />
+            <Description text={props.description} />
+          </div>
+
+          <div className="SelectBox-action">
+            <Input.Check
+              name={props.name}
+              checked={checked}
+              onBlur={props.onBlur}
+              onChange={this.onChange}
+              autoRender
+            />
+          </div>
         </div>
-
-        <div class="SelectBox-action">
-          <Input.Check
-            name={props.name}
-            checked={checked}
-            onBlur={props.onBlur}
-            onChange={this.onChange}
-            autoRender
-          />
-        </div>
-      </div>
+      </ErrorBoundary>
     );
   }
 }

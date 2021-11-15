@@ -8,47 +8,50 @@ import Earnings from './Earnings';
 import Subvention from './Subvention';
 import Applications from './Applications';
 import Reports from './Reports';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 export default function PartnerDashboard() {
   return (
-    <Switch>
-      <Redirect to="/partners/submerchants" from="/partners" exact />
-      <ShowWhenRoute
-        additionalCondition={(user) => user.isPartner('aggregator', 'fully_managed')}
-        path="/partners/settings"
-        component={Settings}
-      />
+    <ErrorBoundary resetOnProps>
+      <Switch>
+        <Redirect to="/partners/submerchants" from="/partners" exact />
+        <ShowWhenRoute
+          additionalCondition={(user) => user.isPartner('aggregator', 'fully_managed')}
+          path="/partners/settings"
+          component={Settings}
+        />
 
-      <ShowWhenRoute
-        additionalCondition={(user) => user.isPartner('pure_platform')}
-        path="/partners/applications"
-        component={Applications}
-      />
+        <ShowWhenRoute
+          additionalCondition={(user) => user.isPartner('pure_platform')}
+          path="/partners/applications"
+          component={Applications}
+        />
 
-      <ShowWhenRoute
-        path="/partners/earnings"
-        component={Earnings}
-        additionalCondition={(user) =>
-          user.isAllowedView('earnings') && user.isHavingPartnerConfigs
-        }
-      />
+        <ShowWhenRoute
+          path="/partners/earnings"
+          component={Earnings}
+          additionalCondition={(user) =>
+            user.isAllowedView('earnings') && user.isHavingPartnerConfigs
+          }
+        />
 
-      <ShowWhenRoute
-        path="/partners/subventions"
-        component={Subvention}
-        additionalCondition={(user) =>
-          user.isAllowedView('earnings') && user.isHavingSubventionConfigs
-        }
-      />
+        <ShowWhenRoute
+          path="/partners/subventions"
+          component={Subvention}
+          additionalCondition={(user) =>
+            user.isAllowedView('earnings') && user.isHavingSubventionConfigs
+          }
+        />
 
-      <ShowWhenRoute
-        path="/partners/reports"
-        component={Reports}
-        // disabling for resellers not having partner configs
-        additionalCondition={(user) => !user.isPartner('reseller') || user.isHavingPartnerConfigs}
-      />
+        <ShowWhenRoute
+          path="/partners/reports"
+          component={Reports}
+          // disabling for resellers not having partner configs
+          additionalCondition={(user) => !user.isPartner('reseller') || user.isHavingPartnerConfigs}
+        />
 
-      <Route path="/partners/submerchants" component={SubMerchantList} />
-    </Switch>
+        <Route path="/partners/submerchants" component={SubMerchantList} />
+      </Switch>
+    </ErrorBoundary>
   );
 }

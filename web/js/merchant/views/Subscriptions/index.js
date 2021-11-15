@@ -33,6 +33,7 @@ import QuickGuide, {
 } from 'merchant/views/Subscriptions/QuickGuide';
 import SubscriptionSettings from 'merchant/views/Subscriptions/Settings';
 import Announcement from 'merchant/components/Announcements';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { CardsGoLiveBanner, PaperNachBanner } from './components/banners/';
 import {
   CAW_CARDS_BANNER,
@@ -210,44 +211,46 @@ class SubscriptionsController extends React.Component {
           <TestModeBanner />
 
           <content>
-            <Switch>
-              <ShowWhenRoute
-                path="/subscriptions/batchuploads"
-                component={HostedEmanadateBatches}
-                additionalCondition={(user) => user.isChargeAtWillEnabled}
-              />
+            <ErrorBoundary resetOnProps>
+              <Switch>
+                <ShowWhenRoute
+                  path="/subscriptions/batchuploads"
+                  component={HostedEmanadateBatches}
+                  additionalCondition={(user) => user.isChargeAtWillEnabled}
+                />
 
-              <ShowWhenRoute
-                path="/subscriptions/settings"
-                component={SubscriptionSettings}
-                additionalCondition={(user) => !user.isChargeAtWillEnabled}
-              />
+                <ShowWhenRoute
+                  path="/subscriptions/settings"
+                  component={SubscriptionSettings}
+                  additionalCondition={(user) => !user.isChargeAtWillEnabled}
+                />
 
-              <ShowWhenRoute
-                path="/subscriptions"
-                component={SubscriptionsList}
-                additionalCondition={(user) => !user.isChargeAtWillEnabled}
-              />
-              <ShowWhenRoute
-                path="/plans"
-                component={ClonedPlanList}
-                additionalCondition={(user) => !user.isChargeAtWillEnabled}
-              />
+                <ShowWhenRoute
+                  path="/subscriptions"
+                  component={SubscriptionsList}
+                  additionalCondition={(user) => !user.isChargeAtWillEnabled}
+                />
+                <ShowWhenRoute
+                  path="/plans"
+                  component={ClonedPlanList}
+                  additionalCondition={(user) => !user.isChargeAtWillEnabled}
+                />
 
-              <Route path="/registration_links" component={RegistrationLinksList} />
+                <Route path="/registration_links" component={RegistrationLinksList} />
 
-              <Route
-                path="/recurring_payments"
-                component={RecurringPayments}
-                additionalCondition={(user) => user.isRegistrationLinkTokenAndPaymentsEnabled}
-              />
+                <Route
+                  path="/recurring_payments"
+                  component={RecurringPayments}
+                  additionalCondition={(user) => user.isRegistrationLinkTokenAndPaymentsEnabled}
+                />
 
-              <Route
-                path="/tokens"
-                component={TokensList}
-                additionalCondition={(user) => user.isRegistrationLinkTokenAndPaymentsEnabled}
-              />
-            </Switch>
+                <Route
+                  path="/tokens"
+                  component={TokensList}
+                  additionalCondition={(user) => user.isRegistrationLinkTokenAndPaymentsEnabled}
+                />
+              </Switch>
+            </ErrorBoundary>
           </content>
         </tabbed-container>
       </div>

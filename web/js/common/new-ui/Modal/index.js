@@ -61,7 +61,7 @@ export class ModalMask extends React.PureComponent {
 
     return (
       <div
-        class={classList('Modal-mask', classArray, this.state.isHidden && 'Modal-mask--hide')}
+        className={classList('Modal-mask', classArray, this.state.isHidden && 'Modal-mask--hide')}
         onClick={maskClosable ? this.onMaskClose : undefined}
       >
         {children}
@@ -111,7 +111,7 @@ export class Modal extends React.PureComponent {
       : '';
 
     return (
-      <div class={classList('Modal-container', classArray)} {...rest}>
+      <div className={classList('Modal-container', classArray)} {...rest}>
         {showCloseBtn && (
           <span
             className={`Modal-close ${fadedCloseButton ? 'Modal-close-faded' : ''} ${
@@ -128,7 +128,7 @@ export class Modal extends React.PureComponent {
           </span>
         )}
 
-        {children}
+        <ErrorBoundary resetOnProps>{children}</ErrorBoundary>
       </div>
     );
   }
@@ -141,11 +141,9 @@ export class Modal extends React.PureComponent {
  *   - {Boolean, optional} noPadding, By default modal body has padding if it has header over it. Set noPadding true to remove padding.
  * */
 export const ModalContent = ({ header, banner, children, className = '', noPadding = false }) => (
-  <ErrorBoundary>
-    <div class={classList('Modal-content', className)}>
-      {header && <header>{header}</header>}
-      {banner}
-      <div class={classList('Modal-body', noPadding && 'no-padding')}>{children}</div>
-    </div>
-  </ErrorBoundary>
+  <div className={classList('Modal-content', className)}>
+    {header && <header>{header}</header>}
+    {banner}
+    <div className={classList('Modal-body', noPadding && 'no-padding')}>{children}</div>
+  </div>
 );

@@ -34,6 +34,10 @@
     "js/common/context",
     "js/common/services",
     "js/common/components",
+    "js/common/new-ui"
+  ],
+  "exclude": [
+    "node_modules",
     "js/common/utils",
     "js/common/ui/NotificationsDropdown/Neostone"
   ]

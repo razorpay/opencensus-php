@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 
@@ -21,6 +22,7 @@ import OnBoarding, {
 } from './OnBoarding';
 import QuickGuide, { getPaymentButtonsQuickGuideIsClosed } from './QuickGuide';
 import CardPaymentsBlockedBanner from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Banner';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 @connect(
   (state) => {
@@ -134,10 +136,12 @@ export default class PaymentButtonsContainer extends React.Component {
           <TestModeBanner />
 
           <content>
-            <Switch>
-              <Route path="/paymentbuttons" component={PaymentButtonList} />
-              <Route path="/subscription_buttons" component={SubscriptionButtonList} />
-            </Switch>
+            <ErrorBoundary resetOnProps>
+              <Switch>
+                <Route path="/paymentbuttons" component={PaymentButtonList} />
+                <Route path="/subscription_buttons" component={SubscriptionButtonList} />
+              </Switch>
+            </ErrorBoundary>
           </content>
         </tabbed-container>
       </>

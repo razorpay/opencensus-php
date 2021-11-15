@@ -1,17 +1,49 @@
-import React, { Component } from 'react';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+import InlineFallbackComponent from './FallbackComponent';
 
-export default class ErrorBoundary extends Component {
+enum Ranks {
+  P0 = 'P0',
+  P1 = 'P1',
+  P2 = 'P2',
+  P3 = 'P3',
+}
+
+interface FallbackComponentProps extends React.FC<any> {
+  eventId?: string | null;
+}
+
+interface Props {
+  children: ReactNode;
+  FallbackComponent?: FallbackComponentProps;
+  tags?: any;
+  rank?: Ranks;
+  resetOnProps?: any;
+}
+
+interface State {
+  error: any;
+  info: ErrorInfo | null;
+  eventId: string | null;
+}
+
+export default class ErrorBoundary extends Component<Props, State> {
   state = {
     error: false,
     info: null,
     eventId: null,
   };
-  componentDidCatch(error, info) {
+
+  private node = React.createRef<HTMLDivElement>();
+  componentDidCatch(error: Error, info: ErrorInfo): void {
     let eventId = null;
     if (window.Sentry) {
       window.Sentry.withScope((scope) => {
+        let tags = this.props.tags || {};
+        tags = { ...tags, rank: this.props.rank || Ranks.P0 };
         scope.setExtras(info);
-        eventId = window.Sentry.captureException(error);
+        eventId = window.Sentry.captureException(error, {
+          tags,
+        });
       });
     } else if (window.Raven) {
       console.log(error, info);
@@ -29,8 +61,9 @@ export default class ErrorBoundary extends Component {
     }
   }
 
-  render() {
+  render(): ReactNode {
     const { children, FallbackComponent } = this.props;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const { error, info, eventId } = this.state;
     const SDK = window.Sentry || window.Raven;
     const hasSDK = !!SDK;
@@ -44,6 +77,7 @@ export default class ErrorBoundary extends Component {
       } else {
         return (
           <div
+            /* @ts-expect-error */
             ref={(node) => (this.node = node)}
             className={`rzp-error-boundary${hasSDK ? ' has-raven' : ''}`}
           >
@@ -82,7 +116,9 @@ export default class ErrorBoundary extends Component {
                     <b>An Error Occured</b>
                   </p>
                   <pre>{error.toString()}</pre>
+                  {/* @ts-expect-error */}
                   <pre>{info.componentStack.replace(/^\n/gm, '')}</pre>
+                  {/* Ignoring TS error as info can not be null */}
                 </banner>
               </div>
             )}
@@ -93,3 +129,5 @@ export default class ErrorBoundary extends Component {
     return children || null;
   }
 }
+
+export { InlineFallbackComponent, Ranks };

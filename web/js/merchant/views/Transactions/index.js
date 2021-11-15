@@ -27,6 +27,7 @@ import { getItem } from 'common/utils/localStorage';
 import { analyticsTrack } from 'common/utils/analytics';
 import { fetchOpen as fetchOpenDisputes } from 'merchant/reducers/disputes/details';
 import { bindActionCreators } from 'redux';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 let url = 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app';
 if (getMobileOperatingSystem() == 'iOS') {
@@ -346,20 +347,22 @@ class TransactionsContainer extends Component {
           ) : null}
 
           <content>
-            <Switch>
-              <Route path="/refunds/batchupload" component={BatchRefundsUpload} />
-              <Route path="/refunds/batchuploads" component={BatchRefundsList} />
-              <Route path="/refunds" component={RefundsList} />
-              <ShowWhenRoute
-                path="/orders"
-                component={OrdersList}
-                additionalCondition={(usr) => usr.isAllowedView('orders')}
-              />
-              <Route path="/payments/batchuploads/:mode" component={BatchPaymentsList} />
-              <Route path="/payments/batchuploads" component={BatchPaymentsList} />
-              <Route path="/payments" component={PaymentsList} />
-              <Route path="/disputes" component={DisputesList} />
-            </Switch>
+            <ErrorBoundary resetOnProps>
+              <Switch>
+                <Route path="/refunds/batchupload" component={BatchRefundsUpload} />
+                <Route path="/refunds/batchuploads" component={BatchRefundsList} />
+                <Route path="/refunds" component={RefundsList} />
+                <ShowWhenRoute
+                  path="/orders"
+                  component={OrdersList}
+                  additionalCondition={(usr) => usr.isAllowedView('orders')}
+                />
+                <Route path="/payments/batchuploads/:mode" component={BatchPaymentsList} />
+                <Route path="/payments/batchuploads" component={BatchPaymentsList} />
+                <Route path="/payments" component={PaymentsList} />
+                <Route path="/disputes" component={DisputesList} />
+              </Switch>
+            </ErrorBoundary>
           </content>
 
           {this.state.showPopup &&

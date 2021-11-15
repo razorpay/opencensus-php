@@ -19,12 +19,10 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import StatusDetails from './StatusDetails/index';
 
 const analyticsAction = (action) => {
-  if (window.rzpAnalytics) {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Header',
-      eventAction: action,
-    });
-  }
+  window?.rzpAnalytics?.({
+    eventCategory: 'Dashboard - Header',
+    eventAction: action,
+  });
 };
 
 function toggleDropdown() {
@@ -142,7 +140,7 @@ export default class HeaderNav extends Component {
                   }
                 >
                   <li id="whats-new-section">
-                    <ErrorBoundary FallbackComponent={ErrorFallbackComponent}>
+                    <ErrorBoundary FallbackComponent={ErrorFallbackComponent} resetOnProps>
                       {user.isWhatsNewLazyEnabled ? (
                         <NotificationIcon
                           analytics={analytics}

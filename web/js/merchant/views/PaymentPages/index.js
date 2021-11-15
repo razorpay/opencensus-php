@@ -13,6 +13,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 
 import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import PaymentPageZapierBanner from '../../components/Announcements/PaymentPageZapier';
 import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
 import { getItem } from 'common/utils/localStorage';
@@ -54,7 +55,6 @@ export default class PaymentPagesContainer extends Component {
         </ShowWhen>
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}
-
           <header id="link-header">
             <NavLink exact to="/paymentpages">
               Payment Pages
@@ -64,9 +64,11 @@ export default class PaymentPagesContainer extends Component {
           <TestModeBanner />
 
           <content>
-            <Switch>
-              <Route path="/paymentpages" exact component={PaymentPagesList} />
-            </Switch>
+            <ErrorBoundary resetOnProps>
+              <Switch>
+                <Route path="/paymentpages" exact component={PaymentPagesList} />
+              </Switch>
+            </ErrorBoundary>
           </content>
         </tabbed-container>
       </>

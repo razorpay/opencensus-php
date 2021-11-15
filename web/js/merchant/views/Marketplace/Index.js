@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 
@@ -26,6 +27,12 @@ import ShowWhen from 'merchant/components/ShowWhen';
 
 import OnBoarding, { getIsAllowedResetRouteBoarding } from './OnBoarding';
 import QuickGuide, { getRouteQuickGuideIsClosed } from './QuickGuide';
+
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+
+const ClonedPaymentsList = (props) => (
+  <PaymentsList docUrl="https://razorpay.com/docs/route" {...props} />
+);
 
 @connect(
   (state) => {
@@ -76,6 +83,7 @@ class MarketplaceContainer extends React.Component {
   }
 
   fetchDataForMarketPlaceOnboarding = () => {
+    // eslint-disable-next-line no-shadow
     const { transfers, accounts, fetchAccounts, fetchTransfers } = this.props;
 
     if (!transfers.items.length) {
@@ -152,22 +160,20 @@ class MarketplaceContainer extends React.Component {
           <TestModeBanner />
 
           <content>
-            <Switch>
-              <Route path="/route/payments" render={ClonedPaymentsList} />
-              <Route path="/route/transfers" component={TransfersList} />
-              <Route path="/route/reversals" component={ReversalsList} />
-              <Route path="/route/accounts" component={AccountsList} />
-              <Route path="/route/batchuploads" component={BatchesList} />
-            </Switch>
+            <ErrorBoundary resetOnProps>
+              <Switch>
+                <Route path="/route/payments" render={ClonedPaymentsList} />
+                <Route path="/route/transfers" component={TransfersList} />
+                <Route path="/route/reversals" component={ReversalsList} />
+                <Route path="/route/accounts" component={AccountsList} />
+                <Route path="/route/batchuploads" component={BatchesList} />
+              </Switch>
+            </ErrorBoundary>
           </content>
         </tabbed-container>
       </div>
     );
   }
 }
-
-const ClonedPaymentsList = (props) => (
-  <PaymentsList docUrl="https://razorpay.com/docs/route" {...props} />
-);
 
 export default MarketplaceContainer;

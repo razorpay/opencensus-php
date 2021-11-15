@@ -29,6 +29,7 @@ import OnBoarding, {
 } from './OnBoarding';
 
 import QuickGuide, { getPaymentLinksQuickGuideIsClosed } from './QuickGuide';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
 let url = 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app';
@@ -229,18 +230,20 @@ class PaymentLinksContainer extends React.Component {
           <TestModeBanner />
 
           <content>
-            <Switch>
-              <ShowWhenRoute
-                path="/paymentlinks/batchuploads"
-                component={BatchUploadList}
-                additionalCondition={(user) =>
-                  user.isAllowedView('payment_links_batch_uploads') &&
-                  user.isPLBatchUploadEnabled &&
-                  (!user.isSellerAppRole || user.isPaymentLinkBatchEnabledForSellerAppRole)
-                }
-              />
-              <Route path="/paymentlinks" component={PaymentLinksList} />
-            </Switch>
+            <ErrorBoundary resetOnProps>
+              <Switch>
+                <ShowWhenRoute
+                  path="/paymentlinks/batchuploads"
+                  component={BatchUploadList}
+                  additionalCondition={(user) =>
+                    user.isAllowedView('payment_links_batch_uploads') &&
+                    user.isPLBatchUploadEnabled &&
+                    (!user.isSellerAppRole || user.isPaymentLinkBatchEnabledForSellerAppRole)
+                  }
+                />
+                <Route path="/paymentlinks" component={PaymentLinksList} />
+              </Switch>
+            </ErrorBoundary>
           </content>
 
           {this.state.showPopup &&

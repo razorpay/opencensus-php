@@ -14,6 +14,7 @@ import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import { trackOnDemandTabClick } from './trackEvents';
 import ShowWhen from 'merchant/components/ShowWhen';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
   const [settlementExists, setSettlementExists] = useState(true);
@@ -94,28 +95,30 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
           )}
         </header>
         <content>
-          <Switch>
-            <Route
-              path="/instantsettlements"
-              render={() => (
-                <InstantSettlements
-                  settlementExists={settlementExists}
-                  esOndemandSettlementEnabled={esOndemandSettlementEnabled}
-                  checkIfFirstEverSettlement={checkIfFirstEverSettlement}
-                />
-              )}
-            />
-            <Route
-              path="/settlements"
-              render={() => (
-                <SettlementsListContainer
-                  settlementExists={settlementExists}
-                  esOndemandSettlementEnabled={esOndemandSettlementEnabled}
-                  checkIfFirstEverSettlement={checkIfFirstEverSettlement}
-                />
-              )}
-            />
-          </Switch>
+          <ErrorBoundary resetOnProps>
+            <Switch>
+              <Route
+                path="/instantsettlements"
+                render={() => (
+                  <InstantSettlements
+                    settlementExists={settlementExists}
+                    esOndemandSettlementEnabled={esOndemandSettlementEnabled}
+                    checkIfFirstEverSettlement={checkIfFirstEverSettlement}
+                  />
+                )}
+              />
+              <Route
+                path="/settlements"
+                render={() => (
+                  <SettlementsListContainer
+                    settlementExists={settlementExists}
+                    esOndemandSettlementEnabled={esOndemandSettlementEnabled}
+                    checkIfFirstEverSettlement={checkIfFirstEverSettlement}
+                  />
+                )}
+              />
+            </Switch>
+          </ErrorBoundary>
         </content>
       </tabbed-container>
     </>

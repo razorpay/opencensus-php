@@ -1,5 +1,6 @@
 interface Window {
   Sentry: any;
+  Raven: any;
   analytics: any;
   session_id: string;
   rzpQ: any;

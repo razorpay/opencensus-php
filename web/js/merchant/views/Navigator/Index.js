@@ -1,12 +1,18 @@
+import React from 'react';
 import { connect } from 'react-redux';
-import { Route, Switch, NavLink, Link, Redirect } from 'react-router-dom';
-import { Fragment } from 'react';
+import { Route, Switch, Redirect } from 'react-router-dom';
 import CreateRule from './components/CreateRule';
 import RuleList from './components/RuleList';
 import AddProvider from './components/AddProvider';
-import { fetchRules, fetchRule, fetchRuleProviders, fetchTerminalProviders } from 'merchant/reducers/navigator/details';
+import {
+  fetchRules,
+  fetchRule,
+  fetchRuleProviders,
+  fetchTerminalProviders,
+} from 'merchant/reducers/navigator/details';
 import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 @connect(
   (state) => {
@@ -15,25 +21,25 @@ import { ShowWhenRoute } from 'merchant/components/ShowWhen';
     };
   },
   {
-    fetchRule: fetchRule,
-    fetchRuleProviders: fetchRuleProviders,
-    fetchRules: fetchRules,
-    fetchTerminalProviders: fetchTerminalProviders,
+    fetchRule,
+    fetchRuleProviders,
+    fetchRules,
+    fetchTerminalProviders,
   },
 )
 export default class Navigator extends React.Component {
   componentDidMount() {
     this.props.fetchRules();
     this.props.fetchRuleProviders();
-    if(this.props.user.isAddProviderEnabled) {
+    if (this.props.user.isAddProviderEnabled) {
       this.props.fetchTerminalProviders();
     }
     loadCheckout(window.api_host);
   }
   render() {
     return (
-      <Fragment>
-        <div class="routing-navigator">
+      <div className="routing-navigator">
+        <ErrorBoundary resetOnProps>
           <Switch>
             <ShowWhenRoute
               path="/optimizer/add-provider"
@@ -50,8 +56,8 @@ export default class Navigator extends React.Component {
             <Route path="/optimizer/update-rule/:id" component={CreateRule} />
             <Redirect to="/optimizer/rules" />
           </Switch>
-        </div>
-      </Fragment>
+        </ErrorBoundary>
+      </div>
     );
   }
 }
