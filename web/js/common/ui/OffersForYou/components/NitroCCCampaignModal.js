@@ -9,15 +9,15 @@ const NitroCCCampaignModal = ({ closeModal, save }) => {
     corporate_card: [
       {
         iconPath: 'corporate-cards/grow-money',
-        text: 'Grow your limit without collateral',
+        text: 'Make recurring and international payments',
       },
       {
         iconPath: 'corporate-cards/card-money',
-        text: 'A card for your business spends',
+        text: 'Avail business rewards and cheaper FX charges',
       },
       {
         iconPath: 'corporate-cards/tick-money',
-        text: 'Get Started Instantly',
+        text: 'Custom limits, permissions and easy repayments',
       },
     ],
   };
@@ -36,13 +36,15 @@ const NitroCCCampaignModal = ({ closeModal, save }) => {
         </button>
         <h3 className="heading">
           <>
-            Guaranteed Corporate Card with
+            Personal credit cards
             <br />
-            <span>a credit limit of Rs 5lacs</span> if you activate RazorpayX Current Accounts
+            for businesses expenses ?
+            <br />
+            <span>Not anymore!</span>
             <h6>
-              Rs. 25,000 card will be activated on documents submission with
+              Avoid Liability and audit hassles.
               <br />
-              evalution after opening the account
+              switch to RazorpayX Corporate Cards without any collateral.
             </h6>
           </>
         </h3>
@@ -55,8 +57,8 @@ const NitroCCCampaignModal = ({ closeModal, save }) => {
           ))}
         </div>
         <div className="btn-wrapper">
-          <AsyncBtn.Primary type="submit" class="btn btn-primary" onClick={save}>
-            Apply For Current Account
+          <AsyncBtn.Primary type="submit" class="btn btn-color" onClick={save}>
+            I am Interested ✨
           </AsyncBtn.Primary>
         </div>
       </div>

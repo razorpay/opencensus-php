@@ -1,18 +1,19 @@
 .nitro-CC-details 
-  background-position-x: right;
-  background-color: $nitro-dark-bg;
+  background-image: url("https://cdn.razorpay.com/static/assets/modal-asset/nitro-cc-modal-background.png");
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
   background-repeat: no-repeat;
 
   &.corporate-cards 
-    background-image: url("https://cdn.razorpay.com/static/assets/corporate-cards/corporate-card-keystone-bg.svg");
-    background-position-y: 20px;
-    background-size: 50%;  
-
     .section 
       padding: 54px 281px 60px 50px;
 
       .heading 
-        width: 75%;
+        font-size: 32px;
+        font-weight: bold;
+        width: 100%;
 
         span 
           background: linear-gradient(to left, #FFFFFF, #FFE355, #FF7015, #5637EF);
@@ -69,3 +70,6 @@
 
     .btn-wrapper 
       margin-top: 56px;
+
+      .btn-color
+        background: linear-gradient(104.22deg, #F16E21 6.49%, #D3512B 52.27%, #B12A31 100%);
