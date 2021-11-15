@@ -152,7 +152,6 @@ class MainNavLink extends Component {
       tag = (
         <span>
           <i className="i i-early-settlement settle-icon pull-right temp-icon-2" />
-          {isNew && <span class="badge bg-success pull-right hidden-xs right-margin">new</span>}
         </span>
       );
     } else if (isNew) {

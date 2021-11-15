@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import QueryString from 'query-string';
 import { connect } from 'react-redux';
 import MainNavLink from 'merchant_common/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import * as LocalStorageService from 'common/utils/localStorage';
-import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import SuperCheckoutNavLink from 'merchant/components/Sidebar/SuperCheckoutNavLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -22,8 +21,6 @@ const RECOMMANDED_PRODUCT_LIST = [
 function MerchantNavLinks(props) {
   const { routes, isReportsPending, isChargeAtWillEnabled, isSettlementEnabled, user } = props;
   const showMyAccountCutomBadge = !LocalStorageService.getItem('rtb_page_visited');
-  const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
-  const [settlementExists, setSettlementExists] = useState(true);
   const getLandingProduct =
     LocalStorageService.getItem('merchant_landing_page') ||
     LocalStorageService.getItem('default_product_page');
@@ -32,16 +29,6 @@ function MerchantNavLinks(props) {
     RECOMMANDED_PRODUCT_LIST.includes(getLandingProduct) &&
     props.payment === 0 &&
     user.isProductRecommendationEnabled;
-
-  const checkIfFirstEverSettlement = () => {
-    const settlementStatus = getSettlementStatus(user.current);
-    const isDisabled =
-      settlementStatus === 'disableAnimation' || settlementStatus === 'disableAnimationOnReload';
-    setSettlementExists(isDisabled ? false : settlementStatus);
-  };
-  useEffect(() => {
-    checkIfFirstEverSettlement();
-  }, []);
 
   useEffect(() => {
     //set recommend product to localstorage.
@@ -92,7 +79,6 @@ function MerchantNavLinks(props) {
         }
       />
       <MainNavLink
-        isNew={!settlementExists && esOndemandSettlementEnabled && !isRecommendProduct}
         label="Settlements"
         icon="i i-done-all text-success"
         type="general"
@@ -146,6 +132,7 @@ function MerchantNavLinks(props) {
         additionalCondition={(currentUser) =>
           currentUser.isAllowedView('stores') && currentUser.isStoresEnabled
         }
+        isNew={true}
       />
       <MainNavLink
         type="product"
@@ -272,7 +259,6 @@ function MerchantNavLinks(props) {
         icon="i i-rewards text-danger"
         to="/checkout-rewards"
         additionalCondition={(currentUser) => currentUser.isAllowedView('checkoutrewards')}
-        isNew={!isRecommendProduct}
       />
 
       <MainNavLink
