@@ -110,7 +110,11 @@ final class PostAuthenticate
         // For $passport's scalar attributes.
         ensureSameOrOverride($passport->identified, $consumerExists, 'identified', $errors);
         ensureSameOrOverride($passport->authenticated, $authenticated, 'authenticated', $errors);
-        ensureSameOrOverride($passport->mode, $this->ba->getMode(), 'mode', $errors);
+
+        // If authenticated false from API, we ignore mode mismatch.
+        if ($authenticated === true) {
+            ensureSameOrOverride($passport->mode, $this->ba->getMode(), 'mode', $errors);
+        }
 
         $this->ensureRequestContextPassportForDirectAuth($passport, $errors);
         $this->ensureRequestContextPassportForPublicAuth($passport, $errors);

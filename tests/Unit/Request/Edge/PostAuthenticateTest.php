@@ -49,7 +49,7 @@ class PostAuthenticateTest extends TestCase
 
         // Sets up basic auth expectations.
         $ba = $this->mockBasicAuth();
-        $ba->expects($this->atLeastOnce())->method('getMode')->willReturn($expectedMode);
+        $ba->expects($this->any())->method('getMode')->willReturn($expectedMode);
         $ba->expects($this->any())->method('getMerchantId')->willReturn($expectedMerchantId);
         $ba->expects($this->atLeastOnce())->method('getAuthType')->willReturn($expectedAuth);
         $ba->expects($this->atLeastOnce())->method('isProxyAuth')->willReturn($expectedProxy);
@@ -65,7 +65,10 @@ class PostAuthenticateTest extends TestCase
         $this->assertNotNull($passport);
         $this->assertSame($passport->identified, $expectedIdentified);
         $this->assertSame($passport->authenticated, $expectedAuthenticated);
-        $this->assertSame($passport->mode, $expectedMode);
+        if ($expectedAuthenticated === true)
+        {
+            $this->assertSame($passport->mode, $expectedMode);
+        }
         $this->assertSame($passport->consumer !== null, $expectedMerchantId !== null);
         if ($expectedMerchantId !== null)
         {
