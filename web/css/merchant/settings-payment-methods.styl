@@ -36,7 +36,6 @@ $checkout-modal-width = 400px
       width: 320px
       flex-shrink:0
       border-right: 1px solid #E6E7E8
-      flex-wrap:no-wrap
     .level-1
       background: white
       .icon
@@ -273,12 +272,14 @@ $checkout-modal-width = 400px
 
         .instrument-description
           padding: 15px 0px
+          .description-strong
+            font-weight: 600
           .instrument-description-container
             display: flex
             flex-grow: 1
             flex-direction: row
             align-items: center
-            justify-content:  space-evenly
+            justify-content: space-evenly
             flex-wrap: wrap
             background: rgba(232, 235, 239, 0.32)
             padding: 10px
@@ -295,6 +296,13 @@ $checkout-modal-width = 400px
               width: auto
               #status
                 margin-top: 14px
+          .disclaimer
+            color: #000000
+            opacity: 0.3
+            padding-top: 8px
+            &:before
+              content: '*'
+              margin-right: 2px
 
       li.action-required-list-item
         height: auto

@@ -2,7 +2,6 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import moment from 'moment';
 
 import PropTypes from 'prop-types';
 
@@ -34,6 +33,7 @@ import {
   GREYED,
 } from '../constants';
 import { CreateTicketEmitter } from '../../../TicketSupport/utils';
+import { RequestedStatus } from './InstrumentStatuses/RequestedStatus';
 
 class LeafListItem extends React.Component {
   static contextTypes = {
@@ -45,15 +45,14 @@ class LeafListItem extends React.Component {
   };
 
   handleDrawerModal = (type) => {
-    if (type === 'open') {
-      return this.props.openModal({
-        component: <DetailsDrawer />,
-      });
-    } else {
-      return this.props.closeModal({
-        component: <DetailsDrawer />,
-      });
-    }
+    const { openModal: open, closeModal: close } = this.props;
+    return type === 'open'
+      ? open({
+          component: <DetailsDrawer />,
+        })
+      : close({
+          component: <DetailsDrawer />,
+        });
   };
 
   handlePaytmWalletIntegration = (step, status) => {
@@ -493,41 +492,8 @@ class LeafListItem extends React.Component {
               )}
           </div>
         </div>
-        {/* Requested state */}
-        {instrument.status === REQUESTED && (
-          <div className="flex-end instrument-description">
-            <div className="instrument-description-container">
-              <i className="i i-info-outline" />
-              <p>
-                Estimated date of enablement:{' '}
-                <strong>
-                  {instrumentsTat &&
-                    moment
-                      .unix(instrument.created_at)
-                      .add(instrumentsTat[instrument.path], 'days')
-                      .format('Do MMMM YYYY')}
-                  {instrumentsTat &&
-                    moment().diff(
-                      moment
-                        .unix(instrument.created_at)
-                        .add(instrumentsTat[instrument.path], 'days'),
-                    ) > 0 &&
-                    '*'}
-                </strong>{' '}
-              </p>
-            </div>
-            {instrumentsTat &&
-              moment().diff(
-                moment.unix(instrument.created_at).add(instrumentsTat[instrument.path], 'days'),
-              ) > 0 && (
-                <div>
-                  <p style={{ color: 'rgba(0, 0, 0, 0.38)', fontSize: '14px', paddingTop: '8px' }}>
-                    * Sorry for the inconvenience, the request is taking longer than usual.
-                  </p>
-                </div>
-              )}
-          </div>
-        )}
+        <RequestedStatus instrument={instrument} tat={instrumentsTat} />
+
         {[REJECTED, ACTION_REQUIRED].includes(instrument.status) && (
           <div className="comment" title={instrument.comment}>
             <i className="i i-info-outline" />
