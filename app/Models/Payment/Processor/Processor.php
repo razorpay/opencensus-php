@@ -469,16 +469,10 @@ class Processor
                 }
             }
 
-            if (app()->isEnvironmentQA() === true)
-            {
-                return true;
-            }
-
             if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false)
             {
                 return false;
             }
-
 
             $result = $this->app->razorx->getTreatment($merchant->getId(), self::CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
