@@ -5,7 +5,7 @@
   "dependencies": {
     "@razorpay/blade-old": "0.0.1",
     "@razorpay/commander-services": "1.0.38",
-    "@razorpay/commander-shield": "0.0.1351",
+    "@razorpay/commander-shield": "0.0.1362",
     "@types/react-is": "17.0.0",
     "@types/yup": "0.29.10",
     "@universe/services": "1.0.30",
