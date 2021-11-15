@@ -11,7 +11,7 @@ import { showAcceptPaymentsModal, hideAcceptPaymentsModal } from 'merchant/reduc
 
 import ActivationProgress from './ActivationProgress';
 import { trackGoToActivation, trackGoToConfig } from './ga';
-
+import { isMobileDevice } from 'merchant/components/Home/data';
 import MainNavLink from 'merchant_common/components/MainNavLink';
 import MainNavLinkGroup from './MainNavLinkGroup';
 import MerchantNavLinks from './MerchantNavLinks';
@@ -176,8 +176,11 @@ export default class Sidebar extends Component {
           ctaLocation: 'LHS_Nav_Bar',
         },
       });
-
-      this.props.history.push('/activation');
+      if (user.isOnboardingV2Enabled && isMobileDevice()) {
+        this.props.history.push('/onboarding/steps');
+      } else {
+        this.props.history.push('/activation');
+      }
     }
 
     return this.props.user.isSubmitted

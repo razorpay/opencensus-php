@@ -28,6 +28,7 @@ import InitiateWebsiteChange from './WebsiteSelfServe/InitiateWebsiteChange';
 import { FLOWS } from './WebsiteSelfServe/Constants';
 import UpdateTransactionLimit from './UpdateTransactionLimit';
 import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
   return (
@@ -190,11 +191,7 @@ const MerchantDetails = ({
 
   let activationName = 'KYC';
   let trackerName = 'kyc.form_fill';
-  if (
-    !user.showInstantActivation ||
-    !user.instantActivation.isL1Submitted ||
-    user.showActivationMobileForm
-  ) {
+  if (!user.showInstantActivation || !user.instantActivation.isL1Submitted) {
     activationName = 'Activation';
     trackerName = 'act.form_fill';
   }
@@ -425,7 +422,7 @@ const MerchantDetails = ({
           value={() => (
             <span>
               <Link
-                to={user.showActivationMobileForm ? '/onboarding/steps' : '/activation'}
+                to={isMobileDevice() ? '/onboarding/steps' : '/activation'}
                 onClick={() => {
                   tracking.trackEvent(
                     window.rzpQ.onbr().initiated(trackerName, {
@@ -442,7 +439,7 @@ const MerchantDetails = ({
                   });
                 }}
               >
-                {user.activated || user.locked || user.submitted || user.showActivationMobileForm
+                {user.activated || user.locked || user.submitted
                   ? 'View'
                   : user.activation_progress == 100 && !user.submitted
                   ? 'Submit'

@@ -7,7 +7,6 @@ import isEmpty from '@universe/utils/isEmpty';
 import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import { getOrg } from 'merchant/store';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
-import { isMobileDevice } from 'merchant/components/Home/data';
 import { getItem } from 'common/utils/localStorage';
 import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
 
@@ -675,18 +674,6 @@ export default class User {
   get isHavingPartnerConfigs() {
     const currentMerchant = (this.merchants || {})[this.current];
     return !!currentMerchant.partner_type && (currentMerchant.partner || {}).has_commission_configs;
-  }
-
-  get showActivationMobileForm() {
-    return (
-      isMobileDevice() &&
-      this.isInstantActivationEnabled &&
-      ((this.dedupe?.isMatch && !this.isAccepted) ||
-        this.isAccepted ||
-        this.needsClarification ||
-        this.isRejected ||
-        this.isActivatedMCCPending)
-    );
   }
 
   get isHavingSubventionConfigs() {
