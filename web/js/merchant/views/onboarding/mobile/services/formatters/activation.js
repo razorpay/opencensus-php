@@ -23,7 +23,6 @@ const businessDetailFields = [
   'business_operation_city',
   'business_operation_pin',
   'business_operation_address',
-  'merchant_business_detail',
 ];
 const bankAndCompanyDetailFields = ['bank_account_number', 'bank_account_name', 'bank_branch_ifsc'];
 const onboardingCardFields = ['business_type', 'business_subcategory', 'business_model'];

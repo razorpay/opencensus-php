@@ -94,7 +94,7 @@ const isVisible = (fieldName, context) => {
 const isTabComplete = (data, tab, isLiteOnboarding = false) => {
   const tabData = data[tab];
   return Object.keys(tabData).every((key) => {
-    if ('bank_account_name' && isLiteOnboarding) {
+    if (key === 'bank_account_name' && isLiteOnboarding) {
       return true;
     }
     if (!isVisible(key, data)) return true;
