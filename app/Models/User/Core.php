@@ -753,12 +753,13 @@ class Core extends Base\Core
 
             switch ($e->getCode())
             {
+                case ErrorCode::BAD_REQUEST_RESOURCE_EXHAUSTED:
                 case ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED:
                     throw new Exception\BadRequestException(
-                        $e->getCode(),
+                        ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
                         null,
                         [
-                            "internal_error_code" => $e->getCode()
+                            "internal_error_code" => ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED
                         ],
                         $e->getMessage()
                     );
@@ -925,17 +926,29 @@ class Core extends Base\Core
 
     public function mobileOtpLogin(array $input)
     {
-        if ($this->isEnvironmentProduction() === true)
-        {
-            return null;
-        }
-
         if (isset($input[Entity::CONTACT_MOBILE]) === false)
         {
             return null;
         }
 
-        $receiver = $this->getUserByMobile($input[Entity::CONTACT_MOBILE]);
+        // we do not wish to disclose that an account does not exist for a phone number.
+        // So, we'll just return a dummy token.
+        try
+        {
+            $receiver = $this->getUserByMobile($input[Entity::CONTACT_MOBILE]);
+        }
+        catch (Throwable $e)
+        {
+            switch ($e->getCode())
+            {
+                case ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED:
+                    return [
+                        "token"=>$input['token'] ?? Entity::generateUniqueId()
+                    ];
+                default:
+                    throw $e;
+            }
+        }
 
         $receiver = $this->isMobileVerified($receiver);
 
@@ -954,13 +967,24 @@ class Core extends Base\Core
         {
             return $token;
         }
-
-        if ($this->isEnvironmentProduction() === true)
+        // we do not wish to disclose that an account does not exist for an email.
+        // So, we'll just return a dummy token.
+        try
         {
-            return null;
+            $receiver = $this->repo->user->findByEmail($input[Entity::EMAIL]);
         }
-
-        $receiver = $this->repo->user->findByEmail($input[Entity::EMAIL]);
+        catch (Throwable $e)
+        {
+            switch($e->getCode())
+            {
+                case ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND:
+                    return [
+                        "token"=>$input['token'] ?? Entity::generateUniqueId()
+                    ];
+                default:
+                    throw $e;
+            }
+        }
 
         $receiver = $this->isEmailVerified($receiver);
 
@@ -1200,7 +1224,26 @@ class Core extends Base\Core
             $receiver = $input[Entity::EMAIL];
         }
 
-        $user = $this->fetchUser($input);
+        try
+        {
+            $user = $this->fetchUser($input);
+        }
+        catch (Throwable $e)
+        {
+            switch($e->getCode())
+            {
+                case ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED:
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_INCORRECT_OTP
+                    );
+                case ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND:
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_INCORRECT_OTP
+                    );
+                default:
+                    throw $e;
+            }
+        }
 
         // check if account is locked before checking for limits
         $this->checkIfOtpLoginLocked($user);
@@ -1546,12 +1589,13 @@ class Core extends Base\Core
 
             switch ($e->getCode())
             {
+                case ErrorCode::BAD_REQUEST_RESOURCE_EXHAUSTED:
                 case ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED:
                     throw new Exception\BadRequestException(
-                        $e->getCode(),
+                        ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
                         null,
                         [
-                            "internal_error_code" => $e->getCode()
+                            "internal_error_code" => ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED
                         ],
                         $e->getMessage()
                     );
@@ -1593,12 +1637,30 @@ class Core extends Base\Core
      * @param array $input
      *
      * @return array
+     * @throws BadRequestException
+     * @throws Throwable
      */
     public function sendVerificationOtp(array $input)
     {
         $this->getUserEntity()->getValidator()->validateInput('sendVerificationOtp', $input);
 
-        $receiver = $this->fetchUserForVerification($input);
+        try
+        {
+            $receiver = $this->fetchUserForVerification($input);
+        }
+        catch (Throwable $e)
+        {
+            switch($e->getCode())
+            {
+                case ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND:
+                case ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED:
+                    return [
+                        "token"=>$input['token'] ?? Entity::generateUniqueId()
+                    ];
+                default:
+                    throw $e;
+            }
+        }
 
         $isPasswordEqual = (new BcryptHasher)->check($input[Entity::PASSWORD], $receiver->getPassword());
 
@@ -1799,7 +1861,23 @@ class Core extends Base\Core
     {
         $this->getUserEntity()->getValidator()->validateInput('verifyVerificationOtp', $input);
 
-        $user = $this->fetchUserForVerification($input);
+        try
+        {
+            $user = $this->fetchUserForVerification($input);
+        }
+        catch (Throwable $e)
+        {
+            switch($e->getCode())
+            {
+                case ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND:
+                case ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED:
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_INCORRECT_OTP
+                    );
+                default:
+                    throw $e;
+            }
+        }
 
         $receiver = $this->checkIfContactMobileOrEmailIsVerified($input, $user);
 
