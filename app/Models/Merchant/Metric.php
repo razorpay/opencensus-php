@@ -51,7 +51,7 @@ final class Metric
     const SUBMERCHANT_TAGGING_FAILURE_TOTAL = 'submerchant_tagging_failure_total';
 
     const BUSINESS_BANKING_ENABLED_TRIGGER_FAILURE = 'business_banking_enabled_trigger_failure';
-    
+
     const AFFILIATED_PARTNERS_FETCH_LATENCY = 'affiliated_partners_fetch_latency';
     const FETCH_ALL_SUBMERCHANTS_LATENCY = 'fetch_all_submerchants_latency';
     const FETCH_ALL_PARTNERS_LATENCY = 'fetch_all_partners_latency';
@@ -68,11 +68,11 @@ final class Metric
     // 1CC metrics
     private const MERCHANT_EXTERNAL_PREFIX = 'merchant_external_';
 
-    const MERCHANT_COUPONS_REQUEST_TIME_MILLIS          = 'merchant_coupons_request_time_millis';
-    const MERCHANT_COUPONS_REQUEST_COUNT                = 'merchant_coupons_request_count';
-    const MERCHANT_EXTERNAL_COUPONS_REQUEST_TIME_MILLIS = self::MERCHANT_EXTERNAL_PREFIX . 'coupons_request_time_millis';
+    const MERCHANT_COUPONS_REQUEST_DURATION_MILLIS          = 'merchant_coupons_request_duration_millis';
+    const MERCHANT_COUPONS_REQUEST_COUNT                    = 'merchant_coupons_request_count';
+    const MERCHANT_EXTERNAL_COUPONS_REQUEST_DURATION_MILLIS = self::MERCHANT_EXTERNAL_PREFIX . 'coupons_request_duration_millis';
 
-    const MERCHANT_COUPON_VALIDITY_REQUEST_TIME_MILLIS                     = 'merchant_coupon_validity_request_time_millis';
+    const MERCHANT_COUPON_VALIDITY_REQUEST_DURATION_MILLIS                 = 'merchant_coupon_validity_request_duration_millis';
     const MERCHANT_COUPON_VALIDITY_REQUEST_COUNT                           = 'merchant_coupon_validity_check_request_count';
     const MERCHANT_EXTERNAL_COUPON_VALIDITY_REQUEST_TIME_MILLIS            = self::MERCHANT_EXTERNAL_PREFIX . 'coupon_validity_request_time_millis';
     const MERCHANT_EXTERNAL_COUPON_VALIDITY_REQUEST_INVALID_REQUEST_COUNT  = self::MERCHANT_EXTERNAL_PREFIX . 'coupon_validity_request_invalid_request_count';

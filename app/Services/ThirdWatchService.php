@@ -17,11 +17,15 @@ use Illuminate\Support\Str;
  */
 class ThirdWatchService
 {
-    const ADDRESS_COD_VALIDITY_TTL = 1440; // 24 hours
+    const ADDRESS_COD_VALIDITY_TTL = 30 * 1440; // 30 days
     const ADDRESS_VALIDITY_CACHE_KEY_PREFIX = 'TW_ADDRESS_COD_VALIDITY';
 
     const MAX_POLLING_TIME_MILLIS = 1000; // 1sec
     const POLLING_INTERVAL_MILLIS = 50; // 50ms
+
+    const CACHE_RESULT_TAG_KEY = 'result';
+    const CACHE_RESULT_TAG_VALUE_HIT = 'hit';
+    const CACHE_RESULT_TAG_VALUE_MISS = 'miss';
 
     private $app;
 
@@ -48,50 +52,65 @@ class ThirdWatchService
     {
         $serviceStart = $this->getCurrentTimeInMillis();
 
-        if (!isset($input['address']) || !isset($input['order_id']))
+        try
         {
-            throw new Exception\BadRequestValidationFailureException();
+            if (!isset($input['address']) || !isset($input['order_id']))
+            {
+                throw new Exception\BadRequestValidationFailureException();
+            }
+
+            // Rzp order id
+            $orderId = $input['order_id'];
+
+            $address = $input['address'];
+
+            (new Address\Validator())->setStrictFalse()->validateInput('codServiceabilityCheck', $address);
+
+            // set unique id for caching if not present
+            $this->getAddressId($orderId, $address);
+
+            $key = $this->getCacheKey($address);
+            $cacheResponse = $this->cache->get($key);
+
+            if (empty($cacheResponse) === false)
+            {
+                $this->trace->count(
+                    TraceCode::TW_ADDRESS_COD_VALIDITY_CACHE_GET_TOTAL,
+                    [self::CACHE_RESULT_TAG_KEY => self::CACHE_RESULT_TAG_VALUE_HIT]
+                );
+
+                return ['cod' => $cacheResponse['label'] === 'green'];
+            }
+
+            $this->trace->count(
+                TraceCode::TW_ADDRESS_COD_VALIDITY_CACHE_GET_TOTAL,
+                [self::CACHE_RESULT_TAG_KEY => self::CACHE_RESULT_TAG_VALUE_MISS]
+            );
+
+            $this->enrichAddressForTW($orderId, $address);
+            $kafkaResult = (new ThirdWatchClient())->sendAddressToKafka($key, $address);
+
+            if ($kafkaResult === false)
+            {
+                return ['cod' => false];
+            }
+
+            $response = $this->pollCacheForThirdWatchResponse($key);
+
+            if (empty($response) === true)
+            {
+                return ['cod' => false ];
+            }
+
+            return $response;
         }
-
-        // Rzp order id
-        $orderId = $input['order_id'];
-
-        $address = $input['address'];
-
-        (new Address\Validator())->setStrictFalse()->validateInput('codServiceabilityCheck', $address);
-
-        // set unique id for caching if not present
-        $this->getAddressId($orderId, $address);
-
-        $key = $this->getCacheKey($address);
-
-        $cacheResponse = $this->cache->get($key);
-
-        if (empty($cacheResponse) === false)
+        finally
         {
-           return ['cod' => $cacheResponse['label'] === 'green'];
+            $this->trace->histogram(
+                TraceCode::TW_ADDRESS_COD_VALIDITY_TOTAL_DURATION,
+                $this->getCurrentTimeInMillis() - $serviceStart
+            );
         }
-
-        $kafkaResult = (new ThirdWatchClient())->sendAddressToKafka($key, $address);
-
-        if ($kafkaResult === false)
-        {
-            return ['cod' => false];
-        }
-
-        $response = $this->pollCacheForThirdWatchResponse($key);
-
-        if (empty($response) === true)
-        {
-            return ['cod' => false ];
-        }
-
-        $this->trace->count(
-            TraceCode::TW_ADDRESS_COD_VALIDITY_TOTAL_TIME_TAKEN,
-            ['time_taken' => $this->getCurrentTimeInMillis() - $serviceStart]
-        );
-
-        return $response;
     }
 
     /**
@@ -119,6 +138,7 @@ class ThirdWatchService
 
         $time = $newTime = $this->getCurrentTimeInMillis();
 
+        $cachePopulated = false;
         while ($newTime - $time <= self::MAX_POLLING_TIME_MILLIS)
         {
             $result = $this->sleepAndCheckResponse($key);
@@ -126,6 +146,7 @@ class ThirdWatchService
             if (isset($result['label']))
             {
                 $response['cod'] = ($result['label'] === 'green');
+                $cachePopulated = true;
                 break;
             }
             else
@@ -134,23 +155,24 @@ class ThirdWatchService
             }
         }
 
+        if ($cachePopulated === false) {
+            $this->trace->count(TraceCode::TW_ADDRESS_COD_VALIDITY_POLLING_TIMEOUTS);
+        }
+
         // API call received from TW
-        $this->trace->count(
-              TraceCode::TW_ADDRESS_COD_VALIDITY_POLL_TIME_TAKEN, [
-                  'time_taken' => $newTime - $time
-        ]);
+        $this->trace->histogram(
+            TraceCode::TW_ADDRESS_COD_VALIDITY_POLL_DURATION,
+            $newTime - $time
+        );
 
         return $response;
     }
 
     protected function getAddressId(string $orderId, array &$address)
     {
-        if (isset($address[Entity::ENTITY_ID]))
+        if (isset($address[Entity::ID]) === false)
         {
-            $address[Entity::ID] = $address[Entity::ENTITY_ID];
-        }
-        else
-        {
+            //just generate a random id for an unsaved address
             $address[Entity::ID] = $orderId . ':' . Str::uuid();
         }
     }
@@ -165,5 +187,10 @@ class ThirdWatchService
         usleep(self::POLLING_INTERVAL_MILLIS * 1000);
 
         return $this->cache->get($key);
+    }
+
+    private function enrichAddressForTW(string $orderId, array &$address)
+    {
+        $address['order_id'] = $orderId;
     }
 }

@@ -45,9 +45,9 @@ class ThirdWatchClient
           return false;
       }
 
-      $this->trace->count(
-          TraceCode::TW_ADDRESS_COD_VALIDITY_KAFKA_PUSH_TIME_TAKEN,
-          ['kafka_code' => $kafkaResult, 'time_taken' => ($this->getCurrentTimeInMillis() - $kafkaStart)]
+      $this->trace->histogram(
+          TraceCode::TW_ADDRESS_COD_VALIDITY_KAFKA_PUSH_DURATION,
+          $this->getCurrentTimeInMillis() - $kafkaStart
       );
 
       return true;

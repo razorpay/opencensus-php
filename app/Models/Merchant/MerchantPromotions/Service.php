@@ -76,9 +76,10 @@ class Service extends Base\Service
 
         $response = $this->sendRequest($request, $mockResponse);
 
-        $this->trace->count(
-            Metric::MERCHANT_EXTERNAL_COUPONS_REQUEST_TIME_MILLIS,
-            ['time' => millitime() - $externalCallStart]);
+        $this->traceResponseTime(
+            Metric::MERCHANT_EXTERNAL_COUPONS_REQUEST_DURATION_MILLIS,
+            $externalCallStart
+        );
 
         $decodedResponse = json_decode($response->body, true);
 
@@ -102,7 +103,7 @@ class Service extends Base\Service
             $validator->validateInput('fetchCouponsResponse', $coupon);
         }
 
-        $this->trace->count(Metric::MERCHANT_COUPONS_REQUEST_TIME_MILLIS, ['time' => millitime() - $startTime]);
+        $this->traceResponseTime(Metric::MERCHANT_COUPONS_REQUEST_DURATION_MILLIS, $startTime);
 
         return $decodedResponse;
     }
@@ -174,9 +175,10 @@ class Service extends Base\Service
 
         $response = $this->sendRequest($request, $mockResponse);
 
-        $this->trace->count(
-            Metric::MERCHANT_EXTERNAL_COUPON_VALIDITY_REQUEST_TIME_MILLIS,
-            ['time' => millitime() - $externalRequestStart]);
+        $this->traceResponseTime(
+            Metric::MERCHANT_EXTERNAL_COUPONS_REQUEST_DURATION_MILLIS,
+            $externalRequestStart
+        );
 
         $decodedResponse = json_decode($response->body, true);
 
@@ -188,9 +190,7 @@ class Service extends Base\Service
             );
         }
 
-        $this->trace->count(
-            Metric::MERCHANT_COUPON_VALIDITY_REQUEST_TIME_MILLIS,
-            ['time' => millitime() - $startTimeMillis]);
+        $this->traceResponseTime(Metric::MERCHANT_COUPON_VALIDITY_REQUEST_DURATION_MILLIS, $startTimeMillis);
 
         try
         {
@@ -269,5 +269,18 @@ class Service extends Base\Service
             );
         }
         return $response;
+    }
+
+    protected function traceResponseTime(string $metric, int $startTime, $extraDimensions = [])
+    {
+        $duration = millitime() - $startTime;
+
+        $dimensions = array_merge(
+            $extraDimensions,
+            [
+                'merchant_id' => $this->merchant->getId(),
+            ]);
+
+        $this->trace->histogram($metric, $duration, $dimensions);
     }
 }

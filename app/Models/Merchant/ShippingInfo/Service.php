@@ -132,11 +132,7 @@ class Service extends Base\Service
         {
             $this->trace->debug(TraceCode::MERCHANT_SHIPPING_INFO_NO_UNCACHED_ADDRESS, ["order_id" => $orderId]);
 
-            $callTimeMetric = millitime() - $serviceabilityCheckStartTime;
-
-            $callTimeDimensions = ['time' => $callTimeMetric];
-
-            $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS, $callTimeDimensions);
+            $this->traceResponseTime(Metric::MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS, $serviceabilityCheckStartTime);
 
             return [self::SHIPPING_INFO_ADDRESSES => array_merge($nonCachedAddresses, $cachedAddresses)];
         }
@@ -244,11 +240,7 @@ class Service extends Base\Service
                 unset($address[self::SHIPPING_INFO_ID]);
             });
 
-        $callTimeMetric = millitime() - $serviceabilityCheckStartTime;
-
-        $callTimeDimensions = ['time' => $callTimeMetric];
-
-        $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS, $callTimeDimensions);
+        $this->traceResponseTime(Metric::MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS, $serviceabilityCheckStartTime);
 
         return [self::SHIPPING_INFO_ADDRESSES => array_merge($nonCachedAddresses, $cachedAddresses)];
     }
@@ -316,9 +308,7 @@ class Service extends Base\Service
         try
         {
             $response = $this->sendRequest($request);
-            $externalCallTimeMetric = millitime() - $externalRequeststartTime;
-            $dimensions = ['url' => $serviceabilityUrl, 'time' => $externalCallTimeMetric];
-            $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_TIME_MILLIS, $dimensions);
+            $this->traceResponseTime(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_TIME_MILLIS, $externalRequeststartTime);
             $this->trace->info(TraceCode::MERCHANT_ADDRESS_SHIPPING_INFO_RESPONSE, (array)$response);
             return $response;
         }
@@ -502,5 +492,18 @@ class Service extends Base\Service
                 }
             });
         return $addresses;
+    }
+
+    protected function traceResponseTime(string $metric, int $startTime, $extraDimensions = [])
+    {
+        $duration = millitime() - $startTime;
+
+        $dimensions = array_merge(
+            $extraDimensions,
+            [
+                'merchant_id' => $this->merchant->getId(),
+            ]);
+
+        $this->trace->histogram($metric, $duration, $dimensions);
     }
 }
