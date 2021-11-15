@@ -109,6 +109,7 @@ export const analyticsTrack = ({
   screen,
   properties = {},
   toLumberjack = true, // Send all events to LJ by default
+  toCleverTap = false,
 }) => {
   if (!objectName) {
     throwAnalyticsException('[analytics]: objectName cannot be empty');
@@ -138,15 +139,23 @@ export const analyticsTrack = ({
   const eventTimestamp = new Date().toISOString();
   const eventName = titleCase(`${objectName} ${actionName}`);
   if (window.analytics && window.analytics.track) {
-    window.analytics.track(eventName, {
-      ...properties,
-      screen,
-      eventTimestamp,
-      experiment_ID: getCookie('auth_source') === 'website' ? 'Signup_experiment_1' : 'none',
-      // TODO: Deprecated, remove once all iterations are migrated
-      device_type: window.innerWidth <= 1020 ? 'mweb' : 'dweb',
-      source: window.innerWidth <= 1020 ? 'Mobile Dashboard' : 'Dashboard',
-    });
+    window.analytics.track(
+      eventName,
+      {
+        ...properties,
+        screen,
+        eventTimestamp,
+        experiment_ID: getCookie('auth_source') === 'website' ? 'Signup_experiment_1' : 'none',
+        // TODO: Deprecated, remove once all iterations are migrated
+        device_type: window.innerWidth <= 1020 ? 'mweb' : 'dweb',
+        source: window.innerWidth <= 1020 ? 'Mobile Dashboard' : 'Dashboard',
+      },
+      {
+        integrations: {
+          CleverTap: toCleverTap,
+        },
+      },
+    );
   }
 
   if (toLumberjack) {

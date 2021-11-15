@@ -281,6 +281,7 @@ export default class ProfileDropdown extends Component {
                               location: 'top navigation',
                               ...getCommonAnalyticsProperties(window.rzp_user),
                             },
+                            toCleverTap: true,
                           });
                           return analytics('Copy - Merchant ID');
                         }}
