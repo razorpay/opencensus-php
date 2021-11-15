@@ -1711,6 +1711,7 @@ class PricingTest extends TestCase
                 'plan_name'             => 'testName',
                 'payment_method'        => 'card',
                 'payment_method_type'   => 'credit',
+                'payment_method_subtype'=> 'business',
                 'receiver_type'         => '',
                 'payment_issuer'        => 'hdfc',
                 'payment_network'       => 'Visa,MasterCard',

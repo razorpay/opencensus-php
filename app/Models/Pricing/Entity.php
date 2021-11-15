@@ -204,6 +204,7 @@ class Entity extends Base\PublicEntity
         self::PLAN_NAME,
         self::PAYMENT_METHOD,
         self::PAYMENT_METHOD_TYPE,
+        self::PAYMENT_METHOD_SUBTYPE,
         self::RECEIVER_TYPE,
         self::INTERNATIONAL,
         self::EMI_DURATION,
