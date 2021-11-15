@@ -6,11 +6,11 @@ import Form from 'common/new-ui/Form';
 import { AsyncBtn } from 'common/new-ui/Button';
 import Datetime from 'react-datetime';
 import { GENDER_OPTIONS, NOOP } from '../../constants';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 import { states } from 'merchant/helpers/data';
-
 import { getCityAndState } from '../LosOnboarding/PersonalDetailsForm';
-
+import BureauCompliance from 'merchant/views/Capital/Loans/BureauCompliance';
+import moment from 'moment';
 import {
   validateAddress,
   validateEmail,
@@ -21,7 +21,7 @@ import {
   validateLastName,
 } from '../Validators';
 
-import { trackCheckEligibilityCta, trackMajorStackholderFill, trackTermsOrPolicy } from '../ga';
+import { trackCheckEligibilityCta, trackMajorStackholderFill } from '../ga';
 import { getPersonalFormError } from '../Helpers/getPersonalFormErrors';
 import { statesOptions } from '../Helpers/getStatesOptions';
 import { isValidPinCode } from 'common/utils/validators';
@@ -98,6 +98,7 @@ const PersonalDetailsForm = ({
   const [majorityStakeholder, setMajorityStakeholder] = React.useState(majority_stakeholder);
   const [pincodeError, setPincodeError] = React.useState(false);
   const [fieldsChanged, setFieldsChanged] = React.useState(false);
+  const getNameForConsent = `${formData.first_name} ${formData.second_name}`;
 
   const derivePromoterDetailsFormValues = (applicant) => {
     const data = {
@@ -412,28 +413,7 @@ const PersonalDetailsForm = ({
           </Input.Group>
         )}
         <div className="terms">
-          By submitting this form you agree to our{' '}
-          <a
-            className="text-primary"
-            target="_blank"
-            href="https://razorpay.com/terms/"
-            onClick={() => {
-              trackTermsOrPolicy(merchantId, 'T&C');
-            }}
-          >
-            T&C&nbsp;
-          </a>
-          and our&nbsp;
-          <a
-            className="text-primary"
-            target="_blank"
-            href="https://razorpay.com/privacy/"
-            onClick={() => {
-              trackTermsOrPolicy(merchantId, 'Privacy Policy');
-            }}
-          >
-            Privacy Policy
-          </a>
+          <BureauCompliance name={getNameForConsent} />
         </div>
         <div className="loan-application-form-footer">
           <AsyncBtn.Primary
@@ -457,5 +437,5 @@ const mapStateToProps = (state) => ({
 });
 
 export default connect(mapStateToProps, {
-  showNotification,
+  showNotification: fnShowNotification,
 })(PersonalDetailsForm);
