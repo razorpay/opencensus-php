@@ -1310,6 +1310,44 @@ class Constants
             ],
         ],
         [
+            'id'          => 'OCT-DA-NITRO-ICICIBranded',
+            'title'       => 'Festive Bonanza!',
+            'description' => "Enjoy the benefits of ICICI Powered RazorpayX current account with a reduced pricing of 1.65% on your payments 🎉",
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro_festive_bonanza_icon.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Try now',
+                    'url'   => '',
+                    'id'    => 'announcement-projectNitro-cta1',
+                ],
+            ],
+            'start_ts'    => 1632960000,
+            'end_ts'      => 1641800920,
+            'filters'     => [
+                'splitz_experiments' => ['NITRO_ICICI_BRANDED_CAMPAIGN'],
+            ]
+        ],
+        [
+            'id'          => 'OCT-DA-NITRO-ICICIRemarketing',
+            'title'       => 'Powered By ICICI',
+            'description' => "Enjoy the benefits of ICICI Powered RazorpayX current account with a reduced pricing of 1.65% on your payments 🎉",
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro_festive_bonanza_icon.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Try now',
+                    'url'   => '',
+                    'id'    => 'announcement-projectNitro-cta1',
+                ],
+            ],
+            'start_ts'    => 1632960000,
+            'end_ts'      => 1641800920,
+            'filters'     => [
+                'splitz_experiments' => ['NITRO_ICICI_REMARKETING_CAMPAIGN'],
+            ]
+        ],
+        [
             'id'          => 'May21-PLMApp-GTM',
             'title'       => 'Accept and track your payments on the go!',
             'description' => 'With the Payments Mobile App, create and share payment links instantly, track payments on the go and issue refunds with a single click from anywhere.',

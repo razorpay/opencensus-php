@@ -136,6 +136,10 @@ return [
         //QR Code Announcement
         'QR_CODE_ANNOUNCEMENT' => env('QR_CODE_ANNOUNCEMENT', ''),
 
+        //Nitro ICICI Campaign
+        'NITRO_ICICI_BRANDED_CAMPAIGN' => env('NITRO_ICICI_BRANDED_CAMPAIGN', ''),
+        'NITRO_ICICI_REMARKETING_CAMPAIGN' => env('NITRO_ICICI_REMARKETING_CAMPAIGN', ''),
+
         //Nitro CC Announcement
         'NITRO_CC_ANNOUNCEMENT' => env('NITRO_CC_ANNOUNCEMENT', ''),
 

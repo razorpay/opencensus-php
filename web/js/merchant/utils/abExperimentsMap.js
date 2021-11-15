@@ -137,6 +137,16 @@ export default {
     'IEKWVAyw0f0Liy', // Beta
   ],
 
+  nitro_icici_branded_experiment: [
+    'IKaXmWhWtAfCrw', // Prod
+    'IKbzEcTvvsVk8D', // Beta
+  ],
+
+  nitro_icici_remarketing_experiment: [
+    'IKaYgajoyBVov7', // Prod
+    'IKbzEcTvvsVk8D', // Beta
+  ],
+
   catalyst_campaign_experiment: [
     'HYimXrRKRI0V7y', // Prod
     'HYiqGXEBQX3oo8', // Beta

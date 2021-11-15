@@ -21,6 +21,7 @@ import KeystoneModal from 'common/ui/OffersForYou/components/KeystoneModal';
 import NitroSelfServe from './Neostone/index';
 import NitroCCCampaignModal from 'common/ui/OffersForYou/components/NitroCCCampaignModal';
 import NitroFestiveBonanzaModal from '../../../merchant/components/Announcements/NitroFestiveBonanza/NitroFestiveBonanzaModal';
+import NitroICICIModal from '../../../merchant/components/Announcements/NitroICICIBanner/NitroICICIModal';
 
 const BENEFITS = {
   other: [
@@ -594,6 +595,8 @@ class DetailView extends React.Component {
     if (user.isProjectKeystoneCorporateCardsEnabled) return 'Nitro_Keystone_Card';
     if (user.isProjectKeystoneCashAdvanceEnabled) return 'Nitro_Keystone_CashAdvance';
     if (user.isProjectNitroCorporateCard) return 'Nitro_Capital';
+    if (user.isNitroIciciBrandedCampaignEnabled) return 'Nitro_ICICIBranded';
+    if (user.isNitroIciciRemarketingCampaignEnabled) return 'Nitro_ICICIRemarketing';
     if (user.isNitroCCCampaignEnabled) return 'Nitro_CardOffer';
     if (!user.isProjectNitroCorporateCard) return 'Nitro_FestiveBonanza';
     return nitroCampaignId(user).version;
@@ -773,6 +776,10 @@ class DetailView extends React.Component {
         <KeystoneModal user={this.props.user} save={this.save} tracking={this.props.tracking} />
       );
     if (showNitroFormFields) return <InfoForm save={this.save} tracking={this.props.tracking} />;
+    if (this.props.user.isNitroIciciBrandedCampaignEnabled)
+      return <NitroICICIModal save={this.save} />;
+    if (this.props.user.isNitroIciciRemarketingCampaignEnabled)
+      return <NitroICICIModal save={this.save} />;
     if (this.props.user.isNitroCCCampaignEnabled)
       return (
         <NitroCCCampaignModal

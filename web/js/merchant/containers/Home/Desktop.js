@@ -58,6 +58,7 @@ import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DiwaliFestiveOfferBanner from '../../components/Announcements/DiwaliFestiveOfferBanner';
 import NitroFestiveBonanza from '../../components/Announcements/NitroFestiveBonanza';
+import NitroICICIBanner from '../../components/Announcements/NitroICICIBanner';
 import NitroCCCampaign from '../../components/Announcements/NitroCCCampaign';
 
 class AnalyticsDesktop extends Component {
@@ -528,6 +529,13 @@ class AnalyticsDesktop extends Component {
           </ShowWhen>
           <ShowWhen additionalCondition={(usr) => usr.isProjectNitroEnabled}>
             <NitroFestiveBonanza productName="home" />
+          </ShowWhen>
+          <ShowWhen
+            additionalCondition={(usr) =>
+              usr.isNitroIciciBrandedCampaignEnabled || usr.isNitroIciciRemarketingCampaignEnabled
+            }
+          >
+            <NitroICICIBanner productName="home" />
           </ShowWhen>
           <ShowWhen additionalCondition={(usr) => usr.isNitroCCCampaignEnabled}>
             <NitroCCCampaign productName="home" />

@@ -491,6 +491,16 @@ export default class User {
     );
   }
 
+  get isNitroIciciBrandedCampaignEnabled() {
+    return getSplitzExperimentVariant('nitro_icici_branded_experiment')?.variables?.result === 'on';
+  }
+
+  get isNitroIciciRemarketingCampaignEnabled() {
+    return (
+      getSplitzExperimentVariant('nitro_icici_remarketing_experiment')?.variables?.result === 'on'
+    );
+  }
+
   get isNitroCCCampaignEnabled() {
     return getSplitzExperimentVariant('nitro_CC_experiment')?.variables?.result === 'on';
   }
