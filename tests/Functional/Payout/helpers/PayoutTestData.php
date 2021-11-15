@@ -14447,8 +14447,188 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+                'class'               => Exception\BadRequestException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
+
+    'testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingRTGSMode' => [
+        'entity' => 'event',
+        'event'  => 'payout.updated',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity'         => 'payout',
+                    'status'         => 'processing',
+                    'status_details'  => [
+                        'reason' => 'beneficiary_bank_confirmation_pending',
+                        'description' => 'Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after 09th November 2021'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingNEFTMode' => [
+        'entity' => 'event',
+        'event'  => 'payout.updated',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity'         => 'payout',
+                    'status'         => 'processing',
+                    'status_details'  => [
+                        'reason' => 'beneficiary_bank_confirmation_pending',
+                        'description' => 'Confirmation of credit to the beneficiary is pending from HDFC Bank. Please check the status after 09th November 2021'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingIMPSMode' => [
+        'entity' => 'event',
+        'event'  => 'payout.updated',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity'         => 'payout',
+                    'status'         => 'processing',
+                    'status_details'  => [
+                        'reason' => 'beneficiary_bank_confirmation_pending',
+                        'description' => 'Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after 09th November 2021'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingUPIMode' => [
+        'entity' => 'event',
+        'event'  => 'payout.updated',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity'         => 'payout',
+                    'status'         => 'processing',
+                    'status_details'  => [
+                        'reason' => 'beneficiary_bank_confirmation_pending',
+                        'description' => 'Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPayoutUpdatedWebhookWithRazorxExperimentForBankWindowClosedNEFTMode' => [
+        'entity' => 'event',
+        'event'  => 'payout.updated',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity'         => 'payout',
+                    'status'         => 'processing',
+                    'status_details'  => [
+                        'reason' => 'bank_window_closed',
+                        'description' => "The NEFT window for the day is closed. Payout will be "
+                                         ."processed by our partner bank at 09th November 2021, 09:13 PM",
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPayoutUpdatedWebhookWithRazorxExperimentForBankWindowClosedRTGSMode' => [
+        'entity' => 'event',
+        'event'  => 'payout.updated',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity'         => 'payout',
+                    'status'         => 'processing',
+                    'status_details'  => [
+                        'reason' => 'bank_window_closed',
+                        'description' => "The RTGS window for the day is closed. Payout will be "
+                                          ."processed by our partner bank at 10th November 2021, 12:33 AM",
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPayoutUpdatedWebhookWithRazorxExperimentForPayoutProcessing' => [
+        'entity' => 'event',
+        'event'  => 'payout.updated',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity'         => 'payout',
+                    'status'         => 'processing',
+                    'status_details'  => [
+                        'reason' => 'payout_processing',
+                        'description' => 'Payout is being processed by our partner bank. Please check '
+                                            ."the final status after some time"
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPayoutUpdatedWebhookWithRazorxExperimentForNullCase' => [
+        'entity' => 'event',
+        'event'  => 'payout.updated',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity'         => 'payout',
+                    'status'         => 'processing',
+                    'status_details'  => [
+                        'reason' => null,
+                        'description' => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPayoutUpdatedWebhookWithoutRazorxExperimentNotContainingStatusDetails' => [
+        'entity'   => 'event',
+        'event'    => 'payout.updated',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity'         => 'payout',
+                    'status'         => 'processing',
+                ],
+            ],
         ],
     ],
 

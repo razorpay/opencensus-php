@@ -59,6 +59,8 @@ final class Constants
 
     const DEFAULT_ISSUER = 'default_issuer';
 
+    const PROCESSED_BY_TIME = 'processed_by_time';
+
     //Card Issuer bank IFSC Code mapping
     const BANK_IFSC = [
         Issuer::UTIB => [

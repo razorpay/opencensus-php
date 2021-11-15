@@ -5599,6 +5599,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INCORRECT_2FA_PASSWORD_REDIS_ERROR                = 'INCORRECT_2FA_PASSWORD_REDIS_ERROR';
     const LOGIN_2FA_PASSWORD_SUSPENDED                      = 'LOGIN_2FA_PASSWORD_SUSPENDED';
 
+    const PAYOUT_STATUS_DETAILS_ENTITY_CREATED              = 'PAYOUT_STATUS_DETAILS_ENTITY_CREATED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

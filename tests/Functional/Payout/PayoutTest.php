@@ -14736,4 +14736,492 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+    public function testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingRTGSMode()
+    {
+
+       $this->mockRazorxTreatment(
+            'yesbank', 'off', 'off', 'off', 'off',
+            'on', 'on', 'off', 'on',
+            'on', 'off', 'on', 'on',
+            'off', 'control', 'on',
+            'on', 'off', 'control', 'off',
+            'on'
+       );
+
+            $payloadUpdatedOne = null;
+
+            $this->mockServiceStorkRequest(
+                function ($path, $payload) use (& $payloadUpdated) {
+                $this->assertContains($payload['event']['name'], ['payout.updated']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_UPDATED:
+                        $payloadUpdated = $payload;
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(5);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout',$payout->getId(),['mode' => 'RTGS']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $bankAccount = $payout->fundaccount->account;
+
+        $this->fixtures->edit('bank_account',$bankAccount->getId(), ['ifsc' => 'ICIC0000104']);
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+                'source_type' => 'payout',
+                'source_id' => $payout->getId(),
+                'status' => 'initiated',
+                'channel' => 'rbl',
+                'failure_reason' => '',
+                'utr' => 928337183,
+                'mode' => 'RTGS',
+                'remarks' => '',
+                'bank_status_code' => 'SUCCESS',
+                'status_details' => [
+                    'reason' => 'beneficiary_bank_confirmation_pending',
+                    'parameters' => [
+                        'processed_by_time' => '1636481743',
+                    ],
+                ],
+            ]);
+
+        $payoutUpdatedEventData = $this->testData[__FUNCTION__];
+
+        $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
+    }
+
+    public function testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingNEFTMode()
+    {
+
+        $this->mockRazorxTreatment(
+            'yesbank', 'off', 'off', 'off', 'off',
+            'on', 'on', 'off', 'on',
+            'on', 'off', 'on', 'on',
+            'off', 'control', 'on',
+            'on', 'off', 'control', 'off',
+            'on'
+        );
+
+        $payloadUpdatedOne = null;
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use (& $payloadUpdated) {
+                $this->assertContains($payload['event']['name'], ['payout.updated']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_UPDATED:
+                        $payloadUpdated = $payload;
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(5);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout',$payout->getId(),['mode' => 'NEFT']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $bankAccount = $payout->fundaccount->account;
+
+        $this->fixtures->edit('bank_account',$bankAccount->getId(), ['ifsc' => 'HDFC0000104']);
+
+
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'source_type' => 'payout',
+            'source_id' => $payout->getId(),
+            'status' => 'initiated',
+            'channel' => 'rbl',
+            'failure_reason' => '',
+            'utr' => 928337183,
+            'mode' => 'NEFT',
+            'remarks' => '',
+            'bank_status_code' => 'SUCCESS',
+            'status_details' => [
+                'reason' => 'beneficiary_bank_confirmation_pending',
+                'parameters' => [
+                    'processed_by_time' => '1636481743',
+                ],
+            ],
+        ]);
+
+        $payoutUpdatedEventData = $this->testData[__FUNCTION__];
+
+        $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
+    }
+
+    public function testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingIMPSMode()
+    {
+
+        $this->mockRazorxTreatment(
+            'yesbank', 'off', 'off', 'off', 'off',
+            'on', 'on', 'off', 'on',
+            'on', 'off', 'on', 'on',
+            'off', 'control', 'on',
+            'on', 'off', 'control', 'off',
+            'on'
+        );
+
+        $payloadUpdatedOne = null;
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use (& $payloadUpdated) {
+                $this->assertContains($payload['event']['name'], ['payout.updated']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_UPDATED:
+                        $payloadUpdated = $payload;
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(5);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $bankAccount = $payout->fundaccount->account;
+
+        $this->fixtures->edit('bank_account',
+                              $bankAccount->getId(), ['ifsc' => 'ICIC0000104']);
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'source_type' => 'payout',
+            'source_id' => $payout->getId(),
+            'status' => 'initiated',
+            'channel' => 'rbl',
+            'failure_reason' => '',
+            'utr' => 928337183,
+            'mode' => 'IMPS',
+            'remarks' => '',
+            'bank_status_code' => 'SUCCESS',
+            'status_details' => [
+                'reason' => 'beneficiary_bank_confirmation_pending',
+                'parameters' => [
+                    'processed_by_time' => '1636481743',
+                ],
+            ],
+        ]);
+
+        $payoutUpdatedEventData = $this->testData[__FUNCTION__];
+
+        $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
+    }
+
+    public function testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingUPIMode()
+    {
+
+        $this->mockRazorxTreatment(
+            'yesbank', 'off', 'off', 'off', 'off',
+            'on', 'on', 'off', 'on',
+            'on', 'off', 'on', 'on',
+            'off', 'control', 'on',
+            'on', 'off', 'control', 'off',
+            'on'
+        );
+
+        $payloadUpdatedOne = null;
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use (& $payloadUpdated) {
+                $this->assertContains($payload['event']['name'], ['payout.updated']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_UPDATED:
+                        $payloadUpdated = $payload;
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(5);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout',$payout->getId(),['mode' => 'UPI']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'source_type' => 'payout',
+            'source_id' => $payout->getId(),
+            'status' => 'initiated',
+            'channel' => 'rbl',
+            'failure_reason' => '',
+            'utr' => 928337183,
+            'mode' => 'UPI',
+            'remarks' => '',
+            'bank_status_code' => 'SUCCESS',
+            'status_details' => [
+                'reason' => 'beneficiary_bank_confirmation_pending',
+                'parameters' => [
+                    'processed_by_time' => '1636481743',
+                ],
+            ],
+        ]);
+
+        $payoutUpdatedEventData = $this->testData[__FUNCTION__];
+
+        $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
+    }
+
+    public function testPayoutUpdatedWebhookWithRazorxExperimentForBankWindowClosedNEFTMode()
+    {
+
+        $this->mockRazorxTreatment(
+            'yesbank', 'off', 'off', 'off', 'off',
+            'on', 'on', 'off', 'on',
+            'on', 'off', 'on', 'on',
+            'off', 'control', 'on',
+            'on', 'off', 'control', 'off',
+            'on'
+        );
+
+        $payloadUpdatedOne = null;
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use (& $payloadUpdated) {
+                $this->assertContains($payload['event']['name'], ['payout.updated']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_UPDATED:
+                        $payloadUpdated = $payload;
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(5);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout',$payout->getId(),['mode' => 'NEFT']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'source_type' => 'payout',
+            'source_id' => $payout->getId(),
+            'status' => 'initiated',
+            'channel' => 'rbl',
+            'failure_reason' => '',
+            'utr' => 928337183,
+            'remarks' => '',
+            'bank_status_code' => 'SUCCESS',
+            'status_details' => [
+                'reason' => 'bank_window_closed',
+                'parameters' => [
+                    'processed_by_time' => '1636472623',
+                ],
+            ],
+        ]);
+
+        $payoutUpdatedEventData = $this->testData[__FUNCTION__];
+
+        $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
+    }
+
+    public function testPayoutUpdatedWebhookWithRazorxExperimentForBankWindowClosedRTGSMode()
+    {
+
+        $this->mockRazorxTreatment(
+            'yesbank', 'off', 'off', 'off', 'off',
+            'on', 'on', 'off', 'on',
+            'on', 'off', 'on', 'on',
+            'off', 'control', 'on',
+            'on', 'off', 'control', 'off',
+            'on'
+        );
+
+        $payloadUpdatedOne = null;
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use (& $payloadUpdated) {
+                $this->assertContains($payload['event']['name'], ['payout.updated']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_UPDATED:
+                        $payloadUpdated = $payload;
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(5);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout',$payout->getId(),['mode' => 'RTGS']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'source_type' => 'payout',
+            'source_id' => $payout->getId(),
+            'status' => 'initiated',
+            'channel' => 'rbl',
+            'failure_reason' => '',
+            'utr' => 928337183,
+            'mode' => 'UPI',
+            'remarks' => '',
+            'bank_status_code' => 'SUCCESS',
+            'status_details' => [
+                'reason' => 'bank_window_closed',
+                'parameters' => [
+                    'processed_by_time' => '1636484602',
+                ],
+            ],
+        ]);
+
+        $payoutUpdatedEventData = $this->testData[__FUNCTION__];
+
+        $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
+    }
+
+    public function testPayoutUpdatedWebhookWithRazorxExperimentForPayoutProcessing()
+    {
+
+        $this->mockRazorxTreatment(
+            'yesbank', 'off', 'off', 'off', 'off',
+            'on', 'on', 'off', 'on',
+            'on', 'off', 'on', 'on',
+            'off', 'control', 'on',
+            'on', 'off', 'control', 'off',
+            'on'
+        );
+
+        $payloadUpdatedOne = null;
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use (& $payloadUpdated) {
+                $this->assertContains($payload['event']['name'], ['payout.updated']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_UPDATED:
+                        $payloadUpdated = $payload;
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(5);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'source_type' => 'payout',
+            'source_id' => $payout->getId(),
+            'status' => 'initiated',
+            'channel' => 'rbl',
+            'failure_reason' => '',
+            'utr' => 928337183,
+            'mode' => 'UPI',
+            'remarks' => '',
+            'bank_status_code' => 'SUCCESS',
+            'status_details' => [
+                'reason' => 'payout_processing',
+                'parameters' => [
+                    'processed_by_time' => '',
+                ],
+            ],
+        ]);
+
+        $payoutUpdatedEventData = $this->testData[__FUNCTION__];
+
+        $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
+    }
+
+    public function testPayoutUpdatedWebhookWithRazorxExperimentForNullCase()
+    {
+
+        $this->mockRazorxTreatment(
+            'yesbank', 'off', 'off', 'off', 'off',
+            'on', 'on', 'off', 'on',
+            'on', 'off', 'on', 'on',
+            'off', 'control', 'on',
+            'on', 'off', 'control', 'off',
+            'on'
+        );
+
+        $payloadUpdatedOne = null;
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use (& $payloadUpdated) {
+                $this->assertContains($payload['event']['name'], ['payout.updated']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_UPDATED:
+                        $payloadUpdated = $payload;
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(5);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'source_type' => 'payout',
+            'source_id' => $payout->getId(),
+            'status' => 'initiated',
+            'channel' => 'rbl',
+            'failure_reason' => '',
+            'utr' => 928337183,
+            'mode' => 'UPI',
+            'remarks' => '',
+            'bank_status_code' => 'SUCCESS',
+        ]);
+
+        $payoutUpdatedEventData = $this->testData[__FUNCTION__];
+
+        $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
+    }
+
+    public function testPayoutUpdatedWebhookWithoutRazorxExperimentNotContainingStatusDetails()
+
+    {
+        $payloadUpdatedOne = null;
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use (& $payloadUpdated) {
+                $this->assertContains($payload['event']['name'], ['payout.updated']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_UPDATED:
+                        $payloadUpdated = $payload;
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(5);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'status' => 'initiated',
+            'channel' => 'rbl',
+            'failure_reason' => '',
+            'utr' => 928337183,
+            'remarks' => '',
+            'bank_status_code' => 'SUCCESS'
+        ]);
+
+        $payoutUpdatedEventData = $this->testData[__FUNCTION__];
+
+        $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
+    }
+
 }

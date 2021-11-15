@@ -51,6 +51,9 @@ class Entity extends Base\PublicEntity
     const FTS_TRANSFER_ID        = 'fts_transfer_id';
     const GATEWAY_REF_NO         = 'gateway_ref_no';
     const GATEWAY_ERROR_CODE     = 'gateway_error_code';
+    const STATUS_DETAILS         = 'status_details';
+    const REASON                 = 'reason';
+    const PARAMETERS             = 'parameters';
 
     //Fund transfer retry constants
     const FILE                  = 'file';

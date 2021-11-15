@@ -44,7 +44,9 @@ use RZP\Models\PayoutMeta\Entity as PayoutMetaEntity;
 use Razorpay\OAuth\Application\Repository as AppRepo;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
-
+use RZP\Models\FundTransfer\Attempt as Attempt;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 /**
  * @property Customer\Entity        $customer
@@ -128,6 +130,9 @@ class Entity extends Base\PublicEntity
 
     // to send reason and description for queued state
     const QUEUEING_DETAILS       = 'queueing_details';
+
+    // to send staus details reason and description for processing state now
+   const STATUS_DETAILS          = 'status_details';
 
     // scheduled_at is the timestamp for when the merchant schedules the payout to be processed
     const SCHEDULED_AT                          = 'scheduled_at';
@@ -291,6 +296,8 @@ class Entity extends Base\PublicEntity
     const BULK_PAYOUT_APP           = 'bulk_payout_app';
 
     protected $queueFlag = false;
+
+    protected $statusDetails = [];
 
     // This flag will be used to decide if FTS fund transfer has to be async call.
     protected $syncFtsFundTransfer = false;
@@ -550,6 +557,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::ERROR,
         self::QUEUEING_DETAILS,
+        self::STATUS_DETAILS,
     ];
 
     protected static $modifiers = [
@@ -1033,6 +1041,11 @@ class Entity extends Base\PublicEntity
     public function getScheduledAt()
     {
         return $this->getAttribute(self::SCHEDULED_AT);
+    }
+
+    public function getStatusDetails()
+    {
+        return $this->statusDetails;
     }
 
     public function hasBeenQueued()
@@ -1618,6 +1631,47 @@ class Entity extends Base\PublicEntity
     public function setId($id)
     {
         $this->setAttribute(self::ID, $id);
+    }
+
+   public function setStatusDetails($statusDetails)
+    {
+        $statusDetailsReason = $statusDetails[Attempt\Entity::REASON] ?? null;
+
+        $processByTime = $statusDetails[Attempt\Entity::PARAMETERS][Attempt\Constants::PROCESSED_BY_TIME] ?? null;
+
+        $statusDetailsDescription = StatusDetails::STATUS_REASONS_WITH_DESCRIPTION[$statusDetailsReason] ?? null;
+
+        $statusDescriptionTime = Carbon::createFromTimestamp($processByTime, 'Asia/Kolkata')->format("dS F Y") ?? null;
+
+        if ($statusDetailsReason === StatusDetails::BENEFICIARY_BANK_CONFIRMATION_PENDING)
+       {
+           $beneBankName = $this->provideBeneBankName() ?? 'beneficiary bank';
+
+           $statusDetailsDescription = str_replace('beneficiary bank',$beneBankName, $statusDetailsDescription);
+       }
+
+       if($statusDetailsReason === StatusDetails::BANK_WINDOW_CLOSED)
+       {
+           $statusDescriptionTime = Carbon::createFromTimestamp($processByTime, 'Asia/Kolkata')->format("dS F Y, h:i A") ?? null;
+
+           $mode = $this->getMode();
+
+           $statusDetailsDescription = str_replace('mode',$mode,$statusDetailsDescription);
+
+       }
+
+       if ($statusDetailsDescription != null)
+       {
+           $statusDetailsDescription = str_replace('time stamp', $statusDescriptionTime, $statusDetailsDescription) ?? null;
+       }
+
+        $statusDetailsArray =
+                [
+                   'reason'         => $statusDetailsReason,
+                   'description'    => $statusDetailsDescription
+                ];
+
+        $this->statusDetails = $statusDetailsArray;
     }
 
     // ============================= END SETTERS =============================
@@ -2660,5 +2714,17 @@ class Entity extends Base\PublicEntity
         {
             $attributes[self::PENDING_ON_USER] = $data[self::PENDING_ON_USER];
         }
+    }
+
+    public function provideBeneBankName()
+    {
+        $ifsc = $this->fundAccount->account->getIfscCode();
+
+        $ifscCode = substr($ifsc,0,4);
+
+        $beneBank = BaseIFSC::getBankName($ifscCode);
+
+        return $beneBank;
+
     }
 }

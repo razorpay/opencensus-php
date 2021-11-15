@@ -337,7 +337,9 @@ trait TestsBusinessBanking
                                            string $fundAccountDuplicateViaUniqueHash = 'on',
                                            string $rblBASFetchV2 = 'off',
                                            string $enableQueuedPayoutsViaPayoutsService = 'control',
-                                           string $payoutsToFtsSync = 'off')
+                                           string $payoutsToFtsSync = 'off',
+                                           string $enableStatusDetailsFeature = 'off')
+
     {
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -368,7 +370,8 @@ trait TestsBusinessBanking
                     $fundAccountDuplicateViaUniqueHash,
                     $rblBASFetchV2,
                     $enableQueuedPayoutsViaPayoutsService,
-                    $payoutsToFtsSync
+                    $payoutsToFtsSync,
+                    $enableStatusDetailsFeature
                 )
                 {
                     if (ends_with($feature, 'mode_payout_filter'))
@@ -444,6 +447,11 @@ trait TestsBusinessBanking
                     if ($feature === 'payout_to_fts_sync_mode')
                     {
                         return strtolower($payoutsToFtsSync);
+                    }
+
+                    if ($feature === 'enable_status_details_feature')
+                    {
+                        return strtolower($enableStatusDetailsFeature);
                     }
 
                     return strtolower($defaultBehaviour);

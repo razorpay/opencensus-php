@@ -674,6 +674,8 @@ class Core extends Base\Core
 
         $gatewayErrorCode = $input['gateway_error_code'] ?? '';
 
+        $statusDetails    = $input[Entity::STATUS_DETAILS] ?? null;
+
         $sourceAccountID = $input[Entity::SOURCE_ACCOUNT_ID] ?? null;
 
         $bankAccountType = $input[Entity::BANK_ACCOUNT_TYPE] ?? null;
@@ -696,6 +698,8 @@ class Core extends Base\Core
             Entity::SOURCE_ACCOUNT_ID  => $sourceAccountID,
             Entity::BANK_ACCOUNT_TYPE  => $bankAccountType,
             Entity::GATEWAY_ERROR_CODE => $gatewayErrorCode,
+            Entity::STATUS_DETAILS     => $statusDetails,
+
         ] + $extraInfo;
 
         if (isset($ftaData['return_utr']) === true)

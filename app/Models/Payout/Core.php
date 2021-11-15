@@ -666,12 +666,36 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($payout);
             });
 
-        if (($initialUtr === null) and
-            ($payout->getUtr() !== null) and
-            ($isPayoutService === false))
-        {
-            $this->app->events->fire('api.payout.updated', [$payout]);
-        }
+        // adding the condition to fire payout.updated webhook
+        // with experiment enabled for selected merchant
+
+        $merchantId = $payout->getMerchantId();
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::ENABLE_STATUS_DETAILS_FEATURE,
+            $this->mode,
+            Entity::RAZORX_RETRY_COUNT
+        );
+
+            if (strtolower($variant) === 'on' and ($isPayoutService === false))
+            {
+                $statusDetails = $ftaData[Attempt\Entity::STATUS_DETAILS] ?? null;
+
+                $payout->setStatusDetails($statusDetails);
+
+                $this->app->events->fire('api.payout.updated', [$payout]);
+            }
+
+            else
+            {
+                if (($initialUtr === null) and
+                    ($payout->getUtr() !== null) and
+                    ($isPayoutService === false))
+                {
+                     $this->app->events->fire('api.payout.updated', [$payout]);
+                }
+            }
 
         $this->trace->info(
             TraceCode::PAYOUT_UPDATED_AFTER_FTA_RECON,
