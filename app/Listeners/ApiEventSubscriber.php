@@ -1444,9 +1444,23 @@ class ApiEventSubscriber extends Base\Core
 
     protected function getPaymentDowntimePayload(Downtime\Entity $downtime): array
     {
+        $downtimePublicArray = $downtime->toArrayPublic();
+
+        $variant = $this->app->razorx->getTreatment(
+            $this->listeningMerchant,
+            Merchant\RazorxTreatment::SEND_MERCHANT_DOWNTIMES,
+            $this->mode
+        );
+
+        if(!((strtolower($variant) === 'on') &&
+            ($this->listeningMerchant->isFeatureEnabled(Feature\Constants::ENABLE_GRANULAR_DOWNTIMES))))
+        {
+            (new Downtime\Service())->removeGranularDowntimeKeys($downtimePublicArray);
+        }
+
         $payload = [
             Constants\Entity::PAYMENT_DOWNTIME => [
-                'entity' => $downtime->toArrayPublic(),
+                'entity' => $downtimePublicArray,
             ]
         ];
 

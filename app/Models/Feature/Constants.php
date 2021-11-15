@@ -935,6 +935,12 @@ class Constants
 
     const ONE_CC_COUPONS = 'one_cc_coupons';
 
+    /**
+     * Flag to enable the new granular downtimes apis.
+     * To send type and flow keys in instrument along with instrument_schema if applicable.
+     */
+    const ENABLE_GRANULAR_DOWNTIMES = 'enable_granular_downtimes';
+
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -1328,6 +1334,7 @@ class Constants
         self::ONE_CC_COUPONS                  => true,
         self::ENABLE_PAYPAL_AS_BACKUP         => true,
         self::ONBOARD_TOKENIZATION            => true,
+        self::ENABLE_GRANULAR_DOWNTIMES       => true,
     ];
     // Entity type constants
     const ACCOUNT                       = 'account';

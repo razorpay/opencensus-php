@@ -1927,7 +1927,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_DOWNTIME_CREATE_JOB                           = 'PAYMENT_DOWNTIME_CREATE_JOB';
     const PAYMENT_DOWNTIMES_TO_ACTIVATE                         = 'PAYMENT_DOWNTIMES_TO_ACTIVATE';
     const PAYMENT_DOWNTIMES_TO_RESOLVE                          = 'PAYMENT_DOWNTIMES_TO_RESOLVE';
-    const PAYMENT_DOWNTIMES_MERCHANT_ID                         = 'PAYMENT_DOWNTIMES_MERCHANT_ID';
+    const ENABLE_GRANULAR_DOWNTIMES                             = 'ENABLE_GRANULAR_DOWNTIMES';
 
     const PAYMENT_DOWNTIME_CREATE_EMAIL                         = 'PAYMENT_DOWNTIME_CREATE_EMAIL';
     const PAYMENT_DOWNTIME_RESOLVE_EMAIL                        = 'PAYMENT_DOWNTIME_RESOLVE_EMAIL';
