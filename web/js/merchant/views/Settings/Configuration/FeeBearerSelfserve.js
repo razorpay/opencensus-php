@@ -6,9 +6,11 @@ import { bindActionCreators } from 'redux';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import LoaderDots from 'common/ui/LoaderDots';
 
-function FeeBearerSelfserver(props) {
+function FeeBearerSelfserve(props) {
   const [feeBearer, setfeeBearer] = useState(props.user.merchant.fee_bearer);
+  const [showLoader, setshowLoader] = useState(false);
 
   const handleToggle = async (type) => {
     // Track fee bearer toggle
@@ -22,6 +24,9 @@ function FeeBearerSelfserver(props) {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+
+    setshowLoader(true);
+
     try {
       const response = await merchantFetch({
         url: `merchant/toggle_fee_bearer`,
@@ -33,6 +38,7 @@ function FeeBearerSelfserver(props) {
       });
 
       if (response) {
+        setshowLoader(false);
         setfeeBearer(type);
         props.showNotification({
           type: 'success',
@@ -51,6 +57,7 @@ function FeeBearerSelfserver(props) {
         });
       }
     } catch ({ errors }) {
+      setshowLoader(false);
       props.showNotification({
         type: 'error',
         message: errors,
@@ -89,12 +96,18 @@ function FeeBearerSelfserver(props) {
             <div class={`fee-bearer-panel-col ${feeBearer === 'platform' ? 'active' : null}`}>
               <h4>
                 <b>You pay the fee</b>
-                <input
-                  type="radio"
-                  class="radio-pointer"
-                  checked={feeBearer === 'platform'}
-                  onChange={() => handleToggle('platform')}
-                />
+                {showLoader && feeBearer === 'customer' ? (
+                  <div class="panel-loader">
+                    <LoaderDots />
+                  </div>
+                ) : (
+                  <input
+                    type="radio"
+                    class="radio-pointer"
+                    checked={feeBearer === 'platform'}
+                    onChange={() => handleToggle('platform')}
+                  />
+                )}
               </h4>
               <p>Razorpay platform fee would be borne by you. </p>
               <br />
@@ -104,12 +117,18 @@ function FeeBearerSelfserver(props) {
             <div class={`fee-bearer-panel-col ${feeBearer === 'customer' ? 'active' : null}`}>
               <h4>
                 <b>Convenience fee model</b>
-                <input
-                  type="radio"
-                  class="radio-pointer"
-                  checked={feeBearer === 'customer'}
-                  onChange={() => handleToggle('customer')}
-                />
+                {showLoader && feeBearer === 'platform' ? (
+                  <div class="panel-loader">
+                    <LoaderDots />
+                  </div>
+                ) : (
+                  <input
+                    type="radio"
+                    class="radio-pointer"
+                    checked={feeBearer === 'customer'}
+                    onChange={() => handleToggle('customer')}
+                  />
+                )}
               </h4>
               <p>You charge a convenience fee to your customer.</p>
               <br />
@@ -125,4 +144,4 @@ export default connect(
     user: state.session.user,
   }),
   (dispatch) => bindActionCreators({ showNotification }, dispatch),
-)(FeeBearerSelfserver);
+)(FeeBearerSelfserve);

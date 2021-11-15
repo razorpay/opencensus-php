@@ -333,6 +333,7 @@ class CongfigurationContainer extends Component {
 
             <ShowWhen
               additionalCondition={(usr) =>
+                usr.isOrgRZP &&
                 usr.isAccepted &&
                 usr.role === 'owner' &&
                 !usr.international &&
