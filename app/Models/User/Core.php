@@ -3894,4 +3894,30 @@ class Core extends Base\Core
 
         return $response;
     }
+
+    public function getUserByVerifiedContact(array $input) {
+        $response = null;
+        $user = null;
+
+        if (isset($input[Entity::CONTACT_MOBILE])) {
+            $mobile = $input[Entity::CONTACT_MOBILE];
+
+            $user = $this->getUserByMobile($mobile);
+            $user = $this->isMobileVerified($user);
+        }
+
+        if ($user) {
+            $merchantEntities = $user->merchants()->where(
+                Merchant\Entity::SUSPENDED_AT, null
+            )->take(1000)->get();
+
+            $merchants = $merchantEntities->callOnEveryItem('toArrayUser');
+            $merchantDetails = $this->getUnifiedMerchants($merchants);
+
+            $response = $user->toArrayPublic();
+            $response['merchants'] = $merchantDetails;
+        }
+
+        return $response;
+    }
 }

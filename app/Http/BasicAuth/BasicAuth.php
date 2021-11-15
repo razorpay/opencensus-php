@@ -1794,6 +1794,11 @@ class BasicAuth
         return ($this->getInternalApp() === 'loc');
     }
 
+    public function isCapitalLOSApp(): bool
+    {
+        return ($this->getInternalApp() === 'los');
+    }
+
     public function isCapitalCollectionsApp(): bool
     {
         return ($this->getInternalApp() === 'capital_collections_client');

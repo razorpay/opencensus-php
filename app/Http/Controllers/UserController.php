@@ -234,6 +234,15 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getUserByVerifiedContact()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getUserByVerifiedContact($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postUpgradeUserToMerchant()
     {
         $input = Request::all();

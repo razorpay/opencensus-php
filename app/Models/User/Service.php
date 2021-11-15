@@ -1482,4 +1482,10 @@ class Service extends Base\Service
     {
         return (new DeviceDetail\Core)->createUserDeviceDetail($input);
     }
+
+    public function getUserByVerifiedContact(array $input) {
+        $user = $this->core()->getUserByVerifiedContact($input);
+
+        return $user;
+    }
 }

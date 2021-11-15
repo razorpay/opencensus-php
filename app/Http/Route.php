@@ -1652,6 +1652,7 @@ class Route
         'user_details_unified'                     => ['get',      'users_unified',                                  'UserController@getUserDetailsUnified'                              ],
         'user_all_roles'                           => ['get',      'users/{id}/roles/{merchant_id}',                 'UserController@getUserRoles'                                       ],
         'user_delete_incorrect_password_count'     => ['post',     'users/incorrect_password_count',                 'UserController@removeIncorrectPasswordCount'                       ],
+        'user_fetch_by_verified_contact_internal'  => ['post',     'users_internal/fetch_by_verified_contact',       'UserController@getUserByVerifiedContact'                           ],
 
         //user device details
         'user_device_detail_save'                  => ['post',     'user/device-details',                            'UserController@postSaveDeviceDetails'                              ],
@@ -2109,6 +2110,7 @@ class Route
         'feature_add_internal'                     => ['post',     'internal/features',                              'FeatureController@addFeatures'                                     ],
         'feature_get'                              => ['get',      'features/{entityType}/{entityId}',               'FeatureController@getFeatures'                                     ],
         'feature_get_all'                          => ['get',      'feature/{entityType}/{entityId}',                'FeatureController@getFeatures'                                     ],
+        'internal_feature_get_all'                 => ['get',      'internal/feature/{entityType}/{entityId}',       'FeatureController@getFeatures'                                     ],
         'feature_get_status'                       => ['get',      'feature/{entityType}/{entityId}/{featureName}',  'FeatureController@getFeatureStatus'                                ],
         'feature_bulk_assign'                      => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                      => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
@@ -3466,6 +3468,8 @@ class Route
     public static $internal = [
         'internal_feature_bulk_assign',
         'internal_feature_bulk_remove',
+        'internal_feature_get_all',
+        'user_fetch_by_verified_contact_internal',
         'merchant_risk_alerts_foh_workflow_trigger_nc',
         'buy_pricing_assign_bulk',
         'external_bvs_validation_request',
@@ -10565,6 +10569,8 @@ class Route
             'merchant_fetch_internal_users',
             'internal_feature_bulk_assign',
             'internal_feature_bulk_remove',
+            'internal_feature_get_all',
+            'user_fetch_by_verified_contact_internal',
         ],
         'capital_cards_m2p' =>[
             'capital_cards_m2p_webhook',
