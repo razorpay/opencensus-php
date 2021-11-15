@@ -203,7 +203,8 @@ class Service extends Base\Service
             'stores',
             'stores_url',
             'pp_donation_goal_tracker',
-            'ftx_2021'
+            'ftx_2021',
+            'rx_icici_auto_kyc'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
