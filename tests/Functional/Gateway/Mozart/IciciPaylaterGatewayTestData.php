@@ -46,7 +46,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
+                    'description' => 'Your payment could not be completed due to insufficient account balance. Try again with another account.',
                 ],
             ],
             'status_code' => 400,

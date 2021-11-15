@@ -38,7 +38,8 @@ class ErrorTest extends TestCase
             Error::readMappingFromJsonFile(base_path(ErrorMappingService::NETBANKING_ERROR_CODES_JSON), null, false),
             Error::readMappingFromJsonFile(base_path(ErrorMappingService::UPI_ERROR_CODES_JSON), null, false),
             Error::readMappingFromJsonFile(base_path(ErrorMappingService::WALLET_ERROR_CODES_JSON), null, false),
-            Error::readMappingFromJsonFile(base_path(ErrorMappingService::COD_ERROR_CODES_JSON), null, false));
+            Error::readMappingFromJsonFile(base_path(ErrorMappingService::COD_ERROR_CODES_JSON), null, false),
+            Error::readMappingFromJsonFile(base_path(ErrorMappingService::PAYLATER_ERROR_CODES_JSON), null, false));
 
         $shouldNotBeInRepoError = ["SUCCESS", "INVALID_ARGUMENT_INVALID_FILE_HANDLER_SOURCE","UNHANDLED_KYC_PROCESSOR_TYPE",
             "INVALID_ARGUMENT_INVALID_INTERNATIONAL_ACTIVATION_FLOW",
