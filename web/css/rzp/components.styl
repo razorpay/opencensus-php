@@ -190,7 +190,10 @@
   &.btn-toolbar {
     margin-top: 25px;
     flex-basis: initial;
-
+    // mobile specific css for the filter buttons added
+    @media screen and (max-width: $screen-sm-min) {
+        margin-top 5px
+    }
     > .btn:first-child {
       margin-left: 0;
     }

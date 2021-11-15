@@ -156,12 +156,13 @@ export default class PaymentButtonsList extends ListContainer {
             )}
           </div>
         </HeaderAction>
-
+        {/* an example of passing custom value to the filter length for mobile for ListFilter Component */}
         <ListFilter
           form="paymentButtonListFilter"
           count={this.state.count}
           onClearAnalytics={track.searchClear}
           onSubmit={this.search}
+          maxMwebFiltersLength={3}
         />
 
         <DataTable

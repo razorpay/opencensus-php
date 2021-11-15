@@ -2,18 +2,31 @@ import React, { Component } from 'react';
 import { reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import { stringifyQueryParams, getURLQueryParams } from 'common/utils/rzp-utils';
+import { isMobileDevice } from 'merchant/components/Home/data';
 import { withRouter } from 'react-router-dom';
+
+const DEFAULT_MAX_FILTER_COUNT_DESKTOP = 8;
+const DEFAULT_MAX_FILTER_COUNT_MOBILE = 2;
+
+/* 
+  Default max filter count value added for destop as well as mobile
+  implemented a new prop maxMwebFiltersLength for accepting custom
+  value for mobile filter length else default value is set
+*/
 
 class ListFilter extends Component {
   constructor(props) {
     super(props);
 
-    const MAX_FILTERS = 9;
-    const hasMoreFilters = this.props.children.length >= MAX_FILTERS;
+    const MAX_FILTERS = isMobileDevice()
+      ? this.props.maxMwebFiltersLength || DEFAULT_MAX_FILTER_COUNT_MOBILE
+      : DEFAULT_MAX_FILTER_COUNT_DESKTOP;
+    const hasMoreFilters = this.props.children.length > MAX_FILTERS;
 
     this.state = {
       hasMoreFilters,
       showAllFilters: !hasMoreFilters,
+      maxFilterLength: MAX_FILTERS,
     };
   }
 
@@ -41,9 +54,9 @@ class ListFilter extends Component {
       params = getURLQueryParams(props.location.search);
     }
 
-    for (let k in params) {
-      if (params.hasOwnProperty(k)) {
-        params[k] = decodeURI(params[k]);
+    for (const key in params) {
+      if (params.hasOwnProperty(key)) {
+        params[key] = decodeURI(params[key]);
       }
     }
 
@@ -81,10 +94,10 @@ class ListFilter extends Component {
 
   render() {
     const { handleSubmit, form } = this.props;
-    const { hasMoreFilters, showAllFilters } = this.state;
+    const { hasMoreFilters, showAllFilters, maxFilterLength } = this.state;
 
     const filters = this.props.children;
-    const visibleFilters = showAllFilters ? filters : filters.slice(0, 8);
+    const visibleFilters = showAllFilters ? filters : filters.slice(0, maxFilterLength);
 
     return (
       <form
