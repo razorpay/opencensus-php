@@ -757,6 +757,10 @@ export default class User {
     return this.getExpStatus('self_serve_credits');
   }
 
+  get isFtxEnabled() {
+    return this.getExpStatus('ftx_2021');
+  }
+
   get isEmailSelfServeEnabled() {
     return this.getExpStatus('email_self_serve');
   }

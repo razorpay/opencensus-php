@@ -3,7 +3,6 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { analyticsTrack } from 'common/utils/analytics';
-
 import Spinner from 'common/ui/Spinner';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -11,9 +10,9 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
 import { getItem } from 'common/utils/localStorage';
-
 import LogList from './Logs/List';
 import GenerateReportPanel from './GenerateReportPanel';
+import EasterEgg from 'merchant/components/EasterEgg';
 
 @connect(null, { showNotification })
 export default class ReportHome extends React.PureComponent {
@@ -197,6 +196,7 @@ export default class ReportHome extends React.PureComponent {
             </div>
           </content>
         </tabbed-container>
+        <EasterEgg extraClass="ftx-reports-page" page="Reports" />
       </div>
     );
   }

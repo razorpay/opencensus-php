@@ -28,6 +28,7 @@ import {
 } from './ga';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
+import EasterEgg from 'merchant/components/EasterEgg';
 
 @connect(
   (state) => ({
@@ -272,6 +273,7 @@ class AnalyticsMobile extends Component {
             isMobile={true}
           />
           <p className="section-title">{paymentInsightsTitle}</p>
+          <EasterEgg extraClass="ftx-home-page" page="Home" />
           <PaymentMethods
             startDate={startDate}
             endDate={endDate}

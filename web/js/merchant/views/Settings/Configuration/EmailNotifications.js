@@ -24,7 +24,7 @@ class EmailNotifications extends Component {
 
   state = {};
 
-  UNSAFE_componentWillMount() {
+  componentDidMount() {
     this.props.initialize(this.props.config);
   }
 

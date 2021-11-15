@@ -2,35 +2,28 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import HeaderAction from 'common/ui/HeaderAction';
-
 import RTracking from 'react-tracking';
 import track from './track';
-
 import Pager from 'common/ui/Pager';
 import Spinner from 'common/ui/Spinner';
 import { withRouter } from 'react-router-dom';
 import ListContainer from 'merchant/containers/ListContainer';
 import ListFilter from 'merchant/components/ListFilter';
-
 import ShowWhen from 'merchant/components/ShowWhen';
 import EmptyList from 'merchant/components/EmptyList';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import { DocLink } from 'merchant/components/DocsLink';
-
 import List from './List';
-
 import { populateRPLReduxList } from 'merchant/reducers/invoices/list';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
-
 import {
   getIsPaymentPagesEnabled,
   getIsAllowedPaymentPagesResetOnBoarding,
 } from '../../OnBoarding';
 import { getPaymentPageQuickGuideIsClosed } from '../../QuickGuide';
-
 import { fetchPaymentPagesList } from '../model';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';

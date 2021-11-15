@@ -1,0 +1,134 @@
+.ftx-container
+  background url(https://cdn.razorpay.com/static/assets/ftx/ftx-2021-easteregg.gif)
+  width 65px
+  height 65px
+  background-repeat no-repeat
+  position absolute
+  background-size contain
+  cursor pointer
+  z-index 999
+
+.ftx-home-page
+  right 25px
+
+.ftx-payment-links
+  bottom 5px
+  left 0
+
+.ftx-settings-page
+  right 25px
+  bottom 30px
+
+.ftx-settings-page-mweb
+  margin-left 10px
+  bottom 2px
+
+.ftx-transaction-page, .ftx-settlements-page, .ftx-reports-page
+  margin-top -100px
+  margin-left 30px
+
+.ftx-parent
+  position relative
+
+.ftx-popup
+  background url('https://cdn.razorpay.com/static/assets/ftx/ftx-modal-dweb.png')
+  width 100%
+  height 600px
+  background-size cover
+  position relative
+
+  .pop-close
+    font-size 25px
+    position absolute
+    right 23px
+    top 27px
+    cursor pointer
+    color #FFFFFF
+
+  .button-container
+    width 340px
+    height 70px
+    position absolute
+    bottom 80px
+    left 45px
+
+  .cta
+    background: url(https://cdn.razorpay.com/static/assets/ftx/ftx-modal-cta.svg)
+    color #FFFFFF
+    font-weight 600
+    letter-spacing 4px
+    padding 12px
+    height 100%
+    display flex
+    justify-content center
+    align-items center
+    background-size contain
+    background-repeat no-repeat
+    cursor pointer
+
+    &:hover, &:focus
+      background url(https://cdn.razorpay.com/static/assets/ftx/ftx-modal-cta-active.svg)
+      color #FFFFFF
+      height 100%
+      background-size contain
+      background-repeat no-repeat
+
+  i
+    margin-left 5px
+
+  a
+    position absolute
+    bottom 55px
+    left 45px
+    text-decoration underline
+    font-weight bold
+    color #9B9B9B
+
+// mweb styles
+
+@media screen and (max-width: 1023px) {
+  .ftx-home-page {
+    margin-top -60px
+  }
+
+  .ftx-popup {
+    background url('https://cdn.razorpay.com/static/assets/ftx/ftx-modal-mweb.png')
+    background-size cover
+
+    .cta {
+      height 85%
+      font-size 13px
+
+      &:hover, &:focus {
+        height 85%
+        font-size 13px
+      }
+    }
+
+    .pop-close {
+      left 6px
+      top 17px
+    }
+
+    .button-container {
+      left 15px
+      width 300px
+    }
+
+    a {
+      left 15px
+    }
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  .ftx-home-page {
+    margin-top 15px
+  }
+}
+
+@media screen and (min-width: 1143px) {
+  .ftx-settings-page-mweb{
+    display none
+  }
+}

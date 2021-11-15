@@ -202,7 +202,8 @@ class Service extends Base\Service
             'lite_onboarding',
             'stores',
             'stores_url',
-            'pp_donation_goal_tracker'
+            'pp_donation_goal_tracker',
+            'ftx_2021'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);

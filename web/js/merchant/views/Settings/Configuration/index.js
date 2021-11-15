@@ -33,6 +33,8 @@ import {
   REFUND_SETTINGS,
   WHATSAPP_NOTIF,
 } from './deeplink-constants';
+import EasterEgg from 'merchant/components/EasterEgg';
+
 class CongfigurationContainer extends Component {
   state = {
     isLoading: false,
@@ -365,6 +367,7 @@ class CongfigurationContainer extends Component {
             )}
           </div>
         )}
+        <EasterEgg extraClass="ftx-settings-page-mweb" page="Settings" />
       </div>
     );
   }

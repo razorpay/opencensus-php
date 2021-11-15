@@ -2,7 +2,6 @@ import { connect } from 'react-redux';
 import { withRouter, NavLink, Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import { Field } from 'redux-form';
-
 import HeaderAction from 'common/ui/HeaderAction';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
@@ -12,10 +11,8 @@ import {
   getURLQueryParams,
 } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
-
 import { fetchPaymentLinks } from 'merchant/reducers/paymentlinks/list';
 import { fetchReminders } from 'merchant/reducers/reminders';
-
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -24,11 +21,11 @@ import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import { RZPFeatures } from 'merchant/helpers/data';
 import ListFilter from 'merchant/views/Invoices/Invoices/components/ListFilter';
 import DateRangePicker from 'common/ui/DateRangePicker';
-
 import ListContainer from 'merchant/containers/ListContainer';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 import track from './track';
 import { trackSearchFilterForInternational } from './ga';
+import EasterEgg from 'merchant/components/EasterEgg';
 
 // TODO: Update colSpan if no of columns are changes
 const EmptyComponent = () => (
@@ -324,6 +321,7 @@ export default class PaymentLinksContainer extends ListContainer {
             this.paginate(params);
           }}
         />
+        <EasterEgg extraClass="ftx-payment-links" page="Payment Links" />
       </div>
     );
   }

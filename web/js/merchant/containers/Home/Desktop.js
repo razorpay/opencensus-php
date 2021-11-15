@@ -54,6 +54,7 @@ import ShowWhen from '../../components/ShowWhen';
 import ABCBanner from '../../components/Announcements/ABCBanner';
 import StartupCongratulationBanner from '../../components/Announcements/StartupCongratulationBanner';
 import CrossBorderPaymentsBanner from '../../components/Announcements/CrossBorderPaymentsBanner';
+import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DiwaliFestiveOfferBanner from '../../components/Announcements/DiwaliFestiveOfferBanner';
 import NitroFestiveBonanza from '../../components/Announcements/NitroFestiveBonanza';
@@ -738,6 +739,7 @@ class AnalyticsDesktop extends Component {
           </div>
           <div className="row">
             <div className="col-md-12">
+              <EasterEgg extraClass="ftx-home-page" page="Home" />
               <div className="section-title payment-insights-title">
                 {paymentInsightsTitle}&nbsp;
                 <small>

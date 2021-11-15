@@ -25,6 +25,7 @@ import { CHECKOUT_LANG } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import Button from 'common/new-ui/Button';
 import { getCustomURL } from 'merchant/components/DocsLink';
+import EasterEgg from 'merchant/components/EasterEgg';
 
 const languageOptions = [
   { name: 'English', code: 'en' },
@@ -462,6 +463,7 @@ class CheckoutTheme extends Component {
               </div>
             </div>
           </div>
+          <EasterEgg extraClass="ftx-settings-page" page="Settings" />
         </div>
       </div>
     );

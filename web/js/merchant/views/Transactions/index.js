@@ -27,6 +27,7 @@ import { getItem } from 'common/utils/localStorage';
 import { analyticsTrack } from 'common/utils/analytics';
 import { fetchOpen as fetchOpenDisputes } from 'merchant/reducers/disputes/details';
 import { bindActionCreators } from 'redux';
+import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 let url = 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app';
@@ -379,6 +380,7 @@ class TransactionsContainer extends Component {
               closeFooter={this.closeFooter}
             />
           )}
+        <EasterEgg extraClass="ftx-transaction-page" page="Transactions" />
       </React.Fragment>
     );
   }
