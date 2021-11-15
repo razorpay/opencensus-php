@@ -315,6 +315,15 @@ class Service extends Base\Service
 
         $hasAggregatorFeature = $merchant->hasAggregatorFeature();
 
+        $this->trace->info(
+            TraceCode::SUBMERCHANT_CREATE_REQUEST,
+            [
+                'name'              => $input[Entity::NAME] ?? null,
+                'merchant_id'       => $merchant->getId(),
+                'is_linked_account' => $isLinkedAccount,
+            ]
+        );
+
         //
         // Cannot create sub-merchant if all following conditions are met:
         // 1. Not a linked account
@@ -396,7 +405,7 @@ class Service extends Base\Service
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
             Constants::MERCHANT_MUTEX_RETRY_COUNT
         );
-        
+
         if (isset($linkedAccountArray['id']) === false)
         {
             throw new Exception\LogicException(

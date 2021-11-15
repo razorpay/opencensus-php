@@ -1623,6 +1623,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_TAGS_APPEND                                  = 'MERCHANT_TAGS_APPEND';
     const MERCHANT_TAGS_APPEND_COMPLETED                        = 'MERCHANT_TAGS_APPEND_COMPLETED';
     const MAP_PARTNER_SUBMERCHANT_ENTITY                        = 'MAP_PARTNER_SUBMERCHANT_ENTITY';
+    const SUBMERCHANT_CREATE_REQUEST                            = 'SUBMERCHANT_CREATE_REQUEST';
+    const LINKED_ACCOUNT_BUILD_ENTITY                           = 'LINKED_ACCOUNT_BUILD_ENTITY';
     const PARTNERSHIP_SUBMERCHANT_SIGNUP                        = 'PARTNERSHIP_SUBMERCHANT_SIGNUP';
     const MERCHANT_PRICING_PLAN_ASSIGN_REQUEST                  = 'MERCHANT_PRICING_PLAN_ASSIGN_REQUEST';
     const MERCHANT_LIVE_ENABLE_REQUEST                          = 'MERCHANT_LIVE_ENABLE_REQUEST';

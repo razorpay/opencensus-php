@@ -293,6 +293,17 @@ class Core extends Base\Core
 
         unset($input[Entity::PRODUCT]);
 
+        if ($linkedAccount === true)
+        {
+            $this->trace->info(
+                TraceCode::LINKED_ACCOUNT_BUILD_ENTITY,
+                [
+                    'name'          => $input[Entity::NAME] ?? null,
+                    'merchant_id'   => $aggregatorMerchant->getId(),
+                ]
+            );
+        }
+
         $subMerchant = $entity->build($input);
 
         $has24x7SettlementFeature = $aggregatorMerchant->isFeatureEnabled(Feature\Constants::SETTLEMENT_24X7);
