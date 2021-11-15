@@ -1,3 +1,4 @@
+import React from 'react';
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 
@@ -12,6 +13,8 @@ import SelectConfig from './SelectConfig';
 import SelectPeriod from './SelectPeriod';
 import SelectFormat from './SelectFormat';
 import EmailReport from './EmailReport';
+
+const marketplaceConfigTypes = ['transactions', 'payments', 'refunds', 'settlements'];
 
 @RTracking(() => window.rzpQ.component('GenerateReportPanel'))
 export default class GenerateReportPanel extends React.PureComponent {
@@ -74,6 +77,7 @@ export default class GenerateReportPanel extends React.PureComponent {
     });
   };
 
+  // eslint-disable-next-line consistent-return
   @RTracking((props, state) => {
     try {
       const { selectedConfig: { id, name, report_type } = {} } = state;
@@ -109,7 +113,7 @@ export default class GenerateReportPanel extends React.PureComponent {
         periodStart: startTime,
         periodEnd: endTime,
         formatSelected: this.selectFormat.getValue(),
-        emailSelected: isPresent(emails) ? true : false,
+        emailSelected: !!isPresent(emails),
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
@@ -142,6 +146,9 @@ export default class GenerateReportPanel extends React.PureComponent {
               values: [this.props.mode],
             },
           },
+        },
+        file_meta: {
+          extension: this.selectFormat?.state?.value,
         },
       };
     }
@@ -273,8 +280,6 @@ const dailyPeriodOptions = [
   { label: 'Yesterday', name: 'yesterday' },
   { label: 'Daily', name: 'daily' },
 ];
-
-const marketplaceConfigTypes = ['transactions', 'payments', 'refunds', 'settlements'];
 
 function getAvlblPeriodOptions({ onlyDailyOptionsInReferredAccounts, selectedConfig = {} }) {
   const isReferredAccountsAll = (selectedConfig.template || {}).referred_accounts === 'all';
