@@ -4265,6 +4265,22 @@ class Core extends Base\Core
     }
 
     /**
+     * Fetches merchant and merchant details from merchant_id
+     *
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    public function getMerchantAndDetailEntities(string $merchantId) : array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        return [$merchant, $merchantDetails];
+    }
+
+    /**
      * @param Entity $merchantDetail
      * @param string $template
      */

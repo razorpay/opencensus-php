@@ -191,7 +191,7 @@ class BvsValidationClient extends BaseClient
      */
     public function getValidationFlow(string $merchant_id): string
     {
-        [$merchant, $merchantDetailsEntity] = (new DetailCore())->getMerchantAndSetBasicAuth($merchant_id);
+        [$merchant, $merchantDetailsEntity] = (new DetailCore())->getMerchantAndDetailEntities($merchant_id);
 
         if($merchantDetailsEntity->getActivationStatus() === Status::ACTIVATED or
             $merchantDetailsEntity->getActivationStatus() === Status::ACTIVATED_MCC_PENDING
