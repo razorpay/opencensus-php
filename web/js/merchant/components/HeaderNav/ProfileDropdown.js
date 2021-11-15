@@ -19,6 +19,7 @@ import logoutGoogleAccount from '../../../common/utils/logoutGoogle';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import RTracking from 'react-tracking';
+import { track as trackPartnerOnbr } from 'merchant/views/PartnerDashboard/Onboarding/ga';
 
 @withRouter
 @connect(
@@ -112,6 +113,10 @@ export default class ProfileDropdown extends Component {
       window.hj('trigger', 'partner_onboarding_started');
       window.hj('tagRecording', ['partner_onboarding_started']);
     }
+    const businessTypeName = this.props.user.isUnregisteredBusiness ? 'Unregistered' : 'Registered';
+    trackPartnerOnbr({
+      eventLabel: `Partner Onboarding | Start | Explore Partner Program | ${businessTypeName}`,
+    });
 
     this.props.openModal({
       size: 'xlarge',

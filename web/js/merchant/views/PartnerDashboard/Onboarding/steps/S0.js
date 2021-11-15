@@ -1,5 +1,6 @@
 import React from 'react';
 import SlideContoller from './SlideController';
+import { track } from '../ga';
 
 const S0 = (props) => {
   const handleNextClick = () => {
@@ -19,6 +20,11 @@ const S0 = (props) => {
         },
       });
     }
+
+    track({
+      eventAction: 'New User Welcome Screen',
+      eventLabel: `Partner Onboarding | Next | ${props.businessTypeName}`,
+    });
   };
 
   const handleLearnMoreClick = () => {

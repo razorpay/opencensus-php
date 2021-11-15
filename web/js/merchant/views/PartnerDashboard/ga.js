@@ -1,16 +1,17 @@
 import { setTrackData } from 'common/utils/googleAnalytics';
+import store from 'merchant/store';
 
 const eventCategory = 'Partner Dashboard - ';
 
 const trackAffiliateAccounts = setTrackData({
-  eventCategory: eventCategory + 'Affiliate Accounts',
+  eventCategory: `${eventCategory}Affiliate Accounts`,
 });
 
 const trackSettings = setTrackData({
-  eventCategory: eventCategory + 'Settings',
+  eventCategory: `${eventCategory}Settings`,
 });
 
-export function trackReferral(action) {
+export function trackReferral() {
   trackAffiliateAccounts({
     eventAction: 'Share Referral Link - Affiliate Accounts',
     eventLabel: 'Click on Copy',
@@ -19,7 +20,7 @@ export function trackReferral(action) {
 
 export function trackListEvents(action) {
   trackAffiliateAccounts({
-    eventAction: action + ' - Affiliate Accounts',
+    eventAction: `${action} - Affiliate Accounts`,
   });
 }
 
@@ -32,8 +33,12 @@ export function trackClearAnalytics() {
 }
 
 export function trackAddNewMerchantEvents(action) {
+  const user = store.getState().session.user;
+  const businessTypeName = user.isUnregisteredBusiness ? 'Unregistered' : 'Registered';
+
   trackAffiliateAccounts({
-    eventAction: action + ' - Add New Merchant',
+    eventAction: `${action} - Add New Merchant`,
+    eventLabel: `Add Sub Merchant - ${businessTypeName}`,
   });
 }
 

@@ -32,7 +32,12 @@ import {
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
 import AddMerchant from './AddMerchant';
 import ListFilter from './ListFilter';
-import { trackSearchAnalytics, trackClearAnalytics, trackReferral } from '../ga';
+import {
+  trackSearchAnalytics,
+  trackClearAnalytics,
+  trackReferral,
+  trackAddNewMerchantEvents,
+} from '../ga';
 import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import { mediaWindowUrl } from './components/SocialShare';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
@@ -275,6 +280,7 @@ class ProductSubMerchantsList extends ListContainer {
     this.trackUserEvent('partnerships.submerchant.add', {
       source: 'welcome screen',
     });
+    trackAddNewMerchantEvents('Click - Welcome Screen');
     this.props.openModal({
       size: 'med-large',
       component: <AddMerchant closeModal={this.props.closeModal} />,

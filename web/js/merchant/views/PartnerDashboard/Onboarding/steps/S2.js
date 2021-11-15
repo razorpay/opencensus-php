@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import SlideController from './SlideController';
 import PartnerSelectBox from './PartnerTypeSelector';
+import { track } from '../ga';
 
-const s2 = ({
+const S2 = ({
   role,
   onRoleSelect,
   sliderProps,
@@ -12,25 +13,31 @@ const s2 = ({
   isMobile,
   lpVariant,
   lpFold,
+  businessTypeName,
 }) => {
   const handleNextClick = () => {
     tracking.trackEvent(
       window.rzpQ.onbr().interaction('partnerships.partner.type.next', {
-        merchantId: merchantId,
+        merchantId,
         partnerType: role,
-        lpVariant: lpVariant,
-        lpFold: lpFold,
+        lpVariant,
+        lpFold,
       }),
     );
+
+    track({
+      eventAction: 'Select - Type',
+      eventLabel: `Partner Onboarding | Next | ${businessTypeName}`,
+    });
   };
 
   const handleOtherCTAClicks = (action) => {
     tracking.trackEvent(
       window.rzpQ.onbr().interaction('partnerships.partner_type_otherCTAs.selected', {
-        merchantId: merchantId,
+        merchantId,
         otherCTA: action,
-        lpVariant: lpVariant,
-        lpFold: lpFold,
+        lpVariant,
+        lpFold,
       }),
     );
   };
@@ -63,7 +70,7 @@ const s2 = ({
     });
 
     return () => {
-      closeButton && closeButton.removeEventListener('click', closeClickHandler);
+      closeButton?.removeEventListener('click', closeClickHandler);
       prevDotIcons.forEach((item) => () => {
         item.removeEventListener('click', dotIconClickHandler);
       });
@@ -72,19 +79,17 @@ const s2 = ({
 
   return (
     <>
-      <div className={'partner-onbr-info step-2'}>
-        <div className="partner-illustration"></div>
+      <div className="partner-onbr-info step-2">
+        <div className="partner-illustration" />
         <div className="title">Choose your Partnership&nbsp;Type</div>
         <div className="options-group select-partner-type-options">
           <PartnerSelectBox
-            label={'Reseller Partner'}
+            label="Reseller Partner"
             onClick={() => onRoleSelect('reseller')}
             checked={role === 'reseller'}
-            icon={'/dist/css/assets/onboarding/reseller-icon.svg'}
-            description={'Refer your connections and get rewarded'}
-            hoverContent={
-              'Freelancer, Startup Incubator, Entrepreneur, Influencer, Blogger, Web developer, Designer etc'
-            }
+            icon="/dist/css/assets/onboarding/reseller-icon.svg"
+            description="Refer your connections and get rewarded"
+            hoverContent="Freelancer, Startup Incubator, Entrepreneur, Influencer, Blogger, Web developer, Designer etc"
             isMobile={isMobile}
           >
             <ul>
@@ -94,16 +99,12 @@ const s2 = ({
             </ul>
           </PartnerSelectBox>
           <PartnerSelectBox
-            label={'Aggregator Partner'}
+            label="Aggregator Partner"
             onClick={() => onRoleSelect('aggregator')}
             checked={role === 'aggregator'}
-            icon={'/dist/css/assets/onboarding/aggregator-icon.svg'}
-            description={
-              'Manage account and payment cycle of your merchants (Tech integration required)'
-            }
-            hoverContent={
-              'Business that manage end-to-end payment collection for their customers. Eg: ERP, Restaurant Management Platform'
-            }
+            icon="/dist/css/assets/onboarding/aggregator-icon.svg"
+            description="Manage account and payment cycle of your merchants (Tech integration required)"
+            hoverContent="Business that manage end-to-end payment collection for their customers. Eg: ERP, Restaurant Management Platform"
             isMobile={isMobile}
           >
             <ul>
@@ -119,6 +120,7 @@ const s2 = ({
                     handleOtherCTAClicks('Partner Auth link');
                     e.stopPropagation();
                   }}
+                  rel="noopener noreferrer"
                 >
                   (Partner Auth)
                 </a>{' '}
@@ -134,6 +136,7 @@ const s2 = ({
               href="https://razorpay.com/support/"
               target="_blank"
               onClick={() => handleOtherCTAClicks('Contact Support')}
+              rel="noopener noreferrer"
             >
               &nbsp;Contact Support <i className="i i-external-link " />
             </a>
@@ -141,7 +144,7 @@ const s2 = ({
           <p>
             <a
               onClick={() => {
-                abort && abort();
+                abort?.();
                 handleOtherCTAClicks('Other Razorpay Products');
               }}
               target="_blank"
@@ -159,7 +162,7 @@ const s2 = ({
         sliderProps={{
           ...sliderProps,
           prev: () => {
-            sliderProps.prev && sliderProps.prev();
+            sliderProps?.prev();
             handleOtherCTAClicks('back button');
           },
         }}
@@ -170,4 +173,4 @@ const s2 = ({
   );
 };
 
-export default s2;
+export default S2;

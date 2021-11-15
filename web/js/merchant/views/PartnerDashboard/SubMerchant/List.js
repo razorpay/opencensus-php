@@ -16,6 +16,7 @@ import ReferralBox from './ReferralBox';
 import Announcement from 'merchant/components/Announcements/Instant';
 import { XSubMerchantList, PrimarySubMerchantList } from './AccountsList';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { trackAddNewMerchantEvents } from '../ga';
 
 @connect(
   (state) => ({
@@ -44,6 +45,7 @@ export default class SubMerchantsList extends Component {
     this.trackUserEvent('partnerships.submerchant.add', {
       source: 'navbar',
     });
+    trackAddNewMerchantEvents('Click - Navbar');
     this.props.openModal({
       size: 'med-large',
       component: <AddMerchant closeModal={this.props.closeModal} />,

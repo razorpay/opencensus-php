@@ -159,6 +159,7 @@ export default class AddMerchant extends Component {
         contactsCount: this.state.bulkContactsCount,
       }),
     );
+    trackAddNewMerchantEvents('Add Multiple - Invite Contacts');
     return this.props
       .createBatch({
         file_id: this.state.file_id,
@@ -209,6 +210,7 @@ export default class AddMerchant extends Component {
           contactsCount: response.processable_count || 0,
         }),
       );
+      trackAddNewMerchantEvents('Add Multiple - Success');
     } else {
       this.setState({ file_id: '' });
       this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.upload', {
@@ -231,6 +233,7 @@ export default class AddMerchant extends Component {
     const { user } = this.props;
     if (mode === 'bulk') {
       this.trackUserEvent('partnerships.submerchant.add.product_group.multiple');
+      trackAddNewMerchantEvents('Click - Add Multiple');
       this.props.tracking.trackEvent(
         window.rzpQ.onbr().interaction('partnerships.submerchant.add.multiple', {
           partnerID: user.id,

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
+import { track as trackPartnerOnbr } from 'merchant/views/PartnerDashboard/Onboarding/ga';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
@@ -13,6 +14,11 @@ function showPartnerIntent(props) {
     window.hj('trigger', 'partner_onboarding_started');
     window.hj('tagRecording', ['partner_onboarding_started']);
   }
+
+  const businessTypeName = props.user.isUnregisteredBusiness ? 'Unregistered' : 'Registered';
+  trackPartnerOnbr({
+    eventLabel: `Partner Onboarding | Start | Become a Partner | ${businessTypeName}`,
+  });
 
   props.tracking.trackEvent(
     window.rzpQ.onbr().clicked('partnerships.appstore.partner.cta', {

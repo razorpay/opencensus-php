@@ -201,6 +201,7 @@ export default class BaseScreen extends React.Component {
                   merchantId={this.props.user.merchant.id}
                   lpVariant={this.state.lpVariant}
                   lpFold={this.state.lpFold}
+                  businessTypeName={this.state.businessTypeName}
                 />
               )
             : null}
@@ -219,6 +220,7 @@ export default class BaseScreen extends React.Component {
               isMobile={this.props.isMobileResolution}
               lpVariant={this.state.lpVariant}
               lpFold={this.state.lpFold}
+              businessTypeName={this.state.businessTypeName}
             />
           )}
           {(sliderProps) => <S3 key={3} sliderProps={sliderProps} onNext={this.onCompleteClick} />}
