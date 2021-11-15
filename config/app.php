@@ -341,5 +341,16 @@ return array(
 
     'customer_flagging_report_url' => env('CUSTOMER_FLAGGING_REPORT_URL'),
 
+    'keyless_header' =>  [
+        'identifier'    => env('KEYLESS_HEADER_IDENTIFIER'),
+        'sender'    =>  [
+            'public_key'    => env('KEYLESS_HEADER_SENDER_PUBLIC'),
+            'private_key'   => env('KEYLESS_HEADER_SENDER_PRIVATE')
+        ],
+        'receiver'  =>  [
+            'public_key'    => env('KEYLESS_HEADER_RECEIVER_PUBLIC'),
+        ],
+    ],
+
     'payment_store_hosted_base_url' => env('PAYMENT_STORE_HOSTED_BASE_URL'),
 );

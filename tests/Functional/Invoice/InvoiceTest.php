@@ -17,6 +17,8 @@ use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Invoice\Entity;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -34,6 +36,27 @@ class InvoiceTest extends TestCase
     use TestsWebhookEvents;
 
     const TEST_INV_ID = 'inv_1000000invoice';
+
+    protected function enableRazorXTreatmentForKeylessHeader()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->expects($this->any())->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === RazorxTreatment::KEYLESS_HEADER_INVOICE)
+                    {
+                        return 'on';
+                    }
+                    return 'off';
+                }));
+    }
 
     protected function setUp(): void
     {
@@ -53,6 +76,8 @@ class InvoiceTest extends TestCase
         $this->fixtures->create('user', ['id' => '1000000000user']);
 
         $this->ba->privateAuth();
+
+        $this->enableRazorXTreatmentForKeylessHeader();
     }
 
     // ------------------------------------------------------------
@@ -2765,7 +2790,7 @@ class InvoiceTest extends TestCase
 
             $input['amount'] = $payment->getAmount();
             $refund = $this->refundAuthorizedPayment($payment->getPublicId(), $input);
-            $this->assertPassportKeyExists('consumer.id'); // just check for presence of passport 
+            $this->assertPassportKeyExists('consumer.id'); // just check for presence of passport
 
             $this->ba->cronAuth();
 

@@ -13,6 +13,7 @@ use Illuminate\Database\Connection;
 use Razorpay\Outbox\Job\Repository;
 use Illuminate\Support\Facades\Redis;
 use Razorpay\Outbox\Encoder\JsonEncoder;
+use Razorpay\Edge\Passport\KeylessHeader;
 use Http\Discovery\Psr17FactoryDiscovery;
 use Razorpay\Outbox\Encrypt\AES256GCMEncrypt;
 use Symfony\Component\Cache\Adapter\Psr16Adapter;
@@ -413,6 +414,19 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $encoder   = new JsonEncoder();
             $repo      = new Repository($app['config']->get('database.default'));
             return new Core($encrypter, $encoder, $repo);
+        });
+
+        $this->app->singleton('keyless_header', function ($app) {
+            $identifier = config('app.keyless_header.identifier');
+            $sender_public_key = config('app.keyless_header.sender.public_key');
+            $sender_private_key = config('app.keyless_header.sender.private_key');
+            $receiver_public_key = config('app.keyless_header.receiver.public_key');
+            return new KeylessHeader(
+                $identifier,
+                hex2bin($receiver_public_key),
+                hex2bin($sender_public_key),
+                hex2bin($sender_private_key)
+            );
         });
 
         $this->app->singleton(Acs\SyncEventManager::SINGLETON_NAME, function($app)

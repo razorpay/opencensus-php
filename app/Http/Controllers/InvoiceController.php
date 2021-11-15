@@ -448,8 +448,27 @@ class InvoiceController extends Controller
 
         $data['lumberjack_key'] = Config::get('applications.lumberjack.static_key');
 
+        $mode = ($data["is_test_mode"] ?? true) ? "test" : "live";
+
+        $keylessHeader = null;
+        if (empty($merchantId) === false)
+        {
+            $is_keyless_header_enabled = $this->app->razorx->getTreatment(
+                $merchantId,
+                Merchant\RazorxTreatment::KEYLESS_HEADER_INVOICE,
+                $mode
+            );
+
+            if ($is_keyless_header_enabled === "on") {
+                $keylessHeader = $this->app['keyless_header']->get(
+                    $merchantId,
+                    $mode);
+            }
+        }
+
         return View::make($view)
-                   ->with('data', $data);
+            ->with('data', $data)
+            ->with('keyless_header', $keylessHeader);
     }
 
 
@@ -530,8 +549,27 @@ class InvoiceController extends Controller
 
         $data['lumberjack_key'] = Config::get('applications.lumberjack.static_key');
 
+        $mode = ($data["is_test_mode"] ?? true) ? "test" : "live";
+
+        $keylessHeader = null;
+        if (empty($merchantId) === false)
+        {
+            $is_keyless_header_enabled = $this->app->razorx->getTreatment(
+                $merchantId,
+                Merchant\RazorxTreatment::KEYLESS_HEADER_INVOICE,
+                $mode
+            );
+
+            if ($is_keyless_header_enabled === "on") {
+                $keylessHeader = $this->app['keyless_header']->get(
+                    $merchantId,
+                    $mode);
+            }
+        }
+
         return View::make($view)
-            ->with('data', $data);
+            ->with('data', $data)
+            ->with('keyless_header', $keylessHeader);
     }
 
     /**

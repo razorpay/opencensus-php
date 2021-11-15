@@ -369,7 +369,8 @@ final class RazorxTreatment
     // Experiment for removal of extra fields during onboarding
     const LITE_ONBOARDING = 'lite_onboarding';
 
+    const KEYLESS_HEADER_INVOICE = 'keyless_header_invoice';
+
     //Experiment for showing status details to selected merchant
     const ENABLE_STATUS_DETAILS_FEATURE = 'enable_status_details_feature';
-
 }

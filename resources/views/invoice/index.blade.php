@@ -120,6 +120,8 @@
 
     (function (globalScope) {
 
+        var keylessHeader = "{{$keyless_header}}";
+
         var data = {!!utf8_json_encode($data)!!};
 
         function forEach (dict, cb) {
@@ -224,6 +226,7 @@
             form.submit();
         }
 
+        data.keyless_header            = keylessHeader;
         globalScope.data               = data;
         globalScope.hasRedirect        = hasRedirect;
         globalScope.redirectToCallback = redirectToCallback;
