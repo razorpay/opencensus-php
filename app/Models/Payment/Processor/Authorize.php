@@ -915,6 +915,8 @@ trait Authorize
     {
         $this->updatePaymentAuthFailed($e);
 
+        $this->addBackupMethodForRetry($this->payment, $this->merchant, $e);
+
         throw $e;
     }
 
@@ -3253,6 +3255,7 @@ trait Authorize
             return;
         }
 
+
         $this->validateInternationalAllowed($payment);
 
         $this->validateInternationalRecurringPaymentsAllowed($payment);
@@ -3342,7 +3345,6 @@ trait Authorize
 
                     $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD;
                     $e = new Exception\BadRequestException($errorCode, null, $data);
-
                     $this->updatePaymentAuthFailed($e);
                     throw $e;
                 }

@@ -154,11 +154,11 @@ class ProcessorTest extends TestCase
 
     public function testPaypalAsBackupForInternationalPayments(){
 
-        $ex = new GatewayErrorException(ErrorCode::GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED);
+        $ex = new GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED);
         $paypal = [
             'paypal' => true
         ];
-
+        
         $payment = \Mockery::mock(Entity::class);
         $merchant = \Mockery::mock(Merchant\Entity::class);
 

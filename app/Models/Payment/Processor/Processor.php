@@ -305,7 +305,8 @@ class Processor
         ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD_GATEWAY,
         ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK,
         ErrorCode::GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED,
-        ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_NOT_PERMITTED_TXN
+        ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_NOT_PERMITTED_TXN,
+        ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED
     );
 
     /**
@@ -3296,7 +3297,11 @@ class Processor
             $this->changeTerminalCapabilityIfApplicable($terminal, $error);
 
             throw $ex;
-        }
+        } catch (Exception\BaseException $e)
+        {
+            $this->addBackupMethodForRetry($this->payment, $this->merchant, $e);
+            throw $e;
+        } 
     }
 
     protected function processFirstDataCallback($action, $input)
