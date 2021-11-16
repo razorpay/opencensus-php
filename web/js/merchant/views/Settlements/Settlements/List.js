@@ -73,12 +73,8 @@ class SettlementsListContainer extends ListContainer {
   get settleNowRestrictionMsg() {
     if (!this.settlementRestricted) return;
 
-    const {
-      attempts_left,
-      settlable_amount,
-      max_amount_limit,
-      settlements_count_limit,
-    } = this.props.ondemand_restrictions.data;
+    const { attempts_left, settlable_amount, max_amount_limit, settlements_count_limit } =
+      this.props.ondemand_restrictions.data;
     if (this.isOnDemandDisabled) {
       const restrictedItem = this.restrictedFeatures
         .filter((feat) => this.props.user.isFeatureEnabled(feat))
@@ -430,13 +426,16 @@ class SettlementsListContainer extends ListContainer {
           />
         ) : null}
         <content>
-          <div class="content-wrapper">
+          <div className="content-wrapper">
             <HeaderAction>
-              <div class="settlement-actions-wrapper">
+              <div className="settlement-actions-wrapper">
                 {
-                  <div class="btn btn-link settlement-doc-btn" onClick={this.viewSettlementCycle}>
+                  <div
+                    className="btn btn-link settlement-doc-btn"
+                    onClick={this.viewSettlementCycle}
+                  >
                     <span
-                      class="icon i-info-outline"
+                      className="icon i-info-outline"
                       style={{
                         marginRight: '5px',
                         position: 'relative',
@@ -449,7 +448,7 @@ class SettlementsListContainer extends ListContainer {
                 {this.props.user.isOndemandSettlementEnabled &&
                   !this.settlementRestricted &&
                   this.props.user.isAllowedView('early_settlement') && (
-                    <div class="box-left-pad10-inline">
+                    <div className="box-left-pad10-inline">
                       <ScheduledBanner
                         onExit={() => {
                           this.setState({ openAutoModal: false });
@@ -463,17 +462,21 @@ class SettlementsListContainer extends ListContainer {
               </div>
             </HeaderAction>
 
-            <div class="pull-right">
+            <div className="settlement-info-content">
               {this.props.user.isOrgAllowedFunctionality('current_balance') && (
-                <div class="flex text-right settlement-balance-amount p-t p-b-15">
+                <div className="flex text-right settlement-balance-amount p-t p-b-15">
                   <div>
                     <div>
                       <strong>
                         Current Balance:{' '}
-                        <Amount value={balance} currency="INR" class={currentBalanceClassName} />
+                        <Amount
+                          value={balance}
+                          currency="INR"
+                          className={currentBalanceClassName}
+                        />
                       </strong>
                       {this.props.user.isAutomaticSettlementEnabled && (
-                        <i class="i i-early-settlement settle-current-icon">
+                        <i className="i i-early-settlement settle-current-icon">
                           <PopoverComponent align="left" theme="dark">
                             <PopoverBody>
                               <span>Early Settlment has been enabled with your account.</span>
@@ -490,7 +493,7 @@ class SettlementsListContainer extends ListContainer {
                             <Amount
                               value={this.props.settlement_amount.data.settlement_amount}
                               currency="INR"
-                              class="amount-settlement"
+                              className="amount-settlement"
                             />
                           </strong>
                           will be settled on{' '}
@@ -500,7 +503,7 @@ class SettlementsListContainer extends ListContainer {
                           />
                           {this.props.settlement_amount.data.reason_for_delay && (
                             <>
-                              <i class="i i-info-circle" />
+                              <i className="i i-info-circle" />
                               <PopoverComponent theme="dark" align="left">
                                 <PopoverBody>
                                   <div>{this.props.settlement_amount.data.reason_for_delay}</div>
@@ -526,7 +529,7 @@ class SettlementsListContainer extends ListContainer {
                                 eventLabel: `Settlements`,
                               });
                             }}
-                            class="btn-link pointer"
+                            className="btn-link pointer"
                             style={{ marginLeft: '5px' }}
                           >
                             <b>Know More</b>
@@ -568,7 +571,7 @@ class SettlementsListContainer extends ListContainer {
                       {no_settlement.caption}
                       {no_settlement.reason && (
                         <>
-                          <i class="i i-info-circle" />
+                          <i className="i i-info-circle" />
                           <PopoverComponent theme="dark" align="left">
                             <PopoverBody>
                               <div>{no_settlement.reason}</div>
@@ -590,7 +593,7 @@ class SettlementsListContainer extends ListContainer {
               onClearAnalytics={this.onClearAnalytics}
             />
 
-            <div class="clearfix" />
+            <div className="clearfix" />
 
             {error && <Alert type="error" message={error} />}
 
