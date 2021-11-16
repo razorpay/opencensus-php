@@ -1175,4 +1175,23 @@ class NonVirtualAccountQrCodeTest extends TestCase
         }
         $this->assertEquals($transactionReference, $qrPaymentRequest['transaction_reference']);
     }
+
+    public function testQrCodeDemo()
+    {
+        $this->ba->directAuth();
+
+        $this->app['rzp.mode'] = 'test';
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->makeRequestAndGetContent($testData);
+
+        $this->assertEquals($testData['content']['name'],$response['name']);
+
+        $this->assertEquals($testData['content']['usage'],$response['usage']);
+
+        $this->assertEquals($testData['content']['type'],$response['type']);
+
+        $this->assertNotNull($response['id']);
+    }
 }

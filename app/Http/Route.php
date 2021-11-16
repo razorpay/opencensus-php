@@ -21,6 +21,9 @@ class Route
         // Dev routes
         'inspector_view_get'                      => ['get',      '_inspector',                                      'GenericController@getInspectorIndex'                               ],
 
+        //qr code demo
+        'qr_code_demo'                             => ['post',     'payments/qr_codes/demo',                         'QrCodeController@qrDemo'                                           ],
+        'qr_code_demo_cors'                        => ['options',  'payments/qr_codes/demo',                         'QrCodeController@qrDemoCors'                                       ],
         // qr code search
         'qr_code_fetch_multiple'                   => ['get',      'payments/qr_codes',                              'QrCodeController@list'                                             ],
         'qr_payments_fetch_multiple'               => ['get',      'payments/qr_payments',                           'QrPaymentController@fetchMultiplePayments'                         ],
@@ -7137,6 +7140,8 @@ class Route
     ];
 
     public static $direct = [
+        'qr_code_demo',
+        'qr_code_demo_cors',
         'store_hosted_page_data_options',
         'store_hosted_page_by_slug',
         'store_hosted_page_by_slug_detail_page',

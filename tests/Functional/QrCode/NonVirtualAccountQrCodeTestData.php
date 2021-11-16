@@ -249,5 +249,20 @@ return [
             ],
             'status_code' => 200,
         ]
+    ],
+
+    'testQrCodeDemo' => [
+        'url' => '/payments/qr_codes/demo',
+        'method' => 'POST',
+        'content' => [
+            'name'           => 'Test QR Code',
+            'description'    => 'QR code for tests',
+            'usage'          => 'multiple_use',
+            'type'           => 'upi_qr',
+            'fixed_amount'   => '0',
+            'notes'          => [
+                'a' => 'b',
+            ],
+        ]
     ]
 ];
