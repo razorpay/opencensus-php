@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Contact;
 
+use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants;
@@ -12,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Traits\TrimSpace;
+use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\Pagination\Entity as PaginationEntity;
@@ -135,12 +137,21 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      * @param array           $traceData
      *
+     * @param bool            $compositePayoutSaveOrFail
+     * @param array           $metadata
+     *
      * @return Entity
      */
-    public function createForCompositeRequest(array $input, Merchant\Entity $merchant, array $traceData): Entity
+    public function createForCompositeRequest(array $input,
+                                              Merchant\Entity $merchant,
+                                              array $traceData,
+                                              bool $compositePayoutSaveOrFail = true,
+                                              array $metadata = []): Entity
     {
         $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST_FOR_COMPOSITE_PAYOUT, [
-            'input' => $traceData
+            'input'             => $traceData,
+            'save_or_fail_flag' => $compositePayoutSaveOrFail,
+            'metadata'          => $metadata
         ]);
 
         // Code to check for a duplicate contact
@@ -152,7 +163,8 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::DUPLICATE_CONTACT_FOUND,
                 [
-                    Entity::ID => $contact->getId(),
+                    Entity::ID          => $contact->getId(),
+                    'save_or_fail_flag' => $compositePayoutSaveOrFail
                 ]);
 
             return $contact;
@@ -164,11 +176,34 @@ class Core extends Base\Core
 
         $contact->merchant()->associate($merchant);
 
-        $this->repo->saveOrFailWithoutEsSync($contact);
+        if (empty($metadata) === false)
+        {
+            if (array_key_exists(Entity::ID, $metadata) === true)
+            {
+                $contact->setId($metadata[Entity::ID]);
+            }
+
+            if (array_key_exists(Entity::CREATED_AT, $metadata) === true)
+            {
+                $contact->setCreatedAt($metadata[Entity::CREATED_AT]);
+            }
+        }
+
+        if ($compositePayoutSaveOrFail === true)
+        {
+            $this->repo->saveOrFailWithoutEsSync($contact);
+        }
+        else
+        {
+            $contact->setId(Base\UniqueIdEntity::generateUniqueId());
+
+            $contact->setCreatedAt(Carbon::now(Timezone::IST)->getTimestamp());
+        }
 
         $this->trace->info(TraceCode::CONTACT_CREATED_FOR_COMPOSITE_PAYOUT,
                            [
                                Constants\Entity::CONTACT => $contact->getId(),
+                               'save_or_fail_flag'       => $compositePayoutSaveOrFail
                            ]);
 
         return $contact;

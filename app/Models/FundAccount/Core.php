@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundAccount;
 
+use Carbon\Carbon;
 use Lib\PhoneBook;
 
 use RZP\Exception;
@@ -15,6 +16,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Traits\TrimSpace;
+use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Models\WalletAccount;
 use RZP\Constants\Entity as E;
@@ -294,10 +296,14 @@ class Core extends Base\Core
     public function createForCompositePayout(array $input,
                                              Merchant\Entity $merchant,
                                              Contact\Entity $contact,
-                                             array $traceData): Entity
+                                             array $traceData,
+                                             bool $compositePayoutSaveOrFail = true,
+                                             array $metadata = []): Entity
     {
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST_FOR_COMPOSITE_PAYOUT, [
-            'input' => $traceData
+            'input'             => $traceData,
+            'save_or_fail_flag' => $compositePayoutSaveOrFail,
+            'metadata'          => $metadata
         ]);
 
         if ((isset($input[Entity::ACCOUNT_TYPE]) === true) and
@@ -322,6 +328,7 @@ class Core extends Base\Core
                 [
                     Entity::ID          => $fundAccount->getId(),
                     Entity::UNIQUE_HASH => $uniqueHash,
+                    'save_or_fail_flag' => $compositePayoutSaveOrFail
                 ]);
 
             return $fundAccount;
@@ -335,7 +342,7 @@ class Core extends Base\Core
 
         $fundAccount = $fundAccount->build($input);
 
-        $account = $this->createAccount($input, $merchant, $contact);
+        $account = $this->createAccount($input, $merchant, $contact, $compositePayoutSaveOrFail);
 
         $fundAccount->source()->associate($contact);
 
@@ -343,14 +350,37 @@ class Core extends Base\Core
 
         $fundAccount->setUniqueHash($uniqueHash);
 
-        $this->repo->saveOrFailWithoutEsSync($fundAccount);
+        if (empty($metadata) === false)
+        {
+            if (array_key_exists(Entity::ID, $metadata) === true)
+            {
+                $fundAccount->setId($metadata[Entity::ID]);
+            }
+
+            if (array_key_exists(Entity::CREATED_AT, $metadata) === true)
+            {
+                $fundAccount->setCreatedAt($metadata[Entity::CREATED_AT]);
+            }
+        }
+
+        if ($compositePayoutSaveOrFail === true)
+        {
+            $this->repo->saveOrFailWithoutEsSync($fundAccount);
+
+            Metric::pushCreateMetrics($fundAccount);
+        }
+        else
+        {
+            $fundAccount->setId(Base\UniqueIdEntity::generateUniqueId());
+
+            $fundAccount->setCreatedAt(Carbon::now(Timezone::IST)->getTimestamp());
+        }
 
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATED_FOR_COMPOSITE_PAYOUT,
                            [
-                               E::FUND_ACCOUNT => $fundAccount->getId(),
+                               E::FUND_ACCOUNT     => $fundAccount->getId(),
+                               'save_or_fail_flag' => $compositePayoutSaveOrFail
                            ]);
-
-        Metric::pushCreateMetrics($fundAccount);
 
         return $fundAccount;
     }
@@ -398,7 +428,8 @@ class Core extends Base\Core
 
     protected function createAccount(array $input,
                                      Merchant\Entity $merchant,
-                                     Base\PublicEntity $source = null): Base\PublicEntity
+                                     Base\PublicEntity $source = null,
+                                     bool $compositePayoutSaveOrFail = true): Base\PublicEntity
     {
         $accountType = $input[Entity::ACCOUNT_TYPE];
 
@@ -413,7 +444,7 @@ class Core extends Base\Core
                 break;
 
             case Type::VPA:
-                $account = (new Vpa\Core)->createForSource($accountInput, $source);
+                $account = (new Vpa\Core)->createForSource($accountInput, $source, $compositePayoutSaveOrFail);
                 break;
 
             case Type::CARD:

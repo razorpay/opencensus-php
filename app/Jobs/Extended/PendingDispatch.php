@@ -54,6 +54,16 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
 
             app('trace')->traceException($e, Trace::CRITICAL, TraceCode::QUEUE_DISPATCH_JOB_FAILURE, $traceData);
 
+            // Throwing error in case of failures in successfully dispatching message to queue. Normally exceptions caught here are not being thrown.
+            if (($this->queueConfigKey === 'payout_post_create_process_low_priority') and
+                ($e->getMessage() === "Target class [rzp.mode] does not exist."))
+            {
+                app('trace')->info(TraceCode::QUEUE_DISPATCH_JOB_FAILURE, ['queue_name' => $this->queueConfigKey, 'error' =>  "Dispatching Error"]);
+
+                throw $e;
+            }
+
+
             $tokens = explode('\\', get_class($this->job));
 
             $job    = $tokens[count($tokens) - 1];
@@ -65,6 +75,13 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
             ];
 
             app('trace')->count(self::JOB_DISPATCH_FAILED, $dimensions);
+
+            // Throwing error in case of failures in successfully dispatching message to queue. Normally exceptions caught here are not being thrown.
+            if ($this->queueConfigKey === 'payout_post_create_process_low_priority')
+            {
+                app('trace')->info(TraceCode::QUEUE_DISPATCH_JOB_FAILURE, ['queue_name' => $this->queueConfigKey, 'error' =>  "Dispatching Error"]);
+                throw $e;
+            }
         }
     }
 

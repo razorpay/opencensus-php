@@ -928,6 +928,7 @@ class Constants
      */
     const HIGH_TPS_COMPOSITE_PAYOUT = 'high_tps_composite_payout';
 
+    const PAYOUT_ASYNC_INGRESS = 'payout_async_ingress';
     /**
      * One click checkout
      */
@@ -940,7 +941,6 @@ class Constants
      * To send type and flow keys in instrument along with instrument_schema if applicable.
      */
     const ENABLE_GRANULAR_DOWNTIMES = 'enable_granular_downtimes';
-
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -1328,11 +1328,12 @@ class Constants
         self::NETWORK_TOKENIZATION_LIVE       => true,
         self::HIGH_TPS_COMPOSITE_PAYOUT       => true,
         self::ALLOW_NETWORK_TOKENS            => true,
+        self::ENABLE_PAYPAL_AS_BACKUP         => true,
+        self::PAYOUT_ASYNC_INGRESS            => true,
         self::ONE_CLICK_CHECKOUT              => true,
         self::ONE_CC_MANDATORY_LOGIN          => true,
         self::ONE_CC_MERCHANT_DASHBOARD       => true,
         self::ONE_CC_COUPONS                  => true,
-        self::ENABLE_PAYPAL_AS_BACKUP         => true,
         self::ONBOARD_TOKENIZATION            => true,
         self::ENABLE_GRANULAR_DOWNTIMES       => true,
     ];
@@ -1914,6 +1915,11 @@ class Constants
         self::NEW_SETTLEMENT_SERVICE => [
             'feature'       => self::NEW_SETTLEMENT_SERVICE,
             'display_name'  => 'Enable new flow for settlements',
+            'documentation' => '',
+        ],
+        self::PAYOUT_ASYNC_INGRESS => [
+            'feature'       => self::PAYOUT_ASYNC_INGRESS,
+            'display_name'  => 'Feature to have a separate composite API ingress',
             'documentation' => '',
         ],
         self::ONE_CLICK_CHECKOUT => [

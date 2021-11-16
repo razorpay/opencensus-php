@@ -7,6 +7,7 @@ use RZP\Models\Contact;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
+use RZP\Models\Payout\Status;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Merchant\Balance;
@@ -66,7 +67,7 @@ class FundAccountPayout extends Base
         return $payout;
     }
 
-    public function createPayoutForCompositePayoutFlow(array $input, Balance\Entity $balance = null): Entity
+    public function createPayoutForCompositePayoutFlow(array $input, Balance\Entity $balance = null, array $payoutMetadata = []): Entity
     {
         /** @var Balance\Entity $balance */
         if ($balance === null)
@@ -78,7 +79,27 @@ class FundAccountPayout extends Base
 
         $input = array_merge($input, [Payout\Entity::QUEUE_PAYOUT_CREATE_REQUEST => $queuePayoutCreateRequest]);
 
-        return parent::createPayoutForCompositePayoutFlow($input, $balance);
+        return parent::createPayoutForCompositePayoutFlow($input, $balance, $payoutMetadata);
+    }
+
+    public function createPayoutWithoutSaveForHighTpsCompositePayouts(array $input, Balance\Entity $balance = null)
+    {
+        $queuePayoutCreateRequest = $this->shouldDelayTransactionCreationForPayout();
+
+        $input = array_merge($input, [Payout\Entity::QUEUE_PAYOUT_CREATE_REQUEST => $queuePayoutCreateRequest]);
+
+        $this->setPayoutBalance($input, $balance);
+
+        $this->preValidations();
+
+        $payout =  $this->createPayoutEntityForNewCompositePayoutFlow($input, false);
+
+        if ($payout->getQueuePayoutCreateRequest() === true)
+        {
+            $payout->setStatus(Status::CREATE_REQUEST_SUBMITTED);
+        }
+
+        return $payout;
     }
 
     /**

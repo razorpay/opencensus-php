@@ -1959,10 +1959,12 @@ class Validator extends Base\Validator
         // Replaces ACCOUNT_NUMBER with corresponding BALANCE_ID.
         $accountNumber = array_pull($input, Balance\Entity::ACCOUNT_NUMBER);
 
+        $merchantId = array_pull($input, Balance\Entity::MERCHANT_ID);
+
         try
         {
             /** @var Balance\Entity $balance */
-            $balance = app('repo')->balance->getBalanceByAccountNumberOrFail($accountNumber);
+            $balance = (new Balance\Repository)->getBalanceByAccountNumberOrFail($accountNumber, $merchantId);
 
             $input[Balance\Entity::BALANCE_ID] = $balance->getId();
 

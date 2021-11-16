@@ -78,17 +78,28 @@ class Service extends Base\Service
     }
 
     /**
-     * @param array          $input
-     * @param Contact\Entity $contact
-     * @param array          $traceData
+     * @param array           $input
+     * @param Contact\Entity  $contact
+     * @param array           $traceData
+     *
+     * @param Merchant\Entity $merchant
+     * @param bool            $compositePayoutSaveOrFail
+     * @param array           $metadata
      *
      * @return Entity
      * @throws BadRequestValidationFailureException
      */
-    public function createForCompositePayout(array $input, Contact\Entity $contact, array $traceData): Entity
+    public function createForCompositePayout(array $input,
+                                             Contact\Entity $contact,
+                                             array $traceData,
+                                             Merchant\Entity $merchant,
+                                             $compositePayoutSaveOrFail = true,
+                                             array $metadata = []): Entity
     {
         $this->trace->info(TraceCode::FUND_ACCOUNT_RAW_REQUEST_FOR_COMPOSITE_PAYOUT, [
-            'input' => $traceData
+            'input'             => $traceData,
+            'save_or_fail_flag' => $compositePayoutSaveOrFail,
+            'metadata'          => $metadata
         ]);
 
         $this->preProcessingForCard($input, $traceData);
@@ -99,7 +110,12 @@ class Service extends Base\Service
                 'Fund accounts cannot be created on an inactive ' . $contact->getEntity());
         }
 
-        return $this->core->createForCompositePayout($input, $this->merchant, $contact, $traceData);
+        return $this->core->createForCompositePayout($input,
+                                                     $merchant,
+                                                     $contact,
+                                                     $traceData,
+                                                     $compositePayoutSaveOrFail,
+                                                     $metadata);
     }
 
     protected function preProcessingForCard(array &$input, array &$traceData)

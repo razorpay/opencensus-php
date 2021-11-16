@@ -287,14 +287,17 @@ class Repository extends Base\Repository
         return $this->getBalanceByAccountNumberOrFail($accountNumber)->getId();
     }
 
-    public function getBalanceByAccountNumberOrFail(string $accountNumber): Entity
+    public function getBalanceByAccountNumberOrFail(string $accountNumber, string $merchantId = null): Entity
     {
-        //
-        // Gets merchant identifier from current auth context.
-        // Must not use $this->merchantId because when auth's merchant is set/reset it does not affect
-        // singleton repository objects which are already resolved.
-        //
-        $merchantId = $this->auth->getMerchantId();
+        if ($merchantId === null)
+        {
+            //
+            // Gets merchant identifier from current auth context.
+            // Must not use $this->merchantId because when auth's merchant is set/reset it does not affect
+            // singleton repository objects which are already resolved.
+            //
+            $merchantId = $this->auth->getMerchantId();
+        }
 
         return $this->newQuery()
                     ->where(Entity::ACCOUNT_NUMBER, $accountNumber)

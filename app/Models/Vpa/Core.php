@@ -8,7 +8,7 @@ use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
-    public function createForSource(array $input, Base\PublicEntity $source): Entity
+    public function createForSource(array $input, Base\PublicEntity $source, bool $compositePayoutSaveOrFail = true): Entity
     {
         $vpa = (new Entity)->build($input);
 
@@ -19,7 +19,10 @@ class Core extends Base\Core
 
         $vpa->source()->associate($source);
 
-        $this->repo->saveOrFail($vpa);
+        if ($compositePayoutSaveOrFail === true)
+        {
+            $this->repo->saveOrFail($vpa);
+        }
 
         return $vpa;
     }

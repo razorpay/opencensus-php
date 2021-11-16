@@ -75,9 +75,13 @@ class Service extends Base\Service
         ];
     }
 
-    public function createForCompositePayout(array $input, array $traceData): Entity
+    public function createForCompositePayout(array $input,
+                                             array $traceData,
+                                             Merchant\Entity $merchant,
+                                             bool $compositePayoutSaveOrFail = true,
+                                             array $metadata = []): Entity
     {
-        return $this->core->createForCompositeRequest($input, $this->merchant, $traceData);
+        return $this->core->createForCompositeRequest($input, $merchant, $traceData, $compositePayoutSaveOrFail, $metadata);
     }
 
     public function fetch(string $id, array $input): array

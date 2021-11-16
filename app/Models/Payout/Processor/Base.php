@@ -351,19 +351,21 @@ class Base extends BaseCore
      * @param array               $input
      * @param Balance\Entity|null $balance
      *
+     * @param array               $payoutMetadata
+     *
      * @return Entity
      * @throws BadRequestException
      */
-    public function createPayoutForCompositePayoutFlow(array $input, Balance\Entity $balance): Entity
+    public function createPayoutForCompositePayoutFlow(array $input, Balance\Entity $balance, array $payoutMetadata = []): Entity
     {
         $this->setPayoutBalance($input, $balance);
 
         $this->preValidations();
 
         /** @var Payout\Entity $payout */
-        $payout = $this->repo->transaction(function () use ($input)
+        $payout = $this->repo->transaction(function () use ($input, $payoutMetadata)
         {
-            $payout =  $this->createPayoutEntityForNewCompositePayoutFlow($input);
+            $payout =  $this->createPayoutEntityForNewCompositePayoutFlow($input, true, $payoutMetadata);
 
             if ($payout->getQueuePayoutCreateRequest() === true)
             {
@@ -1700,8 +1702,15 @@ class Base extends BaseCore
     {
         $fundAccountId = $input[Payout\Entity::FUND_ACCOUNT_ID];
 
-        /** @var FundAccount\Entity $fundAccount */
-        $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
+        if ($this->fundAccount === null)
+        {
+            /** @var FundAccount\Entity $fundAccount */
+            $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
+        }
+        else
+        {
+            $fundAccount = $this->fundAccount;
+        }
 
         if ($fundAccount->isActive() === false)
         {
@@ -1815,7 +1824,7 @@ class Base extends BaseCore
         return $payout;
     }
 
-    protected function createPayoutEntityForNewCompositePayoutFlow(array $input)
+    protected function createPayoutEntityForNewCompositePayoutFlow(array $input, bool $compositePayoutSaveOrFail = true, array $metadata = [])
     {
         $payout = (new Payout\Entity);
 
@@ -1838,6 +1847,24 @@ class Base extends BaseCore
         //
         $payout = $payout->build($input);
 
+        if ($compositePayoutSaveOrFail === false)
+        {
+            $payout->setCreatedAt(Carbon::now(Timezone::IST)->getTimestamp());
+        }
+
+        if (empty($metadata) === false)
+        {
+            if (array_key_exists(Entity::ID, $metadata) === true)
+            {
+                $payout->setId($metadata[Entity::ID]);
+            }
+
+            if (array_key_exists(Entity::CREATED_AT, $metadata) === true)
+            {
+                $payout->setCreatedAt($metadata[Entity::CREATED_AT]);
+            }
+        }
+
         $this->runEntityValidations($payout, $input);
 
         $payout->setQueuePayoutCreateRequest($queuePayoutCreateRequest);
@@ -1848,7 +1875,10 @@ class Base extends BaseCore
         {
             $payout->setQueueFlag(true);
 
-            (new PayoutsDetailsCore)->create(true, $payout);
+            if ($compositePayoutSaveOrFail === true)
+            {
+                (new PayoutsDetailsCore)->create(true, $payout);
+            }
         }
 
         (new Payout\Purpose)->setPurposeAndTypeForNewCompositePayoutFlow($payout, $payout->getPurpose());
@@ -2177,6 +2207,8 @@ class Base extends BaseCore
 
             $highTpsMerchantFlag = $payout->merchant->isFeatureEnabled(Constants::HIGH_TPS_COMPOSITE_PAYOUT);
 
+            $asyncIngressFlag = $payout->merchant->isFeatureEnabled(Constants::PAYOUT_ASYNC_INGRESS);
+
             if ($highTpsMerchantFlag === true)
             {
                 // Manually setting this to 0 so that the payout goes via the low priority queue
@@ -2186,7 +2218,10 @@ class Base extends BaseCore
 
             if ($hashValue === 0)
             {
-                PayoutPostCreateProcessLowPriority::dispatch($this->mode, $payout->getId(), $payout->toBeQueued());
+                if ($asyncIngressFlag === false)
+                {
+                    PayoutPostCreateProcessLowPriority::dispatch($this->mode, $payout->getId(), $payout->toBeQueued());
+                }
 
                 $this->trace->info(
                     TraceCode::PAYOUT_CREATE_SUBMITTED_REQUEST_ENQUEUED_LOW_PRIORITY,

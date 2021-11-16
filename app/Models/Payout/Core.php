@@ -277,26 +277,46 @@ class Core extends Base\Core
      * @param Merchant\Entity    $merchant
      * @param FundAccount\Entity $fundAccount
      *
+     * @param Balance\Entity     $balance
+     * @param bool               $compositePayoutSaveOrFail
+     *
+     * @param array              $payoutMetadata
+     *
      * @return Entity
+     * @throws BadRequestException
      */
     public function createPayoutToFundAccountForCompositePayout(array $input,
                                                                 Merchant\Entity $merchant,
                                                                 FundAccount\Entity $fundAccount,
-                                                                Merchant\Balance\Entity $balance): Entity
+                                                                Merchant\Balance\Entity $balance,
+                                                                bool $compositePayoutSaveOrFail = true,
+                                                                array $payoutMetadata = []): Entity
     {
         $this->trace->info(
             TraceCode::FUND_ACCOUNT_COMPOSITE_PAYOUT_CREATE_REQUEST,
             [
-                'input' => $input
+                'input'             => $input,
+                'save_or_fail_flag' => $compositePayoutSaveOrFail,
+                'metadata'          => $payoutMetadata
             ]);
 
-        // TODO: See if we can get balance from somewhere before and reuse here.
-        $payout = $this->getProcessor('fund_account_payout')
-                       ->setMerchant($merchant)
-                       ->setFundAccount($fundAccount)
-                        // NOT SUPPORTED: Workflow, Scheduled Payouts, Partner payouts,
-                        // Payouts via Apps, Batch Payouts, Payout Microservice
-                       ->createPayoutForCompositePayoutFlow($input, $balance);
+        if ($compositePayoutSaveOrFail === true)
+        {
+            // TODO: See if we can get balance from somewhere before and reuse here.
+            $payout = $this->getProcessor('fund_account_payout')
+                           ->setMerchant($merchant)
+                           ->setFundAccount($fundAccount)
+                // NOT SUPPORTED: Workflow, Scheduled Payouts, Partner payouts,
+                // Payouts via Apps, Batch Payouts, Payout Microservice
+                           ->createPayoutForCompositePayoutFlow($input, $balance, $payoutMetadata);
+        }
+        else
+        {
+            $payout = $this->getProcessor('fund_account_payout')
+                           ->setMerchant($merchant)
+                           ->setFundAccount($fundAccount)
+                           ->createPayoutWithoutSaveForHighTpsCompositePayouts($input, $balance);
+        }
 
         return $payout;
     }
@@ -1023,6 +1043,7 @@ class Core extends Base\Core
 
                 $payout = $this->setSubBalance($payout);
 
+                // If failure happens after payout transaction was created, next retry attempt will fail in validation as status is different.
                 $payout->getValidator()->validatePostCreateProcessPayout();
 
                 $payout = $this->getProcessor('fund_account_payout')
@@ -1035,6 +1056,73 @@ class Core extends Base\Core
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
+    public function fireWebhookForPayoutCreationFailure($metadata, $input, $merchantId)
+    {
+        $traceData = [
+            'metadata'    => $metadata,
+            'input'       => $input,
+            'merchant_id' => $merchantId
+        ];
+
+        try
+        {
+            $this->trace->info(TraceCode::PAYOUT_FAILURE_WEBHOOK_DISPATCH_INITIATED, $traceData);
+
+            $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            if ((array_key_exists(Entity::NARRATION, $input) === false) or
+                (empty($input[Entity::NARRATION]) === true))
+            {
+                $input[Entity::NARRATION] = $this->merchant->getBillingLabel();
+            }
+
+            /** @var Balance\Entity $balance */
+            $balance = (new Balance\Repository)->getBalanceByAccountNumberOrFail($input[Entity::ACCOUNT_NUMBER], $merchantId);
+
+            $payout = new Entity;
+
+            $fundAccountInput = array_pull($input, Entity::FUND_ACCOUNT);
+            unset($input[Entity::ACCOUNT_NUMBER]);
+
+            $input[Entity::FUND_ACCOUNT_ID] = 'fa_' . $metadata[Entity::FUND_ACCOUNT][Entity::ID];
+
+            $input[Entity::BALANCE_ID] = $balance->getId();
+
+            $payout->build($input);
+
+            $payout->setAttribute(Entity::FUND_ACCOUNT_ID, $metadata[Entity::FUND_ACCOUNT][Entity::ID]);
+
+            if (array_key_exists(Entity::REFERENCE_ID, $input) === true)
+            {
+                $payout->setAttribute(Entity::REFERENCE_ID, $input[Entity::REFERENCE_ID]);
+            }
+
+            $payout->setId($metadata[Entity::PAYOUT][Entity::ID]);
+
+            $payout->setCreatedAt($metadata[Entity::PAYOUT][Entity::CREATED_AT]);
+
+            $payout->setStatus(Status::FAILED);
+
+            $payout->merchant()->associate($this->merchant);
+
+            $payout->balance()->associate($balance);
+
+            $payout->setUpdatedAt(Carbon::now()->getTimestamp());
+
+            $payout->setFailureReason('payout entity creation failed');
+
+            $this->app->events->dispatch('api.payout.failed', [$payout]);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::PAYOUT_FAILURE_WEBHOOK_FAILED_TO_DISPATCH,
+                $traceData);
+        }
     }
 
     // This is a feature for high tps merchants. A single merchant can have multiple sub balance (entity of type balance)

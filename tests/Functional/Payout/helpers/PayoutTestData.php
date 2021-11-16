@@ -14452,7 +14452,7 @@ return [
             'url'     => '/payouts',
             'content' => [
                 'account_number' => '2224440041626905',
-                'amount'         => 2000000,
+                'amount'         => '2000000',
                 'currency'       => 'INR',
                 'purpose'        => 'refund',
                 'narration'      => 'Batman',
