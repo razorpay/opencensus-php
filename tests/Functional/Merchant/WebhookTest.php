@@ -1018,7 +1018,6 @@ class WebhookTest extends TestCase
             'payment.created',
             function (array $event)
             {
-                s($event['payload']['payment']['entity']);
                 $this->assertArrayNotHasKey('reference9', $event['payload']['payment']['entity']);
                 $this->assertArrayNotHasKey('reference5', $event['payload']['payment']['entity']);
                 $this->assertArrayNotHasKey('customer_fee', $event['payload']['payment']['entity']);

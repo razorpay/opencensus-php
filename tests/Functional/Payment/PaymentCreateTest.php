@@ -6123,8 +6123,6 @@ class PaymentCreateTest extends TestCase
 
         $transaction = $this->getLastEntity('transaction', true);
 
-        s($transaction);
-
         $this->assertEquals(10120, $transaction['amount']);
 
         $this->assertEquals(0, $transaction['credit']);
