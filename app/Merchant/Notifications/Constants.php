@@ -1070,11 +1070,11 @@ class Constants
         ],
         [
             'id'          => 'OCT-DA-NITRO-CARDOFFER',
-            'title'       => 'Free Corporate Card! Festive Bonanza!',
-            'description' => 'Yes, you heard it right. Get a Razorpay corporate card in less than 3 days  along with 25,000 free credits 🎉 .This festive season enjoy the benefits of a pre-approved RazorpayX corporate card with upto 5 lakhs credit limit 🎉',
-            'start_ts'    => 1632960000,
+            'title'       => 'Free Corporate Card!',
+            'description' => 'Enjoy the benefits of a pre-approved RazorpayX corporate card with upto 5 lakhs credit limit 🎁',
+            'start_ts'    => 1636797441,
             'end_ts'      => 1640822400,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro_festive_bonanza_icon.svg',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
@@ -1272,29 +1272,10 @@ class Constants
             ]
         ],
         [
-            'id'          => 'OCT-DA-NITRO-FESTIVEBONANZA',
-            'title'       => 'Festive Bonanza!',
-            'description' => "This festive season enjoy the benefits of RazorpayX current account along with a reduced pricing of 1.65% on payments 🎉",
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro_festive_bonanza_icon.svg',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Try now',
-                    'url'   => '',
-                    'id'    => 'announcement-projectNitro-cta1',
-                ],
-            ],
-            'start_ts'    => 1632960000,
-            'end_ts'      => 1638517904,
-            'filters'     => [
-                'splitz_experiments'         => self::nitroSplitzExperimentsList,
-            ],
-        ],
-        [
             'id'          => 'OCT-DA-NITRO-ICICIBranded',
             'title'       => 'Festive Bonanza!',
             'description' => "Enjoy the benefits of ICICI Powered RazorpayX current account with a reduced pricing of 1.65% on your payments 🎉",
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro_festive_bonanza_icon.svg',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
@@ -1303,7 +1284,7 @@ class Constants
                     'id'    => 'announcement-projectNitro-cta1',
                 ],
             ],
-            'start_ts'    => 1632960000,
+            'start_ts'    => 1636797441,
             'end_ts'      => 1641800920,
             'filters'     => [
                 'splitz_experiments' => ['NITRO_ICICI_BRANDED_CAMPAIGN'],
@@ -1313,7 +1294,7 @@ class Constants
             'id'          => 'OCT-DA-NITRO-ICICIRemarketing',
             'title'       => 'Powered By ICICI',
             'description' => "Enjoy the benefits of ICICI Powered RazorpayX current account with a reduced pricing of 1.65% on your payments 🎉",
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro_festive_bonanza_icon.svg',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
@@ -1322,7 +1303,7 @@ class Constants
                     'id'    => 'announcement-projectNitro-cta1',
                 ],
             ],
-            'start_ts'    => 1632960000,
+            'start_ts'    => 1636797441,
             'end_ts'      => 1641800920,
             'filters'     => [
                 'splitz_experiments' => ['NITRO_ICICI_REMARKETING_CAMPAIGN'],

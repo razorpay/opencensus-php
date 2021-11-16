@@ -7,7 +7,7 @@ import { openModal as openModalProp } from 'merchant_common/reducers/modals';
 import RazorpayXNitroAnnouncement from '../../../../../js/common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
 
 const bannerText =
-  'This festive season enjoy the benefits of a pre-approved RazorpayX corporate card with upto 5 lakhs credit limit 🎉';
+  'Enjoy the benefits of a pre-approved RazorpayX corporate card with upto 5 lakhs credit limit 🎉';
 const cardId = 'OCT-NITRO-CARDOFFER';
 
 const cta1Text = 'Know More';
@@ -62,7 +62,7 @@ const NitroCCCampaign = React.memo(({ productName, openModal }) => {
 
   return (
     <AnnouncementBanner
-      title="Festive Bonanza!"
+      title="Free Corporate Card!"
       canBeClosed={true}
       theme="primary"
       bannerKey={`nitro-CC-Campaign-${user.current}`}

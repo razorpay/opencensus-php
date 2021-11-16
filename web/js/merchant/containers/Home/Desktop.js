@@ -56,7 +56,6 @@ import StartupCongratulationBanner from '../../components/Announcements/StartupC
 import CrossBorderPaymentsBanner from '../../components/Announcements/CrossBorderPaymentsBanner';
 import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import NitroFestiveBonanza from '../../components/Announcements/NitroFestiveBonanza';
 import NitroICICIBanner from '../../components/Announcements/NitroICICIBanner';
 import NitroCCCampaign from '../../components/Announcements/NitroCCCampaign';
 
@@ -522,9 +521,6 @@ class AnalyticsDesktop extends Component {
           </ShowWhen>
           <ShowWhen additionalCondition={(usr) => usr.isCrossBorderPaymentsCampaignEnabled}>
             <CrossBorderPaymentsBanner productName="CrossBorderPayment-Create" />
-          </ShowWhen>
-          <ShowWhen additionalCondition={(usr) => usr.isProjectNitroEnabled}>
-            <NitroFestiveBonanza productName="home" />
           </ShowWhen>
           <ShowWhen
             additionalCondition={(usr) =>

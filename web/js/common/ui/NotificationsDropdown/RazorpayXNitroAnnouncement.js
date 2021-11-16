@@ -20,7 +20,6 @@ import Textarea from 'common/ui/Forms/AutoResizeTextarea';
 import KeystoneModal from 'common/ui/OffersForYou/components/KeystoneModal';
 import NitroSelfServe from './Neostone/index';
 import NitroCCCampaignModal from 'common/ui/OffersForYou/components/NitroCCCampaignModal';
-import NitroFestiveBonanzaModal from '../../../merchant/components/Announcements/NitroFestiveBonanza/NitroFestiveBonanzaModal';
 import NitroICICIModal from '../../../merchant/components/Announcements/NitroICICIBanner/NitroICICIModal';
 
 const BENEFITS = {
@@ -598,7 +597,6 @@ class DetailView extends React.Component {
     if (user.isNitroIciciBrandedCampaignEnabled) return 'Nitro_ICICIBranded';
     if (user.isNitroIciciRemarketingCampaignEnabled) return 'Nitro_ICICIRemarketing';
     if (user.isNitroCCCampaignEnabled) return 'Nitro_CardOffer';
-    if (!user.isProjectNitroCorporateCard) return 'Nitro_FestiveBonanza';
     return nitroCampaignId(user).version;
   };
 
@@ -788,7 +786,6 @@ class DetailView extends React.Component {
           tracking={this.props.tracking}
         />
       );
-    if (!isProjectNitroCorporateCard) return <NitroFestiveBonanzaModal save={this.save} />;
     return (
       <div className="razorpayx-announcement-details">
         <div className="section">
@@ -869,11 +866,9 @@ const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking, user }) =>
   if (activeView === 'detail-view') {
     return (
       <div ariaHideApp={false} id="hubspot-ca-form-modal">
-        {user.isProjectNitroCorporateCard ? (
-          <button type="button" class="close" onClick={handleClose}>
-            <i class="i i-close" />
-          </button>
-        ) : null}
+        <button type="button" class="close" onClick={handleClose}>
+          <i class="i i-close" />
+        </button>
         <div className="razorpayx-announcement">
           <DetailView
             onOfferAccept={onOfferAccept}
