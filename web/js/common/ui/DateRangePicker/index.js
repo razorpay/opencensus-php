@@ -2,10 +2,11 @@ import moment from 'moment';
 import React, { Component } from 'react';
 import { PowerSelect } from 'react-power-select';
 import Drp from 'common/ui/Forms/DateRangePickerField';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
-const defaultPresets = [],
-  customRangeText = 'Custom Range',
-  customRangeVal = 0;
+const defaultPresets = [];
+const customRangeText = 'Custom Range';
+const customRangeVal = 0;
 
 const getStartDateFromDiff = (diff, endDate) => {
   /*
@@ -23,7 +24,7 @@ class DateRangePicker extends Component {
     super(props);
 
     let { presets } = props;
-    const { startDate, endDate = moment() } = props;
+    const { endDate = moment() } = props;
 
     if (!Array.isArray(presets)) {
       presets = defaultPresets;
@@ -64,8 +65,8 @@ class DateRangePicker extends Component {
     this.setState({ selectedPreset });
 
     if (selectedPreset !== this.customPreset) {
-      let endDate = moment(),
-        startDate = getStartDateFromDiff(selectedPreset.value, endDate);
+      const endDate = moment();
+      const startDate = getStartDateFromDiff(selectedPreset.value, endDate);
 
       this.setDates(startDate, endDate, selectedPreset);
 
@@ -76,8 +77,8 @@ class DateRangePicker extends Component {
   }
 
   onDatesChange({ from, to }) {
-    let startDate = this.state.startDate,
-      endDate = this.state.endDate;
+    const startDate = this.state.startDate;
+    const endDate = this.state.endDate;
 
     if (from === startDate.unix() && to === endDate.unix()) {
       return;
@@ -91,19 +92,20 @@ class DateRangePicker extends Component {
   updatePresets(presets = this.props.presets, defaultPreset = this.props.defaultPreset) {
     const now = moment();
 
-    let { startDate, endDate } = this.state;
+    let { startDate } = this.state;
+    const { endDate } = this.state;
 
     let { selectedPreset } = this.state;
 
     presets = presets.map((preset) => {
-      const text = preset[0],
-        rest = preset.slice(1),
-        timeStampDiff =
-          now.unix() -
-          now
-            .clone()
-            .add(...rest)
-            .unix();
+      const text = preset[0];
+      const rest = preset.slice(1);
+      const timeStampDiff =
+        now.unix() -
+        now
+          .clone()
+          .add(...rest)
+          .unix();
 
       const result = { name: text, value: timeStampDiff };
 
@@ -141,9 +143,9 @@ class DateRangePicker extends Component {
   }
 
   render() {
-    const { icon, onDatesChange, numberOfMonths = 2, horizontalMargin = 0 } = this.props;
+    const { icon, numberOfMonths = 2, horizontalMargin = 0 } = this.props;
 
-    let { presets, selectedPreset, startDate, endDate } = this.state;
+    const { presets, selectedPreset, startDate, endDate } = this.state;
 
     return (
       <div className="rzp-daterange-picker clearfix">
@@ -165,7 +167,7 @@ class DateRangePicker extends Component {
             startDate={startDate}
             endDate={endDate}
             onDatesChange={this.onDatesChange}
-            numberOfMonths={numberOfMonths}
+            numberOfMonths={isMobileDevice() ? 1 : numberOfMonths}
             horizontalMargin={horizontalMargin}
           />
         </div>

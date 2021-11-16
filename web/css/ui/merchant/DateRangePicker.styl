@@ -1,11 +1,20 @@
 $borderColor = rgba(0, 0, 0, 0.1);
 $height = 40px;
 
+/* 
+  For m-web we want to keep the DateRanege selector
+  in the next line to fit the whole component properly
+  so custom media query css added for the same
+*/
+
 .rzp-daterange-picker {
 
   display: block;
   border: 1px solid $borderColor;
   border-radius: 2px;
+  @media screen and (max-width: $screen-sm-min) {
+      border none;
+  }
 
   div.DateRangePicker > .caret {
 
@@ -23,6 +32,9 @@ $height = 40px;
     &.icon-container, &.presets-container {
 
       border-left: none;
+      @media screen and (max-width: $screen-sm-min) {
+        border 1px solid $borderColor;
+      }
     }
 
     &.icon-container {
@@ -31,6 +43,9 @@ $height = 40px;
       padding: 9px;
       font-size: 20px;
       padding-right: 0;
+      @media screen and (max-width: $screen-sm-min) {
+        border-right-width 0;
+      }
     }
 
     &.presets-container {
@@ -39,9 +54,17 @@ $height = 40px;
 
         height: 40px;
       }
+      @media screen and (max-width: $screen-sm-min) {
+        border-left-width 0;
+      }
     }
 
     &.daterange-container {
+      @media screen and (max-width: $screen-sm-min) {
+        clear both
+        margin-top 15px
+        border 1px solid $borderColor;
+      }
 
       i.i-date-range {
 
@@ -51,6 +74,13 @@ $height = 40px;
       .DateRangePicker_picker {
 
         z-index: 2;
+        /*
+          Special css with !important needed to be added to keep the 
+          DateRange Picker aligned for devices with < 360 width
+        */
+        @media screen and (max-width: 359) {
+          left -20px !important
+        }
       }
     }
 

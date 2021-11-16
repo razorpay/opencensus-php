@@ -27,6 +27,7 @@ export default ({ showBatchIdFilter, ...props }) => {
 
       <div className="form-group datepicker-group">
         <label>Duration</label>
+        {/* For m-web we want to show only one month to support mweb view */}
         <DateRangePicker presets={dateRangePresets} onDatesChange={onDatesChange} />
       </div>
 

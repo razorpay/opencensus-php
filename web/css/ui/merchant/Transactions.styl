@@ -3,9 +3,13 @@
 
   .rzp-daterange-picker > div 
     height: 28px;
+    // For m-web we need to have the height increased to support the border bottom
+    @media screen and (max-width: $screen-sm-min) {
+      height 30px
+    }
 
   .rzp-daterange-picker > div.icon-container
-    padding: 5px;
+    padding: 6px 5px;
 
    .PowerSelect 
     width: 130px; 
@@ -37,7 +41,7 @@
     vertical-align: top;
 
   .PowerSelect__TriggerStatus 
-    top: 8px;
+    top: 10px;
 
   .rzp-daterange-picker > div.presets-container .PowerSelect__TriggerLabel, .rzp-daterange-picker > div.presets-container .PowerSelect__Trigger 
     height: 25px;
