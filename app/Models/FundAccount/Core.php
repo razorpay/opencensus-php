@@ -191,7 +191,7 @@ class Core extends Base\Core
                         [
                             Entity::ID                            => $fundAccount->getId(),
                             Entity::BATCH_ID                      => $batchId,
-                            Entity::UNIQUE_HASH . 'expected'      => $uniqueConsistentHash,
+                            Entity::UNIQUE_HASH . '_expected'     => $uniqueConsistentHash,
                             Entity::UNIQUE_HASH . '_of_duplicate' => $fundAccount->getUniqueHash(),
                         ]);
 
@@ -1098,6 +1098,8 @@ class Core extends Base\Core
         if ($uniqueHash === $uniqueHashForExistingFundAccount)
         {
             $fundAccount->setUniqueHash($uniqueHash);
+
+            $fundAccount->setConnection($this->mode);
 
             $this->repo->saveOrFail($fundAccount);
 
