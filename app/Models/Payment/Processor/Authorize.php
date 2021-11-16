@@ -11,9 +11,11 @@ use Route;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 
+use RZP\Constants\Procurer;
 use RZP\Jobs;
 use RZP\Error;
 use RZP\Exception;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -318,7 +320,7 @@ trait Authorize
         }
 
         $this->setSelectedTerminals($payment, $gatewayInput);
-
+        $this->performFraudCheckRaasInternational($payment, $input);
         $this->setSelectedTerminalsForApplicationMethodsIfApplicable($payment);
 
         // we are doing this after terminal selection since we might reject payemnt if there are no terminals found
@@ -3268,11 +3270,31 @@ trait Authorize
         // be later handled within payment service
         if (($this->shouldRedirect($payment) === true) or
             ($this->shouldRedirectV2($payment, []) === true) or
-            ($this->shouldRedirectDCC($payment) === true))
+            ($this->shouldRedirectDCC($payment) === true) or
+            ($this->shouldRedirectRaasInternational($payment)=== true))
         {
             return;
         }
 
+        try
+        {
+            $this->runFraudChecks($payment, $input);
+        }
+        catch (\Throwable $ex)
+        {
+            throw $ex;
+        }
+    }
+
+    /**
+     * @param Payment\Entity $payment
+     * @param $input
+     * @return mixed
+     * @throws Exception\BadRequestException
+     * @throws \Throwable
+     */
+    protected function runFraudChecks(Payment\Entity $payment, $input)
+    {
         try
         {
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_RISKCHECK_INITIATED, $payment);
@@ -3345,7 +3367,12 @@ trait Authorize
 
                     $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD;
                     $e = new Exception\BadRequestException($errorCode, null, $data);
-                    $this->updatePaymentAuthFailed($e);
+
+                    //for RaaS International Payments we skip this as this will be performed inside the performFraudCheckforInternational
+                    if ($this->shouldRedirectRaasInternational($payment) === false)
+                    {
+                        $this->updatePaymentAuthFailed($e);
+                    }
                     throw $e;
                 }
                 else
@@ -3400,6 +3427,7 @@ trait Authorize
                 ]);
 
             $this->addBackupMethodForRetry($this->payment, $this->merchant, $ex);
+
             throw $ex;
         }
     }
@@ -8827,6 +8855,20 @@ trait Authorize
 
         return true;
     }
+    /**
+     * Check and return if RaaS is applicable for this payment and is of type International
+     * @param Payment\Entity $payment
+     * @return bool
+     */
+    protected function shouldRedirectRaasInternational(Payment\Entity $payment): bool
+    {
+        if (($payment->merchant->isFeatureEnabled(Features::RAAS) === true) and ($payment->isInternational()===true))
+        {
+            return true;
+        }
+
+        return false;
+    }
 
     // function accepts, $terminalGatewayInput to check whether we can return a redirect response or not
     // since it has auth terminal selection data and if we can return a redirect response, we are using
@@ -9981,5 +10023,81 @@ trait Authorize
             $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
 
             $this->segment->trackPayment($payment, TraceCode::PAYMENT_CREATED);
+    }
+    /**
+     * This function runs the FraudCheck for terminals where procurer is Razorpay , as fraud checks were skipped initially
+     * for RaaS International Payments
+     * @param Payment\Entity $payment
+     * @param array $input
+     */
+    protected function performFraudCheckRaasInternational(Payment\Entity $payment, $input = [])
+    {
+
+            if (($this->shouldRedirect($payment) === true) or
+                ($this->shouldRedirectV2($payment, []) === true) or
+                ($this->shouldRedirectDCC($payment) === true) or
+                ($this->shouldRedirectRaasInternational($payment)=== false))
+            {
+                return ;
+            }
+
+            $sortedTerminals = $this->selectedTerminals;
+
+            $priorityTerminal = $sortedTerminals[0];
+
+            $runFraudCheck = false;
+            $i = 0;
+            $finalNonFraudTerminals=[];
+                foreach ($sortedTerminals as $terminal)
+                {
+
+                if ($terminal['procurer'] === Procurer::RAZORPAY)
+                {
+
+                    $runFraudCheck = true;
+
+
+                }else {
+                    $finalNonFraudTerminals[$i++]=$terminal;
+                }
+            }
+            //performs FraudCheck only when Procurer is RZP
+            if (!$runFraudCheck)
+            {
+                return ;
+            }
+
+            try
+                {
+
+                    $this->runFraudChecks($payment, $input);
+
+                }
+                catch (\Throwable $ex)
+                {   // if procurer of the terminal with priority is 1 , we consider the fraud detection
+                    // and throw the exception
+                    if ($priorityTerminal['procurer'] === Procurer::RAZORPAY)
+                    {
+                        $this->updatePaymentAuthFailed($ex);
+                        throw $ex;
+                    }
+                    else
+                    {
+                        $this->trace->info(
+                            TraceCode::FRAUD_DETECTION_FAILED_RAAS_INTERNATIONAL,
+                            [
+                                'error' => $ex->getMessage(),
+                                'payment_id' => $payment->getId(),
+                                'input_terminals' =>$this->selectedTerminals,
+                                'output_terminals' => $finalNonFraudTerminals,
+
+                            ]);
+                        // when procurer is merchant , we skip the do not consider the fraud check assessment
+                        // and replace the remove the razorpay terminals
+                        $this->selectedTerminals=$finalNonFraudTerminals;
+
+                    }
+
+                }
     }
 }

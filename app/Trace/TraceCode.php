@@ -2063,6 +2063,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FRAUD_DETECTION_STARTED                               = 'FRAUD_DETECTION_STARTED';
     const FRAUD_DETECTION_DONE                                  = 'FRAUD_DETECTION_DONE';
     const FRAUD_DETECTION_FAILED                                = 'FRAUD_DETECTION_FAILED';
+    const FRAUD_DETECTION_FAILED_RAAS_INTERNATIONAL             ='FRAUD_DETECTION_FAILED_RAAS_INTERNATIONAL';
     const FRAUD_DETECTION_SKIPPED                               = 'FRAUD_DETECTION_SKIPPED';
     const KUBERNETES_INVOICE_JOB_EXISTS                         = 'KUBERNETES_INVOICE_JOB_EXISTS';
     const KUBERNETES_INVOICE_JOB_CREATED                        = 'KUBERNETES_INVOICE_JOB_CREATED';

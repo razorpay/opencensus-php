@@ -35,11 +35,11 @@ use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Models\Gateway\Terminal\GatewayProcessor\Hitachi\GatewayProcessor;
+use Throwable;
 
 class Selector extends Base\Core
 {
     protected $input;
-
     protected $options;
 
     protected static $filters = [
