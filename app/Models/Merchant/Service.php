@@ -208,10 +208,11 @@ class Service extends Base\Service
             // assume the organization is razorpay
             $input[Entity::ORG_ID] = Org\Entity::RAZORPAY_ORG_ID;
 
+            $email = $input[Entity::EMAIL] ?? '';
             $this->trace->info(
                 TraceCode::MERCHANT_ORG_NOT_GIVEN,
                 [
-                    'merchant_email' => $input[Entity::EMAIL],
+                    'merchant_email' => $email,
                     'merchant_name'  => $input[Entity::NAME],
                 ]);
         }

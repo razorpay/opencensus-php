@@ -1621,6 +1621,9 @@ class Route
         'linked_account_create_batch'              => ['post',     'linked_accounts/batch',                          'MerchantController@createLinkedAccount'                            ],
 
         'user_register'                            => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
+        'user_otp_register'                        => ['post',     'users/register/otp',                             'UserController@registerUserWithOtp'                                ],
+        'verify_user_otp_register'                 => ['post',     'users/register/otp/verify',                      'UserController@verifyAndRegisterUser'                              ],
+
         'user_merchant_upgrade'                    => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],
         'user_resend_verification'                 => ['post',     'users/resend-verification',                      'UserController@postResendVerificationMail'                         ],
         'user_resend_verification_otp'             => ['post',     'users/resend-verification-otp',                  'UserController@postResendVerificationOtp'                          ],
@@ -3651,6 +3654,8 @@ class Route
         'user_login_2fa_setup_verify_mobile',
         'user_merchant_upgrade',
         'user_register',
+        'user_otp_register',
+        'verify_user_otp_register',
         'user_resend_verification',
         'user_reset_password_create',
         'user_reset_password_token',
@@ -10194,6 +10199,8 @@ class Route
             'user_login_2fa_setup_mobile',
             'user_login_2fa_setup_verify_mobile',
             'user_register',
+            'user_otp_register',
+            'verify_user_otp_register',
             'user_oauth_login',
             'user_oauth_register',
             'user_verify_second_factor_auth',

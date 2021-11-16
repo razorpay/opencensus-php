@@ -24,7 +24,7 @@ class CreateUsersTable extends Migration
 
             $table->string(User::NAME, 200);
 
-            $table->string(User::EMAIL, 255)->unique();
+            $table->string(User::EMAIL, 255)->unique()->nullable();
 
             $table->string(User::PASSWORD, 100)->nullable();
             $table->string(User::OLD_PASSWORD_1, 100)->nullable();
@@ -58,6 +58,8 @@ class CreateUsersTable extends Migration
 
             $table->json(User::OAUTH_PROVIDER)
                   ->nullable();
+
+            $table->tinyInteger(User::SIGNUP_VIA_EMAIL)->default(1);
 
             $table->index(User::CONFIRM_TOKEN);
 

@@ -662,7 +662,7 @@ class PublicErrorDescription
     const BAD_REQUEST_CUSTOMER_DUPLICATE_NOT_GLOBAL                             = 'Customer cannot be created';
     const BAD_REQUEST_GLOBAL_CUSTOMER_MISMATCH                                  = 'Global customer does not match with the customer found';
 
-    const BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED                              = 'OTP verification failed because attempt threshold has been reached. Please regenerate OTP.';
+    const BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED                              = 'OTP verification failed because attempt threshold has been reached. Please generate another otp.';
     const BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED                                 = 'SMS sending failed because threshold has been reached. Please try again later.';
     const SERVER_ERROR_EMAIL_LOGIN_OTP_REDIS_ERROR                              = 'An error occurred with redis during email login otp flow.';
     const SERVER_ERROR_EMAIL_VERIFICATION_OTP_REDIS_ERROR                       = 'An error occurred with redis during email verification otp flow.';
@@ -1507,4 +1507,10 @@ class PublicErrorDescription
     const BAD_REQUEST_USER_2FA_LOGIN_PASSWORD_REQUIRED                              = 'Second factor authentication is enabled for user. Password is required';
     const BAD_REQUEST_2FA_LOGIN_PASSWORD_SUSPENDED                                  = '2FA with password suspended due to too many incorrect attempts. Please try after some time.';
     const SERVER_ERROR_2FA_INCORRECT_PASSWORD_REDIS_ERROR                           = 'An error occurred with redis during 2fa with password flow.';
+    // Email/Mobile + OTP Signup
+    const BAD_REQUEST_EMAIL_ALREADY_EXISTS                                          = 'Customer with this email already exists';
+    const BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS                                 = 'Customer with this contact number already exists';
+    const BAD_REQUEST_EMAIL_SIGNUP_OTP_SEND_THRESHOLD_EXHAUSTED                     = 'Email Verification OTP could not be sent because threshold has been reached. Please try again later.';
+    const BAD_REQUEST_REDIS_KEY_THRESHOLD_EXCEEDED                                  = 'Bad request, redis key threshold exceeded.';
+    const BAD_REQUEST_SIGNUP_OTP_VERIFICATION_THRESHOLD_EXHAUSTED                   = 'Signup OTP verification attempt limit reached. Please try again later.';
 }

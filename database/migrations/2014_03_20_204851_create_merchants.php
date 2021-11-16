@@ -33,7 +33,7 @@ class CreateMerchants extends Migration
             $table->string(Merchant::NAME)
                   ->nullable();
 
-            $table->string(Merchant::EMAIL, 255);
+            $table->string(Merchant::EMAIL, 255)->nullable();
 
             $table->string(Merchant::ACCOUNT_CODE, 255)
                   ->nullable()
@@ -223,6 +223,8 @@ class CreateMerchants extends Migration
             $table->integer(Merchant::CREATED_AT);
 
             $table->integer(Merchant::UPDATED_AT);
+
+            $table->tinyInteger(Merchant::SIGNUP_VIA_EMAIL)->default(1);
 
             $table->index(Merchant::ACTIVATED_AT);
             $table->index(Merchant::ACTIVATED);

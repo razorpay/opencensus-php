@@ -56,7 +56,7 @@ class Validator extends Base\Validator
         Entity::MERCHANT_AVG_ORDER_VALUE        => 'sometimes|array|custom',
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
         Entity::CONTACT_EMAIL                   => 'sometimes|email|max:255',
-        Entity::CONTACT_MOBILE                  => 'sometimes|numeric|digits_between:8,11',
+        Entity::CONTACT_MOBILE                  => 'sometimes|max:15|contact_syntax',
         Entity::CONTACT_LANDLINE                => 'sometimes|numeric|digits_between:8,11',
         Entity::BUSINESS_TYPE                   => 'sometimes|numeric|digits_between:1,10',
         Entity::BUSINESS_NAME                   => 'filled|string|max:255',
@@ -140,7 +140,7 @@ class Validator extends Base\Validator
         Entity::MERCHANT_AVG_ORDER_VALUE                 => 'filled|array|custom',
         Entity::CONTACT_NAME                             => 'sometimes|alpha_space|max:255',
         Entity::CONTACT_EMAIL                            => 'filled|email|max:255',
-        Entity::CONTACT_MOBILE                           => 'sometimes|numeric|digits_between:8,11',
+        Entity::CONTACT_MOBILE                           => 'sometimes|max:15|contact_syntax',
         Entity::CONTACT_LANDLINE                         => 'sometimes|numeric|digits_between:8,11',
         Entity::BUSINESS_TYPE                            => 'filled|numeric|digits_between:1,10',
         Entity::BUSINESS_NAME                            => 'sometimes|max:255',
@@ -246,7 +246,7 @@ class Validator extends Base\Validator
         Entity::DEPARTMENT                      => 'sometimes|numeric|digits_between:1,7',
         Entity::BUSINESS_NAME                   => 'sometimes|string|max:255',
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
-        Entity::CONTACT_MOBILE                  => 'sometimes|numeric|digits_between:8,11',
+        Entity::CONTACT_MOBILE                  => 'sometimes|max:15|contact_syntax',
         Entity::BUSINESS_WEBSITE                => 'sometimes|max:255|custom',
     ];
 

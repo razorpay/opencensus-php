@@ -2406,10 +2406,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_MOBILE_LOGIN                                     = 'USER_MOBILE_LOGIN';
     const USER_X_MOBILE_APP_DOWNLOAD_LINK                       = 'USER_X_MOBILE_APP_DOWNLOAD_LINK';
     const USER_X_MOBILE_APP_DOWNLOAD_LINK_SENDING_FAILED        = 'USER_X_MOBILE_APP_DOWNLOAD_LINK_SENDING_FAILED';
-    const USER_SEND_SMS_OTP_FOR_LOGIN                          = 'USER_SEND_SMS_OTP_FOR_LOGIN';
-    const USER_VERIFY_SMS_OTP_FOR_LOGIN                        = 'USER_VERIFY_SMS_OTP_FOR_LOGIN';
-    const USER_SEND_EMAIL_OTP_FOR_LOGIN                        = 'USER_SEND_EMAIL_OTP_FOR_LOGIN';
-    const USER_VERIFY_EMAIL_OTP_FOR_LOGIN                      = 'USER_VERIFY_EMAIL_OTP_FOR_LOGIN';
+    const USER_SEND_SMS_OTP_FOR_LOGIN                           = 'USER_SEND_SMS_OTP_FOR_LOGIN';
+    const USER_VERIFY_SMS_OTP_FOR_LOGIN                         = 'USER_VERIFY_SMS_OTP_FOR_LOGIN';
+    const USER_SEND_EMAIL_OTP_FOR_LOGIN                         = 'USER_SEND_EMAIL_OTP_FOR_LOGIN';
+    const USER_SEND_EMAIL_OTP_FOR_REGISTER                      = 'USER_SEND_EMAIL_OTP_FOR_REGISTER';
+    const USER_VERIFY_EMAIL_OTP_FOR_LOGIN                       = 'USER_VERIFY_EMAIL_OTP_FOR_LOGIN';
+    const USER_VERIFY_EMAIL_OTP_FOR_REGISTER                    = 'USER_VERIFY_EMAIL_OTP_FOR_REGISTER';
     const USER_SEND_EMAIL_OTP_FOR_VERIFICATION                  = 'USER_SEND_EMAIL_OTP_FOR_VERIFICATION';
     const USER_SEND_SMS_OTP_FOR_VERIFICATION                    = 'USER_SEND_SMS_OTP_FOR_VERIFICATION';
     const USER_VERIFY_EMAIL_OTP_FOR_VERIFICATION                = 'USER_VERIFY_EMAIL_OTP_FOR_VERIFICATION';
@@ -2434,6 +2436,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CAPTCHA_VERIFICATION_CALL_FAILED                      = 'CAPTCHA_VERIFICATION_CALL_FAILED';
     const CAPTCHA_RETRY_LOGIC_SUCCESS                           = 'CAPTCHA_RETRY_LOGIC_SUCCESS';
     const SEND_USER_LOGIN_EMAIL_ATTEMPT                         = 'SEND_USER_LOGIN_EMAIL_ATTEMPT';
+    const EMAIL_SIGNUP_OTP_SEND_THRESHOLD_EXHAUSTED             = 'EMAIL_SIGNUP_OTP_SEND_THRESHOLD_EXHAUSTED';
+    const EMAIL_SIGNUP_OTP_REDIS_ERROR                          = 'EMAIL_SIGNUP_OTP_REDIS_ERROR';
 
     //Trace codes for users 2fa factory
     const SEND_2FA_OTP_SMS_FOR_ACTION                           = 'SEND_2FA_OTP_SMS_FOR_ACTION';
@@ -5605,6 +5609,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LOGIN_2FA_PASSWORD_SUSPENDED                      = 'LOGIN_2FA_PASSWORD_SUSPENDED';
 
     const PAYOUT_STATUS_DETAILS_ENTITY_CREATED              = 'PAYOUT_STATUS_DETAILS_ENTITY_CREATED';
+    const REDIS_KEY_THRESHOLD_EXCEEDED                      = 'REDIS_KEY_THRESHOLD_EXCEEDED';
+    const SIGNUP_OTP_VERIFICATION_THRESHOLD_EXHAUSTED          = 'SIGNUP_OTP_VERIFICATION_THRESHOLD_EXHAUSTED';
+    const VERIFY_SIGNUP_OTP_REDIS_ERROR                        = 'VERIFY_SIGNUP_OTP_REDIS_ERROR';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

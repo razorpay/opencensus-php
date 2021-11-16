@@ -125,6 +125,8 @@ class UserTest extends TestCase
 
         $this->coreMock->shouldReceive('attach')->andReturn(((new Core())->create($content['userData']))->toArrayPublic());
 
+        $this->coreMock->shouldReceive('checkIfMobileAlreadyExists')->withAnyArgs()->andReturn(false);
+
         $this->userRepoMock->shouldReceive('findOrFailPublic')->with('100002Razorpay')->andReturn(((new Core())->create($content['userData'])));
 
         $this->merchantRepoMock->shouldReceive('findOrFailPublic')->andReturn((new MerchantEntity())->build($content['merchantData']));
@@ -170,6 +172,7 @@ class UserTest extends TestCase
             'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
+            'email_verified' => false,
         ];
 
         $this->mockRedis();
@@ -208,6 +211,7 @@ class UserTest extends TestCase
             'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
+            'email_verified' => false,
         ];
 
         $this->mockRedis();
@@ -258,6 +262,7 @@ class UserTest extends TestCase
             'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
+            'email_verified' => false,
         ];
 
         $this->mockRedis();
@@ -382,6 +387,7 @@ class UserTest extends TestCase
             'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
+            'email_verified' => false,
         ];
 
         $this->mockRedis();
@@ -435,6 +441,7 @@ class UserTest extends TestCase
             'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
+            'email_verified' => false,
         ];
 
         $this->mockRedis();
@@ -636,6 +643,8 @@ class UserTest extends TestCase
         $this->coreMock->shouldReceive('attach')->andReturn(((new Core())->create($content['userData']))->toArrayPublic());
 
         $this->userRepoMock->shouldReceive('findOrFailPublic')->with('100002Razorpay')->andReturn(((new Core())->create($content['userData'])));
+
+        $this->coreMock->shouldReceive('checkIfMobileAlreadyExists')->withAnyArgs()->andReturn(false);
 
         $this->merchantRepoMock->shouldReceive('findOrFailPublic')->andReturn((new MerchantEntity())->build($content['merchantData']));
 
@@ -849,6 +858,7 @@ class UserTest extends TestCase
             'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
+            'email_verified' => false,
         ];
 
         $this->mockRedis();
@@ -1711,6 +1721,7 @@ class UserTest extends TestCase
             'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => true,
+            'email_verified' => true
         ];
 
         $this->basicAuthMock->shouldReceive('isAdminAuth')->andReturn(false);
@@ -1826,6 +1837,7 @@ class UserTest extends TestCase
             'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
+            'email_verified' => false,
         ];
 
         $this->userEntityMock->shouldReceive('getValidator')->andReturn($this->userValidator);
