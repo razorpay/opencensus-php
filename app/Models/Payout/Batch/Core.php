@@ -257,7 +257,19 @@ class Core extends BaseCore
             ]);
 
         // Check batch status
-        $status = $this->checkPayoutsBatchStatus($batchId);
+        try
+        {
+            $status = $this->checkPayoutsBatchStatus($batchId);
+        }
+        catch(BadRequestException $e)
+        {
+            // If the batch entity was not found in the table Payouts_batch
+            // it means the batch request didn't come as a private auth based API request.
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_INVALID_ID)
+            {
+                return $webhook;
+            }
+        }
 
         $webhook[EventEntity::PAYLOAD][PayoutEntity::PAYOUT][PayoutEntity::ENTITY][Constants::BATCH_STATUS] = $status;
 
@@ -301,7 +313,19 @@ class Core extends BaseCore
             ]);
 
         // Check batch status
-        $status = $this->checkPayoutsBatchStatus($payoutEntity->getBatchId());
+        try
+        {
+            $status = $this->checkPayoutsBatchStatus($payoutEntity->getBatchId());
+        }
+        catch(BadRequestException $e)
+        {
+            // If the batch entity was not found in the table Payouts_batch
+            // it means the batch request didn't come as a private auth based API request.
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_INVALID_ID)
+            {
+                return $webhookPayload;
+            }
+        }
 
         $webhookPayload[Constants::BATCH_STATUS] = $status;
 
@@ -340,7 +364,7 @@ class Core extends BaseCore
         /**
          * @var Entity
          */
-        $payoutsBatchEntity = (new Repository())->findOrFail($batchId);
+        $payoutsBatchEntity = (new Repository())->findOrFailPublic($batchId);
 
         return $payoutsBatchEntity->updateStatusFromBatchService();
     }

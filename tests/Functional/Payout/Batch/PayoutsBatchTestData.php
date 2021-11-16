@@ -339,4 +339,74 @@ return [
             ],
         ],
     ],
+
+    'testPayoutWebhooksForDashboardBasedBulkPayouts' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/bulk',
+            'content' => [
+                [
+                    'razorpayx_account_number' => '2224440041626905',
+                    'payout'                   => [
+                        'amount'       => '1000',
+                        'currency'     => 'INR',
+                        'mode'         => 'IMPS',
+                        'purpose'      => 'payout',
+                        'narration'    => 'Acme Corp Fund Transfer',
+                        'reference_id' => 'MFN1234'
+                    ],
+                    'fund'                     => [
+                        'account_type'   => 'bank_account',
+                        'account_name'   => 'Gaurav Kumar',
+                        'account_IFSC'   => 'HDFC0001234',
+                        'account_number' => '1121431121541121',
+                    ],
+                    'contact'                  => [
+                        'type'         => 'customer',
+                        'name'         => 'Gaurav Kumar',
+                        'email'        => 'sampleone@example.com',
+                        'mobile'       => '9988998899',
+                        'reference_id' => ''
+                    ],
+                    'idempotency_key'          => 'batch_abc123'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'batch_id'        => 'batch_C3fzDCb4hA4F6b',
+                        'idempotency_key' => 'batch_abc123'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFiringOfWebhookOnPayoutCreationForDashboardBasedBulkPayouts' => [
+        'entity'   => 'event',
+        'event'    => 'payout.initiated',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity'         => 'payout',
+                    'amount'         => 1000,
+                    'currency'       => 'INR',
+                    'status'         => 'processing',
+                    'purpose'        => 'payout',
+                    'mode'           => 'IMPS',
+                    'reference_id'   => 'MFN1234',
+                    'narration'      => 'Acme Corp Fund Transfer',
+                    'batch_id'       => 'batch_C3fzDCb4hA4F6b',
+                    'notes'          => [],
+                ],
+            ],
+        ],
+    ],
 ];

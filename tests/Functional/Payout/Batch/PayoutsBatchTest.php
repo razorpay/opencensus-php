@@ -412,6 +412,28 @@ class PayoutsBatchTest extends TestCase
         )->toArrayPublic();
     }
 
+    // to test if the webhooks for a dashboard based bulk payout works normally with mfn and payouts_batch feature flags
+    public function testPayoutWebhooksForDashboardBasedBulkPayouts()
+    {
+        $customTestCase = $this->testData[__FUNCTION__];
+
+        $headers = [
+            'HTTP_' . RequestHeader::X_Batch_Id => 'C3fzDCb4hA4F6b',
+        ];
+
+        // Add idempotency header to test data
+        $customTestCase['request']['server'] = $headers;
+
+        $this->ba->batchAuth();
+
+        $this->expectWebhookEventWithContents('payout.initiated',
+                                              'testFiringOfWebhookOnPayoutCreationForDashboardBasedBulkPayouts');
+
+        // We are not creating a payouts batch entity, to simulate a dashboard based bulk payout request
+
+        $this->startTest($customTestCase);
+    }
+
     protected function assertFileContents($fileContent)
     {
         $expectedHeaderRow
