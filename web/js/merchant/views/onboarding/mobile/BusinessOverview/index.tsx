@@ -329,6 +329,7 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                         formikProps.touched.business_model && formikProps.errors.business_model
                       }
                       helpText="Tell us about the products you sell, your customers and the channels you primarily use for business ( Website, offline retail, etc) with minimum 200 characters"
+                      maxLength={255}
                     />
                   </View>
                 </Space>
