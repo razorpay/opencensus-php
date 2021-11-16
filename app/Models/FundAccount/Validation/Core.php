@@ -15,6 +15,7 @@ use RZP\Constants\Product;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
@@ -379,7 +380,8 @@ class Core extends Base\Core
             $balance = $this->merchant->primaryBalance;
         }
 
-        if ($balance->getFeeCredits() >= $fee)
+        if (($balance->getFeeCredits() >= $fee) and
+            ($balance['type'] === Balance\Type::PRIMARY))
         {
             return;
         }

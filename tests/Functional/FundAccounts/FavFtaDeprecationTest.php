@@ -71,6 +71,68 @@ class FavFtaDeprecationTest extends TestCase
         Queue::assertPushed(FavQueueForFTS::class);
     }
 
+    public function testFAVCreditforBankingBalance()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->fixtures->merchant->addFeatures(['expose_fa_validation_utr']);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'na']);
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $balanceAccount = $this->getDbLastEntity('balance');
+
+        $this->testData[__FUNCTION__]['request']['content']['account_number'] =  $balanceAccount['account_number'];
+
+        $this->createFAVBankingPricingPlan();
+
+        $response = $this->startTest();
+
+        $this->triggerFlowToUpdateFavWithNewState($response['id'], 'COMPLETED');
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $fundAccount = $this->getLastEntity('fund_account', true);
+        $fav         = $this->getLastEntity('fund_account_validation', true);
+
+        // Queue will be processed by now.
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
+        $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertNotNull($fav['results']['utr']);
+        $this->assertEquals($balanceAccount['id'], $fav['balance_id']);
+        $this->assertEquals('INR', $fav['currency']);
+
+        // Fee and tax will be calculated at the time fund account validation is created.
+        $this->assertEquals(3, $fav['fees']);
+        $this->assertEquals(0, $fav['tax']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals('na', $txn['fee_model']);
+        $this->assertEquals(false, $txn['settled']);
+        $this->assertEquals(3, $txn['fee']);
+        $this->assertEquals(3, $txn['mdr']);
+        $this->assertEquals(0, $txn['tax']);
+        $this->assertEquals(3, $txn['debit']);
+        $this->assertEquals($fav['amount'], $txn['amount']);
+        $this->assertEquals(9999997, $txn['balance']);
+        $this->assertEquals(0, $txn['fee_credits']);
+        //credit_type is default since fee_credits are not used by razorpayX
+        $this->assertEquals('default', $txn['credit_type']);
+
+        $this->assertNotNull($txn['posted_at']);
+
+        // utr should be present in response['results'] array
+        $this->assertArrayKeysExist($response['results'], ['utr','account_status','registered_name']);
+
+        return $response;
+    }
+
     public function testFavHandlerFunction()
     {
         Queue::fake();

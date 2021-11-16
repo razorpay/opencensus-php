@@ -4,9 +4,10 @@ namespace RZP\Models\Transaction\Processor;
 
 use Carbon\Carbon;
 
-use RZP\Constants\Timezone;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
+use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Transaction\Processor\Base as BaseProcessor;
 
@@ -53,7 +54,8 @@ class FundAccountValidation extends BaseProcessor
     {
         switch (true)
         {
-            case ($this->feeCredits >= $this->fees):
+            case (($this->feeCredits >= $this->fees) and
+                  ($this->source->balance['type'] === Balance\Type::PRIMARY)):
                 $this->calculateFeeForFeeCredit();
                 break;
 
@@ -89,5 +91,20 @@ class FundAccountValidation extends BaseProcessor
     protected function setMerchantBalance()
     {
         $this->merchantBalance = $this->source->balance ?? $this->txn->merchant->primaryBalance;
+    }
+
+    public function setFeeDefaults()
+    {
+        if ($this->source->balance['type'] === Balance\TYPE::BANKING)
+        {
+            $this->amountCredits = 0;
+            $this->feeCredits    = 0;
+
+            $this->setMerchantFeeDefaults();
+        }
+        else
+        {
+            parent::setFeeDefaults();
+        }
     }
 }
