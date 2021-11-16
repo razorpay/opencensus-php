@@ -16,6 +16,8 @@ import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { track } from './ga';
 import RTracking from 'react-tracking';
 import { getCookie } from 'common/utils/cookies';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 
 @RTracking(() => window.rzpQ.component('partnerOnbr'))
 @withRouter
@@ -47,6 +49,9 @@ export default class BaseScreen extends React.Component {
       businessTypeName: this.props.user.isUnregisteredBusiness ? 'Unregistered' : 'Registered',
       fbBusinessTypeSuffix: this.props.user.isUnregisteredBusiness ? 'unreg' : 'reg',
     };
+
+    const isAppStorePage = this.props.location.pathname === '/app-store';
+    this.screenName = isAppStorePage ? 'app store' : 'home page';
   }
 
   componentDidMount() {
@@ -144,13 +149,26 @@ export default class BaseScreen extends React.Component {
           this.trackSignupSuccessEvents();
         }
       })
-      .catch(() => {
+      .catch(({ errors }) => {
         this.props.closeModal();
         this.props.showNotification({
           type: 'error',
           message: 'Something went wrong, we could not service this request at the moment.',
         });
         this.props.closeModal();
+
+        analyticsTrack({
+          objectName: 'Partner signup',
+          actionName: 'failed',
+          screen: this.screenName,
+          properties: {
+            status: 'failure',
+            failureReason: errors[0],
+            location: 'partner onboarding base screen',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+          toCleverTap: true,
+        });
       });
   };
 
@@ -162,6 +180,16 @@ export default class BaseScreen extends React.Component {
     track({
       eventAction: 'T&C Page',
       eventLabel: `Partner Onboarding | Accept T&C | ${this.state.businessTypeName}`,
+    });
+    analyticsTrack({
+      objectName: 'Partner T&C Page',
+      actionName: 'accept clicked',
+      screen: this.screenName,
+      properties: {
+        location: 'partner onboarding base screen',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+      toCleverTap: true,
     });
 
     this.closeTransaction('merchant/partner_type', {
@@ -186,6 +214,16 @@ export default class BaseScreen extends React.Component {
       eventAction: 'New User 1st Screen',
       eventLabel: `Partner Onboarding | Next | ${this.state.businessTypeName}`,
     });
+    analyticsTrack({
+      objectName: 'New User 1st Screen',
+      actionName: 'next clicked',
+      screen: this.screenName,
+      properties: {
+        location: 'partner onboarding base screen',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+      toCleverTap: true,
+    });
   };
 
   render() {
@@ -196,6 +234,7 @@ export default class BaseScreen extends React.Component {
             ? (sliderProps) => (
                 <S0
                   key={0}
+                  screenName={this.screenName}
                   sliderProps={sliderProps}
                   tracking={this.props.tracking}
                   merchantId={this.props.user.merchant.id}
@@ -211,6 +250,7 @@ export default class BaseScreen extends React.Component {
           {(sliderProps) => (
             <S2
               key={2}
+              screenName={this.screenName}
               sliderProps={sliderProps}
               onRoleSelect={this.onRoleSelect}
               role={this.state.role}

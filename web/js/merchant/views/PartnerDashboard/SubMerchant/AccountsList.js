@@ -43,6 +43,8 @@ import { mediaWindowUrl } from './components/SocialShare';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import Loader from 'common/ui/Loader';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const email = {
   title: 'Registered Email',
@@ -281,6 +283,16 @@ class ProductSubMerchantsList extends ListContainer {
       source: 'welcome screen',
     });
     trackAddNewMerchantEvents('Click - Welcome Screen');
+    analyticsTrack({
+      objectName: 'Add New Merchant',
+      actionName: 'clicked',
+      screen: 'affiliate accounts',
+      properties: {
+        location: 'welcome screen',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+      toCleverTap: true,
+    });
     this.props.openModal({
       size: 'med-large',
       component: <AddMerchant closeModal={this.props.closeModal} />,
@@ -363,6 +375,17 @@ class ProductSubMerchantsList extends ListContainer {
           partnerID: this.props.user.id,
         }),
       );
+      analyticsTrack({
+        objectName: 'Social Share Referral Link',
+        actionName: 'clicked',
+        screen: 'affiliate accounts',
+        properties: {
+          location: 'welcome screen',
+          socialMedia: platform,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+        toCleverTap: true,
+      });
       this.props.tracking.trackEvent(
         window.rzpQ.onbr().clicked('partnerships.submerchant.referral.product_group.social', {
           productGroup,
@@ -388,6 +411,16 @@ class ProductSubMerchantsList extends ListContainer {
           partnerID: this.props.user.id,
         }),
       );
+      analyticsTrack({
+        objectName: 'Copy Referal Link',
+        actionName: 'clicked',
+        screen: 'affiliate accounts',
+        properties: {
+          location: 'welcome screen',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+        toCleverTap: true,
+      });
       // new event
       this.props.tracking.trackEvent(
         window.rzpQ.onbr().clicked('partnerships.submerchant.referral.product_group.copy', {

@@ -1,6 +1,8 @@
 import React from 'react';
 import SlideContoller from './SlideController';
 import { track } from '../ga';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const S0 = (props) => {
   const handleNextClick = () => {
@@ -24,6 +26,17 @@ const S0 = (props) => {
     track({
       eventAction: 'New User Welcome Screen',
       eventLabel: `Partner Onboarding | Next | ${props.businessTypeName}`,
+    });
+
+    analyticsTrack({
+      objectName: 'New User Welcome Screen',
+      actionName: 'next clicked',
+      screen: props.screenName,
+      properties: {
+        location: 'partner onboarding base screen',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+      toCleverTap: true,
     });
   };
 

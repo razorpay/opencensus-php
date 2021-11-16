@@ -118,6 +118,17 @@ export default class ProfileDropdown extends Component {
       eventLabel: `Partner Onboarding | Start | Explore Partner Program | ${businessTypeName}`,
     });
 
+    analyticsTrack({
+      objectName: 'Explore Partner Program',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        location: 'top navigation',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+      toCleverTap: true,
+    });
+
     this.props.openModal({
       size: 'xlarge',
       disableClose: false,

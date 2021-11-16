@@ -5,6 +5,8 @@ import { track as trackPartnerOnbr } from 'merchant/views/PartnerDashboard/Onboa
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import { partnerProducts } from './data/index';
 
@@ -18,6 +20,17 @@ function showPartnerIntent(props) {
   const businessTypeName = props.user.isUnregisteredBusiness ? 'Unregistered' : 'Registered';
   trackPartnerOnbr({
     eventLabel: `Partner Onboarding | Start | Become a Partner | ${businessTypeName}`,
+  });
+
+  analyticsTrack({
+    objectName: 'Become a Partner',
+    actionName: 'clicked',
+    screen: 'app store',
+    properties: {
+      location: 'app store footer',
+      ...getCommonAnalyticsProperties(window.rzp_user),
+    },
+    toCleverTap: true,
   });
 
   props.tracking.trackEvent(

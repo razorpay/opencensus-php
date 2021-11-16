@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import SlideController from './SlideController';
 import PartnerSelectBox from './PartnerTypeSelector';
 import { track } from '../ga';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const S2 = ({
   role,
@@ -14,6 +16,7 @@ const S2 = ({
   lpVariant,
   lpFold,
   businessTypeName,
+  screenName,
 }) => {
   const handleNextClick = () => {
     tracking.trackEvent(
@@ -28,6 +31,17 @@ const S2 = ({
     track({
       eventAction: 'Select - Type',
       eventLabel: `Partner Onboarding | Next | ${businessTypeName}`,
+    });
+
+    analyticsTrack({
+      objectName: 'Partner Select Type',
+      actionName: 'next clicked',
+      screen: screenName,
+      properties: {
+        location: 'partner onboarding base screen',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+      toCleverTap: true,
     });
   };
 

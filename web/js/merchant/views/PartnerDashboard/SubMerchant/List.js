@@ -17,6 +17,8 @@ import Announcement from 'merchant/components/Announcements/Instant';
 import { XSubMerchantList, PrimarySubMerchantList } from './AccountsList';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { trackAddNewMerchantEvents } from '../ga';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect(
   (state) => ({
@@ -45,6 +47,16 @@ export default class SubMerchantsList extends Component {
     this.trackUserEvent('partnerships.submerchant.add', {
       source: 'navbar',
     });
+    analyticsTrack({
+      objectName: 'Add New Merchant',
+      actionName: 'clicked',
+      screen: 'affiliate accounts',
+      properties: {
+        location: 'navbar',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+      toCleverTap: true,
+    });
     trackAddNewMerchantEvents('Click - Navbar');
     this.props.openModal({
       size: 'med-large',
@@ -54,6 +66,16 @@ export default class SubMerchantsList extends Component {
 
   handleShareReferralLink = () => {
     this.trackUserEvent('partnerships.submerchant.referral');
+    analyticsTrack({
+      objectName: 'Share Referral Link',
+      actionName: 'clicked',
+      screen: 'affiliate accounts',
+      properties: {
+        location: 'submerchant list',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+      toCleverTap: true,
+    });
 
     this.props.openModal({
       size: 'med-large',

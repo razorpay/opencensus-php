@@ -4,6 +4,8 @@ import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import { mediaWindowUrl } from './SocialShare';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 export default function SocialShareGroup({ referralUrl, tracking, product, partnerID }) {
   const trackUserEvent = (eventName, properties = {}) => {
@@ -32,6 +34,17 @@ export default function SocialShareGroup({ referralUrl, tracking, product, partn
     }
     if (product === PRODUCT_TYPE.PG) {
       trackUserEvent('partnerships.submerchant.referral.social');
+      analyticsTrack({
+        objectName: 'Social Share Referral Link',
+        actionName: 'clicked',
+        screen: 'affiliate accounts',
+        properties: {
+          location: 'submerchant list',
+          socialMedia: platform,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+        toCleverTap: true,
+      });
       trackUserEvent('partnerships.submerchant.referral.product_group.social', {
         productGroup: 'Payments',
         socialMedia: platform,
@@ -47,6 +60,16 @@ export default function SocialShareGroup({ referralUrl, tracking, product, partn
       });
       trackReferral();
       trackUserEvent('partnerships.submerchant.referral.copy');
+      analyticsTrack({
+        objectName: 'Copy Referal Link',
+        actionName: 'clicked',
+        screen: 'affiliate accounts',
+        properties: {
+          location: 'submerchant list',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+        toCleverTap: true,
+      });
       trackUserEvent('partnerships.submerchant.referral.product_group.copy', {
         productGroup: 'Payments',
       });
