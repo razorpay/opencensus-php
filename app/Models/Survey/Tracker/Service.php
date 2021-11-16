@@ -122,6 +122,15 @@ class Service extends Base\Service
             $lastTriggeredSurvey[Entity::SURVEY_TYPE] = $survey[Survey\Entity::TYPE];
         }
 
+        $this->trace->info(TraceCode::RESPONSE_FOR_PENDING_SURVEY,
+            [
+                'survey_type' => $lastTriggeredSurvey[Entity::SURVEY_TYPE],
+                'survey_url'  => $lastTriggeredSurvey[Entity::SURVEY_URL],
+                'survey_id'   => $lastTriggeredSurvey[Entity::SURVEY_ID]
+            ]
+        );
+
+
         return (empty($surveyResponse) === true) ? $lastTriggeredSurvey->toArrayPublic() : null;
     }
 

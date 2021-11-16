@@ -5064,6 +5064,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SURVEY_TRIGGER_INPUT                              = 'SURVEY_TRIGGER_INPUT';
     const COHORT_EMAIL_GETTING_SENT                         = 'COHORT_EMAIL_GETTING_SENT';
     const SELECTED_COHORT_COUNT                             = 'SELECTED_COHORT_COUNT';
+    const RESPONSE_FOR_PENDING_SURVEY                       = 'RESPONSE_FOR_PENDING_SURVEY';
 
     const BANK_TRANSFER_REQUEST_UPDATION_FAILED     = 'BANK_TRANSFER_REQUEST_UPDATION_FAILED';
     const APPLICATION_TAG_MAPPING_NOT_PRESENT       = 'APPLICATION_TAG_MAPPING_NOT_PRESENT';
