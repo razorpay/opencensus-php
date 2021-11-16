@@ -1,9 +1,5 @@
-import { connect } from 'react-redux';
 import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
-
-import { openModal } from 'merchant_common/reducers/modals';
-
 import Time from 'common/ui/Time';
 import Amount from 'common/ui/Amount';
 import Spinner from 'common/ui/Spinner';
@@ -11,10 +7,8 @@ import Alert from 'common/ui/Forms/Alert';
 import Definition from 'common/ui/Definition';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
-
 import Button from 'common/new-ui/Button';
-import { DocLink } from 'merchant/components/DocsLink'
-
+import { DocLink } from 'merchant/components/DocsLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import CopyLink from 'merchant/components/CopyLink';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
@@ -23,10 +17,9 @@ import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { changeData } from 'merchant/views/Subscriptions/SubscriptionLinks/Update/Review';
 import Tooltip from 'common/ui/Tooltip';
-
-import ManualChargeModal from './ManualChargeModal';
-
 import { trackClickDuplicateSubscription } from '../ga';
+import moment from 'moment';
+import analytics from '../../analytics';
 
 export default (props) => {
   const {
@@ -52,7 +45,7 @@ export default (props) => {
     removeOffer,
   } = props;
 
-  let showTestChargeBtn =
+  const showTestChargeBtn =
     !isLoading &&
     onTestChargeAttempt &&
     (['authenticated', 'active', 'halted', 'pending'].indexOf(subscription.status) > -1 ||
@@ -62,7 +55,8 @@ export default (props) => {
 
   const allowUpdateSubscription =
     ['authenticated', 'active'].includes(subscription.status) &&
-    (subscription.payment_method !== 'upi' && subscription.payment_method !== 'emandate');
+    subscription.payment_method !== 'upi' &&
+    subscription.payment_method !== 'emandate';
 
   const hideCancelUpdate = ['cancelled', 'completed', 'expired'].includes(subscription.status);
 
@@ -105,14 +99,23 @@ export default (props) => {
             <i class="i i-refresh text-main icon--formal" /> <strong>{subscription.id}</strong>
             {allowUpdateSubscription && (
               <div class="pull-right" style={style}>
-                <NavLink class="btn btn-primary" to={`/subscriptions/${subscription.id}/edit`}>
+                <NavLink
+                  class="btn btn-primary"
+                  to={`/subscriptions/${subscription.id}/edit`}
+                  onClick={() => {
+                    analytics.track('subscription.update.initiate');
+                  }}
+                >
                   Update
                 </NavLink>
               </div>
             )}
             <div class="btn-toolbar pull-right">
               <NavLink
-                onClick={trackClickDuplicateSubscription}
+                onClick={() => {
+                  trackClickDuplicateSubscription();
+                  analytics.track('subscription.clone.start');
+                }}
                 class="btn Button--primary--invert"
                 to={`/subscriptions/new?duplicate_id=${subscription.id}`}
               >
@@ -182,11 +185,9 @@ export default (props) => {
               </EntityDetailRow>
 
               <EntityDetailRow label="Payment Method">
-                <div class="payment_method">
-                  {subscription.payment_method || '--'}
-                </div>
-                {(subscription.payment_details || []).map((ele) => (
-                  <div>{ele}</div>
+                <div class="payment_method">{subscription.payment_method || '--'}</div>
+                {(subscription.payment_details || []).map((ele, i) => (
+                  <div key={i}>{ele}</div>
                 ))}
               </EntityDetailRow>
 
@@ -248,7 +249,7 @@ export default (props) => {
                       }
                     >
                       <DocLink href="https://razorpay.com/docs/subscriptions" target="_blank">
-                        View docs >
+                        View docs &gt;
                       </DocLink>{' '}
                     </ShowWhen>
                   </div>
@@ -316,17 +317,17 @@ export default (props) => {
   );
 };
 
-const getTestModeMessage = (subscription) => {
-
+function getTestModeMessage(subscription) {
   const chargeThisNowBtn = {
     btnLabel: 'Charge this now',
     infoMsg: ' Attempt charge now for next scheduled invoice. ',
   };
 
-  if (subscription.payment_method === 'emandate' &&
-      subscription.status === 'created' &&
-      subscription.pay_now_enabled) {
-
+  if (
+    subscription.payment_method === 'emandate' &&
+    subscription.status === 'created' &&
+    subscription.pay_now_enabled
+  ) {
     return chargeThisNowBtn;
   }
 
@@ -356,11 +357,11 @@ const getTestModeMessage = (subscription) => {
       return chargeThisNowBtn;
     }
   }
-};
+}
 
-const UpdatedSubscriptionPreview = ({ data }) => {
-  return data.map(({ heading, changes }) => (
-    <div class="changed-values">
+function UpdatedSubscriptionPreview({ data }) {
+  return data.map(({ heading, changes }, index) => (
+    <div class="changed-values" key={index}>
       <div>
         {changes.map((e) => (
           <div class="current-change" key={e.current}>
@@ -375,20 +376,22 @@ const UpdatedSubscriptionPreview = ({ data }) => {
       </div>
     </div>
   ));
-};
+}
 
 // Customer component
-const getCustomerDetail = (customer) => (
-  <Definition placeholder="--">
-    {customer.name}
-    {customer.email && <span>{customer.email}</span>}
-    {customer.contact && <span>{customer.contact}</span>}
-    {customer.id && <code>{customer.id}</code>}
-  </Definition>
-);
+function getCustomerDetail(customer) {
+  return (
+    <Definition placeholder="--">
+      {customer.name}
+      {customer.email && <span>{customer.email}</span>}
+      {customer.contact && <span>{customer.contact}</span>}
+      {customer.id && <code>{customer.id}</code>}
+    </Definition>
+  );
+}
 
 // Get plan description
-const getDescription = (interval, period) => {
+function getDescription(interval, period) {
   switch (period) {
     case 'monthly':
       return `Billed Every ${interval} month`;
@@ -399,4 +402,4 @@ const getDescription = (interval, period) => {
     default:
       return period;
   }
-};
+}

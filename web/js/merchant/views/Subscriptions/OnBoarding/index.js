@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
@@ -18,6 +19,7 @@ import OnBoarding, {
 import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
 
 import { PROS, FEATURES_DATA, FEATURES_LINKS } from './data';
+import analytics from '../analytics';
 
 @connect((state) => ({
   user: state.session.user,
@@ -42,22 +44,29 @@ export default class SubscriptionOnBoarding extends React.Component {
   getNextButton = (sliderProps) => () => {
     const props = {
       feature: RZPFeatures.SUBSCRIPTIONS,
-      onClick: this.props.closeOnboarding,
       page: sliderProps.active,
     };
+    let onClick = this.props.closeOnboarding;
 
     if (this.props.user.isSubscriptionsEnabled) {
       props.isLocalEnabler = true;
-      props.onClick = this.closeOnboarding;
+      onClick = this.closeOnboarding;
     }
 
-    this.props.tracking.trackEvent(
-      window.rzpQ.subscription().interaction('subscription.onboarding.get_started', {
-        isTour: this.props.user.isSubscriptionsEnabled,
-      }),
+    return (
+      <FeatureEnableSliderButton
+        {...props}
+        onClick={() => {
+          this.props.tracking.trackEvent(
+            window.rzpQ.subscription().interaction('subscription.onboarding.get_started', {
+              isTour: this.props.user.isSubscriptionsEnabled,
+            }),
+          );
+          analytics.track('subscription.tutorial.get_started');
+          onClick();
+        }}
+      />
     );
-
-    return <FeatureEnableSliderButton {...props} />;
   };
 
   renderSkipButton = (sliderProps) => {
@@ -67,13 +76,22 @@ export default class SubscriptionOnBoarding extends React.Component {
       onClick: this.props.closeOnboarding,
       isTour: this.props.subscriptionProductOnBoarding.isTour,
     };
+    let onClick = this.props.closeOnboarding;
 
     if (this.props.user.isSubscriptionsEnabled) {
       btnProps.isLocalEnabler = true;
-      btnProps.onClick = this.closeOnboarding;
+      onClick = this.closeOnboarding;
     }
 
-    return <SkipAndGetStartedButton {...btnProps} />;
+    return (
+      <SkipAndGetStartedButton
+        {...btnProps}
+        onClick={() => {
+          analytics.track('subscription.tutorial.skip');
+          onClick();
+        }}
+      />
+    );
   };
 
   render() {
@@ -97,6 +115,7 @@ export default class SubscriptionOnBoarding extends React.Component {
                     isTour: this.props.user.isSubscriptionsEnabled,
                   }),
                 );
+                analytics.track(`subscription.tutorial.read_more`);
 
                 return sliderProps.next(...args);
               }}
@@ -114,6 +133,9 @@ export default class SubscriptionOnBoarding extends React.Component {
                 onClick: () => {
                   this.props.tracking.trackEvent(
                     window.rzpQ.subscription().interaction(`subscription.onboarding.${link.label}`),
+                  );
+                  analytics.track(
+                    `subscription.tutorial.${link.label?.toLowerCase().split(' ').join('_')}`,
                   );
                 },
               }))}

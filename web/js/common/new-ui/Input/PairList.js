@@ -1,3 +1,5 @@
+import React from 'react';
+// eslint-disable-next-line import/no-cycle
 import { Label, inputClass } from './index';
 import debounce from 'common/utils/debounce';
 import { classList } from 'common/utils/rzp-utils';
@@ -14,7 +16,8 @@ export default class PairList extends React.PureComponent {
 
   onChange = debounce(this.props.onChange, 250); // Optimization to avoid parent re-render on every key press
 
-  onAddNew = (e) => {
+  onAddNew = () => {
+    // eslint-disable-next-line react/no-access-state-in-setstate
     const freshPairs = [...this.state.pairs];
     freshPairs.push({
       key: '',
@@ -30,7 +33,9 @@ export default class PairList extends React.PureComponent {
         document.getElementsByName(`${this.props.name}[${freshPairs.length - 1}][key]`)[0].focus(),
       10,
     );
-    this.props.onAddNew && this.props.onAddNew(freshPairs);
+    if (this.props.onAddNew) {
+      this.props.onAddNew(freshPairs);
+    }
   };
 
   updateField = (e, field) => {
@@ -38,10 +43,11 @@ export default class PairList extends React.PureComponent {
     const pairId = e.currentTarget.dataset.id;
 
     if (pairId > -1) {
+      // eslint-disable-next-line react/no-access-state-in-setstate
       const freshPairs = [...this.state.pairs];
       freshPairs[pairId][field] = e.target.value;
 
-      this.onChange(freshPairs);
+      this.onChange(freshPairs, field);
       this.setState({
         pairs: freshPairs,
       });
@@ -59,6 +65,7 @@ export default class PairList extends React.PureComponent {
     const pairId = e.currentTarget.dataset.id;
 
     if (pairId > -1) {
+      // eslint-disable-next-line react/no-access-state-in-setstate
       const freshPairs = [...this.state.pairs];
       freshPairs.splice(pairId, 1);
 
@@ -102,7 +109,7 @@ export default class PairList extends React.PureComponent {
 class Pair extends React.Component {
   state = {};
 
-  onFocusTitle = (e) => {
+  onFocusTitle = () => {
     this.setState({
       focusTitle: true,
     });
@@ -113,10 +120,12 @@ class Pair extends React.Component {
       focusTitle: false,
     });
 
-    this.props.onBlurTitle && this.props.onBlurTitle(e);
+    if (this.props.onBlurTitle) {
+      this.props.onBlurTitle(e);
+    }
   };
 
-  onFocusDesc = (e) => {
+  onFocusDesc = () => {
     this.setState({
       focusDesc: true,
     });
@@ -127,7 +136,9 @@ class Pair extends React.Component {
       focusDesc: false,
     });
 
-    this.props.onBlurDesc && this.props.onBlurDesc(e);
+    if (this.props.onBlurDesc) {
+      this.props.onBlurDesc(e);
+    }
   };
 
   render() {

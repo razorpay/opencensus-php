@@ -11,6 +11,7 @@ import { getIntervalCycle } from 'common/utils/rzp-utils';
 import { subscriptionId, createdAt, status } from 'common/ui/item/pair';
 import Tooltip from 'common/ui/Tooltip';
 import { trackClickDuplicatePlan } from 'merchant/views/Subscriptions/Plans/ga';
+import analytics from '../../analytics';
 
 export default ({ plan, isLoading, statusMsg, subscriptions }) => {
   const tableLimit = 5; // Set limit to total rows displayed in table
@@ -23,11 +24,13 @@ export default ({ plan, isLoading, statusMsg, subscriptions }) => {
       ) : (
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
-            <i class="i i-plan text-main icon--formal" />{' '}
-            <strong>{plan.id}</strong>
+            <i class="i i-plan text-main icon--formal" /> <strong>{plan.id}</strong>
             <div class="btn-toolbar pull-right">
               <NavLink
-                onClick={trackClickDuplicatePlan}
+                onClick={() => {
+                  trackClickDuplicatePlan();
+                  analytics.track('plan.clone.start');
+                }}
                 class="btn Button--primary--invert"
                 to={`/plans/new?duplicate_id=${plan.id}`}
               >
@@ -55,29 +58,17 @@ export default ({ plan, isLoading, statusMsg, subscriptions }) => {
 
               <EntityDetailRow
                 label="Billing Amount"
-                value={() => (
-                  <Amount
-                    currency={plan.item.currency}
-                    value={plan.item.amount}
-                  />
-                )}
+                value={() => <Amount currency={plan.item.currency} value={plan.item.amount} />}
               />
 
               <EntityDetailRow
                 label="Billing Frequency"
-                value={() => (
-                  <span>{getIntervalCycle(plan.interval, plan.period)}</span>
-                )}
+                value={() => <span>{getIntervalCycle(plan.interval, plan.period)}</span>}
               />
 
               <EntityDetailRow
                 label="Created At"
-                value={() => (
-                  <Time
-                    value={plan.created_at}
-                    format="DD MMM YYYY, hh:mm:ss a"
-                  />
-                )}
+                value={() => <Time value={plan.created_at} format="DD MMM YYYY, hh:mm:ss a" />}
               />
 
               <NestedEntityDetailRow label="Notes" value={plan.notes} />
@@ -104,10 +95,7 @@ export default ({ plan, isLoading, statusMsg, subscriptions }) => {
                   />
                 </ListToggler>
               ) : (
-                <EntityDetailRow
-                  label="Subscriptions"
-                  value="No Subscriptions"
-                />
+                <EntityDetailRow label="Subscriptions" value="No Subscriptions" />
               )}
             </div>
           </div>

@@ -3,6 +3,7 @@ import ListFilter from 'merchant/components/ListFilter';
 
 import { PowerSelect } from 'react-power-select';
 import { humanize } from 'common/utils/rzp-utils';
+import moment from 'moment';
 
 const statusList = [
   'created',
@@ -100,7 +101,7 @@ export default (props) => {
               class="form-control input-sm"
               onChange={props.onFieldChange}
             >
-              <option value=""></option>
+              <option value="" />
               <option value={next7DaysEpoch}>Next 7 days</option>
               <option value={next30DaysEpoch}>Next 30 days</option>
               <option value={next60DaysEpoch}>Next 60 days</option>
@@ -115,7 +116,7 @@ export default (props) => {
               class="form-control input-sm"
               onChange={props.onFieldChange}
             >
-              <option value=""></option>
+              <option value="" />
               <option value={next7DaysEpoch}>Next 7 days</option>
               <option value={next30DaysEpoch}>Next 30 days</option>
               <option value={next60DaysEpoch}>Next 60 days</option>

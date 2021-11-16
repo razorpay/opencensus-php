@@ -14,3 +14,4 @@ web/entry/merchantLA-entry.js
 web/entry/merchant-entry.js
 web/js/merchant/containers/App.js
 web/js/merchantLA/containers/App.js
+web/js/merchant/views/Subscriptions/Subscriptions/Details.js
