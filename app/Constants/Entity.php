@@ -389,12 +389,14 @@ class Entity
     const AUTH_SERVICE_REFRESH_TOKENS  = 'auth_service.refresh_tokens';
 
     // Service: Shield
-    const SHIELD_RULES                 = 'shield.rules';
-    const SHIELD_RISKS                 = 'shield.risks';
-    const SHIELD_RISK_LOGS             = 'shield.risk_logs';
-    const SHIELD_LISTS                 = 'shield.lists';
-    const SHIELD_LIST_ITEMS            = 'shield.list_items';
-    const SHIELD_RULE_ANALYTICS        = 'shield.rule_analytics';
+    const SHIELD_RULES                    = 'shield.rules';
+    const SHIELD_RISKS                    = 'shield.risks';
+    const SHIELD_RISK_LOGS                = 'shield.risk_logs';
+    const SHIELD_LISTS                    = 'shield.lists';
+    const SHIELD_LIST_ITEMS               = 'shield.list_items';
+    const SHIELD_RULE_ANALYTICS           = 'shield.rule_analytics';
+    const SHIELD_RISK_THRESHOLD_CONFIGS   = 'shield.risk_threshold_configs';
+    const SHIELD_MERCHANT_RISK_THRESHOLDS = 'shield.merchant_risk_thresholds';
 
     const PAYMENTS_CARDS_AUTHORIZATION  = 'payments_cards.authorization';
     const PAYMENTS_CARDS_AUTHENTICATION = 'payments_cards.authentication';
@@ -1149,16 +1151,20 @@ class Entity
         self::REPORTING_LOGS                => \RZP\Services\Reporting::class,
         self::REPORTING_CONFIGS             => \RZP\Services\Reporting::class,
         self::REPORTING_SCHEDULES           => \RZP\Services\Reporting::class,
-        self::SHIELD_RULES                  => \RZP\Services\ShieldClient::class,
         self::AUTH_SERVICE_APPLICATIONS     => \RZP\Services\AuthService::class,
         self::AUTH_SERVICE_CLIENTS          => \RZP\Services\AuthService::class,
         self::AUTH_SERVICE_TOKENS           => \RZP\Services\AuthService::class,
         self::AUTH_SERVICE_REFRESH_TOKENS   => \RZP\Services\AuthService::class,
-        self::SHIELD_RULE_ANALYTICS         => \RZP\Services\ShieldClient::class,
-        self::SHIELD_RISKS                  => \RZP\Services\ShieldClient::class,
-        self::SHIELD_RISK_LOGS              => \RZP\Services\ShieldClient::class,
-        self::SHIELD_LISTS                  => \RZP\Services\ShieldClient::class,
-        self::SHIELD_LIST_ITEMS             => \RZP\Services\ShieldClient::class,
+
+        self::SHIELD_RULES                    => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RULE_ANALYTICS           => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RISKS                    => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RISK_LOGS                => \RZP\Services\ShieldClient::class,
+        self::SHIELD_LISTS                    => \RZP\Services\ShieldClient::class,
+        self::SHIELD_LIST_ITEMS               => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RISK_THRESHOLD_CONFIGS   => \RZP\Services\ShieldClient::class,
+        self::SHIELD_MERCHANT_RISK_THRESHOLDS => \RZP\Services\ShieldClient::class,
+
         self::BATCH_SERVICE                 => \RZP\Services\BatchMicroService::class,
         self::BATCH_FILE_STORE              => \RZP\Services\BatchMicroService::class,
         self::PAYMENTS_CARDS_AUTHENTICATION => \RZP\Services\CardPaymentService::class,

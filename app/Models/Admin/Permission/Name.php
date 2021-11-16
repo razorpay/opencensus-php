@@ -279,6 +279,15 @@ class Name
     const PURGE_SHIELD_LIST_ITEMS             = 'purge_shield_list_items';
     const DELETE_SHIELD_LIST_ITEM             = 'delete_shield_list_item';
     const RETRIEVE_SHIELD_UI_SETTINGS         = 'retrieve_shield_ui_settings';
+    const VIEW_RISK_THRESHOLD_CONFIG          = 'view_risk_threshold_config';
+    const CREATE_RISK_THRESHOLD_CONFIG        = 'create_risk_threshold_config';
+    const UPDATE_RISK_THRESHOLD_CONFIG        = 'update_risk_threshold_config';
+    const DELETE_RISK_THRESHOLD_CONFIG        = 'delete_risk_threshold_config';
+    const VIEW_MERCHANT_RISK_THRESHOLD        = 'view_merchant_risk_threshold';
+    const CREATE_MERCHANT_RISK_THRESHOLD      = 'create_merchant_risk_threshold';
+    const UPDATE_MERCHANT_RISK_THRESHOLD      = 'update_merchant_risk_threshold';
+    const DELETE_MERCHANT_RISK_THRESHOLD      = 'delete_merchant_risk_threshold';
+    const BULK_UPDATE_MERCHANT_RISK_THRESHOLD = 'bulk_update_merchant_risk_threshold';
     const VIEW_MERCHANT_ANALYTICS             = 'view_merchant_analytics';
     const ASSIGN_MERCHANT_ACTIVATION_REVIEWER = 'assign_merchant_activation_reviewer';
     const DB_META_QUERY                       = 'db_meta_query';

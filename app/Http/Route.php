@@ -1821,6 +1821,61 @@ class Route
             'shield/settings/ui',
             'ShieldController@proxyRequest'
         ],
+        'shield_risk_threshold_config_get_multiple' => [
+            'get',
+            'shield/risk/threshold/configs',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_risk_threshold_config_get' => [
+            'get',
+            'shield/risk/threshold/configs/{config_id}',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_risk_threshold_config_create' => [
+            'post',
+            'shield/risk/threshold/configs',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_risk_threshold_config_update' => [
+            'put',
+            'shield/risk/threshold/configs/{config_id}',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_risk_threshold_config_delete' => [
+            'delete',
+            'shield/risk/threshold/configs/{config_id}',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_merchant_risk_threshold_get_multiple' => [
+            'get',
+            'shield/merchant/risk/thresholds',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_merchant_risk_threshold_get' => [
+            'get',
+            'shield/merchant/risk/thresholds/{threshold_id}',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_merchant_risk_threshold_create' => [
+            'post',
+            'shield/merchant/risk/thresholds',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_merchant_risk_threshold_update' => [
+            'put',
+            'shield/merchant/risk/thresholds/{threshold_id}',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_merchant_risk_threshold_delete' => [
+            'delete',
+            'shield/merchant/risk/thresholds/{threshold_id}',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_merchant_risk_threshold_bulk_update' => [
+            'post',
+            'shield/merchant/risk/threshold/bulk',
+            'ShieldController@proxyRequest'
+        ],
 
         // Scrooge Routes
         'scrooge_dashboard_init'                   => ['get',      'scrooge/dashboard-init',                         'ScroogeController@dashboardInit'                                   ],
@@ -5124,6 +5179,17 @@ class Route
         'shield_list_items_purge',
         'shield_list_items_delete',
         'shield_settings_ui',
+        'shield_risk_threshold_config_get_multiple',
+        'shield_risk_threshold_config_get',
+        'shield_risk_threshold_config_create',
+        'shield_risk_threshold_config_update',
+        'shield_risk_threshold_config_delete',
+        'shield_merchant_risk_threshold_get_multiple',
+        'shield_merchant_risk_threshold_get',
+        'shield_merchant_risk_threshold_create',
+        'shield_merchant_risk_threshold_update',
+        'shield_merchant_risk_threshold_delete',
+        'shield_merchant_risk_threshold_bulk_update',
 
         'razorx_route',
         'splitz_route',
@@ -6182,21 +6248,34 @@ class Route
         'reports_transaction_dsp'                  => Permission::VIEW_SPECIAL_MERCHANT_REPORT,
         'reports_refund_irctc'                     => Permission::VIEW_SPECIAL_MERCHANT_REPORT,
         'enable_emi_merchant_sub'                  => Permission::MANAGE_EMI_PLANS,
-        'shield_rules_get_multiple'                => Permission::VIEW_SHIELD_RULE,
-        'shield_rules_get'                         => Permission::VIEW_SHIELD_RULE,
-        'shield_rules_create'                      => Permission::CREATE_SHIELD_RULE,
-        'shield_rules_update'                      => Permission::EDIT_SHIELD_RULE,
-        'shield_rules_delete'                      => Permission::DELETE_SHIELD_RULE,
-        'shield_lists_get_multiple'                => Permission::VIEW_SHIELD_LIST,
-        'shield_lists_get'                         => Permission::VIEW_SHIELD_LIST,
-        'shield_lists_create'                      => Permission::CREATE_SHIELD_LIST,
-        'shield_lists_delete'                      => Permission::DELETE_SHIELD_LIST,
-        'shield_list_items_get_multiple'           => Permission::VIEW_SHIELD_LIST,
-        'shield_list_items_get'                    => Permission::VIEW_SHIELD_LIST,
-        'shield_list_items_add_multiple'           => Permission::ADD_SHIELD_LIST_ITEMS,
-        'shield_list_items_purge'                  => Permission::PURGE_SHIELD_LIST_ITEMS,
-        'shield_list_items_delete'                 => Permission::DELETE_SHIELD_LIST_ITEM,
-        'shield_settings_ui'                       => Permission::RETRIEVE_SHIELD_UI_SETTINGS,
+
+        'shield_rules_get_multiple'                   => Permission::VIEW_SHIELD_RULE,
+        'shield_rules_get'                            => Permission::VIEW_SHIELD_RULE,
+        'shield_rules_create'                         => Permission::CREATE_SHIELD_RULE,
+        'shield_rules_update'                         => Permission::EDIT_SHIELD_RULE,
+        'shield_rules_delete'                         => Permission::DELETE_SHIELD_RULE,
+        'shield_lists_get_multiple'                   => Permission::VIEW_SHIELD_LIST,
+        'shield_lists_get'                            => Permission::VIEW_SHIELD_LIST,
+        'shield_lists_create'                         => Permission::CREATE_SHIELD_LIST,
+        'shield_lists_delete'                         => Permission::DELETE_SHIELD_LIST,
+        'shield_list_items_get_multiple'              => Permission::VIEW_SHIELD_LIST,
+        'shield_list_items_get'                       => Permission::VIEW_SHIELD_LIST,
+        'shield_list_items_add_multiple'              => Permission::ADD_SHIELD_LIST_ITEMS,
+        'shield_list_items_purge'                     => Permission::PURGE_SHIELD_LIST_ITEMS,
+        'shield_list_items_delete'                    => Permission::DELETE_SHIELD_LIST_ITEM,
+        'shield_settings_ui'                          => Permission::RETRIEVE_SHIELD_UI_SETTINGS,
+        'shield_risk_threshold_config_get_multiple'   => Permission::VIEW_RISK_THRESHOLD_CONFIG,
+        'shield_risk_threshold_config_get'            => Permission::VIEW_RISK_THRESHOLD_CONFIG,
+        'shield_risk_threshold_config_create'         => Permission::CREATE_RISK_THRESHOLD_CONFIG,
+        'shield_risk_threshold_config_update'         => Permission::UPDATE_RISK_THRESHOLD_CONFIG,
+        'shield_risk_threshold_config_delete'         => Permission::DELETE_RISK_THRESHOLD_CONFIG,
+        'shield_merchant_risk_threshold_get_multiple' => Permission::VIEW_MERCHANT_RISK_THRESHOLD,
+        'shield_merchant_risk_threshold_get'          => Permission::VIEW_MERCHANT_RISK_THRESHOLD,
+        'shield_merchant_risk_threshold_create'       => Permission::CREATE_MERCHANT_RISK_THRESHOLD,
+        'shield_merchant_risk_threshold_update'       => Permission::UPDATE_MERCHANT_RISK_THRESHOLD,
+        'shield_merchant_risk_threshold_delete'       => Permission::DELETE_MERCHANT_RISK_THRESHOLD,
+        'shield_merchant_risk_threshold_bulk_update'         => Permission::BULK_UPDATE_MERCHANT_RISK_THRESHOLD,
+
         'user_fetch_admin'                         => Permission::USER_FETCH_ADMIN,
         'refund_edit_status'                       => Permission::EDIT_REFUND,
         'refund_mark_processed_bulk'               => Permission::EDIT_REFUND,
@@ -9780,6 +9859,17 @@ class Route
             'shield_rules_get_multiple',
             'shield_rules_update',
             'shield_settings_ui',
+            'shield_risk_threshold_config_get_multiple',
+            'shield_risk_threshold_config_get',
+            'shield_risk_threshold_config_create',
+            'shield_risk_threshold_config_update',
+            'shield_risk_threshold_config_delete',
+            'shield_merchant_risk_threshold_get_multiple',
+            'shield_merchant_risk_threshold_get',
+            'shield_merchant_risk_threshold_create',
+            'shield_merchant_risk_threshold_update',
+            'shield_merchant_risk_threshold_delete',
+            'shield_merchant_risk_threshold_bulk_update',
             'sms_callback',
             'splitz_evaluate',
             'splitz_preflight',

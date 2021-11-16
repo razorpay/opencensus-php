@@ -24,6 +24,8 @@ class ShieldClient implements ExternalService
     const RISK_LOGS_PATH                    = '/risk/logs';
     const LISTS_PATH                        = '/merchants/{merchant_id}/lists';
     const LIST_ITEMS_PATH                   = '/merchants/{merchant_id}/lists/{list_id}/list_items';
+    const RISK_THRESHOLD_CONFIGS_PATH       = '/risk/threshold/configs';
+    const MERCHANT_RISK_THRESHOLDS_PATH     = '/merchant/risk/thresholds';
     const CONTENT_TYPE                      = 'content-type';
     const RULES                             = 'rules';
     const RULE_ANALYTICS                    = 'rule_analytics';
@@ -31,6 +33,8 @@ class ShieldClient implements ExternalService
     const RISK_LOGS                         = 'risk_logs';
     const LISTS                             = 'lists';
     const LIST_ITEMS                        = 'list_items';
+    const RISK_THRESHOLD_CONFIGS            = 'risk_threshold_configs';
+    const MERCHANT_RISK_THRESHOLDS          = 'merchant_risk_thresholds';
     const REQUEST_TIMEOUT_INTERNATIONAL     = 10;
     const REQUEST_TIMEOUT_OTHERS            = 2;
     const REQUEST_TIMEOUT_ADMIN             = 45;
@@ -95,6 +99,12 @@ class ShieldClient implements ExternalService
 
             case self::LIST_ITEMS:
                 return $this->getListItems($input, $merchantId);
+
+            case self::RISK_THRESHOLD_CONFIGS:
+                return $this->getRiskThresholdConfigs($input);
+
+            case self::MERCHANT_RISK_THRESHOLDS:
+                return $this->getMerchantRiskThresholds($input);
         }
 
         return [];
@@ -120,6 +130,12 @@ class ShieldClient implements ExternalService
 
             case self::LIST_ITEMS:
                 return $this->getListItemsById($id, $merchantId, $input);
+
+            case self::RISK_THRESHOLD_CONFIGS:
+                return $this->getRiskThresholdConfigById($id);
+
+            case self::MERCHANT_RISK_THRESHOLDS:
+                return $this->getMerchantRiskThresholdById($id);
         }
 
         return [];
@@ -226,6 +242,26 @@ class ShieldClient implements ExternalService
         $listItemPath = str_replace('{list_id}', $listId, $listItemPath);
 
         return $this->sendRequest($listItemPath . '/' . $id, Requests::GET);
+    }
+
+    public function getRiskThresholdConfigs(array $input)
+    {
+        return $this->sendRequest(self::RISK_THRESHOLD_CONFIGS_PATH, Requests::GET, $input);
+    }
+
+    public function getRiskThresholdConfigById(string $id): array
+    {
+        return $this->sendRequest(self::RISK_THRESHOLD_CONFIGS_PATH . '/' . $id, Requests::GET);
+    }
+
+    public function getMerchantRiskThresholds(array $input)
+    {
+        return $this->sendRequest(self::MERCHANT_RISK_THRESHOLDS_PATH, Requests::GET, $input);
+    }
+
+    public function getMerchantRiskThresholdById(string $id): array
+    {
+        return $this->sendRequest(self::MERCHANT_RISK_THRESHOLDS_PATH . '/' . $id, Requests::GET);
     }
 
     protected function getPaymentProperties(Payment\Entity $payment): array

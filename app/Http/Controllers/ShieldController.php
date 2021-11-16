@@ -19,6 +19,15 @@ class ShieldController extends Controller
     const LIST_ITEM_DELETE_ROUTE      = 'shield_list_items_delete';
     const LIST_ITEMS_PURGE_ROUTE      = 'shield_list_items_purge';
 
+    const RISK_THRESHOLD_CONFIG_CREATE_ROUTE = 'shield_risk_threshold_config_create';
+    const RISK_THRESHOLD_CONFIG_UPDATE_ROUTE = 'shield_risk_threshold_config_update';
+    const RISK_THRESHOLD_CONFIG_DELETE_ROUTE = 'shield_risk_threshold_config_delete';
+
+    const MERCHANT_RISK_THRESHOLD_CREATE_ROUTE      = 'shield_merchant_risk_threshold_create';
+    const MERCHANT_RISK_THRESHOLD_UPDATE_ROUTE      = 'shield_merchant_risk_threshold_update';
+    const MERCHANT_RISK_THRESHOLD_DELETE_ROUTE      = 'shield_merchant_risk_threshold_delete';
+    const MERCHANT_RISK_THRESHOLD_BULK_UPDATE_ROUTE = 'shield_merchant_risk_threshold_bulk_update';
+
     const EXTERNAL_SHIELD_ENTITY = 'external_shield_entity';
 
     const WORKFLOW_APPLICABLE_ROUTES = [
@@ -30,6 +39,13 @@ class ShieldController extends Controller
         self::LIST_ITEM_BULK_CREATE_ROUTE,
         self::LIST_ITEM_DELETE_ROUTE,
         self::LIST_ITEMS_PURGE_ROUTE,
+        self::RISK_THRESHOLD_CONFIG_CREATE_ROUTE,
+        self::RISK_THRESHOLD_CONFIG_UPDATE_ROUTE,
+        self::RISK_THRESHOLD_CONFIG_DELETE_ROUTE,
+        self::MERCHANT_RISK_THRESHOLD_CREATE_ROUTE,
+        self::MERCHANT_RISK_THRESHOLD_UPDATE_ROUTE,
+        self::MERCHANT_RISK_THRESHOLD_DELETE_ROUTE,
+        self::MERCHANT_RISK_THRESHOLD_BULK_UPDATE_ROUTE,
     ];
 
     const EXISTING_ENTITY_RETRIEVAL_ROUTES = [
@@ -37,6 +53,10 @@ class ShieldController extends Controller
         self::RULES_DELETE_ROUTE,
         self::LIST_DELETE_ROUTE,
         self::LIST_ITEM_DELETE_ROUTE,
+        self::RISK_THRESHOLD_CONFIG_UPDATE_ROUTE,
+        self::RISK_THRESHOLD_CONFIG_DELETE_ROUTE,
+        self::MERCHANT_RISK_THRESHOLD_UPDATE_ROUTE,
+        self::MERCHANT_RISK_THRESHOLD_DELETE_ROUTE,
     ];
 
     public function proxyRequest()
@@ -52,6 +72,25 @@ class ShieldController extends Controller
             // 1. If workflow not enabled for permission
             // 2. If Workflow is mocked
             $this->createWorkflowRequestIfApplicable($requestUri, $method, $payload);
+        }
+
+        if ($method === 'GET')
+        {
+            if (empty($payload) === false)
+            {
+                $queryStringFromData = http_build_query($payload);
+
+                $queryString = parse_url($requestUri, PHP_URL_QUERY);
+
+                if (empty($queryString) === true)
+                {
+                    $requestUri = $requestUri . '?' . $queryStringFromData;
+                }
+                else
+                {
+                    $requestUri = $requestUri . '&' . $queryStringFromData;
+                }
+            }
         }
 
         $response = $this->app['shield']->sendRequestV2($requestUri, $method, $payload);
@@ -179,6 +218,8 @@ class ShieldController extends Controller
         switch ($routeName)
         {
             case self::RULES_UPDATE_ROUTE:
+            case self::RISK_THRESHOLD_CONFIG_UPDATE_ROUTE:
+            case self::MERCHANT_RISK_THRESHOLD_UPDATE_ROUTE:
                 $ruleIdentifiers = Request::route()->parameters();
 
                 array_walk($ruleIdentifiers, function(&$value, $key)

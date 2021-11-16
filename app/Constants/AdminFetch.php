@@ -502,6 +502,40 @@ class AdminFetch
                     ]
                 ],
             ],
+            Entity::SHIELD_RISK_THRESHOLD_CONFIGS => [
+                'category' => [
+                    Fetch::LABEL        => 'Category',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'default',
+                        'merchant_category'
+                    ]
+                ],
+                'category_value' => [
+                    Fetch::LABEL        => 'Category Value',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'vendor' => [
+                    Fetch::LABEL        => 'Vendor',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'sift'
+                    ]
+                ],
+            ],
+            Entity::SHIELD_MERCHANT_RISK_THRESHOLDS => [
+                'merchant_id' => [
+                    Fetch::LABEL        => 'Merchant Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'vendor' => [
+                    Fetch::LABEL        => 'Vendor',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'sift'
+                    ]
+                ],
+            ],
             Entity::BATCH_SERVICE => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'status' => [
