@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\BankingAccountService;
 use App;
 use Carbon\Carbon;
 
+use RZP\Error\ErrorCode;
 use RZP\Services\SalesForceClient;
 use RZP\Models\BankingAccount\Status;
 use RZP\Exception\BadRequestException;
@@ -218,6 +219,19 @@ class BankingAccountServiceTest extends TestCase
                                       ]);
 
         $this->assertNotNull($merchantDetail);
+    }
+
+    public function testCreateBusinessWithIndividualConstitution()
+    {
+        $this->ba->proxyAuth();
+
+        $this->createMerchantDetailWithBusinessId();
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_CONSTITUTION_NOT_SUPPORTED);
+
+        $this->expectException(BadRequestException::class);
+
+        $this->startTest();
     }
 
     public function testCron()

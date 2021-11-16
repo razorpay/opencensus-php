@@ -99,6 +99,22 @@ return [
         ],
     ],
 
+    'testCreateBusinessWithIndividualConstitution' => [
+        'request'  => [
+            'url'     => '/merchant/banking_application/business/',
+            'method'  => 'POST',
+            'content' => [
+                'name'          => 'Razorpay',
+                'constitution'  => 'individual',
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+
     'testCron' => [
         'request'  => [
             'url'     => '/bas/banking_application/cron/poll/status/123456',

@@ -8,6 +8,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\Core;
 use RZP\Trace\TraceCode;
@@ -75,11 +76,16 @@ class Service extends Base\Service
                     ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_REQUIRED);
             }
 
+            // X doesn't support "individual" constitution (business type) at the moment
+            if (array_key_exists(Constants::CONSTITUTION, $input) === true
+                    && $input[Constants::CONSTITUTION] === Merchant\Detail\BusinessType::INDIVIDUAL) {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_CONSTITUTION_NOT_SUPPORTED);
+            }
+
             $merchant = $this->app['basicauth']->getMerchant();
 
             $input[Constants::MERCHANT_ID]  = $merchant->getId();
-
-            $input[Constants::CONSTITUTION] = $this->getBusinessType($merchant);
 
             $path = Constants::BUSINESS_PATH;
         }
