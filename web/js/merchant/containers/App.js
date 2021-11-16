@@ -47,6 +47,7 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { fetchInstantSettlements } from 'merchant/reducers/collection';
 import { bindActionCreators, compose } from 'redux';
 import PartnerActivationRequiredModal from 'merchant/views/PartnerDashboard/Activation/Components/ActivationRequiredModal';
+import _refiner from 'refiner-js';
 
 @RTracking()
 class App extends Component {
@@ -163,6 +164,16 @@ class App extends Component {
           .catch(() => segmentIdentiyCall(dataFromAPI));
       }
     });
+
+    // Initialize refiner
+    if(window.REFINER_PROJECT_ID) {
+      _refiner('setProject', window.REFINER_PROJECT_ID);
+      _refiner('identifyUser', {
+          id: user.user.id,
+          merchant_id: user.merchant.id,
+          created_at: user.user.created_at,
+      });
+    }
 
     const self = this;
     window.addEventListener('NOT_AUTHENTICATED', function (e) {
