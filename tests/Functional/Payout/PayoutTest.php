@@ -9674,6 +9674,20 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+    }
+
+    public function testCreateXpayrollPayoutWithSourceDetails()
+    {
+        $this->ba->appAuthTest($this->config['applications.xpayroll.secret']);
+
+        $this->startTest();
+    }
+
     public function testCreatePayoutLinkPayoutWithExtraFieldsInSourceDetails()
     {
         $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
@@ -12579,6 +12593,56 @@ class PayoutTest extends OAuthTestCase
         $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payoutSources];
 
         $this->assertArraySelectiveEquals($sourceDetails, $response['items'][0]);
+    }
+
+    public function testFetchPayoutSkipXpayrollOnProxyAuth()
+    {
+        // create 5 payouts [2 xpayroll + 3 payout_link]
+        $this->testCreateXpayrollPayoutWithSourceDetails();
+        $this->testCreateXpayrollPayoutWithSourceDetails();
+        $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
+        $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
+        $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutsOnProxyAuth'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $accountNumber = $this->bankingBalance->getAccountNumber();
+
+        $testData['request']['url'] = '/payouts?account_number=' . $accountNumber . '&exclude_sources[]=xpayroll';
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        // finally only 3 payout should be present
+        $this->assertEquals(3, $response['count']);
+    }
+
+    public function testFetchPayoutSkipXpayrollOnPrivateAuth()
+    {
+        // create 5 payouts [2 xpayroll + 3 payout_link]
+        $this->testCreateXpayrollPayoutWithSourceDetails();
+        $this->testCreateXpayrollPayoutWithSourceDetails();
+        $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
+        $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
+        $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutsOnProxyAuth'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $accountNumber = $this->bankingBalance->getAccountNumber();
+
+        $testData['request']['url'] = '/payouts?account_number=' . $accountNumber . '&exclude_sources[]=xpayroll';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        // finally only 3 payout should be present
+        $this->assertEquals(3, $response['count']);
     }
 
     public function testFetchPayoutWithSourceIdAndSourceTypeOnPrivateAuth()

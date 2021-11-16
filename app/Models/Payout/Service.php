@@ -557,8 +557,6 @@ class Service extends Base\Service
     /**
      * @param array $input
      * @return array
-     * @throws Exception\BadRequestValidationFailureException
-     * @throws Exception\InvalidArgumentException
      */
     public function fetchMultiple(array $input): array
     {
@@ -566,12 +564,18 @@ class Service extends Base\Service
         $merchantValidator = $this->merchant->getValidator();
 
         $merchantValidator->validateAndTranslateToAccountNumberForBankingIfApplicable($input);
-
+        $to_exclude_sources = [];
+        if (array_key_exists('exclude_sources', $input))
+        {
+            $to_exclude_sources = $input['exclude_sources'];
+            // unset 'exclude_sources' since its not part of the payout entity and will throw validation error
+            unset($input['exclude_sources']);
+        }
         $payouts = $this->repo->payout->fetchMultiple($input, $this->merchant->getId());
 
         // Since pending payouts can be on both the api workflow system and workflow service
         // therefore we need to fetch and merge payouts from both systems
-        return $this->mergePendingPayoutsViaWorkflowService($input, $payouts);
+        return $this->mergePendingPayoutsViaWorkflowService($input, $payouts, $to_exclude_sources);
     }
 
     public function processReversedPayout(string $id)
@@ -1668,10 +1672,10 @@ class Service extends Base\Service
     /**
      * @param array $input
      * @param Base\PublicCollection $payouts
-     * @throws Exception\BadRequestValidationFailureException
-     * @throws Exception\InvalidArgumentException
+     * @param array $to_exclude_sources
+     * @return array
      */
-    protected function mergePendingPayoutsViaWorkflowService(array $input, Base\PublicCollection $payouts)
+    protected function mergePendingPayoutsViaWorkflowService(array $input, Base\PublicCollection $payouts, array $to_exclude_sources)
     {
         $pendingPayoutsViaWfs = [];
 
@@ -1707,7 +1711,27 @@ class Service extends Base\Service
             }
         }
 
+        $count_of_payroll_payouts = 0;
+        if (in_array('xpayroll', $to_exclude_sources, TRUE))
+        {
+            foreach ($payouts as $key => $value)
+            {
+                $payoutSources = $payouts[$key]->getSourceDetails();
+                // vanilla payouts will not have payout_source. So check if a source is present or not.
+                if (count($payoutSources) > 0 && $payoutSources[0]['source_type'] === 'xpayroll')
+                {
+                    $payouts->forget($key);
+                    $count_of_payroll_payouts += 1;
+                }
+            }
+        }
+
+
         $payoutsArr = $payouts->toArrayPublic();
+        if (in_array('xpayroll', $to_exclude_sources, TRUE))
+        {
+            $payoutsArr['count_of_payroll_payouts'] = $count_of_payroll_payouts;
+        }
 
         $payoutItems = & $payoutsArr['items'];
 

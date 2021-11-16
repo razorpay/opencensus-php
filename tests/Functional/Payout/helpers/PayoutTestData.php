@@ -10734,6 +10734,117 @@ return [
         ],
     ],
 
+    'testCreateXpayrollPayoutWithSourceDetails' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'url'     => '/payouts_internal',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'xpayroll',
+                        'priority'    => 1,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 90,
+                'fees'            => 590,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'xpayroll',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+            'url'     => '/payouts_internal',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'payout_links',
+                        'priority'    => 1,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 90,
+                'fees'            => 590,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'payout_links',
+                        'priority'    => 1,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testCreatePayoutLinkPayoutWithSourceDetails' => [
         'request'  => [
             'method'  => 'POST',
