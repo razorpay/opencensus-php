@@ -485,12 +485,6 @@ export default class User {
     return getSplitzExperimentVariant('cross_border_payments_campaign')?.variables?.result === 'on';
   }
 
-  get isDiwaliFestiveOfferEnabled() {
-    return (
-      getSplitzExperimentVariant('diwali_festive_offer_experiment')?.variables?.result === 'on'
-    );
-  }
-
   get isNitroIciciBrandedCampaignEnabled() {
     return getSplitzExperimentVariant('nitro_icici_branded_experiment')?.variables?.result === 'on';
   }

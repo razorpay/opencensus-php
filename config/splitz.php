@@ -130,9 +130,6 @@ return [
         'CROSS_BORDER_PAYMENTS_ANNOUNCEMENT' => env('CROSS_BORDER_PAYMENTS_ANNOUNCEMENT', ''),
         'NEOSTONE_EXPERIMENT' => env('NEOSTONE_EXPERIMENT', ''),
 
-        //Diwali Festive Offer Announcement
-        'DIWALI_FESTIVE_OFFER_ANNOUNCEMENT' => env('DIWALI_FESTIVE_OFFER_ANNOUNCEMENT', ''),
-
         //QR Code Announcement
         'QR_CODE_ANNOUNCEMENT' => env('QR_CODE_ANNOUNCEMENT', ''),
 
