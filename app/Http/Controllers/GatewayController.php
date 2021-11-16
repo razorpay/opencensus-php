@@ -30,6 +30,7 @@ use Illuminate\Http\RedirectResponse;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Jobs\DynamicNetBankingUrlUpdater;
+use RZP\Gateway\Utility as GatewayUtility;
 use RZP\Gateway\Netbanking\Base\Repository;
 use RZP\Gateway\Enach\Npci\Netbanking as EnachNb;
 use RZP\Models\Gateway\Priority as GatewayPriority;
@@ -131,7 +132,7 @@ class GatewayController extends Controller
             {
                 return $this->app['upi.payments']->preProcessServerCallback($input, $gatewayDriver);
             }
-            
+
             return $gateway->preProcessServerCallback($input, $gatewayDriver);
         }
         catch (Exception\GatewayErrorException $exception)
@@ -366,16 +367,7 @@ class GatewayController extends Controller
 
         $traceInput = $input;
 
-        unset($traceInput['payeeVpa'], $traceInput['payerVpa']);
-
-        $trace->info(
-            TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK,
-            [
-                'input'     => $traceInput,
-                'body'      => Request::getContent(),
-                'headers'   => Request::header(),
-                'gateway'   => $gateway,
-            ]);
+        $data = ( new GatewayUtility())->gatewayTrace($gateway, $traceInput);
 
         switch ($gateway)
         {
@@ -1640,5 +1632,5 @@ class GatewayController extends Controller
         }
 
         return false;
-    }    
+    }
 }
