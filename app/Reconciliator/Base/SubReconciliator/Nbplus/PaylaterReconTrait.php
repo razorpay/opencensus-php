@@ -16,10 +16,8 @@ trait PaylaterReconTrait
     {
         $data = [
             'payment_id' => $this->payment->getId(),
-            'recon_data' => [
-                PaylaterService::GATEWAY_REFERENCE_NUMBER       => $rowDetails[BaseReconciliate::REFERENCE_NUMBER] ?? null,
-                PaylaterService::PROVIDER_REFERENCE_NUMBER      => $rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID] ?? null,
-            ],
+            PaylaterService::GATEWAY_REFERENCE_NUMBER       => $rowDetails[BaseReconciliate::REFERENCE_NUMBER] ?? null,
+            PaylaterService::PROVIDER_REFERENCE_NUMBER      => $rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID] ?? null,
         ];
 
         $this->dispatchPaylaterDataToNbplusServiceQueue($data);
