@@ -36,14 +36,15 @@
       <button type="submit">Proceed</button>
     </form>
   @else
-    <button type="submit" onclick="paymentCallback()">Proceed</button>
+    <button type="submit" onclick="paymentCallback(this)">Proceed</button>
     <script>
         // Callback data //
       var data = {!!utf8_json_encode($data)!!}; // Callback data //
 
       var iosBridge = window.webkit && webkit.messageHandlers && webkit.messageHandlers.CheckoutBridge;
 
-      function paymentCallback() {
+      function paymentCallback(btnElm) {
+        btnElm.disabled=true;
         if (window.CheckoutBridge) {
           CheckoutBridge.oncomplete(JSON.stringify(data));
         } else if (iosBridge) {
