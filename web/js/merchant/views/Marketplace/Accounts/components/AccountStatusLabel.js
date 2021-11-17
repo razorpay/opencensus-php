@@ -44,6 +44,11 @@ const statusMap = {
 const AccountStatusDetailsView = React.memo(
   ({ showActivationForm, activationStatus, errorDetails }) => {
     const status = activationStatus || 'not_activated';
+    // TODO: quick fix unexpected activation status, remove once new key added
+    if (!statusMap[status]) {
+      return '-';
+    }
+
     const { labelClass, ctaText, showCtaAsButton, description } = statusMap[status];
 
     return (
@@ -71,6 +76,11 @@ const AccountStatusDetailsView = React.memo(
 const AccountStatusListView = React.memo(
   ({ showActivationForm, activationStatus, timeStamp, errorDetails }) => {
     const status = activationStatus || 'not_activated';
+    // TODO: quick fix unexpected activation status, remove once new key added
+    if (!statusMap[status]) {
+      return '-';
+    }
+
     const { labelClass, tooltipCta, tooltipMessage } = statusMap[status];
 
     return (
