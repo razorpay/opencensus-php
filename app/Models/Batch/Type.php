@@ -182,6 +182,8 @@ class Type
 
     const CREATE_EXEC_RISK_ACTION = 'create_exec_risk_action';
 
+    const LEDGER_ONBOARD_OLD_ACCOUNT = 'ledger_onboard_old_account';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -240,6 +242,7 @@ class Type
         self::HITACHI_CBK_VISA,
         self::HITACHI_CBK_RUPAY,
         self::CREATE_EXEC_RISK_ACTION,
+        self::LEDGER_ONBOARD_OLD_ACCOUNT,
     ];
 
     /**
@@ -430,6 +433,7 @@ class Type
         self::TRANSFER_REVERSAL,
         self::RECURRING_CHARGE_AXIS,
         self::EMANDATE_DEBIT_HDFC,
+        self::LEDGER_ONBOARD_OLD_ACCOUNT,
     ];
 
     /**
@@ -490,6 +494,7 @@ class Type
         self::HITACHI_CBK_RUPAY,
         self::HITACHI_CBK_VISA,
         self::CREATE_EXEC_RISK_ACTION,
+        self::LEDGER_ONBOARD_OLD_ACCOUNT,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data

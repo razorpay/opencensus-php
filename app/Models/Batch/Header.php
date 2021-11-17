@@ -1204,6 +1204,8 @@ class Header
     const RISK_ACTION_WORKFLOW_ACTION_ID        = 'workflow_action_id';
     const RISK_ACTION_STATUS                    = 'workflow_action_status';
 
+    const ONBOARD_TO_LEDGER = 'onboard_to_ledger';
+
     // Following is a list of columns that are mandatory headers in the fund account (contact) batch file
     const MANDATORY_AND_CONDITIONALLY_MANDATORY_HEADERS_FOR_FUND_ACCOUNTS = [
         Header::FUND_ACCOUNT_TYPE,
@@ -3507,6 +3509,16 @@ class Header
                 self::CONFIG_ID,
                 self::START_TIME,
                 self::END_TIME,
+            ],
+        ],
+
+        TYPE::LEDGER_ONBOARD_OLD_ACCOUNT => [
+            self::INPUT => [
+                self::MERCHANT_ID
+            ],
+            self::OUTPUT => [
+                self::MERCHANT_ID,
+                self::STATUS,
             ],
         ],
 

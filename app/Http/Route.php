@@ -2028,6 +2028,9 @@ class Route
         'feature_onboarding_fetch_responses'       => ['get',      'feature/onboarding/{feature}/responses',         'FeatureController@getOnboardingSubmissionsDeprecated'              ],
         'feature_onboarding_fetch_all_responses'   => ['get',      'feature/onboarding/responses',                   'FeatureController@getOnboardingSubmissionsDeprecated'              ],
 
+        // Route to add ledger_journal_write feature and onboard those accounts to ledger
+        'onboard_old_accounts_to_ledger'           => ['post',     'onboarding/feature/ledger/onboard_old_accounts', 'FeatureController@addFeatureAndOnboardOldAccountsToLedger'         ],
+
         // Reporting Service
         'reporting_config_get'                     => ['get',      'reporting/configs/{id}',                         'ReportingController@getConfig'                                     ],
         'reporting_config_list'                    => ['get',      'reporting/configs',                              'ReportingController@listConfig'                                    ],
@@ -4017,6 +4020,7 @@ class Route
         'vendor_payment_email_integration_webhook',
         // ledger route
         'ledger_fetch_multiple_transactions',
+        'onboard_old_accounts_to_ledger',
 
         //merchant action cron sends the notifications to the merchants which are suspended and tagged
         'merchant_action_notification_cron',
@@ -10896,6 +10900,7 @@ class Route
             'dispute_automation',
             'create_exec_risk_action',
             'bulk_risk_action_status_comment',
+            'onboard_old_accounts_to_ledger',
         ],
 
         'stork' => [

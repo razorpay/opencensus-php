@@ -181,6 +181,11 @@ class Constants
     const OPTIMIZER_SMART_ROUTER          = 'optimizer_smart_router';
     const SKIP_NOTES_MERGING              = 'skip_notes_merging';
 
+    // Ledger constants
+    const IDEMPOTENCY_KEY = 'idempotency_key';
+    const MERCHANT_ID     = 'merchant_id';
+    const MODE            = 'mode';
+
     const PAYMENT_STATUS_AGGREGATE        = 'payment_status_aggregate';
     const VISA_SAFE_CLICK                 = 'vsc_authorization';
 

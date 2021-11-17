@@ -25,6 +25,21 @@ class FeatureController extends Controller
     }
 
     /**
+     * Adds LEDGER_JOURNAL_WRITES features to accounts
+     * And then onboard that account to ledger service
+     *
+     * @return ApiResponse
+     */
+    public function addFeatureAndOnboardOldAccountsToLedger()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->addFeatureAndOnboardOldAccountsToLedger($input);
+
+        return ApiResponse::json($data->toArrayWithItems());
+    }
+
+    /**
      * Adds features to entities
      *
      * @param string|null $routeName

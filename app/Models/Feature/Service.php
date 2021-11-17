@@ -2,9 +2,12 @@
 
 namespace RZP\Models\Feature;
 
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Merchant\Balance\Type as BalanceType;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
@@ -37,6 +40,88 @@ class Service extends Base\Service
         });
 
         return $features->toArray();
+    }
+
+    public function addFeatureAndOnboardOldAccountsToLedger(array $input)
+    {
+        $response = new Base\PublicCollection;
+
+        foreach ($input as $request) {
+
+            $result = [
+                Constants::IDEMPOTENCY_KEY => $request[Constants::IDEMPOTENCY_KEY],
+                Constants::MERCHANT_ID     => $request[Constants::MERCHANT_ID],
+                Constants::STATUS          => 'success'
+            ];
+
+            try
+            {
+                $merchantId = $request[Constants::MERCHANT_ID];
+                $isOnboardToLedger = $request['onboard_to_ledger'];
+
+                $this->trace->info(
+                    TraceCode::LEDGER_JOURNAL_WRITES_FEATURE_ASSIGNED,
+                    [
+                        Constants::MERCHANT_ID => $merchantId,
+                        Constants::MODE        => $this->mode,
+                    ]);
+
+                // fetch merchant entity
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                // first sending the request to ledger because if anything fails we don't add the feature
+                $this->buildAccountCreateRequest($merchant, $isOnboardToLedger);
+
+                // Add LEDGER_JOURNAL_WRITES feature to merchant
+                (new Core)->create(
+                    [
+                        Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                        Entity::ENTITY_ID => $merchant->getId(),
+                        Entity::NAME => Constants::LEDGER_JOURNAL_WRITES,
+                    ]);
+
+            } catch(\Exception $e) {
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::LEDGER_ADD_FEATURE_OR_ACCOUNT_CREATE_ERROR,
+                    [
+                        Constants::MERCHANT_ID    => $request[Constants::MERCHANT_ID],
+                    ]);
+
+                $result[Constants::STATUS] = 'failed';
+            }
+
+            $response->add($result);
+        }
+
+        return $response;
+    }
+
+    private function buildAccountCreateRequest($merchant, $isOnboardToLedger)
+    {
+        if ($isOnboardToLedger === true) {
+            // Fetch Merchant balance. Required to generate request body for account creation on ledger
+            $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
+                $merchant->getId(),
+                BalanceType::BANKING,
+                AccountType::SHARED,
+                $this->mode);
+
+            // Fetch Merchant banking account. Required to generate request body for account creation on ledger
+            $bankingAcc = $this->repo->banking_account->getFromBalanceId($balance->getId());
+
+            $this->trace->info(TraceCode::LEDGER_JOURNAL_WRITES_FEATURE_ASSIGNED,
+                [
+                    Constants::MERCHANT_ID => $merchant->getId(),
+                    Constants::MODE        => $this->mode,
+                    'balance_id'           => $balance->getId(),
+                    'banking_account_id'   => $bankingAcc->getId(),
+                ]);
+
+            (new Merchant\Balance\Ledger\Core)->createXLedgerAccount($merchant, $bankingAcc, AccountType::SHARED, $balance->getBalance());
+        }
     }
 
     public function addAccountFeatures(array $input): array
