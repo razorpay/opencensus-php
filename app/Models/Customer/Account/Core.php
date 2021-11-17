@@ -328,11 +328,21 @@ class Core extends Base\Core
 
     public function createGlobalAddress($input)
     {
+        if(Session()->has($this->mode . '_app_token') === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
+
+        $appToken = Session()->get($this->mode . '_app_token');
+
         Customer\Validator::validateCreateGlobalAddress($input);
 
         $input = Customer\Validator::validateAndParseContactInInput($input);
 
-        $customer = $this->getOrCreateGlobalCustomer($input);
+        list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
+            ['app_token' => $appToken],
+            $this->repo->merchant->getSharedAccount(),
+            true);
 
         $addressEntity = new Address\Core();
 

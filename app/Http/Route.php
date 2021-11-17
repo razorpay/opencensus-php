@@ -7341,6 +7341,7 @@ class Route
         'customer_logout_global',
         'app_delete_token',
         'checkout_personalisation',
+        'customer_create_global_address',
     ];
 
     /**

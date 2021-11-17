@@ -640,6 +640,14 @@ class CustomerTest extends TestCase
     public function testCreateGlobalAddress()
     {
         $this->ba->publicAuth();
+        $this->mockSession();
         $this->startTest();
+    }
+
+    protected function mockSession($appToken = 'capp_1000000custapp')
+    {
+        $data = [ 'test_app_token' => $appToken ];
+
+        $this->session($data);
     }
 }
