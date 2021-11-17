@@ -2132,19 +2132,23 @@ export default class ActivationWizard extends React.Component {
               </span>
             )}
             {/* Alerts: For linked account */}
-            {this.isLinkedAccountForm && 
-              (isFormVerificationFailed && (
-                <Alert.Warning iconBefore="i-info-outline">
-                  {verificationFailureError || 'Bank account verification failed'}
-                </Alert.Warning>
-              )) || (isFormVerificationPending && (
-                <Alert.Warning iconBefore="i-info-outline">
-                  Bank account verification is in process
-                </Alert.Warning>
-              )) || (isFormActivated && (
-                <Alert.Info iconBefore="i-done-all">The account has been activated</Alert.Info>
-              ))
-            }
+            {this.isLinkedAccountForm && (
+              <>
+                {(isFormVerificationFailed && (
+                  <Alert.Warning iconBefore="i-info-outline">
+                    {verificationFailureError || 'Bank account verification failed'}
+                  </Alert.Warning>
+                )) ||
+                  (isFormVerificationPending && (
+                    <Alert.Warning iconBefore="i-info-outline">
+                      Bank account verification is in process
+                    </Alert.Warning>
+                  )) ||
+                  (isFormActivated && (
+                    <Alert.Info iconBefore="i-done-all">The account has been activated</Alert.Info>
+                  ))}
+              </>
+            )}
 
             {/* Alerts: for MAIN activation form */}
             {do {
