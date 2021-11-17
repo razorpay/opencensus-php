@@ -827,9 +827,14 @@ class Processor
                     $order = (new Order\Core)->create($orderPayLoad, $this->merchant);
 
                     $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($order->getId());
+
+                    return;
                 }
 
-                return;
+                if ($this->subscription->isPending() !== true)
+                {
+                    return;
+                }
             }
         }
 
