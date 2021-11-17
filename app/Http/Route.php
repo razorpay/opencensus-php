@@ -3134,7 +3134,6 @@ class Route
         'merchant_coupon_validity',
         'merchant_coupon_remove',
         'shipping_info',
-        'update_serviceability_url',
         'customer_create_global_address',
         'order_update_customer_details_1cc',
         'order_reset_1cc',
@@ -3517,11 +3516,8 @@ class Route
         'token_delete',
 
         // 1CC Routes
-        'update_serviceability_url',
         'update_shipping_slabs',
         'update_cod_slabs',
-        'update_coupon_validity_url',
-        'update_fetch_coupons_url',
         'banking_draft_invitations_create',
     ];
 
@@ -4783,6 +4779,11 @@ class Route
         //Axis bank changes
         'draft_invitation_fetch',
         'draft_invitation_accept',
+
+        // 1cc config routes
+        'update_serviceability_url',
+        'update_coupon_validity_url',
+        'update_fetch_coupons_url',
     ];
 
     //
@@ -8441,6 +8442,10 @@ class Route
             'banking_draft_invitations_create',
             'draft_invitation_fetch',
             'draft_invitation_accept',
+
+            'update_serviceability_url',
+            'update_coupon_validity_url',
+            'update_fetch_coupons_url',
         ],
 
         'admin_dashboard' => [

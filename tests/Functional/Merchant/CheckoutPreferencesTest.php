@@ -1979,21 +1979,21 @@ class CheckoutPreferencesTest extends TestCase
 
     public function testUpdateFetchCouponsURL()
     {
-        $this->ba->privateAuth();
+        $this->ba->proxyAuthTest();
 
         $this->startTest();
     }
 
     public function testUpdateShippingInfoURL()
     {
-        $this->ba->privateAuth();
+        $this->ba->proxyAuthTest();
 
         $this->startTest();
     }
 
     public function testUpdateCouponValidityURL()
     {
-        $this->ba->privateAuth();
+        $this->ba->proxyAuthTest();
 
         $this->startTest();
     }
