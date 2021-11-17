@@ -418,7 +418,7 @@ class Processor
                 $order = $this->fetchOrderFromInput($input);
 
                 // offers are not supported in initial ramp
-                if ((empty($order) !== false) and
+                if ((empty($order) === false) and
                     (($order->hasOffers() === true) or
                      ($order->isDiscountApplicable() === true) or
                      ($order->getProductId() !== null) or
@@ -3301,7 +3301,7 @@ class Processor
         {
             $this->addBackupMethodForRetry($this->payment, $this->merchant, $e);
             throw $e;
-        } 
+        }
     }
 
     protected function processFirstDataCallback($action, $input)
