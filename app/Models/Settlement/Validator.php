@@ -136,8 +136,9 @@ class Validator extends Base\Validator
     protected static $settlementStatusUpdateRules = [
         'id'            => 'required|string|size:14',
         'utr'           => 'sometimes|string',
-        'status'        => 'required|string|in:processed',
+        'status'        => 'required|string|in:processed,failed',
         'remarks'       => 'sometimes|string',
+        'failure_reason'=> 'sometimes|string',
         'redacted_ba'   => 'required|string'
     ];
 

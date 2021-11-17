@@ -1184,6 +1184,7 @@ class Processor extends Base\Core
             $updateStatusAllowed = [
                 Status::PROCESSED,
                 Status::CREATED,
+                Status::FAILED,
             ];
 
             $setl = $this->repo->settlement->findOrFail($input['id']);
@@ -1193,7 +1194,7 @@ class Processor extends Base\Core
             if (in_array($currentStatus, $updateStatusAllowed) === false)
             {
                 return [
-                    'error' => sprintf("current settlement status %s can not be updated to processed state", $currentStatus)
+                    'error' => sprintf("current settlement status %s can not be updated", $currentStatus)
                 ];
             }
 
@@ -1207,6 +1208,10 @@ class Processor extends Base\Core
                     $setl->setUtr($input['utr']);
                     $setl->setStatus($input['status']);
                     $setl->setRemarks($input['remarks']);
+                    if(isset($input['failure_reason']) === true)
+                    {
+                        $setl->setFailureReason($input['failure_reason']);
+                    }
 
                     $this->repo->saveOrFail($setl);
 
@@ -1219,7 +1224,10 @@ class Processor extends Base\Core
 
             $merchant_id = $setl->getMerchantId();
 
-            if (in_array($merchant_id, MerchantModel\Preferences::TRANSFER_SETTLED_WEBHOOK_MIDS) === true)
+            // we started updating failed state also in old service for all the settlements from new settlements
+            // service so triggering this webhook only for the processed state
+            if ((in_array($merchant_id, MerchantModel\Preferences::TRANSFER_SETTLED_WEBHOOK_MIDS) === true)
+                and ($setl->getStatus() === Status::PROCESSED))
             {
                 $input['settlement_id'] = $setl->getId();
 

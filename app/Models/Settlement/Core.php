@@ -1028,7 +1028,8 @@ class Core extends Base\Core
 
     protected function updateSettlementStatusInTransfer(Entity $settlement)
     {
-        if ($settlement->merchant->isLinkedAccount() === true)
+        if (($settlement->merchant->isLinkedAccount() === true)
+            and ($settlement->getStatus() === Status::PROCESSED))
         {
             TransferSettlementStatus::dispatch($this->mode, $settlement->getId());
         }
