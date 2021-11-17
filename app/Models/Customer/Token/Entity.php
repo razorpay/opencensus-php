@@ -925,7 +925,7 @@ class Entity extends Base\PublicEntity
 
         $routeName = $app['api.route']->getCurrentRouteName();
 
-         if($routeName == 'merchant_checkout_preferences')
+         if($routeName == 'merchant_checkout_preferences' || $routeName == 'otp_verify')
          {
              $billingAddress = $this->getBillingAddress();
 

@@ -650,4 +650,23 @@ class CustomerTest extends TestCase
 
         $this->session($data);
     }
+    
+    public function testCardCountryDetailsInOtpFlow()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockRaven();
+
+        // send OTP
+        $response = $this->sendOtp('9988776655');
+
+        // verify OTP
+        $content = $this->verifyOtp('9988776655', 'abc@razorpay.com', '233443', '123', true);
+
+        $this->assertEquals($content['success'], 1);
+
+        $this->assertNotEquals($content['tokens'], null);
+
+        $this->assertNotEquals($content['tokens']['items'][0]['card']['country'], null);
+    }
 }

@@ -1084,9 +1084,9 @@ class Entity extends Base\PublicEntity
 
         $routeName = $app['api.route']->getCurrentRouteName();
 
-         if($routeName == 'merchant_checkout_preferences')
-         {
+        if($routeName == 'merchant_checkout_preferences' || $routeName == 'otp_verify')
+        {
             $attributes[self::COUNTRY] = $this->getCountry()!==null?$this->getCountry():null;
-         }
+        }
     }
 }
