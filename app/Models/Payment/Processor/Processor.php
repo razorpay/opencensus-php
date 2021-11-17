@@ -3301,6 +3301,8 @@ class Processor
 
             $this->changeTerminalCapabilityIfApplicable($terminal, $error);
 
+            $this->addBackupMethodForRetry($this->payment, $this->merchant, $ex);
+
             throw $ex;
         } catch (Exception\BaseException $e)
         {
