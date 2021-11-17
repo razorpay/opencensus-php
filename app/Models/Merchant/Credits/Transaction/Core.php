@@ -83,7 +83,7 @@ class Core extends Base\Core
 
                 // Credits which will expire first will be used first
                 $credits = $this->repo->credits->getCreditsSortedByExpiry(
-                    $currentTimestamp, $txn->merchant->getId(), $creditType);
+                    $currentTimestamp, $txn->merchant, $creditType);
 
                 //
                 // The amount of credits to be deducted will be reflected in the credit log

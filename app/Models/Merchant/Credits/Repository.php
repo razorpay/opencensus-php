@@ -6,10 +6,13 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Promotion;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
+use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
 {
@@ -74,23 +77,52 @@ class Repository extends Base\Repository
      *       OR `expired_at` IS NULL )
      *   ORDER  BY -`expired_at` DESC
      */
-    public function getCreditsSortedByExpiry(int $timestamp, string $merchantId, string $type)
+    public function getCreditsSortedByExpiry(int $timestamp, Merchant\Entity $merchant, string $type)
     {
         assertTrue($this->isTransactionActive());
 
+        if($merchant->isFeatureEnabled(Feature\Constants::CREDIT_ID_BASED_NEW_QUERY) === false)
+        {
+            return Entity::lockForUpdate()->newQuery()
+                ->merchantId($merchant->getId())
+                ->where(Entity::TYPE, '=', $type)
+                ->whereRaw(Entity::VALUE . '>' . Entity::USED)
+                ->where(function ($query) use ($timestamp)
+                {
+                    $query->where(Entity::EXPIRED_AT, '>', $timestamp)
+                        ->orWhereNull(Entity::EXPIRED_AT);
+                }
+                )
+                // This is done because we want to keep the null EXPIRED at the bottom
+                ->orderBy(\DB::raw('-`expired_at`'), 'desc')
+                ->get();
+        }
+
+        $merchantsCredits = $this->newQuery()
+            ->merchantId($merchant->getId())
+            ->get();
+
+        $creditsFiltered = $merchantsCredits->filter(function ($item, $type) {
+            return (
+                ($item->getUnusedCredits() > 0) and
+                (($item->getExpiredAt() == null) or ($item->getExpiredAt() > time())) and
+                ($item->getType() == $type)
+            );
+        });
+
+        $creditIds = $creditsFiltered->getStringAttributesByKey('id');
+
+        $creditIds = array_keys($creditIds);
+
+        if (count($creditIds) < 1)
+        {
+            return new PublicCollection;
+        }
+
         return Entity::lockForUpdate()->newQuery()
-                    ->merchantId($merchantId)
-                    ->where(Entity::TYPE, '=', $type)
-                    ->whereRaw(Entity::VALUE . '>' . Entity::USED)
-                    ->where(function ($query) use ($timestamp)
-                        {
-                            $query->where(Entity::EXPIRED_AT, '>', $timestamp)
-                                  ->orWhereNull(Entity::EXPIRED_AT);
-                        }
-                    )
-                    // This is done because we want to keep the null EXPIRED at the bottom
-                    ->orderBy(\DB::raw('-`expired_at`'), 'desc')
-                    ->get();
+            ->whereIn(Entity::ID, $creditIds)
+            ->orderBy(\DB::raw('-`expired_at`'), 'desc')
+            ->get();
     }
 
     public function getCreditsSortedByExpiryForProduct(int $timestamp, string $merchantId, string $type, string $product)
@@ -204,33 +236,69 @@ class Repository extends Base\Repository
      *  'fee'    => 550
      * ]
      *
-     * @param string $merchantId
+     * @param Merchant\Entity $merchant
      *
      * @return array
      */
-    public function getTypeAggregatedMerchantCredits(string $merchantId): array
+    public function getTypeAggregatedMerchantCredits(Merchant\Entity $merchant): array
     {
         assertTrue($this->isTransactionActive());
 
-        $credits = Entity::lockForUpdate()->newQuery()
-                      ->whereRaw(Entity::VALUE . '>' . Entity::USED)
-                      ->merchantId($merchantId)
-                      ->where(function ($query)
-                          {
-                              $query->where(Entity::EXPIRED_AT, '>', time())
-                                    ->orWhereNull(Entity::EXPIRED_AT);
-                          })
-                      ->get();
+        if($merchant->isFeatureEnabled(Feature\Constants::CREDIT_ID_BASED_NEW_QUERY) === false)
+        {
+            $credits = Entity::lockForUpdate()->newQuery()
+                ->whereRaw(Entity::VALUE . '>' . Entity::USED)
+                ->merchantId($merchant->getId())
+                ->where(function ($query)
+                {
+                    $query->where(Entity::EXPIRED_AT, '>', time())
+                        ->orWhereNull(Entity::EXPIRED_AT);
+                })
+                ->get();
+
+            $data = [];
+
+            foreach ($credits as $credit)
+            {
+                if (isset($data[$credit->getType()]) === false)
+                {
+                    $data[$credit->getType()] = 0;
+                }
+                $data[$credit->getType()] += $credit->getUnusedCredits();
+            }
+
+            return $data;
+        }
+
+        $merchantsCredits = $this->newQuery()
+            ->merchantId($merchant->getId())
+            ->get();
+
+        $creditsFiltered = $merchantsCredits->filter(function ($item) {
+            return ($item->getUnusedCredits() > 0) and (($item->getExpiredAt() == null) or ($item->getExpiredAt() > time()));
+        });
+
+        $creditIds = $creditsFiltered->getStringAttributesByKey('id');
+
+        $creditIds = array_keys($creditIds);
 
         $data = [];
 
-        foreach ($credits as $credit)
+        if (count($creditIds) > 0)
         {
-            if (isset($data[$credit->getType()]) === false)
+            $credits = Entity::lockForUpdate()->newQuery()
+                ->whereIn(Entity::ID, $creditIds)
+                ->get();
+
+            foreach ($credits as $credit)
             {
-                $data[$credit->getType()] = 0;
+                if (isset($data[$credit->getType()]) === false)
+                {
+                    $data[$credit->getType()] = 0;
+                }
+
+                $data[$credit->getType()] += $credit->getUnusedCredits();
             }
-            $data[$credit->getType()] += $credit->getUnusedCredits();
         }
 
         return $data;

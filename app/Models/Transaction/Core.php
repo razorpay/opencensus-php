@@ -1513,9 +1513,7 @@ class Core extends Base\Core
         }
         else
         {
-            $merchantId = $merchant->getId();
-
-            $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($merchantId);
+            $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($merchant);
 
             $amountCredits =  $credits[Credits\Type::AMOUNT] ?? 0;
 
@@ -1787,7 +1785,7 @@ class Core extends Base\Core
 
         $startTime = microtime(true);
 
-        $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($txn->getMerchantId());
+        $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($txn->merchant);
 
         $processor->setMerchantBalanceLockForUpdate();
 

@@ -321,9 +321,7 @@ abstract class Base extends BaseCore
         }
         else
         {
-            $merchantId = $this->merchantBalance->merchant->getId();
-
-            $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($merchantId);
+            $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($this->merchantBalance->merchant);
 
             $amountCredits =  $credits[Credits\Type::AMOUNT] ?? 0;
 
