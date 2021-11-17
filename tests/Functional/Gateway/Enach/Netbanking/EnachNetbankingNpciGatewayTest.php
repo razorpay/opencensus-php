@@ -524,6 +524,30 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertNotNull($enach['umrn']);
     }
 
+    public function testPaymentFailedWithWrongOtpVerify()
+    {
+        $this->createPaymentFailedWithWrongOtp();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('emandate',$payment['method']);
+        $this->assertEquals('created',$payment['status']);
+        $this->assertEquals('enach_npci_netbanking',$payment['gateway']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockVerifyResponse();
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertEquals($this->sharedTerminal['gateway_acquirer'], $enach['acquirer']);
+        $this->assertNotNull($enach['gateway_reference_id']);
+        $this->assertEquals(null, $enach['umrn']);
+        $this->assertEquals('605',$enach['error_code']);
+        $this->assertEquals('Otp Verification Failure',$enach['error_message']);
+    }
+
+
     public function testAuthorizeFailedPayment()
     {
         $this->createPaymentFailed();
@@ -949,6 +973,36 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         });
     }
 
+    protected function mockWrongOtpCallbackResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'authorize_get_secure_data')
+            {
+                $content['Accptd']     = '';
+                $content['AccptRefNo'] = '';
+                $content['ReasonCode'] = '605';
+                $content['ReasonDesc'] = 'Otp Verification Failure';
+                $content['RejectBy']   = 'Customer';
+            }
+        });
+    }
+
+    protected function mockVerifyResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['Accptd']     = '';
+                $content['AccptRefNo'] = '';
+                $content['ErrorCode'] = '605';
+                $content['ErrorDesc'] = 'Otp Verification Failure';
+                $content['RejectBy']   = 'Customer';
+            }
+        });
+    }
+
     protected function mockFailedCallbackResponse()
     {
         $this->mockServerContentFunction(function(& $content, $action = null)
@@ -1153,6 +1207,27 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->mockRejectCallbackResponse();
 
         $testData = $this->testData['testPaymentRejectResponse'];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+    protected function createPaymentFailedWithWrongOtp()
+    {
+        $payment                 = $this->getEmandatePaymentArray('SBIN', 'netbanking', 0);
+        $payment['bank_account'] = [
+            'account_number' => '1111111111111',
+            'ifsc'           => 'sbin0000123',
+            'name'           => 'Test account',
+            'account_type'   => 'savings',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockWrongOtpCallbackResponse();
+
+        $testData = $this->testData['testPaymentFailedWithWrongOtpVerify'];
 
         $this->runRequestResponseFlow($testData, function() use ($payment) {
             $this->doAuthPayment($payment);

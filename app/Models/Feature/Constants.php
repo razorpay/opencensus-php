@@ -942,7 +942,7 @@ class Constants
     const ONE_CC_COUPONS = 'one_cc_coupons';
 
     const CREDIT_ID_BASED_NEW_QUERY = 'credit_id_based_new_query';
-    
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,

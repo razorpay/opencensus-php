@@ -866,6 +866,9 @@ class Gateway extends Base\Gateway
             $attributes[Base\Entity::UMRN]                  = $content[ResponseXmlTags::MANDATE_ID] ?? null;
         }
 
+        $attributes[Base\Entity::ERROR_CODE]            = $content[ResponseXmlTags::ERROR_CODE] ?? null;
+        $attributes[Base\Entity::ERROR_MESSAGE]         = $content[ResponseXmlTags::ERROR_DESCRIPTION] ?? null;
+
         if ((isset($gatewayPayment[Base\Entity::STATUS]) === false) or
             ($verify->match === false))
         {
