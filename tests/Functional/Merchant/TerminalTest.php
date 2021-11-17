@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use Crypt;
 use Event;
 use Mockery;
+use Carbon\Carbon;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
@@ -19,10 +20,12 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Services\RazorXClient;
 use RZP\Error\PublicErrorDescription;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetailsEntity;
 
 class TerminalTest extends TestCase
 {
@@ -3247,6 +3250,72 @@ class TerminalTest extends TestCase
         $url = '/merchants/100000Razorpay/terminals';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testFetchMerchantsInfoForIIR()
+    {
+        $now       = Carbon::now()->timestamp;
+        $merchants = [];
+
+        $merchants[0] = $this->fixtures->merchant->createMerchantWithDetails(
+            Org::RZP_ORG,
+            'testIIRMid1234',
+            [
+                MerchantEntity::NAME            => 'Test IIR MID 1234',
+                MerchantEntity::ACTIVATED       => 1,
+                MerchantEntity::LIVE            => 1,
+                MerchantEntity::ACTIVATED_AT    => $now,
+                MerchantEntity::WEBSITE         => 'www.testIIRMid1234.com',
+                MerchantEntity::CATEGORY2       => 'category2_1'
+            ],
+            [
+                MerchantDetailsEntity::ACTIVATION_STATUS        => 'activated',
+                MerchantDetailsEntity::BUSINESS_TYPE            => 'biz type 1',
+                MerchantDetailsEntity::BUSINESS_CATEGORY        => 'biz category 1',
+                MerchantDetailsEntity::BUSINESS_SUBCATEGORY     => 'biz subcategory',
+            ]);
+
+        $this->fixtures->org->createAxisOrg();
+
+        $merchants[1] = $this->fixtures->merchant->createMerchantWithDetails(
+            Org::AXIS_ORG_ID,
+            'testIIRMid1235',
+            [
+                MerchantEntity::NAME            => 'Test IIR MID 1254',
+                MerchantEntity::ACTIVATED       => 1,
+                MerchantEntity::LIVE            => 1,
+                MerchantEntity::ACTIVATED_AT    => $now,
+                MerchantEntity::WEBSITE         => 'www.testIIRMid1235.com',
+                MerchantEntity::CATEGORY2       => 'category2_1'
+            ],
+            [
+                MerchantDetailsEntity::ACTIVATION_STATUS        => 'activated',
+                MerchantDetailsEntity::BUSINESS_TYPE            => 'biz type 2',
+                MerchantDetailsEntity::BUSINESS_CATEGORY        => 'biz category 2',
+                MerchantDetailsEntity::BUSINESS_SUBCATEGORY     => 'biz subcategory',
+            ]);
+
+        $merchants[2] = $this->fixtures->merchant->createMerchantWithDetails(
+            Org::AXIS_ORG_ID,
+            'testIIRMid1236',
+            [
+                MerchantEntity::NAME            => 'Test IIR MID 1256',
+                MerchantEntity::ACTIVATED       => 1,
+                MerchantEntity::LIVE            => 1,
+                MerchantEntity::ACTIVATED_AT    => $now,
+                MerchantEntity::WEBSITE         => 'www.testIIRMid1236.com',
+                MerchantEntity::CATEGORY2       => 'category2_1'
+            ],
+            [
+                MerchantDetailsEntity::ACTIVATION_STATUS        => 'activated',
+                MerchantDetailsEntity::BUSINESS_TYPE            => 'biz type 2',
+                MerchantDetailsEntity::BUSINESS_CATEGORY        => 'biz category 2',
+                MerchantDetailsEntity::BUSINESS_SUBCATEGORY     => 'biz subcategory',
+            ]);
+
+        $this->ba->terminalsAuth();
 
         $this->startTest();
     }

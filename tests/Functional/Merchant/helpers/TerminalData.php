@@ -5,6 +5,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use \RZP\Models\Payment\Gateway;
 use RZP\Error\PublicErrorDescription;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 
 return [
 
@@ -4168,5 +4169,47 @@ return [
                 'network_category'          => 'food_and_beverage',
             ]
         ]
+    ],
+
+    'testFetchMerchantsInfoForIIR' => [
+        'request' => [
+            'url'     => '/internal/iir/merchants',
+            'method'  => 'GET',
+            'content' => [
+                'org_id' => 'org_'.Org::AXIS_ORG_ID,
+                'merchant_ids' => ['testIIRMid1234', 'testIIRMid1235', 'testIIRMid1236']
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => "collection",
+                'count'  => 2,
+                'items'  => [
+                    [
+                        "id"                    => "testIIRMid1235",
+                        "business_category"     => 'biz category 2',
+                        "business_subcategory"  => 'biz subcategory',
+                        "business_type"         => 'biz type 2',
+                        "website"               => 'www.testIIRMid1235.com',
+                        "category2"             => 'category2_1',
+                        "org_id"                => "CLTnQqDj9Si8bx",
+                        "entity"                =>  "merchant",
+                        "admin"                 => true
+                    ],
+                    [
+                        "id"                    => "testIIRMid1236",
+                        "business_category"     => 'biz category 2',
+                        "business_subcategory"  => 'biz subcategory',
+                        "business_type"         => 'biz type 2',
+                        "website"               => 'www.testIIRMid1236.com',
+                        "category2"             => 'category2_1',
+                        "org_id"                => "CLTnQqDj9Si8bx",
+                        "entity"                =>  "merchant",
+                        "admin"                 => true
+                    ],
+                ],
+            ],
+            'status_code'   => 200,
+        ],
     ],
 ];

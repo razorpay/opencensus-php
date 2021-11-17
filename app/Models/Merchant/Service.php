@@ -7809,4 +7809,13 @@ class Service extends Base\Service
 
         return $slabs;
     }
+
+    public function fetchMerchantsByParams(array $input)
+    {
+        (new Validator)->validateInput('fetch_merchants_by_params', $input);
+
+        $this->trace->info(TraceCode::FETCH_MERCHANTS_BY_PARAMS_REQUEST, $input);
+
+        return $this->repo->merchant->fetchMerchantsByParams($input)->toArrayAdmin();
+    }
 }

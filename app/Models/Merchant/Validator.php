@@ -2443,4 +2443,14 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_INVALID_COUNTRY, null, [$value]);
         }
     }
+
+    protected static $fetchMerchantsByParamsRules = [
+        Detail\Entity::BUSINESS_CATEGORY        => 'sometimes|array',
+        Detail\Entity::BUSINESS_SUBCATEGORY     => 'sometimes|string',
+        Detail\Entity::BUSINESS_TYPE            => 'sometimes|string',
+        Entity::WEBSITE                         => 'sometimes|string',
+        Entity::CATEGORY2                       => 'sometimes|string',
+        Entity::ORG_ID                          => 'sometimes|string',
+        'merchant_ids'                          => 'sometimes|array',
+    ];
 }

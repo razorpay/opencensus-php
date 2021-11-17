@@ -579,7 +579,7 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
-    
+
     public function getAccountBalances()
     {
         $input = Request::all();
@@ -2578,7 +2578,7 @@ class MerchantController extends Controller
 
         return ApiResponse::json([], 201);
     }
-    
+
     public function updateShippingInfoUrl()
     {
         $input = Request::all();
@@ -2605,7 +2605,7 @@ class MerchantController extends Controller
 
         return ApiResponse::json([], 201);
     }
-    
+
     public function updateShippingSlabs()
     {
         $input = Request::all();
@@ -2613,5 +2613,14 @@ class MerchantController extends Controller
         $this->service()->updateShippingSlabs($input);
 
         return ApiResponse::json([], 201);
+    }
+
+    public function fetchMerchantsByparams()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchMerchantsByParams($input);
+
+        return ApiResponse::json($response);
     }
 }

@@ -380,6 +380,7 @@ class Route
         'merchant_details_suggested_update'        => ['post',     'merchants/details/suggested_update',             'MerchantController@updateSuggestedMerchantDetails'                 ],
         'internal_merchants_fetch'                 => ['get',      'internal/merchants',                             'MerchantController@getMerchantBulk'                                ],
         'internal_merchant_fetch'                  => ['get',      'internal/merchants/{id}',                        'MerchantController@internalGetMerchant'                            ],
+        'internal_merchants_fetch_by_params'       => ['get',      'internal/iir/merchants',                         'MerchantController@fetchMerchantsByparams'                         ],
         'internal_merchant_submission_date'        => ['get',      'internal/merchants/{id}/submission_date',       'MerchantController@internalGetMerchantSubmissionDate'               ],
         'internal_send_merchant_email'             => ['post',     'internal/merchants/{id}/send_email',             'MerchantController@sendMerchantEmail'                            ],
         'internal_merchant_get_rejection_reasons'  => ['get',      'internal/merchants/{id}/rejection_reasons',      'MerchantController@internalGetMerchantRejectionReasons'          ],
@@ -3525,6 +3526,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'internal_merchants_fetch_by_params',
         'internal_feature_bulk_assign',
         'internal_feature_bulk_remove',
         'internal_feature_get_all',
@@ -10963,7 +10965,8 @@ class Route
             'internal_merchant_auto_disabled_methods',
             'terminal_edit_internal',
             'internal_send_merchant_email',
-            'feature_get_merchants_internal'
+            'feature_get_merchants_internal',
+            'internal_merchants_fetch_by_params',
         ],
         'spinnaker' => [
             'throttle_create_config_spinnaker',

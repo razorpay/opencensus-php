@@ -27,6 +27,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
 use RZP\Models\Terminal\Category;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -864,6 +865,66 @@ class Repository extends Base\Repository
         }
 
         return $query;
+    }
+
+    public function fetchMerchantsByParams(array $filters)
+    {
+        $merchantDetailsRepo = $this->repo->merchant_detail;
+
+        //Please connect with terminals team before modifying this or adding any new fetch attribute
+        // as this is used for IIR dashboard.
+        $attributes = [
+            $this->dbColumn(Entity::ID),
+            $merchantDetailsRepo->dbColumn(Detail\Entity::BUSINESS_CATEGORY),
+            $merchantDetailsRepo->dbColumn(Detail\Entity::BUSINESS_SUBCATEGORY),
+            $merchantDetailsRepo->dbColumn(Detail\Entity::BUSINESS_TYPE),
+            $this->dbColumn(Entity::WEBSITE),
+            $this->dbColumn(Entity::CATEGORY2),
+            $this->dbColumn(Entity::ORG_ID),
+        ];
+
+        $merchantsMerchantId = $this->dbColumn(Entity::ID);
+        $merchantDetailsMerchantId = $merchantDetailsRepo->dbColumn(Detail\Entity::MERCHANT_ID);
+        $activated     = $this->dbColumn(Entity::ACTIVATED);
+        $activatedAt   = $this->dbColumn(Entity::ACTIVATED_AT);
+
+        $startTime = millitime();
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select($attributes)
+            ->join(Table::MERCHANT_DETAIL, $merchantsMerchantId, $merchantDetailsMerchantId)
+            ->whereNotNull($activatedAt)
+            ->where($activated, 1);
+
+        foreach ($filters as $attributeKey => $attributeValue)
+        {
+            switch ($attributeKey)
+            {
+                case Entity::ORG_ID:
+                    $orgId = Org\Entity::silentlyStripSign($filters[Entity::ORG_ID]);
+                    $query->where(Entity::ORG_ID, $orgId);
+                    break;
+
+                case 'merchant_ids':
+                    if((isset($filters['merchant_ids']) === true) and (empty($filters['merchant_ids']) === false))
+                    {
+                        $query->whereIn(Entity::ID, $filters['merchant_ids']);
+                    }
+                    break;
+
+                default:
+                    $query->where($attributeKey, $attributeValue);
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::FETCH_MERCHANTS_BY_PARAMS_TIME_TAKEN,
+            [
+                'filters'            => $filters,
+                'time_taken'         => millitime() - $startTime,
+            ]);
+
+        return $query->orderBy(Entity::ACTIVATED_AT, 'desc')->get();
     }
 
     public function fetchMerchantsForSettlement(array $inMerchantIds = [], array $notInMerchantIds = [])

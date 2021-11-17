@@ -337,6 +337,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_ADD_MERCHANT                                 = 'TERMINAL_ADD_MERCHANT';
     const TERMINAL_COPY                                         = 'TERMINAL_COPY';
     const TERMINAL_REASSIGN_MERCHANT                            = 'TERMINAL_REASSIGN_MERCHANT';
+    const FETCH_MERCHANTS_BY_PARAMS_REQUEST                     = 'FETCH_MERCHANTS_BY_PARAMS_REQUEST';
+    const FETCH_MERCHANTS_BY_PARAMS_TIME_TAKEN                  = 'FETCH_MERCHANTS_BY_PARAMS_TIME_TAKEN';
     const VERIFY_REFUND_TRANSACTION_CREATED                     = 'VERIFY_REFUND_TRANSACTION_CREATED';
     const PAYMENT_FETCH_REFUND_CREATE_DATA                      = 'PAYMENT_FETCH_REFUND_CREATE_DATA';
     const MANUAL_GATEWAY_REFUND_RESPONSE                        = 'MANUAL_GATEWAY_REFUND_RESPONSE';
