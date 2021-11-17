@@ -37,6 +37,9 @@ class CreatePricing extends Migration
             $table->string(Pricing::TYPE)
                   ->default(PricingType::PRICING);
 
+            $table->string(Pricing::APP_NAME)
+                  ->nullable();
+
             $table->string(Pricing::GATEWAY)
                   ->nullable();
 

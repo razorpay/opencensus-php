@@ -29,6 +29,7 @@ class Pricing extends Base
         $defaultValues = [
             Entity::CHANNEL             => null,
             Entity::ACCOUNT_TYPE        => $accountType,
+            Entity::APP_NAME            => null,
             Entity::PAYMENT_METHOD_TYPE => null,
             Entity::PAYMENT_NETWORK     => null,
             Entity::PAYMENT_ISSUER      => null,

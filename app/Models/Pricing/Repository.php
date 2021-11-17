@@ -412,6 +412,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * @param string $feature
+     * @param Merchant\Entity $merchant
+     * @return mixed
+     *
+     * only non app pricing rules from the default plan are fetched
+     *
+     */
     public function getBankingSharedAccountNonFreePayouDefaultPricingRules(string $feature, Merchant\Entity $merchant)
     {
         $orgId = $merchant->getOrgId();
@@ -423,10 +431,20 @@ class Repository extends Base\Repository
                     ->where(Pricing\Entity::ACCOUNT_TYPE, AccountType::SHARED)
                     ->where(Pricing\Entity::ORG_ID, '=', $orgId)
                     ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                    ->whereNull(Pricing\Entity::APP_NAME)
                     ->whereNull(Pricing\Entity::PAYOUTS_FILTER)
                     ->get();
     }
 
+    /**
+     * @param string $feature
+     * @param Merchant\Entity $merchant
+     * @param array $channels
+     * @return mixed
+     *
+     * only non app pricing rules from the default plan are fetched
+     *
+     */
     public function getBankingDirectAccountNonFreePayoutDefaultPricingRules(string $feature, Merchant\Entity $merchant, array $channels)
     {
         $orgId = $merchant->getOrgId();
@@ -438,11 +456,20 @@ class Repository extends Base\Repository
                     ->where(Pricing\Entity::ACCOUNT_TYPE, AccountType::DIRECT)
                     ->where(Pricing\Entity::ORG_ID, '=', $orgId)
                     ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                    ->whereNull(Pricing\Entity::APP_NAME)
                     ->whereNull(Pricing\Entity::PAYOUTS_FILTER)
                     ->whereIn(Pricing\Entity::CHANNEL, $channels)
                     ->get();
     }
 
+    /**
+     * @param string $feature
+     * @param Merchant\Entity $merchant
+     * @return mixed
+     *
+     * only non app pricing rules from the default plan are fetched
+     *
+     */
     public function getBankingSharedAccountFreePayoutDefaultPricingRules(string $feature, Merchant\Entity $merchant)
     {
         $orgId = $merchant->getOrgId();
@@ -454,10 +481,19 @@ class Repository extends Base\Repository
                     ->where(Pricing\Entity::ACCOUNT_TYPE, AccountType::SHARED)
                     ->where(Pricing\Entity::ORG_ID, '=', $orgId)
                     ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                    ->whereNull(Pricing\Entity::APP_NAME)
                     ->where(Pricing\Entity::PAYOUTS_FILTER, '=', Payout\Entity::FREE_PAYOUT)
                     ->get();
     }
 
+    /**
+     * @param string $feature
+     * @param Merchant\Entity $merchant
+     * @return mixed
+     *
+     * only non app pricing rules from the default plan are fetched
+     *
+     */
     public function getBankingDirectAccountFreePayoutDefaultPricingRules(string $feature, Merchant\Entity $merchant)
     {
         $orgId = $merchant->getOrgId();
@@ -469,8 +505,31 @@ class Repository extends Base\Repository
                     ->where(Pricing\Entity::ACCOUNT_TYPE, AccountType::DIRECT)
                     ->where(Pricing\Entity::ORG_ID, '=', $orgId)
                     ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                    ->whereNull(Pricing\Entity::APP_NAME)
                     ->where(Pricing\Entity::PAYOUTS_FILTER, '=', Payout\Entity::FREE_PAYOUT)
                     ->get();
+    }
+
+    /**
+     * @param string $feature
+     * @param Merchant\Entity $merchant
+     * @return mixed
+     *
+     * All the app pricing rules from the default plan are returned
+     *
+     */
+    public function getAppPayoutPricingRules(string $feature, Merchant\Entity $merchant)
+    {
+        $orgId = $merchant->getOrgId();
+
+        return $this->newQuery()
+            ->product(Product::BANKING)
+            ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
+            ->where(Pricing\Entity::FEATURE, '=', $feature)
+            ->whereNotNull(Pricing\Entity::APP_NAME)
+            ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+            ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+            ->get();
     }
 
     public function getPlansOrderedByPlanId(array $input)

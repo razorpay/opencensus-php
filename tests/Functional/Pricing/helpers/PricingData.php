@@ -2996,7 +2996,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'Banking default plan',
-                    'rules_count' => 44,
+                    'rules_count' => 48, // added 4 new rules for xpayroll
                     'type'        => 'pricing',
                 ],
                 [
@@ -3103,7 +3103,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'Banking default plan',
-                    'rules_count' => 44,
+                    'rules_count' => 48, // added four new rules for xpayroll
                     'type'        => 'pricing',
                 ],
                 [

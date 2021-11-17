@@ -443,4 +443,20 @@ class Plan extends PublicCollection
 
         return false;
     }
+
+    public function hasAppPayoutPricingRule(): bool
+    {
+        /** @var Entity $rule */
+        foreach ($this->items as $rule)
+        {
+            if (($rule->isBankingProduct() === true) and
+                ($rule->getFeature() === Feature::PAYOUT) and
+                ($rule->isAppPayoutPricingRule() === true))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

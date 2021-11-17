@@ -1,3 +1,6 @@
+ALTER TABLE pricing
+    ADD COLUMN app_name varchar(16) DEFAULT NULL;
+
 ALTER TABLE cards
     ADD merchant_id varchar(14) after id;
 

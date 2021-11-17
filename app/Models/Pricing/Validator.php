@@ -39,6 +39,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                 => 'sometimes',
         Entity::PROCURER                => 'sometimes|nullable|in:razorpay,merchant',
         Entity::PLAN_NAME               => 'sometimes',
+        Entity::APP_NAME                => 'sometimes|nullable|string',
         Entity::PAYMENT_METHOD          => 'required_unless:feature,refund,optimizer,payment|nullable|string',
         Entity::PAYMENT_METHOD_TYPE     => 'sometimes|nullable',
         Entity::PAYMENT_METHOD_SUBTYPE  => 'sometimes_if:payment_method,card,emandate,fund_transfer|nullable',
@@ -93,6 +94,7 @@ class Validator extends Base\Validator
         'addPlanRuleInternational',
         'addPlanRuleAmountRange',
         'addPlanRuleFeature',
+        'addPlanRuleAppName',
         'addPlanRulePricingMethod',
         'addPlanRulePricingMethodType',
         'addPlanRuleMinAndMaxFee',
@@ -158,6 +160,23 @@ class Validator extends Base\Validator
         }
 
         Pricing\Feature::validateFeature($input[Pricing\Entity::FEATURE]);
+    }
+
+    protected function validateAddPlanRuleAppName($input)
+    {
+        if (empty($input[Pricing\Entity::APP_NAME]) === true)
+        {
+            return;
+        }
+
+        // check for valid internal app name, for now only xpayroll is allowed
+        if($input[Pricing\Entity::APP_NAME] === 'xpayroll')
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestValidationFailureException(
+            $input[Pricing\Entity::APP_NAME].'it is an invalid app name');
     }
 
     protected function validateAddPlanRuleProcurer($input)

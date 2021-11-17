@@ -325,7 +325,9 @@ class Fee extends Base\Core
             return $pricingPlan;
         }
 
-        $pricingPlan = $this->addBankingPayoutFallbackRules($pricingPlan, $merchant);
+        $pricingPlan = $this->addNonAppBankingPayoutFallbackRules($pricingPlan, $merchant);
+
+        $pricingPlan = $this->addBankingPayoutAppFallbackRules($pricingPlan, $merchant);
 
         return $pricingPlan;
     }
@@ -351,7 +353,7 @@ class Fee extends Base\Core
         return $pricingPlan;
     }
 
-    protected function addBankingPayoutFallbackRules(Plan $pricingPlan, Merchant\Entity $merchant)
+    protected function addNonAppBankingPayoutFallbackRules(Plan $pricingPlan, Merchant\Entity $merchant)
     {
         //
         // Add default pricing rules with payouts_filter = free_payout, only when no such rules are already defined for
@@ -473,5 +475,17 @@ class Fee extends Base\Core
     protected function getCustomPricingPlan(Base\PublicEntity $entity)
     {
         return null;
+    }
+
+    protected function addBankingPayoutAppFallbackRules(Plan $pricingPlan, Merchant\Entity $merchant)
+    {
+        // add app specific pricing rules, if they are already not included
+        if ($pricingPlan->hasAppPayoutPricingRule() === false)
+        {
+            $rules       = $this->repo->getAppPayoutPricingRules(Feature::PAYOUT, $merchant);
+            $pricingPlan = $pricingPlan->merge($rules);
+        }
+
+        return $pricingPlan;
     }
 }

@@ -14332,6 +14332,59 @@ class PayoutTest extends OAuthTestCase
         $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED);
     }
 
+    public function testPayoutPricingForXpayroll()
+    {
+        $this->ba->xpayrollAuth();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('Bbg7cl6t6I3XB8', $payout['pricing_rule_id']);
+
+        $payoutSource = $this->getDbLastEntity('payout_source');
+
+        $this->assertEquals('100000000000sa', $payoutSource['source_id']);
+    }
+
+
+    public function testQueuedPayoutPricingForXpayroll()
+    {
+        $this->ba->xpayrollAuth();
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->fixtures->edit('balance',$balanceId,['balance' => 0]);
+
+        $this->startTest();
+
+        $this->fixtures->edit('balance',$balanceId,['balance' => 1000000]);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('Bbg7cl6t6I3XB8', $payout['pricing_rule_id']);
+
+        $payoutSource = $this->getDbLastEntity('payout_source');
+
+        $this->assertEquals('100000000000sa', $payoutSource['source_id']);
+    }
+
+    public function testPayoutPricingForNonXpayrollApp()
+    {
+        $this->ba->payoutLinksAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testPayoutPricingForPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testPayoutCreateOnInternalContactByXpayroll()
     {
         $this->ba->xPayrollAuth();

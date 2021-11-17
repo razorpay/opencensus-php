@@ -38,6 +38,9 @@ class Entity extends Base\PublicEntity
     const PAYOUTS_FILTER                = 'payouts_filter';
     const IS_BUY_PRICING_ALLOWED        = 'is_buy_pricing_allowed';
 
+    // to configure pricing for internal apps
+    const APP_NAME                      = 'app_name';
+
     //
     // By default, all the rules are of type pricing
     // commission type pricing is used in partners to specify partner fixed commission or explicit commission
@@ -102,6 +105,7 @@ class Entity extends Base\PublicEntity
         self::FEATURE,
         self::PROCURER,
         self::GATEWAY,
+        self::APP_NAME,
         self::PAYMENT_METHOD,
         self::PAYMENT_METHOD_SUBTYPE,
         self::PAYMENT_METHOD_TYPE,
@@ -146,6 +150,7 @@ class Entity extends Base\PublicEntity
         self::PROCURER                  => null,
         self::PRODUCT                   => Product::PRIMARY,
         self::FEATURE                   => Feature::PAYMENT,
+        self::APP_NAME                  => null,
         self::PAYMENT_METHOD_TYPE       => null,
         self::PAYMENT_METHOD_SUBTYPE    => null,
         self::PAYMENT_NETWORK           => null,
@@ -568,6 +573,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRODUCT);
     }
 
+    public function getAppName()
+    {
+        return $this->getAttribute(self::APP_NAME);
+    }
+
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
@@ -601,6 +611,11 @@ class Entity extends Base\PublicEntity
     public function isBankingProduct(): bool
     {
         return ($this->getProduct() === Product::BANKING);
+    }
+
+    public function isAppPayoutPricingRule(): bool
+    {
+        return ($this->getAppName() !== null);
     }
 
     public function isAccountTypeDirect()

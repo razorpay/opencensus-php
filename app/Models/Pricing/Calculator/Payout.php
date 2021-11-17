@@ -6,6 +6,7 @@ use RZP\Models\Pricing;
 use RZP\Http\BasicAuth;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Payout as PayoutModel;
+use RZP\Models\PayoutSource as PayoutSource;
 use RZP\Models\Merchant\Balance\Entity;
 
 /**
@@ -77,6 +78,19 @@ class Payout extends Base
         $authType      = $this->getAuthForPayout();
         $payoutsFilter = $this->getFreePayoutsFilter();
 
+        $payoutSourceDetails = $this->entity->getSourceDetailsAttribute();
+        $payoutSourceDetails = $payoutSourceDetails->toArray();
+
+        if (empty($payoutSourceDetails) === false)
+        {
+            $sourceDetails = end($payoutSourceDetails);
+            $appName = $sourceDetails[PayoutSource\Entity::SOURCE_TYPE];
+        }
+        else
+        {
+            $appName = $this->app['basicauth']->getInternalApp();
+        }
+
         // The filters are applied in order. If you have 10 rules
         // in total. Suppose 8 rules match with account type
         // as direct then the next filter will be applied on those 8
@@ -92,6 +106,7 @@ class Payout extends Base
         $filters = [
             [Pricing\Entity::ACCOUNT_TYPE, $accountType, false, null],
             [Pricing\Entity::PAYOUTS_FILTER, $payoutsFilter, false, null],
+            [Pricing\Entity::APP_NAME, $appName, true, null],
             [Pricing\Entity::CHANNEL, $channel, true, null],
             [Pricing\Entity::AUTH_TYPE, $authType, true, null],
         ];

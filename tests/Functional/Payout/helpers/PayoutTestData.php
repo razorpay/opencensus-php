@@ -10773,8 +10773,9 @@ return [
                 'purpose'         => 'refund',
                 'status'          => 'processing',
                 'mode'            => 'IMPS',
-                'tax'             => 90,
-                'fees'            => 590,
+                //zero pricing for xpayroll
+                'tax'             => 0,
+                'fees'            => 0,
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
@@ -11380,8 +11381,9 @@ return [
                 'purpose'         => 'refund',
                 'status'          => 'processing',
                 'mode'            => 'IMPS',
-                'tax'             => 162,
-                'fees'            => 1062,
+                // zero pricing for xpayroll
+                'tax'             => 0,
+                'fees'            => 0,
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
@@ -14373,6 +14375,188 @@ return [
         ],
     ],
 
+    'testPayoutPricingForXpayroll'=>  [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 10000,
+                'currency'        => 'INR',
+                'purpose'         => 'payout',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'xpayroll',
+                        'priority'    => 1,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 10000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'payout',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testQueuedPayoutPricingForXpayroll'=>  [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 10000,
+                'currency'        => 'INR',
+                'purpose'         => 'payout',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'queue_if_low_balance'  => 1,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'xpayroll',
+                        'priority'    => 1,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 10000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'payout',
+                'status'          => 'queued',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testPayoutPricingForNonXpayrollApp'=>  [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 10000,
+                'currency'        => 'INR',
+                'purpose'         => 'payout',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'payout_links',
+                        'priority'    => 1,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 10000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'payout',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 90,
+                'fees'            => 590,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testPayoutPricingForPrivateAuth'=>  [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 10000,
+                'currency'        => 'INR',
+                'purpose'         => 'payout',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 10000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'payout',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 90,
+                'fees'            => 590,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
     'testPayoutCreateOnInternalContactByXpayroll'=> [
         'request'  => [
             'server'  => [
@@ -14391,6 +14575,13 @@ return [
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'xpayroll',
+                        'priority'    => 1,
+                    ]
+                ]
             ],
         ],
         'response' => [
@@ -14402,8 +14593,8 @@ return [
                 'purpose'   => 'payout',
                 'status'    => 'processing',
                 'mode'      => 'IMPS',
-                'tax'       => 162,
-                'fees'      => 1062,
+                'tax'       => 0,
+                'fees'      => 0,
                 'notes'     => [
                     'abc' => 'xyz',
                 ],
