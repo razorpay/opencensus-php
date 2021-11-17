@@ -18,6 +18,14 @@
     }
 
     @font-face {
+            font-family: "Lato-Bold";
+            font-weight: 700;
+            font-display: swap;
+            src:
+                url('fonts/Lato-Bold.ttf') format('truetype')
+    }
+
+    @font-face {
         font-family: "Lato-Light";
         font-weight: 400;
         font-display: swap;
