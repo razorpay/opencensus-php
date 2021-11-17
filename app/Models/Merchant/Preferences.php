@@ -125,6 +125,7 @@ class Preferences
     const MID_BOB_2                 = 'DyLpdroA9jOWcY';
     const MID_BOB_3                 = 'DyLsgu8Kh683Ja';
     const MID_BAGIC                 = 'CYseUgx4bt9VFp';
+    const MID_BAGIC_2               = 'IEH5RyDZ4IrnCx';
     const MID_IMPACT_SCHOOL_ARCH    = 'D89MU9wL8ptnEM';
     const MID_VEL_TECH_HIGH_TECH    = 'CxrfYIK8mrctAN';
     const MID_MSRIT_EXAM_FEES_VFH   = 'CxqX32TCfZaHnQ';

@@ -815,7 +815,17 @@ class Notifier extends Base\Core
                 ];
 
                 break;
+            case Preferences::MID_BAGIC_2:
+                $sender = 'BJAZGI';
+                $template = 'sms.custom_invoice.bagic_revised';
+                $params = [
+                    'first_name'    => $this->invoice->getCustomerName() ?? 'Customer',
+                    'policy_number' => $receipt,
+                    'amount'        => $this->invoice->getAmount() / 100,
+                    'lob'           => $this->invoice->getNotes()['lob'] ?? '',
+                ];
 
+                break;
             case Preferences::MID_RBL_AGRI_LOAN:
                 $template = 'sms.custom_invoice.rbl_agri_loan';
                 $sender   = 'RBLBNK';
