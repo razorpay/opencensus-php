@@ -200,7 +200,7 @@ class Generator extends Base\Core
             function() use ($bankAccount)
             {
                 $existingAccount = $this->repo->bank_account
-                    ->findVirtualBankAccountByAccountNumberAndBankCode($bankAccount->getAccountNumber(), $bankAccount->getIfscCode());
+                    ->findVirtualBankAccountByAccountNumberAndBankCode($bankAccount->getAccountNumber(), $bankAccount->getIfscCode(), true);
 
                 if ($existingAccount !== null)
                 {

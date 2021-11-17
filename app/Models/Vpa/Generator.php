@@ -178,7 +178,7 @@ class Generator extends Base\Core
             self::VA_VPA_GENERATION . $vpa->getAddress(),
             function() use ($vpa) {
                 $existingAccount = $this->repo->vpa
-                    ->findByAddress($vpa->getAddress());
+                    ->findByAddress($vpa->getAddress(), true);
 
                 if ($existingAccount !== null)
                 {

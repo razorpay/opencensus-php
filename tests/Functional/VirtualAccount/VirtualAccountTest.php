@@ -1018,7 +1018,11 @@ class VirtualAccountTest extends TestCase
 
         $this->closeVirtualAccount($virtualAccount['id']);
 
-        $this->createVirtualAccount([],false, 'samedesc');
+        $data = $this->testData['testCreateVirtualAccountWithIdenticalDescriptor'];
+
+        $this->runRequestResponseFlow($data, function() {
+            $this->createVirtualAccount([],false, 'samedesc');
+        });
     }
 
     public function testFetchVirtualAccount()

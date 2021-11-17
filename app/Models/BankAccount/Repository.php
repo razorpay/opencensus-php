@@ -134,7 +134,8 @@ class Repository extends Base\Repository
                       ->select($bankAccountData)
                       ->join(Table::VIRTUAL_ACCOUNT, $bankAccountEntityId, '=', $virtualAccountId)
                       ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
-                      ->where(Entity::TYPE, '=', Type::VIRTUAL_ACCOUNT);
+                      ->where(Entity::TYPE, '=', Type::VIRTUAL_ACCOUNT)
+                      ->latest();
 
         if ($bankCode !== null)
         {

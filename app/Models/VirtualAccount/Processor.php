@@ -386,7 +386,6 @@ abstract class Processor extends Base\Core
             {
                 return false;
             }
-
         }
 
         if ($this->useSharedVirtualAccount($entity) === true)
