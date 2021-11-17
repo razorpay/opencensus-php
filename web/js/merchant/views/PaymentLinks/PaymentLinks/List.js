@@ -235,10 +235,10 @@ export default class PaymentLinksContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
-        <HeaderAction>
+        <HeaderAction responsive>
           <div class="btn-toolbar pull-right">
             <span class="btn btn-link">
-              <span class="badge bg-success m-r">new</span>
+              <span class="badge bg-success m-r hidden-xs">new</span>
 
               <Link to="/reminders" onClick={this.trackReminderSetting}>
                 Reminder Settings
@@ -247,35 +247,42 @@ export default class PaymentLinksContainer extends ListContainer {
             <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
               <TakeATourButton feature={RZPFeatures.PL} />
             </ShowWhen>
-
-            <DocsLink {...docsLinkProps} onClick={this.trackDocumentClick} />
+            <span className="hidden-xs">
+              <DocsLink {...docsLinkProps} onClick={this.trackDocumentClick} />
+            </span>
+            <div className="mob-header hidden-lg">
+              <DocsLink {...docsLinkProps} onClick={this.trackDocumentClick} />
+              <span class="badge bg-success m-r hidden-lg">new</span>
+            </div>
             <ShowWhen
               additionalCondition={(user) =>
                 (mode !== 'live' || !user.isRejected) && user.isAllowedEdit('payment_links')
               }
             >
-              <NavLink className="btn btn-primary btn-shine" to="/paymentlinks/new">
-                <i class="i i-plus" />
-                <span
-                  onClick={() => {
-                    tracking.trackEvent(
-                      window.rzpQ.onbr().success('dash.pl_action', {
-                        action: 'Initiate_PL_Creation',
-                      }),
-                    );
-                    analyticsTrack({
-                      objectName: 'create payment link',
-                      actionName: 'clicked',
-                      screen: 'create payment link',
-                      properties: {
-                        ...getCommonAnalyticsProperties(window.rzp_user),
-                      },
-                    });
-                  }}
-                >
-                  Create Payment Link
-                </span>
-              </NavLink>
+              <span className="cta-container">
+                <NavLink className="btn btn-primary btn-shine" to="/paymentlinks/new">
+                  <i class="i i-plus" />
+                  <span
+                    onClick={() => {
+                      tracking.trackEvent(
+                        window.rzpQ.onbr().success('dash.pl_action', {
+                          action: 'Initiate_PL_Creation',
+                        }),
+                      );
+                      analyticsTrack({
+                        objectName: 'create payment link',
+                        actionName: 'clicked',
+                        screen: 'create payment link',
+                        properties: {
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      });
+                    }}
+                  >
+                    Create Payment Link
+                  </span>
+                </NavLink>
+              </span>
             </ShowWhen>
           </div>
         </HeaderAction>

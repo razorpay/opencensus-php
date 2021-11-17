@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
+import HeaderAction from 'common/ui/HeaderAction';
 import { compose, bindActionCreators } from 'redux';
 import DataTable from 'common/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -85,7 +86,7 @@ class BatchList extends ListContainer {
 
     return (
       <div class="content-wrapper batch-upload-wrapper">
-        <div class="btn-toolbar pull-right header-btns">
+        <div class="btn-toolbar pull-right header-btns hidden-xs">
           {sampleUrl && (
             <a class="btn btn-link hidden-xs" href={sampleUrl} onClick={this.downloadSampleFile}>
               Download Sample File
@@ -128,6 +129,59 @@ class BatchList extends ListContainer {
             null
           )}
         </div>
+        {/* Mobile Header for New Batch Upload Mobile View */}
+        <HeaderAction responsive>
+          <div className="btn-toolbar pull-right hidden-lg">
+            {sampleUrl && (
+              <a className="btn btn-link" href={sampleUrl} onClick={this.downloadSampleFile}>
+                Download Sample File
+              </a>
+            )}
+
+            <ShowWhen
+              additionalCondition={(usr) => usr.isOrgAllowedFunctionality('external_links')}
+            >
+              {docUrl && (
+                <DocLink
+                  class="btn btn-link"
+                  href={docUrl}
+                  target="_blank"
+                  onClick={this.trackViewDocumentation}
+                >
+                  Documentation &nbsp; <i class="i i-external-link" />
+                </DocLink>
+              )}
+            </ShowWhen>
+
+            {this.props.multiBatch ? (
+              <div class="pull-right MultiBatch--action">
+                <span className="cta-container">
+                  <div class="btn btn-primary">Upload New Batch</div>
+                </span>
+                <PopoverComponent align="bottom" class="MultiBatch--popover">
+                  <PopoverTitle>
+                    <h4>
+                      <strong>Upload New Batch</strong>
+                    </h4>
+                  </PopoverTitle>
+                  <PopoverBody>{this.props.renderBatchOptions(this.openUploadModal)}</PopoverBody>
+                </PopoverComponent>
+              </div>
+            ) : (
+              ((session.mode !== 'live' || !user.isRejected) && (
+                <span className="cta-container">
+                  <button
+                    class="btn btn-primary pull-right"
+                    onClick={this.openUploadModal(this.props.renderUploadModal)}
+                  >
+                    Click here to upload
+                  </button>
+                </span>
+              )) ||
+              null
+            )}
+          </div>
+        </HeaderAction>
 
         <BatchListFilter
           form="batchListFilter"
