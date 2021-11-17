@@ -1912,5 +1912,14 @@ final class FactoryData
         $factory(\RZP\Models\Merchant\Merchant1ccConfig\Entity::class, [
             'id'        => $faker->uniqueid,
         ]);
+
+        $factory(\RZP\Models\Store\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'status'      => \RZP\Models\PaymentLink\Status::ACTIVE,
+            'title'       => 'Sample title',
+            'description' => 'Sample description',
+            'notes'       => null,
+        ]);
     }
 }

@@ -439,4 +439,66 @@ return [
             ],
         ],
     ],
+
+    'testCreateOrder' => [
+        'request'     => [
+            'url'     => '/store/store_100000000000pl/order',
+            'method'  => 'post',
+            'content' => [
+                'line_items'      => [
+                    [
+                        'payment_page_item_id'   => 'ppi_10000000000ppi',
+                        "quantity"               =>  1
+                    ],
+                ],
+            ],
+        ],
+        'response'     => [
+            'content'  => [
+                'order'    => [
+                    'entity'        => 'order',
+                    'amount'        => 1000,
+                    'amount_paid'   => 0,
+                ],
+                'line_items' => [
+                    [
+                        'ref_id'       => 'ppi_' . STORETEST::TEST_PPI_ID,
+                        'ref_type'     => 'payment_page_item',
+                        'quantity'     => 1,
+                        'amount'       => 1000,
+                    ]
+                ]
+            ],
+            'status_code'          => 200,
+        ]
+    ],
+
+    'testMakePaymentAndCheckStoreStatus' => [
+    'request' => [
+        'url'    => '/payments',
+        'method' => 'post',
+        'content' => [
+            'payment_link_id' => 'pl_' . StoreTest::TEST_STORE_ID,
+            'amount'          => 1000,
+            'currency'          => 'INR',
+            'email'             => 'a@b.com',
+            'contact'           => '9918899029',
+            'description'       => 'random description',
+            'bank'              => 'IDIB',
+            'card'              => [
+                'number'            => '4012001038443335',
+                'name'              => 'Harshil',
+                'expiry_month'      => '12',
+                'expiry_year'       => '2024',
+                'cvv'               => '566',
+            ],
+            'order_id' => 'order_' . StoreTest::TEST_ORDER_ID,
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                ],
+            'status_code'  => 200
+            ]
+    ],
 ];
