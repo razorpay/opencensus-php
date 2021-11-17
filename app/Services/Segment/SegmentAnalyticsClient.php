@@ -4,9 +4,8 @@
 namespace RZP\Services\Segment;
 
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Models\Merchant;
+use RZP\Jobs\SegmentRequestJob;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\AbstractEventClient;
 use RZP\Trace\TraceCode;
@@ -275,4 +274,30 @@ class SegmentAnalyticsClient extends AbstractEventClient
         }
     }
 
+    protected function sendEventRequest(array $headers, string $url, array $eventData)
+    {
+        try
+        {
+            $request  = [
+                'method'    => 'post',
+                'url'       => $url,
+                'headers'   => $headers,
+                'content'   => json_encode($eventData),
+                'options'   => [
+                    'timeout'   => self::REQUEST_TIMEOUT
+                ]
+            ];
+
+            SegmentRequestJob::dispatch($request);
+        }
+        catch (\Exception $e)
+        {
+            $errorContext = [
+                'class'     => get_class($this),
+                'message'   => $e->getMessage(),
+            ];
+
+            $this->trace->error(TraceCode::EVENT_QUEUE_SEND_FAILED, $errorContext);
+        }
+    }
 }
