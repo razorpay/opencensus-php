@@ -125,12 +125,13 @@ const EasterEgg = (props) => {
     }
   };
 
-  return (
-    shouldShowEasterEgg() &&
-    props.user.isFtxEnabled && (
+  if (shouldShowEasterEgg() && props.user.isFtxEnabled) {
+    return (
       <div ref={ref} className={`ftx-container ${props.extraClass}`} onClick={clickEasterEgg} />
-    )
-  );
+    );
+  } else {
+    return null;
+  }
 };
 
 export default connect((state) => ({ user: state.session.user }), { openModal, closeModal })(
