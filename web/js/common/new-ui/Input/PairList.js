@@ -92,6 +92,8 @@ export default class PairList extends React.PureComponent {
                 pair={this.state.pairs[idx]}
                 updateKey={this.updateKey}
                 updateValue={this.updateValue}
+                onBlurTitle={this.props.onBlurTitle}
+                onBlurDesc={this.props.onBlurDesc}
               />
             ))}
 
@@ -116,12 +118,14 @@ class Pair extends React.Component {
   };
 
   onBlurTitle = (e) => {
+    const pairId = e.currentTarget.dataset.id;
+
     this.setState({
       focusTitle: false,
     });
 
     if (this.props.onBlurTitle) {
-      this.props.onBlurTitle(e);
+      this.props.onBlurTitle(e, pairId);
     }
   };
 
@@ -132,12 +136,14 @@ class Pair extends React.Component {
   };
 
   onBlurDesc = (e) => {
+    const pairId = e.currentTarget.dataset.id;
+
     this.setState({
       focusDesc: false,
     });
 
     if (this.props.onBlurDesc) {
-      this.props.onBlurDesc(e);
+      this.props.onBlurDesc(e, pairId);
     }
   };
 

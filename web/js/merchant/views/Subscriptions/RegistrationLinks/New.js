@@ -30,6 +30,7 @@ import {
   trackSubmitCreateForm,
   trackCloseCreateForm,
 } from './ga';
+import analytics from '../analytics';
 
 const CustomerDetailsMandatoryFields = [
   'description',
@@ -194,9 +195,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   trackRegistrationLinkCreation = (event, options) => {
     if (!event) return;
 
-    this.props.tracking.trackEvent(
-      window.rzpQ.chargeAtWill().interaction(`authlink.create.${event}`, options),
-    );
+    analytics.track(`registrationlink.create.${event}`, options);
   };
 
   setFormFields = (key, value) => {
@@ -253,6 +252,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   handlePaymentMethod = ({ option }) => {
     this.setFormFields('mandateMethod', option);
 
+    analytics.track('registrationlink.create.method', { method_type: option });
     trackClickPaymentMethod(option);
   };
 
@@ -451,7 +451,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         if (this.props.onClose) {
           this.props.luminateRow(entityId);
 
-          this.onClose();
+          this.props.onClose();
         } else {
           const redirectUrl = `/registration_links/${entityId}`;
 

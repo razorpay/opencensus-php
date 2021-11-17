@@ -14,54 +14,48 @@ import { fetchTokens as fetchAll } from 'merchant/reducers/collection';
 import { tokenId, createdAt } from 'common/ui/item/pair';
 
 import ListFilter from './components/ListFilter';
+import analytics from '../analytics';
+import { trackSearchEvent } from '../utils';
 
 const method = {
   title: 'Method',
-  value: item => {
-    if(['upi', 'nach'].includes(item.method)) return item.method.toUpperCase();
-    return titleCase(item.method)
+  value: (item) => {
+    if (['upi', 'nach'].includes(item.method)) return item.method.toUpperCase();
+    return titleCase(item.method);
   },
 };
 
 const email = {
   title: 'Email',
-  value: item => (item.customer ? item.customer.email : '--'),
+  value: (item) => (item.customer ? item.customer.email : '--'),
 };
 
 const contact = {
   title: 'Contact',
-  value: item => (item.customer ? item.customer.contact : '--'),
+  value: (item) => (item.customer ? item.customer.contact : '--'),
 };
 
 const status = {
   title: 'Status',
-  value: item => <TokenStatusLabel status={getTokenStatus(item)} />,
+  value: (item) => <TokenStatusLabel status={getTokenStatus(item)} />,
 };
 
 @connect(
-  state => ({
+  (state) => ({
     ...state.tokens,
   }),
-  { fetchAll }
+  { fetchAll },
 )
 @RTracking(() => window.rzpQ.component('TokensList'))
 export default class TokensList extends ListContainer {
   trackSearch = (event, options) => {
-    if (!event) return;
-
-    this.props.tracking.trackEvent(
-      window.rzpQ.chargeAtWill().interaction(`token.search.${event}`, options)
-    );
+    trackSearchEvent(event, { options, eventStartLabel: 'token.search' });
   };
 
-  onSubmit = filters => {
-    Object.keys(filters).forEach(filter => {
-      this.trackSearch(filter);
-    });
-
-    this.search(filters);
-
+  onSubmit = (filters) => {
     this.trackSearch('initiate');
+    this.trackSearch(filters);
+    this.search(filters);
   };
 
   onClearAnalytics = () => {
@@ -95,15 +89,12 @@ export default class TokensList extends ListContainer {
           title="Tokens"
           count={this.state.count}
           skip={this.state.skip}
-          paginate={this.paginate}
           columns={[tokenId, method, email, contact, createdAt, status]}
           {...this.props}
           paginate={(params, type) => {
-            this.props.tracking.trackEvent(
-              window.rzpQ.chargeAtWill().interaction(`token.browse.${type}`, {
-                page: params.skip % params.count,
-              })
-            );
+            analytics.track(`token.browse.${type}`, {
+              page: params.skip % params.count,
+            });
 
             this.paginate(params);
           }}

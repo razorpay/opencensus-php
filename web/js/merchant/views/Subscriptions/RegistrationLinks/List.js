@@ -4,12 +4,7 @@ import RTracking from 'react-tracking';
 
 import DataTable from 'common/ui/Table/DataTable';
 import HeaderAction from 'common/ui/HeaderAction';
-import {
-  amount,
-  receipt,
-  status,
-  createdAt as createdAtProperty,
-} from 'common/ui/item/pair';
+import { amount, receipt, status, createdAt as createdAtProperty } from 'common/ui/item/pair';
 
 import { fetchRegistrationLinks as fetchAll } from 'merchant/reducers/collection';
 
@@ -19,22 +14,24 @@ import CopyLink from 'merchant/components/CopyLink';
 import ListContainer from 'merchant/containers/ListContainer';
 
 import ListFilter from './components/ListFilter';
+import analytics from '../analytics';
+import { trackSearchEvent } from '../utils';
 
 const id = {
   title: 'Link ID',
-  value: item => <Link to={'/registration_links/' + item.id}>{item.id}</Link>,
+  value: (item) => <Link to={`/registration_links/${item.id}`}>{item.id}</Link>,
 };
 
 const link = {
   title: 'Registration Link',
-  value: item => <CopyLink url={item.short_url} />,
+  value: (item) => <CopyLink url={item.short_url} />,
 };
 
 const customer = {
   title: 'Customer',
   value: ({ customer_details = {} }) => [
-    <div>Email: {customer_details.email}</div>,
-    <div>Contact: {customer_details.contact}</div>,
+    <div key="email">Email: {customer_details.email}</div>,
+    <div key="contact">Contact: {customer_details.contact}</div>,
   ],
 };
 
@@ -43,27 +40,17 @@ const createdAt = {
   value: getTime('created_at', 'll'),
 };
 
-@connect(state => state.registrationLinks, { fetchAll })
+@connect((state) => state.registrationLinks, { fetchAll })
 @RTracking(() => window.rzpQ.component('RegistrationLinksList'))
 export default class RegistrationLinksList extends ListContainer {
   trackSearch = (event, options) => {
-    if (!event) return;
-
-    this.props.tracking.trackEvent(
-      window.rzpQ
-        .chargeAtWill()
-        .interaction(`authlink.search.${event}`, options)
-    );
+    trackSearchEvent(event, { options, eventStartLabel: 'registrationlink.search' });
   };
 
-  onSubmit = filters => {
-    Object.keys(filters).forEach(filter => {
-      this.trackSearch(filter);
-    });
-
-    this.search(filters);
-
+  onSubmit = (filters) => {
     this.trackSearch('initiate');
+    this.trackSearch(filters);
+    this.search(filters);
   };
 
   onClearAnalytics = () => {
@@ -100,13 +87,9 @@ export default class RegistrationLinksList extends ListContainer {
           {...this.props}
           count={this.state.count}
           paginate={(params, type) => {
-            this.props.tracking.trackEvent(
-              window.rzpQ
-                .chargeAtWill()
-                .interaction(`authlink.browse.${type}`, {
-                  page: params.skip % params.count,
-                })
-            );
+            analytics.track(`registrationlink.browse.${type}`, {
+              page: params.skip % params.count,
+            });
 
             this.paginate(params);
           }}

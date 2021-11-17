@@ -6,7 +6,7 @@ function analytics() {
 
   function sendToLumberjack(event, options) {
     lumberjackTrack(
-      window.rzpQ.subscription().interaction(event, {
+      window.rzpQ.interaction(event, {
         options,
       }),
     );

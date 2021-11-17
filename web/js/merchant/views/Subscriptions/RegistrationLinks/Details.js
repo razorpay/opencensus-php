@@ -37,6 +37,7 @@ import {
   trackClickDownloadNACHForm,
   trackClickViewNACHForm,
 } from './gaAuth';
+import analytics from '../analytics';
 
 @withRouter
 @connect(
@@ -86,9 +87,7 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
   trackRegistrationLinkDetails = (event, options) => {
     if (!event) return;
 
-    this.props.tracking.trackEvent(
-      window.rzpQ.chargeAtWill().interaction(`registration_link.${event}`, options),
-    );
+    analytics.track(`registration_link.${event}`, options);
   };
 
   downloadSignedNACHFile = () => {

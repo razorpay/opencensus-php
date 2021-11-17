@@ -8,26 +8,20 @@ import PaymentsTable from 'merchant/views/Transactions/Payments/components/Payme
 import PaymentListFilter from 'merchant/views/Transactions/Payments/components/PaymentsListFilter';
 import HeaderAction from 'common/ui/HeaderAction';
 import DocsLink from 'merchant/components/DocsLink';
+import analytics from '../analytics';
+import { trackSearchEvent } from '../utils';
 
-@connect(state => ({ ...state.payments }), { fetchAll })
+@connect((state) => ({ ...state.payments }), { fetchAll })
 @RTracking(() => window.rzpQ.component('EmandatePayments'))
 export default class EmandatePayments extends ListContainer {
   trackSearch = (event, options) => {
-    if (!event) return;
-
-    this.props.tracking.trackEvent(
-      window.rzpQ.chargeAtWill().interaction(`payment.search.${event}`, options)
-    );
+    trackSearchEvent(event, { options, eventStartLabel: 'payment.search' });
   };
 
-  onSubmit = filters => {
-    Object.keys(filters).forEach(filter => {
-      this.trackSearch(filter);
-    });
-
-    this.search(filters);
-
+  onSubmit = (filters) => {
     this.trackSearch('initiate');
+    this.trackSearch(filters);
+    this.search(filters);
   };
 
   onClearAnalytics = () => {
@@ -57,15 +51,11 @@ export default class EmandatePayments extends ListContainer {
         <PaymentsTable
           count={this.state.count}
           skip={this.state.skip}
-          paginate={this.paginate}
           {...this.props}
           paginate={(params, type) => {
-            this.props.tracking.trackEvent(
-              window.rzpQ.chargeAtWill().interaction(`payment.browse.${type}`, {
-                page: params.skip % params.count,
-              })
-            );
-
+            analytics.track(`payment.browse.${type}`, {
+              page: params.skip % params.count,
+            });
             this.paginate(params);
           }}
           onErrorCloseClick={this.onErrorCloseClick}

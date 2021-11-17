@@ -36,6 +36,7 @@ import {
   trackClickResubmitNachForm,
   trackClickViewNACHForm,
 } from './ga';
+import analytics from '../analytics';
 
 const CARD_MAX_AMOUNT = 500000;
 
@@ -83,9 +84,7 @@ export default class TokenDetailsContainer extends Component {
   trackTokenDetailsView = (event, options) => {
     if (!event) return;
 
-    this.props.tracking.trackEvent(
-      window.rzpQ.chargeAtWill().interaction(`token.${event}`, options),
-    );
+    analytics.track(`token.${event}`, options);
   };
 
   handleChargeNow = () => {
