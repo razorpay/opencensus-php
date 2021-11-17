@@ -1106,6 +1106,7 @@ class Route
         'store_create_order'                       => ['post',     'store/{id}/order',                              'StoreController@createOrder'                                        ],
         'store_create_order_options'               => ['options',  'store/{id}/order',                              'StoreController@createOrderOptions'                                 ],
         'store_hosted_page_by_slug_detail_page'    => ['any',      'store/hosted/{slug}/{path?}',                   'StoreController@getHostedPage'                                      ],
+        'store_hosted_product_detail_page'         => ['get',      'store/hosted/{slug}/product/{id}',              'StoreController@getHostedPageForProductDetail'                      ],
 
         //End of store section
         // payment link service end points
@@ -7144,6 +7145,7 @@ class Route
         'qr_code_demo_cors',
         'store_hosted_page_data_options',
         'store_hosted_page_by_slug',
+        'store_hosted_product_detail_page',
         'store_hosted_page_by_slug_detail_page',
         'store_hosted_page_data',
         'customer_flagging_entity_details',

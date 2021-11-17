@@ -111,6 +111,31 @@ class Service extends Base\Service
         return $this->core->getViewData($store);
     }
 
+    // Need to merge the above function validations into a single function
+    public function getHostedPageProductDetailData(string $id, string $productId)
+    {
+        $store = $this->repo->store->findByPublicId($id);
+
+        $merchant = $store->merchant;
+
+        $activeStore = $this->core->getStoreEntity($merchant);
+
+        if ($store->getPublicId() !== $activeStore->getPublicId())
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'This store does not exist');
+        }
+
+        $productId = \RZP\Models\PaymentLink\PaymentPageItem\Entity::stripDefaultSign($productId);
+
+        $product = $this->repo->payment_page_item->findByIdAndPaymentLinkEntityAndMerchantOrFail($productId, $store, $merchant);
+
+        return $this->core->getViewDataForProductDetailPage($store, $product);
+    }
+
     protected function setModeAndMerchant(string $id)
     {
         try

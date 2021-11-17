@@ -132,19 +132,9 @@ class StoreController extends Controller
 
     public function getHostedPage($slug)
     {
-        $gimli        = $this->app['elfin']->driver('gimli');
+        $id = $this->getStoreIdFromSlug($slug);
 
-        $slugMetadata = $gimli->expandAndGetMetadata($slug);
-
-        // Renders 404 if no metadata available(error/exception at Gimli side)
-        if ($slugMetadata === null)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-        }
-
-        $this->ba->setModeAndDbConnection($slugMetadata['mode']);
-
-        return $this->getHostedPageById($slugMetadata['id']);
+        return $this->getHostedPageById($id);
     }
 
     public function getHostedPageById($id)
@@ -162,20 +152,29 @@ class StoreController extends Controller
         }
     }
 
-    public function getHostedPageData($slug)
+    public function getHostedPageForProductDetail($slug, $productId)
     {
-        $gimli        = $this->app['elfin']->driver('gimli');
+        $id = $this->getStoreIdFromSlug($slug);
 
-        $slugMetadata = $gimli->expandAndGetMetadata($slug);
+        try {
+            $payload = $this->service()->getHostedPageProductDetailData($id, $productId);
 
-        if ($slugMetadata === null)
+            return View::make('store.product_detail', ['data' => $payload]);
+        }
+        catch(BadRequestException | BadRequestValidationFailureException $e)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+            $data = ['error_code' => $e->getCode(), 'message' => $e->getMessage(), 'data' => $e->getData()];
+
+            return View::make('payment_link.error_payment_link', ['data' => $data]);
         }
 
-        $this->ba->setModeAndDbConnection($slugMetadata['mode']);
+    }
 
-        $response = $this->service()->getHostedPageData($slugMetadata['id']);
+    public function getHostedPageData($slug)
+    {
+        $id = $this->getStoreIdFromSlug($slug);
+
+        $response = $this->service()->getHostedPageData($id);
 
         return ApiResponse::json($response);
     }
@@ -224,5 +223,22 @@ class StoreController extends Controller
         $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
 
         return $response;
+    }
+
+    protected function getStoreIdFromSlug($slug)
+    {
+        $gimli        = $this->app['elfin']->driver('gimli');
+
+        $slugMetadata = $gimli->expandAndGetMetadata($slug);
+
+        // Renders 404 if no metadata available(error/exception at Gimli side)
+        if ($slugMetadata === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
+        $this->ba->setModeAndDbConnection($slugMetadata['mode']);
+
+        return $slugMetadata['id'];
     }
 }

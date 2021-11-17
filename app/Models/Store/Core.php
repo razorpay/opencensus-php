@@ -288,7 +288,7 @@ class Core extends Base\Core
         return $this->entityRepo->findByPublicIdAndMerchant($storeId, $merchant);
     }
 
-    public function getViewData(Entity $store)
+    public function getViewData(Entity $store): array
     {
         return [
             'key_id'           => $this->getMerchantKeyId($store->merchant),
@@ -298,6 +298,34 @@ class Core extends Base\Core
             'store'            => $this->serializeStoreForHosted($store),
             'base_url'         => $this->config['app']['url'],
             'checkout_id'      => 'pl_'.$store->getId(),
+        ];
+    }
+
+    public function getViewDataForProductDetailPage(Entity $store, PaymentPageItem\Entity $product): array
+    {
+        $data = $this->getViewData($store);
+
+        $this->addMetaTagsForProductDetailPage($store, $product, $data);
+
+        return $data;
+    }
+
+    protected function addMetaTagsForProductDetailPage(Entity $store, PaymentPageItem\Entity $product, array & $data)
+    {
+        $name = $product->itemWithTrashed->getName();
+
+        $metaTitle = 'Buy '.$name." @ ".$store->getTitle();
+
+        $metaDescription = $product->itemWithTrashed->getDescription();
+
+        $images = $product->getProductConfig(Entity::PRODUCT_IMAGES);
+
+        $metaImage = $images[0] ?? $data['merchant']['image'];
+
+        $data['meta_tags'] = [
+            'meta_title'       => $metaTitle,
+            'meta_description' => $metaDescription,
+            'meta_image'       => $metaImage
         ];
     }
 
