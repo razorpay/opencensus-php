@@ -23,6 +23,23 @@ export const routeToChannelIDMap = {
   },
 };
 
+export const bankingRouteToChannelIDMap = {
+  default: {
+    dev: 'ILpOiPdxsl62QN',
+    beta: 'ILpOiPdxsl62QN',
+    stage: 'ILpOiPdxsl62QN',
+    axis: 'ILpOiPdxsl62QN',
+    production: 'IMN6odavPeZlSu',
+  },
+  home: {
+    dev: 'ILpOiPdxsl62QN',
+    beta: 'ILpOiPdxsl62QN',
+    stage: 'ILpOiPdxsl62QN',
+    axis: 'ILpOiPdxsl62QN',
+    production: 'IMN6odavPeZlSu',
+  },
+};
+
 export const assetNames = {
   ANNOUNCEMENT: 'ANNOUNCEMENT',
 };

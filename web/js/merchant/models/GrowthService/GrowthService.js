@@ -42,7 +42,7 @@ export default class GrowthService extends GenericEntity {
     if (this.user.isGrowthServiceEnabled) {
       const new_announcements = await this.fetchAssetData(
         merchant_id,
-        getChannelID(fromWhere),
+        getChannelID(fromWhere, this.user.isOrgRZP),
         assetNames.ANNOUNCEMENT,
       );
 

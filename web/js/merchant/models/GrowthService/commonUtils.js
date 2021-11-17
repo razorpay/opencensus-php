@@ -1,10 +1,16 @@
-import { routeToChannelIDMap, assetNames, announcementSchema } from './data';
+import {
+  routeToChannelIDMap,
+  bankingRouteToChannelIDMap,
+  assetNames,
+  announcementSchema,
+} from './data';
 
-export const getChannelID = (fromWhere = 'home') => {
+export const getChannelID = (fromWhere = 'home', isRzpORG = true) => {
+  const routeMap = isRzpORG ? routeToChannelIDMap : bankingRouteToChannelIDMap;
   const channelID =
-    routeToChannelIDMap[fromWhere]?.[window.APP_ENV] ||
-    routeToChannelIDMap.default[window.APP_ENV] ||
-    routeToChannelIDMap.default.production;
+    routeMap[fromWhere]?.[window.APP_ENV] ||
+    routeMap.default[window.APP_ENV] ||
+    routeMap.default.production;
 
   return channelID;
 };
