@@ -19,7 +19,13 @@ export const VPA_HANDLES = [
   'apl',
 ];
 
-export const CARD_NETWORKS = ['Master Card', 'Visa', 'RuPay', 'American Express', 'Diners Club'];
+export const CARD_NETWORKS = [
+  { code: 'AMEX', networkName: 'American Express' },
+  { code: 'VISA', networkName: 'Visa' },
+  { code: 'MC', networkName: 'Master Card' },
+  { code: 'RUPAY', networkName: 'RuPay' },
+  { code: 'DICL', networkName: 'Diners Club' },
+];
 
 export const CARD_ISSUERS = [
   { code: 'SBIN', issuerName: 'State Bank of India' },

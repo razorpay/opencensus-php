@@ -68,6 +68,25 @@ export const fetchOngoingDowntimes = () => {
                   if (!('network' in cardDowntimes)) {
                     cardDowntimes.network = {};
                   }
+
+                  // Mapping to card network name
+                  downtime.mapToName = true;
+
+                  const network = CARD_NETWORKS.find(
+                    (element) => element.code === downtime?.instrument?.network,
+                  );
+                  if (network != undefined) {
+                    const networkName = network.networkName;
+                    downtime.providerName = networkName;
+                  }
+
+                  const index = cardNetworksOperational.findIndex(
+                    (element) => element.code === downtime?.instrument?.network,
+                  );
+                  if (index > -1) {
+                    cardNetworksOperational.splice(index, 1);
+                  }
+
                   switch (downtime.severity) {
                     case 'low':
                       if ('low' in cardDowntimes.network) cardDowntimes.network.low.push(downtime);
@@ -84,10 +103,6 @@ export const fetchOngoingDowntimes = () => {
                       else cardDowntimes.network.high = [downtime];
                       break;
                     default:
-                  }
-                  const index = cardNetworksOperational.indexOf(downtime.instrument[instrument]);
-                  if (index > -1) {
-                    cardNetworksOperational.splice(index, 1);
                   }
                 } else if (instrument === 'issuer') {
                   if (!('issuer' in cardDowntimes)) {
@@ -417,6 +432,15 @@ export const fetchHistoricalDowntimes = async (skip, count, paymentMethod) => {
                   (element) => element.code === historicalDowntime?.instrument?.issuer,
                 );
                 historicalDowntime.providerName = issuer.issuerName;
+              }
+
+              if (instrument === 'network') {
+                historicalDowntime.mapToName = true;
+                const network = CARD_NETWORKS.find(
+                  (element) => element.code === historicalDowntime?.instrument?.network,
+                );
+
+                historicalDowntime.providerName = network.networkName;
               }
               break;
             case UPI_PAYMENT_METHOD:

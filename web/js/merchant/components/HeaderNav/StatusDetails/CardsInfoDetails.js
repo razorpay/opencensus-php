@@ -11,7 +11,9 @@ const CardNetworks = ({ network, operationalNetworks }) => {
         {network?.medium && <OngoingDowntime downtimes={network.medium} severity="medium" />}
         {network?.high && <OngoingDowntime downtimes={network.high} severity="high" />}
         <NoIssuesStatus />
-        <p className="status-list">{operationalNetworks?.join(', ')}</p>
+        <p className="status-list">
+          {operationalNetworks.map(({ networkName }) => networkName)?.join(', ')}
+        </p>
       </div>
     </>
   );

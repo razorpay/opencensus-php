@@ -76,9 +76,21 @@ const ShowHistoricalDowntime = ({ historicalDowntime }) => {
     let title = '';
     for (const property in instrument) {
       if (instrument.hasOwnProperty(property)) {
-        const value = ['issuer', 'bank'].includes(property) ? providerName : instrument[property];
+        const value = ['issuer', 'bank', 'psp', 'network'].includes(property)
+          ? providerName
+          : instrument[property];
         const className = !['psp', 'vpa_handle'].includes(property) ? 'capitalize' : '';
-        title = <p className={className}>{`${property} - ${value}`}</p>;
+
+        if (className) {
+          title = <p className={className}>{`${property} - ${value}`}</p>;
+        } else {
+          title = (
+            <p>
+              {property === 'psp' && `PSP - ${value}`}
+              {property === 'vpa_handle' && `VPA Handle - ${value}`}
+            </p>
+          );
+        }
       }
     }
     return title;

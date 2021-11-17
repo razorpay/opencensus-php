@@ -5,7 +5,7 @@ import OngoingDowntime from './OngoingDowntime';
 const VPADetails = ({ downtimes, operational }) => {
   return (
     <>
-      <p className="title">VPA</p>
+      <p className="title">VPA Handles</p>
       <div className="description border">
         {downtimes?.vpa_handle?.low && (
           <OngoingDowntime downtimes={downtimes.vpa_handle.low} severity="low" />
