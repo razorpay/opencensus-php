@@ -30,10 +30,6 @@ class Core extends Base\Core
      */
     public function create(Base\Entity $entity, $entityType, array $input, bool $ignoreMaxLimit = false)
     {
-        $this->trace->info(
-            TraceCode::ADDRESS_CREATE_REQUEST,
-            $input);
-
         if ($entityType === Constants\Entity::PAYMENT)
         {
             // see php doc block of function for reason as to why why we are calling createForPayment()
