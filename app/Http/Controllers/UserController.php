@@ -112,7 +112,7 @@ class UserController extends Controller
             if (empty($details) === false)
             {
                 $oldNotification = (new Merchant\Notifications\Service)->getOldNotificationsForUser($details, $org);
-                $newNotification = (new Merchant\Notifications\Service)->getNewNotificationsForUser($details);
+                $newNotification = (new Merchant\Notifications\Service)->getNewNotificationsForUser($details, $org);
                 $data['old_notifications'] = json_encode($oldNotification);
                 $data['new_notifications'] = json_encode($newNotification);
                 //TODO: Remove this in next release

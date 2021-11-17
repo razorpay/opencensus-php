@@ -30,11 +30,13 @@ class Service extends Base\Service
      *
      * @return array List of notifications for a user.
      */
-    public function getNewNotificationsForUser(array $user): array
+    public function getNewNotificationsForUser(array $user, array $org): array
     {
-        $notifications = Constants::getSplitzBasedNotifications();
-
-        return $this->notificationsFiltered($notifications, $user);
+        if ($this->isOrgRZP($org)) {
+            $notifications = Constants::getSplitzBasedNotifications();
+            return $this->notificationsFiltered($notifications, $user);
+        }
+        return [];
     }
 
     /**
