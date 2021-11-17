@@ -8,7 +8,6 @@ use Config;
 use Carbon\Carbon;
 use Illuminate\Hashing\BcryptHasher;
 
-use RZP\Exception\ServerErrorException;
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -28,7 +27,6 @@ use RZP\Services\TokenService;
 use RZP\Services\HubspotClient;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
-use RZP\Mail\User\OtpSignup as OtpSignup;
 use RZP\Models\Admin\Admin\Token;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Http\UserRolePermissionsMap;
@@ -44,238 +42,10 @@ use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 use RZP\Mail\User\ContactMobileUpdated as ContactMobileUpdatedMail;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
-use RZP\Models\User\RateLimitLoginSignup\Facade as LoginSignupRateLimit;
 
 class Core extends Base\Core
 {
     const VERIFY_SUPPORT_CONTACT = 'verify_support_contact';
-
-    /**
-     * @param array $input
-     * @return array
-     * @throws BadRequestException
-     * @throws ServerErrorException
-     */
-    public function sendSignupOtpViaEmail(array $input): array
-    {
-        if ($this->checkIfEmailAlreadyExists($input[Entity::EMAIL])) {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS,
-                null,
-                [
-                    "internal_error_code" => ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS
-                ]
-            );
-        }
-
-        LoginSignupRateLimit::checkKeyLimitExceeded(
-            $input[Entity::EMAIL],
-            Constants::SEND_EMAIL_SIGNUP_OTP_RATE_LIMIT_SUFFIX,
-            Constants::EMAIL_SIGNUP_OTP_SEND_TTL,
-            Constants::EMAIL_SIGNUP_OTP_SEND_THRESHOLD
-        );
-
-        $input += $this->getLoginSignupOtpPayload($input, Constants::SIGNUP_OTP_ACTION);
-
-        $receiver = $input[Entity::EMAIL];
-
-        $otp = $this->generateOtpForLoginSignup($receiver, $input);
-
-        $payload = $this->getEmailPayload($input, $otp);
-
-        $mailable = new OtpSignup($payload, $otp);
-
-        try
-        {
-            Mail::queue($mailable);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->count(Metric::USER_EMAIL_OTP_SEND_FAILED);
-
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::USERS_SEND_EMAIL_OTP_FAILED,
-                compact('input'));
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_EMAIL_OTP_FAILED,
-                null,
-                null,
-                $e->getMessage()
-            );
-        }
-
-        $this->traceEmailOtpLoginRoute($input, TraceCode::USER_SEND_EMAIL_OTP_FOR_REGISTER);
-
-        return array_only($otp, 'token');
-    }
-
-    /**
-     * @param array $input
-     * @return array|null
-     * @throws BadRequestException
-     */
-    public function sendSignupOtpViaSms(array $input): ?array
-    {
-        if ($this->checkIfMobileAlreadyExists($input[Entity::CONTACT_MOBILE])) {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS,
-                null,
-                [
-                    "internal_error_code" => ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS
-                ]
-            );
-        }
-
-        $input += $this->getLoginSignupOtpPayload($input, Constants::SIGNUP_OTP_ACTION);
-
-        $receiver = $input[Entity::CONTACT_MOBILE];
-
-        $otp = $this->generateOtpForLoginSignup($receiver, $input);
-
-        $payload = $this->getSmsPayload($input, $otp);
-
-        try
-        {
-            $this->app->raven->sendOtp($payload);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::USERS_SEND_SMS_OTP_FAILED,
-                compact('input'));
-
-            switch ($e->getCode())
-            {
-                case ErrorCode::BAD_REQUEST_RESOURCE_EXHAUSTED:
-                case ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED:
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
-                        null,
-                        [
-                            "internal_error_code" => ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED
-                        ],
-                        $e->getMessage()
-                    );
-                default:
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_SMS_OTP_FAILED,
-                        null,
-                        null,
-                        $e->getMessage()
-                    );
-            }
-        }
-
-        return array_only($otp, 'token');
-    }
-
-    /**
-     * Returns a token returned by raven service that will be used for verification
-     * @param array $input
-     * @return array
-     * @throws BadRequestException
-     * @throws ServerErrorException
-     */
-    public function registerWithOtp(array $input): ?array
-    {
-        $this->getUserEntity()->getValidator()->validateInput('signupOtp', $input);
-
-        // if by any change both email and contact number are present, prefer email
-        if (isset($input[Entity::EMAIL]))
-        {
-            return $this->sendSignupOtpViaEmail($input);
-        }
-        else
-        {
-            return $this->sendSignupOtpViaSms($input);
-        }
-    }
-
-    protected function traceEmailOtpSignupRoute(array $input, string $traceCode)
-    {
-        $keysToTrace = [Entity::EMAIL];
-
-        $data = [];
-        foreach ($keysToTrace as $key)
-        {
-            $data[$key] = $input[$key] ?? null;
-        }
-
-        $this->trace->info($traceCode, $data);
-    }
-
-    /**
-     * @param array $input
-     * @return bool
-     * @throws BadRequestException|ServerErrorException
-     */
-    public function verifySignupOtp(array $input): bool
-    {
-        $this->getUserEntity()->getValidator()->validateInput('verifySignupOtp', $input);
-
-        if (isset($input[Entity::CONTACT_MOBILE]) === true)
-        {
-            // if a user associated with the input contact_mobile exists, raise an error
-            $receiver = $input[Entity::CONTACT_MOBILE];
-            if ($this->checkIfMobileAlreadyExists($receiver)) {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS,
-                    null,
-                    [
-                        "internal_error_code" => ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS
-                    ]
-                );
-            }
-            $signupMedium = Constants::CONTACT_MOBILE;
-        }
-        else
-        {
-            // if a user associated with the inout email exists, raise an error
-            $receiver = $input[Entity::EMAIL];
-            if ($this->checkIfEmailAlreadyExists($receiver)) {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS,
-                    null,
-                    [
-                        "internal_error_code" => ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS
-                    ]
-                );
-            }
-            $signupMedium = Constants::EMAIL;
-        }
-
-        $input += $this->getLoginSignupOtpPayload($input, Constants::SIGNUP_OTP_ACTION);
-
-        LoginSignupRateLimit::checkKeyLimitExceeded(
-            $receiver,
-            Constants::VERIFY_SIGNUP_OTP_RATE_LIMIT_SUFFIX,
-            Constants::VERIFY_SIGNUP_OTP_TTL,
-            Constants::SIGNUP_OTP_VERIFICATION_THRESHOLD
-        );
-
-        $this->verifyLoginSignupOtp($receiver, $input, $receiver);
-
-        if($signupMedium === Constants::EMAIL)
-        {
-            LoginSignupRateLimit::resetKey(
-                $receiver,
-                Constants::SEND_EMAIL_SIGNUP_OTP_RATE_LIMIT_SUFFIX
-            );
-        }
-
-        LoginSignupRateLimit::resetKey(
-            $receiver, Constants::VERIFY_SIGNUP_OTP_RATE_LIMIT_SUFFIX
-        );
-
-        $this->traceEmailOtpSignupRoute($input, TraceCode::USER_VERIFY_EMAIL_OTP_FOR_REGISTER);
-
-        return true;
-    }
 
     public function create(array $input, string $operation = 'create'): Entity
     {
@@ -732,7 +502,7 @@ class Core extends Base\Core
 
         $this->getUserEntity()->getValidator()->validateInput('loginMobile', $input);
 
-        $user = $this->repo->user->getUserFromMobileOrFail($input[Entity::CONTACT_MOBILE]);
+        $user = $this->getUserByMobile($input[Entity::CONTACT_MOBILE]);
 
         $this->verifyPassword($user, $input[Entity::PASSWORD]);
 
@@ -745,13 +515,12 @@ class Core extends Base\Core
         (new Core)->trackOnboardingEvent($user->getContactMobile(),
             EventCode::LOGIN_SUCCESS_WITH_MOBILE);
 
-        $this->trace->count(
-            Metric::USER_LOGIN_COUNT,
-            [
-                Constants::METHOD => Constants::PASSWORD,
-                Constants::MEDIUM => Constants::CONTACT_MOBILE,
-            ]
-        );
+        $dimensionsForUserLogin = [
+            Constants::LOGIN_METHOD => Constants::PASSWORD,
+            Constants::LOGIN_MEDIUM => Constants::CONTACT_MOBILE,
+        ];
+
+        $this->trace->count(Metric::USER_LOGIN_COUNT, $dimensionsForUserLogin);
 
         return $this->get($user, true);
     }
@@ -797,13 +566,12 @@ class Core extends Base\Core
         (new Core)->trackOnboardingEvent($user->getEmail(),
             EventCode::MERCHANT_ONBOARDING_LOGIN_SUCCESS);
 
-        $this->trace->count(
-            Metric::USER_LOGIN_COUNT,
-            [
-                Constants::METHOD => Constants::PASSWORD,
-                Constants::MEDIUM => Constants::EMAIL,
-            ]
-        );
+        $dimensionsForUserLogin = [
+            Constants::LOGIN_METHOD => Constants::PASSWORD,
+            Constants::LOGIN_MEDIUM => Constants::EMAIL,
+        ];
+
+        $this->trace->count(Metric::USER_LOGIN_COUNT, $dimensionsForUserLogin);
 
         $loginMailNotificationEnabled = (new Merchant\Core())->isRazorxExperimentEnable($user->getId(),
             RazorxTreatment::USER_LOGIN_EMAIL_NOTIFICATION);
@@ -838,7 +606,7 @@ class Core extends Base\Core
         }
     }
 
-    public function getLoginSignupOtpPayload(array $input, string $action)
+    public function getLoginOtpPayload(array $input, string $action)
     {
         $medium = 'email';
 
@@ -853,11 +621,11 @@ class Core extends Base\Core
         ];
     }
 
-    public function getToken($userId, array $input)
+    public function getToken(Entity $user, array $input)
     {
         $token = $input['token'] ?? Entity::generateUniqueId();
 
-        $context = sprintf('%s:%s:%s', $userId, $input[Entity::ACTION], $token);
+        $context = sprintf('%s:%s:%s', $user->getId(), $input[Entity::ACTION], $token);
 
         $source = "api.user.{$input['action']}";
 
@@ -877,15 +645,17 @@ class Core extends Base\Core
             'source');
     }
 
-    public function generateOtpForLoginSignup(string $userId, array $input)
+    public function generateOtpForLogin(Entity $user, array $input)
     {
-        $payload = $this->getToken($userId, $input);
+        $payload = $this->getToken($user, $input);
 
         $token = array_pull($payload, 'token');
 
         $otp = $this->app->raven->generateOtp($payload);
 
-        return $otp + array_only($payload, 'context') + compact('token');
+        $otp = $otp + array_only($payload, 'context') + compact('token');
+
+        return $otp;
     }
 
     public function getSmsPayload(array $input, array $otp)
@@ -960,9 +730,9 @@ class Core extends Base\Core
     {
         $this->checkIfOtpLoginLocked($user);
 
-        $input += $this->getLoginSignupOtpPayload($input, Constants::LOGIN_OTP_ACTION);
+        $input += $this->getLoginOtpPayload($input, 'login_otp');
 
-        $otp = $this->generateOtpForLoginSignup($user->getId(), $input);
+        $otp = $this->generateOtpForLogin($user, $input);
 
         $payload = $this->getSmsPayload($input, $otp);
 
@@ -1117,9 +887,9 @@ class Core extends Base\Core
 
         $this->checkEmailLoginOtpSendLimitExceeded($input[Entity::EMAIL]);
 
-        $input += $this->getLoginSignupOtpPayload($input, Constants::LOGIN_OTP_ACTION);
+        $input += $this->getLoginOtpPayload($input, 'login_otp');
 
-        $otp = $this->generateOtpForLoginSignup($user->getId(), $input);
+        $otp = $this->generateOtpForLogin($user, $input);
 
         $payload = $this->getEmailPayload($input, $otp);
 
@@ -1154,9 +924,6 @@ class Core extends Base\Core
         return array_only($otp, 'token');
     }
 
-    /**
-     * @throws BadRequestException
-     */
     public function mobileOtpLogin(array $input)
     {
         if (isset($input[Entity::CONTACT_MOBILE]) === false)
@@ -1168,7 +935,7 @@ class Core extends Base\Core
         // So, we'll just return a dummy token.
         try
         {
-            $receiver = $this->repo->user->getUserFromMobileOrFail($input[Entity::CONTACT_MOBILE]);
+            $receiver = $this->getUserByMobile($input[Entity::CONTACT_MOBILE]);
         }
         catch (Throwable $e)
         {
@@ -1195,7 +962,7 @@ class Core extends Base\Core
         $this->getUserEntity()->getValidator()->validateInput('loginOtp', $input);
 
         $token = $this->mobileOtpLogin($input);
-       // $this->trace->count(Merchant\Metric::Login_total);
+
         if ($token !== null)
         {
             return $token;
@@ -1223,18 +990,14 @@ class Core extends Base\Core
 
         $token = $this->sendLoginOtpViaEmail($input, $receiver);
 
-
         return $token;
     }
 
-    /**
-     * @throws BadRequestException
-     */
     public function fetchUser(array $input)
     {
         if (isset($input[Entity::CONTACT_MOBILE]) === true)
         {
-            $user = $this->repo->user->getUserFromMobileOrFail($input[Entity::CONTACT_MOBILE]);
+            $user = $this->getUserByMobile($input[Entity::CONTACT_MOBILE]);
 
             $user = $this->isMobileVerified($user);
 
@@ -1252,17 +1015,18 @@ class Core extends Base\Core
      * Verify OTP with Raven service
      * @param $receiver
      * @param $input
-     * @param $userId
+     * @param $user
+     * @param $dimensionsForUserLogin
      * @throws BadRequestException on incorrect OTP
      */
-    private function verifyLoginSignupOtp($receiver, $input, $userId)
+    private function verifyOtpWithRaven($receiver, $input, $user, $dimensionsForUserLogin)
     {
         $payload = [
             'receiver' => $receiver,
             'source'   => "api.user.{$input['action']}"
         ];
 
-        $payload += $this->getToken($userId, $input);
+        $payload += $this->getToken($user, $input);
 
         $payload = array_only($payload, ['context', 'receiver', 'source']) + array_only($input, 'otp');
 
@@ -1272,14 +1036,7 @@ class Core extends Base\Core
         }
         catch (\Throwable $e)
         {
-            $this->trace->count(
-                Constants::VERIFY_LOGIN_SIGNUP_OTP_MEETRICS[$input['action']],
-                [
-                    Constants::METHOD => Constants::OTP,
-                    Constants::MEDIUM => isset($input[Entity::CONTACT_MOBILE]) ? Constants::CONTACT_MOBILE : Constants::EMAIL,
-                    Constants::ACTION => $input['action']
-                ]
-            );
+            $this->trace->count(Metric::VERIFY_LOGIN_INCORRECT_OTP, $dimensionsForUserLogin);
 
             switch ($e->getCode())
             {
@@ -1493,9 +1250,14 @@ class Core extends Base\Core
 
         $this->checkLoginOtpVerificationLimitExceeded($receiver, $loginMedium, $user);
 
-        $input += $this->getLoginSignupOtpPayload($input, Constants::LOGIN_OTP_ACTION);
+        $input += $this->getLoginOtpPayload($input, 'login_otp');
 
-        $this->verifyLoginSignupOtp($receiver, $input, $user->getId());
+        $dimensionsForUserLogin = [
+            Constants::LOGIN_METHOD => Constants::OTP,
+            Constants::LOGIN_MEDIUM => $loginMedium,
+        ];
+
+        $this->verifyOtpWithRaven($receiver, $input, $user, $dimensionsForUserLogin);
 
         $this->resetLoginOtpVerificationLimit($receiver);
 
@@ -1515,13 +1277,7 @@ class Core extends Base\Core
             $this->traceEmailOtpLoginRoute($input, TraceCode::USER_VERIFY_EMAIL_OTP_FOR_LOGIN);
         }
 
-        $this->trace->count(
-            Metric::USER_LOGIN_COUNT,
-            [
-                Constants::METHOD => Constants::OTP,
-                Constants::MEDIUM => $loginMedium,
-            ]
-        );
+        $this->trace->count(Metric::USER_LOGIN_COUNT, $dimensionsForUserLogin);
 
         $this->checkSecondFactorAuthForOtpLogin($user);
 
@@ -1768,9 +1524,9 @@ class Core extends Base\Core
 
         $this->checkEmailVerificationOtpSendLimitExceeded($input[Entity::EMAIL]);
 
-        $input += $this->getLoginSignupOtpPayload($input, Constants::VERIFY_USER_ACTION);
+        $input += $this->getLoginOtpPayload($input, 'verify_user');
 
-        $otp = $this->generateOtpForLoginSignup($user->getId(), $input);
+        $otp = $this->generateOtpForLogin($user, $input);
 
         $payload = $this->getEmailPayload($input, $otp);
 
@@ -1810,9 +1566,9 @@ class Core extends Base\Core
                 ]);
         }
 
-        $input += $this->getLoginSignupOtpPayload($input, Constants::VERIFY_USER_ACTION);
+        $input += $this->getLoginOtpPayload($input, 'verify_user');
 
-        $otp = $this->generateOtpForLoginSignup($user->getId(), $input);
+        $otp = $this->generateOtpForLogin($user, $input);
 
         $payload = $this->getSmsPayload($input, $otp);
 
@@ -1860,14 +1616,11 @@ class Core extends Base\Core
         return array_only($otp, 'token');
     }
 
-    /**
-     * @throws BadRequestException
-     */
     public function fetchUserForVerification(array $input)
     {
         if (isset($input[Entity::CONTACT_MOBILE]) === true)
         {
-            $user = $this->repo->user->getUserFromMobileOrFail($input[Entity::CONTACT_MOBILE]);
+            $user = $this->getUserByMobile($input[Entity::CONTACT_MOBILE]);
 
             return $user;
         }
@@ -2131,23 +1884,23 @@ class Core extends Base\Core
         if (isset($input[Entity::CONTACT_MOBILE]) === true)
         {
             $dimensionsForUserLogin = [
-                Constants::METHOD => Constants::OTP,
-                Constants::MEDIUM => Constants::CONTACT_MOBILE,
+                Constants::LOGIN_METHOD => Constants::OTP,
+                Constants::LOGIN_MEDIUM => Constants::CONTACT_MOBILE,
             ];
         }
         else
         {
             $dimensionsForUserLogin = [
-                Constants::METHOD => Constants::OTP,
-                Constants::MEDIUM => Constants::EMAIL,
+                Constants::LOGIN_METHOD => Constants::OTP,
+                Constants::LOGIN_MEDIUM => Constants::EMAIL,
             ];
         }
 
-        $this->checkVerifyOtpVerificationLimitExceeded($receiver, $dimensionsForUserLogin[Constants::MEDIUM], $user->getId());
+        $this->checkVerifyOtpVerificationLimitExceeded($receiver, $dimensionsForUserLogin[Constants::LOGIN_MEDIUM], $user->getId());
 
-        $input += $this->getLoginSignupOtpPayload($input, Constants::VERIFY_USER_ACTION);
+        $input += $this->getLoginOtpPayload($input, 'verify_user');
 
-        $this->verifyLoginSignupOtp($receiver, $input, $user->getId());
+        $this->verifyOtpWithRaven($receiver, $input, $user, $dimensionsForUserLogin);
 
         if (isset($input[Entity::EMAIL]))
         {
@@ -2766,56 +2519,45 @@ class Core extends Base\Core
     }
 
     /**
-     * Takes in mobile number and checks if users
-     * corresponding to that mobile number already exist.
+     * Takes in mobile number and returns
+     * user entity
      *
      * @param string $mobile
-     * @return bool
-     */
-    public function checkIfMobileAlreadyExists(string $mobile): bool
-    {
-        $users = $this->repo->user->findByMobile($mobile);
-
-        if($users->count() > 0)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Takes in an email and checks if a user
-     * corresponding to that email already exists.
      *
-     * @param string $email
-     * @return bool True if email already exist, false otherwise
-     * @throws Exception\ServerErrorException
-     * @author kartiksayani
+     * @return Entity
+     * @throws BadRequestException
      */
-    public function checkIfEmailAlreadyExists(string $email)
+    protected function getUserByMobile(string $mobile):Entity
     {
-        try
+        $user = $this->repo->user->findByMobile($mobile);
+
+        if ($user->count() === 1)
         {
-            $this->repo->user->findByEmail($email);
+            return $user->firstOrFail();
         }
-        catch (Exception\BadRequestException $e)
+
+        if ($user->count() < 1)
         {
-            switch ($e->getCode())
-            {
-                // findByEmail throws an exception if no records are found. If this exact exception is received, return a false
-                // Only this exception is expected to be raised.
-                // For anything else, raise a ServerError.
-                case ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND:
-                    return false;
-                default:
-                    throw new Exception\ServerErrorException(
-                        "Unknown Error encountered while checking if the email exists",
-                        $e->getCode()
-                    );
-            }
+            $this->trace->count(Metric::NO_ACCOUNTS_ASSOCIATED);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED,
+                null,
+                [
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED,
+                ]
+            );
         }
-        return true;
+        else
+        {
+            $this->trace->count(Metric::MULTIPLE_ACCOUNTS_ASSOCIATED);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED,
+                null,
+                [
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED,
+                ]
+            );
+        }
     }
 
     /**
@@ -4238,7 +3980,7 @@ class Core extends Base\Core
         if (isset($input[Entity::CONTACT_MOBILE])) {
             $mobile = $input[Entity::CONTACT_MOBILE];
 
-            $user = $this->repo->user->getUserFromMobileOrFail($mobile);
+            $user = $this->getUserByMobile($mobile);
             $user = $this->isMobileVerified($user);
         }
 

@@ -374,6 +374,7 @@ class Core extends Base\Core
         $input = array(
             'ifsc_code'             => Entity::SPECIAL_IFSC_CODE,
             'beneficiary_name'      => 'Test ' . $merchant->getId(),
+            'beneficiary_email'     => $merchant->getEmail(),
             'account_number'        => random_integer(11),
             'beneficiary_address1'  => 'Bengaluru Palace',
             'beneficiary_address2'  => 'Palace Rd, Vasanth Nagar',
@@ -381,14 +382,8 @@ class Core extends Base\Core
             'beneficiary_state'     => 'KA',
             'beneficiary_country'   => 'IN',
             'beneficiary_pin'       => '560052',
-//          TODO: @kartik.sayani - should this be changed?
             'beneficiary_mobile'    => '18002700323',
         );
-
-        if (is_null($merchant->getEmail()) === false)
-        {
-            $input['beneficiary_email'] = $merchant->getEmail();
-        }
 
         $ba = $this->createBankAccount($input, $merchant, Mode::TEST);
 

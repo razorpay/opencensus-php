@@ -42,6 +42,4 @@ final class Metric
 
     const DASHBOARD_SWITCH_SUCCESS_TOTAL      = 'dashboard_switch_success_total';
     const DASHBOARD_SWITCH_FAILURE_TOTAL      = 'dashboard_switch_failure_total';
-    const USER_SIGNUP                         = 'user_signup';
-    const VERIFY_SIGNUP_INCORRECT_OTP         = 'verify_signup_incorrect_otp';
 }

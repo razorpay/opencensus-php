@@ -18,28 +18,6 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function registerUserWithOtp()
-    {
-        $input = Request::all();
-
-        /** @var Service $userService */
-        $userService = $this->service();
-        $data = $userService->registerWithOtp($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function verifyAndRegisterUser()
-    {
-        $input = Request::all();
-
-        /** @var Service $userService */
-        $userService = $this->service();
-        $data = $userService->verifySignupOtp($input);
-
-        return ApiResponse::json($data);
-    }
-
     public function createUser()
     {
         $input = Request::all();

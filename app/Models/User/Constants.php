@@ -3,8 +3,6 @@
 namespace RZP\Models\User;
 
 use RZP\Constants\Environment;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 
 class Constants
 {
@@ -42,11 +40,11 @@ class Constants
 
     const BANNER_CLICKTIME = 'banner_clicktime';
 
-    const METHOD                = 'method';
-    const MEDIUM                = 'medium';
-    const ACTION                = 'action';
+    // Login metrics start
+    const LOGIN_METHOD                = 'login_method';
+    const LOGIN_MEDIUM                = 'login_medium';
 
-    // Possible Login/Signup methods
+    // Possible Login methods
     const PASSWORD                    = 'password';
     const OTP                         = 'otp';
 
@@ -98,20 +96,11 @@ class Constants
     // verification otp verification ttl and threshold
     const VERIFICATION_OTP_VERIFICATION_TTL = 1800; // 30 mins
     const VERIFICATION_OTP_VERIFICATION_THRESHOLD = 9; // 9 times in 30 mins
-    const EMAIL_SIGNUP_OTP_SEND_TTL = 1800;//30 mins
 
     // no. of incorrect password allowed on 2fa with password
     const INCORRECT_LOGIN_2FA_PASSWORD_THRESHOLD_COUNT = 5;
 
     const INCORRECT_LOGIN_THRESHOLD_COUNT = 5;
-
-    const INCORRECT_SIGNUP_THRESHOLD_COUNT = 5;
-
-    const EMAIL_SIGNUP_OTP_SEND_THRESHOLD = 5;
-
-    const VERIFY_SIGNUP_OTP_TTL = 7200; //120 mins
-
-    const SIGNUP_OTP_VERIFICATION_THRESHOLD = 9;
 
     public static $attributionList = [
         self::UTM_SOURCE,
@@ -284,46 +273,9 @@ class Constants
 
     ];
 
-    const SEND_EMAIL_SIGNUP_OTP_RATE_LIMIT_SUFFIX = "_signup_otp_send_count";
-    const VERIFY_SIGNUP_OTP_RATE_LIMIT_SUFFIX = "_signup_otp_verify_count";
-
     //Email id used for banking demo mode
     const BANKING_DEMO_USER_EMAILS = [
         "razorpayx.demo@gmail.com",
         "acmecorporation2021@gmail.com"
-    ];
-
-    const RATE_LIMIT_LOGIN_SIGNUP_MAP = [
-        self::SEND_EMAIL_SIGNUP_OTP_RATE_LIMIT_SUFFIX => [
-            "thresholdTraceCode" => TraceCode::EMAIL_SIGNUP_OTP_SEND_THRESHOLD_EXHAUSTED,
-            "thresholdErrorCode" => ErrorCode::BAD_REQUEST_EMAIL_SIGNUP_OTP_SEND_THRESHOLD_EXHAUSTED,
-            "redisTraceCode" => TraceCode::EMAIL_SIGNUP_OTP_REDIS_ERROR,
-            "redisErrorCode" => ErrorCode::SERVER_ERROR_EMAIL_SIGNUP_OTP_REDIS_ERROR,
-            "redisErrorDescription" => "An error occurred while interacting with redis on email otp signup route.",
-        ],
-        self::VERIFY_SIGNUP_OTP_RATE_LIMIT_SUFFIX => [
-            "thresholdTraceCode" => TraceCode::SIGNUP_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
-            "thresholdErrorCode" => ErrorCode::BAD_REQUEST_SIGNUP_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
-            "redisTraceCode" => TraceCode::VERIFY_SIGNUP_OTP_REDIS_ERROR,
-            "redisErrorCode" => ErrorCode::SERVER_ERROR_VERIFY_SIGNUP_OTP_REDIS_ERROR,
-            "redisErrorDescription" => "An error occurred while interacting with redis on signup otp verification route.",
-        ],
-        "default" => [
-            "thresholdTraceCode" =>TraceCode::REDIS_KEY_THRESHOLD_EXCEEDED,
-            "thresholdErrorCode" =>ErrorCode::BAD_REQUEST_REDIS_KEY_THRESHOLD_EXCEEDED,
-            "redisTraceCode" =>TraceCode::REDIS_SESSION_STORE_ERROR,
-            "redisErrorCode" =>ErrorCode::SERVER_ERROR,
-            "redisErrorDescription" =>"Redis Server Error"
-        ]
-    ];
-
-    const SIGNUP_OTP_ACTION = 'signup_otp';
-    const LOGIN_OTP_ACTION = 'login_otp';
-    const VERIFY_USER_ACTION = 'verify_user';
-
-    const VERIFY_LOGIN_SIGNUP_OTP_MEETRICS = [
-        self::SIGNUP_OTP_ACTION => Metric::VERIFY_SIGNUP_INCORRECT_OTP,
-        self::LOGIN_OTP_ACTION => Metric::VERIFY_LOGIN_INCORRECT_OTP,
-        self::VERIFY_USER_ACTION => Metric::VERIFY_LOGIN_INCORRECT_OTP,
     ];
 }

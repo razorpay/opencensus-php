@@ -105,12 +105,6 @@ class Core extends Base\Core
 
     public function create($input)
     {
-        if (isset($input['contact_mobile']))
-        {
-            $contact_mobile = $input['contact_mobile'];
-            unset($input['contact_mobile']);
-        }
-
         $merchant = (new Merchant\Entity)->build($input);
 
         $this->trace->info(
@@ -121,12 +115,10 @@ class Core extends Base\Core
 
         $merchant->setAuditAction(Action::CREATE_MERCHANT);
 
-        if (isset($input['email']) === true)
-        {
-            $email['email'] = $input['email'];
+        $email['email'] = $input['email'];
 
-            $merchant->getValidator()->validateInput('unique_email', $email);
-        }
+        $merchant->getValidator()->validateInput('unique_email', $email);
+
         $merchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
 
         $org = $this->repo->org->findOrFailPublic($input[Entity::ORG_ID]);
@@ -152,12 +144,7 @@ class Core extends Base\Core
 
         $this->savePartnerIntentInSettings($input, $merchant);
 
-        $this->addMerchantSupportingEntities(
-            $merchant,
-            null,
-            false,
-            !empty($contact_mobile) ? ['contact_mobile' => $contact_mobile] : []
-        );
+        $this->addMerchantSupportingEntities($merchant);
 
         $this->syncHeimdallRelatedEntities($merchant, $input, true);
 
@@ -445,9 +432,9 @@ class Core extends Base\Core
         }
     }
 
-    public function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null, bool $optimizeCreationFlow = false, array $extras = [])
+    public function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null, bool $optimizeCreationFlow = false)
     {
-        (new Detail\Core)->createMerchantDetails($merchant, $extras);
+        (new Detail\Core)->createMerchantDetails($merchant);
 
         if ($optimizeCreationFlow === true)
         {

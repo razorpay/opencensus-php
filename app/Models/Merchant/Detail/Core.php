@@ -1771,10 +1771,7 @@ class Core extends Base\Core
     {
         $merchantDetail = (new Entity)->build($input);
 
-        if ($merchant->getEmail() !== null)
-        {
-            $merchantDetail->setContactEmail($merchant->getEmail());
-        }
+        $merchantDetail->setContactEmail($merchant->getEmail());
 
         $merchantDetail->merchant()->associate($merchant);
 

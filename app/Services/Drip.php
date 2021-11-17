@@ -124,7 +124,7 @@ class Drip
         $data = [
             'subscribers' => [
                 [
-                    'email' => $merchant->getEmail() ?? null,
+                    'email' => $merchant->getEmail(),
                     'custom_fields' => [
                         $key => $value
                     ],

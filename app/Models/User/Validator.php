@@ -36,38 +36,17 @@ class Validator extends Base\Validator
         Entity::CAPTCHA_DISABLE                 => 'sometimes|string',
         Entity::ID                              => 'sometimes|max:14',
         Entity::NAME                            => 'sometimes|string|max:200',
-        Entity::EMAIL                           => 'required_without:contact_mobile|email',
-        Entity::PASSWORD                        => 'required_without:otp|between:8,50|confirmed|numbers|letters',
-        Entity::PASSWORD_CONFIRMATION           => 'required_without:otp|between:8,50',
-        Entity::CONTACT_MOBILE                  => 'required_without:email|max:15|contact_syntax',
+        Entity::EMAIL                           => 'required|email',
+        Entity::PASSWORD                        => 'required|between:8,50|confirmed|numbers|letters',
+        Entity::PASSWORD_CONFIRMATION           => 'required|between:8,50',
+        Entity::CONTACT_MOBILE                  => 'sometimes|nullable|max:15|contact_syntax',
         Entity::REMEMBER_TOKEN                  => 'sometimes',
         Entity::CONFIRM_TOKEN                   => 'sometimes',
         Entity::SETTINGS                        => 'nullable|associative_array',
         Merchant\Constants::PARTNER_INTENT      => 'sometimes|boolean',
         Entity::APP                             => 'sometimes|string',
         // Remove this when signup experiment for X is ramped up.
-        Entity::X_VERIFY_EMAIL                  => 'sometimes|string',
-        Entity::TOKEN                           => 'sometimes|string',
-        Entity::OTP                             => 'required_without:password|string|between:4,6',
-        Entity::SIGNUP_VIA_EMAIL                => 'sometimes',
-    ];
-
-    protected static $signupOtpRules = [
-        Entity::CONTACT_MOBILE                  => 'required_without:email|max:15|contact_syntax',
-        Entity::EMAIL                           => 'required_without:contact_mobile|email',
-        Entity::TOKEN                           => 'sometimes|string',
-        Entity::APP                             => 'sometimes|string'
-    ];
-
-    protected static $verifySignupOtpRules = [
-        Entity::CONTACT_MOBILE                  => 'required_without:email|max:15|contact_syntax',
-        Entity::EMAIL                           => 'required_without:contact_mobile|email',
-        Entity::TOKEN                           => 'required|string',
-        Entity::APP                             => 'sometimes|string',
-        Entity::CAPTCHA                         => 'required_without_all:captcha_disable',
-        Entity::CAPTCHA_DISABLE                 => 'sometimes|string',
-        Entity::OTP                             => 'required|string|between:4,6',
-        Merchant\Constants::PARTNER_INTENT      => 'sometimes|boolean',
+        Entity::X_VERIFY_EMAIL                  => 'sometimes|string'
     ];
 
     protected static $createOauthRules = [
@@ -79,7 +58,6 @@ class Validator extends Base\Validator
         Merchant\Constants::PARTNER_INTENT      => 'sometimes|boolean',
         Entity::APP                             => 'sometimes|string',
         Entity::OAUTH_PROVIDER                  => 'required|string|custom',
-        Entity::SIGNUP_VIA_EMAIL                => 'sometimes',
     ];
 
     protected static $editRules = [
@@ -270,10 +248,6 @@ class Validator extends Base\Validator
         Entity::EMAIL => 'required|email|unique:users,email',
     ];
 
-    protected static $createMobileUniqueRules = [
-        Entity::CONTACT_MOBILE => 'required|max:15|contact_syntax|unique:users,contact_mobile',
-    ];
-
     protected static $createOtpRules = [
         // When medium is not sent OTP is sent to both mediums.
         Entity::MEDIUM        => 'sometimes|filled|in:sms,email',
@@ -349,7 +323,7 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         'captcha',
-        'email_or_mobile_unique'
+        'email_unique'
     ];
 
     protected static $loginValidators = [
@@ -370,10 +344,6 @@ class Validator extends Base\Validator
 
     protected static $changePasswordValidators = [
         'old_password'
-    ];
-
-    protected static $verifySignupOtpValidators = [
-        'captcha_only'
     ];
 
     protected static $verifyUserThroughEmailRules = [
@@ -503,30 +473,11 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateEmailOrMobileUnique(array $input)
+    protected function validateEmailUnique(array $input)
     {
-        $inputField = '';
+        $inputEmail = ['email' => $input[Entity::EMAIL]];
 
-        if (isset($input[Entity::EMAIL]) === true)
-        {
-            $input = ['email' => $input[Entity::EMAIL]];
-
-            $inputField = 'Email';
-        }
-        else if (isset($input[Entity::CONTACT_MOBILE]) === true)
-        {
-            $input = ['contact_mobile' => $input[Entity::CONTACT_MOBILE]];
-
-            $inputField = 'Mobile';
-        }
-        else
-        {
-            //Throw runtime exception
-        }
-
-        $validatorFunction = 'create' . $inputField . 'Unique';
-
-        $this->validateInput($validatorFunction, $input);
+        $this->validateInput('createEmailUnique', $inputEmail);
     }
 
     /**

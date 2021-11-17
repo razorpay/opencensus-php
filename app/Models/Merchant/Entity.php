@@ -146,7 +146,6 @@ class Entity extends Base\PublicEntity
 
     const ACCOUNT_CODE              = 'account_code';
     const CODE                      = 'code';
-    const SIGNUP_VIA_EMAIL          = 'signup_via_email';
 
     // Coupon Related Data for display only
     const COUPON_CODE              = 'coupon_code';
@@ -360,7 +359,6 @@ class Entity extends Base\PublicEntity
         self::SIGNUP_SOURCE,
         self::ACCOUNT_CODE,
         self::PURPOSE_CODE,
-        self::SIGNUP_VIA_EMAIL
     ];
 
     const CONFIG_LIST = [
@@ -459,7 +457,6 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::PARENT_ID                      => null,
-        self::EMAIL                          => null,
         self::CATEGORY2                      => null,
         self::LIVE                           => false,
         self::ACTIVATED                      => false,
@@ -601,12 +598,9 @@ class Entity extends Base\PublicEntity
 
     protected function generateTransactionReportEmail($input)
     {
-        if (isset($input[self::EMAIL]) === true)
-        {
-            $email = array($input[self::EMAIL]);
+        $email = array($input[self::EMAIL]);
 
-            $this->setAttribute(self::TRANSACTION_REPORT_EMAIL, $email);
-        }
+        $this->setAttribute(self::TRANSACTION_REPORT_EMAIL, $email);
     }
 
     protected function generateInvoiceCode($input)
@@ -1668,7 +1662,7 @@ class Entity extends Base\PublicEntity
 
     public function getEmail()
     {
-        return $this->attributes[self::EMAIL] ?? null;
+        return $this->attributes[self::EMAIL];
     }
 
     public function getName()

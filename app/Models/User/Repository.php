@@ -2,8 +2,6 @@
 
 namespace RZP\Models\User;
 
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 
@@ -17,13 +15,6 @@ class Repository extends Base\Repository
         Entity::EMAIL       => 'sometimes|email|max:255',
     ];
 
-    /**
-     * Finds user by email.
-     * Fetches the first user found for an email, or throws an exception.
-     * @param string $email
-     * @return Entity User entity
-     * @throws BadRequestException
-     */
     public function findByEmail(string $email)
     {
         $liveMode = $this->auth->getLiveConnection();
@@ -33,60 +24,13 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
-    /**
-     * Finds user by contact number.
-     * Fetches the first user found for a contact number, or throws an exception.
-     * @param string $mobile
-     * @return
-     */
     public function findByMobile(string $mobile)
     {
-        // for legacy reasons, a contact number can belong to multiple users
-        // Return back all the users and let the calling function
-        // choose what to do with it
         $liveMode = $this->auth->getLiveConnection();
 
         return $this->newQueryWithConnection($liveMode)
                     ->where(Entity::CONTACT_MOBILE, '=', $mobile)
                     ->get();
-    }
-
-    /**
-     * @param string $mobile
-     * @return Entity User entity
-     * @throws BadRequestException
-     */
-    public function getUserFromMobileOrFail(string $mobile): Entity
-    {
-        $users = $this->findByMobile($mobile);
-
-        if($users->count() === 1)
-        {
-            return $users->firstOrFail();
-        }
-        else if($users->count() === 0)
-        {
-            $this->trace->count(Metric::NO_ACCOUNTS_ASSOCIATED);
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED,
-                null,
-                [
-                    'internal_error_code' => ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED,
-                ]
-            );
-        }
-        else
-        {
-            $this->trace->count(Metric::MULTIPLE_ACCOUNTS_ASSOCIATED);
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED,
-                null,
-                [
-                    'internal_error_code' => ErrorCode::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED,
-                ]
-            );
-        }
-
     }
 
     public function getUserFromEmailOrFail(string $email)
