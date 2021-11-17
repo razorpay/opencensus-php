@@ -34,6 +34,9 @@ class ReconServiceController extends Controller
             '^file_types$',
             '^signed_url$',
         ],
+        self::POST => [
+            '^output_email$',
+        ]
     ];
 
     const WHITELISTED_ADMIN_ROUTES_REGEX = [
