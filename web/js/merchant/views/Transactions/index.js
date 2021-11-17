@@ -121,7 +121,8 @@ class TransactionsContainer extends Component {
           </ShowWhen>
         </div>
         <tabbed-container>
-          <header id="transactions-header">
+          {/* To make the header scrollable we just need to add this new class to the header component */}
+          <header id="transactions-header" className="scrollable-tab-header">
             <NavLink
               to="/payments"
               onClick={() => {

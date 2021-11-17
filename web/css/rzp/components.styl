@@ -997,3 +997,52 @@ dl.rzp-definition {
   position: relative;
   top: 11px;
 }
+
+// Common scss to make the tab scrollable for m-web 
+.scrollable-tab-header{
+  @media screen and (max-width: $screen-xs-max) {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    a{
+      min-width 20%
+      text-align center
+    }
+  }
+}
+
+/* 
+  Common scss to make the header action section supportive for m-web
+  making the primary CTA sticky to the bottom of the page
+  making the links and all be a part of a div relative to just below of the tabs
+*/
+.tabbed-header-actions {
+  @media screen and (max-width: $screen-xs-max) {
+    margin -20px -20px 16px
+    background-color #F8F9FB
+    padding 10px
+    .btn-toolbar{
+      //needed to add !important to override the inline style which is coming from the library with class pull-right
+      float unset !important  
+    }
+    .cta-container {
+      position fixed
+      padding 15px
+      background-color white
+      bottom 0
+      left 0
+      width 100%
+      display flex
+      justify-content center
+      box-shadow 0 4px 11px 0 #152d4b
+      .btn-primary {
+        background-color #2A86F3
+        border-color #2A86F3
+        font-weight 700
+      }
+    }
+  }
+}

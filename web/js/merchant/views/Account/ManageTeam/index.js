@@ -49,7 +49,7 @@ class ManageTeamContainer extends React.Component {
       component: (
         <>
           <ModalHeader title="Invite New Member" onCloseClick={this.props.closeModal} />
-          <div class="modal-body">
+          <div className="modal-body">
             <NewInvitation
               visibleFields={visibleFields}
               defaults={defaults}
@@ -91,31 +91,35 @@ class ManageTeamContainer extends React.Component {
     const { user } = this.props;
 
     return (
-      <div class="content-wrapper content-sm" id="settings-content">
-        {!user.org_enforced_second_factor_auth && (
-          <ShowWhen myRole="owner">
-            <Merchant2FASettings />
-          </ShowWhen>
-        )}
-        <HeaderAction>
-          <div class="btn-toolbar pull-right">
+      <div className="content-wrapper content-sm" id="settings-content">
+        {/* passing the new props to the HeaderAction component to support the m-web view */}
+        <HeaderAction responsive>
+          <div className="btn-toolbar pull-right">
             <DocsLink
               url="https://razorpay.com/docs/team-support/"
               onClick={this.onDocumentationClick}
             />
             <ShowWhen additionalCondition={(userCurrent) => userCurrent.isAllowedEdit('team')}>
-              <button class="btn btn-primary" onClick={this.inviteNewMember}>
-                Invite New Member
-              </button>
+              {/* To make the CTAs on header to be sticky in teh bottom need to add a wrapper to them added same */}
+              <span className="cta-container">
+                <button className="btn btn-primary" onClick={this.inviteNewMember}>
+                  Invite New Member
+                </button>
+              </span>
             </ShowWhen>
           </div>
         </HeaderAction>
-        <div class="ManageTeam--list">
+        {!user.org_enforced_second_factor_auth && (
+          <ShowWhen myRole="owner">
+            <Merchant2FASettings />
+          </ShowWhen>
+        )}
+        <div className="ManageTeam--list">
           <ShowWhen additionalCondition={(userCurrent) => userCurrent.isAllowedView('invitations')}>
             <PendingInvitationsList {...this.props} />
           </ShowWhen>
 
-          <div class="m-t" />
+          <div className="m-t" />
 
           <TeamMembersList {...this.props} />
         </div>

@@ -14,7 +14,8 @@ import { analyticsTrack } from 'common/utils/analytics';
 export default function MyAccount() {
   return (
     <tabbed-container>
-      <header id="myaccount-header">
+      {/* To make the header scrollable we just need to add this new class to the header component */}
+      <header id="myaccount-header" className="scrollable-tab-header">
         <ShowWhen additionalCondition={(user) => user.isAllowedView('profile')}>
           <NavLink to="/profile">Profile</NavLink>
         </ShowWhen>

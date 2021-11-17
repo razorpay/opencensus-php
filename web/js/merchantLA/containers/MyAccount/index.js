@@ -9,7 +9,8 @@ export default class MyAccount extends Component {
   render() {
     return (
       <tabbed-container>
-        <header id="myaccount-header">
+        {/* To make the header scrollable we just need to add this new class to the header component */}
+        <header id="myaccount-header" className="scrollable-tab-header">
           <NavLink to="/profile">Profile</NavLink>
           <ShowWhen myRole="linked_account_owner">
             <NavLink to="/team">Manage Team</NavLink>

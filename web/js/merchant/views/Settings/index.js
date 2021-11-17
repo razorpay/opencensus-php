@@ -74,7 +74,8 @@ class Settings extends Component {
 
     return (
       <tabbed-container>
-        <header id="settings-header">
+        {/* To make the header scrollable we just need to add this new class to the header component */}
+        <header id="settings-header" className="scrollable-tab-header">
           <ShowWhen additionalCondition={(user) => user.isAllowedView('configuration')}>
             <NavLink
               to="/config"

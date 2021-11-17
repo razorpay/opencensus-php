@@ -42,10 +42,10 @@ function CreditsList(props) {
   };
 
   return (
-    <div class="credits content-wrapper content-sm">
+    <div className="credits content-wrapper content-sm">
       {showDocumentation && (
-        <HeaderAction>
-          <div class="btn-toolbar pull-right">
+        <HeaderAction responsive>
+          <div className="btn-toolbar pull-right">
             <DocsLink
               url="https://razorpay.com/docs/payment-gateway/dashboard-guide/credits/"
               onClick={() => analyticsTrack(OPEN_DOCUMENTATION)}
@@ -54,24 +54,26 @@ function CreditsList(props) {
         </HeaderAction>
       )}
       {loading ? (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       ) : (
-        <div class="list-group details-row-container">
+        <div className="list-group details-row-container">
           {props.user.isAllowedEdit('credits') && (
-            <div class="manage-alerts-row">
+            <div className="manage-alerts-row">
               <span>Note: Standard TDR charges applies on adding funds</span>
               <span style={{ color: '#528ff0' }} onClick={handleManageAlert}>
                 Manage Alerts
                 {}
-                <i class="i i-bell-outline" />
+                <i className="i i-bell-outline" />
               </span>
             </div>
           )}
 
           {(user.business_type === '11' || user.business_type === '2') && (
-            <div class="note">These credits can not be applied for credit cards transactions.</div>
+            <div className="note">
+              These credits can not be applied for credit cards transactions.
+            </div>
           )}
 
           <CreditDetailsNew

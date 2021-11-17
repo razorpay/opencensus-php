@@ -56,7 +56,8 @@ class Reminders extends React.Component {
 
     return (
       <div class="content-wrapper content-sm" id="settings-content">
-        <HeaderAction>
+        {/* passing the new props to the HeaderAction component to support the m-web view */}
+        <HeaderAction responsive>
           <div class="btn-toolbar pull-right">
             <DocsLink url="https://razorpay.com/docs/payment-links/reminders-payment-links/" />
           </div>

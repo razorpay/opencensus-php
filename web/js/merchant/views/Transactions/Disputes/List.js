@@ -57,7 +57,8 @@ class Dispute extends ListContainer {
   render() {
     return (
       <div class="content-wrapper">
-        <HeaderAction>
+        {/* passing the new props to the HeaderAction component to support the m-web view */}
+        <HeaderAction responsive>
           <ShowWhen
             additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
           >

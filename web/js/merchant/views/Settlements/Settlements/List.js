@@ -427,7 +427,7 @@ class SettlementsListContainer extends ListContainer {
         ) : null}
         <content>
           <div className="content-wrapper">
-            <HeaderAction>
+            <HeaderAction responsive>
               <div className="settlement-actions-wrapper">
                 {
                   <div

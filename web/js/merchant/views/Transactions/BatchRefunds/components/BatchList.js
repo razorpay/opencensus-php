@@ -188,11 +188,12 @@ class BatchList extends Component {
 
     return (
       <div class="content-wrapper">
-        <HeaderAction>
+        {/* passing the new props to the HeaderAction component to support the m-web view */}
+        <HeaderAction responsive>
           <div class="btn-toolbar pull-right">
             {sampleUrl && (
               <a
-                class="btn btn-link hidden-xs"
+                class="btn btn-link"
                 href={sampleUrl}
                 onClick={this.props.gaEvents.trackSampleFileDownload('From List View')}
               >
@@ -211,9 +212,12 @@ class BatchList extends Component {
             </ShowWhen>
 
             {(session.mode !== 'live' || !user.isRejected) && (
-              <button class="btn btn-primary pull-right" onClick={this.openBatchUploadModal}>
-                Click here to upload
-              </button>
+              /* To make the CTAs on header to be sticky in teh bottom need to add a wrapper to them added same */
+              <span className="cta-container">
+                <button class="btn btn-primary pull-right" onClick={this.openBatchUploadModal}>
+                  Click here to upload
+                </button>
+              </span>
             )}
           </div>
         </HeaderAction>

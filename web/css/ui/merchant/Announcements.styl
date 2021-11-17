@@ -168,12 +168,20 @@
       flex-wrap: wrap
       align-items: center
       height: 100%
-
       span.display-inline
         margin: 0 10px 0 0
 
       a.Button--secondary
         margin: 2px 0
+
+// added css to fix the announcement banner positioning for m-web
+.announcement-banner        
+  .schedule-enable-container
+    .scheduled-btn-act
+      @media screen and (max-width: $screen-xs-max) {
+        margin 10px 0 0
+        display inline-block
+      }
 
 .Modal .modal-body.rzp-early-stl-modal
   color: #58666E

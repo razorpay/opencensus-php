@@ -71,12 +71,16 @@ class WebhooksContainer extends ListContainer {
       <>
         <CSATSurveyBanner user={this.props.user} />
         <div className="content-wrapper" style={{ minHeight: '350px' }}>
-          <HeaderAction>
+          {/* passing the new props to the HeaderAction component to support the m-web view */}
+          <HeaderAction responsive>
             <div class="btn-toolbar pull-right">
               <DocsLink url="https://razorpay.com/docs/webhooks/" />
-              <button className="btn btn-primary" onClick={this.showNewWebhookModal}>
-                + Add New Webhook
-              </button>
+              {/* To make the CTAs on header to be sticky in teh bottom need to add a wrapper to them added same */}
+              <span className="cta-container">
+                <button className="btn btn-primary" onClick={this.showNewWebhookModal}>
+                  + Add New Webhook
+                </button>
+              </span>
             </div>
           </HeaderAction>
 
