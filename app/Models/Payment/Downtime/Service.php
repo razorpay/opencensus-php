@@ -10,7 +10,6 @@ use RZP\Models\Base;
 use RZP\Mail\Downtime;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
-use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
 use Razorpay\Trace\Logger as Trace;
@@ -58,30 +57,23 @@ class Service extends Base\Service
         );
 
         $this->trace->info(
-            TraceCode::ENABLE_GRANULAR_DOWNTIMES,
+            TraceCode::PAYMENT_DOWNTIMES_MERCHANT_ID,
             [
                 'merchantId' => $this->merchant->getMerchantId(),
                 'variant' => $variant
             ]
         );
 
-        if ((strtolower($variant) === 'on') &&
-            ($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_GRANULAR_DOWNTIMES) === true))
+        if (strtolower($variant) === 'on')
         {
             $downtimes = $this->getRepository()->fetchOngoingPlatformAndMerchantDowntimes($this->merchant->getMerchantId());
-
-            return $downtimes->toArrayPublic();
         }
         else
         {
             $downtimes = $this->getRepository()->fetchOngoingDowntimes();
-
-            $downtimesArrayPublic = $downtimes->toArrayPublic();
-
-            $this->removeGranularDowntimeKeys($downtimesArrayPublic);
-
-            return $downtimesArrayPublic;
         }
+
+        return $downtimes->toArrayPublic();
     }
 
     public function fetchOngoingDowntimes(): array
@@ -437,17 +429,6 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(
                 ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
                 null, null, "Date range should be within 30 days");
-        }
-    }
-
-    public function removeGranularDowntimeKeys(array & $downtimesArrayPublic)
-    {
-        if(isset($downtimesArrayPublic["items"]) === true) {
-            foreach ($downtimesArrayPublic["items"] as $key => $downtime) {
-                unset($downtimesArrayPublic["items"][$key][Entity::INSTRUMENT_SCHEMA]);
-                unset($downtimesArrayPublic["items"][$key][Entity::INSTRUMENT][Entity::TYPE]);
-                unset($downtimesArrayPublic["items"][$key][Entity::INSTRUMENT][Entity::FLOW]);
-            }
         }
     }
 }

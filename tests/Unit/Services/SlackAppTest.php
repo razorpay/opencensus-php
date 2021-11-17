@@ -29,7 +29,7 @@ class SlackAppTest extends TestCase
                 new SlackApp($this->app),
                 [$sampleDowntimeEntity, 'started']);
 
-        $expectedPayload = '{"entity":"event","event":"payment.downtime.started","contains":["payment.downtime"],"payload":{"payment.downtime":{"entity":{"id":"down_","entity":"payment.downtime","status":"started","instrument":[],"instrument_schema":[]}}}}';
+        $expectedPayload = '{"entity":"event","event":"payment.downtime.started","contains":["payment.downtime"],"payload":{"payment.downtime":{"entity":{"id":"down_","entity":"payment.downtime","status":"started","instrument":[]}}}}';
         $this->assertSame($expectedPayload, $actualPayload);
     }
 
