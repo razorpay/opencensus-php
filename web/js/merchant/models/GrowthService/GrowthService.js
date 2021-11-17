@@ -1,20 +1,57 @@
 import GenericEntity from '../GenericEntity';
-import store from 'merchant/store';
+import { getMode, getUser } from 'merchant/store';
 import { assetNames } from './data';
 import { getChannelID, sortAssetData, isValidAssetData } from './commonUtils';
 
 export default class GrowthService extends GenericEntity {
   resourceUrl = 'growth/assets';
-  user = store.getState().session.user;
+  user = getUser();
+
+  getUserFeatures = () => {
+    let device, browser, features;
+    const mode = getMode();
+    const role = this.user?.userRole;
+
+    if (typeof window.razorpayAnalytics?.utils?.getBrowserDetails === 'function') {
+      const browserDetails = window.razorpayAnalytics.utils.getBrowserDetails();
+      device = browserDetails?.device;
+      browser = browserDetails?.browser;
+    }
+
+    const context = {
+      device,
+      mode,
+      role,
+      browser,
+    };
+
+    if (Array.isArray(this.user?.features))
+      features = this.user.features.filter(({ value }) => value).map(({ feature }) => feature);
+
+    return {
+      context,
+      features,
+    };
+  };
+
+  getPayloadData = () => {
+    const { org_id: corp_id = '' } = this.user?.merchant;
+    const user_id = this.user?.user?.id;
+
+    return {
+      corp_id,
+      user_id,
+      ...this.getUserFeatures(),
+    };
+  };
 
   fetchAssetData = (merchant_id, channel_id, assetName) => {
-    const { org_id: corp_id = '' } = this.user?.merchant;
     return this.makeGenericAjaxCall({
       data: {
         merchant_id,
         channel_id,
         asset: assetName,
-        corp_id,
+        ...this.getPayloadData(),
       },
       method: 'post',
       mode: 'live',
