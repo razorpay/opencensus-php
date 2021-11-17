@@ -75,7 +75,7 @@ class Netbanking
         self::PUNB_C => 'Punjab National Bank - Corporate Banking',
         self::PUNB_R => 'Punjab National Bank - Retail Banking',
         self::RATN_C => 'RBL Bank - Corporate Banking',
-        self::SVCB_C => 'Shamrao Vithal Bank - Corporate Banking',
+        self::SVCB_C => 'SVC Co-Operative Bank Ltd. - Corporate Banking',
         self::UTIB_C => 'Axis Bank - Corporate Banking',
         self::YESB_C => 'Yes Bank - Corporate Banking',
         self::KKBK_C => 'Kotak Mahindra Bank - Corporate Banking',
@@ -86,6 +86,7 @@ class Netbanking
         IFSC::ALLA   => 'Indian Bank (Erstwhile Allahabad Bank)',
         IFSC::VIJB   => 'Bank of Baroda - Retail Banking (Erstwhile Vijaya Bank)',
         IFSC::HSBC   => 'HSBC',
+        IFSC::SVCB   => 'SVC Co-Operative Bank Ltd.',
     ];
 
     const ACCOUNT_NUMBER_LENGTHS = [

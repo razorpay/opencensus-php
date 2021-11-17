@@ -63,7 +63,7 @@ class BankCodes
         IFSC::SRCB => 'SWB',                    // Saraswat Co-Op Bank Ltd
         IFSC::STBP => 'SBI',                    // State Bank of Patiala - Silent redirect to SBI
         IFSC::SURY => 'SRB',                    // Suryoday Small Finance Bank
-        IFSC::SVCB => 'SVC',                    // Shamrao Vithal Co-Op Bank Ltd
+        IFSC::SVCB => 'SVC',                    // Svc Co-Op Bank Ltd
         IFSC::SYNB => 'CNB',                    // Syndicate Bank - migrated to Canara bank
         IFSC::TBSB => 'TBB',                    // Thane Bharat Sahakari Bank Ltd
         IFSC::TJSB => 'TJB',                    // TJSB Bank
@@ -88,7 +88,7 @@ class BankCodes
         Netbanking::PUNB_C => 'CPN',            // Punjab National Bank - Corporate
         Netbanking::PUNB_R => 'PNB',            // Punjab National Bank - Retail
         Netbanking::RATN_C => 'RTC',            // RBL Bank Limited Corporate
-        Netbanking::SVCB_C => 'SV2',            // Shamrao Vithal Bank Corporate
+        Netbanking::SVCB_C => 'SV2',            // Svc Bank Corporate
         Netbanking::YESB_C => 'YBC',            // Yes Bank Corporate
     ];
 
