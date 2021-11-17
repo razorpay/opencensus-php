@@ -18,9 +18,9 @@ trait BharatQrTrait
      *
      * @return null|string
      */
-    protected function getPaymentIdFromBharatQr(string $bankReference, array $row)
+    protected function getPaymentIdFromBharatQr(string $bankReference, array $row, int $amount)
     {
-        $bharatQr = $this->repo->bharat_qr->findByProviderReferenceId($bankReference);
+        $bharatQr = $this->repo->bharat_qr->findByProviderReferenceIdAndAmount($bankReference, $amount);
 
         if ($bharatQr === null)
         {

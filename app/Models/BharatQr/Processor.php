@@ -41,7 +41,9 @@ class Processor extends VirtualAccount\Processor
     {
         $providerReferenceId = $this->gatewayInput[GatewayResponseParams::PROVIDER_REFERENCE_ID];
 
-        $bharatQrEntity = $this->repo->bharat_qr->findByProviderReferenceId($providerReferenceId);
+        $amount = $this->gatewayInput[GatewayResponseParams::AMOUNT];
+
+        $bharatQrEntity = $this->repo->bharat_qr->findByProviderReferenceIdAndAmount($providerReferenceId, $amount);
 
         if ($bharatQrEntity === null)
         {

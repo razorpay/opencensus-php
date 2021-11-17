@@ -96,7 +96,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         if ($row[self::COLUMN_TERMINAL_NUMBER] === self::BHARAT_QR_TERMINAL)
         {
-            $bharatQr = $this->repo->bharat_qr->findByProviderReferenceId($row[self::COLUMN_RRN]);
+            $amount   = (int) ($row[self::COLUMN_PAYMENT_AMOUNT] * 100);
+
+            $bharatQr = $this->repo->bharat_qr->findByProviderReferenceIdAndAmount(
+                                                                                    $row[self::COLUMN_RRN],
+                                                                                    $amount);
 
             if ($bharatQr === null)
             {
@@ -160,7 +164,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         $response = (new BharatQr\Service)->processPayment($input, 'hitachi');
 
         // Fetch and raise alert if payment still not created
-        $bharatQr = $this->repo->bharat_qr->findByProviderReferenceId($row[self::COLUMN_RRN]);
+        $amount = (int) ($row[self::COLUMN_PAYMENT_AMOUNT] * 100);
+
+        $bharatQr = $this->repo->bharat_qr->findByProviderReferenceIdAndAmount(
+                                                                                $row[self::COLUMN_RRN] ,
+                                                                                $amount);
 
         if ($bharatQr === null)
         {

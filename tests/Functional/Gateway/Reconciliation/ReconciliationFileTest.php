@@ -3705,7 +3705,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->runForFiles([$file], 'HDFC');
 
-        $transaction = $this->getLastEntity('transaction', true);
+        $transaction = $this->getDbLastEntityToArray('transaction');
 
         $this->assertNotNull($transaction['reconciled_at']);
 

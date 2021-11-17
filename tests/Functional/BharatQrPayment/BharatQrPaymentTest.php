@@ -972,4 +972,60 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
         $this->assertEquals($rrn, $payment['reference16']);
     }
+
+    protected function processDuplicateUpiQrPayment($request)
+    {
+        $content = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($request['content']);
+
+        $request['raw'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        //Created Qr Entity As Expected
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($request['content']['PayerAmount'] * 100, $payment['amount']);
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($upi['payment_id']);
+
+        $this->assertEquals($bharatQr['expected'], true);
+
+        //Check RRN capture
+        $rrn = '000011100101';
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+    }
+
+    public function testDuplicateUpiQrPaymentProcess()
+    {
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $request = $this->testData['testUpiQrPaymentProcess'];
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId;
+        $request['content']['PayerAmount'] = 100;
+
+        $this->processDuplicateUpiQrPayment($request);
+
+        $request['content']['PayerAmount'] = 200;
+        $this->processDuplicateUpiQrPayment($request);
+    }
 }

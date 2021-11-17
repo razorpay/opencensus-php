@@ -106,13 +106,13 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         // Fetch payment ID from bharat_qr
-        $qrCodePayment = $this->repo->bharat_qr->findByProviderReferenceId($referenceNumber);
+        $amount = (int) ($row[self::AMOUNT] * 100);
+
+        $qrCodePayment = $this->repo->bharat_qr->findByProviderReferenceIdAndAmount($referenceNumber, $amount);
 
         // Fetch payment ID from qr_payment
         if ($qrCodePayment === null)
         {
-            $amount = (int) ($row[self::AMOUNT] * 100);
-
             $qrCodePayment = $this->repo->qr_payment->findByProviderReferenceIdAndGatewayAndAmount($referenceNumber, Gateway::UPI_ICICI, $amount);
         }
 
@@ -146,7 +146,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             $response = (new BharatQr\Service)->processPayment(json_encode($callbackData), 'upi_icici');
 
             // Fetch and raise alert if payment still not created
-            $qrCodePayment = $this->repo->bharat_qr->findByProviderReferenceId($referenceNumber);
+            $qrCodePayment = $this->repo->bharat_qr->findByProviderReferenceIdAndAmount($referenceNumber, $amount);
 
             if ($qrCodePayment === null)
             {

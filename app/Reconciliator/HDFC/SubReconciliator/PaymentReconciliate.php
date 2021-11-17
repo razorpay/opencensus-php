@@ -70,7 +70,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         {
             $transactionId = str_replace('\'', '', $row[self::COLUMN_GATEWAY_TRANSACTION_ID]);
 
-            $paymentId = $this->getPaymentIdFromBharatQr($transactionId, $row);
+            $amount = (int) ($row[self::COLUMN_PAYMENT_AMOUNT[0]] * 100);
+
+            $paymentId = $this->getPaymentIdFromBharatQr($transactionId, $row, $amount);
         }
         else
         {

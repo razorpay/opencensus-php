@@ -587,7 +587,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer');
     }
 
-    protected function processIciciQrPaymentWithDifferentAmountUtil($amount, $expectedStatus = true)
+    protected function processIciciQrPaymentWithDifferentAmountUtil($amount)
     {
         $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer']);
 
@@ -621,7 +621,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->processIciciQrPaymentWithDifferentAmountUtil(100);
         $this->processIciciQrPaymentWithDifferentAmountUtil(200);
     }
-
+    
     public function testProcessIciciQrPaymentForQrNotFound()
     {
         $request = $this->testData['testProcessIciciQrPayment'];
