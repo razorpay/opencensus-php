@@ -632,11 +632,13 @@ class Name
 
     const PAYMENT_LINKS_V2_ADMIN              = 'payment_links_v2_admin';
 
+    const PAYMENT_LINKS_OPS_BATCH_CANCEL      = 'payment_links_ops_batch_cancel';
+
     // Dedupe Permission
     const VIEW_MERCHANT_DEDUPE                = 'view_merchant_dedupe';
     const SUB_MERCHANT_DEDUPE                 = 'submerchant_dedupe';
     const EDIT_MERCHANT_DEDUPE                = 'edit_merchant_dedupe';
-    
+
     // Permission for merchants to view free payouts attributes
     const MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES = 'merchant_view_free_payouts_attributes';
 
@@ -766,7 +768,7 @@ class Name
     const ECOLLECT_ICICI_BATCH_UPLOAD                = 'ecollect_icici_batch_upload';
     const ECOLLECT_RBL_BATCH_UPLOAD                  = 'ecollect_rbl_batch_upload';
     const VIRTUAL_BANK_ACCOUNT_BATCH_UPLOAD          = 'virtual_bank_account_batch_upload';
-    
+
     // Admin action permission for X Ops Team
     const ENABLE_DOWNTIME_NOTIFICATION_X_DASHBOARD   = 'enable_downtime_notification_x_dashboard';
 

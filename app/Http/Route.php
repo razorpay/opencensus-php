@@ -1130,6 +1130,7 @@ class Route
         //temporary route to enable merchants to switch to v2 endpoints from dashboard
         'payment_links_switch_versions'            => ['post',            'payment_links_switch_versions',                  'InvoiceController@switchPlVersions'                                ],
         'payment_links_v2_admin'                   => ['post',            'payment_links_admin',                            'PlinkController@sendRequest'                                       ],
+        'payment_links_ops_batch_cancel'           => ['post',            'payment_links_ops/batch_cancel',                 'PlinkController@sendRequest'                                       ],
         // end of payment link service end points
         // Setu Integration
         'bbps_bill_payments'                       => ['get',      'bbps_bill_payments',                             'BbpsController@showBbpsDashboard'                                  ],
@@ -4807,6 +4808,7 @@ class Route
         'mir_instrument_set',
         'virtual_account_debug',
         'payment_links_v2_admin',
+        'payment_links_ops_batch_cancel',
         'transfer_debug',
         'setl_ondemand_pricing',
         'setl_ondemand_fund_accounts',
@@ -5779,6 +5781,7 @@ class Route
         'transfer_debug'                           => Permission::DEBUG_TRANSFERS_ROUTES,
         'virtual_account_debug'                    => Permission::DEBUG_VIRTUAL_ACCOUNT,
         'payment_links_v2_admin'                   => Permission::PAYMENT_LINKS_V2_ADMIN,
+        'payment_links_ops_batch_cancel'           => Permission::PAYMENT_LINKS_OPS_BATCH_CANCEL,
         'capital_cards_service'                    => Permission::CAPITAL_DEVELOPER,
         'capital_cards_dev_admin'                  => Permission::CAPITAL_DEVELOPER,
         'capital_collections_admin'                => Permission::ADD_MERCHANT_ADJUSTMENT,
@@ -9485,6 +9488,7 @@ class Route
             'payment_links_sign_payload',
             'payment_links_switch_versions',
             'payment_links_v2_admin',
+            'payment_links_ops_batch_cancel',
             'payment_mandate_hq_redirect_authenticate',
             'payment_on_hold_bulk_update',
             'payment_otp_generate',

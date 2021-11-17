@@ -1516,6 +1516,10 @@ return [
             Permission::PAYMENT_LINKS_V2_ADMIN => [
                 'description' => 'Admin actions for payment links v2 service',
                 'assignable'  => true
+            ],
+            Permission::PAYMENT_LINKS_OPS_BATCH_CANCEL => [
+                'description' => 'Ops permission for payment links batch cancel',
+                'assignable'  => true
             ]
         ],
 
