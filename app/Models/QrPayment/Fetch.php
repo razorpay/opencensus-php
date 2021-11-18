@@ -13,10 +13,11 @@ class Fetch extends BaseFetch
             PaymentEntity::STATUS         => 'sometimes',
             PaymentEntity::NOTES          => 'sometimes|notes_fetch',
             EsRepository::CUSTOMER_EMAIL  => 'sometimes|string',
-            Entity::PAYMENT_ID            => 'sometimes|alpha_num|size:14',
+            Entity::PAYMENT_ID            => 'sometimes|string',
             Entity::QR_CODE_ID            => 'sometimes|string',
             Entity::PROVIDER_REFERENCE_ID => 'sometimes',
             Entity::MERCHANT_ID           => 'sometimes|alpha_num|size:14',
+            Entity::GATEWAY               => 'sometimes|string',
         ],
     ];
 
@@ -31,6 +32,7 @@ class Fetch extends BaseFetch
             Entity::QR_CODE_ID,
             Entity::PROVIDER_REFERENCE_ID,
             EsRepository::CUSTOMER_EMAIL,
+            Entity::GATEWAY,
         ],
     ];
 
@@ -42,6 +44,7 @@ class Fetch extends BaseFetch
         Entity::PROVIDER_REFERENCE_ID,
         EsRepository::CUSTOMER_EMAIL,
         Entity::MERCHANT_ID,
+        Entity::GATEWAY,
     ];
 
     const SIGNED_IDS = [

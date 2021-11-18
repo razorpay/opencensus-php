@@ -4243,15 +4243,21 @@ class AdminFetch
                     Fetch::LABEL => 'Qr Code ID',
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
-                'payment_id'            => [
-                    Fetch::LABEL => 'Payment ID',
-                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                'payment_id'    => [
+                    Fetch::LABEL        => 'Payment Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
                 ],
                 'gateway'               => [
-                    Fetch::LABEL => 'Gateway',
-                    Fetch::TYPE  => Fetch::TYPE_STRING
+                    Fetch::LABEL  => 'Gateway',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'mindgate',
+                        'bt_rbl',
+                        'upi_icici',
+                        'hitachi',
+                    ],
                 ],
-                'transaction_reference' => [
+                'provider_reference_id' => [
                     Fetch::LABEL => 'NPCI Reference Id',
                     Fetch::TYPE  => Fetch::TYPE_STRING
                 ],
