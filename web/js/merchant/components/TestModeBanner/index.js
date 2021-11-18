@@ -28,7 +28,8 @@ class TestModeBanner extends Component {
     if (user.isOrgAxis) return null;
 
     return (
-      <div className="TestModeBanner">
+      /* For not as we have a seperarte Test Mode banner for m-web which is prominent so hiding this from m-web */
+      <div className="TestModeBanner hidden-xs">
         <Banner>
           You are in <b>Test Mode</b>, so only test data is shown.{' '}
           {user.isActivated ? (

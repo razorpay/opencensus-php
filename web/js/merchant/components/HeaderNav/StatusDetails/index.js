@@ -189,7 +189,8 @@ class StatusDetails extends React.Component {
 
     return (
       <main className={classList('status-details', sliderOpen && 'status-details--active')}>
-        <div className="status-details-slide-toggle">
+        {/* Hidden the Bank Downtime from M-web for now 17/11/21 till nav is fixed properly for m-web */}
+        <div className="status-details-slide-toggle hidden-xs">
           <span onClick={this.handleSliderToggleClick}>Bank Downtimes</span>
         </div>
         {sliderOpen ? (
