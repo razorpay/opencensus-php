@@ -605,6 +605,30 @@ return [
                 'id'    => 'NewSubmerchant',
                 'name'  => 'Submerchant',
                 'email' => 'testsub@razorpay.com',
+                'contact_mobile' => ''
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'account_id'   => 'acc_NewSubmerchant',
+                'account_name' => 'Submerchant',
+                'email'        => 'testsub@razorpay.com',
+            ],
+        ],
+    ],
+
+    'testCreateSubMerchantWithMobileNoByAggregatorBatch' => [
+        'request'  => [
+            'url'     => '/submerchants/batch',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Entity-Id' => '10000000000000',
+            ],
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant',
+                'email' => 'testsub@razorpay.com',
+                'contact_mobile' => '9876543210'
             ],
         ],
         'response' => [

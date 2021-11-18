@@ -1583,6 +1583,54 @@ return [
         ],
     ],
 
+    'testCreatePartnerSubmerchantWithValidContactMobile' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'name'           => 'random_name_1',
+                'email'          => 'user@example.com',
+                'contact_mobile' => '9999999999',
+                'product'        => 'banking',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'user' => [
+                    'name'           => 'random_name_1',
+                    'email'          => 'user@example.com',
+                    'contact_mobile' => '9999999999'
+                ]
+            ],
+        ],
+    ],
+
+    'testCreatePartnerSubmerchantWithInvalidContactMobile' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'name'           => 'random_name_1',
+                'email'          => 'user@example.com',
+                'contact_mobile' => '9999999',
+                'product'        => 'banking',
+            ],
+        ],
+        'response'      => [
+            'content'   => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The contact mobile must be between 8 and 11 digits.',
+                ],
+            ],
+            'status_code'       => 400,
+        ],
+        'exception'     => [
+            'class'                 => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreatePartnerSubmerchantWithProduct' => [
         'request'  => [
             'url'     => '/submerchants',

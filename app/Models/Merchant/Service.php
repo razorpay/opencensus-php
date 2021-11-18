@@ -325,10 +325,9 @@ class Service extends Base\Service
         );
 
         //
-        // Cannot create sub-merchant if all following conditions are met:
-        // 1. Not a linked account
-        // 2. Is neither a partner nor has an aggregator feature (for BC we allow the feature)
-        // 3. Is a partner of type pure-platform
+        // Cannot create sub-merchant for non-linked account if any of the following conditions are met:
+        // 1. Is neither a partner nor has an aggregator feature (for BC we allow the feature)
+        // 2. Is a partner of type pure-platform
         //
         if ($isLinkedAccount === false)
         {
@@ -4773,10 +4772,12 @@ class Service extends Base\Service
     public function formatUserCreationData(string $email, Entity $subMerchant)
     {
         $dummyPass = bin2hex(random_bytes(20));
+        $subMerchantDetails = (new MerchantDetailCore())->getMerchantDetails($subMerchant);
 
         return [
             User\Entity::NAME                  => $subMerchant->getName(),
             User\Entity::EMAIL                 => $email,
+            User\Entity::CONTACT_MOBILE        => $subMerchantDetails->getContactMobile(),
             User\Entity::PASSWORD              => $dummyPass,
             User\Entity::PASSWORD_CONFIRMATION => $dummyPass,
             User\Entity::CAPTCHA_DISABLE       => User\Validator::DISABLE_CAPTCHA_SECRET,
@@ -4882,12 +4883,12 @@ class Service extends Base\Service
     {
         $ownerId = $merchant->primaryOwner()->getId();
 
+        $product = $input[Entity::PRODUCT] ?? Product::PRIMARY;
+
         // TODO: Remove when dashboard stops sending
         unset($input['user_id']);
-
         unset($input['account']);
-
-        $product = $input[Entity::PRODUCT] ?? Product::PRIMARY;
+        unset($input[Entity::PRODUCT]);
 
         if($optimizeCreationFlow === false)
         {
@@ -4920,6 +4921,8 @@ class Service extends Base\Service
                  ($merchant->canCommunicateWithSubmerchant() === true))
         {
             $this->sendSubMerchantCreationMail($subMerchant, $merchant, $product, $newUser, $createdNew);
+
+            //$this->sendSubMerchantCreationSMS($subMerchant, $product);
         }
 
         return $this->getSubMerchantResponseArray($merchant, $subMerchant, $product);

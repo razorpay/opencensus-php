@@ -1554,6 +1554,28 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testCreatePartnerSubmerchantWithValidContactMobile()
+    {
+        $this->createPartnerAndUser();
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreatePartnerSubmerchantWithInvalidContactMobile()
+    {
+        $this->createPartnerAndUser();
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testCreatePartnerSubmerchantWithProduct()
     {
         $this->createPartnerAndUser();

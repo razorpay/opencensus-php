@@ -291,7 +291,8 @@ class Core extends Base\Core
             }
         }
 
-        unset($input[Entity::PRODUCT]);
+        $contactMobile = $input[Detail\Entity::CONTACT_MOBILE] ?? null;
+        unset($input[Detail\Entity::CONTACT_MOBILE]);
 
         if ($linkedAccount === true)
         {
@@ -344,7 +345,9 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($subMerchant);
 
-        $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant, $optimizeCreationFlow);
+        $subMerchantDetailInput = !empty($contactMobile) ? [Detail\Entity::CONTACT_MOBILE => $contactMobile] : [];
+
+        $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant, $optimizeCreationFlow, $subMerchantDetailInput);
 
         $this->syncHeimdallRelatedEntities($subMerchant, $input);
 
@@ -432,9 +435,10 @@ class Core extends Base\Core
         }
     }
 
-    public function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null, bool $optimizeCreationFlow = false)
+    public function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null,
+                                                  bool $optimizeCreationFlow = false, array $input = [])
     {
-        (new Detail\Core)->createMerchantDetails($merchant);
+        (new Detail\Core)->createMerchantDetails($merchant, $input);
 
         if ($optimizeCreationFlow === true)
         {

@@ -2,12 +2,13 @@
 
 namespace RZP\Models\Partner;
 
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
-use RZP\Models\Merchant\Entity;
-use RZP\Models\Merchant\Service as MerchantService;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Entity;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Service as MerchantService;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 
 class RateLimitBatch extends Base\Core
 {
@@ -39,6 +40,11 @@ class RateLimitBatch extends Base\Core
         }
 
         $this->incrementRateLimitCount($merchant);
+
+        if ((isset($input[DetailEntity::CONTACT_MOBILE]) === true) and ($input[DetailEntity::CONTACT_MOBILE] === "##contact_mobile##"))
+        {
+            unset($input[DetailEntity::CONTACT_MOBILE]);
+        }
 
         $merchantService = new MerchantService;
 

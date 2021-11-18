@@ -866,6 +866,49 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals('testsub@razorpay.com', $submerchantUser['email']);
     }
 
+    public function testCreateSubMerchantWithMobileNoByAggregatorBatch()
+    {
+        Mail::fake();
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
+        $this->ba->batchAppAuth();
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redisKey = (new RateLimitBatch())->getRateLimitRedisKey("10000000000000");
+
+        $response = $this->startTest();
+
+        $submerchant = $this->getLastEntity('merchant', true);
+
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01');
+
+        $this->assertEquals(1, count($mapping));
+
+        $this->verifyAccessMapEntries($app, $submerchant);
+
+        $counter = $redis->get($redisKey);
+
+        $this->assertEquals(1, $counter);
+
+        $submerchantUser = $this->getLastEntity('user', true);
+
+        $this->assertEquals('testsub@razorpay.com', $submerchantUser['email']);
+
+        $this->assertEquals('9876543210', $submerchantUser['contact_mobile']);
+
+        $submerchantDetail = $this->getLastEntity('merchant_detail', true);
+
+        $this->assertEquals('9876543210', $submerchantDetail['contact_mobile']);
+    }
+
     public function testCreateSubMerchantByAggregatorBatchRatelimitExceeded()
     {
         Mail::fake();
