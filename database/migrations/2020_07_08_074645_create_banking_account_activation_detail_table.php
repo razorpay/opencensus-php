@@ -100,6 +100,9 @@ class CreateBankingAccountActivationDetailTable extends Migration
             $table->string(Entity::ASSIGNEE_TEAM)
                   ->nullable();
 
+            $table->integer(Entity::BOOKING_DATE_AND_TIME)
+                  ->nullable();
+
             $table->string(Entity::RM_NAME)
                   ->nullable();
 

@@ -2559,6 +2559,25 @@ return [
         ],
     ],
 
+    'testUpdateActivationSlotBookingDetail' => [
+        'request' => [
+            'url'     => '/banking_accounts/activation/{id}/details/slot_booking',
+            'method'  => 'POST',
+            'content' => [
+                "admin_email"           => "superadmin@razorpay.com",
+                "booking_date_and_time" => 1639960752,
+                "additional_details"    => [
+                    "booking_id" => "SRF2345"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "booking_date_and_time" => '1639960752',
+            ],
+        ],
+    ],
+
     'testUpdateActivationDetailIfNameUpdated' => [
         'request'  => [
             'url'     => '/banking_accounts/activation/{id}/details',

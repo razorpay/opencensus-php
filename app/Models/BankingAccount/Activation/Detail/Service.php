@@ -108,6 +108,46 @@ class Service extends Base\Service
         return null;
     }
 
+    /**
+     * @throws BadRequestException
+     */
+    public function addSlotBookingDetailsForBankingAccount(string $bankingAccountId, array $input): array
+    {
+        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+
+        $activationDetail = $this->repo->banking_account_activation_detail->findByBankingAccountId($bankingAccount->getId());
+
+        (new Validator())->validateInput('add_slot_booking_detail', $input);
+
+        $email = array_pull($input, Entity::ADMIN_EMAIL);
+
+        if(array_key_exists(Entity::ADDITIONAL_DETAILS, $input) === true)
+        {
+            $input = $this->updateAdditionalDetailsPayload($activationDetail, $input);
+        }
+
+        try
+        {
+            $admin = $this->repo->admin->findByEmail($email);
+        }
+        catch (\Throwable $e)
+        {
+            return [
+                'error'   => $e->getMessage(),
+            ];
+        }
+
+        $updatedActivationDetail = $this->repo->transaction(function() use ($bankingAccount,
+            $activationDetail, $input, $admin)
+        {
+            (new BankingAccount\Core())->addReviewerToBankingAccount($bankingAccount, $admin->getPublicId());
+
+            return $this->core->update($activationDetail, $input);
+        });
+
+        return $updatedActivationDetail->toArrayPublic();
+    }
+
 
     public function updateForBankingAccount(string $bankingAccountId,
                                             array $input,
@@ -149,40 +189,7 @@ class Service extends Base\Service
             // This is to ensure that update request comes with only those keys which has to be updated and
             // not necessarily the entire json value. It will also ensure that previous data is not lost.
 
-            $previousAdditionalDetails = json_decode($activationDetail->getAdditionalDetails(), true);
-
-            $currentAdditionalDetails = $input[Entity::ADDITIONAL_DETAILS];
-
-            $dateFields = [
-                Entity::API_ONBOARDED_DATE,
-                Entity::API_ONBOARDING_LOGIN_DATE,
-            ];
-
-            // Convert date strings to epoch
-            foreach($dateFields as $dateField)
-            {
-                if (array_key_exists($dateField,$currentAdditionalDetails))
-                {
-                    if(strtotime($currentAdditionalDetails[$dateField]))
-                    {
-                        $currentAdditionalDetails[$dateField] =
-                            strtoepoch($currentAdditionalDetails[$dateField], 'd-M-Y', true);
-                    }
-                }
-            }
-
-            if ($previousAdditionalDetails)
-            {
-                if(!is_array($previousAdditionalDetails)){
-                    $previousAdditionalDetails = json_decode($previousAdditionalDetails,true);
-                }
-
-                $input[Entity::ADDITIONAL_DETAILS] = json_encode(array_merge($previousAdditionalDetails,$currentAdditionalDetails),true);
-            }
-            else
-            {
-                $input[Entity::ADDITIONAL_DETAILS] = json_encode($currentAdditionalDetails);
-            }
+            $input = $this->updateAdditionalDetailsPayload($activationDetail, $input);
         }
 
         $updatedActivationDetail = $this->repo->transaction(function() use ($bankingAccount,
@@ -449,4 +456,53 @@ class Service extends Base\Service
     {
         return empty($input[Entity::RM_NAME]) === false && empty($activationDetail[Entity::RM_NAME]) === true;
     }
+
+    /**
+     * @param Entity $activationDetail
+     * @param array  $input
+     *
+     * @return array
+     * @throws BadRequestException
+     */
+    public function updateAdditionalDetailsPayload(Entity $activationDetail, array $input): array
+    {
+        $previousAdditionalDetails = json_decode($activationDetail->getAdditionalDetails(), true);
+
+        $currentAdditionalDetails = $input[Entity::ADDITIONAL_DETAILS];
+
+        $dateFields = [
+            Entity::API_ONBOARDED_DATE,
+            Entity::API_ONBOARDING_LOGIN_DATE,
+        ];
+
+        // Convert date strings to epoch
+        foreach ($dateFields as $dateField)
+        {
+            if (array_key_exists($dateField, $currentAdditionalDetails))
+            {
+                if (strtotime($currentAdditionalDetails[$dateField]))
+                {
+                    $currentAdditionalDetails[$dateField] =
+                        strtoepoch($currentAdditionalDetails[$dateField], 'd-M-Y', true);
+                }
+            }
+        }
+
+        if ($previousAdditionalDetails)
+        {
+            if (!is_array($previousAdditionalDetails))
+            {
+                $previousAdditionalDetails = json_decode($previousAdditionalDetails, true);
+            }
+
+            $input[Entity::ADDITIONAL_DETAILS] = json_encode(array_merge($previousAdditionalDetails, $currentAdditionalDetails), true);
+        }
+        else
+        {
+            $input[Entity::ADDITIONAL_DETAILS] = json_encode($currentAdditionalDetails);
+        }
+
+        return $input;
+    }
+
 }

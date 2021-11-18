@@ -2496,6 +2496,8 @@ class Route
         'banking_account_activation_detail_create'=> ['post',     'banking_accounts/activation/{id}/details',                   'BankingAccountController@postCreateActivationDetail'       ],
         'banking_account_activation_detail'
         .'_update'                                => ['patch',    'banking_accounts/activation/{id}/details',                   'BankingAccountController@patchActivationDetail'            ],
+        'banking_account_activation_detail'
+        .'_slot_booking'                          => ['post',    'banking_accounts/activation/{id}/details/slot_booking',      'BankingAccountController@addActivationSlotBookingDetail'   ],
 
         'banking_account_activation_mis_download' => ['get',      'banking_accounts/activation/mis/download',                  'BankingAccountController@downloadActivationMis'            ],
 
@@ -3534,6 +3536,7 @@ class Route
         'merchant_risk_alerts_foh_workflow_trigger_nc',
         'buy_pricing_assign_bulk',
         'external_bvs_validation_request',
+        'banking_account_activation_detail_slot_booking',
         'bas_ca_lead_to_sales_force',
         'rbl_in_progress_lead_to_sales_force',
         'bas_banking_accounts_create',
@@ -11063,6 +11066,7 @@ class Route
 
         'banking_account_service' => [
             'external_bvs_validation_request',
+            'banking_account_activation_detail_slot_booking',
             'bas_ca_lead_to_sales_force',
             'bas_banking_accounts_create',
             'merchant_fetch_internal',

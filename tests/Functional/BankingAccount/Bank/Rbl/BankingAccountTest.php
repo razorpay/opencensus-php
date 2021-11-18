@@ -4365,6 +4365,33 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testUpdateActivationSlotBookingDetail()
+    {
+        $bankingAccount = $this->createBankingAccountFromDashboard();
+
+        $bankingAccountId = $bankingAccount['id'];
+
+        if(str_contains($bankingAccount['id'], Entity::getIdPrefix()) === false)
+        {
+            $bankingAccountId = $bankingAccount->getPublicId();
+        }
+
+        $dataToReplace  = [
+            'request' => [
+                'url'     => '/banking_accounts/activation/' . $bankingAccountId . '/details/slot_booking',
+                'method'  => 'POST',
+            ],
+        ];
+
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccountEntity = $this->getDbLastEntity('banking_account');
+
+        $this->assertNotNull($bankingAccountEntity->reviewers());
+    }
+
     public function testUpdateActivationDetailIfNameUpdated()
     {
         $bankingAccount = $this->testCreateActivationDetail();

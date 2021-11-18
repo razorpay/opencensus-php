@@ -150,6 +150,13 @@ class BankingAccountController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function addActivationSlotBookingDetail(string $bankingAccountId)
+    {
+        $response = $this->activationDetailService->addSlotBookingDetailsForBankingAccount($bankingAccountId, $this->input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postUpdateActivationDetailsFromBatchService()
     {
         $input = Request::all();

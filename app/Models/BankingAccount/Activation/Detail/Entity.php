@@ -100,6 +100,8 @@ class Entity extends Base\PublicEntity
     // team that is currently assigned to work on this
     const ASSIGNEE_TEAM = 'assignee_team';
 
+    const BOOKING_DATE_AND_TIME = 'booking_date_and_time';
+
     // Details received from RBL
     const RM_NAME = 'rm_name';
     const RM_PHONE_NUMBER = 'rm_phone_number';
@@ -123,6 +125,8 @@ class Entity extends Base\PublicEntity
     const DECLARATION_STEP = 'declaration_step';
 
     const BUSINESS_PAN_VALIDATION = 'business_pan_validation';
+
+    const ADMIN_EMAIL = 'admin_email';
 
     protected $entity = 'banking_account_activation_detail';
 
@@ -149,6 +153,7 @@ class Entity extends Base\PublicEntity
         self::IS_DOCUMENTS_WALKTHROUGH_COMPLETE,
         self::COMMENT,
         self::ASSIGNEE_TEAM,
+        self::BOOKING_DATE_AND_TIME,
         self::SALES_TEAM,
         self::SALES_POC_PHONE_NUMBER,
         self::RM_NAME,
@@ -186,6 +191,7 @@ class Entity extends Base\PublicEntity
         self::SALES_TEAM,
         self::SALES_POC_PHONE_NUMBER,
         self::ASSIGNEE_TEAM,
+        self::BOOKING_DATE_AND_TIME,
         self::COMMENT,
         self::RM_NAME,
         self::DECLARATION_STEP,
@@ -221,6 +227,7 @@ class Entity extends Base\PublicEntity
         self::SALES_TEAM,
         self::SALES_POC_PHONE_NUMBER,
         self::ASSIGNEE_TEAM,
+        self::BOOKING_DATE_AND_TIME,
         self::DECLARATION_STEP,
         self::BUSINESS_PAN_VALIDATION,
         self::COMMENT,

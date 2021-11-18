@@ -193,12 +193,19 @@ class Validator extends Base\Validator
         Entity::ASSIGNEE_TEAM                       => 'sometimes|string|nullable|in:ops,bank,sales',
         Entity::RM_NAME                             => 'sometimes|string|max:255',
         Entity::RM_PHONE_NUMBER                     => 'sometimes|string|max:255',
+        Entity::BOOKING_DATE_AND_TIME               => 'sometimes|epoch',
         Entity::ACCOUNT_OPEN_DATE                   => 'sometimes|epoch|nullable',
         Entity::ACCOUNT_LOGIN_DATE                  => 'sometimes|epoch|nullable',
         Entity::BUSINESS_NAME                       => 'sometimes|string|max:255',
         Entity::BUSINESS_TYPE                       => 'sometimes|string|max:255|custom',
         Entity::BUSINESS_PAN                        => 'sometimes|string|size:10',
         Entity::DECLARATION_STEP                    => 'sometimes|boolean'
+    ];
+
+    protected static $addSlotBookingDetailRules = [
+        Entity::ADMIN_EMAIL           => 'required|string|max:255',
+        Entity::BOOKING_DATE_AND_TIME => 'required|epoch',
+        Entity::ADDITIONAL_DETAILS    => 'required|array',
     ];
 
     protected static $verifyOtpRules = [
