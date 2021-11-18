@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\Payout\Entity as PayoutEntity;
 
@@ -57,8 +58,9 @@ class Core extends Base\Core
     public function updatePayoutIntermediateTransactions()
     {
         $response = [
-            'payout_ids_marked_completed' => [],
-            'payout_ids_marked_reversed'  => [],
+            'payout_intermediate_txn_marked_completed' => [],
+            'payout_intermediate_txn_marked_reversed'  => [],
+            'payout_intermediate_txn_update_failed'    => []
         ];
 
         $time = Carbon::now(Timezone::IST)->subMinutes(self::DEFAULT_TIME_TILL_RECON)->getTimestamp();
@@ -69,27 +71,68 @@ class Core extends Base\Core
                            ]
         );
 
+        // fetched from slave. $pendingIntermediateTxns->payout->getConnectionName would return slave-live. This would
+        // cause issue as updates would go to slave-replica then
         $pendingIntermediateTxns = $this->repo->payouts_intermediate_transactions
                                               ->fetchPendingTransactionsBeforeGivenTime($time);
 
         foreach ($pendingIntermediateTxns as $pendingIntermediateTxn)
         {
-            /** @var PayoutEntity $payout */
-            $payout = $pendingIntermediateTxn->payout;
-
-            if ($payout->hasTransaction() === true)
+            try
             {
-                // call mark success
-                $this->markIntermediateTransactionCompleted($pendingIntermediateTxn);
+                // taking mutex on payout id because egress flow also takes on payout id and we want only one of them
+                // to operate on a given payout id at a time.
+                $response = $this->mutex->acquireAndRelease(
+                    $pendingIntermediateTxn->getPayoutId(),
+                    function () use ($pendingIntermediateTxn, $response)
+                    {
+                        // reloading it from master
+                        $intermediateTxn = $this->repo->payouts_intermediate_transactions->findOrFail($pendingIntermediateTxn->getId());
 
-                array_push($response["payout_ids_marked_completed"], $payout->getId());
+                        /** @var PayoutEntity $payout */
+                        $payout = $intermediateTxn->payout;
+
+                        // DEBUGGED AN ISSUE WHERE INTERMEDIATE TXN LOADED FROM SLAVE CONNECTION EARLIER AND THEIR RELATIONS
+                        // WERE ALSO GETTING FETCHED FROM SLAVE, BECAUSE OF WHICH UPDATE TO THEM WAS GOING TO SLAVE-REPLICA.
+                        // ENSURE THAT CONNECTIONS HERE ARE TO LIVE(MASTER) FOR ALL ENTITIES.
+                        $this->trace->info(TraceCode::PAYOUT_INTERMEDIATE_TRANSACTIONS_CONNECTION_DEBUG,
+                                           [
+                                               'payout_connection_name'  => $payout->getConnectionName(),
+                                               'balance_connection_name' => $payout->balance->getConnectionName(),
+                                               'intermediate_txn_name'   => $intermediateTxn->getConnectionName()
+                                           ]
+                        );
+
+                        if ($payout->hasTransaction() === true)
+                        {
+                            $this->transaction([$this, 'markIntermediateTransactionCompleted'], $intermediateTxn);
+
+                            array_push($response["payout_intermediate_txn_marked_completed"], $intermediateTxn->getId());
+                        }
+                        else
+                        {
+                            $this->markIntermediateTransactionReversedForPayout($payout, $intermediateTxn);
+
+                            array_push($response["payout_intermediate_txn_marked_reversed"], $intermediateTxn->getId());
+                        }
+
+                        return $response;
+                    },
+                    self::MUTEX_LOCK_TIMEOUT,
+                    ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+                );
             }
-            else
+            catch (\Throwable $exception)
             {
-                // call mark reversed
-                $this->markIntermediateTransactionReversedForPayout($payout);
+                $this->trace->traceException(
+                    $exception,
+                    Trace::ERROR,
+                    TraceCode::PAYOUT_INTERMEDIATE_TRANSACTIONS_CRON_UPDATE_REQUEST_FAILED,
+                    [
+                        'intermediate_txn_id' => $pendingIntermediateTxn->getId()
+                    ]);
 
-                array_push($response["payout_ids_marked_reversed"], $payout->getId());
+                array_push($response["payout_intermediate_txn_update_failed"], $pendingIntermediateTxn->getId());
             }
         }
 
@@ -113,10 +156,13 @@ class Core extends Base\Core
         return $this->repo->transaction->findById($txnId);
     }
 
-    public function markIntermediateTransactionReversedForPayout(PayoutEntity $payout)
+    public function markIntermediateTransactionReversedForPayout(PayoutEntity $payout, Entity &$intermediateTxn = null)
     {
-        /** @var Entity $intermediateTxn */
-        $intermediateTxn = $this->fetchIntermediateTransactionForAGivenPayoutId($payout->getId());
+        if ($intermediateTxn === null)
+        {
+            /** @var Entity $intermediateTxn */
+            $intermediateTxn = $this->fetchIntermediateTransactionForAGivenPayoutId($payout->getId());
+        }
 
         $txnId = $intermediateTxn->getTransactionId();
 
@@ -152,7 +198,8 @@ class Core extends Base\Core
 
             $this->markIntermediateTransactionReversed($intermediateTxn);
 
-            (new PayoutCore)->handlePayoutReversed($payout, 'REVERSAL');
+            // this has mutex which is in a db txn , but it still works , because there is a mutex outside on payout id
+            (new PayoutCore)->handlePayoutReversedForHighTpsMerchants($payout, 'REVERSAL');
 
             $reversal = $payout->reversal;
 
@@ -173,22 +220,14 @@ class Core extends Base\Core
                            ]
         );
 
-        $this->mutex->acquireAndRelease(
-            'payout_intermediate_transaction_' . $intermediateTxn->getId(),
-            function () use ($intermediateTxn)
-            {
-                // reloading the payout here to ensure if any other process
-                // gets a mutex on payout resource, it gets a fresh copy
-                // of payout to work.
-                $this->repo->payouts_intermediate_transactions->reload($intermediateTxn);
+        // mutex should be outside of db txn because if its inside db txn , other processes wont see changes.
+        // therefore using lock for update because there are validations in setStatus function.
 
-                $intermediateTxn->setStatus(Status::REVERSED);
+        $intermediateTxn = $this->repo->payouts_intermediate_transactions->lockForUpdate($intermediateTxn->getId());
 
-                $this->repo->payouts_intermediate_transactions->saveOrFail($intermediateTxn);
-            },
-            self::MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
-        );
+        $intermediateTxn->setStatus(Status::REVERSED);
+
+        $this->repo->payouts_intermediate_transactions->saveOrFail($intermediateTxn);
 
         $this->trace->info(TraceCode::PAYOUT_INTERMEDIATE_TRANSACTIONS_MARK_REVERSED_RESPONSE,
                            [
@@ -205,22 +244,13 @@ class Core extends Base\Core
                            ]
         );
 
-        $this->mutex->acquireAndRelease(
-            'payout_intermediate_transaction_' . $intermediateTxn->getId(),
-            function () use ($intermediateTxn)
-            {
-                // reloading the payout here to ensure if any other process
-                // gets a mutex on payout resource, it gets a fresh copy
-                // of payout to work.
-                $this->repo->payouts_intermediate_transactions->reload($intermediateTxn);
+        // mutex should be outside of db txn because if its inside db txn , other processes wont see changes.
+        // therefore using lock for update because there are validations in setStatus function.
+        $intermediateTxn = $this->repo->payouts_intermediate_transactions->lockForUpdate($intermediateTxn->getId());
 
-                $intermediateTxn->setStatus(Status::COMPLETED);
+        $intermediateTxn->setStatus(Status::COMPLETED);
 
-                $this->repo->payouts_intermediate_transactions->saveOrFail($intermediateTxn);
-            },
-            self::MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
-        );
+        $this->repo->payouts_intermediate_transactions->saveOrFail($intermediateTxn);
 
         $this->trace->info(TraceCode::PAYOUT_INTERMEDIATE_TRANSACTIONS_MARK_COMPLETED_RESPONSE,
                            [

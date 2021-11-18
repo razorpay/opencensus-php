@@ -110,6 +110,11 @@ class Entity extends Base\PublicEntity
 
     // ============================= GETTERS ===============================
 
+    public function getPayoutId()
+    {
+        return $this->getAttribute(self::PAYOUT_ID);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
