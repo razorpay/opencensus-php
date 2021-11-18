@@ -11,6 +11,8 @@ use RZP\Models\Merchant\Detail\Constants as DConstants;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\CommunicationHandler;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\DisablePaymentsHandler;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\MerchantTagsHandler;
+use RZP\Models\Merchant\Escalations\Actions\Handlers\FundsOnHoldHandler;
+use RZP\Models\Merchant\Escalations\Actions\Handlers\EscalationHandler;
 use RZP\Notifications\Onboarding\Events;
 
 class Constants
@@ -212,6 +214,30 @@ class Constants
                 ],
                 self::ENABLE      => false
             ],
+        ],
+        10000000 => [
+            [
+                self::DESCRIPTION => "funds on hold on activated mcc pending",
+                self::TO          => self::MERCHANT,
+                self::CONDITIONS  => [
+                    DEntity::ACTIVATION_STATUS         => Status::ACTIVATED_MCC_PENDING,
+                ],
+                self::MILESTONE   => 'hard_limit_level_4',
+                self::ACTIONS     => [
+                    [
+                        self::HANDLER => FundsOnHoldHandler::class,
+                    ],
+                    [
+                        self::HANDLER => CommunicationHandler::class,
+                        self::PARAMS  => [
+                            'event' => Events::FUNDS_ON_HOLD
+                        ]
+                    ],
+                    [
+                        self::HANDLER => EscalationHandler::class,
+                    ]
+                ],
+            ]
         ],
         1000000000 => [
             [

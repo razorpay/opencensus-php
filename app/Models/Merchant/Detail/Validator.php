@@ -15,6 +15,7 @@ use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
+use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 
 class Validator extends Base\Validator
 {
@@ -131,8 +132,8 @@ class Validator extends Base\Validator
         Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|active_url',
         Entity::ACTIVATION_FORM_MILESTONE       => 'sometimes|string|max:30|custom',
         Entity::SHOP_ESTABLISHMENT_NUMBER       => 'sometimes|string|max:100|nullable',
-        'playstore_url'                         => 'sometimes|active_url|max:255|nullable',
-        'appstore_url'                          => 'sometimes|active_url|max:255|nullable',
+        BusinessDetailConstants::PLAYSTORE_URL  => 'sometimes|active_url|max:255|nullable',
+        BusinessDetailConstants::APPSTORE_URL   => 'sometimes|active_url|max:255|nullable',
     ];
 
     protected static $editRules = [
@@ -233,8 +234,8 @@ class Validator extends Base\Validator
         Entity::SHOP_ESTABLISHMENT_NUMBER                => 'sometimes|string|max:100|nullable',
         Entity::BUSINESS_SUGGESTED_PIN                   => 'sometimes|size:6',
         Entity::BUSINESS_SUGGESTED_ADDRESS               => 'sometimes|max:255',
-        'playstore_url'                                  => 'sometimes|active_url|max:255|nullable',
-        'appstore_url'                                   => 'sometimes|active_url|max:255|nullable',
+        BusinessDetailConstants::PLAYSTORE_URL           => 'sometimes|active_url|max:255|nullable',
+        BusinessDetailConstants::APPSTORE_URL            => 'sometimes|active_url|max:255|nullable',
     ];
 
     protected static $preSignupRules = [

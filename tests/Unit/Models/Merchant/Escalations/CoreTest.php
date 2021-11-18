@@ -15,6 +15,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Escalations;
 use RZP\Models\Merchant\Escalations\Actions;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class CoreTest extends TestCase
 {
@@ -75,7 +76,7 @@ class CoreTest extends TestCase
 
         $this->assertFalse($triggered);
     }
-    
+
     public function testEscalation_5K_milestone_L1()
     {
         $this->app->instance("rzp.mode", Mode::LIVE);
@@ -130,6 +131,28 @@ class CoreTest extends TestCase
         (new Escalations\Core)->triggerPaymentEscalations(false);
 
         $this->verifyEscalationAndAction('L1', 1500000);
+    }
+
+    public function testEscalation_1lakh_FOH()
+    {
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        Mail::fake();
+
+        $this->createAndFetchMocks(true);
+
+        [$merchantDetail] = $this->createAndFetchFixturesForMilestone('hard_limit');
+
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 100000);
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 200);
+
+        (new Escalations\Core)->triggerPaymentEscalations(false);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantDetail->getMerchantId());
+
+        $this->assertTrue($merchant->getAttribute(MerchantEntity::HOLD_FUNDS));
+
+        $this->verifyEscalationAndAction('hard_limit_level_4', 10000000);
     }
 
     public function testEscalation10kMilestoneTimeBoundFalseFilterLinkedAccount()
@@ -292,6 +315,7 @@ class CoreTest extends TestCase
                 ];
                 break;
             case 'soft_limit':
+            case 'hard_limit':
                 $merchantAttributes = [
                     'activated' => 1,
                     'live'      => true

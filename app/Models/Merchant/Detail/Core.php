@@ -12,7 +12,6 @@ use RZP\Models\Base;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
-use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Trace\Tracer;
 use RZP\Models\State;
@@ -87,6 +86,7 @@ use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Models\Merchant\Detail\BusinessDetailSearch\InMemoryBusinessSearch;
+use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Notifications\Dashboard\Constants as DashboardNotificationConstants;
 use RZP\Models\Merchant\Fraud\HealthChecker\Constants as HealthCheckerConstants;
@@ -148,9 +148,9 @@ class Core extends Base\Core
     public function checkForCorrectAppUrls($appUrls)
     {
         //check For valid playStore Url
-        if (empty($appUrls['playstore_url']) === false)
+        if (empty($appUrls[BusinessDetailConstants::PLAYSTORE_URL]) === false)
         {
-            $playstoreUrl = $appUrls['playstore_url'];
+            $playstoreUrl = $appUrls[BusinessDetailConstants::PLAYSTORE_URL];
             if (str_starts_with($playstoreUrl, 'https://play.google.com/store/apps/details') === false)
             {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PLAYSTORE_URL);
@@ -158,9 +158,9 @@ class Core extends Base\Core
         }
 
         //check For valid appStore Url
-        if (empty($appUrls['appstore_url']) === false)
+        if (empty($appUrls[BusinessDetailConstants::APPSTORE_URL]) === false)
         {
-            $appstoreUrl = $appUrls['appstore_url'];
+            $appstoreUrl = $appUrls[BusinessDetailConstants::APPSTORE_URL];
             if (str_starts_with($appstoreUrl, 'https://apps.apple.com') === false)
             {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_APPSTORE_URL);
@@ -217,7 +217,7 @@ class Core extends Base\Core
         //isolating business details
         $businessDetailsInput = [];
 
-        $urlsInput = ['playstore_url', 'appstore_url'];
+        $urlsInput = [BusinessDetailConstants::PLAYSTORE_URL, BusinessDetailConstants::APPSTORE_URL];
 
         foreach ($urlsInput as $url){
             if(isset($input[$url]) === true)
@@ -2705,7 +2705,7 @@ class Core extends Base\Core
         });
 
         $response = Tracer::inSpan(['name' =>  'create_response.extra_details'], function() use($response, $merchant, $merchantBusinessDetails, $merchantDetails) {
-            $appUrls = ['playstore_url', 'appstore_url'];
+            $appUrls = [BusinessDetailConstants::PLAYSTORE_URL, BusinessDetailConstants::APPSTORE_URL];
 
             foreach ($appUrls as $url){
                 $response[$url] = $merchantBusinessDetails[BusinessDetailEntity::APP_URLS][$url] ?? '';

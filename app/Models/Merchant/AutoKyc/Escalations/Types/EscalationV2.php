@@ -29,6 +29,7 @@ class EscalationV2 extends BaseEscalationType
                 $this->createEscalationV1ForMerchant($merchant, $type, $level, Constants::EMAIL);
 
                 $this->createEscalationV2ForMerchant($merchant, $merchantsGmvMap[$merchant->getId()][0], $type, $level);
+
                 $this->app[MConstants::TRACE]->info(TraceCode::ESCALATION_V2_SUCCESS, [
                     'type'        => $type,
                     'level'       => $level,
