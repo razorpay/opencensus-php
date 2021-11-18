@@ -67,6 +67,9 @@ class KeyAuthCreds extends AuthCreds
     {
         $secret = $this->getSecret();
 
+        //We are setting passport claims here to identify consumer, as edge identifies consumer even if authentication fails
+        $this->app['basicauth']->setPassportConsumerClaims(BasicAuth::PASSPORT_CONSUMER_TYPE_MERCHANT, $this->key->getMerchantId(), false);
+
         if ($secret === '')
         {
             $this->trace->info(TraceCode::BAD_REQUEST_API_SECRET_NOT_PROVIDED, [self::KEY_ID => $this->getKey()]);

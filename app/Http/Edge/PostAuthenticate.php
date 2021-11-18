@@ -104,8 +104,18 @@ final class PostAuthenticate
 
         $errors = [];
 
-        // For $passport->consumer existence.
-        $consumerExists = ($this->ba->getMerchantId() !== null);
+        $consumerExists = false;
+        // consumer is identified at edge even if authentication fails, hence this condition - though authentication is false , we set consumer identified as true in api
+        if ( $authenticated === true){
+            $consumerExists = ($this->ba->getMerchantId() !== null);
+        } else {
+            $apiPassport = $this->ba->getPassport();
+
+            //check whether consumer is set in passport
+            if (isset($apiPassport['consumer'])) {
+                $consumerExists = ($this->ba->getPassport()['consumer']['id'] !== null);
+            }
+        }
 
         // For $passport's scalar attributes.
         ensureSameOrOverride($passport->identified, $consumerExists, 'identified', $errors);
@@ -166,9 +176,16 @@ final class PostAuthenticate
         if (!$this->isPrivateAuth()) {
             return;
         }
-        // For $passport->consumer existence.
+        // checks whether consumer is set in passport
+        $apiPassport = $this->ba->getPassport();
+        $passportConsumerExists = ($this->ba->getMerchantId() !== null);
+
+        if (isset($apiPassport['consumer'])) {
+            $passportConsumerExists = ($apiPassport['consumer']['id'] !== null);
+        }
+
         $consumerExists = ($this->ba->getMerchantId() !== null);
-        ensureSameExistenceOrOverride($passport->consumer, $consumerExists, 'consumer', $errors, new Passport\ConsumerClaims);
+        ensureSameExistenceOrOverride($passport->consumer, $passportConsumerExists, 'consumer', $errors, new Passport\ConsumerClaims);
         if ($consumerExists === true) {
             // For $passport->consumer's scalar attributes.
             ensureSameOrOverride($passport->consumer->id, $this->ba->getMerchantId(), 'consumer.id', $errors);
