@@ -16,7 +16,7 @@ export default ({
   trackSkipBankDetails,
   onBlurElement,
 }) => (
-  <React.Fragment>
+  <>
     {showAmountField && (
       <Input.Group class="InputGroup--inline" label="Amount">
         <div class="Input-content">
@@ -64,5 +64,5 @@ export default ({
       bankAccountNumber={bankAccountNumber}
       onBlurElement={onBlurElement}
     />
-  </React.Fragment>
+  </>
 );

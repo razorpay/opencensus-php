@@ -20,9 +20,7 @@ export function trackClickPaymentMethod(value) {
 
 export function trackSkipBankDetails(event) {
   track({
-    eventAction: `${
-      event.target.checked ? 'Checked' : 'Unchecked'
-    } - Skip bank details`,
+    eventAction: `${event.target.checked ? 'Checked' : 'Unchecked'} - Skip bank details`,
   });
 }
 

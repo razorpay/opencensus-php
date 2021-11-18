@@ -122,7 +122,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
         </div>
 
         {showStartDate && (
-          <React.Fragment>
+          <>
             <Input.Check
               required={!props.isEdit}
               label="Start Date"
@@ -182,7 +182,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
                 <Description text="Date from which subscription should start" />
               </div>
             </Input.Group>
-          </React.Fragment>
+          </>
         )}
 
         <Input

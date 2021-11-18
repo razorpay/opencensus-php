@@ -154,10 +154,10 @@ function EmptyComponent() {
   return (
     <EmptyList
       description={
-        <React.Fragment>
+        <>
           <div>There are no subscriptions yet!!</div>
           <div>Create a plan first to create a subscription.</div>
-        </React.Fragment>
+        </>
       }
     />
   );

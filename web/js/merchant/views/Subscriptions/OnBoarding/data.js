@@ -21,13 +21,13 @@ export const FEATURES_DATA = [
 
 // Landing
 export const PROS = [
-  <span>
+  <span key="1">
     <strong>8</strong>% Reduction in churn
   </span>,
-  <span>
+  <span key="2">
     <strong>24</strong>% Lower collection costs
   </span>,
-  <span>
+  <span key="3">
     Upto <strong>1.7</strong>x increase in CLTV
   </span>,
 ];

@@ -22,8 +22,8 @@ export default () => (
       </div>
     </div>
     <p>
-      <i class="i i-info-circle m-r" />
-      Registration Links with SMS and Email will be sent once the batch is created.
+      <i class="i i-info-circle m-r" /> Registration Links with SMS and Email will be sent once the
+      batch is created.
     </p>
   </div>
 );

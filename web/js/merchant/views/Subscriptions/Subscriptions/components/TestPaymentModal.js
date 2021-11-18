@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import ModalHeader from 'common/ui/ModalHeader';
 import Alert from 'common/ui/Forms/Alert';
-import { isBlank } from 'common/utils/rzp-utils';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { testChargeSubscription } from 'merchant/reducers/subscriptions';
@@ -20,7 +19,7 @@ export default class TestPaymentModal extends Component {
   };
 
   handleSubmit = (isSuccess = 0) => {
-    var testChargeMessages = [
+    const testChargeMessages = [
       'Charge marked as FAILURE',
       'Charge marked as SUCCESS',
       'Upcoming invoice is issued',
@@ -51,9 +50,7 @@ export default class TestPaymentModal extends Component {
   };
 
   render() {
-    let title;
-    let description;
-    let button;
+    let title, description, button;
 
     if (this.props.subscriptionStatus === 'halted') {
       title = 'Issue upcoming invoice';
@@ -72,8 +69,7 @@ export default class TestPaymentModal extends Component {
       );
     } else {
       title = 'Charge Now';
-      description =
-        'This is test payment. You can choose it to be success or failure.';
+      description = 'This is test payment. You can choose it to be success or failure.';
       button = (
         <div class="btn-toolbar m-t">
           <AsyncButton

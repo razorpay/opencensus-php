@@ -46,7 +46,7 @@ export default function MandatePaymentMethod({ mandate }) {
         {/* max amount of mandate */}
         {!!mandate.max_amount && (
           <>
-            Max Amount: <Amount value={mandate.max_amount} currency={'INR'} />{' '}
+            Max Amount: <Amount value={mandate.max_amount} currency="INR" />{' '}
           </>
         )}
       </Definition>
@@ -73,7 +73,7 @@ export default function MandatePaymentMethod({ mandate }) {
         </>
         <>
           Max Auto-debit Amount:{' '}
-          <Amount value={mandate.max_amount || CARD_MAX_AMOUNT} currency={'INR'} />{' '}
+          <Amount value={mandate.max_amount || CARD_MAX_AMOUNT} currency="INR" />{' '}
         </>
       </Definition>
     );
@@ -92,11 +92,11 @@ export default function MandatePaymentMethod({ mandate }) {
     return (
       <Definition>
         <strong>UPI</strong>
-        <>{bank_account && bank_account.bank_name && bank_account.bank_name}</>
+        {bank_account && bank_account.bank_name && bank_account.bank_name}
         {frequency && <>Billing Frequency: {BILLING_FREQUENCY[frequency]} </>}
         {maxAmount && (
           <>
-            Max Billing Amount: <Amount value={maxAmount} currency={'INR'} />
+            Max Billing Amount: <Amount value={maxAmount} currency="INR" />
           </>
         )}
       </Definition>

@@ -13,24 +13,21 @@ export default ({
 }) => {
   if (downloadSignedNACHFile) {
     return (
-      <React.Fragment>
-        <AsyncButton
-          class="btn btn-link nach-download-btn"
-          onClick={() => {
-            trackClickViewNACHForm();
-            return downloadSignedNACHFile();
-          }}
-          target="_blank"
-        >
-          <i class="i i-file-attach" />
-          View Signed NACH Form
-        </AsyncButton>
-      </React.Fragment>
+      <AsyncButton
+        class="btn btn-link nach-download-btn"
+        onClick={() => {
+          trackClickViewNACHForm();
+          return downloadSignedNACHFile();
+        }}
+        target="_blank"
+      >
+        <i class="i i-file-attach" /> View Signed NACH Form
+      </AsyncButton>
     );
   }
 
   return (
-    <React.Fragment>
+    <>
       <Alert
         type="warning"
         message="Customer’s NACH form has not been uploaded yet"
@@ -55,6 +52,6 @@ export default ({
       >
         Download form
       </a>
-    </React.Fragment>
+    </>
   );
 };

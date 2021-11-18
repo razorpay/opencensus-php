@@ -4,18 +4,12 @@ import { NavLink } from 'react-router-dom';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
-import { titleCase } from 'common/utils/rzp-utils';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import { paymentId, status, createdAt } from 'common/ui/item/pair';
 import DataTable from 'common/ui/Table/DataTable';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import AsyncButton from 'react-async-button';
-
-const notificationClassMap = {
-  sent: 'text-success',
-  pending: 'text-warning',
-};
 
 // Note: class is needed for "ref" to work in parent component
 @RTracking(() => window.rzpQ.component('InvoiceDetail'))
@@ -29,14 +23,12 @@ export default class InvoiceDetail extends Component {
   getAddOnList() {
     const isUPIPaymentMethod = this.props.subscription.payment_method === 'upi';
 
-    if (isUPIPaymentMethod) return;
+    if (isUPIPaymentMethod) return null;
 
-    let invoiceStatus = this.props.invoice.status;
-    let addons = this.props.addons;
+    const invoiceStatus = this.props.invoice.status;
+    const addons = this.props.addons;
 
-    let addonsList;
-
-    addonsList = addons.map((addon, key) => {
+    const addonsList = addons.map((addon, key) => {
       return (
         <div class={`m-b ${invoiceStatus === 'next_due' && 'addons'}`} key={`addon-${key}`}>
           {invoiceStatus === 'next_due' && (
@@ -87,12 +79,11 @@ export default class InvoiceDetail extends Component {
   }
 
   render() {
-    let {
+    const {
       mode,
       invoice,
       isValidInvoice,
       isLoading,
-      statusMsg,
       curInvoiceIndex,
       subscription,
       plan,
@@ -102,6 +93,10 @@ export default class InvoiceDetail extends Component {
     } = this.props;
 
     let invoiceContent;
+    const showAttemptChargeCTA =
+      ['active', 'pending', 'halted', 'completed'].indexOf(subscription.status) > -1 ||
+      (subscription.status === 'cancelled' &&
+        (curInvoiceIndex > 1 || (subscription.type !== 3 && subscription.type !== 1)));
 
     if (!isValidInvoice) {
       invoiceContent = (
@@ -175,58 +170,47 @@ export default class InvoiceDetail extends Component {
                   )}
                 />
 
-                {do {
-                  if (invoice.status === 'next_due' && subscription.status !== 'pending') {
-                    <EntityDetailRow
-                      label="Charge at"
-                      value={() => (
+                {invoice.status === 'next_due' && subscription.status !== 'pending' && (
+                  <EntityDetailRow
+                    label="Charge at"
+                    value={() => (
+                      <div>
                         <div>
-                          <div>
-                            <Time
-                              value={
-                                subscription.status === 'halted'
-                                  ? invoice.billing_start
-                                  : nextChargeAt
-                              }
-                              format="DD MMM YYYY, hh:mm:ss a"
-                            />
-                          </div>
-                        </div>
-                      )}
-                    />;
-                  } else if (invoice.status === 'issued') {
-                    <EntityDetailRow
-                      label={`${
-                        subscription.status === 'pending' ? 'Next Charge at' : 'Charge at'
-                      }`}
-                      value={() => (
-                        <div>
-                          <div>
-                            <Time value={nextChargeAt} format="DD MMM YYYY, hh:mm:ss a" />
-                          </div>
-
-                          {do {
-                            if (
-                              ['active', 'pending', 'halted', 'completed'].indexOf(
-                                subscription.status,
-                              ) > -1 ||
-                              (subscription.status === 'cancelled' &&
-                                (curInvoiceIndex > 1 ||
-                                  (subscription.type !== 3 && subscription.type !== 1)))
-                            ) {
-                              <AsyncButton
-                                class="btn btn-default m-t"
-                                text=" Attempt Charge"
-                                pendingText="Attempting..."
-                                onClick={() => onManualAttempt(invoice.id, subscription.id)}
-                              />;
+                          <Time
+                            value={
+                              subscription.status === 'halted'
+                                ? invoice.billing_start
+                                : nextChargeAt
                             }
-                          }}
+                            format="DD MMM YYYY, hh:mm:ss a"
+                          />
                         </div>
-                      )}
-                    />;
-                  }
-                }}
+                      </div>
+                    )}
+                  />
+                )}
+
+                {invoice.status === 'issued' && (
+                  <EntityDetailRow
+                    label={`${subscription.status === 'pending' ? 'Next Charge at' : 'Charge at'}`}
+                    value={() => (
+                      <div>
+                        <div>
+                          <Time value={nextChargeAt} format="DD MMM YYYY, hh:mm:ss a" />
+                        </div>
+
+                        {showAttemptChargeCTA && (
+                          <AsyncButton
+                            class="btn btn-default m-t"
+                            text=" Attempt Charge"
+                            pendingText="Attempting..."
+                            onClick={() => onManualAttempt(invoice.id, subscription.id)}
+                          />
+                        )}
+                      </div>
+                    )}
+                  />
+                )}
 
                 <EntityDetailRow
                   label="Recurring Amount"

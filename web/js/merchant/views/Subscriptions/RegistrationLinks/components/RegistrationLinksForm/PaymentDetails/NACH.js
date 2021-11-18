@@ -12,7 +12,7 @@ export default ({
   bankAccountNumber,
   onBlurElement,
 }) => (
-  <React.Fragment>
+  <>
     <BankDetails
       required
       hideBankName
@@ -44,5 +44,5 @@ export default ({
       data-name="form_reference2"
       onBlur={onBlurElement}
     />
-  </React.Fragment>
+  </>
 );

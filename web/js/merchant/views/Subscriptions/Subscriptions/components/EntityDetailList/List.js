@@ -1,3 +1,4 @@
+import React from 'react';
 import Alert from 'common/ui/Forms/Alert';
 import EntityRow from './Row';
 import Time from 'common/ui/Time';
@@ -40,14 +41,14 @@ export default class EntityDetailList extends React.Component {
       subscriptionType,
       mode,
       subscriptionId,
-      paymentMethod
+      paymentMethod,
     } = this.props;
 
     if (loading) {
-      return [<EntityRow item={{}} loading={loading} />];
+      return [<EntityRow key="loading" item={{}} loading={loading} />];
     }
 
-    let list = [];
+    const list = [];
 
     let limit = this.state.curLimit; // Show curLimit number of loaders. Also, default curLimit rows unless items.length is lesser
     if (!loading && items.length) {
@@ -95,7 +96,7 @@ export default class EntityDetailList extends React.Component {
       }
 
       // Check if 1st(last in array) invoice is upfront invoice
-      let isUpfrontInvoice = index === items.length - 1 ? isFirstInvoiceUpfront : false; // Set true for 1st invoice if it's upfront
+      const isUpfrontInvoice = index === items.length - 1 ? isFirstInvoiceUpfront : false; // Set true for 1st invoice if it's upfront
 
       // Check for the latest invoice with status 'issued' and if any attempts failed
       // (To set authAttempts only for latest invoice for now)
@@ -104,7 +105,7 @@ export default class EntityDetailList extends React.Component {
       }
 
       if (item.id === 'inv_upcoming') {
-        this.INVOICE_MAP['upcoming'] = index;
+        this.INVOICE_MAP.upcoming = index;
       } else {
         this.INVOICE_MAP[item.created_at] = index;
       }
@@ -144,6 +145,7 @@ export default class EntityDetailList extends React.Component {
         <div
           class="entity-detail-row clickable credit-note-row"
           onClick={() => goToLink(creditNote.id, index)}
+          key={index}
         >
           <div class="row-item content">
             <i class="i i-replay item-left" />
@@ -167,9 +169,9 @@ export default class EntityDetailList extends React.Component {
   };
 
   mergeCreditNotesRows = () => {
-    const { items, creditNotes, loading } = this.props,
-      rowList = this.getRowList(),
-      creditNoteList = this.getCreditNotesRow();
+    const { items, creditNotes, loading } = this.props;
+    const rowList = this.getRowList();
+    const creditNoteList = this.getCreditNotesRow();
 
     if (loading) {
       return rowList;
@@ -181,17 +183,17 @@ export default class EntityDetailList extends React.Component {
       .reverse();
 
     const components = [];
-    if (this.INVOICE_MAP['upcoming'] >= 0) {
-      const upcomingInvoice = rowList[this.INVOICE_MAP['upcoming']];
+    if (this.INVOICE_MAP.upcoming >= 0) {
+      const upcomingInvoice = rowList[this.INVOICE_MAP.upcoming];
 
       components.push(upcomingInvoice);
 
-      delete this.INVOICE_MAP['upcoming'];
+      delete this.INVOICE_MAP.upcoming;
     }
 
     createdAtList.forEach((id) => {
-      const creditNoteLoc = this.CREDIT_NOTE_MAP[id],
-        invoiceLoc = this.INVOICE_MAP[id];
+      const creditNoteLoc = this.CREDIT_NOTE_MAP[id];
+      const invoiceLoc = this.INVOICE_MAP[id];
 
       if (creditNoteLoc >= 0) {
         components.push(creditNoteList[creditNoteLoc]);
@@ -210,7 +212,7 @@ export default class EntityDetailList extends React.Component {
   };
 
   render() {
-    let { title, subTitle, error, loading, items } = this.props;
+    const { title, subTitle, error, loading, items } = this.props;
     let showBtn = null;
 
     // 'Show More' btn is visible only when items are available and length of items is more than limit set by parent

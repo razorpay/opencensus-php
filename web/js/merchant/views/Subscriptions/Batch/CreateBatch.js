@@ -1,4 +1,4 @@
-import { Component, Fragment } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 
 import BatchUpload from 'merchant/containers/BatchNew/Upload';
@@ -27,7 +27,7 @@ const gaEvents = setGaTrack('Dashboard - Subscriptions - BU');
   validateRegistrationLinkBatch,
   closeModal,
 })
-export default class CreateHostedMandateBatch extends Component {
+export default class CreateHostedMandateBatch extends React.Component {
   renderRecurringChargeModal = () => (
     <BatchUpload
       acceptFileInfo={['csv']}

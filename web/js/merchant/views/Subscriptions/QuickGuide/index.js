@@ -1,3 +1,4 @@
+import React from 'react';
 import { RZPFeatures, PossibleStatuses } from 'merchant/helpers/data';
 
 import QuickGuide, {
@@ -23,25 +24,19 @@ const SubscriptionsStates = {
   EXPIRED: 'expired',
   COMPLETED: 'completed',
 };
+const Title = <QuickGuideTitle />;
 
 @QuickGuide({
   feature: RZPFeatures.SUBSCRIPTIONS,
   data_points: ['subscriptions', 'plans'],
 })
 export default class SubscriptionQuickGuide extends React.Component {
-  getCloseBtn = isCompleted => {
-    return (
-      <QuickGuideCloseBtn
-        isCompleted={isCompleted}
-        onClick={this.props.onClickClose}
-      />
-    );
+  getCloseBtn = (isCompleted) => {
+    return <QuickGuideCloseBtn isCompleted={isCompleted} onClick={this.props.onClickClose} />;
   };
 
   render() {
-    const { planStatus, subscriptionStatus, paymentStatus } = getStatus(
-      this.props
-    );
+    const { planStatus, subscriptionStatus, paymentStatus } = getStatus(this.props);
 
     const CloseBtn = this.getCloseBtn(paymentStatus === done);
 
@@ -67,33 +62,29 @@ export default class SubscriptionQuickGuide extends React.Component {
           status={planStatus}
           step="Plan"
           feature={RZPFeatures.SUBSCRIPTIONS}
-          {...getQuickGuideData.Plan(planStatus)}
+          {...getQuickGuideData.plan(planStatus)}
         />
 
         <QuickGuideStep
           status={subscriptionStatus}
           step="Subscription"
           feature={RZPFeatures.SUBSCRIPTIONS}
-          {...getQuickGuideData.Subscription(subscriptionStatus)}
+          {...getQuickGuideData.subscription(subscriptionStatus)}
         />
 
         <QuickGuideStep
           status={paymentStatus}
           step="Payments"
           feature={RZPFeatures.SUBSCRIPTIONS}
-          {...getQuickGuideData.Payment(paymentStatus)}
+          {...getQuickGuideData.payment(paymentStatus)}
         />
       </QuickStepGuide>
     );
   }
 }
 
-const Title = <QuickGuideTitle />;
-
-export const getSubscriptionQuickGuideIsClosed = props => {
-  let isClosed = getQuickGuideIsClosedFromLocalStorage(
-    RZPFeatures.SUBSCRIPTIONS
-  );
+export const getSubscriptionQuickGuideIsClosed = (props) => {
+  let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.SUBSCRIPTIONS);
 
   if (isClosed || props.subscriptions.items.length <= 2) {
     return isClosed;
@@ -101,7 +92,7 @@ export const getSubscriptionQuickGuideIsClosed = props => {
 
   let createCount = 0;
 
-  props.subscriptions.items.forEach(subscription => {
+  props.subscriptions.items.forEach((subscription) => {
     if (
       [
         SubscriptionsStates.ACTIVE,
@@ -118,17 +109,16 @@ export const getSubscriptionQuickGuideIsClosed = props => {
       isClosed = true;
 
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.SUBSCRIPTIONS, true);
-      return false;
     }
   });
 
   return isClosed;
 };
 
-const getStatus = ({ plans, subscriptions }) => {
-  let planStatus = loading,
-    subscriptionStatus = loading,
-    paymentStatus = loading;
+function getStatus({ plans, subscriptions }) {
+  let planStatus = loading;
+  let subscriptionStatus = loading;
+  let paymentStatus = loading;
 
   if (subscriptions.loading && plans.loading) {
     return {
@@ -158,15 +148,13 @@ const getStatus = ({ plans, subscriptions }) => {
   if (subscriptions.items.length) {
     subscriptionStatus = done;
     paymentStatus = active;
-  } else {
-    if (planStatus === done) {
-      subscriptionStatus = active;
-    }
+  } else if (planStatus === done) {
+    subscriptionStatus = active;
   }
 
   // Check paymentStatus
   if (subscriptionStatus === done) {
-    subscriptions.items.forEach(subscription => {
+    subscriptions.items.forEach((subscription) => {
       if (
         [
           SubscriptionsStates.ACTIVE,
@@ -177,8 +165,6 @@ const getStatus = ({ plans, subscriptions }) => {
         ].includes(subscription.status)
       ) {
         paymentStatus = done;
-
-        return false;
       }
     });
   }
@@ -188,4 +174,4 @@ const getStatus = ({ plans, subscriptions }) => {
     subscriptionStatus,
     paymentStatus,
   };
-};
+}

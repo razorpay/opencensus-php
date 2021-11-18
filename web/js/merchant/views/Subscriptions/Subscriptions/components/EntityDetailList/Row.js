@@ -7,7 +7,7 @@ import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
 //TODO: Make this component generalized as per requirement later. Currently only used for subscriptions details view(invoice list)
 export default (props) => {
-  let {
+  const {
     goToLink,
     item,
     index,
@@ -20,13 +20,16 @@ export default (props) => {
     subscriptionchargeAt,
     onManualAttempt,
     isUpfront,
-    mode,
     subscriptionId,
     paymentMethod,
   } = props;
 
-  let chargeAttemptsFailedText; // Charge attempts failed text
-  let retryingInfo; // Whether further retries
+  /*
+   * chargeAttemptsFailedText - Charge attempts failed text
+   * retryingInfo             - Whether further retries
+   * timeDiff                 - Calculate time Diff to show 'due in' text
+   */
+  let chargeAttemptsFailedText, retryingInfo, timeDiff;
 
   const isEmandatePayment = paymentMethod === 'emandate';
   const isIssued = item.status === 'issued';
@@ -37,9 +40,9 @@ export default (props) => {
     if (subscriptionStatus === 'pending') {
       if (!item.subscription_status) {
         // Retrying info for pending state subscription
-        let timeDiff = subscriptionchargeAt - Math.round(new Date().getTime() / 1000);
-        timeDiff = Math.ceil(timeDiff / 3600);
-        retryingInfo = `Retrying in ${timeDiff} hrs. `;
+        let timeDiffVal = subscriptionchargeAt - Math.round(new Date().getTime() / 1000);
+        timeDiffVal = Math.ceil(timeDiffVal / 3600);
+        retryingInfo = `Retrying in ${timeDiffVal} hrs. `;
       }
       if (item.subscription_status !== 'halted') {
         chargeAttemptsFailedText = (
@@ -73,16 +76,14 @@ export default (props) => {
     }
   }
 
-  // Calculate time Diff to show 'due in' text
-  let timeDiff;
   // billing_start in next_due invoice is charge_at of subscription. Check FE creation of next_due invoice. (Not api related)
   if (item.status === 'next_due' && item.billing_start) {
     timeDiff = item.billing_start - Math.round(new Date().getTime() / 1000);
   }
 
   // Check if row is clickable
-  let isRowClickable = goToLink && !loading && activeSecEntityId !== item.id;
-  let classNames = ['entity-detail-row'];
+  const isRowClickable = goToLink && !loading && activeSecEntityId !== item.id;
+  const classNames = ['entity-detail-row'];
 
   if (item.id && activeSecEntityId === item.id) {
     classNames.push('active');
@@ -91,7 +92,12 @@ export default (props) => {
     classNames.push('clickable');
   }
 
-  let isChargedInvoice = item.notes && item.notes.type && item.notes.type == 'upgrade';
+  const isChargedInvoice = item.notes && item.notes.type && item.notes.type == 'upgrade';
+  const showAttemptChargeCTA =
+    item.status === 'issued' &&
+    (['active', 'pending', 'halted', 'completed'].indexOf(subscriptionStatus) > -1 ||
+      (subscriptionStatus === 'cancelled' &&
+        (index > 1 || (subscriptionType !== 3 && subscriptionType !== 1))));
 
   return (
     <div
@@ -162,37 +168,31 @@ export default (props) => {
               </span>,
               <span key="retrying-info"> {retryingInfo}</span>,
             ]}
-          {do {
-            if (
-              item.status === 'issued' &&
-              (['active', 'pending', 'halted', 'completed'].indexOf(subscriptionStatus) > -1 ||
-                (subscriptionStatus === 'cancelled' &&
-                  (index > 1 || (subscriptionType !== 3 && subscriptionType !== 1))))
-            ) {
-              <AsyncButton
-                class="btn-link no-padding"
-                text=" Attempt Charge"
-                pendingText="Attempting..."
-                onClick={() => onManualAttempt(item.id, subscriptionId)}
-              />;
-            }
-          }}
+          {showAttemptChargeCTA && (
+            <AsyncButton
+              class="btn-link no-padding"
+              text=" Attempt Charge"
+              pendingText="Attempting..."
+              onClick={() => onManualAttempt(item.id, subscriptionId)}
+            />
+          )}
         </div>
 
         {isEmandatePayment && isIssued && (
           <div class="details-row eMandate-status">
-            <i class="i i-info-outline m-r" /> eMandate payment status can take 24 - 48 hours to confirm.
-
-            <DocsLink title="Learn more" url="https://razorpay.com/docs/Payment-Subscription-Payment-method-Emandate-new/razorpay/subscriptions/payment-retries/#retry-model-for-emandate" />
+            <i class="i i-info-outline m-r" /> eMandate payment status can take 24 - 48 hours to
+            confirm.
+            <DocsLink
+              title="Learn more"
+              url="https://razorpay.com/docs/Payment-Subscription-Payment-method-Emandate-new/razorpay/subscriptions/payment-retries/#retry-model-for-emandate"
+            />
           </div>
         )}
       </div>
 
-      {do {
-        if (isRowClickable) {
-          <span class="row-item i i-chevron-right" onClick={() => goToLink(item.id, index)} />;
-        }
-      }}
+      {isRowClickable && (
+        <span class="row-item i i-chevron-right" onClick={() => goToLink(item.id, index)} />
+      )}
     </div>
   );
 };

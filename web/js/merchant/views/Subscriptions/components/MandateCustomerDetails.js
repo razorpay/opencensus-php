@@ -4,9 +4,9 @@ export default function MandateCustomerDetails({ customer }) {
   return customer ? (
     <Definition>
       <strong>{customer.name}</strong>
-      <>{customer.email}</>
-      <>{customer.contact}</>
-      <>{customer.id}</>
+      {customer.email}
+      {customer.contact}
+      {customer.id}
     </Definition>
   ) : (
     '--'

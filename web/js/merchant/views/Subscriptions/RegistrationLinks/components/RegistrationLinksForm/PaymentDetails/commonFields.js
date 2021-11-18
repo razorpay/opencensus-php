@@ -2,6 +2,32 @@ import Input from 'common/new-ui/Input';
 
 import { validateBeneficiaryName } from 'common/utils/validators';
 
+const OPTIONS = [
+  {
+    label: 'Savings',
+    name: 'savings',
+  },
+  {
+    label: 'Current',
+    name: 'current',
+  },
+];
+
+const NACH_OPTIONS = [
+  {
+    label: 'SB-NRE',
+    name: 'nre',
+  },
+  {
+    label: 'SB-NRO',
+    name: 'nro',
+  },
+  {
+    label: 'Cash Credit',
+    name: 'cc',
+  },
+];
+
 const getAccountTypes = (isNACHPayment) => {
   if (isNACHPayment) {
     return [...OPTIONS, ...NACH_OPTIONS];
@@ -75,10 +101,8 @@ export const AccountDetails = ({
       value={beneficiaryName}
       onBlur={onBlurElement}
       description="Customer/Beneficiary Name on the Account"
-      validator={value =>
-        !validateBeneficiaryName(value)
-          ? 'Please enter a valid name as per your account'
-          : null
+      validator={(value) =>
+        !validateBeneficiaryName(value) ? 'Please enter a valid name as per your account' : null
       }
     />
 
@@ -101,29 +125,3 @@ export const AccountDetails = ({
     />
   </Input.Group>
 );
-
-const OPTIONS = [
-  {
-    label: 'Savings',
-    name: 'savings',
-  },
-  {
-    label: 'Current',
-    name: 'current',
-  },
-];
-
-const NACH_OPTIONS = [
-  {
-    label: 'SB-NRE',
-    name: 'nre',
-  },
-  {
-    label: 'SB-NRO',
-    name: 'nro',
-  },
-  {
-    label: 'Cash Credit',
-    name: 'cc',
-  },
-];

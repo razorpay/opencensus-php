@@ -3,7 +3,7 @@ import { PossibleStatuses } from 'merchant/helpers/data';
 const { done } = PossibleStatuses;
 
 export const getQuickGuideData = {
-  Plan: status => {
+  plan: (status) => {
     if (status === done) {
       return {
         title: '1. Plan Created',
@@ -18,22 +18,20 @@ export const getQuickGuideData = {
         'Create your custom plans with different billing cycles and prices for your business.',
     };
   },
-  Subscription: status => {
+  subscription: (status) => {
     if (status === done) {
       return {
         title: '2. Subscription Created',
-        content:
-          'Create subscriptions for your customers to receive recurring payments',
+        content: 'Create subscriptions for your customers to receive recurring payments',
       };
     }
 
     return {
       title: '2. Create Subscription',
-      content:
-        'Create subscriptions for your customers to receive recurring payments',
+      content: 'Create subscriptions for your customers to receive recurring payments',
     };
   },
-  Payment: status => {
+  payment: (status) => {
     if (status === done) {
       return {
         title: '3. Payments Received',
@@ -43,8 +41,7 @@ export const getQuickGuideData = {
 
     return {
       title: '3. Receive Payments',
-      content:
-        'Share subscription link with your customers to receive recurring payments.',
+      content: 'Share subscription link with your customers to receive recurring payments.',
     };
   },
 };

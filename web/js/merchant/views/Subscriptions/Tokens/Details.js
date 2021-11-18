@@ -289,7 +289,7 @@ export default class TokenDetailsContainer extends Component {
                     </EntityDetailRow>
                     {this.isCardMethod && maxAmount && isDomesticCard && (
                       <EntityDetailRow label="Max Auto-debit Amount">
-                        <Amount value={maxAmount} currency={'INR'} />{' '}
+                        <Amount value={maxAmount} currency="INR" />{' '}
                         <span>
                           <i class="i i-info-circle" />
                           <Popover theme="dark">
@@ -347,7 +347,6 @@ function TimeStamps({ token }) {
         <Time value={token.created_at} format={timeFormat} />
       </span>
       <Definition>
-        <></>
         <>
           Last Used At: <Time value={token.used_at} format={timeFormat} />
         </>

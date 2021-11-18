@@ -23,9 +23,9 @@ export default class CreateAddOn extends Component {
   state = {};
 
   componentWillMount() {
-    let { addon, subscriptionId, currency = 'INR' } = this.props;
+    const { addon, subscriptionId, currency = 'INR' } = this.props;
 
-    let initProps = {
+    const initProps = {
       addon,
       subscription_id: subscriptionId,
       item: { currency },
@@ -35,17 +35,17 @@ export default class CreateAddOn extends Component {
     this.props.initialize(initProps);
   }
 
-  handleSubmit = props => {
+  handleSubmit = (props) => {
     return this.props
       .saveAddOn(props)
-      .then(response => {
+      .then((response) => {
         this.props.showNotification({
           type: 'success',
           message: 'Add-on included successfully',
         });
         this.props.onSave(response.data.id); // For highlighting the row
       })
-      .catch(err => {
+      .catch((err) => {
         this.setState({
           errors: err.errors,
         });
@@ -90,12 +90,10 @@ export default class CreateAddOn extends Component {
               <div style={{ display: 'inline-block', width: '62%' }}>
                 <label class="control-label label-required price-per-unit">
                   Price per unit (in{' '}
-                  <AmountTooltip
-                    currency={currency}
-                    parentQuerySelector=".Modal"
-                  >
+                  <AmountTooltip currency={currency} parentQuerySelector=".Modal">
                     {window.currencyList[currency].symbol}
-                  </AmountTooltip>)
+                  </AmountTooltip>
+                  )
                 </label>
                 <Field
                   name="item[amount]"

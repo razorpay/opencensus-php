@@ -231,15 +231,15 @@ export default class UploadNACHForm extends React.Component {
 
     if (uploading) {
       return (
-        <React.Fragment>
+        <>
           <i class="i i-info-circle" /> Please wait while we upload NACH form.
-        </React.Fragment>
+        </>
       );
     }
 
     if (this.errorsList.length) {
       return (
-        <React.Fragment>
+        <>
           <h5 class="text-danger">
             <i class="i i-info-circle" /> Details do not match
           </h5>
@@ -247,14 +247,14 @@ export default class UploadNACHForm extends React.Component {
             The highlighted details on the uploaded NACH form do not match. Please ensure you are
             uploading the correct NACH form.
           </p>
-        </React.Fragment>
+        </>
       );
     }
 
     if (errors.heading) {
       return (
-        <React.Fragment>
-          <h5 class={`text-danger`}>
+        <>
+          <h5 class="text-danger">
             <i class="i i-info-circle" /> {errors.heading}
           </h5>
 
@@ -263,7 +263,7 @@ export default class UploadNACHForm extends React.Component {
           {errors.hint && (
             <Alert class="hint" type="warning" message={errors.hint} showDismiss={false} />
           )}
-        </React.Fragment>
+        </>
       );
     }
     return '';
@@ -304,7 +304,7 @@ export default class UploadNACHForm extends React.Component {
           </AccordionItemContent>
         </AccordionItem>
         <AccordionItem status={this.personalDetailsStatus}>
-          <AccordionItemTitle>Customer's Personal Details</AccordionItemTitle>
+          <AccordionItemTitle>Customer&#39;s Personal Details</AccordionItemTitle>
           <AccordionItemContent>
             <EntityDetailRow label="Name">
               {this.renderNachFieldData('customer.name')}
@@ -318,7 +318,7 @@ export default class UploadNACHForm extends React.Component {
           </AccordionItemContent>
         </AccordionItem>
         <AccordionItem status={this.bankAccountStatus}>
-          <AccordionItemTitle>Customer's Bank Details</AccordionItemTitle>
+          <AccordionItemTitle>Customer&#39;s Bank Details</AccordionItemTitle>
           <AccordionItemContent>
             <EntityDetailRow label="Account no">
               {this.renderNachFieldData('bank_account.account_number')}
@@ -362,7 +362,7 @@ export default class UploadNACHForm extends React.Component {
           <main-title class="main-title">Upload NACH Form</main-title>
 
           <p class="file-desc">
-            If you received the customer's signed NACH form, you can upload it here.
+            If you received the customer&#39;s signed NACH form, you can upload it here.
           </p>
 
           <FileUpload
@@ -434,10 +434,10 @@ function getErrorMessage([error, status]) {
       description:
         'Kindly re-upload an image with better quality as the uploaded form could not be read successfully.',
       hint: (
-        <React.Fragment>
+        <>
           The uploaded image should be <b>clear</b>. It should not be <b>cropped</b> and not have
           any <b>shadows</b>.
-        </React.Fragment>
+        </>
       ),
     };
   } else if (error.includes('signature is not detected in the NACH form')) {

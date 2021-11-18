@@ -1,15 +1,17 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PlanDetails from 'merchant/views/Subscriptions/Plans/components/Details';
-import { fetchPlan as fetchItem } from 'merchant/reducers/plans';
-import { fetchSubscriptionsByPlanId as fetchSubscriptions } from 'merchant/reducers/plans';
+import {
+  fetchPlan as fetchItem,
+  fetchSubscriptionsByPlanId as fetchSubscriptions,
+} from 'merchant/reducers/plans';
 import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 
 @connect(
-  state => ({
+  (state) => ({
     ...state.plan,
   }),
-  { fetchItem, fetchSubscriptions }
+  { fetchItem, fetchSubscriptions },
 )
 export default class PlanDetailsContainer extends Component {
   componentWillMount() {
@@ -27,29 +29,31 @@ export default class PlanDetailsContainer extends Component {
   }
 
   componentDidMount() {
-    const { closeUrl, id } = this.props,
-      eventCategory = getEventCategoryFromPath(closeUrl);
-    eventCategory &&
+    const { closeUrl, id } = this.props;
+    const eventCategory = getEventCategoryFromPath(closeUrl);
+    if (eventCategory) {
       window.rzpAnalytics({
-        eventCategory: eventCategory,
+        eventCategory,
         eventAction: 'Open Details - Plans',
         eventLabel: `plan_id=${id}`,
       });
+    }
   }
 
   componentWillUnmount() {
-    const { closeUrl, id } = this.props,
-      eventCategory = getEventCategoryFromPath(closeUrl);
-    eventCategory &&
+    const { closeUrl, id } = this.props;
+    const eventCategory = getEventCategoryFromPath(closeUrl);
+    if (eventCategory) {
       window.rzpAnalytics({
-        eventCategory: eventCategory,
+        eventCategory,
         eventAction: 'Close Details - Plans',
         eventLabel: `plan_id=${id}`,
       });
+    }
   }
 
   render() {
-    let { loading, error, entity, subscriptions } = this.props;
+    const { loading, error, entity, subscriptions } = this.props;
     let statusMsg = {};
 
     if (error) {

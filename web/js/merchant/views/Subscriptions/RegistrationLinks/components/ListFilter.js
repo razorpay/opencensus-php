@@ -5,7 +5,7 @@ import { titleCase } from 'common/utils/rzp-utils';
 
 const statuses = ['issued', 'paid', 'expired'];
 
-export default props => (
+export default (props) => (
   <ListFilter {...props}>
     <div class="form-group list-filter-item">
       <label>Registration Link Id</label>
@@ -24,27 +24,19 @@ export default props => (
 
     <div class="form-group list-filter-item">
       <label>Customer Email</label>
-      <Field
-        name="customer_email"
-        component="input"
-        class="form-control input-sm"
-      />
+      <Field name="customer_email" component="input" class="form-control input-sm" />
     </div>
 
     <div class="form-group list-filter-item">
       <label>Customer Contact</label>
-      <Field
-        name="customer_contact"
-        component="input"
-        class="form-control input-sm"
-      />
+      <Field name="customer_contact" component="input" class="form-control input-sm" />
     </div>
 
     <div class="form-group list-filter-item">
       <label>Status</label>
       <Field name="status" component="select" class="form-control input-sm">
         <option value="">All</option>
-        {statuses.map(status => (
+        {statuses.map((status) => (
           <option key={status} value={status}>
             {titleCase(status)}
           </option>

@@ -1,18 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-
 import Amount from 'common/ui/Amount';
 import Spinner from 'common/ui/Spinner';
 import Alert from 'common/ui/Forms/Alert';
 import DataTable from 'common/ui/Table/DataTable';
-import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-
-import ShowWhen from 'merchant/components/ShowWhen';
-
 import { refundId, amount, createdAt } from 'common/ui/item/pair';
-
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
 export default class CreditNoteDetails extends React.Component {
   render() {
@@ -20,8 +12,8 @@ export default class CreditNoteDetails extends React.Component {
 
     const refunds = [];
 
-    (creditNote.invoices || []).forEach(invoice => {
-      invoice.refunds.forEach(refund => refunds.push(refund));
+    (creditNote.invoices || []).forEach((invoice) => {
+      invoice.refunds.forEach((refund) => refunds.push(refund));
     });
 
     return (
@@ -34,11 +26,7 @@ export default class CreditNoteDetails extends React.Component {
           <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
               {onClose && (
-                <button
-                  type="button"
-                  class="close close-secondary"
-                  onClick={onClose}
-                >
+                <button type="button" class="close close-secondary" onClick={onClose}>
                   <i class="i i-arrow-back" />
                   <i class="i i-close" />
                 </button>
@@ -50,24 +38,15 @@ export default class CreditNoteDetails extends React.Component {
               <div class="panel-body">
                 <Alert type={statusMsg.type} message={statusMsg.message} />
 
-                <EntityDetailRow label="Name">
-                  {creditNote.name}
-                </EntityDetailRow>
+                <EntityDetailRow label="Name">{creditNote.name}</EntityDetailRow>
 
-                <EntityDetailRow label="Description">
-                  {creditNote.description}
-                </EntityDetailRow>
+                <EntityDetailRow label="Description">{creditNote.description}</EntityDetailRow>
 
                 <EntityDetailRow label="Amount">
-                  <Amount
-                    currency={creditNote.currency}
-                    value={creditNote.amount}
-                  />
+                  <Amount currency={creditNote.currency} value={creditNote.amount} />
                 </EntityDetailRow>
 
-                {!!creditNote.invoices.length && (
-                  <RefundsList refunds={refunds} />
-                )}
+                {!!creditNote.invoices.length && <RefundsList refunds={refunds} />}
               </div>
             </div>
           </div>
@@ -76,6 +55,8 @@ export default class CreditNoteDetails extends React.Component {
     );
   }
 }
+
+const createdAtWithStyle = { columnClass: 'text-right', ...createdAt };
 
 const RefundsList = ({ refunds }) => {
   const refundsHeading = {
@@ -98,13 +79,11 @@ const RefundsList = ({ refunds }) => {
   );
 };
 
-const createdAtWithStyle = { columnClass: 'text-right', ...createdAt };
-
 const NumRefunds = ({ refunds, titleCase = false }) => {
   const refundItems = refunds || [];
 
-  const numRefunds = refundItems.length,
-    refundSuffix = numRefunds === 0 || numRefunds > 1 ? 's' : '';
+  const numRefunds = refundItems.length;
+  const refundSuffix = numRefunds === 0 || numRefunds > 1 ? 's' : '';
 
   return (
     <span>

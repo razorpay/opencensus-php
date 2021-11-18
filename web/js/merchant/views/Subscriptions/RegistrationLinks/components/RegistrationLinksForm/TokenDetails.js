@@ -1,4 +1,3 @@
-import React from 'react';
 import moment from 'moment';
 import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
 import { getFormattedAmount, rupeesToPaise } from 'common/utils/rzp-utils';
@@ -105,7 +104,7 @@ export default ({
   }
 
   return (
-    <React.Fragment>
+    <>
       {isUPIPayment && (
         <div class="Input billing-frequency ">
           <Input.Group label="Billing Frequency" class="InputGroup--vTop">
@@ -234,7 +233,7 @@ export default ({
           {...maxAmountProps}
         />
       )}
-    </React.Fragment>
+    </>
   );
 };
 

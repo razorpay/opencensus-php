@@ -1,4 +1,3 @@
-import React from 'react';
 import moment from 'moment';
 import { isEmail, isPhone } from 'common/utils/validators';
 
@@ -21,7 +20,7 @@ export default (props) => {
   } = props;
 
   return (
-    <React.Fragment>
+    <>
       <Input.Textarea
         name="description"
         data-name="description"
@@ -121,7 +120,7 @@ export default (props) => {
           onBlur={() => onBlurElement(null, 'expiry-date')}
         />
       </Input.Group>
-    </React.Fragment>
+    </>
   );
 };
 

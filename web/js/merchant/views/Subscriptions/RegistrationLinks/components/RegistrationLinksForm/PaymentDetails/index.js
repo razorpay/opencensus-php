@@ -41,7 +41,7 @@ export default (props) => {
     isEsignEnabled,
   } = props;
   return (
-    <React.Fragment>
+    <>
       <PaymentMethod
         mandateMethod={mandateMethod}
         avlblMethods={avlblMethods}
@@ -116,7 +116,7 @@ export default (props) => {
         onAddNew={() => onBlurElement(null, 'notes_add_new')}
         defaultValue={notes}
       />
-    </React.Fragment>
+    </>
   );
 };
 

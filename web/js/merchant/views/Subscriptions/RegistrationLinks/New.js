@@ -656,7 +656,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             </div>
           </main>
         ) : (
-          <React.Fragment>
+          <>
             <main class="form-container">
               <main-title>Create Registration Link</main-title>
 
@@ -704,7 +704,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
                 </AsyncBtn.Primary>
               )}
             </footer>
-          </React.Fragment>
+          </>
         )}
       </div>
     );

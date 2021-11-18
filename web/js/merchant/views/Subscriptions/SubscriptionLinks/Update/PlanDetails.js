@@ -14,7 +14,7 @@ export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
     const showScheduleChange = props.status !== 'created' && props.status !== 'authenticated';
 
     return (
-      <React.Fragment>
+      <>
         <PlanDetails
           isEdit
           plans={props.plans}
@@ -58,7 +58,7 @@ export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
             defaultValue={props.fields.schedule_change_at}
           />
         )}
-      </React.Fragment>
+      </>
     );
   }
 }

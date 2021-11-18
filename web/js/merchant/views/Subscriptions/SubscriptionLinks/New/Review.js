@@ -119,7 +119,7 @@ export default function NewSubscriptionLinkReview({ fields, internals, ...props 
   );
 }
 
-/**
+/*
  * refer https://razorpay.com/docs/subscriptions/create/#possible-scenarios to understand logic
  */
 function getAuthorizationAmount(subAmt, addonAmt, immediate, minAuthAmount) {

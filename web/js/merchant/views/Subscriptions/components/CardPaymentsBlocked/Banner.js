@@ -1,3 +1,4 @@
+import React from 'react';
 import AnnouncementBanner from 'merchant/components/Announcements/CardPaymentsBlocked';
 
 export default React.memo(({ isCAW }) => {

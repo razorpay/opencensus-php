@@ -21,7 +21,7 @@ function renderBatchDetails({ batch }) {
   });
 
   return (
-    <React.Fragment>
+    <>
       <div class="equal-margin">
         <BatchStats stats={stats} />
       </div>
@@ -43,7 +43,7 @@ function renderBatchDetails({ batch }) {
           <Time value={batch.created_at} />
         </EntityDetailRow>
       </div>
-    </React.Fragment>
+    </>
   );
 }
 
