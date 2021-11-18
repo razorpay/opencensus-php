@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use RZP\Jobs\Job;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Downtime;
 
@@ -48,7 +49,10 @@ class PaymentDowntimeEvent extends Job
                 ['status' => $this->status, 'downtime' => $downtime->getId(), "merchantId" => $downtime->getMerchantId()]
             );
 
-            (new Downtime\Service())->{'eventDowntime'.ucfirst($this->status)}($downtime, $this->lastSeverity);
+            if(((bool) ConfigKey::get(ConfigKey::ENABLE_DOWNTIME_WEBHOOKS, false)) === true)
+            {
+                (new Downtime\Service())->{'eventDowntime' . ucfirst($this->status)}($downtime, $this->lastSeverity);
+            }
         }
         catch (\Throwable $e)
         {

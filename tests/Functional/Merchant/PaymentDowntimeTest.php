@@ -1215,6 +1215,14 @@ class PaymentDowntimeTest extends TestCase
 
         $this->ba->adminAuth();
 
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:enable_downtime_webhooks' => '1',
+            ],
+        ]);
+
         $addDowntimeRequest = [
             'content' => [
                 'begin'       => Carbon::now()->subMinutes(60)->timestamp,

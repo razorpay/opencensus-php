@@ -102,6 +102,7 @@ class Validator extends Base\Validator
         ConfigKey::ENABLE_DOWNTIME_SERVICE_CARD         => 'filled|boolean',
         ConfigKey::ENABLE_PAYMENT_DOWNTIME_PHONEPE      => 'filled|boolean',
         ConfigKey::USE_MUTEX_FOR_DOWNTIMES              => 'filled|boolean',
+        ConfigKey::ENABLE_DOWNTIME_WEBHOOKS             => 'filled|boolean',
 
         ConfigKey::WORLDLINE_TID_RANGE_LIST           => 'filled|array',
         ConfigKey::WORLDLINE_TID_RANGE_LIST.'.*'      => 'filled|array',
