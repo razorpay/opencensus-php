@@ -47,6 +47,7 @@ function UpdateTransactionLimit(props) {
       const response = await merchantFetch({
         url: 'merchant/transaction_limit',
         method: 'POST',
+        mode: 'live',
         data: formData,
       });
       if (response) {

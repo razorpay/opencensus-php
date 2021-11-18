@@ -118,6 +118,7 @@ const MerchantDetails = ({
       const response = await merchantFetch({
         url: `merchant/business_website_status`,
         method: 'GET',
+        mode: 'live',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -138,6 +139,7 @@ const MerchantDetails = ({
       const response = await merchantFetch({
         url: `merchant/increase_transaction_limit/details`,
         method: 'GET',
+        mode: 'live',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -158,6 +160,7 @@ const MerchantDetails = ({
       const response = await merchantFetch({
         url: `merchant/add_additional_website/details`,
         method: 'GET',
+        mode: 'live',
         headers: {
           'Content-Type': 'application/json',
         },

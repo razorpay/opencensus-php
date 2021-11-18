@@ -13,26 +13,27 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateSession } from 'merchant/reducers/session';
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
     mode: state.session.mode,
   }),
   {
     updateSession,
     showNotification,
-  }
+  },
 )
 class EditWebsiteDetails extends Component {
-  onSubmit = form => {
+  onSubmit = (form) => {
+    // eslint-disable-next-line no-shadow
     const { user, showNotification } = this.props;
 
     return merchantFetch({
       url: 'merchant/activation/update_website_details',
-      mode: this.props.mode,
       method: 'put',
+      mode: 'live',
       data: { business_website: autoPrefixUrls(form.business_website) },
     })
-      .then(response => {
+      .then((response) => {
         if (response.success) {
           //update user session details
           const newUser = new User({
@@ -46,6 +47,7 @@ class EditWebsiteDetails extends Component {
             mode: this.props.mode,
           });
 
+          // eslint-disable-next-line babel/no-unused-expressions
           this.props.onWebsiteAdd && this.props.onWebsiteAdd();
           showNotification({
             type: 'success',
@@ -54,7 +56,7 @@ class EditWebsiteDetails extends Component {
           this.props.onClose();
         }
       })
-      .catch(err => {
+      .catch((err) => {
         if (err.errors && err.errors[0]) {
           showNotification({
             type: 'error',
@@ -74,18 +76,12 @@ class EditWebsiteDetails extends Component {
 
     return (
       <div class="edit-website-modal">
-        <ModalHeader
-          title="Add Website/App Details"
-          onCloseClick={this.props.onClose}
-        />
+        <ModalHeader title="Add Website/App Details" onCloseClick={this.props.onClose} />
         <div class="modal-body">
           {business_website ? (
             <SuccessModalContent onClose={this.props.onClose} />
           ) : (
-            <EditWebsite
-              onSubmit={this.onSubmit}
-              onCancel={this.props.onClose}
-            />
+            <EditWebsite onSubmit={this.onSubmit} onCancel={this.props.onClose} />
           )}
         </div>
       </div>

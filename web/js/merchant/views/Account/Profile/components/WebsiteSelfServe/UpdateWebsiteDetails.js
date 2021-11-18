@@ -201,6 +201,7 @@ function UpdateWebsiteDetails(props) {
       const response = await merchantFetch({
         url: `merchant/save_business_website/${type}`,
         method: 'POST',
+        mode: 'live',
         data: payload,
         headers: {
           'Content-Type': 'application/json',
@@ -281,6 +282,7 @@ function UpdateWebsiteDetails(props) {
       const response = await merchantFetch({
         url: `merchant/additional_website/${type}`,
         method: 'POST',
+        mode: 'live',
         data: formData,
         headers: {
           'Content-Type': 'application/json',
