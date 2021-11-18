@@ -778,6 +778,13 @@ const initialState = {
               icon: 'https://cdn.razorpay.com/paylater-sq/hdfc.svg',
             },
             {
+              name: 'LazyPay',
+              description: '',
+              status: 'Request',
+              slug: 'lazypay',
+              icon: 'https://cdn.razorpay.com/paylater-sq/lazypay.svg',
+            },
+            {
               name: 'ICICI',
               description: '',
               status: 'Request',
