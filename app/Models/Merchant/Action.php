@@ -29,6 +29,13 @@ class Action
     const SET_RECEIPT_EMAIL_EVENT_CAPTURED    = 'set_receipt_email_event_captured';
     const LIVE_DISABLE                        = 'live_disable';
     const LIVE_ENABLE                         = 'live_enable';
+    /*
+        * in international disabling, there will be two types of disabling: Permanent and Temporary,
+        * the only thing difference b/w both will be communication part.
+    */
+    const DISABLE_INTERNATIONAL_TEMPORARY = 'disable_international_temporary';
+    const DISABLE_INTERNATIONAL_PERMANENT = 'disable_international_permanent';
+
 
     public static function exists($action)
     {

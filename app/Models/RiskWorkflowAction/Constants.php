@@ -106,6 +106,8 @@ class Constants
         Action::LIVE_DISABLE . ',' .
         Action::UNSUSPEND . ',' .
         Action::RELEASE_FUNDS . ',' .
+        Action::DISABLE_INTERNATIONAL . ',' .
+        Action::ENABLE_INTERNATIONAL . ',' .
         Action::LIVE_ENABLE;
 
     const RISK_SOURCE_PREFIX      = 'risk_source_';
@@ -114,18 +116,20 @@ class Constants
 
     const BULK_WORKFLOW_GROUP_TAG_PREFIX = 'bulk_workflow_group_';
 
-    const MERCHANT_ID               = 'merchant_id';
-    const BULK_WORKFLOW_ACTION_ID   = 'bulk_workflow_action_id';
+    const MERCHANT_ID             = 'merchant_id';
+    const BULK_WORKFLOW_ACTION_ID = 'bulk_workflow_action_id';
 
     const BULK_RISK_ACTION_INDIVIDUAL_WORKFLOW_MAKER_EMAIL = 'BULK_RISK_ACTION_INDIVIDUAL_WORKFLOW_MAKER_EMAIL';
 
     const BULK_WORKFLOW_DETAILS_TPL = 'BULK_WORKFLOW_DETAILS:: MAKER: %s CHECKER: %s LINK: %s';
 
-    const CREATE_DESTRUCTIVE_RISK_ATTRIBUTES_VALIDATOR  = 'create_destructive_risk_attributes';
-    const CREATE_CONSTRUCTIVE_RISK_ATTRIBUTES_VALIDATOR = 'create_constructive_risk_attributes';
+    const CREATE_DESTRUCTIVE_RISK_ATTRIBUTES_VALIDATOR          = 'create_destructive_risk_attributes';
+    const CREATE_CONSTRUCTIVE_RISK_ATTRIBUTES_VALIDATOR         = 'create_constructive_risk_attributes';
+    const CREATE_ENABLE_INTERNATIONAL_RISK_ATTRIBUTES_VALIDATOR = 'create_enable_international_risk_attributes';
+    const CREATE_DISABLE_INTERNATIONAL_RISK_ATTRIBUTES_VALIDATOR = 'create_disable_international_risk_attributes';
 
     // Risk workflow statuses
-    const EXECUTED      = 'EXECUTED';
-    const INVALIDATED   = 'INVALIDATED';
-    const FAILED        = 'FAILED';
+    const EXECUTED    = 'EXECUTED';
+    const INVALIDATED = 'INVALIDATED';
+    const FAILED      = 'FAILED';
 }

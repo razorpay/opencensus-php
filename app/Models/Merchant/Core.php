@@ -1170,7 +1170,7 @@ class Core extends Base\Core
 
         $action = $input['action'];
 
-        if($this->shouldValidateTag($useWorkflows) === true)
+        if ($this->shouldValidateTag($useWorkflows) === true)
         {
             $adminEntity = $this->getAdminEntityForBulkAction($input);
 
@@ -1210,10 +1210,9 @@ class Core extends Base\Core
             $this->repo->saveOrFail($merchant);
         });
 
-        if (isset($riskAttributes[RiskActionConstants::TRIGGER_COMMUNICATION]) === true
-            and (int)$riskAttributes[RiskActionConstants::TRIGGER_COMMUNICATION] === 1)
+        if (isset($riskAttributes[RiskActionConstants::TRIGGER_COMMUNICATION]) === true)
         {
-            (new MerchantActionNotification())->sendMerchantRiskActionNotifications($merchant, $action);
+            $this->triggerCommunicationIfApplicable($merchant,$action,$riskAttributes[RiskActionConstants::TRIGGER_COMMUNICATION]);
         }
 
         $fundsHoldToggleActions = [
@@ -5421,5 +5420,35 @@ class Core extends Base\Core
                 (new Merchant1ccConfig\Core())->createAndSaveConfig($this->merchant, $input);
             }
         );
+    }
+
+    private function triggerCommunicationIfApplicable($merchant,$action,$triggerCommunication)
+    {
+        /*
+             * in international disabling, there will be two types of disabling: Permanent and Temporary,
+             * the only thing difference b/w both will be communication part.
+             */
+        if ($action === Merchant\Action::DISABLE_INTERNATIONAL)
+        {
+            if ((int)$triggerCommunication === 1)
+            {
+                (new MerchantActionNotification())->sendMerchantRiskActionNotifications($merchant, Merchant\Action::DISABLE_INTERNATIONAL_TEMPORARY);
+            }
+            else
+            {
+                if ((int)$triggerCommunication === 2)
+                {
+                    (new MerchantActionNotification())->sendMerchantRiskActionNotifications($merchant, Merchant\Action::DISABLE_INTERNATIONAL_PERMANENT);
+                }
+            }
+
+        }
+        else
+        {
+            if ((int)$triggerCommunication  === 1)
+            {
+                (new MerchantActionNotification())->sendMerchantRiskActionNotifications($merchant, $action);
+            }
+        }
     }
 }

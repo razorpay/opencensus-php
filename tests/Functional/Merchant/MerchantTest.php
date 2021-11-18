@@ -6684,7 +6684,6 @@ IFSC Code  ICIC0001206
         $testData = $this->testData[$name];
 
         $this->replaceValuesRecursively($testData, $testDataToReplace);
-
         return $this->runRequestResponseFlow($testData);
     }
 
@@ -9832,6 +9831,93 @@ IFSC Code  ICIC0001206
         $this->startTest();
     }
 
+    /*
+     * Testing WorkflowAction creation using route risk-actions/create and then approving that workflowAction
+     */
+    public function testMerchantInternationalDisableActionNewRoute()
+    {
+        //editing the merchant and it's details to make it international enbale in start
+        $this->fixtures->edit('merchant', '10000000000000',
+                              ['international' => true, 'product_international' => '1111000000']);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'international_activation_flow' => 'whitelist']);
+
+        $this->ba->adminAuth();
+
+        //setting up the workflow
+        $this->setupWorkflow('edit_merchant_international', PermissionName::EDIT_MERCHANT_DISABLE_INTERNATIONAL, "test");
+
+        //creating the workflowAction using route "risk-actions/create"
+        $request = $this->testData[__FUNCTION__]['requestWorkflowActionCreation'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $expectedResponse = $this->testData[__FUNCTION__]['responseWorkflowActionCreation']['content'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+        $this->assertEquals('10000000000000', $response['entity_id']);
+
+        $workflowActionId = $response['id'];
+
+        //approving the workflowAction created in previous step
+        $response = $this->performWorkflowAction($workflowActionId, true, 'test');
+
+        $expectedResponse = $this->testData[__FUNCTION__]['responseWorkflowActionApproval']['content'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->assertEquals($workflowActionId, $response['id']);
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000);
+        $this->assertEquals(false, $merchant['international']);
+        $this->assertEquals('0000000000', $merchant['product_international']);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', 10000000000000);
+        $this->assertEquals('blacklist', $merchantDetail['international_activation_flow']);
+
+    }
+
+    public function testMerchantInternationalDisableActionNewRouteForAlreadyDisabled()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', ['international' => false, 'product_international' => '0000000000']);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'international_activation_flow' => 'whitelist']);
+
+        $this->ba->adminAuth();
+
+        $this->setupWorkflow('edit_merchant_international', PermissionName::EDIT_MERCHANT_DISABLE_INTERNATIONAL, "test");
+
+        $this->startTest();
+    }
+
+    public function testMerchantInternationalDisableActionNewRouteValidationFailureRiskSource()
+    {
+        $this->fixtures->edit('merchant', '10000000000000',
+                              ['international' => true, 'product_international' => '1111000000']);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'international_activation_flow' => 'whitelist']);
+
+        $this->ba->adminAuth();
+
+        $this->setupWorkflow('edit_merchant_international', PermissionName::EDIT_MERCHANT_DISABLE_INTERNATIONAL, "test");
+
+        $this->startTest();
+    }
+
+    public function testMerchantInternationalDisableActionNewRouteValidationFailureTriggerCommunication()
+    {
+        $this->fixtures->edit('merchant', '10000000000000',
+                              ['international' => true, 'product_international' => '1111000000']);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'international_activation_flow' => 'whitelist']);
+
+        $this->ba->adminAuth();
+
+        $this->setupWorkflow('edit_merchant_international', PermissionName::EDIT_MERCHANT_DISABLE_INTERNATIONAL, "test");
+
+        $this->startTest();
+    }
+
     public function testMerchantInternationalDisableActionFailure()
     {
         $this->fixtures->edit('merchant', '10000000000000',
@@ -9854,6 +9940,53 @@ IFSC Code  ICIC0001206
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    /*
+     * Testing WorkflowAction creation using route risk-actions/create and then approving that workflowAction
+     */
+    public function testMerchantInternationalPGEnableActionNewRoute()
+    {
+        //editing the merchant to international disable and greylist in start
+        $this->setMerchantMerchantDetailsAndPricing(false, 'greylist');
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'product_international' => '0000000000']);
+
+        $this->ba->adminAuth();
+
+        //setting up the workflow
+        $this->setupWorkflow('edit_merchant_international', PermissionName::EDIT_MERCHANT_ENABLE_INTERNATIONAL, "test");
+
+        //creating the workflowAction using route "risk-actions/create"
+        $request = $this->testData[__FUNCTION__]['requestWorkflowActionCreation'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $expectedResponse = $this->testData[__FUNCTION__]['responseWorkflowActionCreation']['content'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+        $this->assertEquals('10000000000000', $response['entity_id']);
+
+        $workflowActionId = $response['id'];
+
+        //approving the workflowAction created in previous step
+        $response = $this->performWorkflowAction($workflowActionId, true, 'test');
+
+        $expectedResponse = $this->testData[__FUNCTION__]['responseWorkflowActionApproval']['content'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->assertEquals($workflowActionId, $response['id']);
+
+        //asserting if the changes in merchant and mechantDetail entiy are done as they are supposed to be
+        $merchant = $this->getDbEntityById('merchant', 10000000000000);
+        $this->assertEquals(true, $merchant['international']);
+        $this->assertEquals('1000000000', $merchant['product_international']);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', 10000000000000);
+        $this->assertEquals('greylist', $merchantDetail['international_activation_flow']);
+
     }
 
     public function testOutOfOrgMerchantInternationalEnableAction()
@@ -9882,6 +10015,52 @@ IFSC Code  ICIC0001206
         $this->startTest();
     }
 
+    /*
+     * Testing WorkflowAction creation using route risk-actions/create and then approving that workflowAction
+     */
+    public function testMerchantInternationalProdV2EnableActionNewRoute()
+    {
+        //editing the Merchant to internation disable at start.
+        $this->setMerchantMerchantDetailsAndPricing(false, 'whitelist');
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'product_international' => '0000000000']);
+
+        $this->ba->adminAuth();
+
+        //setting up the workflow
+        $this->setupWorkflow('edit_merchant_international', PermissionName::EDIT_MERCHANT_ENABLE_INTERNATIONAL, "test");
+
+        //creating the workflowAction using route "risk-actions/create"
+        $request = $this->testData[__FUNCTION__]['requestWorkflowActionCreation'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $expectedResponse = $this->testData[__FUNCTION__]['responseWorkflowActionCreation']['content'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+        $this->assertEquals('10000000000000', $response['entity_id']);
+
+        $workflowActionId = $response['id'];
+
+        //approving the workflowAction created in previous step
+        $response = $this->performWorkflowAction($workflowActionId, true, 'test');
+
+        $expectedResponse = $this->testData[__FUNCTION__]['responseWorkflowActionApproval']['content'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->assertEquals($workflowActionId, $response['id']);
+
+        //asserting if the changes in merchant and mechantDetail entiy are done as they are supposed to be
+        $merchant = $this->getDbEntityById('merchant', 10000000000000);
+        $this->assertEquals(true, $merchant['international']);
+        $this->assertEquals('0111000000', $merchant['product_international']);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', 10000000000000);
+        $this->assertEquals('whitelist', $merchantDetail['international_activation_flow']);
+    }
+
     public function testOutOfOrgBlacklistedMerchantInternationalEnableAction()
     {
         $this->setMerchantMerchantDetailsAndPricing(false, null);
@@ -9891,6 +10070,34 @@ IFSC Code  ICIC0001206
             'product_international' => '0000000000']);
 
         $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testOutOfOrgBlacklistedMerchantInternationalEnableActionNewRoute()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(false, null);
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'product_international' => '0000000000']);
+
+        $this->ba->adminAuth();
+
+        $this->setupWorkflow('edit_merchant_international', PermissionName::EDIT_MERCHANT_ENABLE_INTERNATIONAL, "test");
+
+        $this->startTest();
+    }
+
+    public function testInternationalEnableActionforAlreadyEnabledNewRoute()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(false, 'whitelist');
+
+        $this->fixtures->edit('merchant', '10000000000000',
+                              ['international' => true, 'product_international' => '1111000000']);
+
+        $this->ba->adminAuth();
+
+        $this->setupWorkflow('edit_merchant_international',PermissionName::EDIT_MERCHANT_ENABLE_INTERNATIONAL,"test");
 
         $this->startTest();
     }

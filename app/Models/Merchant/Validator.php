@@ -1575,7 +1575,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateEnableInternational()
+    public function validateEnableInternational()
     {
         $merchant = $this->entity;
 
@@ -1595,6 +1595,10 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Pricing not present for international.');
         }
+
+        //to check eligibilty of merchant to be internationally enabled
+        $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
+        (new Core)->shouldActivateProductInternational($merchant, $merchantDetails);
     }
 
     public function validateEnableProductInternational($internationalProducts)

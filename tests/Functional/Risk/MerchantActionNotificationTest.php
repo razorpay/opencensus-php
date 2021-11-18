@@ -15,23 +15,14 @@ class MerchantActionNotificationTest extends TestCase
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
-    const DISABLE_LIVE_SUBJECT = 'Razorpay Account disabled: test merchant | 10000000000000';
-    const FOH_SUBJECT = 'Razorpay Account Review: test merchant | 10000000000000 | Funds under Review';
+    private $freshdeskConfig;
 
-    const FOH_EXPECTED_CONTENT = [
-        'status'          => 6, // 6->wating on customer,
-        'group_id'        => 82000147768,
-        'tags'            => ['bulk_workflow_email'],
-        'priority'        => 1,
-        'email'           => 'merchant.email@gmail.com',
-        'email_config_id' => 82000098661,
-        'custom_fields'   => [
-            'cf_ticket_queue' => 'Merchant',
-            'cf_category'     => 'Risk Report_Merchant',
-            'cf_subcategory'  => 'Funds on hold',
-            'cf_product'      => 'Payment Gateway',
-        ],
-        'subject'         => 'Razorpay Account Review: test merchant | 10000000000000 | Funds under Review',
+    const SUBJECT = [
+        'disable_live'                    => 'Razorpay Account disabled: test merchant | 10000000000000',
+        'suspend'                         => 'Razorpay Account disabled: test merchant | 10000000000000',
+        'hold_funds'                      => 'Razorpay Account Review: test merchant | 10000000000000 | Funds under Review',
+        'disable_international_temporary' => 'Razorpay Account Review:  test merchant | 10000000000000 | International Payment Acceptance Paused',
+        'disable_international_permanent' => 'Razorpay Account Review:  test merchant | 10000000000000 | International Disablement',
     ];
 
     public function setUp(): void
@@ -56,16 +47,18 @@ class MerchantActionNotificationTest extends TestCase
             'email' => 'chargeback.poc1@gmail.com,chargeback.poc2@gmail.com',
         ]);
 
+        $this->freshdeskConfig = $this->app['config']->get('applications.freshdesk');
+
         $this->setUpFreshdeskClientMock();
     }
 
     public function testFOHEmailBulkWorkflow()
     {
-        $expectedContent = self::FOH_EXPECTED_CONTENT;
+        $expectedContent = $this->getExpectedContent('hold_funds');
 
-        $expectedContent['email_config_id'] = 82000098428;
+        $expectedContent['email_config_id'] = (int) $this->freshdeskConfig['email_config_ids']['rzpind']['foh_notification'];
 
-        $expectedContent['group_id'] = 82000655429;
+        $expectedContent['group_id'] = (int) $this->freshdeskConfig['group_ids']['rzpind']['foh'];
 
 
         $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
@@ -79,8 +72,7 @@ class MerchantActionNotificationTest extends TestCase
 
     public function testSuspendEmailBulkWorkflow()
     {
-        $expectedContent = self::FOH_EXPECTED_CONTENT;
-        $expectedContent['subject'] = self::DISABLE_LIVE_SUBJECT;
+        $expectedContent = $this->getExpectedContent('suspend');
 
         $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
                                                     $expectedContent,
@@ -95,8 +87,7 @@ class MerchantActionNotificationTest extends TestCase
     {
         $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
 
-        $expectedContent = self::FOH_EXPECTED_CONTENT;
-        $expectedContent['subject'] = self::DISABLE_LIVE_SUBJECT;
+        $expectedContent = $this->getExpectedContent('disable_live');
 
         $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
                                                     $expectedContent,
@@ -105,5 +96,62 @@ class MerchantActionNotificationTest extends TestCase
                                                     ]);
 
         $this->startTest();
+    }
+
+    public function testDisableInternationalTemporaryEmailBulkWorkflow()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
+
+        $expectedContent = $this->getExpectedContent('disable_international_temporary');
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
+                                                    $expectedContent,
+                                                    [
+                                                        'id' => '1234',
+                                                    ]);
+
+        $this->startTest();
+    }
+
+    public function testDisableInternationalPermanentEmailBulkWorkflow()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
+
+        $expectedContent = $this->getExpectedContent('disable_international_permanent');
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
+                                                    $expectedContent,
+                                                    [
+                                                        'id' => '1234',
+                                                    ]);
+
+        $this->startTest();
+    }
+
+
+    function getExpectedContent($action)
+    {
+        $subject = self::SUBJECT[$action];
+        $tag     = ['bulk_workflow_email'];
+        if ($action == 'disable_international_temporary' or $action == 'disable_international_permanent')
+        {
+            $tag = ['bulk_workflow_email', 'international_disablement'];
+        }
+
+        return [
+            'status'          => 6, // 6->wating on customer,
+            'group_id'        => (int) $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+            'tags'            => $tag,
+            'priority'        => 1,
+            'email'           => 'merchant.email@gmail.com',
+            'email_config_id' => (int) $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
+            'custom_fields'   => [
+                'cf_ticket_queue' => 'Merchant',
+                'cf_category'     => 'Risk Report_Merchant',
+                'cf_subcategory'  => 'Funds on hold',
+                'cf_product'      => 'Payment Gateway',
+            ],
+            'subject'         => $subject,
+        ];
     }
 }

@@ -169,28 +169,34 @@ class MerchantActionNotification
             $mailBody = View::make($viewTemplate, $data)->render();
 
             $groupIdMapping = [
-                Action::HOLD_FUNDS      =>  $this->freshdeskConfig['group_ids']['rzpind']['foh'],
-                Action::SUSPEND         =>  $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
-                Action::LIVE_DISABLE    =>  $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                Action::HOLD_FUNDS                      => $this->freshdeskConfig['group_ids']['rzpind']['foh'],
+                Action::SUSPEND                         => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                Action::LIVE_DISABLE                    => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                Action::DISABLE_INTERNATIONAL_PERMANENT => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                Action::DISABLE_INTERNATIONAL_TEMPORARY => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
             ];
 
             $emailConfigIdMapping = [
-                Action::HOLD_FUNDS      =>  $this->freshdeskConfig['email_config_ids']['rzpind']['foh_notification'],
-                Action::SUSPEND         =>  $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
-                Action::LIVE_DISABLE    =>  $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
+                Action::HOLD_FUNDS                      => $this->freshdeskConfig['email_config_ids']['rzpind']['foh_notification'],
+                Action::SUSPEND                         => $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
+                Action::LIVE_DISABLE                    => $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
+                Action::DISABLE_INTERNATIONAL_PERMANENT => $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
+                Action::DISABLE_INTERNATIONAL_TEMPORARY => $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
             ];
+
+            $tag = $this->getTagsForAction($action);
 
             $fdOutboundEmailRequest = [
                 'subject'         => $mailSubject,
                 'description'     => $mailBody,
                 'status'          => 6,
                 'type'            => 'Question',
-                'tags'            => ['bulk_workflow_email'],
+                'tags'            => $tag,
                 'priority'        => 1,
                 'email'           => $merchantEmail,
                 'group_id'        => (int) $groupIdMapping[$action],
                 'email_config_id' => (int) $emailConfigIdMapping[$action],
-                'custom_fields'  => [
+                'custom_fields'   => [
                     'cf_ticket_queue' => 'Merchant',
                     'cf_category'     => 'Risk Report_Merchant',
                     'cf_subcategory'  => Constants::FD_SUB_CATEGORY_FUNDS_ON_HOLD,
@@ -359,5 +365,15 @@ class MerchantActionNotification
             $receiver,
             $whatsAppPayload
         );
+    }
+
+    private function getTagsForAction($action)
+    {
+        $tags=['bulk_workflow_email'];
+        if ($action == Action::DISABLE_INTERNATIONAL_TEMPORARY or $action == Action::DISABLE_INTERNATIONAL_PERMANENT)
+        {
+            $tags = ['bulk_workflow_email', 'international_disablement'];
+        }
+        return $tags;
     }
 }

@@ -7,11 +7,13 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use Razorpay\Trace\Logger;
+use RZP\Models\Merchant\Action;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Merchant\Action as MerchantAction;
 use RZP\Models\Merchant\Validator as MerchantValidator;
+use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 
 class Core extends Base\Core
 {
@@ -45,28 +47,42 @@ class Core extends Base\Core
             case MerchantAction::LIVE_ENABLE:
                 $validator->validateLiveEnable();
                 break;
+            case MerchantAction::ENABLE_INTERNATIONAL:
+                $validator->validateEnableInternational();
+                break;
+            case MerchantAction::DISABLE_INTERNATIONAL:
+                $validator->validateDisableInternational();
+                break;
         }
     }
 
     protected function getParamsForMerchantAction($riskAction, $riskAttributes)
     {
-        if (in_array($riskAction, Merchant\Constants::RISK_CONSTRUCTIVE_ACTION_LIST) === false)
+        if (in_array($riskAction, Merchant\Constants::RISK_CONSTRUCTIVE_ACTION_LIST) === true)
         {
-            $params = [
-                Constants::TRIGGER_COMMUNICATION => $riskAttributes[Constants::TRIGGER_COMMUNICATION],
+            return [
+                Constants::CLEAR_RISK_TAGS => $riskAttributes[Constants::CLEAR_RISK_TAGS],
             ];
-
-            if (isset($riskAttributes[Constants::RISK_TAG]) === true)
-            {
-                $params[Constants::RISK_TAG] = $riskAttributes[Constants::RISK_TAG];
-            }
-
-            return $params;
         }
 
-        return [
-            Constants::CLEAR_RISK_TAGS    => $riskAttributes[Constants::CLEAR_RISK_TAGS],
+        if ($riskAction == Action::ENABLE_INTERNATIONAL)
+        {
+            return [
+                ProductInternationalMapper::INTERNATIONAL_PRODUCTS => $riskAttributes[ProductInternationalMapper::INTERNATIONAL_PRODUCTS],
+            ];
+        }
+
+        $params = [
+            Constants::TRIGGER_COMMUNICATION => $riskAttributes[Constants::TRIGGER_COMMUNICATION],
         ];
+
+        if (isset($riskAttributes[Constants::RISK_TAG]) === true)
+        {
+            $params[Constants::RISK_TAG] = $riskAttributes[Constants::RISK_TAG];
+        }
+
+        return $params;
+
     }
 
     public function validateRiskAttributes(array $input)
@@ -96,9 +112,27 @@ class Core extends Base\Core
         }
         else
         {
-            (new Validator())->validateInput(
-                Constants::CREATE_DESTRUCTIVE_RISK_ATTRIBUTES_VALIDATOR,
-                $riskAttributes);
+            if ($riskAction == Action::ENABLE_INTERNATIONAL)
+            {
+                (new Validator())->validateInput(
+                    Constants::CREATE_ENABLE_INTERNATIONAL_RISK_ATTRIBUTES_VALIDATOR,
+                    $riskAttributes);
+            }
+            else
+            {
+                if ($riskAction == Action::DISABLE_INTERNATIONAL)
+                {
+                    (new Validator())->validateInput(
+                        Constants::CREATE_DISABLE_INTERNATIONAL_RISK_ATTRIBUTES_VALIDATOR,
+                        $riskAttributes);
+                }
+                else
+                {
+                    (new Validator())->validateInput(
+                        Constants::CREATE_DESTRUCTIVE_RISK_ATTRIBUTES_VALIDATOR,
+                        $riskAttributes);
+                }
+            }
         }
     }
 
@@ -128,11 +162,23 @@ class Core extends Base\Core
 
             $routePermission = Permission\Name::$actionMap[$riskAction];
 
+            $internationalProducts = null;
+            if (isset($riskAttributes[ProductInternationalMapper::INTERNATIONAL_PRODUCTS]) === true)
+            {
+                $internationalProducts = $riskAttributes[ProductInternationalMapper::INTERNATIONAL_PRODUCTS];
+                unset($riskAttributes[ProductInternationalMapper::INTERNATIONAL_PRODUCTS]);
+            }
+
             $input = [
-                Constants::ACTION                                   => $riskAction,
-                'use_workflows'                                     => false,
-                Constants::RISK_ATTRIBUTES                          => $riskAttributesParams,
+                Constants::ACTION          => $riskAction,
+                'use_workflows'            => false,
+                Constants::RISK_ATTRIBUTES => $riskAttributesParams,
             ];
+
+            if ($riskAction === Action::ENABLE_INTERNATIONAL)
+            {
+                $input[ProductInternationalMapper::INTERNATIONAL_PRODUCTS] = $internationalProducts;
+            }
 
             if (isset($bulkActionId))
             {
@@ -140,9 +186,9 @@ class Core extends Base\Core
             }
 
             $diffData = [
-                'id'                                    => $merchantId,
-                Constants::ACTION                       => $riskAction,
-                Constants::RISK_ATTRIBUTES              => $riskAttributes,
+                'id'                       => $merchantId,
+                Constants::ACTION          => $riskAction,
+                Constants::RISK_ATTRIBUTES => $riskAttributes,
             ];
             // NOTE: given the use case can generate the diff payload directly,
             // but for consistency reasons calling createDiff

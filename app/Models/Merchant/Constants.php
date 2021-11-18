@@ -572,10 +572,25 @@ final class Constants
     const DISABLE_LIVE_WHATSAPP_TEMPLATE      = 'We have disabled your account as we observed suspicious account activity on your account - {merchant_id} in the name of M/s. {business_name} held with Razorpay.  Please check your registered email for an email with subject Razorpay Account disabled: {merchant_name} | {merchant_id} for more details';
     const DISABLE_LIVE_DASHBOARD_TEMPLATE_TAG = 'mra_disabled';
 
+    //Disable International (temporary) Notification templates
+    const DISABLE_INTERNATIONAL_TEMPORARY_SMS_TEMPLATE           = 'Hi {merchantName}, we regret to inform you that acceptance of international payments has been paused on your Razorpay account due to a risk alert raised by our banking partners. Please check your registered email ID for more details.';
+    const DISABLE_INTERNATIONAL_TEMPORARY_EMAIL_TEMPLATE         = 'emails.merchant.risk.generic.disable_international_temporary.confirmation';
+    const DISABLE_INTERNATIONAL_TEMPORARY_EMAIL_SUBJECT          = 'Razorpay Account Review:  {merchant_name} | {merchant_id} | International Payment Acceptance Paused';
+    const DISABLE_INTERNATIONAL_TEMPORARY_WHATSAPP_TEMPLATE_NAME = 'whatsapp.merchant_risk_actions.disable_international';
+    const DISABLE_INTERNATIONAL_TEMPORARY_WHATSAPP_TEMPLATE      = 'Hi {merchantName}, we regret to inform you that acceptance of international payments has been paused on your Razorpay account due to a risk alert raised by our banking partners. Please check your registered email ID for more details.';
+
+    //Disable International (permanent) Notification Template
+    const DISABLE_INTERNATIONAL_PERMANENT_SMS_TEMPLATE           = 'Hi {merchantName}, we regret to inform you that acceptance of international payments has been paused on your Razorpay account due to a risk alert raised by our banking partners. Please check your registered email ID for more details.';
+    const DISABLE_INTERNATIONAL_PERMANENT_EMAIL_TEMPLATE         = 'emails.merchant.risk.generic.disable_international_permanent.confirmation';
+    const DISABLE_INTERNATIONAL_PERMANENT_EMAIL_SUBJECT          = 'Razorpay Account Review:  {merchant_name} | {merchant_id} | International Disablement';
+    const DISABLE_INTERNATIONAL_PERMANENT_WHATSAPP_TEMPLATE_NAME = 'whatsapp.merchant_risk_actions.disable_international';
+    const DISABLE_INTERNATIONAL_PERMANENT_WHATSAPP_TEMPLATE      = 'Hi {merchantName}, we regret to inform you that acceptance of international payments has been paused on your Razorpay account due to a risk alert raised by our banking partners. Please check your registered email ID for more details.';
+
+
     const MERCHANT_RISK_ACTION_CRON_ADD_TAG_MAP = [
-        Action::SUSPEND         => self::MERCHANT_RISK_SUSPEND_CRON_TAG,
-        Action::HOLD_FUNDS      => self::MERCHANT_RISK_FOH_CRON_TAG,
-        Action::LIVE_DISABLE    => self::MERCHANT_RISK_DISABLE_LIVE_CRON_TAG,
+        Action::SUSPEND      => self::MERCHANT_RISK_SUSPEND_CRON_TAG,
+        Action::HOLD_FUNDS   => self::MERCHANT_RISK_FOH_CRON_TAG,
+        Action::LIVE_DISABLE => self::MERCHANT_RISK_DISABLE_LIVE_CRON_TAG,
     ];
 
     const MERCHANT_RISK_ACTION_CRON_REMOVE_TAG_MAP = [
@@ -612,6 +627,22 @@ final class Constants
             self::EMAIL_SUBJECT              => self::DISABLE_LIVE_EMAIL_SUBJECT,
             self::WHATSAPP_TEMPLATE_NAME     => self::DISABLE_LIVE_WHATSAPP_TEMPLATE_NAME,
             self::WHATSAPP_TEMPLATE          => self::DISABLE_LIVE_WHATSAPP_TEMPLATE,
+        ],
+
+        //temporary
+        Action::DISABLE_INTERNATIONAL_TEMPORARY => [
+            self::SMS_TEMPLATE           => self::DISABLE_INTERNATIONAL_TEMPORARY_SMS_TEMPLATE,
+            self::EMAIL_TEMPLATE         => self::DISABLE_INTERNATIONAL_TEMPORARY_EMAIL_TEMPLATE,
+            self::EMAIL_SUBJECT          => self::DISABLE_INTERNATIONAL_TEMPORARY_EMAIL_SUBJECT,
+            self::WHATSAPP_TEMPLATE_NAME => self::DISABLE_INTERNATIONAL_TEMPORARY_WHATSAPP_TEMPLATE_NAME,
+            self::WHATSAPP_TEMPLATE      => self::DISABLE_INTERNATIONAL_TEMPORARY_WHATSAPP_TEMPLATE,
+        ],
+        Action::DISABLE_INTERNATIONAL_PERMANENT => [
+            self::SMS_TEMPLATE           => self::DISABLE_INTERNATIONAL_PERMANENT_SMS_TEMPLATE,
+            self::EMAIL_TEMPLATE         => self::DISABLE_INTERNATIONAL_PERMANENT_EMAIL_TEMPLATE,
+            self::EMAIL_SUBJECT          => self::DISABLE_INTERNATIONAL_PERMANENT_EMAIL_SUBJECT,
+            self::WHATSAPP_TEMPLATE_NAME => self::DISABLE_INTERNATIONAL_PERMANENT_WHATSAPP_TEMPLATE_NAME,
+            self::WHATSAPP_TEMPLATE      => self::DISABLE_INTERNATIONAL_PERMANENT_WHATSAPP_TEMPLATE,
         ],
     ];
 

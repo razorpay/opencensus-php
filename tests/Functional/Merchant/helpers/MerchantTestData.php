@@ -4952,7 +4952,7 @@ return [
             'method' => 'get',
             'content' => [
                 'app_token' => 'capp_1000000custapp',
-                'currency' => 'INR'
+                'currency'  => 'INR'
             ],
         ],
         'response' => [
@@ -4961,13 +4961,13 @@ return [
         ],
     ],
 
-   'testGetCheckoutRouteWithoutCardTokenNames' => [
-        'request' => [
-            'url' => '/preferences',
-            'method' => 'get',
+    'testGetCheckoutRouteWithoutCardTokenNames' => [
+        'request'  => [
+            'url'     => '/preferences',
+            'method'  => 'get',
             'content' => [
                 'customer_id' => 'cust_100000customer',
-                'currency' => 'INR'
+                'currency'    => 'INR'
             ],
         ],
         'response' => [
@@ -7241,14 +7241,156 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity'          => 'merchant',
-                'international'   => false,
+                'entity'                => 'merchant',
+                'international'         => false,
                 'product_international' => '0000000000',
-                'merchant_detail' => [
+                'merchant_detail'       => [
                     'international_activation_flow' => 'blacklist',
                 ]
             ]
         ]
+    ],
+
+    'testMerchantInternationalDisableActionNewRoute' => [
+        'requestWorkflowActionCreation'  => [
+            'content' => [
+                'action'          => 'disable_international',
+                'merchant_id'     => '10000000000000',
+                'risk_attributes' => [
+                    'trigger_communication' => '1',
+                    'risk_tag'              => 'risk_review_suspend',
+                    'risk_source'           => 'high_fts',
+                    'risk_reason'           => 'high_fts',
+                ],
+            ],
+            'url'     => '/risk-actions/create',
+            'method'  => 'POST',
+        ],
+        'responseWorkflowActionCreation' => [
+            'status_code' => 200,
+            'content'     => [
+                'entity_name'   => 'merchant',
+                'entity_id'     => "10000000000000",
+                'state'         => "open",
+                'maker_type'    => "admin",
+                'org_id'        => "org_100000razorpay",
+                'approved'      => false,
+                'current_level' => 1,
+                'maker'         => [
+                    'id' => "admin_RzrpySprAdmnId",
+                ],
+                'permission'    => [
+                    'name' => "edit_merchant_disable_international",
+                ],
+            ],
+        ],
+        'responseWorkflowActionApproval' => [
+            'content' => [
+                'maker_id'      => "admin_RzrpySprAdmnId",
+                'maker_type'    => "admin",
+                'maker'         => [
+                    'id' => "admin_RzrpySprAdmnId",
+                ],
+                'permission'    => [
+                    'name' => "edit_merchant_disable_international",
+                ],
+                'state'         => "executed",
+                'state_changer' => [
+                    'id' => "admin_RzrpySprAdmnId",
+                ],
+                'org_id'        => "org_100000razorpay",
+                'approved'      => true,
+            ]
+        ],
+    ],
+
+    'testMerchantInternationalDisableActionNewRouteForAlreadyDisabled' => [
+        'request'   => [
+            'content' => [
+                'action'          => 'disable_international',
+                'merchant_id'     => '10000000000000',
+                'risk_attributes' => [
+                    'trigger_communication' => '1',
+                    'risk_tag'              => 'risk_review_suspend',
+                    'risk_source'           => 'high_fts',
+                    'risk_reason'           => 'high_fts',
+                ],
+            ],
+            'url'     => '/risk-actions/create',
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INTERNATIONAL_ALREADY_DISABLED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNATIONAL_ALREADY_DISABLED,
+        ],
+    ],
+
+    'testMerchantInternationalDisableActionNewRouteValidationFailureRiskSource' => [
+        'request'   => [
+            'content' => [
+                'action'          => 'disable_international',
+                'merchant_id'     => '10000000000000',
+                'risk_attributes' => [
+                    'trigger_communication' => '2',
+                    'risk_tag'              => 'risk_review_suspend',
+                    'risk_reason'           => 'high_fts'
+                ],
+            ],
+            'url'     => '/risk-actions/create',
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            "status_code" => 400,
+            'content'     => ['error' => [
+                'code'        => "BAD_REQUEST_ERROR",
+                'description' => "The risk source field is required.",
+                'reason'      => "input_validation_failed",
+                'field'       => "risk_source",
+            ],]
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantInternationalDisableActionNewRouteValidationFailureTriggerCommunication' => [
+        'request'   => [
+            'content' => [
+                'action'          => 'disable_international',
+                'merchant_id'     => '10000000000000',
+                'risk_attributes' => [
+                    'trigger_communication' => '3',
+                    'risk_tag'              => 'risk_review_suspend',
+                    'risk_source'           => 'high_fts',
+                    'risk_reason'           => 'high_fts',
+                ],
+            ],
+            'url'     => '/risk-actions/create',
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            "status_code" => 400,
+            'content'     => ['error' => [
+                'code'        => "BAD_REQUEST_ERROR",
+                'description' => "The selected trigger communication is invalid.",
+                'reason'      => "input_validation_failed",
+                'field'       => "trigger_communication",
+            ],]
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ],
 
     'testMerchantInternationalDisableActionFailure' => [
@@ -7275,6 +7417,105 @@ return [
 
     ],
 
+    'testMerchantInternationalPGEnableActionNewRoute' => [
+        'requestWorkflowActionCreation'  => [
+            'content' => [
+                'action'          => 'enable_international',
+                'merchant_id'     => '10000000000000',
+                'risk_attributes' => [
+                    'international_products' => ['payment_gateway'],
+                ],
+            ],
+            'url'     => '/risk-actions/create',
+            'method'  => 'POST',
+        ],
+        'responseWorkflowActionCreation' => [
+            'status_code' => 200,
+            'content'     => [
+                'entity_name'   => 'merchant',
+                'entity_id'     => "10000000000000",
+                'state'         => "open",
+                'maker_type'    => "admin",
+                'org_id'        => "org_100000razorpay",
+                'approved'      => false,
+                'current_level' => 1,
+                'maker'         => [
+                    'id' => "admin_RzrpySprAdmnId",
+                ],
+                'permission'    => [
+                    'name' => "edit_merchant_enable_international",
+                ],
+            ],
+        ],
+        'responseWorkflowActionApproval' => [
+            'content' => [
+                'maker_id'      => "admin_RzrpySprAdmnId",
+                'maker_type'    => "admin",
+                'maker'         => [
+                    'id' => "admin_RzrpySprAdmnId",
+                ],
+                'permission'    => [
+                    'name' => "edit_merchant_enable_international",
+                ],
+                'state'         => "executed",
+                'state_changer' => [
+                    'id' => "admin_RzrpySprAdmnId",
+                ],
+                'org_id'        => "org_100000razorpay",
+                'approved'      => true,
+            ]
+        ],
+    ],
+
+    'testMerchantInternationalProdV2EnableActionNewRoute' => [
+        'requestWorkflowActionCreation'  => [
+            'content' => [
+                'action'          => 'enable_international',
+                'merchant_id'     => '10000000000000',
+                'risk_attributes' => [
+                    'international_products' => ['invoices'],
+                ],
+            ],
+            'url'     => '/risk-actions/create',
+            'method'  => 'POST',
+        ],
+        'responseWorkflowActionCreation' => [
+            'status_code' => 200,
+            'content'     => [
+                'entity_name'   => 'merchant',
+                'entity_id'     => "10000000000000",
+                'state'         => "open",
+                'maker_type'    => "admin",
+                'org_id'        => "org_100000razorpay",
+                'approved'      => false,
+                'current_level' => 1,
+                'maker'         => [
+                    'id' => "admin_RzrpySprAdmnId",
+                ],
+                'permission'    => [
+                    'name' => "edit_merchant_enable_international",
+                ],
+            ],
+        ],
+        'responseWorkflowActionApproval' => [
+            'content' => [
+                'maker_id'      => "admin_RzrpySprAdmnId",
+                'maker_type'    => "admin",
+                'maker'         => [
+                    'id' => "admin_RzrpySprAdmnId",
+                ],
+                'permission'    => [
+                    'name' => "edit_merchant_enable_international",
+                ],
+                'state'         => "executed",
+                'state_changer' => [
+                    'id' => "admin_RzrpySprAdmnId",
+                ],
+                'org_id'        => "org_100000razorpay",
+                'approved'      => true,
+            ]
+        ],
+    ],
 
     'testMerchantInternationalPGEnableAction' => [
         'request'  => [
@@ -7360,6 +7601,61 @@ return [
         ]
     ],
 
+    'testOutOfOrgBlacklistedMerchantInternationalEnableActionNewRoute' => [
+        'request'   => [
+            'content' => [
+                'action'          => 'enable_international',
+                'merchant_id'     => '10000000000000',
+                'risk_attributes' => [
+                    'international_products' => ['payment_gateway'],
+                ],
+            ],
+            'url'     => '/risk-actions/create',
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+        ],
+
+    ],
+
+    'testInternationalEnableActionforAlreadyEnabledNewRoute' => [
+        'request'   => [
+            'content' => [
+                'action'          => 'enable_international',
+                'merchant_id'     => '10000000000000',
+                'risk_attributes' => [
+                    'international_products' => ['payment_gateway'],
+                ],
+            ],
+            'url'     => '/risk-actions/create',
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INTERNATIONAL_ALREADY_ENABLED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNATIONAL_ALREADY_ENABLED,
+        ],
+
+    ],
 
     'testMerchantInternationalEnableCategoryOneGreylist' => [
         'request'  => [
@@ -7489,9 +7785,9 @@ return [
     ],
 
     'testGetCheckoutPreferencesWithOrderMethodForNonTPVEnabledMerchant' => [
-        'request' => [
-            'url' => '/preferences',
-            'method' => 'get',
+        'request'  => [
+            'url'     => '/preferences',
+            'method'  => 'get',
             'content' => [
                 'currency' => 'INR'
             ]
@@ -7506,9 +7802,9 @@ return [
     ],
 
     'testMerchantBankingVAMigration' => [
-        'request' => [
-            'url' => '/merchants/banking-va-migration',
-            'method' => 'post',
+        'request'  => [
+            'url'     => '/merchants/banking-va-migration',
+            'method'  => 'post',
             'content' => [
                 'merchant_ids' => ['10000000000000']
             ],
@@ -7577,10 +7873,10 @@ return [
         'response' => [
             'content' => [
                 'data' => [
-                    'payment_gateway'   => 'rejected',
-                    'payment_links'     => 'approved',
-                    'payment_pages'     => 'approved',
-                    'invoices'          => 'approved',
+                    'payment_gateway' => 'rejected',
+                    'payment_links'   => 'approved',
+                    'payment_pages'   => 'approved',
+                    'invoices'        => 'approved',
                 ],
             ],
         ],
@@ -7594,19 +7890,19 @@ return [
         'response' => [
             'content' => [
                 'data' => [
-                    'payment_gateway'   => 'rejected',
-                    'payment_links'     => 'rejected',
-                    'payment_pages'     => 'rejected',
-                    'invoices'          => 'rejected',
+                    'payment_gateway' => 'rejected',
+                    'payment_links'   => 'rejected',
+                    'payment_pages'   => 'rejected',
+                    'invoices'        => 'rejected',
                 ],
             ],
         ],
     ],
 
     'testGetCheckoutPreferencesWithConfigIdInOrder' => [
-        'request' => [
-            'url' => '/preferences',
-            'method' => 'get',
+        'request'  => [
+            'url'     => '/preferences',
+            'method'  => 'get',
             'content' => [
                 'currency' => 'INR',
             ]
@@ -7618,9 +7914,9 @@ return [
     ],
 
     'testGetCheckoutPreferencesWithDefaultConfig' => [
-        'request' => [
-            'url' => '/preferences',
-            'method' => 'get',
+        'request'  => [
+            'url'     => '/preferences',
+            'method'  => 'get',
             'content' => [
                 'currency' => 'INR',
             ]
@@ -7632,28 +7928,28 @@ return [
     ],
 
     'testGetCheckoutPreferencesForInvoiceWithOffer' => [
-        'request' => [
+        'request'  => [
             'url'     => '/preferences',
             'method'  => 'get',
             'content' => [
                 'invoice_id' => null,
-                'currency' => 'INR',
+                'currency'   => 'INR',
             ],
         ],
         'response' => [
             'content' => [
                 'offers' => [
                     [
-                        'name' => 'Test Offer',
-                        'payment_method' => 'card',
+                        'name'            => 'Test Offer',
+                        'payment_method'  => 'card',
                         'payment_network' => 'VISA',
-                        'issuer' => 'HDFC',
+                        'issuer'          => 'HDFC',
                     ],
                     [
-                        'name' => 'Test Offer',
-                        'payment_method' => 'card',
+                        'name'            => 'Test Offer',
+                        'payment_method'  => 'card',
                         'payment_network' => 'VISA',
-                        'issuer' => 'HDFC',
+                        'issuer'          => 'HDFC',
                     ]
                 ]
             ],
@@ -7661,13 +7957,13 @@ return [
     ],
 
     'testGetPreferencesInternal' => [
-        'request' => [
-            'url'      => '/internal/preferences/10000000000000',
-            'method'   => 'get',
+        'request'  => [
+            'url'    => '/internal/preferences/10000000000000',
+            'method' => 'get',
         ],
         'response' => [
             'status_code' => 200,
-            'content' => [
+            'content'     => [
                 'methods' => [
 
                 ],
@@ -7676,45 +7972,45 @@ return [
     ],
 
     'testGetAutoDisabledMethodsForMerchant' => [
-        'request' => [
-            'url'      => '/internal/auto_disabled_methods/10000000000000',
-            'method'   => 'get',
+        'request'  => [
+            'url'    => '/internal/auto_disabled_methods/10000000000000',
+            'method' => 'get',
         ],
         'response' => [
             'status_code' => 200,
-            'content' => [
+            'content'     => [
                 'auto_disabled_methods' => ['emi']
             ],
         ],
     ],
 
     'testGetAutoDisabledMethodsForMerchantWithIgnoreBlacklistedForInstrument' => [
-        'request' => [
-            'url'      => '/internal/auto_disabled_methods/10000000000000',
-            'method'   => 'get',
+        'request'  => [
+            'url'    => '/internal/auto_disabled_methods/10000000000000',
+            'method' => 'get',
         ],
         'response' => [
             'status_code' => 200,
-            'content' => [
+            'content'     => [
                 'auto_disabled_methods' =>
-                    [   "credit_card",
-                        "emi",
-                        "cardless_emi",
-                        "prepaid_card",
-                        "paylater",
+                    ["credit_card",
+                     "emi",
+                     "cardless_emi",
+                     "prepaid_card",
+                     "paylater",
                     ]
             ],
         ],
     ],
 
     'testGetAutoDisabledMethodsForBlacklistedCategoryMerchant' => [
-        'request' => [
-            'url'      => '/internal/auto_disabled_methods/10000000000000',
-            'method'   => 'get',
+        'request'  => [
+            'url'    => '/internal/auto_disabled_methods/10000000000000',
+            'method' => 'get',
         ],
         'response' => [
             'status_code' => 200,
-            'content' => [
+            'content'     => [
                 'auto_disabled_methods' => [
                     'credit_card',
                     'debit_card',
@@ -7738,102 +8034,102 @@ return [
                     'paytm',
                     'paypal',
                 ],
-                'kyc_enabled' => false,
+                'kyc_enabled'           => false,
             ],
         ],
     ],
 
     'testGetAutoDisabledMethodsForMerchantWithRandomCategory' => [
-        'request' => [
-            'url'      => '/internal/auto_disabled_methods/10000000000000',
-            'method'   => 'get',
+        'request'  => [
+            'url'    => '/internal/auto_disabled_methods/10000000000000',
+            'method' => 'get',
         ],
         'response' => [
             'status_code' => 200,
-            'content' => [
-                'auto_disabled_methods' => [ ]
+            'content'     => [
+                'auto_disabled_methods' => []
             ],
         ],
     ],
 
     'testGetAutoDisabledMethodsFor5399EcommerceMerchant' => [
-        'request' => [
-            'url'      => '/internal/auto_disabled_methods/10000000000000',
-            'method'   => 'get',
+        'request'  => [
+            'url'    => '/internal/auto_disabled_methods/10000000000000',
+            'method' => 'get',
         ],
         'response' => [
             'status_code' => 200,
-            'content' => [
-                'auto_disabled_methods' => [ ]
+            'content'     => [
+                'auto_disabled_methods' => []
             ],
         ],
     ],
 
     'testGetAutoDisabledMethodsFor5399OthersMerchant' => [
-        'request' => [
-            'url'      => '/internal/auto_disabled_methods/10000000000000',
-            'method'   => 'get',
+        'request'  => [
+            'url'    => '/internal/auto_disabled_methods/10000000000000',
+            'method' => 'get',
         ],
         'response' => [
             'status_code' => 200,
-            'content' => [
+            'content'     => [
                 'auto_disabled_methods' => ['emi']
             ],
         ],
     ],
 
     'testCreateSubmerchantWithCode' => [
-        'request' => [
-            'url' => '/submerchants',
-            'method' => 'post',
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'post',
             'content' => [
-                'name' => 'Linked Account 1',
-                'code' => 'linked_account-1',
+                'name'    => 'Linked Account 1',
+                'code'    => 'linked_account-1',
                 'account' => true,
-                'email' => 'linked1@account.com',
+                'email'   => 'linked1@account.com',
             ],
         ],
         'response' => [
             'content' => [
-                'name' => 'Linked Account 1',
-                'email' => 'linked1@account.com',
-                'entity' => 'merchant',
+                'name'      => 'Linked Account 1',
+                'email'     => 'linked1@account.com',
+                'entity'    => 'merchant',
                 'activated' => false,
-                'code' => 'linked_account-1',
+                'code'      => 'linked_account-1',
             ],
         ],
     ],
 
     'testCreateSubmerchantWithInvalidCode' => [
-        'request' => [
-            'url' => '/submerchants',
-            'method' => 'post',
+        'request'   => [
+            'url'     => '/submerchants',
+            'method'  => 'post',
             'content' => [
-                'name' => 'Linked Account 1',
-                'code' => 'la',
+                'name'    => 'Linked Account 1',
+                'code'    => 'la',
                 'account' => true,
-                'email' => 'linked1@account.com',
+                'email'   => 'linked1@account.com',
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The code must be at least 3 characters.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
     'testOrgLevelFeatureAccess' => [
-        'request' => [],
+        'request'  => [],
         'response' => [
-            'content' => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The requested URL was not found on the server.',
@@ -7844,73 +8140,73 @@ return [
     ],
 
     'testEditMerchantCategoryShouldResetMethods' => [
-        'request' => [
-            'raw' => json_encode([
-                'category'      => '6211',
-                'category2'     => 'mutual_funds',
-                'reset_methods' => true,
-            ]),
-            'url' => '/merchants/1X4hRFHFx4UiXt',
+        'request'  => [
+            'raw'    => json_encode([
+                                        'category'      => '6211',
+                                        'category2'     => 'mutual_funds',
+                                        'reset_methods' => true,
+                                    ]),
+            'url'    => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
             'server' => [
                 // Case: In sign-up case we will not have any other headers
                 // (eg. X-Dashboard-User-Email etc) from dashboard.
-                'CONTENT_TYPE'  => 'application/json',
+                'CONTENT_TYPE'     => 'application/json',
                 'HTTP_X-Dashboard' => 'true',
             ]
-],
+        ],
         'response' => [
             'content' => [
-                'id' => '1X4hRFHFx4UiXt',
-                'entity' => 'merchant',
-                'category'      => '6211',
-                'category2'     => 'mutual_funds',
+                'id'        => '1X4hRFHFx4UiXt',
+                'entity'    => 'merchant',
+                'category'  => '6211',
+                'category2' => 'mutual_funds',
             ]
         ]
     ],
 
     'testEditMerchantCategoryShouldNotResetMethodsIfResetMethodsInInputIsFalse' => [
-        'request' => [
-            'raw' => json_encode([
-                'category'      => '6211',
-                'category2'     => 'mutual_funds',
-                'reset_methods' => false,
-            ]),
-            'url' => '/merchants/1X4hRFHFx4UiXt',
+        'request'  => [
+            'raw'    => json_encode([
+                                        'category'      => '6211',
+                                        'category2'     => 'mutual_funds',
+                                        'reset_methods' => false,
+                                    ]),
+            'url'    => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
             'server' => [
                 // Case: In sign-up case we will not have any other headers
                 // (eg. X-Dashboard-User-Email etc) from dashboard.
-                'CONTENT_TYPE'  => 'application/json',
+                'CONTENT_TYPE'     => 'application/json',
                 'HTTP_X-Dashboard' => 'true',
             ]
-],
+        ],
         'response' => [
             'content' => [
-                'id' => '1X4hRFHFx4UiXt',
-                'entity' => 'merchant',
-                'category'      => '6211',
-                'category2'     => 'mutual_funds',
+                'id'        => '1X4hRFHFx4UiXt',
+                'entity'    => 'merchant',
+                'category'  => '6211',
+                'category2' => 'mutual_funds',
             ]
         ]
     ],
 
     'testEditMerchantCategoryShouldResetMethodsValidationFailure2' => [
-        'request' => [
-            'raw' => json_encode([
-                'category'      => '6211',
-                'category2'     => 'mutual_funds',
-                'reset_methods' => 'yes'
-            ]),
-            'url' => '/merchants/1X4hRFHFx4UiXt',
+        'request'  => [
+            'raw'    => json_encode([
+                                        'category'      => '6211',
+                                        'category2'     => 'mutual_funds',
+                                        'reset_methods' => 'yes'
+                                    ]),
+            'url'    => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
             'server' => [
                 // Case: In sign-up case we will not have any other headers
                 // (eg. X-Dashboard-User-Email etc) from dashboard.
-                'CONTENT_TYPE'  => 'application/json',
+                'CONTENT_TYPE'     => 'application/json',
                 'HTTP_X-Dashboard' => 'true',
             ]
-],
+        ],
         'response' => [
             'content' => [
 
@@ -7918,27 +8214,27 @@ return [
         ],
     ],
 
-    'testGetCheckoutPreferencesIINDetails' => [
-        'request' => [
+    'testGetCheckoutPreferencesIINDetails'           => [
+        'request'  => [
             'url'     => '/preferences',
             'method'  => 'get',
             'content' => [
-                'customer_id'      => 'cust_1000ggcustomer',
-                'personalisation'  => '1',
-                'currency'         => 'INR',
-                'amount'           => '10000'
+                'customer_id'     => 'cust_1000ggcustomer',
+                'personalisation' => '1',
+                'currency'        => 'INR',
+                'amount'          => '10000'
             ],
         ],
         'response' => [
             'content' => [
-                'customer' => [
+                'customer'          => [
                     'tokens' => [
                         'items' => [
                             [
                                 'card' => [
-                                    'type'      => 'credit',
-                                    'issuer'    => 'SBIN',
-                                    'network'   => 'Mastercard',
+                                    'type'    => 'credit',
+                                    'issuer'  => 'SBIN',
+                                    'network' => 'Mastercard',
                                 ]
                             ]
                         ]
@@ -7950,10 +8246,10 @@ return [
                             [],
                             [],
                             [
-                                'method'   => 'card',
-                                'issuer'   => null,
-                                'type'     => 'credit',
-                                'network'  => 'Mastercard',
+                                'method'  => 'card',
+                                'issuer'  => null,
+                                'type'    => 'credit',
+                                'network' => 'Mastercard',
                             ],
                         ],
                     ],
@@ -7962,21 +8258,21 @@ return [
         ],
     ],
     'testGetCheckoutPreferencesWithPreferredMethods' => [
-        'request' => [
+        'request'  => [
             'url'     => '/preferences',
             'method'  => 'get',
             'content' => [
-                'currency' => 'INR',
+                'currency'        => 'INR',
                 'personalisation' => true,
-                'order_id' => 'null',
-                'customer_id' => 'cust_100000customer'
+                'order_id'        => 'null',
+                'customer_id'     => 'cust_100000customer'
             ],
         ],
         'response' => [
             'content' => [
                 'preferred_methods' => [
                     '1234567890' => [
-                        'instruments' =>[
+                        'instruments'               => [
                             [
                                 'instrument' => 'paytm',
                                 'method'     => 'wallet',
@@ -8001,12 +8297,12 @@ return [
             ],
         ],
     ],
-    'testGetCheckoutPersonalisation' => [
-        'request' => [
+    'testGetCheckoutPersonalisation'                 => [
+        'request'  => [
             'url'     => '/personalisation',
             'method'  => 'get',
             'content' => [
-                'order_id' => 'null',
+                'order_id'    => 'null',
                 'customer_id' => 'cust_100000customer'
             ],
         ],
@@ -8014,7 +8310,7 @@ return [
             'content' => [
                 'preferred_methods' => [
                     '1234567890' => [
-                        'instruments' => [
+                        'instruments'               => [
                             [
                                 'instrument' => 'paytm',
                                 'method'     => 'wallet',
@@ -8031,7 +8327,7 @@ return [
                                 'network'    => 'Visa',
                             ],
                         ],
-                        'is_customer_identified'   => true,
+                        'is_customer_identified'    => true,
                         "user_aggregates_available" => false,
                         'versionID'                 => 'v2',
                     ],
@@ -8041,11 +8337,11 @@ return [
     ],
 
     'testGetCheckoutPersonalisationForNonLoggedInUser' => [
-        'request' => [
+        'request'  => [
             'url'     => '/personalisation',
             'method'  => 'get',
             'content' => [
-                'order_id'  => 'null',
+                'order_id' => 'null',
             ],
         ],
         'response' => [
@@ -8055,7 +8351,7 @@ return [
                         'instruments' => [
                             [
                                 'instrument' => 'paytm',
-                                'method'    => 'wallet',
+                                'method'     => 'wallet',
                             ],
                             [
                                 'instrument' => null,
@@ -8077,11 +8373,11 @@ return [
     ],
 
     'testGetCheckoutPersonalisationForNonLoggedInUserUpiIntent' => [
-        'request' => [
+        'request'  => [
             'url'     => '/personalisation',
             'method'  => 'get',
             'content' => [
-                'order_id'  => 'null',
+                'order_id'   => 'null',
                 'upi_intent' => true,
             ],
         ],
@@ -8092,7 +8388,7 @@ return [
                         'instruments' => [
                             [
                                 'instrument' => 'paytm',
-                                'method'    => 'wallet',
+                                'method'     => 'wallet',
                             ],
                             [
                                 'instrument' => '@ybl',
@@ -8122,8 +8418,8 @@ return [
             'url'     => '/personalisation',
             'method'  => 'get',
             'content' => [
-                'order_id'  => 'null',
-                'contact' => '+918888888888',
+                'order_id' => 'null',
+                'contact'  => '+918888888888',
             ],
         ],
         'response' => [
@@ -8155,12 +8451,12 @@ return [
     ],
 
     'testGetCheckoutPersonalisationForNonLoggedInUserWithInternationalContact' => [
-        'request' => [
+        'request'  => [
             'url'     => '/personalisation',
             'method'  => 'get',
             'content' => [
-                'order_id'  => 'null',
-                'contact' => '+118888888888',
+                'order_id' => 'null',
+                'contact'  => '+118888888888',
             ],
         ],
         'response' => [
@@ -8312,13 +8608,13 @@ return [
         ],
     ],
 
-    'testGetCheckoutPersonalisationForContact' => [
-        'request' => [
+    'testGetCheckoutPersonalisationForContact'                    => [
+        'request'  => [
             'url'     => '/personalisation',
             'method'  => 'get',
             'content' => [
-                'order_id'  => 'null',
-                'contact'   => '1234567890'
+                'order_id' => 'null',
+                'contact'  => '1234567890'
             ],
         ],
         'response' => [
@@ -8326,17 +8622,17 @@ return [
             ],
         ]
     ],
-    'testGetCheckoutPersonalisationForCustomerId' => [
-        'request' => [
+    'testGetCheckoutPersonalisationForCustomerId'                 => [
+        'request'   => [
             'url'     => '/personalisation',
             'method'  => 'get',
             'content' => [
-                'order_id'      => 'null',
-                'customer_id'   => 'cust_100005customer'
+                'order_id'    => 'null',
+                'customer_id' => 'cust_100005customer'
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
             ],
             'status_code' => 400,
         ],
@@ -8345,9 +8641,8 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
-    
     'testGetCheckoutPersonalisationWithCustomerIdAndInputContact' => [
-        'request' => [
+        'request'  => [
             'url'     => '/personalisation',
             'method'  => 'get',
             'content' => [
@@ -8388,9 +8683,9 @@ return [
     ],
 
     'testGetBadgeDetailsForRTBNotEnabled' => [
-        'request' => [
-            'url'     => '/badge_details',
-            'method'  => 'get',
+        'request'  => [
+            'url'    => '/badge_details',
+            'method' => 'get',
         ],
         'response' => [
             'content' => [
@@ -8400,9 +8695,9 @@ return [
     ],
 
     'testGetBadgeDetailsForRTBEnabled' => [
-        'request' => [
-            'url'     => '/badge_details',
-            'method'  => 'get',
+        'request'  => [
+            'url'    => '/badge_details',
+            'method' => 'get',
         ],
         'response' => [
             'content' => [
@@ -8411,9 +8706,9 @@ return [
     ],
 
     'testGetBadgeDetailsForRTBEnabledCustomRedis' => [
-        'request' => [
-            'url'     => '/badge_details',
-            'method'  => 'get',
+        'request'  => [
+            'url'    => '/badge_details',
+            'method' => 'get',
         ],
         'response' => [
             'content' => [
@@ -8422,9 +8717,9 @@ return [
     ],
 
     'testGetCheckoutPreferencesWithRTB' => [
-        'request' => [
-            'url'     => '/preferences',
-            'method'  => 'get',
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
         ],
         'response' => [
             'content' => [
@@ -8434,9 +8729,9 @@ return [
     ],
 
     'testPreferencesRTBWithOptoutStatus' => [
-        'request' => [
-            'url'     => '/preferences',
-            'method'  => 'get',
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
         ],
         'response' => [
             'content' => [
@@ -8446,9 +8741,9 @@ return [
     ],
 
     'testPreferencesRTBWithIneligibleStatus' => [
-        'request' => [
-            'url'     => '/preferences',
-            'method'  => 'get',
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
         ],
         'response' => [
             'content' => [
@@ -8458,9 +8753,9 @@ return [
     ],
 
     'testGetCheckoutPreferencesWithoutRTB' => [
-        'request' => [
-            'url'     => '/preferences',
-            'method'  => 'get',
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
         ],
         'response' => [
             'content' => [
@@ -8470,23 +8765,23 @@ return [
     ],
 
     'testGetCheckoutPersonalisationWithNullPreferences' => [
-        'request' => [
+        'request'  => [
             'url'     => '/personalisation',
             'method'  => 'get',
             'content' => [
-                'order_id'      => 'null',
+                'order_id' => 'null',
             ],
         ],
         'response' => [
             'content' => [
-              ],
+            ],
         ],
     ],
 
     'testHoldFundsWithUpdateObserverData' => [
-        'request' => [
-            'url' => '/merchants/10000000000000/action',
-            'method' => 'PUT',
+        'request'  => [
+            'url'     => '/merchants/10000000000000/action',
+            'method'  => 'PUT',
             'content' => [
                 'action' => 'hold_funds',
             ]
@@ -8496,18 +8791,17 @@ return [
                 'workflow' => [
                     'name' => "Hold Funds",
                 ],
-             ],
+            ],
         ],
     ],
 
-
     'testGetCheckoutPersonalisationWithNullPreferencesFalse' => [
-        'request' => [
+        'request'  => [
             'url'     => '/personalisation',
             'method'  => 'get',
             'content' => [
-                'order_id'      => 'null',
-                'contact'     => 1234123412,
+                'order_id' => 'null',
+                'contact'  => 1234123412,
             ],
         ],
         'response' => [
@@ -8541,9 +8835,9 @@ return [
     ],
 
     'testReleaseFundsWithUpdateObserverData' => [
-        'request' => [
-            'url' => '/merchants/10000000000000/action',
-            'method' => 'PUT',
+        'request'  => [
+            'url'     => '/merchants/10000000000000/action',
+            'method'  => 'PUT',
             'content' => [
                 'action' => 'release_funds',
             ]
@@ -8558,9 +8852,9 @@ return [
     ],
 
     'testGetCheckoutPreferencesWithCovidReliefBothEnable' => [
-        'request' => [
-            'url'     => '/preferences',
-            'method'  => 'get',
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
         ],
         'response' => [
             'content' => [
@@ -8570,9 +8864,9 @@ return [
     ],
 
     'testGetCheckoutPreferencesWithoutCovidReliefBothDisable' => [
-        'request' => [
-            'url'     => '/preferences',
-            'method'  => 'get',
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
         ],
         'response' => [
             'content' => [
@@ -8582,9 +8876,9 @@ return [
     ],
 
     'testGetCheckoutPreferencesWithoutCovidReliefRazorXOff' => [
-        'request' => [
-            'url'     => '/preferences',
-            'method'  => 'get',
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
         ],
         'response' => [
             'content' => [
@@ -8594,9 +8888,9 @@ return [
     ],
 
     'testGetCheckoutPreferencesWithoutCovidReliefFeatureOff' => [
-        'request' => [
-            'url'     => '/preferences',
-            'method'  => 'get',
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
         ],
         'response' => [
             'content' => [
@@ -8605,289 +8899,289 @@ return [
         ],
     ],
 
-    'testMerchantSupportOptionDedupeMerchant'  =>  [
+    'testMerchantSupportOptionDedupeMerchant' => [
 
-        'request'       => [
-            'url'      => '/merchants/support/option/flags',
-            'method'   => \Requests::GET
-        ],
-
-        'response'       => [
-            'content' => [
-                "show_chat"                 =>  false,
-                "show_create_ticket_popup"  =>  false,
-                "message_body"              => "",
-                "cta_list"                  => [],
-            ],
-        ],
-    ],
-
-    'testMerchantSupportOptionOldFlow'    =>  [
-
-        'request'       => [
-            'url'      => '/merchants/support/option/flags',
-            'method'   => \Requests::GET
-        ],
-
-        'response'       => [
-            'content' => [
-                "show_create_ticket_popup"  =>  false,
-            ],
-        ],
-    ],
-
-    'testGetRiskData'  =>  [
         'request' => [
-            'url' => '/merchants/10000000000000/risk/data',
-            'method' => 'GET',
+            'url'    => '/merchants/support/option/flags',
+            'method' => \Requests::GET
         ],
+
         'response' => [
             'content' => [
-                'transaction_dedupe_merchant_risk_score' => NULL,
-                'global_merchant_risk_score' => NULL,
-                'merchant_vintage' => '6 month+',
-                'first_transaction_date_attempted' => '2020-12-16',
-                'last_transaction_date_attempted' => '2021-06-16',
-                'number_of_transactions_captured' => [0 => ['lifetime' => 18131,], 1 => ['1_month' => 3238,],],
-                'total_GMV_captured' => [0 => ['lifetime' => '₹7,894,323',], 1 => ['1_month' => '₹1,560,118',],],
-                'success_rate_(%)' => [0 => ['lifetime' => '21.04',], 1 => ['1_month' => '20.26',],],
+                "show_chat"                => false,
+                "show_create_ticket_popup" => false,
+                "message_body"             => "",
+                "cta_list"                 => [],
+            ],
+        ],
+    ],
+
+    'testMerchantSupportOptionOldFlow' => [
+
+        'request' => [
+            'url'    => '/merchants/support/option/flags',
+            'method' => \Requests::GET
+        ],
+
+        'response' => [
+            'content' => [
+                "show_create_ticket_popup" => false,
+            ],
+        ],
+    ],
+
+    'testGetRiskData' => [
+        'request'        => [
+            'url'    => '/merchants/10000000000000/risk/data',
+            'method' => 'GET',
+        ],
+        'response'       => [
+            'content' => [
+                'transaction_dedupe_merchant_risk_score'         => null,
+                'global_merchant_risk_score'                     => null,
+                'merchant_vintage'                               => '6 month+',
+                'first_transaction_date_attempted'               => '2020-12-16',
+                'last_transaction_date_attempted'                => '2021-06-16',
+                'number_of_transactions_captured'                => [0 => ['lifetime' => 18131,], 1 => ['1_month' => 3238,],],
+                'total_GMV_captured'                             => [0 => ['lifetime' => '₹7,894,323',], 1 => ['1_month' => '₹1,560,118',],],
+                'success_rate_(%)'                               => [0 => ['lifetime' => '21.04',], 1 => ['1_month' => '20.26',],],
                 'domestic_merchant_chargeback_to_sale_ratio_(%)' => [0 => ['lifetime' => 0.04,], 1 => ['3_months' => '0.07',],],
-                'domestic_merchant_fraud_to_sale_ratio_(%)' => [0 => ['lifetime' => '0.04',], 1 => ['3_months' => '0.03',],],
-                'total_dispute_count' => [0 => ['lifetime' => 4,], 1 => ['1_month' => 2,],],
-                'international_details' => [
-                    'number_of_transactions_captured' => [0 => ['lifetime' => 12,], 1 => ['1_month' => 4,],],
-                    'total_GMV_captured' => [0 => ['lifetime' => '₹7,550',], 1 => ['1_month' => '₹2,295',],],
+                'domestic_merchant_fraud_to_sale_ratio_(%)'      => [0 => ['lifetime' => '0.04',], 1 => ['3_months' => '0.03',],],
+                'total_dispute_count'                            => [0 => ['lifetime' => 4,], 1 => ['1_month' => 2,],],
+                'international_details'                          => [
+                    'number_of_transactions_captured'       => [0 => ['lifetime' => 12,], 1 => ['1_month' => 4,],],
+                    'total_GMV_captured'                    => [0 => ['lifetime' => '₹7,550',], 1 => ['1_month' => '₹2,295',],],
                     'international_order_approval_rate_(%)' => '37.14',
-                    'success_rate_(%)' => [0 => ['lifetime' => '5.17',], 1 => ['1_month' => '5.97',],],
-                    'merchant_CTS_(%)' => [0 => ['lifetime' => NULL,], 1 => ['3_months' => NULL,],],
-                    'merchant_FTS_(%)' => [0 => ['lifetime' => '4.65',], 1 => ['3_months' => '4.65',],],
+                    'success_rate_(%)'                      => [0 => ['lifetime' => '5.17',], 1 => ['1_month' => '5.97',],],
+                    'merchant_CTS_(%)'                      => [0 => ['lifetime' => null,], 1 => ['3_months' => null,],],
+                    'merchant_FTS_(%)'                      => [0 => ['lifetime' => '4.65',], 1 => ['3_months' => '4.65',],],
                 ],
-                'risk_alerts' => [
-                    'PL_PP_dedupe' => 0,
-                    'customer_flagging' => 0,
-                    'blacklisted_ip_alerts' => NULL,
+                'risk_alerts'                                    => [
+                    'PL_PP_dedupe'          => 0,
+                    'customer_flagging'     => 0,
+                    'blacklisted_ip_alerts' => null,
                 ],
-                'risk_workflow_count' => [
-                    'FOH' => 0,
-                    'suspend' => 0,
+                'risk_workflow_count'                            => [
+                    'FOH'          => 0,
+                    'suspend'      => 0,
                     'disable_live' => 0,
                 ],
             ],
         ],
         'druid_response' => [
-            'Blacklist_IP_blacklist_ip_entities' => NULL,
-            'Blacklist_IP_merchant_id' => NULL,
-            'Customer_Flagging_customer_flagged' => 0,
-            'Customer_Flagging_merchant_id' => 'GDcB2RalYmdJNz',
-            'Dispute_1month_merchant_id' => 'GDcB2RalYmdJNz',
-            'Dispute_1month_past_1_month_disputes' => 2,
-            'Dispute_ltd_lifetime_disputes' => 4,
-            'Dispute_ltd_merchant_id' => 'GDcB2RalYmdJNz',
-            'Domestic_FTS_lifetime_domestic_FTS' => '0.04',
-            'Domestic_FTS_merchant_id' => 'GDcB2RalYmdJNz',
-            'Domestic_FTS_past_3_month_domestic_FTS' => '0.03',
-            'Domestic_FTS_past_3_month_domestic_adjusted_FTS' => '0.02',
-            'Domestic_cts_3months_last_3_months_cts' => '0.07',
-            'Domestic_cts_3months_merchant_id' => 'GDcB2RalYmdJNz',
-            'Domestic_cts_overall_lifetime_cts' => 0.04,
-            'Domestic_cts_overall_merchant_id' => 'GDcB2RalYmdJNz',
-            'Global_Merchant_Risk_Scoring_Global_Merchant_Risk_Score' => NULL,
-            'Global_Merchant_Risk_Scoring_merchant_id' => NULL,
-            'International_FTS_lifetime_international_FTS' => '4.65',
-            'International_FTS_merchant_id' => 'GDcB2RalYmdJNz',
-            'International_FTS_past_3_month_international_FTS' => '4.65',
-            'International_FTS_past_3_month_international_adjusted_FTS' => '4.65',
-            'International_OAR_Order_Approval_rate' => '37.14',
-            'International_OAR_merchant_id' => 'GDcB2RalYmdJNz',
-            'International_Payment_Details_lifetime_captured_gmv' => '7549.830000',
-            'International_Payment_Details_lifetime_captured_payments' => 12,
-            'International_Payment_Details_lifetime_success_rate' => '5.17',
-            'International_Payment_Details_merchant_id' => 'GDcB2RalYmdJNz',
-            'International_Payment_Details_past_one_month_captured_gmv' => '2295.000000',
-            'International_Payment_Details_past_one_month_captured_payments' => 4,
-            'International_Payment_Details_past_one_month_success_rate' => '5.97',
-            'International_cts_3months_last_3_months_cts' => NULL,
-            'International_cts_3months_merchant_id' => 'GDcB2RalYmdJNz',
-            'International_cts_overall_lifetime_cts' => NULL,
-            'International_cts_overall_merchant_id' => 'GDcB2RalYmdJNz',
-            'PL_PP_Dedupe_merchant_id' => 'GDcB2RalYmdJNz',
-            'PL_PP_Dedupe_pl_pp_deduped' => 0,
-            'Payment_Details_first_transaction_date' => '2020-12-16',
-            'Payment_Details_last_transaction_date' => '2021-06-16',
-            'Payment_Details_lifetime_captured_gmv' => '7894322.640000',
-            'Payment_Details_lifetime_captured_payments' => 18131,
-            'Payment_Details_lifetime_success_rate' => '21.04',
-            'Payment_Details_merchant_id' => 'GDcB2RalYmdJNz',
-            'Payment_Details_past_one_month_captured_gmv' => '1560118.000000',
-            'Payment_Details_past_one_month_captured_payments' => 3238,
-            'Payment_Details_past_one_month_success_rate' => '20.26',
-            'Transacting_Dedupe_Merchant_Risk_Scoring_Transacting_Dedupe_Merchant_Risk_Score' => NULL,
-            'Transacting_Dedupe_Merchant_Risk_Scoring_merchant_id' => NULL,
-            '__time' => '2020-12-16T00:00:00.000Z',
-            'merchant_vintage_merchant_id' => 'GDcB2RalYmdJNz',
-            'merchant_vintage_merchant_vintage' => '6 month+',
-            'merchants_created_at' => 1608100654,
-            'merchants_id' => 'GDcB2RalYmdJNz',
-            'workflows_data_Disable_live_workflows' => 0,
-            'workflows_data_FOH_workflows' => 0,
-            'workflows_data_Suspend_workflows' => 0,
-            'workflows_data_merchant_id' => 'GDcB2RalYmdJNz',
+            'Blacklist_IP_blacklist_ip_entities'                                              => null,
+            'Blacklist_IP_merchant_id'                                                        => null,
+            'Customer_Flagging_customer_flagged'                                              => 0,
+            'Customer_Flagging_merchant_id'                                                   => 'GDcB2RalYmdJNz',
+            'Dispute_1month_merchant_id'                                                      => 'GDcB2RalYmdJNz',
+            'Dispute_1month_past_1_month_disputes'                                            => 2,
+            'Dispute_ltd_lifetime_disputes'                                                   => 4,
+            'Dispute_ltd_merchant_id'                                                         => 'GDcB2RalYmdJNz',
+            'Domestic_FTS_lifetime_domestic_FTS'                                              => '0.04',
+            'Domestic_FTS_merchant_id'                                                        => 'GDcB2RalYmdJNz',
+            'Domestic_FTS_past_3_month_domestic_FTS'                                          => '0.03',
+            'Domestic_FTS_past_3_month_domestic_adjusted_FTS'                                 => '0.02',
+            'Domestic_cts_3months_last_3_months_cts'                                          => '0.07',
+            'Domestic_cts_3months_merchant_id'                                                => 'GDcB2RalYmdJNz',
+            'Domestic_cts_overall_lifetime_cts'                                               => 0.04,
+            'Domestic_cts_overall_merchant_id'                                                => 'GDcB2RalYmdJNz',
+            'Global_Merchant_Risk_Scoring_Global_Merchant_Risk_Score'                         => null,
+            'Global_Merchant_Risk_Scoring_merchant_id'                                        => null,
+            'International_FTS_lifetime_international_FTS'                                    => '4.65',
+            'International_FTS_merchant_id'                                                   => 'GDcB2RalYmdJNz',
+            'International_FTS_past_3_month_international_FTS'                                => '4.65',
+            'International_FTS_past_3_month_international_adjusted_FTS'                       => '4.65',
+            'International_OAR_Order_Approval_rate'                                           => '37.14',
+            'International_OAR_merchant_id'                                                   => 'GDcB2RalYmdJNz',
+            'International_Payment_Details_lifetime_captured_gmv'                             => '7549.830000',
+            'International_Payment_Details_lifetime_captured_payments'                        => 12,
+            'International_Payment_Details_lifetime_success_rate'                             => '5.17',
+            'International_Payment_Details_merchant_id'                                       => 'GDcB2RalYmdJNz',
+            'International_Payment_Details_past_one_month_captured_gmv'                       => '2295.000000',
+            'International_Payment_Details_past_one_month_captured_payments'                  => 4,
+            'International_Payment_Details_past_one_month_success_rate'                       => '5.97',
+            'International_cts_3months_last_3_months_cts'                                     => null,
+            'International_cts_3months_merchant_id'                                           => 'GDcB2RalYmdJNz',
+            'International_cts_overall_lifetime_cts'                                          => null,
+            'International_cts_overall_merchant_id'                                           => 'GDcB2RalYmdJNz',
+            'PL_PP_Dedupe_merchant_id'                                                        => 'GDcB2RalYmdJNz',
+            'PL_PP_Dedupe_pl_pp_deduped'                                                      => 0,
+            'Payment_Details_first_transaction_date'                                          => '2020-12-16',
+            'Payment_Details_last_transaction_date'                                           => '2021-06-16',
+            'Payment_Details_lifetime_captured_gmv'                                           => '7894322.640000',
+            'Payment_Details_lifetime_captured_payments'                                      => 18131,
+            'Payment_Details_lifetime_success_rate'                                           => '21.04',
+            'Payment_Details_merchant_id'                                                     => 'GDcB2RalYmdJNz',
+            'Payment_Details_past_one_month_captured_gmv'                                     => '1560118.000000',
+            'Payment_Details_past_one_month_captured_payments'                                => 3238,
+            'Payment_Details_past_one_month_success_rate'                                     => '20.26',
+            'Transacting_Dedupe_Merchant_Risk_Scoring_Transacting_Dedupe_Merchant_Risk_Score' => null,
+            'Transacting_Dedupe_Merchant_Risk_Scoring_merchant_id'                            => null,
+            '__time'                                                                          => '2020-12-16T00:00:00.000Z',
+            'merchant_vintage_merchant_id'                                                    => 'GDcB2RalYmdJNz',
+            'merchant_vintage_merchant_vintage'                                               => '6 month+',
+            'merchants_created_at'                                                            => 1608100654,
+            'merchants_id'                                                                    => 'GDcB2RalYmdJNz',
+            'workflows_data_Disable_live_workflows'                                           => 0,
+            'workflows_data_FOH_workflows'                                                    => 0,
+            'workflows_data_Suspend_workflows'                                                => 0,
+            'workflows_data_merchant_id'                                                      => 'GDcB2RalYmdJNz',
         ],
     ],
 
-    'testGetRiskDataNotFoundCase'  =>  [
-        'request' => [
-            'url' => '/merchants/10000000000000/risk/data',
+    'testGetRiskDataNotFoundCase' => [
+        'request'  => [
+            'url'    => '/merchants/10000000000000/risk/data',
             'method' => 'GET',
         ],
         'response' => [
-            'content' => [],
-            'status_code'  => 404,
+            'content'     => [],
+            'status_code' => 404,
         ],
     ],
 
-    'testGetRiskDataDruidFailedCase'  =>  [
-        'request' => [
-            'url' => '/merchants/10000000000000/risk/data',
+    'testGetRiskDataDruidFailedCase' => [
+        'request'  => [
+            'url'    => '/merchants/10000000000000/risk/data',
             'method' => 'GET',
         ],
         'response' => [
-            'content' => [
+            'content'     => [
                 'error' => 'dummy druid error'
             ],
-            'status_code'  => 503,
+            'status_code' => 503,
         ],
     ],
 
-    'testGetRiskDataColumnNotPresent'  =>  [
-        'request' => [
-            'url' => '/merchants/10000000000000/risk/data',
+    'testGetRiskDataColumnNotPresent' => [
+        'request'        => [
+            'url'    => '/merchants/10000000000000/risk/data',
             'method' => 'GET',
         ],
-        'response' => [
+        'response'       => [
             'content' => [
-                'transaction_dedupe_merchant_risk_score' => NULL,
-                'global_merchant_risk_score' => NULL,
-                'merchant_vintage' => '6 month+',
-                'first_transaction_date_attempted' => '2020-12-16',
-                'last_transaction_date_attempted' => '2021-06-16',
-                'number_of_transactions_captured' => [0 => ['lifetime' => 18131,], 1 => ['1_month' => 3238,],],
-                'total_GMV_captured' => [0 => ['lifetime' => '₹7,894,323',], 1 => ['1_month' => '₹1,560,118',],],
-                'success_rate_(%)' => [0 => ['lifetime' => '21.04',], 1 => ['1_month' => '20.26',],],
+                'transaction_dedupe_merchant_risk_score'         => null,
+                'global_merchant_risk_score'                     => null,
+                'merchant_vintage'                               => '6 month+',
+                'first_transaction_date_attempted'               => '2020-12-16',
+                'last_transaction_date_attempted'                => '2021-06-16',
+                'number_of_transactions_captured'                => [0 => ['lifetime' => 18131,], 1 => ['1_month' => 3238,],],
+                'total_GMV_captured'                             => [0 => ['lifetime' => '₹7,894,323',], 1 => ['1_month' => '₹1,560,118',],],
+                'success_rate_(%)'                               => [0 => ['lifetime' => '21.04',], 1 => ['1_month' => '20.26',],],
                 'domestic_merchant_chargeback_to_sale_ratio_(%)' => [0 => ['lifetime' => 0.04,], 1 => ['3_months' => '0.07',],],
-                'domestic_merchant_fraud_to_sale_ratio_(%)' => [0 => ['lifetime' => 'Data not present in druid',], 1 => ['3_months' => '0.03',],],
-                'total_dispute_count' => [0 => ['lifetime' => 4,], 1 => ['1_month' => 2,],],
-                'international_details' => [
-                    'number_of_transactions_captured' => [0 => ['lifetime' => 12,], 1 => ['1_month' => 4,],],
-                    'total_GMV_captured' => [0 => ['lifetime' => '₹7,550',], 1 => ['1_month' => '₹2,295',],],
+                'domestic_merchant_fraud_to_sale_ratio_(%)'      => [0 => ['lifetime' => 'Data not present in druid',], 1 => ['3_months' => '0.03',],],
+                'total_dispute_count'                            => [0 => ['lifetime' => 4,], 1 => ['1_month' => 2,],],
+                'international_details'                          => [
+                    'number_of_transactions_captured'       => [0 => ['lifetime' => 12,], 1 => ['1_month' => 4,],],
+                    'total_GMV_captured'                    => [0 => ['lifetime' => '₹7,550',], 1 => ['1_month' => '₹2,295',],],
                     'international_order_approval_rate_(%)' => '37.14',
-                    'success_rate_(%)' => [0 => ['lifetime' => '5.17',], 1 => ['1_month' => '5.97',],],
-                    'merchant_CTS_(%)' => [0 => ['lifetime' => NULL,], 1 => ['3_months' => NULL,],],
-                    'merchant_FTS_(%)' => [0 => ['lifetime' => '4.65',], 1 => ['3_months' => '4.65',],],
+                    'success_rate_(%)'                      => [0 => ['lifetime' => '5.17',], 1 => ['1_month' => '5.97',],],
+                    'merchant_CTS_(%)'                      => [0 => ['lifetime' => null,], 1 => ['3_months' => null,],],
+                    'merchant_FTS_(%)'                      => [0 => ['lifetime' => '4.65',], 1 => ['3_months' => '4.65',],],
                 ],
-                'risk_alerts' => [
-                    'PL_PP_dedupe' => 0,
-                    'customer_flagging' => 0,
-                    'blacklisted_ip_alerts' => NULL,
+                'risk_alerts'                                    => [
+                    'PL_PP_dedupe'          => 0,
+                    'customer_flagging'     => 0,
+                    'blacklisted_ip_alerts' => null,
                 ],
-                'risk_workflow_count' => [
-                    'FOH' => 0,
-                    'suspend' => 0,
+                'risk_workflow_count'                            => [
+                    'FOH'          => 0,
+                    'suspend'      => 0,
                     'disable_live' => 0,
                 ],
             ],
         ],
         'druid_response' => [
-            'Blacklist_IP_blacklist_ip_entities' => NULL,
-            'Blacklist_IP_merchant_id' => NULL,
-            'Customer_Flagging_customer_flagged' => 0,
-            'Customer_Flagging_merchant_id' => 'GDcB2RalYmdJNz',
-            'Dispute_1month_merchant_id' => 'GDcB2RalYmdJNz',
-            'Dispute_1month_past_1_month_disputes' => 2,
-            'Dispute_ltd_lifetime_disputes' => 4,
-            'Dispute_ltd_merchant_id' => 'GDcB2RalYmdJNz',
-            'Domestic_FTS_merchant_id' => 'GDcB2RalYmdJNz',
-            'Domestic_FTS_past_3_month_domestic_FTS' => '0.03',
-            'Domestic_FTS_past_3_month_domestic_adjusted_FTS' => '0.02',
-            'Domestic_cts_3months_last_3_months_cts' => '0.07',
-            'Domestic_cts_3months_merchant_id' => 'GDcB2RalYmdJNz',
-            'Domestic_cts_overall_lifetime_cts' => 0.04,
-            'Domestic_cts_overall_merchant_id' => 'GDcB2RalYmdJNz',
-            'Global_Merchant_Risk_Scoring_Global_Merchant_Risk_Score' => NULL,
-            'Global_Merchant_Risk_Scoring_merchant_id' => NULL,
-            'International_FTS_lifetime_international_FTS' => '4.65',
-            'International_FTS_merchant_id' => 'GDcB2RalYmdJNz',
-            'International_FTS_past_3_month_international_FTS' => '4.65',
-            'International_FTS_past_3_month_international_adjusted_FTS' => '4.65',
-            'International_OAR_Order_Approval_rate' => '37.14',
-            'International_OAR_merchant_id' => 'GDcB2RalYmdJNz',
-            'International_Payment_Details_lifetime_captured_gmv' => '7549.830000',
-            'International_Payment_Details_lifetime_captured_payments' => 12,
-            'International_Payment_Details_lifetime_success_rate' => '5.17',
-            'International_Payment_Details_merchant_id' => 'GDcB2RalYmdJNz',
-            'International_Payment_Details_past_one_month_captured_gmv' => '2295.000000',
-            'International_Payment_Details_past_one_month_captured_payments' => 4,
-            'International_Payment_Details_past_one_month_success_rate' => '5.97',
-            'International_cts_3months_last_3_months_cts' => NULL,
-            'International_cts_3months_merchant_id' => 'GDcB2RalYmdJNz',
-            'International_cts_overall_lifetime_cts' => NULL,
-            'International_cts_overall_merchant_id' => 'GDcB2RalYmdJNz',
-            'PL_PP_Dedupe_merchant_id' => 'GDcB2RalYmdJNz',
-            'PL_PP_Dedupe_pl_pp_deduped' => 0,
-            'Payment_Details_first_transaction_date' => '2020-12-16',
-            'Payment_Details_last_transaction_date' => '2021-06-16',
-            'Payment_Details_lifetime_captured_gmv' => '7894322.640000',
-            'Payment_Details_lifetime_captured_payments' => 18131,
-            'Payment_Details_lifetime_success_rate' => '21.04',
-            'Payment_Details_merchant_id' => 'GDcB2RalYmdJNz',
-            'Payment_Details_past_one_month_captured_gmv' => '1560118.000000',
-            'Payment_Details_past_one_month_captured_payments' => 3238,
-            'Payment_Details_past_one_month_success_rate' => '20.26',
-            'Transacting_Dedupe_Merchant_Risk_Scoring_Transacting_Dedupe_Merchant_Risk_Score' => NULL,
-            'Transacting_Dedupe_Merchant_Risk_Scoring_merchant_id' => NULL,
-            '__time' => '2020-12-16T00:00:00.000Z',
-            'merchant_vintage_merchant_id' => 'GDcB2RalYmdJNz',
-            'merchant_vintage_merchant_vintage' => '6 month+',
-            'merchants_created_at' => 1608100654,
-            'merchants_id' => 'GDcB2RalYmdJNz',
-            'workflows_data_Disable_live_workflows' => 0,
-            'workflows_data_FOH_workflows' => 0,
-            'workflows_data_Suspend_workflows' => 0,
-            'workflows_data_merchant_id' => 'GDcB2RalYmdJNz',
+            'Blacklist_IP_blacklist_ip_entities'                                              => null,
+            'Blacklist_IP_merchant_id'                                                        => null,
+            'Customer_Flagging_customer_flagged'                                              => 0,
+            'Customer_Flagging_merchant_id'                                                   => 'GDcB2RalYmdJNz',
+            'Dispute_1month_merchant_id'                                                      => 'GDcB2RalYmdJNz',
+            'Dispute_1month_past_1_month_disputes'                                            => 2,
+            'Dispute_ltd_lifetime_disputes'                                                   => 4,
+            'Dispute_ltd_merchant_id'                                                         => 'GDcB2RalYmdJNz',
+            'Domestic_FTS_merchant_id'                                                        => 'GDcB2RalYmdJNz',
+            'Domestic_FTS_past_3_month_domestic_FTS'                                          => '0.03',
+            'Domestic_FTS_past_3_month_domestic_adjusted_FTS'                                 => '0.02',
+            'Domestic_cts_3months_last_3_months_cts'                                          => '0.07',
+            'Domestic_cts_3months_merchant_id'                                                => 'GDcB2RalYmdJNz',
+            'Domestic_cts_overall_lifetime_cts'                                               => 0.04,
+            'Domestic_cts_overall_merchant_id'                                                => 'GDcB2RalYmdJNz',
+            'Global_Merchant_Risk_Scoring_Global_Merchant_Risk_Score'                         => null,
+            'Global_Merchant_Risk_Scoring_merchant_id'                                        => null,
+            'International_FTS_lifetime_international_FTS'                                    => '4.65',
+            'International_FTS_merchant_id'                                                   => 'GDcB2RalYmdJNz',
+            'International_FTS_past_3_month_international_FTS'                                => '4.65',
+            'International_FTS_past_3_month_international_adjusted_FTS'                       => '4.65',
+            'International_OAR_Order_Approval_rate'                                           => '37.14',
+            'International_OAR_merchant_id'                                                   => 'GDcB2RalYmdJNz',
+            'International_Payment_Details_lifetime_captured_gmv'                             => '7549.830000',
+            'International_Payment_Details_lifetime_captured_payments'                        => 12,
+            'International_Payment_Details_lifetime_success_rate'                             => '5.17',
+            'International_Payment_Details_merchant_id'                                       => 'GDcB2RalYmdJNz',
+            'International_Payment_Details_past_one_month_captured_gmv'                       => '2295.000000',
+            'International_Payment_Details_past_one_month_captured_payments'                  => 4,
+            'International_Payment_Details_past_one_month_success_rate'                       => '5.97',
+            'International_cts_3months_last_3_months_cts'                                     => null,
+            'International_cts_3months_merchant_id'                                           => 'GDcB2RalYmdJNz',
+            'International_cts_overall_lifetime_cts'                                          => null,
+            'International_cts_overall_merchant_id'                                           => 'GDcB2RalYmdJNz',
+            'PL_PP_Dedupe_merchant_id'                                                        => 'GDcB2RalYmdJNz',
+            'PL_PP_Dedupe_pl_pp_deduped'                                                      => 0,
+            'Payment_Details_first_transaction_date'                                          => '2020-12-16',
+            'Payment_Details_last_transaction_date'                                           => '2021-06-16',
+            'Payment_Details_lifetime_captured_gmv'                                           => '7894322.640000',
+            'Payment_Details_lifetime_captured_payments'                                      => 18131,
+            'Payment_Details_lifetime_success_rate'                                           => '21.04',
+            'Payment_Details_merchant_id'                                                     => 'GDcB2RalYmdJNz',
+            'Payment_Details_past_one_month_captured_gmv'                                     => '1560118.000000',
+            'Payment_Details_past_one_month_captured_payments'                                => 3238,
+            'Payment_Details_past_one_month_success_rate'                                     => '20.26',
+            'Transacting_Dedupe_Merchant_Risk_Scoring_Transacting_Dedupe_Merchant_Risk_Score' => null,
+            'Transacting_Dedupe_Merchant_Risk_Scoring_merchant_id'                            => null,
+            '__time'                                                                          => '2020-12-16T00:00:00.000Z',
+            'merchant_vintage_merchant_id'                                                    => 'GDcB2RalYmdJNz',
+            'merchant_vintage_merchant_vintage'                                               => '6 month+',
+            'merchants_created_at'                                                            => 1608100654,
+            'merchants_id'                                                                    => 'GDcB2RalYmdJNz',
+            'workflows_data_Disable_live_workflows'                                           => 0,
+            'workflows_data_FOH_workflows'                                                    => 0,
+            'workflows_data_Suspend_workflows'                                                => 0,
+            'workflows_data_merchant_id'                                                      => 'GDcB2RalYmdJNz',
         ],
     ],
 
-    'testFireHubspotEventFromDashboard'  =>  [
-        'request'       => [
+    'testFireHubspotEventFromDashboard' => [
+        'request' => [
             'url'     => '/merchants/fire_hubspot_event',
             'method'  => \Requests::POST,
             'content' => [
-                "merchant_email"        =>  'test@razorpay.com',
-                "ca_neostone_eligible"  =>  'TRUE',
+                "merchant_email"       => 'test@razorpay.com',
+                "ca_neostone_eligible" => 'TRUE',
             ],
         ],
 
-        'response'    => [
+        'response' => [
             'content' => [
                 'success' => true
             ],
         ],
     ],
 
-    'testFireHubspotEventFromDashboardForWrongEmailId'  =>  [
-        'request'       => [
+    'testFireHubspotEventFromDashboardForWrongEmailId' => [
+        'request' => [
             'url'     => '/merchants/fire_hubspot_event',
             'method'  => \Requests::POST,
-            'server' => [
+            'server'  => [
                 'HTTP_X-Request-Origin' => config('applications.banking_service_url')
             ],
             'content' => [
-                "merchant_email"        =>  'testing@abc.com',
-                "ca_neostone_eligible"  =>  'TRUE',
+                "merchant_email"       => 'testing@abc.com',
+                "ca_neostone_eligible" => 'TRUE',
             ],
         ],
 
-        'response'    => [
+        'response' => [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
@@ -8899,16 +9193,16 @@ return [
     ],
 
     'testNeostoneSendFlagToSalesforce' => [
-        'request'       => [
+        'request' => [
             'url'     => '/merchants/lead_to_salesforce',
             'method'  => \Requests::POST,
             'content' => [
-                'merchant_id' => '10000000000000',
-                'x_onboarding_category'   => 'self_serve'
+                'merchant_id'           => '10000000000000',
+                'x_onboarding_category' => 'self_serve'
             ],
         ],
 
-        'response'    => [
+        'response' => [
             'content' => [
                 'success' => true
             ],
@@ -8916,19 +9210,19 @@ return [
     ],
 
     'testNeostoneSendFlagToSalesforceWrongMid' => [
-        'request'       => [
+        'request' => [
             'url'     => '/merchants/lead_to_salesforce',
             'method'  => \Requests::POST,
-            'server' => [
+            'server'  => [
                 'HTTP_X-Request-Origin' => config('applications.banking_service_url')
             ],
             'content' => [
-                'merchant_id' => '10000000000001',
-                'x_onboarding_category'   => 'self_serve'
+                'merchant_id'           => '10000000000001',
+                'x_onboarding_category' => 'self_serve'
             ],
         ],
 
-        'response'    => [
+        'response' => [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
@@ -8939,32 +9233,32 @@ return [
         ],
     ],
 
-    'testMerchantActionNotificationCronFOH'  =>  [
-        'request'       => [
+    'testMerchantActionNotificationCronFOH' => [
+        'request'  => [
             'url'     => '/merchants/action/notification',
             'method'  => 'POST',
             'content' => [],
             'server'  => [
-                'Content-Type'=>' application/json'
+                'Content-Type' => ' application/json'
             ],
         ],
-        'response'    => [
+        'response' => [
             'content' => [
                 'success' => true
             ],
         ],
     ],
 
-    'testMerchantActionNotificationCronSuspend'  =>  [
-        'request'       => [
+    'testMerchantActionNotificationCronSuspend' => [
+        'request'  => [
             'url'     => '/merchants/action/notification',
             'method'  => 'POST',
             'content' => [],
             'server'  => [
-                'Content-Type'=>' application/json'
+                'Content-Type' => ' application/json'
             ],
         ],
-        'response'    => [
+        'response' => [
             'content' => [
                 'success' => true
             ],
@@ -9064,7 +9358,7 @@ return [
     ],
 
     'testBulkDisableLiveWithoutPermissionFail' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'PUT',
             'url'     => '/merchants/bulk',
             'content' => [
@@ -9082,11 +9376,10 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
+            'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
         ],
     ],
-
 
     'testEditBulkMerchantActionEnableLive' => [
         'request'  => [
@@ -9181,7 +9474,7 @@ return [
     ],
 
     'testBulkEnableLiveWithoutPermissionFail' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'PUT',
             'url'     => '/merchants/bulk',
             'content' => [
@@ -9199,15 +9492,15 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
+            'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
         ],
     ],
 
     'testPreferencesToCheckDisabledSbibuddyWallet' => [
         'request'  => [
-            'url'    => '/preferences',
-            'method' => 'get',
+            'url'     => '/preferences',
+            'method'  => 'get',
             'content' => [
                 'currency' => 'INR'
             ]
@@ -9218,25 +9511,25 @@ return [
         ],
     ],
 
-    'testCheck2FAException'    =>[
-        'request'       =>[
-            'url'       => '/account/config/email',
-            'method'    => 'POST',
-            'server'   =>[
-                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+    'testCheck2FAException' => [
+        'request'   => [
+            'url'     => '/account/config/email',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '20000000000000',
                 'HTTP_X-Dashboard'            => 'true',
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
-            'content'   =>[
-                'transaction_report_email' =>[
+            'content' => [
+                'transaction_report_email' => [
                     'test@email.com'
                 ]
             ],
         ],
-        'response'  =>[
-            'content' =>[
-                'error'  => [
-                    'code' =>  ErrorCode::BAD_REQUEST_ERROR,
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
                 ],
             ],
@@ -9248,53 +9541,53 @@ return [
         ],
     ],
 
-    'testCheck2FACorrectOTP'   =>[
-        'request'       =>[
-            'url'       => '/account/config/email',
-            'method'    => 'POST',
-            'server'   =>[
-                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+    'testCheck2FACorrectOTP' => [
+        'request'  => [
+            'url'     => '/account/config/email',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '20000000000000',
                 'HTTP_X-Dashboard'            => 'true',
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
-            'content'   =>[
-                'transaction_report_email' =>[
+            'content' => [
+                'transaction_report_email' => [
                     'test@email.com',
                 ],
-                'otp'          =>'0007',
-                'token'        =>'HXB27fsBvwvyyw'
+                'otp'                      => '0007',
+                'token'                    => 'HXB27fsBvwvyyw'
             ],
         ],
-        'response'  =>[
-            'content' =>[
-                'transaction_report_email' =>[
+        'response' => [
+            'content' => [
+                'transaction_report_email' => [
                     'test@email.com',
                 ],
             ],
         ],
     ],
 
-    'testCheck2FAIncorrectOTP' =>[
-        'request'       =>[
-            'url'       => '/account/config/email',
-            'method'    => 'POST',
-            'server'   =>[
-                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+    'testCheck2FAIncorrectOTP'      => [
+        'request'   => [
+            'url'     => '/account/config/email',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '20000000000000',
                 'HTTP_X-Dashboard'            => 'true',
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
-            'content'   =>[
-                'transaction_report_email' =>[
+            'content' => [
+                'transaction_report_email' => [
                     'test@email.com',
                 ],
-                'otp'          =>'0008',
-                'token'        =>'HXB27fsBvwvyyw'
+                'otp'                      => '0008',
+                'token'                    => 'HXB27fsBvwvyyw'
             ],
         ],
-        'response'  =>[
-            'content' =>[
-                'error'  => [
-                    'code' =>  ErrorCode::BAD_REQUEST_ERROR,
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
                 ],
             ],
@@ -9334,15 +9627,15 @@ return [
     ],
 
     'testToggleFeeBearerFailForCustomer' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/merchant/toggle_fee_bearer',
             'content' => [
                 'fee_bearer' => 'customer',
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The new fee bearer is same as the previous fee bearer'
@@ -9357,15 +9650,15 @@ return [
     ],
 
     'testToggleFeeBearerToDynamicFail' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/merchant/toggle_fee_bearer',
             'content' => [
                 'fee_bearer' => 'dynamic',
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The selected fee bearer is invalid.'
@@ -9472,29 +9765,29 @@ return [
     ],
 
     'testRiskTaggedMerchantUnsuspendRiskTagged' => [
-        'request' => [
+        'request'  => [
             'content' => [
                 'action' => 'unsuspend'
             ],
-            'url' => '/merchants/%s/action',
-            'method' => 'PUT',
+            'url'     => '/merchants/%s/action',
+            'method'  => 'PUT',
         ],
         'response' => [
-            'content' => ['suspended_at' => null],
+            'content'     => ['suspended_at' => null],
             'status_code' => 200
         ]
     ],
 
     'testRiskTaggedMerchantUnsuspendRiskTaggedWithoutPermission' => [
-        'request' => [
+        'request'  => [
             'content' => [
                 'action' => 'unsuspend'
             ],
-            'url' => '/merchants/%s/action',
-            'method' => 'PUT',
+            'url'     => '/merchants/%s/action',
+            'method'  => 'PUT',
         ],
         'response' => [
-            'content' => ['suspended_at' => null],
+            'content'     => ['suspended_at' => null],
             'status_code' => 200
         ]
     ],
@@ -9504,8 +9797,8 @@ return [
             'content' => [
                 'action' => 'release_funds'
             ],
-            'url' => '/merchants/%s/action',
-            'method' => 'PUT',
+            'url'     => '/merchants/%s/action',
+            'method'  => 'PUT',
         ],
         'response' => [
             'content' => [
@@ -9521,8 +9814,8 @@ return [
             'content' => [
                 'action' => 'release_funds'
             ],
-            'url' => '/merchants/%s/action',
-            'method' => 'PUT',
+            'url'     => '/merchants/%s/action',
+            'method'  => 'PUT',
         ],
         'response' => [
             'content' => [
@@ -9534,27 +9827,27 @@ return [
     ],
 
     'testBulkAssignTag' => [
-        'request' => [
+        'request'  => [
             'content' => [
-                'name'   => 'test',
-                'action' => 'insert',
+                'name'         => 'test',
+                'action'       => 'insert',
                 'merchant_ids' => [
                     '10000000000000',
                     '10000000000000',
                     'randInvalid_Id',
                 ],
             ],
-            'url' => '/merchants/tags/bulk',
-            'method' => 'POST',
+            'url'     => '/merchants/tags/bulk',
+            'method'  => 'POST',
         ],
         'response' => [
             'content' => [
-                'total_count' => 3,
-                'failed_count'=> 1,
-                'failed_ids'  => [
+                'total_count'  => 3,
+                'failed_count' => 1,
+                'failed_ids'   => [
                     'randInvalid_Id',
                 ],
-           ],
+            ],
         ],
     ],
 
@@ -9563,12 +9856,12 @@ return [
             'method'  => 'PUT',
             'url'     => '/merchants/bulk',
             'content' => [
-                'merchant_ids' => ['10000000000044'],
-                'action'       => 'live_enable',
+                'merchant_ids'    => ['10000000000044'],
+                'action'          => 'live_enable',
                 'risk_attributes' => [
                     'clear_risk_tags' => '1',
-                    ],
                 ],
+            ],
             'server'  => [
                 'HTTP_X-Dashboard' => 'true',
             ],
@@ -9581,14 +9874,14 @@ return [
     ],
 
     'testEditBulkEnableLiveNewFlowWithoutPermission' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'PUT',
             'url'     => '/merchants/bulk',
             'content' => [
-                'merchant_ids' => ['10000000000044'],
-                'action'       => 'live_enable',
+                'merchant_ids'    => ['10000000000044'],
+                'action'          => 'live_enable',
                 'risk_attributes' => [
-                    'clear_risk_tags' => '1',
+                    'clear_risk_tags'       => '1',
                     'trigger_communication' => '1',
                 ]
             ],
@@ -9606,7 +9899,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
+            'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
         ],
     ],
@@ -9616,12 +9909,12 @@ return [
             'method'  => 'PUT',
             'url'     => '/merchants/bulk',
             'content' => [
-                'merchant_ids' => ['10000000000044'],
-                'action'       => 'suspend',
+                'merchant_ids'    => ['10000000000044'],
+                'action'          => 'suspend',
                 'risk_attributes' => [
-                    'risk_reason' => 'high_cts',
-                    'risk_source' => 'high_fts',
-                    'risk_tag'     => 'risk_review_watchlist',
+                    'risk_reason'           => 'high_cts',
+                    'risk_source'           => 'high_fts',
+                    'risk_tag'              => 'risk_review_watchlist',
                     'trigger_communication' => '1'
                 ]
             ],
@@ -9641,12 +9934,12 @@ return [
             'method'  => 'PUT',
             'url'     => '/merchants/bulk',
             'content' => [
-                'merchant_ids' => ['10000000000044'],
-                'action'       => 'hold_funds',
+                'merchant_ids'    => ['10000000000044'],
+                'action'          => 'hold_funds',
                 'risk_attributes' => [
-                    'risk_reason' => 'high_cts',
-                    'risk_source' => 'high_fts',
-                    'risk_tag'     => 'risk_review_watchlist',
+                    'risk_reason'           => 'high_cts',
+                    'risk_source'           => 'high_fts',
+                    'risk_tag'              => 'risk_review_watchlist',
                     'trigger_communication' => '1'
                 ]
             ],
@@ -9666,8 +9959,8 @@ return [
             'method'  => 'PUT',
             'url'     => '/merchants/bulk',
             'content' => [
-                'merchant_ids' => ['10000000000044'],
-                'action'       => 'release_funds',
+                'merchant_ids'    => ['10000000000044'],
+                'action'          => 'release_funds',
                 'risk_attributes' => [
                     'clear_risk_tags' => '1',
                 ]
@@ -9688,12 +9981,12 @@ return [
             'method'  => 'PUT',
             'url'     => '/merchants/bulk',
             'content' => [
-                'merchant_ids' => ['10000000000044', '10000000000004'],
-                'action'       => 'live_disable',
+                'merchant_ids'    => ['10000000000044', '10000000000004'],
+                'action'          => 'live_disable',
                 'risk_attributes' => [
-                    'risk_reason' => 'high_cts',
-                    'risk_source' => 'high_fts',
-                    'risk_tag'     => 'risk_review_watchlist',
+                    'risk_reason'           => 'high_cts',
+                    'risk_source'           => 'high_fts',
+                    'risk_tag'              => 'risk_review_watchlist',
                     'trigger_communication' => '1'
                 ]
             ],
@@ -9709,7 +10002,7 @@ return [
     ],
 
     'testEditBulkDisableLiveNewFlowWithoutRiskAttributes' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'PUT',
             'url'     => '/merchants/bulk',
             'content' => [
@@ -9720,32 +10013,32 @@ return [
                 'HTTP_X-Dashboard' => 'true',
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Risk Attributes are not provided',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
 
     'testEditBulkDisableLiveNewFlowIncorrectRiskAttributes' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'PUT',
             'url'     => '/merchants/bulk',
             'content' => [
-                'merchant_ids' => ['10000000000044'],
-                'action'       => 'live_disable',
+                'merchant_ids'    => ['10000000000044'],
+                'action'          => 'live_disable',
                 'risk_attributes' => [
-                    'risk_reason' => 'wjjjr',
-                    'risk_source' => 'high_fts',
-                    'risk_tag'     => 'risk_review_watchlist',
+                    'risk_reason'           => 'wjjjr',
+                    'risk_source'           => 'high_fts',
+                    'risk_tag'              => 'risk_review_watchlist',
                     'trigger_communication' => '1',
                 ]
             ],
@@ -9753,17 +10046,17 @@ return [
                 'HTTP_X-Dashboard' => 'true',
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The selected risk reason is invalid.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
@@ -9778,7 +10071,7 @@ return [
             ],
         ],
         'response' => [
-            'content'=> [],
+            'content'     => [],
             'status_code' => 200,
         ]
     ],
@@ -9795,7 +10088,7 @@ return [
                 'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
             ],
         ],
-        'response'  => [
+        'response' => [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
@@ -9807,7 +10100,7 @@ return [
     ],
 
     'testIncreaseTransactionMerchantActivationFailure' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/merchant/transaction_limit',
             'content' => [
@@ -9829,7 +10122,7 @@ return [
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' =>  ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED,
         ],
     ],
 
@@ -9853,31 +10146,30 @@ return [
         ],
     ],
 
-    'testGetCheckoutPreferencesWithFeeConfigNull' =>[
-        'request' => [
+    'testGetCheckoutPreferencesWithFeeConfigNull' => [
+        'request'  => [
             'content' => [
-                'amount'   => 1000,
-                'currency' => 'INR',
+                'amount'                 => 1000,
+                'currency'               => 'INR',
                 'convenience_fee_config' => null
 
-
             ],
             'method'  => 'POST',
             'url'     => '/orders',
         ],
-        'response'  => [
-            'content'     => [
-                'amount' => 1000,
+        'response' => [
+            'content' => [
+                'amount'   => 1000,
                 'currency' => 'INR'
             ],
         ],
     ],
 
-    'testGetCheckoutPreferencesWithFeeConfigEmpty' =>[
-        'request' => [
+    'testGetCheckoutPreferencesWithFeeConfigEmpty' => [
+        'request'  => [
             'content' => [
-                'amount'   => 1000,
-                'currency' => 'INR',
+                'amount'                 => 1000,
+                'currency'               => 'INR',
                 'convenience_fee_config' => [
 
                 ]
@@ -9885,30 +10177,30 @@ return [
             'method'  => 'POST',
             'url'     => '/orders',
         ],
-        'response'  => [
-            'content'     => [
-                'amount' => 1000,
+        'response' => [
+            'content' => [
+                'amount'   => 1000,
                 'currency' => 'INR'
             ],
         ],
     ],
 
-    'testGetCheckoutPreferencesWithFeeConfigEmptyRules' =>[
-        'request' => [
+    'testGetCheckoutPreferencesWithFeeConfigEmptyRules' => [
+        'request'  => [
             'content' => [
-                'amount'   => 1000,
-                'currency' => 'INR',
+                'amount'                 => 1000,
+                'currency'               => 'INR',
                 'convenience_fee_config' => [
-                    'rules'=>[]
+                    'rules' => []
                 ]
             ],
             'method'  => 'POST',
             'url'     => '/orders',
         ],
-        'response'  => [
-            'content'     => [
-                'amount' => 1000,
-                'currency' => 'INR',
+        'response' => [
+            'content' => [
+                'amount'                 => 1000,
+                'currency'               => 'INR',
                 'convenience_fee_config' => [
 
                 ]
@@ -9916,38 +10208,38 @@ return [
         ],
     ],
 
-    'testGetCheckoutPreferencesWithFeeConfigWithPayeeCustomerForUPI' =>[
-        'request' => [
+    'testGetCheckoutPreferencesWithFeeConfigWithPayeeCustomerForUPI' => [
+        'request'  => [
             'content' => [
-                'amount'   => 1000,
-                'currency' => 'INR',
+                'amount'                 => 1000,
+                'currency'               => 'INR',
                 'convenience_fee_config' => [
-                    'rules'=>[
+                    'rules' => [
                         [
                             'method' => 'upi',
-                            'fee' => [
-                                'payee' => 'customer',
+                            'fee'    => [
+                                'payee'      => 'customer',
                                 'flat_value' => 200
                             ]
                         ],
                         [
                             'method' => 'netbanking',
-                            'fee' => [
-                                'payee' => 'customer',
+                            'fee'    => [
+                                'payee'            => 'customer',
                                 'percentage_value' => "20.98"
                             ]
                         ],
                         [
                             'method' => 'wallet',
-                            'fee' => [
-                                'payee' => 'business',
+                            'fee'    => [
+                                'payee'      => 'business',
                                 'flat_value' => 100
                             ]
                         ],
                         [
                             'method' => 'card',
-                            'fee' => [
-                                'payee' => 'business',
+                            'fee'    => [
+                                'payee'            => 'business',
                                 'percentage_value' => "12.00"
                             ]
                         ]
@@ -9957,37 +10249,37 @@ return [
             'method'  => 'POST',
             'url'     => '/orders',
         ],
-        'response'  => [
-            'content'     => [
-                'amount' => 1000,
-                'currency' => 'INR',
+        'response' => [
+            'content' => [
+                'amount'                 => 1000,
+                'currency'               => 'INR',
                 'convenience_fee_config' => [
-                    'rules'=>[
+                    'rules' => [
                         [
                             'method' => 'upi',
-                            'fee' => [
-                                'payee' => 'customer',
+                            'fee'    => [
+                                'payee'      => 'customer',
                                 'flat_value' => 200
                             ]
                         ],
                         [
                             'method' => 'netbanking',
-                            'fee' => [
-                                'payee' => 'customer',
+                            'fee'    => [
+                                'payee'            => 'customer',
                                 'percentage_value' => "20.98"
                             ]
                         ],
                         [
                             'method' => 'wallet',
-                            'fee' => [
-                                'payee' => 'business',
+                            'fee'    => [
+                                'payee'      => 'business',
                                 'flat_value' => 100
                             ]
                         ],
                         [
                             'method' => 'card',
-                            'fee' => [
-                                'payee' => 'business',
+                            'fee'    => [
+                                'payee'            => 'business',
                                 'percentage_value' => "12.00"
                             ]
                         ]
@@ -9997,26 +10289,26 @@ return [
         ],
     ],
 
-    'testGetCheckoutPreferencesWithFeeConfigPayeeCustomerForCardTypes' =>[
-        'request' => [
+    'testGetCheckoutPreferencesWithFeeConfigPayeeCustomerForCardTypes' => [
+        'request'  => [
             'content' => [
-                'amount'   => 1000,
-                'currency' => 'INR',
+                'amount'                 => 1000,
+                'currency'               => 'INR',
                 'convenience_fee_config' => [
-                    'rules'=>[
+                    'rules' => [
                         [
-                            'method' => 'card',
-                            'card.type' => ['debit','prepaid'],
-                            'fee' => [
-                                'payee' => 'customer',
+                            'method'    => 'card',
+                            'card.type' => ['debit', 'prepaid'],
+                            'fee'       => [
+                                'payee'      => 'customer',
                                 'flat_value' => 200
                             ]
                         ],
                         [
-                            'method' => 'card',
+                            'method'    => 'card',
                             'card.type' => ['credit'],
-                            'fee' => [
-                                'payee' => 'customer',
+                            'fee'       => [
+                                'payee'      => 'customer',
                                 'flat_value' => 100
                             ]
                         ]
@@ -10026,25 +10318,25 @@ return [
             'method'  => 'POST',
             'url'     => '/orders',
         ],
-        'response'  => [
-            'content'     => [
-                'amount' => 1000,
-                'currency' => 'INR',
+        'response' => [
+            'content' => [
+                'amount'                 => 1000,
+                'currency'               => 'INR',
                 'convenience_fee_config' => [
-                    'rules'=>[
+                    'rules' => [
                         [
-                            'method' => 'card',
-                            'card.type' => ['debit','prepaid'],
-                            'fee' => [
-                                'payee' => 'customer',
+                            'method'    => 'card',
+                            'card.type' => ['debit', 'prepaid'],
+                            'fee'       => [
+                                'payee'      => 'customer',
                                 'flat_value' => 200
                             ]
                         ],
                         [
-                            'method' => 'card',
+                            'method'    => 'card',
                             'card.type' => ['credit'],
-                            'fee' => [
-                                'payee' => 'customer',
+                            'fee'       => [
+                                'payee'      => 'customer',
                                 'flat_value' => 100
                             ]
                         ]
@@ -10054,33 +10346,33 @@ return [
         ],
     ],
 
-    'testGetCheckoutPreferencesWithFeeConfigPayeeCustomerForCardAndDebitType' =>[
-        'request' => [
+    'testGetCheckoutPreferencesWithFeeConfigPayeeCustomerForCardAndDebitType' => [
+        'request'  => [
             'content' => [
-                'amount'   => 1000,
-                'currency' => 'INR',
+                'amount'                 => 1000,
+                'currency'               => 'INR',
                 'convenience_fee_config' => [
-                    'rules'=>[
+                    'rules' => [
                         [
                             'method' => 'card',
-                            'fee' => [
-                                'payee' => 'customer',
+                            'fee'    => [
+                                'payee'      => 'customer',
                                 'flat_value' => 300
                             ]
                         ],
                         [
-                            'method' => 'card',
+                            'method'    => 'card',
                             'card.type' => ['credit'],
-                            'fee' => [
-                                'payee' => 'business',
+                            'fee'       => [
+                                'payee'      => 'business',
                                 'flat_value' => 100
                             ]
                         ],
                         [
-                            'method' => 'card',
+                            'method'    => 'card',
                             'card.type' => ['debit'],
-                            'fee' => [
-                                'payee' => 'customer',
+                            'fee'       => [
+                                'payee'      => 'customer',
                                 'flat_value' => 200
                             ]
                         ]
@@ -10090,32 +10382,32 @@ return [
             'method'  => 'POST',
             'url'     => '/orders',
         ],
-        'response'  => [
-            'content'     => [
-                'amount' => 1000,
-                'currency' => 'INR',
+        'response' => [
+            'content' => [
+                'amount'                 => 1000,
+                'currency'               => 'INR',
                 'convenience_fee_config' => [
-                    'rules'=>[
+                    'rules' => [
                         [
                             'method' => 'card',
-                            'fee' => [
-                                'payee' => 'customer',
+                            'fee'    => [
+                                'payee'      => 'customer',
                                 'flat_value' => 300
                             ]
                         ],
                         [
-                            'method' => 'card',
+                            'method'    => 'card',
                             'card.type' => ['credit'],
-                            'fee' => [
-                                'payee' => 'business',
+                            'fee'       => [
+                                'payee'      => 'business',
                                 'flat_value' => 100
                             ]
                         ],
                         [
-                            'method' => 'card',
+                            'method'    => 'card',
                             'card.type' => ['debit'],
-                            'fee' => [
-                                'payee' => 'customer',
+                            'fee'       => [
+                                'payee'      => 'customer',
                                 'flat_value' => 200
                             ]
                         ]
@@ -10125,31 +10417,31 @@ return [
         ],
     ],
 
-    'testGetCheckoutPreferencesWithFeeConfigWithoutPrecalculatedCustomerFee' =>[
-        'request' => [
+    'testGetCheckoutPreferencesWithFeeConfigWithoutPrecalculatedCustomerFee' => [
+        'request'  => [
             'content' => [
-                'amount'   => 1000,
-                'currency' => 'INR',
+                'amount'                 => 1000,
+                'currency'               => 'INR',
                 'convenience_fee_config' => [
-                    'rules'=>[
+                    'rules' => [
                         [
                             'method' => 'netbanking',
-                            'fee' => [
-                                'payee' => 'customer',
+                            'fee'    => [
+                                'payee'            => 'customer',
                                 'percentage_value' => "20.98"
                             ]
                         ],
                         [
                             'method' => 'wallet',
-                            'fee' => [
-                                'payee' => 'business',
+                            'fee'    => [
+                                'payee'      => 'business',
                                 'flat_value' => 100
                             ]
                         ],
                         [
                             'method' => 'card',
-                            'fee' => [
-                                'payee' => 'business',
+                            'fee'    => [
+                                'payee'            => 'business',
                                 'percentage_value' => "12.00"
                             ]
                         ]
@@ -10159,30 +10451,30 @@ return [
             'method'  => 'POST',
             'url'     => '/orders',
         ],
-        'response'  => [
-            'content'     => [
-                'amount' => 1000,
-                'currency' => 'INR',
+        'response' => [
+            'content' => [
+                'amount'                 => 1000,
+                'currency'               => 'INR',
                 'convenience_fee_config' => [
-                    'rules'=>[
+                    'rules' => [
                         [
                             'method' => 'netbanking',
-                            'fee' => [
-                                'payee' => 'customer',
+                            'fee'    => [
+                                'payee'            => 'customer',
                                 'percentage_value' => "20.98"
                             ]
                         ],
                         [
                             'method' => 'wallet',
-                            'fee' => [
-                                'payee' => 'business',
+                            'fee'    => [
+                                'payee'      => 'business',
                                 'flat_value' => 100
                             ]
                         ],
                         [
                             'method' => 'card',
-                            'fee' => [
-                                'payee' => 'business',
+                            'fee'    => [
+                                'payee'            => 'business',
                                 'percentage_value' => "12.00"
                             ]
                         ]
@@ -10192,34 +10484,34 @@ return [
         ],
     ],
 
-    'testGetCheckoutPreferencesWithFeeConfigCardTypesWithoutPrecalculatedCustomerFee' =>[
-        'request' => [
+    'testGetCheckoutPreferencesWithFeeConfigCardTypesWithoutPrecalculatedCustomerFee' => [
+        'request'  => [
             'content' => [
-                'amount'   => 1000,
-                'currency' => 'INR',
+                'amount'                 => 1000,
+                'currency'               => 'INR',
                 'convenience_fee_config' => [
-                    'rules'=>[
+                    'rules' => [
                         [
-                            'method' => 'card',
+                            'method'    => 'card',
                             'card.type' => ['credit'],
-                            'fee' => [
-                                'payee' => 'customer',
+                            'fee'       => [
+                                'payee'            => 'customer',
                                 'percentage_value' => "20.98"
                             ]
                         ],
                         [
-                            'method' => 'card',
+                            'method'    => 'card',
                             'card.type' => ['debit'],
-                            'fee' => [
-                                'payee' => 'business',
+                            'fee'       => [
+                                'payee'      => 'business',
                                 'flat_value' => 100
                             ]
                         ],
                         [
-                            'method' => 'card',
+                            'method'    => 'card',
                             'card.type' => ['prepaid'],
-                            'fee' => [
-                                'payee' => 'business',
+                            'fee'       => [
+                                'payee'            => 'business',
                                 'percentage_value' => "12.00"
                             ]
                         ]
@@ -10229,33 +10521,33 @@ return [
             'method'  => 'POST',
             'url'     => '/orders',
         ],
-        'response'  => [
-            'content'     => [
-                'amount' => 1000,
-                'currency' => 'INR',
+        'response' => [
+            'content' => [
+                'amount'                 => 1000,
+                'currency'               => 'INR',
                 'convenience_fee_config' => [
-                    'rules'=>[
+                    'rules' => [
                         [
-                            'method' => 'card',
+                            'method'    => 'card',
                             'card.type' => ['credit'],
-                            'fee' => [
-                                'payee' => 'customer',
+                            'fee'       => [
+                                'payee'            => 'customer',
                                 'percentage_value' => "20.98"
                             ]
                         ],
                         [
-                            'method' => 'card',
+                            'method'    => 'card',
                             'card.type' => ['debit'],
-                            'fee' => [
-                                'payee' => 'business',
+                            'fee'       => [
+                                'payee'      => 'business',
                                 'flat_value' => 100
                             ]
                         ],
                         [
-                            'method' => 'card',
+                            'method'    => 'card',
                             'card.type' => ['prepaid'],
-                            'fee' => [
-                                'payee' => 'business',
+                            'fee'       => [
+                                'payee'            => 'business',
                                 'percentage_value' => "12.00"
                             ]
                         ]
@@ -10270,12 +10562,12 @@ return [
             'url'     => '/bulk-actions/execute_bulk_action',
             'method'  => 'post',
             'content' => [
-                'merchant_ids'      => ['10000000000044', '10000000000004'],
-                'action_id'         => '{action_id}',
-                'action'            => 'live_disable',
-                'risk_attributes'   => [
-                    'risk_reason'          => 'high_cts',
-                    'risk_source'          => 'high_fts',
+                'merchant_ids'    => ['10000000000044', '10000000000004'],
+                'action_id'       => '{action_id}',
+                'action'          => 'live_disable',
+                'risk_attributes' => [
+                    'risk_reason'           => 'high_cts',
+                    'risk_source'           => 'high_fts',
                     'risk_tag'              => 'risk_review_watchlist',
                     'trigger_communication' => '1'
                 ]
@@ -10288,71 +10580,71 @@ return [
     ],
 
     'testUpdateFetchCouponsURL' => [
-        'request'     => [
+        'request'  => [
             'url'     => '/merchant/coupons/url',
             'method'  => 'post',
             'content' => [
                 'url' => 'https://www.example.com',
             ],
         ],
-        'response'  => [
+        'response' => [
             'content'     => [],
             'status_code' => 201
         ],
     ],
 
     'testUpdateShippingInfoURL' => [
-        'request'     => [
+        'request'  => [
             'url'     => '/merchant/shipping_info/url',
             'method'  => 'post',
             'content' => [
                 'url' => 'http://fake.url',
             ],
         ],
-        'response'  => [
+        'response' => [
             'content'     => [],
             'status_code' => 201
         ],
     ],
 
     'testUpdateCouponValidityURL' => [
-        'request'     => [
+        'request'  => [
             'url'     => '/merchant/coupon/apply/url',
             'method'  => 'post',
             'content' => [
                 'url' => 'https://www.example.com',
             ],
         ],
-        'response'  => [
+        'response' => [
             'content'     => [],
             'status_code' => 201
         ],
     ],
 
     'testFetchCoupons' => [
-        'request'   => [
-            'url'   => '/merchant/coupons',
-            'method' => 'post',
+        'request'  => [
+            'url'     => '/merchant/coupons',
+            'method'  => 'post',
             'content' => [
-                'contact'   => '+92153524643',
-                'email'     => 'nin@osaga.com',
-                'mock_response'  => [
+                'contact'       => '+92153524643',
+                'email'         => 'nin@osaga.com',
+                'mock_response' => [
                     'body' => [
                         'promotions' => [
                             [
-                                'code' => 'rqrqw',
-                                'summary' => 'short summary',
+                                'code'        => 'rqrqw',
+                                'summary'     => 'short summary',
                                 'description' => 'long description- One time ',
-                                'tnc' => [
+                                'tnc'         => [
                                     'dagdasga',
                                     'sahhqw'
                                 ],
                             ],
                             [
-                                'code' => 'adgaga',
-                                'summary' => 'short summary',
+                                'code'        => 'adgaga',
+                                'summary'     => 'short summary',
                                 'description' => 'long description- TWO time ',
-                                'tnc' => [
+                                'tnc'         => [
                                     'dagdasga',
                                     'sahhqw'
                                 ],
@@ -10361,23 +10653,23 @@ return [
                     ]],
             ],
         ],
-        'response'  => [
+        'response' => [
             'content' => [
                 'promotions' => [
                     [
-                        'code' => 'rqrqw',
-                        'summary' => 'short summary',
+                        'code'        => 'rqrqw',
+                        'summary'     => 'short summary',
                         'description' => 'long description- One time ',
-                        'tnc' => [
+                        'tnc'         => [
                             'dagdasga',
                             'sahhqw'
                         ],
                     ],
                     [
-                        'code' => 'adgaga',
-                        'summary' => 'short summary',
+                        'code'        => 'adgaga',
+                        'summary'     => 'short summary',
                         'description' => 'long description- TWO time ',
-                        'tnc' => [
+                        'tnc'         => [
                             'dagdasga',
                             'sahhqw'
                         ],
@@ -10388,18 +10680,18 @@ return [
     ],
 
     'testFetchCouponsNoCouponsAvailable' => [
-        'request'   => [
-            'url'   => '/merchant/coupons',
-            'method' => 'post',
+        'request'  => [
+            'url'     => '/merchant/coupons',
+            'method'  => 'post',
             'content' => [
-                'contact'   => '+92153524643',
-                'email'     => 'nin@osaga.com',
-                'mock_response'  => [
+                'contact'       => '+92153524643',
+                'email'         => 'nin@osaga.com',
+                'mock_response' => [
                     'body' => ['promotions' => [],]
                 ],
             ],
         ],
-        'response'  => [
+        'response' => [
             'content' => [
                 'promotions' => [],
             ],
@@ -10408,11 +10700,11 @@ return [
 
     'testFetchCouponsURLNotConfigured' => [
         'request'   => [
-            'url'   => '/merchant/coupons',
-            'method' => 'post',
+            'url'     => '/merchant/coupons',
+            'method'  => 'post',
             'content' => [
-                'contact'   => '+92153524643',
-                'email'     => 'nin@osaga.com',
+                'contact' => '+92153524643',
+                'email'   => 'nin@osaga.com',
             ],
         ],
         'response'  => [
@@ -10430,32 +10722,32 @@ return [
     ],
 
     'testApplyCouponValidCoupon' => [
-        'request'   => [
-            'url'   => '/merchant/coupon/apply',
-            'method' => 'post',
+        'request'  => [
+            'url'     => '/merchant/coupon/apply',
+            'method'  => 'post',
             'content' => [
-                'contact'   => '1234567890',
-                'email'     => 'email@gmail.com',
-                'code'      => 'etwqyr',
+                'contact'       => '1234567890',
+                'email'         => 'email@gmail.com',
+                'code'          => 'etwqyr',
                 'mock_response' => [
-                    'body' => [
+                    'body'        => [
                         'promotion' => [
                             'reference_id' => 'ref1',
-                            'code' => 'etwqyr',
-                            'value' => 200,
+                            'code'         => 'etwqyr',
+                            'value'        => 200,
                         ],
                     ],
                     'status_code' => 200
                 ],
             ],
         ],
-        'response'  => [
-            'content' =>  [
+        'response' => [
+            'content' => [
                 'promotions' => [
                     [
                         'reference_id' => 'ref1',
-                        'code'  => 'etwqyr',
-                        'value' => 200,
+                        'code'         => 'etwqyr',
+                        'value'        => 200,
                     ]
                 ]
             ],
@@ -10463,43 +10755,43 @@ return [
     ],
 
     'testApplyCouponInvalidCoupon' => [
-        'request'   => [
-            'url'   => '/merchant/coupon/apply',
-            'method' => 'post',
+        'request'  => [
+            'url'     => '/merchant/coupon/apply',
+            'method'  => 'post',
             'content' => [
-                'contact'   => '+92153524643',
-                'email'     => 'nin@osaga.com',
-                'code'      => 'etwqyr',
+                'contact'       => '+92153524643',
+                'email'         => 'nin@osaga.com',
+                'code'          => 'etwqyr',
                 'mock_response' => [
-                    'body' => [
-                        'failure_code'          => 'INVALID_COUPON',
-                        'failure_reason'        => 'Coupon Code has expired',
+                    'body'        => [
+                        'failure_code'   => 'INVALID_COUPON',
+                        'failure_reason' => 'Coupon Code has expired',
                     ],
                     'status_code' => 400,
                 ]
             ],
         ],
-        'response'  => [
-            'content' =>  [
-                'failure_code'          => 'INVALID_COUPON',
-                'failure_reason'        => 'Coupon Code has expired',
+        'response' => [
+            'content'     => [
+                'failure_code'   => 'INVALID_COUPON',
+                'failure_reason' => 'Coupon Code has expired',
             ],
-            'status_code'   => 400,
+            'status_code' => 400,
         ],
     ],
 
     'testCouponValidityURLNotConfigured' => [
         'request'   => [
-            'url'   => '/merchant/coupon/apply',
-            'method' => 'post',
+            'url'     => '/merchant/coupon/apply',
+            'method'  => 'post',
             'content' => [
-                'contact'   => '+92153524643',
-                'email'     => 'nin@osaga.com',
-                'code'      => 'etwqyr'
+                'contact' => '+92153524643',
+                'email'   => 'nin@osaga.com',
+                'code'    => 'etwqyr'
             ],
         ],
         'response'  => [
-            'content' => [
+            'content'     => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                 ],
@@ -10513,45 +10805,44 @@ return [
         ],
     ],
 
-
-    'testOneClickCheckoutStatus' => [
-        'request'   => [
-            'url'   => '/merchant/checkout_details',
-            'method' => 'POST',
+    'testOneClickCheckoutStatus'    => [
+        'request'  => [
+            'url'     => '/merchant/checkout_details',
+            'method'  => 'POST',
             'content' => [
-                'status_1cc'      => 'waitlisted'
+                'status_1cc' => 'waitlisted'
             ],
         ],
-        'response'  => [
+        'response' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'status_1cc'      => 'waitlisted'
+                'status_1cc'  => 'waitlisted'
             ],
         ],
     ],
     'testGetOneClickCheckoutStatus' => [
-        'request'   => [
-            'url'   => '/merchant/checkout_details',
+        'request'  => [
+            'url'    => '/merchant/checkout_details',
             'method' => 'GET',
         ],
-        'response'  => [
+        'response' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'status_1cc'      => 'live'
+                'status_1cc'  => 'live'
             ],
         ],
     ],
 
     'testOneClickCheckoutStatusFeatureNotPresent' => [
         'request'   => [
-            'url'   => '/merchant/checkout_details',
-            'method' => 'POST',
+            'url'     => '/merchant/checkout_details',
+            'method'  => 'POST',
             'content' => [
-                'status_1cc'      => 'waitlisted'
+                'status_1cc' => 'waitlisted'
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                 ],
@@ -10559,7 +10850,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
+            'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ELIGIBLE_FOR_1CC,
         ],
     ],
