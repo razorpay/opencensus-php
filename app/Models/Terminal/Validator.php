@@ -157,6 +157,7 @@ class Validator extends Base\Validator
         Payment\Gateway::BILLDESK_SIHUB,
         Payment\Gateway::MANDATE_HQ,
         Payment\Gateway::NETBANKING_BDBL,
+        Payment\Gateway::MOBIKWIK,
     ];
 
     protected static $createValidators = [
@@ -1782,6 +1783,11 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
         Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $mobikwikEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
     ];
 
     protected static $btYesbankTerminalRules = [
