@@ -543,7 +543,7 @@ class SettlementController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->migrateConfigurations($input);
+        $data =$this->service()->cronRunMigrations($input);
 
         return ApiResponse::json($data);
     }

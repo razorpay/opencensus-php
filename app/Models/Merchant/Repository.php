@@ -1210,6 +1210,23 @@ class Repository extends Base\Repository
         return $childMerchantIds;
     }
 
+    public function fetchAllMids($offsetID,$limit)
+    {
+        $query=$this->newQuery()
+                    ->select(Entity::ID)
+                    ->orderBy(Entity::CREATED_AT,'asc');
+
+        if ($offsetID!=null)
+        {
+            $query=$query->where(Entity::ID, '>', $offsetID);
+        }
+
+        return $query->limit($limit)
+                     ->get()
+                     ->pluck(Entity::ID)
+                     ->toArray();
+    }
+
     /**
      * @param  array  $ids
      * @return Base\PublicCollection

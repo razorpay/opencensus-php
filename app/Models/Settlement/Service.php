@@ -29,10 +29,12 @@ use RZP\Models\Report\Types\SettlementReconReport;
 
 class Service extends Base\Service
 {
-    const LEDGER_RECON_STATE_PROCESSING     = 'processing';
-    const LEDGER_RECON_STATE_PROCESSED      = 'processed';
-    const LEDGER_RECON_TRIGGERED_SYSTEM     = 'system';
-    const LEDGER_RECON_TRIGGERED_MANUAL     = 'manual';
+    const LEDGER_RECON_STATE_PROCESSING                                = 'processing';
+    const LEDGER_RECON_STATE_PROCESSED                                 = 'processed';
+    const LEDGER_RECON_TRIGGERED_SYSTEM                                = 'system';
+    const LEDGER_RECON_TRIGGERED_MANUAL                                = 'manual';
+    const SETTLEMENT_OFFSET_MID_CACHE_KEY                              = 'settlement_migration_offset_mid';
+
 
     public function createSettlementEntry($input)
     {
@@ -1109,6 +1111,102 @@ class Service extends Base\Service
 
         return (new Core)->migrateConfigurations($input);
     }
+
+    public function cronRunMigrations(array $input)
+    {
+        (new Validator)->validateInput('settlement_bulk_migrations', $input);
+
+        $this->trace->info(
+            TraceCode:: SETTLEMENTS_CRON_MIGRATIONS_BEGIN,
+            [
+                'message'        =>'begin cron migrations' ,
+                'request data'   =>$input
+            ]);
+
+        $redis = $this->app['redis']->Connection('mutex_redis');
+
+        $cached_id_exists= $redis->exists(self::SETTLEMENT_OFFSET_MID_CACHE_KEY);
+
+        $cached_merchant_id=null;
+
+        if($cached_id_exists)
+        {
+            $cached_merchant_id = $redis->get(self::SETTLEMENT_OFFSET_MID_CACHE_KEY);
+        }
+
+        $limit=$input['limit'];
+
+        $offsetID = (isset($input['offset_id']) === false)? $cached_merchant_id : $input['offset_id'];
+
+        $allMerchants=$this->repo->merchant->fetchAllMids($offsetID, $limit);
+
+        $merchantsToMigrate=$this->repo->feature->getMerchantIdsHavingFeature(Constants::NEW_SETTLEMENT_SERVICE, $allMerchants);
+
+        $merchantsToMigrate= array_diff($allMerchants, $merchantsToMigrate);
+
+        //Finding the last entry for next update. In case reaches end of table, shouldn't update cache value
+        $newOffsetMid = (empty($allMerchants) === false) ? max($allMerchants) : "";
+
+        if(empty($allMerchants) === true)
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_MIGRATIONS_CRON_FAILURE_NO_MIDS_TO_MIGRATE,
+                [
+                    'message'  =>'no merchants IDs found to migrate anymore. Reached EOT probably',
+                ]);
+        }
+
+        if (empty($merchantsToMigrate) === true)
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_MIGRATIONS_CRON_FAILURE_NO_MIDS_TO_MIGRATE,
+                [
+                    'message'                             =>'no merchants IDs found to migrate in this range',
+                    'offset_id'                           =>$offsetID,
+                    'limit'                               =>$limit,
+                    'all_possible_merchants'              =>$allMerchants,
+                    'final_merchants_to_migrate'          =>$merchantsToMigrate,
+                ]);
+
+            if ((isset($input['offset_id'])===false) && (!empty($allMerchants)))
+            {
+                 $redis->set(self::SETTLEMENT_OFFSET_MID_CACHE_KEY,$newOffsetMid);
+            }
+
+            return [];
+        }
+
+        $input_constructed=[
+            'merchant_ids'            =>$merchantsToMigrate,
+            'migrate_bank_account'    =>'1',
+            'migrate_merchant_config' =>'1',
+            'via'                     =>'payout'
+        ];
+
+        $this->trace->info(
+            TraceCode::MERCHANT_MIGRATIONS_CRON_MIGRATE_MIDs,
+            [
+                'message'                    =>'actual migration starts',
+                'time'                       =>time(),
+                'all_possible_merchants'     =>$allMerchants,
+                'final_merchants_to_migrate' =>$merchantsToMigrate,
+            ]);
+
+        $output= $this->migrateConfigurations($input_constructed);
+
+        //only update cache when no issues occurred in migration, and migration was a success.Eg:In cases of timeouts, cache shouldn't be updated
+        //dont update if end of table reached
+        if ((isset($output['total'])=== true)         &&
+            (isset($output['failed_count'])===true)   &&
+            (isset($input['offset_id'])===false)      &&
+            (!empty($allMerchants)))
+        {
+            $redis->set(self::SETTLEMENT_OFFSET_MID_CACHE_KEY,$newOffsetMid);
+        }
+
+        return $output;
+    }
+
 
     public function replaySettlementsStatusUpdate(array $input)
     {

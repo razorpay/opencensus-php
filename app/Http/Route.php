@@ -3696,6 +3696,7 @@ class Route
         'setl_reconcile_generate',
         'setl_reconcile_h2h',
         'setl_reconcile_test',
+        'setl_service_migration',
         'settlement_ondemand_feature_enable',
         'subscription_cancel_due',
         'subscriptions_charge_invoices',
@@ -3901,7 +3902,6 @@ class Route
         'vendor_payment_send_email_generic',
         'vendor_payment_upcoming_mail_cron',
         'tax_payments_add_penalty_cron',
-        'setl_service_migration',
         'create_payment_config_bulk_via_batch',
         'payment_meta_search',
         'bulk_create_fund_accounts',
@@ -5763,7 +5763,6 @@ class Route
         'create_risk_action',
 
         'banking_draft_invitations_create',
-
         //growth service
         'growth_downtime_for_x',
     ];
@@ -12140,6 +12139,7 @@ class Route
         'subscription_cancel_token',
         'payment_timeout',
         'payment_auth_timeout',
+        'setl_service_migration',
         'contact_list',
         'workflow_get_multiple',
         'payment_capture_gateway_multiple',
