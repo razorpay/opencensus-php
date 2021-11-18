@@ -1504,7 +1504,11 @@ class Service extends Base\Service
 
             $currentMerchantId = Session::get('current_merchant_id');
 
-            if ($currentMerchantId !== null and empty($adminUser) === true)
+            // In case of admin doing login as merchant and if merchants-email is associated with > 1000 merchants,
+            // There is a chance that current merchant stored in session would not be available in /user/{id} API (limit is 1000)
+            // So we are explicitly querying for the currentMerchantId and checking the user has access or not
+            // Ref: https://razorpay.slack.com/archives/C3Y0UA0CB/p1635919864023100
+            if ($currentMerchantId !== null)
             {
                 $currentMerchant = $genericUser->merchants->where('id', $currentMerchantId)->first();
 
