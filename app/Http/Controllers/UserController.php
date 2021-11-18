@@ -59,6 +59,7 @@ class UserController extends Controller
         $data = [
             'isAuthenticated'       => false,
             'isConfirmed'           => false,
+            'isMobileConfirmed'     => false,
             'preSignupData'         => [],
             'isPreSignupComplete'   => false,
             'org'                   => json_encode($org),
@@ -70,6 +71,7 @@ class UserController extends Controller
             $data = [
                 'isAuthenticated'       => (bool) $details['user'],
                 'isConfirmed'           => $details['user']['confirmed'],
+                'isMobileConfirmed'     => $details['user']['contact_mobile_verified'],
                 'preSignupData'         => $details['pre_signup'],
                 'isPreSignupComplete'   => $details['pre_signup_complete'],
                 'user'                  => json_encode($details),

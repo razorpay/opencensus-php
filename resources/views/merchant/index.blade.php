@@ -5,7 +5,7 @@
 
 @include('partials/header')
 
-@if ($isConfirmed and $isPreSignupComplete)
+@if (($isConfirmed || $isMobileConfirmed) and $isPreSignupComplete)
 
 @elseif ($newAuthFlow === false)
   <link rel='stylesheet' href="{{$cdnDashboardUrl}}/css/generated/signup.css" type='text/css' />
@@ -133,7 +133,7 @@ _dcs.account = '9421167';
       window.isAuthPage = true;
   </script>
   <script src="{{$cdnDashboardUrl}}/dist/newAuth-entry.js"></script>
-@elseif ($isConfirmed and $isPreSignupComplete)
+@elseif (($isConfirmed || $isMobileConfirmed) and $isPreSignupComplete)
   <script type="text/javascript">
     window.rzp_user = {!! $user !!};
     window.rzp_org = {!! $org !!};
