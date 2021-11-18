@@ -530,6 +530,11 @@ abstract class Base extends BaseCore
             return true;
         }
 
+        if ($this->source->isCardlessEmiWalnut369() === true)
+        {
+            return true;
+        }
+
         return ($this->txn->getCredit() === $this->txn->getAmount());
     }
 
