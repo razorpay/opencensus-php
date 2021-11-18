@@ -28,6 +28,7 @@ class Gateway
     const CASHFREE               = 'cashfree';
     const ZAAKPAY                = 'zaakpay';
     const CCAVENUE               = 'ccavenue';
+    const PINELABS               = 'pinelabs';
     const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
@@ -329,6 +330,7 @@ class Gateway
         self::ZAAKPAY               => self::ZAAKPAY,
         self::NETBANKING_YESB       => self::YESB,
         self::CCAVENUE              => self::CCAVENUE,
+        self::PINELABS              => self::PINELABS,
         self::NETBANKING_IDFC       => self::IDFC,
         self::NETBANKING_SBI        => self::SBIN,
         self::NETBANKING_INDUSIND   => self::INDUSIND,
@@ -356,6 +358,7 @@ class Gateway
         self::WALLET_PAYZAPP        => self::HDFC,
         self::ENACH_NPCI_NETBANKING => self::NPCI,
         self::ZAAKPAY               => self::ZAAKPAY,
+        self::PINELABS              => self::PINELABS,
     ];
 
     /**
@@ -384,6 +387,15 @@ class Gateway
         self::PAYTM,
         self::CCAVENUE,
         self::ZAAKPAY,
+    ];
+
+    const OPTIMIZER_CARD_GATEWAYS = [
+        self::CASHFREE,
+        self::PAYU,
+        self::PAYTM,
+        self::CCAVENUE,
+        self::ZAAKPAY,
+        self::PINELABS
     ];
 
     /**
@@ -1243,6 +1255,7 @@ class Gateway
         Payment\Gateway::TWID,
         Payment\Gateway::CHECKOUT_DOT_COM,
         Payment\Gateway::ZAAKPAY,
+        Payment\Gateway::PINELABS,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -1353,6 +1366,7 @@ class Gateway
             self::CASHFREE,
             self::ZAAKPAY,
             self::CCAVENUE,
+            self::PINELABS,
             self::CHECKOUT_DOT_COM,
         ],
 
@@ -1813,6 +1827,13 @@ class Gateway
             Network::RUPAY,
             Network::DICL,
             Network::DISC,
+        ],
+        self:: PINELABS => [
+            Network::MC,
+            Network::VISA,
+            Network::AMEX,
+            Network::DICL,
+            Network::RUPAY,
         ],
         self:: CHECKOUT_DOT_COM =>[
             Network::MC,
@@ -2881,6 +2902,7 @@ class Gateway
         Gateway::CASHFREE         => Gateway::CASHFREE,
         Gateway::ZAAKPAY          => Gateway::ZAAKPAY,
         Gateway::CCAVENUE         => Gateway::CCAVENUE,
+        Gateway::PINELABS         => Gateway::PINELABS,
         Gateway::CHECKOUT_DOT_COM => Gateway::CHECKOUT_DOT_COM
     ];
 
@@ -3768,6 +3790,7 @@ class Gateway
             self::ZAAKPAY,
             self::FULCRUM,
             self::CCAVENUE,
+            self::PINELABS,
             self::CHECKOUT_DOT_COM
         ];
 
@@ -3805,6 +3828,7 @@ class Gateway
             self::ZAAKPAY,
             self::FULCRUM,
             self::CCAVENUE,
+            self::PINELABS,
             self::CHECKOUT_DOT_COM,
         ];
 

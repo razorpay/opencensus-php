@@ -64,6 +64,10 @@ trait Callback
         $gatewayInputLog = $gatewayInput;
 
         unset($gatewayInputLog['otp']);
+        // Redact PCI/PII fields of PineLabs
+        unset($gatewayInputLog['masked_card_number']);
+        unset($gatewayInputLog['card_holder_name']);
+
         if (empty($gatewayInputLog['PaReq']) === false)
         {
             $gatewayInputLog['PaReq'] = '*****redacted**** length: ' . strlen($gatewayInputLog['PaReq']);

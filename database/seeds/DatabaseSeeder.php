@@ -1289,6 +1289,7 @@ class DatabaseSeeder extends Seeder
         $this->createPayuTerminal();
         $this->createCashfreeTerminal();
         $this->createZaakpayTerminal();
+        $this->createPinelabsTerminal();
         $this->createNetbankingDcbTerminal();
         $this->createTwidTerminal();
         $this->createCcavenueTerminal();
@@ -2962,6 +2963,24 @@ class DatabaseSeeder extends Seeder
                 'gateway_secure_secret' => Crypt::encrypt('test_secure_secret'),
                 'gateway_secure_secret2' => Crypt::encrypt('test_secure_secret2'),
                 'gateway_access_code' => 'gateway_access_code',
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
+    protected function createPinelabsTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => 'h1t3hfU4c2A11H',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::PINELABS,
+                'card'                  => '1',
+                'netbanking'            => '0',
+                'gateway_merchant_id'   => 'test_pinelabs_mid',
+                'gateway_secure_secret' => Crypt::encrypt('test_secure_secret'),
+                'gateway_access_code'   => Crypt::encrypt('test_access_code'),
                 'created_at'            => time(),
                 'updated_at'            => time(),
             ]

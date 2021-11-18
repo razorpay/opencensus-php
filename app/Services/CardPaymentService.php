@@ -204,11 +204,8 @@ class CardPaymentService
             $input[self::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
         }
 
-        if ((($gateway === Payment\Gateway::PAYU) or
-             ($gateway ===  Payment\Gateway::CASHFREE) or
-             ($gateway ===  Payment\Gateway::CCAVENUE) or
-             ($gateway === Payment\Gateway::ZAAKPAY)) and
-             ($action === Action::CALLBACK))
+        if ((in_array($gateway, Payment\Gateway::OPTIMIZER_CARD_GATEWAYS, true) and
+             ($action === Action::CALLBACK)))
         {
             $dynamicContent = $input['gateway'];
 
@@ -465,6 +462,9 @@ class CardPaymentService
         try
         {
             unset($request['content'][self::INPUT]['gateway']['otp']);
+            // Redacting PCI fields for PineLabs card payments
+            unset($request['content'][self::INPUT]['gateway']['redirect']['dynamicContent']['masked_card_number']);
+            unset($request['content'][self::INPUT]['gateway']['redirect']['dynamicContent']['card_holder_name']);
 
             $request['content'][self::INPUT]['terminal_ids'] = [];
 
@@ -818,14 +818,14 @@ class CardPaymentService
         {
             // The update of gateway entities are handled in the cps.
             $authDetails = $verify->getDataToTrace();
-            
-            if (isset($response['payment']['reference2']) === true) 
+
+            if (isset($response['payment']['reference2']) === true)
             {
                 $authDetails['acquirer'] = [
                     'reference2' => $response['payment']['reference2']
                 ];
             }
-            
+
             return  $authDetails;
         }
 
