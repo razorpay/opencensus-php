@@ -120,6 +120,12 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
         background-image: url($ticketSystemCdn/icon-paper.png)
       &.callback
         background-image: url($ticketSystemCdn/icon-call.svg)
+        .badge
+          background: #1AAE94;
+          position: relative;
+          left: 4px;
+          border-radius: 2px;
+          top: -1px;
       &.callback.disabled
         filter: grayscale(100%)
       &.chat:not(.disabled)

@@ -291,7 +291,9 @@ class SupportBody extends Component {
                 handleClick('schedule-call');
               }}
             >
-              <span>Request a call</span>
+              <span>
+                Request a call <span class="badge">Recommended</span>
+              </span>
               <small class="help-block">{scheduleCallbackReason}</small>
             </li>
           </ShowWhen>
