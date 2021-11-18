@@ -27,7 +27,7 @@ class IfscValidationTest extends TestCase
 
         $this->assertArraySubset([
             'total' => 20911,
-            'valid' => 20882,
+            'valid' => 20808,
         ], $result);
     }
 }

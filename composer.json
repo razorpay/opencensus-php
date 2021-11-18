@@ -15,7 +15,7 @@
         "symfony/event-dispatcher": "^4.0",
         "cebe/markdown": "~1.2.1",
         "elasticsearch/elasticsearch": "^5.2",
-        "razorpay/ifsc": "~1.4",
+        "razorpay/ifsc": "~2.0.3",
         "propaganistas/laravel-phone": "^4.2",
         "giggsey/libphonenumber-for-php": "^8",
         "predis/predis": "^1.1.6",
