@@ -11,26 +11,30 @@ import {
 import { updateSuperCheckoutStatus } from 'merchant/reducers/superCheckout';
 import { sendToLumberjack } from 'common/utils/analytics';
 
-const objectName = 'SuperCheckoutLandingPage1';
+const objectName = 'super_checkout_landing_page1';
 const screen = 'SuperCheckoutOnboarding';
 
 const SuperCheckoutLanding = (props) => {
   useEffect(() => {
-    sendToLumberjack({
-      eventName: `${objectName}Loaded`,
-      properties: {
-        screen,
-        status: props.superCheckout.status,
-      },
-    });
-  }, []);
+    if (!props.superCheckout.loading) {
+      sendToLumberjack({
+        eventName: `${objectName}_loaded`,
+        properties: {
+          screen,
+          status: props.superCheckout.status,
+          merchant_id: props.user.current,
+        },
+      });
+    }
+  }, [props.superCheckout.loading]);
 
   const onReadMoreClicked = (callback) => {
     sendToLumberjack({
-      eventName: `ReadMoreClicked`,
+      eventName: `super_checkout_read_more_clicked`,
       properties: {
         screen,
         status: props.superCheckout.status,
+        merchant_id: props.user.current,
       },
     });
     props.next();
@@ -53,18 +57,20 @@ const SuperCheckoutLanding = (props) => {
             onClick={(e) => {
               e.preventDefault();
               sendToLumberjack({
-                eventName: 'WaitlistFormOpened',
+                eventName: 'super_checkout_waitlist_form_loaded',
                 properties: {
                   screen,
                   status: props.superCheckout.status,
+                  merchant_id: props.user.current,
                 },
               });
               loadWaitlistForm(props.user, () => {
                 sendToLumberjack({
-                  eventName: 'WaitlistFormFilled',
+                  eventName: 'super_checkout_waitlist_form_filled',
                   properties: {
                     screen,
                     status: props.superCheckout.status,
+                    merchant_id: props.user.current,
                   },
                 });
                 props.updateStatus({
@@ -99,10 +105,11 @@ const SuperCheckoutLanding = (props) => {
             onClick={(e) => {
               e.preventDefault();
               sendToLumberjack({
-                eventName: 'FeedbackFormOpened',
+                eventName: 'super_checkout_feedback_form_opened',
                 properties: {
                   screen,
                   status: props.superCheckout.status,
+                  merchant_id: props.user.current,
                 },
               });
               loadFeedbackForm(props.user);

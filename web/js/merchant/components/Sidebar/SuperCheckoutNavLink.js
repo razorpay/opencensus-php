@@ -2,21 +2,29 @@ import { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { sendToLumberjack } from 'common/utils/analytics';
 
-const objectName = 'SuperCheckoutNavTab';
+const objectName = 'super_checkout_nav_tab';
 const screen = 'Dashboard';
 
 const SuperCheckoutNavLink = ({ children, user }) => {
   useEffect(() => {
-    sendToLumberjack({
-      eventName: `${objectName}Displayed`,
-      properties: { screen },
-    });
+    if (user.isSuperCheckoutEnabled) {
+      sendToLumberjack({
+        eventName: `${objectName}_displayed`,
+        properties: {
+          screen,
+          merchant_id: user.current,
+        },
+      });
+    }
   }, []);
 
   const onClick = () => {
     sendToLumberjack({
-      eventName: `${objectName}Clicked`,
-      properties: { screen },
+      eventName: `${objectName}_clicked`,
+      properties: {
+        screen,
+        merchant_id: user.current,
+      },
     });
   };
 

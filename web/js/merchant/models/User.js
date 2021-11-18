@@ -311,7 +311,7 @@ export default class User {
   get isSuperCheckoutEnabled() {
     return (
       this.isFeatureEnabled('one_cc_merchant_dashboard') &&
-      getSplitzExperimentVariant('dashboard_super_checkout')?.variables?.result === 'on'
+      this.getExpStatus('dashboard_super_checkout')
     );
   }
 
