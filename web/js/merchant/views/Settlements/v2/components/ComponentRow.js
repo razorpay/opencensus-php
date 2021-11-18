@@ -4,34 +4,38 @@ import { titleCase } from 'common/utils/rzp-utils';
 
 const ComponentRow = ({ breakupItem, newResponse }) => {
   return (
-    <tr data-testid={`settlementBreakup${breakupItem.type}`}>
-      <td class={breakupItem.type === 'credit' ? `highlight-credit` : `highlight-debit`}>
+    <tr
+      data-testid={`settlementBreakup${breakupItem.type}`}
+      /* Added this conditional classes to TR also for the m-web support */
+      className={breakupItem.type === 'credit' ? `highlight-credit-row` : `highlight-debit-row`}
+    >
+      <td className={breakupItem.type === 'credit' ? `highlight-credit` : `highlight-debit`}>
         <div>
           <b>{titleCase(breakupItem.component)}</b>
         </div>
       </td>
       <td>
         <div>
-          <div class="title">Type</div>
+          <div className="title">Type</div>
           <span>{titleCase(breakupItem.type)}</span>
         </div>
       </td>
       <td>
         <div>
-          <div class="title">Count</div>
+          <div className="title">Count</div>
           {breakupItem.count ? <span>{breakupItem.count}</span> : '-'}
         </div>
       </td>
       <td>
         <div>
-          <div class="title">Amount</div>
+          <div className="title">Amount</div>
           <Amount value={breakupItem.amount} currency="INR" />
         </div>
       </td>
       {newResponse && (
         <td>
           <div>
-            <div class="title">Fee</div>
+            <div className="title">Fee</div>
             <Amount value={breakupItem.fee} currency="INR" />
           </div>
         </td>
@@ -39,7 +43,7 @@ const ComponentRow = ({ breakupItem, newResponse }) => {
       {newResponse && (
         <td>
           <div>
-            <div class="title">Tax</div>
+            <div className="title">Tax</div>
             <Amount value={breakupItem.tax} currency="INR" />
           </div>
         </td>
@@ -47,7 +51,7 @@ const ComponentRow = ({ breakupItem, newResponse }) => {
       {newResponse && (
         <td>
           <div>
-            <div class="title">Settled Amount</div>
+            <div className="title">Settled Amount</div>
             {breakupItem.type === 'debit' ? (
               <span>
                 - <Amount value={breakupItem.settled_amount * -1} currency="INR" />

@@ -5,6 +5,8 @@
   max-width: unset
   margin: 20px
   margin-top: 124px
+  @media screen and (max-width: $screen-sm-min)
+    margin 20px 10px
 
   span
     font-style normal
@@ -80,6 +82,17 @@
         transform: translateY(8px)
         opacity: 0
         animation: move-up .3s ease-in forwards .2s
+        // Added media query to support the multirow view for this info to support m-web
+        @media screen and (max-width: $screen-sm-min)
+          display flex
+          flex-wrap wrap
+          padding 0
+          margin: 16px 0
+          background: #f3f4f7
+          @media screen and (max-width: 392px)
+            // Specific css to support the device with even lesser width
+            margin 16px -8px
+
 
         td.item-details-units
           min-width: 148px
@@ -121,6 +134,13 @@
         line-height: 16px
         vertical-align: top
   
+  .settlement-total-amount
+    float right
+    @media screen and (max-width: $screen-sm-min)
+      float none
+      line-height: 1
+      margin-bottom: 10px
+
   .settled-amount
     font-weight bold
     font-size 13px
@@ -131,11 +151,15 @@
       color #ADBCC9
       padding-left 5px
   
-  .highlight-debit
+  .highlight-debit, .highlight-debit-row
     border-left 3px solid #fbc9a1
   
-  .highlight-credit
+  .highlight-credit, .highlight-credit-row
     border-left 3px solid #b4e397
+  // for the m-web we don't want the left border to show for mweb as we are showing the TR border
+  @media screen and (max-width: $screen-sm-min)
+    .highlight-debit, .highlight-credit 
+      border-left-width 0
   
   .div--loading
     display flex
@@ -179,6 +203,14 @@
     
     .link-all
       display none
+
+.entity-details
+      .pair-group-item
+        .pair-label
+          @media screen and (max-width: $screen-sm-min)
+            width 25%
+          @media screen and (max-width: 359px)
+            width 15%
 
 @media (max-width: 1023px)
   .settlements-v2

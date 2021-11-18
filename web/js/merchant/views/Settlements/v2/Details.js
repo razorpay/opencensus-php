@@ -66,7 +66,8 @@ const SettlementDetails = (props) => {
           {props.mode === 'test' && <TestModeBanner />}
           <div class="panel-heading">
             <div class="text">{props.match.params.id}</div>
-            <div class="pull-right">
+            {/* added a new class as we need to add media query for the same for m-web support */}
+            <div class="settlement-total-amount">
               {!loading ? (
                 <TotalAmount
                   infoComp={
