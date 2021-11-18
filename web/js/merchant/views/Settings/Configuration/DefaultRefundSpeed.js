@@ -195,12 +195,12 @@ class DefaultRefundSpeed extends Component {
     const { isInstantRefundOrg, isInstantRefundMid } = this.state;
 
     return (
-      <div id="default-refund-container" class="panel panel-default refund-panel">
-        <div class="panel-heading pl10" style={{ paddingTop: 0 }}>
-          <span class="title">
+      <div id="default-refund-container" className="panel panel-default refund-panel">
+        <div className="panel-heading pl10" style={{ paddingTop: 0 }}>
+          <span className="title">
             <TextHighlighter hashedWith={REFUND_SETTINGS}>Default Refund Speed</TextHighlighter>{' '}
             <a
-              class="highlight know-more"
+              className="highlight know-more"
               target="_blank"
               rel="noopener noreferrer"
               href={getCustomURL(
@@ -220,10 +220,10 @@ class DefaultRefundSpeed extends Component {
               }
             >
               Know more
-              <i class="i i-external-link" style={{ marginLeft: '5px' }} />
+              <i className="i i-external-link" style={{ marginLeft: '5px' }} />
             </a>
             <a
-              class="highlight know-more"
+              className="highlight know-more"
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -245,16 +245,16 @@ class DefaultRefundSpeed extends Component {
               }
             >
               API Reference Guide
-              <i class="i i-external-link" style={{ marginLeft: '5px' }} />
+              <i className="i i-external-link" style={{ marginLeft: '5px' }} />
             </a>
           </span>
         </div>
 
-        <div class="panel-body" style={{ paddingBottom: '6px' }}>
-          <div class="row">
-            <div class="col-sm-6 p5">
+        <div className="panel-body refund-speed-pannel" style={{ paddingBottom: '6px' }}>
+          <div className="row">
+            <div className="col-sm-6 p5">
               <div
-                class={`refund-panel-col ${
+                className={`refund-panel-col ${
                   this.state.default_refund_speed == 'normal' ? 'active' : ''
                 }`}
               >
@@ -262,7 +262,7 @@ class DefaultRefundSpeed extends Component {
                   <b>Normal Refund</b>
                   <input
                     type="radio"
-                    class="radio-pointer refund-speed-change-permission"
+                    className="radio-pointer refund-speed-change-permission"
                     name="default_instant"
                     checked={this.state.default_refund_speed == 'normal'}
                     onChange={(e) => {
@@ -273,10 +273,10 @@ class DefaultRefundSpeed extends Component {
                 </h4>
                 <p>Your customer will get refunds in 5-7 days.</p>
                 <br />
-                <span class="refunds-speed-tag">
+                <span className="refunds-speed-tag">
                   NORMAL SPEED &nbsp;
                   <span>
-                    <i class="i i-help" />
+                    <i className="i i-help" />
                     <Popover align="bottom" theme="dark">
                       <PopoverBody>
                         <div style={{ textAlign: 'left' }}>
@@ -290,15 +290,15 @@ class DefaultRefundSpeed extends Component {
               </div>
             </div>
             {(!isInstantRefundOrg || (isInstantRefundOrg && isInstantRefundMid)) && (
-              <div class="col-sm-6 p5">
+              <div className="col-sm-6 p5">
                 <div
-                  class={`refund-panel-col ${
+                  className={`refund-panel-col ${
                     this.state.default_refund_speed == 'optimum' ? 'active' : ''
                   }`}
                   id="instant-refund-panel-col"
                 >
                   <h4>
-                    <i class="i i-instant-refund" />
+                    <i className="i i-instant-refund" />
                     <b>Instant Refund</b>
 
                     {!showWhenUtil({
@@ -306,7 +306,7 @@ class DefaultRefundSpeed extends Component {
                     }) ? (
                       <input
                         type="radio"
-                        class="radio-pointer refund-speed-change-permission"
+                        className="radio-pointer refund-speed-change-permission"
                         checked={this.state.default_refund_speed == 'optimum'}
                         name="default_instant"
                         onChange={(e) => {
@@ -319,7 +319,7 @@ class DefaultRefundSpeed extends Component {
                   <p>
                     At a{' '}
                     <strong
-                      class="pointer"
+                      className="pointer"
                       onClick={() => {
                         this.props.tracking.trackEvent(
                           window.rzpQ.merchantActions().initiated(`Click - Minimal Fee`, {
@@ -344,10 +344,10 @@ class DefaultRefundSpeed extends Component {
                   {!showWhenUtil({
                     featureEnabled: 'disable_instant_refunds',
                   }) ? (
-                    <span class="refunds-speed-tag">
+                    <span className="refunds-speed-tag">
                       OPTIMUM SPEED &nbsp;
                       <span>
-                        <i class="i i-help" />
+                        <i className="i i-help" />
                         <Popover align="bottom" theme="dark">
                           <PopoverBody>
                             <div style={{ textAlign: 'left' }}>
@@ -371,7 +371,7 @@ class DefaultRefundSpeed extends Component {
                             eventLabel: `Setting Page | Contact Support`,
                           });
                         }}
-                        class="highlight know-more"
+                        className="highlight know-more"
                         style={{ marginLeft: 0 }}
                         // target="_blank"
                         // href="https://razorpay.com/support/#request"

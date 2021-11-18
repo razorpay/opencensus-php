@@ -216,42 +216,42 @@ class CheckoutTheme extends Component {
     const { user } = this.props;
     const isEnabled = user.isFeatureEnabled('covid_19_relief');
     return (
-      <div class="panel panel-default panel-theme">
-        <div class="panel-section--theme">
-          <div class="panel-heading">
-            <span class="title">Account Settings</span>
+      <div className="panel panel-default panel-theme">
+        <div className="panel-section--theme">
+          <div className="panel-heading">
+            <span className="title">Account Settings</span>
           </div>
-          <div class="panel-body">
-            <form class="form-horizontal">
-              <div class="form-group theme-select">
+          <div className="panel-body">
+            <form className="form-horizontal">
+              <div className="form-group theme-select">
                 {user.isCovidReliefFlowEnabled &&
                   user.business_type !== 7 &&
                   user.business_type !== 9 && (
-                    <div class="covid-donations__settings">
+                    <div className="covid-donations__settings">
                       {this.props.isLoading ? (
                         <LoaderDots />
                       ) : (
                         <div
-                          class={
+                          className={
                             user.isFeatureEnabled('covid_19_relief') ? 'text-primary' : 'text-faded'
                           }
                         >
-                          <i class="i i-Donate" />
+                          <i className="i i-Donate" />
                           <strong>
                             Donations{' '}
                             {user.isFeatureEnabled('covid_19_relief') ? `enabled` : `disabled`} on
                             Checkout
                           </strong>
-                          <span class="toggler-btn">
+                          <span className="toggler-btn">
                             <SwitchField
                               defaultChecked={!!isEnabled}
                               onChange={this.props.onSwitchChange}
                               type="prime"
                             />
                             {user.isFeatureEnabled('covid_19_relief') ? (
-                              <b class="text-primary">Enabled</b>
+                              <b className="text-primary">Enabled</b>
                             ) : (
-                              <b class="text-faded">Disabled</b>
+                              <b className="text-faded">Disabled</b>
                             )}
                           </span>
                         </div>
@@ -272,15 +272,15 @@ class CheckoutTheme extends Component {
                       </div>
                     </div>
                   )}
-                <label class="col-md-12 col-sm-12" style={{ marginTop: 12 }}>
+                <label className="col-md-12 col-sm-12" style={{ marginTop: 12 }}>
                   <strong>Theme Color</strong>
                 </label>
-                <div class="col-md-5 col-sm-6" style={{ position: 'relative' }}>
-                  <div class="color-picker">
+                <div className="col-md-5 col-sm-6" style={{ position: 'relative' }}>
+                  <div className="color-picker">
                     <Field
                       name="brand_color"
                       component="input"
-                      class="form-control"
+                      className="form-control"
                       type="color"
                       onChange={this.onChangeBrandColor}
                     />
@@ -288,35 +288,35 @@ class CheckoutTheme extends Component {
                   <Field
                     name="brand_color"
                     component="input"
-                    class="form-control"
+                    className="form-control"
                     onChange={this.onChangeBrandColor}
                   />
                 </div>
-                <div class="col-md-3 col-sm-6">
+                <div className="col-md-3 col-sm-6">
                   <AsyncButton
-                    class="btn btn-primary"
+                    className="btn btn-primary"
                     text="Save"
                     pendingText="Saving..."
                     onClick={this.onSave}
                   />
                 </div>
-                <div class="col-md-12 col-md-6 description">
+                <div className="col-md-12 col-md-6 description">
                   Choose a theme color for your brand.
                   <br />
                   The default theme color will be used if none is specified.
                 </div>
               </div>
 
-              <div class="form-group">
-                <label class="col-md-12" style={{ marginTop: 12 }}>
+              <div className="form-group">
+                <label className="col-md-12" style={{ marginTop: 12 }}>
                   <strong>Your Logo</strong>
                 </label>
-                <div class="col-md-12 media" style={{ marginTop: 0 }}>
+                <div className="col-md-12 media" style={{ marginTop: 0 }}>
                   {this.props.config.logo_url && (
-                    <div class="media-left">
+                    <div className="media-left">
                       <a>
                         <img
-                          class="media-object"
+                          className="media-object"
                           src={this.props.config.logo_url}
                           width="72"
                           height="72"
@@ -325,7 +325,7 @@ class CheckoutTheme extends Component {
                     </div>
                   )}
 
-                  <div class="media-body">
+                  <div className="media-body">
                     <FileUploadButton
                       text={this.props?.config?.logo_url ? 'Change Logo' : 'Choose File'}
                       labelClass="btn-primary"
@@ -341,28 +341,28 @@ class CheckoutTheme extends Component {
                       </span>
                     )}
 
-                    <div class="help-block" style={{ marginBottom: 0 }}>
+                    <div className="help-block" style={{ marginBottom: 0 }}>
                       <i style={{ fontSize: 12 }}>Max file size: 1MB</i>
                     </div>
                   </div>
-                  <div class="description">
+                  <div className="description">
                     Choose a square image of minimum dimensions 256x256 px.
                   </div>
                 </div>
               </div>
               <IntoView hashedWith={CHECKOUT_LANG}>
                 {this.props.locale && (
-                  <div class="form-group">
-                    <label class="col-md-12" style={{ marginTop: 12 }}>
+                  <div className="form-group">
+                    <label className="col-md-12" style={{ marginTop: 12 }}>
                       <strong>
                         <TextHighlighter hashedWith={CHECKOUT_LANG}>
                           Default Language
                         </TextHighlighter>
                       </strong>
                     </label>
-                    <div class="col-md-6" style={{ marginTop: 0 }}>
+                    <div className="col-md-6" style={{ marginTop: 0 }}>
                       <select
-                        class="form-control"
+                        className="form-control"
                         defaultValue={this.props.locale.config.language_code}
                         onChange={this.onChangeLocale}
                       >
@@ -373,15 +373,15 @@ class CheckoutTheme extends Component {
                         ))}
                       </select>
                     </div>
-                    <div class="col-md-3 col-sm-6">
+                    <div className="col-md-3 col-sm-6 language-option-button">
                       <AsyncButton
-                        class="btn btn-primary"
+                        className="btn btn-primary"
                         text="Save"
                         pendingText="Saving..."
                         onClick={this.saveLocale}
                       />
                     </div>
-                    <div class="col-md-12">
+                    <div className="col-md-12">
                       <br />
                       Default language will be used on the Checkout page if customer doesn’t specify
                       a language.
@@ -390,7 +390,7 @@ class CheckoutTheme extends Component {
                 )}
               </IntoView>
             </form>
-            <div class="footer-note">
+            <div className="footer-note">
               Changes will reflect on{' '}
               <ShowWhen
                 additionalCondition={() => user.isOrgAllowedFunctionality('external_links')}
@@ -431,7 +431,7 @@ class CheckoutTheme extends Component {
             </div>
           </div>
         </div>
-        <div class="panel-section--checkout">
+        <div className="panel-section--checkout">
           <div id="preview-label">Preview</div>
           <div id="preview-checkout">
             <div id="checkout-header" style={{ backgroundColor: this.state.brandColor }}>
@@ -457,7 +457,7 @@ class CheckoutTheme extends Component {
                 {['card', 'netbanking', 'wallet', 'upi', 'emi', 'qr'].map((type, ix) => (
                   <span key={ix}>
                     {getIcon(type, colorVariations)}
-                    <span class="payment-method-label">{type}</span>
+                    <span className="payment-method-label">{type}</span>
                   </span>
                 ))}
               </div>

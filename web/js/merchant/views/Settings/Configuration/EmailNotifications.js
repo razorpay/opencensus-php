@@ -69,7 +69,7 @@ class EmailNotifications extends Component {
           onResend={this.triggerVerificationOtp}
           title="OTP Verification"
           renderMessage={() => (
-            <p class="m-b">
+            <p className="m-b">
               The action you are trying to perform needs 2 step verification. An Email with 6- digit
               OTP has been sent to {this.props?.user?.user?.email}.
             </p>
@@ -159,35 +159,35 @@ class EmailNotifications extends Component {
     return (
       <div>
         {this.props.user.role === rolesList.OWNER && (
-          <div class="panel panel-default ftx-parent">
-            <div class="panel-heading">
-              <span class="title">
+          <div className="panel panel-default ftx-parent">
+            <div className="panel-heading">
+              <span className="title">
                 <TextHighlighter hashedWith={EMAIL_NOTIF}>Email Notifications</TextHighlighter>
               </span>
             </div>
 
-            <div class="panel-body">
-              <form class="form-horizontal" onSubmit={this.onSave}>
-                <div class="description">
+            <div className="panel-body">
+              <form className="form-horizontal" onSubmit={this.onSave}>
+                <div className="description">
                   Enter email addresses that will receive email notifications regarding payments,
                   settlements, daily payment reports, webhooks, etc. (You can enter multiple email
                   addresses separated by a comma.)
                 </div>
 
-                <div class="form-group">
-                  <div class="col-sm-10">
+                <div className="form-group">
+                  <div className="col-sm-10">
                     <Field
                       name="transaction_report_email"
                       component={InputField}
-                      class="form-control"
+                      className="form-control"
                       maxLength="255"
                       validate={required()}
                     />
                   </div>
 
-                  <div class="col-sm-2">
+                  <div className="col-sm-2">
                     <AsyncButton
-                      class="btn btn-primary pull-right"
+                      className="btn btn-primary email-notification-cta"
                       text="Save Changes"
                       pendingText="Saving..."
                       onClick={this.onSave}

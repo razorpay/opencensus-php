@@ -27,9 +27,18 @@
 
       b
         vertical-align: middle
-
+  
+  .email-notification-cta
+    float right
+    @media screen and (max-width: $screen-sm-min)
+      float none
+      margin-top 12px
+      
   .panel-body
     padding: 0 20px 20px
+    @media screen and (max-width: $screen-sm-min)
+      &.refund-speed-pannel
+        padding 0 0 20px
 
     .form-group
       margin-bottom: 0
@@ -727,6 +736,10 @@
 
       button
         margin-right 5px
+
+.language-option-button
+  @media screen and (max-width: $screen-sm-min)
+    margin-top 12px
 
 .fee-bearer-section
   padding 10px
