@@ -192,8 +192,8 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
             return Yup.string().nullable();
           }),
           business_model: Yup.string().min(
-            200,
-            'Business Description should be at least 200 Characters',
+            50,
+            'Business Description should be at least 50 Characters',
           ),
         });
         return _schema;
@@ -328,7 +328,7 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                       errorText={
                         formikProps.touched.business_model && formikProps.errors.business_model
                       }
-                      helpText="Tell us about the products you sell, your customers and the channels you primarily use for business ( Website, offline retail, etc) with minimum 200 characters"
+                      helpText="Tell us about the products you sell, your customers and the channels you primarily use for business ( Website, offline retail, etc) with minimum 50 characters"
                       maxLength={255}
                     />
                   </View>

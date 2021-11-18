@@ -866,6 +866,7 @@ class App extends Component {
       isSyncExperimentEnabled: user.isSyncExperimentEnabled,
       isGstinAutoPopulate: user.isGstinAutoPopulate,
       isLiteOnboarding: user.isLiteOnboarding,
+      isUpdatedLiteOnboarding: user.isUpdatedLiteOnboarding,
       isSyncBankVerificationEnabled: user.isSyncBankVerificationEnabled,
     };
   };

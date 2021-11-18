@@ -58,7 +58,10 @@ const isVisible = (fieldName, context) => {
       return isPersonalPanVisible(context);
     case 'form_80g_url':
     case 'form_12a_url':
-      return showForOrgs(context.business_overview.business_type.value, context.isLiteOnboarding);
+      return showForOrgs(
+        context.business_overview.business_type.value,
+        context.isUpdatedLiteOnboarding,
+      );
     case 'bank_prrof':
     case 'cancelled_cheque':
     case 'bank_statement':
@@ -91,10 +94,10 @@ const isVisible = (fieldName, context) => {
   }
 };
 
-const isTabComplete = (data, tab, isLiteOnboarding = false) => {
+const isTabComplete = (data, tab, isUpdatedLiteOnboarding = false) => {
   const tabData = data[tab];
   return Object.keys(tabData).every((key) => {
-    if (key === 'bank_account_name' && isLiteOnboarding) {
+    if (key === 'bank_account_name' && isUpdatedLiteOnboarding) {
       return true;
     }
     if (!isVisible(key, data)) return true;

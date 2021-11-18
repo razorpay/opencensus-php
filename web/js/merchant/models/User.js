@@ -1380,6 +1380,10 @@ export default class User {
   get isLiteOnboarding() {
     return this.getExpStatus('lite_onboarding') && !!this.isOrgRZP;
   }
+
+  get isUpdatedLiteOnboarding() {
+    return this.getExpStatus('updated_lite_onboarding') && !!this.isOrgRZP;
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

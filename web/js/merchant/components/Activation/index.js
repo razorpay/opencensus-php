@@ -764,7 +764,7 @@ export default class ActivationWizard extends React.Component {
     );
 
     /* Check validity of 'Bank account no.' before saving */
-    if (currentActive == BANK_ACCOUNT_TAB && !this.props.user?.isLiteOnboarding) {
+    if (currentActive == BANK_ACCOUNT_TAB && !this.props.user?.isUpdatedLiteOnboarding) {
       if (
         reqData.hasOwnProperty('bank_account_number') &&
         (!reqData.bank_account_number || reqData.bank_account_number != this.state.account_no)
@@ -943,7 +943,7 @@ export default class ActivationWizard extends React.Component {
         },
       };
       const hasFilledEverything = FORM_TABS_NAMES[NEEDS_CLARIFICATION_STEP].every((field) => {
-        if (field === 'bank_account_name' && this.props.user?.isLiteOnboarding) {
+        if (field === 'bank_account_name' && this.props.user?.isUpdatedLiteOnboarding) {
           return true;
         }
         if (dynamicFieldName[field]) {

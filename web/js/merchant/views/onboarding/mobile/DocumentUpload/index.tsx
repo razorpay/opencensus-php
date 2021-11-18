@@ -64,7 +64,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       isGstinMandatory,
       isGstinAutoPopulate,
       isSyncBankVerificationEnabled,
-      isLiteOnboarding,
+      isUpdatedLiteOnboarding,
     },
   } = useApp();
   const { gstinDetails } = useGstin();
@@ -147,7 +147,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
         additionalDoc,
       },
       isGstinMandatory,
-      isLiteOnboarding,
+      isUpdatedLiteOnboarding,
     );
     setDocumentUploadCompleted(isComplete);
   };
@@ -169,7 +169,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
           additionalDoc,
         },
         isGstinMandatory,
-        isLiteOnboarding,
+        isUpdatedLiteOnboarding,
       );
       setDocumentUploadCompleted(isComplete);
       analyticsTrack({
@@ -206,7 +206,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
         additionalDoc,
       },
       isGstinMandatory,
-      isLiteOnboarding,
+      isUpdatedLiteOnboarding,
     );
     setDocumentUploadCompleted(isComplete);
   }, [addressDoc, businessDoc, bankDoc, additionalDoc]);
@@ -600,7 +600,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                 </Field>
               </FormSection>
             )}
-            {isVisible('form_12a_url', { ...data, isLiteOnboarding }) && (
+            {isVisible('form_12a_url', { ...data, isUpdatedLiteOnboarding }) && (
               <FormSection title="Form 12A Allotment Letter">
                 <Field last>
                   <FileUpload
@@ -616,7 +616,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                 </Field>
               </FormSection>
             )}
-            {isVisible('form_80g_url', { ...data, isLiteOnboarding }) && (
+            {isVisible('form_80g_url', { ...data, isUpdatedLiteOnboarding }) && (
               <FormSection title="Form 80G Allotment Letter">
                 <Field last>
                   <FileUpload

@@ -83,7 +83,7 @@ function requiredForNGO(activation) {
 function showForOrgs(activation) {
   const selectedBusinessType =
     activation.state.dirty.business_type || activation.props.data.business_type;
-  if (activation.props.user?.isLiteOnboarding) {
+  if (activation.props.user?.isUpdatedLiteOnboarding) {
     return selectedBusinessType && Number(selectedBusinessType) === NGO;
   }
   return selectedBusinessType && ORG_BusinessTypes.indexOf(Number(selectedBusinessType)) !== -1;

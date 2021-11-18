@@ -251,11 +251,11 @@ const businessModel = [
       _autoRenderImpure: true,
       description:
         'Please give a brief description of the nature of your business. Please include examples of products you sell, the business category you operate under, your customers and the channels you primarily use to conduct your business(Website, offline retail etc).',
-      placeholder: 'Minimum 200 characters',
+      placeholder: 'Minimum 50 characters',
       descriptionClass: 'Input--business-description',
       validator: (value) => {
-        if (value.length < 200) {
-          return 'Business Description should be at least 200 Characters';
+        if (value.length < 50) {
+          return 'Business Description should be at least 50 Characters';
         }
       },
       showCharacterLength: (val) => {
@@ -866,7 +866,7 @@ const bankAccountFields = [
       isUnregisteredBusiness(activation) || activation.props.user.isRegAutoKYCEnabled
         ? 'We will deposit a small amount of money in your account to verify the account.'
         : '',
-    _when: (activation) => !activation?.props?.user?.isLiteOnboarding,
+    _when: (activation) => !activation?.props?.user?.isUpdatedLiteOnboarding,
     onBlur: function onBlur() {
       if (!this.isOnKYCTab()) {
         const { user, fetchBankVerificationAttemptCount } = this.props;
@@ -951,7 +951,7 @@ const bankAccountFields = [
           const bankAccountNumber = dirty.bank_account_number;
           const accountNo = this.state.account_no;
 
-          const isMatching = bankAccountNumber == accountNo || this?.props?.user?.isLiteOnboarding;
+          const isMatching = bankAccountNumber == accountNo || this?.props?.user?.isUpdatedLiteOnboarding;
 
           if (
             user.activation_form_milestone === 'L1' &&
@@ -998,7 +998,7 @@ const bankAccountFields = [
       },
       _when: (activation) => {
         const isLocked = activation.props.data.locked;
-        return !isLocked && !activation?.props?.user?.isLiteOnboarding;
+        return !isLocked && !activation?.props?.user?.isUpdatedLiteOnboarding;
       },
       onBlur: function (e) {
         if (!this.isOnKYCTab()) {

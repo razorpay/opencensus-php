@@ -183,7 +183,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
             disabled={isFormLocked}
             hasError={formikProps.values.hasBankVerificationFailed}
           >
-            <Field visible={!experiments.isLiteOnboarding}>
+            <Field visible={!experiments.isUpdatedLiteOnboarding}>
               <TextInput
                 width="auto"
                 name="bank_account_name"
@@ -243,7 +243,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
               />
             </Field>
             {!data.submitted ? (
-              <Field visible={!experiments.isLiteOnboarding}>
+              <Field visible={!experiments.isUpdatedLiteOnboarding}>
                 <TextInput
                   width="auto"
                   name="re_enter_bank_account_number"
