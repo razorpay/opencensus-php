@@ -205,6 +205,8 @@ class Service extends Base\Service
             'stores_url',
             'pp_donation_goal_tracker',
             'ftx_2021',
+            'gstin_self_serve',
+            'rx_icici_auto_kyc',
             'rx_icici_auto_kyc',
             'updated_lite_onboarding'
         ];

@@ -2,22 +2,22 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
-import { Field, reduxForm, formValueSelector } from 'redux-form';
+import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import Banner from 'common/ui/Banner';
 import InputField from 'common/ui/Forms/InputField';
 import Alert from 'common/ui/Forms/Alert';
 import ModalHeader from 'common/ui/ModalHeader';
-import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { saveGST } from 'merchant/reducers/profile';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { required, validateGSTIN } from 'common/utils/validators';
 import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
-import ShowWhen from 'merchant/components/ShowWhen';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import FileUpload from 'merchant/components/File/Upload';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { bindActionCreators, compose } from 'redux';
 
 function ShowStatusMsg({ closeModal }) {
   return (
@@ -40,54 +40,24 @@ function ShowStatusMsg({ closeModal }) {
   );
 }
 
-const selector = formValueSelector('newGST');
-@connect(
-  (state) => {
-    return {
-      merchant_gst: state.profile.merchant_gst,
-      rzp_gst: state.profile.rzp_gst,
-      session: state.session,
-    };
-  },
-  {
-    saveGST,
-    updateSession,
-    ...ModalActions,
-    ...NotificationsActions,
-  },
-)
-@RTracking(() => window.rzpQ.component('AddGST'))
-@reduxForm({
-  form: 'newGST',
-})
-export default class AddGST extends Component {
+class AddGST extends Component {
   state = {
     isGSTINSelfServeOn: false,
+    gstinCertificate: null,
   };
 
   gst_success_msg = 'Entered GSTIN will be applicable only from current month onwards.';
 
   componentWillMount() {
-    let { merchant_gst } = this.props;
+    const { merchant_gst } = this.props;
 
-    let initialValues = {
+    const initialValues = {
       gst_type: 'gstin',
     };
 
-    const {
-      business_registered_address,
-      business_registered_pin,
-      business_registered_city,
-      business_registered_state,
-    } = this.props.activationData ? this.props.activationData : {};
-
     this.props.initialize({
       ...initialValues,
-      ...this.props.merchant_gst,
-      address: `${business_registered_address}`,
-      pincode: `${business_registered_pin}`,
-      city: `${business_registered_city}`,
-      state: `${business_registered_state}`,
+      ...merchant_gst,
     });
   }
 
@@ -98,19 +68,16 @@ export default class AddGST extends Component {
       };
     });
 
-  updateGSTINAddress = async (data) => {
-    const payload = {
-      gstin: data.gstin,
-      business_registered_address: data.address,
-      business_registered_state: data.state,
-      business_registered_city: data.city,
-      business_registered_pin: data.pincode,
-    };
+  updateGSTINAddress = async (event) => {
+    event.preventDefault();
+    const formData = new FormData();
+    formData.append('gstin_self_serve_certificate', this.state.gstinCertificate);
+    formData.append('gstin', this.props.merchant_gst.gstin);
 
     try {
       const response = await merchantFetch({
         url: `merchant/gstin_self_serve`,
-        data: payload,
+        data: formData,
         method: `POST`,
       });
 
@@ -130,24 +97,30 @@ export default class AddGST extends Component {
     }
   };
 
-  save = ({ gst_type, ...otherProps }) => {
-    let fieldProps = {};
-    fieldProps[gst_type] = otherProps[gst_type];
-    const isNew = !this.props.merchant_gst.p_gstin && !this.props.merchant_gst.gstin;
+  onGstCertificateFileChange = (file) => {
+    this.setState({ gstinCertificate: file || null });
+  };
 
-    if (this.state.isGSTINSelfServeOn) return this.updateGSTINAddress(otherProps);
+  save = ({ gst_type, ...otherProps }) => {
+    const fieldProps = {};
+    fieldProps[gst_type] = otherProps[gst_type];
 
     return this.props
       .saveGST(fieldProps)
       .then((item) => {
-        const { updateSession, tracking, showNotification, closeModal } = this.props;
+        const {
+          updateSession: updateSessionFn,
+          tracking,
+          showNotification,
+          closeModal,
+        } = this.props;
 
-        let user = new User({
+        const user = new User({
           ...this.props.session.user,
           ...item.data,
         });
 
-        updateSession({
+        updateSessionFn({
           user,
         });
 
@@ -189,17 +162,9 @@ export default class AddGST extends Component {
   };
 
   render() {
-    const {
-      handleSubmit,
-      merchant_gst,
-      rzp_gst,
-      selectedGSTType,
-      session,
-      activationData,
-    } = this.props;
-
+    const { handleSubmit, merchant_gst, session, activationData } = this.props;
     const isNew = !merchant_gst.p_gstin && !merchant_gst.gstin;
-    const isEditable = isNew && this.props.session.user.isAllowedEdit('profile_gst');
+    const isEditable = isNew && session.user.isAllowedEdit('profile_gst');
     const title = merchant_gst.gstin ? `Update GST details` : `Add GST details`;
 
     return (
@@ -258,11 +223,12 @@ export default class AddGST extends Component {
                     component={InputField}
                     class="form-control"
                     autoFocus={true}
-                    placeholder="19AAAAAA1234YYY"
+                    placeholder="19AAAAA1234Y1YY"
                     validate={[required(), validateGSTIN]}
                     disabled={this.shouldGSTINBeDisabled(isEditable)}
                   />
                 </div>
+
                 {isNew && (
                   <div class="gst-update-note">
                     <Banner>
@@ -272,32 +238,29 @@ export default class AddGST extends Component {
                 )}
               </div>
 
-              {this.props.session.user.isFeatureEnabled(`gstin_self_serve`) &&
-                this.props.selfServeStatus === 'not_started' && (
-                  <React.Fragment>
-                    {' '}
-                    <label>GSTIN Address</label>
-                    <div class="label-info">
-                      <span>
-                        Should be as per your GST Certificate. Your business address will also be
-                        updated to this <i className="i i-info-circle" />
-                        <Popover align="top" theme="dark">
-                          <PopoverBody>
-                            <div>
-                              We use your business address to bill the invoices. It should be same
-                              as the address on you GST certificate if you want to generate
-                              E-invoices.
-                            </div>
-                          </PopoverBody>
-                        </Popover>
-                      </span>
-                    </div>
-                  </React.Fragment>
-                )}
+              {this.props.selfServeStatus === 'not_started' && isNew && (
+                <>
+                  <label>GSTIN Address</label>
+                  <div class="label-info">
+                    <span>
+                      Should be as per your GST Certificate. Your business address will also be
+                      updated to this <i className="i i-info-circle" />
+                      <Popover align="top" theme="dark">
+                        <PopoverBody>
+                          <div>
+                            We use your business address to bill the invoices. It should be same as
+                            the address on you GST certificate if you want to generate E-invoices.
+                          </div>
+                        </PopoverBody>
+                      </Popover>
+                    </span>
+                  </div>
+                </>
+              )}
 
               {this.state.isGSTINSelfServeOn === false &&
-                this.props.session.user.isFeatureEnabled(`gstin_self_serve`) &&
-                this.props.selfServeStatus === 'not_started' && (
+                this.props.selfServeStatus === 'not_started' &&
+                isNew && (
                   <div class="suggested-address-row">
                     <span>
                       {activationData.business_registered_address},{' '}
@@ -352,18 +315,7 @@ export default class AddGST extends Component {
                 </div>
               )}
 
-              {!this.props.session.user.isFeatureEnabled(`gstin_self_serve`) && (
-                <div class="help-block">
-                  <span>
-                    GSTIN once submitted cannot be updated via dashboard. To update it, please{' '}
-                    <Link to="#ticket">write to support</Link>
-                  </span>
-                </div>
-              )}
-
-              {(isEditable ||
-                this.state.isGSTINSelfServeOn ||
-                this.props.session.user.isFeatureEnabled(`gstin_self_serve`)) && (
+              {(isEditable || this.state.isGSTINSelfServeOn) && (
                 <div class="Modal__actions">
                   <AsyncButton
                     type="submit"
@@ -374,6 +326,39 @@ export default class AddGST extends Component {
                   />
                 </div>
               )}
+              <div>
+                {!isNew && (
+                  <>
+                    <label class="label-required">GSTIN Certificate</label>
+                    <Field
+                      name="certificate"
+                      component={FileUpload}
+                      accept={['jpg', 'png', 'pdf']}
+                      maxSize={2102000}
+                      onBiggerFileSize={() => {
+                        this.props.showNotification({
+                          type: 'error',
+                          message: `Document too large. Max limit 2MB`,
+                        });
+                      }}
+                      onFileChange={this.onGstCertificateFileChange}
+                      validate={required('Please upload GSTIN certificate')}
+                      onCloseClick={this.onGstCertificateFileChange}
+                    />
+
+                    <div class="Modal__actions">
+                      <button
+                        type="submit"
+                        class="btn btn-primary btn-block"
+                        onClick={this.updateGSTINAddress}
+                        disabled={this.state.gstinCertificate === null}
+                      >
+                        Submit
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </form>
           )}
         </div>
@@ -381,3 +366,24 @@ export default class AddGST extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => ({
+  merchant_gst: state.profile.merchant_gst,
+  rzp_gst: state.profile.rzp_gst,
+  session: state.session,
+});
+
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    { saveGST, updateSession, ...ModalActions, ...NotificationsActions },
+    dispatch,
+  );
+
+export default compose(
+  connect(mapStateToProps, mapDispatchToProps),
+  reduxForm({
+    form: 'newGST',
+  }),
+  // eslint-disable-next-line babel/new-cap
+  RTracking(() => window.rzpQ.component('AddGST')),
+)(AddGST);

@@ -78,7 +78,7 @@ const BankAccountDetails = ({
             </a>
           ) : (
             <span class="pull-right" style={{ opacity: '0.5' }}>
-              Request Under Review
+              Request under review
             </span>
           ))}
       </div>

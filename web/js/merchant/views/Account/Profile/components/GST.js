@@ -9,15 +9,9 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import ConfirmAddressUpdate from './ConfirmAddressUpdate';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { bindActionCreators, compose } from 'redux';
 
-@connect((state) => ({ ...state.profile, user: state.session.user }), {
-  fetchGST,
-  openModal,
-  closeModal,
-  showNotification,
-})
-@RTracking(() => window.rzpQ.component('GSTDetails'))
-export default class GSTDetails extends Component {
+class GSTDetails extends Component {
   state = {
     business_suggested_address: null,
     business_suggested_pin: null,
@@ -25,6 +19,7 @@ export default class GSTDetails extends Component {
     optOutSuccess: null,
     activationResponse: null,
     selfServeStatus: null,
+    rejectionReason: null,
   };
 
   GSTSection = React.createRef(null);
@@ -34,40 +29,60 @@ export default class GSTDetails extends Component {
   }
 
   componentDidMount() {
-    let { user } = this.props;
-
     this.fetchNewAddress();
-
-    // Check if this feature is enabled for the user
-    if (user.isFeatureEnabled(`gstin_self_serve`)) {
-      this.getSelfServeStatus();
-    }
+    this.getSelfServeStatus();
 
     // scroll directly to GST section
     if (location.hash.startsWith('#gst') && this.GSTSection.current)
       this.GSTSection.current.scrollIntoView();
   }
 
-  @RTracking(() =>
-    window.rzpQ.onbr().initiated('dash.my_account_actions', {
-      action: 'Add_GSTIN_Initiated',
-    }),
-  )
   openAddGSTModal = () => {
-    this.props.openModal({
-      size: 'small',
-      component: (
-        <AddGST
-          suggestedAddress={this.state.business_suggested_address}
-          suggestedPin={this.state.business_suggested_pin}
-          showGSTINSelfServe={this.showGSTINSelfServe}
-          showNotification={this.props.showNotification}
-          activationData={this.state.activationResponse}
-          selfServeStatus={this.state.selfServeStatus}
-          fetchStatus={this.getSelfServeStatus}
-        />
-      ),
-    });
+    const doesGSTINExist = this.props.merchant_gst.gstin;
+    const {
+      business_suggested_address,
+      business_suggested_pin,
+      activationResponse,
+      selfServeStatus,
+    } = this.state;
+
+    if (!doesGSTINExist) {
+      return this.props.openModal({
+        size: 'medium',
+        component: (
+          <AddGST
+            suggestedAddress={business_suggested_address}
+            suggestedPin={business_suggested_pin}
+            showGSTINSelfServe={this.showGSTINSelfServe}
+            showNotification={this.props.showNotification}
+            activationData={activationResponse}
+            selfServeStatus={selfServeStatus}
+            fetchStatus={this.getSelfServeStatus}
+          />
+        ),
+      });
+    } else {
+      // update gstin flow
+      // update flow will only work if experiment is on
+      // eslint-disable-next-line no-lonely-if
+      if (this.props.user.isGstinSelfServeOn) {
+        return this.props.openModal({
+          size: 'medium',
+          component: (
+            <AddGST
+              suggestedAddress={business_suggested_address}
+              suggestedPin={business_suggested_pin}
+              showGSTINSelfServe={this.showGSTINSelfServe}
+              showNotification={this.props.showNotification}
+              activationData={activationResponse}
+              selfServeStatus={selfServeStatus}
+              fetchStatus={this.getSelfServeStatus}
+            />
+          ),
+        });
+      }
+    }
+    return '';
   };
 
   fetchNewAddress = async () => {
@@ -104,7 +119,11 @@ export default class GSTDetails extends Component {
   getSelfServeStatus = async () => {
     try {
       const response = await merchantFetch(`merchant/gstin_self_serve`);
-      if (response) this.setState({ selfServeStatus: response.data.status });
+      if (response)
+        this.setState({
+          selfServeStatus: response.data?.status,
+          rejectionReason: response.data?.rejection_reason,
+        });
     } catch (error) {
       // empty block
     }
@@ -152,12 +171,21 @@ export default class GSTDetails extends Component {
     if (business_suggested_address && business_suggested_pin) return `address & pincode`;
     else if (business_suggested_address) return `address`;
     else if (business_suggested_pin) return 'pincode';
+
+    return '';
   };
 
   render() {
-    let { merchant_gst, rzp_gst, user } = this.props;
-    let { business_suggested_address, business_suggested_pin } = this.state;
-    const title = merchant_gst.gstin ? `Update GST details` : `Add GST details`;
+    const { merchant_gst, rzp_gst, user } = this.props;
+    const { business_suggested_address, business_suggested_pin, rejectionReason } = this.state;
+    let title = merchant_gst.gstin
+      ? user.isGstinSelfServeOn
+        ? `Update GST details`
+        : ``
+      : `Add GST details`;
+    if (rejectionReason) {
+      title = 'Request rejected (retry)';
+    }
 
     return (
       <div class="panel panel-default" ref={this.GSTSection}>
@@ -165,19 +193,22 @@ export default class GSTDetails extends Component {
           GST Details
           <ShowWhen
             myRole="owner admin"
-            additionalCondition={(user) =>
-              user.isAllowedEdit('profile') && user.isFeatureEnabled(`gstin_self_serve`)
-            }
+            additionalCondition={(usr) => usr.isAllowedEdit('profile')}
           >
             {this.state.selfServeStatus === 'not_started' &&
               this.state.activationResponse !== null && (
                 <span class="pull-right">
                   <a onClick={this.openAddGSTModal}>{title}</a>
+                  {rejectionReason && (
+                    <Popover align="top" followPointer theme="dark">
+                      <PopoverBody>{rejectionReason}</PopoverBody>
+                    </Popover>
+                  )}
                 </span>
               )}
             {this.state.selfServeStatus === 'in_progress' && (
-              <span class="pull-right">
-                <a>Request under review</a>
+              <span class="pull-right" style={{ opacity: '0.5' }}>
+                Request under review
               </span>
             )}
           </ShowWhen>
@@ -195,7 +226,7 @@ export default class GSTDetails extends Component {
 
           {user.isOrgRZP && (
             <div class="list-group-item">
-              <span>Razorpay's GST Number</span>
+              <span>Razorpay&#39;s GST Number</span>
               <span>{rzp_gst.gstin}</span>
             </div>
           )}
@@ -237,7 +268,7 @@ export default class GSTDetails extends Component {
               )}
               <div class="action">
                 <span>
-                  <p onClick={this.confirmDontUpdate}>Don't update</p>
+                  <p onClick={this.confirmDontUpdate}>Don&#39;t update</p>
                 </span>
               </div>
               <span class="dot-loader">.</span>
@@ -248,3 +279,19 @@ export default class GSTDetails extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    ...state.profile,
+    user: state.session.user,
+  };
+};
+
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators({ fetchGST, openModal, closeModal, showNotification }, dispatch);
+
+export default compose(
+  connect(mapStateToProps, mapDispatchToProps),
+  // eslint-disable-next-line babel/new-cap
+  RTracking(() => window.rzpQ.component('GSTDetails')),
+)(GSTDetails);
