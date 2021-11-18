@@ -404,6 +404,20 @@ return [
         ],
     ],
 
+    'testPgKycActivation' => [
+        'request' => [
+            'content' => [
+                'activation_status'  => 'activated',
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'activation_status'  => 'activated',
+            ],
+        ],
+    ],
+
     'testDefaultInstrumentRequestOnMerchantActivation' => [
         'request' => [
             'content' => [

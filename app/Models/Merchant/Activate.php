@@ -628,7 +628,9 @@ class Activate extends Base\Core
      */
     public function activateBusinessBankingIfApplicable(Entity $merchant, bool $sendActivationSms = false): Entity
     {
-        if ($merchant->isBusinessBankingEnabled() === false)
+        // VA should not be activated for unregistered business in case of PG KYC approval
+        if (($merchant->isBusinessBankingEnabled() === false) or
+             ((new Service())->isAllowedForBusinessBanking($merchant->getId()) === false))
         {
             return $merchant;
         }

@@ -50,6 +50,7 @@ use RZP\Tests\Functional\Merchant\Bvs\BvsValidationTest;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\Document\Entity as MerchantDocuments;
 use RZP\Models\Workflow\Action\Repository as ActionRepository;
+use RZP\Mail\Merchant\RazorpayX\AccountActivationConfirmation;
 use RZP\Models\Admin\Permission\Repository as PermissionRepository;
 
 
@@ -4303,5 +4304,232 @@ You can now start accepting payments from https://www.example.com.
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
 
         $this->assertContains('https://play.google.com/store/apps/details?id=com.abc.app.test', $merchantDetails->getAdditionalWebsites());
+    }
+
+    public function assertBankingEntitiesNotNullInTestMode($merchantDetail)
+    {
+        $bankAccount = $this->getDbEntity('bank_account',
+            [
+                'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'type'        => 'virtual_account'
+            ], 'test');
+
+
+        $this->assertNotNull($bankAccount);
+
+        $entityId = $bankAccount['entity_id'];
+
+        $bankAccountId = $bankAccount['id'];
+
+        $virtualAccount = $this->getDbEntity('virtual_account',
+            [
+                'merchant_id'     => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'id'              => $entityId,
+                'bank_account_id' => $bankAccountId
+            ], 'test');
+
+        $this->assertNotNull($virtualAccount);
+
+        $balanceId = $virtualAccount['balance_id'];
+
+        $balance = $this->getDbEntity('balance',
+            [
+                'merchant_id'  => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'type'         => 'banking',
+                'account_type' => 'shared',
+                'id'           => $balanceId
+            ], 'test');
+
+        $this->assertNotNull($balance);
+
+        $accountNumber = $balance['account_number'];
+
+        $bankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id'    => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'account_type'   => 'nodal',
+                'account_number' => $accountNumber,
+                'balance_id'     => $balanceId
+            ], 'test');
+
+        $this->assertNotNull($bankingAccount);
+    }
+
+    public function assertBankingEntitiesNotNullInLiveMode($merchantDetail)
+    {
+        $bankAccount = $this->getDbEntity('bank_account',
+            [
+                'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'type'        => 'virtual_account'
+            ], 'live');
+
+
+        $this->assertNotNull($bankAccount);
+
+        $entityId = $bankAccount['entity_id'];
+
+        $bankAccountId = $bankAccount['id'];
+
+        $virtualAccount = $this->getDbEntity('virtual_account',
+            [
+                'merchant_id'     => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'id'              => $entityId,
+                'bank_account_id' => $bankAccountId
+            ], 'live');
+
+        $this->assertNotNull($virtualAccount);
+
+        $balanceId = $virtualAccount['balance_id'];
+
+        $balance = $this->getDbEntity('balance',
+            [
+                'merchant_id'  => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'type'         => 'banking',
+                'account_type' => 'shared',
+                'id'           => $balanceId
+            ], 'live');
+
+        $this->assertNotNull($balance);
+
+        $accountNumber = $balance['account_number'];
+
+        $bankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id'    => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'account_type'   => 'nodal',
+                'account_number' => $accountNumber,
+                'balance_id'     => $balanceId
+            ], 'live');
+
+        $this->assertNotNull($bankingAccount);
+    }
+
+    public function assertBankingEntitiesNullInTestMode($merchantDetail)
+    {
+        $bankAccount = $this->getDbEntity('bank_account',
+            [
+                'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'type'        => 'virtual_account'
+            ], 'test');
+
+
+        $this->assertNull($bankAccount);
+    }
+
+    public function assertBankingEntitiesNullInLiveMode($merchantDetail)
+    {
+        $bankAccount = $this->getDbEntity('bank_account',
+            [
+                'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'type'        => 'virtual_account'
+            ], 'live');
+
+
+        $this->assertNull($bankAccount);
+    }
+
+    public function fillPgKyc(bool $businessBanking = false, string $businessType = '1')
+    {
+        Mail::fake();
+
+        $merchantId = self::DEFAULT_MERCHANT_ID;
+
+        $website = 'http://abc.com';
+
+        $this->fixtures->edit('merchant', $merchantId, ['website' => $website, 'whitelisted_domains' => ['abc.com'], 'business_banking' => $businessBanking]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'business_website' => $website, 'issue_fields' => 'business_website', "submitted" => true, Entity::BUSINESS_TYPE => $businessType]);
+
+        $pricingPlanId = $this->fixtures->create('pricing', [
+            'product'        => 'banking',
+            'id'             => '1zE31zbybacac1',
+            'plan_id'        => '1hDYlICobzOCYt',
+            'plan_name'      => 'testDefaultPlan',
+            'feature'        => 'fund_account_validation',
+            'payment_method' => 'bank_account',
+            'percent_rate'   => 900,
+            'org_id'         => '100000razorpay',
+            'type'           => 'pricing',
+        ]);
+
+        $this->fixtures->edit('merchant',$merchantId, [
+            'name'             => ' Kill Bill Pandey ',
+            'billing_label'    => ' AB ',
+            'pricing_plan_id'  => $pricingPlanId['plan_id'],
+            'activated'        => false,
+            'international'    => 0,
+            'category2'        => null
+        ]);
+
+        $testData = & $this->testData['testPgKycActivation'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->fixtures->on('live')->edit('terminal','BANKACC3DSN3DT',
+            ['gateway_merchant_id' => '3434']);
+
+        $this->fixtures->on('live')->edit('terminal','BANKACC3DSN3DZ',
+            ['gateway_merchant_id' => '232323']);
+
+        $this->fixtures->on('test')->edit('terminal','BANKACC3DSN3DT',
+            ['gateway_merchant_id' => '3434']);
+
+        $this->fixtures->on('test')->edit('terminal','BANKACC3DSN3DZ',
+            ['gateway_merchant_id' => '232323']);
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->startTest($testData);
+
+        return $merchantDetail;
+    }
+
+    public function testVaActivationOnPgKycForRegisteredBusinessXUser()
+    {
+        $merchantDetail = $this->fillPgKyc(true, '1');
+
+        Mail::assertQueued(AccountActivationConfirmation::class, function ($mail)
+        {
+            $this->assertEquals('emails.merchant.razorpayx.account_activation_confirmation', $mail->view);
+
+            return true;
+        });
+
+        $this->assertBankingEntitiesNotNullInTestMode($merchantDetail);
+
+        $this->assertBankingEntitiesNotNullInLiveMode($merchantDetail);
+    }
+
+    public function testVaActivationOnPgKycForUnregisteredBusinessXUser()
+    {
+        $merchantDetail = $this->fillPgKyc(true, '11');
+
+        Mail::assertNotQueued(AccountActivationConfirmation::class);
+
+        $this->assertBankingEntitiesNullInTestMode($merchantDetail);
+
+        $this->assertBankingEntitiesNullInLiveMode($merchantDetail);
+    }
+
+    public function testVaActivationOnPgKycForRegisteredBusinessPgUser()
+    {
+        $merchantDetail = $this->fillPgKyc(false, '1');
+
+        Mail::assertNotQueued(AccountActivationConfirmation::class);
+
+        $this->assertBankingEntitiesNullInTestMode($merchantDetail);
+
+        $this->assertBankingEntitiesNullInLiveMode($merchantDetail);
+    }
+
+    public function testVaActivationOnPgKycForUnRegisteredBusinessPgUser()
+    {
+        $merchantDetail = $this->fillPgKyc(false, '11');
+
+        Mail::assertNotQueued(AccountActivationConfirmation::class);
+
+        $this->assertBankingEntitiesNullInTestMode($merchantDetail);
+
+        $this->assertBankingEntitiesNullInLiveMode($merchantDetail);
     }
 }
