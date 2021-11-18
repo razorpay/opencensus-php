@@ -821,12 +821,13 @@ class PublicErrorDescription
     const BAD_REQUEST_INCORRECT_LOGIN_ATTEMPT                                   = 'Incorrect Password login attempt exhausted. Please contact support or login via dashboard';
     const BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT                        = 'Token absent for recurring payment';
     const BAD_REQUEST_TOKEN_NOT_FOUND                                           = 'Token not found.';
-    const BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED                              = 'Multiple accounts associated with this contact mobile.';
+    const BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED                              = 'That mobile number is associated with multiple accounts. Please use your email address to login.';
     const BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED                                    = 'No accounts associated with this contact mobile.';
     const BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED                               = 'The contact mobile is not verified.';
     const BAD_REQUEST_EMAIL_NOT_VERIFIED                                        = 'The email address is not verified.';
     const BAD_REQUEST_CONTACT_MOBILE_ALREADY_VERIFIED                           = 'Mobile number already verified.';
     const BAD_REQUEST_EMAIL_ALREADY_VERIFIED                                    = 'Email already verified.';
+    const BAD_REQUEST_PASSWORD_INCORRECT                                        = 'The password you have entered is incorrect.';
 
     const BAD_REQUEST_USER_2FA_ALREADY_SETUP                                    = 'User already has a verified mobile number associated with the account';
     const BAD_REQUEST_LOCKED_USER_LOGIN                                         = 'User cannot login. User account is locked.';

@@ -885,14 +885,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PASSWORD_INCORRECT,
                 ],
             ],
-            'status_code' => 401,
+            'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PASSWORD_INCORRECT,
         ],
     ],
 
@@ -940,14 +940,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PASSWORD_INCORRECT,
                 ],
             ],
-            'status_code' => 401,
+            'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PASSWORD_INCORRECT,
         ],
     ],
 

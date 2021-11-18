@@ -1669,7 +1669,7 @@ class Core extends Base\Core
             $this->trace->count(Metric::USER_NOT_AUTHENTICATED);
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
+                ErrorCode::BAD_REQUEST_PASSWORD_INCORRECT);
         }
 
         if (isset($input[Entity::EMAIL]) === true)

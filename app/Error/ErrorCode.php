@@ -2389,6 +2389,8 @@ class ErrorCode
     const BAD_REQUEST_2FA_LOGIN_PASSWORD_SUSPENDED                                  = 'BAD_REQUEST_2FA_LOGIN_PASSWORD_SUSPENDED';
     const SERVER_ERROR_2FA_INCORRECT_PASSWORD_REDIS_ERROR                           = 'SERVER_ERROR_2FA_INCORRECT_PASSWORD_REDIS_ERROR';
 
+    const BAD_REQUEST_PASSWORD_INCORRECT                                            = 'BAD_REQUEST_PASSWORD_INCORRECT';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);
