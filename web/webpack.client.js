@@ -98,7 +98,7 @@ module.exports = ({ config, project }) => {
             files: [`icons/${fontsToProjectMap[project] || project}/*.svg`],
             fontName: `${project}-icons`,
             fileName: 'css/[fontname].[ext]',
-            htmlFileName: `css/[fontname].html`,
+            htmlDest: `css/[fontname].html`,
             html: true,
           },
         },
