@@ -1,6 +1,8 @@
 import ModalHeader from 'common/ui/ModalHeader';
 import { gatewayDetailsMapping } from '../util';
 
+const PROVIDERS_WITH_DETAILS_ON_EMAIL = ['atom', 'upi_mindgate'];
+
 export const HowToGetDetails = ({ providers, selectedProvider, closeModal }) => {
   const gatewayName = providers[selectedProvider]['Gateway Name'].data_value;
 
@@ -8,12 +10,12 @@ export const HowToGetDetails = ({ providers, selectedProvider, closeModal }) => 
     <div className="gateway-details-desc--how-to-modal">
       <ModalHeader onCloseClick={closeModal} title={`Where do I find ${gatewayName} details?`} />
       <div className="modal-body">
-        {selectedProvider === 'atom' ? (
+        {PROVIDERS_WITH_DETAILS_ON_EMAIL.includes(selectedProvider) ? (
           <div className="atom-block-wrapper">
-            <p className="atom-block-title">Have a registered Atom Business Account</p>
+            <p className="atom-block-title">Have a registered {gatewayName} Business Account</p>
             <p className="atom-block-desc">
-              For API keys details, you need to refer to the excel sheet shared by Atom on your
-              registered email Id.
+              For API keys details, you need to refer to the excel sheet shared by {gatewayName} on
+              your registered email Id.
             </p>
           </div>
         ) : (
