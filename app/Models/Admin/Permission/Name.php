@@ -772,6 +772,17 @@ class Name
     // Admin action permission for X Ops Team
     const ENABLE_DOWNTIME_NOTIFICATION_X_DASHBOARD   = 'enable_downtime_notification_x_dashboard';
 
+    const CAPITAL_COLLECTIONS_ADMIN             = 'capital_collections_admin';
+    const PAYMENTS_PROMOTION_COUPON_APPLY       = 'payments_promotion_coupon_apply';
+    const PAYMENTS_PROMOTION_COUPON_DELETE      = 'payments_promotion_coupon_delete';
+    const PAYMENTS_PROMOTION_COUPON_UPDATE      = 'payments_promotion_coupon_update';
+    const MERCHANT_ADD_CREDITS_BULK             = 'merchant_add_credits_bulk';
+    const MERCHANT_EMAIL_ADDITIONAL_CREATE      = 'merchant_email_additional_create';
+    const MERCHANT_EMAIL_ADDITIONAL_DELETE      = 'merchant_email_additional_delete';
+    const PAYMENT_PROMOTION_EVENT_UPDATE        = 'payment_promotion_event_update';
+    const PAYMENTS_OFFER_BULK_CREATE            = 'payments_offer_bulk_create';
+    const CAPITAL_SETTLEMENT_ONDEMAND_PRICING   = 'capital_settlement_ondemand_pricing';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

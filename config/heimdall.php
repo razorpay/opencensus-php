@@ -735,6 +735,10 @@ return [
                 'assignable'  => true,
                 'workflow'    => true
             ],
+            Permission::CAPITAL_SETTLEMENT_ONDEMAND_PRICING => [
+                'assignable'  => true,
+            ],
+
         ],
 
         PermissionCategory::ENTITY   => [
@@ -1616,7 +1620,52 @@ return [
                 'assignable'  => true,
                 'workflow'    => true,
             ],
-        ]
+        ],
+
+        PermissionCategory::COLLECTIONS => [
+            Permission::CAPITAL_COLLECTIONS_ADMIN => [
+                'assignable'  => true,
+            ],
+        ],
+
+        PermissionCategory::COUPON => [
+            Permission::PAYMENTS_PROMOTION_COUPON_APPLY => [
+                'assignable'  => true,
+            ],
+            Permission::PAYMENTS_PROMOTION_COUPON_DELETE => [
+                'assignable'  => true,
+            ],
+            Permission::PAYMENTS_PROMOTION_COUPON_UPDATE => [
+                'assignable'  => true,
+            ],
+        ],
+
+        PermissionCategory::CREDITS => [
+            Permission::MERCHANT_ADD_CREDITS_BULK => [
+                'assignable'  => true,
+            ],
+        ],
+
+        PermissionCategory::EMAIL => [
+            Permission::MERCHANT_EMAIL_ADDITIONAL_CREATE => [
+                'assignable'  => true,
+            ],
+            Permission::MERCHANT_EMAIL_ADDITIONAL_DELETE => [
+                'assignable'  => true,
+            ],
+        ],
+
+        PermissionCategory::EVENT_PROMOTION => [
+            Permission::PAYMENT_PROMOTION_EVENT_UPDATE => [
+                'assignable'  => true,
+            ],
+        ],
+
+        PermissionCategory::OFFER => [
+            Permission::PAYMENTS_OFFER_BULK_CREATE => [
+                'assignable'  => true,
+            ],
+        ],
     ],
 
     'workflows' => [

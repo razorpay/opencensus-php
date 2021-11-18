@@ -381,7 +381,7 @@ class PromotionsTest extends TestCase
 
         $role = $this->ba->getAdmin()->roles->first();
 
-        $permission = $this->getDbEntities('permission', ['name' => 'create_promotion_event']);
+        $permission = $this->getDbEntities('permission', ['name' => 'payment_promotion_event_update']);
 
         $role->permissions()->detach($permission[0]['id']);
 
