@@ -1,5 +1,6 @@
 <html><body onload="document.forms[0].submit()">
 <?php
+require('../scripts/sanitizeParams.php');
 
 $sign_url = 'https://checkout.stage.razorpay.in/demo/sign';
 
