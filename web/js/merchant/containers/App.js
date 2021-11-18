@@ -169,9 +169,9 @@ class App extends Component {
     if(window.REFINER_PROJECT_ID) {
       _refiner('setProject', window.REFINER_PROJECT_ID);
       _refiner('identifyUser', {
-          id: user.user.id,
-          merchant_id: user.merchant.id,
-          created_at: user.user.created_at,
+          id: user.user?.id,
+          merchant_id: user.current,
+          created_at: user.user?.created_at,
       });
     }
 
