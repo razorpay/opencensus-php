@@ -37,6 +37,7 @@ export default class Support extends Component {
     isOpened: false,
     isHidden: false,
     notifyCount: 0,
+    botIsActive: false,
     supportFlags: {
       show_chat: true,
       message_body: null,
@@ -96,8 +97,19 @@ export default class Support extends Component {
         this.setState({ notifyCount: response.count });
       });
     }
+    const chatBotInt = setInterval(() => {
+      if (window.chatBotCloseIcon) {
+        this.setState({ botIsActive: true });
+        window.chatBotCloseIcon.onclick = () => {
+          window.chatbotToggle();
+          this.handleVisibility(false);
+        };
+        clearInterval(chatBotInt);
+      }
+    }, 500);
   };
 
+  // eslint-disable-next-line consistent-return
   handleToggle = () => {
     const { user } = this.props;
 
@@ -121,7 +133,11 @@ export default class Support extends Component {
   };
 
   handleChat = () => {
-    if (window.fcWidget) {
+    if (this.props.user.isChatbotLive) {
+      if (window.chatbotToggle) {
+        window.chatbotToggle();
+      }
+    } else if (window.fcWidget) {
       window.fcWidget.open();
     }
 
@@ -163,6 +179,7 @@ export default class Support extends Component {
         <SupportBody
           onToggle={this.handleToggle}
           isOpened={isOpened}
+          botIsActive={this.state.botIsActive}
           onChat={this.handleChat}
           notifyCount={notifyCount}
           isCallEnabled={isCallEnabled}

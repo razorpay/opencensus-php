@@ -572,6 +572,10 @@ export default class User {
     return this.getExpStatus('TicketSystemSupport');
   }
 
+  get isChatbotLive() {
+    return this.getExpStatus('razorpay_chat_bot');
+  }
+
   get isRazorxAnnouncementEnabled() {
     return this.findTag('announcement_razorpayx');
   }

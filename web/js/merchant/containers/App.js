@@ -46,6 +46,7 @@ import LogoutDialog from 'merchant/components/LogoutDialog';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { fetchInstantSettlements } from 'merchant/reducers/collection';
 import { bindActionCreators, compose } from 'redux';
+import { initChatbot } from '../chatbot-init';
 import PartnerActivationRequiredModal from 'merchant/views/PartnerDashboard/Activation/Components/ActivationRequiredModal';
 import _refiner from 'refiner-js';
 
@@ -234,7 +235,6 @@ class App extends Component {
       this.fetchUser().then(({ data }) => {
         const user = data;
         const role = user.userRole;
-
         if (!currentMode) {
           currentMode = user.isActivated ? 'live' : 'test';
         } else if (this.canMerchantMoveToLiveMode(currentMode, isActivated, user)) {
@@ -249,10 +249,15 @@ class App extends Component {
         });
         this.redirectToRoute(role);
         this.setLiveTransactionDone(user);
+        if (user.isChatbotLive) {
+          initChatbot(user);
+        }
+        else {
+          setTimeout(() => {
+            initChat(user);
+          });
+        }
 
-        setTimeout(() => {
-          initChat(user);
-        });
         return data;
       }),
       this.fetchOrg().then(({ data }) => {
@@ -295,8 +300,7 @@ class App extends Component {
         // use partner mode if merchant kyc is not activated and it's enabled
         if (!user.isActivated && this.state.isPartnerModeEnabled) {
           this.fetchPartnerActivationStatus().then(({ data }) => {
-            const isCurrentPartnerKYCActivated =
-              data?.partner_activation?.activation_status === 'activated';
+            const isCurrentPartnerKYCActivated = data?.partner_activation?.activation_status === 'activated';
             if (user && isCurrentPartnerKYCActivated) {
               LocalStorageService.setItem(`is_partner_activated--${user.current}`, 'true');
               isPartnerKYCActivated = 'true';
@@ -318,10 +322,9 @@ class App extends Component {
             } else if (!isPartnerKYCActivated) {
               currentPartnerMode = 'test';
             }
-            LocalStorageService.setItem(this.partnerModeToken, currentPartnerMode);
+
             this.props.updateSession({
-              partnerMode: currentPartnerMode,
-              isUsingPartnerMode: this.state.isPartnerModeEnabled,
+              partnerMode: currentPartnerMode, isUsingPartnerMode: this.state.isPartnerModeEnabled
             });
           });
         }
@@ -454,8 +457,7 @@ class App extends Component {
         this.setState({ nonGoLiveNPSSurveyPopup: takeNonGoLiveNPSSurvey });
       }
 
-      const newIsPartnerModeEnabled =
-        location.pathname.startsWith('/partners/') && user.isIndependentPartnerKYCEnabled;
+      const newIsPartnerModeEnabled = location.pathname.startsWith('/partners/') && user.isIndependentPartnerKYCEnabled;
       if (this.state.isPartnerModeEnabled !== newIsPartnerModeEnabled) {
         this.setState({
           isPartnerModeEnabled: newIsPartnerModeEnabled,
@@ -588,7 +590,7 @@ class App extends Component {
               this.fireMTUFunnelEvents(user);
             }
           })
-          .catch((err) => {});
+          .catch((err) => { });
         break;
       case 2:
         this.fireMTUAudienceEvents(user);
@@ -690,7 +692,7 @@ class App extends Component {
     return merchantFetch({ url: 'partner/activation', mode: 'live' });
   };
 
-  switchMode = (mode, callback = () => {}) => {
+  switchMode = (mode, callback = () => { }) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Header',
       eventAction: 'Switch - Mode',
