@@ -105,9 +105,8 @@ function MerchantNavLinks(props) {
         customBadge={
           getLandingProduct === 'payment_link' &&
           props.payment === 0 &&
-          user.isProductRecommendationEnabled
-            ? 'try'
-            : ''
+          user.isProductRecommendationEnabled &&
+          'try'
         }
       />
       <MainNavLink
@@ -119,9 +118,8 @@ function MerchantNavLinks(props) {
         customBadge={
           getLandingProduct === 'payment_page' &&
           props.payment === 0 &&
-          user.isProductRecommendationEnabled
-            ? 'try'
-            : ''
+          user.isProductRecommendationEnabled &&
+          'try'
         }
       />
       <MainNavLink
@@ -148,9 +146,8 @@ function MerchantNavLinks(props) {
         customBadge={
           ['payment_button', 'payment_gateway'].includes(getLandingProduct) &&
           props.payment === 0 &&
-          user.isProductRecommendationEnabled
-            ? 'try'
-            : ''
+          user.isProductRecommendationEnabled &&
+          'try'
         }
       />
       <MainNavLink
@@ -162,9 +159,8 @@ function MerchantNavLinks(props) {
         customBadge={
           getLandingProduct === 'route' &&
           props.payment === 0 &&
-          user.isProductRecommendationEnabled
-            ? 'try'
-            : ''
+          user.isProductRecommendationEnabled &&
+          'try'
         }
       />
       <MainNavLink
@@ -176,9 +172,8 @@ function MerchantNavLinks(props) {
         customBadge={
           getLandingProduct === 'subscriptions' &&
           props.payment === 0 &&
-          user.isProductRecommendationEnabled
-            ? 'try'
-            : ''
+          user.isProductRecommendationEnabled &&
+          'try'
         }
       />
 
@@ -200,9 +195,8 @@ function MerchantNavLinks(props) {
         customBadge={
           getLandingProduct === 'smart_collect' &&
           props.payment === 0 &&
-          user.isProductRecommendationEnabled
-            ? 'try'
-            : ''
+          user.isProductRecommendationEnabled &&
+          'try'
         }
       />
 
