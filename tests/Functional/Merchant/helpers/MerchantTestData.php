@@ -6769,6 +6769,21 @@ return [
         ],
     ],
 
+    'testUpdateContactMobileOfUserByAdminAndVerifyByFeatureFlag' => [
+        'request'  => [
+            'url'     => '/users-admin/contact',
+            'method'  => 'patch',
+            'content' => [
+                'user_id'        => '',
+                'contact_mobile' => '999999999'
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testUpdateContactMobileOfSelfUser' => [
         'request'   => [
             'url'     => '/users/contact',

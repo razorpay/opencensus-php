@@ -882,6 +882,11 @@ class Constants
      */
     const LEDGER_JOURNAL_WRITES = 'ledger_journal_writes';
 
+    /**
+     * If contact number updated via admin dashboard, mark it verified by default if feature present on org
+     */
+    const ORG_CONTACT_VERIFY_DEFAULT = 'contact_verify_default';
+
     const ORG_AXIS_PAYPAL = 'axis_paypal';
 
     const AXIS_PAYPAL_ENABLE = 'axis_paypal_enable';
@@ -1302,6 +1307,7 @@ class Constants
         self::SHOW_OLD_ERROR_DESC             => true,
         self::PAYOUT_ASYNC_FTS_TRANSFER       => true,
         self::SKIP_SUBM_ONBOARDING_COMM       => true,
+        self::ORG_CONTACT_VERIFY_DEFAULT      => true,
         self::SKIP_CUSTOMER_ID_CHECKOUT       => true,
         self::DISPUTE_PRESENTMENT             => true,
         self::ORG_EMAIL_UPDATE_2FA_ENABLED    => true,

@@ -9211,6 +9211,31 @@ IFSC Code  ICIC0001206
         $this->assertEquals($userDb['contact_mobile_verified'], false);
     }
 
+    public function testUpdateContactMobileOfUserByAdminAndVerifyByFeatureFlag()
+    {
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '100000razorpay',
+                'name' => 'contact_verify_default',
+                'entity_type' => 'org',
+            ]);
+
+        $this->ba->adminAuth();
+
+        $user = $this->fixtures->create('user');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['user_id'] = $user['id'];
+
+        $this->startTest();
+
+        $userDb = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($userDb['contact_mobile_verified'], true);
+    }
+
     public function testUpdateContactMobileOfSelfUser()
     {
         $merchant = $this->createMerchant();

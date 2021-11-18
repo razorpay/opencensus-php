@@ -3425,12 +3425,21 @@ class Core extends Base\Core
         {
             $contactMobileVerified = false;
 
+            // https://docs.google.com/document/d/1Y0S7g3HvPPeo-xpUAzZ4bxKopeWlSbusjRZlW6KMvUc/edit?pli=1#
+            $autoVerifyContact = $this->userHasFeatureOnAllMerchantsOrgs(FeatureConstant::ORG_CONTACT_VERIFY_DEFAULT, $user);
+
+            if($autoVerifyContact === true)
+            {
+                $contactMobileVerified = true;
+            }
+
             $this->trace->info(
                 TraceCode::USER_CONTACT_MOBILE_UPDATE,
                 [
                     Entity::USER_ID        => $user->getId(),
                     Entity::CONTACT_MOBILE => $input[Entity::CONTACT_MOBILE],
                     'admin_id'             => $this->app['basicauth']->getAdmin()->getId(),
+                    'autoVerifyContact'    => $autoVerifyContact,
                 ]);
         }
         else
@@ -3495,6 +3504,35 @@ class Core extends Base\Core
 
         // check if the userRole is only admin/owner.
         (new Role())->validateMerchantUserRoleForUpdateUserDetails($this->userRole);
+    }
+
+    /**
+     * This functions checks if all the merchants for this user have a feature flag enabled
+     *
+     * @param string $feature
+     * @param Entity $user
+     *
+     */
+    protected function userHasFeatureOnAllMerchantsOrgs(string $feature, Entity $user)
+    {
+        $mids = $this->repo->merchant_user->returnMerchantIdsForUserId($user->getId());
+
+        if(count($mids) === 0)
+        {
+            return false;
+        }
+
+        foreach ($mids as $mid)
+        {
+            $merchant = $this->repo->merchant->findOrFail($mid);
+
+            if($merchant->org->isFeatureEnabled($feature) === false)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
