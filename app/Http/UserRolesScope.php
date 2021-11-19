@@ -458,6 +458,7 @@ class UserRolesScope
             'auth_link_paper_mandate_retry_token'                  => [Role::OWNER, Role::ADMIN],
             'banking_account_create'                               => [Role::OWNER, Role::ADMIN],
             'banking_account_create_dashboard'                     => [Role::OWNER, Role::ADMIN],
+            'get_banking_account_slot_booking_details'             => [Role::OWNER, Role::ADMIN],
             'banking_account_service_common_serviceability_check'  => [Role::OWNER, Role::ADMIN],
             'banking_account_service_pincode_serviceability_check' => [Role::OWNER, Role::ADMIN],
             'banking_account_slot_book'                            => [Role::OWNER, Role::ADMIN],

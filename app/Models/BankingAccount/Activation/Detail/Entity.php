@@ -308,6 +308,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttributeValue(self::MERCHANT_POC_PHONE_NUMBER);
     }
 
+    public function getBookingDateAndTime()
+    {
+        return $this->getAttributeValue(self::BOOKING_DATE_AND_TIME);
+    }
+
     public function setPanVerificationStatus(string $status)
     {
         $this->setAttribute(self::BUSINESS_PAN_VALIDATION, $status);

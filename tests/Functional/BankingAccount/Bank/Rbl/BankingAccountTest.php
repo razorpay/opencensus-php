@@ -4392,6 +4392,63 @@ class BankingAccountTest extends TestCase
         $this->assertNotNull($bankingAccountEntity->reviewers());
     }
 
+    public function testGetSlotBookingDetails()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $bankingAccount = $this->createBankingAccountFromDashboard();
+
+        $bankingAccountId = $bankingAccount['id'];
+
+        if(str_contains($bankingAccount['id'], Entity::getIdPrefix()) === false)
+        {
+            $bankingAccountId = $bankingAccount->getPublicId();
+        }
+
+        $request = [
+        'url'     => '/banking_accounts/activation/' . $bankingAccountId . '/details/slot_booking',
+        'method'  => 'POST',
+        'content' => [
+            "admin_email"           => "superadmin@razorpay.com",
+            "booking_date_and_time" => 1639960752,
+            "additional_details"    => [
+                "booking_id" => "SRF2345"
+            ]
+        ],
+    ];
+
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $bankingAccountEntity = $this->getDbLastEntity('banking_account');
+
+        $this->assertNotNull($bankingAccountEntity->reviewers());
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/booking/slot',
+                'method'  => 'GET',
+                'content' => [
+                    "id"      => $bankingAccountId,
+                    "channel" => 'rbl'
+                ],
+            ],
+        ];
+
+        $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest($dataToReplace);
+    }
+
     public function testUpdateActivationDetailIfNameUpdated()
     {
         $bankingAccount = $this->testCreateActivationDetail();

@@ -108,6 +108,23 @@ class Service extends Base\Service
         return null;
     }
 
+    public function getSlotBookingDetailsForBankingAccount(string $bankingAccountId): array
+    {
+        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+
+        $activationDetail = $this->repo->banking_account_activation_detail->findByBankingAccountId($bankingAccount->getId());
+
+        $response[Entity::BOOKING_DATE_AND_TIME] = $activationDetail->getBookingDateAndTime();
+
+        $additionalDetails = json_decode($activationDetail->getAdditionalDetails(), true);
+
+        $response['booking_id'] = $additionalDetails['booking_id'];
+
+        $response['assigned_staff_name'] = $activationDetail->getAssigneeName();
+
+        return $response;
+    }
+
     /**
      * @throws BadRequestException
      */

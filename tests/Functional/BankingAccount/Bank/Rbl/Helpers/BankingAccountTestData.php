@@ -2578,6 +2578,21 @@ return [
         ],
     ],
 
+    'testGetSlotBookingDetails' => [
+        'request' => [
+            'url'     => '/booking/slot',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "booking_date_and_time" => 1639960752,
+                "booking_id"            => "SRF2345"
+            ],
+        ],
+    ],
+
     'testUpdateActivationDetailIfNameUpdated' => [
         'request'  => [
             'url'     => '/banking_accounts/activation/{id}/details',

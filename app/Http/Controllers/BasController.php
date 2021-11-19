@@ -5,6 +5,9 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use RZP\Models\BankingAccountService;
+use RZP\Models\BankingAccount\Activation\Detail\Entity;
+use RZP\Models\BankingAccount\Activation\Detail\Service;
+use RZP\Models\BankingAccount\Activation\Notification\Notifier;
 
 class BasController extends Controller
 {
@@ -134,6 +137,27 @@ class BasController extends Controller
         $data =  $this->service->sendRblApplicationInProgressLeadsToSalesForce();
 
         return ApiResponse::json($data);
+    }
+
+    public function getSlotBookingDetailsForBankingAccountAndChannel()
+    {
+        $input = Request::all();
+
+        $channel = $input['channel'];
+
+        $bankingAccount = $input['id'];
+
+        $response = [];
+
+        if ($channel === 'rbl'){
+
+            $notifier = new Notifier();
+
+            $response = (new Service($notifier))->getSlotBookingDetailsForBankingAccount($bankingAccount);
+        }
+        // ICICI Needs to be implemented
+
+        return ApiResponse::json($response);
     }
 }
 
