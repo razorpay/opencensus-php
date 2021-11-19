@@ -5682,7 +5682,7 @@ class Processor
     {
         if(in_array($e->getError()->getInternalErrorCode(), self::$errorCodesToAllowPaypal)) {
             if ($payment->isCard() === true && $payment->isInternational() === true
-                && $merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::ENABLE_PAYPAL_AS_BACKUP) === true) {
+                && $merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::DISABLE_PAYPAL_AS_BACKUP) === false) {
 
                 //@TODO : Make the following block more generic to test if any method is enabled
 

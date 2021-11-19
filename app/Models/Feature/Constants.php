@@ -873,9 +873,9 @@ class Constants
     const DISABLE_SIFT_JS   =   'disable_sift_js';
 
     /**
-     * Merchant feature used to provide paypal as a backup
+     * Merchant feature used to disable paypal as a backup in case of Intl card failure
      */
-    const ENABLE_PAYPAL_AS_BACKUP   =   'enable_paypal_as_backup';
+    const DISABLE_PAYPAL_AS_BACKUP   =   'disable_paypal_as_backup';
 
     /**
      * All Ledger Features for RX release
@@ -946,8 +946,7 @@ class Constants
 
     const ONE_CC_COUPONS = 'one_cc_coupons';
 
-    const CREDIT_ID_BASED_NEW_QUERY = 'credit_id_based_new_query';
-
+const CREDIT_ID_BASED_NEW_QUERY = 'credit_id_based_new_query';
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1335,7 +1334,7 @@ class Constants
         self::NETWORK_TOKENIZATION_LIVE       => true,
         self::HIGH_TPS_COMPOSITE_PAYOUT       => true,
         self::ALLOW_NETWORK_TOKENS            => true,
-        self::ENABLE_PAYPAL_AS_BACKUP         => true,
+        self::DISABLE_PAYPAL_AS_BACKUP        => true,
         self::PAYOUT_ASYNC_INGRESS            => true,
         self::ONE_CLICK_CHECKOUT              => true,
         self::ONE_CC_MANDATORY_LOGIN          => true,

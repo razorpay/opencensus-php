@@ -154,11 +154,11 @@ class ProcessorTest extends TestCase
 
     public function testPaypalAsBackupForInternationalPayments(){
 
-        $ex = new GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED);
+        $ex = new GatewayErrorException(ErrorCode::GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED);
         $paypal = [
             'paypal' => true
         ];
-        
+
         $payment = \Mockery::mock(Entity::class);
         $merchant = \Mockery::mock(Merchant\Entity::class);
 
@@ -167,7 +167,7 @@ class ProcessorTest extends TestCase
         $payment->shouldReceive('isCard')->andReturn(true);
         $payment->shouldReceive('isInternational')->andReturn(true);
 
-        $merchant->shouldReceive('isFeatureEnabled')->with(Constants::ENABLE_PAYPAL_AS_BACKUP)->andReturn(true);
+        $merchant->shouldReceive('isFeatureEnabled')->with(Constants::DISABLE_PAYPAL_AS_BACKUP)->andReturn(false);
         $merchant->shouldReceive('getMethods->getEnabledWallets')->andReturn($paypal);
 
         $processor->shouldReceive('updatePaymentFailed')->withAnyArgs()->andReturnNull();
@@ -215,7 +215,7 @@ class ProcessorTest extends TestCase
         $payment->shouldReceive('isCard')->andReturn(true);
         $payment->shouldReceive('isInternational')->andReturn(false);
 
-        $merchant->shouldReceive('isFeatureEnabled')->with(Constants::ENABLE_PAYPAL_AS_BACKUP)->andReturn(true);
+        $merchant->shouldReceive('isFeatureEnabled')->with(Constants::DISABLE_PAYPAL_AS_BACKUP)->andReturn(false);
         $merchant->shouldReceive('getMethods->getEnabledWallets')->andReturn($paypal)->zeroOrMoreTimes();
 
         $processor->shouldReceive('updatePaymentFailed')->withAnyArgs()->andReturnNull();
@@ -238,7 +238,7 @@ class ProcessorTest extends TestCase
         $payment->shouldReceive('isCard')->andReturn(true);
         $payment->shouldReceive('isInternational')->andReturn(true);
 
-        $merchant->shouldReceive('isFeatureEnabled')->with(Constants::ENABLE_PAYPAL_AS_BACKUP)->andReturn(true);
+        $merchant->shouldReceive('isFeatureEnabled')->with(Constants::DISABLE_PAYPAL_AS_BACKUP)->andReturn(false);
         $merchant->shouldReceive('getMethods->getEnabledWallets')->andReturn(array());
 
         $processor->shouldReceive('updatePaymentFailed')->withAnyArgs()->andReturnNull();
