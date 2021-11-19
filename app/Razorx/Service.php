@@ -43,7 +43,6 @@ class Service extends Base\Service
             'sellerapp_PL_batch_upload',
             'nps_survey_banner',
             'new_pp_success_modal',
-            'va_search',
             'hide_company_name',
             'batch_cancel',
             'rev_up_chennai_announcement',

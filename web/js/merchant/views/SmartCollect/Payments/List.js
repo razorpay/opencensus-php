@@ -134,7 +134,6 @@ export default class VAPaymentsListContainer extends ListContainer {
           onClearAnalytics={this.onClearAnalytics}
           onSubmit={this.onSearchSubmit}
           onEleBlur={this.onSearchEleBlur}
-          showAdvancedFilters={this.props.user.isSmartCollectAdvancedSearchFeaturesEnabled}
         />
 
         <PaymentsTable

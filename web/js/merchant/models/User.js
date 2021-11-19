@@ -929,10 +929,6 @@ export default class User {
     return true;
   }
 
-  get isSmartCollectAdvancedSearchFeaturesEnabled() {
-    return this.getExpStatus('va_search');
-  }
-
   get isPaymentsExtraRefundDetailsEnabled() {
     return this.getExpStatus('payments_extra_refund_details');
   }
