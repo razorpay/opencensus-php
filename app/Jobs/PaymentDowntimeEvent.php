@@ -4,6 +4,8 @@ namespace RZP\Jobs;
 
 use RZP\Jobs\Job;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Gateway\Downtime\Webhook\Constants\DowntimeService;
+use RZP\Models\Payment\Downtime\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Downtime;
 
@@ -37,12 +39,17 @@ class PaymentDowntimeEvent extends Job
 
     public function handle()
     {
+        $timeStarted = millitime();
+        $downtimeType = "UNKNOWN";
+
         parent::handle();
 
         try
         {
             /** @var \RZP\Models\Payment\Downtime\Entity */
             $downtime = unserialize($this->serializedDowntime);
+
+            $downtimeType = ($downtime->getMerchantId() === null) ? DowntimeService::PLATFORM : DowntimeService::MERCHANT;
 
             $this->trace->info(
                 TraceCode::PAYMENT_DOWNTIME_EVENT_JOB_RECEIVED,
@@ -53,15 +60,32 @@ class PaymentDowntimeEvent extends Job
             {
                 (new Downtime\Service())->{'eventDowntime' . ucfirst($this->status)}($downtime, $this->lastSeverity);
             }
+
+            $this->trace->count(Metric::PAYMENT_DOWNTIME_EVENT_JOB_COUNT,
+                ['downtime_type' => $downtimeType, 'downtime_status' => $this->status, 'status' => 'successful']
+            );
         }
         catch (\Throwable $e)
         {
             $this->trace->traceException($e);
 
+            $this->trace->count(Metric::PAYMENT_DOWNTIME_EVENT_JOB_COUNT,
+                ['downtime_type' => $downtimeType, 'downtime_status' => $this->status, 'status' => 'failed']
+            );
+
             if ($this->attempts() < self::MAX_ALLOWED_ATTEMPTS)
             {
+                $this->trace->count(Metric::PAYMENT_DOWNTIME_EVENT_JOB_COUNT,
+                    ['downtime_type' => $downtimeType, 'downtime_status' => $this->status, 'status' => 'retried']
+                );
+
                 $this->release(self::RELEASE_WAIT_SECS);
             }
         }
+
+        $this->trace->histogram(Metric::PAYMENT_DOWNTIME_EVENT_JOB_DURATION,
+            millitime() - $timeStarted,
+            ['downtime_type' => $downtimeType]
+        );
     }
 }
