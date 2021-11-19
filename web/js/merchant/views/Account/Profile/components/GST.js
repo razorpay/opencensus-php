@@ -10,6 +10,9 @@ import ConfirmAddressUpdate from './ConfirmAddressUpdate';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { bindActionCreators, compose } from 'redux';
+import moment from 'moment';
+
+const THRESHOLD_DATE_GSTIN = `01/01/2021`;
 
 class GSTDetails extends Component {
   state = {
@@ -30,7 +33,9 @@ class GSTDetails extends Component {
 
   componentDidMount() {
     this.fetchNewAddress();
-    this.getSelfServeStatus();
+    if (this.props.user.isGstinSelfServeOn) {
+      this.getSelfServeStatus();
+    }
 
     // scroll directly to GST section
     if (location.hash.startsWith('#gst') && this.GSTSection.current)
@@ -45,6 +50,10 @@ class GSTDetails extends Component {
       activationResponse,
       selfServeStatus,
     } = this.state;
+
+    const isSignedUpAfterThreshold =
+      new Date(moment.unix(this.props.user.created_at).format('DD/MM/YYYY')) >=
+      new Date(THRESHOLD_DATE_GSTIN);
 
     if (!doesGSTINExist) {
       return this.props.openModal({
@@ -63,9 +72,9 @@ class GSTDetails extends Component {
       });
     } else {
       // update gstin flow
-      // update flow will only work if experiment is on
+      // update flow will only work if experiment is on & user is created after 1st Jan, 2021
       // eslint-disable-next-line no-lonely-if
-      if (this.props.user.isGstinSelfServeOn) {
+      if (this.props.user.isGstinSelfServeOn && isSignedUpAfterThreshold) {
         return this.props.openModal({
           size: 'medium',
           component: (
