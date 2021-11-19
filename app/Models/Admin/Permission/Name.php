@@ -783,6 +783,39 @@ class Name
     const PAYMENTS_OFFER_BULK_CREATE            = 'payments_offer_bulk_create';
     const CAPITAL_SETTLEMENT_ONDEMAND_PRICING   = 'capital_settlement_ondemand_pricing';
 
+    const MERCHANT_PRICING_BULK_CREATE                          = 'merchant_pricing_bulk_create';
+    const PAYMENTS_REFUNDS_RETRY_FUND_TRANSFERS_SCROOGE_SOURCE  = 'payments_refunds_retry_fund_transfers_scrooge_source';
+    const PAYMENTS_REFUNDS_RETRY_FUND_TRANSFERS_SCROOGE_CUSTOM  = 'payments_refunds_retry_fund_transfers_scrooge_custom';
+    const CREATE_CREDIT_BUREAU_REPORTS                          = 'create_credit_bureau_reports';
+    const MERCHANT_DISPUTE_BULK_EDIT                            = 'merchant_dispute_bulk_edit';
+    const MERCHANT_ACTIVATION_ARCHIVE                           = 'merchant_activation_archive';
+    const MERCHANT_BANK_ACCOUNT_DETAIL_CREATE                   = 'merchant_bank_account_detail_create';
+    const MERCHANT_BANK_ACCOUNT_DETAIL_UPDATE                   = 'merchant_bank_account_detail_update';
+    const MERCHANT_SETTLEMENT_BANK_ACCOUNT_CREATE               = 'merchant_settlement_bank_account_create';
+    const MERCHANT_SETTLEMENT_BANK_ACCOUNT_UPDATE               = 'merchant_settlement_bank_account_update';
+
+    const MERCHANT_SETTLEMENT_BANK_ACCOUNT_DELETE       = 'merchant_settlement_bank_account_delete';
+    const MERCHANT_BANK_ACCOUNT_EDIT                    = 'merchant_bank_account_edit';
+    const MERCHANT_BANK_ACCOUNT_TEST_GENERATE           = 'merchant_bank_account_test_generate';
+    const MERCHANT_BANK_ACCOUNT_UPDATE                  = 'merchant_bank_account_update';
+    const PAYMENTS_REFUND_EDIT_BULK                     = 'payments_refund_edit_bulk';
+    const SET_CONFIG_KEYS                               = 'set_config_keys';
+    const DELETE_CONFIG_KEY                             = 'delete_config_key';
+    const PAYMENTS_BUY_PRICING_PLAN_RULE_ADD            = 'payments_buy_pricing_plan_rule_add';
+    const PAYMENTS_BUY_PRICING_PLAN_RULE_FORCE_DELETE   = 'payments_buy_pricing_plan_rule_force_delete';
+    const RECON_SERVICE_REQUEST                         = 'recon_service_request';
+
+    const RECON_FILE_UPLOAD                     = 'recon_file_upload';
+    const PAYMENTS_REFUND_FAILED_VERIFY_BULK    = 'payments_refund_failed_verify_bulk';
+    const PAYMENTS_REFUND_SCROOGE_CREATE        = 'payments_refund_scrooge_create';
+    const PAYMENTS_REFUND_SCROOGE_CREATE_BULK   = 'payments_refund_scrooge_create_bulk';
+    const MERCHANT_PRICING_PLAN_RULE_ADD        = 'merchant_pricing_plan_rule_add';
+    const MERCHANT_PRICING_PLAN_RULE_DELETE     = 'merchant_pricing_plan_rule_delete';
+    const MERCHANT_BANK_ACCOUNT_STATUS_CHANGE   = 'merchant_bank_account_status_change';
+    const PAYMENTS_TERMINAL_FETCH_BY_ID         = 'payments_terminal_fetch_by_id';
+    const PAYMENTS_TERMINAL_FETCH_MULTIPLE      = 'payments_terminal_fetch_multiple';
+    const PROXY_MERCHANT_GET_TERMINALS          = 'proxy_merchant_get_terminals';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

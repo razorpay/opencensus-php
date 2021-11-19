@@ -995,7 +995,7 @@ class AdminTest extends TestCase
     {
         $token = $this->createAdminWithRedisConfigPermissions([
             'update_config_key',
-            'manage_config_keys'
+            'set_config_keys'
         ]);
 
         $this->ba->adminAuth('test', $token);
@@ -1062,7 +1062,7 @@ class AdminTest extends TestCase
         $token = $this->createAdminWithRedisConfigPermissions([
             'set_rx_account_prefix',
             'set_shared_account_allowed_channels',
-            'manage_config_keys'
+            'set_config_keys'
         ]);
 
         $this->ba->adminAuth('test',$token);

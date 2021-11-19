@@ -61,6 +61,12 @@ return [
             Permission::MANAGE_CONFIG_KEYS => [
                 'assignable' => true
             ],
+            Permission::SET_CONFIG_KEYS => [
+                'assignable'  => true,
+            ],
+            Permission::DELETE_CONFIG_KEY => [
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::FILE_STORE => [
@@ -678,6 +684,61 @@ return [
                 'description' => 'Blacklist trusted badge for merchant',
                 'assignable'  => true
             ],
+            Permission::CREATE_CREDIT_BUREAU_REPORTS => [
+                'assignable'  => true,
+            ],
+            Permission::MERCHANT_ACTIVATION_ARCHIVE => [
+                'assignable'  => true,
+            ],
+            Permission::MERCHANT_BANK_ACCOUNT_DETAIL_CREATE => [
+                'assignable'  => true,
+            ],
+            Permission::MERCHANT_BANK_ACCOUNT_DETAIL_UPDATE => [
+                'assignable'  => true,
+            ],
+            Permission::MERCHANT_SETTLEMENT_BANK_ACCOUNT_CREATE => [
+                'assignable'  => true,
+            ],
+            Permission::MERCHANT_SETTLEMENT_BANK_ACCOUNT_UPDATE => [
+                'assignable'  => true,
+            ],
+
+            Permission::MERCHANT_SETTLEMENT_BANK_ACCOUNT_DELETE     => [
+                'assignable'  => true,
+            ],
+            Permission::MERCHANT_BANK_ACCOUNT_EDIT     => [
+                'assignable'  => true,
+            ],
+            Permission::MERCHANT_BANK_ACCOUNT_TEST_GENERATE     => [
+                'assignable'  => true,
+            ],
+            Permission::MERCHANT_BANK_ACCOUNT_UPDATE     => [
+                'assignable'  => true,
+            ],
+            Permission::PAYMENTS_REFUND_EDIT_BULK   => [
+                'assignable'  => true,
+            ],
+            Permission::PAYMENTS_REFUND_FAILED_VERIFY_BULK   => [
+                'assignable' => true,
+            ],
+            Permission::PAYMENTS_REFUND_SCROOGE_CREATE   => [
+                'assignable' => true,
+            ],
+            Permission::PAYMENTS_REFUND_SCROOGE_CREATE_BULK   => [
+                'assignable' => true,
+            ],
+            Permission::MERCHANT_BANK_ACCOUNT_STATUS_CHANGE   => [
+                'assignable' => true,
+            ],
+            Permission::PAYMENTS_TERMINAL_FETCH_BY_ID   => [
+                'assignable' => true,
+            ],
+            Permission::PAYMENTS_TERMINAL_FETCH_MULTIPLE   => [
+                'assignable' => true,
+            ],
+            Permission::PROXY_MERCHANT_GET_TERMINALS   => [
+                'assignable' => true,
+            ],
         ],
 
         PermissionCategory::SETTLEMENT => [
@@ -702,6 +763,9 @@ return [
             ],
             Permission::CREATE_DISPUTE_REASON => [
                 'description' => 'Create Dispute Reason Permission',
+                'assignable'  => true,
+            ],
+            Permission::MERCHANT_DISPUTE_BULK_EDIT  => [
                 'assignable'  => true,
             ],
         ],
@@ -739,6 +803,22 @@ return [
                 'assignable'  => true,
             ],
 
+            Permission::MERCHANT_PRICING_BULK_CREATE => [
+                'assignable'  => true,
+            ],
+            Permission::PAYMENTS_BUY_PRICING_PLAN_RULE_ADD   => [
+                'assignable'  => true,
+            ],
+            Permission::PAYMENTS_BUY_PRICING_PLAN_RULE_FORCE_DELETE   => [
+                'assignable'  => true,
+            ],
+
+            Permission::MERCHANT_PRICING_PLAN_RULE_ADD => [
+                'assignable'  => true,
+            ],
+            Permission::MERCHANT_PRICING_PLAN_RULE_DELETE => [
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::ENTITY   => [
@@ -1577,6 +1657,14 @@ return [
                 'description'   => 'Manage access to recon actions on admin dashboard',
                 'assignable'    => true,
             ],
+
+            Permission::RECON_SERVICE_REQUEST => [
+                'assignable'  => true,
+            ],
+
+            Permission::RECON_FILE_UPLOAD => [
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::FTS_DASHBOARD_ADMIN => [
@@ -1663,6 +1751,15 @@ return [
 
         PermissionCategory::OFFER => [
             Permission::PAYMENTS_OFFER_BULK_CREATE => [
+                'assignable'  => true,
+            ],
+        ],
+
+        PermissionCategory::REFUND => [
+            Permission::PAYMENTS_REFUNDS_RETRY_FUND_TRANSFERS_SCROOGE_SOURCE    => [
+                'assignable'  => true,
+            ],
+            Permission::PAYMENTS_REFUNDS_RETRY_FUND_TRANSFERS_SCROOGE_CUSTOM    => [
                 'assignable'  => true,
             ],
         ],

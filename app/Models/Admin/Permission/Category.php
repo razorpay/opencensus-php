@@ -67,4 +67,5 @@ class Category
     const EMAIL                        = 'email';
     const EVENT_PROMOTION              = 'event_promotion';
     const OFFER                        = 'offer';
+    const REFUND                       = 'refund';
 }

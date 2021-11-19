@@ -264,6 +264,7 @@ class Core extends Base\Core
                 if ($isWorkflowRequired === true)
                 {
                     $this->app['workflow']
+                         ->setPermission(Permission\Name::EDIT_MERCHANT_BANK_DETAIL)
                          ->setEntityAndId($oldBankAccount->getEntity(), $oldBankAccount->getId())
                          ->handle($oldBankAccountArray, $newBankAccountArray);
                 }

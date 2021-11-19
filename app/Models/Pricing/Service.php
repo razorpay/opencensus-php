@@ -21,6 +21,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Pricing\Feature as PricingFeature;
+use RZP\Models\Admin\Permission\Name as PermissionName;
 
 class Service extends Base\Service
 {
@@ -635,6 +636,7 @@ class Service extends Base\Service
         $rule = $this->repo->pricing->getPlanRule($planId, $ruleId);
 
         $this->app['workflow']
+            ->setPermission(PermissionName::PAYMENTS_UPDATE_BUY_PRICING_PLAN)
             ->setEntityAndId($rule->getEntity(), $rule->getPlanId())
             ->handle($rule, (new \stdClass));
 

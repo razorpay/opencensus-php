@@ -5,6 +5,7 @@ namespace RZP\Models\Pricing;
 use RZP\Models\Base;
 use RZP\Models\Admin\Action;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Permission\Name as PermissionName;
 
 class Core extends Base\Core
 {
@@ -41,6 +42,7 @@ class Core extends Base\Core
         $rule->setAuditAction(Action::CREATE_PRICING_PLAN_RULE);
 
         $this->app['workflow']
+            ->setPermission(PermissionName::PAYMENTS_UPDATE_BUY_PRICING_PLAN)
             ->setEntityAndId($rule->getEntity(), $rule->getPlanId())
             ->handle((new \stdClass), $rule);
 
