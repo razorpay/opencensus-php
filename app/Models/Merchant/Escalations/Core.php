@@ -21,6 +21,8 @@ class Core extends Base\Core
 {
     protected $cache;
 
+    const DATA_LAKE_WEB_ATTRIBUTION_QUERY = "select * from hive.aggregate_ba.marketing_attributions where merchant_id in (%s)";
+
     public function __construct()
     {
         parent::__construct();
@@ -146,6 +148,53 @@ class Core extends Base\Core
         $this->cache->put($cacheKey, Carbon::now()->getTimestamp());
     }
 
+    public function pushWebAttributionDetailsToSegmentCron()
+    {
+        $lastCronTime = $this->getLastCronTime(Constants::WEB_ATTRIBUTION_CRON_CACHE_KEY);
+
+        /*
+         * Update last Cron time instantly, since processing of cron may take another 5-10 mins
+         * and during that time another payments can happen
+         */
+        $this->updateLastCronTime(Constants::WEB_ATTRIBUTION_CRON_CACHE_KEY);
+
+        list($from, $to) = $this->getTimeWindowForCron([], Constants::WEB_ATTRIBUTION_CRON_CACHE_KEY,1);
+
+        // Fetch all merchants that have been created since last time cron ran
+        $merchantIds = $this->repo->merchant->fetchMerchantsCreatedBetween($from, $to);
+
+        $this->trace->info(TraceCode::WEB_ATTRIBUTION_DETAILS_CRON_TRACE, [
+            'last_cron_time'  => $lastCronTime,
+            'merchants_count' => count($merchantIds),
+        ]);
+
+        $strMerchantIds = implode(', ', array_map(function ($val) { return sprintf('\'%s\'', $val);}, $merchantIds));
+
+        $dataLakeQuery = sprintf(self::DATA_LAKE_WEB_ATTRIBUTION_QUERY, $strMerchantIds);
+
+        $lakeData = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+
+        foreach ($lakeData as $data)
+        {
+            $merchantId = $data['merchant_id'];
+
+            unset($data['merchant_id']);
+
+            $segmentProperties = [];
+
+            foreach ($data as $key => $value)
+            {
+                $segmentProperties["web_" . $key] = $value;
+            }
+
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            $this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties);
+        }
+
+        $this->app['segment-analytics']->buildRequestAndSend();
+    }
+
     public function pushTransactionDetailsToSegmentCron()
     {
         $lastCronTime = $this->getLastCronTime(Constants::TRANSACTION_CRON_CACHE_KEY);
@@ -196,7 +245,7 @@ class Core extends Base\Core
 
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-                $this->app['segment-analytics']->pushIdentify($merchant, $segmentProperties);
+                $this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties);
             }
         }
 

@@ -256,6 +256,15 @@ class Repository extends Base\Repository
                     ->whereNull(Entity::SUSPENDED_AT);
     }
 
+    public function fetchMerchantsCreatedBetween($from, $to)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
+
     public function fetchMerchantsCreatedBetweenForOrg($from, $to, $orgId)
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())
