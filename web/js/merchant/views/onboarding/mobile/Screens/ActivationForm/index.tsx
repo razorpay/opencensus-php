@@ -219,13 +219,14 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           } else if (
             isUnregisteredBusiness(res.business_type) &&
             res.poi_verification_status === 'initiated' &&
-            experiments.canSkipPoiValidation
+            experiments.canSkipPoiValidation &&
+            !experiments.isL2AllowedForPoiInitiated
           ) {
             setModalType('poi_initiated');
           } else if (res.activated && res.activation_status === 'instantly_activated') {
             setModalType('payment_enable');
             switchMode(user.current, 'live');
-          } else if (dedupeStatus === 'partial_match' || res?.activation_flow === 'greylist') {
+          } else {
             setModalType('payment_disable');
           }
           setIsModalOpen(true);
@@ -299,8 +300,12 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       activeTabId === 'business_details' &&
       isInstantActivationEnabled &&
       (!isL1Submitted(activation_form_milestone) ||
-        isDedupe ||
-        (poi_verification_status === 'initiated' && !experiments.isSyncExperimentEnabled))
+        (!experiments.isL2AllowedForPoiInitiated
+          ? isUnregisteredBusiness(data.business_type) &&
+            poi_verification_status === 'initiated' &&
+            activation_form_milestone === 'L1' &&
+            experiments.isSyncExperimentEnabled
+          : false))
     ) {
       return 'Submit KYC';
     }
@@ -514,9 +519,13 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       return (
         false ||
         (activeTabId === 'business_details' &&
-          poi_verification_status === 'initiated' &&
           isInstantActivationEnabled &&
-          !experiments.isSyncExperimentEnabled)
+          (!experiments.isL2AllowedForPoiInitiated
+            ? isUnregisteredBusiness(data.business_type) &&
+              poi_verification_status === 'initiated' &&
+              activation_form_milestone === 'L1' &&
+              experiments.isSyncExperimentEnabled
+            : false))
       );
     }
   };
@@ -527,7 +536,8 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       activation_status === 'needs_clarification' ||
       (isUnregisteredBusiness(data.business_type) &&
         activation_form_milestone === 'L1' &&
-        poi_verification_status === 'initiated')
+        poi_verification_status === 'initiated' &&
+        !experiments.isL2AllowedForPoiInitiated)
     );
   };
 
@@ -565,7 +575,9 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     ];
     if (
       (!isDedupe &&
-        (!isUnregisteredBusiness(data.business_type) || poi_verification_status !== 'initiated') &&
+        (!isUnregisteredBusiness(data.business_type) ||
+          poi_verification_status !== 'initiated' ||
+          experiments.isL2AllowedForPoiInitiated) &&
         activation_form_milestone === 'L1') ||
       ((isDedupe || !!submitted) && activation_form_milestone === 'L2') ||
       !isInstantActivationEnabled
@@ -612,7 +624,12 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
             </Flex>
             <Link
               onClick={() => {
-                if (!submitted && !isDedupe && data.poi_verification_status !== 'initiated') {
+                if (
+                  !submitted &&
+                  !isDedupe &&
+                  (data.poi_verification_status !== 'initiated' ||
+                    experiments.isL2AllowedForPoiInitiated)
+                ) {
                   setIsSaveAndExitModalOpen(true);
                 } else {
                   history.push('/dashboard');

@@ -167,12 +167,12 @@ class App extends Component {
     });
 
     // Initialize refiner
-    if(window.REFINER_PROJECT_ID) {
+    if (window.REFINER_PROJECT_ID) {
       _refiner('setProject', window.REFINER_PROJECT_ID);
       _refiner('identifyUser', {
-          id: user.user?.id,
-          merchant_id: user.current,
-          created_at: user.user?.created_at,
+        id: user.user?.id,
+        merchant_id: user.current,
+        created_at: user.user?.created_at,
       });
     }
 
@@ -868,6 +868,7 @@ class App extends Component {
       isSyncExperimentEnabled: user.isSyncExperimentEnabled,
       isGstinAutoPopulate: user.isGstinAutoPopulate,
       isLiteOnboarding: user.isLiteOnboarding,
+      isL2AllowedForPoiInitiated: user.isL2AllowedForPoiInitiated,
       isUpdatedLiteOnboarding: user.isUpdatedLiteOnboarding,
       isSyncBankVerificationEnabled: user.isSyncBankVerificationEnabled,
     };

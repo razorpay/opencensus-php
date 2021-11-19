@@ -274,9 +274,12 @@ export default class ActivationWizard extends React.Component {
         FORM_TABS_NAMES.push(ndcFields.map((f) => f?.name).filter((f) => Boolean(f)));
         NEEDS_CLARIFICATION_STEP = 5;
       }
-      const userCanSubmitForm = this.props.user.isUnregisteredBusiness
-        ? this.props.user.poi_verification_status !== 'initiated'
-        : true;
+      const userCanSubmitForm =
+        this.props.user.isUnregisteredBusiness &&
+        this.props.user.activation_form_milestone === 'L1' &&
+        !this.props.user.isL2AllowedForPoiInitiated
+          ? this.props.user.poi_verification_status !== 'initiated'
+          : true;
 
       if (
         this.props.user.isInstantActivationEnabled &&
@@ -1947,9 +1950,12 @@ export default class ActivationWizard extends React.Component {
     const isFormActivated = !!this.props.data.activated;
     const isFormSubmitted = !!this.props.data.submitted;
 
-    const userCanSubmitForm = this.props.user.isUnregisteredBusiness
-      ? this.props.user.poi_verification_status !== 'initiated'
-      : true;
+    const userCanSubmitForm =
+      this.props.user.isUnregisteredBusiness &&
+      this.props.user.activation_form_milestone === 'L1' &&
+      !this.props.user.isL2AllowedForPoiInitiated
+        ? this.props.user.poi_verification_status !== 'initiated'
+        : true;
 
     let activeTab = this.state.activeTab;
     activeTab = activeTab < 0 || !activeTab ? 0 : activeTab; // Graceful failure in case activeTab becomes negative. To handle non-reproducible weird error.

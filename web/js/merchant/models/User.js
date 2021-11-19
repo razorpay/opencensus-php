@@ -1296,6 +1296,10 @@ export default class User {
     );
   }
 
+  get isL2AllowedForPoiInitiated() {
+    return this.getExpStatus('l2_allowed') && this.isOrgRZP && this.isUnregisteredBusiness;
+  }
+
   get isAadharEkycMandatory() {
     const query = QueryString.parse(window.location.search);
     const isSourceRX = !!(query && query.merchant && query.merchant === 'x');

@@ -451,6 +451,7 @@ function getActivationState(activationData = {}, isUnregisteredBusiness) {
     merchant,
     isHardLimitReached,
     merchant_tnc,
+    isL2AllowedForPoiInitiated,
   } = activationData;
 
   const tncRequired = !business_website && !merchant_tnc && !isSourceRX() && canGenerateTnCPage;
@@ -468,7 +469,7 @@ function getActivationState(activationData = {}, isUnregisteredBusiness) {
       if (activation_status === 'instantly_activated') {
         activationState = 'L1_instantly_activated';
       } else if (isUnregisteredBusiness) {
-        if (poi_verification_status === 'initiated') {
+        if (poi_verification_status === 'initiated' && !isL2AllowedForPoiInitiated) {
           activationState = 'poi_initiated';
         } else if (poi_verification_status === 'verified' && activated) {
           activationState = 'poi_verified';

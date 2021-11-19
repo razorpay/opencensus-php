@@ -189,6 +189,7 @@ class Service extends Base\Service
             'switch_onboarding_card',
             'additional_domain_whitelist_self_serve',
             'auto_pl',
+            'l2_allowed',
             'remove_presignup_functionality',
             'transaction_limit_update_self_serve',
             'rx_ca_self_serve_flow',

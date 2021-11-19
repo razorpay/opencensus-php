@@ -68,10 +68,7 @@ const ActivationProgress: React.FC = () => {
       if (activationData.activated && activationData.activation_status === 'instantly_activated') {
         setModalType('payment_enable');
         switchMode(user.current, 'live');
-      } else if (
-        checkIfDedupe({ ...activationData, isInstantActivationEnabled }) === 'partial_match' ||
-        activationData?.activation_flow === 'greylist'
-      ) {
+      } else {
         setModalType('payment_disable');
       }
       setIsModalOpen(true);
@@ -82,7 +79,8 @@ const ActivationProgress: React.FC = () => {
   if (
     (!isDedupe &&
       (!isUnregisteredBusiness(data.business_type) ||
-        data.poi_verification_status !== 'initiated') &&
+        data.poi_verification_status !== 'initiated' ||
+        experiments.isL2AllowedForPoiInitiated) &&
       data.activation_form_milestone === 'L1') ||
     ((isDedupe || !!data.submitted) && data.activation_form_milestone === 'L2') ||
     !isInstantActivationEnabled

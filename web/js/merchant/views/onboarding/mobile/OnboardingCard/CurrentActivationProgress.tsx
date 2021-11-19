@@ -322,9 +322,12 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; esc
     }
   } else if (isUnregisteredBusiness(data.business_type) || !isInstantActivationEnabled) {
     if (
-      (data.poi_verification_status === 'incorrect_details' ||
+      ((data.poi_verification_status === 'incorrect_details' ||
         data.poi_verification_status === 'not_matched') &&
-      !experiments.canSkipPoiValidation
+        !experiments.canSkipPoiValidation) ||
+      (data.poi_verification_status === 'initiated' &&
+        data.activation_form_milestone === 'L1' &&
+        experiments.isL2AllowedForPoiInitiated)
     ) {
       return (
         <>
@@ -375,7 +378,8 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; esc
       data.poi_verification_status === 'initiated' &&
       data.activation_form_milestone === 'L1' &&
       experiments.canSkipPoiValidation &&
-      isInstantActivationEnabled
+      isInstantActivationEnabled &&
+      !experiments.isL2AllowedForPoiInitiated
     ) {
       return (
         <>

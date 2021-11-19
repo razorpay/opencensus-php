@@ -85,7 +85,8 @@ const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any
         } else if (
           isUnregisteredBusiness(res.business_type) &&
           res.poi_verification_status === 'initiated' &&
-          experiments.canSkipPoiValidation
+          experiments.canSkipPoiValidation &&
+          !experiments.isL2AllowedForPoiInitiated
         ) {
           setModalType('poi_initiated');
         } else {

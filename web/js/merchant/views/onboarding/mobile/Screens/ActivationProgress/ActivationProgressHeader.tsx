@@ -46,7 +46,10 @@ const ActivationProgressHeader: React.FC<RouteComponentProps & { progress: numbe
             <Space padding={[0.5, 0]}>
               <Link
                 onClick={() =>
-                  !data.submitted && !isDedupe && data.poi_verification_status !== 'initiated'
+                  !data.submitted &&
+                  !isDedupe &&
+                  (data.poi_verification_status !== 'initiated' ||
+                    experiments.isL2AllowedForPoiInitiated)
                     ? setIsSaveAndExitModalOpen(true)
                     : history.push('/dashboard')
                 }
