@@ -219,6 +219,11 @@ class Processor
     const CARD_PAYMENTS_VIA_PGROUTER = 'card_payments_via_pg_router';
 
     /**
+     * Razorx flag to indicate if a s2s payment should go via PG Router and CPS or just via API service, during Payment creation
+     */
+    const S2S_CARD_PAYMENTS_VIA_PGROUTER = 's2s_card_payments_via_pg_router';
+
+    /**
      * @var Merchant\Entity
      */
     protected $merchant;
@@ -406,7 +411,7 @@ class Processor
                 (empty($input[Payment\Entity::SAVE]) === false) or
                 (empty($input[Payment\Entity::OFFER_ID]) === false) or
                 ((empty($input['reward_ids']) === false) and ($merchant->getId() !== '2aTeFCKTYWwfrF')) or
-                (empty($input['auth_type']) === false) or
+                ((empty($input['auth_type']) === false) and ($input['auth_type'] !== "3ds")) or
                 ($merchant->isFeeBearerPlatform() === false) or
                 ($merchant->isRazorpayOrgId() === false))
             {
@@ -475,7 +480,13 @@ class Processor
                 return false;
             }
 
-            $result = $this->app->razorx->getTreatment($merchant->getId(), self::CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+            if ($this->app['basicauth']->isPrivateAuth() === false)
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+            }
+            else {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::S2S_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+            }
 
             return ($result === 'on');
         }
