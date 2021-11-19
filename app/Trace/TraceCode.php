@@ -4687,7 +4687,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_PURPOSE_TRIM_FOR_MERCHANTS_FAILED                      = 'PAYOUT_PURPOSE_TRIM_FOR_MERCHANTS_FAILED';
 
 
-    const PAYMENTS_BULK_FETCH = 'PAYMENTS_BULK_FETCH';
+    const PAYMENTS_BULK_FETCH                    = 'PAYMENTS_BULK_FETCH';
+    const PAYMENTS_BULK_FETCH_RESPONSE           = 'PAYMENTS_BULK_FETCH_RESPONSE';
 
     // Whats app message trace code
     const STORK_WHATSAPP_MESSAGE_FAILED                       = 'STORK_WHATSAPP_MESSAGE_FAILED';

@@ -54,6 +54,7 @@ use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Payment\PaymentMeta;
+use RZP\Models\Merchant\Preferences;
 
 class Service extends Base\Service
 {
@@ -1533,6 +1534,8 @@ class Service extends Base\Service
 
         $payments = $this->repo->payment->fetchPaymentWithForceIndex($input, $merchantId);
 
+        $this->addOutputTraceForPB($payments->toArray());
+
         return $payments->toArrayPublic();
     }
 
@@ -1674,6 +1677,23 @@ class Service extends Base\Service
             'filters'     => $input,
             'merchant_id' => $this->merchant->getId(),
         ]);
+    }
+
+    //Adding logs for PolicyBazaar Fetch Calls
+    //To be removed after RCA
+    protected function addOutputTraceForPB(array $output)
+    {
+        if($this->merchant->getId() === Preferences::MID_POLICY_BAZAAR)
+        {
+            if ($this->app['basicauth']->isStrictPrivateAuth() === true)
+            {
+                $this->trace->info(TraceCode::PAYMENTS_BULK_FETCH_RESPONSE,
+                    [
+                        'data' => $output,
+                        'merchant_id' => $this->merchant->getId(),
+                    ]);
+            }
+        }
     }
 
     protected function addDashboardFlagInstantRefundSupport(array &$entity, $payment)
