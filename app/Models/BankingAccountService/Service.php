@@ -316,6 +316,42 @@ class Service extends Base\Service
         return $bankingAccounts;
     }
 
+    public function slotBookForBankingAccount($bookingDetails)
+    {
+        $path = 'booking/slot/book';
+
+        $channel = $bookingDetails['channel'];
+
+        $id = $bookingDetails['id'];
+
+        $slotBookingDateTime = $bookingDetails['slotDateAndTime'];
+
+        $epochSlotBookingDateTime = strtotime($slotBookingDateTime.' Asia/Kolkata');
+
+        if($channel === 'rbl')
+        {
+            // check in db if slot is already booked for the same id and dateAnTime
+            $activationDetail = $this->app['repo']->banking_account_activation_detail->findByBankingAccountId($id);
+
+            if(empty($activationDetail['booking_date_and_time']) === false && $activationDetail['booking_date_and_time'] === $epochSlotBookingDateTime)
+            {
+                return [
+                    'bookingDetails' => null,
+                    'status' => 'failure',
+                    'ErrorDetail' => [
+                        "errorReason" => 'Slot is already booked for the same date and time,
+                                          it cannot be booked again'
+                    ]
+
+                ];
+            }
+        }
+
+        $response = $this->bankingAccountService->sendRequestAndProcessResponse($path, 'POST', $bookingDetails);
+
+        return $response['data'];
+    }
+
     /**
      * Fetches banking account along with banking_balance and adds to the input array
      * Called from get user call
@@ -647,5 +683,14 @@ class Service extends Base\Service
     public function sendRblApplicationInProgressLeadsToSalesForce(): array
     {
         return $this->core()->sendRblApplicationInProgressLeadsToSalesForce();
+    }
+
+    public function getFreeSlotForBankingAccount($input): array
+    {
+        $path = 'booking/slot/availableSlots';
+
+        $response = $this->bankingAccountService->sendRequestAndProcessResponse($path, 'GET', $input);
+
+        return $response['data'];
     }
 }

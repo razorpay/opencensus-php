@@ -402,6 +402,61 @@ return [
         ],
     ],
 
+    'testSlotBookingForBankingAccount' => [
+        'request'  => [
+            'url'     => '/booking/slot/book',
+            'method'  => 'POST',
+            'content' => [
+                'id' => 'randomBaAccId8',
+                'channel' => 'rbl',
+                'merchantName' => 'Test Merchant',
+                'merchantEmail' => 'test@razorpay.com',
+                'phoneNumber' => '9876543210',
+                'slotDateAndTime' => '17-Nov-2021 11:30:00'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testAvailableSlotsForBankingAccount' => [
+        'request'  => [
+            'url'    => '/booking/slot/availableSlots?currentDate=17-Nov-2021',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testSlotBookingForBankingAccountIfThatSlotIsAlreadyBooked' => [
+        'request'  => [
+            'url'     => '/booking/slot/book',
+            'method'  => 'POST',
+            'content' => [
+                'id' => 'randomBaAccId8',
+                'channel' => 'rbl',
+                'merchantName' => 'Test Merchant',
+                'merchantEmail' => 'test@razorpay.com',
+                'phoneNumber' => '9876543210',
+                'slotDateAndTime' => '17-Nov-2021 11:30:00'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'bookingDetails' => null,
+                'status' => 'failure',
+                'ErrorDetail' => [
+                    "errorReason" => 'Slot is already booked for the same date and time,
+                                          it cannot be booked again'
+                ],
+            ],
+        ],
+    ],
+
     'testDeleteSignatory' => [
         'request'  => [
             'url'     => '/merchant/banking_application/business/10000000000000/applications/10000000000000/person/20000000000000/signatory/40000000000000',

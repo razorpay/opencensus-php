@@ -432,6 +432,69 @@ class BankingAccountServiceTest extends TestCase
         $this->assertEquals(true, $response['data']['serviceable']);
     }
 
+    public function testSlotBookingForBankingAccount()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('#TE-00038', $response['bookingId']);
+    }
+
+    public function testAvailableSlotsForBankingAccount()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertIsArray($response['data']);
+    }
+
+    public function testSlotBookingForBankingAccountIfThatSlotIsAlreadyBooked()
+    {
+        $this->ba->proxyAuth();
+
+        $merchantDetailArray = [
+            'contact_name'               => 'rzp',
+            'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
+            'business_operation_address' => 'Koramangala',
+            'business_operation_state'   => 'KARNATAKA',
+            'business_operation_pin'     => 560034,
+            'business_dba'               => 'test',
+            'business_name'              => 'INTERNET BANKING CA',
+            'business_operation_city'    => 'Bangalore',
+            'activation_status'          => 'activated',
+            'bas_business_id'            => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $ba1 = $this->fixtures->create('banking_account', [
+            'id'                    => 'randomBaAccId8',
+            'account_number'        => '567890123',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id'        => $ba1->getId(),
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'sales_team'                => Validator::SELF_SERVE,
+            'booking_date_and_time'     => strtotime('17-Nov-2021 11:30:00'.' Asia/Kolkata')
+        ]);
+
+        $response = $this->startTest();
+
+        $this->assertEquals('failure', $response['status']);
+    }
+
     public function testDeleteSignatory()
     {
         $this->ba->proxyAuth();

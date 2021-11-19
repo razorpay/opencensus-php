@@ -102,6 +102,24 @@ class BasController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function slotBookForBankingAccount()
+    {
+        $input = Request::all();
+
+        $data = $this->service->slotBookForBankingAccount($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getFreeSlotForBankingAccount()
+    {
+        $input = Request::all();
+
+        $data = $this->service->getFreeSlotForBankingAccount($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function sendCaLeadToSalesForce()
     {
         $input = Request::all();

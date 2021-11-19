@@ -243,6 +243,38 @@ class BankingAccountService
             throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
 
+        else if($path == 'booking/slot/book' and $method == 'POST')
+        {
+            $result = [
+                'data' => [
+                    'id' => '20000000000000',
+                    'bookingStartTime' => '',
+                    'bookingEndTime' => '',
+                    'assignedStaffEmailID' => 'TEST@RAZORPAY.COM',
+                    'bookingId' => '#TE-00038'
+                ]
+            ];
+        }
+
+        else if($path == 'booking/slot/availableSlots' and $method == 'GET')
+        {
+            $result = [
+                'data' => [
+                    "data" => [
+                        "10:00",
+                        "10:15",
+                        "10:30",
+                        "10:45",
+                        "11:00",
+                        "11:15",
+                        "11:30",
+                        "11:45",
+                        "12:00",
+                    ]
+                ]
+            ];
+        }
+
         return $result;
     }
 
