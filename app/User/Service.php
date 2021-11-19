@@ -549,7 +549,7 @@ class Service extends Base\Service
                 return [['Verification failed because of incorrect OTP.', self::LOGIN_UNAUTHENTICATED], null];
             }
 
-            return [['Incorrect email/contact mobile or password. To reset, click on "Forgot?" link.', self::LOGIN_UNAUTHENTICATED], null];
+            return [['The email or password you have entered is incorrect. Click on “Forgot?” to rest your password. ', self::LOGIN_UNAUTHENTICATED], null];
         }
 
         Auth::login($genericUser, false);
