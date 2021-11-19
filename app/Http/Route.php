@@ -993,6 +993,8 @@ class Route
         'capital_marketplace_oauth'                => ['any',      'marketplace/oauth/{path?}',                      'CapitalMarketplaceController@handleDirectRequests'                 ],
         'capital_marketplace_service'              => ['any',      'marketplace/service/{path?}',                    'CapitalMarketplaceController@handleProxyRequests'                  ],
         'capital_marketplace_admin'                => ['any',      'marketplace/admin/{path?}',                      'CapitalMarketplaceController@handleAdminRequests'                  ],
+        'capital_marketplace_dev_admin'            => ['any',      'marketplace/dev_admin/{path?}',                  'CapitalMarketplaceController@handleDevAdminRequests'                  ],
+
 
         'merchants_risk_service'                   => ['any',      'merchants-risk/service/{path?}',                 'MerchantsRiskController@handleProxyRequests'                       ],
         'merchants_risk_admin'                     => ['any',      'merchants-risk/admin/{path?}',                   'MerchantsRiskController@handleAdminRequests'                       ],
@@ -4811,6 +4813,7 @@ class Route
         'merchant_business_detail_save',
         'los_service_dev_admin',
         'loc_service_dev_admin',
+        'capital_marketplace_dev_admin',
         'recon_service_request_proxy',
         'recon_service_file_upload_proxy',
         'recon_service_workflow_file_upload_proxy',
@@ -5781,6 +5784,7 @@ class Route
         'merchant_business_detail_save'             => Permission::EDIT_MERCHANT,
         'los_service_dev_admin'                    => Permission::CAPITAL_DEVELOPER,
         'loc_service_dev_admin'                    => Permission::CAPITAL_DEVELOPER,
+        'capital_marketplace_dev_admin'            => Permission::CAPITAL_DEVELOPER,
         'recon_service_request_proxy'              => Permission::RECON_OPERATION,
         'recon_service_file_upload_proxy'           => Permission::RECON_OPERATION,
         'recon_service_workflow_file_upload_proxy'   => Permission::RECON_OPERATION,
@@ -9127,6 +9131,7 @@ class Route
             'loc_service',
             'loc_service_admin',
             'loc_service_dev_admin',
+            'capital_marketplace_dev_admin',
             'los_service',
             'los_service_admin',
             'los_service_dev_admin',

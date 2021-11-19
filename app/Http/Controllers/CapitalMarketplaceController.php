@@ -239,4 +239,23 @@ class CapitalMarketplaceController extends Controller
 
         return $response;
     }
+
+    protected function handleDevAdminRequests($path = null)
+    {
+        $request = Request::instance();
+        $url     = $path;
+        $body    = $request->all();
+
+        $this->trace->info(TraceCode::CAPITAL_MARKETPLACE_DEV_ADMIN_REQUEST, [
+            'request' => $url,
+        ]);
+
+        $headers = [
+            'X-Admin-Id'    => $this->ba->getAdmin()->getId() ?? '',
+            'X-Admin-Email' => $this->ba->getAdmin()->getEmail() ?? '',
+            'X-Auth-Type'   => 'admin'
+        ];
+
+        return $this->sendRequestAndParseResponse($url, $body, $headers, $request->method());
+    }
 }
