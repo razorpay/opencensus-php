@@ -35,6 +35,8 @@ class GrowthService extends Base\Service
     // Used in response to a preflight request which includes the Access-Control-Request-Headers to indicate which HTTP headers can be used during the actual request.
     const ACCESS_CONTROL_ALLOW_HEADERS = 'Access-Control-Allow-Headers';
 
+    const X_PASSPORT_JWT_V1 = 'X-Passport-JWT-V1';
+
     /**
      * @var string
      */
@@ -59,6 +61,8 @@ class GrowthService extends Base\Service
 
     protected $env;
 
+    protected $auth;
+
     public function __construct()
     {
         $app                  = App::getFacadeRoot();
@@ -69,13 +73,14 @@ class GrowthService extends Base\Service
         $this->key            = $growthConfig['username'];
         $this->secret         = $growthConfig['secret'];
         $this->requestTimeout = $growthConfig['request_timeout'];
+        $this->auth           = $app['basicauth'];
     }
 
     public function getAssetDetails($parameters)
     {
         return $this->sendRequest($parameters, self::GET_ASSET_URL, Requests::POST);
     }
-    
+
     public function editTemplateAndEnableDowntimeNotificationForXDashboard($parameters)
     {
         $templateParameters = ["template" => $parameters['template']];
@@ -118,7 +123,7 @@ class GrowthService extends Base\Service
         }
     }
 
-    protected function getRequestParams($parameters, $path, $method)
+    public function getRequestParams($parameters, $path, $method)
     {
         $url = $this->baseUrl . $path;
 
@@ -127,20 +132,26 @@ class GrowthService extends Base\Service
         $parameters = json_encode($parameters);
 
         $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
-
         $options = [
             'timeout' => $this->requestTimeout,
-            'auth'    => [$this->key, $this->secret],
         ];
+        $jwt = $this->auth->getPassportJwt($this->baseUrl);
+
+        $this->trace->info(TraceCode::GROWTH_REQUEST, ['jwt' => $jwt]);
+
+        if ($jwt == null) {
+            $options['auth'] = [$this->key, $this->secret];
+        }
+        $headers[self::X_PASSPORT_JWT_V1] = $jwt;
 
         $this->trace->info(TraceCode::GROWTH_REQUEST, ['url' => $url, 'parameters' => $parameters, 'headers' => $headers]);
 
         return [
-            'url'     => $url,
+            'url' => $url,
             'headers' => $headers,
-            'data'    => $parameters,
+            'data' => $parameters,
             'options' => $options,
-            'method'  => $method,
+            'method' => $method,
         ];
     }
 

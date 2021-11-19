@@ -136,11 +136,13 @@ class GrowthTest extends TestCase
             ]
         ];
 
+        $this->ba->proxyAuth();
+
         $this->mockGrowthTreatment($input, $output, 'getAssetDetails');
 
         $this->startTest();
     }
-    
+
     public function testEnableDowntimeNotificationForXDashboard()
     {
         $input = [
@@ -163,15 +165,15 @@ class GrowthTest extends TestCase
                 "action" => "ACTIVATED"
             ]
         ];
-        
+
         $output = [
             "status_code" => "200",
         ];
-        
+
         $this->mockGrowthTreatment($input, $output, 'editTemplateAndEnableDowntimeNotificationForXDashboard');
-        
+
         $this->ba->adminAuth();
-        
+
         $this->startTest();
     }
 

@@ -2958,7 +2958,7 @@ class BasicAuth
         $privateKeyId       = $passportConfig['issuer_private_key_id'];
         $passportExpirySecs = $passportConfig['issuer_passport_expire_secs'];
 
-        // set $customExpirySecs only if more than default. 
+        // set $customExpirySecs only if more than default.
         // using caution since not to have an extremely short lived token set by mistake.
         $passportExpirySecs = ($customExpirySecs > $passportExpirySecs) ? $customExpirySecs : $passportExpirySecs;
 

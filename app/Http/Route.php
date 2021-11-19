@@ -4798,6 +4798,9 @@ class Route
         'update_serviceability_url',
         'update_coupon_validity_url',
         'update_fetch_coupons_url',
+
+        //Growth
+        'growth_get_asset_details',
     ];
 
     //
@@ -7041,6 +7044,7 @@ class Route
         'merchant_activation_save'                     => '*',
         'bvs_service_dashboard'                        => '*',
         'merchant_razorx_bulk_evaluate'                => '*',
+        'growth_get_asset_details'                     => '*',
         'merchant_razorx_evaluate'                     => '*',
         'fetch_partner_intent'                         => '*',
         'merchant_features_fetch'                      => '*',
@@ -7338,7 +7342,6 @@ class Route
         'payout_links_verify_customer_otp_demo_cors',
         'payout_links_initiate_demo',
         'payout_links_initiate_demo_cors',
-        'growth_get_asset_details',
     ];
 
     /**
@@ -7420,6 +7423,7 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'growth_get_asset_details',
             'store_create',
             'store_get_by_merchant',
             'store_update',
