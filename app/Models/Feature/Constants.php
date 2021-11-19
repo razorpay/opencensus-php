@@ -1341,6 +1341,7 @@ const CREDIT_ID_BASED_NEW_QUERY = 'credit_id_based_new_query';
         self::ONE_CC_MERCHANT_DASHBOARD       => true,
         self::ONE_CC_COUPONS                  => true,
         self::ONBOARD_TOKENIZATION            => true,
+        self::CREDIT_ID_BASED_NEW_QUERY       => true,
     ];
     // Entity type constants
     const ACCOUNT                       = 'account';
