@@ -323,7 +323,7 @@ class SupportBody extends Component {
               <li
                 class={`support-item p-all chat ${
                   (!this.props.supportFlags.show_chat && notifyCount < 1) ||
-                  !(this.props.user.isChatbotLive && this.props.botIsActive)
+                  !((this.props.user.isChatbotLive && this.props.botIsActive) || true)
                     ? 'disabled'
                     : ''
                 }`}
