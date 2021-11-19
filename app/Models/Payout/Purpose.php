@@ -6,7 +6,9 @@ use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Traits\TrimSpace;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Attempt\Purpose as FTAPurpose;
 
@@ -14,14 +16,15 @@ class Purpose
 {
     use TrimSpace;
 
-    const REFUND          = 'refund';
-    const CASHBACK        = 'cashback';
-    const SALARY          = 'salary';
-    const UTILITY_BILL    = 'utility bill';
-    const VENDOR_BILL     = 'vendor bill';
-    const PAYOUT          = 'payout';
-    const RZP_FEES        = 'rzp_fees';
-    const RZP_TAX_PAYMENT = 'rzp_tax_pay';
+    const REFUND               = 'refund';
+    const CASHBACK             = 'cashback';
+    const SALARY               = 'salary';
+    const UTILITY_BILL         = 'utility bill';
+    const VENDOR_BILL          = 'vendor bill';
+    const PAYOUT               = 'payout';
+    const INTER_ACCOUNT_PAYOUT = 'inter_account_payout';
+    const RZP_FEES             = 'rzp_fees';
+    const RZP_TAX_PAYMENT      = 'rzp_tax_pay';
 
     protected static $default = [
         self::REFUND,
@@ -46,9 +49,18 @@ class Purpose
         self::RZP_TAX_PAYMENT => FTAPurpose::SETTLEMENT,
     ];
 
+    protected static $finopsPurposeTypeMap = [
+        self::INTER_ACCOUNT_PAYOUT => FTAPurpose::INTER_ACCOUNT_PAYOUT,
+    ];
+
     public static function isInDefaults(string $purpose): bool
     {
         return (in_array($purpose, array_keys(self::$defaultPurposeTypeMap), true) === true);
+    }
+
+    public static function isInFinops(string $purpose): bool
+    {
+        return (in_array($purpose, array_keys(self::$finopsPurposeTypeMap), true) === true);
     }
 
     public static function isInInternal(string $purpose = null): bool
@@ -63,6 +75,29 @@ class Purpose
         $merchant = $payout->merchant;
 
         $trimmedPurpose = $this->trimSpaces($purpose);
+
+        //Validate if the merchantId has access to interAccount(access has only to finops team merchantId's)
+        //set purpose and purpose type if it is valid and return
+        //or throw exception
+        if (self::isInFinops($trimmedPurpose) === true)
+        {
+            $merchantId = $merchant->getMerchantId();
+
+            $arrMerchantId = (new AdminService)->getConfigKey(
+                ['key' => ConfigKey::INTER_ACCOUNT_PAYOUT_MERCHANTS]);
+
+            if (in_array($merchantId, $arrMerchantId,true) === true)
+            {
+                $payout->setPurpose($trimmedPurpose);
+                $payout->setPurposeType(self::$finopsPurposeTypeMap[$trimmedPurpose]);
+
+                return;
+            }
+
+            throw new BadRequestValidationFailureException(
+                "Purpose '$purpose' is an internal purpose used by Razorpay and cannot be accessed.",
+                Entity::MERCHANT_ID);
+        }
 
         // If $purpose is one of the defaults, set and return
         if (self::isInDefaults($trimmedPurpose) === true)
@@ -132,8 +167,12 @@ class Purpose
             return;
         }
 
-        //
-        // If purpose sent is not one of the defaults defined. We hence fetch and
+        if (self::isInFinops($trimPurpose) === true)
+        {
+            return;
+        }
+
+        // If purpose sent is not one of the defaults and finopsType defined. We hence fetch and
         // check against the custom list, if available.
         //
         $custom = $this->getCustom($merchant);
@@ -165,9 +204,22 @@ class Purpose
 
         $custom = $this->getSettingsAccessor($merchant)->all()->toArray();
 
+        $finops = self::$finopsPurposeTypeMap;
+
+        $merchantId = $merchant->getId();
+
+        $arrFinopsMerchantId = (new AdminService)->getConfigKey(
+            ['key' => ConfigKey::INTER_ACCOUNT_PAYOUT_MERCHANTS]);
+
         // array_merge cannot be used here because numeric keys in php arrays
         // can cause the function to give unexpected results.
-        $all = $custom + $default;
+
+        if (in_array($merchantId, $arrFinopsMerchantId, true) === true)
+        {
+            $all = $custom + $default + $finops;
+        } else {
+            $all = $custom + $default;
+        }
 
         $purposes = new PublicCollection;
 
@@ -206,8 +258,8 @@ class Purpose
 
         $trimmedPurpose = $this->trimSpaces($purpose);
 
-        // If purpose is 'rzp_fees' we won't allow adding it as a custom purpose
-        if (self::isInInternal($trimmedPurpose) === true)
+        // If purpose is 'rzp_fees' or 'inter_account_payout' we won't allow adding it as a custom purpose
+        if (self::isInInternal($trimmedPurpose) or self::isInFinops(strtolower($trimmedPurpose)) === true)
         {
             throw new BadRequestValidationFailureException(
                 "Purpose '$trimmedPurpose' is an internal purpose used by Razorpay and cannot be added.",

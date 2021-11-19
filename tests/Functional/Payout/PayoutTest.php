@@ -31,6 +31,7 @@ use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
 use RZP\Models\Payout\Status;
 use RZP\Services\RazorXClient;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Services\FTS\FundTransfer;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
@@ -55,6 +56,7 @@ use RZP\Models\Merchant\Balance as Balance;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Mail\Transaction\Payout as PayoutMail;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
@@ -99,7 +101,6 @@ class PayoutTest extends OAuthTestCase
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PayoutTestData.php';
-
         parent::setUp();
 
         $this->ba->privateAuth();
@@ -471,6 +472,168 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 1000]);
 
         $this->startTest();
+    }
+
+    public function testCreateInterAccountPayout()
+    {
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::INTER_ACCOUNT_PAYOUT_MERCHANTS => ["10000000000000"]
+            ]);
+
+        $ledgerSnsPayloadArray = [];
+
+        // During payout creation, there has been push to SNS topic for creating this transaction in Ledger service.
+        // Mocking ledger sns because call to ledger is currently async via SNS. Once it is in sync, this will be removed.
+        $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payoutsCreated = $this->getDbEntities('payout');
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($payoutsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals('1062', $ledgerRequestPayload['commission']);
+            $this->assertEquals('162', $ledgerRequestPayload['tax']);
+            $this->assertEquals('inter_account_payout_initiated', $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload['identifiers']);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload['identifiers']);
+        }
+    }
+
+    public function testCreateInterAccountPayoutByNonFinopsMerchant()
+    {
+        $ledgerSnsPayloadArray = [];
+
+        // During payout creation, there has been push to SNS topic for creating this transaction in Ledger service.
+        // Mocking ledger sns because call to ledger is currently async via SNS. Once it is in sync, this will be removed.
+        $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
+
+        $this->testCreatePayout();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payoutsCreated = $this->getDbEntities('payout');
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($payoutsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals('1062', $ledgerRequestPayload['commission']);
+            $this->assertEquals('162', $ledgerRequestPayload['tax']);
+            $this->assertEquals('payout_initiated', $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload['identifiers']);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload['identifiers']);
+        }
+    }
+    public function testInterAccountPayoutReversal()
+    {
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::INTER_ACCOUNT_PAYOUT_MERCHANTS => ["10000000000000"]
+            ]);
+
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(3, $ledgerSnsPayloadArray);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'failed',
+            'failure_reason' => '',
+            'bank_status_code' => 'YB_NS_E10282323'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
+            'Payout failed. Contact support for help.');
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        //get reversal and check posted_at in reversal txn
+        $payoutReversal = $this->getDbLastEntity('reversal');
+
+        $reversal = $this->getLastEntity('reversal', true);
+        $this->assertEquals(2001062, $reversal['amount']);
+
+        $payoutCreated = $this->getDbLastEntity('payout');
+
+        $reversalCreated = $this->getDbLastEntity('reversal');
+
+        // Since there are multiple events within the flow,
+        // following is a list of events in the order in which they occur in the test flow
+        $transactorTypeArray = [
+            'inter_account_payout_initiated',
+            'inter_account_payout_processed',
+            'inter_account_payout_reversed',
+        ];
+
+        // The first event passes the payout Id, the reversal event passes the reversal Id
+        $transactorIdArray = [
+            $payoutCreated->getPublicId(),
+            $payoutCreated->getPublicId(),
+            $reversalCreated->getPublicId()
+        ];
+
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++) {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals('1062', $ledgerRequestPayload['commission']);
+            $this->assertEquals('162', $ledgerRequestPayload['tax']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+        }
+
+        $ledgerSnsPayloadArray[0]['identifiers'] = json_decode($ledgerSnsPayloadArray[0]['identifiers'], true);
+        $ledgerSnsPayloadArray[1]['identifiers'] = json_decode($ledgerSnsPayloadArray[1]['identifiers'], true);
+
+        // Not passed in payout initiated payload
+        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]['identifiers']);
+        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]['identifiers']);
+
+        // Passed in payout processed payload
+        $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['identifiers']['fts_fund_account_id']);
+        $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['identifiers']['fts_account_type']);
+
+        // Passed in payout reversed payload
+        $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['identifiers']['fts_fund_account_id']);
+        $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['identifiers']['fts_account_type']);
     }
 
     public function testCreatePayoutWithoutFundAccountId()

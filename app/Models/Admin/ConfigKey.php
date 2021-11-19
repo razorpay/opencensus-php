@@ -261,7 +261,10 @@ class ConfigKey
 
     const ASYNC_ESCALATION_HANDLING_ENABLED = self::PREFIX . 'async_escalation_handling_enabled';
 
+    const INTER_ACCOUNT_PAYOUT_MERCHANTS = self::PREFIX . 'inter_account_payout_merchants';
+
     const SUB_BALANCES_MAP = self::PREFIX . 'sub_balance_map';
+
 
     const PUBLIC_KEYS = [
         self::ASYNC_ESCALATION_HANDLING_ENABLED,
@@ -374,6 +377,7 @@ class ConfigKey
         self::RBL_STATEMENT_FETCH_V2_API_MAX_RECORDS,
         self::PAYER_ACCOUNT_NUMBER_INVALID_REGEXES,
         self::RBL_CA_BALANCE_UPDATE_LIMITS,
+        self::INTER_ACCOUNT_PAYOUT_MERCHANTS,
         self::SUB_BALANCES_MAP,
     ];
 

@@ -266,21 +266,32 @@ class Status
             ],
         ],
     ];
-
     public static $payoutStatusToLedgerEventMap = [
         self::CREATED   => Ledger\Payout::PAYOUT_INITIATED,
         self::PROCESSED => Ledger\Payout::PAYOUT_PROCESSED,
         self::REVERSED  => Ledger\Payout::PAYOUT_REVERSED,
     ];
 
+    public static $payoutStatusToLedgerEventMapForInterAccount = [
+        self::CREATED   => Ledger\Payout::INTER_ACCOUNT_PAYOUT_INITIATED,
+        self::PROCESSED => Ledger\Payout::INTER_ACCOUNT_PAYOUT_PROCESSED,
+        self::REVERSED  => Ledger\Payout::INTER_ACCOUNT_PAYOUT_REVERSED,
+    ];
+
     /**
      * @param string $payoutStatus
+     * @param string $purpose
      * @return mixed|string
      * Return ledger event mapped to a payout status. If no such mapping is found, return
      * DEFAULT_EVENT. This is then handled in isDefaultEvent() in Transaction/Processor/Ledger
      */
-    public static function getLedgerEventFromPayoutStatus(string $payoutStatus)
+
+    public static function getLedgerEventFromPayoutStatus(string $payoutStatus, string $purpose)
     {
+        if ($purpose === Purpose::INTER_ACCOUNT_PAYOUT)
+        {
+            return self::$payoutStatusToLedgerEventMapForInterAccount[$payoutStatus] ?? Ledger\Base::DEFAULT_EVENT;
+        }
         return self::$payoutStatusToLedgerEventMap[$payoutStatus] ?? Ledger\Base::DEFAULT_EVENT;
     }
 

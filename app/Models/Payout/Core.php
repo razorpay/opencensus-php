@@ -2119,12 +2119,11 @@ class Core extends Base\Core
             return;
         }
 
-        $event = Status::getLedgerEventFromPayoutStatus($payout->getStatus());
+    $event = Status::getLedgerEventFromPayoutStatus($payout->getStatus(),$payout->getPurpose());
 
-        (new Transaction\Processor\Ledger\Payout)
-            ->pushTransactionToLedger($payout, $event, $reversal, $ftsSourceAccountInformation);
+     (new Transaction\Processor\Ledger\Payout)
+         ->pushTransactionToLedger($payout, $event, $reversal, $ftsSourceAccountInformation);
     }
-
     /**
      * TODO: The logic here could change for different banks. The structure needs to be accommodated for that.
      * JIRA: https://razorpay.atlassian.net/browse/RX-698

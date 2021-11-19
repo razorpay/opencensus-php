@@ -21,6 +21,10 @@ class Payout extends Base
     const PAYOUT_PROCESSED = "payout_processed";
     const PAYOUT_REVERSED  = "payout_reversed";
 
+    const INTER_ACCOUNT_PAYOUT_INITIATED = "inter_account_payout_initiated";
+    const INTER_ACCOUNT_PAYOUT_PROCESSED = "inter_account_payout_processed";
+    const INTER_ACCOUNT_PAYOUT_REVERSED  = "inter_account_payout_reversed";
+
     public function pushTransactionToLedger(Entity $payout,
                                             string $transactorEvent,
                                             Reversal\Entity $reversal = null,
@@ -57,17 +61,20 @@ class Payout extends Base
 
             switch ($transactorEvent)
             {
+                case self::INTER_ACCOUNT_PAYOUT_INITIATED:
                 case self::PAYOUT_INITIATED:
                     $transactorDate = $payout->getInitiatedAt();
                     $apiTransactionId = $payout->getTransactionId();
                     break;
 
+                case self::INTER_ACCOUNT_PAYOUT_PROCESSED:
                 case self::PAYOUT_PROCESSED:
                     $transactorDate = $payout->getProcessedAt();
                     $ftsSourceAccountData = $this->getFtsSourceAccountData($ftsSourceAccountInformation);
 
                     break;
 
+                case self::INTER_ACCOUNT_PAYOUT_REVERSED:
                 case self::PAYOUT_REVERSED:
                     if ($reversal !== null){
                         $transactorDate = $reversal->getCreatedAt();
@@ -137,7 +144,9 @@ class Payout extends Base
                                                              Entity $payout)
     {
         // We are not supposed to send and fts_fund_account_id or account_type for payout initiated
-        if ($payload[self::TRANSACTOR_EVENT] === self::PAYOUT_INITIATED)
+
+        if ($payload[self::TRANSACTOR_EVENT] === self::INTER_ACCOUNT_PAYOUT_INITIATED or
+            $payload[self::TRANSACTOR_EVENT] === self::PAYOUT_INITIATED)
         {
             return;
         }
