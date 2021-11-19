@@ -167,7 +167,7 @@ class App extends Component {
     });
 
     // Initialize refiner
-    if (window.REFINER_PROJECT_ID) {
+    if (window.REFINER_PROJECT_ID && user && user.user) {
       _refiner('setProject', window.REFINER_PROJECT_ID);
       _refiner('identifyUser', {
         id: user.user?.id,
