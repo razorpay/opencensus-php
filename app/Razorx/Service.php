@@ -202,7 +202,6 @@ class Service extends Base\Service
             'dashboard_super_checkout',
             'lite_onboarding',
             'stores',
-            'stores_url',
             'pp_donation_goal_tracker',
             'ftx_2021',
             'gstin_self_serve',
