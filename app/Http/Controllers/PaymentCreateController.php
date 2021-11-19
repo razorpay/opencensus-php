@@ -114,7 +114,15 @@ class PaymentCreateController extends Controller
 
         $data = $this->createPaymentWihoutCoproto($input);
 
-        $merchant =  $this->app['basicauth']->getMerchant();
+        if ((isset($data['processed_via_pg_router'])) === true and
+            ($data['processed_via_pg_router'] === true))
+        {
+            unset($data['processed_via_pg_router']);
+
+            return ApiResponse::json($data);
+        }
+
+        $merchant = $this->app['basicauth']->getMerchant();
 
         $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
 
@@ -798,11 +806,24 @@ class PaymentCreateController extends Controller
     {
         $merchant = $this->app['basicauth']->getMerchant();
 
-        $languageCode = App::getLocale() !== null ?
-                        App::getLocale() :
-                        LocaleCore::setLocale($data, $this->app['basicauth']->getMerchant()->getId());
-
         $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
+        if ((isset($data['processed_via_pg_router'])) === true and
+            ($data['processed_via_pg_router'] === true))
+        {
+            unset($data['processed_via_pg_router']);
+
+            if (isset($data['html']) === true)
+            {
+                return $data['html'];
+            }
+
+            return $data;
+        }
+
+        $languageCode = App::getLocale() !== null ?
+            App::getLocale() :
+            LocaleCore::setLocale($data, $this->app['basicauth']->getMerchant()->getId());
 
         //
         // Check for call from API

@@ -548,11 +548,31 @@ class Processor
             $input[Payment\Entity::CUSTOMER_ID] = $customer->getId();
         }
 
-        $paymentData = $this->app['pg_router']->validateAndCreatePayment($input, true);
+        $paymentData = $this->callPGRouterPaymentCreateBasedOnRoute($input);
 
         $this->logPGRouterRequestTime($input, $startTime);
 
+        $paymentData['processed_via_pg_router'] = true;
+
         return $paymentData;
+    }
+
+    protected function callPGRouterPaymentCreateBasedOnRoute($input)
+    {
+        $route = $this->app['api.route']->getCurrentRouteName();
+
+        switch ($route)
+        {
+            case "payment_create_ajax":
+                return $this->app['pg_router']->validateAndCreatePayment($input, true);
+            case "payment_create_private_old":
+                $input['route_auth'] = $this->app['basicauth']->getAuthType();
+                return $this->app['pg_router']->validateAndCreatePaymentRedirect($input, true);
+            case "payment_create_private_json":
+                $input['route_auth'] = $this->app['basicauth']->getAuthType();
+                return $this->app['pg_router']->validateAndCreatePaymentJson($input, true);
+        }
+        return null;
     }
 
     public function process(array $input, $gatewayInput = []): array

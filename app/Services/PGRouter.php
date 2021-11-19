@@ -62,6 +62,10 @@ class PGRouter
 
     const PGRouterPaymentCancel = '/v1/payments/%s/cancel';
 
+    const PGRouterPaymentCreateJson = 'v1/payments/create/json';
+
+    const PGRouterPaymentCreateRedirect = 'v1/payments/create/redirect';
+
     const PG_ROUTER_FAILURE_STATUS_CODE = "pg_router_failure_status_code";
 
     // Headers
@@ -116,6 +120,21 @@ class PGRouter
     public function validateAndCreatePayment(array $input, bool $throwExceptionOnFailure = false): array
     {
         $output = $this->sendRequest(self::PGRouterValidateAndCreatePayment, Requests::POST, $input, $throwExceptionOnFailure);
+
+        return $output['body'];
+    }
+
+
+    public function validateAndCreatePaymentJson(array $input, bool $throwExceptionOnFailure = false): array
+    {
+        $output = $this->sendRequest(self::PGRouterPaymentCreateJson, Requests::POST, $input, $throwExceptionOnFailure);
+
+        return $output['body'];
+    }
+
+    public function validateAndCreatePaymentRedirect(array $input, bool $throwExceptionOnFailure = false): array
+    {
+        $output = $this->sendRequest(self::PGRouterPaymentCreateRedirect, Requests::POST, $input, $throwExceptionOnFailure);
 
         return $output['body'];
     }
@@ -293,7 +312,7 @@ class PGRouter
         string $endpoint,
         string $method,
         array $data = [],
-        bool $throwExceptionOnFailure = false): array
+        bool $throwExceptionOnFailure = false)
     {
         $request = $this->generateRequest($endpoint, $method, $data);
 
@@ -303,7 +322,17 @@ class PGRouter
 
         $this->logResponseTimeOfPgRouter($startTime, $request['url']);
 
-        $decodedResponse = json_decode($response->body, true);
+        if (strpos($response->headers['content-type'], 'text/html') !== false)
+        {
+            $decodedResponse = [
+                'html' => $response->body
+            ];
+        }
+        else
+        {
+
+            $decodedResponse = json_decode($response->body, true);
+        }
 
         $this->trace->info(TraceCode::PG_ROUTER_RESPONSE,
             ["response" => $decodedResponse ?? [],
