@@ -1004,6 +1004,20 @@ dl.rzp-definition {
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
+    /* reference: https://lea.verou.me/2012/04/background-attachment-local/ */
+    /* Shadows */ 
+    /* Shadow covers for both left and right scroll */ 
+    background-image: linear-gradient(to right, #FFFFFF, #FFFFFF), linear-gradient(to right, #FFFFFF, #FFFFFF), linear-gradient(to right, #0000001a, #ffffff00), linear-gradient(to left, #0000001a, #ffffff00);   
+    /* Position of the shadow to the scrollable div */
+    background-position: left center, right center, left center, right center;
+    background-repeat: no-repeat;
+    background-color: #FFFFFF;
+    /* size for the shadow first is the spread in the x axis and second is y axis */
+    /* Mutiple properties for both sides of the shadows */
+    background-size: 20px 100%, 20px 100%, 10px 100%, 10px 100%;
+	
+	  /* Opera doesn't support this in the shorthand */
+	  background-attachment: local, local, scroll, scroll;
     &::-webkit-scrollbar {
       display: none;
     }
