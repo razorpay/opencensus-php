@@ -663,8 +663,12 @@ class DisputePresentmentTest extends TestCase
                 'expected_recovery_method' => 'adjustment',
             ],
             [
-                'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'upi_yesbank'],//example netbanking gateway that needs to be sent to risk for review
+                'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'upi_yesbank'],
                 'expected_recovery_method' => 'risk_ops_review',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'upi_mindgate'],
+                'expected_recovery_method' => 'adjustment',
             ],
             [
                 'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'wallet_olamoney'],

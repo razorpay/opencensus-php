@@ -26,6 +26,7 @@ class RecoveryMethod
         Gateway::UPI_AXIS,
         Gateway::UPI_ICICI,
         Gateway::UPI_SBI,
+        Gateway::UPI_MINDGATE,
     ];
 
     const WALLET_RECOVER_VIA_ADJUSTMENT_GATEWAYS = [

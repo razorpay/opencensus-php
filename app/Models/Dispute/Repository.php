@@ -383,7 +383,7 @@ class Repository extends Base\Repository
 
     public function getDisputesForDeductionReversal()
     {
-         return $this->newQueryOnSlave()
+         return $this->newQuery()
                       ->where(Entity::STATUS, '=', Status::UNDER_REVIEW)
                       ->where(Entity::INTERNAL_STATUS, '=', InternalStatus::REPRESENTED)
                       ->where(Entity::DEDUCTION_REVERSAL_AT, '<', time())
