@@ -543,7 +543,8 @@ class Type
         self::ECOLLECT_RBL                       => Name::ECOLLECT_RBL_BATCH_UPLOAD,
         self::VIRTUAL_BANK_ACCOUNT               => Name::VIRTUAL_BANK_ACCOUNT_BATCH_UPLOAD,
         self::BANK_TRANSFER_EDIT                 => Name::BANK_TRANSFER_INSERT,
-        self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG => Name::SETTLEMENT_ONDEMAND_FEATURE_ENABLE
+        self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG => Name::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
+        self::LEDGER_ONBOARD_OLD_ACCOUNT         => Name::LEDGER_SERVICE_ACTIONS,
     ];
 
     public static $workflowApplicableBatchTypes = [

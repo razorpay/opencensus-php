@@ -91,6 +91,10 @@ class Service extends Base\Service
                     ]);
 
                 $result[Constants::STATUS] = 'failed';
+
+                $result['error'] = [
+                    'description' => $e->getMessage(),
+                ];
             }
 
             $response->add($result);
