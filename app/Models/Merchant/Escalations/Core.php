@@ -245,11 +245,12 @@ class Core extends Base\Core
 
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-                $this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties);
+                //$this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties);
+                
             }
         }
 
-        $this->app['segment-analytics']->buildRequestAndSend();
+        //$this->app['segment-analytics']->buildRequestAndSend();
     }
 
     public function handleMtuSegmentEvent()

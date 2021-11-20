@@ -9,9 +9,30 @@ use RZP\Trace\TraceCode;
 
 class SegmentRequestJob extends RequestJob
 {
+    public $timeout = 600;
+
+    protected function isAttributionEvent($event)
+    {
+        $type = $event['type'] ?? '';
+
+        if($type !== 'identify')
+        {
+            return false;
+        }
+
+        if(isset($event['traits']) === true and isset($event['traits']['user_days_till_last_transaction']) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function handleRequest()
     {
         $this->traceRequest();
+
+        return;
 
         $timeStarted = microtime(true);
 
@@ -33,6 +54,15 @@ class SegmentRequestJob extends RequestJob
 
         foreach ($batchBody as $event)
         {
+            if($this->isAttributionEvent($event) === true)
+            {
+                $this->trace->info(TraceCode::SKIP_SEGMENT_JOB_REQUEST, [
+                    'event' => $event
+                ]);
+
+                return;
+            }
+
             $body = json_encode([
                 'batch' => [$event]
             ]);

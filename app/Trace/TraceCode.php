@@ -556,6 +556,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MOCK_DRIP_REQUEST                                     = 'MOCK_DRIP_REQUEST';
     const HUBSPOT_JOB_REQUEST                                   = 'HUBSPOT_JOB_REQUEST';
     const SEGMENT_JOB_REQUEST                                   = 'SEGMENT_JOB_REQUEST';
+    const SKIP_SEGMENT_JOB_REQUEST                              = 'SKIP_SEGMENT_JOB_REQUEST';
 
     const DASHBOARD_JOB_ERROR                                   = 'DASHBOARD_JOB_ERROR';
 
