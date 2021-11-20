@@ -51,11 +51,7 @@ class FundAccountValidation extends Base
                 return;
             }
 
-            $notes = [
-                self::BALANCE_ID     => BalanceEntity::getSignedIdOrNull($fundAccountValidation->getBalanceId()),
-                self::TRANSACTION_ID => TransactionEntity::getSignedIdOrNull($fundAccountValidation->getTransactionId())
-            ];
-
+            $transactionId = $fundAccountValidation->getTransactionId();
             $ftsSourceAccountData = [];
             $apiTransactionId = null;
             $transactorId = null;
@@ -89,12 +85,18 @@ class FundAccountValidation extends Base
                     $apiTransactionId = $fundAccountValidation->reversal->getTransactionId();
                     $transactorId = $fundAccountValidation->reversal->getPublicId();
                     $transactorDate = $fundAccountValidation->reversal->getCreatedAt();
+                    $transactionId = $fundAccountValidation->reversal->getTransactionId();
 
                     break;
 
                 default:
                     throw new LogicException(self::TRANSACTOR_EVENT . ' not implemented at ledger : ' . $transactorEvent);
             }
+
+            $notes = [
+                self::BALANCE_ID     => BalanceEntity::getSignedIdOrNull($fundAccountValidation->getBalanceId()),
+                self::TRANSACTION_ID => TransactionEntity::getSignedIdOrNull($transactionId)
+            ];
 
             $identifiers = [
                 self::BANKING_ACCOUNT_ID => $fundAccountValidation->balance->bankingAccount->getPublicId(),
