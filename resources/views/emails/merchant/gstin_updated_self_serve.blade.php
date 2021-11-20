@@ -26,36 +26,19 @@
 <td class="wrapper offset-by-one" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: left; font-size: 14px; line-height: 19px; padding: 10px 20px 0px 0px; position: relative; padding-left: 50px;">
                 <table class="ten columns" style="border-spacing: 0; border-collapse: collapse; padding: 0; vertical-align: top; text-align: left; margin: 0 auto; width: 480px;"><tr style="padding: 0; vertical-align: top; text-align: left;">
 <td class="center welcome" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; font-size: 16px; color: #2d2d2d; line-height: 24px; background: white; margin: 10px 0px 10px 0px; text-align: center; padding: 0px 0px 10px;">
-<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 20px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">Hi Team,</p>
+<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 20px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">Hey,</p>
 
 <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 20px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
-    Your request for updating on GSTIN on the Razorpay Dashboard was rejected.
-
-    It was rejected because the legal business name, business owner name or the registered address associated with the GSTIN number didn't match with your account details on Razorpay.
+    Your GSTIN has been updated successfully. The details are provided below.
+    <br>
+    <strong> GSTIN:</strong> {{$gstin}}
+     <br>
+    Your registered address is updated as below as per GSTIN certificate
+    <br>
+    <strong>Registered address:</strong> {{$business_registered_address}}, {{$business_registered_pin}}, {{$business_registered_city}}, {{$business_registered_state}}
 </p>
 
-    Please raise the request again with the GSTIN which is associated with the following details.
-</p>
-   <table>
-       <tr>
-           <td><b>Legal Business name:</b></td>
-           <td>{{$business_name}}</td>
-       </tr>
-       <tr height = 20px></tr>
-       <tr>
-           <td><b>Promoter name whose PANCARD is associated with GSTIN:</b></td>
-           <td>{{$promoter_pan_name}}</td>
-       </tr>
-       <tr height = 20px></tr>
-       <tr>
-           <td><b>Registered Address:</b></td>
-           <td>{{$business_registered_address}}, {{$business_registered_city}}, {{$business_registered_state}}, {{$business_registered_pin}}</td>
-       </tr>
-   </table>
     <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 20px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
-<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 20px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
-    Incase your registered address associated with the GSTIN is different from the one above, you can edit your registered address while you are raising the GSTIN update request from the Dashboard
-</p>
 
 
 <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 20px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">

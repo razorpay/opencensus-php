@@ -25,6 +25,10 @@ class Events
 
     const REJECTION_REASON_NOTIFICATION                     = 'REJECTION_REASON_NOTIFICATION';
 
+    const GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS           = 'GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS';
+
+    const GSTIN_UPDATED_ON_WORKFLOW_APPROVE                 = 'GSTIN_UPDATED_ON_WORKFLOW_APPROVE';
+
     // Event vs sms templates mapping
     const SMS_TEMPLATES = [
         self::MERCHANT_BUSINESS_WEBSITE_ADD                 => 'sms.dashboard.merchant_business_website_add',
@@ -79,6 +83,8 @@ class Events
         self::BANK_ACCOUNT_CHANGE_SUCCESSFUL                => 'emails.merchant.bankaccount_change',
         self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE    => 'emails.merchant.increase_transaction_limit_request_approve',
         self::REJECTION_REASON_NOTIFICATION                 => 'emails.merchant.rejection_reason_notification',
+        self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS       => 'emails.merchant.gstin_updated_self_serve',
+        self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE             => 'emails.merchant.gstin_updated_on_workflow_approve',
     ];
 
     // Event vs email Tags mapping
@@ -90,6 +96,8 @@ class Events
         self::BANK_ACCOUNT_CHANGE_SUCCESSFUL                => MailTags::ACCOUNT_CHANGED,
         self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE    => MailTags::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE,
         self::REJECTION_REASON_NOTIFICATION                 => MailTags::UPDATE_REJECTION_REASON,
+        self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS       => MailTags::GSTIN_UPDATED_VALIDATION_SUCCESS,
+        self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE             => MailTags::GSTIN_UPDATED_WORKFLOW_APPROVE,
     ];
 
     // Event vs email subject mapping
@@ -101,6 +109,8 @@ class Events
         self::BANK_ACCOUNT_CHANGE_SUCCESSFUL                => 'Razorpay | Bank account change successful for %s(MID: %s)',
         self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE    => 'Razorpay: Transaction Limit updated successfully for %s(MID: %s)',
         self::REJECTION_REASON_NOTIFICATION                 => '%s',
+        self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS       => 'Razorpay | Gstin updated for %s(MID: %s)',
+        self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE             => 'Razorpay | Gstin updated for %s(MID: %s)',
     ];
 
     // Event vs recipients role mapping
@@ -112,6 +122,8 @@ class Events
         self::BANK_ACCOUNT_CHANGE_SUCCESSFUL                => [UserRole::OWNER, UserRole::ADMIN],
         self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE    => [UserRole::OWNER],
         self::REJECTION_REASON_NOTIFICATION                 => [UserRole::OWNER],
+        self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS       => [UserRole::OWNER],
+        self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE             => [UserRole::OWNER],
     ];
 
     // Event vs supported channel mapping
@@ -123,5 +135,7 @@ class Events
         Events::BANK_ACCOUNT_CHANGE_SUCCESSFUL              => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         Events::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE  => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         Events::REJECTION_REASON_NOTIFICATION               => [Channel::EMAIL],
+        Events::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS     => [Channel::EMAIL],
+        Events::GSTIN_UPDATED_ON_WORKFLOW_APPROVE           => [Channel::EMAIL],
     ];
 }

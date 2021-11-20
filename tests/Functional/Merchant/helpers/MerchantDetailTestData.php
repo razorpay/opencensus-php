@@ -2310,7 +2310,8 @@ return [
         ],
         'response' => [
             'content'   => [
-                'status'    => 'not_started',
+                'status'           => 'not_started',
+                'rejection_reason' => null
             ],
         ],
     ],
@@ -2321,10 +2322,6 @@ return [
             'method'    => 'POST',
             'content'   => [
                 'gstin'                       => '18AABCU9603R1ZM',
-                'business_registered_address' => 'Registered Address',
-                'business_registered_state'   => 'DL',
-                'business_registered_city'    => 'Delhi',
-                'business_registered_pin'     => '560050',
             ],
         ],
         'response'  => [
@@ -2340,10 +2337,6 @@ return [
             'method'    => 'POST',
             'content'   => [
                 'gstin'                       => '18AABCU9603R1ZM',
-                'business_registered_address' => 'Registered Address',
-                'business_registered_state'   => 'DL',
-                'business_registered_city'    => 'Delhi',
-                'business_registered_pin'     => '560050',
             ],
         ],
         'response'  => [

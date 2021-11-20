@@ -50,6 +50,7 @@ class Name
     const EDIT_MERCHANT_FEATURES              = 'edit_merchant_features';
     const EDIT_MERCHANT_COMMENTS              = 'edit_merchant_comments';
     const EDIT_MERCHANT_BANK_DETAIL           = 'edit_merchant_bank_detail';
+    const EDIT_MERCHANT_GSTIN_DETAIL          = 'edit_merchant_gstin_detail';
     const EDIT_IIN_RULE                       = 'edit_iin_rule';
     const EDIT_IIN_RULE_BULK                  = 'edit_iin_rule_bulk';
     const IIN_BATCH_UPLOAD                    = 'iin_batch_upload';

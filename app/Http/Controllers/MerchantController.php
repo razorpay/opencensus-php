@@ -1166,9 +1166,9 @@ class MerchantController extends Controller
 
     public function getGstinSelfServeStatus()
     {
-        $status = $this->service(E::MERCHANT_DETAIL)->getGstinSelfServeStatus();
+        $response = $this->service(E::MERCHANT_DETAIL)->getGstinSelfServeStatus();
 
-        return ApiResponse::json(['status' => $status]);
+        return ApiResponse::json($response);
     }
 
     public function postGstinSelfServe()
@@ -1176,6 +1176,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service(E::MERCHANT_DETAIL)->updateGstinSelfServe($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postGstinUpdateWorkflow()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->updateMerchantGstinDetailsOnSelfServeWorkflowApprove($input);
 
         return ApiResponse::json($response);
     }

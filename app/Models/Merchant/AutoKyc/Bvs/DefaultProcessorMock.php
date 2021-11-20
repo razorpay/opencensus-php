@@ -11,6 +11,8 @@ class DefaultProcessorMock extends DefaultProcessor
 {
     private $mockStatus;
 
+    private $mockValidationDetail;
+
     const UNITTEST_VALIDATION_ARRAY_CACHE_KEY = 'unittest_bvs_validation_array';
 
     const UNITTEST_VALIDATION_ARRAY_CACHE_TTL = 15 * 60; // 15 minutes
@@ -87,6 +89,9 @@ class DefaultProcessorMock extends DefaultProcessor
             ])
         ];
 
+
+        $data = array_merge($data, $this->mockValidationDetail);
+
         $validationResponse = new ValidationResponse($data);
 
         return new BaseResponse\ValidationDetailsResponse($validationResponse);
@@ -95,5 +100,10 @@ class DefaultProcessorMock extends DefaultProcessor
     public function setMockStatus(string $mockStatus)
     {
         $this->mockStatus = $mockStatus;
+    }
+
+    public function setMockValidationDetail(array $validationDetail)
+    {
+        $this->mockValidationDetail = $validationDetail;
     }
 }

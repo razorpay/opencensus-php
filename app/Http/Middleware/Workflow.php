@@ -52,6 +52,7 @@ class Workflow
         Permission::PAYMENTS_UPDATE_BUY_PRICING_PLAN,
         Permission::MANAGE_RAZORX_OPERATIONS,
         Permission::CREATE_PAYOUT,
+        Permission::EDIT_MERCHANT_GSTIN_DETAIL,
         Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
         Permission::UPDATE_MERCHANT_WEBSITE,
         Permission::DELETE_TERMINAL,

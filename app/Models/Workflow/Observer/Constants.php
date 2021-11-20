@@ -18,6 +18,8 @@ class Constants
 
     const INCREASE_TRANSACTION_LIMIT_SELF_SERVE =   'increase_transaction_limit_self_serve';
 
+    const MERCHANT_GSTIN_SELF_SERVE_UPDATE      =   'merchant_gstin_self_serve_update';
+
     const APPROVED_TRANSACTION_LIMIT            =   'approved_transaction_limit';
 
     const APPROVE                               =   'approve';
@@ -39,6 +41,8 @@ class Constants
         self::INCREASE_TRANSACTION_LIMIT_SELF_SERVE => MerchantSelfServeObserver::class,
 
         self::MERCHANT_ACTIVATION_UPDATE_WEBSITE    => MerchantSelfServeObserver::class,
+
+        self::MERCHANT_GSTIN_SELF_SERVE_UPDATE      => MerchantSelfServeObserver::class,
     ];
 
     const ROUTE_VS_RAZORX_EXPERIMENT = [
@@ -54,16 +58,18 @@ class Constants
         self::MERCHANT_ACTIVATION_STATUS     => RazorxTreatment::PERFORM_ACTION_ON_WORKFLOW_OBSERVER_DATA,
     ];
 
-    const REJECTION_REASON         = 'rejection_reason';
+    const REJECTION_REASON                   = 'rejection_reason';
 
-    const MESSAGE_SUBJECT          = 'subject';
+    const MESSAGE_SUBJECT                    = 'subject';
 
-    const MESSAGE_BODY             = 'body';
+    const MESSAGE_BODY                       = 'body';
 
-    const WORKFLOW_EXISTS          = 'workflow_exists';
+    const WORKFLOW_EXISTS                    = 'workflow_exists';
 
-    const WORKFLOW_STATUS          = 'workflow_status';
+    const WORKFLOW_STATUS                    = 'workflow_status';
 
-    const REJECTION_REASON_MESSAGE = 'rejection_reason_message';
+    const REJECTION_REASON_MESSAGE           = 'rejection_reason_message';
+
+    const SHOW_REJECTION_REASON_ON_DASHBOARD = 'show_on_dashboard';
 
 }

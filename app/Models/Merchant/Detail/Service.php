@@ -23,18 +23,23 @@ use RZP\Models\Promotion;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
+use RZP\Constants\IndianStates;
 use RZP\Models\Promotion\Event;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Constants;
 use Illuminate\Support\Facades\Mail;
+use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant as MerchantMail;
 use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Merchant\Document as Document;
 use RZP\Models\Merchant\Referral as Referral;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Workflow\Action as WorkflowAction;
 use \RZP\Models\State\Entity as StateChangeEntity;
+use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Core as BvsCore;
 use RZP\Models\Merchant\SlackActions as SlackActions;
@@ -54,6 +59,7 @@ use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
+use RZP\Models\Workflow\Observer\Constants as WorkflowObserverConstants;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Notifications\Dashboard\Constants as DashboardNotificationConstants;
 
@@ -1538,40 +1544,96 @@ class Service extends Base\Service
 
         $data = $this->getGstinSelfServeInputFromCache();
 
-        if ($data !== null)
+        list($isOpenWorkFlow, $rejectionReason) = $this->getWorkflowDataForGstinSelfServe();
+
+        if (($data !== null) or
+            ($isOpenWorkFlow === true))
         {
             $status = DEConstants::GSTIN_SELF_SERVE_STATUS_IN_PROGRESS;
         }
-
         $this->trace->info(TraceCode::GSTIN_UPDATE_SELF_SERVE_STATUS, [
-           'status' => $status,
+            DEConstants::STATUS                => $status,
+            DetailConstants::REJECTION_REASON  => $rejectionReason
         ]);
 
-        return $status;
+        return [
+            DEConstants::STATUS               => $status,
+            DetailConstants::REJECTION_REASON => $rejectionReason
+        ];
+    }
+
+    protected function getWorkflowDataForGstinSelfServe()
+    {
+        [$entityId, $entity] = (new Merchant\Core)->fetchWorkflowData(Constants::GSTIN_UPDATE_SELF_SERVE,  $this->merchant);
+
+        $action = (new WorkFlowActionCore())->fetchLastUpdatedWorkflowActionInPermissionList(
+            $entityId,
+            $entity,
+            [Permission\Name::EDIT_MERCHANT_GSTIN_DETAIL]
+        );
+
+        if (empty($action) === true)
+        {
+            return [false, null];
+        }
+
+        $rejectionReason = $this->getRejectionReasonForGstInSelfServe($action->getId());
+
+        return [$action->isOpen(), $rejectionReason];
+    }
+
+    protected function getRejectionReasonForGstInSelfServe($actionId)
+    {
+        $observerData = (new WorkflowService())->getWorkflowObserverData(WorkflowAction\Entity::getSignedId($actionId));
+
+        $showRejection =  $observerData[WorkflowObserverConstants::SHOW_REJECTION_REASON_ON_DASHBOARD] ?? 'true';
+
+        if (($showRejection === 'true') and
+            (isset($observerData[WorkflowObserverConstants::REJECTION_REASON])))
+        {
+            $rejectionReason = json_decode($observerData[WorkflowObserverConstants::REJECTION_REASON], true);
+
+            return $rejectionReason[WorkflowObserverConstants::MESSAGE_BODY] ?? null;
+        }
+
+        return null;
     }
 
     public function updateGstinSelfServe($input)
     {
         $this->validator->validateInput('gstin_self_serve', $input);
 
-        $flow = $this->getGstinSelfServeFlow();
+        $this->merchant->getValidator()->validateIsActivated($this->merchant);
 
-        $this->trace->info(TraceCode::GSTIN_UPDATE_SELF_SERVE_INITIATED, [
-            'input' => $input,
-            'flow'  => $flow,
-        ]);
+        $this->trace->info(TraceCode::GSTIN_UPDATE_SELF_SERVE_INITIATED, []);
 
-        switch ($flow)
+        $payload = $this->getUpdateGstinSelfServeBvsPayload($input);
+
+        $validation = (new BvsCore)->verify($this->merchant->getId(), $payload);
+
+        if ($validation === null)
         {
-            case DEConstants::GSTIN_SELF_SERVE_V2_FLOW:
-                $response = $this->updateGstinSelfServeV2($input);
-                break;
-            case DEConstants::GSTIN_SELF_SERVE_V1_FLOW:
-            default:
-                $response = $this->updateGstinSelfServeV1($input);
+            throw new Exception\ServerErrorException('', ErrorCode::SERVER_ERROR);
         }
 
-        return $response;
+        $this->trace->info(TraceCode::GSTIN_UPDATE_SELF_SERVE_VALIDATION_CREATED, $validation->toArrayPublic());
+
+        $fileId = $this->uploadGstInCertificateForGstinSelfServe(
+            $input[DetailConstants::GSTIN_SELF_SERVE_CERTIFICATE],
+            $this->merchant->merchantDetail
+        );
+
+        unset($input[DetailConstants::GSTIN_SELF_SERVE_CERTIFICATE]);
+
+        $input = array_merge($input, [
+            Merchant\Entity::MERCHANT_ID               => $this->merchant->getId(),
+            BvsConstant::VALIDATION_ID                 => $validation->getValidationId(),
+            DetailConstants::GSTIN_CERTIFICATE_FILE_ID => $fileId,
+        ]);
+
+        $this->storeGstinSelfServeInput($input);
+
+        return $input;
     }
 
 
@@ -1586,51 +1648,166 @@ class Service extends Base\Service
                 break;
             default:
                 $this->handleGstinSelfServeCallbackFailure($detail);
-
         }
+
         $this->deleteGstinSelfServeInput();
     }
 
-    protected function getGstinSelfServeFlow()
+
+    /**
+     * @param Entity $detail
+     */
+    private function handleGstinSelfServeCallbackSuccess(Entity $detail): void
     {
-        $variant = $this->app['razorx']->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::GSTIN_SELF_SERVE_V2,
-            Mode::LIVE
+        $input = $this->getGstinSelfServeInputFromCache();
+
+        $registeredBusinessAddressDetails =  $this->getRegisteredBusinessAddressFromBvsForGstinUpdateSelfServe($detail->getMerchantId(), $input[BvsConstant::VALIDATION_ID]);
+
+        $detail->edit(
+            array_merge([
+                    Entity::GSTIN => $input[Entity::GSTIN]
+                ],
+                $registeredBusinessAddressDetails
+            )
         );
 
-        switch ($variant)
+        $this->repo->merchant_detail->saveOrFail($detail);
+
+        // if any previous rejected workflow of gstin exist : do not show rejection reason for any old rejected workflow
+        $this->stopShowingRejectionReasonForGstInSelfServe($detail->getId(), $detail->getEntity());
+
+        $this->sendMailForGstinUpdatedSelfServe();
+
+        $this->trace->info(TraceCode::GSTIN_UPDATED_WITH_REGISTERED_ADDRESS, []);
+    }
+
+    protected function getRegisteredBusinessAddressFromBvsForGstinUpdateSelfServe($merchantId, $validationId)
+    {
+        $verificationDetails = $this->getBvsValidationArtefactDetails($merchantId,
+            BvsConstant::GSTIN,
+            $validationId
+        );
+
+        $registeredAddress = $verificationDetails[BvsConstant::ENRICHMENT_DETAIL_FIELDS]->online_provider->details->primary_address->value;
+
+        $this->trace->info(TraceCode::GSTIN_BUSINESS_REGISTERED_ADDRESS_FROM_BVS, [$registeredAddress]);
+
+        return $this->getComponentOfRegisteredAddressForGstInSelfServe($registeredAddress);
+    }
+
+    /**
+     * Bvs provides address as string in format of '<business_registered_address>, <business_registered_city>, <business_registered_state>, <business_registered_pin>'
+     * Ex : 1302, 13, ORCHID, 18 B G KHER ROAD, WORLI MUMBAI, Mumbai City, Maharashtra, 400018
+     * This function extracts address fields
+     * @param $registeredAddress
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\ServerErrorException
+     */
+    protected function getComponentOfRegisteredAddressForGstInSelfServe($registeredAddress)
+    {
+        $components = explode(',' , $registeredAddress);
+
+        $size = sizeof($components);
+
+        if ($size < 4)
         {
-            case 'on':
-                return DEConstants::GSTIN_SELF_SERVE_V2_FLOW;
-            default:
-                return DEConstants::GSTIN_SELF_SERVE_V1_FLOW;
+            throw new Exception\ServerErrorException(
+            'Failed to get business registered address fields',
+            ErrorCode::SERVER_ERROR);
+        }
+
+        return [
+            Entity::BUSINESS_REGISTERED_PIN     => trim($components[$size - 1]),
+            Entity::BUSINESS_REGISTERED_STATE   => $this->getStateCodeFromStateName(trim($components[$size - 2])),
+            Entity::BUSINESS_REGISTERED_CITY    => trim($components[$size - 3]),
+            Entity::BUSINESS_REGISTERED_ADDRESS => trim(implode(',', array_slice($components, 0, $size - 3)))
+        ];
+    }
+
+    protected function getStateCodeFromStateName($stateName)
+    {
+        $stateCode = IndianStates::getStateCode($stateName);
+
+        if(empty($stateCode) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_INVALID_STATE_CODE
+            );
+        }
+
+        return $stateCode;
+    }
+
+    protected function handleGstinSelfServeCallbackFailure(Entity $oldDetailEntity)
+    {
+        $input = $this->getGstinSelfServeInputFromCache();
+
+        $newDetailsEntity = clone $oldDetailEntity;
+
+        $newDetailsEntity->edit([
+            Entity::GSTIN => $input[Entity::GSTIN],
+        ]);
+
+        $this->app['workflow']
+            ->setPermission(Permission\Name::EDIT_MERCHANT_GSTIN_DETAIL)
+            ->setRouteName(DetailConstants::GSTIN_UPDATE_SELF_SERVE_ROUTE_NAME)
+            ->setRouteParams([])
+            ->setInput($input)
+            ->setController(DetailConstants::GSTIN_UPDATE_SELF_SERVE_WORKFLOW_CONTROLLER)
+            ->setMethod('POST')
+            ->setEntityAndId($oldDetailEntity->getEntity(), $oldDetailEntity->getId())
+            ->handle($oldDetailEntity, $newDetailsEntity, true);
+
+
+        // for sanity
+        $this->app['workflow']
+            ->setInput(null)
+            ->setPermission(null)
+            ->setRouteName(null)
+            ->setRouteParams(null)
+            ->setController(null)
+            ->setWorkflowMaker(null)
+            ->setWorkflowMakerType(null)
+            ->setMakerFromAuth(true);
+
+        $this->addGstinCertificateUrlInWorkflowCommentForGstinSelfServe(
+            $input[DetailConstants::GSTIN_CERTIFICATE_FILE_ID],
+            $oldDetailEntity
+        );
+    }
+
+    protected function stopShowingRejectionReasonForGstInSelfServe($entityId, $entity)
+    {
+        $action = (new WorkFlowActionCore())->fetchLastUpdatedWorkflowActionInPermissionList(
+            $entityId,
+            $entity,
+            [Permission\Name::EDIT_MERCHANT_GSTIN_DETAIL]
+        );
+
+        if ((empty($action) === false) and
+            ($action->isRejected() === true))
+        {
+            (new WorkflowService())->updateWorkflowObserverData(WorkflowAction\Entity::getSignedId($action->getId()),[
+                    WorkflowObserverConstants::SHOW_REJECTION_REASON_ON_DASHBOARD => 'false'
+            ]);
         }
     }
 
-    protected function updateGstinSelfServeV1($input)
+    public function updateMerchantGstinDetailsOnSelfServeWorkflowApprove($input)
     {
-        $this->storeGstinSelfServeInput($input);
+        $merchant = $this->repo->merchant->findOrFailPublic($input[Merchant\Entity::MERCHANT_ID]);
 
-        return $input;
-    }
+        $merchantDetails = $merchant->merchantDetail;
 
-    protected function updateGstinSelfServeV2($input)
-    {
-        $payload = $this->getUpdateGstinSelfServeBvsPayload($input);
+        $merchantDetails->edit([
+                Entity::GSTIN => $input[Entity::GSTIN],
+            ]
+        );
 
-        $validation = (new BvsCore)->verify($this->merchant->getId(), $payload);
+        $this->repo->merchant_detail->saveOrFail($merchantDetails);
 
-        if ($validation === null)
-        {
-            throw new Exception\ServerErrorException('', ErrorCode::SERVER_ERROR);
-        }
-
-        $this->trace->info(TraceCode::GSTIN_UPDATE_SELF_SERVE_VALIDATION_CREATED, $validation->toArrayPublic());
-
-        $this->storeGstinSelfServeInput($input);
-
-        return $input;
+        $this->sendMailForGstinUpdatedSelfServe(DashboardEvents::GSTIN_UPDATED_ON_WORKFLOW_APPROVE);
     }
 
     protected function storeGstinSelfServeInput($input)
@@ -1668,34 +1845,79 @@ class Service extends Base\Service
         return [
             BvsConstant::CUSTOM_CALLBACK_HANDLER => 'gstin_self_serve_callback_handler',
             BvsConstant::ARTEFACT_TYPE           => BvsConstant::GSTIN,
-            BvsConstant::CONFIG_NAME             => 'gstin_self_serve',
+            BvsConstant::CONFIG_NAME             => 'gstin',
             BvsConstant::VALIDATION_UNIT         => BvsValidationConstants::IDENTIFIER,
             BvsConstant::DETAILS                 => [
                 BvsConstant::GSTIN      => $input[Entity::GSTIN],
                 BvsConstant::LEGAL_NAME => $this->merchant->merchantDetail->getPromoterPanName() ?? '',
                 BvsConstant::TRADE_NAME => $this->merchant->merchantDetail->getBusinessName() ?? '',
-                'primary_pin_code'      => $input[Entity::BUSINESS_REGISTERED_PIN],
             ],
         ];
     }
 
-    /**
-     * @param Entity $detail
-     */
-    private function handleGstinSelfServeCallbackSuccess(Entity $detail): void
+    protected function addGstinCertificateUrlInWorkflowCommentForGstinSelfServe($fileId, $merchantDetail)
     {
-        $input = $this->getGstinSelfServeInputFromCache();
+        $workFlowAction = (new WorkFlowActionCore())->fetchOpenActionOnEntityOperation($merchantDetail->getId(),
+            $merchantDetail->getEntity(),
+            Permission\Name::EDIT_MERCHANT_GSTIN_DETAIL
+        )->first();
 
-        $detail->edit($input);
+        if (is_null($workFlowAction) === true)
+        {
+            $this->trace->error(TraceCode::GSTIN_UPDATE_WORKFLOW_ACTION_NOT_FOUND, [
+                'merchant_id' => $this->merchant->getId(),
+            ]);
+        }
+        else
+        {
+            $comment = sprintf(
+                DEConstants::GSTIN_CERTIFICATE_WORKFLOW_COMMENT,
+                $this->app->config->get('applications.dashboard.url'),
+                $fileId
+            );
 
-        $this->repo->merchant_detail->saveOrFail($detail);
+            $commentEntity = (new CommentCore())->create([
+                'comment' => $comment,
+            ]);
+
+            $commentEntity->entity()->associate($workFlowAction);
+
+            $this->repo->saveOrFail($commentEntity);
+        }
+
+        $this->trace->info(TraceCode::GSTIN_CERTIFICATE_URL_ADDED_IN_WORKFLOW_COMMENT, [
+            'workflow_action' => $workFlowAction->toArrayPublic(),
+        ]);
     }
 
-    protected function handleGstinSelfServeCallbackFailure(Entity $detail)
+    protected function sendMailForGstinUpdatedSelfServe($event = DashboardEvents::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS)
     {
-        $mail = (new MerchantMail\GstinSelfServeVerificationFailure($detail->merchant->toArray(), $detail->toArray()));
+        $args = [
+            Constants::MERCHANT         => $this->merchant,
+            DashboardEvents::EVENT      => $event,
+            Constants::PARAMS           => []
+        ];
 
-        Mail::queue($mail);
+        (new DashboardNotificationHandler($args))->send();
+    }
+
+    protected function uploadGstInCertificateForGstinSelfServe($gstinCertificate, $merchantDetails)
+    {
+        $fileInputs = [
+            DetailConstants::GSTIN_SELF_SERVE_CERTIFICATE => $gstinCertificate
+        ];
+
+        $fileAttributes = $this->storeActivationFile($merchantDetails, $fileInputs);
+
+        if ((is_array($fileAttributes) === false) or
+            (isset($fileAttributes[DetailConstants::GSTIN_SELF_SERVE_CERTIFICATE]) === false))
+        {
+            throw new Exception\ServerErrorException(
+                'gstin certificate upload failed',
+                ErrorCode::SERVER_ERROR);
+        }
+
+        return $fileAttributes[DetailConstants::GSTIN_SELF_SERVE_CERTIFICATE][Document\Constants::FILE_ID];
     }
 
     public function getAovConfig()

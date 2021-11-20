@@ -395,11 +395,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $gstinSelfServeRules = [
-        Entity::GSTIN                       => 'filled|string|size:15',
-        Entity::BUSINESS_REGISTERED_ADDRESS => 'required|max:255',
-        Entity::BUSINESS_REGISTERED_STATE   => 'required|alpha_space|max:2|custom',
-        Entity::BUSINESS_REGISTERED_CITY    => 'required|alpha_space|max:255',
-        Entity::BUSINESS_REGISTERED_PIN     => 'required|size:6',
+        Entity::GSTIN                           => 'filled|string|size:15',
+        Constants::GSTIN_SELF_SERVE_CERTIFICATE => 'required|file|mimes:pdf,jpeg,jpg,png'
     ];
 
     protected static $gstinSelfServeValidators = [
@@ -1287,7 +1284,7 @@ class Validator extends Base\Validator
 
     protected function validateGstinSelfServeNotInProgress()
     {
-        $status = (new Merchant\Detail\Service)->getGstinSelfServeStatus();
+        $status = (new Merchant\Detail\Service)->getGstinSelfServeStatus()[Constants::STATUS];
 
         if ($status === Merchant\Detail\Constants::GSTIN_SELF_SERVE_STATUS_NOT_STARTED)
         {
@@ -1297,7 +1294,7 @@ class Validator extends Base\Validator
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_GSTIN_SELF_SERVE_IN_PROGRESS);
     }
 
-    /**
+     /**
      * custom validation for business website to enable ipv6 and ipv4 urls
      * @param array $input
      *

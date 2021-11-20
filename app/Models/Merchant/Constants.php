@@ -145,6 +145,7 @@ final class Constants
     const TRANSACTION_LIMIT_INCREASE_INVOICE_URL        = 'transaction_limit_increase_invoice_url';
     const INCREASE_TRANSACTION_LIMIT                    = 'increase_transaction_limit';
     const UPDATED_TRANSACTION_LIMIT                     = 'updated_transaction_limit';
+    const GSTIN_UPDATE_SELF_SERVE                       = 'gstin_update_self_serve';
 
     const INCREASE_TRANSACTION_LIMIT_POST_WORKFLOW_APPROVE          = 'RZP\Http\Controllers\MerchantController@postTransactionLimitWorkflowApprove';
 
@@ -425,6 +426,10 @@ final class Constants
         self::INCREASE_TRANSACTION_LIMIT   => [
             self::PERMISSION   => Permission::INCREASE_TRANSACTION_LIMIT,
             self::ENTITY       => \RZP\Constants\Entity::MERCHANT,
+        ],
+        self::GSTIN_UPDATE_SELF_SERVE      => [
+            self::PERMISSION  => Permission::EDIT_MERCHANT_GSTIN_DETAIL,
+            self::ENTITY      => \RZP\Constants\Entity::MERCHANT_DETAIL,
         ]
     ];
 

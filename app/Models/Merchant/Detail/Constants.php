@@ -124,12 +124,14 @@ class Constants
     const ADDRESS             = 'address';
 
     // GSTIN update self serve flow related constants
-    const GSTIN_SELF_SERVE_V1_FLOW                          = 'v1';
-    const GSTIN_SELF_SERVE_V2_FLOW                          = 'v2';
-    const GSTIN_SELF_SERVE_INPUT_CACHE_TTL                  = 90 * 24 * 60 * 60; // 90 days (in seconds)
+    const GSTIN_SELF_SERVE_INPUT_CACHE_TTL                  =  6 * 60 * 60; // 6 hours (in seconds)
     const GSTIN_SELF_SERVE_INPUT_CACHE_KEY_FORMAT           = 'gstin_self_serve_input_%s';
     const GSTIN_SELF_SERVE_STATUS_NOT_STARTED               = 'not_started';
     const GSTIN_SELF_SERVE_STATUS_IN_PROGRESS               = 'in_progress';
+    const GSTIN_SELF_SERVE_CERTIFICATE                      = 'gstin_self_serve_certificate';
+    const GSTIN_CERTIFICATE_FILE_ID                         = 'gstin_certificate_file_id';
+    const REJECTION_REASON                                  = 'rejection_reason';
+    const STATUS                                            = 'status';
 
     const DOCUMENT_VERIFICATION_STATUS          = 'document_verification_status';
     const OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME = 'ocr_match_percentage_with_pan_name';
@@ -195,6 +197,11 @@ class Constants
     const INTERNATIONAL_ACTIVATION = 'international_activation';
 
     const ACTIVATION_FLOWS = [self::ACTIVATION, self::INTERNATIONAL_ACTIVATION];
+
+    // Gstin self serve related constants
+    const GSTIN_UPDATE_SELF_SERVE_ROUTE_NAME          = 'merchant_gstin_self_serve_update';
+    const GSTIN_UPDATE_SELF_SERVE_WORKFLOW_CONTROLLER = 'RZP\Http\Controllers\MerchantController@postGstinUpdateWorkflow';
+    const GSTIN_CERTIFICATE_WORKFLOW_COMMENT          = 'GstIn Certificate : %sadmin/entity/ufh.files/live/file_%s';
 
 
     // Kyc Events constant

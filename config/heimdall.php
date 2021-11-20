@@ -235,6 +235,9 @@ return [
             ],
             Permission::EDIT_MERCHANT_FEATURES              => '',
             Permission::EDIT_MERCHANT_BANK_DETAIL           => '',
+            Permission::EDIT_MERCHANT_GSTIN_DETAIL          => [
+                'workflow'    => true,
+            ],
 
             Permission::EDIT_MERCHANT_WEBSITE_DETAIL        => '',
 

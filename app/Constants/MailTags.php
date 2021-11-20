@@ -243,6 +243,10 @@ class MailTags
 
     const UPDATE_REJECTION_REASON                       = 'update_rejection_reason';
 
+    const GSTIN_UPDATED_VALIDATION_SUCCESS              = 'gstin_updated_validation_success';
+
+    const GSTIN_UPDATED_WORKFLOW_APPROVE                = 'gstin_updated_workflow_approve';
+
     /**
      * Razorpay Trusted Business/Badge Constants
      */

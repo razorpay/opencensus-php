@@ -31,7 +31,11 @@ class Factory
             //
             $mockStatus = $app['config']['services.bvs.response'] ?? Constant::SUCCESS;
 
+            $mockValidationDetail = $app['config']['services.bvs.validationDetail'] ?? [];
+
             $processorMock->setMockStatus($mockStatus);
+
+            $processorMock->setMockValidationDetail($mockValidationDetail);
 
             return $processorMock;
         }

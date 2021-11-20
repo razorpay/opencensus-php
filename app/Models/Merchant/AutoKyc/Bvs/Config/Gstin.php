@@ -87,4 +87,8 @@ class Gstin extends BaseConfig
             ]
         ]
     ];
+
+    protected $enrichmentDetails = [
+        "online_provider.details.primary_address.value",
+    ];
 }

@@ -11280,8 +11280,6 @@ class Route
         'create_virtual_account_from_order'    => [Feature::OFFLINE_PAYMENTS],
         'payment_status_count'                 => [Feature::PAYMENT_STATUS_AGGREGATE],
         'order_create_admin'                   => [Feature::ALLOW_FORCE_TERMINAL_ID],
-        'merchant_gstin_self_serve_status'     => [Feature::GSTIN_SELF_SERVE],
-        'merchant_gstin_self_serve_update'     => [Feature::GSTIN_SELF_SERVE],
         'get_dispute_document_types_metadata'  => [Feature::DISPUTE_PRESENTMENT],
         'bbps_bill_payments'                   => [Feature::FEATURE_BBPS],
         'patch_dispute_contest_by_id'          => [Feature::DISPUTE_PRESENTMENT],

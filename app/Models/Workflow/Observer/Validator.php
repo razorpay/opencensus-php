@@ -3,6 +3,7 @@
 namespace RZP\Models\Workflow\Observer;
 
 use RZP\Models\Workflow\Base;
+use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FDConstants;
 
@@ -20,6 +21,7 @@ class Validator extends Base\Validator
         Constants::REJECTION_REASON                                        => 'sometimes|array|size:2',
         Constants::REJECTION_REASON . '.' . Constants::MESSAGE_SUBJECT     => 'sometimes|string',
         Constants::REJECTION_REASON . '.' . Constants::MESSAGE_BODY        => 'sometimes|string',
+        Constants::SHOW_REJECTION_REASON_ON_DASHBOARD                      => 'sometimes|string',
     ];
 
     protected static $approvedTransactionLimitRules = [
@@ -34,6 +36,7 @@ class Validator extends Base\Validator
     protected $routeValidatorMapping = [
         Constants::MERCHANT_SAVE_BUSINESS_WEBSITE        => 'rejection_reason_data',
         Constants::MERCHANT_ACTIVATION_UPDATE_WEBSITE    => 'rejection_reason_data',
+        Constants::MERCHANT_GSTIN_SELF_SERVE_UPDATE      => 'rejection_reason_data',
         Constants::INCREASE_TRANSACTION_LIMIT_SELF_SERVE => 'approved_transaction_limit',
     ];
 

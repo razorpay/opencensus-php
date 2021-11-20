@@ -191,8 +191,6 @@ class Constants
 
     const P2P_UPI                         = 'p2p_upi';
 
-    const GSTIN_SELF_SERVE                = 'gstin_self_serve';
-
     const CAPITAL_CARDS_COLLECTIONS       = 'capital_cards_collections';
     /**
       Prevents user to switch to test mode from live mode
@@ -1265,7 +1263,6 @@ const CREDIT_ID_BASED_NEW_QUERY = 'credit_id_based_new_query';
         self::OFFER_ON_SUBSCRIPTION           => true,
         self::AUTOMATED_LOC_ELIGIBLE          => true,
         self::PREVENT_TEST_MODE               => true,
-        self::GSTIN_SELF_SERVE                => true,
         self::DIRECT_TRANSFER                 => true,
         self::APPS_EXTEMPT_RISK_CHECK         => true,
         self::APPS_EXEMPT_CUSTOMER_FLAGGING   => true,
@@ -1796,11 +1793,6 @@ const CREDIT_ID_BASED_NEW_QUERY = 'credit_id_based_new_query';
         self::DIRECT_TRANSFER => [
             'feature'       => self::DIRECT_TRANSFER,
             'display_name'  => 'Required to make direct transfers',
-            'documentation' => '',
-        ],
-        self::GSTIN_SELF_SERVE => [
-            'feature'       => self::GSTIN_SELF_SERVE,
-            'display_name'  => 'gstin self serve flow',
             'documentation' => '',
         ],
         self::APPS_EXTEMPT_RISK_CHECK => [

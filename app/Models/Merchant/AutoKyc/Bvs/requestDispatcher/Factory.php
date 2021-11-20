@@ -22,6 +22,9 @@ class Factory
             case Merchant\AutoKyc\Bvs\Constant::BANK_ACCOUNT:
                 return new BankAccount($merchant, $merchantDetails);
 
+            case Merchant\AutoKyc\Bvs\Constant::GSTIN:
+                return new GstinAuth($merchant, $merchantDetails);
+
             case Merchant\AutoKyc\Bvs\Constant::CIN:
                 return new CinAuth($merchant, $merchantDetails);
 
