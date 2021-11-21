@@ -3013,6 +3013,7 @@ class Route
         'token_fetch'                             => ['post',        'tokens/fetch',                                             'TokenController@fetch'                                    ],
         'token_fetch_cryptogram'                  => ['post',        'tokens/payment_data',                                      'TokenController@fetchCryptoGram'                          ],
         'token_delete'                            => ['post',        'tokens/delete',                                            'TokenController@delete'                                   ],
+        'token_status'                            => ['post',        'internal/tokens/status',                                   'TokenController@updateStatus'                             ],
 
        'token_pause_not_supported_card_tokens'    => ['post',        'tokens/pause_not_supported/card',                          'TokenController@pauseNotSupportedCardTokens'                                                         ],
 
@@ -4072,6 +4073,8 @@ class Route
         'banking_draft_invitations_create',
 
         'buy_pricing_terminal_cost',
+
+        'token_status',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -11135,6 +11138,10 @@ class Route
             'ledger_fetch_multiple_transactions',
             'fetch_account_types_ledger',
             'fetch_fund_account_types_ledger',
+        ],
+
+        'card_vault' => [
+            'token_status'
         ]
     ];
 

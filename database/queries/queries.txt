@@ -1091,6 +1091,11 @@ ALTER TABLE `payments`
     ADD INDEX `payments_verify_bucket_index` (`verify_bucket`),
     ADD INDEX `payments_gateway_index` (`gateway`);
 
+ALTER TABLE `tokens`
+    ADD COLUMN status VARCHAR(20) DEFAULT NULL AFTER 'auth_type';
+
+ALTER TABLE `tokens`
+    ADD COLUMN notes TEXT DEFAULT NULL;
 
 # Following query is run because even though HDFC said the rupay payment
 # was not captured, we marked the payment as authorized on our end.

@@ -297,4 +297,36 @@ return [
             'internal_error_code'   => 'BAD_REQUEST_VALIDATION_FAILURE',
         ],
     ],
+
+    'testTokenStatusLive' => [
+        'request' => [
+            'url' => '/internal/tokens/status',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testTokenStatusLiveFailure' => [
+        'request' => [
+            'url' => '/internal/tokens/status',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\BadRequestException::class,
+            'internal_error_code'   => 'BAD_REQUEST_NO_RECORDS_FOUND',
+        ],
+    ]
 ];

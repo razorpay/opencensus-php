@@ -3584,6 +3584,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VAULT_FETCH_TOKEN                                     = 'VAULT_FETCH_TOKEN';
     const VAULT_DELETE_TOKEN                                    = 'VAULT_DELETE_TOKEN';
     const VAULT_TOKEN_ONBOARDING_REQUEST                        = 'VAULT_TOKEN_ONBOARDING_REQUEST';
+    const VAULT_UPDATE_TOKEN                                    = 'VAULT_UPDATE_TOKEN';
+    const VAULT_UPDATE_TOKEN_FAILED                             = 'VAULT_UPDATE_TOKEN_FAILED';
+    const VAULT_TOKEN_STATUS_UPDATE_SERVICE                     = 'VAULT_TOKEN_STATUS_UPDATE_SERVICE';
 
     const VAULT_TOKEN_MIGRATION_DISPATCH_FAILED                 = 'VAULT_TOKEN_MIGRATION_DISPATCH_FAILED';
     const VAULT_TOKEN_MIGRATION_CRON_DISPATCH_FAILED            = 'VAULT_TOKEN_MIGRATION_CRON_DISPATCH_FAILED';

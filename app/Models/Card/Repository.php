@@ -307,4 +307,11 @@ class Repository extends Base\Repository
                     ->get()
                     ->last();
     }
+
+    public function updateById($id, $updateData)
+    {
+        return $this->newQuery()
+            ->where(Token\Entity::ID, $id)
+            ->update($updateData);
+    }
 }

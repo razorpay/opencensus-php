@@ -55,4 +55,13 @@ class TokenController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function updateStatus()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateStatus($input);
+
+        return ApiResponse::json($data);
+    }
 }

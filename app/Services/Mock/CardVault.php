@@ -91,14 +91,20 @@ class CardVault extends BaseCardVault
             $response['expiry_year'] = '20' . $response['expiry_year'];
         }
 
-        $response['service_providers'] = [
+        $response['service_provider_tokens'] = [
             [
-                'type'  => 'network',
-                'name'  => 'visa',
-                'data'  => [
+                'id'             => 'spt_1234abcd',
+                'entity'         => 'service_provider_token',
+                'provider_type'  => 'network',
+                'provider_name'  => $input['provider']['network'],
+                'interoperable'  => true,
+                'status'         => 'activated',
+                'provider_data'  => [
                     'token_reference_number' => $token,
                     'card_reference_number'  => strrev($token),
-                    'interoperable'          => true,
+                    'token_iin'              => '453335',
+                    'token_expiry_month'     => 12,
+                    'token_expiry_year'      => 2021,
                 ],
             ]
         ];
@@ -161,6 +167,13 @@ class CardVault extends BaseCardVault
     }
 
     public function onboardMerchant($input): array
+    {
+        $response['success'] = true;
+
+        return $response;
+    }
+
+    public function updateToken($input): array
     {
         $response['success'] = true;
 

@@ -50,25 +50,45 @@ class Core extends Base\Core
     {
         $response = $this->getTokenizedCardResponseFromVault($input, $merchant);
 
-        $expiry_year = $input['expiry_year'];
-
-        $expiry_month = $input['expiry_month'];
-
-        if($input['expiry_year'] !== null && strlen($expiry_year) == 2)
-        {
-            $expiry_year = '20' . $expiry_year;
-        }
-
         $createInput = [
             Card\Entity::VAULT_TOKEN        => $response['token'],
             Card\Entity::GLOBAL_FINGERPRINT => $response['fingerprint'],
-            Card\Entity::EXPIRY_MONTH       => $expiry_month,
-            Card\Entity::EXPIRY_YEAR        => $expiry_year,
-            Card\Entity::VAULT              => $response['service_providers'][0]['name'],
-            Card\Entity::LENGTH             => strlen($input['number']),
-            Card\Entity::LAST4              => substr($input['number'] ?? null, 0, 4),
-            Card\Entity::IIN                => substr($input['number'] ?? null, 0, 6)
+            Card\Entity::LAST4              => substr($input['number'] ?? null, -4),
+            Card\Entity::LENGTH             => 0,
+            Card\Entity::IIN                => '000000',
+            Card\Entity::EXPIRY_MONTH       => '0',
+            Card\Entity::EXPIRY_YEAR        => '9999',
         ];
+
+        if(empty($response['service_provider_tokens']) === false)
+        {
+            $createInput[Card\Entity::VAULT] = $response['service_provider_tokens'][0]['provider_name'];
+
+            if($this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_iin'))
+            {
+                $createInput[Card\Entity::IIN] = $response['service_provider_tokens'][0]['provider_data']['token_iin'];
+            }
+
+            if($this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_number'))
+            {
+                $createInput[Card\Entity::LENGTH] = strlen($response['service_provider_tokens'][0]['provider_data']['token_number']);
+            }
+
+            if($this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_expiry_month') &&
+                $this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_expiry_year'))
+            {
+                $createInput[Card\Entity::EXPIRY_MONTH] = $response['service_provider_tokens'][0]['provider_data']['token_expiry_month'];
+
+                $expiry_year = $response['service_provider_tokens'][0]['provider_data']['token_expiry_year'];
+
+                if ($expiry_year !== null && strlen($expiry_year) == 2)
+                {
+                    $expiry_year = '20' . $expiry_year;
+                }
+
+                $createInput[Card\Entity::EXPIRY_YEAR] = $expiry_year;
+            }
+        }
 
         $card = (new Card\Entity)->buildCard($createInput, 'tokenizedCard');
 
@@ -81,9 +101,7 @@ class Core extends Base\Core
             $card->iinRelation()->associate($iin);
         }
 
-        $tokenStatus = $response['status'];
-
-        return [$card, $response['service_providers'], $tokenStatus];
+        return [$card, $response['service_provider_tokens']];
     }
 
     public function fetchCryptogram($card, $merchant)
@@ -638,5 +656,47 @@ class Core extends Base\Core
         $cardVaultToken = $card->getVaultToken();
 
         return $cardVault->deleteNetworkToken($cardVaultToken);
+    }
+
+    public function updateCard($id, $tokenData)
+    {
+        $updateData = [];
+
+        if(array_key_exists('iin', $tokenData) && $tokenData['iin'] !== null)
+        {
+            $updateData[Card\Entity::IIN] = $tokenData['iin'];
+        }
+
+        if(array_key_exists('expiry_year', $tokenData) && $tokenData['expiry_year'] !== null &&
+            array_key_exists('expiry_month', $tokenData) && $tokenData['expiry_month'] !== null)
+        {
+            $updateData[Card\Entity::EXPIRY_MONTH] = $tokenData['expiry_month'];
+
+            $updateData[Card\Entity::EXPIRY_YEAR] = $tokenData['expiry_year'];
+        }
+
+        if(empty($updateData) === false)
+        {
+            $rowsAffected = $this->repo->card->updateById($id, $updateData);
+
+            if ($rowsAffected === 0)
+            {
+                throw new Exception\BadRequestException(\RZP\Error\P2p\ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+                    'card',
+                    ['data' => $tokenData]
+                );
+            }
+        }
+    }
+
+    protected function isPresent($array, $param)
+    {
+        if(array_key_exists($param, $array) &&
+            !($array[$param] !== null || $array[$param] === 0 || $array[$param] === ''))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

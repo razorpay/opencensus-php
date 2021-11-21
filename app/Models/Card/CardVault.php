@@ -244,4 +244,13 @@ class CardVault extends Base\Core
 
         return $this->app['card.cardVault']->onboardMerchant($input);
     }
+
+    public function updateToken($vaultToken, $updateData)
+    {
+        $input = $updateData;
+
+        $input['token'] = $vaultToken;
+
+        return $this->app['card.cardVault']->updateToken($input);
+    }
 }

@@ -195,30 +195,41 @@ class TokenTest extends TestCase
 
         $callable = function ($route, $method, $input)
         {
-            $response['success'] = true;
-            $token = base64_encode($input['card']['number']);
-
-            $response['success'] = true;
-            $response['token']  = $token;
-            $response['fingerprint'] = strrev($token);
-            $response['token_iin'] = substr($input['card']['number'] ?? null, 0, 6);
-            $response['expiry_month'] = $input['card']['expiry_month'];
-            $response['expiry_year'] = $input['card']['expiry_year'];
-            $response['status'] = 'activated';
-
-            if (strlen($response['expiry_year']) == 2)
+            if ($route === 'tokens/update')
             {
-                $response['expiry_year'] = '20' . $response['expiry_year'];
+                return ['success' => true];
             }
 
-            $response['service_providers'] = [
+            $response['success'] = true;
+
+            $token = base64_encode($input['card']['number']);
+            $response['token']  = $token;
+            $response['length'] = '16';
+
+            $response['fingerprint'] = strrev($token);
+            $token_iin = substr($input['card']['number'] ?? null, 0, 6);
+
+            $expiry_year = $input['card']['expiry_year'];
+            if (strlen($expiry_year) == 2)
+            {
+                $expiry_year = '20' . $expiry_year;
+            }
+
+            $response['service_provider_tokens'] = [
                 [
-                    'type'  => 'network',
-                    'name'  => 'visa',
-                    'data'  => [
+                    'id'             => 'spt_1234abcd',
+                    'entity'         => 'service_provider_token',
+                    'provider_type'  => 'network',
+                    'provider_name'  => 'visa',
+                    'status'                 => 'activated',
+                    'interoperable'          => true,
+                    'provider_data'  => [
                         'token_reference_number' => $token,
                         'card_reference_number'  => strrev($token),
-                        'interoperable'          => true,
+                        'token_expiry_month'     => $input['card']['expiry_month'],
+                        'token_expiry_year'      => $expiry_year,
+                        'token_iin'              => $token_iin,
+                        'token_number'           => $input['card']['number'],
                     ],
                 ]
             ];
@@ -251,11 +262,11 @@ class TokenTest extends TestCase
 
         $this->assertEquals('card', $response['method']);
 
-        $this->assertEquals('12', $response['expiry_month']);
+        $this->assertNotNull($response['service_provider_tokens']);
 
-        $this->assertEquals('2023', $response['expiry_year']);
+        $this->assertEquals('12', $response['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
 
-        $this->assertNotNull($response['service_providers']);
+        $this->assertEquals('2023', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
 
         $this->assertArrayNotHasKey('customer_id', $response);
     }
@@ -268,33 +279,31 @@ class TokenTest extends TestCase
 
         $callable = function ($route, $method, $input)
         {
-            $response['success'] = true;
-            $token = base64_encode($input['card']['number']);
-
-            $response['success'] = true;
-            $response['token']  = $token;
-            $response['fingerprint'] = strrev($token);
-            $response['token_iin'] = "";
-            $response['expiry_month'] = "";
-            $response['expiry_year'] = "";
-            $response['status'] = 'created';
-
-            if (strlen($response['expiry_year']) == 2)
+            if ($route === 'tokens/update')
             {
-                $response['expiry_year'] = '20' . $response['expiry_year'];
+                return ['success' => true];
             }
 
-            $response['service_providers'] = [
+            $response['success'] = true;
+            $token = base64_encode($input['card']['number']);
+            $response['token']  = $token;
+            $response['fingerprint'] = strrev($token);
+
+            $response['service_provider_tokens'] = [
                 [
-                    'type'  => 'network',
-                    'name'  => 'mastercard',
-                    'data'  => [
+                    'id'             => 'spt_1234abcd',
+                    'entity'         => 'service_provider_token',
+                    'provider_type'  => 'network',
+                    'provider_name'  => 'mastercard',
+                    'status'         => 'created',
+                    'interoperable'  => true,
+                    'provider_data'  => [
                         'token_reference_number' => $token,
                         'card_reference_number'  => strrev($token),
+                        'token_expiry_month' => 0,
+                        'token_expiry_year' => 0,
                         'token_iin' => "",
-                        'expiry_month' => 0,
-                        'expiry_year' => 0,
-                        'interoperable' => true,
+                        'token_number' => "",
                     ],
                 ]
             ];
@@ -327,11 +336,11 @@ class TokenTest extends TestCase
 
         $this->assertEquals('card', $response['method']);
 
-        $this->assertEquals('12', $response['expiry_month']);
+        $this->assertNotNull($response['service_provider_tokens']);
 
-        $this->assertEquals('2023', $response['expiry_year']);
+        $this->assertEquals(null, $response['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
 
-        $this->assertNotNull($response['service_providers']);
+        $this->assertEquals(null, $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
 
         $this->assertArrayNotHasKey('customer_id', $response);
     }
@@ -344,32 +353,43 @@ class TokenTest extends TestCase
 
         $callable = function ($route, $method, $input)
         {
-            $response['success'] = true;
-            $response['provider'] = $input['provider']['network'];
-            $token = base64_encode($input['card']['number']);
-
-            $response['success'] = true;
-            $response['token']  = $token;
-            $response['fingerprint'] = strrev($token);
-            $response['token_iin'] = substr($input['card']['number'] ?? null, 0, 6);
-            $response['last4'] = substr($input['card']['number'] ?? null, 0, 4);
-            $response['expiry_month'] = $input['card']['expiry_month'];
-            $response['expiry_year'] = $input['card']['expiry_year'];
-            $response['length'] = strlen($input['card']['number']);
-
-            if (strlen($response['expiry_year']) == 2)
+            if ($route === 'tokens/update')
             {
-                $response['expiry_year'] = '20' . $response['expiry_year'];
+                return ['success' => true];
             }
 
-            $response['service_providers'] = [
+            $response['success'] = true;
+            $response['provider'] = $input['provider']['network'];
+
+            $token = base64_encode($input['card']['number']);
+            $response['token']  = $token;
+
+            $response['fingerprint'] = strrev($token);
+            $response['last4'] = substr($input['card']['number'] ?? null, 0, 4);
+
+            $token_iin = substr($input['card']['number'] ?? null, 0, 6);
+
+            $expiry_year = $input['card']['expiry_year'];
+            if (strlen($expiry_year) == 2)
+            {
+                $expiry_year = '20' . $expiry_year;
+            }
+
+            $response['service_provider_tokens'] = [
                 [
-                    'type'  => 'network',
-                    'name'  => $input['provider']['network'],
-                    'data'  => [
+                    'id'             => 'spt_1234abcd',
+                    'entity'         => 'service_provider_token',
+                    'provider_type'  => 'network',
+                    'provider_name'  => $input['provider']['network'],
+                    'status'         => 'created',
+                    'interoperable'  => true,
+                    'provider_data'  => [
                         'token_reference_number' => $token,
                         'card_reference_number'  => strrev($token),
-                        'interoperable'          => true,
+                        'token_expiry_month'     => $input['card']['expiry_month'],
+                        'token_expiry_year'      => $expiry_year,
+                        'token_iin'              => $token_iin,
+                        'token_number'           => $input['card']['number'],
                     ],
                 ]
             ];
@@ -411,6 +431,11 @@ class TokenTest extends TestCase
 
         $callable = function ($route, $method, $input)
         {
+            if ($route === 'tokens/update')
+            {
+                return ['success' => true];
+            }
+
             $response['success'] = false;
 
             $response['error'] = [
@@ -460,14 +485,14 @@ class TokenTest extends TestCase
             $dummyCardNumber = '4100000000000099';
 
             $response['success'] = true;
-            $response['service_providers'] = [
-                'type'  => 'network',
-                'name'  => 'Visa',
-                'data'  => [
+            $response['service_provider_tokens'] = [
+                'provider_type'  => 'network',
+                'provider_name'  => 'Visa',
+                'provider_data'  => [
                     'token_number' => $dummyCardNumber,
                     'cryptogram_value' => 12,
-                    'expiry_month' => 12,
-                    'expiry_year' => 2021,
+                    'token_expiry_month' => 12,
+                    'token_expiry_year' => 2021,
                 ],
             ];
 
@@ -494,15 +519,15 @@ class TokenTest extends TestCase
 
         $response = $this->startTest($fetchPayload);
 
-        $this->assertNotNull($response['service_providers']['data']['token_number']);
+        $this->assertNotNull($response['service_provider_tokens']['provider_data']['token_number']);
 
-        $this->assertNotNull($response['service_providers']['data']['cryptogram_value']);
+        $this->assertNotNull($response['service_provider_tokens']['provider_data']['cryptogram_value']);
 
-        $this->assertEquals('12', $response['service_providers']['data']['expiry_month']);
+        $this->assertEquals('12', $response['service_provider_tokens']['provider_data']['token_expiry_month']);
 
-        $this->assertEquals('2021', $response['service_providers']['data']['expiry_year']);
+        $this->assertEquals('2021', $response['service_provider_tokens']['provider_data']['token_expiry_year']);
 
-        $this->assertEquals('4100000000000099', $response['service_providers']['data']['token_number']);
+        $this->assertEquals('4100000000000099', $response['service_provider_tokens']['provider_data']['token_number']);
     }
 
     public function testFetchCryptogramLiveInvalidToken()
@@ -516,14 +541,14 @@ class TokenTest extends TestCase
             $dummyCardNumber = '4100000000000099';
 
             $response['success'] = true;
-            $response['service_providers'] = [
-                'type'  => 'network',
-                'name'  => 'Visa',
-                'data'  => [
+            $response['service_provider_tokens'] = [
+                'provider_type'  => 'network',
+                'provider_name'  => 'Visa',
+                'provider_data'  => [
                     'token_number' => $dummyCardNumber,
                     'cryptogram_value' => 12,
-                    'expiry_month' => 12,
-                    'expiry_year' => 2021,
+                    'token_expiry_month' => 12,
+                    'token_expiry_year' => 2021,
                 ],
             ];
 
@@ -603,14 +628,20 @@ class TokenTest extends TestCase
             $response['fingerprint'] = strrev($token);
             $response['status'] = 'activated';
 
-            $response['service_providers'] = [
+            $response['service_provider_tokens'] = [
                 [
-                    'type'  => 'network',
-                    'name'  => 'visa',
-                    'data'  => [
+                    'id'             => 'spt_1234abcd',
+                    'entity'         => 'service_provider_token',
+                    'provider_type'  => 'network',
+                    'provider_name'  => 'visa',
+                    'interoperable'  => true,
+                    'status'         => 'activated',
+                    'provider_data'  => [
                         'token_reference_number' => $token,
                         'card_reference_number'  => strrev($token),
-                        'interoperable'          => true,
+                        'token_iin'              => '400000',
+                        'token_expiry_month'     => '12',
+                        'token_expiry_year'      => '2023',
                     ],
                 ]
             ];
@@ -640,11 +671,11 @@ class TokenTest extends TestCase
 
         $this->assertEquals('card', $fetchResponse['method']);
 
-        $this->assertEquals('12', $fetchResponse['expiry_month']);
+        $this->assertEquals('12', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
 
-        $this->assertEquals('2023', $fetchResponse['expiry_year']);
+        $this->assertEquals('2023', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
 
-        $this->assertNotNull($fetchResponse['service_providers']);
+        $this->assertNotNull($fetchResponse['service_provider_tokens']);
     }
 
     public function testFetchTokenLiveInvalidToken()
@@ -662,14 +693,20 @@ class TokenTest extends TestCase
             $response['fingerprint'] = strrev($token);
             $response['status'] = 'activated';
 
-            $response['service_providers'] = [
+            $response['service_provider_tokens'] = [
                 [
-                    'type'  => 'network',
-                    'name'  => 'visa',
-                    'data'  => [
+                    'id'            => 'spt_1234abcd',
+                    'entity'        => 'service_provider_token',
+                    'provider_type' => 'network',
+                    'provider_name' => 'visa',
+                    'interoperable' => true,
+                    'status'        => 'activated',
+                    'provider_data' => [
                         'token_reference_number' => $token,
                         'card_reference_number'  => strrev($token),
-                        'interoperable'          => true,
+                        'token_iin'              => '400000',
+                        'token_expiry_month'     => '12',
+                        'token_expiry_year'      => '2023',
                     ],
                 ]
             ];
@@ -840,5 +877,54 @@ class TokenTest extends TestCase
         $deletePayload = $this->testData['testTokenDelete'];
 
         $this->startTest($deletePayload);
+    }
+
+    public function testTokenStatusLive()
+    {
+        $this->ba->privateAuth();
+
+        $createPayload = $this->testData['testCreateToken'];
+
+        $response = $this->startTest($createPayload);
+
+
+        $statusPayload = $this->testData['testTokenStatusLive'];
+
+        $statusPayload['request']['content'] = [
+            'token_id'     => Token\Entity::verifyIdAndStripSign($response['id']),
+            'iin'          => '123456',
+            'expiry_month' => '12',
+            'expiry_year'  => '21',
+            'status'       => 'suspended',
+        ];
+
+        $this->ba->appAuth('rzp_test','');
+
+        $statusResponse = $this->startTest($statusPayload);
+
+        $this->assertEquals($response['id'], $statusResponse['token_id']);
+
+        $this->assertEquals($statusPayload['request']['content']['status'], $statusResponse['status']);
+
+        $this->assertNotNull($statusResponse['vault_token']);
+    }
+
+    public function testTokenStatusLiveFailure()
+    {
+        $this->ba->privateAuth();
+
+        $statusPayload = $this->testData['testTokenStatusLiveFailure'];
+
+        $statusPayload['request']['content'] = [
+            'token_id'     => 'IH1DUoeHzMRMHO',
+            'iin'          => '123456',
+            'expiry_month' => '12',
+            'expiry_year'  => '21',
+            'status'       => 'suspended',
+        ];
+
+        $this->ba->appAuth('rzp_test','');
+
+        $statusResponse = $this->startTest($statusPayload);
     }
 }

@@ -542,4 +542,22 @@ class CardVault
 
         return $response;
     }
+
+    public function updateToken($input): array
+    {
+        $this->trace->info(TraceCode::VAULT_UPDATE_TOKEN);
+
+        $response = $this->sendRequest('tokens/update', 'post', $input);
+
+        if ($response[self::SUCCESS] === false)
+        {
+            throw new Exception\RuntimeException(
+                'Update token request failed', [
+                    'data' => $response,
+                    'id'   => $input['merchant_token'],
+                ]);
+        }
+
+        return $response;
+    }
 }

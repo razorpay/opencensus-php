@@ -581,4 +581,11 @@ class Repository extends Base\Repository
                     ->limit($count)
                     ->get($tokenId);
     }
+
+    public function updateById($tokenId, $updateData)
+    {
+        return $this->newQuery()
+            ->where(Token\Entity::ID, $tokenId)
+            ->update($updateData);
+    }
 }

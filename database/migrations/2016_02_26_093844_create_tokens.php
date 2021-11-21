@@ -98,6 +98,12 @@ class CreateTokens extends Migration
             $table->char(Token::AUTH_TYPE, 14)
                   ->nullable();
 
+            $table->string(Token::STATUS, 20)
+                  ->nullable();
+
+            $table->text(Token::NOTES)
+                  ->nullable();
+
             $table->boolean(Token::RECURRING)
                   ->default(0);
 

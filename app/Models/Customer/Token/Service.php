@@ -515,9 +515,9 @@ class Service extends Base\Service
     {
         if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
         {
-            list($token, $serviceProviders, $tokenStatus) = $this->core->createTokenAndTokenizedCard($input);
+            list($token, $serviceProviderTokens) = $this->core->createTokenAndTokenizedCard($input);
 
-            return $token->toArrayPublicTokenizedCard($serviceProviders, $tokenStatus);
+            return $token->toArrayPublicTokenizedCard($serviceProviderTokens);
         }
 
         $this->validateMode();
@@ -535,16 +535,14 @@ class Service extends Base\Service
 
             $token = $this->repo->token->findOrFailByPublicIdAndMerchant($input['id'], $this->merchant);
 
-            $serviceProviders = [];
-
-            $tokenStatus = null;
+            $serviceProviderTokens = [];
 
             if ($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NETWORK_TOKENS) === true)
             {
-                [$serviceProviders, $tokenStatus] = $this->core->fetchToken($token);
+                $serviceProviderTokens = $this->core->fetchToken($token);
             }
 
-            return $token->toArrayPublicTokenizedCard($serviceProviders, $tokenStatus);
+            return $token->toArrayPublicTokenizedCard($serviceProviderTokens);
         }
 
         $this->validateMode();
@@ -568,9 +566,9 @@ class Service extends Base\Service
 
             $token = $this->repo->token->findOrFailByPublicIdAndMerchant($input['id'], $this->merchant);
 
-            $serviceProviders = $this->core->fetchCryptogram($token, $this->merchant);
+            $serviceProviderTokens = $this->core->fetchCryptogram($token, $this->merchant);
 
-            $response['service_providers'] = $serviceProviders;
+            $response['service_provider_tokens'] = $serviceProviderTokens;
 
             return $response;
         }
@@ -707,6 +705,30 @@ class Service extends Base\Service
         }
 
         $response['notes'] = [];
+
+        return $response;
+    }
+
+    public function updateStatus($input)
+    {
+        $this->trace->info(
+            TraceCode::VAULT_TOKEN_STATUS_UPDATE_SERVICE,
+            ['input' => $input]);
+
+        (new Validator)->validateInput(Validator::GET_STATUS, $input);
+
+        $response = [
+            'token_id' => $input['token_id'],
+            'status'   => $input['status']
+        ];
+
+        $vaultToken = $this->core->updateStatus($input);
+
+        $response['vault_token'] = $vaultToken;
+
+        $this->trace->info(
+            TraceCode::VAULT_TOKEN_STATUS_UPDATE_SERVICE,
+            ['input' => $input]);
 
         return $response;
     }

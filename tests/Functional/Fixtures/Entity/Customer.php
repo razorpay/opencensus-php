@@ -70,6 +70,7 @@ class Customer extends Base
             'card_id'       => null,
             'used_at'       => 10,
             'created_at'    => 1500000000,
+            'status'        => 'activated',
         ],
         [
             'id'            => '100000custbank',
@@ -81,6 +82,7 @@ class Customer extends Base
             'card_id'       => null,
             'used_at'       => 10,
             'created_at'    => 1500000001,
+            'status'        => 'activated',
         ],
         [
             'id'            => '100000custcard',
@@ -93,6 +95,7 @@ class Customer extends Base
             'card_id'       => '100000000lcard',
             'used_at'       => 10,
             'created_at'    => 1500000002,
+            'status'        => 'activated',
         ],
         [
             'id'            => '100000rpaycard',
@@ -105,6 +108,7 @@ class Customer extends Base
             'card_id'       => '10000000rucard',
             'used_at'       => 10,
             'created_at'    => 1500000002,
+            'status'        => 'activated',
         ],
         [
             'id'            => '100001custcard',
@@ -116,6 +120,7 @@ class Customer extends Base
             'card_id'       => '100000001lcard',
             'used_at'       => 10,
             'created_at'    => 1500000003,
+            'status'        => 'activated',
         ],
         [
             'id'            => '10000custgcard',
@@ -128,6 +133,7 @@ class Customer extends Base
             'wallet'        => null,
             'used_at'       => 10,
             'created_at'    => 1500000004,
+            'status'        => 'activated',
         ],
         [
             'id'                => '100000emandate',
@@ -142,6 +148,7 @@ class Customer extends Base
             'used_at'           => 10,
             'created_at'        => 1500000005,
             'max_amount'        => 105,
+            'status'            => 'activated',
         ],
     );
 

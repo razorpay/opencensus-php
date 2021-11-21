@@ -99,6 +99,7 @@ class Entity extends Base\PublicEntity
         self::VAULT,
         self::GLOBAL_FINGERPRINT,
         self::INTERNATIONAL,
+        self::IIN,
     ];
 
     protected $guarded = [self::ID];
@@ -196,6 +197,7 @@ class Entity extends Base\PublicEntity
         self::TRIVIA         => null,
         self::CATEGORY       => null,
         self::NAME           => '',
+        self::LENGTH         => 0,
     ];
 
     protected $casts = [
@@ -520,6 +522,10 @@ class Entity extends Base\PublicEntity
         $year = $this->getExpiryYear();
 
         $month = $this->getExpiryMonth();
+
+        if($month === 0) {
+            return null;
+        }
 
         return Carbon::createFromDate($year, $month, 1, Timezone::IST)
                      ->endOfMonth()
@@ -1076,7 +1082,7 @@ class Entity extends Base\PublicEntity
 
         return null;
     }
-    
+
     // Card Country would be set as part of token object only for the preferences API.
     protected function setCardCountryInTokenResponse(& $attributes)
     {

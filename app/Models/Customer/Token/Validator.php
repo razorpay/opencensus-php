@@ -20,6 +20,7 @@ class Validator extends Base\Validator
     const FETCH_CRYPTOGRAM                        = 'fetch_cryptogram';
     const FETCH_TOKEN                             = 'fetch_token';
     const DELETE_TOKEN                            = 'delete_token';
+    const GET_STATUS                              = 'get_status';
 
     /**
      * token epoch constrains :
@@ -50,6 +51,8 @@ class Validator extends Base\Validator
         Entity::START_TIME          => 'sometimes_if:method,upi,nach,emandate',
         Entity::DEBIT_TYPE          => 'required_only_if:auth_type,migrated|string|in:max_amount,fixed_amount',
         Entity::FREQUENCY           => 'required_only_if:auth_type,migrated|string|in:adhoc,monthly,quarterly,yearly',
+        Entity::STATUS              => 'sometimes|nullable',
+        Entity::NOTES               => 'sometimes|nullable'
     ];
 
     protected static $createDirectRules = [
@@ -90,6 +93,14 @@ class Validator extends Base\Validator
 
     protected static $deleteTokenRules = [
         'id'     => 'required|public_id',
+    ];
+
+    protected static $getStatusRules = [
+        'token_id'     => 'required|string',
+        'status'       => 'required|string',
+        'iin'          => 'sometimes',
+        'expiry_month' => 'sometimes',
+        'expiry_year'  => 'sometimes',
     ];
 
     protected static function validateBank($attribute, $value)

@@ -78,6 +78,8 @@ class Entity extends Base\PublicEntity
     const FREQUENCY                 = 'frequency';
     const ENTITY_ID                 = 'entity_id';
     const ENTITY_TYPE               = 'entity_type';
+    const STATUS                    = 'status';
+    const NOTES                     = 'notes';
 
     const CUSTOMER                  = 'customer';
 
@@ -153,6 +155,8 @@ class Entity extends Base\PublicEntity
         self::VPA_ID,
         self::DEBIT_TYPE,
         self::FREQUENCY,
+        self::STATUS,
+        self::NOTES,
     ];
 
     protected $visible = [
@@ -196,6 +200,8 @@ class Entity extends Base\PublicEntity
         self::START_TIME,
         self::DEBIT_TYPE,
         self::FREQUENCY,
+        self::STATUS,
+        self::NOTES,
     ];
 
     protected $public = [
@@ -218,6 +224,8 @@ class Entity extends Base\PublicEntity
         self::MAX_AMOUNT,
         self::EXPIRED_AT,
         self::START_TIME,
+        self::STATUS,
+        self::NOTES,
         // TODO: uncomment when we start accepting token as input
         // self::MAX_AMOUNT,
     ];
@@ -245,6 +253,8 @@ class Entity extends Base\PublicEntity
         self::START_TIME                => null,
         self::ENTITY_ID                 => null,
         self::ENTITY_TYPE               => null,
+        self::STATUS                    => null,
+        self::NOTES                     => null,
     ];
 
     protected $publicSetters = [
@@ -258,6 +268,8 @@ class Entity extends Base\PublicEntity
         self::MAX_AMOUNT,
         self::EXPIRED_AT,
         self::START_TIME,
+        self::STATUS,
+        self::NOTES,
     ];
 
     protected $appends = [
@@ -481,6 +493,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_TYPE);
     }
 
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getNotes()
+    {
+        return $this->getAttribute(self::NOTES);
+    }
+
     public function getRecurringStatus()
     {
         return $this->getAttribute(self::RECURRING_STATUS);
@@ -541,6 +563,16 @@ class Entity extends Base\PublicEntity
     public function setStartTime($startTime)
     {
         $this->setAttribute(self::START_TIME, $startTime);
+    }
+
+    public function setStatus($status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setNotes($notes)
+    {
+        $this->setAttribute(self::NOTES, $notes);
     }
 
     public function setRecurringStatus($recurringStatus)
@@ -734,6 +766,22 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function setPublicStatusAttribute(array & $array)
+    {
+        if ($this->getMethod() !== Payment\Method::CARD)
+        {
+            unset($array[self::STATUS]);
+        }
+    }
+
+    protected function setPublicNotesAttribute(array & $array)
+    {
+        if ($this->getMethod() !== Payment\Method::CARD)
+        {
+            unset($array[self::NOTES]);
+        }
+    }
+
     protected function setPublicMrnAttribute(array & $array)
     {
         $array[self::MRN] = null;
@@ -853,7 +901,7 @@ class Entity extends Base\PublicEntity
         return $publicArray;
     }
 
-    public function toArrayPublicTokenizedCard($serviceProviders, $tokenStatus)
+    public function toArrayPublicTokenizedCard($serviceProviderTokens)
     {
         $publicArray = parent::toArrayPublic();
 
@@ -872,18 +920,22 @@ class Entity extends Base\PublicEntity
             $publicArray[self::CUSTOMER_ID] = $this->customer->getPublicId();
         }
 
-        $publicArray['card']['token_iin']       = $this->card->getIin();
+        $publicArray['compliant_with_tokenisation_guidelines'] = true;
 
-        $publicArray[Card\Entity::EXPIRY_MONTH] = $this->card->getExpiryMonth();
-
-        $publicArray[Card\Entity::EXPIRY_YEAR]  = $this->card->getExpiryYear();
-
-        $publicArray['status'] = ($this->isExpired() === true) ? 'deactivated' : $tokenStatus;
-
-        if (empty($serviceProviders) === false)
+        if (empty($serviceProviderTokens) === false)
         {
-            $publicArray['service_providers'] = $serviceProviders;
+            $publicArray['service_provider_tokens'] = $serviceProviderTokens;
+
+            foreach ($serviceProviderTokens as $provider)
+            {
+                $provider['status'] = ($this->isExpired() === true) ? 'deactivated' : $provider['status'];
+            }
         }
+
+        // todo: when more than one tokens are come into picture, take union of statuses
+        $publicArray['status'] = $serviceProviderTokens[0]['status'];
+
+        $publicArray['notes'] = [];
 
         return $publicArray;
     }

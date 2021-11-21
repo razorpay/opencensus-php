@@ -1317,7 +1317,7 @@ class Core extends Base\Core
             $customer = $this->repo->customer->findOrFailByPublicIdAndMerchant($input[Token\Entity::CUSTOMER_ID], $this->merchant);
         }
 
-        list($card, $serviceProviders, $tokenStatus) = (new Card\Core)->createTokenizedCard($input['card'], $this->merchant);
+        list($card, $serviceProviderTokens) = (new Card\Core)->createTokenizedCard($input['card'], $this->merchant);
 
          $this->trace->info(
             TraceCode::TOKEN_CREATE_FOR_TOKENIZED_CARD
@@ -1325,9 +1325,13 @@ class Core extends Base\Core
 
         $token = new Token\Entity;
 
+        // todo: change to golabal status when token v/s card design is finalized
+        $tokenStatus = $serviceProviderTokens[0]['status'];
+
         $createTokenInput = [
             Entity::METHOD      => Method::CARD,
             Entity::CARD_ID     => $card->getId(),
+            Entity::STATUS      => $tokenStatus
         ];
 
         $token->build($createTokenInput);
@@ -1347,14 +1351,20 @@ class Core extends Base\Core
 
         if (empty($existingToken) === false)
         {
-            return [$existingToken, $serviceProviders, $tokenStatus];
+            return [$existingToken, $serviceProviderTokens];
         }
 
         $this->repo->saveOrFail($card);
 
         $this->repo->saveOrFail($token);
 
-        return [$token, $serviceProviders, $tokenStatus];
+        $updateData = [
+            'merchant_token' => $token['id'],
+        ];
+
+        (new Card\CardVault)->updateToken($card->getVaultToken(), $updateData);
+
+        return [$token, $serviceProviderTokens];
     }
 
     public function createNetworkToken($input)
@@ -1418,14 +1428,14 @@ class Core extends Base\Core
     {
         $response = (new Card\Core)->fetchCryptogram($token->card, $merchant);
 
-        return $response['service_providers'];
+        return $response['service_provider_tokens'];
     }
 
     public function fetchToken($token)
     {
         $response = (new Card\Core)->fetchToken($token->card);
 
-        return [$response['service_providers'], $response['status']] ;
+        return $response['service_provider_tokens'];
     }
 
     public function deleteToken($token)
@@ -1444,5 +1454,67 @@ class Core extends Base\Core
         $cardVault = (new Card\CardVault);
 
         return $cardVault->onboardMerchant($merchant);
+    }
+
+    public function updateStatus($tokenData)
+    {
+        $updateData = [];
+
+        if(array_key_exists('status', $tokenData) && $tokenData['status'] !== null)
+        {
+            $updateData[Token\Entity::STATUS] = $tokenData['status'];
+        }
+
+        if($this->isPresent($tokenData, 'expiry_year') && $this->isPresent($tokenData, 'expiry_month'))
+        {
+            $expiryMonth = (int)$tokenData['expiry_month'];
+
+            $expiryYear = (int)$tokenData['expiry_year'];
+
+            if (strlen($expiryYear) == 2)
+            {
+                $expiryYear = '20' . $expiryYear;
+            }
+
+            $updateData[Token\Entity::EXPIRED_AT] = $this->getExpiryTimestamp($expiryMonth, $expiryYear);
+        }
+        else
+        {
+            $updateData[Token\Entity::EXPIRED_AT] = null;
+        }
+
+        $rowsAffected = $this->repo->token->updateById($tokenData['token_id'], $updateData);
+
+        if ($rowsAffected === 0)
+        {
+            throw new Exception\BadRequestException(\RZP\Error\P2p\ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+                'token',
+                ['data' => $tokenData]
+            );
+        }
+
+        $token = $this->repo->token->findOrFailPublic($tokenData['token_id']);
+
+        (new Card\Core)->updateCard($token['card_id'], $tokenData);
+
+        return $token->card['vault_token'];
+    }
+
+    public function getExpiryTimestamp($expiryMonth, $expiryYear)
+    {
+        return Carbon::createFromDate($expiryYear, $expiryMonth, 1, Constants\Timezone::IST)
+            ->endOfMonth()
+            ->getTimestamp();
+    }
+
+    protected function isPresent($array, $param)
+    {
+        if(array_key_exists($param, $array) &&
+            !($array[$param] !== null || $array[$param] === 0 || $array[$param] === ''))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
