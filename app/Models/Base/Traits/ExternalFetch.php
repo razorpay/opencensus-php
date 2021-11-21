@@ -22,7 +22,7 @@ trait ExternalFetch
 
         try
         {
-            $entity = $class->fetch($id, $merchantId, $input);
+            $entity = $class->fetch($this->entity, $id, $merchantId, $input);
 
             if (empty($entity) === false)
             {
