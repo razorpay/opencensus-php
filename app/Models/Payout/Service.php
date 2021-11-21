@@ -2066,7 +2066,14 @@ class Service extends Base\Service
             $contactMetadata = $metadata[Entity::CONTACT];
         }
 
-        $contact = $this->createContactForNewCompositePayoutFlow($input, $traceData, $contactMetadata);
+        try
+        {
+            $contact = $this->createContactForNewCompositePayoutFlow($input, $traceData, $contactMetadata);
+        }
+        catch (\Throwable $exception)
+        {
+            $contact = $this->handleExceptionAndFindEntity($exception, 'contact', $contactMetadata);
+        }
 
         $this->trace->info(TraceCode::PAYOUT_OPTIMIZATION_FOR_COMPOSITE_TIME_TAKEN, [
             'step'              => 'composite_contact_creation',
@@ -2083,7 +2090,14 @@ class Service extends Base\Service
             $fundAccountMetaData = $metadata[Entity::FUND_ACCOUNT];
         }
 
-        $fundAccount = $this->createFundAccountForNewCompositePayoutFlow($input, $contact, $traceData, $fundAccountMetaData);
+        try
+        {
+            $fundAccount = $this->createFundAccountForNewCompositePayoutFlow($input, $contact, $traceData, $fundAccountMetaData);
+        }
+        catch (\Throwable $exception)
+        {
+            $fundAccount = $this->handleExceptionAndFindEntity($exception, 'fund_account', $fundAccountMetaData);
+        }
 
         $this->trace->info(TraceCode::PAYOUT_OPTIMIZATION_FOR_COMPOSITE_TIME_TAKEN, [
             'step'              => 'composite_fund_account_creation',
@@ -2100,7 +2114,14 @@ class Service extends Base\Service
             $payoutMetadata = $metadata[Entity::PAYOUT];
         }
 
-        $payout = $this->createPayoutForNewCompositePayoutFlow($input, $fundAccount, $balance, $payoutMetadata);
+        try
+        {
+            $payout = $this->createPayoutForNewCompositePayoutFlow($input, $fundAccount, $balance, $payoutMetadata);
+        }
+        catch (\Throwable $exception)
+        {
+            $payout = $this->handleExceptionAndFindEntity($exception, 'payout', $payoutMetadata);
+        }
 
         $this->trace->info(TraceCode::PAYOUT_OPTIMIZATION_FOR_COMPOSITE_TIME_TAKEN, [
             'step'              => 'composite_payout_creation',
@@ -2113,6 +2134,36 @@ class Service extends Base\Service
         ]);
 
         return [$payout, $contact, $fundAccount];
+    }
+
+    // Check for DB error of duplicate entry and fetch entity from master if required.
+    protected function handleExceptionAndFindEntity($exception, string $entityName, array $metadata)
+    {
+        $this->trace->traceException(
+            $exception,
+            Trace::ERROR,
+            TraceCode::PAYOUT_ENTITY_CREATION_FAILURE_IN_INGRESS_TO_EGRESS,
+            [
+                'entity'   => $entityName,
+                'metadata' => $metadata
+            ]);
+
+        $id = $metadata[Entity::ID];
+
+        if ($this->checkDuplicatePrimaryKeyError($exception->getMessage(), $entityName, $id) === false)
+        {
+            throw $exception;
+        }
+
+        return $this->repo->$entityName->findOrFailOnMaster($id);
+    }
+
+    // Checks for DB error of duplicate entry with same primary key.
+    protected function checkDuplicatePrimaryKeyError(string $errorMsg, string $entityName, string $entityId)
+    {
+        $errorPattern = sprintf("/1062 Duplicate entry '%s' for key '%ss.PRIMARY'/", $entityId, $entityName);
+
+        return (preg_match($errorPattern, $errorMsg) === 1);
     }
 
     protected function createContactForNewCompositePayoutFlow(array $input, array $traceData, array $contactMetadata): Contact\Entity

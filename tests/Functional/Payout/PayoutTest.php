@@ -14764,10 +14764,12 @@ class PayoutTest extends OAuthTestCase
             ]
         ];
 
+        $merchantId = $this->bankingBalance->merchant->getId();
+
         // Manually pushing into the queue because this is the only way to do this.
         // Keeping the queueFlag as false for this test.
         // Payout should get processed since merchant has enough balance.
-        (new PayoutPostCreateProcessLowPriority('test', $payoutId, 'false', $metadata, $this->bankingBalance->merchant->getId(), $payoutRequest))->handle();
+        (new PayoutPostCreateProcessLowPriority('test', $payoutId, 'false', $metadata, $merchantId, $payoutRequest))->handle();
 
         /** @var PayoutsIntermediateTransactions\Entity $intermediateTxn */
         $intermediateTxn = $this->getDbLastEntity(Constants\Entity::PAYOUTS_INTERMEDIATE_TRANSACTIONS);
@@ -14821,6 +14823,102 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('created', $payout['internal_status']);
         $this->assertEquals('processing', $publicResponse['status']);
         $this->assertNotNull($payout['initiated_at']);
+    }
+
+    public function testProcessingOfPayoutForHighTpsAsyncIngressDedupeCheckOnId()
+    {
+        Queue::fake();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_ASYNC_INGRESS]);
+
+        $payoutRequest = $this->testData['testCompositePayoutCreationViaNewCompositeFlow']['request']['content'];
+        $response      = $this->testCompositePayoutCreationViaNewCompositeFlow();
+
+        Queue::assertPushed(PayoutPostCreateProcessLowPriority::class, 1);
+
+        $payoutId = substr($response['id'], 5);
+
+        $fundAccountDetails = $response[Payout\Entity::FUND_ACCOUNT];
+
+        $metadata = [
+            Payout\Entity::PAYOUT       => [
+                Payout\Entity::ID         => $payoutId,
+                Payout\Entity::CREATED_AT => $response[Payout\Entity::CREATED_AT],
+            ],
+            Payout\Entity::CONTACT      => [
+                Payout\Entity::ID         => substr($fundAccountDetails[Payout\Entity::CONTACT][Payout\Entity::ID], 5),
+                Payout\Entity::CREATED_AT => $fundAccountDetails[Payout\Entity::CONTACT][Payout\Entity::CREATED_AT]
+            ],
+            Payout\Entity::FUND_ACCOUNT => [
+                Payout\Entity::ID         => substr($fundAccountDetails[Payout\Entity::ID], 3),
+                Payout\Entity::CREATED_AT => $fundAccountDetails[Payout\Entity::CREATED_AT]
+            ]
+        ];
+
+        $contactsBefore = $this->getDbEntities(Constants\Entity::CONTACT);
+
+        $fundAccountsBefore = $this->getDbEntities(Constants\Entity::FUND_ACCOUNT);
+
+        $this->fixtures->create('contact', [
+            'id'      => $metadata['contact']['id'],
+            'name'    => 'Prashanth Y',
+            'email'   => 'prashanth@razorpay.com',
+            'contact' => '9999999999',
+            'type'    => 'employee',
+        ]);
+
+        $this->fixtures->create('vpa', [
+            'id'                  => "INOMO4znVI7aC9",
+            'entity_id'           => $metadata['contact']['id'],
+            'entity_type'         => "contact",
+            'username'            => "mehulisa10xdev",
+            'handle'              => "razorpay",
+            'merchant_id'         => "10000000000000",
+            'created_at'          => 1637309570,
+            'fts_fund_account_id' => null,
+        ]);
+
+        $this->fixtures->create('fund_account',[
+            'id'              => $metadata['fund_account']['id'],
+            'merchant_id'     => "10000000000000",
+            'source_type'     => "contact",
+            'source_id'       => $metadata['contact']['id'],
+            'account_type'    => "vpa",
+            'account_id'      => "INOMO4znVI7aC9",
+            'batch_id'        => null,
+            'idempotency_key' => null,
+            'active'          => true,
+            'created_at'      => 1637309569,
+            'updated_at'      => 1637309570,
+            'deleted_at'      => null,
+            'unique_hash'     => "",
+        ]);
+
+        $merchantId = $this->bankingBalance->merchant->getId();
+
+        (new Payout\Service)->fundAccountCompositePayoutForHighTpsMerchants($payoutRequest,
+                                                                            $merchantId,
+                                                                            $metadata);
+
+        $contact = $this->getDbLastEntity(Constants\Entity::CONTACT);
+
+        $this->assertEquals('Prashanth Y', $contact->getName());
+
+        $this->assertNotEquals($payoutRequest[Constants\Entity::FUND_ACCOUNT][Constants\Entity::CONTACT]['name'], $contact->getName());
+
+        /** @var  $fundAccount */
+        $fundAccount = $this->getDbLastEntity(Constants\Entity::FUND_ACCOUNT);
+
+        $this->assertEquals("", $fundAccount->getUniqueHash());
+
+        $contactsAfter = $this->getDbEntities(Constants\Entity::CONTACT);
+
+        $fundAccountsAfter = $this->getDbEntities(Constants\Entity::FUND_ACCOUNT);
+
+        $this->assertCount(count($fundAccountsBefore->toArray()) + 1, $fundAccountsAfter);
+
+        $this->assertCount(count($contactsBefore->toArray()) + 1, $contactsAfter);
+
     }
 
     public function testGetPayoutsAndGetBalanceForHighTpsMerchantsWithSubBalances()

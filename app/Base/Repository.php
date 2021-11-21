@@ -470,6 +470,23 @@ class Repository extends \Razorpay\Spine\Repository
         $this->processDbQueryFailure('find', array('id' => $id, 'columns' => $columns));
     }
 
+    /**
+     * Find the entity on master. We want to query master db for flows that are less tolerant to replica lag.
+     *
+     * @param string   $id
+     * @param array $columns
+     *
+     * @return \RZP\Models\Base\Entity
+     */
+    public function findOrFailOnMaster(string $id, $columns = array('*'))
+    {
+        $mode = $this->app['rzp.mode'];
+
+        if ( ! is_null($model = $this->newQueryWithConnection($mode)->useWritePdo()->find($id, $columns))) return $model;
+
+        $this->processDbQueryFailure('find', array('id' => $id, 'columns' => $columns));
+    }
+
     protected function parseIds($value): array
     {
         if ($value instanceof Model)
