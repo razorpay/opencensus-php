@@ -211,6 +211,7 @@ trait RepositoryFetch
                 'query_ctx'      => is_null($merchantId) ? 'admin' : 'merchant',
                 'duration_ms'    => $queryDuration,
                 'query'          => $query->toSql(),
+                'merchantId'     => $merchantId,
             ]);
         }
 

@@ -15,6 +15,7 @@ use RZP\Models\External;
 use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Base\ConnectionType;
+use RZP\Trace\TraceCode;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicCollection;
@@ -97,7 +98,19 @@ class Repository extends Transaction\Repository
     {
         $this->setBaseQueryIfApplicable($merchantId);
 
+        $startTimeMs = round(microtime(true) * 1000);
+
         $statements = parent::fetch($input, $merchantId, $connectionType);
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $totalFetchTime = $endTimeMs - $startTimeMs;
+
+        $this->trace->info(TraceCode::QUERY_TIME_FOR_TRANSACTION_API , [
+            'duration_ms'    => $totalFetchTime,
+            'merchantId'     => $merchantId,
+        ]);
+
 
         // After fetching settlement collection, we lazy load source relations for payout.
         $statements->where(Entity::TYPE, E::PAYOUT)->load($this->expandsForTypePayout);
