@@ -212,39 +212,6 @@ class CardVault extends Base\Core
         return $input;
     }
 
-    public function onboardMerchant($merchant)
-    {
-        $merchantInput = [
-            'id'            => $merchant->getId(),
-            'activate'      => $merchant->isActivated(),
-            'org_id'        => $merchant->getOrgId(),
-            'live'          => $merchant->isLive(),
-            'name'          => $merchant->getName(),
-            'email'         => $merchant->getEmail(),
-            'billing_label' => $merchant->getBillingLabel(),
-            'features'      => $merchant->getEnabledFeatures(),
-        ];
-
-        $merchantDetails = $merchant->merchantDetail->toArrayPublic();
-
-        $merchantDetailsInput = [
-            'business_dba'               => $merchant->getBillingLabel(),
-            'business_operation_city'    => $merchantDetails[Detail\Entity::BUSINESS_REGISTERED_CITY],
-            'business_operation_state'   => $merchantDetails[Detail\Entity::BUSINESS_REGISTERED_STATE],
-            'business_operation_country' => $merchantDetails[Detail\Entity::BUSINESS_REGISTERED_COUNTRY],
-            'business_operation_pin'     => $merchantDetails[Detail\Entity::BUSINESS_REGISTERED_PIN],
-            'contact_mobile'             => $merchantDetails[Detail\Entity::CONTACT_MOBILE],
-            'business_website'           => $merchantDetails[Detail\Entity::BUSINESS_WEBSITE],
-        ];
-
-        $input = [
-            'merchant'        => $merchantInput,
-            'merchant_detail' => $merchantDetailsInput
-        ];
-
-        return $this->app['card.cardVault']->onboardMerchant($input);
-    }
-
     public function updateToken($vaultToken, $updateData)
     {
         $input = $updateData;

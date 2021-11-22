@@ -21,6 +21,14 @@ use RZP\Models\Feature\Constants as Feature;
 
 class Core extends Base\Core
 {
+    const GATEWAY_VISA = 'tokenisation_visa';
+    const GATEWAY_MC   = 'tokenisation_mastercard';
+
+    const TokenizationGateways = [
+        self::GATEWAY_VISA,
+        self::GATEWAY_MC,
+    ];
+
     /**
      * TODO: merge create and this method
      * currently this needs to be in transaction as we are creating
@@ -1451,9 +1459,24 @@ class Core extends Base\Core
 
     public function onboardMerchant($merchant)
     {
-        $cardVault = (new Card\CardVault);
+        $input = [
+            Merchant\Entity::ORG_ID => $merchant->getOrgId()
+        ];
 
-        return $cardVault->onboardMerchant($merchant);
+        foreach (self::TokenizationGateways as $gateway)
+        {
+            $this->trace->info(
+            TraceCode::TOKENIZATION_MERCHANT_ONBOARD,
+            ['gateway' => $gateway,
+                'merchant' => $merchant->getId()]);
+
+            $data = $this->app['terminals_service']->initiateOnboarding($merchant->getId(), $gateway, null, null, [], $input);
+
+            if ($data == null)
+            {
+                throw new Exception\ServerErrorException('Tokenization Onboarding failed', ErrorCode::MERCHANT_ONBOARD_ERROR_TERMINAL_CREATION);
+            }
+        }
     }
 
     public function updateStatus($tokenData)

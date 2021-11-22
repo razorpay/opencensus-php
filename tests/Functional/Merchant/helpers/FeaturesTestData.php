@@ -2115,26 +2115,6 @@ return [
             ],
             'status_code' => 200,
         ],
-    ],
-
-    'testOnboardMerchantVaultFailure' => [
-        'request'  => [
-            'url'     => '/features',
-            'method'  => 'post',
-            'content' => [
-                'names'       => ['dummy'],
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000'
-            ]
-        ],
-        'response' => [
-            'content' => [ ],
-            'status_code' => 500,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\RuntimeException',
-            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
-        ],
     ]
 
 ];

@@ -166,13 +166,6 @@ class CardVault extends BaseCardVault
         return $response;
     }
 
-    public function onboardMerchant($input): array
-    {
-        $response['success'] = true;
-
-        return $response;
-    }
-
     public function updateToken($input): array
     {
         $response['success'] = true;

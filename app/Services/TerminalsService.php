@@ -55,6 +55,7 @@ class TerminalsService
     const TIMEOUT           = 'timeout';
     const CONNECT_TIMEOUT   = 'connect_timeout';
     const OPTIONS           = 'options';
+    const ORG_ID            = 'org_id';
 
     const DEFAULT_TIMEOUT   = 0.1;
 
@@ -296,6 +297,12 @@ class TerminalsService
             self::IDENTIFIERS   =>  $identifiers,
             self::FEATURES      =>  $features,
         ];
+
+        // for network tokenization
+        if (isset($otherInputs[self::ORG_ID]) === true)
+        {
+            $content[self::ORG_ID] = $otherInputs[self::ORG_ID];
+        }
 
         // for paysecure
         if (isset($otherInputs[self::GATEWAY_ACQUIRER]) === true)

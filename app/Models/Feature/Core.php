@@ -160,7 +160,7 @@ class Core extends Base\Core
         {
            $merchant = $this->repo->merchant->findOrFailPublic($entityId);
 
-           $onboardingResponse = (new Token\Core())->onboardMerchant($merchant);
+           (new Token\Core())->onboardMerchant($merchant);
         }
 
         $this->notifyMerchantOfFeatureActivationIfApplicable($entityType, $entityId, $feature, $shouldSync);
