@@ -5639,6 +5639,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LOGIN_2FA_PASSWORD_SUSPENDED                      = 'LOGIN_2FA_PASSWORD_SUSPENDED';
 
     const PAYOUT_STATUS_DETAILS_ENTITY_CREATED              = 'PAYOUT_STATUS_DETAILS_ENTITY_CREATED';
+    const ROUTE_NOT_FOUND                                   = 'ROUTE_NOT_FOUND';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

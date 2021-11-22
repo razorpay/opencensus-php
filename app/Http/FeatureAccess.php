@@ -114,6 +114,14 @@ class FeatureAccess
             }
         }
 
+        $this->trace->info(TraceCode::ROUTE_NOT_FOUND,
+                           [
+                               'route_features'          => $routeFeatures,
+                               'merchant_Route_features' => $merchantRouteFeatures,
+                               'app_id_present'          => empty($appId)
+                           ]
+        );
+
         // if app shouldn't access the route on the merchant behalf or
         // merchant is accessing the route directly and merchant doesn't have access
         return ApiResponse::routeNotFound();
