@@ -43,6 +43,7 @@ class Constants
     const VIRTUAL_ACCOUNTS                = 'virtual_accounts';
     const QR_CODES                        = 'qr_codes';
     const QR_IMAGE_CONTENT                = 'qr_image_content';
+    const QR_IMAGE_PARTNER_NAME           = 'qr_image_partner_name';
     const VIRTUAL_ACCOUNTS_BANKING        = 'virtual_accounts_banking';
     const BANK_TRANSFER_ON_CHECKOUT       = 'bank_transfer_on_checkout';
     const CHECKOUT_VA_WITH_CUSTOMER       = 'checkout_va_with_customer';
@@ -945,7 +946,8 @@ class Constants
 
     const ONE_CC_COUPONS = 'one_cc_coupons';
 
-const CREDIT_ID_BASED_NEW_QUERY = 'credit_id_based_new_query';
+    const CREDIT_ID_BASED_NEW_QUERY = 'credit_id_based_new_query';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1024,6 +1026,7 @@ const CREDIT_ID_BASED_NEW_QUERY = 'credit_id_based_new_query';
         self::PAYMENT_FAILURE_EMAIL           => true,
         self::VIRTUAL_ACCOUNTS                => true,
         self::QR_IMAGE_CONTENT                => true,
+        self::QR_IMAGE_PARTNER_NAME           => true,
         self::VIRTUAL_ACCOUNTS_BANKING        => true,
         self::BANK_TRANSFER_ON_CHECKOUT       => true,
         self::CHECKOUT_VA_WITH_CUSTOMER       => true,
@@ -1424,6 +1427,11 @@ const CREDIT_ID_BASED_NEW_QUERY = 'credit_id_based_new_query';
         self::QR_IMAGE_CONTENT => [
             'feature'       => self::QR_IMAGE_CONTENT,
             'display_name'  => 'QR Intent link response',
+            'documentation' => 'qr-codes',
+        ],
+        self::QR_IMAGE_PARTNER_NAME => [
+            'feature'       => self::QR_IMAGE_PARTNER_NAME,
+            'display_name'  => 'QR codes Partner Name',
             'documentation' => 'qr-codes',
         ],
         self::PAYOUT    => [

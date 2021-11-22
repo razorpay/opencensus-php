@@ -738,6 +738,11 @@ return [
                         'display_name' => 'QR Intent link response'
                     ],
                     [
+                        'feature'      => 'qr_image_partner_name',
+                        'value'        => false,
+                        'display_name' => 'QR codes Partner Name',
+                    ],
+                    [
                         'feature'      => 'payout',
                         'value'        => false,
                         'display_name' => 'Payouts'
@@ -1128,6 +1133,7 @@ return [
                     'payment_failure_email',
                     'virtual_accounts',
                     'qr_image_content',
+                    'qr_image_partner_name',
                     'virtual_accounts_banking',
                     'bank_transfer_on_checkout',
                     'checkout_va_with_customer',
@@ -1242,6 +1248,7 @@ return [
                         'payment_failure_email',
                         'virtual_accounts',
                         'qr_image_content',
+                        'qr_image_partner_name',
                         'virtual_accounts_banking',
                         'bank_transfer_on_checkout',
                         'checkout_va_with_customer',
@@ -1363,6 +1370,7 @@ return [
                     'payment_failure_email',
                     'virtual_accounts',
                     'qr_image_content',
+                    'qr_image_partner_name',
                     'virtual_accounts_banking',
                     'bank_transfer_on_checkout',
                     'checkout_va_with_customer',
