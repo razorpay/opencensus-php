@@ -6,6 +6,7 @@ use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Entity;
 use RZP\Models\PaperMandate;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Traits\MocksRazorx;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
@@ -46,7 +47,15 @@ class PaperMandateTest extends TestCase
     {
         $this->mockGenerateNACH();
 
-        $this->mockRazorxTreatmentV2(RazorxTreatment::RECURRING_MORE_ACCOUNT_TYPE, 'on');
+        if ($this->razorxMock === null)
+        {
+            $this->razorxMock = Mockery::mock(RazorXClient::class)->makePartial();
+
+            $this->app->instance('razorx', $this->razorxMock);
+        }
+
+        $this->razorxMock
+            ->shouldReceive('getTreatment')->andReturn('on');
 
         $this->startTest();
     }

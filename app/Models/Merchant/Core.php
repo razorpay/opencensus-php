@@ -5043,11 +5043,15 @@ class Core extends Base\Core
         return ($count !== 0);
     }
 
+
     /**
      * Checks if razorx experiment is enabled for the merchant
+     * when there is error return the default value
      *
      * @param string $merchantId
      * @param string $experimentName
+     *
+     * @param bool   $defaultValue
      *
      * @return bool
      */
@@ -5057,11 +5061,11 @@ class Core extends Base\Core
 
         $variant = $this->app->razorx->getTreatment($merchantId,
                                                     $experimentName,
-                                                    $mode);
+                                                    $mode,
+                                                    2);
 
         return ($variant === Constants::RAZORX_EXPERIMENT_ON);
     }
-
     public function triggerMerchantBankingAccountsWebhook(Entity $merchant)
     {
         $eventPayload = [
