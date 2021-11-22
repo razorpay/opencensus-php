@@ -29,9 +29,13 @@ return array(
     | to be allowed to remain idle before it expires. If you want them
     | to immediately expire on the browser closing, set that option.
     |
+    | We also differentiate the lifetime differently for loggedin and non logged in users
+    |
     */
 
     'lifetime' => 60*12,
+
+    'non_logged_in_lifetime' => 60,
 
     /*
     |--------------------------------------------------------------------------

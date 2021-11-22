@@ -2,13 +2,27 @@
 
 namespace App\Session;
 
+use App;
 use Auth;
+use Config;
+use App\Trace\TraceCode;
 use Illuminate\Support\Arr;
 use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Contracts\Cache\Repository as CacheContract;
 
 class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessionHandler
 {
     protected $sessionNamespace = 'sessions';
+
+    protected $nonLoggedInUserSessionTimeout;
+
+    public function __construct(CacheContract $cache, $loggedInUserSessionTimeout, $nonLoggedInUserSessionTimeout = 60)
+    {
+        parent::__construct($cache, $loggedInUserSessionTimeout);
+
+        $this->nonLoggedInUserSessionTimeout = $nonLoggedInUserSessionTimeout;
+    }
+
 
     public function read($sessionId)
     {
@@ -32,9 +46,9 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
 
         $responses = $connection->transaction(function ($tx) use ($sessionId, $data)
         {
-            $lifetime = $this->minutes * 60;
-
             $data = $this->getDefaultPayload($data, app());
+
+            $lifetime = $this->getLifetime($data);
 
             $sessionKey = $this->sessionNamespace.':'.$sessionId;
 
@@ -139,7 +153,7 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
             // Delete the key holding entire session data
             $tx->del($key);
         });
-        
+
         return $responses;
     }
 
@@ -156,5 +170,26 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
     private function getUserSessionKey($userId)
     {
         return "users:$userId:" . $this->sessionNamespace;
+    }
+
+
+    protected function getLifetime($data)
+    {
+        if ($this->isUserLoggedIn($data) === false)
+        {
+            return $this->nonLoggedInUserSessionTimeout * 60;
+        }
+
+        return $this->minutes * 60;
+    }
+
+    protected function isUserLoggedIn($data)
+    {
+        if ((isset($data['user_id']) === false) and
+            (isset($data['admin_id']) === false))
+        {
+            return false;
+        }
+        return true;
     }
 }

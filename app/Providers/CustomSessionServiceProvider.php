@@ -15,9 +15,13 @@ class CustomSessionServiceProvider extends ServiceProvider {
         {
             // Taken from Illuminate\Session\SessionManager
 
-            $minutes = $app['config']['session.lifetime'];
+            $loggedInUserSessionTimeout = $app['config']['session.lifetime'];
 
-            $handler = new CustomCacheBasedSessionHandler(clone $app['cache']->driver('redis'), $minutes);
+            $nonLoggedInUserSessionTimeout = $app['config']['session.non_logged_in_lifetime'];
+
+            $handler = new CustomCacheBasedSessionHandler(clone $app['cache']->driver('redis'),
+                $loggedInUserSessionTimeout,
+                $nonLoggedInUserSessionTimeout);
 
             $handler->getCache()->getStore()->setConnection($app['config']['session.connection']);
 
