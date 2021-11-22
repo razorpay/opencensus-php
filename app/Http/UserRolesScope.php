@@ -79,6 +79,7 @@ class UserRolesScope
                 Role::OWNER,
                 Role::MANAGER,
                 Role::ADMIN,
+                Role::SELLERAPP,
                 Role::OPERATIONS,
                 Role::FINANCE,
                 Role::LINKED_ACCOUNT_OWNER,

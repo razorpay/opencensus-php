@@ -3802,6 +3802,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SALESFORCE_CA_EVENT_REQUEST                              = 'SALESFORCE_CA_EVENT_REQUEST';
     const SALESFORCE_CA_EVENT_RESPONSE                             = 'SALESFORCE_CA_EVENT_RESPONSE';
     const SALESFORCE_CA_EVENT_ERROR                                = 'SALESFORCE_CA_EVENT_ERROR';
+    const FILTER_RESPONSE_BASED_ON_ROLE                            = 'FILTER_RESPONSE_BASED_ON_ROLE';
 
     // Banking account
     const BANKING_ACCOUNT_USER_PERMISSION_ERROR                = 'BANKING_ACCOUNT_USER_PERMISSION_ERROR';

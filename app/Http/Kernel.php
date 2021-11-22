@@ -74,6 +74,7 @@ class Kernel extends HttpKernel
         \Illuminate\Session\Middleware\StartSession::class,
         Middleware\TemporaryStartSession::class,
         Middleware\RequestLogHandler::class,
+        Middleware\UserRoleBasedResponseFilter::class,
     ];
 
     /**
@@ -93,6 +94,7 @@ class Kernel extends HttpKernel
         'excel_store_proxy'             => Middleware\ExcelStoreProxy::class,
         'workflow'                      => Middleware\Workflow::class,
         'merchant_ip_filter'            => Middleware\MerchantIpFilter::class,
+        'filter_response_fields'        => Middleware\UserRoleBasedResponseFilter::class,
         'event_tracker'                 => Middleware\EventTracker::class,
         'p2p'                           => Middleware\P2p::class,
         'merchant_idempotency_handler'  => Middleware\MerchantIdempotencyHandler::class,

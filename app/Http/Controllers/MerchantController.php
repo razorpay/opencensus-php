@@ -1038,7 +1038,7 @@ class MerchantController extends Controller
     {
         $response = $this->service(E::MERCHANT_DETAIL)->fetchMerchantDetails();
 
-        return ApiResponse::json($response);
+        return $response;
     }
 
     public function isAdminLoggedInAsMerchant()

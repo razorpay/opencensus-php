@@ -5777,7 +5777,6 @@ class Route
         'risk_attributes_get',
 
         'create_risk_action',
-
         'banking_draft_invitations_create',
         //growth service
         'growth_downtime_for_x',
@@ -6849,7 +6848,6 @@ class Route
         'create_risk_action'                              => Permission::MERCHANT_ACTIONS,
 
         'banking_draft_invitations_create'                => Permission::REJECT_PAYOUT,
-
         // growth service
         'growth_downtime_for_x'                           => Permission::ENABLE_DOWNTIME_NOTIFICATION_X_DASHBOARD,
     ];
@@ -11482,6 +11480,9 @@ class Route
         'excel_store_delete_records',
         'excel_store_page_by_url',
     ];
+    const FILTER_RESPONSE_FIELDS_ROUTES = [
+        'merchant_activation_details',
+    ];
 
     /**
      * Register all routes here whose
@@ -12717,6 +12718,11 @@ class Route
         if (in_array($name, self::REQUEST_LOG_ROUTES, true) === true)
         {
             $route->middleware('request_log_handler');
+        }
+        //to filter response fileds based on the user role i.e. controlling api response view for user roles
+        if (in_array($name, self::FILTER_RESPONSE_FIELDS_ROUTES, true) === true)
+        {
+            $route->middleware('filter_response_fields');
         }
     }
 

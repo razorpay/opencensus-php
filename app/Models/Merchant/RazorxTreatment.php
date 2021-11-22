@@ -4,6 +4,9 @@ namespace RZP\Models\Merchant;
 
 final class RazorxTreatment
 {
+    // Response filed filtering based on role
+    const RESPONSE_FIELDS_FILTERING_FOR_ROLES = 'response_fields_filtering_for_roles';
+
     //Razorx treatment constant, allows system to call bvs for partnership deed verification.
     const AUTO_KYC_PARTNERSHIP = "auto_kyc_partnership";
 
