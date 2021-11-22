@@ -30,7 +30,7 @@ return [
             'content'     => [
                 'error'         => [
                     'code'              => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'       => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    'description'       => "Your payment didn't go through as it was declined. Try another account or contact your bank for details.",
                 ],
             ],
             'status_code' => 400,

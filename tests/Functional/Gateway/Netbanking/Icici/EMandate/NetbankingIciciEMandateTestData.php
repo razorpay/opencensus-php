@@ -21,7 +21,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    'description'   => "Your payment didn't go through as it was declined. Try another account or contact your bank for details.",
                 ],
             ],
             'status_code' => 400,
@@ -71,7 +71,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER,
+                    'description'   => 'The payment could not be completed as it was cancelled by the customer.',
                 ],
             ],
             'status_code' => 400,
@@ -103,7 +103,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_GATEWAY_TOKEN_EMPTY,
+                    'description'   => 'The payment could not be completed as the eMandate is inactive.',
                 ],
             ],
             'status_code' => 400,

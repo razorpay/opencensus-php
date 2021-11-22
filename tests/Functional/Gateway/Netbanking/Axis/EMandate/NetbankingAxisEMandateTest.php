@@ -371,7 +371,7 @@ class NetbankingAxisEMandateTest extends TestCase
                 'status'              => 'failed',
                 'method'              => 'emandate',
                 'internal_error_code' => 'BAD_REQUEST_PAYMENT_INVALID_ACCOUNT',
-                'error_description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
+                'error_description'   => "Your payment could not be completed as the bank account details you've entered are incorrect. Try again with another account.",
             ],
             $payment
         );

@@ -886,7 +886,7 @@ class NetbankingIciciEMandateTest extends TestCase
                 'method'              => 'emandate',
                 'recurring_type'      => 'auto',
                 'internal_error_code' => 'BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER',
-                'error_description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER
+                'error_description'   => 'The payment could not be completed as it was cancelled by the customer.'
             ],
             $payment
         );

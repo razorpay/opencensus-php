@@ -425,7 +425,7 @@ class EmandateDebitReconciliationTest extends TestCase
                 'amount'              => 3500,
                 'error_code'          => 'BAD_REQUEST_ERROR',
                 'internal_error_code' => 'BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE',
-                'error_description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE
+                'error_description'   => 'Your payment could not be completed due to insufficient account balance. Try again with another account.'
             ],
             $debitPayment
         );
