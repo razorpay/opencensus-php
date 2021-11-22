@@ -1373,7 +1373,7 @@ class UserTest extends TestCase
 
     public function testMobileSendVerificationOtpVerifiedUser()
     {
-        $user = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+        $user = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true, 'confirm_token' => null]);
 
         $testData = &$this->testData[__FUNCTION__];
 
@@ -4987,4 +4987,38 @@ class UserTest extends TestCase
 
     }
 
+    public function testMobileSendVerificationOtpUnverifiedEmail()
+    {
+        $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => false, 'confirm_token' => 'notnull']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '0123456789',
+            'password'              => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testMobileOtpLoginMobileAndEmailUnverified()
+    {
+        $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'contact_mobile_verified' => false, 'confirm_token' => "notnull"]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'                 => '0123456789',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
 }

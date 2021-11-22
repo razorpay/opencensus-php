@@ -951,7 +951,30 @@ class Core extends Base\Core
             }
         }
 
-        $receiver = $this->isMobileVerified($receiver);
+        try
+        {
+            $receiver = $this->isMobileVerified($receiver);
+        }
+        catch (Throwable $e)
+        {
+            switch ($e->getCode())
+            {
+                case ErrorCode::BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED:
+                    if($receiver->getConfirmedAttribute() === false)
+                    {
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_MOBILE_OTP_LOGIN_NOT_ALLOWED,
+                            null,
+                            [
+                                "internal_error_code"=> ErrorCode::BAD_REQUEST_MOBILE_OTP_LOGIN_NOT_ALLOWED
+                            ]
+                        );
+                    }
+                    throw $e;
+                default:
+                    throw $e;
+            }
+        }
 
         $token = $this->sendLoginOtpViaSms($input, $receiver);
 
@@ -1565,6 +1588,17 @@ class Core extends Base\Core
                 [
                     'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_VERIFIED
                 ]);
+        }
+
+        if($user->getConfirmedAttribute() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MOBILE_OTP_LOGIN_NOT_ALLOWED,
+                null,
+                [
+                    "internal_error_code"=> ErrorCode::BAD_REQUEST_MOBILE_OTP_LOGIN_NOT_ALLOWED
+                ]
+            );
         }
 
         $input += $this->getLoginOtpPayload($input, 'verify_user');

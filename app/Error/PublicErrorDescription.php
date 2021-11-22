@@ -1510,4 +1510,6 @@ class PublicErrorDescription
     const BAD_REQUEST_USER_2FA_LOGIN_PASSWORD_REQUIRED                              = 'Second factor authentication is enabled for user. Password is required';
     const BAD_REQUEST_2FA_LOGIN_PASSWORD_SUSPENDED                                  = '2FA with password suspended due to too many incorrect attempts. Please try after some time.';
     const SERVER_ERROR_2FA_INCORRECT_PASSWORD_REDIS_ERROR                           = 'An error occurred with redis during 2fa with password flow.';
+
+    const BAD_REQUEST_MOBILE_OTP_LOGIN_NOT_ALLOWED                                  = 'Please use your email address to login.';
 }

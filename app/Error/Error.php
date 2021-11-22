@@ -56,7 +56,8 @@ class Error extends Support\Fluent
         ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_VERIFIED,
         ErrorCode::BAD_REQUEST_EMAIL_ALREADY_VERIFIED,
         ErrorCode::BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED,
-        ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED
+        ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
+        ErrorCode::BAD_REQUEST_MOBILE_OTP_LOGIN_NOT_ALLOWED
     ];
 
     const INTERNAL_ERROR_CODE   = 'internal_error_code';

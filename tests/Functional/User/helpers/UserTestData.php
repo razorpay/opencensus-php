@@ -625,6 +625,27 @@ return [
         ],
     ],
 
+    'testMobileOtpLoginMobileAndEmailUnverified' => [
+        'request' => [
+            'url'     => '/users/login/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MOBILE_OTP_LOGIN_NOT_ALLOWED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MOBILE_OTP_LOGIN_NOT_ALLOWED,
+        ],
+    ],
+
     'testMobileVerifyOtp' => [
         'request' => [
             'url'     => '/users/login/otp/verify',
@@ -926,6 +947,27 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_VERIFIED,
+        ],
+    ],
+
+    'testMobileSendVerificationOtpUnverifiedEmail' => [
+        'request' => [
+            'url'     => '/users/login/verification-otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MOBILE_OTP_LOGIN_NOT_ALLOWED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MOBILE_OTP_LOGIN_NOT_ALLOWED,
         ],
     ],
 

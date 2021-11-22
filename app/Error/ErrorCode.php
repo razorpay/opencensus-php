@@ -2391,6 +2391,7 @@ class ErrorCode
     const SERVER_ERROR_2FA_INCORRECT_PASSWORD_REDIS_ERROR                           = 'SERVER_ERROR_2FA_INCORRECT_PASSWORD_REDIS_ERROR';
 
     const BAD_REQUEST_PASSWORD_INCORRECT                                            = 'BAD_REQUEST_PASSWORD_INCORRECT';
+    const BAD_REQUEST_MOBILE_OTP_LOGIN_NOT_ALLOWED                                  = 'BAD_REQUEST_MOBILE_OTP_LOGIN_NOT_ALLOWED';
 
     static function getConstants()
     {
