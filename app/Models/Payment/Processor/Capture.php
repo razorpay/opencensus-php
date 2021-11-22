@@ -803,7 +803,8 @@ trait Capture
     {
         try
         {
-            if (($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === false) or
+            if ((($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === false) and
+                ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false)) or
                 ($txn->isBalanceUpdated() === true))
             {
                 return;
@@ -843,6 +844,22 @@ trait Capture
         $this->repo->transaction(function() use ($payment, $txn)
         {
             (new Transaction\Core)->asyncUpdateMerchantBalance($payment, $txn);
+
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true)
+            {
+                $payment->setTax($txn->getTax());
+
+                if ($payment->isFeeBearerCustomer() === false)
+                {
+                    //set and fee values from txn
+                    $payment->setFee($txn->getFee());
+                }
+
+                $this->calculateAndSetMdrFeeIfApplicable($payment, $txn);
+
+                $this->repo->saveOrFail($payment);
+                $this->repo->saveOrFail($txn);
+            }
         });
     }
 

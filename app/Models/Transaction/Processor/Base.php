@@ -12,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Entity;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
@@ -112,51 +113,60 @@ abstract class Base extends BaseCore
         // fills the transaction attributes from the merchant attributes
         $this->fillDetails();
 
-        // fetches credits, balance and calculates fees and taxes
-        $this->setFeeDefaults();
-
-        // calculates fee sources and calculates credit and debit amounts
-        $this->calculateFees();
-
-        // update credit and debit amounts, fees and taxes in transaction
-        $this->setOtherDetails();
-
-        // updates entity specific attributes in transaction
-        $this->updateTransaction();
-
-        $negativeLimit = (new Balance\Core)->getNegativeLimit($this->txn);
-
-        if ($this->shouldUpdateBalance() === true)
+        if ($this->shouldMoveTxnFillToAsync())
         {
-            $startTime = microtime(true);
+            $values = [
+                Transaction\Entity::DEBIT               => 0,
+                Transaction\Entity::CREDIT              => 0,
+                Transaction\Entity::FEE                 => 0,
+                Transaction\Entity::TAX                 => 0,
+            ];
 
-            try
+            $this->txn->fill($values);
+            // updates entity specific attributes in transaction
+            $this->updateTransaction();
+        }
+        else
+        {
+            $this->setCreditDebitDetails($this);
+
+            // updates entity specific attributes in transaction
+            $this->updateTransaction();
+
+            $negativeLimit = (new Balance\Core)->getNegativeLimit($this->txn);
+
+            if ($this->shouldUpdateBalance() === true)
             {
-                $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_LOCK_INIT);
+                $startTime = microtime(true);
 
-                $lockStartTime = microtime(true);
-                // update merchant credits an balances
-                $this->setMerchantBalanceLockForUpdate();
+                try
+                {
+                    $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_LOCK_INIT);
 
-                $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_LOCK_TIME_TAKEN,
-                    [
-                        'lock_start_time'   => (microtime(true) - $lockStartTime) * 1000
-                    ]
-                );
+                    $lockStartTime = microtime(true);
+                    // update merchant credits an balances
+                    $this->setMerchantBalanceLockForUpdate();
 
-                $this->updateCredits($negativeLimit);
+                    $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_LOCK_TIME_TAKEN,
+                        [
+                            'lock_start_time' => (microtime(true) - $lockStartTime) * 1000
+                        ]
+                    );
 
-                $this->updateBalances($negativeLimit);
-            }
-            finally
-            {
-                $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_TIME_TAKEN,
-                    [
-                        'txn_type'              => $this->txn->getType(),
-                        'async_update'          => false,
-                        'balance_update_time'   => (microtime(true) - $startTime) * 1000
-                    ]
-                );
+                    $this->updateCredits($negativeLimit);
+
+                    $this->updateBalances($negativeLimit);
+                }
+                finally
+                {
+                    $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_TIME_TAKEN,
+                        [
+                            'txn_type' => $this->txn->getType(),
+                            'async_update' => false,
+                            'balance_update_time' => (microtime(true) - $startTime) * 1000
+                        ]
+                    );
+                }
             }
         }
 
@@ -179,6 +189,11 @@ abstract class Base extends BaseCore
     protected function shouldUpdateBalance()
     {
         return true;
+    }
+
+    protected function shouldMoveTxnFillToAsync(): bool
+    {
+        return false;
     }
 
     public function setOtherDetails()
@@ -253,6 +268,18 @@ abstract class Base extends BaseCore
         $this->setMerchantCredits();
 
         $this->setMerchantFeeDefaults();
+    }
+
+    public function setCreditDebitDetails($processor)
+    {
+        // fetches credits, balance and calculates fees and taxes
+        $processor->setFeeDefaults();
+
+        // calculates fee sources and calculates credit and debit amounts
+        $processor->calculateFees();
+
+        // update credit and debit amounts, fees and taxes in transaction
+        $processor->setOtherDetails();
     }
 
     public function setMerchantFeeDefaults()

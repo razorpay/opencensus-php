@@ -144,6 +144,7 @@ class Constants
     const VIJAYA_MERCHANT                 = 'vijaya_merchant';
     const HIDE_VA_PAYER_BANK_DETAIL       = 'hide_va_payer_bank_detail';
     const ASYNC_BALANCE_UPDATE            = 'async_balance_update';
+    const ASYNC_TXN_FILL_DETAILS          = 'async_txn_fill_details';
     const PHONEPE_INTENT                  = 'phonepe_intent';
     const ISSUE_MPANS                     = 'issue_mpans';
     const BLOCK_DEBIT_2K                  = 'block_debit_2k';
@@ -1338,6 +1339,7 @@ const CREDIT_ID_BASED_NEW_QUERY = 'credit_id_based_new_query';
         self::ONE_CC_MERCHANT_DASHBOARD       => true,
         self::ONE_CC_COUPONS                  => true,
         self::ONBOARD_TOKENIZATION            => true,
+        self::ASYNC_TXN_FILL_DETAILS          => true,
         self::CREDIT_ID_BASED_NEW_QUERY       => true,
     ];
     // Entity type constants

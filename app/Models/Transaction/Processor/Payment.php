@@ -173,6 +173,11 @@ class Payment extends Base
 
     }
 
+    protected function shouldMoveTxnFillToAsync(): bool
+    {
+        return $this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS);
+    }
+
     protected function fillEmptyTxnFeesAndAmount()
     {
         $amount = $this->source->getBaseAmount();

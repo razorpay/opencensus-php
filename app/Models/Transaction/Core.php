@@ -1781,11 +1781,18 @@ class Core extends Base\Core
 
         $processor->setTransaction($txn);
 
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true)
+        {
+            $processor->setCreditDebitDetails($processor);
+        }
+        else
+        {
+            $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($txn->merchant);
+        }
+
         $negativeLimit = (new Balance\Core)->getNegativeLimit($txn);
 
         $startTime = microtime(true);
-
-        $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($txn->merchant);
 
         $processor->setMerchantBalanceLockForUpdate();
 
