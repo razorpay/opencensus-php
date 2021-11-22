@@ -296,6 +296,7 @@ class InstrumentRequestProxyTest extends TestCase
                 }
 
                 $this->assertArrayHasKey('X-Dashboard-Admin-Email', $additionalHeaders);
+                $this->assertArrayHasKey('X-Dashboard-Admin-OrgId', $additionalHeaders);
 
                 $response = new \Requests_Response;
 

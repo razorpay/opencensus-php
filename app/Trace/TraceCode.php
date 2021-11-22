@@ -588,6 +588,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const KOTAK_NODAL_BALANCE_REQUEST                           = 'KOTAK_NODAL_BALANCE_REQUEST';
     const KOTAK_NODAL_BALANCE_RESPONSE                          = 'KOTAK_NODAL_BALANCE_RESPONSE';
     const TERMINALS_SERVICE_PAYMENT_TERMINALS                   = 'TERMINALS_SERVICE_PAYMENT_TERMINALS';
+    const X_DASHBOARD_ADMIN_ORG_ID                              = 'X_DASHBOARD_ADMIN_ORG_ID';
     const TERMINAL_SELECTION                                    = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_FOR_RULE_GROUP                     = 'TERMINAL_SELECTION_FOR_RULE_GROUP';
     const TERMINAL_RULE_FILTER_EXCEPTION                        = 'TERMINAL_RULE_FILTER_EXCEPTION';

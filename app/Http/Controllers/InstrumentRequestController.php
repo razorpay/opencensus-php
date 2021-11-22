@@ -13,6 +13,7 @@ use Illuminate\Routing\Controller as BaseController;
 class InstrumentRequestController extends BaseController
 {
     const X_DASHBOARD_ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';
+    const X_DASHBOARD_ADMIN_ORG_ID = 'X-Dashboard-Admin-OrgId';
     const X_DASHBOARD_MERCHANT_ID   = "X-Dashboard-Merchant-Id";
     const X_DASHBOARD_MERCHANT_ORG_ID   = "X-Dashboard-Merchant-OrgId";
 
@@ -21,6 +22,7 @@ class InstrumentRequestController extends BaseController
 
     protected $app;
 
+    protected $auth;
     /**
      * InstrumentRequestController constructor.
      */
@@ -29,6 +31,10 @@ class InstrumentRequestController extends BaseController
         $this->app = App::getFacadeRoot();
 
         $this->trace = $this->app['trace'];
+
+        $this->auth = $this->app['basicauth'];
+
+        $this->adminOrgId = $this->app['basicauth']->getAdminOrgId();
     }
 
     public function getInternalInstrumentRequestById(string $id)
@@ -171,8 +177,14 @@ class InstrumentRequestController extends BaseController
 
     protected function getAdminHeadersForInstrumentRequest() : array
     {
+        $this->trace->info(TraceCode::X_DASHBOARD_ADMIN_ORG_ID, [
+            'OrgID' => $this->auth->getAdminOrgId(),
+        ]);
+
         return [
             self::X_DASHBOARD_ADMIN_EMAIL => $this->getAdminEmail(),
+
+            self::X_DASHBOARD_ADMIN_ORG_ID => $this->auth->getAdminOrgId(),
         ];
     }
 
