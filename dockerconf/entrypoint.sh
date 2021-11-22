@@ -2,6 +2,20 @@
 
 set -euo pipefail
 
+# ref doc: <TODO>
+term_to_winch() {
+  echo "Caught SIGQUIT signal!"
+  # We do this so before graceful shutdown we remove the pod from the service by failing the readiness probe.
+  touch /app/public/graceful-shutdown.txt
+  # Wait for readiness probe to fail so no additional requests are received
+  sleep 12
+  # Translate the SIGTERM we caught to a SIGWINCH for the child processes
+  kill -s SIGQUIT "$CHILD"
+  wait "$CHILD"
+  echo "Child exited"
+}
+
+trap term_to_winch SIGQUIT
 echo "$(date) Cast config for environments"
 # casting only env.php.j2 for devserve env as the secrets are injected via kube secrets
 # DEV_SERVE variable is set

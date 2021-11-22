@@ -1484,6 +1484,18 @@ class Service extends Base\Service
 
         try
         {
+            $stopServiceFileExists = file_exists("/app/public/graceful-shutdown.txt");
+
+            if ($stopServiceFileExists === true)
+            {
+                Trace::info(TraceCode::API_GRACEFUL_SHUTDOWN_HAPPENING, []);
+
+                return [
+                    'statusMessage' => 'graceful shutdown happening',
+                    'statusCode'    => 500
+                ];
+            }
+
             $apiBaseUrl = ApiUrl::getApiBaseUrl();
             // removing the /v1/ part at the end in the apiURL obtained from config
             $apiURL = substr($apiBaseUrl, 0, -4) . '/commit.txt';
