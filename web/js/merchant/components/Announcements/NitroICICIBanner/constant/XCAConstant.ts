@@ -32,7 +32,7 @@ const XCASubText =
 const XCATooltipText = 'In partnership with India’s leading Banks';
 
 const ToolTipReqHeader = 'Bank and balance requirements :';
-const ToolTipReqList = ['ICICI Bank: Quarterly average balance of ₹20000 to be maintained'];
+const ToolTipReqList = ['ICICI Bank: Quarterly average balance of ₹25000 to be maintained'];
 const ToolTipTnCHeader = 'Terms & Conditions :';
 const ToolTipTnCList = [
   'Pricing change & any offer unless mentioned otherwise, will be executed only after the RazorpayX Current account is activated.',

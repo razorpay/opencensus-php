@@ -33,8 +33,8 @@ const XCATooltipText = 'In partnership with India’s leading Banks';
 
 const ToolTipReqHeader = 'Bank and balance requirements :';
 const ToolTipReqList = [
-  'RBL Bank: Monthly average balance of ₹25000 to be maintained',
-  'ICICI Bank: Quarterly average balance of ₹20000 to be maintained',
+  'RBL Bank: Monthly average balance of ₹20000 to be maintained',
+  'ICICI Bank: Quarterly average balance of ₹25000 to be maintained',
 ];
 const ToolTipTnCHeader = 'Terms & Conditions :';
 const ToolTipTnCList = [
