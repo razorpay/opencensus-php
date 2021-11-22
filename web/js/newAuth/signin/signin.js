@@ -71,7 +71,7 @@ const Signin = () => {
       {isFetchingOrgData ? (
         <FullPageLoader />
       ) : (
-        <Size height="100%">
+        <Size minheight="100vh">
           <Container org={orgData.orgName}>
             {orgData.backgroundImgUrl && <Image src={orgData.backgroundImgUrl} />}
             <Size maxWidth="830px">

@@ -96,7 +96,7 @@ const SignUp = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Size height="100%">
+      <Size minHeight="100vh">
         <Container>
           <Size maxWidth="830px" height="100%">
             <Flex flexDirection="column">
