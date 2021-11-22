@@ -49,6 +49,7 @@ class Kernel extends HttpKernel
      */
     protected $middlewarePriority = [
         // Route middleware
+        Middleware\SaveApiDetailsForDocumentation::class,
         Middleware\DecodePassportJwt::class,
         Middleware\ProductIdentifier::class,
         Middleware\ProxySQL::class,
@@ -87,6 +88,7 @@ class Kernel extends HttpKernel
         'product_identifier'            => Middleware\ProductIdentifier::class,
         'proxysql'                      => Middleware\ProxySQL::class,
         'throttle'                      => Middleware\Throttle::class,
+        'save_api_details'              => Middleware\SaveApiDetailsForDocumentation::class,
         'auth'                          => Middleware\Authenticate::class,
         'admin_access'                  => Middleware\AdminAccess::class,
         'user_access'                   => Middleware\UserAccess::class,

@@ -11,6 +11,7 @@ use App;
 use Request;
 
 use RZP\Constants\Entity as E;
+use RZP\Http\Middleware\SaveApiDetailsForDocumentation;
 
 abstract class Controller extends BaseController
 {

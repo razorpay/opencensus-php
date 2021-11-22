@@ -5,6 +5,7 @@ namespace RZP\Http;
 use ApiResponse;
 use Illuminate\Routing\Router;
 
+use RZP\Constants\Environment;
 use RZP\Constants\Mode;
 use RZP\Constants\Entity;
 use RZP\Models\IdempotencyKey;
@@ -12347,6 +12348,10 @@ class Route
         'order_refund_multiple_authorized',
     ];
 
+    public static $skipApiDocumentation = [
+
+    ];
+
     /**
      * @var Router
      */
@@ -12674,6 +12679,8 @@ class Route
         $uri     = $info[1];
         $action  = $info[2];
 
+        $env = $this->app->environment();
+
         // For 'any' we have to register all the methods, there is no http verb called 'any'.
         if ($methods === ['any'])
         {
@@ -12730,6 +12737,13 @@ class Route
         {
             $route->middleware('request_log_handler');
         }
+
+        if ((in_array($env, [Environment::TESTING , Environment::TESTING_DOCKER]) === true) and
+            (in_array($name, self::$skipApiDocumentation, true) === false))
+        {
+            $route->middleware('save_api_details');
+        }
+
         //to filter response fileds based on the user role i.e. controlling api response view for user roles
         if (in_array($name, self::FILTER_RESPONSE_FIELDS_ROUTES, true) === true)
         {

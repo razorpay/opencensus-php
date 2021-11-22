@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Redis;
 use RZP\Services\EsClient;
 use RZP\Tests\TestCase as ParentTestCase;
 use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
+use RZP\Services\AutoGenerateApiDocs\Constants as ApiDocsConstants;
 
 class TestCase extends ParentTestCase
 {
@@ -125,6 +126,13 @@ class TestCase extends ParentTestCase
         parent::tearDown();
     }
 
+    protected function getDefaultDescription(string $functionName): string
+    {
+        $prefix = 'test';
+        $functionName = preg_replace('/^' . preg_quote($prefix, '/') . '/', '', $functionName);
+        return ucwords(implode(' ',preg_split('/(?=[A-Z])/', $functionName)));
+    }
+
     protected function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
@@ -134,6 +142,17 @@ class TestCase extends ParentTestCase
         if (isset($this->testData[$name]))
         {
             $testData = $this->testData[$name];
+
+            if(empty($testData) === false)
+            {
+                $apiDocumentationData = [];
+                $apiDocumentationData[ApiDocsConstants::API_SUMMARY]                  = !empty($testData['summary']) ? $testData['summary']: null ;
+                $apiDocumentationData[ApiDocsConstants::API_REQUEST_DESCRIPTION]      = $testData['request']['description'] ?? $this->getDefaultDescription($name);
+                $apiDocumentationData[ApiDocsConstants::API_RESPONSE_DESCRIPTION]     = $testData['response']['description'] ?? '';
+
+                $headers                        = $testData['request']['headers'] ?? [];
+                $testData['request']['headers'] = array_merge($headers,  [ApiDocsConstants::API_DOCUMENTATION_DETAILS => json_encode($apiDocumentationData)]);
+            }
         }
 
         $this->replaceValuesRecursively($testData, $testDataToReplace);
