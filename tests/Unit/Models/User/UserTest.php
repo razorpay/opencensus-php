@@ -741,6 +741,29 @@ class UserTest extends TestCase
         $this->assertNotNull($response);
     }
 
+    public function testVerifyUserThroughMode()
+    {
+        $content = [
+            'otp'           => '0007',
+            'action'        => 'second_factor_auth',
+            'token'         => 'sadscscs',
+        ];
+
+        $this->userEntityMock->shouldReceive('getValidator')->andReturn($this->userValidator);
+
+        $this->userValidator->shouldReceive('validateInput')->andReturn([]);
+
+        $this->userEntityMock->shouldReceive('getId')->andReturn('100002Razorpay');
+
+        $this->merchantEntityMock->shouldReceive('getId')->andReturn('1cXSLlUU8V9sXl');
+
+        $this->userEntityMock->shouldReceive('getContactMobile')->andReturn('9999999999');
+
+        $response = $this->userService->verifyUserThroughMode($content);
+
+        $this->assertNotNull($response);
+    }
+
     public function testAccountUnlock()
     {
         $expected = [

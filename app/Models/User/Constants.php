@@ -48,6 +48,10 @@ class Constants
     const PASSWORD                    = 'password';
     const OTP                         = 'otp';
 
+    const RECEIVER                    = 'receiver';
+    const UNIQUE_ID                   = 'unique_id';
+    const ACTION                      = 'action';
+
     //when user does a normal or OTP login
     const EMAIL                       = 'email';
     const CONTACT_MOBILE              = 'contact_mobile';

@@ -2452,6 +2452,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VERIFY_2FA_OTP_SMS_FOR_ACTION                         = 'VERIFY_2FA_OTP_SMS_FOR_ACTION';
     const SEND_2FA_OTP_SMS_FAILED                               = 'SEND_2FA_OTP_SMS_FAILED';
     const VERIFY_2FA_OTP_SMS_FOR_ACTION_FAILED                  = 'VERIFY_2FA_OTP_SMS_FOR_ACTION';
+    const VERIFY_OTP_SMS_FOR_ACTION_FAILED                      = 'VERIFY_OTP_SMS_FOR_ACTION';
     const VERIFY_OTP_SMS_VALIDATION_FAILURE                     = 'VERIFY_OTP_SMS_VALIDATION_FAILURE';
     const USER_CONTACT_MOBILE_UPDATE                            = 'USER_CONTACT_MOBILE_UPDATE';
     const USER_ACCOUNT_LOCK_UNLOCK_ACTION                       = 'USER_ACCOUNT_LOCK_UNLOCK_ACTION';

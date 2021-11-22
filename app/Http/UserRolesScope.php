@@ -106,6 +106,7 @@ class UserRolesScope
             'merchant_toggle_fee_bearer'            => [Role::OWNER],
             'increase_transaction_limit_self_serve' => [Role::OWNER, Role::ADMIN],
             'add_additional_website_self_serve'     => [Role::OWNER, Role::ADMIN],
+            'user_verify_and_update_mobile_otp'     => [Role::OWNER, Role::ADMIN],
             // Merchant user routes
             'user_merchant_mapping_action' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
 
@@ -411,7 +412,7 @@ class UserRolesScope
             'user_fetch_for_merchant'                       => [Role::ADMIN, Role::OWNER, Role::SELLERAPP, Role::OPERATIONS, Role::MANAGER, Role::SELLERAPP_PLUS, Role::RBL_SUPERVISOR, Role::FINANCE, Role::AGENT,],
             'user_fetch_purpose_code'                       => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::FINANCE,],
             'user_otp_create'                               => Role::ALL_ROLES,
-            'user_verify_through_email'                     => [Role::ADMIN, Role::OWNER, Role::FINANCE,],
+            'user_verify_through_mode'                      => [Role::ADMIN, Role::OWNER, Role::FINANCE,],
             'virtual_account_configs'                       => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::MANAGER,],
             'webhook_fetch'                                 => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
             'webhook_fetch_events'                          => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
@@ -895,6 +896,7 @@ class UserRolesScope
             'user_send_x_mobile_app_link'                          => [Role::OWNER, Role::ADMIN],
             'user_trigger_2fa_otp'                                 => Role::ALL_ROLES,
             'user_update_contact'                                  => [Role::OWNER, Role::ADMIN],
+            'user_contact_update_sent_otp'                         => [Role::OWNER, Role::ADMIN],
             'user_update_contact_merchant'                         => [Role::OWNER, Role::ADMIN],
             'user_verify_contact'                                  => Role::ALL_ROLES,
             'user_verify_email'                                    => Role::ALL_ROLES,

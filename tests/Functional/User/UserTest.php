@@ -3569,6 +3569,21 @@ class UserTest extends TestCase
         $this->assertTrue($user->isContactMobileVerified());
     }
 
+    public function testVerifyOtpAndUpdateContactMobile()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $userDb = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $this->assertTrue($userDb->isContactMobileVerified());
+
+        $this->assertEquals($userDb->getContactMobile(),"9123456789");
+    }
+
     public function testVerifyContactWithInvalidOtp()
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
@@ -3924,6 +3939,21 @@ class UserTest extends TestCase
                 }));
     }
 
+    public function testPostSendOtpForContactMobileUpdate()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
+
+        $this->mockRedisSuccess(__FUNCTION__, $user->getId());
+
+        $this->startTest();
+    }
+
     public function testEditContactMobileByUser()
     {
         $user = $this->fixtures->create('user');
@@ -4189,6 +4219,13 @@ class UserTest extends TestCase
     }
 
     public function testVerifyUserThroughEmail()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testVerifyUserThroughMode()
     {
         $this->ba->proxyAuth();
 

@@ -3,6 +3,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Models\User\Entity;
 use RZP\Models\User\Service;
 
 class UserController extends Controller
@@ -220,6 +221,15 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function verifyOtpAndUpdateContactMobile()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyOtpAndUpdateContactMobile($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getUser(string $id)
     {
         $data = $this->service()->get($id);
@@ -357,6 +367,19 @@ class UserController extends Controller
     }
 
     /**
+     *  User is sending otp to update his/her own contact Mobile
+     * @return mixed
+     */
+    public function postSendOtpForContactMobileUpdate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->sendOtpForContactMobileUpdate($input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
      * Update contact mobile of a user using userId
      * by Restricted Merchant or Admin
      * @return mixed
@@ -387,14 +410,16 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function verifyUserThroughEmail()
+    public function verifyUserThroughMode(string $medium)
     {
-        $data = $this->service()->verifyUserThroughEmail($this->input);
+        $input = Request::all();
+
+        $input[Entity::MEDIUM] = $medium;
+
+        $data = $this->service()->verifyUserThroughMode($input);
 
         return ApiResponse::json($data);
     }
-
-
 
     public function getUserForMerchant(string $userId)
     {

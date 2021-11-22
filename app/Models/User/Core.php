@@ -6,6 +6,7 @@ use Mail;
 use Hash;
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use Illuminate\Hashing\BcryptHasher;
 
 use Throwable;
@@ -1982,6 +1983,38 @@ class Core extends Base\Core
         return $response;
     }
 
+    //verify otp on the new added number
+    public function verifyOtpAndUpdateContactMobile(array $input, Merchant\Entity $merchant, Entity $user)
+    {
+        $input[Constants::UNIQUE_ID] = $user->getId();
+
+        $input[Constants::ACTION]    = Entity::SECOND_FACTOR_AUTH;
+
+        $smsOtpAuth = $this->app['module']->secondFactorAuth::make('SmsOtpAuth');
+
+        $contact = $input[Constants::RECEIVER];
+
+        if($smsOtpAuth->is2faCredentialValid($input) == false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+        }
+
+        $this->repo->transactionOnLiveAndTest(function() use ($user, $contact)
+        {
+            $user->setContactMobile($contact);
+
+            $this->repo->saveOrFail($user);
+
+            $user->setContactMobileVerified(true);
+
+            $this->repo->saveOrFail($user);
+        });
+
+        $this->notifyUserAboutContactMobileUpdate($user, $merchant);
+
+        return $user;
+    }
+
     public function verifyUserSecondFactorAuth(Entity $user, array $input): array
     {
         $this->getUserEntity()->getValidator()->validateInput('verify_user_second_factor', $input);
@@ -2943,7 +2976,9 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::USERS_SEND_OTP_FOR_ACTION, compact('input'));
 
-        $func = 'sendOtpVia' . studly_case($input[Entity::MEDIUM] ?? 'sms_and_email');
+        $input[Entity::MEDIUM] = $input[Entity::MEDIUM] ?? 'sms_and_email';
+
+        $func = 'sendOtpVia' . studly_case($input[Entity::MEDIUM]);
 
         return $this->$func($input, $merchant, $user);
     }
@@ -3362,6 +3397,47 @@ class Core extends Base\Core
     }
 
     /**
+     *  User sending otp to update his contact mobile
+     *  Send OTP to new mobile number.
+     *
+     * @param array  $input
+     * @param Entity $user
+     *
+     * @return Entity
+     * @throws Exception\BadRequestException
+     */
+    public function sendOtpForContactMobileUpdate(array $input, Entity $user)
+    {
+        if ($user->getRestricted() === true)
+        {
+            //
+            // if merchant_user role is admin/owner
+            // allow editing contact mobile.
+            //
+            $userMapping    = $this->repo->merchant->getMerchantUserMapping($this->merchant->getId(),
+                                                                            $user->getId());
+            $this->userRole = $userMapping->pivot->role;
+
+            if (in_array($this->userRole, [Role::ADMIN, Role::OWNER], true) === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION);
+            }
+        }
+
+        $smsOtpAuth = $this->app['module']->secondFactorAuth::make('SmsOtpAuth');
+
+        $smsOtpAuthPayload = $this->getSmsOtpAuthBasePayload($user, $input);
+
+        $smsOtpAuth->sendOtp($smsOtpAuthPayload);
+
+        $this->trace->info(TraceCode::USER_CONTACT_MOBILE_UPDATE, [
+            mask_phone($input[Entity::CONTACT_MOBILE])
+        ]);
+
+        return $user;
+    }
+
+    /**
      *  User updating its contact mobile
      *
      *  1) Send OTP to mobile number.
@@ -3636,27 +3712,38 @@ class Core extends Base\Core
         $this->app['diag']->trackOnboardingEvent($eventCode, $this->merchant, $ex, $customProperties);
     }
 
+    //Verify user through otp sent to the provided Email
+    public function verifyUserThroughEmail(array $input, Merchant\Entity $merchant, Entity $user): array
+    {
+        $input[Entity::MEDIUM] = 'email';
+
+        $input[Entity::ACTION] = 'user_auth';
+
+        return $this->verifyUserThroughMode($input, $merchant, $user);
+    }
+
     /**
-     * Verify user through otp sent to email.
+     * Verify user through otp sent to the provided mode.
      * Generates and stores a user verification token in redis.
      * This token has to be passed in subsequent calls which need user authorization.
      *
-     * @param array $input
+     * @param array           $input
      * @param Merchant\Entity $merchant
-     * @param Entity $user
+     * @param Entity          $user
+     *
      * @return array
      */
-    public function verifyUserThroughEmail(array $input, Merchant\Entity $merchant, Entity $user) : array
+    public function verifyUserThroughMode(array $input, Merchant\Entity $merchant, Entity $user): array
     {
         /** @var Validator $validator */
         $validator = $user->getValidator();
 
-        $validator->validateInput('verifyUserThroughEmail', $input);
+        $validator->validateInput('verify_user_through_mode', $input);
 
-        $this->verifyOtp($input + ['action' => 'user_auth'], $merchant, $user);
+        $this->verifyOtp($input, $merchant, $user);
 
         /** @var TokenService $tokenService */
-        $tokenService  = $this->app['token_service'];
+        $tokenService = $this->app['token_service'];
 
         $token = $tokenService->generate($user->getId());
 

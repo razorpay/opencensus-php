@@ -250,7 +250,7 @@ class Validator extends Base\Validator
 
     protected static $createOtpRules = [
         // When medium is not sent OTP is sent to both mediums.
-        Entity::MEDIUM        => 'sometimes|filled|in:sms,email',
+        Entity::MEDIUM        => 'sometimes|filled|in:sms,email,sms_and_email',
         Entity::ACTION        => 'required|filled|in:'
                                  . 'verify_contact,'
                                  . 'verify_email,'
@@ -261,6 +261,7 @@ class Validator extends Base\Validator
                                  . 'create_payout_batch,'
                                  . 'approve_payout,'
                                  . 'approve_payout_bulk,'
+                                 . 'second_factor_auth,'
                                  . 'user_auth,'
                                  . 'bulk_payout_approve,'
                                  . 'create_bulk_payout_link,'
@@ -297,6 +298,11 @@ class Validator extends Base\Validator
         Entity::TOKEN           => 'required|unsigned_id',
         Entity::ACTION          => 'sometimes|filled|in:bureau_verify,verify_support_contact',
         Entity::CONTACT_MOBILE  => 'required_if:action,bureau_verify,verify_support_contact|max:15|contact_syntax',
+    ];
+
+    protected static $verifyOtpFromUpdateRules = [
+        Constants::OTP             => 'required|filled|min:4',
+        Constants::RECEIVER        => 'required|max:15|contact_syntax',
     ];
 
     protected static $resendOtpRules = [
@@ -346,9 +352,11 @@ class Validator extends Base\Validator
         'old_password'
     ];
 
-    protected static $verifyUserThroughEmailRules = [
+    protected static $verifyUserThroughModeRules = [
         Entity::OTP             => 'required|filled|min:4',
+        Entity::ACTION          => 'required',
         Entity::TOKEN           => 'required|unsigned_id',
+        Entity::MEDIUM          => 'required|in:sms,email,sms_and_email',
     ];
 
     /**
@@ -960,6 +968,22 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID);
+        }
+    }
+
+    public function validateUniqueNumberExcludingCurrentUser(Entity $user, $number)
+    {
+        // if same number already verified
+        if ($user->getContactMobile() === $number and $user->isContactMobileVerified() === true)
+        {
+            throw new BadRequestValidationFailureException('Contact mobile is already verified');
+        }
+
+        $response = (new Repository())->findUniqueNumberExcludingCurrentUser($user->getId(), $number);
+
+        if(isset($response) === true){
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN);
         }
     }
 

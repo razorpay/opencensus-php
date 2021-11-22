@@ -2311,6 +2311,7 @@ class ErrorCode
     const BAD_REQUEST_BANK_INSTRUMENT_INVALID                                       = 'BAD_REQUEST_BANK_INSTRUMENT_INVALID';
     const BAD_REQUEST_PAYLATER_INSTRUMENT_INVALID                                   = 'BAD_REQUEST_PAYLATER_INSTRUMENT_INVALID';
     const BAD_REQUEST_EMI_INSTRUMENT_INVALID                                        = 'BAD_REQUEST_EMI_INSTRUMENT_INVALID';
+    const BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN                                  = 'BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN';
 
     // XPayroll
     const BAD_REQUEST_TO_XPAYROLL_SERVICE                                           = 'BAD_REQUEST_TO_XPAYROLL_SERVICE';

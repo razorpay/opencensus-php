@@ -47,6 +47,15 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
+
+    public function findUniqueNumberExcludingCurrentUser(string $id, string $number)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CONTACT_MOBILE, '=', $number)
+                    ->where(Entity::ID, '!=', $id)
+                    ->first();
+    }
+
     public function filterEmailNotVerifiedUserIds(int $from, int $to): array
     {
         return $this->newQuery()

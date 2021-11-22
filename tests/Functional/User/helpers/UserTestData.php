@@ -2648,6 +2648,24 @@ return [
         ],
     ],
 
+    'testVerifyOtpAndUpdateContactMobile' => [
+        'request' => [
+            'url'     => '/users/verify/update/new/mobile',
+            'method'  => 'POST',
+            'content' => [
+                'receiver' => '9123456789',
+                'otp'      => '000007',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'id'                      => 'MerchantUser01',
+                'contact_mobile'          => '9123456789',
+                'contact_mobile_verified' => true,
+            ],
+        ],
+    ],
+
     'testVerifyContactWithInvalidOtp' => [
         'request' => [
             'url'     => '/users/verify_contact',
@@ -2958,6 +2976,25 @@ return [
         ],
     ],
 
+    'testPostSendOtpForContactMobileUpdate' => [
+        'request'   => [
+            'url'     => '/users/contact/sendotp',
+            'method'  => 'post',
+            'content' => [
+                'contact_mobile' => '9707753394',
+                'otp_auth_token' => 'otp_auth_token',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testEditContactMobileByUser' => [
         'request'   => [
             'url'     => '/users/contact/update',
@@ -3194,6 +3231,26 @@ return [
             'content' => [
                 'otp'            => '0007',
                 'token'          => 'RandomToken123',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testVerifyUserThroughMode' => [
+        'request'  => [
+            'url'     => '/users/verify/mode/sms_and_email',
+            'method'  => 'post',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'RandomToken123',
+                'medium'         => 'sms_and_email',
+                'action'         => 'second_factor_auth',
             ],
             'server'  => [
                 'HTTP_X-Dashboard-User-id' => '',

@@ -1203,6 +1203,15 @@ class Service extends Base\Service
         return $this->user->toArrayPublic();
     }
 
+    public function verifyOtpAndUpdateContactMobile(array $input): array
+    {
+        $this->user->getValidator()->validateInput('verify_otp_from_update', $input);
+
+        $response = $this->core()->verifyOtpAndUpdateContactMobile($input, $this->merchant, $this->user);
+
+        return $response->toArrayPublic();
+    }
+
     /**
      * @param array $input
      *
@@ -1290,6 +1299,28 @@ class Service extends Base\Service
         return $this->core()->editContactMobile($input, $this->user);
     }
 
+    /**
+     * An user authorization token also has to be given in input.
+     * This token is provided by using api on the route "user_verify_through_mode".
+     *
+     * @param array $input
+     * @return mixed
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function sendOtpForContactMobileUpdate(array $input)
+    {
+        $this->validator->validateInput('edit_contact_mobile', $input);
+
+        $this->validator->validateUniqueNumberExcludingCurrentUser($this->user, $input[Entity::CONTACT_MOBILE]);
+
+        $token = $input[Entity::OTP_AUTH_TOKEN];
+
+        $this->app['token_service']->verify($token, $this->user->getId());
+
+        $this->core()->sendOtpForContactMobileUpdate($input, $this->user);
+
+        return ['contact number' => $this->user->getContactMobile()];
+    }
 
     public function updateContactMobile(array $input)
     {
@@ -1321,6 +1352,17 @@ class Service extends Base\Service
         $user = $this->auth->getUser();
 
         return $this->core()->verifyUserThroughEmail($input, $merchant, $user);
+    }
+
+    public function verifyUserThroughMode($input)
+    {
+        $merchant = $this->auth->getMerchant();
+
+        $user = $this->auth->getUser();
+
+        $input[Entity::ACTION] = $input[Entity::ACTION] ?? Entity::SECOND_FACTOR_AUTH;
+
+        return $this->core()->verifyUserThroughMode($input, $merchant, $user);
     }
 
     public function oAuthSignup($input): array

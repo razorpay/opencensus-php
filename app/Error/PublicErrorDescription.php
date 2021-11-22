@@ -1074,6 +1074,8 @@ class PublicErrorDescription
     const BAD_REQUEST_FEE_RECOVERY_MANUAL_FOR_RZP_FEES_PAYOUT_NOT_SUPPORTED     = 'Manual recovery for rzp_fees type payouts is not supported';
     const BAD_REQUEST_FEE_RECOVERY_AMOUNT_ZERO                                  = 'Fee Recovery payout amount cannot be zero';
 
+    const BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN                              = 'Request failed as contact mobile already taken';
+
     // Scheduled Payouts
     const BAD_REQUEST_SCHEDULED_PAYOUT_AUTH_NOT_SUPPORTED                       = 'Scheduled Payouts can only be created via dashboard';
     const BAD_REQUEST_SCHEDULED_PAYOUT_CANCEL_AUTH_NOT_SUPPORTED                = 'Scheduled Payouts can only be cancelled via dashboard';
