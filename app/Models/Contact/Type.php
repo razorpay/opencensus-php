@@ -20,13 +20,14 @@ final class Type
 {
     use TrimSpace;
 
-    const CUSTOMER                     = 'customer';
-    const EMPLOYEE                     = 'employee';
-    const VENDOR                       = 'vendor';
-    const SELF                         = 'self';
-    const RZP_FEES                     = 'rzp_fees';
-    const TAX_PAYMENT_INTERNAL_CONTACT = 'rzp_tax_pay';
-    const XPAYROLL_INTERNAL            = 'rzp_xpayroll';
+    const CUSTOMER                             = 'customer';
+    const EMPLOYEE                             = 'employee';
+    const VENDOR                               = 'vendor';
+    const SELF                                 = 'self';
+    const RZP_FEES                             = 'rzp_fees';
+    const TAX_PAYMENT_INTERNAL_CONTACT         = 'rzp_tax_pay';
+    const XPAYROLL_INTERNAL                    = 'rzp_xpayroll';
+    const CAPITAL_COLLECTIONS_INTERNAL_CONTACT = 'rzp_capital_collections';
 
     // Settings module key
     const TYPES = 'types';
@@ -41,6 +42,7 @@ final class Type
     public static $internal = [
         self::RZP_FEES,
         self::TAX_PAYMENT_INTERNAL_CONTACT,
+        self::CAPITAL_COLLECTIONS_INTERNAL_CONTACT,
         self::XPAYROLL_INTERNAL,
     ];
 
@@ -48,9 +50,12 @@ final class Type
         'vendor_payments' => [
             self::TAX_PAYMENT_INTERNAL_CONTACT,
         ],
+        'capital_collections_client' => [
+            self::CAPITAL_COLLECTIONS_INTERNAL_CONTACT,
+        ],
         'xpayroll' => [
             self::XPAYROLL_INTERNAL,
-        ],
+        ]
     ];
 
     public static function isInDefaults(string $type): bool

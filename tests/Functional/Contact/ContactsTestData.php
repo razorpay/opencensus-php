@@ -2378,6 +2378,54 @@ return [
         ],
     ],
 
+    'testCreateRZPCapitalCollectionsTypeContact' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test Contact',
+                'type'         => 'rzp_capital_collections'
+            ],
+            'url'     => '/contacts_internal',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test Contact',
+                'type'         => 'rzp_capital_collections',
+                'reference_id' => null,
+                'email'        => null,
+                'contact'      => null,
+                'notes'        => []
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testCreateRZPCaptialCollectionsTypeContactByOtherInternalAppFailure' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test Contact',
+                'type'         => 'rzp_capital_collections'
+            ],
+            'url'     => '/contacts_internal',
+            'method'  => 'POST'
+        ],
+
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Creating/Updating an internal Razorpay Contact is not permitted',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED,
+        ],
+    ],
+
     'testCreateRZPXpayrolltypeContactByOtherInternalAppFailure' => [
         'request'  => [
             'content' => [

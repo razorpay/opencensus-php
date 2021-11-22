@@ -15095,4 +15095,74 @@ return [
             ],
         ],
     ],
+
+    'testPayoutCreateOnInternalContactByCapitalCollections'=> [
+        'request'  => [
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'method'  => 'POST',
+            'url'     => '/internalContactPayout',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'payout',
+                'mode'            => 'IMPS',
+                'fund_account_id' => ''
+            ],
+            'source_details' => [
+                [
+                    'source_type' => 'capital_collections',
+                    'source_id'   => 'Sk77UkNsB8ywa5',
+                    'priority'    => 1
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'payout',
+                'amount'    => 2000000,
+                'currency'  => 'INR',
+                'narration' => 'Test Merchant Fund Transfer',
+                'purpose'   => 'payout',
+                'status'    => 'processing',
+                'mode'      => 'IMPS',
+                'tax'       => 162,
+                'fees'      => 1062,
+                'notes'     => []
+            ]
+        ],
+    ],
+
+    'testPayoutCreateOnCollectionsInternalContactByOtherAppFailure'=> [
+        'request'  => [
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'method'  => 'POST',
+            'url'     => '/internalContactPayout',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'payout',
+                'mode'            => 'IMPS',
+                'fund_account_id' => '',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => ErrorCode::BAD_REQUEST_APP_NOT_PERMITTED_TO_CREATE_PAYOUT_ON_THIS_CONTACT_TYPE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

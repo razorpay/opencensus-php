@@ -227,24 +227,6 @@ class Core extends Base\Core
         return false;
     }
 
-    /**
-     * This function will check that this is trying to create the XPayroll internal contact
-     * Also checks if the request source is valid
-     *
-     * @param Entity $contact
-     * @return bool
-     */
-    protected function isXpayrollContactRequest(Entity $contact): bool
-    {
-        if (($contact->getType() === Type::XPAYROLL_INTERNAL) and
-            ($this->app['basicauth']->isXPayrollApp() === true))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     public function update(Entity $contact, array $input): Entity
     {
         $this->trace->info(
@@ -787,19 +769,5 @@ class Core extends Base\Core
         }
 
         return $contacts;
-    }
-
-    public function isInternalAppInternalContactRequest(Entity $contact)
-    {
-        if($this->isTaxPaymentContactRequest($contact) === true)
-        {
-            return true;
-        }
-
-        if($this->isXpayrollContactRequest($contact) === true)
-        {
-            return true;
-        }
-        return false;
     }
 }

@@ -1203,6 +1203,40 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateRZPCapitalCollectionsTypeContact()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = $merchant['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->capitalCollectionsAuth();
+
+        $this->startTest();
+
+        $contactDb = $this->getDbLastEntity('contact');
+
+        $this->assertEquals($contactDb['type'],'rzp_capital_collections');
+    }
+
+    public function testCreateRZPCaptialCollectionsTypeContactByOtherInternalAppFailure()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = $merchant['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->xPayrollAuth();
+
+        $this->startTest();
+    }
+
     public function testCreateRZPXpayrollTypeContact()
     {
         $merchant = $this->fixtures->create('merchant');

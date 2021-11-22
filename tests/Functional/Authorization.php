@@ -959,9 +959,18 @@ class Authorization
 
     public function xpayrollAuth($mode = 'test')
     {
-        $thirdwatchConfig = \Config::get('applications.xpayroll');
+        $xpayrollConfig = \Config::get('applications.xpayroll');
 
-        $pwd = $thirdwatchConfig['secret'];
+        $pwd = $xpayrollConfig['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
+    }
+
+    public function capitalCollectionsAuth($mode = 'test')
+    {
+        $capitalCollectionsConfig = \Config::get('applications.capital_collections_client');
+
+        $pwd = $capitalCollectionsConfig['secret'];
 
         $this->appAuth('rzp_' . $mode, $pwd);
     }

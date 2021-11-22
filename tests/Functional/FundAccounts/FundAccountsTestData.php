@@ -3919,6 +3919,74 @@ return [
             'status_code' => 201
         ]
     ],
+
+    'testCapitalCollectionsInternalContactFundaccountCreation' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts_internal',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => '',
+                'bank_account' => [
+                    'name'           => 'test name',
+                    'ifsc'           => 'ICIC0000020',
+                    'account_number' => '000205031288'
+                ],
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'entity'       => 'fund_account',
+                'contact_id'   => '',
+                'account_type' => 'bank_account',
+                'bank_account' => [
+                    'ifsc'           => 'ICIC0000020',
+                    'bank_name'      => 'ICICI Bank',
+                    'name'           => 'test name',
+                    'notes'          => [],
+                    'account_number' => '000205031288',
+                ]
+            ],
+            'status_code' => 201,
+        ],
+    ],
+
+    'testCapitalCollectionsInternalContactFundaccountCreationByOtherInternalAppFailure' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts_internal',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => '',
+                'bank_account' => [
+                    'name'           => 'test name',
+                    'ifsc'           => 'ICIC0000020',
+                    'account_number' => '000205031288'
+                ],
+            ],
+        ],
+
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Creating a fund account for an Internal Razopay contact is not permitted',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNAL_FUND_ACCOUNT_CREATION_NOT_PERMITTED,
+        ],
+    ],
+
     'testXpayrollInternalContactFundaccountCreation' => [
         'request'  => [
             'method'  => 'POST',
@@ -3952,6 +4020,7 @@ return [
             'status_code' => 201,
         ],
     ],
+
     'testXpayrollInternalContactFundaccountCreationByOtherInternalAppFailure' => [
         'request'  => [
             'method'  => 'POST',

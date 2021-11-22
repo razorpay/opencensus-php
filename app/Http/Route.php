@@ -10736,7 +10736,10 @@ class Route
             'merchant_fetch_internal_users',
             'feature_add_internal',
             'feature_delete_internal',
-            'feature_get_multiple_internal'
+            'feature_get_multiple_internal',
+            'contact_create_internal',
+            'fund_account_create_internal',
+            'payout_create_on_internal_contact'
         ],
 
         'loc'  => [
