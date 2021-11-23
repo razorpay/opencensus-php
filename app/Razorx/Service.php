@@ -26,6 +26,7 @@ class Service extends Base\Service
     public function updateExperiments(array $data): array
     {
         $features = [
+            'slot_booking',
             'coupons',
             'is_announcement',
             'is_banner',
