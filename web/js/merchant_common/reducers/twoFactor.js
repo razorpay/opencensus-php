@@ -35,9 +35,11 @@ export const triggerOtpOnBoth = () =>
 export const verifyOtpOnEmail = (data) =>
   merchantFetch({
     url: 'users/verify/mode/email',
-    action: 'user_auth',
     method: 'POST',
-    data,
+    data: {
+      ...data,
+      action: 'user_auth',
+    },
   });
 
 export const verifyOtpOnSMS = (data) =>
