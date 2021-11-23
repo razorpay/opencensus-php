@@ -63,6 +63,7 @@ class ViewSerializer extends Base\Core
             'base_url'         => $this->config['app']['url'],
             E::ORG             => $this->serializeOrgPropertiesForHosted(),
             'view_preferences' => $this->getViewPreferences(),
+            'keyless_header'   => $this->getKeylessAuth(),
         ];
     }
 
@@ -359,6 +360,26 @@ class ViewSerializer extends Base\Core
             'page_load_optimization_enabled' => $pageLoadOptimizationEnabled,
             'disclaimer_text_enabled'        => $disclaimerTextEnabled,
             ];
+    }
+
+    protected function getKeylessAuth()
+    {
+        $keylessHeader = null;
+        $merchantId = $this->merchant->getId();
+        $mode = $this->mode ?? Mode::LIVE;
+        $isKeylessHeaderEnabled = $this->app->razorx->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::KEYLESS_HEADER_PP,
+            $mode
+        );
+
+        if ($isKeylessHeaderEnabled === "on") {
+            $keylessHeader = $this->app['keyless_header']->get(
+                $merchantId,
+                $mode);
+        }
+
+        return $keylessHeader;
     }
 
     protected function populateDonationGoalTrackerWithAdditionalKeys(array & $settings): void

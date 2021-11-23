@@ -34,6 +34,8 @@ use RZP\Models\PaymentLink as PaymentLinkModel;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\RazorXClient;
 
 class PaymentLinkTest extends TestCase
 {
@@ -48,6 +50,27 @@ class PaymentLinkTest extends TestCase
     const TEST_PPI_ID_2 = '10000000001ppi';
     const TEST_ORDER_ID = '10000000000ord';
 
+    protected function enableRazorXTreatmentForKeylessHeader()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->expects($this->any())->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === RazorxTreatment::KEYLESS_HEADER_PP)
+                    {
+                        return 'on';
+                    }
+                    return 'off';
+                }));
+    }
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/PaymentLinkTestData.php';
@@ -55,6 +78,8 @@ class PaymentLinkTest extends TestCase
         parent::setUp();
 
         $this->ba->proxyAuth();
+
+        $this->enableRazorXTreatmentForKeylessHeader();
     }
 
     public function testPaymentLinkMakePaymentWhenPageIsInactive()
@@ -548,7 +573,7 @@ class PaymentLinkTest extends TestCase
 
         $this->assertArrayKeysExist($content, ['data', 'udf_schema']);
 
-        $this->assertArrayKeysExist($content['data'], ['base_url', 'payment_link', 'merchant', 'key_id', 'is_test_mode', 'environment', 'org', 'view_preferences']);
+        $this->assertArrayKeysExist($content['data'], ['base_url', 'payment_link', 'merchant', 'key_id', 'is_test_mode', 'environment', 'org', 'view_preferences', 'keyless_header']);
 
         $this->assertEquals($content['data']['payment_link']['id'], $entity->getPublicId());
     }

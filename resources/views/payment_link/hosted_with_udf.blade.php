@@ -73,7 +73,8 @@
                   form_title: 'Payment Details'
                 },
                 requestParams: requestParams,
-                view_preferences: data.view_preferences
+                view_preferences: data.view_preferences,
+                keyless_header: data.keyless_header,
               };
         </script>
 
