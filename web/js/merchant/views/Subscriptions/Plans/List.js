@@ -131,12 +131,14 @@ export default class PlansListContainer extends ListContainer {
 }
 
 function EmptyComponent() {
-  <EmptyList
-    description={
-      <>
-        <div>There are no plans yet!!</div>
-        <div>Create new plans.</div>
-      </>
-    }
-  />;
+  return (
+    <EmptyList
+      description={
+        <>
+          <div>There are no plans yet!!</div>
+          <div>Create new plans.</div>
+        </>
+      }
+    />
+  );
 }
