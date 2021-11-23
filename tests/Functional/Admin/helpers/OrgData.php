@@ -425,6 +425,21 @@ return [
         ],
     ],
 
+    'testFeatureForOrg' => [
+        'request' => [
+            'url' => '/orgs/hostname/dashboard.razorpay.com',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    'disable_announcements'
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testCreateOrgInvalidHostname' => [
         'request' => [
             'url' => '/orgs',

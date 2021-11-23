@@ -948,6 +948,8 @@ class Constants
 
     const CREDIT_ID_BASED_NEW_QUERY = 'credit_id_based_new_query';
 
+    const ORG_ANNOUNCEMENT_TAB_DISABLE = 'disable_announcements';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1342,6 +1344,7 @@ class Constants
         self::ONE_CC_MERCHANT_DASHBOARD       => true,
         self::ONE_CC_COUPONS                  => true,
         self::ONBOARD_TOKENIZATION            => true,
+        self::ORG_ANNOUNCEMENT_TAB_DISABLE     => true,
         self::ASYNC_TXN_FILL_DETAILS          => true,
         self::CREDIT_ID_BASED_NEW_QUERY       => true,
     ];

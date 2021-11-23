@@ -308,6 +308,20 @@ class OrgTest extends TestCase
         $this->startTest();
     }
 
+    public function testFeatureForOrg()
+    {
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Constants::ORG_ANNOUNCEMENT_TAB_DISABLE,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $result = $this->startTest();
+        $this->assertEquals(['disable_announcements'], $result['features']);
+    }
+
     // Test for an exception
     public function testCreateWithoutPassword()
     {
