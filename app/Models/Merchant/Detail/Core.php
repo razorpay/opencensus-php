@@ -1635,7 +1635,10 @@ class Core extends Base\Core
         {
             $promoterPanName = $merchantDetails->getPromoterPanName();
 
-            $merchantDetails->setBankAccountName($promoterPanName);
+            if ($promoterPanName !== null)
+            {
+                $merchantDetails->setBankAccountName($promoterPanName);
+            }
         }
 
         $merchantDetails->edit($input);
