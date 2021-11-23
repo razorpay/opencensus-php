@@ -56,6 +56,8 @@ class Service extends Base\Service
 
     public function processBuyPricingCostCalculation($input)
     {
+        $startAt = millitime();
+
         (new Validator())->validateInput("buyPricingCost", $input);
 
         $this->trace->info(
@@ -78,7 +80,11 @@ class Service extends Base\Service
             array_push($planIds, $terminal[Entity::PLAN_ID]);
         }
 
+        $dbStartAt = millitime();
+
         $buyPricingPlans = $this->repo->pricing->getBuyPricingPlansByIds(array_unique($planIds))->groupBy(Entity::PLAN_ID);
+
+        $dbEndAt = millitime();
 
         foreach ($terminals as $terminal)
         {
@@ -107,6 +113,13 @@ class Service extends Base\Service
             }
 
         }
+
+        $this->trace->info(
+            TraceCode::BUY_PRICING_PROCESS_COST_CALCULATION_EXECUTION_TIME,
+            [
+                'execution_time'    => millitime() - $startAt,
+                'db_execution_time' => $dbEndAt - $dbStartAt,
+            ]);
 
         return ['terminals' => $result];
     }

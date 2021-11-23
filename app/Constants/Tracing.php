@@ -213,6 +213,7 @@ class Tracing
             'transfer_fetch_multiple',
             'payment_transfer',
             'payment_fetch_transfers',
+            'buy_pricing_terminal_cost',
         ]);
     }
 
