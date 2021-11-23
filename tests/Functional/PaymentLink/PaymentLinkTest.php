@@ -1858,6 +1858,64 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentHandleUpdate()
+    {
+
+        $this->testPaymentHandleCreation();
+
+        $pl = $this->getDbLastEntity('payment_link', 'live');
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $gimli = $this->createMock(Gimli::class);
+
+        $gimli->method('expandAndGetMetadata')->willReturn(null);
+
+        $elfin = $this->createMock(ElfinService::class);
+
+        $elfin->method('driver')->willReturn($gimli);
+
+        $elfin->method('shorten')->willReturn(
+            "https://rzp.io/i/@newHandle"
+        );
+
+        $this->app->instance('elfin', $elfin);
+
+        $this->app->instance('mode', 'live');
+
+        $newPaymentHandle = "@newHandle";
+
+        $handleUrl = $this->app['config']->get('app.payment_handle_hosted_base_url')
+            . "/". $newPaymentHandle;
+
+        $request = [
+            'method' => 'PATCH',
+            'url' => '/v1/payment_handle/' . $pl->getPublicId(),
+            'content' => [
+                'slug' => $newPaymentHandle
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey(Entity::URL, $content);
+
+        $this->assertArrayHasKey(Entity::SLUG, $content);
+
+        $this->assertEquals($content[Entity::SLUG], $newPaymentHandle);
+
+        $this->assertEquals($content[Entity::URL], $handleUrl);
+    }
+
+    public function testPaymentHandleFetch()
+    {
+        $this->testPaymentHandleCreation();
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function assertDonationGoalTrackerRefundFlow(Entity $paymentLink, array $goalTrackerSubset, array $refundInput): void

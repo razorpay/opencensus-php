@@ -424,6 +424,51 @@ class Service extends Base\Service
         return $this->modifyResponseForPaymentHandle($response);
     }
 
+    public function updatePaymentHandle(array $input, string $id): array
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            throw new BadRequestValidationFailureException(
+                'Payment handle can only be updated in live mode.',
+                null,
+                null);
+        }
+
+        $validator = (new Validator);
+
+        $validator->validateInput('updatePaymentHandle',$input);
+
+        $validator->validatePaymentHandleUpdation($input, $this->merchant);
+
+        // TODO Add validation to see if id and default payment handle id is same
+        $response = $this->core->updatePaymentHandle($input, $id);
+
+        return $this->modifyResponseForPaymentHandle($response);
+    }
+
+    public function getPaymentHandleByMerchant(): array
+    {
+        $response = $this->core->getPaymentHandleByMerchant($this->merchant);
+
+        return $this->modifyResponseForPaymentHandle($response);
+    }
+
+    public function suggestionPaymentHandle($input)
+    {
+        $count = Entity::DEFAULT_PAYMENT_HANDLE_SUGGESTION_COUNT;
+
+        if(array_key_exists(Entity::COUNT, $input) === true)
+        {
+            (new Validator)->validatePaymentHandleSuggestionCount($input[Entity::COUNT]);
+
+            $count = $input[Entity::COUNT];
+        }
+
+        $suggestions = $this->core->suggestionPaymentHandle($count);
+
+        return $suggestions;
+    }
+
     protected function getPaymentLinkAndSetModeAndMerchant(string $id)
     {
         $paymentPage = null;

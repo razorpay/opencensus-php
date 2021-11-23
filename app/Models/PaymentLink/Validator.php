@@ -183,6 +183,10 @@ class Validator extends Base\Validator
         Entity::CURRENCY        => 'filled|string|currency',
     ];
 
+    protected static $updatePaymentHandleRules = [
+        Entity::SLUG            => 'required|min:4|max:30',
+    ];
+
     /**
      * Rules for settings.goal_tracker.
      * @var string[]
@@ -498,6 +502,21 @@ class Validator extends Base\Validator
         $this->validateSlugUnique($input[Entity::SLUG]);
     }
 
+    public function validatePaymentHandleUpdation(array $input)
+    {
+        $this->validateSlugUnique($input[Entity::SLUG]);
+
+        $this->isValidPaymentHandle($input[Entity::SLUG]);
+    }
+
+    public function validatePaymentHandleSuggestionCount($count)
+    {
+        if($count > 10 or $count < 1)
+            {
+                throw new BadRequestValidationFailureException(
+                    'value of count should be atleast 1 and atmost 10');
+            }
+    }
     /**
      * Validate times_payable attribute for activation. For activation(unlike edit), it must be greater than times_paid
      *

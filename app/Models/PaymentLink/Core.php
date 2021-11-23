@@ -167,6 +167,38 @@ class Core extends Base\Core
         return $entity;
     }
 
+    public function updatePaymentHandle(array $input, string $id)
+    {
+        $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $this->updateShortUrlIfApplicable($paymentLink, $input);
+
+        $this->upsertDefaultPaymentHandleForMerchant([
+            Entity::DEFAULT_PAYMENT_HANDLE          => $input[Entity::SLUG],
+            Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID  => $paymentLink->getPublicId(),
+        ]);
+
+        return $paymentLink;
+    }
+
+    public function getPaymentHandleByMerchant(Merchant\Entity $merchant): Entity
+    {
+        $merchantSetting = Settings\Accessor::for($merchant, Settings\Module::PAYMENT_LINK)
+            ->all();
+
+        if (empty($merchantSetting) === true || empty($merchantSetting[ENTITY::DEFAULT_PAYMENT_HANDLE]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Payment Handle does not exists for this merchant. Please create a new one',
+                null,
+                null);
+        }
+
+        $paymentHandleId = $merchantSetting[ENTITY::DEFAULT_PAYMENT_HANDLE][Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID];
+
+        return $this->repo->payment_link->findByPublicIdAndMerchant($paymentHandleId, $merchant);
+    }
+
     public function createSubscription(Entity $paymentLink, array $input, Merchant\Entity $merchant)
     {
         $ppItemId = $input[Entity::PAYMENT_PAGE_ITEM_ID];
@@ -2226,6 +2258,55 @@ class Core extends Base\Core
                 Entity::DEFAULT_PAYMENT_HANDLE => $input
             ])
             ->save();
+    }
+
+    public function suggestionPaymentHandle($count)
+    {
+        $merchant = $this->merchant;
+
+        $merchantBillingLabel = $merchant->getBillingLabel();
+
+        // Remove all characters other than a-z, A-Z, 0-9 and space
+        $merchantBillingLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
+
+        // removes spaces
+        $merchantBillingLabel = str_replace(' ', '', $merchantBillingLabel);
+
+        $suggestions = [];
+
+        if($this->slugExists($merchantBillingLabel) === false)
+        {
+            array_push($suggestions, $merchantBillingLabel);
+
+            $count--;
+        }
+
+        $this->generatePaymentHandle($merchantBillingLabel, $count, $suggestions);
+
+        return $suggestions;
+    }
+
+    protected function generatePaymentHandle(string $handle, $count, & $suggestions)
+    {
+        while($count > 0) {
+
+            $suggestedHandle = $handle . rand(1, 10000);
+
+            if ($this->slugExists($suggestedHandle) === false) {
+
+                array_push($suggestions, $suggestedHandle);
+
+                $count--;
+            }
+        }
+        return $suggestions;
+    }
+
+    public function slugExists(string $slug)
+    {
+        $gimli  = $this->app['elfin']->driver('gimli');
+
+        return ($gimli->expand($slug) !== null);
     }
 
     public function getPlIdFromSlug(string $slug)

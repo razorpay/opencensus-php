@@ -345,4 +345,29 @@ class PaymentLinkController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function updatePaymentHandle(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updatePaymentHandle($input, $id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getPaymentHandle()
+    {
+        $response = $this->service()->getPaymentHandleByMerchant();
+
+        return ApiResponse::json($response);
+    }
+
+    public function suggestionPaymentHandle()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->suggestionPaymentHandle($input);
+
+        return ApiResponse::json($response);
+    }
 }

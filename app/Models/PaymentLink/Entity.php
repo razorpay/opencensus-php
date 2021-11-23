@@ -54,6 +54,9 @@ class Entity extends Base\PublicEntity
     const VIEW_TYPE_PAGE       = 'page';
     const VIEW_TYPE_STORE      = 'store';
 
+    const VIEW_TYPE_PAYMENT_HANDLE     = 'payment_handle';
+    const NAME                         = 'name';
+
     /**
      * Optional attribute: allows a custom view template ID to be defined
      */
@@ -108,6 +111,9 @@ class Entity extends Base\PublicEntity
 
     const DEFAULT_PAYMENT_HANDLE               = 'default_payment_handle';
     const DEFAULT_PAYMENT_HANDLE_PAGE_ID       = 'default_payment_handle_page_id';
+
+    const COUNT                                   = 'count';
+    const DEFAULT_PAYMENT_HANDLE_SUGGESTION_COUNT = 4;
 
     //Settings applicable to Payment Button only
     const PP_BUTTON_DISABLE_BRANDING   = 'pp_button_disable_branding';

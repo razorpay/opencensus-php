@@ -12,10 +12,10 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 class ViewType
 {
-    const BUTTON     = 'button';
-    const PAGE       = 'page';
+    const BUTTON              = 'button';
+    const PAGE                = 'page';
     const SUBSCRIPTION_BUTTON = 'subscription_button';
-    const PAYMENT_HANDLE     = 'payment_handle';
+    const PAYMENT_HANDLE      = 'payment_handle';
 
     public static function isValid(string $viewType): bool
     {

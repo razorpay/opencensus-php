@@ -11,7 +11,7 @@
           if(window.RZP && window.RZP.hasOwnProperty("renderApp")) {
               var data = {!!utf8_json_encode($data)!!};
 
-              window.RZP.renderApp('app-container', data); 
+              window.RZP.renderApp('app-container', data);
           }
       }
     </script>
