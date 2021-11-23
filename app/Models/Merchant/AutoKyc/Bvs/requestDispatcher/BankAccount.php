@@ -42,6 +42,7 @@ class BankAccount extends Base
             Constant::DETAILS         => [
                 Constant::ACCOUNT_NUMBER       => $this->merchantDetails->getBankAccountNumber(),
                 Constant::IFSC                 => $this->merchantDetails->getBankBranchIfsc(),
+                Constant::BENEFICIARY_NAME     => $this->merchantDetails->getBankAccountName(),
                 Constant::ACCOUNT_HOLDER_NAMES => $accountHolderNames,
             ],
         ];

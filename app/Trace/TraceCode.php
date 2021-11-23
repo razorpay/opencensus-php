@@ -1621,7 +1621,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ACTIVATION_LOGS                              = 'MERCHANT_ACTIVATION_LOGS';
     const MERCHANT_UPDATE_WEBSITE_DETAILS                       = 'MERCHANT_UPDATE_WEBSITE_DETAILS';
     const MERCHANT_ADD_ADDITIONAL_WEBSITE_DETAILS               = 'MERCHANT_ADD_ADDITIONAL_WEBSITE_DETAILS';
-    const MERCHANT_BVS_BANK_VERIFICATION                        = 'MERCHANT_BVS_BANK_VERIFICATION';
     const MERCHANT_INCREASE_TRANSACTION_LIMIT_INPUT             = 'MERCHANT_INCREASE_TRANSACTION_LIMIT_INPUT';
     const MERCHANT_TRANSACTION_LIMIT_UPDATE_SUCCESS             = 'MERCHANT_TRANSACTION_LIMIT_UPDATE_SUCCESS';
     const MERCHANT_DELETE_ADDITIONAL_WEBSITES                   = 'MERCHANT_DELETE_ADDITIONAL_WEBSITES';
@@ -5450,8 +5449,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BALANCE_DATA                                 = 'MERCHANT_BALANCE_DATA';
 
     const GET_MERCHANT_RISK_DATA_DRUID_ERROR                    = 'GET_MERCHANT_RISK_DATA_DRUID_ERROR';
-    const GET_RZORX_EXPERIMENT_ERROR                            = 'GET_RZORX_EXPERIMENT_ERROR';
-    const BVS_VERIFICATION_ERROR                                = 'BVS_VERIFICATION_ERROR';
 
     const RECON_SERVICE_RESPONSE                                = 'RECON_SERVICE_RESPONSE';
     const RECON_SERVICE_REQUEST                                 = 'RECON_SERVICE_REQUEST';

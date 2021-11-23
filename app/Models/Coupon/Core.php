@@ -109,6 +109,17 @@ class Core extends Base\Core
         return $coupon;
     }
 
+    public function isRazorxExperimentEnable(string $merchantId, string $experimentName): bool
+    {
+        $mode = $this->mode ?? Mode::LIVE;
+
+        $variant = $this->app->razorx->getTreatment($merchantId,
+            $experimentName,
+            $mode);
+
+        return ($variant === Merchant\Constants::RAZORX_EXPERIMENT_ON);
+    }
+
     public function apply(Merchant\Entity $merchant, array $input): array
     {
         $couponCode = $input[Entity::CODE] ?? '';
@@ -119,7 +130,7 @@ class Core extends Base\Core
 
             $exptName = $config[Constants::EXPERIMENT_NAME];
 
-            if ((new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(), $exptName) === false)
+            if ($this->isRazorxExperimentEnable($merchant->getId(), $exptName) === false)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE,

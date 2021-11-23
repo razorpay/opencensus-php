@@ -3028,7 +3028,8 @@ class Core extends Base\Core
         }
 
         if (empty($merchantDetails->getBankAccountNumber()) === true or
-            empty($merchantDetails->getBankBranchIfsc()) === true)
+            empty($merchantDetails->getBankBranchIfsc()) === true or
+            empty($merchantDetails->getBankAccountName()) === true)
         {
             return;
         }
@@ -3072,12 +3073,9 @@ class Core extends Base\Core
             $merchant->getId(),
             RazorxTreatment::KARZA_BANK_ACCOUNT_VERIFICATION);
 
-        if ($isKarzaVerificationEnabled === true and $merchant->getOrgId() === Org\Entity::RAZORPAY_ORG_ID)
+        if ($isKarzaVerificationEnabled === true)
         {
             //call to bvs for Bank Account before L2 submission
-            $this->trace->info(
-                TraceCode::MERCHANT_BVS_BANK_VERIFICATION,
-                ['merchant_id' => $merchant->getId()]);
             (new requestDispatcher\BankAccount($merchant, $merchantDetails))->triggerBVSRequest();
 
         }
@@ -3087,7 +3085,8 @@ class Core extends Base\Core
     {
         $existingMerchantDetails = $this->repo->merchant_detail->findOrFail($merchantDetails->getId());
 
-        if ($merchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC) === $existingMerchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC) and
+        if ($merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NAME) === $existingMerchantDetails->getAttribute(Entity::BANK_ACCOUNT_NAME) and
+            $merchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC) === $existingMerchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC) and
             $merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NUMBER) === $existingMerchantDetails->getAttribute(Entity::BANK_ACCOUNT_NUMBER))
         {
             return false;
@@ -4733,19 +4732,9 @@ class Core extends Base\Core
 
         foreach ($requestCreators as $requestCreator)
         {
-            try
+            if ($requestCreator instanceof requestDispatcher\RequestDispatcher)
             {
-                if ($requestCreator instanceof requestDispatcher\RequestDispatcher)
-                {
-                    $requestCreator->triggerBVSRequest();
-                }
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->error(TraceCode::BVS_VERIFICATION_ERROR,
-                                    ['message'        => $e->getMessage(),
-                                     'merchantId'     => $merchant->getId(),
-                                     'requestCreator' => $requestCreator]);
+                $requestCreator->triggerBVSRequest();
             }
         }
     }
@@ -4835,8 +4824,7 @@ class Core extends Base\Core
                 return false;
             }
 
-            $this->trace->info(TraceCode::ONBOARDING_FIELD_VERIFICATION_REQUEST_RECEIVED, ['field' => $field,
-                                                                                           "merchant_id"=>$merchant->getId()]);
+            $this->trace->info(TraceCode::ONBOARDING_FIELD_VERIFICATION_REQUEST_RECEIVED, ['field' => $field,"merchant_id"=>$merchant->getId()]);
 
             $artefactDetails = Constant::FIELD_ARTEFACT_DETAILS_MAP[$field];
 
