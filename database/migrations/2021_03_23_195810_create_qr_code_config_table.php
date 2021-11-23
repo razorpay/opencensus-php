@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\QrCode\QrCodeConfig\Entity;
+use RZP\Models\QrCodeConfig\Entity;
 
 class CreateQrCodeConfigTable extends Migration
 {
@@ -23,29 +23,21 @@ class CreateQrCodeConfigTable extends Migration
                   ->primary();
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH)
-                  ->nullbale(false);
-
-            $table->string(Entity::PAYMENT_METHOD)
                   ->nullable(false);
 
-            $table->string(Entity::GATEWAY)
+            $table->integer(Entity::CUT_OFF_TIME)
+                  ->nullable(true);
+
+            $table->integer(Entity::CREATED_AT)
                   ->nullable(false);
 
-            $table->string(Entity::PROVIDER)
-                  ->nullable(false);
+            $table->integer(Entity::UPDATED_AT)
+                  ->nullable(true);
 
-            $table->json(Entity::CONFIG)
-                  ->nullable(false);
-
-            $table->integer(Entity::DISABLED_AT);
-
-            $table->integer(Entity::CREATED_AT);
-
-            $table->integer(Entity::UPDATED_AT);
+            $table->integer(Entity::DELETED_AT)
+                  ->nullable(true);
 
             $table->index(Entity::MERCHANT_ID);
-
-            $table->index(Entity::GATEWAY);
 
             $table->index(Entity::CREATED_AT);
         });
@@ -58,6 +50,6 @@ class CreateQrCodeConfigTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists(Table::QR_PAYMENT_REQUEST);
+        Schema::dropIfExists(Table::QR_CODE_CONFIG);
     }
 }
