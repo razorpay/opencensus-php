@@ -2111,6 +2111,9 @@ class Route
         'splitz_evaluate_bulk'                     => ['post',     'splitz/bulkEvaluate',                            'SplitzController@evaluateRequestBulk'                              ],
         'splitz_preflight'                         => ['options',  'splitz/evaluate',                                'SplitzController@allowCors'                                        ],
 
+        //splitz bulk evaluate route for proxy auth
+        'splitz_evaluate_bulk_proxy'               => ['post',     'splitz/bulkEvaluateProxy',                       'SplitzController@evaluateRequestBulk'                              ],
+
         // Growth service
         'growth_get_asset_details'                          => ['post',     'growth/assets',                                  'GrowthController@getAssetDetails'                                  ],
         'growth_downtime_for_x'                             => ['post',     'growth/assets/enable_downtime_for_x',                     'GrowthController@enableDowntimeNotificationForXDashboard' ],
@@ -4814,8 +4817,12 @@ class Route
         'update_coupon_validity_url',
         'update_fetch_coupons_url',
 
+        // splitz
+        'splitz_evaluate_bulk_proxy',
+
         //Growth
         'growth_get_asset_details',
+
     ];
 
     //
@@ -7060,6 +7067,7 @@ class Route
         'merchant_razorx_bulk_evaluate'                => '*',
         'growth_get_asset_details'                     => '*',
         'merchant_razorx_evaluate'                     => '*',
+        'splitz_evaluate_bulk_proxy'                   => '*',
         'fetch_partner_intent'                         => '*',
         'merchant_features_fetch'                      => '*',
         'banking_accounts_list'                        => '*',
@@ -7894,6 +7902,7 @@ class Route
             'merchant_public_get_banks',
             'merchant_razorx_bulk_evaluate',
             'merchant_razorx_evaluate',
+            'splitz_evaluate_bulk_proxy',
             'merchant_replace_key',
             'merchant_replace_key_with_otp',
             'merchant_requests_create',
@@ -8491,6 +8500,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'splitz_evaluate_bulk_proxy',
             'merchant_update_fraud_type',
             'admin_merchant_post_preferences',
             'merchant_activation_gst_details',

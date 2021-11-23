@@ -32,7 +32,6 @@ class UserRolesScope
     public function setRouteUserRoleMap()
     {
         $this->routeUserRoleMap = [
-
             // batch routes
             'batch_create'         => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER,Role::SELLERAPP, Role::AUTH_LINK_SUPERVISOR], BankingRole::getAllRoles()),
             'batch_download_file'  => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER,Role::SELLERAPP, Role::AUTH_LINK_SUPERVISOR], BankingRole::getAllRoles()),
@@ -345,6 +344,7 @@ class UserRolesScope
             'merchant_partner_configs_fetch'                => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::RBL_SUPERVISOR,],
             'merchant_razorx_bulk_evaluate'                 => array_merge(Role::allExceptPaymentLinkRoles(), Role::LINKED_ACCOUNT_ROLES),
             'merchant_razorx_evaluate'                      => array_merge(Role::allExceptPaymentLinkRoles(), Role::LINKED_ACCOUNT_ROLES),
+            'splitz_evaluate_bulk_proxy'                    => array_merge(Role::allExceptPaymentLinkRoles(), Role::LINKED_ACCOUNT_ROLES),
             'growth_get_asset_details'                      => array_merge(Role::allExceptPaymentLinkRoles(), Role::LINKED_ACCOUNT_ROLES),
             'merchant_requests_create'                      => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],
             'merchant_store_fetch'                          => [Role::ADMIN, Role::OWNER, Role::SELLERAPP, Role::FINANCE, Role::MANAGER,Role::OPERATIONS],
