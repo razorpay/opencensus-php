@@ -82,8 +82,14 @@ export default class CreateRule extends React.Component {
       .then((res) => {
         params.forEach((p, index, obj) => {
           if (p.name === 'Wallets') {
-            if (res.length != 0) {
-              p.values = res;
+            if (res.wallets.length != 0) {
+              p.values = res.wallets;
+            } else {
+              obj.splice(index, 1);
+            }
+          } else if (p.name === 'Currency') {
+            if (res.currency.length != 0) {
+              p.values = res.currency;
             } else {
               obj.splice(index, 1);
             }
@@ -134,8 +140,14 @@ export default class CreateRule extends React.Component {
     return new Promise((resolve) => {
       const { terminalProviders } = this.props;
       const data = [];
+      const currencyData = [];
       const mapData = {};
+      const mapCurrencyData = {};
       terminalProviders.forEach((provider) => {
+        let key = `${provider.Gateway}_${provider.Terminal_id}`;
+        if (rzpGateways.includes(provider.Gateway)) {
+          key = provider.Gateway;
+        }
         if (provider.Gateway_details.wallet_metadata) {
           const wallets = provider.Gateway_details.wallet_metadata?.wallets || [];
           wallets.forEach((w) => {
@@ -143,15 +155,22 @@ export default class CreateRule extends React.Component {
               data.push(w);
             }
           });
-          let key = `${provider.Gateway}_${provider.Terminal_id}`;
-          if (rzpGateways.includes(provider.Gateway)) {
-            key = provider.Gateway;
-          }
           mapData[key] = wallets;
         }
+        provider.Currency?.forEach((c) => {
+          if (!currencyData.includes(c)) {
+            currencyData.push(c);
+          }
+        });
+        mapCurrencyData[key] = provider.Currency;
       });
-      const result = data.map((w) => ({ value: w }));
-      this.setState({ mapWalletProvider: mapData });
+      const walletResult = data.map((w) => ({ value: w }));
+      const currencyResult = currencyData.map((c) => ({ value: c }));
+      const result = {
+        wallets: walletResult,
+        currency: currencyResult,
+      };
+      this.setState({ mapWalletProvider: mapData, mapCurrencyProvider: mapCurrencyData });
       resolve(result);
     });
   };
@@ -207,6 +226,7 @@ export default class CreateRule extends React.Component {
     },
     PARAMETERS: [],
     mapWalletProvider: {},
+    mapCurrencyProvider: {},
   };
 
   deactivateRule = () => {
@@ -451,6 +471,47 @@ export default class CreateRule extends React.Component {
     this.addNewRow(pp);
   };
 
+  configureProvider = (param, selectedValues, mapProvider, p) => {
+    let disable = true;
+    selectedValues.forEach((v) => {
+      if (mapProvider[p.id]?.includes(v)) {
+        disable = false;
+      }
+    });
+    if (disable) {
+      p.disabled = true;
+      p.disabled_message = `Selected ${param} is not supported on this provider.`;
+    }
+  };
+
+  checkMethods = (operands, selectedWallets, selectedCurrencies) => {
+    let is_netbanking = false;
+    let is_wallet = false;
+    let is_currency = false;
+    if (operands[1].value.includes('netbanking')) {
+      is_netbanking = true;
+    }
+    if (operands[1].value.includes('wallet') || operands[0].value === '$payment.optimizer_wallet') {
+      is_wallet = true;
+      this.findSelectedValues(operands, '$payment.optimizer_wallet', selectedWallets);
+    }
+    if (operands[0].value === '$payment.optimizer_currency') {
+      is_currency = true;
+      this.findSelectedValues(operands, '$payment.optimizer_currency', selectedCurrencies);
+    }
+    return {
+      is_netbanking,
+      is_wallet,
+      is_currency,
+    };
+  };
+
+  findSelectedValues = (operands, checkParam, selectedValues) => {
+    if (operands[0].value === checkParam && operands[1].value != '') {
+      selectedValues.push(...operands[1].value.split(','));
+    }
+  };
+
   render() {
     if (this.state.redirect) {
       return <Redirect to={this.state.redirect} />;
@@ -467,39 +528,25 @@ export default class CreateRule extends React.Component {
     );
 
     const selectedWallets = [];
+    const selectedCurrencies = [];
     let is_netbanking = false;
     let is_smart_router = false;
     let is_wallet = false;
+    let is_currency = false;
     if (this.state.rule.precondition) {
       if (this.state.rule.precondition.type === 'logical') {
         this.state.rule.precondition.operands.forEach((o) => {
-          if (o.operands[1].value.includes('netbanking')) {
-            is_netbanking = true;
-          }
-          if (
-            o.operands[1].value.includes('wallet') ||
-            o.operands[0].value === '$payment.optimizer_wallet'
-          ) {
-            is_wallet = true;
-            if (o.operands[0].value === '$payment.optimizer_wallet' && o.operands[1].value != '') {
-              selectedWallets.push(...o.operands[1].value.split(','));
-            }
-          }
+          const methodResult = this.checkMethods(o.operands, selectedWallets, selectedCurrencies);
+          is_netbanking = methodResult.is_netbanking;
+          is_wallet = methodResult.is_wallet;
+          is_currency = methodResult.is_currency;
         });
       } else {
         const operands = this.state.rule.precondition.operands;
-        if (operands[1].value.includes('netbanking')) {
-          is_netbanking = true;
-        }
-        if (
-          operands[1].value.includes('wallet') ||
-          operands[0].value === '$payment.optimizer_wallet'
-        ) {
-          is_wallet = true;
-          if (operands[0].value === '$payment.optimizer_wallet' && operands[1].value != '') {
-            selectedWallets.push(...operands[1].value.split(','));
-          }
-        }
+        const methodResult = this.checkMethods(operands, selectedWallets, selectedCurrencies);
+        is_netbanking = methodResult.is_netbanking;
+        is_wallet = methodResult.is_wallet;
+        is_currency = methodResult.is_currency;
       }
     }
 
@@ -510,9 +557,9 @@ export default class CreateRule extends React.Component {
         }
       });
     });
-    if (is_netbanking || is_wallet) {
+    if (is_netbanking || is_wallet || is_currency) {
       MAPPED_PROVIDERS = MAPPED_PROVIDERS.map((p) => {
-        if (p.id == SMART_ROUTER) {
+        if (p.id == SMART_ROUTER && (!is_currency || is_wallet || is_netbanking)) {
           p.disabled = true;
           if (is_wallet) {
             p.disabled_message = 'Wallet is not supported on Smart Router.';
@@ -520,17 +567,14 @@ export default class CreateRule extends React.Component {
             p.disabled_message =
               'Smart Router cannot be added as a provider for conditions with Net Banking currently.';
           }
-        } else if (is_wallet && selectedWallets.length != 0) {
-          const { mapWalletProvider } = this.state;
-          let disable = true;
-          selectedWallets.forEach((w) => {
-            if (mapWalletProvider[p.id]?.includes(w)) {
-              disable = false;
-            }
-          });
-          if (disable) {
-            p.disabled = true;
-            p.disabled_message = 'Selected wallet is not supported on this provider.';
+        } else if (p.id != SMART_ROUTER) {
+          if (is_wallet && selectedWallets.length != 0) {
+            const { mapWalletProvider } = this.state;
+            this.configureProvider('wallet', selectedWallets, mapWalletProvider, p);
+          }
+          if (is_currency && selectedCurrencies.length != 0) {
+            const { mapCurrencyProvider } = this.state;
+            this.configureProvider('currency', selectedCurrencies, mapCurrencyProvider, p);
           }
         }
         return p;

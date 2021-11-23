@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { titleCase } from 'common/utils/rzp-utils';
 import ClickOutside from './ClickOutside';
 import { SMART_ROUTER, gatewayLogos } from './util';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -77,7 +76,7 @@ export default class Select extends React.Component {
                                     <img src={gatewayLogos[o.id.split('_')[0]]} />
                                   </div>
                                 )}
-                              <b class="optn-text">{titleCase(o.name)}</b>
+                              <b class="optn-text">{o.name}</b>
                               {o.id === SMART_ROUTER ? (
                                 <span className="recommended-provider">
                                   <span className="recommended-provider-text">RECOMMENDED</span>

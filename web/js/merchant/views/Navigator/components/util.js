@@ -302,22 +302,42 @@ const emiDurationParameter = [
   },
 ];
 
-// using the same experiment created for emi as it is enabled and not required for emi now.
-const internationalParameter = getExpStatus('optimizer_emi_duration')
+const internationalParameter = [
+  {
+    name: 'International',
+    value: '$payment.optimizer_international',
+    description: 'International payment',
+    id: 15,
+    values: [
+      {
+        value: 'true',
+      },
+      {
+        value: 'false',
+      },
+    ],
+    operators: {
+      '==': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      '!=': {
+        multiple: false,
+        type: 'dropdown',
+      },
+    },
+    type: 'boolean',
+  },
+];
+
+const currencyParameter = getExpStatus('optimizer_currency')
   ? [
       {
-        name: 'International',
-        value: '$payment.optimizer_international',
-        description: 'International payment',
-        id: 15,
-        values: [
-          {
-            value: 'true',
-          },
-          {
-            value: 'false',
-          },
-        ],
+        name: 'Currency',
+        value: '$payment.optimizer_currency',
+        description: 'INR, USD',
+        id: 16,
+        values: [],
         operators: {
           '==': {
             multiple: false,
@@ -327,8 +347,12 @@ const internationalParameter = getExpStatus('optimizer_emi_duration')
             multiple: false,
             type: 'dropdown',
           },
+          in: {
+            multiple: true,
+            type: 'dropdown',
+          },
         },
-        type: 'boolean',
+        type: 'string',
       },
     ]
   : [];
@@ -740,6 +764,7 @@ export const parameters = [
   ...emiDurationParameter,
   ...walletPrameter,
   ...internationalParameter,
+  ...currencyParameter,
 ];
 export const PROVIDERS = [
   { name: 'Smart Router1', id: 1, value: 'smartrouter' },

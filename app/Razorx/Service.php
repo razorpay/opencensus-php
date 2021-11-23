@@ -173,7 +173,6 @@ class Service extends Base\Service
             'csm_experince_survey',
             'inv_create_flow_ux',
             'loans_collections_dashboard',
-            'optimizer_emi_duration',
             'rx_ca_portal',
             'pp_success_page',
             'bvs_get_gst_details',
@@ -208,7 +207,8 @@ class Service extends Base\Service
             'gstin_self_serve',
             'rx_icici_auto_kyc',
             'rx_icici_auto_kyc',
-            'updated_lite_onboarding'
+            'updated_lite_onboarding',
+            'optimizer_currency'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
