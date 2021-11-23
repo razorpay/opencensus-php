@@ -46,7 +46,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Your payment could not be completed due to insufficient account balance. Try again with another account.',
+                    'description' => 'Your payment could not be completed due to insufficient account balance. Try another payment method.',
                 ],
             ],
             'status_code' => 400,
@@ -68,7 +68,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
+                    'description' => "You've entered an incorrect OTP too many times. Try again in sometime.",
                 ],
             ],
             'status_code' => 400,

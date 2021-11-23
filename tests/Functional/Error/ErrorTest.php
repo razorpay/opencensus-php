@@ -3,7 +3,6 @@
 
 namespace Functional\Error;
 
-
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Services\ErrorMappingService;
@@ -29,17 +28,16 @@ class ErrorTest extends TestCase
 
         unset($definedErrors, $definedP2PErrors, $definedTerminalOnboardingErrors);
 
-        $allErrorMapping = array_merge(Error::readMappingFromJsonFile(base_path(ErrorMappingService::APP_ERROR_CODES_JSON), null, false),
-            Error::readMappingFromJsonFile(base_path(ErrorMappingService::CARD_ERROR_CODES_JSON), null, false),
-            Error::readMappingFromJsonFile(base_path(ErrorMappingService::CARDLESS_EMI_ERROR_CODES_JSON), null, false),
-            Error::readMappingFromJsonFile(base_path(ErrorMappingService::COMMON_ERROR_CODES_JSON), null, false),
-            Error::readMappingFromJsonFile(base_path(ErrorMappingService::EMANDATE_ERROR_CODES_JSON), null, false),
-            Error::readMappingFromJsonFile(base_path(ErrorMappingService::NACH_ERROR_CODES_JSON), null, false),
-            Error::readMappingFromJsonFile(base_path(ErrorMappingService::NETBANKING_ERROR_CODES_JSON), null, false),
-            Error::readMappingFromJsonFile(base_path(ErrorMappingService::UPI_ERROR_CODES_JSON), null, false),
-            Error::readMappingFromJsonFile(base_path(ErrorMappingService::WALLET_ERROR_CODES_JSON), null, false),
-            Error::readMappingFromJsonFile(base_path(ErrorMappingService::COD_ERROR_CODES_JSON), null, false),
-            Error::readMappingFromJsonFile(base_path(ErrorMappingService::PAYLATER_ERROR_CODES_JSON), null, false));
+        $allErrorMapping = array();
+
+        foreach (ErrorMappingService::EMM_NAMESPACES_PATH_VS_JSON_MAPPING as $namespacePath => $generatedJsonPath)
+        {
+            $filename = sprintf(ErrorMappingService::FETCHED_ERROR_CODES_PATH, $namespacePath);
+
+            $namespaceArray = Error::readMappingFromJsonFile(base_path($filename), null, false);
+
+            $allErrorMapping = array_merge($allErrorMapping, $namespaceArray);
+        }
 
         $shouldNotBeInRepoError = ["SUCCESS", "INVALID_ARGUMENT_INVALID_FILE_HANDLER_SOURCE","UNHANDLED_KYC_PROCESSOR_TYPE",
             "INVALID_ARGUMENT_INVALID_INTERNATIONAL_ACTIVATION_FLOW",
@@ -57,85 +55,45 @@ class ErrorTest extends TestCase
             "BAD_REQUEST_INVALID_ACTION_CLEAR_TAG_VALUE","BAD_REQUEST_UNSUPPORTED_COMMUNICATION_TYPE",
         ];
 
-        $allErrorCodes1 = array();
-        $allErrorCodes2 = array();
-        $allErrorCodes3 = array();
-        $allErrorCodes4 = array();
-        $allErrorCodes5 = array();
-        $allErrorCodes6 = array();
-        $allErrorCodes7 = array();
-        $allErrorCodes8 = array();
-        $allErrorCodes9 = array();
+        $errorCodeBatches = array();
+
         $count = 0;
-        
-       foreach($allErrorMapping as $key => $value)
-       {
-           if ($count >= 0 and $count <= 400)
-           {
-               $allErrorCodes1[$value['internal_error_code']] = true;
-           }
-           if ($count >= 401 and $count <= 800)
-           {
-               $allErrorCodes2[$value['internal_error_code']] = true;
-           }
-           if ($count >= 801 and $count <= 1200)
-           {
-               $allErrorCodes3[$value['internal_error_code']] = true;
-           }
-           if ($count >= 1201 and $count <= 1600)
-           {
-               $allErrorCodes4[$value['internal_error_code']] = true;
-           }
-           if ($count >= 1601 and $count <= 2000)
-           {
-               $allErrorCodes5[$value['internal_error_code']] = true;
-           }
-           if ($count >= 2001 and $count <= 2400)
-           {
-               $allErrorCodes6[$value['internal_error_code']] = true;
-           }
-           if ($count >= 2401 and $count <= 2800)
-           {
-               $allErrorCodes7[$value['internal_error_code']] = true;
-           }
-           if ($count >= 2801 and $count <= 3200)
-           {
-               $allErrorCodes8[$value['internal_error_code']] = true;
-           }
-           if ($count >= 3201 and $count <= 3600)
-           {
-               $allErrorCodes9[$value['internal_error_code']] = true;
-           }
+
+        $errorBatchCount = 0;
+
+        foreach($allErrorMapping as $key => $value)
+        {
+            if (($count % 400) === 0)
+            {
+                $errorBatchCount += 1;
+            }
+
+            $errorCodeBatches[$errorBatchCount][$value['internal_error_code']] = true;
 
             ++$count;
-       }
+        }
 
-       foreach ($finalDefinedErrorCodes as $key => $value)
-       {
-           if (in_array($key, $shouldNotBeInRepoError) === true)
-           {
-                   continue;
-           }
+        foreach ($finalDefinedErrorCodes as $key => $value)
+        {
+            if (in_array($key, $shouldNotBeInRepoError) === true)
+            {
+                continue;
+            }
 
-           $foundErrorCode = false;
+            $foundErrorCode = false;
 
-           if ((array_key_exists($key, $allErrorCodes1) === true) or
-               (array_key_exists($key, $allErrorCodes2) === true) or
-               (array_key_exists($key, $allErrorCodes3) === true) or
-               (array_key_exists($key, $allErrorCodes4) === true) or
-               (array_key_exists($key, $allErrorCodes5) === true) or
-               (array_key_exists($key, $allErrorCodes6) === true) or
-               (array_key_exists($key, $allErrorCodes7) === true) or
-               (array_key_exists($key, $allErrorCodes8) === true) or
-               (array_key_exists($key, $allErrorCodes9) === true))
-           {
-               $foundErrorCode = true;
-           }
+            foreach ($errorCodeBatches as $batchNo => $batch)
+            {
+                if (array_key_exists($key, $batch))
+                {
+                    $foundErrorCode = true;
+                }
+            }
 
-           if ($foundErrorCode === false)
-           {
-              self::fail("Internal Error Code ".$key." defined in ErrorCode class but mapping not available in Common Error Repo");
-           }
-       }
+            if ($foundErrorCode === false)
+            {
+                self::fail("Internal Error Code ".$key." defined in ErrorCode class but mapping not available in Common Error Repo");
+            }
+        }
     }
 }
