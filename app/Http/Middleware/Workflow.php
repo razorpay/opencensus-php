@@ -81,6 +81,8 @@ class Workflow
         Permission::ADD_ADDITIONAL_WEBSITE,
         Permission::INCREASE_TRANSACTION_LIMIT,
         Permission::SYNC_ENTITY_BY_ID,
+        Permission::PAYMENTS_BUY_PRICING_PLAN_RULE_ADD,
+        Permission::PAYMENTS_BUY_PRICING_PLAN_RULE_FORCE_DELETE,
     ];
 
     protected $app;

@@ -42,7 +42,6 @@ class Core extends Base\Core
         $rule->setAuditAction(Action::CREATE_PRICING_PLAN_RULE);
 
         $this->app['workflow']
-            ->setPermission(PermissionName::PAYMENTS_UPDATE_BUY_PRICING_PLAN)
             ->setEntityAndId($rule->getEntity(), $rule->getPlanId())
             ->handle((new \stdClass), $rule);
 

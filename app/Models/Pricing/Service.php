@@ -636,7 +636,6 @@ class Service extends Base\Service
         $rule = $this->repo->pricing->getPlanRule($planId, $ruleId);
 
         $this->app['workflow']
-            ->setPermission(PermissionName::PAYMENTS_UPDATE_BUY_PRICING_PLAN)
             ->setEntityAndId($rule->getEntity(), $rule->getPlanId())
             ->handle($rule, (new \stdClass));
 
