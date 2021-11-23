@@ -3,14 +3,18 @@
 namespace RZP\Models\PaymentLink;
 
 use Request;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Trace\Tracer;
 use Illuminate\Http\Request  as CurrentRequest;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Models\Settings;
+use RZP\Models\LineItem;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
+use RZP\Models\PaymentLink\PaymentPageItem as PPI;
 
 class Service extends Base\Service
 {
@@ -397,6 +401,29 @@ class Service extends Base\Service
         return $payload;
     }
 
+    public function createPaymentHandle(array $input) : array
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            throw new BadRequestValidationFailureException(
+                'Payment handle can only be created in live mode.',
+                null,
+                null);
+        }
+
+        $validator = (new Validator);
+
+        $validator->validateInput('createPaymentHandle',$input);
+
+        $validator->validatePaymentHandleCreation($input, $this->merchant);
+
+        $this->modifyInputForPaymentHandle($input);
+
+        $response = $this->core->createPaymentHandle($input, $this->merchant, $this->user);
+
+        return $this->modifyResponseForPaymentHandle($response);
+    }
+
     protected function getPaymentLinkAndSetModeAndMerchant(string $id)
     {
         $paymentPage = null;
@@ -436,5 +463,52 @@ class Service extends Base\Service
 
             $paymentLink[Entity::PAYMENT_PAGE_ITEMS][$i] = $paymentPageItem->toArrayPublic();
         }
+    }
+
+    protected function modifyInputForPaymentHandle(array & $input)
+    {
+        // adding currency parameter
+        $input[Entity::CURRENCY] =  empty($input[Entity::CURRENCY]) ? 'INR' : $input[Entity::CURRENCY];
+
+        // adding empty payment_page_items
+        $input[Entity::PAYMENT_PAGE_ITEMS] =  [
+                [
+                    PPI\Entity::ITEM     => [
+                        LineItem\Entity::NAME     => ENTITY::AMOUNT,
+                        'currency' => $input[Entity::CURRENCY],
+                ],
+                    PPI\Entity::SETTINGS   => [
+                        PPI\Entity::POSITION     => 0
+                ],
+                    PPI\Entity::MANDATORY  => true,
+                    PPI\Entity::MIN_AMOUNT => 100
+            ]
+        ];
+
+        $input[ENTITY::SETTINGS]  = [
+            ENTITY::UDF_SCHEMA  => "[{\"name\":\"comment\",\"title\":\"Comment\",\"required\":true,\"type\":\"string\",\"options\":{},\"settings\":{\"position\":1}}]"
+        ];
+
+        $input[ENTITY::VIEW_TYPE]  = ViewType::PAYMENT_HANDLE;
+    }
+
+    protected function modifyResponseForPaymentHandle(Entity $response) : array
+    {
+        $modifiedResponse = [];
+
+        $modifiedResponse[ENTITY::TITLE] = $response[ENTITY::TITLE];
+
+        $modifiedResponse[ENTITY::ID]    = $response->getPublicId();
+
+        $merchantSetting = Settings\Accessor::for($this->merchant, Settings\Module::PAYMENT_LINK)
+            ->all();
+
+        $merchantHandleSetting = $merchantSetting[Entity::DEFAULT_PAYMENT_HANDLE];
+
+        $modifiedResponse[ENTITY::SLUG]  = $merchantHandleSetting[Entity::DEFAULT_PAYMENT_HANDLE];
+
+        $modifiedResponse[ENTITY::URL]   = $this->app['config']->get('app.payment_handle_hosted_base_url'). '/' . $modifiedResponse[Entity::SLUG]; ;
+
+        return $modifiedResponse;
     }
 }

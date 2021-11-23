@@ -1086,6 +1086,8 @@ class Route
         'hosted_subscription_button_details'       => ['get',      'subscription_buttons/{x_entity_id}/button_details',       'PaymentLinkController@getHostedButtonDetails'             ],
         'subscription_button_create_subscription'  => ['post',     'subscription_buttons/{x_entity_id}/create_subscription',  'PaymentLinkController@createSubscription'                 ],
 
+        'payment_handle_create'                    => ['post',     'payment_handle',                                          'PaymentLinkController@createPaymentHandle'                ],
+
         // end of payment page section
 
         //Store Dashboard section
@@ -4457,6 +4459,7 @@ class Route
         'payment_page_get_invoice_details',
         'payment_page_send_receipt',
         'payment_page_save_receipt_for_payment',
+        'payment_handle_create',
         'submerchants_fetch',
         'submerchants_fetch_multiple',
         'webhook_fire',
@@ -8072,6 +8075,7 @@ class Route
             'payment_page_slug_exists',
             'payment_page_update',
             'payment_page_view_get',
+            'payment_handle_create',
             'payment_payout',
             'payment_redirect_3ds',
             'payment_redirect_3ds_get',
@@ -9566,6 +9570,7 @@ class Route
             'payment_page_slug_exists',
             'payment_page_update',
             'payment_page_view_get',
+            'payment_handle_create',
             'payment_payout',
             'payment_redirect_3ds',
             'payment_redirect_3ds_get',

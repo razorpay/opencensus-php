@@ -9,6 +9,7 @@ use RZP\Base;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Models\Settings;
 use RZP\Models\Merchant;
 use RZP\Models\LineItem;
 use RZP\Constants\Timezone;
@@ -36,7 +37,7 @@ class Validator extends Base\Validator
         Entity::TITLE           => 'required|string|min:3|max:40',
         Entity::DESCRIPTION     => 'string|max:65535|nullable|utf8', // 65535 bytes is size of mysql's text data type.
         Entity::NOTES           => 'sometimes|notes',
-        Entity::SLUG            => 'filled|min:4|max:30|custom',
+        Entity::SLUG            => 'filled|min:4|max:30', // need to call validate slug separately for regex validation
         Entity::SUPPORT_CONTACT => 'nullable|contact_syntax',
         Entity::SUPPORT_EMAIL   => 'nullable|email',
         Entity::TERMS           => 'nullable|string|min:5|max:2048',
@@ -176,6 +177,11 @@ class Validator extends Base\Validator
         Invoice\Entity::RECEIPT => 'sometimes|string|min:1|max:40',
     ];
 
+    protected static $createPaymentHandleRules = [
+        Entity::TITLE           => 'required|string|min:3|max:40',
+        Entity::SLUG            => 'required|min:4|max:30',
+        Entity::CURRENCY        => 'filled|string|currency',
+    ];
 
     /**
      * Rules for settings.goal_tracker.
@@ -297,12 +303,12 @@ class Validator extends Base\Validator
     {
         $valid = preg_match('/^[A-Za-z0-9-_]+$/', $value);
 
-        if ($valid !== 1)
+        if ($valid !== 1 )
         {
             throw new BadRequestValidationFailureException(
-                'slug must only contain alpha numeric, _ and - characters',
-                Entity::SLUG,
-                compact('value'));
+                    'slug must only contain alpha numeric, _ and - characters',
+                    Entity::SLUG,
+                    compact('value'));
         }
     }
 
@@ -454,6 +460,44 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateSlugUnique($slug)
+    {
+        $app          = App::getFacadeRoot();
+
+        $gimli        = $app['elfin']->driver('gimli');
+
+        $slugMetadata = $gimli->expandAndGetMetadata($slug);
+
+        if ($slugMetadata !== null)
+        {
+            throw new BadRequestValidationFailureException(
+                'Slug already taken.'
+            );
+        }
+    }
+
+    public function isValidPaymentHandle($slug)
+    {
+        $valid = preg_match('/^@+[A-Za-z0-9-_]+$/', $slug);
+
+        if($valid !== 1)
+        {
+            throw new BadRequestValidationFailureException(
+                'Handle must contain @ at the start and must only contain alpha numeric, _ and - characters',
+                Entity::SLUG,
+                compact('slug'));
+        }
+    }
+
+    public function validatePaymentHandleCreation(array $input,Merchant\Entity $merchant )
+    {
+        $this->isValidPaymentHandle($input[Entity::SLUG]);
+
+        $this->validatePaymentHandleExistsForMerchant($merchant);
+
+        $this->validateSlugUnique($input[Entity::SLUG]);
+    }
+
     /**
      * Validate times_payable attribute for activation. For activation(unlike edit), it must be greater than times_paid
      *
@@ -473,6 +517,19 @@ class Validator extends Base\Validator
                 [
                     Entity::TIMES_PAYABLE => $value,
                 ]);
+        }
+    }
+
+    public function validatePaymentHandleExistsForMerchant(Merchant\Entity $merchant)
+    {
+        $merchantSetting = Settings\Accessor::for($merchant, Settings\Module::PAYMENT_LINK)->all();
+
+        if (!empty($merchantSetting) === true && !empty($merchantSetting[ENTITY::DEFAULT_PAYMENT_HANDLE]) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Payment Handle already exists for this merchant',
+                null,
+                null);
         }
     }
 

@@ -10,6 +10,8 @@ use RZP\Models\Feature\Constants;
 use RZP\Models\Item;
 use RZP\Models\Order;
 use RZP\Models\PaymentLink\Entity;
+use RZP\Services\Elfin\Impl\Gimli;
+use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Services\Mock;
 use RZP\Services\Elfin;
 use RZP\Models\Payment;
@@ -1806,6 +1808,29 @@ class PaymentLinkTest extends TestCase
             'pay_id'    => $payment['id'],
             'amount'    => 35000
         ]);
+    }
+
+    public function testPaymentHandleCreation()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $gimli = $this->createMock(Gimli::class);
+
+        $gimli->method('expandAndGetMetadata')->willReturn(null);
+
+        $elfin = $this->createMock(ElfinService::class);
+
+        $elfin->method('driver')->willReturn($gimli);
+
+        $elfin->method('shorten')->willReturn(
+            "https://rzp.io/i/@sampleHandle"
+        );
+
+        $this->app->instance('elfin', $elfin);
+
+        $this->app->instance('mode', 'live');
+
+        $this->startTest();
     }
 
     // -------------------- Protected methods --------------------

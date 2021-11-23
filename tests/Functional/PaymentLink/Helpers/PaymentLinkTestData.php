@@ -2720,4 +2720,22 @@ return [
             'content' => [],
         ],
     ],
+
+    'testPaymentHandleCreation'   => [
+        'request'  => [
+            'url'     => '/payment_handle',
+            'method'  => 'post',
+            'content' => [
+                'title'      =>    'sample title',
+                'slug'       =>    '@sampleHandle'
+            ]
+        ],
+        'response' => [
+            'content'  => [
+                'title'      => 'sample title',
+                'slug'       => '@sampleHandle',
+                'url'        => 'https://pages.razorpay.com/@sampleHandle',
+            ]
+        ]
+    ],
 ];

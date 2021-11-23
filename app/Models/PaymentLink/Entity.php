@@ -41,6 +41,7 @@ class Entity extends Base\PublicEntity
     const SUPPORT_EMAIL      = 'support_email';
     const TERMS              = 'terms';
     const TYPE               = 'type';
+    const URL                = 'url';
     const TEMPLATE_TYPE      = 'template_type';
 
     const PAYMENT_PAGE_ITEMS   = 'payment_page_items';
@@ -104,6 +105,9 @@ class Entity extends Base\PublicEntity
     const SELECTED_INPUT_FIELD         = 'selected_udf_field';
     const CUSTOM_SERIAL_NUMBER         = 'enable_custom_serial_number';
     const ENABLE_80G_DETAILS           = 'enable_80g_details';
+
+    const DEFAULT_PAYMENT_HANDLE               = 'default_payment_handle';
+    const DEFAULT_PAYMENT_HANDLE_PAGE_ID       = 'default_payment_handle_page_id';
 
     //Settings applicable to Payment Button only
     const PP_BUTTON_DISABLE_BRANDING   = 'pp_button_disable_branding';
@@ -456,11 +460,14 @@ class Entity extends Base\PublicEntity
 
     public function getProductType(): string
     {
-        if ($this->getViewType() === self::VIEW_TYPE_PAGE)
+        if ($this->getViewType() === ViewType::PAGE)
         {
             return Order\ProductType::PAYMENT_PAGE;
         }
-
+        if($this->getViewType() === ViewType::PAYMENT_HANDLE)
+        {
+            return Order\ProductType::PAYMENT_HANDLE;
+        }
         return Order\ProductType::PAYMENT_BUTTON;
     }
 

@@ -9,6 +9,7 @@ class ProductType
     const INVOICE            = 'invoice';
     const AUTH_LINK          = 'auth_link';
     const PAYMENT_PAGE       = 'payment_page';
+    const PAYMENT_HANDLE     = 'payment_handle';
     const PAYMENT_LINK       = 'payment_link';
     const PAYMENT_LINK_V2    = 'payment_link_v2';
     const SUBSCRIPTION       = 'subscription';

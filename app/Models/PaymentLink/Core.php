@@ -52,6 +52,8 @@ class Core extends Base\Core
      */
     protected $plHostedBaseUrl;
 
+    protected $paymentHandleHostedBaseUrl;
+
     protected $merchantRiskService;
 
     const PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP = 'PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP';
@@ -66,6 +68,7 @@ class Core extends Base\Core
 
         $this->elfin           = $this->app['elfin'];
         $this->plHostedBaseUrl = $this->app['config']->get('app.payment_link_hosted_base_url');
+        $this->paymentHandleHostedBaseUrl = $this->app['config']->get('app.payment_handle_hosted_base_url');
         $this->merchantRiskService = $this->app['merchantRiskClient'];
     }
 
@@ -102,6 +105,12 @@ class Core extends Base\Core
         Tracer::inSpan(['name' => 'payment_page.create.build'], function() use ($paymentLink, $input) {
             $paymentLink->build($input);
         });
+
+        if((array_key_exists(Entity::SLUG, $input) === true) and
+            ($paymentLink->getViewType() !== ViewType::PAYMENT_HANDLE))
+        {
+            (new Validator)->validateSlug('validateSlug', $input[Entity::SLUG]);
+        }
 
         Tracer::inSpan(['name' => 'payment_page.create.short_url'], function() use ($paymentLink, $input) {
             $this->createAndSetShortUrl($paymentLink, $input[Entity::SLUG] ?? null);
@@ -142,6 +151,20 @@ class Core extends Base\Core
         });
 
         return $paymentLink;
+    }
+
+    public function createPaymentHandle(array $input, Merchant\Entity $merchant, User\Entity $user = null): Entity
+    {
+        // payment page creation
+        $entity = $this->create($input, $merchant, $user);
+
+        // upsert in merchant setting
+        $this->upsertDefaultPaymentHandleForMerchant([
+            Entity::DEFAULT_PAYMENT_HANDLE          => $input[Entity::SLUG],
+            Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID  => $entity->getPublicId(),
+        ]);
+
+        return $entity;
     }
 
     public function createSubscription(Entity $paymentLink, array $input, Merchant\Entity $merchant)
@@ -1388,7 +1411,20 @@ class Core extends Base\Core
         // Following are default set of parameters, when there is no slug passed in input
         // URL: https://pages.razorpay.in/pl_10000000000000/view OR https://pages.razorpay.in/AlphaNumMin4Max30Slug
 
-        $hostedBaseUrl = $this->plHostedBaseUrl;
+        switch ($paymentLink->getViewType())
+        {
+            case ViewType::PAYMENT_HANDLE:
+
+                $hostedBaseUrl = $this->paymentHandleHostedBaseUrl;
+
+                break;
+
+            default:
+
+                $hostedBaseUrl = $this->plHostedBaseUrl;
+
+                break;
+        }
 
         $merchant = $paymentLink->merchant;
 
@@ -1418,6 +1454,7 @@ class Core extends Base\Core
             // No fall back: Only use Gimli(our shortener service) and do not fall back to Bitly etc if that fails
             $this->elfin->setNoFallback();
             // Additional parameters/metadata which gets used later in rendering view endpoint
+
             $params += [
                 'alias'          => $slug,
                 'fail_if_exists' => true,
@@ -1521,7 +1558,20 @@ class Core extends Base\Core
         }
         else
         {
-            $view = 'payment_link.hosted_with_udf';
+            switch ($paymentLink->getViewType())
+            {
+                case ViewType::PAYMENT_HANDLE:
+
+                        $view = 'payment_handle.hosted_with_udf';
+
+                        break;
+
+                default:
+
+                    $view = 'payment_link.hosted_with_udf';
+
+                    break;
+            }
         }
 
         return $view;
@@ -2167,5 +2217,31 @@ class Core extends Base\Core
                 $request
             );
         }
+    }
+
+    public function upsertDefaultPaymentHandleForMerchant(array $input): void
+    {
+        Settings\Accessor::for($this->merchant, Settings\Module::PAYMENT_LINK)
+            ->upsert([
+                Entity::DEFAULT_PAYMENT_HANDLE => $input
+            ])
+            ->save();
+    }
+
+    public function getPlIdFromSlug(string $slug)
+    {
+            $gimli        = $this->app['elfin']->driver('gimli');
+
+            $slugMetadata = $gimli->expandAndGetMetadata($slug);
+
+            // Renders 404 if no metadata available(error/exception at Gimli side)
+            if ($slugMetadata === null)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+            }
+
+            $this->app['basicauth']->setModeAndDbConnection($slugMetadata['mode']);
+
+            return $slugMetadata['id'];
     }
 }
