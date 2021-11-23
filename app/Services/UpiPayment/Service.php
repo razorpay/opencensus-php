@@ -10,7 +10,9 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Gateway\Upi\Base;
+use RZP\Gateway\Base\Verify;
 use RZP\Models\Base\PublicEntity;
+use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
 use Psr\Http\Message\RequestInterface;
 use Http\Discovery\Psr18ClientDiscovery;
@@ -50,6 +52,20 @@ class Service
      */
     protected $action;
 
+    /**
+     * Stores the current gateway
+     *
+     * @var string
+     */
+    protected $gateway;
+
+    /**
+     * Stores the received input
+     *
+     * @var array
+     */
+    protected $input;
+
     const MAX_RETRY = 2;
 
     const METADATA = 'metadata';
@@ -77,9 +93,13 @@ class Service
      * @param  array  $input
      * @return array
      */
-    public function action(string $action, array $input) : array
+    public function action(string $action, array $input, string $gateway) : array
     {
         $this->action = $action;
+
+        $this->input = $input;
+
+        $this->gateway = $gateway;
 
         $request = $this->getRequest($input);
 
@@ -105,7 +125,7 @@ class Service
             'gateway' => $gateway,
         ];
 
-        return $this->action(self::PRE_PROCESS, $data);
+        return $this->action(self::PRE_PROCESS, $data, $gateway);
     }
 
     /**
@@ -122,8 +142,15 @@ class Service
 
         $content = $this->buildRequestBody($input);
 
+        $uri = $this->action;
+
+        if ($uri === Payment\Action::AUTHORIZE_FAILED)
+        {
+            $uri = Payment\Action::VERIFY;
+        }
+
         $request = [
-            Request::URL        => $domain . $this->action,
+            Request::URL        => $domain . $uri,
             Request::METHOD     => Request::POST,
             Request::CONTENT    => $content,
         ];
@@ -171,6 +198,13 @@ class Service
             case Payment\Action::CALLBACK:
                 $data = [
                     'data'      => $input['gateway'],
+                    'gateway'   => $input['payment']['gateway'],
+                ];
+                break;
+            case Payment\Action::VERIFY:
+            case Payment\Action::AUTHORIZE_FAILED:
+                $data = [
+                    'data'      => $input,
                     'gateway'   => $input['payment']['gateway'],
                 ];
                 break;
@@ -306,6 +340,9 @@ class Service
                 return $response['data'];
             case Payment\Action::CALLBACK:
                 return $response;
+            case Payment\Action::VERIFY:
+            case Payment\Action::AUTHORIZE_FAILED:
+                return $this->processVerifyResponse($response);
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',
@@ -325,6 +362,12 @@ class Service
     {
         if ($code === 200)
         {
+            // Verify error is handled seprately.
+            if ($this->action == Payment\Action::VERIFY)
+            {
+                return;
+            }
+
             $this->checkGatewayFailure($response);
         }
         else if ($code >= 400 and $code < 500)
@@ -378,6 +421,200 @@ class Service
     }
 
     /**
+     * Process the response received from UPS for verify action
+     *
+     * @param  array $response
+     * @return array
+     */
+    protected function processVerifyResponse(array $response)
+    {
+        $verify = new Verify($this->gateway, []);
+
+        $verify->setVerifyResponseBody($response);
+
+        $verify->setStatus(VerifyResult::STATUS_MATCH);
+
+        $this->setGatewaySuccess($verify);
+
+        $this->setApiSuccess($verify);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $verify->setStatus(VerifyResult::STATUS_MISMATCH);
+        }
+
+        if ($verify->gatewaySuccess === true)
+        {
+            $payment = $response[Response::DATA][Response::DATA][Entity::PAYMENT];
+
+            $verify->setAmountMismatch(
+                $payment[Payment\Entity::AMOUNT_AUTHORIZED] !== $this->input[Entity::PAYMENT][Payment\Entity::AMOUNT]
+            );
+
+            $verify->setCurrencyAndAmountAuthorized(
+                $payment[Payment\Entity::CURRENCY],
+                $payment[Payment\Entity::AMOUNT_AUTHORIZED]
+            );
+        }
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        if ($this->action === Payment\Action::AUTHORIZE_FAILED)
+        {
+            return $this->processAuthorizeFailedPayment($verify, $response);
+        }
+
+        $this->verifyPayment($verify);
+
+        return $verify->getDataToTrace();
+    }
+
+    /**
+     * processes Authorize failed payments
+     *
+     * @param  Verify $verify
+     * @param  array  $response
+     * @return array
+     */
+    protected function processAuthorizeFailedPayment(Verify $verify, array $response)
+    {
+        $e = null;
+
+        try
+        {
+            $this->verifyPayment($verify);
+        }
+        catch (Exception\PaymentVerificationException $e)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
+                [
+                    'message'    => 'Payment verification failed. Now converting to authorized',
+                    'payment_id' => $this->input[Entity::PAYMENT][Payment\Entity::ID]
+                ]);
+        }
+
+        if ($e === null)
+        {
+            throw new Exception\LogicException(
+                'When converting failed payment to authorized, payment verification ' .
+                'should have failed but instead it did not',
+                null,
+                $this->input[Entity::PAYMENT]);
+        }
+
+        return $this->getAuthorizeFailedResponse($verify, $response);
+    }
+
+    /**
+     * Verifies a payment
+     *
+     * @param  Verify $verify
+     */
+    protected function verifyPayment($verify)
+    {
+        if (($verify->amountMismatch === true) and
+            ($verify->throwExceptionOnMismatch))
+        {
+            throw new Exception\RuntimeException(
+                'Payment amount verification failed.',
+                [
+                    'payment_id' => $this->input[Entity::PAYMENT][Payment\Entity::ID],
+                    'gateway'    => $this->gateway
+                ]);
+        }
+
+        if (($verify->match === false) and
+            ($verify->throwExceptionOnMismatch))
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify);
+        }
+    }
+
+    /**
+     * sets gateway status in verify object
+     *
+     * @param  Verify $verify
+     * @return array
+     */
+    protected function setGatewaySuccess(Verify $verify)
+    {
+        $body = $verify->verifyResponseBody;
+
+        $isSuccess = $body[Response::DATA]['success'];
+
+        $verify->gatewaySuccess  = $isSuccess;
+    }
+
+    /**
+     * sets api payment status in verify object
+     *
+     * @param  Verify $verify
+     * @return array
+     */
+    protected function setApiSuccess(Verify $verify)
+    {
+        $verify->apiSuccess = true;
+
+        $apiStatus = $this->input[Entity::PAYMENT][Payment\Entity::STATUS];
+
+        if (($apiStatus === Payment\Status::FAILED) or
+            ($apiStatus === Payment\Status::CREATED))
+        {
+            $verify->apiSuccess = false;
+        }
+    }
+
+    /**
+     * Returns authorize failed response
+     *
+     * @param $verify
+     * @return array
+     * @throws Exception\LogicException
+     */
+    protected function getAuthorizeFailedResponse(Verify $verify, array $response)
+    {
+        $returnResponse = [];
+
+        if (($verify->apiSuccess === false) and
+            ($verify->gatewaySuccess === true))
+        {
+            $data = $response[Response::DATA][Response::DATA];
+
+            $acquirer[Payment\Entity::VPA]  = $data[Entity::UPI][Base\Entity::NPCI_REFERENCE_ID];
+            $acquirer[Payment\Entity::REFERENCE16] = $data[Entity::UPI][Base\Entity::NPCI_REFERENCE_ID];
+
+            $returnResponse['acquirer'] = $acquirer;
+
+            if ($verify->amountMismatch === true)
+            {
+                if ((is_string($verify->currency) === true) and
+                    (is_integer($verify->amountAuthorized) === true))
+                {
+                    $returnResponse[Payment\Entity::CURRENCY]             = $verify->currency;
+                    $returnResponse[Payment\Entity::AMOUNT_AUTHORIZED]    = $verify->amountAuthorized;
+                }
+                else
+                {
+                    throw new Exception\LogicException(
+                        'For gateways with amountMismatch, currency and amountAuthorized are mandatory',
+                        null,
+                        ['payment' => $this->input['payment']]);
+                }
+            }
+
+            return $returnResponse;
+        }
+
+        throw new Exception\LogicException(
+            'Should not have reached here',
+            null,
+            ['payment' => $this->input['payment']]);
+    }
+
+    /**
      * Traces the response received from UPS
      *
      * @param  mixed $response
@@ -413,6 +650,10 @@ class Service
                 break;
             case Payment\Action::CALLBACK:
                 $traceData += $request[Request::CONTENT];
+                break;
+            case Payment\Action::VERIFY:
+            case Payment\Action::AUTHORIZE_FAILED:
+                $traceData += $this->getVerifyTraceData($request[Request::CONTENT]);
                 break;
             default:
                 throw new Exception\LogicException(
@@ -495,6 +736,31 @@ class Service
         ];
 
         $data[self::METADATA] = $content[self::METADATA] ?? [];
+
+        return $data;
+    }
+
+    /**
+     * get trace data for verify action send to UPS
+     *
+     * @param  array $content
+     * @return array
+     */
+    protected function getVerifyTraceData(array $content): array
+    {
+        $data = [
+            Payment\Entity::GATEWAY    => $content[Entity::PAYMENT][Payment\Entity::GATEWAY] ?? null,
+            Entity::PAYMENT     => [
+                Payment\Entity::ID        => $content[Entity::PAYMENT][Payment\Entity::ID] ?? null,
+                Payment\Entity::AMOUNT    => $content[Entity::PAYMENT][Payment\Entity::AMOUNT] ?? null,
+                Payment\Entity::CURRENCY  => $content[Entity::PAYMENT][Payment\Entity::CURRENCY] ?? null,
+                Payment\Entity::CPS_ROUTE => $content[Entity::PAYMENT][Payment\Entity::CPS_ROUTE] ?? null,
+                Payment\Entity::VPA       => $content[Entity::PAYMENT][Payment\Entity::VPA] ?? null,
+            ],
+            Entity::MERCHANT   => [
+                Merchant\Entity::BILLING_LABEL  => $content[Entity::MERCHANT][Merchant\Entity::BILLING_LABEL] ?? null,
+            ],
+        ];
 
         return $data;
     }

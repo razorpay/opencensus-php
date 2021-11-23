@@ -301,7 +301,7 @@ trait UpiTrait
             $this->setMetadataForUpsAuthorize($payment, $gatewayData);
         }
 
-        return $this->app['upi.payments']->action($action, $gatewayData);
+        return $this->app['upi.payments']->action($action, $gatewayData, $gateway);
     }
 
     /**

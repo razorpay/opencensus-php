@@ -5,7 +5,9 @@ namespace RZP\Tests\Functional\PaymentsUpi\Service;
 use Mockery;
 
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Entity;
@@ -292,8 +294,6 @@ class UpiPaymentServiceTest extends TestCase
             ], $payment->toArray()
         );
 
-        $f = $payment->toArray();
-
         $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
 
         $this->assertNull($upiEntity);
@@ -346,8 +346,6 @@ class UpiPaymentServiceTest extends TestCase
             Entity::CPS_ROUTE       => Entity::UPI_PAYMENT_SERVICE,
             ], $payment->toArray()
         );
-
-        $f = $payment->toArray();
 
         $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
 
@@ -409,8 +407,6 @@ class UpiPaymentServiceTest extends TestCase
             Entity::CPS_ROUTE       => Entity::UPI_PAYMENT_SERVICE,
             ], $payment->toArray()
         );
-
-        $f = $payment->toArray();
 
         $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
 
@@ -493,6 +489,57 @@ class UpiPaymentServiceTest extends TestCase
             Entity::CPS_ROUTE           => Entity::UPI_PAYMENT_SERVICE,
             Entity::ERROR_CODE          => 'GATEWAY_ERROR',
             Entity::INTERNAL_ERROR_CODE => 'GATEWAY_ERROR_DEBIT_FAILED',
+            ], $payment->toArray()
+        );
+
+        $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
+
+        $this->assertNull($upiEntity);
+    }
+
+    /**
+     * Test successful verification
+     *
+     * @return void
+     */
+    public function testVerifySuccess()
+    {
+        $this->testCollectPaymentSuccess();
+
+        $payment = $this->getDbLastPayment();
+
+        $payment = $this->verifyPayment($payment->getPublicId());
+
+        $this->assertSame($payment['payment']['verified'], 1);
+    }
+
+    /**
+     * Test Late Auth Payments
+     *
+     * @return void
+     */
+    public function testVerifyLateAuth()
+    {
+        $this->testMozartFailure();
+
+        $payment = $this->getDbLastPayment();
+
+        $time = Carbon::now(Timezone::IST)->addMinutes(4);
+
+        Carbon::setTestNow($time);
+
+        $this->verifyAllPayments();
+
+        $payment->reload();
+
+        $this->assertTrue($payment->isLateAuthorized());
+
+        $this->assertArraySubset(
+            [
+            Entity::STATUS          => Status::AUTHORIZED,
+            Entity::GATEWAY         => 'upi_airtel',
+            Entity::TERMINAL_ID     => $this->terminal->getId(),
+            Entity::CPS_ROUTE       => Entity::UPI_PAYMENT_SERVICE,
             ], $payment->toArray()
         );
 

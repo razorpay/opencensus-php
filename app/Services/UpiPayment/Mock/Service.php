@@ -2,6 +2,7 @@
 
 namespace RZP\Services\UpiPayment\Mock;
 
+use RZP\Models\Payment;
 use Psr\Http\Message\RequestInterface;
 use RZP\Services\UpiPayment\Service as UpiPaymentService;
 
@@ -20,7 +21,14 @@ class Service extends UpiPaymentService
     {
         $content = json_decode($request->getBody()->getContents(), true);
 
-        $action = camel_case($this->action);
+        $action = $this->action;
+
+        if ($this->action === Payment\Action::AUTHORIZE_FAILED)
+        {
+            $action = Payment\Action::VERIFY;
+        }
+
+        $action = camel_case($action);
 
         list($response, $code) = $this->$action($content);
 
@@ -198,6 +206,37 @@ class Service extends UpiPaymentService
         ];
 
         return [$response, $statusCode];
+    }
+
+    protected function verify(array $content): array
+    {
+        $data = $content['data'];
+
+        $responseData['data'] = [
+            'upi' => [
+                'vpa' => $data['payment']['vpa'] ?? '',
+                'status_code' => '000',
+                'npci_reference_id' => '987654321',
+                'merchant_reference' => $data['payment']['id'],
+            ],
+            'payment' => [
+                'currency' => 'INR',
+                'amount_authorized' => $data['payment']['amount']
+            ],
+            'terminal' => [
+                'gateway_merchant_id' => 'MER0000000548542'
+            ],
+        ];
+
+        $responseData['success'] = true;
+
+        $response = [
+            'data'      => $responseData,
+            'gateway'   => $content['gateway'],
+            'error'     => null,
+        ];
+
+        return [$response, 200];
     }
 
     public function content(&$content)
