@@ -372,6 +372,7 @@ class PaymentDetailsContainer extends Component {
             viewSettlementOverview={this.viewSettlementOverview}
             config={config}
             user={this.props.user}
+            org={this.props.org}
             onClose={this.props.onCloseSecView}
             merchantManualAction={merchantManualAction}
             settlement_amount={this.props.settlement_amount}
@@ -406,6 +407,7 @@ export default compose(
       return {
         ...state.payment,
         user: state.session.user,
+        org: state.session.org,
         config: state.config.config,
         settlement_amount: state.home.settlement_amount,
       };

@@ -47,7 +47,7 @@ class PaymentDetailsContainer extends Component {
         ) : (
           <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
-              Refund Id: <b>{this.props.refund.id}</b>
+              Refund Id: <b>{refund.id}</b>
             </div>
 
             <div class="SliderPanel__Body">
@@ -57,8 +57,8 @@ class PaymentDetailsContainer extends Component {
                   <EntityDetailRow
                     label="Payment"
                     value={() => (
-                      <Link to={`/payments/${this.props.refund.payment_id}`}>
-                        <code>{this.props.refund.payment_id}</code>
+                      <Link to={`/payments/${refund.payment_id}`}>
+                        <code>{refund.payment_id}</code>
                       </Link>
                     )}
                   />
@@ -67,18 +67,13 @@ class PaymentDetailsContainer extends Component {
                     value={() => (
                       <ContentToggler onToggleClick={this.props.viewRefundHistory}>
                         <span>View History</span>
-                        <RefundStatusTimeline refund={this.props.refund} />
+                        <RefundStatusTimeline refund={refund} />
                       </ContentToggler>
                     )}
                   />
                   <EntityDetailRow
                     label="Amount"
-                    value={() => (
-                      <Amount
-                        value={this.props.refund.amount}
-                        currency={this.props.refund.currency}
-                      />
-                    )}
+                    value={() => <Amount value={refund.amount} currency={refund.currency} />}
                   />
 
                   {refund.fees && refund.tax && (
@@ -99,7 +94,7 @@ class PaymentDetailsContainer extends Component {
                   <EntityDetailRow
                     label="Refund Speed"
                     value={() => {
-                      const refundSpeed = this.props.refund.speed_processed;
+                      const refundSpeed = refund.speed_processed;
                       return (
                         <span>
                           {refundSpeed === 'instant' || refundSpeed === null ? (
@@ -116,26 +111,29 @@ class PaymentDetailsContainer extends Component {
                     }}
                   />
 
-                  <EntityDetailRow label="Currency" value={this.props.refund.currency} />
+                  <EntityDetailRow label="Currency" value={refund.currency} />
 
                   <EntityDetailRow
                     label="Created At"
                     value={() => (
-                      <Time value={this.props.refund.created_at} format="DD MMM YYYY, hh:mm:ss a" />
+                      <Time value={refund.created_at} format="DD MMM YYYY, hh:mm:ss a" />
                     )}
                   />
 
-                  {this.props.refund.transaction && this.props.user.isUxRevampPhase2Enabled && (
+                  <EntityDetailRow label="Processed at">
+                    <Time value={refund.created_at} format="DD MMM YYYY, hh:mm:ss a" />
+                  </EntityDetailRow>
+
+                  <EntityDetailRow label="Refund Type" value={refund.refund_type} />
+
+                  {refund.transaction && this.props.user.isUxRevampPhase2Enabled && (
                     <EntityDetailRow label="Settlement Details">
-                      <SettlementInfo data={this.props.refund} />
+                      <SettlementInfo data={refund} />
                     </EntityDetailRow>
                   )}
 
-                  <NestedEntityDetailRow
-                    label="Acquirer Data"
-                    value={this.props.refund.acquirer_data}
-                  />
-                  <NestedEntityDetailRow label="Notes" value={this.props.refund.notes} />
+                  <NestedEntityDetailRow label="Acquirer Data" value={refund.acquirer_data} />
+                  <NestedEntityDetailRow label="Notes" value={refund.notes} />
                 </div>
               </div>
             </div>
@@ -158,6 +156,7 @@ const mapStateToProps = (state) => {
   return {
     ...state.payment,
     user: state.session.user,
+    org: state.session.org,
     default_refund_speed: state.config.config.default_refund_speed,
     config: state.config.config,
   };

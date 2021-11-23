@@ -70,7 +70,7 @@ function PaymentDetails(props) {
         },
       });
     }
-  }, [payment]);
+  }, [isFromHomePage, payment]);
 
   return (
     <div class="content-wrapper content-sm txn-details">
@@ -221,6 +221,27 @@ function PaymentDetails(props) {
                 <EntityDetailRow label="Created At">
                   <Time value={payment.created_at} format="DD MMM YYYY, hh:mm:ss a" />
                 </EntityDetailRow>
+
+                <EntityDetailRow label="Late Authorized">
+                  <Definition>
+                    <span>{payment.late_authorized ? 'Yes' : 'No'}</span>
+                  </Definition>
+                </EntityDetailRow>
+
+                <EntityDetailRow label="Authorised At">
+                  <Time value={payment.authorized_at} format="DD MMM YYYY, hh:mm:ss a" />
+                </EntityDetailRow>
+
+                <EntityDetailRow label="Auto Captured">
+                  <Definition>
+                    <span>{payment.auto_captured ? 'Yes' : 'No'}</span>
+                  </Definition>
+                </EntityDetailRow>
+
+                <EntityDetailRow label="Captured At">
+                  <Time value={payment.captured_at} format="DD MMM YYYY, hh:mm:ss a" />
+                </EntityDetailRow>
+
                 <ShowWhen
                   additionalCondition={() =>
                     user.isUxRevampPhase2Enabled && payment.transaction && !isSettlementOnHold
