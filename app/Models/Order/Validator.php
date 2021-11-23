@@ -534,6 +534,13 @@ class Validator extends Base\Validator
                 if ($input[Entity::AMOUNT] === '0')
                 {
                     $supportedBanks = Payment\Gateway::removeEmandateRegistrationDisabledBanks($supportedBanks);
+
+                    $auth_type = $input['auth_type'] ?? null;
+
+                    if($auth_type === "netbanking")
+                    {
+                        $supportedBanks = Payment\Gateway::removeNetbankingEmandateRegistrationDisabledBanks($supportedBanks);
+                    }
                 }
                 break;
 

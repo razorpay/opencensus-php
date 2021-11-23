@@ -605,12 +605,24 @@ class Gateway
         IFSC::YESB,
     ];
 
+    // disabled for all auth types
     const EMANDATE_REGISTRATION_DISABLED_BANKS = [
         IFSC::UTBI,
         IFSC::ORBC,
         IFSC::ANDB,
         IFSC::USFB,
         IFSC::SYNB,
+    ];
+
+    const NB_EMANDATE_REGISTRATION_DISABLED_BANKS = [
+        IFSC::APGB,
+        IFSC::CBIN,
+        IFSC::DCBL,
+        IFSC::IOBA,
+        IFSC::JIOP,
+        IFSC::KVGB,
+        IFSC::PSIB,
+        IFSC::UCBA,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -3729,6 +3741,10 @@ class Gateway
         return array_diff($banks, static::EMANDATE_REGISTRATION_DISABLED_BANKS);
     }
 
+    public static function removeNetbankingEmandateRegistrationDisabledBanks(array $banks)
+    {
+        return array_diff($banks, static::NB_EMANDATE_REGISTRATION_DISABLED_BANKS);
+    }
     /*
      * This change is for having a separate list for registration disabled banks as the bank may support
      * debits but might be temporarily blocked for registrations and should be removed from the list to be re-enabled.

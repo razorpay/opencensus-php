@@ -415,6 +415,11 @@ class Core extends Base\Core
 
             $banks = Payment\Gateway::removeEmandateRegistrationDisabledBanks($banks);
 
+            if($authType === "netbanking")
+            {
+                $banks = Payment\Gateway::removeNetbankingEmandateRegistrationDisabledBanks($banks);
+            }
+
             if (empty($banks) === false)
             {
                 $banks = $this->getBankNames($banks);

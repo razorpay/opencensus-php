@@ -2540,6 +2540,19 @@ trait Authorize
 
         $supportedBanks = Payment\Gateway::getAvailableEmandateBanksForAuthType($authType);
 
+        if ($authType === "netbanking")
+        {
+            if (in_array($bank, Gateway::removeNetbankingEmandateRegistrationDisabledBanks($supportedBanks), true) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
+                    Payment\Entity::BANK,
+                    [
+                        'payment' => $payment->toArray(),
+                    ]);
+            }
+        }
+
         if (in_array($bank, Gateway::removeEmandateRegistrationDisabledBanks($supportedBanks), true) === false)
         {
             throw new Exception\BadRequestException(
