@@ -45,20 +45,23 @@ const EasterEgg = (props) => {
 
   const ref = React.useRef();
 
-  // setup intersection observer to check when easter egg comes into viewport
+  // setup IntersectionObserver to check when easter egg comes into viewport
   // whenever it enters into viewport, updating the impression count
   // also memozing the observer so that new observer isn't created on each render
-  const observer = React.useMemo(
-    () =>
-      new IntersectionObserver(([entry]) => {
+  const observer = React.useMemo(() => {
+    // IntersectionObserver support is not there on all the browsers
+    if (window.IntersectionObserver) {
+      return new IntersectionObserver(([entry]) => {
         if (entry.isIntersecting) {
           setRenders((prevRenderCount) => {
             return prevRenderCount + 1;
           });
         }
-      }),
-    [],
-  );
+      });
+    } else {
+      return null;
+    }
+  }, []);
 
   // observer is unavailable in IE, hence the null checks
   useEffect(() => {
@@ -67,7 +70,7 @@ const EasterEgg = (props) => {
     }
     // Remove the observer as soon as the component is unmounted
     return () => {
-      if (observer.disconnect) {
+      if (observer && observer.disconnect) {
         observer.disconnect();
       }
     };
