@@ -198,6 +198,17 @@ class PaperNachCiti extends Base
                                              ->subscription_registration
                                              ->findByTokenIdAndMerchant($token->getId(), $token->merchant->getId());
 
+            if(empty($subscriptionRegistration))
+            {
+                $this->trace->info(TraceCode::GATEWAY_FILE_ERROR_GENERATING_DATA,
+                    [
+                        'payment_id'                => $paymentId,
+                        'subscription_registration' => $subscriptionRegistration,
+                    ]);
+
+                continue;
+            }
+
             $paperMandate = $subscriptionRegistration->paperMandate;
 
             $data = Fields::getNachRegistrationData($token, $paymentId, $token->merchant, $paperMandate);
@@ -437,6 +448,17 @@ class PaperNachCiti extends Base
             $url = (new SubscriptionRegistration\Core())->getUploadedFileUrlByPaymentForNachMethod($payment);
 
             $filePath = $utilityCode . DIRECTORY_SEPARATOR . $paymentId .'.jpg';
+
+            if(empty($url))
+            {
+                $this->trace->info(TraceCode::GATEWAY_FILE_ERROR_GENERATING_DATA,
+                    [
+                        'payment_id' => $paymentId,
+                        'url'        => $url,
+                    ]);
+
+                continue;
+            }
 
             try
             {
