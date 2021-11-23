@@ -1384,9 +1384,20 @@ class Gateway extends Base\Gateway
         // and we are not revealing Bank RRN, this gives us a bit of
         // extra security for fake callbacks
 
-        assertTrue($content[Fields::MERCHANT_ID] === $gatewayPayment->getMerchantId());
+        $responseReceived = empty($gatewayPayment[Entity::RECEIVED]) === false;
 
-        assertTrue($actualPaymentId === $gatewayPayment->getPaymentId());
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+            'message'           => $responseReceived ? 'Making assertions' : 'Skipping assertions',
+            'gateway'           => $this->gateway,
+            'payment_id'        => $input['payment']['id'],
+            'response_received' => $responseReceived
+        ]);
+
+        if ($responseReceived === true)
+        {
+           assertTrue($content[Fields::MERCHANT_ID] === $gatewayPayment->getMerchantId());
+           assertTrue($actualPaymentId === $gatewayPayment->getPaymentId());
+        }
 
 //        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
 //        $actualAmount   = number_format($content[Fields::PAYER_AMOUNT], 2, '.', '');
