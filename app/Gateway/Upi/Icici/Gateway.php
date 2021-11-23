@@ -253,7 +253,7 @@ class Gateway extends Base\Gateway
             Base\IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
             Base\IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
             Base\IntentParams::TXN_CURRENCY  => 'INR',
-            Base\IntentParams::MCC           => '5411',
+            Base\IntentParams::MCC           => $this->getTerminalId($input),
         ];
 
         return ['data' => ['intent_url' => $this->generateIntentString($content)]];

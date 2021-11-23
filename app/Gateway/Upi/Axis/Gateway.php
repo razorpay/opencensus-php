@@ -1327,7 +1327,7 @@ class Gateway extends Base\Gateway
             Base\IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
             Base\IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
             Base\IntentParams::TXN_CURRENCY  => $input['payment']['currency'],
-            Base\IntentParams::MCC           => '5411',
+            Base\IntentParams::MCC           => $this->getMerchantCategory($input),
         ];
 
         if (isset($input['upi']['reference_url']) === true)
@@ -1376,6 +1376,16 @@ class Gateway extends Base\Gateway
         }
 
         return [];
+    }
+
+    /**
+     * Returns the MCC code, based on the merchant category
+     * @param  array  $input
+     * @return string 4 digit integer as string, default value is 5411
+     */
+    protected function getMerchantCategory(array $input)
+    {
+        return $input['merchant']['category'] ?? '5411';
     }
 
     protected function getPaymentRemark(array $input)

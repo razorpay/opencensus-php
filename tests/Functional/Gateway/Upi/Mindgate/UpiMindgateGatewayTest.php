@@ -201,12 +201,19 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->payment['_']['flow'] = 'intent';
 
+        $this->fixtures->merchant->setCategory('1111');
+
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
         $paymentId = $response['payment_id'];
 
         // Co Proto must be working
         $this->assertEquals('intent', $response['type']);
         $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $intentUrl = $response['data']['intent_url'];
+        $mccFromIntentUrl = substr($intentUrl, strpos($intentUrl,'&mc=') + 4, 4);
+
+        $this->assertEquals('1111', $mccFromIntentUrl);
 
         $this->checkPaymentStatus($paymentId, 'created');
 

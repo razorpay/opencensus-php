@@ -64,6 +64,8 @@ class MindgateVirtualAccountTest extends TestCase
 
     public function testCreate()
     {
+        $this->fixtures->merchant->setCategory('1111');
+
         $response = $this->createVirtualAccount($this->input);
 
         $this->va = $this->getDbLastEntity('virtual_account');
@@ -863,6 +865,6 @@ class MindgateVirtualAccountTest extends TestCase
         $this->assertSame('TestMerchant' . str_replace(' ', '', $va->description), $params['tn']);
         $this->assertSame(amount_format_IN($va->getAmountExpected()), $params['am']);
         $this->assertSame('INR', $params['cu']);
-        $this->assertSame('5411', $params['mc']);
+        $this->assertSame('1111', $params['mc']);
     }
 }
