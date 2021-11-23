@@ -8641,6 +8641,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
+
     'testGetCheckoutPersonalisationWithCustomerIdAndInputContact' => [
         'request'  => [
             'url'     => '/personalisation',
@@ -10852,6 +10853,91 @@ return [
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ELIGIBLE_FOR_1CC,
+        ],
+    ],
+
+    'testGetCheckoutPreferenceWithOutUserConsentTokenisation' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer' => [
+                    'tokens' => [
+                        'items' => [
+                            [
+                                'consent_taken' => false,
+                                'card' => [
+                                    'type'      => 'credit',
+                                    'issuer'    => 'HDFC',
+                                    'network'   => 'Visa',
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferenceWithUserConsentTokenisation' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer' => [
+                    'tokens' => [
+                        'items' => [
+                            [
+                                'consent_taken' => true,
+                                'card' => [
+                                    'type'      => 'credit',
+                                    'issuer'    => 'HDFC',
+                                    'network'   => 'Visa',
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferenceWithUserConsentTokenisationWithCustomerId' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer' => [
+                    'tokens' => [
+                        'items' => [
+                            [
+                                'consent_taken' => true,
+                                'card' => [
+                                    'type'      => 'credit',
+                                    'issuer'    => 'HDFC',
+                                    'network'   => 'Visa',
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+            ],
         ],
     ],
 ];

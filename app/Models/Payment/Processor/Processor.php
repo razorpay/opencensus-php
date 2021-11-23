@@ -219,6 +219,17 @@ class Processor
     const CARD_PAYMENTS_VIA_PGROUTER = 'card_payments_via_pg_router';
 
     /**
+     * User consent flag indicates whether the user has given consent to tokenise
+     * the card or not.
+     */
+    const USER_CONSENT_FOR_TOKENISATION = 'user_consent_for_tokenisation';
+
+    /**
+     * save flag indicates whether new card needs to be saved
+     */
+    const SAVE = 'save';
+
+    /**
      * Razorx flag to indicate if a s2s payment should go via PG Router and CPS or just via API service, during Payment creation
      */
     const S2S_CARD_PAYMENTS_VIA_PGROUTER = 's2s_card_payments_via_pg_router';
@@ -653,6 +664,8 @@ class Processor
                 $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment);
             }
 
+            $this->saveUserConsentInRedis($input, $paymentData);
+
             return $paymentData;
         }
         catch (\Throwable $e)
@@ -678,6 +691,61 @@ class Processor
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e, $meta, $properties);
 
             throw $e;
+        }
+    }
+
+    /**
+     * @param $input
+     * @param $paymentData
+     */
+    protected function saveUserConsentInRedis($input, $paymentData): void
+    {
+        try
+        {
+            $paymentId = $paymentData['payment_id'] ?? $paymentData['razorpay_payment_id'] ?? '';
+            $paymentMethod = $input[Payment\Entity::METHOD] ?? '';
+            $paymentMethodsUsingCards = [Payment\Entity::CARD, Payment\Entity::EMI];
+            $library = $input['_']['library'] ?? '';
+            $allowedLibraries = [Payment\Analytics\Metadata::CHECKOUTJS];
+
+            $this->trace->info(
+                TraceCode::TOKENISATION_CONSENT_LOG,
+                [
+                    'paymentId'     => $paymentId,
+                    'library'       => $library,
+                    'method'        => $paymentMethod,
+                    'user_consent'  => $input[self::USER_CONSENT_FOR_TOKENISATION] ?? '',
+                    'save'          => $input[self::SAVE] ?? '',
+                ]);
+
+            if ((empty($paymentId) === true) or
+                (in_array($paymentMethod, $paymentMethodsUsingCards, true) === false) or
+                (in_array($library, $allowedLibraries, true) === false))
+            {
+                return;
+            }
+
+            $userConsentGiven = ((empty($input[self::USER_CONSENT_FOR_TOKENISATION]) === false) ||
+                                 (empty($input[self::SAVE]) === false));
+
+            if ($userConsentGiven === false)
+            {
+                return;
+            }
+
+            $redisKey = $paymentId . '_saved_card_consent';
+
+            $ttl = 60 * 60; // 1 hr in seconds
+
+            $this->app['cache']->put($redisKey, true, $ttl);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::TOKENISATION_CONSENT_REDIS_ERROR,
+                []);
         }
     }
 

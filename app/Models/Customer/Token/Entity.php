@@ -127,6 +127,13 @@ class Entity extends Base\PublicEntity
      */
     const AUTHENTICATION_DATA   = 'authenitaction_data';
 
+    /**
+     * Signifies whether user consent has been taken for a saved card for tokenisation
+     * This will be used by checkout to identify consent taken saved cards
+     * This will be deprecated after Dec 31st, 2021 once we stop saving cards on razorpay
+     */
+    public const CONSENT_TAKEN = 'consent_taken';
+
     protected static $sign      = 'token';
 
     protected $entity           = 'token';
@@ -200,6 +207,7 @@ class Entity extends Base\PublicEntity
         self::START_TIME,
         self::DEBIT_TYPE,
         self::FREQUENCY,
+        self::CONSENT_TAKEN,
         self::STATUS,
         self::NOTES,
     ];
@@ -224,6 +232,7 @@ class Entity extends Base\PublicEntity
         self::MAX_AMOUNT,
         self::EXPIRED_AT,
         self::START_TIME,
+        self::CONSENT_TAKEN,
         self::STATUS,
         self::NOTES,
         // TODO: uncomment when we start accepting token as input
@@ -491,6 +500,11 @@ class Entity extends Base\PublicEntity
     public function getEntityType()
     {
         return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
+    public function getAcknowledgedAt()
+    {
+        return $this->getAttribute(self::ACKNOWLEDGED_AT);
     }
 
     public function getStatus()

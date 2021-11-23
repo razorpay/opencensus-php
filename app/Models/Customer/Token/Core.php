@@ -1479,6 +1479,31 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * @param $tokens
+     * @return mixed
+     */
+    public function addConsentFieldInTokens($tokens)
+    {
+        foreach ($tokens as $token)
+        {
+            if($token->getMethod() === Entity::CARD)
+            {
+                $acknowledgedAt = $token->getAcknowledgedAt();
+
+                if(empty($acknowledgedAt) === false)
+                {
+                    $token[Entity::CONSENT_TAKEN] = true;
+                }
+                else
+                {
+                    $token[Entity::CONSENT_TAKEN] = false;
+                }
+            }
+        }
+        return $tokens;
+    }
+
     public function updateStatus($tokenData)
     {
         $updateData = [];

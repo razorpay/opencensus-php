@@ -16,6 +16,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Excel\Import as ExcelImport;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Payment\Entity as Payment;
 
 class EMIPaymentTest extends TestCase
 {
@@ -76,6 +77,91 @@ class EMIPaymentTest extends TestCase
         $this->assertEquals($payment['status'], 'captured');
 
         $this->fixtures->merchant->disableEmi();
+    }
+
+    public function testEmiPaymentWithNewCardAndUserConsentTokenisation()
+    {
+        $this->mockSession();
+
+        $this->fixtures->merchant->enableEmi();
+        $this->ba->publicAuth();
+        $this->payment['amount'] = 500000;
+        $this->payment['method'] = 'emi';
+        $this->payment['emi_duration'] = 9;
+        $this->payment['card']['number'] = '41476700000006';
+        $this->payment['save'] = 1;
+        $this->payment['_']['library'] = 'checkoutjs';
+
+        $content = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $token = $this->getLastEntity('token', true);
+        $this->assertNotNull($token['acknowledged_at']);
+    }
+
+    public function testEmiPaymentWithSavedCardAndUserConsentTokenisation()
+    {
+        $this->mockSession();
+
+        $token = $this->getEntityById('token', '10000custgcard', true);
+
+        $this->fixtures->merchant->enableEmi();
+        $this->ba->publicAuth();
+        $this->payment['method'] = 'emi';
+        $this->payment['amount'] = 500000;
+        $this->payment['emi_duration'] = 9;
+        $this->payment[Payment::CARD] = array('cvv'  => 111);
+        $this->payment[Payment::TOKEN] = $token[Payment::TOKEN];
+        $this->payment['user_consent_for_tokenisation'] = 1;
+        $this->payment['_']['library'] = 'checkoutjs';
+
+        $content = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $token = $this->getEntityById('token', '10000custgcard', true);
+
+        $this->assertNotNull($token['acknowledged_at']);
+    }
+
+    public function testEmiPaymentWithLocalSavedCardAndUserConsentTokenisation()
+    {
+        $token = $this->getEntityById('token', '100000custcard', true);
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->ba->publicAuth();
+
+        $this->payment[Payment::CUSTOMER_ID] = 'cust_100000customer';
+        $this->payment['method'] = 'emi';
+        $this->payment['amount'] = 500000;
+        $this->payment['emi_duration'] = 9;
+        $this->payment[Payment::CARD] = array('cvv'  => 111);
+        $this->payment[Payment::TOKEN] = $token[Payment::TOKEN];
+        $this->payment['user_consent_for_tokenisation'] = 1;
+        $this->payment['_']['library'] = 'checkoutjs';
+
+        $content = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $token = $this->getEntityById('token', '100000custcard', true);
+
+        $this->assertNotNull($token['acknowledged_at']);
+    }
+
+    public function testEmiPaymentWithLocalNewCardAndUserConsentTokenisation()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->ba->publicAuth();
+
+        $this->payment[Payment::CUSTOMER_ID] = 'cust_100000customer';
+        $this->payment['method'] = 'emi';
+        $this->payment['amount'] = 500000;
+        $this->payment['emi_duration'] = 9;
+        $this->payment['save'] = 1;
+        $this->payment['_']['library'] = 'checkoutjs';
+
+        $content = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $token = $this->getLastEntity('token', true);
+        $this->assertNotNull($token['acknowledged_at']);
     }
 
     public function testEmiPaymentCreatWithMerchantSpecificEmiPlan()
@@ -475,5 +561,12 @@ class EMIPaymentTest extends TestCase
 
         $this->assertEquals($content['error']['http_status_code'], 400);
         $this->assertEquals($content['error']['internal_error_code'], 'BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD');
+    }
+
+    protected function mockSession($appToken = 'capp_1000000custapp')
+    {
+        $data = [ 'test_app_token' => $appToken ];
+
+        $this->session($data);
     }
 }

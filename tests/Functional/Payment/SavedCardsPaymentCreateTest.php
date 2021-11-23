@@ -1400,6 +1400,160 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertNotEquals($card1['id'], $card2['id']);
     }
 
+    public function testPaymentWithNewCardAndUserConsentTokenisation()
+    {
+        $this->mockSession();
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['save'] = 1;
+
+        $this->payment['_']['library'] = 'checkoutjs';
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertNotNull($token['acknowledged_at']);
+    }
+
+    public function testPaymentWithSavedCardAndUserConsentTokenisation()
+    {
+        $this->mockSession();
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $token = $this->getEntityById('token', '10000custgcard', true);
+
+        $this->payment[Payment::CARD] = array('cvv'  => 111);
+
+        $this->payment[Payment::TOKEN] = $token[Payment::TOKEN];
+
+        $this->payment['user_consent_for_tokenisation'] = 1;
+
+        $this->payment['_']['library'] = 'checkoutjs';
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $token = $this->getEntityById('token', '10000custgcard', true);
+
+        $this->assertNotNull($token['acknowledged_at']);
+    }
+
+    public function testPaymentWithLocalSavedCardAndUserConsentTokenisation()
+    {
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment[Payment::CARD] = [];
+
+        $this->payment[Payment::TOKEN] = '10000cardtoken';
+
+        $this->payment[Payment::CARD] = array('cvv'  => 111);
+
+        $this->payment[Payment::CUSTOMER_ID] = 'cust_100000customer';
+
+        $this->payment['user_consent_for_tokenisation'] = 1;
+
+        $this->payment['_']['library'] = 'checkoutjs';
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $token = $this->getEntityById('token', '100000custcard', true);
+
+        $this->assertNotNull($token['acknowledged_at']);
+    }
+
+    public function testPaymentWithLocalNewCardAndUserConsentTokenisation()
+    {
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment[Payment::CUSTOMER_ID] = 'cust_100000customer';
+
+        $this->payment['save'] = 1;
+
+        $this->payment['_']['library'] = 'checkoutjs';
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertNotNull($token['acknowledged_at']);
+    }
+
+    public function testPaymentWithUserConsentTokenisationWithInvalidLibrary()
+    {
+        $this->mockSession();
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['save'] = 1;
+
+        $this->payment['_']['library'] = 'razorpayjs';
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertNull($token['acknowledged_at']);
+    }
+
+    public function testPaymentWithInvalidUserConsentTokenisation()
+    {
+        $this->mockSession();
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['save'] = 1;
+
+        $this->payment['user_consent_for_tokenisation'] = 2;
+
+        $this->expectException('RZP\Exception\BadRequestValidationFailureException');
+
+        $this->expectExceptionMessage('The selected user consent for tokenisation is invalid.');
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+    }
+
+    public function testVerifyOtpResponseWithoutUserConsentTokenisation()
+    {
+        $this->ba->publicAuth();
+
+        $this->withSession(['test_checkcookie' => '0']);
+
+        $content = $this->verifyOtp('9988776655', 'abc@razorpay.com', '233443', '123');
+
+        $this->assertArrayHasKey('tokens', $content);
+
+        $this->assertArrayHasKey('items', $content['tokens']);
+
+        $this->assertArrayHasKey('card', $content['tokens']['items'][0]);
+
+        $this->assertArrayHasKey('consent_taken', $content['tokens']['items'][0]);
+
+        $this->assertEquals(false, $content['tokens']['items'][0]['consent_taken']);
+    }
+
+    public function testVerifyOtpResponseWithUserConsentTokenisation()
+    {
+        $this->ba->publicAuth();
+
+        $this->withSession(['test_checkcookie' => '0']);
+
+        $this->fixtures->edit('token', '10000custgcard', ['acknowledged_at' => Carbon::now()->timestamp]);
+
+        $content = $this->verifyOtp('9988776655', 'abc@razorpay.com', '233443', '123');
+
+        $this->assertArrayHasKey('tokens', $content);
+
+        $this->assertArrayHasKey('items', $content['tokens']);
+
+        $this->assertArrayHasKey('card', $content['tokens']['items'][0]);
+
+        $this->assertArrayHasKey('consent_taken', $content['tokens']['items'][0]);
+
+        $this->assertEquals(true, $content['tokens']['items'][0]['consent_taken']);
+    }
+
     protected function mockSession($appToken = 'capp_1000000custapp')
     {
         $data = [ 'test_app_token' => $appToken ];

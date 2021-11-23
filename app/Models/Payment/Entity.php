@@ -70,6 +70,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property Customer\Entity        $customer
  * @property PaymentMeta\Entity     $paymentMeta
  * @property Customer\Token\Entity  $localToken
+ * @property Customer\Token\Entity  $globalToken
  * @property CardMandateNotification\Entity $cardMandateNotification
  */
 class Entity extends Base\PublicEntity implements CommissionSourceInterface

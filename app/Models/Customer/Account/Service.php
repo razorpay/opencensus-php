@@ -404,6 +404,8 @@ class Service extends Base\Service
 
             if (($tokens !== null) and ($tokens->count() > 0))
             {
+                $tokens = (new Customer\Token\Core)->addConsentFieldInTokens($tokens);
+
                 $result['tokens'] = $tokens->toArrayPublic();
             }
         }

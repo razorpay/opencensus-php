@@ -269,6 +269,8 @@ class Core extends Base\Core
 
             $tokens = (new Token\Core)->removeCardTokensWithoutName($tokens);
 
+            $tokens = (new Token\Core)->addConsentFieldInTokens($tokens);
+
             $response['tokens'] = $tokens->toArrayPublic();
         }
 

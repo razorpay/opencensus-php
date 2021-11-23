@@ -131,6 +131,7 @@ class Validator extends Base\Validator
         'meta'                          => 'sometimes|array',
         'authentication'                => 'required_if:application,visasafeclick|array',
         'reward_ids'                    => 'sometimes|array',
+        'user_consent_for_tokenisation' => 'sometimes|in:0,1', // temporary - for taking saved card consent till Dec 31st 2021
         'authentication.cavv'                                        => 'required_if:application,visasafeclick|size:28|string',
         'authentication.cavv_algorithm'                              => 'required_if:application,visasafeclick|size:1|string',
         'authentication.eci'                                         => 'required_if:application,visasafeclick|max:2|string',

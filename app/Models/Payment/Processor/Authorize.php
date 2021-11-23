@@ -6220,6 +6220,14 @@ trait Authorize
     {
         $this->updateLateAuthFlag($payment);
 
+        /**
+         * Storing saved card consent
+         * Doing this so that consent provided cards can be migrated to tokenised format
+         * once integration with networks is completed.
+         * This code will not be used after Dec 31st 2021, so needs to be removed then
+         */
+        $this->storeSavedCardConsentIfPresent($payment);
+
         //
         // Needs to be before capture, since disount amount
         // is used to decide whether to capture or not
@@ -10024,6 +10032,56 @@ trait Authorize
 
             $this->segment->trackPayment($payment, TraceCode::PAYMENT_CREATED);
     }
+
+    /**
+     * @param Payment\Entity $payment
+     */
+    protected function storeSavedCardConsentIfPresent(Payment\Entity $payment): void
+    {
+        try
+        {
+            $tokenEntity = $payment->getGlobalOrLocalTokenEntity();
+
+            if(isset($tokenEntity) === false)
+            {
+                return;
+            }
+
+            if($tokenEntity->getMethod() !== Token\Entity::CARD)
+            {
+                return;
+            }
+
+            $redisKey = $payment->getPublicId() . '_saved_card_consent';
+
+            $consent = $this->app['cache']->get($redisKey);
+
+            if(empty($consent) === true)
+            {
+                return;
+            }
+
+            $this->trace->info(
+                TraceCode::TOKENISATION_CONSENT_STORAGE,
+                [
+                    'paymentId' => $payment->getId(),
+                    'tokenId'   => $tokenEntity->getId(),
+                ]);
+
+            $tokenEntity->setAcknowledgedAt(Carbon::now()->timestamp);
+
+            $tokenEntity->saveOrFail();
+
+            $this->app['cache']->delete($redisKey);
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::TOKENISATION_CONSENT_STORAGE_ERROR, [
+                'paymentId' => $payment->getId(),
+            ]);
+        }
+    }
+
     /**
      * This function runs the FraudCheck for terminals where procurer is Razorpay , as fraud checks were skipped initially
      * for RaaS International Payments

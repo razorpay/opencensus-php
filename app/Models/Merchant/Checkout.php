@@ -587,6 +587,8 @@ class Checkout
 
             $savedTokens = $tokenCore->removeCardTokensWithoutName($savedTokens);
 
+            $savedTokens = $tokenCore->addConsentFieldInTokens($savedTokens);
+
             $custData =  [
                 'email'     => $customer->getEmail(),
                 'contact'   => $customer->getContact(),
@@ -1346,21 +1348,21 @@ class Checkout
     public function getPersonalisedMethods($merchant, $mode, $input)
     {
         $this->tracePersonalisationRequest($merchant, $mode, $input);
-        
+
         $this->checkAndFillAppTokenInputFromSession($merchant, $mode, $input);
-        
+
         $this->checkGivenContactIsDiffFromLogInContact($input, $merchant);
 
         $data = [];
-        
+
         // The below code is required for ensuring that the disabled
         // tokens are removed for the logged in users
-        if ((isset($input[Payment\Entity::CUSTOMER_ID]) === true) or 
+        if ((isset($input[Payment\Entity::CUSTOMER_ID]) === true) or
             (isset($input[Payment\Entity::APP_TOKEN]) === true))
         {
             $data[Entity::METHODS] = (new Methods\Core)->getFormattedMethods($merchant);
         }
-        
+
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
         $this->checkAndAddDetailsForOrder($input, $merchant, $data);
@@ -1371,7 +1373,7 @@ class Checkout
 
         return $data;
     }
-    
+
     private function checkGivenContactIsDiffFromLogInContact(array & $input, $merchant)
     {
         if (empty($input[Payment\Entity::APP_TOKEN]) or empty($input[Payment\Entity::CONTACT]))
@@ -1384,19 +1386,19 @@ class Checkout
         $appToken  = (new Customer\AppToken\Core)->getAppByAppTokenId($appTokenId, $merchant);
 
         $logInContact = null;
-        
+
         if ($appToken !== null)
         {
             $logInContact = $appToken->customer->getContact();
         }
-        
+
         if (($logInContact === null) or ($logInContact === $input[Payment\Entity::CONTACT]))
         {
             return ;
         }
-        
+
         $inputForLogout = ['logout' => 'app'];
-        
+
         (new AppToken\Service())->deleteAppTokensForGlobalCustomer($inputForLogout);
 
         unset($input[Payment\Entity::APP_TOKEN]);

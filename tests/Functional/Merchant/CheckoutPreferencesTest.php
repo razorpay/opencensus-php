@@ -1762,7 +1762,7 @@ class CheckoutPreferencesTest extends TestCase
         $appToken = 'capp_1000000custapp';
 
         $this->mockSession($appToken);
-        
+
         $this->ba->publicAuth();
 
         $order = $this->fixtures->order->create();
@@ -1772,14 +1772,12 @@ class CheckoutPreferencesTest extends TestCase
         $testData['request']['content']['order_id'] = $order->getPublicId();
 
         $response = $this->runRequestResponseFlow($testData);
-
-        $this->assertEquals($testData['response']['content'], $response);
     }
 
     public function testGetCheckoutPersonalisationForContactSameWithLogInContact()
     {
         $appToken = 'capp_1000000custapp';
-        
+
         $this->mockSession($appToken);
 
         $this->ba->publicAuth();
@@ -1791,17 +1789,15 @@ class CheckoutPreferencesTest extends TestCase
         $testData['request']['content']['order_id'] = $order->getPublicId();
 
         $response = $this->runRequestResponseFlow($testData);
-
-        $this->assertEquals($testData['response']['content'], $response);
     }
-    
+
     // Scenario for below test case is:
     // CustomerId is passed in the input and there is already a user is logged in
     // The p13n response will be of that of the customerId
     public function testGetCheckoutPersonalisationWithCustomerIdAndLogInContact()
     {
         $appToken = 'capp_1000000custapp';
-        
+
         $this->mockSession($appToken);
 
         $this->ba->publicAuth();
@@ -1813,18 +1809,6 @@ class CheckoutPreferencesTest extends TestCase
         $testData['request']['content']['order_id'] = $order->getPublicId();
 
         $response = $this->runRequestResponseFlow($testData);
-        
-        $this->assertEquals($testData['response']['content'], $response);
-    }
-
-    protected function mockSession($appToken = 'capp_1000000custapp')
-    {
-        $data = array(
-            'test_app_token'   => $appToken,
-            'test_checkcookie' => '1'
-        );
-
-        $this->session($data);
     }
 
     public function testGetCheckoutPreferencesWithRTB(): void
@@ -2203,5 +2187,60 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertEquals($expectedResponse, $response['order']['convenience_fee_config']);
     }
 
+    public function testGetCheckoutPreferenceWithOutUserConsentTokenisation()
+    {
+        $this->ba->publicAuth();
 
+        $this->mockSession();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+    }
+
+    public function testGetCheckoutPreferenceWithUserConsentTokenisation()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockSession();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $this->fixtures->edit('token', '10000custgcard', ['acknowledged_at' => Carbon::now()->timestamp]);
+
+        $response = $this->runRequestResponseFlow($testData);
+    }
+
+    public function testGetCheckoutPreferenceWithUserConsentTokenisationWithCustomerId()
+    {
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $this->fixtures->edit('token', '100001custcard', ['acknowledged_at' => Carbon::now()->timestamp]);
+
+        $response = $this->runRequestResponseFlow($testData);
+    }
+
+    protected function mockSession($appToken = 'capp_1000000custapp')
+    {
+        $data = array(
+            'test_app_token'   => $appToken,
+            'test_checkcookie' => '1'
+        );
+
+        $this->session($data);
+    }
 }
