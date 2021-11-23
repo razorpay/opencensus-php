@@ -304,6 +304,8 @@ class Core extends Detail\Core
                     if (empty($kycClarificationReasons) === false)
                     {
                         $partnerActivation->setKycClarificationReasons($kycClarificationReasons);
+
+                        $this->repo->saveOrFail($partnerActivation);
                     }
 
                     $oldPartnerActivationStatus = $partnerActivation->getActivationStatus();
