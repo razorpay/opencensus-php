@@ -117,6 +117,63 @@ class Core extends Base\Core
         return $email;
     }
 
+    public function addEmail($merchantId, $type, $emailToBeAdded)
+    {
+        $emailEntity = $this->repo->merchant_email->getEmailByType($type, $merchantId);
+
+        if (empty($emailEntity) === false)
+        {
+            $emails = $emailEntity->getEmail();
+
+            if (str_contains($emails, $emailToBeAdded) === true)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS);
+            }
+            $emailInput = [
+                'email'         => sprintf('%s,%s', $emails, $emailToBeAdded),
+                Entity::TYPE    => $type,
+            ];
+
+            $this->edit($emailEntity, $emailInput);
+        }
+        else
+        {
+            $emailInput = [
+                'email'         => $emailToBeAdded,
+                Entity::TYPE    => $type,
+            ];
+
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            $this->create($merchant, $emailInput);
+        }
+    }
+
+    public function removeEmail($merchantId, $type, $emailToBeRemoved)
+    {
+        $emailEntity = $this->repo->merchant_email->getEmailByType($type, $merchantId);
+
+        $emails = $emailEntity->getEmail();
+
+        if (str_contains($emails, $emailToBeRemoved) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_TO_BE_REMOVED_NOT_PRESENT);
+        }
+
+        $emailArr = explode(',', $emails);
+
+        $emailArr = array_filter($emailArr, function($email) use ($emailToBeRemoved) {
+            return $email !== $emailToBeRemoved;
+        });
+
+        $emailInput = [
+            'email'         => join(',', $emailArr),
+            Entity::TYPE    => $type,
+        ];
+
+        $this->edit($emailEntity, $emailInput);
+    }
+
     /**
      * edit merchant email entity based on input
      *

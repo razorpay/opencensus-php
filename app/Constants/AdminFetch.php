@@ -573,6 +573,8 @@ class AdminFetch
                         'linked_account_create',
                         'payment_transfer',
                         'transfer_reversal',
+                        'chargeback_poc',
+                        'whitelisted_domain',
                     ],
                 ],
             ],

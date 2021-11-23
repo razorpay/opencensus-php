@@ -279,6 +279,9 @@ class PublicErrorDescription
     const BAD_REQUEST_REFUND_NOT_IN_CREATED                                     = 'Refund is not in created state';
     const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                    = 'This operation is not allowed. Please contact Razorpay support for details.';
     const BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS                             = 'Merchant email already exists for account - ';
+    const BAD_REQUEST_EMAIL_TO_BE_REMOVED_NOT_PRESENT                           = 'Merchant email to be removed does not exist';
+    const BAD_REQUEST_DOMAIN_ALREADY_WHITELISTED                                = 'Whitelisted domain to be added already exists for the merchant';
+    const BAD_REQUEST_WHITELISTED_DOMAIN_NOT_FOUND                              = 'Whitelisted domain to be removed not found for the merchant';
     const BAD_REQUEST_MERCHANT_INVALID_MCC_CODE                                 = 'Invalid mcc code';
     const BAD_REQUEST_DUPLICATE_EXTERNAL_ID                                     = 'External Id already exists';
     const BAD_REQUEST_INVALID_POA_VERIFICATION_STATUS_CHANGE                    = 'Invalid poa verification status change ';

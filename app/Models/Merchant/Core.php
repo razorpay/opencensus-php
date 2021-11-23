@@ -66,6 +66,7 @@ use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Jobs\BackFillReferredApplication;
 use RZP\Jobs\BackFillMerchantApplications;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\Merchant\Fraud\HealthChecker;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
@@ -3817,6 +3818,33 @@ class Core extends Base\Core
         $this->addDomainInWhitelistedDomain($merchant, $domain);
     }
 
+    public function addWhitelistedDomainForUrl($merchantId, $url)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $this->addDomainInWhitelistedDomainOrFail($merchant, (new TLDExtract)->getEffectiveTLDPlusOne($url));
+
+        $this->repo->merchant->saveOrFail($merchant);
+
+        $liveStatus = (new HealthChecker\Job)->isLive($url);
+
+        if ($liveStatus['result'] !== HealthChecker\Constants::RESULT_LIVE)
+        {
+            return sprintf('Current merchant website status: %s', $liveStatus['result']);
+        }
+
+        return '';
+    }
+
+    public function removeWhitelistedDomainForUrl($merchantId, $url)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $this->removeDomainFromWhitelistedDomainOrFail($merchant, (new TLDExtract)->getEffectiveTLDPlusOne($url));
+
+        $this->repo->merchant->saveOrFail($merchant);
+    }
+
     /**
      * there are two flow where website can be updated
      * 1) edit website in merchant entity and then sync with merchant_details
@@ -3862,6 +3890,25 @@ class Core extends Base\Core
             array_push($whitelistedDomains, $domain);
 
             $merchant->setWhitelistedDomains($whitelistedDomains);
+
+            return true;
+        }
+        return false;
+    }
+
+    public function addDomainInWhitelistedDomainOrFail(Entity $merchant, string $domain = null)
+    {
+        if ($this->addDomainInWhitelistedDomain($merchant, $domain) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_DOMAIN_ALREADY_WHITELISTED);
+        }
+    }
+
+    public function removeDomainFromWhitelistedDomainOrFail(Entity $merchant, string $domain = null)
+    {
+        if ($this->removeDomainFromWhitelistedDomain($merchant, $domain) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_WHITELISTED_DOMAIN_NOT_FOUND);
         }
     }
 
@@ -3884,7 +3931,10 @@ class Core extends Base\Core
             $whitelistedDomains = array_values($whitelistedDomains);
 
             $merchant->setWhitelistedDomains($whitelistedDomains);
+
+            return true;
         }
+        return false;
     }
 
     /**

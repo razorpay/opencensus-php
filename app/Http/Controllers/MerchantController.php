@@ -2632,4 +2632,22 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function updateChargebackPOC()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_EMAIL)->updateChargebackPOC($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateWhitelistedDomain()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateWhitelistedDomain($input);
+
+        return ApiResponse::json($response);
+    }
 }

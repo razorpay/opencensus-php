@@ -9,6 +9,8 @@ use Config;
 use Request;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 
 class Service extends Base\Service
 {
@@ -127,5 +129,39 @@ class Service extends Base\Service
         $supportDetails = $this->core()->upsert($merchant, $input);
 
         return $supportDetails->toArrayPublic();
+    }
+
+    public function updateChargebackPOC($input): array
+    {
+        $status = 'success';
+
+        $errorMsg = '';
+
+        try
+        {
+            switch (strtolower($input['action']))
+            {
+                case 'insert':
+                    $this->core()->addEmail($input['merchant_id'], Merchant\Email\Type::CHARGEBACK, $input['email']);
+                    break;
+                case 'delete':
+                    $this->core()->removeEmail($input['merchant_id'], Merchant\Email\Type::CHARGEBACK, $input['email']);
+                    break;
+                default:
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ACTION);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $status = 'failure';
+
+            $errorMsg = sprintf('ERROR: %s', $e->getMessage());
+        }
+
+        $input['status'] = $status;
+
+        $input['error_message'] = $errorMsg;
+
+        return $input;
     }
 }

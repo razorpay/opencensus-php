@@ -3028,6 +3028,8 @@ class Route
         'create_exec_risk_action'                   => ['post',       'risk-actions/execute',                                    'RiskActionController@createAndExecuteRiskAction'              ],
         'risk_attributes_get'                       => ['get',        'risk-actions/risk_attributes',                            'RiskActionController@getRiskAttributes'                       ],
         'bulk_risk_action_status_comment'           => ['post',       'bulk-action/comment',                                     'BulkActionController@addBulkRiskActionCommentPostExecution'   ],
+        'chargeback_poc'                            => ['post',       'bulk_edit/chargeback_poc',                                'MerchantController@updateChargebackPOC'                       ],
+        'whitelisted_domain'                        => ['post',       'bulk_edit/whitelisted_domain',                            'MerchantController@updateWhitelistedDomain'                   ],
 
         'merchant_coupons'                        => ['post',         'merchant/coupons',                                        'MerchantController@fetchCouponCodes'                           ],
         'merchant_coupon_validity'                => ['post',         'merchant/coupon/apply',                                   'MerchantController@applyCoupon'                              ],
@@ -4077,6 +4079,9 @@ class Route
         'buy_pricing_terminal_cost',
 
         'token_status',
+
+        'chargeback_poc',
+        'whitelisted_domain',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -10950,6 +10955,8 @@ class Route
             'create_exec_risk_action',
             'bulk_risk_action_status_comment',
             'onboard_old_accounts_to_ledger',
+            'chargeback_poc',
+            'whitelisted_domain',
         ],
 
         'stork' => [

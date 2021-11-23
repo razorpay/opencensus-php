@@ -7821,4 +7821,42 @@ class Service extends Base\Service
 
         return $this->repo->merchant->fetchMerchantsByParams($input)->toArrayAdmin();
     }
+
+    public function updateWhitelistedDomain($input): array
+    {
+        $status = 'success';
+
+        $errorMsg = '';
+
+        $comment = '';
+
+        try
+        {
+            switch (strtolower($input['action']))
+            {
+                case 'insert':
+                    $comment = $this->core()->addWhitelistedDomainForUrl($input['merchant_id'], $input['url']);
+                    break;
+                case 'delete':
+                    $this->core()->removeWhitelistedDomainForUrl($input['merchant_id'], $input['url']);
+                    break;
+                default:
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ACTION);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $status = 'failure';
+
+            $errorMsg = sprintf('ERROR: %s', $e->getMessage());
+        }
+
+        $input['status'] = $status;
+
+        $input['comment'] = $comment;
+
+        $input['error_message'] = $errorMsg;
+
+        return $input;
+    }
 }

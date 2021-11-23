@@ -184,6 +184,10 @@ class Type
 
     const LEDGER_ONBOARD_OLD_ACCOUNT = 'ledger_onboard_old_account';
 
+    const CHARGEBACK_POC      =  'chargeback_poc';
+
+    const WHITELISTED_DOMAIN  =  'whitelisted_domain';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -243,6 +247,8 @@ class Type
         self::HITACHI_CBK_RUPAY,
         self::CREATE_EXEC_RISK_ACTION,
         self::LEDGER_ONBOARD_OLD_ACCOUNT,
+        self::CHARGEBACK_POC,
+        self::WHITELISTED_DOMAIN,
     ];
 
     /**
@@ -495,6 +501,8 @@ class Type
         self::HITACHI_CBK_VISA,
         self::CREATE_EXEC_RISK_ACTION,
         self::LEDGER_ONBOARD_OLD_ACCOUNT,
+        self::CHARGEBACK_POC,
+        self::WHITELISTED_DOMAIN,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -545,6 +553,8 @@ class Type
         self::BANK_TRANSFER_EDIT                 => Name::BANK_TRANSFER_INSERT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG => Name::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
         self::LEDGER_ONBOARD_OLD_ACCOUNT         => Name::LEDGER_SERVICE_ACTIONS,
+        self::CHARGEBACK_POC                     => Name::BULK_UPDATE_CHARGEBACK_POC,
+        self::WHITELISTED_DOMAIN          => Name::BULK_UPDATE_WHITELISTED_DOMAIN,
     ];
 
     public static $workflowApplicableBatchTypes = [

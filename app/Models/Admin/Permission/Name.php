@@ -711,6 +711,8 @@ class Name
     const MANAGE_CARE_SERVICE_CALLBACK                 = 'manager_care_service_callback';
     const CARE_SERVICE_DARK_PROXY                      = 'care_service_dark_proxy';
     const MANAGE_FRESHCHAT                             = 'manage_freshchat';
+    const BULK_UPDATE_CHARGEBACK_POC                   = 'bulk_update_chargeback_poc';
+    const BULK_UPDATE_WHITELISTED_DOMAIN                = 'bulk_update_whitelisted_domain';
 
     const TOKEN_REGISTRATION_ACTIONS = 'token_registration_actions';
 

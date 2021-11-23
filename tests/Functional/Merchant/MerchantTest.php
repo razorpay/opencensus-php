@@ -13389,4 +13389,97 @@ The same has been enabled for the account.
         $this->assertTrue(array_key_exists('country', $tokens['items'][0]['card']) === true);
     }
 
+    public function testUpdateChargebackPOC()
+    {
+        $this->ba->batchAppAuth();
+
+        $request = [
+            'url'   => '/bulk_edit/chargeback_poc',
+            'method' => 'POST',
+            'content' => [
+                'merchant_id'   => '10000000000000',
+                'email'         => 'test1@rzp.com',
+                'action'        => 'insert',
+            ],
+        ];
+
+        // add first chargeback POC email
+        $response = $this->sendRequest($request);
+        $responseData = json_decode(json_encode($response->getData()), true);
+
+        $this->assertEquals('success', $responseData['status']);
+
+        $request['content']['email'] = 'test2@rzp.com';
+
+        // add second chargeback POC email
+        $this->sendRequest($request);
+
+        $request['content']['email'] = 'test3@rzp.com';
+
+        // add third chargeback POC email
+        $this->sendRequest($request);
+
+        // try to add a duplicate chargeback POC email
+        $response = $this->sendRequest($request);
+
+        $responseData = json_decode(json_encode($response->getData()), true);
+        $this->assertEquals('failure', $responseData['status']);
+
+        $request['content']['email'] = 'test2@rzp.com';
+        $request['content']['action'] = 'delete';
+
+        // remove the second chargeback POC email
+        $response = $this->sendRequest($request);
+
+        $responseData = json_decode(json_encode($response->getData()), true);
+        $this->assertEquals('success', $responseData['status']);
+
+        $request['content']['email'] = 'test4@rzp.com';
+
+        // remove a mail that doesn't exist
+        $response = $this->sendRequest($request);
+
+        $responseData = json_decode(json_encode($response->getData()), true);
+        $this->assertEquals('failure', $responseData['status']);
+    }
+
+    public function testUpdateWhitelistedDomain()
+    {
+        $this->ba->batchAppAuth();
+
+        $request = [
+            'url'   => '/bulk_edit/whitelisted_domain',
+            'method' => 'POST',
+            'content' => [
+                'merchant_id'   => '10000000000000',
+                'url'           => 'https://admin-dashboard.razorpay.com',
+                'action'        => 'insert',
+            ],
+        ];
+
+        $response = $this->sendRequest($request);
+        $responseData = json_decode(json_encode($response->getData()), true);
+        $this->assertEquals('success', $responseData['status']);
+
+        $request['content']['url'] = 'https://dashboard.razorpay.com';
+        $response = $this->sendRequest($request);
+        $responseData = json_decode(json_encode($response->getData()), true);
+        $this->assertEquals('ERROR: Whitelisted domain to be added already exists for the merchant', $responseData['error_message']);
+
+        $request['content']['url'] = 'https://a.testtinngg.com';
+        $response = $this->sendRequest($request);
+        $responseData = json_decode(json_encode($response->getData()), true);
+        $this->assertEquals('Current merchant website status: Manual Review', $responseData['comment']);
+
+        $request['content']['action'] = 'delete';
+        $request['content']['url'] = 'https://cricbuzz.com';
+        $response = $this->sendRequest($request);
+        $responseData = json_decode(json_encode($response->getData()), true);
+        $this->assertEquals('ERROR: Whitelisted domain to be removed not found for the merchant', $responseData['error_message']);
+
+        $request['content']['url'] = 'https://dashboard.razorpay.com';
+        $response = $this->sendRequest($request);
+        $responseData = json_decode(json_encode($response->getData()), true);
+        $this->assertEquals('success', $responseData['status']);
+    }
 }

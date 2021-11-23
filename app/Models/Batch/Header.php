@@ -1204,6 +1204,15 @@ class Header
     const RISK_ACTION_WORKFLOW_ACTION_ID        = 'workflow_action_id';
     const RISK_ACTION_STATUS                    = 'workflow_action_status';
 
+    // Edit Chargeback POC
+    const CHARGEBACK_POC_EMAIL  = 'email';
+    const ACTION                = 'action';
+    const ERROR_MESSAGE         = 'error_message';
+
+    // Edit Whitelisted Domain
+    const URL                           = 'url';
+    const COMMENTS                      = 'comments';
+
     const ONBOARD_TO_LEDGER = 'onboard_to_ledger';
 
     // Following is a list of columns that are mandatory headers in the fund account (contact) batch file
@@ -4060,6 +4069,37 @@ class Header
                 self::RISK_ACTION_BULK_WORKFLOW_ACTION_ID,
                 self::RISK_ACTION_WORKFLOW_ACTION_ID,
                 self::RISK_ACTION_STATUS,
+            ],
+        ],
+
+        Type::CHARGEBACK_POC => [
+            self::INPUT => [
+                self::MERCHANT_ID,
+                self::ACTION,
+                self::CHARGEBACK_POC_EMAIL,
+            ],
+            self::OUTPUT => [
+                self::MERCHANT_ID,
+                self::ACTION,
+                self::CHARGEBACK_POC_EMAIL,
+                self::STATUS,
+                self::ERROR_MESSAGE,
+            ],
+        ],
+
+        Type::WHITELISTED_DOMAIN => [
+            self::INPUT => [
+                self::MERCHANT_ID,
+                self::ACTION,
+                self::URL,
+            ],
+            self::OUTPUT => [
+                self::MERCHANT_ID,
+                self::ACTION,
+                self::URL,
+                self::STATUS,
+                self::ERROR_MESSAGE,
+                self::COMMENT,
             ],
         ],
     ];
