@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use Illuminate\Support\Str;
 use View, Request, ApiResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -91,7 +92,10 @@ class PublicController extends Controller
 
         // decode base64 string
         $getParams = str_replace(' ', '+', $getParams);
-        $data = utf8_json_decode(base64_decode($getParams), true);
+        $data = utf8_json_decode(base64_decode($getParams), true) ?? [];
+
+        // Perform validation to prevent XSS
+        $this->validateCallbackUrlParams($data);
 
         // Relevant info for re-directing to merchant url.
 
@@ -107,15 +111,18 @@ class PublicController extends Controller
             // with already existing POST params that have been
             // defined by the merchant
             //
-            if (isset($data['request']['content']))
-            {
-                $data['request']['content'] = array_merge(
-                    $data['request']['content'], $postParams);
-            }
-            else
-            {
-                $data['request']['content'] = $postParams;
-            }
+            $data['request']['content'] = array_filter(
+                array_merge($data['request']['content'] ?? [], $postParams),
+                static function ($value, $key) {
+                    // Remove fields where keys (or) values contain injected JavaScript
+                    // with `javascript:` pseudo protocol to prevent XSS
+                    return ! (
+                        Str::contains($key, 'javascript:') ||
+                        Str::contains($value, 'javascript:')
+                    );
+                },
+                ARRAY_FILTER_USE_BOTH
+            );
 
             $data['retry'] = false;
         }
@@ -248,6 +255,21 @@ class PublicController extends Controller
         ];
 
         (new JitValidator)->rules($rules)->input($params)->validate();
+    }
+
+    /**
+     * @param array $params
+     */
+    protected function validateCallbackUrlParams(array $params): void
+    {
+        $rules = [
+            'request'        => 'sometimes|array',
+            'request.url'    => 'required_with:request|url',
+            'options'        => 'sometimes|json',
+            'back'           => 'sometimes|url',
+        ];
+
+        (new JitValidator())->setStrictFalse()->rules($rules)->input($params)->validate();
     }
 
     protected function getDbStatus($replica = null)
