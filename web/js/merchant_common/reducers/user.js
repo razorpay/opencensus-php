@@ -6,8 +6,8 @@ const UPDATE_USER_ASYNC = 'UPDATE_USER_ASYNC';
 export const updateContactMobile = (data) => ({
   type: UPDATE_USER_ASYNC,
   payload: merchantFetch({
-    url: `users/contact/update`,
-    method: 'patch',
+    url: `users/contact/sendotp`,
+    method: 'post',
     data,
     mode: 'live',
   }),

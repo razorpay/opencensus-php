@@ -1,12 +1,14 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import ModalHeader from 'common/ui/ModalHeader';
-import OtpInput from 'common/new-ui/Input/OtpInput';
+import { OtpInput } from 'common/new-ui/Input/OtpInput';
 import { AsyncBtn } from 'common/new-ui/Button';
 
 import { closeModal } from 'merchant_common/reducers/modals';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+
 class TwoFactorVerificationOTP extends React.Component {
   static defaultProps = {
     onWrongOtp: () => {},
@@ -20,7 +22,7 @@ class TwoFactorVerificationOTP extends React.Component {
   };
 
   onCloseClick = () => {
-    this.props.onClose && this.props.onClose();
+    this.props.onClose?.();
     this.props.closeModal();
   };
 
@@ -28,10 +30,11 @@ class TwoFactorVerificationOTP extends React.Component {
     return this.props
       .onConfirm({
         otp: this.otpValue,
+        receiver: this.props.contactMobile,
       })
-      .then(() => {
+      .then((data) => {
         this.onCloseClick();
-        this.props.onSuccess();
+        this.props.onSuccess(data);
       })
       .catch(({ errors }) => {
         this.props.onWrongOtp({ errors });

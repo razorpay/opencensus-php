@@ -1,10 +1,10 @@
 import { merge } from 'common/utils/immutable';
 import createReducer from './createReducer';
 
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
+
 const MARK_TWO_FACTOR_VERIFIED = 'MARK_TWO_FACTOR_VERIFIED';
 const UPDATE_TWO_FACTOR_VERIFIED = 'UPDATE_TWO_FACTOR_VERIFIED';
-
-import ajax, { merchantFetch } from 'merchant/utils/ajax';
 
 /* Actions */
 
@@ -20,11 +20,42 @@ export const triggerOtpOnEmail = () =>
     medium: 'email',
   });
 
+export const triggerOtpOnSMS = () =>
+  triggerOtpForVerification({
+    action: 'second_factor_auth',
+    medium: 'sms',
+  });
+
+export const triggerOtpOnBoth = () =>
+  triggerOtpForVerification({
+    action: 'second_factor_auth',
+    medium: 'sms_and_email',
+  });
+
 export const verifyOtpOnEmail = (data) =>
   merchantFetch({
     url: 'users/verify/mode/email',
+    action: 'user_auth',
     method: 'POST',
     data,
+  });
+
+export const verifyOtpOnSMS = (data) =>
+  merchantFetch({
+    url: 'users/verify/mode/sms',
+    action: 'second_factor_auth',
+    method: 'POST',
+    data,
+  });
+
+export const verifyOtpOnBoth = (data) =>
+  merchantFetch({
+    url: 'users/verify/mode/sms_and_email',
+    method: 'POST',
+    data: {
+      ...data,
+      action: 'second_factor_auth',
+    },
   });
 
 export const verifyContactMobile = (data) => ({
@@ -45,6 +76,18 @@ export const verifyTwoFactorOtp = (twoFactorOptions) => ({
     method: 'POST',
     data: {
       otp: twoFactorOptions.otp,
+    },
+  }),
+});
+
+export const verifyTwoFactorOtpMobile = (twoFactorOptions) => ({
+  type: MARK_TWO_FACTOR_VERIFIED,
+  payload: merchantFetch({
+    url: 'users/verify/update/new/mobile',
+    method: 'POST',
+    data: {
+      otp: twoFactorOptions.otp,
+      receiver: twoFactorOptions.receiver,
     },
   }),
 });

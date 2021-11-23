@@ -1,14 +1,21 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
+import { compose } from 'redux';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   triggerOtpOnEmail,
+  triggerOtpOnSMS,
+  triggerOtpOnBoth,
   verifyOtpOnEmail,
+  verifyOtpOnSMS,
+  verifyOtpOnBoth,
   verifyTwoFactorOtp,
+  verifyTwoFactorOtpMobile,
 } from 'merchant_common/reducers/twoFactor';
-import { updateContactMobile } from 'merchant_common/reducers/user';
+import { updateContactMobile, updateUser } from 'merchant_common/reducers/user';
 
 import TwoFactorVerificationOTP from 'common/ui/TwoFactorVerification/TwoFactorVerificationOTP';
 
@@ -16,21 +23,7 @@ import EditContactMobileForm from './EditContactMobileForm';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 
-@connect(
-  (state) => ({
-    contactMobile: (state.session.user.user || {}).contact_mobile,
-    userEmail: (state.session.user.user || {}).email,
-  }),
-  {
-    closeModal,
-    openModal,
-    showNotification,
-    verifyTwoFactorOtp,
-    updateContactMobile,
-  },
-)
-@RTracking(() => window.rzpQ.component('UpdateContactMobile'))
-export default class UpdateContactMobile extends React.Component {
+class UpdateContactMobile extends React.Component {
   state = {};
 
   constructor(props) {
@@ -39,23 +32,37 @@ export default class UpdateContactMobile extends React.Component {
   }
 
   componentWillMount() {
-    this.triggerEmailVerificationOtp();
+    this.triggerVerificationOtp();
   }
+
+  getOTPDestination = () => {
+    const { user } = this.props.user;
+    const hasOnlyEmail = Boolean(user.email && user.confirmed);
+    const hasOnlyMobile = Boolean(user.contact_mobile && user.contact_mobile_verified);
+    const hasBothEmailAndMobile = hasOnlyEmail && hasOnlyMobile;
+
+    return {
+      hasOnlyEmail,
+      hasOnlyMobile,
+      hasBothEmailAndMobile,
+    };
+  };
 
   @RTracking((props) => {
     return props.tracking.trackEvent(
       window.rzpQ.merchantActions().success('change_contact_mobile'),
     );
   })
-  onContactMobileUpdateComplete = () => {
+  onContactMobileUpdateComplete = (data) => {
     // Passing contact_mobile_verified hardcoded as true in callback
     // Ideally this should come from API, but BE is unable send that as response
     // in current state
+    this.props.updateUser({ contact_mobile: data.data.contact_mobile });
     return this.props.onComplete({ contact_mobile_verified: true });
   };
 
   onContactMobileVerificationOtpConfirm = (data) => {
-    return this.props.verifyTwoFactorOtp(data);
+    return this.props.verifyTwoFactorOtpMobile(data);
   };
 
   onMobileVerificationOtpResend = () => {
@@ -72,10 +79,11 @@ export default class UpdateContactMobile extends React.Component {
       onConfirm={this.onContactMobileVerificationOtpConfirm}
       onWrongOtp={this.onWrongOtp}
       onResend={this.onMobileVerificationOtpResend}
+      contactMobile={this.contactMobile}
       title="Verify your mobile number"
       renderMessage={() => (
         <>
-          <p class="m-b">An SMS with 6-digit OTP has been sent to {this.state.contactMobile}</p>
+          <p class="m-b">An SMS with 6-digit OTP has been sent to {this.contactMobile}</p>
           <p class="m-t m-b">OTP will expire in 5 mins.</p>
         </>
       )}
@@ -105,17 +113,26 @@ export default class UpdateContactMobile extends React.Component {
     });
   };
 
-  triggerEmailVerificationOtp = (resend = {}) => {
+  triggerVerificationOtp = (resend = {}) => {
     analyticsTrack({
       objectName: '2fa email otp',
       actionName: 'sent',
       screen: 'my account',
       properties: {
-        resend: resend,
+        resend,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-    return triggerOtpOnEmail()
+
+    const { hasBothEmailAndMobile, hasOnlyEmail } = this.getOTPDestination();
+
+    const triggerOTPFn = hasBothEmailAndMobile
+      ? triggerOtpOnBoth
+      : hasOnlyEmail
+      ? triggerOtpOnEmail
+      : triggerOtpOnSMS;
+
+    return triggerOTPFn()
       .then(({ data }) => {
         this.setState({
           token: data.token,
@@ -130,29 +147,50 @@ export default class UpdateContactMobile extends React.Component {
   };
 
   onEmailOtpConfirm = (data) => {
-    return verifyOtpOnEmail({
+    const { hasBothEmailAndMobile, hasOnlyEmail } = this.getOTPDestination();
+
+    const verifyOTPFn = hasBothEmailAndMobile
+      ? verifyOtpOnBoth
+      : hasOnlyEmail
+      ? verifyOtpOnEmail
+      : verifyOtpOnSMS;
+
+    return verifyOTPFn({
       ...data,
       token: this.state.token,
-    }).then(({ data }) => {
+    }).then(({ data: dataCurrent }) => {
       this.setState({
-        otpAuthToken: data.otp_auth_token,
+        otpAuthToken: dataCurrent.otp_auth_token,
       });
     });
   };
 
   render() {
+    const { user } = this.props.user;
+    const { hasBothEmailAndMobile, hasOnlyEmail, hasOnlyMobile } = this.getOTPDestination();
+
     return (
       <TwoFactorVerificationOTP
         onSuccess={this.onEmailOtpVerificationComplete}
         onConfirm={this.onEmailOtpConfirm}
         onClose={this.onCloseClick}
         onWrongOtp={this.onWrongOtp}
-        onResend={this.triggerEmailVerificationOtp}
+        onResend={this.triggerVerificationOtp}
         title="Change mobile number"
         renderMessage={() => (
           <p class="m-b">
-            Changing mobile number requires you to enter OTP sent over your registered email address{' '}
-            <strong>{this.props.userEmail}</strong>
+            Changing mobile number requires you to enter OTP sent over to your{' '}
+            {hasOnlyEmail && (
+              <>
+                registered email address <strong>{this.props.userEmail}</strong>
+              </>
+            )}
+            {hasBothEmailAndMobile && ' and '}
+            {hasOnlyMobile && (
+              <>
+                registered phone number <strong>{user.contact_mobile}</strong>
+              </>
+            )}
           </p>
         )}
       />
@@ -160,7 +198,7 @@ export default class UpdateContactMobile extends React.Component {
   }
 
   onCloseClick = () => {
-    this.props.onClose && this.props.onClose();
+    this.props.onClose?.();
     this.props.closeModal();
   };
 
@@ -170,3 +208,23 @@ export default class UpdateContactMobile extends React.Component {
     );
   };
 }
+
+const mapStateToProps = (state) => ({
+  contactMobile: (state.session.user.user || {}).contact_mobile,
+  userEmail: (state.session.user.user || {}).email,
+  user: state.session.user,
+});
+
+export default compose(
+  // eslint-disable-next-line babel/new-cap
+  RTracking(() => window.rzpQ.component('UpdateContactMobile')),
+  connect(mapStateToProps, {
+    closeModal,
+    openModal,
+    showNotification,
+    verifyTwoFactorOtp,
+    verifyTwoFactorOtpMobile,
+    updateContactMobile,
+    updateUser,
+  }),
+)(UpdateContactMobile);
