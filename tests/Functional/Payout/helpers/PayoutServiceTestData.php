@@ -133,6 +133,40 @@ return [
         ],
     ],
 
+    'testGetPayoutById' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/pout_Gg7sgBZgvYjlSB',
+            'server' => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+            ],
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "id"                =>   "pout_Gg7sgBZgvYjlSB",
+                "entity"            =>   "payout",
+                "fund_account_id"   =>   "fa_100000000000fa",
+                "amount"            =>   100,
+                "currency"          =>   "INR",
+                "merchant_id"       =>   "10000000000000",
+                "notes"             =>   "",
+                "fees"              =>   0,
+                "tax"               =>   0,
+                "status"            =>   "processing",
+                "purpose"           =>   "refund",
+                "utr"               =>   "",
+                "reference_id"      =>   null,
+                "narration"         =>   "test Merchant Fund Transfer",
+                "batch_id"          =>   "",
+                "initiated_at"      =>   1614325830,
+                "failure_reason"    =>   null,
+                "created_at"        =>   1614325826,
+                "fee_type"          =>   null
+            ],
+        ],
+    ],
 
     'testValidatePayout' => [
         'request'  => [

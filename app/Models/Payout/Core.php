@@ -129,6 +129,11 @@ class Core extends Base\Core
     protected $payoutRetryServiceClient;
 
     /**
+     * @var PayoutService\Get
+     */
+    protected $payoutGetApiServiceClient;
+
+    /**
      * @var PayoutService\QueuedInitiate
      */
     protected $payoutServiceQueuedInitiateClient;
@@ -151,6 +156,8 @@ class Core extends Base\Core
         $this->payoutScheduledServiceClient = $this->app[PayoutService\Schedule::PAYOUT_SERVICE_SCHEDULE];
 
         $this->payoutRetryServiceClient = $this->app[PayoutService\Retry::PAYOUT_SERVICE_RETRY];
+
+        $this->payoutGetApiServiceClient = $this->app[PayoutService\Get::PAYOUT_SERVICE_GET];
 
         $this->payoutServiceQueuedInitiateClient =
             $this->app[PayoutService\QueuedInitiate::PAYOUT_SERVICE_QUEUED_INITIATE];
@@ -1484,6 +1491,26 @@ class Core extends Base\Core
             });
 
         return $payout;
+    }
+
+    //get payout by id from payouts service
+    public function fetchFromPayoutsService(string $id, Merchant\Entity $merchant): array
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_GET_REQUEST_FROM_MICROSERVICE,
+            [
+                'id' => $id
+            ]);
+
+        $response = $this->payoutGetApiServiceClient->GetPayoutByIdViaMicroservice($id, $merchant->getId());
+
+        $this->trace->info(
+            TraceCode::PAYOUT_GET_RESPONSE_FROM_MICROSERVICE,
+            [
+                'response' => $response
+            ]);
+
+        return $response;
     }
 
     /**

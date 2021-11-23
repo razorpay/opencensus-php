@@ -15,6 +15,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Services\PayoutService\Get as PayoutServiceGet;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Services\PayoutService\Retry as PayoutServiceRetry;
 use RZP\Services\PayoutService\Create as PayoutServiceCreate;
@@ -98,6 +99,44 @@ class PayoutServiceTest extends TestCase
                                 );
 
         $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
+    }
+
+    public function mockPayoutServiceGet($fail = false, $request = [])
+    {
+        // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
+        // are going to be sent to payout service.
+        $payoutServiceGetMock = Mockery::mock('RZP\Services\PayoutService\Get',
+            [$this->app])->makePartial();
+
+        $defaultRequest['headers']['X-Passport-JWT-V1'] = "";
+
+        $request = array_merge($defaultRequest, $request);
+
+        $payoutServiceGetMock->shouldReceive('sendRequest')
+            ->withArgs(
+                function($arg) use ($request) {
+                    try
+                    {
+                        // Using this method only here as we want to check if the keys in the
+                        // request are coming properly or not.
+                        $this->assertArrayKeySelectiveEquals($request, $arg);
+
+                        return true;
+                    }
+                    catch (\Throwable $e)
+                    {
+                        return false;
+                    }
+                }
+            )
+            ->andReturn(
+            // We are returning this response only as we don't have a use case of supporting
+            // response based on $request, if needed, that can also be added here using
+            // andReturnUsing method instead of andReturn
+                $this->getResponseForPayoutByIdServiceMock($fail)
+            );
+
+        $this->app->instance(PayoutServiceGet::PAYOUT_SERVICE_GET, $payoutServiceGetMock);
     }
 
     public function mockPayoutServiceQueuedInitiate($fail = false, $request = [])
@@ -230,6 +269,55 @@ class PayoutServiceTest extends TestCase
     }
 
     public function createResponseForPayoutServiceMock($fail, $status = 'created')
+    {
+        $response = new Requests_Response();
+
+        if ($fail === true)
+        {
+            $response->body = json_encode(
+                [
+                    "error"   =>
+                        [
+                            "code"        => ErrorCode::BAD_REQUEST_ERROR,
+                            "description" => "Service Failure",
+                            "field"      => null
+                        ]
+                ]);
+            $response->status_code = 400;
+            $response->success = true;
+        }
+        else
+        {
+            $response->body = json_encode(
+                [
+                    "id"                =>   "pout_Gg7sgBZgvYjlSB",
+                    "entity"            =>   "payout",
+                    "fund_account_id"   =>   "fa_100000000000fa",
+                    "amount"            =>   100,
+                    "currency"          =>   "INR",
+                    "merchant_id"       =>   "10000000000000",
+                    "notes"             =>   "",
+                    "fees"              =>   0,
+                    "tax"               =>   0,
+                    "status"            =>   $status,
+                    "purpose"           =>   "refund",
+                    "utr"               =>   "",
+                    "reference_id"      =>   null,
+                    "narration"         =>   "test Merchant Fund Transfer",
+                    "batch_id"          =>   "",
+                    "initiated_at"      =>   1614325830,
+                    "failure_reason"    =>   null,
+                    "created_at"        =>   1614325826,
+                    "fee_type"          =>   null
+                ]);
+            $response->status_code = 200;
+            $response->success = true;
+        }
+
+        return $response;
+    }
+
+    public function getResponseForPayoutByIdServiceMock($fail, $status = 'processing')
     {
         $response = new Requests_Response();
 
@@ -422,6 +510,33 @@ class PayoutServiceTest extends TestCase
     public function testCreatePayoutServiceFailure()
     {
         $this->mockPayoutServiceCreate(true);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testGetPayoutById()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getLastEntity('payout', true, 'live');
+
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $org = $this->getLastEntity('org', true);
+
+        $this->fixtures->org->edit($org['id'], ['custom_code' => 'axis_cc']);
+
+        $org = $this->getLastEntity('org', true);
+
+        $orgId = trim($org['id'],"org_");
+
+        $this->fixtures->merchant->edit('10000000000000',['org_id' => $orgId]);
+
+        $this->mockPayoutServiceGet();
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 

@@ -68,6 +68,8 @@ class Entity extends Base\PublicEntity
     const INVITATIONS                   = 'invitations';
     const PRODUCT                       = 'product';
 
+    const ACTOR_INFO                    = 'actor_info';
+
     const APP                           = 'app';
 
     const OAUTH_PROVIDER                = 'oauth_provider';

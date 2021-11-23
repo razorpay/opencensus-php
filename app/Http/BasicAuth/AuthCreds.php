@@ -338,5 +338,4 @@ abstract class AuthCreds
     {
         return $this->orgCustomCode === self::AXIS_CC_ORG_CUSTOM_CODE;
     }
-
 }

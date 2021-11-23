@@ -629,6 +629,21 @@ class Service extends Base\Service
 
     public function fetch(string $id, array $input): array
     {
+        if ($this->app['basicauth']->authCreds->checkIfOrgAxisCC() === true)
+        {
+            $this->trace->info(
+                TraceCode::PAYOUT_AXIS_CC_GET_REQUEST,
+                [
+                    'input' => $input,
+                    'id' => $id,
+
+                ]);
+
+            $payout = $this->core->fetchFromPayoutsService($id, $this->merchant);
+
+            return $payout;
+        }
+
         $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
         return $payout->toArrayPublic();

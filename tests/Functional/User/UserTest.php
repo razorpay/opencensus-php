@@ -466,6 +466,21 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetUserInternalFromPayoutsServiceApp()
+    {
+        $user = $this->fixtures->create('user');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users_internal/' . $user['id'];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->ba->appAuthTest($this->config['applications.payouts_service.secret']);
+
+        $this->startTest();
+    }
+
     public function testGetAfterStoringPreSignUpSourceInfo()
     {
         $user = $this->fixtures->create('user');

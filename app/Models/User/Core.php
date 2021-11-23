@@ -33,6 +33,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Http\UserRolePermissionsMap;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountService;
+use RZP\Models\Workflow\Service\Adapter;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Models\Merchant\Balance\Type as ProductType;
@@ -2664,6 +2665,13 @@ class Core extends Base\Core
         }
 
         $response[Entity::MERCHANTS]   = $merchantsUnique;
+
+        if ($this->app['basicauth']->isPayoutService() === true)
+        {
+            $actorInfo = Adapter\Base::getActorInfo();
+
+            $response[Entity::ACTOR_INFO] = $actorInfo;
+        }
 
         return $response;
     }

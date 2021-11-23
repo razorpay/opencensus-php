@@ -110,6 +110,7 @@ class Base
         }
     }
 
+
     public function getRequest(array $input, string $action, string $method, array $headers = [])
     {
         $request = [
@@ -119,7 +120,7 @@ class Base
                 RequestHeader::CONTENT_TYPE  => 'application/json',
                 self::X_REQUEST_ID           => $this->app['request']->getId(),
             ],
-            'content' => json_encode($input),
+            'content' => empty($input) ? $input: json_encode($input),
             'options' => [
                 'auth'            => $this->getAuthDetails(),
                 'timeout'         => self::TIMEOUT,

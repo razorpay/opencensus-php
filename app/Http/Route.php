@@ -2002,7 +2002,7 @@ class Route
         'oauth_application_delete'                 => ['delete',   'oauth/applications/{id}',                        'OAuthApplicationController@delete'                                 ],
         'oauth_merchant_notify'                    => ['post',     'oauth/notify/{type}',                            'MerchantController@sendOAuthNotification'                          ],
         'oauth_application_update'                 => ['post',     'oauth/applications/{id}',                        'OAuthApplicationController@update'                                 ],
-        'oauth_application_update_admin'           => ['post',     'admin-oauth/applications/{id}',                  'OAuthApplicationController@updateAdmin'                                 ],
+        'oauth_application_update_admin'           => ['post',     'admin-oauth/applications/{id}',                  'OAuthApplicationController@updateAdmin'                            ],
         'oauth_sync_merchant_map'                  => ['post',     'oauth/update_merchant_map',                      'MerchantController@updateMerchantAccessMapFromTokens'              ],
 
         'merchant_analytics'                       => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
@@ -4029,6 +4029,7 @@ class Route
         'create_workflow_for_payout',
         'payout_purpose_get_internal',
         'create_payment_payout_service_axis_cc',
+
 
         // payment analytics cron creates a new partition and drops oldest partition, runs daily
         'payment_analytics_partition_cron',
@@ -11142,9 +11143,9 @@ class Route
             'internal_merchant_fetch',
             'payout_purpose_get_internal',
             'create_workflow_for_payout',
-
             'payment_fetch_by_id_internal',
             'create_payment_payout_service_axis_cc',
+            'user_fetch_internal',
         ],
 
         'ledger' => [
