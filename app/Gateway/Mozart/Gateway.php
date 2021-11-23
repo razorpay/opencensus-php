@@ -1537,7 +1537,15 @@ class Gateway extends Base\Gateway
 
         $this->checkTpvAndModifyOrder($content, $input);
 
-        $url = $this->getUrlForMozartRequest($input, 'payments', $mode);
+        $prefix = 'payments';
+
+        if ((isset($input['gateway']['cps_route']) === true) and 
+            ($input['gateway']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE))
+        {
+            $prefix = 'upiPayments';
+        }
+
+        $url = $this->getUrlForMozartRequest($input, $prefix, $mode);
 
         // TODO : Once these wallets migrated to Nbplus service, remove this hack
 
@@ -3219,8 +3227,9 @@ class Gateway extends Base\Gateway
         if ($variant === 'upi_airtel')
         {
             $data = [
-                'payload' => $input,
-                'gateway' => Payment\Gateway::UPI_AIRTEL,
+                'payload'       => $input,
+                'gateway'       => Payment\Gateway::UPI_AIRTEL,
+                'cps_route'     => Payment\Entity::UPI_PAYMENT_SERVICE,
             ];
             return $this->upiPreProcess($data);
         }

@@ -108,6 +108,8 @@ class PreProcess extends Base\Mock\Server
 
     public function upi_airtel($entities)
     {
+        assertTrue($entities['gateway']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE);
+
         $data = json_decode($entities['gateway']['payload'], true);
         $response = MozartUpiResponse::getDefaultInstanceForV2();
         
