@@ -374,6 +374,9 @@ final class RazorxTreatment
 
     const KEYLESS_HEADER_INVOICE = 'keyless_header_invoice';
 
+    // Experiment for sending auth header for Stores
+    const KEYLESS_HEADER_STORES = 'keyless_header_stores';
+    
     // Experiment for sending auth header for Payment Pages
     const KEYLESS_HEADER_PP = 'keyless_header_pp';
 

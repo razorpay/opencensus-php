@@ -298,6 +298,7 @@ class Core extends Base\Core
             'store'            => $this->serializeStoreForHosted($store),
             'base_url'         => $this->config['app']['url'],
             'checkout_id'      => 'pl_'.$store->getId(),
+            'keyless_header'   => $this->getKeylessAuth($store->merchant),
         ];
     }
 
@@ -308,6 +309,26 @@ class Core extends Base\Core
         $this->addMetaTagsForProductDetailPage($store, $product, $data);
 
         return $data;
+    }
+
+    protected function getKeylessAuth(Merchant\Entity $merchant)
+    {
+        $keylessHeader = null;
+        $merchantId = $merchant->getId();
+        $mode = $this->mode ?? Mode::LIVE;
+        $isKeylessHeaderEnabled = $this->app->razorx->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::KEYLESS_HEADER_STORES,
+            $mode
+        );
+
+        if ($isKeylessHeaderEnabled === "on") {
+            $keylessHeader = $this->app['keyless_header']->get(
+                $merchantId,
+                $mode);
+        }
+
+        return $keylessHeader;
     }
 
     protected function addMetaTagsForProductDetailPage(Entity $store, PaymentPageItem\Entity $product, array & $data)
