@@ -616,6 +616,34 @@ return [
             ]
         ]
     ],
+    'testGetAutoProcessedInvoice' => [
+        'request'  => [
+            'method' => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id' => '20000000000006',
+            ],
+            'url'    => '/vendor-payments/auto-processed-invoice/file_123456',
+            'content' => [],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'created_at' => 1633512478,
+                'failure_reason' => '',
+                'file_format' => 'application/pdf',
+                'file_name' => 'abcde.pdf',
+                'file_size' => 42210,
+                'invoice_file_id' => 'file_123456',
+                'merchant_id' => '10000000000000',
+                'ocr_reference_id' => 'ocr_I608S03WojmkBc',
+                'status' => 'processed',
+                'updated_at' => 1633512478,
+                'user_id' => '20000000000006',
+                'vendor_payment_id' => 'vdpm_I608cieF0R9bYr'
+            ]
+        ]
+    ],
     'testSendVendorInvite' => [
         'request'  => [
             'method' => 'POST',

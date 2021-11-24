@@ -1456,6 +1456,7 @@ class Route
         'vendor_payment_get_invoice_zip_file'      => ['get',      'vendor-payments/invoices/ufh/{id}',              'VendorPaymentController@getInvoicesFromUfh'                        ],
         'vendor_payment_get_quick_filter_amounts'  => ['get',      'vendor-payments/_meta/quick-filter-amounts',     'VendorPaymentController@getQuickFilterAmounts'                     ],
         'vendor_payment_email_integration_webhook' => ['post',     'vendor-payments/mailgun-webhook',                'VendorPaymentController@processIncomingMail'                       ],
+        'vendor_payment_get_auto_processed_invoice'=> ['get',      'vendor-payments/auto-processed-invoice/{id}',    'VendorPaymentController@getAutoProcessedInvoice'                            ],
         'vendor_payment_send_vendor_invite_ei'     => ['post',     'vendor-payments/invite-vendor',                  'VendorPaymentController@inviteVendor'                              ],
 
         // Accounting Payouts (inside vendor payments)
@@ -4657,6 +4658,7 @@ class Route
         'vendor_payment_update_invoice_file_id',
         'vendor_payment_get_invoice_zip_file',
         'vendor_payment_get_quick_filter_amounts',
+        'vendor_payment_get_auto_processed_invoice',
 
         // Accounting Payouts
         'accounting_payouts_integration_status',
@@ -6990,6 +6992,7 @@ class Route
         'vendor_payment_invoice_upload'                => Permission::CREATE_VENDOR_PAYMENTS,
         'vendor_payment_get_ocr_data'                  => Permission::CREATE_VENDOR_PAYMENTS,
         'vendor_payment_invoice_get_signed_url'        => Permission::GET_SIGNED_URL,
+        'vendor_payment_get_auto_processed_invoice'    => Permission::CREATE_VENDOR_PAYMENTS,
         'vendor_payment_contact_get'                   => Permission::VIEW_CONTACT,
         'vendor_payment_contact_create'                => Permission::CREATE_CONTACT,
         'vendor_payment_contact_update'                => Permission::UPDATE_CONTACT,
@@ -8452,6 +8455,7 @@ class Route
             'vendor_payment_summary',
             'vendor_payment_update_invoice_file_id',
             'vendor_payment_get_quick_filter_amounts',
+            'vendor_payment_get_auto_processed_invoice',
             'virtual_account_add_receivers',
             'virtual_account_add_allowed_payer',
             'virtual_account_delete_allowed_payer',
@@ -11717,6 +11721,7 @@ class Route
         'vendor_payment_update_invoice_file_id',
         'vendor_payment_get_invoice_zip_file',
         'vendor_payment_get_quick_filter_amounts',
+        'vendor_payment_get_auto_processed_invoice',
 
         'payout_links_added_fund_accounts',
         'payout_links_added_fund_accounts_cors',

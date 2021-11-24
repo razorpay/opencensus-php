@@ -927,6 +927,7 @@ class UserRolesScope
             'vendor_payment_get_tds_categories'                    => [Role::OWNER, Role::ADMIN],
             'vendor_payment_invoice_get_signed_url'                => [Role::OWNER, Role::ADMIN],
             'vendor_payment_invoice_upload'                        => [Role::OWNER, Role::ADMIN],
+            'vendor_payment_get_auto_processed_invoice'            => [Role::OWNER, Role::ADMIN],
             'vendor_payment_list'                                  => [Role::OWNER, Role::ADMIN],
             'vendor_payment_mark_as_paid'                          => [Role::OWNER, Role::ADMIN],
             'vendor_payment_reporting_info'                        => [Role::OWNER, Role::ADMIN],

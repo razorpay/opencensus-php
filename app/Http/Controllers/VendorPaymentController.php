@@ -130,7 +130,7 @@ class VendorPaymentController extends Controller
 
     public function uploadInvoice()
     {
-        return $this->service->uploadInvoice($this->ba->getMerchant(),$this->input);
+        return $this->service->uploadInvoice($this->ba->getMerchant(), $this->input, $this->ba->getUser());
     }
 
     public function executeVendorPayment(string $vendorPaymentId)
@@ -263,6 +263,11 @@ class VendorPaymentController extends Controller
         return $this->service->createMerchantEmailMapping($this->ba->getMerchant());
     }
 
+    public function getAutoProcessedInvoice(string $fileId)
+    {
+        return $this->service->getAutoProcessedInvoice($this->ba->getMerchant(), $fileId);
+    }
+    
     public function inviteVendor()
     {
         return $this->service->inviteVendor($this->ba->getMerchant(), $this->input);

@@ -485,6 +485,46 @@ class VendorPaymentTest extends TestCase
 
     }
 
+    public function testGetAutoProcessedInvoice()
+    {
+        $user = $this->fixtures->create('user', ['id' => '20000000000006']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => BankingRole::OWNER,
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('getAutoProcessedInvoice')->andReturn(
+            [
+                'created_at' => 1633512478,
+                'failure_reason' => '',
+                'file_format' => 'application/pdf',
+                'file_name' => 'abcde.pdf',
+                'file_size' => 42210,
+                'invoice_file_id' => 'file_123456',
+                'merchant_id' => '10000000000000',
+                'ocr_reference_id' => 'ocr_I608S03WojmkBc',
+                'status' => 'processed',
+                'updated_at' => 1633512478,
+                'user_id' => '20000000000006',
+                'vendor_payment_id' => 'vdpm_I608cieF0R9bYr'
+            ]
+        );
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('getAutoProcessedInvoice');
+    }
+    
     public function testSendVendorInvite()
     {
         $user = $this->fixtures->create('user', ['id' => '20000000000006']);

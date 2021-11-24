@@ -121,7 +121,9 @@ class Tracing
             'vendor_payment_get_invoice_zip_file',
             'vendor_payment_email_integration_webhook',
             'vendor_payment_get_email_mapping',
+            'vendor_payment_send_vendor_invite_ei',
             'merchant_fetch_internal_users',
+            'vendor_payment_get_auto_processed_invoice',
 
             // accounting-payouts API routes
             'accounting_payouts_integration_status',

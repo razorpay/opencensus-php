@@ -57,6 +57,7 @@ class Service
     const GET_MERCHANT_EMAIL_ADDRESS    = 'GetMerchantEmailAddress';
     const FUND_ACCOUNT_LINKING          = 'FundAccountCreated';
     const CREATE_MERCHANT_EMAIL_MAPPING = 'CreateMerchantEmailMapping';
+    const GET_AUTO_PROCESSED_INVOICE    = 'GetAutoProcessedInvoiceDetails';
     const TRIGGER_VENDOR_INVITE         = 'TriggerEiVendorInvitationEmail';
 
     const BASE_PATH = 'twirp/vendorpayments.Vendorpayments';
@@ -364,7 +365,7 @@ class Service
         return $this->makeRequest($merchant, $url, $input);
     }
 
-    public function uploadInvoice(MerchantEntity $merchant, array $input)
+    public function uploadInvoice(MerchantEntity $merchant, array $input, Entity $user = null)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UPLOAD_INVOICE);
         // The MS we are calling, expects JSON content,
@@ -374,6 +375,11 @@ class Service
         $input['file'] = base64_encode(file_get_contents($_FILES['file']['tmp_name']));
 
         $input['file_name'] = $_FILES['file']['name'];
+
+        if(!empty($user))
+        {
+            $input['user_id'] = $user->getPublicId();
+        }
 
         return $this->makeRequest($merchant, $url, $input);
 
@@ -587,6 +593,18 @@ class Service
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::TRIGGER_VENDOR_INVITE);
 
         return $this->makeRequest($merchant, $url, $data);
+    }
+
+    public function getAutoProcessedInvoice(MerchantEntity $merchant, string $fileId)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_AUTO_PROCESSED_INVOICE);
+
+        $data = [
+            'merchant_id'     => $merchant->getMerchantId(),
+            'invoice_file_id' => $fileId
+        ];
+
+        return $this->makeRequest($merchant, $url, $data, [], 'POST');
     }
 
     protected function makeRequest(MerchantEntity $merchant = null,
