@@ -1390,6 +1390,7 @@ class Route
         'payout_purpose_get_internal'              => ['get',      'payouts/purposes/{merchant_id}',                 'PayoutController@getPurposesInternal'                                      ],
         'payout_purpose_validate_internal'         => ['post',     'payouts/purpose/validate',                       'PayoutController@validatePurpose'                                  ],
         'payout_purpose_post'                      => ['post',     'payouts/purposes',                               'PayoutController@postPurpose'                                      ],
+        'bulk_payout_purpose_post'                 => ['post',     'payouts/purposes/{merchant_id}',                 'PayoutController@postBulkPurpose'                                  ],
         'payout_fetch_reversals'                   => ['get',      'payouts/{id}/reversals',                         'PayoutController@getPayoutReversal'                                ],
         'payouts_process_queued_new'               => ['post',     'payouts/queued/process/new',                     'PayoutController@processInitiateForQueuedPayouts'                  ],
         // TODO : Remove this route. Has been kept here for backward compatibility
@@ -4040,6 +4041,7 @@ class Route
         'create_ledger_payout_service',
         'create_workflow_for_payout',
         'payout_purpose_get_internal',
+        'bulk_payout_purpose_post',
         'create_payment_payout_service_axis_cc',
 
 
@@ -11174,6 +11176,7 @@ class Route
             'create_ledger_payout_service',
             'internal_merchant_fetch',
             'payout_purpose_get_internal',
+            'bulk_payout_purpose_post',
             'create_workflow_for_payout',
             'payment_fetch_by_id_internal',
             'create_payment_payout_service_axis_cc',

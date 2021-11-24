@@ -6464,12 +6464,24 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 1,
+                'count'     => 4,
                 'items'     => [
                     [
                         'purpose'       => 'Give Mehul A Bonus',
                         'purpose_type'  => 'settlement',
                     ],
+                    [
+                        'purpose'   => 'Bulk Custom Purpose',
+                        'purpose_type'  => 'settlement'
+                    ],
+                    [
+                        'purpose'   => 'Is this a purpose',
+                        'purpose_type'  => 'settlement'
+                    ],
+                    [
+                        'purpose'   => 'Zomato',
+                        'purpose_type'  => 'settlement'
+                    ]
                 ],
             ],
         ],
@@ -6492,6 +6504,79 @@ return [
                     [
                         'purpose'       => 'Give Mehul A Bonus',
                         'purpose_type'  => 'settlement',
+                    ],
+                    [
+                        'purpose'       => 'refund',
+                        'purpose_type'  => 'refund',
+                    ],
+                    [
+                        'purpose'       => 'cashback',
+                        'purpose_type'  => 'refund',
+                    ],
+                    [
+                        'purpose'       => 'payout',
+                        'purpose_type'  => 'settlement',
+                    ],
+                    [
+                        'purpose'       => 'salary',
+                        'purpose_type'  => 'settlement',
+                    ],
+                    [
+                        'purpose'       => 'utility bill',
+                        'purpose_type'  => 'settlement',
+                    ],
+                    [
+                        'purpose'       => 'vendor bill',
+                        'purpose_type'  => 'settlement',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testAddBulkCustomPayoutPurpose' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts/purposes/{merchant_id}',
+            'content' => [
+                [
+                    'purpose'   => 'Give Mehul A Bonus',
+                    'purpose_type'  => 'settlement'
+                ],
+                [
+                    'purpose'   => 'Bulk Custom Purpose',
+                    'purpose_type'  => 'settlement'
+                ],
+                [
+                    'purpose'   => 'Is this a purpose',
+                    'purpose_type'  => 'settlement'
+                ],
+                [
+                    'purpose'   => ' Zomato ',
+                    'purpose_type'  => 'settlement'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 10,
+                'items'     =>  [
+                    [
+                        'purpose'   => 'Give Mehul A Bonus',
+                        'purpose_type'  => 'settlement'
+                    ],
+                    [
+                        'purpose'   => 'Bulk Custom Purpose',
+                        'purpose_type'  => 'settlement'
+                    ],
+                    [
+                        'purpose'   => 'Is this a purpose',
+                        'purpose_type'  => 'settlement'
+                    ],
+                    [
+                        'purpose'   => 'Zomato',
+                        'purpose_type'  => 'settlement'
                     ],
                     [
                         'purpose'       => 'refund',
@@ -6589,6 +6674,68 @@ return [
         ],
     ],
 
+    'testAddBulkCustomPayoutPurposeThatAlreadyExists' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts/purposes/{merchant_id}',
+            'content' => [
+                [
+                    'purpose'       => 'Give Mehul A Bonus',
+                    'purpose_type'  => 'settlement'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 10,
+                'items'     =>  [
+                    [
+                        'purpose'   => 'Give Mehul A Bonus',
+                        'purpose_type'  => 'settlement'
+                    ],
+                    [
+                        'purpose'   => 'Bulk Custom Purpose',
+                        'purpose_type'  => 'settlement'
+                    ],
+                    [
+                        'purpose'   => 'Is this a purpose',
+                        'purpose_type'  => 'settlement'
+                    ],
+                    [
+                        'purpose'   => 'Zomato',
+                        'purpose_type'  => 'settlement'
+                    ],
+                    [
+                        'purpose'       => 'refund',
+                        'purpose_type'  => 'refund',
+                    ],
+                    [
+                        'purpose'       => 'cashback',
+                        'purpose_type'  => 'refund',
+                    ],
+                    [
+                        'purpose'       => 'payout',
+                        'purpose_type'  => 'settlement',
+                    ],
+                    [
+                        'purpose'       => 'salary',
+                        'purpose_type'  => 'settlement',
+                    ],
+                    [
+                        'purpose'       => 'utility bill',
+                        'purpose_type'  => 'settlement',
+                    ],
+                    [
+                        'purpose'       => 'vendor bill',
+                        'purpose_type'  => 'settlement',
+                    ],
+                ],
+            ],
+
+        ],
+    ],
+
     'testAdd201CustomPayoutPurposes' => [
         'request' => [
             'method'  => 'POST',
@@ -6612,6 +6759,33 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testAdd301BulkCustomPayoutPurposes' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts/purposes/{merchant_id}',
+            'content' => [
+                [
+                    'purpose'       => 'Give Mehul A Bonus',
+                    'purpose_type'  => 'settlement'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You have reached the maximum limit (300) of custom payout purposes that can be created.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
 
     'testAddCustomPurposeRZPFees' => [
         'request'  => [

@@ -304,6 +304,15 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postBulkPurpose(string $merchantId)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->postBulkPurpose($merchantId, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getPayoutReversal(string $payoutId)
     {
         $data = $this->service()->fetchReversalOfPayout($payoutId);

@@ -283,6 +283,59 @@ class Purpose
              ->save();
     }
 
+    public function addNewBulkCustom(array $input, Merchant\Entity $merchant)
+    {
+        $allCustomKeys = array_keys($this->getSettingsAccessor($merchant)->all()->toArray());
+
+        $allCustomKeysTrimmed = $this->trimSpaces($allCustomKeys);
+
+        $new_purpose = array();
+        $purpose_type = array();
+        foreach($input as $item){
+
+            $trimmedPurpose = $this->trimSpaces($item['purpose']);
+
+            if (self::isInInternal($trimmedPurpose) === true){
+                continue;
+            }
+            if ((self::isInDefaults(strtolower($trimmedPurpose))) or
+                (array_search_ci($trimmedPurpose, $allCustomKeysTrimmed) !== false)) {
+                continue;
+            }
+
+            $data = [
+                "purpose" => $trimmedPurpose,
+                "purpose_type" => $item['purpose_type']
+            ];
+
+            (new Validator)->validateInput('create_purpose', $data);
+
+            array_push($new_purpose, $trimmedPurpose);
+            array_push($purpose_type,$item['purpose_type']);
+        }
+
+        $maxPurposes = Validator::MAX_PURPOSES_ALLOWED + Validator::MAX_PURPOSES_ALLOWED_TO_XPAYROLL;
+
+        if (count($new_purpose) + count($allCustomKeysTrimmed) > $maxPurposes)
+        {
+            throw new BadRequestValidationFailureException(
+                "You have reached the maximum limit ($maxPurposes) of custom payout purposes that can be created.",
+                Entity::PURPOSE_TYPE);
+        }
+
+        $data = array();
+        $i=0;
+
+        foreach($new_purpose as $item){
+            $data[$item] = $this->trimSpaces($purpose_type[$i]);
+            $i++;
+        }
+
+        $this->getSettingsAccessor($merchant)
+            ->upsert($data)
+            ->save();
+    }
+
     protected function getSettingsAccessor(Merchant\Entity $merchant): Settings\Accessor
     {
         return Settings\Accessor::for($merchant, Settings\Module::PAYOUT_PURPOSE, Mode::LIVE);

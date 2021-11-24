@@ -39,6 +39,8 @@ class Validator extends Base\Validator
     // TODO: Finalize on some final number that we wish to support in the long run
     const MAX_PURPOSES_ALLOWED = 200;
 
+    const MAX_PURPOSES_ALLOWED_TO_XPAYROLL = 100;
+
     /**
      * Rate limit on items sending for bulk payout create.
      */
@@ -1145,5 +1147,14 @@ class Validator extends Base\Validator
     {
         $featureList = (new FeatureRepo())->findMerchantWithFeatures($merchantId, [Features::RBL_CA_UPI]);
         return (count($featureList) !== 0);
+    }
+
+    public function validatebulkPurposeCreation(int $count)
+    {
+        if($count >= 100 ){
+            throw new Exception\BadRequestValidationFailureException(
+                "The limit for max purpose creation in 1 call is 100, please reduce the number from ".$count."."
+            );
+        }
     }
 }

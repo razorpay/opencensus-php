@@ -760,6 +760,21 @@ class Service extends Base\Service
         return $purposeObj->getAll($this->merchant);
     }
 
+    public function postBulkPurpose(string $merchantId, array $input): array
+    {
+        $count = count($input);
+
+        (new Validator) -> validatebulkPurposeCreation($count);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $purposeObj = new Purpose;
+
+        $purposeObj->addNewBulkCustom($input, $merchant);
+
+        return $purposeObj->getAll($merchant);
+    }
+
     public function fetchReversalOfPayout(string $id): array
     {
         $merchantId = $this->merchant->getId();

@@ -5266,9 +5266,21 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testAddBulkCustomPayoutPurpose()
+    {
+        $this->ba->appAuth();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+        $request['url'] = '/payouts/purposes/10000000000000';
+
+        $this->startTest();
+    }
+
     public function testGetAllCustomPayoutPurposesInternalRoute()
     {
         $this->testAddCustomPayoutPurpose();
+
+        $this->testAddBulkCustomPayoutPurpose();
 
         $this->ba->appAuth();
 
@@ -5323,6 +5335,18 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testAddBulkCustomPayoutPurposeThatAlreadyExists()
+    {
+        $this->testAddBulkCustomPayoutPurpose();
+
+        $this->ba->appAuth();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+        $request['url'] = '/payouts/purposes/10000000000000';
+
+        $this->startTest();
+    }
+
     public function testAdd201CustomPayoutPurposes()
     {
         for ($count = 0; $count < Payout\Validator::MAX_PURPOSES_ALLOWED; $count++)
@@ -5345,6 +5369,40 @@ class PayoutTest extends OAuthTestCase
         ];
 
         $this->ba->privateAuth();
+
+        $this->sendRequest($request);
+    }
+
+    public function testAdd301BulkCustomPayoutPurposes()
+    {
+        for ($count = 0; $count < Payout\Validator::MAX_PURPOSES_ALLOWED + Payout\Validator::MAX_PURPOSES_ALLOWED_TO_XPAYROLL; $count++)
+        {
+            $this->addCustomPayoutBulkPurpose('Give Bonus To Mehul '. $count, 'settlement');
+        }
+
+        $this->ba->appAuth();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+        $request['url'] = '/payouts/purposes/10000000000000';
+
+        $this->startTest();
+    }
+
+    protected function addCustomPayoutBulkPurpose($purpose, $purposeType)
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts/purposes/{merchant_id}',
+            'content' => [
+                [
+                    'purpose'        => $purpose,
+                    'purpose_type'   => $purposeType,
+                ]
+            ]
+        ];
+        $request['url'] = '/payouts/purposes/10000000000000';
+
+        $this->ba->appAuth();
 
         $this->sendRequest($request);
     }
