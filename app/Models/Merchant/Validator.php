@@ -101,7 +101,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::ID                          => 'sometimes|alpha_num|size:14|unique:merchants',
         Entity::NAME                        => 'sometimes|string|max:200',
-        Entity::EMAIL                       => 'required|email',
+        Entity::EMAIL                       => 'sometimes|email',
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
@@ -110,6 +110,7 @@ class Validator extends Base\Validator
         Entity::EXTERNAL_ID                 => 'sometimes|string|max:255',
         Entity::SIGNUP_SOURCE               => 'sometimes|string|max:32',
         Entity::CODE                        => 'custom',
+        Entity::SIGNUP_VIA_EMAIL            => 'sometimes|in:0,1',
     ];
 
     protected static $editRules = [

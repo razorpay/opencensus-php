@@ -104,7 +104,7 @@ class Core extends Base\Core
 
     const MAX_ES_MERCHANT_SYNC_LIMIT = 1000;
 
-    public function create($input)
+    public function create($input, $merchantDetailInputData = [])
     {
         $merchant = (new Merchant\Entity)->build($input);
 
@@ -116,10 +116,10 @@ class Core extends Base\Core
 
         $merchant->setAuditAction(Action::CREATE_MERCHANT);
 
-        $email['email'] = $input['email'];
-
-        $merchant->getValidator()->validateInput('unique_email', $email);
-
+        if (isset($input['email']) === true)
+        {
+            $merchant->getValidator()->validateInput('unique_email', array_only($input, 'email'));
+        }
         $merchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
 
         $org = $this->repo->org->findOrFailPublic($input[Entity::ORG_ID]);
@@ -145,7 +145,12 @@ class Core extends Base\Core
 
         $this->savePartnerIntentInSettings($input, $merchant);
 
-        $this->addMerchantSupportingEntities($merchant);
+        $this->addMerchantSupportingEntities(
+            $merchant,
+            null,
+            false,
+            $merchantDetailInputData
+        );
 
         $this->syncHeimdallRelatedEntities($merchant, $input, true);
 

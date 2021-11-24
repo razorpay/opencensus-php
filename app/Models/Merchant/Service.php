@@ -193,9 +193,10 @@ class Service extends Base\Service
      * Creates a merchant and saves in database
      *
      * @param  array $input
+     * @param  array $merchantDetailInputData
      * @return array
      */
-    public function create(array $input): array
+    public function create(array $input, array $merchantDetailInputData = []): array
     {
         if (empty($input[Entity::ADMINS]) === false)
         {
@@ -208,10 +209,11 @@ class Service extends Base\Service
             // assume the organization is razorpay
             $input[Entity::ORG_ID] = Org\Entity::RAZORPAY_ORG_ID;
 
+            $email = $input[Entity::EMAIL] ?? null;
             $this->trace->info(
                 TraceCode::MERCHANT_ORG_NOT_GIVEN,
                 [
-                    'merchant_email' => $input[Entity::EMAIL],
+                    'merchant_email' => $email,
                     'merchant_name'  => $input[Entity::NAME],
                 ]);
         }
@@ -221,7 +223,7 @@ class Service extends Base\Service
         }
 
         /** @var Entity $merchant */
-        $merchant = $this->core()->create($input);
+        $merchant = $this->core()->create($input, $merchantDetailInputData);
 
         $this->enableBusinessBankingIfApplicable($merchant);
 

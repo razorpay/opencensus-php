@@ -3,12 +3,10 @@
 namespace RZP\Models\BankAccount;
 
 use App;
-
-use Razorpay\IFSC\IFSC;
-
 use RZP\Base;
 use RZP\Exception;
 use RZP\Constants\Mode;
+use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Bank\IFSC as BankIFSC;
@@ -41,7 +39,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_PIN                 => 'sometimes|integer|digits:6',
         Entity::BENEFICIARY_COUNTRY             => 'sometimes|in:IN',
         Entity::BENEFICIARY_EMAIL               => 'sometimes|email',
-        Entity::BENEFICIARY_MOBILE              => 'sometimes|numeric|digits_between:10,12',
+        Entity::BENEFICIARY_MOBILE              => 'sometimes|max:15|contact_syntax',
         Entity::NOTES                           => 'sometimes|notes',
     ];
 

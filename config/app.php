@@ -181,6 +181,7 @@ return array(
         RZP\Providers\OpenCensusProvider::class,
         RZP\Http\BasicAuth\ServiceProvider::class,
         RZP\Services\DashboardServiceProvider::class,
+        RZP\Models\User\RateLimitLoginSignup\Provider::class,
 
         // Makes blade sharper
         RZP\Providers\KnifeServiceProvider::class,

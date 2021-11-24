@@ -45,6 +45,7 @@ class Entity extends Base\PublicEntity
     //added for org level enforcing of 2fa
     const ORG_ENFORCED_SECOND_FACTOR_AUTH = 'org_enforced_second_factor_auth';
 
+    const SIGNUP_VIA_EMAIL              = 'signup_via_email';
     const TOKEN                         = 'token';
     const EXPIRY_TIME                   = 'expiryTime';
 
@@ -78,6 +79,10 @@ class Entity extends Base\PublicEntity
 
     // Boolean attribute is true if contact mobile is verified via OTP
     const CONTACT_MOBILE_VERIFIED       = 'contact_mobile_verified';
+    // Boolean attribute is true if email is verified; this is equivalent to `confirmed` attribute
+    // which should be deprecated for sake of brevity
+    const EMAIL_VERIFIED       = 'email_verified';
+
     // Additional input keys
     const MEDIUM                        = 'medium';
     const OTP                           = 'otp';
@@ -109,6 +114,7 @@ class Entity extends Base\PublicEntity
         self::PASSWORD_RESET_TOKEN,
         self::PASSWORD_RESET_EXPIRY,
         self::ORG_ENFORCED_SECOND_FACTOR_AUTH,
+        self::SIGNUP_VIA_EMAIL
     ];
 
     protected $public = [
@@ -117,6 +123,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::CONTACT_MOBILE,
         self::CONTACT_MOBILE_VERIFIED,
+        self::EMAIL_VERIFIED,
         self::SECOND_FACTOR_AUTH,
         self::SECOND_FACTOR_AUTH_ENFORCED,
         self::SECOND_FACTOR_AUTH_SETUP,
@@ -125,6 +132,7 @@ class Entity extends Base\PublicEntity
         self::CONFIRMED,
         self::ACCOUNT_LOCKED,
         self::CREATED_AT,
+        self::SIGNUP_VIA_EMAIL,
     ];
 
     protected $hidden = [
@@ -160,6 +168,7 @@ class Entity extends Base\PublicEntity
 
     protected $appends = [
         self::CONFIRMED,
+        self::EMAIL_VERIFIED,
         self::SECOND_FACTOR_AUTH_ENFORCED,
         self::SECOND_FACTOR_AUTH_SETUP,
         self::RESTRICTED,
@@ -334,6 +343,11 @@ class Entity extends Base\PublicEntity
     }
 
     public function getConfirmedAttribute()
+    {
+        return ($this->getAttribute(self::CONFIRM_TOKEN) === null);
+    }
+
+    public function getEmailVerifiedAttribute()
     {
         return ($this->getAttribute(self::CONFIRM_TOKEN) === null);
     }

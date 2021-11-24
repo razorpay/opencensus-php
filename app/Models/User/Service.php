@@ -8,7 +8,6 @@ use Config;
 use Carbon\Carbon;
 use RZP\Models\Base\PublicEntity;
 use Illuminate\Hashing\BcryptHasher;
-
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
@@ -25,6 +24,7 @@ use RZP\Models\DeviceDetail;
 use RZP\Mail\User as UserMail;
 use RZP\Services\HubspotClient;
 use RZP\Models\Admin\AdminLead;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -54,19 +54,9 @@ class Service extends Base\Service
     {
         $this->traceRegisterInput($input);
 
-        $data = [];
-
         $referrer = $input['ref'] ?? '';
 
-        $invitationToken = $input['invitation'] ?? null;
-
         $businessName = $input['business_name'] ?? '';
-
-        $invitation = null;
-
-        $user = null;
-
-        $tokenData = null;
 
         $partnerIntent = $input[Merchant\Constants::PARTNER_INTENT] ?? false;
 
@@ -74,42 +64,12 @@ class Service extends Base\Service
 
         $this->app->hubspot->trackSignupEvent($input);
 
-        /*
-         * If we have an invitation token, the user may have created an account
-         * in the meantime. $user will be equal to the user with the same email
-         * as the invited user
-         */
-        if (empty($invitationToken) === false)
-        {
-            $invitation = (new Invitation\Service)->fetchByToken($invitationToken);
+        $partnerInvitation  = $this->handleUserInvitation($input);
+        $user               = $partnerInvitation['user'];
+        $invitation         = $partnerInvitation['invitation'];
+        $invitationToken    = $partnerInvitation['invitationToken'];
 
-            $user = $this->core->getUserFromEmail($invitation);
-
-            // Since input would be lacking an email in case of registration via the invitation
-            $input[Entity::EMAIL] = $invitation[Invitation\Entity::EMAIL];
-
-            unset($input['invitation']);
-        }
-
-        $heimdallInvitationToken = $input['merchant_invitation'] ?? null;
-
-        $adminId = null;
-
-        if (empty($heimdallInvitationToken) === false)
-        {
-            // Check if this token is valid or not
-            $tokenData = (new AdminLead\Service)->verify($heimdallInvitationToken);
-
-            if (isset($tokenData['id']) === true)
-            {
-                $tokenSignUpInput = [AdminLead\Entity::SIGNED_UP => 1];
-
-                (new AdminLead\Service)->editInvitation(
-                    $tokenData[AdminLead\Entity::ORG_ID], $tokenData[AdminLead\Entity::ID], $tokenSignUpInput);
-            }
-
-            unset($input['merchant_invitation']);
-        }
+        $heimdallTokenData = $this->handleHeimdallInvitation($input);
 
         if (empty($input[Entity::OAUTH_PROVIDER]) === false)
         {
@@ -130,6 +90,19 @@ class Service extends Base\Service
             }
 
             $input[Entity::NAME] = $input[Entity::NAME] ?? '';
+
+            if (isset($input[Entity::CONTACT_MOBILE]) === true)
+            {
+                if($this->core()->checkIfMobileAlreadyExists($input[Entity::CONTACT_MOBILE]) === true)
+                {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS);
+                }
+                $input[Entity::SIGNUP_VIA_EMAIL] = 0;
+            }
+            else
+            {
+                $input[Entity::SIGNUP_VIA_EMAIL] = 1;
+            }
 
             unset($input['ref']);
 
@@ -158,68 +131,268 @@ class Service extends Base\Service
 
         /**
          * These two conditions are exclusive
-         * One cannot accept an invite and create a merchant account at the same time
+         * One cannot accept an invitation and create a merchant account at the same time
          */
         if (empty($invitationToken) === false)
         {
-            $invitationAcceptInput = [
-                Invitation\Entity::USER_ID => $user[Entity::ID],
-                Invitation\Entity::ACTION  => 'accept',
-                Invitation\Entity::EMAIL   => $user[Entity::EMAIL],
-            ];
-
-            (new Invitation\Service)->action($invitation[Invitation\Entity::ID], $invitationAcceptInput);
-
-            $this->confirm($user[Entity::ID]);
-
-            $this->core->subscribeToMailingList($user);
-
-             $data['login'] = true;
+            $this->acceptInvite($user, $invitation);
+            $data = ['login'=>true];
         }
         else
         {
-            $merchantInputData = [
-                Merchant\Entity::EMAIL         => $user[Entity::EMAIL],
-                Merchant\Entity::NAME          => $businessName,
-                Merchant\Entity::SIGNUP_SOURCE => $this->auth->getRequestOriginProduct(),
-            ];
-
-            if (isset($input[Merchant\Constants::PARTNER_INTENT]))
-            {
-                $merchantInputData[Merchant\Constants::PARTNER_INTENT] = $partnerIntent;
-            }
-
-            if (empty($tokenData) === false)
-            {
-                // Merchant belongs to the same org that the inviting admin does
-                $merchantInputData[Merchant\Entity::ORG_ID] = $tokenData[AdminLead\Entity::ORG_ID];
-                // Map merchant to the admin that generated his lead (invited merchant to sign up)
-                $merchantInputData[Merchant\Entity::ADMINS] = [$tokenData[AdminLead\Entity::ADMIN_ID]];
-            }
-
-            $sendOtpEmail = filter_var($this->app['request']->header(RequestHeader::X_SEND_EMAIL_OTP, false),
-                                       FILTER_VALIDATE_BOOLEAN);
-
-            // Remove this when signup experiment for X is ramped up as we can find the
-            // template just from the product origin
-            $isRequestFromXVerifyEmail = $this->isRequestFromXVerifyEmail($input);
-
-            $inputData = ["isRequestFromXVerifyEmail" => $isRequestFromXVerifyEmail];
-
-            $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer, $sendOtpEmail, $inputData);
+            $data = $this->createMerchant($user, $referrer, $businessName, $partnerIntent, $input, $heimdallTokenData, true);
         }
 
+        $signupMethod = Constants::PASSWORD;
+
+        $this->signUpSuccess($user, $partnerIntent, $signupMethod);
+
+        return $data;
+    }
+
+    protected function handleUserInvitation(array &$input): array
+    {
+        /*
+         * If we have an invitation token, the user may have created an account
+         * in the meantime. $user will be equal to the user with the same email
+         * as the invited user
+         */
+        $invitationToken = $input['invitation'] ?? null;
+        $invitation = null;
+        $user = null;
+
+        if (empty($invitationToken) === false)
+        {
+            $invitation = (new Invitation\Service)->fetchByToken($invitationToken);
+
+            $user = $this->core->getUserFromEmail($invitation);
+
+            // Since input would be lacking an email in case of registration via the invitation
+            $input[Entity::EMAIL] = $invitation[Invitation\Entity::EMAIL];
+
+            unset($input['invitation']);
+        }
+
+        return ['user' => $user, 'invitation' => $invitation, 'invitationToken' => $invitationToken];
+    }
+
+    protected function handleHeimdallInvitation(array &$input)
+    {
+        $heimdallInvitationToken = $input['merchant_invitation'] ?? null;
+
+        $heimdallTokenData = null;
+
+        if (empty($heimdallInvitationToken) === false)
+        {
+            // Check if this token is valid or not
+            $heimdallTokenData = (new AdminLead\Service)->verify($heimdallInvitationToken);
+
+            if (isset($heimdallTokenData['id']) === true)
+            {
+                $tokenSignUpInput = [AdminLead\Entity::SIGNED_UP => 1];
+
+                (new AdminLead\Service)->editInvitation(
+                    $heimdallTokenData[AdminLead\Entity::ORG_ID], $heimdallTokenData[AdminLead\Entity::ID], $tokenSignUpInput);
+            }
+
+            unset($input['merchant_invitation']);
+        }
+        return $heimdallTokenData;
+
+    }
+
+    protected function signUpSuccess($user, $partnerIntent, $signupMethod)
+    {
         $visitorId = $this->fetchVisitorIdFromCookie();
 
-        $customProperties = [Entity::EMAIL                      => $user[Entity::EMAIL],
-                             Entity::VISITOR_ID                 => $visitorId,
-                             Merchant\Constants::PARTNER_INTENT => $partnerIntent];
+        $customProperties = [
+            Entity::EMAIL                      => $user[Entity::EMAIL] ?? null,
+            Entity::VISITOR_ID                 => $visitorId,
+            Merchant\Constants::PARTNER_INTENT => $partnerIntent
+        ];
+
+        if ($user[Entity::SIGNUP_VIA_EMAIL] == 0)
+        {
+            $signupMedium = Constants::CONTACT_MOBILE;
+        }
+        else
+        {
+            $signupMedium = Constants::EMAIL;
+        }
+
+        $this->trace->count(
+            Metric::USER_SIGNUP,
+            [
+                Constants::METHOD => $signupMethod,
+                Constants::MEDIUM => $signupMedium,
+            ]
+        );
 
         $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS, $this->merchant, null, $customProperties);
 
         $this->pushSegmentSignupEvent($user[Entity::ID], $customProperties);
+    }
 
-        return $data;
+    protected function acceptInvite(array $user, array $invitation = null)
+    {
+        $invitationAcceptInput = [
+            Invitation\Entity::USER_ID => $user[Entity::ID],
+            Invitation\Entity::ACTION  => 'accept',
+            Invitation\Entity::EMAIL   => $user[Entity::EMAIL],
+        ];
+
+        (new Invitation\Service)->action($invitation[Invitation\Entity::ID], $invitationAcceptInput);
+
+        $this->confirm($user[Entity::ID]);
+
+        $this->core->subscribeToMailingList($user);
+    }
+
+    protected function createMerchant(array $user, string $referrer, string $businessName, bool $partnerIntent, array $input, $heimdallTokenData, bool $sendConfirmation): array
+    {
+        $merchantInputData = [
+            Merchant\Entity::NAME          => $businessName,
+            Merchant\Entity::SIGNUP_SOURCE => $this->auth->getRequestOriginProduct(),
+        ];
+
+        $merchantDetailInputData = [];
+
+        if (isset($user[Entity::EMAIL]) === true)
+        {
+            $merchantInputData[Merchant\Entity::EMAIL] = $user[Entity::EMAIL];
+            $merchantInputData[Merchant\Entity::SIGNUP_VIA_EMAIL] = 1;
+        }
+        else if (isset($user[Entity::CONTACT_MOBILE]))
+        {
+            $merchantDetailInputData[Entity::CONTACT_MOBILE] = $user[Entity::CONTACT_MOBILE];
+            $merchantInputData[Merchant\Entity::SIGNUP_VIA_EMAIL] = 0;
+        }
+
+        if (isset($input[Merchant\Constants::PARTNER_INTENT]))
+        {
+            $merchantInputData[Merchant\Constants::PARTNER_INTENT] = $partnerIntent;
+        }
+
+        if (empty($heimdallTokenData) === false)
+        {
+            // Merchant belongs to the same org that the inviting admin does
+            $merchantInputData[Merchant\Entity::ORG_ID] = $heimdallTokenData[AdminLead\Entity::ORG_ID];
+            // Map merchant to the admin that generated his lead (invited merchant to sign up)
+            $merchantInputData[Merchant\Entity::ADMINS] = [$heimdallTokenData[AdminLead\Entity::ADMIN_ID]];
+        }
+
+        $sendOtpEmail = filter_var($this->app['request']->header(RequestHeader::X_SEND_EMAIL_OTP, false),
+            FILTER_VALIDATE_BOOLEAN);
+
+        // Remove this when signup experiment for X is ramped up as we can find the
+        // template just from the product origin
+        $isRequestFromXVerifyEmail = $this->isRequestFromXVerifyEmail($input);
+
+        $inputData = ["isRequestFromXVerifyEmail" => $isRequestFromXVerifyEmail];
+
+        return $this->createMerchantFromUser(
+            $merchantInputData,
+            $user,
+            $referrer,
+            $sendOtpEmail,
+            $inputData,
+            $sendConfirmation,
+            $merchantDetailInputData
+        );
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\ServerErrorException
+     */
+    public function registerWithOtp(array $input): array
+    {
+        //TODO: @kartik.sayani - Is this needed with otp signups?
+        $invitationToken = $input['invitation'] ?? null;
+
+        if (empty($invitationToken) === false)
+        {
+            $invitation = (new Invitation\Service)->fetchByToken($invitationToken);
+
+            if (empty($invitation[Invitation\Entity::EMAIL]) === false)
+            {
+                // Since input would be lacking an email in case of registration via the invitation
+                $input[Entity::EMAIL] = $invitation[Invitation\Entity::EMAIL];
+            }
+        }
+
+        return $this->core->registerWithOtp($input);
+    }
+
+    public function verifySignupOtp(array $input, string $operation = 'createOTPSignup'): array
+    {
+        $referrer = $input['ref'] ?? '';
+
+        $businessName = $input['business_name'] ?? '';
+
+        $partnerIntent = $input[Merchant\Constants::PARTNER_INTENT] ?? false;
+
+        $this->trace->count(Merchant\Metric::SIGNUP_TOTAL);
+
+        // $this->app->hubspot->trackSignupEvent($input);
+        // TODO: @kartik.sayani- is this needed with mobile/email + otp signup?
+        $partnerInvitation      = $this->handleUserInvitation($input);
+        $user                   = $partnerInvitation['user'];
+        $invitation             = $partnerInvitation['invitation'];
+        $invitationToken        = $partnerInvitation['invitationToken'];
+
+        $verifySuccess = $this->core->verifySignupOtp($input);
+
+        if($verifySuccess === true)
+        {
+            $heimdallTokenData = $this->handleHeimdallInvitation($input);
+
+            if (empty($user) === true)
+            {
+                $input[Entity::NAME] = $input[Entity::NAME] ?? '';
+
+                if (isset($input[Entity::CONTACT_MOBILE]) === true)
+                {
+                    $input[Entity::SIGNUP_VIA_EMAIL] = 0;
+                }
+                else
+                {
+                    $input[Entity::SIGNUP_VIA_EMAIL] = 1;
+                }
+
+                unset($input['ref']);
+
+                unset($input['business_name']);
+
+                $user = $this->create($input, $operation);
+
+                $userEntity = $this->repo->user->findByPublicId($user[Entity::ID]);
+                $this->core->setContactMobileOrEmailVerify($input, $userEntity);
+            }
+
+            /**
+             * These two conditions are exclusive
+             * One cannot accept an invitation and create a merchant account at the same time
+             */
+            if (empty($invitationToken) === false)
+            {
+                $this->acceptInvite($user, $invitation);
+                $data = ['login'=>true];
+            }
+            else
+            {
+                $this->createMerchant($user, $referrer, $businessName, $partnerIntent, $input, $heimdallTokenData, false);
+                $data = $this->get($user['id']);
+            }
+
+            $signupMethod = Constants::OTP;
+
+            $this->signUpSuccess($user, $partnerIntent, $signupMethod);
+
+            return $data;
+        }
     }
 
     protected function pushSegmentSignupEvent($userId, $customProperties)
@@ -266,9 +439,17 @@ class Service extends Base\Service
      * @param bool $sendConfirmation
      * @return array
      */
-    public function createMerchantFromUser(array $merchantInputData, array $userData, string $referrer = '', bool $sendOtpEmail = false, array $inputData = [], bool $sendConfirmation = true)
+    public function createMerchantFromUser(
+        array $merchantInputData,
+        array $userData,
+        string $referrer = '',
+        bool $sendOtpEmail = false,
+        array $inputData = [],
+        bool $sendConfirmation = true,
+        array $merchantDetailInputData = []
+    )
     {
-        $merchantData = $this->merchantService->create($merchantInputData);
+        $merchantData = $this->merchantService->create($merchantInputData, $merchantDetailInputData);
 
         if (empty($referrer) === false)
         {
@@ -291,11 +472,13 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantData['id']);
 
-        $data = [];
-        $data['id']      = $merchant->getId();
-        $data['name']    = $merchant->getName();
-        $data['email']   = $user->getEmail();
-        $data['user_id'] = $user->getId();
+        $data = [
+            "id"                => $merchant->getId(),
+            "name"              => $merchant->getName(),
+            "email"             => $user->getEmail(),
+            "contact_mobile"    => $user->getContactMobile(),
+            "user_id"           => $user->getId()
+        ];
 
         if($sendConfirmation === true)
         {

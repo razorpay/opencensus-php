@@ -4,8 +4,8 @@ namespace RZP\Error;
 
 use App;
 use ArrayObject;
-use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Constants\Mode;
 use Illuminate\Support;
 use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
@@ -57,7 +57,11 @@ class Error extends Support\Fluent
         ErrorCode::BAD_REQUEST_EMAIL_ALREADY_VERIFIED,
         ErrorCode::BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED,
         ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
-        ErrorCode::BAD_REQUEST_MOBILE_OTP_LOGIN_NOT_ALLOWED
+        ErrorCode::BAD_REQUEST_MOBILE_OTP_LOGIN_NOT_ALLOWED,
+        ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS,
+        ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS,
+        ErrorCode::BAD_REQUEST_EMAIL_SIGNUP_OTP_SEND_THRESHOLD_EXHAUSTED,
+        ErrorCode::BAD_REQUEST_SIGNUP_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
     ];
 
     const INTERNAL_ERROR_CODE   = 'internal_error_code';

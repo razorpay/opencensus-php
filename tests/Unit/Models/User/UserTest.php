@@ -4,19 +4,18 @@ namespace Tests\Unit\Models\User;
 
 use Mockery;
 use Carbon\Carbon;
-use Illuminate\Hashing\BcryptHasher;
-use Illuminate\Support\Facades\Redis;
-use Illuminate\Support\Facades\Mail as Mail;
-
 use Tests\Unit\TestCase;
 use RZP\Models\User\Core;
 use RZP\Models\User\Entity;
 use RZP\Models\User\Constants;
 use RZP\Exception\LogicException;
+use Illuminate\Hashing\BcryptHasher;
+use Illuminate\Support\Facades\Redis;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\User\Validator as Validator;
+use Illuminate\Support\Facades\Mail as Mail;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -125,6 +124,8 @@ class UserTest extends TestCase
 
         $this->coreMock->shouldReceive('attach')->andReturn(((new Core())->create($content['userData']))->toArrayPublic());
 
+        $this->coreMock->shouldReceive('checkIfMobileAlreadyExists')->withAnyArgs()->andReturn(false);
+
         $this->userRepoMock->shouldReceive('findOrFailPublic')->with('100002Razorpay')->andReturn(((new Core())->create($content['userData'])));
 
         $this->merchantRepoMock->shouldReceive('findOrFailPublic')->andReturn((new MerchantEntity())->build($content['merchantData']));
@@ -170,6 +171,7 @@ class UserTest extends TestCase
             'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
+            'email_verified' => false,
         ];
 
         $this->mockRedis();
@@ -208,6 +210,7 @@ class UserTest extends TestCase
             'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
+            'email_verified' => false,
         ];
 
         $this->mockRedis();
@@ -258,6 +261,7 @@ class UserTest extends TestCase
             'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
+            'email_verified' => false,
         ];
 
         $this->mockRedis();
@@ -382,6 +386,7 @@ class UserTest extends TestCase
             'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
+            'email_verified' => false,
         ];
 
         $this->mockRedis();
@@ -435,6 +440,7 @@ class UserTest extends TestCase
             'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
+            'email_verified' => false,
         ];
 
         $this->mockRedis();
@@ -636,6 +642,8 @@ class UserTest extends TestCase
         $this->coreMock->shouldReceive('attach')->andReturn(((new Core())->create($content['userData']))->toArrayPublic());
 
         $this->userRepoMock->shouldReceive('findOrFailPublic')->with('100002Razorpay')->andReturn(((new Core())->create($content['userData'])));
+
+        $this->coreMock->shouldReceive('checkIfMobileAlreadyExists')->withAnyArgs()->andReturn(false);
 
         $this->merchantRepoMock->shouldReceive('findOrFailPublic')->andReturn((new MerchantEntity())->build($content['merchantData']));
 
@@ -872,6 +880,7 @@ class UserTest extends TestCase
             'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
+            'email_verified' => false,
         ];
 
         $this->mockRedis();
@@ -1734,6 +1743,7 @@ class UserTest extends TestCase
             'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => true,
+            'email_verified' => true
         ];
 
         $this->basicAuthMock->shouldReceive('isAdminAuth')->andReturn(false);
@@ -1849,6 +1859,7 @@ class UserTest extends TestCase
             'org_enforced_second_factor_auth' => false,
             'restricted' => false,
             'confirmed' => false,
+            'email_verified' => false,
         ];
 
         $this->userEntityMock->shouldReceive('getValidator')->andReturn($this->userValidator);

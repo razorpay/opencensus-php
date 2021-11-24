@@ -5,8 +5,8 @@ namespace Functional\Error;
 
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
-use RZP\Services\ErrorMappingService;
 use RZP\Tests\Functional\TestCase;
+use RZP\Services\ErrorMappingService;
 
 class ErrorTest extends TestCase
 {

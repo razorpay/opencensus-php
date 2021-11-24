@@ -1620,14 +1620,14 @@ return [
             'content'   => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'The contact mobile must be between 8 and 11 digits.',
+                    'description'   => 'Contact number should be at least 8 digits, including country code',
                 ],
             ],
             'status_code'       => 400,
         ],
         'exception'     => [
-            'class'                 => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT,
         ],
     ],
 

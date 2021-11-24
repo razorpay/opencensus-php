@@ -3,8 +3,8 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\User\Entity as UserEntity;
+use RZP\Exception\BadRequestValidationFailureException;
 
 return [
 
@@ -2039,6 +2039,7 @@ return [
         ],
     ],
 
+
     'testFailedLogin2faNotSetup' => [
         'request' => [
             'url'     => '/users/login',
@@ -3709,4 +3710,199 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_2FA_LOGIN_PASSWORD_SUSPENDED,
         ],
     ],
+
+    'testUserRegisterSendSignupOtpViaSms' => [
+        'request' => [
+            'url'     => '/users/register/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testUserRegisterSendSignupOtpViaSmsMobileExists' => [
+        'request' => [
+            'url'     => '/users/register/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS,
+        ],
+    ],
+
+    'testUserRegisterSendSignupOtpViaEmailEmailExists' => [
+        'request' => [
+            'url'     => '/users/register/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_EMAIL_ALREADY_EXISTS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS,
+        ],
+    ],
+
+    'testUserRegisterSendSignupOtpViaEmail' => [
+        'request' => [
+            'url'     => '/users/register/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testUserRegisterVerifySignupOtpIncorrectOtp' => [
+        'request' => [
+            'url'     => '/users/register/otp/verify',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INCORRECT_OTP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ],
+    ],
+
+    'testUserRegisterSendSignupOtpViaSmsLimitReached' => [
+        'request' => [
+            'url'     => '/users/register/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
+        ],
+    ],
+
+    'testUserRegisterSendSignupOtpViaEmailLimitReached' => [
+        'request' => [
+            'url'     => '/users/register/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_EMAIL_SIGNUP_OTP_SEND_THRESHOLD_EXHAUSTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_SIGNUP_OTP_SEND_THRESHOLD_EXHAUSTED,
+        ],
+    ],
+
+    'testUserRegisterVerifySignupOtpIncorrectOtpLimitOnAnOtpReached' => [
+        'request' => [
+            'url'     => '/users/register/otp/verify',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED,
+        ],
+    ],
+
+    'testUserRegisterVerifySignupOtpTotalIncorrectOtpLimitReached' => [
+        'request' => [
+            'url'     => '/users/register/otp/verify',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SIGNUP_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SIGNUP_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
+        ],
+    ],
+
+    'testUserRegisterVerifySignupOtpSms' => [
+        'request' => [
+            'url'     => '/users/register/otp/verify',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            "content" => []
+        ]
+    ],
+
+    'testUserRegisterVerifySignupOtpEmail' => [
+        'request' => [
+            'url'     => '/users/register/otp/verify',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+
+        ]
+    ],
+
+
 ];

@@ -7,27 +7,28 @@ use Mail;
 use Hash;
 use Mockery;
 use Carbon\Carbon;
-
-use RZP\Constants\Product;
-use RZP\Models\BankingAccount\Channel;
-use RZP\Models\Merchant\Attribute\Type;
-use Illuminate\Database\Eloquent\Factory;
-
+use RZP\Error\ErrorCode;
 use RZP\Mail\User\Otp;
 use RZP\Mail\User\Login;
+use RZP\Constants\Product;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
 use RZP\Models\User\Entity;
-use RZP\Models\User\Constants;
+use RZP\Mail\User\OtpSignup;
 use RZP\Services\Mock\Raven;
+use RZP\Models\User\Constants;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Mail\User\PasswordReset;
 use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Redis;
+use RZP\Models\BankingAccount\Channel;
+use RZP\Exception\BadRequestException;
 use RZP\Mail\User\AccountVerification;
+use RZP\Models\Merchant\Attribute\Type;
+use Illuminate\Database\Eloquent\Factory;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
@@ -123,6 +124,8 @@ class UserTest extends TestCase
     public function testRegisterWithOauthPayload()
     {
         $this->ba->dashboardGuestAppAuth();
+
+        $this->app['config']->set('oauth.merchant_oauth_mock', true);
 
         $this->startTest();
     }
@@ -5035,5 +5038,308 @@ class UserTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
+    }
+
+    public function testUserRegisterSendSignupOtpViaSms()
+    {
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:signup_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+            ->willReturn($smsPayload);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '0123456789',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
+    public function testUserRegisterSendSignupOtpViaSmsMobileExists()
+    {
+        $user1 = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => $user1["contact_mobile"],
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+    }
+
+    public function testUserRegisterSendSignupOtpViaEmail()
+    {
+        Mail::fake();
+
+        $emailPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:signup_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+            ->willReturn($emailPayload);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'        => 'some.one@some.com',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+
+        Mail::assertQueued(OtpSignup::class, function ($mail)
+        {
+            $this->assertEquals('signup_otp', $mail->input['action']);
+            $this->assertNotEmpty($mail->otp);
+            $this->assertEquals('emails.user.otp_signup', $mail->view);
+            return true;
+        });
+    }
+
+    public function testUserRegisterSendSignupOtpViaEmailEmailExists()
+    {
+        $user1 = $this->fixtures->create('user', ['email' => 'some.one@some.com', 'password' => 'hello123', 'confirm_token' => null]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'        => $user1["email"],
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testUserRegisterVerifySignupOtpIncorrectOtp()
+    {
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '0123456789',
+            'captcha'               => 'faked',
+            'token'                 => 'token',
+            'otp'                   => '0008',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+    }
+
+    public function testUserRegisterSendSignupOtpViaEmailLimitReached()
+    {
+        $testData = & $this->testData[__FUNCTION__];
+
+        $email = 'some.one@some.com';
+
+        $content = [
+            'email' => $email
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redis->set($email.Constants::SEND_EMAIL_SIGNUP_OTP_RATE_LIMIT_SUFFIX, Constants::EMAIL_SIGNUP_OTP_SEND_THRESHOLD);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $redis->del($email.Constants::SEND_EMAIL_SIGNUP_OTP_RATE_LIMIT_SUFFIX);
+    }
+
+    public function testUserRegisterSendSignupOtpViaSmsLimitReached()
+    {
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['sendOtp', 'generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:signup_otp:token',
+        ];
+
+        $this->app['raven']->method('generateOtp')->willReturn($smsPayload);
+
+        $this->app['raven']->method('sendOtp')->willThrowException(
+            new BadRequestException(ErrorCode::BAD_REQUEST_RESOURCE_EXHAUSTED)
+        );
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '0123456789',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testUserRegisterVerifySignupOtpIncorrectOtpLimitOnAnOtpReached()
+    {
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['verifyOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('verifyOtp')->willThrowException(
+            new BadRequestException(ErrorCode::BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED)
+        );
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '0123456789',
+            'captcha'               => 'faked',
+            'token'                 => 'token',
+            'otp'                   => '0008',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testUserRegisterVerifySignupOtpTotalIncorrectOtpLimitReached()
+    {
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '0123456789',
+            'captcha'               => 'faked',
+            'token'                 => 'token',
+            'otp'                   => '0008',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redis->set($content["contact_mobile"].Constants::VERIFY_SIGNUP_OTP_RATE_LIMIT_SUFFIX, Constants::SIGNUP_OTP_VERIFICATION_THRESHOLD);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $redis->del($content["contact_mobile"].Constants::VERIFY_SIGNUP_OTP_RATE_LIMIT_SUFFIX);
+    }
+
+    public function testUserRegisterVerifySignupOtpSms()
+    {
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '8877665544',
+            'captcha'               => 'faked',
+            'token'                 => 'token',
+            'otp'                   => '0007',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $testData['response']['content'] = [
+            "contact_mobile"            => $content["contact_mobile"],
+            "signup_via_email"          => 0,
+            "confirmed"                 => false,
+            "email_verified"            => false,
+            "contact_mobile_verified"   => true,
+            "email"                     => null
+        ];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->assertEquals($merchant["signup_via_email"], 0);
+    }
+
+    public function testUserRegisterVerifySignupOtpEmail()
+    {
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => 'some.one@some.com',
+            'captcha'               => 'faked',
+            'token'                 => 'token',
+            'otp'                   => '0007',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $testData['response']['content'] = [
+            "email"                     => $content["email"],
+            "signup_via_email"          => 1,
+            "confirmed"                 => true,
+            "email_verified"            => true,
+            "contact_mobile_verified"   => false,
+            "contact_mobile"            => null
+        ];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->assertEquals($merchant["signup_via_email"], 1);
+
     }
 }
