@@ -3,7 +3,7 @@
 namespace RZP\Models\Merchant\Methods;
 
 use RZP\Models\Terminal\Category;
-use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 
 class DefaultMethodsForCategory
 {
@@ -707,7 +707,8 @@ class DefaultMethodsForCategory
                 ],
             ],
 
-            MerchantEntity::AXIS_ORG_ID => [
+            // For VAS orgs, adding only category [others, other] as blacklisted methods are same for all categories
+            OrgEntity::AXIS_ORG_ID => [
                 Category::OTHERS  =>  [
                     Category::OTHERS    =>  [
                         self::BLACKLISTED_METHODS => [
@@ -729,6 +730,46 @@ class DefaultMethodsForCategory
                             Entity::PAYPAL,
                             Entity::PHONEPE_SWITCH,
                             Entity::BANK_TRANSFER,
+                        ],
+                        self::GREYLISTED_METHODS =>[],
+                        self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
+                    ]
+                ],
+            ],
+            OrgEntity::HDFC_ORG_ID => [
+                Category::OTHERS  =>  [
+                    Category::OTHERS    =>  [
+                        self::BLACKLISTED_METHODS => [
+                            Entity::EMI,
+                            Entity::CARDLESS_EMI,
+                            Entity::PREPAID_CARD,
+                            Entity::PAYLATER,
+                            Entity::AIRTELMONEY,
+                            Entity::FREECHARGE,
+                            Entity::JIOMONEY,
+                            Entity::MOBIKWIK,
+                            Entity::MPESA,
+                            Entity::OLAMONEY,
+                            Entity::PAYUMONEY,
+                            Entity::PAYZAPP,
+                            Entity::SBIBUDDY,
+                            Entity::PHONEPE,
+                            Entity::PAYTM,
+                            Entity::PAYPAL,
+                            Entity::PHONEPE_SWITCH,
+                            Entity::BANK_TRANSFER,
+                        ],
+                        self::GREYLISTED_METHODS =>[],
+                        self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
+                    ]
+                ],
+            ],
+            OrgEntity::ICICI_ORG_ID => [
+                Category::OTHERS  =>  [
+                    Category::OTHERS    =>  [
+                        self::BLACKLISTED_METHODS =>[
+                            Entity::PAYLATER,
+                            Entity::PREPAID_CARD,
                         ],
                         self::GREYLISTED_METHODS =>[],
                         self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
@@ -769,9 +810,35 @@ class DefaultMethodsForCategory
         Entity::PAYPAL,
     ];
 
+    // Refer: https://docs.google.com/spreadsheets/d/1SbG4Zi29QFBjwN8QjKS47V13DW6LFbDk0U-OXQ1FLQo
     const ORG_WISE_METHODS_ENABLEMENT = [
         'default' => self::CATEGORY_DEPENDENT_METHODS,
-        MerchantEntity::AXIS_ORG_ID => [
+        OrgEntity::AXIS_ORG_ID => [
+            Entity::CREDIT_CARD,
+            Entity::DEBIT_CARD,
+            Entity::NETBANKING,
+            Entity::UPI,
+        ],
+        // All except prepaid card and paylater
+        OrgEntity::ICICI_ORG_ID => [
+            Entity::CREDIT_CARD,
+            Entity::DEBIT_CARD,
+            Entity::AMEX,
+            Entity::NETBANKING,
+            Entity::UPI,
+            Entity::EMI,
+            Entity::CARDLESS_EMI, // should be enabled if EMI is enabled, have placed in all the same places where Entity::EMI is there in the above map
+            Entity::AIRTELMONEY,
+            Entity::FREECHARGE,
+            Entity::JIOMONEY,
+            Entity::MOBIKWIK,
+            Entity::MPESA,
+            Entity::OLAMONEY,
+            Entity::PAYUMONEY,
+            Entity::PAYZAPP,
+            Entity::SBIBUDDY
+        ],
+        OrgEntity::HDFC_ORG_ID => [
             Entity::CREDIT_CARD,
             Entity::DEBIT_CARD,
             Entity::NETBANKING,

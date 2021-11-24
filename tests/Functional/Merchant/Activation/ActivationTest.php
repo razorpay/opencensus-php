@@ -952,6 +952,87 @@ class ActivationTest extends OAuthTestCase
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
     }
 
+    public function testActivationDefaultMethodsBasedOnIciciOrg()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+        $orgId      = 'EKUZMBUtgInwi0'; // ICICI org id
+
+        // create org
+
+        $org = $this->fixtures->create('org', ['id' => $orgId]);
+
+        $planId = '1hDYlICobzOCYt';
+
+        // create pricing plan for org
+
+        $this->fixtures->pricing->createStandardPricingPlanForDifferentOrg($planId, $orgId);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        // assign org standard pricing plan to merchant
+
+        $this->fixtures->edit('merchant', $merchantId, [
+            'org_id' => $orgId,
+            'pricing_plan_id' => $planId
+        ]);
+
+        $data = $this->getKycSubmittedMerchantDetailData($merchantId);
+
+        $this->fixtures->create('merchant_detail', $data);
+
+        $this->fixtures->create('methods:default_methods', ['merchant_id' => '1cXSLlUU8V9sXl']);
+
+        $methods = $this->fixtures->edit('methods', '1cXSLlUU8V9sXl', ['bank_transfer' => 0]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $data = $this->getKycSubmittedMerchantData();
+        $data['category'] = '6051';
+        $data['category2'] = 'cryptocurrency';
+        $data['activated'] = 0;
+
+        $this->fixtures->on('test')->edit('merchant', $merchantId, $data);
+        $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
+
+        $testData = $this->testData['changeActivationStatus'];
+
+        $this->changeActivationStatus(
+            $testData['request']['content'],
+            $testData['response']['content'],
+            'activated');
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->ba->adminAuth('test', $authToken, $org->getPublicId());
+
+        $this->startTest($testData);
+
+        $methodsArray =  ((new MethodRepo)->find($merchantId))->toArray();
+
+        $expectedMethods = [
+            'credit_card'   => true,
+            'debit_card'    => true,
+            'netbanking'    => true,
+            'upi'           => true,
+            'prepaid_card'  => false,
+            'paylater'      => false,
+            'airtelmoney'   => true,
+            'freecharge'    => true,
+            'jiomoney'      => true,
+            'mobikwik'      => true,
+            'mpesa'         => true,
+            'olamoney'      => true,
+            'payumoney'     => true,
+            'payzapp'       => true,
+            'sbibuddy'      => true,
+            'cardless_emi'  => true,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
+    }
+
     public function testPostInstantActivationBlockedOrg()
     {
         $merchantId = '1cXSLlUU8V9sXl';
