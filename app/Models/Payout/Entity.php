@@ -536,6 +536,7 @@ class Entity extends Base\PublicEntity
         self::CANCELLATION_USER,
         self::QUEUEING_DETAILS,
         self::ON_HOLD_AT,
+        self::MERCHANT_ID
     ];
 
     protected $webhook = [
@@ -1872,7 +1873,8 @@ class Entity extends Base\PublicEntity
 
         // Workflows are not enabled on test mode for now
         if ((app('rzp.mode') === Mode::TEST) or
-            ($basicAuth->isStrictPrivateAuth() === true))
+            (($basicAuth->isStrictPrivateAuth() === true) and
+            ($basicAuth->isSlackApp() === false)))
         {
             unset($attributes[self::WORKFLOW_HISTORY]);
 
@@ -1888,7 +1890,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicBankingAccountIdAttribute(array & $attributes)
     {
-        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false and app('basicauth')->isSlackApp() === false)
         {
             unset ($attributes[self::BANKING_ACCOUNT_ID]);
 
@@ -1977,7 +1979,8 @@ class Entity extends Base\PublicEntity
         /** @var BasicAuth $basicAuth */
         $basicAuth = app('basicauth');
 
-        if ($basicAuth->isStrictPrivateAuth() === true)
+        if ($basicAuth->isStrictPrivateAuth() === true and
+            ($basicAuth->isSlackApp() === false))
         {
             unset($attributes[self::USER_ID]);
         }
@@ -2009,8 +2012,9 @@ class Entity extends Base\PublicEntity
         //
         // Don't forget fund_account if a composite payout request is made through strictPrivateAuth as we need to
         // show fund_account in the response of composite payout.
+
         if ((app('basicauth')->isStrictPrivateAuth() === true) and
-            ($this->isComposite() === false))
+            !(($this->isComposite() === true) or app('basicauth')->isSlackApp() === true))
         {
             array_forget($attributes, self::FUND_ACCOUNT);
 

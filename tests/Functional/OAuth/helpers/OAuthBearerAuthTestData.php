@@ -664,7 +664,7 @@ return [
                 'public_key' => 'rzp_test_oauth_TheTestAuthKey',
             ],
             'roles' => [
-                'oauth::scope::read_write',
+                'oauth::scope::rx_read_write',
             ],
         ],
     ],

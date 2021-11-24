@@ -944,6 +944,14 @@ class Constants
      */
     const ONE_CC_MANDATORY_LOGIN = 'one_cc_mandatory_login';
 
+     /**
+     * Currently to support the RazorpayX slack app use case this feature is added.
+     * It is used to create exception for private auth request and makes some public setters behave like proxy auth.
+     * This feature enables accessing payouts.fund_accounts, payouts.workflow_history via private auth,
+     * which are ususlly not accessible via private auth.
+     */
+    const PUBLIC_SETTERS_VIA_OAUTH = 'public_setters_via_oauth';
+
     const ONE_CC_COUPONS = 'one_cc_coupons';
 
     const CREDIT_ID_BASED_NEW_QUERY = 'credit_id_based_new_query';

@@ -64,10 +64,30 @@ class Fetch extends BaseFetch
             PayoutSource::SOURCE_ID   => 'sometimes|string',
             PayoutSource::SOURCE_TYPE => 'sometimes|string',
         ],
+        AuthType::PRIVATE_AUTH => [
+            self::EXPAND_EACH                       => 'filled|string|in:user,reversal,fund_account,fund_account.contact,transaction',
+            // Because, dashboard thinks there can be just one mode (live/test).
+            Entity::PRODUCT                         => 'sometimes:balance_id|string|in:banking',
+            Entity::PENDING_ON_ME                   => 'sometimes|boolean',
+            Entity::PENDING_ON_ROLES                => 'sometimes|array',
+            Entity::PENDING_ON_ROLES . '.*'         => 'filled|string|in:finance_l1,finance_l2,finance_l3,owner,admin',
+            // These are not expected from the dashboard, but are set internally via code.
+            Entity::PENDING_ON_ME_VIA_WFS           => 'sometimes|boolean',
+            Entity::PENDING_ON_ROLES_VIA_WFS        => 'sometimes|array',
+            Entity::PENDING_ON_ROLES_VIA_WFS . '.*' => 'filled|string|in:finance_l1,finance_l2,finance_l3,owner,admin',
+        ]
     ];
 
     const ACCESSES = [
         AuthType::PRIVATE_AUTH => [
+            self::EXPAND_EACH,
+            Entity::PENDING_ON_ME,
+            Entity::PENDING_ON_ROLES,
+            Entity::PENDING_ON_ROLES . '.*',
+            Entity::PENDING_ON_ME_VIA_WFS,
+            Entity::PENDING_ON_ROLES_VIA_WFS,
+            Entity::PENDING_ON_ROLES_VIA_WFS . '.*',
+            Entity::PRODUCT,
             Entity::ID,
             Entity::TRANSACTION_ID,
             Entity::UTR,

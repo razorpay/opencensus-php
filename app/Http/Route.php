@@ -3215,6 +3215,8 @@ class Route
     ];
 
     public static $private = [
+        'payout_reject',
+        'payout_approve',
         'payout_create_with_otp',
         'payout_validate',
         'user_otp_create',

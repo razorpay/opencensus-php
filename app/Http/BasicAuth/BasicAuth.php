@@ -21,6 +21,7 @@ use RZP\Models\Admin;
 use RZP\Models\Batch;
 use RZP\Models\Device;
 use RZP\Constants\Mode;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -2007,6 +2008,13 @@ class BasicAuth
     {
         return ($this->type === Type::DIRECT_AUTH);
     }
+
+    public function isSlackApp()
+    {
+        return ($this->getAccessTokenId() !== null and
+            ((new Feature\Service())->checkFeatureEnabled(Feature\Constants::APPLICATION, $this->getOAuthApplicationId(), Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH))['status']);
+    }
+
 
     public function isProxyOrPrivilegeAuth()
     {

@@ -24,6 +24,7 @@ use RZP\Models\Feature;
 use RZP\Http\BasicAuth;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card\Type;
+use Razorpay\OAuth\Client;
 use RZP\Models\FileStore;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
@@ -2331,14 +2332,145 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
     }
 
+    public function testApprovePayoutWithBearerAuth()
+    {
+        $this->mockLedgerSns(0);
+
+        $this->liveSetUp();
+
+        $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
+
+        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
+
+        $this->fixtures->on('live')->create('feature', [
+            'entity_id' => $client->application_id,
+            'entity_type' => 'application',
+            'name'  => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999],'owner', 'live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => '20000000000000',
+            'merchant_id' => '10000000000000',
+            'product'     => 'banking',
+            'role'       => 'owner'
+        ], 'live');
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $firstApprovalResponse = $this->startTest();
+
+        $firstActionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals('pending', $firstApprovalResponse['status']);
+        $this->assertEquals('Approving', $firstActionChecker['user_comment']);
+        $this->assertEquals(true, $firstActionChecker['approved']);
+    }
+
+    public function testRejectPayoutWithBearerAuth()
+    {
+        $this->mockLedgerSns(0);
+
+        $this->liveSetUp();
+
+        $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
+
+        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
+
+        $this->fixtures->on('live')->create('feature', [
+            'entity_id' => $client->application_id,
+            'entity_type' => 'application',
+            'name'  => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999],'owner', 'live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => '20000000000000',
+            'merchant_id' => '10000000000000',
+            'product'     => 'banking',
+            'role'       => 'owner'
+        ], 'live');
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
+
+        $firstApprovalResponse = $this->startTest();
+
+        $firstActionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals('rejected', $firstApprovalResponse['status']);
+        $this->assertEquals('Rejecting', $firstActionChecker['user_comment']);
+        $this->assertEquals(false, $firstActionChecker['approved']);
+    }
+
+    public function testGetPayoutsWithBearerAuth()
+    {
+        $this->mockLedgerSns(0);
+
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $user = $this->fixtures->on('live')->create('user');
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $p = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->edit('payout', $p['id'],['user_id' => $user['id']]);
+
+        $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
+
+        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
+
+        $this->fixtures->on('live')->create('feature', [
+            'entity_id' => $client->application_id,
+            'entity_type' => 'application',
+            'name'  => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => '20000000000000',
+            'merchant_id' => '10000000000000',
+            'product'     => 'banking',
+            'role'       => 'owner'
+        ], 'live');
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $payout = $this->startTest();
+
+        $this->assertPassport();
+        $this->assertPassportKeyExists('oauth.client_id');
+        $this->assertPassportKeyExists('oauth.app_id');
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true, 'live');
+    }
 
     public function testCreatePayoutWithOtpBearerAuth()
     {
-        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['read_write']]);
+        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['read_write', 'rx_read_write']]);
 
         $this->ba->oauthBearerAuth($accessToken);
 
         $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999]);
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '10000000000000',
+            'entity_type' => 'application',
+            'name'  => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
 
         $testData = $this->testData[__FUNCTION__];
         $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
@@ -14883,101 +15015,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotNull($payout['initiated_at']);
     }
 
-    public function testProcessingOfPayoutForHighTpsAsyncIngressDedupeCheckOnId()
-    {
-        Queue::fake();
-
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_ASYNC_INGRESS]);
-
-        $payoutRequest = $this->testData['testCompositePayoutCreationViaNewCompositeFlow']['request']['content'];
-        $response      = $this->testCompositePayoutCreationViaNewCompositeFlow();
-
-        Queue::assertPushed(PayoutPostCreateProcessLowPriority::class, 1);
-
-        $payoutId = substr($response['id'], 5);
-
-        $fundAccountDetails = $response[Payout\Entity::FUND_ACCOUNT];
-
-        $metadata = [
-            Payout\Entity::PAYOUT       => [
-                Payout\Entity::ID         => $payoutId,
-                Payout\Entity::CREATED_AT => $response[Payout\Entity::CREATED_AT],
-            ],
-            Payout\Entity::CONTACT      => [
-                Payout\Entity::ID         => substr($fundAccountDetails[Payout\Entity::CONTACT][Payout\Entity::ID], 5),
-                Payout\Entity::CREATED_AT => $fundAccountDetails[Payout\Entity::CONTACT][Payout\Entity::CREATED_AT]
-            ],
-            Payout\Entity::FUND_ACCOUNT => [
-                Payout\Entity::ID         => substr($fundAccountDetails[Payout\Entity::ID], 3),
-                Payout\Entity::CREATED_AT => $fundAccountDetails[Payout\Entity::CREATED_AT]
-            ]
-        ];
-
-        $contactsBefore = $this->getDbEntities(Constants\Entity::CONTACT);
-
-        $fundAccountsBefore = $this->getDbEntities(Constants\Entity::FUND_ACCOUNT);
-
-        $this->fixtures->create('contact', [
-            'id'      => $metadata['contact']['id'],
-            'name'    => 'Prashanth Y',
-            'email'   => 'prashanth@razorpay.com',
-            'contact' => '9999999999',
-            'type'    => 'employee',
-        ]);
-
-        $this->fixtures->create('vpa', [
-            'id'                  => "INOMO4znVI7aC9",
-            'entity_id'           => $metadata['contact']['id'],
-            'entity_type'         => "contact",
-            'username'            => "mehulisa10xdev",
-            'handle'              => "razorpay",
-            'merchant_id'         => "10000000000000",
-            'created_at'          => 1637309570,
-            'fts_fund_account_id' => null,
-        ]);
-
-        $this->fixtures->create('fund_account',[
-            'id'              => $metadata['fund_account']['id'],
-            'merchant_id'     => "10000000000000",
-            'source_type'     => "contact",
-            'source_id'       => $metadata['contact']['id'],
-            'account_type'    => "vpa",
-            'account_id'      => "INOMO4znVI7aC9",
-            'batch_id'        => null,
-            'idempotency_key' => null,
-            'active'          => true,
-            'created_at'      => 1637309569,
-            'updated_at'      => 1637309570,
-            'deleted_at'      => null,
-            'unique_hash'     => "",
-        ]);
-
-        $merchantId = $this->bankingBalance->merchant->getId();
-
-        (new Payout\Service)->fundAccountCompositePayoutForHighTpsMerchants($payoutRequest,
-                                                                            $merchantId,
-                                                                            $metadata);
-
-        $contact = $this->getDbLastEntity(Constants\Entity::CONTACT);
-
-        $this->assertEquals('Prashanth Y', $contact->getName());
-
-        $this->assertNotEquals($payoutRequest[Constants\Entity::FUND_ACCOUNT][Constants\Entity::CONTACT]['name'], $contact->getName());
-
-        /** @var  $fundAccount */
-        $fundAccount = $this->getDbLastEntity(Constants\Entity::FUND_ACCOUNT);
-
-        $this->assertEquals("", $fundAccount->getUniqueHash());
-
-        $contactsAfter = $this->getDbEntities(Constants\Entity::CONTACT);
-
-        $fundAccountsAfter = $this->getDbEntities(Constants\Entity::FUND_ACCOUNT);
-
-        $this->assertCount(count($fundAccountsBefore->toArray()) + 1, $fundAccountsAfter);
-
-        $this->assertCount(count($contactsBefore->toArray()) + 1, $contactsAfter);
-
-    }
+    
 
     public function testGetPayoutsAndGetBalanceForHighTpsMerchantsWithSubBalances()
     {
@@ -15793,63 +15831,5 @@ class PayoutTest extends OAuthTestCase
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
-    }
-
-    public function testPayoutCreateOnInternalContactByCapitalCollections()
-    {
-        $this->ba->capitalCollectionsAuth();
-
-        $contact = $this->fixtures->create('contact',
-            [
-                'name' => 'test name',
-                'type' => \RZP\Models\Contact\Type::CAPITAL_COLLECTIONS_INTERNAL_CONTACT
-            ]);
-
-        $fundAccount = $this->fixtures->fund_account->createBankAccount(
-            [
-                'source_type' => 'contact',
-                'source_id' => $contact->getId(),
-            ],
-            [
-                'name' => 'test',
-                'ifsc' => 'SBIN0007105',
-                'account_number' => '111000',
-            ]);
-        
-        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
-
-        $this->startTest();
-
-        $payout = $this->getDbLastEntity('payout');
-
-        $this->assertEquals($payout['fund_account_id'], $fundAccount['id']);
-    }
-
-    public function testPayoutCreateOnCollectionsInternalContactByOtherAppFailure()
-    {
-        $this->ba->capitalCollectionsAuth();
-
-        $contact = $this->fixtures->create('contact',
-            [
-                'name' => 'test name',
-                'type' => \RZP\Models\Contact\Type::CAPITAL_COLLECTIONS_INTERNAL_CONTACT
-            ]);
-
-        $fundAccount = $this->fixtures->fund_account->createBankAccount(
-            [
-                'source_type' => 'contact',
-                'source_id'   => $contact->getId(),
-            ],
-            [
-                'name'           => 'test',
-                'ifsc'           => 'SBIN0007105',
-                'account_number' => '111000',
-            ]);
-
-        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
-
-        $this->ba->xPayrollAuth();
-
-        $this->startTest();
     }
 }

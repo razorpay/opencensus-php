@@ -280,7 +280,7 @@ class Entity extends Base\PublicEntity
         // Don't forget these attributes if a composite payout request is made through strictPrivateAuth as we need to
         // show contact in the response of composite payout.
         if ((app('basicauth')->isStrictPrivateAuth() === true) and
-            ($this->isComposite() === false))
+            !(($this->isComposite() === true) or app('basicauth')->isSlackApp()))
         {
             array_forget($attributes, [self::SOURCE, self::CONTACT, self::CUSTOMER]);
 

@@ -2,18 +2,18 @@
 
 namespace RZP\Models\Feature;
 
-use RZP\Constants\Entity as EntityConstants;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Balance\AccountType;
-use RZP\Models\Merchant\Balance\Type as BalanceType;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
+use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Metric as FeatureMetric;
+use RZP\Models\Merchant\Balance\Type as BalanceType;
 
 class Service extends Base\Service
 {
@@ -204,9 +204,9 @@ class Service extends Base\Service
         // As in future iteration, there will be some checks added for Entity Type and ID
         // Exact requirement is not finalised yet. Only this will be rolled out in Iteration 1
 
-        $entityType = Constants::MERCHANT;
+        $entityType = $entityType ?? Constants::MERCHANT;
 
-        $entityId = $this->merchant->getId();
+        $entityId = $entityId ?? $this->merchant->getId();
 
         $response = new Base\Collection;
 

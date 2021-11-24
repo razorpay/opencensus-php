@@ -739,6 +739,43 @@ return [
         ],
     ],
 
+    'testApprovePayoutWithBearerAuth' => [
+        'request'  => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/approve',
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+                'user_comment' => 'Approving',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testRejectPayoutWithBearerAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/reject',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+                'queue_if_low_balance'  => 0,
+                'user_comment' => 'Rejecting',
+                'force_reject' => false
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testApprovePayoutWithComment' => [
         'request'  => [
             'server' => [
@@ -2448,8 +2485,6 @@ return [
                 'HTTP_X-Request-Origin' => config('applications.banking_service_url')
             ],
             'content' => [
-                'token'   => 'BUIj3m2Nx2VvVj',
-                'otp'     => '1234',
             ],
         ],
         'response' => [
@@ -15214,39 +15249,125 @@ return [
         ],
     ],
 
-    'testCreatePayoutWithOtpBearerAuth' => [
+    'testGetPayoutsWithBearerAuth' => [
         'request'  => [
-            'method'  => 'POST',
-            'url'     => '/payouts_with_otp',
+            'method'  => 'GET',
+            'url'     => '/payouts',
             'content' => [
-                'account_number'  => '2224440041626905',
-                'amount'          => 2000000,
-                'currency'        => 'INR',
-                'purpose'         => 'refund',
-                'mode'            => 'IMPS',
-                'fund_account_id' => 'fa_100000000000fa',
-                'notes'           => [
-                    'abc' => 'xyz',
-                ],
+                'product' => 'banking',
+                'count'   => 10,
+                'expand'  => [
+                    'fund_account.contact',
+                    'user'
+                ]
             ],
         ],
         'response' => [
             'content' => [
-                'entity'          => 'payout',
-                'amount'          => 2000000,
-                'currency'        => 'INR',
-                'fund_account_id' => 'fa_100000000000fa',
-                'purpose'         => 'refund',
-                'mode'            => 'IMPS',
-                'tax'             => 162,
-                'fees'            => 1062,
-                'notes'           => [
-                    'abc' => 'xyz',
+                'entity' => 'collection',
+                'count' => 1,
+                'items' =>[
+                    0 => [
+                        'entity' => 'payout',
+                        'fund_account_id' => 'fa_100000000000fa',
+                        'fund_account' =>
+                            array (
+                                'id' => 'fa_100000000000fa',
+                                'entity' => 'fund_account',
+                                'contact_id' => 'cont_1000001contact',
+                                'account_type' => 'bank_account',
+                                'bank_account' =>
+                                    array (
+                                        'ifsc' => 'YESB0CMSNOC',
+                                        'bank_name' => 'Yes Bank',
+                                        'name' => 'random_name',
+                                        'notes' =>
+                                            array (
+                                            ),
+                                        'account_number' => '2224440041626905',
+                                    ),
+                                'contact' => [],
+                                'batch_id' => NULL,
+                                'active' => true,
+                            ),
+                        'amount' => 10000,
+                        'currency' => 'INR',
+                        'workflow_history' =>
+                            array (
+                                'current_level' => 1,
+                                'steps' =>
+                                    array (
+                                        0 =>
+                                            array (
+                                                'op_type' => 'or',
+                                                'level' => 1,
+                                                'total_reviewer_count' => 2,
+                                                'roles' =>
+                                                    array (
+                                                        0 =>
+                                                            array (
+                                                                'id' => 'RzpAdminRoleId',
+                                                                'name' => 'SuperAdmin',
+                                                                'reviewer_count' => 1,
+                                                                'checkers' =>
+                                                                    array (
+                                                                    ),
+                                                            ),
+                                                        1 =>
+                                                            array (
+                                                                'id' => 'RzpOwnerRoleId',
+                                                                'name' => 'Owner',
+                                                                'reviewer_count' => 1,
+                                                                'checkers' =>
+                                                                    array (
+                                                                    ),
+                                                            ),
+                                                    ),
+                                            ),
+                                        1 =>
+                                            array (
+                                                'op_type' => 'and',
+                                                'level' => 2,
+                                                'total_reviewer_count' => 1,
+                                                'roles' =>
+                                                    array (
+                                                        0 =>
+                                                            array (
+                                                                'id' => 'RzpFinL3RoleId',
+                                                                'name' => 'Finance L3',
+                                                                'reviewer_count' => 1,
+                                                                'checkers' =>
+                                                                    array (
+                                                                    ),
+                                                            ),
+                                                    ),
+                                            ),
+                                    ),
+                            ),
+                        'notes' =>
+                            array (
+                            ),
+                        'fees' => 0,
+                        'tax' => 0,
+                        'status' => 'pending',
+                        'purpose' => 'refund',
+                        'utr' => NULL,
+                        'user' => [],
+                        'mode' => 'NEFT',
+                        'reference_id' => NULL,
+                        'narration' => 'Test Merchant Fund Transfer',
+                        'batch_id' => NULL,
+                        'banking_account_id' => 'bacc_1000000lcustba',
+                        'failure_reason' => NULL,
+                        'fee_type' => NULL,
+                        'scheduled_at' => NULL,
+                        'merchant_id' => '10000000000000',
+                    ],
                 ],
             ],
         ],
         'expected_passport' => [
-            'mode'          => 'test',
+            'mode'          => 'live',
             'identified'    => true,
             'authenticated' => true,
             'consumer'      => [
@@ -15258,14 +15379,14 @@ return [
                 'owner_id'   => '10000000000000',
                 // 'client_id'  => '<CLIENT_ID>',
                 // 'app_id'     => '<APP_ID>',
-                'env'        => 'dev',
+                'env'        => 'prod',
             ],
             'credential' => [
-                'username'   => 'rzp_test_oauth_TheTestAuthKey',
-                'public_key' => 'rzp_test_oauth_TheTestAuthKey',
+                'username'   => 'rzp_live_oauth_TheTestAuthKey',
+                'public_key' => 'rzp_live_oauth_TheTestAuthKey',
             ],
             'roles' => [
-                'oauth::scope::read_write',
+                'oauth::scope::rx_read_write',
             ],
         ],
     ],
@@ -15339,4 +15460,61 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testCreatePayoutWithOtpBearerAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_with_otp',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz'
+                ],
+            ],
+        ],
+        'expected_passport' => [
+            'mode'          => 'test',
+            'identified'    => true,
+            'authenticated' => true,
+            'consumer'      => [
+                'type' => 'merchant',
+                'id'   => '10000000000000',
+            ],
+             'credential' => [
+                'username'   => 'rzp_test_oauth_TheTestAuthKey',
+                'public_key' => 'rzp_test_oauth_TheTestAuthKey',
+            ],
+            'mode'          => 'test',
+            'oauth' => [
+                'owner_type' => 'merchant',
+                'owner_id'   => '10000000000000',
+                // 'client_id'  => '<CLIENT_ID>',
+                // 'app_id'     => '<APP_ID>',
+                'env'        => 'dev',
+            ],
+            'roles' => [
+                    'oauth::scope::read_write',
+            ],
+        ]
+    ]
 ];

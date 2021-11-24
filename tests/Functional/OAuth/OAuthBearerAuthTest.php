@@ -865,7 +865,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
     //Testing oauth related functionality to support slack app for X
     public function testSendOtpWithBearerAuth()
     {
-        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['read_write']]);
+        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['rx_read_write']]);
 
         $this->ba->oauthBearerAuth($accessToken);
 
