@@ -46,7 +46,7 @@ class PaymentSplitInItems extends Component {
 
     if (hash) {
       hash = hash.substring(1);
-      const allowedModules = ['paymentpages', 'paymentbuttons', 'subscription_buttons'];
+      const allowedModules = ['paymentpages', 'paymentbuttons', 'subscription_buttons', 'stores'];
 
       return allowedModules.indexOf(hash) > -1;
     }

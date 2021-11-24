@@ -28,8 +28,13 @@ const amount = {
 };
 
 const stock = {
-  title: 'Units',
+  title: 'Stock',
   value: (item) => item.stock,
+};
+
+const unitsSold = {
+  title: 'Units Sold',
+  value: (item) => item.stock_sold,
 };
 
 const status = {
@@ -61,7 +66,7 @@ export default class ProductsListContainer extends ListContainer {
 
         <DataTable
           title="Products"
-          columns={[storeProductId, name, productImage, amount, stock, status]}
+          columns={[storeProductId, name, productImage, amount, stock, unitsSold, status]}
           {...this.props}
         />
 

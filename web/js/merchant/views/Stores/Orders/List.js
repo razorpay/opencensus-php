@@ -1,13 +1,19 @@
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
-import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
+import { withRouter, Link } from 'react-router-dom';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentsListFilter from './Filter';
 
-import { paymentId, amount, customer, createdAtShort, status } from 'common/ui/item/pair';
+import { amount, customer, createdAtShort, status } from 'common/ui/item/pair';
 
 import EntityTable from 'merchant/components/EntityTable';
+
+import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
+
+const paymentId = {
+  title: 'Payment Id',
+  value: (item) => <Link to={`/payments/${item.id}#stores`}>{item.id}</Link>,
+};
 
 const PaymentsTable = (props) => {
   const paymentColumns = [paymentId, amount, customer, createdAtShort, status];
