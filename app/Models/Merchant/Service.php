@@ -5765,14 +5765,19 @@ class Service extends Base\Service
         $wasBankingEnabledNow = false;
         $wasSwitchToPG = false;
 
-        $this->repo->transactionOnLiveAndTest(function() use ($product, &$wasBankingEnabledNow, &$wasSwitchToPG)
+        $this->repo->transactionOnLiveAndTest(function() use
+            ($product, &$wasBankingEnabledNow, &$wasSwitchToPG, $merchant)
         {
+            $user = $this->addMerchantUserMappingOnProduct($merchant, $product);
 
-            // Add Banking Role for the current merchant User.
-            Tracer::inSpan(['name' => 'product_switch.addProductSwitchRole'], function() use($product) {
-                (new User\Service)->addProductSwitchRole($product);
-            });
-
+            // if $user is empty, that means that the user mapping creation logic failed
+            // since the mapping already exists
+            // that may happen be due to the master slave db replica
+            // in such a case, we'll skip further flow
+            if (empty($user) === true)
+            {
+                return;
+            }
 
             $wasSwitchToPG = $this->auth->getRequestOriginProduct() === Product::PRIMARY;
 
@@ -7820,6 +7825,52 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::FETCH_MERCHANTS_BY_PARAMS_REQUEST, $input);
 
         return $this->repo->merchant->fetchMerchantsByParams($input)->toArrayAdmin();
+    }
+
+    private function addMerchantUserMappingOnProduct(Entity $merchant, string $product = null)
+    {
+        try
+        {
+            return $this->addProductSwitchRole($product);
+        }
+        catch (Throwable $ex)
+        {
+            //The INSERT query failed due to a unique constraint violation.
+            if ($ex->getCode() === ErrorCode::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::ERROR_DUE_TO_DATABASE_LAG_DURING_PRODUCT_SWITCH);
+
+                // retry the call to product switch, this call should
+                $mapping = $this->getMerchantUserMappingForProduct($product, $merchant->getId(), null, true);
+
+                if (empty($mapping) === false)
+                {
+                    // return null to indicate that the mapping wasn't created
+                    return null;
+                }
+            }
+
+            throw $ex;
+        }
+    }
+
+    public function addProductSwitchRole(string $product = null)
+    {
+        // Add Banking Role for the current merchant User.
+        return Tracer::inSpan(['name' => 'product_switch.addProductSwitchRole'], function () use ($product) {
+            return (new User\Service)->addProductSwitchRole($product);
+        });
+    }
+
+    public function getMerchantUserMappingForProduct(string $product = null,
+                                                     string $merchantId = null,
+                                                     string $userId = null,
+                                                     bool $useWritePdo = false)
+    {
+        return (new User\Service)->getMerchantUserMappingForProduct($product, null, null, $useWritePdo);
     }
 
     public function updateWhitelistedDomain($input): array

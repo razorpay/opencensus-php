@@ -1129,10 +1129,7 @@ class Service extends Base\Service
         $merchantId = $this->auth->getMerchantId();
 
         // Check if a role for this user already exists with the existing product merchant user mapping.
-        $userMapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
-                                                                     $user->getId(),
-                                                                     null,
-                                                                     $product);
+        $userMapping = $this->getMerchantUserMappingForProduct($product, $merchantId, $user->getId());
 
         if (empty($userMapping) === true)
         {
@@ -1142,10 +1139,7 @@ class Service extends Base\Service
 
             $switchProduct = ($product === Product::BANKING) ? Product::PRIMARY : Product::BANKING;
 
-            $userMapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
-                $user->getId(),
-                null,
-                $switchProduct);
+            $userMapping = $this->getMerchantUserMappingForProduct($switchProduct, $merchantId, $user->getId());
 
             $productRole = null;
 
@@ -1529,5 +1523,23 @@ class Service extends Base\Service
         $user = $this->core()->getUserByVerifiedContact($input);
 
         return $user;
+    }
+
+    public function getMerchantUserMappingForProduct(string $product = null,
+                                                     string $merchantId = null,
+                                                     string $userId = null,
+                                                     bool $useWritePdo = false)
+    {
+        $userId = $userId ?? $this->auth->getUser()->getId();
+
+        $product = $product ?? $this->auth->getRequestOriginProduct();
+
+        $merchantId = $merchantId ?? $this->auth->getMerchantId();
+
+        return $this->repo->merchant->getMerchantUserMapping($merchantId,
+                                                             $userId,
+                                                             null,
+                                                             $product,
+                                                             $useWritePdo);
     }
 }

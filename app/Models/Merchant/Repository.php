@@ -705,7 +705,8 @@ class Repository extends Base\Repository
     public function getMerchantUserMapping(string $merchantId,
                                            string $userId,
                                            string $role = null,
-                                           string $product = null)
+                                           string $product = null,
+                                           bool $useWritePdo = false)
     {
         $product = $product ?? $this->auth->getRequestOriginProduct();
 
@@ -722,6 +723,11 @@ class Repository extends Base\Repository
         if (empty($product) === false)
         {
             $query->where(Entity::PRODUCT, $product);
+        }
+
+        if ($useWritePdo === true)
+        {
+            $query->useWritePdo();
         }
 
         return $query->first();
