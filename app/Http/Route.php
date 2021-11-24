@@ -2179,6 +2179,7 @@ class Route
         // Pincode Service
         'pincode_get'                              => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
         '1cc_pincode_get'                          => ['get',      '1cc/pincodes/{id}',                              'PincodeSearchController@get'                                       ],
+        'internal_pincode_get'                     => ['get',      'internal/pincodes/{id}',                         'PincodeSearchController@get'                                       ],
         'cities_get'                               => ['get',      'cities',                                         'CityController@getCities'                                          ],
         'db_meta_query'                            => ['post',     'db_meta_query',                                  'AdminController@dbMetaDataQuery'                                   ],
 
@@ -4099,6 +4100,8 @@ class Route
 
         'chargeback_poc',
         'whitelisted_domain',
+
+        'internal_pincode_get',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -10767,6 +10770,7 @@ class Route
             'internal_feature_bulk_remove',
             'internal_feature_get_all',
             'user_fetch_by_verified_contact_internal',
+            'internal_pincode_get',
         ],
         'capital_cards_m2p' =>[
             'capital_cards_m2p_webhook',
