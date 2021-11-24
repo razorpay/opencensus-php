@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import Form from 'common/new-ui/Form';
@@ -11,6 +12,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 
 import { closeModal } from 'merchant_common/reducers/modals';
 import { updateContactMobile } from 'merchant_common/reducers/user';
+import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 
 @connect(
   (state) => ({
@@ -19,6 +21,7 @@ import { updateContactMobile } from 'merchant_common/reducers/user';
   {
     closeModal,
     updateContactMobile,
+    showNotification: fnShowNotification,
   },
 )
 export default class EditContactMobileForm extends React.Component {
@@ -27,7 +30,7 @@ export default class EditContactMobileForm extends React.Component {
   };
 
   onCloseClick = () => {
-    this.props.onClose && this.props.onClose();
+    if (this.props.onClose) this.props.onClose();
     this.props.closeModal();
   };
 
@@ -40,7 +43,7 @@ export default class EditContactMobileForm extends React.Component {
 
   onContactUpdateSubmit = () => {
     const { contactMobile } = this.state;
-    const { otpAuthToken } = this.props;
+    const { otpAuthToken, showNotification } = this.props;
 
     const data = {
       contact_mobile: contactMobile,
@@ -72,7 +75,7 @@ export default class EditContactMobileForm extends React.Component {
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
-        this.props.showNotification({
+        showNotification({
           type: 'error',
           message: errors[0],
         });
