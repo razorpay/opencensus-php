@@ -162,7 +162,7 @@ class MerchantActionNotification
         {
             $merchantEmail = $merchant->merchantDetail->getContactEmail();
 
-            $ccEmails = (new Dispute\Service)->getDefaultDisputeEmails($merchant->getId());
+            $ccEmails = (new Dispute\Service)->getCCEmailsWithSalesPOC($merchant->getId());
 
             $mailSubject = (new TemplateEngine)->render($subject, $data);
 
