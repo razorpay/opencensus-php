@@ -78,6 +78,7 @@ class Limit
         Type::SETTLEMENT_ONDEMAND_FEATURE_CONFIG    => 50000,
         Type::BUY_PRICING_RULE                      => 100000,
         Type::BUY_PRICING_ASSIGN                    => 100000,
+        Type::LEDGER_ONBOARD_OLD_ACCOUNT            => 5000,
     ];
 
     /**
