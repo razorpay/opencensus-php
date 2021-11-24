@@ -30,7 +30,6 @@ use RZP\Models\FundTransfer\Attempt\Type as Product;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccount\Gateway\Rbl\Fields as RblGatewayFields;
 use RZP\Models\BankingAccount\Detail\Core as BankingAccountDetailCore;
-use RZP\Models\BankingAccount\Detail\Entity as BankingAccountDetailEntity;
 
 class CreateAccount extends Base
 {
@@ -688,7 +687,7 @@ class CreateAccount extends Base
                         Logger::CRITICAL,
                         TraceCode::FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_GRACEFULLY_FAILED,
                         [
-                            'source_account_id'  => $input[self::SOURCE_ACCOUNT_CONST][Constants::ID],
+                            'source_account_id'  => $input[self::SOURCE_ACCOUNT_CONST][self::BANKING_ACCOUNT_ID],
                             'message' => $e->getMessage(),
                         ]);
 
@@ -746,7 +745,7 @@ class CreateAccount extends Base
         $this->trace->info(
             TraceCode::FTS_PROCESS_REQUEST_TO_UPDATE_SOURCE_ACCOUNT_GRACEFULLY,
             [
-                'source_account_id' => $input[self::SOURCE_ACCOUNT_CONST][Constants::ID],
+                'banking_account_id' => $input[self::SOURCE_ACCOUNT_CONST][self::BANKING_ACCOUNT_ID],
             ]
         );
 
@@ -754,20 +753,23 @@ class CreateAccount extends Base
          * This array will contain all the sensitive input details after tokenisation
          * @var array
          */
-        $tokenisedCreds = $this->updateBankingAccountDetails($input);
+        $tokenisedInput = $this->updateBankingAccountDetails($input);
 
         $this->trace->info(
             TraceCode::FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_TOKENISED_CREDS,
             [
-                'tokenised_creds' => $tokenisedCreds,
+                'tokenised_creds' => $tokenisedInput,
             ]
         );
 
         // Replace the existing input with the tokenised creds
-        foreach ($tokenisedCreds as $key => $value)
+        foreach ($tokenisedInput[Constants::CREDENTIALS] as $key => $value)
         {
             $input[self::SOURCE_ACCOUNT_CONST][Constants::CREDENTIALS][$key] = $value;
         }
+
+        $input[self::SOURCE_ACCOUNT_CONST][Constants::FUND_ACCOUNT_ID] = $tokenisedInput[Constants::FUND_ACCOUNT_ID];
+        $input[self::SOURCE_ACCOUNT_CONST][self::BANKING_ACCOUNT_ID]   = $tokenisedInput[self::BANKING_ACCOUNT_ID];
 
         $reformattedInput = $this->formatInputForGracefulSourceAccountUpdate($input);
 
@@ -786,7 +788,7 @@ class CreateAccount extends Base
         $this->trace->info(
             TraceCode::FTS_PROCESS_REQUEST_SENT_TO_UPDATE_SOURCE_ACCOUNT_GRACEFULLY,
             [
-                'source_account_id' => $input[self::SOURCE_ACCOUNT_CONST][Constants::ID],
+                'banking_account_id' => $input[self::SOURCE_ACCOUNT_CONST][self::BANKING_ACCOUNT_ID],
                 'response'          => $response,
             ]
         );
@@ -806,7 +808,7 @@ class CreateAccount extends Base
         $this->trace->info(
             TraceCode::FTS_PROCESS_REQUEST_TO_UPDATE_BANKING_ACCOUNT_DETAILS,
             [
-                'source_account_id' => $input[self::SOURCE_ACCOUNT_CONST][Constants::ID],
+                'banking_account_id' => $input[self::SOURCE_ACCOUNT_CONST][self::BANKING_ACCOUNT_ID],
             ]
         );
 
@@ -817,8 +819,8 @@ class CreateAccount extends Base
     protected function processRequestToUpdateBankingAccountDetailsGracefully($srcAccDetails)
     {
         // Fetch all the objects related to the relevant banking account
-        $bankingAccountId     = $srcAccDetails[BankingAccountDetailEntity::BANKING_ACCOUNT_ID];
-        $bankingAccountEntity = $this->repo->banking_account->findOrFail($bankingAccountId);
+        $bankingAccountId     = $srcAccDetails[self::BANKING_ACCOUNT_ID];
+        $bankingAccountEntity = $this->repo->banking_account->findOrFailPublic($bankingAccountId);
         $this->channel        = $bankingAccountEntity->getChannel();
         $processor            = $this->bankingAccountCore->getProcessor($this->channel);
 
@@ -838,13 +840,24 @@ class CreateAccount extends Base
             );
         }
 
+        // Note, This fund account ID will probably only be non-empty for activated banking accounts.
+        // I checked the DB records, newly created entities didn't have a FTS fund account ID.
+        // To be safe, only update RBL UPI creds thru this flow if the status of the banking account entity is activated
+        $ftsFundAccountId = $bankingAccountEntity->getFtsFundAccountId();
+
         // This call will tokenise the input and then store them in the DB/vault as needed. Check out the function
         // implementation for details.
-        return (new BankingAccountDetailCore())->updateBankingAccountDetails(
+        $tokenisedCreds = (new BankingAccountDetailCore())->updateBankingAccountDetails(
             $srcAccDetails[Constants::CREDENTIALS],
             $bankingAccountEntity,
             $processor
         );
+
+        return [
+            Constants::FUND_ACCOUNT_ID => $ftsFundAccountId,
+            self::BANKING_ACCOUNT_ID   => $bankingAccountId,
+            Constants::CREDENTIALS     => $tokenisedCreds,
+        ];
     }
 
     /**
@@ -858,9 +871,10 @@ class CreateAccount extends Base
         $input = $input[self::SOURCE_ACCOUNT_CONST];
 
         return [
-            $input[Constants::ID] => [
-                Constants::CREDENTIALS   => $input[Constants::CREDENTIALS],
-                self::GRACEFUL_UPDATE => true,
+            $input[self::BANKING_ACCOUNT_ID] => [
+                Constants::CREDENTIALS     => $input[Constants::CREDENTIALS],
+                Constants::FUND_ACCOUNT_ID => $input[Constants::FUND_ACCOUNT_ID],
+                self::GRACEFUL_UPDATE      => true,
             ],
         ];
     }

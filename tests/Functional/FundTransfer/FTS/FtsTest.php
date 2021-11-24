@@ -275,7 +275,6 @@ class FtsTest extends TestCase
             'method'  => 'PATCH',
             'content' => [
                 'source_account' => [
-                    'id'                 => 'testSrcAcc1010',
                     'banking_account_id' => '1000000lcustba',
                     'credentials'        => [
                         RblGatewayFields::BCAGENT          => 'RandomBcagent',
