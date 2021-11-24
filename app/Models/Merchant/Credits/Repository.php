@@ -102,11 +102,11 @@ class Repository extends Base\Repository
             ->merchantId($merchant->getId())
             ->get();
 
-        $creditsFiltered = $merchantsCredits->filter(function ($item, $type) {
+        $creditsFiltered = $merchantsCredits->filter(function ($item) use ($type) {
             return (
                 ($item->getUnusedCredits() > 0) and
-                (($item->getExpiredAt() == null) or ($item->getExpiredAt() > time())) and
-                ($item->getType() == $type)
+                (($item->getExpiredAt() === null) or ($item->getExpiredAt() > time())) and
+                ($item->getType() === $type)
             );
         });
 

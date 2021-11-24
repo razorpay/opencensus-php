@@ -61,6 +61,42 @@ class CreditsTest extends TestCase
         // $this->assertEquals(50000, $nodalBalance['credits']);
     }
 
+    public function testWithQueryOptimisedCredits()
+    {
+
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 100000,
+        ]);
+
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 100000,
+            'merchant_id' => '10NodalAccount',
+        ]);
+
+        $this->fixtures->merchant->editCredits('100000', '10000000000000');
+        $this->fixtures->merchant->editCreditsforNodalAccount('100000');
+
+        $this->fixtures->merchant->addFeatures(['credit_id_based_new_query']);
+
+        $this->doAuthAndCapturePayment();
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals(0, $txn['fee']);
+        $this->assertEquals(0, $txn['tax']);
+        $this->assertEquals(true, $txn['gratis']);
+        $this->assertEquals('1ZeroPricingR1', $txn['pricing_rule_id']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $this->assertEquals(1050000, $balance['balance']);
+        $this->assertEquals(50000, $balance['credits']);
+
+        // $nodalBalance = $this->getNodalAccountBalance();
+        // $this->assertEquals(1050000, $nodalBalance['balance']);
+        // $this->assertEquals(50000, $nodalBalance['credits']);
+    }
+
     /**
      * When payment authorized on payment network gateway
      */
