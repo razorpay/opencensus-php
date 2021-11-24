@@ -4228,6 +4228,13 @@ class Header
             $expectedHeaders[] = self::MERCHANT_ID;
         }
 
+        // TODO: Update the batch header once FE changes for the same are deployed on prod.
+        if (($type === Type::PARTNER_SUBMERCHANT_INVITE) and
+            ((in_array(self::CONTACT_MOBILE, $actualHeaders, true) === true)))
+        {
+            $expectedHeaders[] = self::CONTACT_MOBILE;
+        }
+
         // For payouts, we do not want to match exact headers, because we are allowing some headers to be skipped.
         // Since some headers can be skipped, we are also allowing for rearrangement of headers
         // and hence there are no strict checks inside payout batch file header validations.

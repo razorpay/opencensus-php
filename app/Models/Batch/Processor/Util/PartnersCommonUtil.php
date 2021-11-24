@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch\Processor\Util;
 
 use RZP\Exception;
+use RZP\Models\Batch\Type;
 use RZP\Models\Batch\Header;
 
 class PartnersCommonUtil
@@ -13,6 +14,13 @@ class PartnersCommonUtil
 
         $firstRow = str_getcsv(current($rows), $delimiter);
 
+        // TODO: update the batch header once the FE changes for the same are deployed on prod.
+        if (($batchType === Type::PARTNER_SUBMERCHANT_INVITE) and
+            ((in_array(Header::CONTACT_MOBILE, $firstRow, true) === true)))
+        {
+            $headings[] = Header::CONTACT_MOBILE;
+        }
+
         if (Header::areTwoHeadersSame($headings, $firstRow) === false)
         {
             $msg = 'Uploaded file has invalid headers. Acceptable headers are [%s]';
@@ -22,5 +30,4 @@ class PartnersCommonUtil
             throw new Exception\BadRequestValidationFailureException($msg);
         }
     }
-
 }
