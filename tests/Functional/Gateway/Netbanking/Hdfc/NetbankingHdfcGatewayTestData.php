@@ -36,7 +36,7 @@ return [
         'bank' => 'HDFC',
         'received' => true,
         'client_code' => 'abcom',
-        'merchant_code' => 'RAZORPAY',
+        'merchant_code' => 'RAZORPAY2',
 //        'bank_payment_id' => null,
         'error_message' => null,
         'entity' => 'netbanking',

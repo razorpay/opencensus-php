@@ -644,9 +644,9 @@ return [
 
         // tpv
         'live_hash_secret_tpv' => env('NETBANKING_HDFC_GATEWAY_CUG_LIVE_HASH_SECRET'),
-        'test_hash_secret_tpv' => '12345',
+        'test_hash_secret_tpv' => '123456',
 
-        'test_merchant_id' => 'RAZORPAY',
+        'test_merchant_id' => 'RAZORPAY2',
     ],
 
     'netbanking_corporation' => [
