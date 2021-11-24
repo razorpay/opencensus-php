@@ -37,6 +37,14 @@ class Payment extends Base
 
         $this->repo->saveOrFail($this->txn);
 
+        if ($this->txn->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false)
+        {
+            $this->fillSettledAtInfo();
+        }
+    }
+
+    public function fillSettledAtInfo()
+    {
         $settledAt = $this->getSettledAtTimestamp();
 
         $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);

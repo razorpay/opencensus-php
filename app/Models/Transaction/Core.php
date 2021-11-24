@@ -145,8 +145,12 @@ class Core extends Base\Core
     {
         list($txn, $feesSplit) = $this->createTransactionForSource($payment);
 
-        // dispatch this transaction for settlement.
-        $this->dispatchForSettlementBucketing($txn);
+        // async balance update worker will set details of txn that's why we are pushing txn now.
+        if($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false)
+        {
+            // dispatch this transaction for settlement.
+            $this->dispatchForSettlementBucketing($txn);
+        }
 
         return [$txn, $feesSplit];
     }
@@ -1784,6 +1788,8 @@ class Core extends Base\Core
         if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true)
         {
             $processor->setCreditDebitDetails($processor);
+
+            $processor->fillSettledAtInfo();
         }
         else
         {

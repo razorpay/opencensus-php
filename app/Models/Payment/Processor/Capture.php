@@ -859,6 +859,9 @@ trait Capture
 
                 $this->repo->saveOrFail($payment);
                 $this->repo->saveOrFail($txn);
+
+                // dispatching txn data to new settlement service after updating credit and debit value
+                (new Transaction\Core)->dispatchForSettlementBucketing($txn);
             }
         });
     }
