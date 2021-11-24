@@ -5084,6 +5084,12 @@ class Processor
             return false;
         }
 
+       // not sending gateway request while creating mandate
+        if ($payment->isCardMandateCreateApplicable() === true)
+        {
+            return false;
+        }
+
         // Card recurring payment when created are supposed to be left in created state
         // We will set a instantaneous reminder, which will process the payment state
         if ($payment->isCardMandateNotificationCreateApplicable() === true)
