@@ -693,9 +693,6 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($payout);
             });
 
-        // adding the condition to fire payout.updated webhook
-        // with experiment enabled for selected merchant
-
         $merchantId = $payout->getMerchantId();
 
         $variant = $this->app->razorx->getTreatment(
@@ -705,16 +702,31 @@ class Core extends Base\Core
             Entity::RAZORX_RETRY_COUNT
         );
 
-            if (strtolower($variant) === 'on' and ($isPayoutService === false))
+        $ftaStatus = $ftaData[Attempt\Constants::FTA_STATUS] ?? null ;
+
+        // checks condition to fire Payout.updated webhook in case
+        // if experiment is on and status details update has come or utr update comes
+        // if experiment is off checks for utr update
+        if ((strtolower($variant) === 'on' and
+                $ftaStatus === "initiated") and
+            ($isPayoutService === false))
+        {
+            $statusDetails = $ftaData[Attempt\Entity::STATUS_DETAILS] ?? null;
+
+            if (($statusDetails === null) and ($initialUtr === null) and ($payout->getUtr() !== null))
             {
-                $statusDetails = $ftaData[Attempt\Entity::STATUS_DETAILS] ?? null;
-
-                $payout->setStatusDetails($statusDetails);
-
                 $this->app->events->fire('api.payout.updated', [$payout]);
             }
 
             else
+            {
+                $payout->setStatusDetails($statusDetails);
+
+                $this->app->events->fire('api.payout.updated', [$payout]);
+            }
+        }
+
+        else
             {
                 if (($initialUtr === null) and
                     ($payout->getUtr() !== null) and

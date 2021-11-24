@@ -297,7 +297,10 @@ class Entity extends Base\PublicEntity
 
     protected $queueFlag = false;
 
-    protected $statusDetails = [];
+    protected $statusDetails = [
+        'reason'        => null,
+        'description'   => null,
+    ];
 
     // This flag will be used to decide if FTS fund transfer has to be async call.
     protected $syncFtsFundTransfer = false;
@@ -1641,10 +1644,16 @@ class Entity extends Base\PublicEntity
 
         $statusDetailsDescription = StatusDetails::STATUS_REASONS_WITH_DESCRIPTION[$statusDetailsReason] ?? null;
 
-        $statusDescriptionTime = Carbon::createFromTimestamp($processByTime, 'Asia/Kolkata')->format("dS F Y") ?? null;
+        $statusDescriptionTime = Carbon::createFromTimestamp($processByTime, 'Asia/Kolkata')->format("dS F Y, h:i A") ?? null;
 
         if ($statusDetailsReason === StatusDetails::BENEFICIARY_BANK_CONFIRMATION_PENDING)
        {
+           // time contains only date in case if it is not NEFT and RTGS
+
+           if (($this->getMode() !== 'NEFT') and ($this->getMode() !== 'RTGS'))
+           {
+               $statusDescriptionTime = Carbon::createFromTimestamp($processByTime, 'Asia/Kolkata')->format("dS F Y") ?? null;
+           }
            $beneBankName = $this->provideBeneBankName() ?? 'beneficiary bank';
 
            $statusDetailsDescription = str_replace('beneficiary bank',$beneBankName, $statusDetailsDescription);
@@ -1652,8 +1661,6 @@ class Entity extends Base\PublicEntity
 
        if($statusDetailsReason === StatusDetails::BANK_WINDOW_CLOSED)
        {
-           $statusDescriptionTime = Carbon::createFromTimestamp($processByTime, 'Asia/Kolkata')->format("dS F Y, h:i A") ?? null;
-
            $mode = $this->getMode();
 
            $statusDetailsDescription = str_replace('mode',$mode,$statusDetailsDescription);

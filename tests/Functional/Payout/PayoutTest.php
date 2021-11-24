@@ -15291,7 +15291,7 @@ class PayoutTest extends OAuthTestCase
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
                 'source_type' => 'payout',
                 'source_id' => $payout->getId(),
-                'status' => 'initiated',
+                'fta_status' => 'initiated',
                 'channel' => 'rbl',
                 'failure_reason' => '',
                 'utr' => 928337183,
@@ -15354,7 +15354,7 @@ class PayoutTest extends OAuthTestCase
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
             'source_type' => 'payout',
             'source_id' => $payout->getId(),
-            'status' => 'initiated',
+            'fta_status' => 'initiated',
             'channel' => 'rbl',
             'failure_reason' => '',
             'utr' => 928337183,
@@ -15412,7 +15412,7 @@ class PayoutTest extends OAuthTestCase
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
             'source_type' => 'payout',
             'source_id' => $payout->getId(),
-            'status' => 'initiated',
+            'fta_status' => 'initiated',
             'channel' => 'rbl',
             'failure_reason' => '',
             'utr' => 928337183,
@@ -15469,7 +15469,7 @@ class PayoutTest extends OAuthTestCase
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
             'source_type' => 'payout',
             'source_id' => $payout->getId(),
-            'status' => 'initiated',
+            'fta_status' => 'initiated',
             'channel' => 'rbl',
             'failure_reason' => '',
             'utr' => 928337183,
@@ -15526,7 +15526,7 @@ class PayoutTest extends OAuthTestCase
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
             'source_type' => 'payout',
             'source_id' => $payout->getId(),
-            'status' => 'initiated',
+            'fta_status' => 'initiated',
             'channel' => 'rbl',
             'failure_reason' => '',
             'utr' => 928337183,
@@ -15582,7 +15582,7 @@ class PayoutTest extends OAuthTestCase
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
             'source_type' => 'payout',
             'source_id' => $payout->getId(),
-            'status' => 'initiated',
+            'fta_status' => 'initiated',
             'channel' => 'rbl',
             'failure_reason' => '',
             'utr' => 928337183,
@@ -15635,7 +15635,7 @@ class PayoutTest extends OAuthTestCase
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
             'source_type' => 'payout',
             'source_id' => $payout->getId(),
-            'status' => 'initiated',
+            'fta_status' => 'initiated',
             'channel' => 'rbl',
             'failure_reason' => '',
             'utr' => 928337183,
@@ -15688,7 +15688,7 @@ class PayoutTest extends OAuthTestCase
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
             'source_type' => 'payout',
             'source_id' => $payout->getId(),
-            'status' => 'initiated',
+            'fta_status' => 'initiated',
             'channel' => 'rbl',
             'failure_reason' => '',
             'utr' => 928337183,
