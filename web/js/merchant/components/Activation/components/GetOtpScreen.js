@@ -154,7 +154,7 @@ const GetOtpScreen = ({
   const generateOTP = (btnStyle) => {
     const body = {
       aadhaar_number: aadharNumber,
-      captcha: captcha,
+      captcha,
     };
     return merchantFetch({
       url: 'bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarVerifyCaptchaAndSendOtp',
@@ -238,6 +238,23 @@ const GetOtpScreen = ({
       generateCaptcha();
     }
   }, [activeTab, isStartAgain]);
+
+  useEffect(() => {
+    if (error) {
+      const errorMsg = getAadharFieldErrorMsg() || getApiErrorMsg() || getCaptchaFieldMsg();
+      analyticsTrack({
+        objectName: 'Form Field',
+        actionName: 'Validation Failed',
+        screen: 'home page',
+        eventAction: 'Error',
+        properties: {
+          error: errorMsg,
+          fieldLabel: 'Aadhar Verification',
+          tab: 'Documents Verification',
+        },
+      });
+    }
+  }, [error]);
 
   return (
     <>

@@ -61,6 +61,7 @@ const ShopEstablishmentNumber: React.FC = () => {
             handleSubmit={handleSubmit}
             isBlurCalled={isBlurCalled}
             setIsBlurCalled={setIsBlurCalled}
+            tabName="Documents"
           />
         </form>
       )}

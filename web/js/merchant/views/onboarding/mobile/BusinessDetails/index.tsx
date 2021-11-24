@@ -807,6 +807,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
             handleSubmit={handleSubmit}
             isBlurCalled={isBlurCalled}
             setIsBlurCalled={setIsBlurCalled}
+            tabName="Business Details"
           />
         </form>
       )}

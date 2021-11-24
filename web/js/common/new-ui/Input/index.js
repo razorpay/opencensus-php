@@ -1,3 +1,4 @@
+import React from 'react';
 import FileUpload from 'merchant/components/File/Upload';
 import { classList } from 'common/utils/rzp-utils';
 
@@ -24,15 +25,15 @@ export function inputClass({ props, state, className }) {
   }
 
   if (props.size) {
-    wrapperClass += ' Input--' + props.size;
+    wrapperClass += ` Input--${props.size}`;
   }
 
   if (props.className) {
-    wrapperClass += ' ' + props.className;
+    wrapperClass += ` ${props.className}`;
   }
 
   if (className) {
-    wrapperClass += ' ' + className;
+    wrapperClass += ` ${className}`;
   }
 
   if (state) {
@@ -57,7 +58,7 @@ export function inputClass({ props, state, className }) {
 }
 
 export function separateDomProps(props) {
-  let {
+  const {
     tag = 'input',
     label,
     fieldLabel,
@@ -180,6 +181,7 @@ export class Error extends React.Component {
   }
 }
 
+// eslint-disable-next-line valid-jsdoc
 /**
  * General Field component
  * @props
@@ -191,8 +193,9 @@ export default class Field extends React.Component {
     super(props);
     this.state = {
       mature: props.mature,
-      focus: false,
       error: '',
+      // eslint-disable-next-line react/no-unused-state
+      focus: true,
       character_length:
         props.tag === 'textarea' && props.defaultValue ? props.defaultValue.length : 0,
     };
@@ -234,14 +237,15 @@ export default class Field extends React.Component {
       }
     }
 
-    if (isDifferent) {
-      this.el && this.valid();
+    if (isDifferent && this.el) {
+      this.valid();
     }
   }
 
   componentDidMount() {
     // On render, FE error will be shown upfront if value filled is not value.
     if (this.el && this.el.value) {
+      // eslint-disable-next-line react/no-did-mount-set-state
       this.setState({
         mature: true,
       });
@@ -249,14 +253,20 @@ export default class Field extends React.Component {
   }
 
   focus = (e) => {
-    this.props.onFocus && this.props.onFocus(e);
+    if (this.props.onFocus) {
+      this.props.onFocus(e);
+    }
+    // eslint-disable-next-line react/no-unused-state
     this.setState({ focus: true });
 
     this.updateInfo(e); // On focus, it must display information based on some value of self / other field.
   };
 
   blur = (e) => {
-    this.props.onBlur && this.props.onBlur(e);
+    if (this.props.onBlur) {
+      this.props.onBlur(e, this.state.error);
+    }
+    // eslint-disable-next-line react/no-unused-state
     this.setState({ focus: false });
 
     /*
@@ -270,8 +280,13 @@ export default class Field extends React.Component {
 
   change = (e) => {
     this.valid();
-    this.props.showCharacterLength && this.setCharacterLength();
-    this.props.onChange && this.props.onChange(e);
+    if (this.props.showCharacterLength) {
+      this.setCharacterLength();
+    }
+
+    if (this.props.onChange) {
+      this.props.onChange(e);
+    }
 
     if (!this.state.mature || !this.state.touched) {
       this.setState({ touched: true });
@@ -281,11 +296,11 @@ export default class Field extends React.Component {
   };
 
   valid() {
-    let { pattern, required, validator, requiredError, patternError } = this.props;
+    const { validator, requiredError, patternError } = this.props;
 
-    let el = this.el;
-    let value = el.value;
-    let validity = el.validity;
+    const el = this.el;
+    const value = el.value;
+    const validity = el.validity;
     let error = '';
 
     if (validity.valueMissing) {
@@ -305,7 +320,7 @@ export default class Field extends React.Component {
   setCharacterLength() {
     const { showCharacterLength } = this.props;
 
-    let value = this.el.value;
+    const value = this.el.value;
     if (showCharacterLength) {
       const character_length = showCharacterLength(value);
 
@@ -345,7 +360,7 @@ export default class Field extends React.Component {
                 infoEle: data || null,
               });
             })
-            .catch((err) => {
+            .catch(() => {
               this.setState({
                 infoEle: null,
               });
@@ -362,8 +377,8 @@ export default class Field extends React.Component {
   }
 
   render() {
-    let allProps = separateDomProps(this.props);
-    let InputTag = allProps.tag;
+    const allProps = separateDomProps(this.props);
+    const InputTag = allProps.tag;
 
     let defaultValue = allProps.defaultValue;
     if (this.props.type === 'file') {
@@ -375,9 +390,9 @@ export default class Field extends React.Component {
       infoEle = this.state.infoEle;
     }
 
-    let descriptionEle = allProps.description;
+    const descriptionEle = allProps.description;
 
-    let InputComponent = (
+    const InputComponent = (
       <InputTag
         {...allProps.props}
         onFocus={this.focus}
@@ -451,7 +466,7 @@ class Check extends Field {
   }
 
   render() {
-    let { label, fieldLabel, description, info, props } = separateDomProps(this.props);
+    const { label, fieldLabel, description, props } = separateDomProps(this.props);
 
     return (
       <div class={inputClass(this)}>
@@ -497,7 +512,7 @@ class Radio extends Field {
   };
 
   toggle = (e) => {
-    let target = e.target;
+    const target = e.target;
     if (!this.props.name) {
       Array.prototype.forEach.call(target.parentNode.parentNode.querySelectorAll('input'), (el) => {
         if (el !== target) {
@@ -509,17 +524,21 @@ class Radio extends Field {
       value: target.value,
     });
 
-    this.props.onChange && this.props.onChange(e);
+    if (this.props.onChange) {
+      this.props.onChange(e);
+    }
   };
 
   onBlur = (e) => {
-    this.props.onBlur && this.props.onBlur(e);
+    if (this.props.onBlur) {
+      this.props.onBlur(e);
+    }
   };
 
   render() {
-    let { label, description, options, props } = separateDomProps(this.props);
+    const { label, description, options, props } = separateDomProps(this.props);
 
-    let defaultValue = this.state.value;
+    const defaultValue = this.state.value;
     let selectedDescription;
 
     return (
@@ -528,8 +547,8 @@ class Radio extends Field {
         <div class="Input-content">
           <div class="Input--radioLabels">
             {options.map((o, i) => {
-              let stringOption = typeof o == 'string';
-              let label = stringOption ? o : o.label;
+              const stringOption = typeof o == 'string';
+              const labelInput = stringOption ? o : o.label;
               let value = i;
               if (!stringOption) {
                 if (o.hasOwnProperty('value')) {
@@ -539,7 +558,7 @@ class Radio extends Field {
 
               // important to have double equals in below line
               // as dom value is always string, but integer may be passed in JS
-              let selected = value == defaultValue;
+              const selected = value == defaultValue;
               if (selected) {
                 selectedDescription = o.description;
               }
@@ -556,7 +575,7 @@ class Radio extends Field {
                     onBlur={this.onBlur}
                   />
                   <div className="Input-radio" />
-                  <Label text={label} class="Input-inlineLabel" />
+                  <Label text={labelInput} class="Input-inlineLabel" />
                 </label>
               );
             })}
@@ -578,7 +597,7 @@ Field.File2 = (_) => {
 };
 
 Field.File = (_) => {
-  let { label, description, selectedDescription, defaultValue, ...props } = separateDomProps(_);
+  const { label, description } = separateDomProps(_);
 
   return (
     <div class={inputClass({ props: _ })}>

@@ -2,12 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Input, { Description } from 'common/new-ui/Input';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { merchantFetch } from 'merchant/utils/ajax';
-import OtpInput from 'common/new-ui/Input/OtpInput';
+import OtpInputComponent from 'common/new-ui/Input/OtpInput';
 import { analyticsTrack } from 'common/utils/analytics';
-
-const Error = ({ text }) => {
-  return <div className="e-aadhar__error">{text}</div>;
-};
 
 const VerifyOtp = ({
   analyticsProperties,
@@ -53,8 +49,8 @@ const VerifyOtp = ({
   const verifyOTP = () => {
     const randomPin = Math.floor(1000 + Math.random() * 9000).toString();
     const body = {
-      otp: otp,
-      captcha: captcha,
+      otp,
+      captcha,
       file_password: randomPin,
     };
     return merchantFetch({
@@ -148,6 +144,20 @@ const VerifyOtp = ({
     }
   }, [otp]);
 
+  useEffect(() => {
+    analyticsTrack({
+      objectName: 'Form Field',
+      actionName: 'Validation Failed',
+      screen: 'home page',
+      eventAction: 'Error',
+      properties: {
+        error: 'Invalid OTP. Try again',
+        fieldLabel: 'Aadhar Verification',
+        tab: 'Documents Verification',
+      },
+    });
+  }, [wrongOtp]);
+
   return (
     <>
       <div class="Input-label otp-label" style={{ textAlign: 'right' }}>
@@ -162,7 +172,7 @@ const VerifyOtp = ({
 
       <div className="otp-screen">
         <div className="Input-content otp-screen__otp">
-          <OtpInput
+          <OtpInputComponent
             heading="OTP has been sent to the number linked with Aadhar"
             onComplete={updateOtpValue}
             onChange={updateOtpValue}
@@ -201,6 +211,7 @@ const VerifyOtp = ({
                 <a
                   href="https://razorpay.com/privacy/"
                   target="_blank"
+                  rel="noreferrer"
                   onClick={() => {
                     trackEvent(window.rzpQ.onbr().initiated('kyc.e-aadhar_consent_link'));
                     analyticsTrack({

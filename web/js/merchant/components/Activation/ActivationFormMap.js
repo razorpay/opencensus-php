@@ -129,18 +129,27 @@ const contactFields = [
   {
     label: 'Contact Name',
     name: 'contact_name',
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
   },
   {
     label: 'Contact Number',
     name: 'contact_mobile',
     type: 'tel',
     info: 'We will reach out to this phone for any account related issues.',
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
   },
   {
     label: 'Contact Email',
     name: 'contact_email',
     type: 'email',
     info: 'We will reach out to this email for any account related issues.',
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
   },
 ];
 
@@ -179,6 +188,9 @@ const businessModel = [
     _cmp: Input.Select,
     options: [], // options will be filled dynamically based on current activation stage
     info: getBusinessTypeInfo,
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
   },
   [
     {
@@ -200,12 +212,18 @@ const businessModel = [
         }
         return '';
       },
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
     },
     {
       label: 'Sub Category',
       name: 'business_subcategory',
       _cmp: Input.Select,
       _autoRenderImpure: true,
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
       options: [],
       _optionsFn: function (activation, categories) {
         // For setting options dynamically on basis some condition or other field selection
@@ -253,6 +271,9 @@ const businessModel = [
         'Please give a brief description of the nature of your business. Please include examples of products you sell, the business category you operate under, your customers and the channels you primarily use to conduct your business(Website, offline retail etc).',
       placeholder: 'Minimum 50 characters',
       descriptionClass: 'Input--business-description',
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
       validator: (value) => {
         if (value.length < 50) {
           return 'Business Description should be at least 50 Characters';
@@ -294,6 +315,9 @@ const businessModel = [
     ),
     _autoRenderImpure: true,
     options: [],
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
     _optionsFn: (activation) => {
       if (activation.props.aovRange.config) {
         return ['--Select--'].concat(
@@ -323,6 +347,9 @@ const businessModel = [
       _cmp: Input.Radio,
       _name: 'has_url',
       className: 'Input--vTop Input--Website',
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
       _optionsFn: (activation) => {
         return [
           {
@@ -362,6 +389,9 @@ const businessModel = [
       className: 'Input--vTop Input--website',
       value: 1,
       _when: (activation) => activation.state.has_url === '1',
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
     },
     {
       label: '',
@@ -369,6 +399,9 @@ const businessModel = [
       placeholder: 'Enter URL',
       type: 'url',
       className: 'Input--Website-Url',
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
       validator: (value) => {
         if (!isUrlLenient(value)) {
           return 'Please enter a valid url';
@@ -386,6 +419,9 @@ const businessModel = [
       _name: 'app_url',
       className: 'Input--vTop Input--app',
       _when: (activation) => activation.state.has_url === '1',
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
     },
     {
       label: '',
@@ -393,6 +429,9 @@ const businessModel = [
       placeholder: 'Enter App Link',
       type: 'url',
       className: 'Input--App-Url',
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
       info:
         'Your app url would look something like this “https://play.google.com/store/apps/details?id=<package_name>&launch=true” Provide just the play store url in case you operate in multiple stores or any one url in case you don’t have a play store url',
       _when: (activation) => activation.state.app_url === '1' && activation.state.has_url === '1',
@@ -485,7 +524,7 @@ const businessDetails = [
         return error;
       },
       _when: (activation) => displayCompanyPAN(activation),
-      onBlur: function onBlur() {
+      onBlur: function onBlur(e, error) {
         if (!this.isOnKYCTab()) {
           const { user } = this.props;
           const { dirty } = this.state;
@@ -501,6 +540,7 @@ const businessDetails = [
             this.saveCurrentTab();
           }
         }
+        this.sendErrorMessageToSegment(e, error);
       },
       _disabledWhen: (activation) => {
         if (activation?.props?.user?.submitted) {
@@ -567,7 +607,7 @@ const businessDetails = [
           PAN_ERROR_MESSAGE,
         );
       },
-      onBlur: function onBlur() {
+      onBlur: function onBlur(e, error) {
         if (!this.isOnKYCTab()) {
           const { user } = this.props;
           const { dirty } = this.state;
@@ -584,6 +624,7 @@ const businessDetails = [
             this.saveCurrentTab();
           }
         }
+        this.sendErrorMessageToSegment(e, error);
       },
     },
     {
@@ -595,6 +636,9 @@ const businessDetails = [
       maxLength: '21',
       className: 'Input--capitalize',
       info: 'Example : U67190TN2014PTC096978',
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
       _when: (activation) => {
         const currentBusinessType =
           activation.state.dirty.business_type || activation.props.data.business_type;
@@ -608,6 +652,9 @@ const businessDetails = [
       info: 'Example : AAB-2933',
       className: 'Input--capitalize',
       validator: (value) => validateCIN(value, 'LLPIN'),
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
       _when: (activation) =>
         activation.props.data.business_type &&
         LLPIN_BusinessTypes.indexOf(Number(activation.props.data.business_type)) !== -1,
@@ -661,7 +708,7 @@ const businessDetails = [
         }
         return isPANVerified(activation);
       },
-      onBlur: function onBlur() {
+      onBlur: function onBlur(e, error) {
         if (!this.isOnKYCTab()) {
           const { user } = this.props;
           const { dirty } = this.state;
@@ -679,6 +726,7 @@ const businessDetails = [
             this.saveCurrentTab();
           }
         }
+        this.sendErrorMessageToSegment(e, error);
       },
     },
     {
@@ -723,7 +771,7 @@ const businessDetails = [
         }
         return isPANVerified(activation);
       },
-      onBlur: function onBlur() {
+      onBlur: function onBlur(e, error) {
         if (!this.isOnKYCTab()) {
           const { user } = this.props;
           const { dirty } = this.state;
@@ -737,12 +785,16 @@ const businessDetails = [
             this.saveCurrentTab();
           }
         }
+        this.sendErrorMessageToSegment(e, error);
       },
     },
   ],
   {
     label: 'Billing Label',
     name: 'business_dba',
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
     _autoRenderImpure: true,
     required: true,
     info: getBillingLabelInfo,
@@ -759,6 +811,9 @@ const businessDetails = [
       label: 'GSTIN',
       options: ['We have a registered GSTIN', "We don't have a GSTIN"],
       className: 'Input--vTop Input--capitalize',
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
       _cmp: Input.Radio,
       _when: (activation) => excludeFor_Indiv(activation) && isL1Completed(activation),
       description: (activation) => {
@@ -791,6 +846,9 @@ const businessDetails = [
           activation.state.has_gstin === '0' &&
           isL1Completed(activation)
         );
+      },
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
       },
       _autoRenderImpure: true, // Re-render to show the error
       getLabel: (activation) => {
@@ -867,7 +925,8 @@ const bankAccountFields = [
         ? 'We will deposit a small amount of money in your account to verify the account.'
         : '',
     _when: (activation) => !activation?.props?.user?.isUpdatedLiteOnboarding,
-    onBlur: function onBlur() {
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
       if (!this.isOnKYCTab()) {
         const { user, fetchBankVerificationAttemptCount } = this.props;
         const { dirty } = this.state;
@@ -908,7 +967,8 @@ const bankAccountFields = [
     },
     validator: validateIFSC,
     checkValidityFromAPI: getBankVerificationAtteemptError,
-    onBlur: function onBlur() {
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
       if (!this.isOnKYCTab()) {
         const { user, fetchBankVerificationAttemptCount } = this.props;
         const { dirty } = this.state;
@@ -943,7 +1003,8 @@ const bankAccountFields = [
       autoComplete: 'new-password',
       _autoRenderImpure: true,
       checkValidityFromAPI: getBankVerificationAtteemptError,
-      onBlur: function onBlur() {
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
         if (!this.isOnKYCTab()) {
           const { user, fetchBankVerificationAttemptCount } = this.props;
           const { dirty } = this.state;
@@ -951,7 +1012,8 @@ const bankAccountFields = [
           const bankAccountNumber = dirty.bank_account_number;
           const accountNo = this.state.account_no;
 
-          const isMatching = bankAccountNumber == accountNo || this?.props?.user?.isUpdatedLiteOnboarding;
+          const isMatching =
+            bankAccountNumber == accountNo || this?.props?.user?.isUpdatedLiteOnboarding;
 
           if (
             user.activation_form_milestone === 'L1' &&
@@ -1000,7 +1062,8 @@ const bankAccountFields = [
         const isLocked = activation.props.data.locked;
         return !isLocked && !activation?.props?.user?.isUpdatedLiteOnboarding;
       },
-      onBlur: function (e) {
+      onBlur: function (e, error) {
+        this.sendErrorMessageToSegment(e, error);
         if (!this.isOnKYCTab()) {
           const { user, fetchBankVerificationAttemptCount } = this.props;
           const { dirty } = this.state;
@@ -1035,6 +1098,9 @@ const uploadFields = [
     name: 'e_aadhar',
     customField: canShowEAadharComponent,
     _when: canShowEAadharComponent,
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
     isFieldValid: (activation) => {
       if (
         activation.props.data.stakeholder &&
@@ -1054,6 +1120,9 @@ const uploadFields = [
   },
   {
     label: 'Address Proof',
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
     getLabel: (activation) => {
       if (isUnregisteredBusiness(activation)) {
         return 'Address Proof';
@@ -1081,6 +1150,9 @@ const uploadFields = [
   {
     label: 'First Page',
     name: 'address_proof_front',
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
     getLabel: (activation) => {
       const { address_proof } = activation.state;
       const addressProofType = ADDRESS_PROOF_TYPES[address_proof];
@@ -1100,6 +1172,9 @@ const uploadFields = [
   {
     label: 'Last Page',
     name: 'address_proof_back',
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
     getLabel: (activation) => {
       const { address_proof } = activation.state;
       const addressProofType = ADDRESS_PROOF_TYPES[address_proof];
@@ -1123,6 +1198,9 @@ const uploadFields = [
     label: 'Business Registration Proof',
     _autoRenderImpure: true, // Here, Description on other field while render.
     _cmp: Input.File,
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
     description: (activation) => {
       const currentBusinessType =
         activation.state.dirty.business_type != null
@@ -1199,6 +1277,9 @@ const uploadFields = [
       label: BUSINESS_PROOF_TYPE_DOCS[type],
       name: type,
     })),
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
     _when: isBusinessProofTypeDocFieldVisible,
     className: 'Input--vTop',
   },
@@ -1208,6 +1289,9 @@ const uploadFields = [
     label: 'Shop Establishment Number',
     required: false,
     _autoRenderImpure: true,
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
     info: () =>
       'Your Shop establishment number is required to proceed with KYC. This will help us expedite the review of your KYC.',
     _when: (activation) => {
@@ -1225,6 +1309,9 @@ const uploadFields = [
     getLabel: (activation) => BUSINESS_PROOF_TYPE_DOCS[activation.state.business_proof_type],
     getName: (activation) => activation.state.business_proof_type,
     _cmp: Input.File,
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
     description: (activation) => {
       const {
         props: {
@@ -1337,7 +1424,8 @@ const uploadFields = [
         'Please provide the correct GSTIN details',
       );
     },
-    onBlur: function onBlur() {
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
       if (!this.isOnKYCTab()) {
         const { user } = this.props;
         const { dirty } = this.state;
@@ -1381,6 +1469,9 @@ const uploadFields = [
     label: 'Company PAN',
     _cmp: Input.File,
     description: 'PAN details should be of the mentioned business only.',
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
     _when: (activation) => {
       const currentBusinessType =
         activation.state.dirty.business_type || activation.props.data.business_type;
@@ -1392,6 +1483,9 @@ const uploadFields = [
     label: 'Personal PAN',
     _cmp: Input.File,
     description: 'Upload scanned copy of personal PAN Card',
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
     _when: (activation) => {
       const currentBusinessType =
         activation.state.dirty.business_type || activation.props.data.business_type;
@@ -1402,6 +1496,9 @@ const uploadFields = [
     name: 'form_12a_url',
     label: 'Form 12A Allotment Letter',
     _cmp: Input.File,
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
     required: requiredForNGO,
     _when: showForOrgs,
   },
@@ -1409,6 +1506,9 @@ const uploadFields = [
     name: 'form_80g_url',
     label: 'Form 80G Allotment Letter',
     _cmp: Input.File,
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
     required: requiredForNGO,
     _when: showForOrgs,
   },
@@ -1416,6 +1516,9 @@ const uploadFields = [
     name: 'address_proof_url',
     label: 'Bank Account Proof',
     _cmp: Input.File,
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
     description: (
       <>
         Please ensure your <b>Name, Account Number & Branch IFSC</b> are clearly visible on the
@@ -1436,6 +1539,9 @@ const uploadFields = [
     name: 'promoter_address_url',
     label: "Authorized Signatory's Address Proof",
     _cmp: Input.File,
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
     description: (
       <span>
         Upload<b> both sides </b>of the government issued photo ID (Passport / Driving License /
@@ -1464,6 +1570,9 @@ const uploadFields = [
     label: 'Additional DOC',
     _name: 'additional_doc',
     _cmp: Input.Select,
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
     options: [],
     _when: (activation) =>
       doesHaveAdditionalDocs(activation) &&
@@ -1485,6 +1594,9 @@ const uploadFields = [
 
       return additionalDoc ? additionalDoc.label : '';
     },
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
     getName: (activation) => activation.state.additional_doc,
     _cmp: Input.File,
     className: 'document-group',
@@ -1503,6 +1615,9 @@ export const ndcFields = [
     }),
     _when: (activation) => {
       return activation.isNeedsClarificationMode() && activation.isOnKYCTab(); //Some improvements are possible here regarding placement of this field
+    },
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
     },
   },
   {
@@ -1523,6 +1638,9 @@ export const ndcFields = [
     className: 'document-group',
     _when: (activation) => {
       return activation.isNeedsClarificationMode() && activation.isOnKYCTab(); //Some improvements are possible here regarding placement of this field
+    },
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
     },
     isNotDeletable: true,
   },

@@ -116,6 +116,7 @@ const ContactDetails: React.FC<ContactDetailsProps> = ({ isFormLocked }) => {
             handleSubmit={handleSubmit}
             isBlurCalled={isBlurCalled}
             setIsBlurCalled={setIsBlurCalled}
+            tabName="Contact Details"
           />
         </form>
       )}

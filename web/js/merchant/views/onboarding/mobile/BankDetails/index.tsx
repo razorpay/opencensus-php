@@ -305,6 +305,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
             handleSubmit={handleSubmit}
             isBlurCalled={isBlurCalled}
             setIsBlurCalled={setIsBlurCalled}
+            tabName="Bank Details"
           />
         </form>
       )}

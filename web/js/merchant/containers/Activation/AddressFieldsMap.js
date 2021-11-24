@@ -2,13 +2,13 @@ import Input from 'common/new-ui/Input';
 import { states } from 'merchant/helpers/data';
 import { excludeFor_Indiv } from 'merchant/components/Activation/ActivationUtils';
 
-var stateOptions = ['--Select--'].concat(
-  Object.keys(states).map(c => {
+const stateOptions = ['--Select--'].concat(
+  Object.keys(states).map((c) => {
     return {
       name: c,
       label: states[c],
     };
-  })
+  }),
 );
 
 export default [
@@ -18,6 +18,9 @@ export default [
       label: 'Address',
       placeholder: 'Enter Street Address',
       _cmp: Input.Textarea,
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
     },
     {
       name: 'business_registered_pin',
@@ -25,11 +28,17 @@ export default [
       size: 'small',
       maxLength: '6',
       validator: isPinValid,
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
     },
     {
       name: 'business_registered_city',
       label: 'City',
       _autoRenderImpure: true, // Re-evaluate errors if pincode is updated
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
     },
     {
       name: 'business_registered_state',
@@ -37,6 +46,9 @@ export default [
       _cmp: Input.Select,
       options: stateOptions,
       _autoRenderImpure: true, // Re-evaluate errors if pincode is updated
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
     },
   ],
   {
@@ -45,6 +57,9 @@ export default [
     description: 'Physical Verification may take place at this address',
     _cmp: Input.Check,
     _when: excludeFor_Indiv,
+    onBlur: function onBlur(e, error) {
+      this.sendErrorMessageToSegment(e, error);
+    },
   },
   [
     {
@@ -53,6 +68,9 @@ export default [
       label: 'Operational Address',
       _cmp: Input.Textarea,
       _when: differentAddress,
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
     },
     {
       name: 'business_operation_pin',
@@ -61,12 +79,18 @@ export default [
       maxLength: '6',
       validator: isPinValid,
       _when: differentAddress,
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
     },
     {
       name: 'business_operation_city',
       label: 'City',
       _autoRenderImpure: true, // Re-evaluate errors if pincode is updated
       _when: differentAddress,
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
     },
     {
       name: 'business_operation_state',
@@ -75,6 +99,9 @@ export default [
       options: stateOptions,
       _autoRenderImpure: true, // Re-evaluate errors if pincode is updated
       _when: differentAddress,
+      onBlur: function onBlur(e, error) {
+        this.sendErrorMessageToSegment(e, error);
+      },
     },
   ],
 ];
@@ -85,8 +112,9 @@ function differentAddress(activation) {
 }
 
 function isPinValid(value) {
-  let pin = Number(value);
+  const pin = Number(value);
   if (!pin || pin < 100000 || pin > 999999) {
     return 'Please enter 6 digit pincode';
   }
+  return 0;
 }

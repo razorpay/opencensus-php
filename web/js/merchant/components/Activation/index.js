@@ -99,6 +99,7 @@ import SupportButton from 'merchant/components/Home/SupportButton';
 import { GTAG_KEYS, invokeGtag } from 'merchant/components/OnBoarding/utils';
 import { isValidGSTIN } from '../../../common/utils/rzp-utils';
 import { trackEvents as trackEventsAction } from 'merchant/reducers/trackEvents';
+import { capitalize } from 'common/utils/rzp-utils';
 
 /*
  *             Main-form        LA-form
@@ -576,6 +577,30 @@ export default class ActivationWizard extends React.Component {
     }
 
     this.goto(null, callBack);
+  };
+
+  sendErrorMessageToSegment = (e, error) => {
+    if (error) {
+      const fieldLabel = capitalize(e.target.name.split('_').join(' '));
+      this.props.trackEventsAction({
+        objectName: 'Form Field',
+        actionName: 'Validation Failed',
+        screen: 'home page',
+        eventAction: 'failed',
+        properties: {
+          error: error,
+          fieldLabel: fieldLabel,
+          tab: mainFormTabs[this.state.activeTab],
+        },
+      });
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().failed('Form Field Validation', {
+          error: error,
+          fieldLabel: fieldLabel,
+          tab: mainFormTabs[this.state.activeTab],
+        }),
+      );
+    }
   };
 
   next = (e) => {
@@ -1932,6 +1957,10 @@ export default class ActivationWizard extends React.Component {
         },
         toLumberjack: false,
       });
+
+      if (error) {
+        sendErrorMessageToSegment(error);
+      }
     }
     return (
       <>
@@ -2784,6 +2813,7 @@ function CustomField(props) {
                 <div className="activation-power-select-option">{option.company_name}</div>
               )}
               matcher={matcher}
+              onBlur={(e) => props.onBlur(e, error)}
             />
             {error && <div className="Input-error">{error}</div>}
           </div>
@@ -2817,6 +2847,7 @@ function CustomField(props) {
                 <div className="activation-power-select-option">{option}</div>
               )}
               matcher={matcher}
+              onBlur={(e) => props.onBlur(e, error)}
             />
             {!error && description && <div className="Input-desc">{description}</div>}
             {error && <div className="Input-error d-block">{error}</div>}

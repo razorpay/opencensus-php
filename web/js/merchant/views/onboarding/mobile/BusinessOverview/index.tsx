@@ -565,6 +565,7 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
               handleSubmit={handleSubmit}
               isBlurCalled={isBlurCalled}
               setIsBlurCalled={setIsBlurCalled}
+              tabName="Business Overview"
             />
           </form>
         );
