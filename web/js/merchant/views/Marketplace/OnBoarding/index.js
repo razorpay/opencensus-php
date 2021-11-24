@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import { RZPFeatures } from 'merchant/helpers/data';
@@ -24,22 +25,20 @@ import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGu
 
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
 import KYCAlertModal from './KYCAlertModal';
+import { setItem } from 'common/utils/localStorage';
 
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
     isTestMode: state.session.mode === 'test',
-    routeProductOnBoarding: getCurrentProductOnBoardingDetails(
-      state,
-      RZPFeatures.ROUTE
-    ),
+    routeProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.ROUTE),
   }),
   {
     fetchUser,
     openModal,
     closeModal,
     handleProductQuickGuide,
-  }
+  },
 )
 @OnBoarding({
   feature: RZPFeatures.ROUTE,
@@ -52,7 +51,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
   switchToTestMode = () => {
     const { user } = this.props;
 
-    LocalStorageService.setItem(`rzp_mode--${user.current}`, 'test');
+    setItem(`rzp_mode--${user.current}`, 'test');
     window.location.reload();
   };
 
@@ -77,7 +76,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
     this.props.closeOnboarding();
   };
 
-  getNextBtnProp = sliderProps => () => {
+  getNextBtnProp = (sliderProps) => () => {
     if (this.showKYCModal) {
       return (
         <Button.Primary class="Forward-Button" onClick={this.showKYCAlertModal}>
@@ -100,7 +99,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
     return <FeatureEnableSliderButton {...props} />;
   };
 
-  renderSkipButton = sliderProps => {
+  renderSkipButton = (sliderProps) => {
     if (this.showKYCModal) {
       return (
         <Button.Transparent onClick={this.showKYCAlertModal}>
@@ -131,7 +130,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
           active={this.props.active}
           afterSlide={getOnBoardingSliderDots(this.renderSkipButton)}
         >
-          {sliderProps => (
+          {(sliderProps) => (
             <Landing
               {...sliderProps}
               title="Route"
@@ -141,7 +140,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
             />
           )}
 
-          {sliderProps => (
+          {(sliderProps) => (
             <Features
               {...sliderProps}
               title="What makes Route great?"
@@ -158,18 +157,11 @@ export default class MarketPlaceOnBoarding extends React.Component {
 }
 
 function getOnBoardingSliderDots(renderSkipButton) {
-  return sliderProps => (
-    <SliderDots {...sliderProps}>{renderSkipButton(sliderProps)}</SliderDots>
-  );
+  return (sliderProps) => <SliderDots {...sliderProps}>{renderSkipButton(sliderProps)}</SliderDots>;
 }
 
 export function getIsAllowedResetRouteBoarding({ transfers, accounts }) {
-  if (
-    accounts.loading ||
-    transfers.loading ||
-    transfers.items.length ||
-    accounts.accounts.length
-  ) {
+  if (accounts.loading || transfers.loading || transfers.items.length || accounts.accounts.length) {
     return false;
   }
 
