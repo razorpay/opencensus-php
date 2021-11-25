@@ -47,7 +47,7 @@ class Service extends Base\Service
             return [];
         }
 
-        $request = new ApiRequestAny();
+        $request = new ApiRequestAny(['client_type' => 'merchant']);
 
         $requestData = ['mid' => $merchantId];
 
@@ -64,7 +64,7 @@ class Service extends Base\Service
             array_push($input, $experimentInput);
         }
 
-        list($error, $data) = $request->processInput($input)->send("splitz/bulkEvaluate", 'POST');
+        list($error, $data) = $request->processInput($input)->send("splitz/bulkEvaluateProxy", 'POST');
 
         if (empty($error) === false)
         {
