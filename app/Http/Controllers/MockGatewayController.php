@@ -218,7 +218,7 @@ class MockGatewayController extends Controller
 
             $merchant = $this->app['basicauth']->getMerchant();
 
-            $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+            $data += (new CheckoutView())->addOrgInformationInResponse($merchant, true);
 
             $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
                 [
@@ -226,7 +226,7 @@ class MockGatewayController extends Controller
                     'org_logo'           => $data['org_logo'],
                     'org_name'          => $data['org_name'],
                 ]);
-            
+
             if (!filter_var($data['org_logo'], FILTER_VALIDATE_URL))
             {
                 $data['org_logo'] = 'https://cdn.razorpay.com/logo.svg';

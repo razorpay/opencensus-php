@@ -968,6 +968,8 @@ class PaymentCreateController extends Controller
                 }
                 else if ($data['method'] === Payment\Method::EMANDATE)
                 {
+                    $data += (new CheckoutView())->addOrgInformationInResponse($merchant, true);
+
                     $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
                         [
                             'view create via'   =>  'emandate.form',
@@ -982,6 +984,8 @@ class PaymentCreateController extends Controller
                         [
                             'view create via'   =>  'gateway.gatewayUpiForm',
                         ]);
+
+                    $data += (new CheckoutView())->addOrgInformationInResponse($merchant, true);
 
                     return View::make('gateway.gatewayUpiForm')
                                ->with('data', [
@@ -1415,6 +1419,8 @@ class PaymentCreateController extends Controller
         $postFormData['production'] = $this->app->environment() === Environment::PRODUCTION;
         $postFormData['merchant_id'] = $merchant->getId();
         $postFormData['language_code'] = $data['language_code'];
+        $postFormData += (new CheckoutView())->addOrgInformationInResponse($merchant, true);
+
 
         $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
             [
@@ -1432,6 +1438,7 @@ class PaymentCreateController extends Controller
         $postFormData['theme']['color'] = $merchant->getBrandColorElseDefault();
         $postFormData['name'] = $merchant->getBillingLabel();
         $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
+        $postFormData += (new CheckoutView())->addOrgInformationInResponse($merchant, true);
 
         $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
             [

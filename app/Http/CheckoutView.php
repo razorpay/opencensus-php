@@ -6,6 +6,7 @@ use App;
 use RZP\Base\RepositoryManager;
 use RZP\Models\Admin\Org;
 use RZP\Models\Merchant as MerchantEntity;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class CheckoutView{
 
@@ -32,9 +33,25 @@ class CheckoutView{
     }
 
 
-    public function addOrgInformationInResponse($merchant = null): array
+    public function addOrgInformationInResponse($merchant = null, $orgData = false ): array
     {
         $data = [];
+
+        if(isset($merchant) === true and
+            $orgData === false)
+        {
+            $variant = $this->app['razorx']->getTreatment(
+                $merchant->getId(),
+                RazorxTreatment::DISALLOW_ORG_DATA_IN_RESPONSE,
+                $this->app['rzp.mode']
+            );
+        }
+
+        if(isset($variant) === true and
+            $variant === "on" )
+        {
+            return $data;
+        }
 
         $customBranding = isset($merchant) ?
                     (new MerchantEntity\Core())->isOrgCustomBranding($merchant):

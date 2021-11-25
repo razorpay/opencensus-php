@@ -365,7 +365,6 @@ final class RazorxTreatment
     // Experiment for transfers state machine.
     const ROUTE_TRANSFER_STATE = 'route_transfer_state';
 
-
     // Experiment to send looker link with downtimes notifications to slack
     const DOWNTIMES_LOOKER_TO_SLACK = 'downtime_looker_to_slack';
 
@@ -374,6 +373,9 @@ final class RazorxTreatment
 
     // Experiment for removal of extra fields during onboarding
     const LITE_ONBOARDING = 'lite_onboarding';
+
+    //Experiment for removal of extra fields in payment response
+    const DISALLOW_ORG_DATA_IN_RESPONSE = 'disallow_org_data_in_response';
 
     const KEYLESS_HEADER_INVOICE = 'keyless_header_invoice';
 
