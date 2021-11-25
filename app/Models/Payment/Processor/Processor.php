@@ -425,7 +425,8 @@ class Processor
                 ((empty($input['auth_type']) === false) and ($input['auth_type'] !== "3ds")) or
                 ($merchant->isFeeBearerPlatform() === false) or
                 ($merchant->isRazorpayOrgId() === false) or
-                ($merchant->isFeatureEnabled('raas') === true))
+                ($merchant->isFeatureEnabled('raas') === true) or
+                ($merchant->isMarketplace() === true))
             {
                 return false;
             }
