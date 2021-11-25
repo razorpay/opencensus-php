@@ -120,6 +120,8 @@ class UpiSbiGatewayTest extends TestCase
     {
         $this->sharedTerminal = $this->fixtures->create(Constants::SHARED_UPI_SBI_INTENT_TERMINAL);
 
+        $this->fixtures->merchant->setCategory('1111');
+
         $this->payment['description'] = 'intentPayment';
         unset($this->payment['vpa']);
 
@@ -127,7 +129,7 @@ class UpiSbiGatewayTest extends TestCase
 
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
 
-        $this->assertSame("upi://pay?am=100.00&cu=INR&mc=5411&pa=some@sbi&pn=merchantname&tn=TestMerchantintentPayment&tr=pay_someid", $response['data']['intent_url']);
+        $this->assertSame("upi://pay?am=100.00&cu=INR&mc=1111&pa=some@sbi&pn=merchantname&tn=TestMerchantintentPayment&tr=pay_someid", $response['data']['intent_url']);
 
         $paymentId = $response['payment_id'];
 
@@ -136,6 +138,11 @@ class UpiSbiGatewayTest extends TestCase
         // Co Proto must be working
         $this->assertEquals('intent', $response['type']);
         $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $intentUrl = $response['data']['intent_url'];
+        $mccFromIntentUrl = substr($intentUrl, strpos($intentUrl,'&mc=') + 4, 4);
+
+        $this->assertEquals('1111', $mccFromIntentUrl);
 
         $this->checkPaymentStatus($paymentId, 'created');
 
@@ -1198,6 +1205,9 @@ class UpiSbiGatewayTest extends TestCase
     {
         $this->sharedTerminal = $this->fixtures->create(Constants::SHARED_UPI_SBI_INTENT_TERMINAL);
 
+        //Explicitly setting category to null, to test if default value of 5411 is picked up or not.
+        $this->fixtures->merchant->setCategory(null);
+
         $this->ba->privateAuth();
 
         $data = $this->testData['testPaymentWithGstTaxInvoice'];
@@ -1234,6 +1244,11 @@ class UpiSbiGatewayTest extends TestCase
         // Co Proto must be working
         $this->assertEquals('intent', $response['type']);
         $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $intentUrl = $response['data']['intent_url'];
+        $mccFromIntentUrl = substr($intentUrl, strpos($intentUrl,'&mc=') + 4, 4);
+
+        $this->assertEquals('5411', $mccFromIntentUrl);
 
         $this->checkPaymentStatus($paymentId, 'created');
 

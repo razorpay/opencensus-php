@@ -446,7 +446,8 @@ class PayInitData extends Base\Mock\Server
         {
             $remark = str_replace(" ", "", $entities['upi']['remark']);
 
-            $intentUrl = sprintf("upi://pay?am=100.00&cu=INR&mc=5411&pa=some@sbi&pn=merchantname&tn=%s&tr=pay_someid", $remark);
+            $intentUrl = sprintf("upi://pay?am=100.00&cu=INR&mc=%s&pa=some@sbi&pn=merchantname&tn=%s&tr=pay_someid",
+                                 $entities['merchant']['category'], $remark);
 
             $response = [
                 'data' => [],

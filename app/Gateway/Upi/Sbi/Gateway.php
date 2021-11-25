@@ -109,6 +109,8 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
 
+        $input['merchant']['category'] = $this->getMerchantCategory($input);
+
         $response = $this->authorizeRequest($input);
 
         $data = [
@@ -116,6 +118,16 @@ class Gateway extends Base\Gateway
         ];
 
         return ['data' => $data];
+    }
+
+    /**
+     * Returns the MCC code, based on the merchant category
+     * @param  array  $input
+     * @return string 4 digit integer as string, default value is 5411
+     */
+    protected function getMerchantCategory(array $input) : string
+    {
+        return $input['merchant']['category'] ?? '5411';
     }
 
 
