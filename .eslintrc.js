@@ -27,7 +27,7 @@ module.exports = {
     'no-async-promise-executor': 'warn',
     'yml/sort-keys': 'off',
     'no-unused-expressions': 'off',
-    'babel/no-unused-expressions': 'error',
+    'babel/no-unused-expressions': ['error', { allowShortCircuit: true, allowTernary: true }],
     'react/prop-types': 'off',
     'react/no-unknown-property': [2, { ignore: ['class', 'for'] }],
     'react/jsx-filename-extension': ['error', { extensions: ['.js', '.tsx'] }],

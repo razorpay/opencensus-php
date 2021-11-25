@@ -1,12 +1,4 @@
-import {
-  set,
-  merge,
-  removeItem,
-  unshift,
-  updateItem,
-  push,
-  deepMerge,
-} from 'common/utils/immutable';
+import { set, merge, removeItem, updateItem, push, deepMerge } from 'common/utils/immutable';
 
 import { getCurrency } from 'common/ui/Amount';
 import { paiseToRupees } from 'common/utils/rzp-utils';
@@ -28,8 +20,7 @@ const DELETE_UDF_FIELD = 'DELETE_UDF_FIELD';
 
 const INIT_PAYMENT_BUTTON_TEMPALTE_DATA = 'INIT_PAYMENT_BUTTON_TEMPALTE_DATA';
 const UPDATE_PAYMENT_BUTTON_DATA = 'UPDATE_PAYMENT_BUTTON_DATA';
-const UPDATE_PAYMENT_BUTTON_RECEIPT_DETAILS =
-  'UPDATE_PAYMENT_BUTTON_RECEIPT_DETAILS';
+const UPDATE_PAYMENT_BUTTON_RECEIPT_DETAILS = 'UPDATE_PAYMENT_BUTTON_RECEIPT_DETAILS';
 
 const UPDATE_STEP_REVIEW_PROGRESS = 'UPDATE_STEP_REVIEW_PROGRESS';
 
@@ -44,22 +35,18 @@ const DEFAULT_CURRENCY = 'INR';
  * */
 export const updateTemplateType = (data, templateKey) => {
   let paymentButtonText = 'Pay Now';
-  let amountFields = [];
-  let udfFields = [FIXED_FIELDS.email, FIXED_FIELDS.phone]; // Email and Phone are added by default to display in UI and will NOW be sent in
+  const amountFields = [];
+  const udfFields = [FIXED_FIELDS.email, FIXED_FIELDS.phone]; // Email and Phone are added by default to display in UI and will NOW be sent in
 
   if (templateKey === templateTypes.donation.key) {
     // 1.
     paymentButtonText = 'Donate Now';
 
     // 2.
-    const donationAmountField = getBaseFieldForAmountFieldType(
-      FIELD_TYPES.dynamic_price.key
-    );
+    const donationAmountField = getBaseFieldForAmountFieldType(FIELD_TYPES.dynamic_price.key);
     donationAmountField.item.name = 'Donate an Amount of your Choice';
     donationAmountField.mandatory = true;
-    donationAmountField.min_amount = paiseToRupees(
-      getCurrency(DEFAULT_CURRENCY).min_value
-    );
+    donationAmountField.min_amount = paiseToRupees(getCurrency(DEFAULT_CURRENCY).min_value);
 
     amountFields.push(donationAmountField);
 
@@ -69,7 +56,7 @@ export const updateTemplateType = (data, templateKey) => {
       FIXED_FIELDS.address,
       FIXED_FIELDS.city,
       FIXED_FIELDS.pincode,
-      FIXED_FIELDS.state
+      FIXED_FIELDS.state,
     );
   }
 
@@ -92,7 +79,7 @@ export const fetchPaymentButtonDetails = (id, isIntentDuplicate) => {
   return {
     type: FETCH_PAYMENT_BUTTON_ENTITY,
     payload: getPaymentButtonDetails(id),
-    isIntentDuplicate: isIntentDuplicate, // This indicates whether the payment items needs to clear off the ids in the fetched entity
+    isIntentDuplicate, // This indicates whether the payment items needs to clear off the ids in the fetched entity
     id,
   };
 };
@@ -101,7 +88,7 @@ export const resetPageData = () => ({
   type: RESET_PAYMENT_BUTTON_DATA,
 });
 
-export const updateStepReviewProgress = data => {
+export const updateStepReviewProgress = (data) => {
   return {
     type: UPDATE_STEP_REVIEW_PROGRESS,
     payload: data,
@@ -116,7 +103,7 @@ export const updateAmountField = (amountField, index) => ({
   },
 });
 
-export const deleteAmountField = index => ({
+export const deleteAmountField = (index) => ({
   type: DELETE_AMOUNT_FIELD,
   index,
 });
@@ -129,22 +116,22 @@ export const updateUDFField = (field, index) => ({
   },
 });
 
-export const deleteUDFField = index => ({
+export const deleteUDFField = (index) => ({
   type: DELETE_UDF_FIELD,
   index,
 });
 
-export const updatePaymentButtonData = data => ({
+export const updatePaymentButtonData = (data) => ({
   type: UPDATE_PAYMENT_BUTTON_DATA,
   payload: data,
 });
 
-export const updateReceiptDetails = data => ({
+export const updateReceiptDetails = (data) => ({
   type: UPDATE_PAYMENT_BUTTON_RECEIPT_DETAILS,
   payload: data,
 });
 
-export const updateHighlightButtonSettings = id => {
+export const updateHighlightButtonSettings = (id) => {
   return {
     type: UPDATE_BUTTON_SETTINGS_HIGHLIGHTER,
     payload: {
@@ -153,7 +140,7 @@ export const updateHighlightButtonSettings = id => {
   };
 };
 
-let initialState = {
+const initialState = {
   paymentButtonId: null,
   paymentButtonEntity: {
     currency: DEFAULT_CURRENCY, // Initialising with INR currency
@@ -184,7 +171,7 @@ let initialState = {
   },
 };
 
-export default function(state = initialState, action) {
+export default function paymentButtonCreateReducer(state = initialState, action) {
   switch (action.type) {
     case `${FETCH_PAYMENT_BUTTON_ENTITY}::PENDING`: {
       return {
@@ -203,8 +190,7 @@ export default function(state = initialState, action) {
       }
 
       // 2.
-      entityData.settings.allow_social_share =
-        entityData.settings.allow_social_share === '1';
+      entityData.settings.allow_social_share = entityData.settings.allow_social_share === '1';
 
       // 3.
       entityData.payment_page_items.forEach((pi, index) => {
@@ -227,7 +213,7 @@ export default function(state = initialState, action) {
       // 5. If intention while fetching is to duplicate, then delete existing entity specific data
       if (action.isIntentDuplicate) {
         // 5-1. Remove id for each of payment page item
-        entityData.payment_page_items.forEach(fi => {
+        entityData.payment_page_items.forEach((fi) => {
           // Removing payment_page_id is enough since removing/adding id for items is handled in handleSavePublish. However, this is just for sanity.
 
           delete fi.id;
@@ -244,7 +230,7 @@ export default function(state = initialState, action) {
 
       // 6.
       const udfSchema = JSON.parse(entityData.settings.udf_schema);
-      const udfFields = udfSchema.sort(function(a, b) {
+      const udfFields = udfSchema.sort((a, b) => {
         const positionA = a.settings.position;
         const positionB = b.settings.position;
 
@@ -253,7 +239,7 @@ export default function(state = initialState, action) {
 
       // 7.
       const amountItems = entityData.payment_page_items;
-      const amountFields = amountItems.sort(function(a, b) {
+      const amountFields = amountItems.sort((a, b) => {
         const positionA = a.settings.position;
         const positionB = b.settings.position;
 
@@ -264,8 +250,7 @@ export default function(state = initialState, action) {
       const receiptSettings = {
         enable_receipt: entityData.settings.enable_receipt || '1',
         selected_udf_field: entityData.settings.selected_udf_field || '',
-        enable_custom_serial_number:
-          entityData.settings.enable_custom_serial_number || '0',
+        enable_custom_serial_number: entityData.settings.enable_custom_serial_number || '0',
         enable_80g_details: entityData.settings.enable_80g_details || '0',
       };
 
@@ -273,8 +258,8 @@ export default function(state = initialState, action) {
 
       const storeState = {
         paymentButtonEntity: entityData,
-        udfFields: udfFields, // Sorted fields udf schema
-        amountFields: amountFields, // Sorted fields from amount items
+        udfFields, // Sorted fields udf schema
+        amountFields, // Sorted fields from amount items
 
         stepsProgress: {
           isButtonDetailsReviewed: true,
@@ -301,7 +286,7 @@ export default function(state = initialState, action) {
         paymentButtonEntity: deepMerge(
           // Needed for settings, currency, page receipts
           state.paymentButtonEntity,
-          action.payload
+          action.payload,
         ),
       };
     }
@@ -328,16 +313,9 @@ export default function(state = initialState, action) {
       // Insert in starting of the form items
       let amountFields;
 
-      if (
-        action.payload.hasOwnProperty('index') &&
-        typeof action.payload.index !== 'undefined'
-      ) {
+      if (action.payload.hasOwnProperty('index') && typeof action.payload.index !== 'undefined') {
         // Modifying existing amount field
-        amountFields = updateItem(
-          state.amountFields,
-          action.payload.index,
-          action.payload.field
-        );
+        amountFields = updateItem(state.amountFields, action.payload.index, action.payload.field);
       } else {
         // Adding new amount field
         amountFields = push(state.amountFields, action.payload.field); // Position of items is updated before creating(/saving) the page, otherwise deleting a form item will creating inconsistency
@@ -355,11 +333,7 @@ export default function(state = initialState, action) {
 
       if (typeof action.payload.index !== 'undefined') {
         // Modifying existing amount field
-        udfFields = updateItem(
-          state.udfFields,
-          action.payload.index,
-          action.payload.field
-        );
+        udfFields = updateItem(state.udfFields, action.payload.index, action.payload.field);
       } else {
         // Adding new amount field
         udfFields = push(state.udfFields, action.payload.field); // Position of items is updated before creating(/saving) the page, otherwise deleting a form item will creating inconsistency

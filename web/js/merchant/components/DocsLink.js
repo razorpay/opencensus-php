@@ -33,7 +33,7 @@ export default function DocsLink({ url, title = 'Documentation', style = {}, onC
 
 export function getCustomURL(url) {
   const user = getUser();
-  if (!user.isWhiteLabelledOrg) return url;
+  if (user.isOrgRZP) return url;
 
   const urlSplits = url.split('://');
   const org = user.orgCustomCode === 'axis' ? 'axisbank' : user.orgCustomCode;

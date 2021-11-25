@@ -754,8 +754,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             onClick={this.togglePageSettings}
             className="Button--header"
           >
-            <i className="i i-settings-outline" />
-            Page Settings
+            <i className="i i-settings-outline" /> Page Settings
           </Button.Transparent>
           <AsyncBtn.Primary
             onClick={() => {
@@ -792,7 +791,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       } else if (isPageLoadError === ERROR.INVALID_ENTITY) {
         content = (
           <div class="page-center">
-            Payment page with id <b>{payment_page_id}</b> doesn't exist.
+            Payment page with id <b>{payment_page_id}</b> doesn&apos;t exist.
             <br />
             Go to <Link to="/paymentpages/">Payment Pages list</Link>{' '}
           </div>

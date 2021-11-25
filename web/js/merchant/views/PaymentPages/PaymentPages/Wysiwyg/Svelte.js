@@ -1,8 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { LOGOS } from 'merchant_common/helpers/themes';
-
-@connect((state) => ({ user: state.session.user }))
+@connect((state) => ({ user: state.session.user, org: state.session.org }))
 export default class Svelte extends React.Component {
   shouldComponentUpdate() {
     return false; // No need to re-render again, all 3 React apps are working independently bridged via store
@@ -11,7 +9,7 @@ export default class Svelte extends React.Component {
   initialize = (node) => {
     if (!node) return;
 
-    const { payment_page_id, user } = this.props;
+    const { payment_page_id, user, org } = this.props;
 
     this.templateData = {
       is_test_mode: this.props.isTestMode,
@@ -25,12 +23,14 @@ export default class Svelte extends React.Component {
       },
       org: {
         branding: {
-          branding_logo: user.isWhiteLabelledOrg ? LOGOS[user.orgCustomCode] : null,
-          show_rzp_logo: !user.isWhiteLabelledOrg,
+          branding_logo: user.isOrgRZP ? null : org.payment_apps_logo_url,
+          show_rzp_logo: user.isOrgRZP,
         },
       },
       // Other keys are not required by Svelte app in isWYSIWYGMode
     };
+
+    console.log(this.props.user.isWhiteLabelledOrg, this.templateData);
 
     this._svelteInstance = window.RZP.renderApp(node, this.templateData);
   };

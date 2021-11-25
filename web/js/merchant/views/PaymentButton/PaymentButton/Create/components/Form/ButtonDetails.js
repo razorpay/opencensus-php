@@ -8,10 +8,7 @@ import Button from 'common/new-ui/Button';
 import InputCurrencyAmount from './components/InputCurrencyAmount';
 import InputDropdown from './components/InputDropdown';
 
-import {
-  buttonThemesList,
-  orgButtonThemes,
-} from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
+import { buttonThemesList } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
 import { getBaseFieldForAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import META, {
@@ -29,6 +26,7 @@ export const maxLengthForButtonLabel = 20;
 @connect(
   (state) => ({
     user: state.session.user,
+    org: state.session.org,
   }),
   {
     updatePaymentButtonData,
@@ -59,8 +57,10 @@ export default class ButtonDetails extends React.Component {
 
     // Update default button theme in store if first-time creation mode
     const { user, isEditExistingId } = this.props;
-    if (!isEditExistingId && user.isOrgAxis) {
-      this.updateButtonTheme(orgButtonThemes.axis);
+    if (!isEditExistingId && !user.isOrgRZP) {
+      const brand_color =
+        this.props.org.merchant_styles?.checkout_theme_color || 'rzp-dark-standard';
+      this.updateButtonTheme(brand_color);
     }
   }
 
@@ -292,7 +292,7 @@ export default class ButtonDetails extends React.Component {
             onBlur={track.buttonLabel}
           />
 
-          {!user.isOrgAxis && (
+          {user.isOrgRZP && (
             <InputDropdown
               label="Button Theme"
               name="button_theme"

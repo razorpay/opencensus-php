@@ -603,22 +603,18 @@ export default class PaymentButtonCreate extends React.Component {
   get actionButtons() {
     const { user } = this.props;
 
-    const actionButtons = (
-      <React.Fragment>
-        {user.isPaymentPageReceiptsEnabled && (
-          <Button.Transparent
-            type="button"
-            style={{ color: '#fff' }}
-            class="payment-receipt-btn"
-            onClick={this.handleTogglePageReceiptModal}
-          >
-            <span>
-              <i class="i i-document" /> Payment Receipts
-            </span>
-          </Button.Transparent>
-        )}
-      </React.Fragment>
-    );
+    const actionButtons = user.isPaymentPageReceiptsEnabled ? (
+      <Button.Transparent
+        type="button"
+        style={{ color: '#fff' }}
+        class="payment-receipt-btn"
+        onClick={this.handleTogglePageReceiptModal}
+      >
+        <span>
+          <i class="i i-document" /> Payment Receipts
+        </span>
+      </Button.Transparent>
+    ) : null;
 
     return actionButtons;
   }
@@ -647,7 +643,6 @@ export default class PaymentButtonCreate extends React.Component {
         onClose={this.handleCloseTemplateSelection}
         selectTemplate={(templateKey) => {
           this.props.updateTemplateType(null, templateKey);
-
           track.templateSelect(templateKey);
         }}
       />
@@ -657,7 +652,7 @@ export default class PaymentButtonCreate extends React.Component {
   get ErrorView() {
     return (
       <div class="page-center">
-        Payment Button with id <b>{this.paymentButtonId}</b> doesn't exist.
+        Payment Button with id <b>{this.paymentButtonId}</b> doesn&apos;t exist.
         <br />
         Go to <Link to="/paymentbuttons/">Payment Buttons list</Link>{' '}
       </div>

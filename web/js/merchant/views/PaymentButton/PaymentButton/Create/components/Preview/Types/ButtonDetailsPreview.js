@@ -1,7 +1,8 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { classList } from 'common/utils/rzp-utils';
 import { maxLengthForButtonLabel } from '../../Form/ButtonDetails';
-import { buttonThemes, buttonThemesList, orgButtonThemes } from '../../../constants/buttonThemes';
+import { buttonThemes, buttonThemesList } from '../../../constants/buttonThemes';
 
 const rzpLogoWhite = (
   <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -17,6 +18,7 @@ let isFontLoadedForButton = false;
 
 @connect((state) => ({
   user: state.session.user,
+  org: state.session.org,
   config: state.config,
 }))
 export default class ButtonDetailsPreview extends React.Component {
@@ -34,10 +36,10 @@ export default class ButtonDetailsPreview extends React.Component {
 
     isFontLoadedForButton = true;
 
-    const head = document.head || document.getElementsByTagName('head')[0],
-      style = document.createElement('style');
+    const head = document.head || document.getElementsByTagName('head')[0];
+    const style = document.createElement('style');
 
-    var css = `@import url('https://fonts.googleapis.com/css2?family=Muli:wght@700;800&display=swap');`;
+    const css = `@import url('https://fonts.googleapis.com/css2?family=Muli:wght@700;800&display=swap');`;
 
     head.appendChild(style);
 
@@ -53,7 +55,6 @@ export default class ButtonDetailsPreview extends React.Component {
     if (this.isCustomTheme) {
       const { paymentButtonEntity } = this.props;
       const buttonTheme = paymentButtonEntity.settings.payment_button_theme;
-
       return buttonTheme;
     } else {
       return this.props.config.config.brand_color;
@@ -99,34 +100,14 @@ export default class ButtonDetailsPreview extends React.Component {
     if (razorpayButtonThemes.find((theme) => theme.value === buttonTheme)) {
       return true;
     }
-  }
 
-  get hasRZPLogo() {
-    const { user } = this.props;
-    let _hasRZPLogo = true;
-
-    if (user.isOrgAxis) {
-      _hasRZPLogo = false;
-    }
-
-    return _hasRZPLogo;
-  }
-
-  get customSecuredByLogoSrc() {
-    const { user } = this.props;
-    let _customSecuredByLogoSrc = null;
-
-    if (user.isOrgAxis) {
-      _customSecuredByLogoSrc = 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.png';
-    }
-
-    return _customSecuredByLogoSrc;
+    return false;
   }
 
   render() {
-    const { paymentButtonEntity, user } = this.props;
-    const buttonText = paymentButtonEntity.settings.payment_button_text,
-      buttonTheme = paymentButtonEntity.settings.payment_button_theme;
+    const { paymentButtonEntity, user, org } = this.props;
+    const buttonText = paymentButtonEntity.settings.payment_button_text;
+    const buttonTheme = paymentButtonEntity.settings.payment_button_theme;
 
     let isLightTheme = true; // Default false bcoz meanwhile the colorJS script is loading, light theme enables dark color text which works well with all contrasts.
 
@@ -144,31 +125,31 @@ export default class ButtonDetailsPreview extends React.Component {
             this.isRazorpayTheme && 'PaymentButton-Button--rzpTheme',
             `PaymentButton-Button--${isLightTheme ? 'light' : 'dark'}`,
             this.isRazorpayTheme && `PaymentButton-Button--${buttonTheme}`,
-            !this.hasRZPLogo && 'PaymentButton-Button--noLogo',
+            !user.isOrgRZP && 'PaymentButton-Button--noLogo',
           )}
           style={{
             background: !this.isRazorpayTheme ? this.brandColor : '',
           }}
         >
-          {this.hasRZPLogo && rzpLogoWhite}
+          {user.isOrgRZP && rzpLogoWhite}
 
           <div class="PaymentButton-Button-contents">
             <span class="PaymentButton-Button-text">
               {buttonText ? buttonText.substring(0, maxLengthForButtonLabel) : ''}
             </span>
             <div class="PaymentButton-Button-rzpBranding">
-              {this.customSecuredByLogoSrc ? (
+              {user.isOrgRZP ? (
+                'Secured by Razorpay'
+              ) : (
                 <React.Fragment>
                   Secured by{' '}
                   <img
                     class="secured-by-logo"
-                    src={this.customSecuredByLogoSrc}
+                    src={org.payment_btn_logo_url}
                     alt="brand"
                     height="10px"
                   />
                 </React.Fragment>
-              ) : (
-                'Secured by Razorpay'
               )}
             </div>
           </div>
