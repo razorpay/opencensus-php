@@ -68,6 +68,10 @@ class Core extends Base\Core
             {
                 $createInput[Card\Entity::IIN] = $response['service_provider_tokens'][0]['provider_data']['token_iin'];
             }
+            else
+            {
+                $response['service_provider_tokens'][0]['provider_data']['token_iin'] = null;
+            }
 
             if($this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_number'))
             {
@@ -87,6 +91,12 @@ class Core extends Base\Core
                 }
 
                 $createInput[Card\Entity::EXPIRY_YEAR] = $expiry_year;
+            }
+            else
+            {
+                $response['service_provider_tokens'][0]['provider_data']['token_expiry_month'] = null;
+
+                $response['service_provider_tokens'][0]['provider_data']['token_expiry_year'] = null;
             }
         }
 
@@ -692,7 +702,7 @@ class Core extends Base\Core
     protected function isPresent($array, $param)
     {
         if(array_key_exists($param, $array) &&
-            !($array[$param] !== null || $array[$param] === 0 || $array[$param] === ''))
+            !($array[$param] === null || $array[$param] === 0 || $array[$param] === ''))
         {
             return true;
         }

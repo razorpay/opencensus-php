@@ -134,6 +134,23 @@ class Entity extends Base\PublicEntity
      */
     public const CONSENT_TAKEN = 'consent_taken';
 
+    /*
+     * service provider tokens attributes
+     */
+    const ID            = 'id';
+    const ENTITY        = 'entity';
+    const PROVIDER_DATA = 'provider_data';
+    const INTEROPERABLE = 'interoperable';
+
+    /*
+     * provider data attributes
+     */
+    const TOKEN_NUMBER           = 'token_number';
+    const CRYPTOGRAM_VALUE       = 'cryptogram_value';
+    const TOKEN_REFERENCE_NUMBER = 'token_reference_number';
+    const CARD_REFERENCE_NUMBER  = 'card_reference_number';
+    const TOKEN_IIN              = 'token_iin';
+
     protected static $sign      = 'token';
 
     protected $entity           = 'token';
@@ -313,6 +330,24 @@ class Entity extends Base\PublicEntity
         self::USED_AT,
         self::RECURRING_DETAILS,
         self::CREATED_AT,
+    ];
+
+    public static $cryptogramDataServiceProviderTokensUnsetAttributes = [
+        self::ID,
+        self::ENTITY,
+        self::STATUS,
+        self::INTEROPERABLE,
+    ];
+
+    public static $cryptogramDataProviderDataUnsetAttributes = [
+        self::TOKEN_REFERENCE_NUMBER,
+        self::CARD_REFERENCE_NUMBER,
+        self::TOKEN_IIN,
+    ];
+
+    public static $providerDataUnsetAttributes = [
+        self::TOKEN_NUMBER,
+        self::CRYPTOGRAM_VALUE,
     ];
 
     public function customer()
@@ -938,20 +973,53 @@ class Entity extends Base\PublicEntity
 
         if (empty($serviceProviderTokens) === false)
         {
-            $publicArray['service_provider_tokens'] = $serviceProviderTokens;
+            $serviceProviderTokensArray = array();
 
             foreach ($serviceProviderTokens as $provider)
             {
-                $provider['status'] = ($this->isExpired() === true) ? 'deactivated' : $provider['status'];
+                $provider[self::STATUS] = ($this->isExpired() === true) ? 'deactivated' : $provider[self::STATUS];
+
+                foreach (self::$providerDataUnsetAttributes as $attribute)
+                {
+                    unset($provider[self::PROVIDER_DATA][$attribute]);
+                }
+
+                array_push($serviceProviderTokensArray, $provider);
             }
+
+            $publicArray['service_provider_tokens'] = $serviceProviderTokensArray;
+
+            // todo: when more than one tokens are come into picture, take union of statuses
+            $publicArray[self::STATUS] = $serviceProviderTokens[0][self::STATUS];
         }
 
-        // todo: when more than one tokens are come into picture, take union of statuses
-        $publicArray['status'] = $serviceProviderTokens[0]['status'];
-
-        $publicArray['notes'] = [];
+        $publicArray[self::NOTES] = [];
 
         return $publicArray;
+    }
+
+    public function toArrayPublicCryptogramData($serviceProviderTokens)
+    {
+        $serviceProviderTokensArray = array();
+
+        foreach ($serviceProviderTokens as $provider)
+        {
+            foreach (self::$cryptogramDataServiceProviderTokensUnsetAttributes as $attribute)
+            {
+                unset($provider[$attribute]);
+            }
+
+            foreach (self::$cryptogramDataProviderDataUnsetAttributes as $attribute)
+            {
+                unset($provider[self::PROVIDER_DATA][$attribute]);
+            }
+
+            $provider[self::PROVIDER_DATA][self::CRYPTOGRAM_VALUE] = (string)$provider[self::PROVIDER_DATA][self::CRYPTOGRAM_VALUE];
+
+            array_push($serviceProviderTokensArray, $provider);
+        }
+
+        return $serviceProviderTokensArray;
     }
 
     public function isUpiRecurringToken()

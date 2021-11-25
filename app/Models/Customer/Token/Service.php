@@ -568,7 +568,7 @@ class Service extends Base\Service
 
             $serviceProviderTokens = $this->core->fetchCryptogram($token, $this->merchant);
 
-            $response['service_provider_tokens'] = $serviceProviderTokens;
+            $response['service_provider_tokens'] = $token->toArrayPublicCryptogramData($serviceProviderTokens);
 
             return $response;
         }
