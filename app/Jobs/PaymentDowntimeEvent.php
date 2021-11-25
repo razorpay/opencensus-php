@@ -18,7 +18,7 @@ class PaymentDowntimeEvent extends Job
     protected $queueConfigKey = 'webhook_event';
 
     /** {@inheritDoc} */
-    public $timeout = 300; // I.e. 5m ~= 5000 http calls to stork * 50ms.
+    public $timeout = 900; // I.e. 15m ~= (5000 http calls to stork * 50ms) + (5000 DB calls) + (margin)
 
     /** @var string See \RZP\Models\Payment\Downtime\Status */
     public $status;
