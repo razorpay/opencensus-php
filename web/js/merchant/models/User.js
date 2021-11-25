@@ -463,7 +463,6 @@ export default class User {
 
   isNeostoneFlowEnabled = (showState = '') => {
     return (
-      this.isProjectNitroEnabled &&
       this.isPartOfNeostone &&
       getXCAStatus(this).showState === showState &&
       this.isOwner &&
