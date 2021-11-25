@@ -48,7 +48,7 @@ return [
             'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
-                'amount'    => 20030000,
+                'amount'    => 50030000,
                 'description' => 'Demo Narration - optional',
                 'notes'     => [
                                 'key1' => 'note3',
@@ -60,10 +60,10 @@ return [
             'content' => [
 //                'id'                   => 'sod_F2hdIcWTkePDcC',
                 'entity'                => 'settlement.ondemand',
-                'amount_requested'      => 20030000,
-                'fees'                  => 472708,
-                'tax'                   => 72108,
-                'amount_pending'        => 19557292,
+                'amount_requested'      => 50030000,
+                'fees'                  => 1180708,
+                'tax'                   => 180108,
+                'amount_pending'        => 48849292,
                 'amount_settled'        => 0,
                 'amount_reversed'       => 0,
                 'currency'              => 'INR',
@@ -89,14 +89,64 @@ return [
                 'count' => 2,
                 'items' => [
                     [
+//                        'id'                    => 'sod_FGi3ZQErsqc9lc',
+                        'entity'                => 'settlement.ondemand',
+                        'amount_requested'      => 50220000,
+                        'amount_settled'        => 0,
+                        'fees'                  => 1185192,
+                        'tax'                   => 180792,
+                        'amount_reversed'       => 0,
+                        'amount_pending'        => 49034808,
+                        'settle_full_balance'   => false,
+                        'currency'              => 'INR',
+                        'status'                => 'initiated',
+                        'description'           => 'Demo Narration - optional',
+                        'notes'                 => [],
+//                        'created_at'           => 1595239294,
+                        'ondemand_payouts' => [
+                            'entity' => 'collection',
+                            'count'  => 2,
+                            'items'  => [
+                                [
+//                                    'id'                      => 'sodp_FGi3ZSdqiiG3AP',
+                                    'entity'                   => 'settlement.ondemand_payout',
+//                                    'initiated_at'            => 1595239294,
+                                    'processed_at'            => null,
+                                    'reversed_at'             => null,
+                                    'amount'                  => 50000000,
+                                    'amount_settled'          => 48820000,
+                                    'fees'                    => 1180000,
+                                    'tax'                     => 180000,
+                                    'utr'                     => null,
+                                    'status'                  => 'initiated',
+//                                    'created_at'              => 1595239293,
+                                ],
+                                [
+//                                    'id'                       => 'sodp_FGi3ZYZjPQhi49',
+                                    'entity'                   => 'settlement.ondemand_payout',
+//                                    'initiated_at'             => 1595239294,
+                                    'processed_at'             => null,
+                                    'reversed_at'              => null,
+                                    'amount'                   => 220000,
+                                    'amount_settled'           => 214808,
+                                    'fees'                     => 5192,
+                                    'tax'                      => 792,
+                                    'utr'                      => null,
+                                    'status'                   =>  'initiated',
+//                                    'created_at'               => 1595239293,
+                                ]
+                            ]
+                        ]
+                    ],
+                    [
 //                        'id'                    => 'sod_FGi3a0Du84Lr7B',
                         'entity'                => 'settlement.ondemand',
-                        'amount_requested'      => 20220000,
+                        'amount_requested'      => 50030000,
                         'amount_settled'        => 0,
-                        'fees'                  => 477192,
-                        'tax'                   => 72792,
+                        'fees'                  => 1180708,
+                        'tax'                   => 180108,
                         'amount_reversed'       => 0,
-                        'amount_pending'        => 19742808,
+                        'amount_pending'        => 48849292,
                         'settle_full_balance'    => false,
                         'currency'              => 'INR',
                         'status'                => 'initiated',
@@ -114,65 +164,15 @@ return [
 //                                    'initiated_at'             => 1595239294,
                                     'processed_at'             => null,
                                     'reversed_at'              => null,
-                                    'amount'                   => 20000000,
-                                    'amount_settled'           => 19528000,
-                                    'fees'                     => 472000,
-                                    'tax'                      => 72000,
+                                    'amount'                   => 50000000,
+                                    'amount_settled'           => 48820000,
+                                    'fees'                     => 1180000,
+                                    'tax'                      => 180000,
                                     'utr'                      => null,
                                     'status'                   => 'initiated',
 //                                    'created_at'               => 1595239294,
                                 ],
                                 [
-                                    'entity'                   => 'settlement.ondemand_payout',
-//                                    'initiated_at'             => 1595239294,
-                                    'processed_at'             => null,
-                                    'reversed_at'              => null,
-                                    'amount'                   => 220000,
-                                    'amount_settled'           => 214808,
-                                    'fees'                     => 5192,
-                                    'tax'                      => 792,
-                                    'utr'                      => null,
-                                    'status'                   => 'initiated',
-//                                    'created_at'               => 1595239294,
-                                ]
-                            ]
-                        ]
-                    ],
-                    [
-//                        'id'                    => 'sod_FGi3ZQErsqc9lc',
-                        'entity'                => 'settlement.ondemand',
-                        'amount_requested'      => 20030000,
-                        'amount_settled'        => 0,
-                        'fees'                  => 472708,
-                        'tax'                   => 72108,
-                        'amount_reversed'       => 0,
-                        'amount_pending'        => 19557292,
-                        'settle_full_balance'   => false,
-                        'currency'              => 'INR',
-                        'status'                => 'initiated',
-                        'description'           => 'Demo Narration - optional',
-                        'notes'                 => [],
-//                        'created_at'           => 1595239294,
-                        'ondemand_payouts' => [
-                            'entity' => 'collection',
-                            'count'  => 2,
-                            'items'  => [
-                                [
-//                                    'id'                      => 'sodp_FGi3ZSdqiiG3AP',
-                                    'entity'                   => 'settlement.ondemand_payout',
-//                                    'initiated_at'            => 1595239294,
-                                    'processed_at'            => null,
-                                    'reversed_at'             => null,
-                                    'amount'                  => 20000000,
-                                    'amount_settled'          => 19528000,
-                                    'fees'                    => 472000,
-                                    'tax'                     => 72000,
-                                    'utr'                     => null,
-                                    'status'                  => 'initiated',
-//                                    'created_at'              => 1595239293,
-                                ],
-                                [
-//                                    'id'                       => 'sodp_FGi3ZYZjPQhi49',
                                     'entity'                   => 'settlement.ondemand_payout',
 //                                    'initiated_at'             => 1595239294,
                                     'processed_at'             => null,
@@ -182,12 +182,12 @@ return [
                                     'fees'                     => 708,
                                     'tax'                      => 108,
                                     'utr'                      => null,
-                                    'status'                   =>  'initiated',
-//                                    'created_at'               => 1595239293,
+                                    'status'                   => 'initiated',
+//                                    'created_at'               => 1595239294,
                                 ]
                             ]
                         ]
-                    ]
+                    ],
                 ]
             ]
         ]
@@ -205,10 +205,10 @@ return [
                 'items' => [
                     [
                         'entity'                => 'settlement.ondemand',
-                        'amount_requested'      => 20030000,
-                        'amount_settled'        => 19557292,
-                        'fees'                  => 472708,
-                        'tax'                   => 72108,
+                        'amount_requested'      => 50030000,
+                        'amount_settled'        => 48849292,
+                        'fees'                  => 1180708,
+                        'tax'                   => 180108,
                         'amount_reversed'       => 0,
                         'amount_pending'        => 0,
                         'settle_full_balance'   => false,
@@ -282,7 +282,7 @@ return [
             'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
-                'amount' => 20030000,
+                'amount' => 50030000,
                 'settle_full_balance' => 0,
                 'description' => 'Demo Narration - optional',
             ],
@@ -291,10 +291,10 @@ return [
             'content' => [
 //                'id'                    => 'sod_F2hdIcWTkePDcC',
                 'entity'                => 'settlement.ondemand',
-                'amount_requested'      => 20030000,
-                'fees'                  => 472708,
-                'tax'                   => 72108,
-                'amount_pending'        => 19557292,
+                'amount_requested'      => 50030000,
+                'fees'                  => 1180708,
+                'tax'                   => 180108,
+                'amount_pending'        => 48849292,
                 'amount_settled'        => 0,
                 'amount_reversed'       => 0,
                 'settle_full_balance'   => false,
@@ -395,7 +395,7 @@ return [
             'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
-                'amount'      => 20030000,
+                'amount'      => 50030000,
                 'settle_full_balance' => 0,
                 'description'   => 'Demo Narration - optional',
             ],
@@ -404,10 +404,10 @@ return [
             'content' => [
 //                'id'                    => 'sod_F2iLNDZn8cODKc',
                 'entity'                => 'settlement.ondemand',
-                'amount_requested'      => 20030000,
-                'fees'                  => 472708,
-                'tax'                   => 72108,
-                'amount_pending'        => 19557292,
+                'amount_requested'      => 50030000,
+                'fees'                  => 1180708,
+                'tax'                   => 180108,
+                'amount_pending'        => 48849292,
                 'amount_settled'        => 0,
                 'amount_reversed'       => 0,
                 'settle_full_balance'   => false,
@@ -424,7 +424,7 @@ return [
             'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
-                'amount' => 20030000,
+                'amount' => 50030000,
                 'settle_full_balance' => 0,
                 'description' => 'Demo Narration - optional',
             ],
@@ -433,10 +433,10 @@ return [
             'content' => [
 //                'id'                    => 'sod_F2iLNDZn8cODKc',
                 'entity'                => 'settlement.ondemand',
-                'amount_requested'      => 20030000,
-                'fees'                  => 472708,
-                'tax'                   => 72108,
-                'amount_pending'        => 19557292,
+                'amount_requested'      => 50030000,
+                'fees'                  => 1180708,
+                'tax'                   => 180108,
+                'amount_pending'        => 48849292,
                 'amount_settled'        => 0,
                 'amount_reversed'       => 0,
                 'settle_full_balance'   => false,
@@ -453,7 +453,7 @@ return [
             'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
-                'amount' => 20220000,
+                'amount' => 50220000,
                 'settle_full_balance' => 0,
                 'description' => 'Demo Narration - optional',
             ],
@@ -462,10 +462,10 @@ return [
             'content' => [
 //                'id'                    => 'sod_F2iLNDZn8cODKc',
                 'entity'                => 'settlement.ondemand',
-                'amount_requested'      => 20220000,
-                'fees'                  => 477192,
-                'tax'                   => 72792,
-                'amount_pending'        => 19742808,
+                'amount_requested'      => 50220000,
+                'fees'                  => 1185192,
+                'tax'                   => 180792,
+                'amount_pending'        => 49034808,
                 'amount_settled'        => 0,
                 'amount_reversed'       => 0,
                 'settle_full_balance'   => false,
@@ -663,7 +663,7 @@ return [
             'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
-                'amount' => 20030000,
+                'amount' => 50030000,
                 'settle_full_balance' => 0,
                 'description' => 'Demo Narration - optional',
             ],
@@ -672,10 +672,10 @@ return [
             'content' => [
 //                'id'                    => 'sod_F2iLNDZn8cODKc',
                 'entity'                => 'settlement.ondemand',
-                'amount_requested'      => 20030000,
+                'amount_requested'      => 50030000,
                 'fees'                  => 1180,
                 'tax'                   => 180,
-                'amount_pending'        => 20028820,
+                'amount_pending'        => 50028820,
                 'amount_settled'        => 0,
                 'amount_reversed'       => 0,
                 'settle_full_balance'   => false,
@@ -825,7 +825,7 @@ return [
             'url'     => '/settlements/ondemand/fees',
             'method'  => 'get',
             'content' => [
-                'amount' => 20030000
+                'amount' => 50030000
             ],
         ],
         'response' => [
@@ -942,7 +942,7 @@ return [
             'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
-                'amount'    => 30000000,
+                'amount'    => 60000000,
                 'description' => 'Demo Narration - optional',
                 'notes'     => [
                     'key1' => 'note3',
@@ -953,11 +953,11 @@ return [
         'response' => [
             'content' => [
                 'entity'                => 'settlement.ondemand',
-                'amount_requested'      => 30000000,
-                'fees'                  => 708000,
-                'tax'                   => 108000,
+                'amount_requested'      => 60000000,
+                'fees'                  => 1416000,
+                'tax'                   => 216000,
                 'amount_pending'        => 0,
-                'amount_settled'        => 29292000,
+                'amount_settled'        => 58584000,
                 'amount_reversed'       => 0,
                 'currency'              => 'INR',
                 'status'                => 'processed',
@@ -1514,5 +1514,396 @@ return [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
+    ],
+
+    'testOndemandCreationForMerchantWithXSettlementAccountNonBankingHoursGreaterThanIMPSLimitOld' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand',
+            'method'  => 'post',
+            'content' => [
+                'amount'    => 30000000,
+                'description' => 'Demo Narration - optional',
+                'notes'     => [
+                    'key1' => 'note3',
+                    'key2' => 'note5'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'                => 'settlement.ondemand',
+                'amount_requested'      => 30000000,
+                'fees'                  => 708000,
+                'tax'                   => 108000,
+                'amount_pending'        => 0,
+                'amount_settled'        => 29292000,
+                'amount_reversed'       => 0,
+                'currency'              => 'INR',
+                'status'                => 'processed',
+                'description'             => 'Demo Narration - optional',
+                'notes'                 => [
+                    'key1' => 'note3',
+                    'key2' => 'note5'
+                ],
+            ]
+        ]
+    ],
+
+    'testBankingHourOndemandCreationOld' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand',
+            'method'  => 'post',
+            'content' => [
+                'amount'    => 20030000,
+                'description' => 'Demo Narration - optional',
+                'notes'     => [
+                    'key1' => 'note3',
+                    'key2' => 'note5'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+//                'id'                   => 'sod_F2hdIcWTkePDcC',
+                'entity'                => 'settlement.ondemand',
+                'amount_requested'      => 20030000,
+                'fees'                  => 472708,
+                'tax'                   => 72108,
+                'amount_pending'        => 19557292,
+                'amount_settled'        => 0,
+                'amount_reversed'       => 0,
+                'currency'              => 'INR',
+                'status'                => 'initiated',
+                'description'             => 'Demo Narration - optional',
+                'notes'                 => [
+                    'key1' => 'note3',
+                    'key2' => 'note5'
+                ],
+//                'created_at'         => 1582000200,
+            ]
+        ]
+    ],
+
+    'testFetchApiOld' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/?from=1582000200&expand[]=ondemand_payouts',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 2,
+                'items' => [
+                    [
+//                        'id'                    => 'sod_FGi3a0Du84Lr7B',
+                        'entity'                => 'settlement.ondemand',
+                        'amount_requested'      => 20220000,
+                        'amount_settled'        => 0,
+                        'fees'                  => 477192,
+                        'tax'                   => 72792,
+                        'amount_reversed'       => 0,
+                        'amount_pending'        => 19742808,
+                        'settle_full_balance'    => false,
+                        'currency'              => 'INR',
+                        'status'                => 'initiated',
+                        'description'             => 'Demo Narration - optional',
+                        'notes'                 => [],
+//                        'created_at'            => 1595239294,
+//                        'updated_at'            => 1595239294,
+                        'ondemand_payouts' => [
+                            'entity' => 'collection',
+                            'count'  => 2,
+                            'items'  => [
+                                [
+//                                    'id'                       => 'sodp_FGi3a0IjIScQNQ',
+                                    'entity'                   => 'settlement.ondemand_payout',
+//                                    'initiated_at'             => 1595239294,
+                                    'processed_at'             => null,
+                                    'reversed_at'              => null,
+                                    'amount'                   => 20000000,
+                                    'amount_settled'           => 19528000,
+                                    'fees'                     => 472000,
+                                    'tax'                      => 72000,
+                                    'utr'                      => null,
+                                    'status'                   => 'initiated',
+//                                    'created_at'               => 1595239294,
+                                ],
+                                [
+                                    'entity'                   => 'settlement.ondemand_payout',
+//                                    'initiated_at'             => 1595239294,
+                                    'processed_at'             => null,
+                                    'reversed_at'              => null,
+                                    'amount'                   => 220000,
+                                    'amount_settled'           => 214808,
+                                    'fees'                     => 5192,
+                                    'tax'                      => 792,
+                                    'utr'                      => null,
+                                    'status'                   => 'initiated',
+//                                    'created_at'               => 1595239294,
+                                ]
+                            ]
+                        ]
+                    ],
+                    [
+//                        'id'                    => 'sod_FGi3ZQErsqc9lc',
+                        'entity'                => 'settlement.ondemand',
+                        'amount_requested'      => 20030000,
+                        'amount_settled'        => 0,
+                        'fees'                  => 472708,
+                        'tax'                   => 72108,
+                        'amount_reversed'       => 0,
+                        'amount_pending'        => 19557292,
+                        'settle_full_balance'   => false,
+                        'currency'              => 'INR',
+                        'status'                => 'initiated',
+                        'description'           => 'Demo Narration - optional',
+                        'notes'                 => [],
+//                        'created_at'           => 1595239294,
+                        'ondemand_payouts' => [
+                            'entity' => 'collection',
+                            'count'  => 2,
+                            'items'  => [
+                                [
+//                                    'id'                      => 'sodp_FGi3ZSdqiiG3AP',
+                                    'entity'                   => 'settlement.ondemand_payout',
+//                                    'initiated_at'            => 1595239294,
+                                    'processed_at'            => null,
+                                    'reversed_at'             => null,
+                                    'amount'                  => 20000000,
+                                    'amount_settled'          => 19528000,
+                                    'fees'                    => 472000,
+                                    'tax'                     => 72000,
+                                    'utr'                     => null,
+                                    'status'                  => 'initiated',
+//                                    'created_at'              => 1595239293,
+                                ],
+                                [
+//                                    'id'                       => 'sodp_FGi3ZYZjPQhi49',
+                                    'entity'                   => 'settlement.ondemand_payout',
+//                                    'initiated_at'             => 1595239294,
+                                    'processed_at'             => null,
+                                    'reversed_at'              => null,
+                                    'amount'                   => 30000,
+                                    'amount_settled'           => 29292,
+                                    'fees'                     => 708,
+                                    'tax'                      => 108,
+                                    'utr'                      => null,
+                                    'status'                   =>  'initiated',
+//                                    'created_at'               => 1595239293,
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testFetchApiWithStatusOld' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/?status=processed',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'                => 'settlement.ondemand',
+                        'amount_requested'      => 20030000,
+                        'amount_settled'        => 19557292,
+                        'fees'                  => 472708,
+                        'tax'                   => 72108,
+                        'amount_reversed'       => 0,
+                        'amount_pending'        => 0,
+                        'settle_full_balance'   => false,
+                        'currency'              => 'INR',
+                        'status'                => 'processed',
+                        'description'           => 'Demo Narration - optional',
+                        'notes'                 => [],
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testBankingHourOndemandCreationWithMockWebhookOld' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand',
+            'method'  => 'post',
+            'content' => [
+                'amount' => 20030000,
+                'settle_full_balance' => 0,
+                'description' => 'Demo Narration - optional',
+            ],
+        ],
+        'response' => [
+            'content' => [
+//                'id'                    => 'sod_F2hdIcWTkePDcC',
+                'entity'                => 'settlement.ondemand',
+                'amount_requested'      => 20030000,
+                'fees'                  => 472708,
+                'tax'                   => 72108,
+                'amount_pending'        => 19557292,
+                'amount_settled'        => 0,
+                'amount_reversed'       => 0,
+                'settle_full_balance'   => false,
+                'currency'              => 'INR',
+                'status'                => 'initiated',
+                'description'           => 'Demo Narration - optional',
+//                'created_at'          => 1582000200,
+            ]
+        ]
+    ],
+
+    'testOndemandCreationBankingHourOld' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand',
+            'method'  => 'post',
+            'content' => [
+                'amount'      => 20030000,
+                'settle_full_balance' => 0,
+                'description'   => 'Demo Narration - optional',
+            ],
+        ],
+        'response' => [
+            'content' => [
+//                'id'                    => 'sod_F2iLNDZn8cODKc',
+                'entity'                => 'settlement.ondemand',
+                'amount_requested'      => 20030000,
+                'fees'                  => 472708,
+                'tax'                   => 72108,
+                'amount_pending'        => 19557292,
+                'amount_settled'        => 0,
+                'amount_reversed'       => 0,
+                'settle_full_balance'   => false,
+                'currency'              => 'INR',
+                'status'                => 'initiated',
+                'description'           => 'Demo Narration - optional',
+//                'created_at'            => 1582036200,
+            ]
+        ]
+    ],
+
+    'testNonBankingHourOndemandCreationWithMockWebhookOld' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand',
+            'method'  => 'post',
+            'content' => [
+                'amount' => 20030000,
+                'settle_full_balance' => 0,
+                'description' => 'Demo Narration - optional',
+            ],
+        ],
+        'response' => [
+            'content' => [
+//                'id'                    => 'sod_F2iLNDZn8cODKc',
+                'entity'                => 'settlement.ondemand',
+                'amount_requested'      => 20030000,
+                'fees'                  => 472708,
+                'tax'                   => 72108,
+                'amount_pending'        => 19557292,
+                'amount_settled'        => 0,
+                'amount_reversed'       => 0,
+                'settle_full_balance'   => false,
+                'currency'              => 'INR',
+                'status'                => 'initiated',
+                'description'           => 'Demo Narration - optional',
+//                'created_at'            => 1582036200,
+            ]
+        ]
+    ],
+
+    'testNonBankingHourOndemandCreationWithPartialReversalOld' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand',
+            'method'  => 'post',
+            'content' => [
+                'amount' => 20220000,
+                'settle_full_balance' => 0,
+                'description' => 'Demo Narration - optional',
+            ],
+        ],
+        'response' => [
+            'content' => [
+//                'id'                    => 'sod_F2iLNDZn8cODKc',
+                'entity'                => 'settlement.ondemand',
+                'amount_requested'      => 20220000,
+                'fees'                  => 477192,
+                'tax'                   => 72792,
+                'amount_pending'        => 19742808,
+                'amount_settled'        => 0,
+                'amount_reversed'       => 0,
+                'settle_full_balance'   => false,
+                'currency'              => 'INR',
+                'status'                => 'initiated',
+                'description'             => 'Demo Narration - optional',
+//                'created_at'            => 1582036200,
+            ]
+        ]
+    ],
+
+    'testOndemandCreationForFixedRatePricingOld' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand',
+            'method'  => 'post',
+            'content' => [
+                'amount' => 20030000,
+                'settle_full_balance' => 0,
+                'description' => 'Demo Narration - optional',
+            ],
+        ],
+        'response' => [
+            'content' => [
+//                'id'                    => 'sod_F2iLNDZn8cODKc',
+                'entity'                => 'settlement.ondemand',
+                'amount_requested'      => 20030000,
+                'fees'                  => 1180,
+                'tax'                   => 180,
+                'amount_pending'        => 20028820,
+                'amount_settled'        => 0,
+                'amount_reversed'       => 0,
+                'settle_full_balance'   => false,
+                'currency'              => 'INR',
+                'status'                => 'initiated',
+                'description'           => 'Demo Narration - optional',
+//                'created_at'            => 1582036200,
+            ]
+        ]
+    ],
+
+    'testOndemandFeesForFixedRateOld' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/fees',
+            'method'  => 'get',
+            'content' => [
+                'amount' => 20030000
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 2,
+                'items' => [
+                    [
+                        'name'            => 'settlement_ondemand',
+                        'amount'          => 1000,
+                        'percentage'      => null,
+                        'pricing_rule_id' => '1GuENK6Hl2BWGg',
+                        'pricing_rule' => [
+                            'percent_rate' => 0,
+                            'fixed_rate'   => 500,
+                        ],
+                    ],
+                    [
+                        'name'            => 'tax',
+                        'amount'          => 180,
+                        'percentage'      =>  1800,
+                        'pricing_rule_id' => null,
+                    ],
+                ],
+            ]
+        ]
     ],
 ];

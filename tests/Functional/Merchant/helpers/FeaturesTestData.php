@@ -768,6 +768,11 @@ return [
                         'display_name'  => 'Es Ondemand Restricted'
                     ],
                     [
+                        'feature'       => 'updated_imps_ondemand',
+                        'value'         => false,
+                        'display_name'  => 'Updated IMPS Ondemand',
+                    ],
+                    [
                         'feature'      => 'es_automatic',
                         'value'        => true,
                         'display_name' => 'Es Automatic'
@@ -1199,6 +1204,7 @@ return [
                     'transaction_v2',
                     'es_on_demand',
                     'es_on_demand_restricted',
+                    'updated_imps_ondemand',
                     'es_automatic',
                     'headless_disable',
                     'bepg_disable',
@@ -1314,6 +1320,7 @@ return [
                         'transaction_v2',
                         'es_on_demand',
                         'es_on_demand_restricted',
+                        'updated_imps_ondemand',
                         'es_automatic',
                         'headless_disable',
                         'bepg_disable',
@@ -1436,6 +1443,7 @@ return [
                     'transaction_v2',
                     'es_on_demand',
                     'es_on_demand_restricted',
+                    'updated_imps_ondemand',
                     'es_automatic',
                     'headless_disable',
                     'bepg_disable',

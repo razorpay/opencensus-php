@@ -18,8 +18,6 @@ use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer as BulkJob;
 
 class Core extends Base\Core
 {
-    const MAX_IMPS_AMOUNT = 200000 * 100;
-
     const MIN_SPLIT_AMOUNT = 10000;
 
     public function createSettlementTransfer($amount, $mode = FundTransfer\Mode::NEFT)
@@ -95,13 +93,15 @@ class Core extends Base\Core
 
         $splitAmount = [];
 
+        $maxIMPSLimit = (new OndemandPayout\Core)->fetchIMPSLimit();
+
         while($totalAmountRemaining > 0)
         {
-            if ($totalAmountRemaining > self::MAX_IMPS_AMOUNT)
+            if ($totalAmountRemaining > $maxIMPSLimit)
             {
-                $totalAmountRemaining -= self::MAX_IMPS_AMOUNT;
+                $totalAmountRemaining -= $maxIMPSLimit;
 
-                $payoutAmount = self::MAX_IMPS_AMOUNT;
+                $payoutAmount = $maxIMPSLimit;
 
                 if(($totalAmountRemaining < self::MIN_SPLIT_AMOUNT) and ($totalAmountRemaining > 0))
                 {

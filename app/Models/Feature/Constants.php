@@ -108,6 +108,7 @@ class Constants
     const TRANSACTION_V2                  = 'transaction_v2';
     const ES_ON_DEMAND                    = 'es_on_demand';
     const ES_ON_DEMAND_RESTRICTED         = 'es_on_demand_restricted';
+    const UPDATED_IMPS_ONDEMAND           = 'updated_imps_ondemand';
     const ES_AUTOMATIC                    = 'es_automatic';
     const HEADLESS_DISABLE                = 'headless_disable';
     const BEPG_DISABLE                    = 'bepg_disable';
@@ -1102,6 +1103,7 @@ class Constants
         self::TRANSACTION_V2                  => true,
         self::ES_ON_DEMAND                    => true,
         self::ES_ON_DEMAND_RESTRICTED         => true,
+        self::UPDATED_IMPS_ONDEMAND           => true,
         self::ES_AUTOMATIC                    => true,
         self::HEADLESS_DISABLE                => true,
         self::BEPG_DISABLE                    => true,
@@ -1468,6 +1470,11 @@ class Constants
         self::ES_ON_DEMAND_RESTRICTED => [
             'feature'       => self::ES_ON_DEMAND_RESTRICTED,
             'display_name'  => 'Es Ondemand Restricted',
+            'documentation' => '',
+        ],
+        self::UPDATED_IMPS_ONDEMAND => [
+            'feature'       => self::UPDATED_IMPS_ONDEMAND,
+            'display_name'  => 'Updated IMPS Ondemand',
             'documentation' => '',
         ],
         self::ES_AUTOMATIC              => [

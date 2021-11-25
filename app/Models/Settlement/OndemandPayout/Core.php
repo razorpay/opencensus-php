@@ -34,7 +34,9 @@ class Core extends Base\Core
         'reversed',
     ];
 
-    const MAX_IMPS_AMOUNT = 200000 * 100;
+    const MAX_IMPS_AMOUNT = FundTransfer\Base\Initiator\NodalAccount::MAX_IMPS_AMOUNT * 100;
+
+    const PREVIOUS_MAX_IMPS_AMOUNT = 200000 * 100;
 
     const PAYOUT_PROCESSED_EVENT = 'payout.processed';
 
@@ -309,13 +311,16 @@ class Core extends Base\Core
         switch($mode)
         {
             case FundTransfer\Mode::IMPS:
+
+                $maxIMPSAmount = $this->fetchIMPSLimit();
+
                 while($totalAmountRemaining > 0)
                 {
-                    if ($totalAmountRemaining > self::MAX_IMPS_AMOUNT)
+                    if ($totalAmountRemaining > $maxIMPSAmount)
                     {
-                        $totalAmountRemaining -= self::MAX_IMPS_AMOUNT;
+                        $totalAmountRemaining -= $maxIMPSAmount;
 
-                        $payoutAmount = self::MAX_IMPS_AMOUNT;
+                        $payoutAmount = $maxIMPSAmount;
 
                         if(($totalAmountRemaining < self::MIN_SPLIT_AMOUNT) and ($totalAmountRemaining > 0))
                         {
@@ -414,5 +419,15 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($settlementOndemandPayout);
         }
+    }
+
+    public function fetchIMPSLimit()
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::UPDATED_IMPS_ONDEMAND) === true)
+        {
+            return self::MAX_IMPS_AMOUNT;
+        }
+
+        return self::PREVIOUS_MAX_IMPS_AMOUNT;
     }
 }
