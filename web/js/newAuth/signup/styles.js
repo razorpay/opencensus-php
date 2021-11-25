@@ -48,6 +48,7 @@ export const RelativeView = Styled(View)`
 `;
 
 export const Container = Styled(View)`
+  height: 100%;
   overflow-y: auto;
   background: linear-gradient(0deg, rgba(2, 42, 156, 0.3), rgba(2, 42, 156, 0.3)), linear-gradient(232.85deg, #020529 -52%, #000B8E 198.1%);
 `;
