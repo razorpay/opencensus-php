@@ -1205,13 +1205,14 @@ class Processor extends Base\Core
                 $resource,
                 function () use ($setl, $input)
                 {
-                    $setl->setUtr($input['utr']);
+                    // Setting the utr and failure reason as null in case empty string
+                    $utr = empty($input['utr']) === true ? null : $input['utr'];
+                    $failureReason = empty($input['failure_reason']) === true ? null : $input['failure_reason'];
+
+                    $setl->setUtr($utr);
                     $setl->setStatus($input['status']);
                     $setl->setRemarks($input['remarks']);
-                    if(isset($input['failure_reason']) === true)
-                    {
-                        $setl->setFailureReason($input['failure_reason']);
-                    }
+                    $setl->setFailureReason($failureReason);
 
                     $this->repo->saveOrFail($setl);
 
@@ -1220,9 +1221,24 @@ class Processor extends Base\Core
                 30,
                 ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_SETTLEMENT_UPDATE_IN_PROGRESS);
 
-            (new Core)->triggerSettlementWebhook($setl, $input['redacted_ba']);
+            $failedNotification = false;
 
             $merchant_id = $setl->getMerchantId();
+
+            $variant = $this->app->razorx->getTreatment($merchant_id,
+                MerchantModel\RazorxTreatment::SETTLEMENT_FAILED_NOTIFICATION,
+                $this->mode
+            );
+
+            if (strtolower($variant) === 'on')
+            {
+                if (isset($input['trigger_failed_notification']) === true)
+                {
+                    $failedNotification = $input['trigger_failed_notification'];
+                }
+            }
+
+            (new Core)->triggerSettlementWebhook($setl, $input['redacted_ba'], $failedNotification, $failedNotification);
 
             // we started updating failed state also in old service for all the settlements from new settlements
             // service so triggering this webhook only for the processed state

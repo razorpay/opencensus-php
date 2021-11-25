@@ -31,12 +31,15 @@ use RZP\Models\Settlement\Bucket as BucketModel;
 use RZP\Jobs\Transfers\TransferSettlementStatus;
 use RZP\Models\Settlement\Details as SetlDetails;
 use RZP\Jobs\Settlement\TransactionMigrationBatch;
+use RZP\Mail\Merchant\SettlementBankAccountFailure;
 use RZP\Mail\Merchant\SettlementsProcessedNotification;
 use RZP\Notifications\Settlement\Handler as SettlementNotificationHandler;
 
 class Core extends Base\Core
 {
     const SETTLEMENT_DASHBOARD_URL = 'https://dashboard.razorpay.com/app/settlements/%s';
+
+    const DASHBOARD_URL = 'https://dashboard.razorpay.com/app/%s';
 
     const SETTLEMENT_PROCESSED_SMS_TEMPLATE = 'sms.settlements.processed';
 
@@ -310,12 +313,13 @@ class Core extends Base\Core
      * @param Entity $settlement
      * @param null $redactedBaNumber
      * @param bool $sendFailureSms
+     * @param bool $sendFailureMail
      */
-    public function triggerSettlementWebhook(Entity $settlement, $redactedBaNumber = null, $sendFailureSms = false)
+    public function triggerSettlementWebhook(Entity $settlement, $redactedBaNumber = null, $sendFailureSms = false, $sendFailureMail = false)
     {
         $this->updateSettlementStatusInTransfer($settlement);
 
-        $this->triggerSettlementNotification($settlement, $redactedBaNumber, $sendFailureSms);
+        $this->triggerSettlementNotification($settlement, $redactedBaNumber, $sendFailureSms, $sendFailureMail);
 
         if ($this->shouldSendWebhook($settlement) === false)
         {
@@ -371,34 +375,60 @@ class Core extends Base\Core
                 return;
             }
 
-            $data = [
-                'merchant' => [
-                    MerchantModel\Entity::EMAIL      => $email,
-                    MerchantModel\Entity::LOGO_URL   => $merchant->getLogoUrl(),
-                ],
-                'settlement' => [
-                    'id'                      => $settlement->getPublicId(),
-                    'amount'                  => $settlement->getAmount(),
-                    'utr'                     => $settlement->getUtr(),
-                    'breakup'                 => $setlDetails['setl_details'],
-                    'has_aggregated_fee_tax'  => $setlDetails['has_aggregated_fee_tax'],
-                    'ba_number'               => $bankAccountNumber,
-                    'time'                    => $settlementTime,
-                    'url'                     => sprintf(self::SETTLEMENT_DASHBOARD_URL, $settlement->getPublicId()),
-                ],
-            ];
+            $settlementMail = null;
 
-            $settlementProcessedMail = new SettlementsProcessedNotification($data);
+            if ($settlement->isStatusProcessed() === true)
+            {
+                $data = [
+                    'merchant' => [
+                        MerchantModel\Entity::EMAIL      => $email,
+                        MerchantModel\Entity::LOGO_URL   => $merchant->getLogoUrl(),
+                    ],
+                    'settlement' => [
+                        'id'                      => $settlement->getPublicId(),
+                        'amount'                  => $settlement->getAmount(),
+                        'utr'                     => $settlement->getUtr(),
+                        'breakup'                 => $setlDetails['setl_details'],
+                        'has_aggregated_fee_tax'  => $setlDetails['has_aggregated_fee_tax'],
+                        'ba_number'               => $bankAccountNumber,
+                        'time'                    => $settlementTime,
+                        'url'                     => sprintf(self::SETTLEMENT_DASHBOARD_URL, $settlement->getPublicId()),
+                    ],
+                ];
 
-            Mail::queue($settlementProcessedMail);
+                $settlementMail = new SettlementsProcessedNotification($data);
+            }
+            else if ($settlement->isStatusFailed() === true)
+            {
+                $data = [
+                    'merchant' => [
+                        MerchantModel\Entity::ID         => $settlement->getMerchantId(),
+                        MerchantModel\Entity::EMAIL      => $email,
+                        'profile_link'                   => sprintf(self::DASHBOARD_URL, "profile"),
+                        'bank_account_update_link'       => sprintf(self::DASHBOARD_URL, "profile/update_bank_account"),
+                    ],
+                    'settlement' => [
+                        'failure_reason'  => $settlement->getFailureReason(),
+                        'ba_number'       => $bankAccountNumber,
+                    ],
+                ];
 
-            $this->trace->info(
-                TraceCode::SETTLEMENT_PROCESSED_MAIL_NOTIFICATION_ENQUEUED,
-                [
-                    'merchant_id'   => $merchant->getId(),
-                    'settlement_id' => $settlement->getId(),
-                    'status'        => $settlement->getStatus(),
-                ]);
+                $settlementMail = new SettlementBankAccountFailure($data);
+            }
+
+            if (empty($settlementMail) === false or $settlementMail !== "")
+            {
+                Mail::queue($settlementMail);
+
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_MAIL_NOTIFICATION_ENQUEUED,
+                    [
+                        'merchant_id'   => $merchant->getId(),
+                        'settlement_id' => $settlement->getId(),
+                        'status'        => $settlement->getStatus(),
+                    ]);
+            }
+
         }
         catch (\Throwable $e)
         {
@@ -527,8 +557,9 @@ class Core extends Base\Core
      * @param Entity $settlement
      * @param null $redactedBaNumber
      * @param bool $sendFailureSms
+     * @param bool $sendFailureMail
      */
-    public function triggerSettlementNotification(Entity $settlement, $redactedBaNumber = null, $sendFailureSms = false)
+    public function triggerSettlementNotification(Entity $settlement, $redactedBaNumber = null, $sendFailureSms = false, $sendFailureMail = false)
     {
         // do not trigger notification in test mode
         if ($this->mode === Mode::TEST)
@@ -577,16 +608,36 @@ class Core extends Base\Core
 
                 (new SettlementNotificationHandler($args))->sendForEvent(Events::PROCESSED);
             }
-            else if (($settlement->isStatusFailed() === true) and ($sendFailureSms === true))
+            else if ($settlement->isStatusFailed() === true)
             {
-                $args = [
-                    'settlement'          => $settlement,
-                    'merchant'            => $merchant,
-                    'bankAccountNumber'   => $bankAccountNumber
-                ];
+                if ($sendFailureMail === true)
+                {
+                    $this->triggerSettlementsMail($settlement, $bankAccountNumber, $merchant);
+                }
 
-                (new SettlementNotificationHandler($args))->sendForEvent(Events::FAILED);
+                if ($sendFailureSms === true)
+                {
+                    $args = [
+                        'settlement'          => $settlement,
+                        'merchant'            => $merchant,
+                        'bankAccountNumber'   => $bankAccountNumber
+                    ];
+
+                    (new SettlementNotificationHandler($args))->sendForEvent(Events::FAILED);
+                }
             }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_NOTIFICATION_INVALID_SETTLEMENT_STATUS,
+                    [
+                        'merchant_id'   => $merchant->getId(),
+                        'settlement_id' => $settlement->getId(),
+                        'status'        => $settlement->getStatus(),
+                    ]);
+
+            }
+
         }
         catch (\Throwable $e)
         {
