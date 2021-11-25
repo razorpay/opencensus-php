@@ -4202,6 +4202,70 @@ return [
         ],
     ],
 
+    'testAddDuplicatePricingRuleWithDifferentAppName' => [
+        'request'   => [
+            'content' => [
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'international'       => 0,
+                'amount_range_active' => 1,
+                'amount_range_max'    => 1500,
+                'amount_range_min'    => 0,
+                'account_type'        => 'shared',
+                'app_name'            => 'xpayroll',
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'international'       => false,
+                'amount_range_active' => true,
+                'amount_range_max'    => 1500,
+                'amount_range_min'    => 0,
+                'account_type'        => 'shared',
+                'app_name'            => 'xpayroll',
+            ]
+        ]
+    ],
+
+    'testAddDuplicatePricingRulesWithSameAppName' => [
+        'request'   => [
+            'content' => [
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'international'       => 0,
+                'amount_range_active' => 1,
+                'amount_range_max'    => 1500,
+                'amount_range_min'    => 0,
+                'account_type'        => 'shared',
+                'app_name'            => 'xpayroll',
+            ],
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The new rule matches with an active existing rule',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
+        ],
+    ],
+
     'testAddPricingPlanRuleForBankingPayoutWithCorrectAuth' => [
         'request' => [
             'content' => [

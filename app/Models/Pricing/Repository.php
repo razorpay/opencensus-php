@@ -658,7 +658,8 @@ class Repository extends Base\Repository
         $network,
         $international,
         $amountRangeActive = 0,
-        $orgId = null)
+        $orgId = null,
+        $appName = null)
     {
         $rule = $this->newQueryWithOrgIdParam($orgId)
                      ->where(Entity::PLAN_ID, '=',$planId)
@@ -670,6 +671,7 @@ class Repository extends Base\Repository
                      ->where(Entity::PAYMENT_NETWORK, '=', $network)
                      ->where(Entity::INTERNATIONAL, '=', $international)
                      ->where(Entity::AMOUNT_RANGE_ACTIVE, '=', $amountRangeActive)
+                     ->where(Entity::APP_NAME,'=',$appName)
                      ->first();
 
         return $rule;

@@ -203,6 +203,15 @@ class Service extends Base\Service
 
                     $ruleOrgId = $plan->getOrgId();
 
+                    if(empty($item[Pricing\Entity::APP_NAME]) === true)
+                    {
+                        $appName = null;
+                    }
+                    else
+                    {
+                        $appName = $item[Pricing\Entity::APP_NAME];
+                    }
+
                     // the route is being used by terminalsService also for paypal onboarding pricing update, we don't send subtype from there
                     $methodSubtype = isset($item[Pricing\Entity::PAYMENT_METHOD_SUBTYPE]) ? $item[Pricing\Entity::PAYMENT_METHOD_SUBTYPE] : null;
                     /** @var Pricing\Entity $existingRule */
@@ -216,7 +225,8 @@ class Service extends Base\Service
                         $item[Pricing\Entity::PAYMENT_NETWORK],
                         $item[Pricing\Entity::INTERNATIONAL],
                         0,
-                        $orgId);
+                        $orgId,
+                        $appName);
 
                     if ($existingRule === null)
                     {
@@ -271,7 +281,8 @@ class Service extends Base\Service
                                 $item[Pricing\Entity::PAYMENT_NETWORK],
                                 $item[Pricing\Entity::INTERNATIONAL],
                                 0,
-                                $orgId);
+                                $orgId,
+                                $appName);
 
                             (new Pricing\Core)->editPlanRule($planId, $existingRule->getId(), $rule, $orgId);
                         }

@@ -2890,6 +2890,44 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAddDuplicatePricingRuleWithDifferentAppName()
+    {
+        $this->ba->adminAuth();
+
+        $pricingPlan = $this->createPricingPlan();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/pricing/' . $pricingPlan['id'] . '/rule';
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        unset($request['content']['app_name']);
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->startTest();
+
+        $dbPricingRule = $this->getDbLastEntity('pricing')->toArray();
+
+        $this->assertEquals($pricingPlan['id'], $dbPricingRule['plan_id']);
+
+        $this->assertEquals('xpayroll', $dbPricingRule['app_name']);
+    }
+
+    public function testAddDuplicatePricingRulesWithSameAppName()
+    {
+        $this->ba->adminAuth();
+
+        $pricingPlan = $this->createPricingPlan();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/pricing/' . $pricingPlan['id'] . '/rule';
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->startTest();
+    }
+
     public function testAddPricingPlanRuleForBankingPayoutWithCorrectAuth()
     {
         $this->ba->adminAuth();

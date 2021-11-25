@@ -973,7 +973,8 @@ class Validator extends Base\Validator
                 ($rule[Entity::RECEIVER_TYPE] === $newRule[Entity::RECEIVER_TYPE]) and
                 ($this->isAccountTypeAndChannelSameForBothRules($rule, $newRule) === true) and
                 ($rule[Entity::AUTH_TYPE] === $newRule[Entity::AUTH_TYPE]) and
-                ($rule[Entity::PAYOUTS_FILTER] === $newRule[Entity::PAYOUTS_FILTER]))
+                ($rule[Entity::PAYOUTS_FILTER] === $newRule[Entity::PAYOUTS_FILTER]) and
+                ($rule[Entity::APP_NAME] === $newRule[Entity::APP_NAME]))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
@@ -993,6 +994,7 @@ class Validator extends Base\Validator
                 ($this->isAccountTypeAndChannelSameForBothRules($rule, $newRule) === true) and
                 ($rule[Entity::AUTH_TYPE] === $newRule[Entity::AUTH_TYPE]) and
                 ($rule[Entity::PAYOUTS_FILTER] === $newRule[Entity::PAYOUTS_FILTER]) and
+                ($rule[Entity::APP_NAME] === $newRule[Entity::APP_NAME]) and
                 (isset($newRule[Entity::AMOUNT_RANGE_ACTIVE]) === true) and
                 (isset($rule[Entity::AMOUNT_RANGE_ACTIVE]) === true))
             {
@@ -1013,6 +1015,7 @@ class Validator extends Base\Validator
                 ($this->isAccountTypeAndChannelSameForBothRules($rule, $newRule) === true) and
                 ($rule[Entity::AUTH_TYPE] === $newRule[Entity::AUTH_TYPE]) and
                 ($rule[Entity::PAYOUTS_FILTER] === $newRule[Entity::PAYOUTS_FILTER]) and
+                ($rule[Entity::APP_NAME] === $newRule[Entity::APP_NAME]) and
                 (empty($newRule[Entity::AMOUNT_RANGE_ACTIVE]) !== empty($rule[Entity::AMOUNT_RANGE_ACTIVE])))
             {
                 throw new Exception\BadRequestException(
