@@ -24,6 +24,8 @@ class MerchantAttributeTest extends TestCase
     use TestsBusinessBanking;
     use HeimdallTrait;
 
+    const DEFAULT_MERCHANT_ID = '10000000000000';
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantAttributeTestData.php';
@@ -194,6 +196,69 @@ class MerchantAttributeTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantAddingNewPreferencesForIntentLos()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $this->assertFeaturePresence(Features::ALLOW_ES_AMAZON);
+
+        $this->assertFeaturePresence(Features::CAPITAL_CARDS_ELIGIBLE);
+    }
+
+    public function testMerchantRemovingPreferencesForIntentLosExisting()
+    {
+        $this->ba->proxyAuth();
+
+        $this->createMerchantAttribute(
+            self::DEFAULT_MERCHANT_ID,
+            'banking',
+            'x_merchant_intent',
+            'marketplace_is',
+            'true');
+
+        $this->createMerchantAttribute(
+            self::DEFAULT_MERCHANT_ID,
+            'banking',
+            'x_merchant_intent',
+            'corporate_cards',
+            'true');
+
+        $this->fixtures->create('feature', [
+            'name'        => Features::ALLOW_ES_AMAZON,
+            'entity_id'   => self::DEFAULT_MERCHANT_ID,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Features::CAPITAL_CARDS_ELIGIBLE,
+            'entity_id'   => self::DEFAULT_MERCHANT_ID,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->startTest();
+
+        $this->assertFeaturePresence(Features::ALLOW_ES_AMAZON);
+
+        $this->assertFeaturePresence(Features::CAPITAL_CARDS_ELIGIBLE);
+    }
+
+    public function testMerchantRemovingPreferencesForIntentLosNonExisting()
+    {
+        $this->ba->proxyAuth();
+
+        $this->assertFeatureAbsence(Features::ALLOW_ES_AMAZON);
+
+        $this->assertFeatureAbsence(Features::CAPITAL_CARDS_ELIGIBLE);
+
+        $this->startTest();
+
+        $this->assertFeatureAbsence(Features::ALLOW_ES_AMAZON);
+
+        $this->assertFeatureAbsence(Features::CAPITAL_CARDS_ELIGIBLE);
+    }
+
     public function testMerchantAddingNewPreferencesForSource()
     {
         $this->ba->proxyAuth();
@@ -343,5 +408,33 @@ class MerchantAttributeTest extends TestCase
                 'updated_at'    => time(),
                 'created_at'    => time()
             ]);
+    }
+
+    protected function assertFeaturePresence(
+        string $featureName,
+        string $merchantId = self::DEFAULT_MERCHANT_ID)
+    {
+        $featuresArray = $this->getFeatures($merchantId);
+
+        $this->assertContains($featureName, $featuresArray);
+    }
+
+    protected function assertFeatureAbsence(
+        string $featureName,
+        string $merchantId = self::DEFAULT_MERCHANT_ID)
+    {
+        $featuresArray = $this->getFeatures($merchantId);
+
+        $this->assertNotContains($featureName, $featuresArray);
+    }
+
+    protected function getFeatures(string $merchantId)
+    {
+        return $this->getDbEntity(
+            'feature',
+            [
+                'entity_id' => $merchantId,
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
     }
 }

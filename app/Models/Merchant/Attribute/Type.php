@@ -29,6 +29,7 @@ class Type
     const VENDOR_PAYMENTS               = 'vendor_payments';
     const CORPORATE_CARDS               = 'corporate_cards';
     const INSTANT_SETTLEMENTS           = 'instant_settlements';
+    const MARKETPLACE_IS                = 'marketplace_is';
     const OTHERS                        = 'others';
 
     //SOURCE Types

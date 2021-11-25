@@ -35,6 +35,7 @@ class GroupType
             Type::VENDOR_PAYMENTS,
             Type::CORPORATE_CARDS,
             Type::INSTANT_SETTLEMENTS,
+            Type::MARKETPLACE_IS,
             Type::OTHERS
         ],
 

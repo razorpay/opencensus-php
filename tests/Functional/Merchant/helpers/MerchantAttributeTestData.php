@@ -159,6 +159,110 @@ return [
         ],
     ],
 
+    'testMerchantAddingNewPreferencesForIntentLos' => [
+        'request' => [
+            'content' => [
+                [
+                    'type'  => 'corporate_cards',
+                    'value' => 'true'
+                ],
+                [
+                    'type'  => 'marketplace_is',
+                    'value' => 'true'
+                ],
+                [
+                    'type'  => 'vendor_payments',
+                    'value' => 'true'
+                ]
+            ],
+            'url' => '/merchant/preferences/x_merchant_intent',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'type'  => 'corporate_cards',
+                    'value' => 'true'
+                ],
+                [
+                    'type'  => 'marketplace_is',
+                    'value' => 'true'
+                ],
+                [
+                    'type'  => 'vendor_payments',
+                    'value' => 'true'
+                ]
+            ]
+        ],
+    ],
+
+    'testMerchantRemovingPreferencesForIntentLosExisting' => [
+        'request' => [
+            'content' => [
+                [
+                    'type'  => 'corporate_cards',
+                    'value' => 'false'
+                ],
+                [
+                    'type'  => 'marketplace_is',
+                    'value' => 'false'
+                ]
+            ],
+            'url' => '/merchant/preferences/x_merchant_intent',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'type'  => 'corporate_cards',
+                    'value' => 'false'
+                ],
+                [
+                    'type'  => 'marketplace_is',
+                    'value' => 'false'
+                ]
+            ]
+        ],
+    ],
+
+    'testMerchantRemovingPreferencesForIntentLosNonExisting' => [
+        'request' => [
+            'content' => [
+                [
+                    'type'  => 'corporate_cards',
+                    'value' => 'false'
+                ],
+                [
+                    'type'  => 'marketplace_is',
+                    'value' => 'false'
+                ]
+            ],
+            'url' => '/merchant/preferences/x_merchant_intent',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'type'  => 'corporate_cards',
+                    'value' => 'false'
+                ],
+                [
+                    'type'  => 'marketplace_is',
+                    'value' => 'false'
+                ]
+            ]
+        ],
+    ],
+
     'testMerchantAddingNewPreferencesForSource' => [
         'request' => [
             'content' => [

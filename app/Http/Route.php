@@ -11253,7 +11253,6 @@ class Route
     public static $routeNameToFeaturesMap = [
         'capital_cards_service'                => [Feature::CAPITAL_CARDS],
         'loc_service'                          => [Feature::WITHDRAW_LOC, Feature::WITHDRAWAL_ES_AMAZON],
-        'los_service'                          => [Feature::LOS],
         'feature_dummy'                        => [Feature::DUMMY],
         'payment_create_wallet'                => [Feature::S2SWALLET, Feature::S2S],
         'payment_create_upi'                   => [Feature::S2SUPI, Feature::S2S],
