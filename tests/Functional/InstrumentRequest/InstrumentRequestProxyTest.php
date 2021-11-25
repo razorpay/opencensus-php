@@ -297,6 +297,7 @@ class InstrumentRequestProxyTest extends TestCase
 
                 $this->assertArrayHasKey('X-Dashboard-Admin-Email', $additionalHeaders);
                 $this->assertArrayHasKey('X-Dashboard-Admin-OrgId', $additionalHeaders);
+                $this->assertEquals('org_100000razorpay', $additionalHeaders['X-Dashboard-Admin-OrgId']);
 
                 $response = new \Requests_Response;
 
