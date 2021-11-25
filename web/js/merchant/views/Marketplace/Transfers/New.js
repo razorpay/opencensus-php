@@ -9,7 +9,6 @@ import { withRouter } from 'react-router-dom';
 import debounce from 'common/utils/debounce';
 import { prefixEntityValue } from 'merchant_common/helpers/data';
 import Alert from 'common/ui/Forms/Alert';
-import DatePickerField from 'common/ui/Forms/DatePickerField';
 import InputGroupField from 'common/ui/Forms/InputField/InputGroupField';
 import { required } from 'common/utils/validators';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -22,6 +21,12 @@ import { isHoliday, nextWorkingDay } from 'common/utils/bankHolidays';
 import RadioButton from 'common/ui/Forms/RadioButton';
 import DirectTransferBanner from './components/DirectTransferBanner';
 import { compose, bindActionCreators } from 'redux';
+import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from '../../../../common/new-ui/SuspenseWithLoader';
+
+const DatePickerField = lazy(() =>
+  import(/* webpackChunkName: 'DatePickerField' */ 'common/ui/Forms/DatePickerField'),
+);
 
 // TODO: Use components/AccountSelector to for account search | selection input
 
@@ -321,18 +326,20 @@ class TransferNew extends Component {
                         )}
                       />
                       <div class="transfers-onhold-datepicker">
-                        <Field
-                          component={DatePickerField}
-                          name="holdUntil"
-                          required
-                          placeholder="Select Date"
-                          disabled={this.props.onHold !== 'on_hold_until'}
-                          isDayBlocked={(date) => {
-                            date = date.clone().startOf('day').toDate();
+                        <SuspenseWithLoader>
+                          <Field
+                            component={DatePickerField}
+                            name="holdUntil"
+                            required
+                            placeholder="Select Date"
+                            disabled={this.props.onHold !== 'on_hold_until'}
+                            isDayBlocked={(date) => {
+                              date = date.clone().startOf('day').toDate();
 
-                            return date < nextWorkingDate || isHoliday(date);
-                          }}
-                        />
+                              return date < nextWorkingDate || isHoliday(date);
+                            }}
+                          />
+                        </SuspenseWithLoader>
                       </div>
                       <Field
                         component={RadioButton}

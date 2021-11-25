@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
-
 import debounce from 'common/utils/debounce';
-import takeScreenshot from 'common/utils/screenshot';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -20,28 +17,27 @@ import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
 import { API_ERROR, API_INVALID_RESP, getPlatformColor } from 'merchant/components/Home/data';
-import { trackError, trackGoToLinks, trackNoData } from 'merchant/containers/Home/ga';
+import { trackError, trackNoData } from 'merchant/containers/Home/ga';
 
 import Mobile from 'merchant/containers/Home/Traffic/Mobile';
 
 const aggTypes = groupValues.map((value) => groupMeta[value]);
 
 const chartOptions = {
-    tooltips: {
-      enabled: false,
-    },
-    layout: {
-      padding: {
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-      },
+  tooltips: {
+    enabled: false,
+  },
+  layout: {
+    padding: {
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
     },
   },
-  csvDateFormat = 'DD-MM-YYYY';
+};
+const csvDateFormat = 'DD-MM-YYYY';
 
-@connect(null, { showNotification })
 class Traffic extends Component {
   constructor(props) {
     super(props);
@@ -54,6 +50,7 @@ class Traffic extends Component {
     };
 
     groupValues.forEach((groupValue) => {
+      // eslint-disable-next-line react/no-direct-mutation-state
       this.state.groupsState[groupValue] = {
         loading: false,
         chartData: null,
@@ -77,22 +74,26 @@ class Traffic extends Component {
 
     const { sectionTitle, analyticsFetch } = this.props;
 
-    const { selectedGrouping, groupsState } = this.state,
-      groupState = groupsState[selectedGrouping.value],
-      meta = groupMeta[selectedGrouping.value],
-      query = getQuery({
-        startTime: startDate.unix(),
-        endTime: endDate.unix(),
-        group: selectedGrouping.value,
-      });
+    const { selectedGrouping, groupsState } = this.state;
+    const groupState = groupsState[selectedGrouping.value];
+    const meta = groupMeta[selectedGrouping.value];
+    const query = getQuery({
+      startTime: startDate.unix(),
+      endTime: endDate.unix(),
+      group: selectedGrouping.value,
+    });
 
     if (isInitialLoad) {
-      this.state.loading = true;
+      this.setState({
+        loading: false,
+      });
     }
 
     groupState.loading = true;
     groupState.error = '';
 
+    // I have no clue what this is 😟
+    // eslint-disable-next-line react/no-access-state-in-setstate
     this.setState(this.state);
 
     const downloadFileName = `Platform traffic split, ${startDate.format(
@@ -162,7 +163,9 @@ class Traffic extends Component {
         }
 
         if (isInitialLoad) {
-          this.state.loading = false;
+          this.setState({
+            loading: false,
+          });
         }
 
         groupState.loading = false;
@@ -179,7 +182,11 @@ class Traffic extends Component {
           groupState.error = data.error;
         }
 
+        // I have no clue what this is 😟
+        // eslint-disable-next-line react/no-access-state-in-setstate
         this.setState(this.state);
+
+        return '';
       });
   }
 
@@ -199,8 +206,8 @@ class Traffic extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { startDate, endDate } = nextProps,
-      props = this.props;
+    const { startDate, endDate } = nextProps;
+    const props = this.props;
 
     if (
       startDate.toDate() !== props.startDate.toDate() ||
@@ -222,18 +229,22 @@ class Traffic extends Component {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-    const { selectedGrouping, groupsState } = this.state,
-      groupState = groupsState[selectedGrouping.value],
-      anchor = e.target;
+    const { selectedGrouping, groupsState } = this.state;
+    const groupState = groupsState[selectedGrouping.value];
+    const anchor = e.target;
 
     if (!groupState.pngData.url) {
       e.preventDefault();
 
-      takeScreenshot(this.panelBody).then((url) => {
-        groupState.pngData.url = url;
+      import('common/utils/screenshot').then((module) => {
+        const takeScreenshot = module.default;
+        takeScreenshot(this.panelBody).then((url) => {
+          groupState.pngData.url = url;
 
-        this.setState(this.state, () => {
-          anchor.click();
+          // eslint-disable-next-line react/no-access-state-in-setstate
+          this.setState(this.state, () => {
+            anchor.click();
+          });
         });
       });
     }
@@ -244,11 +255,11 @@ class Traffic extends Component {
       return;
     }
 
-    const { width, height } = this.chartContent.getBoundingClientRect();
+    const { width } = this.chartContent.getBoundingClientRect();
 
     // fixing with and height of chart container so that
     // the chart size would not grow
-    this.chartContent.style.width = width + 'px';
+    this.chartContent.style.width = `${width}px`;
   }
 
   handleResize() {
@@ -290,12 +301,12 @@ class Traffic extends Component {
   }
 
   render() {
-    const { loading, selectedGrouping, groupsState } = this.state,
-      groupState = groupsState[selectedGrouping.value],
-      { isCurrency } = groupMeta[selectedGrouping.value],
-      { chartData, legendData } = groupState,
-      hasNoData = !chartData || chartData.labels.length === 0,
-      { sectionTitle, startDate, endDate, isMobile } = this.props;
+    const { loading, selectedGrouping, groupsState } = this.state;
+    const groupState = groupsState[selectedGrouping.value];
+    const { isCurrency } = groupMeta[selectedGrouping.value];
+    const { chartData, legendData } = groupState;
+    const hasNoData = !chartData || chartData.labels.length === 0;
+    const { sectionTitle, isMobile } = this.props;
 
     if (isMobile) {
       const mobileProps = {
@@ -376,4 +387,4 @@ class Traffic extends Component {
   }
 }
 
-export default Traffic;
+export default connect(null, { showNotification })(Traffic);

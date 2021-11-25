@@ -125,6 +125,8 @@ module.exports = ({ config, project }) => {
       filename: devMode ? 'css/[name].css' : 'css/[name].[contenthash].css',
       chunkFilename: devMode ? 'css/[id].css' : 'css/[id].[contenthash].css',
     }),
+    // Ignoring the moment locale as we only use moment core
+    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
   );
 
   //remove unused CopyWebpackPlugin, LoadablePlugin, HtmlWebpackPlugin from default config

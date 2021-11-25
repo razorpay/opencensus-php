@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import OffersForYouIconJson from 'merchant/helpers/lottieConfigs/OffersForYouIconJson.json';
-import CustomLottie from 'common/new-ui/Lottie';
+import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+
+const CustomLottie = lazy(() =>
+  import(/* webpackChunkName: 'CustomLottie' */ 'common/new-ui/Lottie'),
+);
 
 const OffersForYouIcon = ({ isStopped, setIsStopped }) => {
   const [animationStart, setAnimationStart] = useState(false);
@@ -8,28 +13,30 @@ const OffersForYouIcon = ({ isStopped, setIsStopped }) => {
   const eventListeners = [
     {
       eventName: 'complete',
-      callback: () => { 
-        setIsStopped(true); 
+      callback: () => {
+        setIsStopped(true);
       },
     },
     {
       eventName: 'DOMLoaded',
-      callback: () => { 
+      callback: () => {
         setTimeout(() => {
           setAnimationStart(!isStopped);
         }, 1000);
-      }, 
-    }
+      },
+    },
   ];
 
   return (
-    <CustomLottie
-      animationData={OffersForYouIconJson}
-      autoplay={animationStart}
-      loop={2}
-      eventListeners={eventListeners}
-      isStopped={isStopped}
-    />
+    <SuspenseWithLoader>
+      <CustomLottie
+        animationData={OffersForYouIconJson}
+        autoplay={animationStart}
+        loop={2}
+        eventListeners={eventListeners}
+        isStopped={isStopped}
+      />
+    </SuspenseWithLoader>
   );
 };
 

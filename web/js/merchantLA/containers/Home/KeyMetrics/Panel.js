@@ -3,29 +3,18 @@ import { Link } from 'react-router-dom';
 import Chart from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { PowerSelect } from 'react-power-select';
-
 import Definition from 'common/ui/Definition';
 import Change from 'common/ui/Change';
-import { BtnGroup, Btn } from 'common/ui/BtnGroup/index.js';
+import { BtnGroup, Btn } from 'common/ui/BtnGroup/index';
 import { namedColors } from 'common/utils/chart/colors';
-import {
-  isDefined,
-  titleCase,
-  paiseToRupees,
-  getPercentage,
-} from 'common/utils/rzp-utils';
+import { isDefined, titleCase, paiseToRupees, getPercentage } from 'common/utils/rzp-utils';
 import debounce from 'common/utils/debounce';
-import { timeScale } from 'common/utils/chart/new.js';
-import takeScreenshot from 'common/utils/screenshot';
+import { timeScale } from 'common/utils/chart/new';
 import Group, { GroupItem } from 'common/ui/Group';
-import {
-  humanReadableIndian,
-  humanReadableIndianCurrency,
-} from 'common/utils/numerals';
+import { humanReadableIndian, humanReadableIndianCurrency } from 'common/utils/numerals';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import GenericTooltip from 'common/ui/Tooltip';
-
-import { tabsMeta, breakdownVals, breakdownValsMap } from './data';
+import { tabsMeta, breakdownVals, breakdownValsMap, PLATFORM, CUMULATIVE } from './data';
 import GroupingDropdown from 'merchantLA/containers/Home/GroupingDropdown';
 import FilteringDropdown from 'merchantLA/components/Home/FilteringDropdown';
 import Legend from 'merchantLA/components/Home/Legend';
@@ -37,10 +26,6 @@ import GenericPanel, {
   PanelFooter,
 } from 'merchantLA/components/Home/GenericPanel';
 import Tooltip from 'merchantLA/components/Home/Tooltip';
-import {
-  PLATFORM,
-  CUMULATIVE,
-} from 'merchantLA/containers/Home/KeyMetrics/data';
 
 import { trackGoToLinks } from './ga';
 import customToolTip, { positioner } from './customTooltip';
@@ -74,18 +59,14 @@ const _getChartData = (data, selectedGrouping, canvas) => {
    * For Cumulative graph, we need to render gradient
    */
 
-  if (
-    !data.histogram ||
-    !selectedGrouping ||
-    selectedGrouping.value !== CUMULATIVE
-  ) {
+  if (!data.histogram || !selectedGrouping || selectedGrouping.value !== CUMULATIVE) {
     return data.histogram;
   }
 
-  const ctx = canvas.getContext('2d'),
-    gradient = ctx.createLinearGradient(0, 0, 0, 250),
-    // reducing opacity of primary color
-    startColor = namedColors.primaryColor.replace(/1\)$/, '0.5)');
+  const ctx = canvas.getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+  // reducing opacity of primary color
+  const startColor = namedColors.primaryColor.replace(/1\)$/, '0.5)');
 
   gradient.addColorStop(0, startColor);
   gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
@@ -130,7 +111,7 @@ class Panel extends Component {
 
     return showGroupingByPtfm || grouping.length === 0
       ? grouping
-      : grouping.filter(groupItem => {
+      : grouping.filter((groupItem) => {
           return groupItem.value !== PLATFORM;
         });
   }
@@ -172,15 +153,18 @@ class Panel extends Component {
   handleImageExportClick(e) {
     const a = e.target;
 
-    const { tabName, data } = this.props,
-      { png } = data;
+    const { tabName, data } = this.props;
+    const { png } = data;
 
     if (!png.url) {
       e.preventDefault();
 
-      takeScreenshot(this.panelBody).then(url => {
-        this.props.onScreenshot(tabName, url, () => {
-          a.click();
+      import('common/utils/screenshot').then((module) => {
+        const takeScreenshot = module.default;
+        takeScreenshot(this.panelBody).then((url) => {
+          this.props.onScreenshot(tabName, url, () => {
+            a.click();
+          });
         });
       });
     }
@@ -199,7 +183,7 @@ class Panel extends Component {
         this.setState({
           hideGraph: false,
         });
-      }
+      },
     );
   }
 
@@ -219,35 +203,30 @@ class Panel extends Component {
 
   render() {
     const {
-        selectedGrouping,
-        selectedFilters,
-        data,
-        startDate,
-        endDate,
-        selectedBreakdown,
-        lastUpdatedAt,
-        isCurrency,
-        externalUrl,
-        showGroupingByPtfm,
-        tabName,
-        sectionTitle,
-      } = this.props,
-      { visibleGroups: grouping } = this.state,
-      dateFormat = 'DD MMM YYYY',
-      { options, filters } = this.meta,
-      { loading, histogram, trend } = data;
+      selectedGrouping,
+      selectedFilters,
+      data,
+      startDate,
+      endDate,
+      selectedBreakdown,
+      lastUpdatedAt,
+      isCurrency,
+      externalUrl,
+      sectionTitle,
+    } = this.props;
+    const { visibleGroups: grouping } = this.state;
+    const dateFormat = 'DD MMM YYYY';
+    const { filters } = this.meta;
+    const { loading, histogram, trend } = data;
 
     const hasNoData = !histogram || histogram.datasets.length === 0;
 
     const noGrouping =
-      (selectedGrouping && selectedGrouping.value === CUMULATIVE) ||
-      this.meta.noGrouping;
+      (selectedGrouping && selectedGrouping.value === CUMULATIVE) || this.meta.noGrouping;
 
-    const hasLegends = !noGrouping && !loading && data.legendData;
-
-    let trendValue = 0,
-      trendText = '',
-      trendAbsValue = 0;
+    let trendValue = 0;
+    let trendText = '';
+    let trendAbsValue = 0;
 
     if (trend.show && !trend.loading) {
       const currentCount = trend.currentCount;
@@ -259,12 +238,13 @@ class Panel extends Component {
         ? humanReadableIndianCurrency(paiseToRupees(trendAbsValue))
         : humanReadableIndian(trendAbsValue);
 
-      trendText +=
-        ' (' +
-        (trend.currentCount === 0
-          ? trend.previousCount !== 0 ? 100 : 0
-          : getPercentage(currentCount, trendAbsValue)) +
-        '%)';
+      trendText += ` (${
+        trend.currentCount === 0
+          ? trend.previousCount !== 0
+            ? 100
+            : 0
+          : getPercentage(currentCount, trendAbsValue)
+      }%)`;
     }
 
     let chartOptions = { ...globalChartOptions };
@@ -289,55 +269,44 @@ class Panel extends Component {
 
     return (
       <GenericPanel
-        className={`key-metrics-container${
-          !loading && noGrouping ? ' no-legends' : ''
-        }`}
+        className={`key-metrics-container${!loading && noGrouping ? ' no-legends' : ''}`}
         isLoading={data.loading}
         hasNoData={hasNoData}
         error={data.error}
       >
         <PanelTopbar className="clearfix">
-          {data.trend.show &&
-            !data.trend.error && (
-              <div
-                className={`pull-left ${
-                  data.trend.loading ? ' trend-loading' : ''
-                }`}
-              >
-                <div>
-                  <Change value={trendValue}>
+          {data.trend.show && !data.trend.error && (
+            <div className={`pull-left ${data.trend.loading ? ' trend-loading' : ''}`}>
+              <div>
+                <Change value={trendValue}>
+                  {trend.loading ? (
+                    <PlaceholderLoader />
+                  ) : (
+                    <span>
+                      {trendText}
+                      <Tooltip value={trendAbsValue} isCurrency={isCurrency} />
+                    </span>
+                  )}
+                </Change>
+                <Definition>
+                  <span className="text-fade">
                     {trend.loading ? (
                       <PlaceholderLoader />
                     ) : (
                       <span>
-                        {trendText}
-                        <Tooltip
-                          value={trendAbsValue}
-                          isCurrency={isCurrency}
-                        />
+                        Compared to:
+                        <span>
+                          {<span>&nbsp;&nbsp;</span>}
+                          {trend.startDate.format(dateFormat)}{' '}
+                        </span>
+                        -<span> {trend.endDate.format(dateFormat)} </span>
                       </span>
                     )}
-                  </Change>
-                  <Definition>
-                    <span className="text-fade">
-                      {trend.loading ? (
-                        <PlaceholderLoader />
-                      ) : (
-                        <span>
-                          Compared to:
-                          <span>
-                            {<span>&nbsp;&nbsp;</span>}
-                            {trend.startDate.format(dateFormat)}{' '}
-                          </span>
-                          -
-                          <span> {trend.endDate.format(dateFormat)} </span>
-                        </span>
-                      )}
-                    </span>
-                  </Definition>
-                </div>
+                  </span>
+                </Definition>
               </div>
-            )}
+            </div>
+          )}
           <div className="panel-actions pull-right">
             <BtnGroup
               className="panel-action-item time-breakdown"
@@ -346,24 +315,20 @@ class Panel extends Component {
             >
               {breakdownVals.map((item, index) => {
                 const btnProps = {
-                    value: item.value,
-                    key: index,
-                    className: 'btn-default',
-                  },
-                  isEnabled = item.isEnabled(startDate, endDate);
+                  value: item.value,
+                  key: index,
+                  className: 'btn-default',
+                };
+                const isEnabled = item.isEnabled(startDate, endDate);
 
                 if (!isEnabled) {
                   btnProps.disabled = 'disabled';
                 }
 
                 return (
-                  <Btn {...btnProps}>
+                  <Btn key={`${item.title}_index`} {...btnProps}>
                     <span>{item.title}</span>
-                    {!isEnabled && (
-                      <GenericTooltip align="top">
-                        {item.disabledText}
-                      </GenericTooltip>
-                    )}
+                    {!isEnabled && <GenericTooltip align="top">{item.disabledText}</GenericTooltip>}
                   </Btn>
                 );
               })}
@@ -395,16 +360,15 @@ class Panel extends Component {
                 />
               </div>
             )}
-            {filters &&
-              filters.length > 0 && (
-                <div className="panel-action-item">
-                  <FilteringDropdown
-                    onFilterChange={this.handleFilterChange}
-                    filters={filters}
-                    selectedFilters={selectedFilters}
-                  />
-                </div>
-              )}
+            {filters && filters.length > 0 && (
+              <div className="panel-action-item">
+                <FilteringDropdown
+                  onFilterChange={this.handleFilterChange}
+                  filters={filters}
+                  selectedFilters={selectedFilters}
+                />
+              </div>
+            )}
             <div id="keymetrics-download" className="panel-action-item">
               <MoreOptionsButton
                 csvData={data.csv}
@@ -418,28 +382,21 @@ class Panel extends Component {
         </PanelTopbar>
 
         <PanelBody>
-          <div
-            className="panel-body-content"
-            ref={node => (this.panelBody = node)}
-          >
+          <div className="panel-body-content" ref={(node) => (this.panelBody = node)}>
             <div className="chart-container">
-              {!data.loading &&
-                data.histogram &&
-                !this.state.hideGraph && (
-                  <Line
-                    options={chartOptions}
-                    data={getChartData}
-                    ref={node => (this.chartInstance = node)}
-                  />
-                )}
-            </div>
-            {!noGrouping &&
-              !data.loading &&
-              data.legendData && (
-                <div>
-                  <Legend data={data.legendData} isCurrency={isCurrency} />
-                </div>
+              {!data.loading && data.histogram && !this.state.hideGraph && (
+                <Line
+                  options={chartOptions}
+                  data={getChartData}
+                  ref={(node) => (this.chartInstance = node)}
+                />
               )}
+            </div>
+            {!noGrouping && !data.loading && data.legendData && (
+              <div>
+                <Legend data={data.legendData} isCurrency={isCurrency} />
+              </div>
+            )}
           </div>
         </PanelBody>
 
@@ -450,14 +407,9 @@ class Panel extends Component {
           <div className="pull-right">
             <Link
               target="_blank"
-              to={`/${
-                this.meta.index
-              }?from=${startDate.unix()}&to=${endDate.unix()}&ref=home`}
+              to={`/${this.meta.index}?from=${startDate.unix()}&to=${endDate.unix()}&ref=home`}
               onClick={() =>
-                trackGoToLinks(
-                  titleCase(this.meta.index),
-                  sectionTitle + ' | ' + this.meta.title
-                )
+                trackGoToLinks(titleCase(this.meta.index), `${sectionTitle} | ${this.meta.title}`)
               }
             >
               {`View all ${this.meta.index} from this date range`}

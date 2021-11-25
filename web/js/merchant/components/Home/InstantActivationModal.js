@@ -14,12 +14,17 @@ import {
 } from 'merchant/reducers/onboarding';
 import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
 import { setOnBoardingDataInLocalState } from 'merchant/components/OnBoarding';
-import CustomLottie from 'common/new-ui/Lottie';
 import InstantActivation from 'merchant/helpers/lottieConfigs/InstantActivation.json';
 import { ProgressBar } from 'common/ui/ProgressBar';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
+import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from '../../../common/new-ui/SuspenseWithLoader';
+
+const CustomLottie = lazy(() =>
+  import(/* webpackChunkName: 'CustomLottie' */ 'common/new-ui/Lottie'),
+);
 
 const RECOMMANDED_PRODUCT_LIST = {
   payment_gateway: { link: '/keys', name: 'API Key' },
@@ -276,13 +281,15 @@ const InstantActivationModal = ({
         showCloseBtn={!isPaymentLinkRecommendedProduct}
       >
         <div className="modal-header">
-          <CustomLottie
-            animationData={InstantActivation}
-            autoplay={animationStart}
-            loop={0}
-            eventListeners={eventListeners}
-            isStopped={false}
-          />
+          <SuspenseWithLoader>
+            <CustomLottie
+              animationData={InstantActivation}
+              autoplay={animationStart}
+              loop={0}
+              eventListeners={eventListeners}
+              isStopped={false}
+            />
+          </SuspenseWithLoader>
         </div>
         <div className="modal-body">
           <div className="modal-description">

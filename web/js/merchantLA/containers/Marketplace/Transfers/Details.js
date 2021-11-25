@@ -2,29 +2,25 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { findDOMNode } from 'react-dom';
 import { withRouter } from 'react-router-dom';
-import TransferDetails from 'merchantLA/components/Marketplace/Transfers/Details';
-import ReversalDetails from 'merchantLA/containers/Marketplace/Reversals/Details.js';
-import {
-  fetchTransfer,
-  fetchReversals,
-} from 'merchantLA/reducers/marketplace/transfer';
+import ReversalDetails from 'merchantLA/containers/Marketplace/Reversals/Details';
+import { fetchTransfer, fetchReversals } from 'merchantLA/reducers/marketplace/transfer';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import setGaTrack from './ga';
+import SuspenseWithLoader from '../../../../common/new-ui/SuspenseWithLoader';
+import lazy from 'merchant/routes/LazyLoader';
+import { compose, bindActionCreators } from 'redux';
+
+const TransferDetails = lazy(() =>
+  import(
+    /* webpackChunkName: 'TransferDetails' */ 'merchantLA/components/Marketplace/Transfers/Details'
+  ),
+);
 
 const gaEvents = setGaTrack('LA Dashboard - Transfers');
 
-@withRouter
-@connect(state => ({ ...state.transfer, ...state.session }), {
-  fetchTransfer,
-  fetchReversals,
-  showNotification,
-  expandSlider,
-  compactSlider,
-  ...ModalActions,
-})
-export default class TransferDetailsContainer extends Component {
+class TransferDetailsContainer extends Component {
   state = {};
 
   fetchData(transferId) {
@@ -32,9 +28,7 @@ export default class TransferDetailsContainer extends Component {
       return;
     }
 
-    this.props
-      .fetchTransfer(transferId)
-      .then(() => this.props.fetchReversals(transferId));
+    this.props.fetchTransfer(transferId).then(() => this.props.fetchReversals(transferId));
   }
 
   componentWillMount() {
@@ -57,30 +51,35 @@ export default class TransferDetailsContainer extends Component {
       this.props.compactSlider();
 
       // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
+      // eslint-disable-next-line react/no-find-dom-node
       if (this.reversalsView && findDOMNode(this.reversalsView)) {
+        // eslint-disable-next-line react/no-find-dom-node
         findDOMNode(this.reversalsView).classList.add('toggle-slider');
       }
     } else {
       this.props.expandSlider();
 
       // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
+      // eslint-disable-next-line react/no-find-dom-node
       if (this.reversalsView && findDOMNode(this.reversalsView)) {
+        // eslint-disable-next-line react/no-find-dom-node
         findDOMNode(this.reversalsView).classList.remove('toggle-slider');
       }
     }
   }
 
   onReversalDetailsClose = () => {
-    let { compactSlider, history, location } = this.props;
+    const { compactSlider: compactSliderFn, history, location } = this.props;
 
     if (this.reversalsView) {
+      // eslint-disable-next-line react/no-find-dom-node
       findDOMNode(this.reversalsView).classList.toggle('toggle-slider');
     }
 
-    compactSlider();
+    compactSliderFn();
 
     // Going back to initial detail view mode. Remove the chunk in url after the last /.
-    history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
+    history.push(location.pathname.replace(/\/[^/]+\/?$/, ''));
   };
 
   componentDidMount() {
@@ -92,14 +91,14 @@ export default class TransferDetailsContainer extends Component {
   }
 
   render() {
-    let {
+    const {
       entity,
       loading,
       errors,
       reversals,
       onClose,
       onReverse,
-      showNotification,
+      showNotification: showNotificationFn,
       user,
       reversal_id,
     } = this.props;
@@ -113,27 +112,25 @@ export default class TransferDetailsContainer extends Component {
     }
 
     return (
-      <div
-        class={`transfer-details-container ${
-          reversal_id ? 'multi-content' : ''
-        }`}
-      >
-        <TransferDetails
-          transfer={entity}
-          reversals={reversals}
-          isLoading={loading}
-          statusMsg={statusMsg}
-          onClose={onClose}
-          onReverse={onReverse}
-          showNotification={showNotification}
-          parentAccountName={user.marketplace_merchant_name}
-          showRefundToCustomer={user.isAllowedLARefunds}
-        />
+      <div class={`transfer-details-container ${reversal_id ? 'multi-content' : ''}`}>
+        <SuspenseWithLoader>
+          <TransferDetails
+            transfer={entity}
+            reversals={reversals}
+            isLoading={loading}
+            statusMsg={statusMsg}
+            onClose={onClose}
+            onReverse={onReverse}
+            showNotification={showNotificationFn}
+            parentAccountName={user.marketplace_merchant_name}
+            showRefundToCustomer={user.isAllowedLARefunds}
+          />
+        </SuspenseWithLoader>
         {reversal_id && (
           <ReversalDetails
             id={reversal_id}
             onClose={this.onReversalDetailsClose}
-            ref={c => (this.reversalsView = c)}
+            ref={(c) => (this.reversalsView = c)}
             notAllowFetchTransfer={true}
           />
         )}
@@ -141,3 +138,26 @@ export default class TransferDetailsContainer extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return { ...state.transfer, ...state.session };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators(
+    {
+      fetchTransfer,
+      fetchReversals,
+      showNotification,
+      expandSlider,
+      compactSlider,
+      ...ModalActions,
+    },
+    dispatch,
+  );
+};
+
+export default compose(
+  withRouter,
+  connect(mapStateToProps)(mapDispatchToProps),
+)(TransferDetailsContainer);

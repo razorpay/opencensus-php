@@ -4,7 +4,6 @@ import { connect } from 'react-redux';
 import { findDOMNode } from 'react-dom';
 import { withRouter } from 'react-router-dom';
 
-import TransferDetails from 'merchant/views/Marketplace/Transfers/components/Details';
 import ReversalDetails from 'merchant/views/Marketplace/Reversals/Details';
 import ReversalModal from './ReversalModal';
 import {
@@ -16,6 +15,14 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
+import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from '../../../../common/new-ui/SuspenseWithLoader';
+
+const TransferDetails = lazy(() =>
+  import(
+    /* webpackChunkName: 'TransferDetails' */ 'merchant/views/Marketplace/Transfers/components/Details'
+  ),
+);
 
 @withRouter
 @connect((state) => state.transfer, {
@@ -122,18 +129,20 @@ export default class TransferDetailsContainer extends Component {
 
     return (
       <div class={`transfer-details-container ${reversal_id ? 'multi-content' : ''}`}>
-        <TransferDetails
-          transfer={entity}
-          reversals={reversals}
-          isLoading={loading}
-          statusMsg={statusMsg}
-          onClose={onClose}
-          onReverse={onReverse}
-          openReversalModal={this.openReversalModal}
-          onTransferUpdate={this.onTransferUpdate}
-          showNotification={showNotification}
-          isDirectTransferEnabled={isDirectTransferEnabled}
-        />
+        <SuspenseWithLoader>
+          <TransferDetails
+            transfer={entity}
+            reversals={reversals}
+            isLoading={loading}
+            statusMsg={statusMsg}
+            onClose={onClose}
+            onReverse={onReverse}
+            openReversalModal={this.openReversalModal}
+            onTransferUpdate={this.onTransferUpdate}
+            showNotification={showNotification}
+            isDirectTransferEnabled={isDirectTransferEnabled}
+          />
+        </SuspenseWithLoader>
         {reversal_id && (
           <ReversalDetails
             id={reversal_id}

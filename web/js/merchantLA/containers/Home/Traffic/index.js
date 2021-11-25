@@ -1,12 +1,8 @@
 import React, { Component } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
-
 import debounce from 'common/utils/debounce';
-import takeScreenshot from 'common/utils/screenshot';
 import { showNotification } from 'merchant_common/reducers/notifications';
-
 import { fetch } from 'merchantLA/reducers/pokedex';
 import GenericPanel, {
   PanelTopbar,
@@ -18,37 +14,28 @@ import GroupingDropdown from 'merchantLA/containers/Home/GroupingDropdown';
 import Legend from 'merchantLA/components/Home/Legend';
 import LastUpdated from 'merchantLA/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchantLA/containers/Home/MoreOptionsButton';
-import {
-  API_ERROR,
-  API_INVALID_RESP,
-  getPlatformColor,
-} from 'merchantLA/components/Home/data';
-import {
-  trackError,
-  trackGoToLinks,
-  trackNoData,
-} from 'merchantLA/containers/Home/ga';
+import { API_ERROR, API_INVALID_RESP, getPlatformColor } from 'merchantLA/components/Home/data';
+import { trackError, trackNoData } from 'merchantLA/containers/Home/ga';
 
 import Mobile from 'merchantLA/containers/Home/Traffic/Mobile';
 
-const aggTypes = groupValues.map(value => groupMeta[value]);
+const aggTypes = groupValues.map((value) => groupMeta[value]);
 
 const chartOptions = {
-    tooltips: {
-      enabled: false,
-    },
-    layout: {
-      padding: {
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-      },
+  tooltips: {
+    enabled: false,
+  },
+  layout: {
+    padding: {
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
     },
   },
-  csvDateFormat = 'DD-MM-YYYY';
+};
+const csvDateFormat = 'DD-MM-YYYY';
 
-@connect(null, { showNotification })
 class Traffic extends Component {
   constructor(props) {
     super(props);
@@ -60,7 +47,8 @@ class Traffic extends Component {
       windowWidth: window.innerWidth,
     };
 
-    groupValues.forEach(groupValue => {
+    groupValues.forEach((groupValue) => {
+      // eslint-disable-next-line react/no-direct-mutation-state
       this.state.groupsState[groupValue] = {
         loading: false,
         chartData: null,
@@ -84,32 +72,34 @@ class Traffic extends Component {
 
     const { sectionTitle, analyticsFetch } = this.props;
 
-    const { selectedGrouping, groupsState } = this.state,
-      groupState = groupsState[selectedGrouping.value],
-      meta = groupMeta[selectedGrouping.value],
-      query = getQuery({
-        startTime: startDate.unix(),
-        endTime: endDate.unix(),
-        group: selectedGrouping.value,
-      });
+    const { selectedGrouping, groupsState } = this.state;
+    const groupState = groupsState[selectedGrouping.value];
+    const meta = groupMeta[selectedGrouping.value];
+    const query = getQuery({
+      startTime: startDate.unix(),
+      endTime: endDate.unix(),
+      group: selectedGrouping.value,
+    });
 
     if (isInitialLoad) {
+      // eslint-disable-next-line react/no-direct-mutation-state
       this.state.loading = true;
     }
 
     groupState.loading = true;
     groupState.error = '';
 
+    // eslint-disable-next-line react/no-access-state-in-setstate
     this.setState(this.state);
 
     const downloadFileName = `Platform traffic split, ${startDate.format(
-      csvDateFormat
+      csvDateFormat,
     )} to ${endDate.format(csvDateFormat)}, ${meta.title}(Razorpay)`;
 
     const requestId = ++this.requestId;
 
     (analyticsFetch || fetch)(query, this.props.mode)
-      .then(resp => {
+      .then((resp) => {
         if (requestId !== this.requestId) {
           return null;
         }
@@ -134,9 +124,9 @@ class Traffic extends Component {
 
         if (labels.length === 0) {
           trackNoData(
-            `${sectionTitle} from ${startDate.format(
-              csvDateFormat
-            )} to ${endDate.format(csvDateFormat)}`
+            `${sectionTitle} from ${startDate.format(csvDateFormat)} to ${endDate.format(
+              csvDateFormat,
+            )}`,
           );
         }
 
@@ -154,7 +144,7 @@ class Traffic extends Component {
 
         return resp;
       })
-      .catch(err => {
+      .catch((err) => {
         if (requestId !== this.requestId) {
           return null;
         }
@@ -163,23 +153,20 @@ class Traffic extends Component {
 
         return API_ERROR;
       })
-      .then(data => {
+      .then((data) => {
         if (!data) {
           return null;
         }
 
         if (isInitialLoad) {
+          // eslint-disable-next-line react/no-direct-mutation-state
           this.state.loading = false;
         }
 
         groupState.loading = false;
 
         if (data.error) {
-          trackError(
-            `Error while fetching data for traffic section - ${
-              selectedGrouping.value
-            }`
-          );
+          trackError(`Error while fetching data for traffic section - ${selectedGrouping.value}`);
 
           this.props.showNotification({
             type: 'error',
@@ -190,7 +177,10 @@ class Traffic extends Component {
           groupState.error = data.error;
         }
 
+        // eslint-disable-next-line react/no-access-state-in-setstate
         this.setState(this.state);
+
+        return '';
       });
   }
 
@@ -205,13 +195,13 @@ class Traffic extends Component {
       },
       () => {
         return this.getData();
-      }
+      },
     );
   }
 
   componentWillReceiveProps(nextProps) {
-    const { startDate, endDate } = nextProps,
-      props = this.props;
+    const { startDate, endDate } = nextProps;
+    const props = this.props;
 
     if (
       startDate.toDate() !== props.startDate.toDate() ||
@@ -222,18 +212,22 @@ class Traffic extends Component {
   }
 
   handleImageExportClick(e) {
-    const { selectedGrouping, groupsState } = this.state,
-      groupState = groupsState[selectedGrouping.value],
-      anchor = e.target;
+    const { selectedGrouping, groupsState } = this.state;
+    const groupState = groupsState[selectedGrouping.value];
+    const anchor = e.target;
 
     if (!groupState.pngData.url) {
       e.preventDefault();
 
-      takeScreenshot(this.panelBody).then(url => {
-        groupState.pngData.url = url;
+      import('common/utils/screenshot').then((module) => {
+        const takeScreenshot = module.default;
+        takeScreenshot(this.panelBody).then((url) => {
+          groupState.pngData.url = url;
 
-        this.setState(this.state, () => {
-          anchor.click();
+          // eslint-disable-next-line react/no-access-state-in-setstate
+          this.setState(this.state, () => {
+            anchor.click();
+          });
         });
       });
     }
@@ -244,11 +238,11 @@ class Traffic extends Component {
       return;
     }
 
-    const { width, height } = this.chartContent.getBoundingClientRect();
+    const { width } = this.chartContent.getBoundingClientRect();
 
     // fixing with and height of chart container so that
     // the chart size would not grow
-    this.chartContent.style.width = width + 'px';
+    this.chartContent.style.width = `${width}px`;
   }
 
   handleResize() {
@@ -267,7 +261,7 @@ class Traffic extends Component {
           this.setChartSize();
           this.setState({ hideChart: false });
         });
-      }
+      },
     );
   }
 
@@ -290,12 +284,12 @@ class Traffic extends Component {
   }
 
   render() {
-    const { loading, selectedGrouping, groupsState } = this.state,
-      groupState = groupsState[selectedGrouping.value],
-      { isCurrency } = groupMeta[selectedGrouping.value],
-      { chartData, legendData } = groupState,
-      hasNoData = !chartData || chartData.labels.length === 0,
-      { sectionTitle, startDate, endDate, isMobile } = this.props;
+    const { loading, selectedGrouping, groupsState } = this.state;
+    const groupState = groupsState[selectedGrouping.value];
+    const { isCurrency } = groupMeta[selectedGrouping.value];
+    const { chartData, legendData } = groupState;
+    const hasNoData = !chartData || chartData.labels.length === 0;
+    const { sectionTitle, isMobile } = this.props;
 
     if (isMobile) {
       const mobileProps = {
@@ -341,34 +335,28 @@ class Traffic extends Component {
           </div>
         </PanelTopbar>
         <PanelBody>
-          <div className="chart-row" ref={node => (this.panelBody = node)}>
+          <div className="chart-row" ref={(node) => (this.panelBody = node)}>
             <div className="column">
-              <div
-                className="chart-content"
-                ref={node => (this.chartContent = node)}
-              >
-                {!groupState.loading &&
-                  chartData &&
-                  !this.state.hideChart && (
-                    <Doughnut
-                      ref={node => (this.chartInstance = node)}
-                      options={chartOptions}
-                      data={chartData}
-                      windowWidth={this.state.windowWidth}
-                    />
-                  )}
+              <div className="chart-content" ref={(node) => (this.chartContent = node)}>
+                {!groupState.loading && chartData && !this.state.hideChart && (
+                  <Doughnut
+                    ref={(node) => (this.chartInstance = node)}
+                    options={chartOptions}
+                    data={chartData}
+                    windowWidth={this.state.windowWidth}
+                  />
+                )}
               </div>
             </div>
             <div className="column">
-              {!groupState.loading &&
-                legendData && (
-                  <Legend
-                    data={groupState.legendData}
-                    alignment="vertical"
-                    isCurrency={isCurrency}
-                    tooltipAlign="right"
-                  />
-                )}
+              {!groupState.loading && legendData && (
+                <Legend
+                  data={groupState.legendData}
+                  alignment="vertical"
+                  isCurrency={isCurrency}
+                  tooltipAlign="right"
+                />
+              )}
             </div>
           </div>
         </PanelBody>
@@ -382,4 +370,4 @@ class Traffic extends Component {
   }
 }
 
-export default Traffic;
+export default connect(null, { showNotification })(Traffic);

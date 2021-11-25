@@ -1,8 +1,13 @@
 import moment from 'moment';
 import React, { Component } from 'react';
 import { PowerSelect } from 'react-power-select';
-import Drp from 'common/ui/Forms/DateRangePickerField';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+
+const Drp = lazy(() =>
+  import(/* webpackChunkName: 'Drp' */ 'common/ui/Forms/DateRangePickerField'),
+);
 
 const defaultPresets = [];
 const customRangeText = 'Custom Range';
@@ -163,13 +168,15 @@ class DateRangePicker extends Component {
           )}
         </div>
         <div className="daterange-container pull-left">
-          <Drp
-            startDate={startDate}
-            endDate={endDate}
-            onDatesChange={this.onDatesChange}
-            numberOfMonths={isMobileDevice() ? 1 : numberOfMonths}
-            horizontalMargin={horizontalMargin}
-          />
+          <SuspenseWithLoader>
+            <Drp
+              startDate={startDate}
+              endDate={endDate}
+              onDatesChange={this.onDatesChange}
+              numberOfMonths={isMobileDevice() ? 1 : numberOfMonths}
+              horizontalMargin={horizontalMargin}
+            />
+          </SuspenseWithLoader>
         </div>
       </div>
     );
