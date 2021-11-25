@@ -1,3 +1,6 @@
+import React from 'react';
+import moment from 'moment';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
@@ -7,7 +10,6 @@ import { keysToSentence } from 'common/utils/rzp-utils';
 
 import {
   fetchPaymentPageEntity,
-  fetchPaymentPageEntitySettings,
   fetchPaymentsListForPaymentPage,
   editPaymentPage,
   editPaymentPageItem,
@@ -19,7 +21,7 @@ import { updateItem } from 'common/utils/immutable';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { trackDetailViewEdits, trackShareActions } from '../ga';
+import { trackDetailViewEdits } from '../ga';
 import track from './track';
 
 import NoEntityResultsFound from 'common/ui/NoEntityResultsFound';
@@ -29,7 +31,7 @@ import PaymentPagesV3Entity from './V3';
 import ActivateAgain from 'merchant/views/PaymentPages/PaymentPages/components/Modals/ActivateAgain';
 
 @withRouter
-@connect((state) => ({}), {
+@connect(() => ({}), {
   updatePPInReduxList,
   showNotification,
   closeModal,
@@ -96,8 +98,6 @@ export default class extends React.Component {
       });
   }
 
-  fetchSettings(id) {}
-
   fetchEntityPayments(id) {
     return fetchPaymentsListForPaymentPage(id)
       .then((resp) => {
@@ -138,7 +138,7 @@ export default class extends React.Component {
 
           let newPaymentPageEntity;
           if (isEntityPaymentPageItem) {
-            let paymentPageItems = this.state.paymentPageEntity.payment_page_items;
+            const paymentPageItems = this.state.paymentPageEntity.payment_page_items;
             let itemIndexInArray;
 
             paymentPageItems.find((pi, ix) => {
@@ -155,7 +155,7 @@ export default class extends React.Component {
                 resp.data,
               );
             } else {
-              throw 'Please Reload the page'; // index must index, so this Shouldn't happen though
+              throw new Error('Please Reload the page'); // index must index, so this Shouldn't happen though
             }
           } else {
             newPaymentPageEntity = resp.data;
@@ -168,7 +168,7 @@ export default class extends React.Component {
 
           return resp;
         } else {
-          throw 'Some network issue occured';
+          throw new Error('Some network issue occured');
         }
       })
       .catch(({ errors }) => {
@@ -177,12 +177,13 @@ export default class extends React.Component {
         if (Array.isArray(err)) {
           err = [];
 
-          errors.length &&
+          if (errors.length) {
             errors.forEach((e) => {
               if (e && e.toLowerCase().indexOf('status code') === -1) {
                 err.push(e);
               }
             });
+          }
 
           err = err.length ? err : null;
         }
@@ -203,8 +204,6 @@ export default class extends React.Component {
    * 2) Direct manual deactivation can be done any time user wants while in Active State;
    **/
   toggleManualActivation = () => {
-    const newStatus = 'active';
-
     const status = this.state.paymentPageEntity.status;
     const statusReason = this.state.paymentPageEntity.status_reason;
 
@@ -247,6 +246,9 @@ export default class extends React.Component {
         return apiAction(this.state.paymentPageEntity.id)
           .then((resp) => {
             if (resp.data) {
+              // preverse missing fields from success response (like settings key)
+              // eslint-disable-next-line react/no-access-state-in-setstate
+              const newPaymentPageEntity = { ...this.state.paymentPageEntity, ...resp.data };
               this.props.showNotification({
                 type: 'success',
                 message: successMsg,
@@ -254,10 +256,10 @@ export default class extends React.Component {
 
               this.props.closeModal();
 
-              this.props.updatePPInReduxList(resp.data, false);
+              this.props.updatePPInReduxList(newPaymentPageEntity, false);
 
               this.setState({
-                paymentPageEntity: resp.data,
+                paymentPageEntity: newPaymentPageEntity,
               });
               trackDetailViewEdits('Toggle Status', isActive ? 'deactivate' : 'activate');
 
@@ -271,12 +273,13 @@ export default class extends React.Component {
             if (Array.isArray(err)) {
               err = [];
 
-              errors.length &&
+              if (errors.length) {
                 errors.forEach((e) => {
                   if (e && e.toLowerCase().indexOf('status code') === -1) {
                     err.push(e);
                   }
                 });
+              }
 
               err = err.length ? err : null;
             }
@@ -295,7 +298,7 @@ export default class extends React.Component {
   };
 
   reActivateLink = () => {
-    let statusReason = this.state.paymentPageEntity.status_reason;
+    const statusReason = this.state.paymentPageEntity.status_reason;
 
     const isExpired = statusReason.toLowerCase() === 'expired';
     const isCompleted = statusReason.toLowerCase() === 'completed';
@@ -329,10 +332,15 @@ export default class extends React.Component {
             return activatePaymentPage(this.state.paymentPageEntity.id, data)
               .then((resp) => {
                 if (resp.data) {
-                  this.props.updatePPInReduxList(resp.data, false);
+                  const newPaymentPageEntity = {
+                    // eslint-disable-next-line react/no-access-state-in-setstate
+                    ...this.state.paymentPageEntity,
+                    ...resp.data,
+                  };
+                  this.props.updatePPInReduxList(newPaymentPageEntity, false);
 
                   this.setState({
-                    paymentPageEntity: resp.data,
+                    paymentPageEntity: newPaymentPageEntity,
                   });
 
                   this.props.showNotification({
@@ -340,7 +348,7 @@ export default class extends React.Component {
                     message: `${this.state.paymentPageEntity.id} is now Active`,
                   });
                 } else {
-                  throw 'Some network error has occured';
+                  throw new Error('Some network error has occured');
                 }
 
                 return resp;
@@ -351,12 +359,13 @@ export default class extends React.Component {
                 if (Array.isArray(err)) {
                   err = [];
 
-                  errors.length &&
+                  if (errors.length) {
                     errors.forEach((e) => {
                       if (e && e.toLowerCase().indexOf('status code') === -1) {
                         err.push(e);
                       }
                     });
+                  }
 
                   err = err.length ? err : null;
                 }
@@ -383,7 +392,7 @@ export default class extends React.Component {
   }
 
   render() {
-    let { paymentPageEntity, loading } = this.state;
+    const { paymentPageEntity, loading } = this.state;
 
     if (loading) {
       return (
