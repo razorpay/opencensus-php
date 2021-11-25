@@ -107,6 +107,37 @@ class ValidatorTest extends BaseTest
         $this->assertNull($this->paymentLinkvalidator->validateAmount("amount", $value));
     }
 
+    public function testValidateMaxAllowedAmountExceedsForCurrency()
+    {
+        $pl = $this->createPaymentLink();
+
+        $this->assignEntityValueThroughReflection($pl);
+        $pl['currency'] = 'IDR';
+
+        $data = '';
+        $this->expectException(BadRequestValidationFailureException::class);
+        try {
+            $this->paymentLinkvalidator->validateAmount("amount", '2000000000');
+        }catch (Exception\BadRequestValidationFailureException $ex){
+            $data = $ex ->getMessage();
+        }
+
+        $this->assertEquals("amount exceeds maximum payment amount allowed",$data);
+
+    }
+
+    public function testValidateMaxAllowedAmountForCurrency()
+    {
+        $pl = $this->createPaymentLink();
+
+        $this->assignEntityValueThroughReflection($pl);
+        $pl['currency'] = 'IDR';
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->assertNull($this->paymentLinkvalidator->validateAmount("amount", '51000000'));
+
+    }
+
     /**
      * @dataProvider getData
      * @group nocode_pp_validator

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use App;
 use RZP\Base;
+use RZP\Models\Currency\Core as CurrencyCore;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -294,6 +295,8 @@ class Validator extends Base\Validator
                 ($lineItem[LineItem\Entity::QUANTITY] ?? 1);
         }
 
+
+
         $this->validateAmount('total_amount', $totalAmount);
     }
 
@@ -371,7 +374,19 @@ class Validator extends Base\Validator
         // If amount is set, validate that it doesn't exceeds max payment amount allowed for merchant
         $maxAmountAllowed = $paymentLink->merchant->getMaxPaymentAmount();
 
-        if ($amount > $maxAmountAllowed)
+        $baseAmount = $amount;
+
+        if(isset($paymentLink['currency']) === true)
+        {
+            $currency = $paymentLink['currency'];
+
+            if ($currency != Currency::INR)
+            {
+                $baseAmount = (new CurrencyCore)->getBaseAmount($amount, $currency);
+            }
+        }
+
+        if ($baseAmount > $maxAmountAllowed)
         {
             throw new BadRequestValidationFailureException(
                 $attribute . ' exceeds maximum payment amount allowed',

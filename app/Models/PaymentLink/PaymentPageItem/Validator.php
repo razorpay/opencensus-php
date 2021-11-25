@@ -4,6 +4,7 @@ namespace RZP\Models\PaymentLink\PaymentPageItem;
 
 use Dotenv\Exception\ValidationException;
 use RZP\Base;
+use RZP\Models\Currency\Core as CurrencyCore;
 use RZP\Models\Item;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -114,7 +115,14 @@ class Validator extends Base\Validator
         // If amount is set, validate that it doesn't exceeds max payment amount allowed for merchant
         $maxAmountAllowed = $paymentPageItem->merchant->getMaxPaymentAmount();
 
-        if ($amount > $maxAmountAllowed)
+        $baseAmount = $amount;
+
+        if ($currency != Currency::INR)
+        {
+            $baseAmount = (new CurrencyCore)->getBaseAmount($amount, $currency);
+        }
+
+        if ($baseAmount > $maxAmountAllowed)
         {
             throw new BadRequestValidationFailureException(
                 $attribute . ' exceeds maximum payment amount allowed',
