@@ -124,7 +124,7 @@ class Service extends Base\Service
                     'banking_account_id'   => $bankingAcc->getId(),
                 ]);
 
-            (new Merchant\Balance\Ledger\Core)->createXLedgerAccount($merchant, $bankingAcc, AccountType::SHARED, $balance->getBalance());
+            (new Merchant\Balance\Ledger\Core)->createXLedgerAccount($merchant, $bankingAcc, $this->mode, AccountType::SHARED, $balance->getBalance());
         }
     }
 
