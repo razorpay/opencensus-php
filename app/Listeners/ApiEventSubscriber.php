@@ -896,9 +896,19 @@ class ApiEventSubscriber extends Base\Core
 
     protected function onZapierPaymentPagePaidV1(Payment\Entity $payment)
     {
+        $this->onPaymentPagePartnerWebhookEvent($payment);
+    }
+
+    protected function onShiprocketPaymentPagePaidV1(Payment\Entity $payment)
+    {
+        $this->onPaymentPagePartnerWebhookEvent($payment);
+    }
+
+    protected function onPaymentPagePartnerWebhookEvent(Payment\Entity $payment)
+    {
         $paymentPageCore = new PaymentLink\Core();
 
-        $payload = $paymentPageCore->constructPayloadForZapierWebhook($payment);
+        $payload = $paymentPageCore->constructPayloadForPartnerWebhook($payment);
 
         $this->dispatchEventToStork($payload);
     }

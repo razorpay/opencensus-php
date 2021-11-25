@@ -11,4 +11,10 @@ class Constants
 
     // payment page V3 experiment
     const PAYMENT_PAGE_V3 = 'paymentpages_v3';
+
+    const PARTNER_ZAPIER = 'partner_zapier';
+
+    const PARTNER_SHIPROCKET = 'partner_shiprocket';
+
+    const PARTNER_WEBHOOK_SETTINGS_KEY = 'partner_webhook_settings';
 }

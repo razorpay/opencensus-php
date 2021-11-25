@@ -183,6 +183,11 @@ class Entity extends Base\PublicEntity
         self::PP_BUTTON_THEME,
     ];
 
+    const PARTNER_WEBHOOKS = [
+        Constants::PARTNER_ZAPIER     => Merchant\Webhook\Event::ZAPIER_PAYMENT_PAGE_PAID_V1,
+        Constants::PARTNER_SHIPROCKET => Merchant\Webhook\Event::SHIPROCKET_PAYMENT_PAGE_PAID_V1
+    ];
+
     /**
      * expire_by has to be atleast 15 minutes from current timestamp
      */
@@ -644,6 +649,19 @@ class Entity extends Base\PublicEntity
         $accessor = $this->getSettingsAccessor();
 
         return $key === null ? $accessor->all() : $accessor->get($key);
+    }
+
+    public function getEnabledPartnerWebhooks()
+    {
+        $accessor = $this->getSettingsAccessor();
+
+        $partnerWebhookSettings = $accessor->get(Constants::PARTNER_WEBHOOK_SETTINGS_KEY);
+
+        // Hardcoding zapier settings because its activated by oauth and merchant does not have
+        // an option to enable/disable from payment page dashboard
+        $partnerWebhookSettings[Constants::PARTNER_ZAPIER] = "1";
+
+        return $partnerWebhookSettings;
     }
 
     /**

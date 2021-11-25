@@ -2143,29 +2143,37 @@ class Core extends Base\Core
 
     protected function eventPaymentPagePaid(Entity $paymentPage, Payment\Entity $payment)
     {
-        $event = '';
+        $this->firePartnerWebhooksIfNeeded($paymentPage, $payment);
+    }
 
-        switch ($paymentPage->getViewType())
+    protected function firePartnerWebhooksIfNeeded(Entity $paymentPage, Payment\Entity $payment)
+    {
+        // We are sending webhooks only for payment pages now.
+        if ($paymentPage->getViewType() !== ViewType::PAGE)
         {
-            case ViewType::PAGE:
-
-                $event = 'api.zapier.payment_page.paid.v1';
-
-                break;
-
-            default:
-
-                return;
-
+            return;
         }
+
+        $partnerWebhookSettings = $paymentPage->getEnabledPartnerWebhooks();
 
         $eventPayload = [
             ApiEventSubscriber::MAIN => $payment
         ];
 
-        $this->trace->info(TraceCode::PAYMENT_PAGE_FIRE_WEBHOOK, [$event]);
+        foreach ($partnerWebhookSettings as $partnerName => $partnerWebhookEnabled)
+        {
+            $partnerWebhookEvent = Entity::PARTNER_WEBHOOKS[$partnerName] ?? null;
 
-        $this->app['events']->fire($event, $eventPayload);
+            //In case the partner name is saved wrong in the settings sent via dashboard
+            if (($partnerWebhookEvent === null) || ($partnerWebhookEnabled !== "1"))
+            {
+                continue;
+            }
+
+            $this->trace->info(TraceCode::PAYMENT_PAGE_FIRE_WEBHOOK, [$partnerWebhookEvent]);
+
+            $this->app['events']->fire('api.'.$partnerWebhookEvent, $eventPayload);
+        }
     }
 
     /**
@@ -2174,7 +2182,7 @@ class Core extends Base\Core
      * @param Payment\Entity $payment
      * @return array
      */
-    public function constructPayloadForZapierWebhook(Payment\Entity $payment): array
+    public function constructPayloadForPartnerWebhook(Payment\Entity $payment): array
     {
         $payload = [];
 

@@ -1432,6 +1432,42 @@ class PaymentLinkTest extends TestCase
         $this->assertContains("invoice.paid", $response);
 
         $this->assertNotContains("zapier.payment_page.paid.v1", $response);
+
+        $this->assertNotContains("shiprocket.payment_page.paid.v1", $response);
+    }
+
+    public function testNoShiprocketPaymentPagePaidWebhookDefault()
+    {
+        $data = $this->createPaymentLinkAndOrderForThat(['view_type' => 'page']);
+
+        $paymentLink = $data['payment_link'];
+
+        $order = $data['payment_link_order']['order'];
+
+        $this->dontExpectWebhookEvent('shiprocket.payment_page.paid.v1');
+
+        $this->makePaymentForPaymentLinkWithOrderAndAssert($paymentLink, $order);
+    }
+
+    public function testShiprocketPaymentPagePaidWebhookEnabled()
+    {
+        $data = $this->createPaymentLinkAndOrderForThat(['view_type' => 'page']);
+
+        $paymentLink = $data['payment_link'];
+
+        $settings = [
+            'partner_webhook_settings' => [
+                'partner_shiprocket' => "1",
+            ]
+        ];
+
+        $paymentLink->getSettingsAccessor()->upsert($settings)->save();
+
+        $order = $data['payment_link_order']['order'];
+
+        $this->expectWebhookEventWithContents('shiprocket.payment_page.paid.v1', 'testShiprocketPaymentPagePaidWebhookEventData');
+
+        $this->makePaymentForPaymentLinkWithOrderAndAssert($paymentLink, $order);
     }
 
     public function testFetchPaymentsForPaymentPage()

@@ -115,6 +115,7 @@ class Event
     const PAYOUT_DOWNTIME_STARTED           = 'payout.downtime.started';
     const PAYOUT_DOWNTIME_RESOLVED          = 'payout.downtime.resolved';
     const ZAPIER_PAYMENT_PAGE_PAID_V1       = 'zapier.payment_page.paid.v1';
+    const SHIPROCKET_PAYMENT_PAGE_PAID_V1   = 'shiprocket.payment_page.paid.v1';
 
     // Payouts Batch API
     const PAYOUT_CREATION_FAILED = 'payout.creation.failed';
@@ -243,6 +244,7 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_REJECTED,
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW,
         self::ZAPIER_PAYMENT_PAGE_PAID_V1,
+        self::SHIPROCKET_PAYMENT_PAGE_PAID_V1,
     ];
 
     /**
@@ -363,6 +365,7 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_REJECTED,
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW,
         self::ZAPIER_PAYMENT_PAGE_PAID_V1,
+        self::SHIPROCKET_PAYMENT_PAGE_PAID_V1,
     ];
 
     // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
@@ -479,6 +482,7 @@ class Event
         self::ZAPIER_PAYMENT_PAGE_PAID_V1                 => 40,
         self::PAYMENT_PENDING                             => 41,
         self::PAYOUT_LINK_EXPIRED                         => 42,
+        self::SHIPROCKET_PAYMENT_PAGE_PAID_V1             => 43,
     ];
 
     /**
@@ -584,6 +588,7 @@ class Event
         self::PAYOUT_DOWNTIME_RESOLVED          => [Product::BANKING],
         self::PAYOUT_CREATION_FAILED            => [Product::BANKING],
         self::ZAPIER_PAYMENT_PAGE_PAID_V1       => [Product::PRIMARY],
+        self::SHIPROCKET_PAYMENT_PAGE_PAID_V1   => [Product::PRIMARY],
 
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED           => [Product::PRIMARY],
         self::PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION => [Product::PRIMARY],
@@ -687,6 +692,7 @@ class Event
         self::BANKING_ACCOUNTS_ISSUED           => Entity::MERCHANT,
         self::PAYMENT_PAGE_PAID                 => Entity::PAYMENT_PAGE,
         self::ZAPIER_PAYMENT_PAGE_PAID_V1       => Entity::PAYMENT_PAGE,
+        self::SHIPROCKET_PAYMENT_PAGE_PAID_V1   => Entity::PAYMENT_PAGE,
         self::P2P_TRANSACTION_CREATED           => Entity::P2P_TRANSACTION,
         self::P2P_TRANSACTION_COMPLETED         => Entity::P2P_TRANSACTION,
         self::P2P_TRANSACTION_FAILED            => Entity::P2P_TRANSACTION,
@@ -795,6 +801,7 @@ class Event
      */
     public static $eventsSkippedFromListingApi = [
         self::ZAPIER_PAYMENT_PAGE_PAID_V1,
+        self::SHIPROCKET_PAYMENT_PAGE_PAID_V1,
     ];
 
     public static function getLaunchedEventNames()
