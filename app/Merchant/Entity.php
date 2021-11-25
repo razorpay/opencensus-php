@@ -25,8 +25,9 @@ class Entity extends Base\Entity
         'suspended_at'
     );
 
-    const ID_LENGTH = 14;
-    const EMAIL     = 'email';
+    const ID_LENGTH         = 14;
+    const EMAIL             = 'email';
+    const CONTACT_NAME      = 'contact_name';
 
     protected static $generators = array('id');
 

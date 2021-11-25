@@ -32,9 +32,10 @@ class Service extends Base\Service
     ];
 
     // for Registered Onboarding flow.
+    // note: with mobile based signups going live,
+    // contact_mobile is no longer considered for presignup completeness check
     const NOT_REGISTERED_BUSINESS_PRE_SIGNUP_FIELDS = [
-      'contact_name',
-      'contact_mobile'
+      'contact_name'
     ];
 
     const WEBSITE_URLS = [
