@@ -37,7 +37,7 @@ export default class Support extends Component {
     isOpened: false,
     isHidden: false,
     notifyCount: 0,
-    botIsActive: false,
+    botIsLoaded: false,
     supportFlags: {
       show_chat: true,
       message_body: null,
@@ -99,7 +99,7 @@ export default class Support extends Component {
     }
     const chatBotInt = setInterval(() => {
       if (window.chatBotCloseIcon) {
-        this.setState({ botIsActive: true });
+        this.setState({ botIsLoaded: true });
         window.chatBotCloseIcon.onclick = () => {
           window.chatbotToggle();
           this.handleVisibility(false);
@@ -179,7 +179,7 @@ export default class Support extends Component {
         <SupportBody
           onToggle={this.handleToggle}
           isOpened={isOpened}
-          botIsActive={this.state.botIsActive}
+          botIsLoaded={this.state.botIsLoaded}
           onChat={this.handleChat}
           notifyCount={notifyCount}
           isCallEnabled={isCallEnabled}
