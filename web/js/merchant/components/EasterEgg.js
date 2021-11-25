@@ -128,7 +128,7 @@ const EasterEgg = (props) => {
     }
   };
 
-  if (shouldShowEasterEgg() && props.user.isFtxEnabled) {
+  if (shouldShowEasterEgg() && props.user.isFtxEnabled && props.user.isOrgRZP) {
     return (
       <div ref={ref} className={`ftx-container ${props.extraClass}`} onClick={clickEasterEgg} />
     );
