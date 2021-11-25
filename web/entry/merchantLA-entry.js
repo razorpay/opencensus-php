@@ -44,14 +44,8 @@ function MerchantLAEntry() {
       document.documentElement.appendChild(link);
     };
 
-    const appendScript = (src) => {
-      const s = document.createElement('script');
-      s.src = src;
-      document.documentElement.appendChild(s);
-    }
-
     websiteAssets.js.forEach((src) => {
-      appendScript(cdnDashboardUrl + src);
+      document.write(`<script src="${cdnDashboardUrl}${src}"></script>`);
     });
 
     websiteAssets.css.forEach((src) => {
