@@ -15,7 +15,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import * as SessionActions from 'merchantLA/reducers/session';
 import { applyTheme } from 'merchant_common/helpers/themes';
-import User, { setFeatures } from 'merchantLA/models/User';
+import User from 'merchantLA/models/User';
 import { resizeWindow } from 'merchantLA/reducers/app';
 import rolesList from 'merchantLA/helpers/permissions/roles-list';
 import LogoutDialog from '../../merchant/components/LogoutDialog';
@@ -112,15 +112,15 @@ export default class App extends Component {
         return data;
       }),
       this.fetchOrg().then(({ data }) => {
-        let orgCode = (this.orgCode = data.custom_code);
+        const orgCode = (this.orgCode = data.custom_code);
         if (orgCode && orgCode !== 'rzp') {
-          applyTheme(orgCode);
+          applyTheme(data);
         }
       }),
-    ]).then((response) => {
+    ]).then(() => {
       this.props.updateSession({ mode: currentMode });
-
       let $splash = document.getElementById('splash');
+
       if ($splash) {
         $splash.parentElement.removeChild($splash);
       }
