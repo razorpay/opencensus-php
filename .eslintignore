@@ -15,3 +15,6 @@ web/entry/merchant-entry.js
 web/js/merchant/containers/App.js
 web/js/merchantLA/containers/App.js
 web/js/merchant/chatbot-init.js
+web/entry/merchantTnc-entry.js
+web/entry/pokedex-entry.js
+web/entry/razorx-entry.js
