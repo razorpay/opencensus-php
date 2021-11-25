@@ -1,0 +1,36 @@
+name: Publish Build To Chromatic
+
+on: push
+
+jobs:
+  build:
+    name: Build
+    runs-on: [self-hosted]
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Chromatic for some reason needs git history
+
+      - name: Use Node v12.13.0
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.13.0
+
+      - name: Install Dependencies
+        run: |
+          cd web
+          npm ci
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+      - name: Push Build To Chromatic
+        # Storybook builds inside web folder, Chromatic references that
+        run: |
+          cd web
+          CHROMATIC_TOKEN=$CHROMATIC_TOKEN npm run chromatic
+        env:
+          CHROMATIC_TOKEN: ${{secrets.CHROMATIC_PROJECT_TOKEN}}
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
