@@ -89,16 +89,16 @@ class Service extends Base\Service
      *
      * @return array
      *
-     * @throws BadRequestError
+     * @throws \Razorpay\Api\Errors\BadRequestError
      */
-    public function register($input): array
+    public function register($input)
     {
         // PG FE is sending this header
         // we are forwarding this header to PG backend so we can send otp for verify email
         $options['headers']['X-Send-Email-Otp'] = Request::header('X-Send-Email-OTP') ?? 'false';
         $options['headers'][self::CAPTCHA_MODE_HEADER] = Request::header(self::CAPTCHA_MODE_HEADER);
 
-        $request = new ApiRequestAny($options);
+        $request = new \App\Admin\ApiRequestAny($options);
 
         $this->checkOauthProviderInPayload($input);
 
@@ -106,41 +106,15 @@ class Service extends Base\Service
 
         if (empty($error) === false)
         {
-            throw new BadRequestError(
+            throw new \Razorpay\Api\Errors\BadRequestError(
                 $error[0],
-                ErrorCode::BAD_REQUEST_ERROR,
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
         }
 
         return [$error, $data];
     }
-
-    /**
-     * @param  array  $input [description]
-     *
-     * @return array
-     */
-    public function registerWithOtp(array $input): array
-    {
-        return $this->requestAPI($input,'users/register/otp', 'POST');
-    }
-
-    /**
-     * @param array $input
-     * @return array
-     * @throws BadRequestError
-     */
-    public function registerWithOtpVerify(array $input): array
-    {
-        $options['headers']['X-Send-Email-Otp'] = 'false';
-        $options['headers'][self::CAPTCHA_MODE_HEADER] = Request::header(self::CAPTCHA_MODE_HEADER);
-
-        list($error, $data) = $this->requestAPI($input,'users/register/otp/verify', 'POST', $options);
-
-        return [$error, $data];
-    }
-
 
     /**
      *  For security reasons, checking explicitly for oauth_provider key in the payload.
@@ -1120,9 +1094,13 @@ class Service extends Base\Service
                 }
             }
 
-            // with mobile signup going live, only contact name is used
-            // as a pre_signup completeness check
-            $data['pre_signup_complete'] = (strlen($data["pre_signup"][Merchant\Entity::CONTACT_NAME]) !== 0);
+            $preSignupValues = array_values($data['pre_signup']);
+
+            // This is same as on UserController
+            $data['pre_signup_complete'] = array_reduce($preSignupValues, function($carry, $item)
+            {
+                return $carry and !empty($item);
+            }, true);
 
             // We don't show presignup form for user
             // created before this date
@@ -1268,10 +1246,12 @@ class Service extends Base\Service
 
             $data["pre_signup"] = $merchantService->getPreSignupDetails($currentMerchantId);
 
-            // with mobile signup going live, only contact name is used
-            // as a pre_signup completeness check
+            $preSignupValues = array_values($data['pre_signup']);
+
             // This is same as on UserController
-            $data['pre_signup_complete'] = (strlen($data['pre_signup'][Merchant\Entity::CONTACT_NAME]) !== 0);
+            $data['pre_signup_complete'] = array_reduce($preSignupValues, function($carry, $item) {
+                return $carry and !empty($item);
+            }, true);
 
             // for non-registered check if pre_signup_complete done or not;
 
@@ -1359,15 +1339,6 @@ class Service extends Base\Service
     public function loginOtpRoute(array $input, string $route, string $httpVerb, array $options=[])
     {
         $request = new \App\Admin\ApiRequestAny($options);
-
-        list($error, $data) = $request->processInput($input)->send($route, $httpVerb);
-
-        return [$error, $data];
-    }
-
-    public function requestAPI(array $input, string $route, string $httpVerb, array $options=[])
-    {
-        $request = new ApiRequestAny($options);
 
         list($error, $data) = $request->processInput($input)->send($route, $httpVerb);
 

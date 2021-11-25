@@ -36,13 +36,6 @@ class GenericController extends Controller
         'users/oauth-login/no2fa',
         'users/oauth-login',
         'users/oauth-register',
-        'users/login/otp',
-        'users/login/otp/verify',
-        'users/login/otp/2fa',
-        'users/login/verification-otp',
-        'users/login/verification-otp/verify',
-        'users/register/otp',
-        'users/register/otp/verify',
     ];
 
     const PATH_VS_COOKIE = [

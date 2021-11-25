@@ -77,8 +77,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/signin/verify-user/otp/verify', 'UserController@postVerifyUserOtp');
 
         Route::post('/register', 'UserController@postRegister'); // ePOS
-        Route::post('/register/otp', 'UserController@postRegisterSendOtp'); // ePOS
-        Route::post('/register/otp/verify', 'UserController@postRegisterVerifyOtp'); // ePOS
         Route::post('/oauth-signin', 'UserController@postOauthSignIn');
         Route::post('/oauth-register', 'UserController@postOauthRegister');
         Route::post('/2fa_setup/verify-mobile', 'UserController@postSetup2faVerifyMobile');

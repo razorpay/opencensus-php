@@ -24,15 +24,6 @@ class Constants
   const LOGIN_ACTION                = 'login_action';
   const TWO_FA_DURING_SIGNUP        = 'two_fa_during_signup';
 
-  // Signup method: otp/password/oauth
-  const SIGNUP_METHOD               = 'signup_method';
-
-  // Signup mode: email/password
-  const SIGNUP_MEDIUM               = 'signup_mode';
-
-  // Login mode: email/password
-  const LOGIN_MEDIUM                = 'signup_mode';
-
   // Metric labels - HTTP_REQUESTS_DOWNSTREAM
   const LABEL_HTTP_REQUESTS_DOWNSTREAM_STATUS       = 'status';
   const LABEL_HTTP_REQUESTS_DOWNSTREAM_IS_SUCCESS   = 'is_success';
@@ -54,17 +45,13 @@ class Constants
    //when user does a normal login
   const NORMAL_LOGIN                = 'normal_login';
   const OTP_LOGIN                   = 'otp_login';
-  const OTP_SIGNUP                  = 'otp_signup';
 
-  /** Possible Login/Signup methods **/
+  /** Possible Login methods **/
   const PASSWORD                    = 'password';
   const OTP                         = 'otp';
    //currently only one oauth provider - google
   const OAUTH                       = 'oauth';
 
-  /** Possible Login/Signup modes **/
-  const EMAIL                       = 'email';
-  const CONTACT_MOBILE              = 'contact_mobile';
 
   // Event trigger count
   const EVENT_COUNT_ONE             = 1;
