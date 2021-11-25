@@ -143,7 +143,7 @@ class App extends Component {
             id: user.user.id,
             userId: user.user.id,
             emailId: user.email,
-            activatedAt,
+            activatedAt: moment.unix(activatedAt),
             mode,
             userRole: user.role,
             kycStatus,
