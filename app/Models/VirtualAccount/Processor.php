@@ -40,6 +40,7 @@ abstract class Processor extends Base\Core
      * @var PaymentProcessor
      */
     protected $paymentProcessor;
+    protected $isPaymentExpected = true;
 
     const VIRTUAL_ACCOUNT_NOT_FOUND = 'VIRTUAL_ACCOUNT_NOT_FOUND';
     const VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED = 'VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED';
@@ -371,23 +372,6 @@ abstract class Processor extends Base\Core
     {
         $this->setVirtualAccount($entity);
 
-        if ($this->virtualAccount !== null)
-        {
-            if ($this->virtualAccount->isClosed() === true)
-            {
-                $this->setUnexpectedReason($entity, TraceCode::VIRTUAL_ACCOUNT_CLOSED);
-                $this->trace->info(
-                    TraceCode::VIRTUAL_ACCOUNT_CLOSED,
-                    $entity->toArray());
-                return false;
-            }
-
-            if ($this->isVirtualAccountDueToBeClosed($entity) === true)
-            {
-                return false;
-            }
-        }
-
         if ($this->useSharedVirtualAccount($entity) === true)
         {
             if (($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) and
@@ -416,11 +400,11 @@ abstract class Processor extends Base\Core
                     break;
 
                 case Constants\Entity::UPI_TRANSFER:
-                    {
-                        $data = [
-                            'npci_reference_id' => $entity->getRrn(),
-                        ];
-                    }
+                {
+                    $data = [
+                        'npci_reference_id' => $entity->getRrn(),
+                    ];
+                }
             }
 
             $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_PAYMENT_REROUTED_TO_SHARED, $data);
@@ -433,7 +417,7 @@ abstract class Processor extends Base\Core
             return $this->createOrFetchSharedVirtualAccount();
         }
 
-        return true;
+        return $this->isPaymentExpected;
     }
 
     private function createOrFetchSharedVirtualAccount()
@@ -485,9 +469,20 @@ abstract class Processor extends Base\Core
             return true;
         }
 
+        if ($this->virtualAccount->isClosed() === true)
+        {
+            $this->setUnexpectedReason($entity, TraceCode::VIRTUAL_ACCOUNT_CLOSED);
+            $this->trace->info(
+                TraceCode::VIRTUAL_ACCOUNT_CLOSED,
+                $entity->toArray());
+            $this->isPaymentExpected = false;
+            return false;
+        }
+
         if ($this->isVirtualAccountDueToBeClosed($entity) === true)
         {
-            return true;
+            $this->isPaymentExpected = false;
+            return false;
         }
 
         if (($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) and

@@ -207,6 +207,11 @@ class Processor extends VirtualAccount\Processor
             return true;
         }
 
+        if ($this->isVirtualAccountDueToBeClosed($entity) === true)
+        {
+            return true;
+        }
+
         $amountExpected = $this->virtualAccount->getAmountExpected();
 
         $amountReceived = (int) $this->data['payment']['amount'];

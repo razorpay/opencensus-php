@@ -275,7 +275,6 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferWithInActiveAccount()
     {
-        $this->markTestSkipped('Skipped due to yesbank disablement');
 
         $bankAccount = $this->createVirtualAccount('live', 'BankAccountMer');
 
@@ -293,9 +292,23 @@ class BankTransferTest extends TestCase
         $bankTransfer =  $this->getLastEntity('bank_transfer', true, 'live');
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals('va_ShrdVirtualAcc', $bankTransfer['virtual_account_id']);
+        $this->assertEquals('VIRTUAL_ACCOUNT_MERCHANT_NOT_LIVE', $bankTransfer['unexpected_reason']);
         $this->assertEquals(false, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
+        $this->runBankTransferRequestAssertions(
+            true,
+            'VIRTUAL_ACCOUNT_MERCHANT_NOT_LIVE',
+            [
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => 'va_ShrdVirtualAcc',
+                'merchant_id'                   => 'BankAccountMer',
+                'bank_transfer_id'              => $bankTransfer['id'],
+                'payment_id'                    => $bankTransfer['payment_id'],
+            ],
+            'live'
+        );
         // Payment is automatically captured
         $payment =  $this->getLastEntity('payment', true, 'live');
         $this->assertEquals('SHRDBANKACC3DS', $payment['terminal_id']);
@@ -3282,6 +3295,8 @@ class BankTransferTest extends TestCase
 
         if ($mode === 'live')
         {
+            $request['url'] = '/ecollect/validate';
+
             $this->ba->yesbankAuth('live');
         }
 
@@ -4221,9 +4236,9 @@ class BankTransferTest extends TestCase
         );
     }
 
-    protected function runBankTransferRequestAssertions(bool $isCreated, string $errorMessage, $expectedValues = [])
+    protected function runBankTransferRequestAssertions(bool $isCreated, string $errorMessage, $expectedValues = [], $mode = 'test')
     {
-        $bankTransferRequest = $this->getDbLastEntity('bank_transfer_request');
+        $bankTransferRequest = $this->getDbLastEntity('bank_transfer_request', $mode);
 
         $this->assertNotNull($bankTransferRequest['request_payload']);
         $this->assertEquals($isCreated, $bankTransferRequest['is_created']);
@@ -4234,7 +4249,7 @@ class BankTransferTest extends TestCase
             return;
         }
 
-        $this->ba->adminAuth();
+        $this->ba->adminAuth($mode);
         $testData = $this->testData['adminFetchBankTransferRequest'];
         $testData['request']['url'] .= $bankTransferRequest->getPublicId();
         $bankTransferRequest = $this->startTest($testData);
