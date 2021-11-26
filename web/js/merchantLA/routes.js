@@ -5,13 +5,7 @@ import { matchDetail as matchDetailx, matchModal as matchModalx } from '../merch
 import SettlementDetails from 'merchantLA/containers/Settlements/Details';
 import ReversalDetails from 'merchantLA/containers/Marketplace/Reversals/Details';
 import LARefundsBatchDetails from 'merchantLA/containers/Marketplace/Reversals/BatchDetails';
-import lazy from 'merchant/routes/LazyLoader';
-
-const TransferDetails = lazy(() =>
-  import(
-    /* webpackChunkName: 'TransferDetails' */ 'merchantLA/containers/Marketplace/Transfers/Details'
-  ),
-);
+import TransferDetails from 'merchantLA/containers/Marketplace/Transfers/Details';
 
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets

@@ -8,7 +8,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import setGaTrack from './ga';
-import SuspenseWithLoader from '../../../../common/new-ui/SuspenseWithLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import lazy from 'merchant/routes/LazyLoader';
 import { compose, bindActionCreators } from 'redux';
 
