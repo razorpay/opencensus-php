@@ -134,10 +134,7 @@ module.exports = ({ config, project }) => {
     2,
     3,
     new CopyWebpackPlugin({
-      patterns: [
-        { from: './css/assets', to: './css/assets' },
-        { from: './entry/raven-entry.js', to: './' },
-      ],
+      patterns: [{ from: './css/assets', to: './css/assets' }],
     }),
     new HtmlWebpackPlugin({
       filename: `${project}-entry.js`,

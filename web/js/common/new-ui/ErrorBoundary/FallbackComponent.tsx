@@ -1,4 +1,5 @@
 import React from 'react';
+import errorService from '@razorpay/universe-utils/errorService';
 
 interface Props {
   eventId: string | null;
@@ -17,8 +18,7 @@ const FallbackComponent: React.FC<Props> = ({ eventId }) => {
           <a
             className="error-report-link"
             onClick={() => {
-              console.log(`window.Sentry.showReportDialog({ eventId }); called`);
-              window.Sentry.showReportDialog({ eventId });
+              errorService.showReportDialog();
             }}
           >
             click here

@@ -20,6 +20,9 @@ import { resizeWindow } from 'merchantLA/reducers/app';
 import rolesList from 'merchantLA/helpers/permissions/roles-list';
 import LogoutDialog from '../../merchant/components/LogoutDialog';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { initSentry } from 'common/utils/observability';
+
+initSentry("MerchantLA");
 
 @withRouter
 @connect(
@@ -166,12 +169,6 @@ export default class App extends Component {
       LocalStorageService.setItem(this.modeToken, currentMode);
 
       if (user && user.user) {
-        if (window.setRavenContext) {
-          window.setRavenContext({
-            mode: currentMode,
-          });
-        }
-
         window.rzpAnalytics({
           name: 'set_dimensions',
           dimensions: {

@@ -15,6 +15,7 @@ import Applications from 'merchant/views/Settings/Applications/';
 import Application from 'merchant/models/Application';
 import Configuration from 'merchant/views/Settings/Configuration';
 import PaymentMethods from 'merchant/views/Settings/PaymentMethods';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 
@@ -141,27 +142,29 @@ class Settings extends Component {
           </ShowWhen>
         </header>
         <TestModeBanner />
-        <content>
-          <Route path="/config" component={Configuration} />
-          <Route path="/webhooks" component={Webhooks} />
-          <Route
-            path="/keys"
-            component={(props) => (
-              <ApiKeys
-                {...props}
-                onWebsiteAdd={this.onWebsiteAdd}
-                isWebsiteInWorkflow={this.state.isWebsiteInWorkflow}
-              />
-            )}
-          />
-          <Route path="/reminders" component={Reminders} />
+        <ErrorBoundary resetOnProps>
+          <content>
+            <Route path="/config" component={Configuration} />
+            <Route path="/webhooks" component={Webhooks} />
+            <Route
+              path="/keys"
+              component={(props) => (
+                <ApiKeys
+                  {...props}
+                  onWebsiteAdd={this.onWebsiteAdd}
+                  isWebsiteInWorkflow={this.state.isWebsiteInWorkflow}
+                />
+              )}
+            />
+            <Route path="/reminders" component={Reminders} />
 
-          {this.state.isConnectedAppsFound ? (
-            <Route exact path="/applications" component={Applications} />
-          ) : null}
+            {this.state.isConnectedAppsFound ? (
+              <Route exact path="/applications" component={Applications} />
+            ) : null}
 
-          <Route path="/payment-methods" component={PaymentMethods} />
-        </content>
+            <Route path="/payment-methods" component={PaymentMethods} />
+          </content>
+        </ErrorBoundary>
       </tabbed-container>
     );
   }

@@ -23,9 +23,6 @@
     window.rzp_org = {!! $org !!};
     window.api_host = "{!! $api_host !!}"
 </script>
-@if(env('APP_ENV') === 'production')
-  @include('partials/sentry')
-@endif
 
 @include('partials/rzpq-interface')
 

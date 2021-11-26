@@ -3,39 +3,6 @@
 function merchantEntry() {
   function executeJS() {
     const cdnDashboardUrl = window.cdnDashboardUrl || '';
-    if (typeof window.Sentry !== 'undefined') {
-      const environment = window.INSTANCE_TYPE === 'canary' ? 'canary' : window.APP_ENV;
-
-      window.Sentry.onLoad(() => {
-        window.Sentry.init({
-          release: __VERSION__,
-          environment,
-          dsn: window.SENTRY_DSN,
-          beforeSend: (event, hint) => {
-            if (
-              hint &&
-              hint.originalException &&
-              hint.originalException.code === 'UNKNOWN_ERROR_CODE'
-            ) {
-              return null;
-            }
-
-            return event;
-          },
-        });
-
-        if (window.rzp_user && window.rzp_user.current) {
-          window.Sentry.configureScope((scope) => {
-            window.Sentry.setTag('app', 'Merchant');
-            window.Sentry.setTag('role', window.rzp_user.role);
-
-            scope.setUser({
-              id: window.rzp_user.current,
-            });
-          });
-        }
-      });
-    }
 
     const appendLink = (src) => {
       const link = document.createElement('link');

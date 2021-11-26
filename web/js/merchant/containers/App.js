@@ -9,6 +9,7 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ModalDialog from 'common/ui/ModalDialog';
 import { analyticsTrack, initAnalytics } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { initSentry } from 'common/utils/observability';
 import Notifications from 'common/ui/Notifications';
 import LocalStorageService from 'common/utils/localStorage';
 import debounce from 'common/utils/debounce';
@@ -49,6 +50,8 @@ import { bindActionCreators, compose } from 'redux';
 import { initChatbot } from '../chatbot-init';
 import PartnerActivationRequiredModal from 'merchant/views/PartnerDashboard/Activation/Components/ActivationRequiredModal';
 import _refiner from 'refiner-js';
+
+initSentry("Merchant");
 
 @RTracking()
 class App extends Component {
@@ -624,12 +627,6 @@ class App extends Component {
       LocalStorageService.setItem(this.modeToken, currentMode);
 
       if (user && user.user) {
-        if (window.setRavenContext) {
-          window.setRavenContext({
-            mode: currentMode,
-          });
-        }
-
         if (window.rzpAnalytics) {
           window.rzpAnalytics({
             name: 'set_dimensions',

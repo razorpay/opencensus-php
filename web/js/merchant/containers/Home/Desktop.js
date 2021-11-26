@@ -538,7 +538,11 @@ class AnalyticsDesktop extends Component {
 
           {user.isNeostoneFlowEnabled('neostone-tracker') && (
             <div className="nss-tracker-wrapper">
-              <ErrorBoundary FallbackComponent={null}>
+              <ErrorBoundary
+                FallbackComponent={() => {
+                  return null;
+                }}
+              >
                 <NeoStoneTracker proceededBank={getXCAStatus(user).proceededBank} user={user} />
               </ErrorBoundary>
             </div>

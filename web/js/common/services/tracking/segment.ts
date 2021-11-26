@@ -1,5 +1,8 @@
 import { getMode } from '../mode';
 import getMobileDetect from 'common/utils/mobileDetect';
+import errorService from '@razorpay/universe-utils/errorService';
+import { Sections } from 'common/new-ui/ErrorBoundary';
+
 /* Delimiters are space / underscore */
 export const titleCase = (sentence) => {
   return (sentence || '')
@@ -62,14 +65,11 @@ const getCommonProperties = ({ screen, properties, user }) => {
 const throwAnalyticsException = (errorMessage: string) => {
   const error = new Error(errorMessage);
 
-  if (window.Sentry) {
-    window.Sentry.captureException(error, (scope) => {
-      scope.setTag('section', 'analytics');
-      return scope;
-    });
-  } else {
-    throw error;
-  }
+  errorService.captureError(error, {
+    tags: {
+      section: Sections.ANALYTICS,
+    },
+  });
 };
 
 export const analyticsTrack = ({

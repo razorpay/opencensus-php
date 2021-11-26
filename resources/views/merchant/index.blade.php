@@ -150,10 +150,6 @@ _dcs.account = '9421167';
   </script>
 
 
-  @if(env('APP_ENV') === 'production')
-    @include('partials/sentry')
-  @endif
-
   <script src="https://www.recaptcha.net/recaptcha/api.js?render=explicit"></script>
   <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
 @else
@@ -170,6 +166,7 @@ _dcs.account = '9421167';
   @if ($newAuthFlow === true)
     <script src="{{$cdnDashboardUrl}}/dist/newAuth-entry.js"></script>
   @else
+    <!-- loading sentry in older fashion for angular js codebase -->
     @if(env('APP_ENV') === 'production')
         @include('partials/sentry')
     @endif

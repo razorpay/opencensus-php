@@ -1,5 +1,7 @@
 import { titleCase } from './rzp-utils';
 import { getCookie } from 'common/utils/cookies';
+import errorService from '@razorpay/universe-utils/errorService';
+import { Sections } from 'common/new-ui/ErrorBoundary';
 
 export const sendToLumberjack = ({ eventName, properties = {} }) => {
   const body = {
@@ -30,14 +32,11 @@ export const sendToLumberjack = ({ eventName, properties = {} }) => {
 const throwAnalyticsException = (errorMessage) => {
   const error = new Error(errorMessage);
 
-  if (window.Sentry) {
-    window.Sentry.captureException(error, (scope) => {
-      scope.setTag('section', 'analytics');
-      return scope;
-    });
-  } else {
-    throw error;
-  }
+  errorService.captureError(error, {
+    tags: {
+      section: Sections.ANALYTICS,
+    },
+  });
 };
 
 export const initAnalytics = () => {
