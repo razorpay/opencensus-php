@@ -7,21 +7,25 @@ const base = {
   errorBackground: 'rgba(234,33,45,0.1)',
   secondary: '#ea212d',
   tertiary: '#ffffff',
+  quillTextColor: '#0d2366',
 };
 
 const THEMES = {
   hdfc: {
     primary: '#084c8d',
+    navBarBandColor: 'rgba(0,0,0,0.2)',
   },
   bob: {
     navBg: '#FF5D27',
     primary: '#F04E00',
+    navBarBandColor: 'rgba(0,0,0,0.2)',
   },
   icic: {
     navBg: '#163D6B',
     primary: '#0A3D6B',
     sidebarLinkActive: '#5697fc',
     brandBg: 'transparent',
+    navBarBandColor: '#ffffff',
     borderColor: '#fff',
   },
   axis: {
@@ -30,6 +34,8 @@ const THEMES = {
     secondary: '#FFFFFF',
     backgroundShade: '#fff8f8',
     link: '#528ff0',
+    quillTextColor: '#212121',
+    navBarBandColor: '#ffffff',
   },
 };
 
@@ -56,6 +62,7 @@ const makeTheme = (it, org) => `
 }
 
 .${org} .btn-primary,
+.${org} .btn-primary:hover,
 .${org} .btn-primary:active,
 .${org} .btn-primary:active:hover,
 .${org} .btn.btn-primary,
@@ -67,17 +74,29 @@ const makeTheme = (it, org) => `
 .${org} :checked + .Input-checkbox,
 .${org} .btn-primary[disabled]:hover,
 .${org} .OnBoarding .Button-Container .Button.Forward-Button,
-.${org} .Button--primary:not(:disabled):hover  {
+.${org} .Button--primary:not(:disabled):hover {
   background-color: ${it.primary};
   border-color: ${it.primary};
 }
 
-.${org} .Button--primary--invert,
 .${org} .Input:not(.Input--disabled) .Input-el:focus,
 .${org} .PowerSelect--focused,
-.${org} .rc-calendar-today .rc-calendar-date
-{
+.${org} .PowerSelect--focused.material-input,
+.${org} .rc-calendar-today .rc-calendar-date,
+.${org} .Input-pair.is-focused,
+.${org} .material-input:focus,
+.${org} .material-input__datepicker.material-input__datepicker-focused .SingleDatePicker,
+.${org} .material-input__datepicker .SingleDatePicker:hover,
+.${org} #paymentpage-container #description.is-focused,
+.${org} .pair-value .form-control:focus,
+.${org} .form-control:focus,
+.${org} .PowerSelect--focused.material-input {
+.${org} .pair-value .form-control:focus {
   border-color: ${it.primary} !important;
+}
+
+.${org} .RadioButton__button:before {
+  background-color: ${it.primary};
 }
 
 .${org} .btn-secondary,
@@ -88,7 +107,15 @@ const makeTheme = (it, org) => `
 .${org} .Button--secondary.Button,
 .${org} .Button--secondary,
 .${org} .btn-secondary[disabled]:hover,
-.${org} .Button--secondary:not(:disabled):hover  {
+.${org} .Button--secondary:not(:disabled):hover,
+.${org} .Button--primary--invert,
+.${org} .btn-primary--invert
+.${org} .Button--transparent,
+.${org} .Button--transparent:not(:disabled):hover,
+.${org} .btn-outline,
+.${org} .btn-outline:hover,
+.${org} .btn-border,
+.${org} .btn-border:hover {
   background-color: transparent;
   color: ${it.primary};
   border-color: ${it.primary};
@@ -100,29 +127,16 @@ const makeTheme = (it, org) => `
   background-color: ${it.primary};
 }
 
-.${org} .btn-outline,
-.${org} .btn-outline:hover {
-  color: ${it.primary};
-  border: 1px solid ${it.primary};
-}
-
 .${org} tabbed-container header a.active,
-.${org} .Button--primary--invert,
-.${org} .Button--transparent,
-.${org} .Button--transparent:not(:disabled):hover {
-  border-color: ${it.primary};
-  color: ${it.primary};
-}
-
-.${org} tabbed-container header a:hover {
-  color: ${it.primary};
-}
-
 .${org} div.panel.recent-activity-cont .panel-topbar tabbed-container .row a.active {
   border-color: ${it.primary};
   color: ${it.primary};
 }
 
+.${org} tabbed-container header a:hover,
+.${org} .Button--transparent,
+.${org} .Button--transparent:not(:disabled):hover,
+.${org} .Modal-container--PaymentpagesReceipt .Button--add-80g,
 .${org} div.panel.recent-activity-cont .panel-topbar tabbed-container .row a:hover {
   color: ${it.primary};
 }
@@ -141,7 +155,7 @@ ${it.brandBg ? `.${org} .brand-logo{background:${it.brandBg};}` : ''}
 }
 
 .${org} .sidebar .brand-logo::after {
-  border-color: ${it.borderColor || it.transparent};
+  border-color: ${it.navBarBandColor};
 }
 
 ${
@@ -186,7 +200,7 @@ ${
     }
 
     .${org} .sidebar .nav > a:focus,
-    .${org} .sidebar .nav > a >i{
+    .${org} .sidebar .nav > a > i {
 color:${it.sideBarIcon} !important;
 }`
     : ``
@@ -213,11 +227,6 @@ color:${it.sideBarIconActive} !important;
 
 .${org} .panel-default .panel-heading {
   background-color: ${it.primaryTransparent};
-}
-
-.${org} .alert-danger {
-  background-color: ${it.errorBackground};
-  color: ${it.tertiary};
 }
 
 .${org} .bg-dark .text-warning-lter,
@@ -249,9 +258,7 @@ color:${it.sideBarIconActive} !important;
   background-color: ${it.primary};
 }
 
-${/* .${org} .btn-link, */ ''}
 .${org} a.breadcrumb__backNav--link,
-${/* .${org} a:not(.btn-primary):not(.NavLink):not(.Button):not(.btn), */ ''}
 .${org} .Button--Link,
 .${org} .OnBoarding--Features .Header .Header-external-links,
 .${org} .link,
@@ -266,10 +273,17 @@ ${/* .${org} a:not(.btn-primary):not(.NavLink):not(.Button):not(.btn), */ ''}
 
 // HINT: don't have info on the light primary color value, to make UI good we are adding this
 .${org} .btn-link:hover,
-.${org} .Button--primary--invert:hover,
 .${org} a:hover:not(.btn-primary):not(.NavLink):not(.Button):not(.btn) {
   color: ${it.primary};
   opacity: 0.85;
+}
+
+.${org} .btn-text,
+.${org} .btn-text:hover,
+.${org} .btn-text:focus {
+  color: ${it.primary};
+  text-decoration: none;
+  background-color: transparent;
 }
 
 .${org} .payment-capture-panel .panel-content .is-active,
@@ -291,6 +305,18 @@ ${/* .${org} a:not(.btn-primary):not(.NavLink):not(.Button):not(.btn), */ ''}
 
 .${org} .keymetrics > .nav.nav-tabs li.active > a > div:after {
   border-top-color: ${it.primary};
+}
+
+.${org} .payment-pages-v3 .Modal-container--CreatorModal-BaseForm .base-form-side-btn span {
+  border-color: ${it.primary};
+}
+
+.${org} .payment-pages-v3 .Modal-container--CreatorModal-BaseForm .base-form-cancel span {
+  color: ${it.primary};
+}
+
+.${org} .payment-pages-v3 .Modal-container--CreatorModal-BaseForm .base-form-save span  {
+  background-color: ${it.primary};
 }
 
 `;

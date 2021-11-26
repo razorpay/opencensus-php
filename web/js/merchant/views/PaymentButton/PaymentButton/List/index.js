@@ -142,7 +142,7 @@ export default class PaymentButtonsList extends ListContainer {
       <div class="PaymentButtons--ListingPage content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <ShowWhen additionalCondition={() => !user.isOrgAxis}>
+            <ShowWhen additionalCondition={(_user) => !_user.isOrgAxis}>
               <TakeATourButton feature={RZPFeatures.PB} onSuccess={this.resetCopyPasteCodeStatus} />
             </ShowWhen>
 

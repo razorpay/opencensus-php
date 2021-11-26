@@ -1,8 +1,8 @@
+import React from 'react';
 import { connect } from 'react-redux';
-
 import { classList } from 'common/utils/rzp-utils';
-
-@connect(state => ({
+@connect((state) => ({
+  org: state.session.org,
   isMobileResolution: state.app.isMobileResolution,
 }))
 export default class StepGuide extends React.Component {
@@ -29,14 +29,8 @@ export default class StepGuide extends React.Component {
   }
 
   render() {
-    const {
-        className,
-        title,
-        children,
-        closeBtn,
-        isMobileResolution,
-      } = this.props,
-      { activeStep } = this.state;
+    const { className, title, children, closeBtn, isMobileResolution, org } = this.props;
+    const { activeStep } = this.state;
 
     const CloseBtn = closeBtn && (closeBtn || <i class="i i-close" />);
 
@@ -45,14 +39,13 @@ export default class StepGuide extends React.Component {
         class={classList(
           'StepGuide',
           className && `StepGuide--${className}`,
-          isMobileResolution && 'StepGuide-mobile'
+          isMobileResolution && 'StepGuide-mobile',
+          org.custom_code === 'axis' && 'no-img',
         )}
       >
         {title && <div class="StepGuide--Title">{title}</div>}
 
-        <div class="StepGuide--Steps">
-          {isMobileResolution ? children[activeStep] : children}
-        </div>
+        <div class="StepGuide--Steps">{isMobileResolution ? children[activeStep] : children}</div>
 
         {CloseBtn && <span class="StepGuide--Close">{CloseBtn}</span>}
 
@@ -61,10 +54,7 @@ export default class StepGuide extends React.Component {
             {children.map((ele, stepNum) => (
               <div
                 key={stepNum}
-                className={classList(
-                  'Switcher-switch',
-                  activeStep === stepNum && 'active'
-                )}
+                className={classList('Switcher-switch', activeStep === stepNum && 'active')}
                 onClick={this.setActiveStep(stepNum)}
               />
             ))}

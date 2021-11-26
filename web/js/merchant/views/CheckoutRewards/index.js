@@ -18,6 +18,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import OnBoarding, { getIsRewardsEnabled, getIsAllowedResetRewardsOnBoarding } from './OnBoarding';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import {
   handleProductQuickGuide,
@@ -93,13 +94,9 @@ export default class CheckoutRewardsIndex extends Component {
 
   render() {
     const { user } = this.props;
-
-    if (!user.isRewardsPageEnabled) {
-      return <OnBoarding />;
-    }
-
     const { showOnboarding } = this.props.rewardsProductOnBoarding;
-    if (showOnboarding) {
+
+    if ((!user.isRewardsPageEnabled || showOnboarding) && !user.isOrgAxis) {
       return <OnBoarding />;
     }
 
@@ -131,7 +128,9 @@ export default class CheckoutRewardsIndex extends Component {
                           Merchant Terms
                         </a>
 
-                        <TakeATourButton feature={RZPFeatures.REWARDS} />
+                        <ShowWhen additionalCondition={(currentUser) => !currentUser.isOrgAxis}>
+                          <TakeATourButton feature={RZPFeatures.REWARDS} />
+                        </ShowWhen>
                         <DocsLink
                           url="https://razorpay.com/docs/payment-gateway/checkout-rewards/"
                           onClick={this.documentationClicked}

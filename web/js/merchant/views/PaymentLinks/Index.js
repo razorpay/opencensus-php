@@ -157,6 +157,7 @@ class PaymentLinksContainer extends React.Component {
     if (showOnboarding && !user.isOrgAxis) {
       return <OnBoarding />;
     }
+
     return (
       <React.Fragment>
         <div className="banner-container">

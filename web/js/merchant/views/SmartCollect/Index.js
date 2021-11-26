@@ -40,6 +40,8 @@ export default class SmartCollectContainer extends React.Component {
 
   render() {
     const { user } = this.props;
+    const { isQuickGuideOpen, showOnboarding } = this.props.VAProductOnBoarding;
+
     if (user.isUnregisteredBusiness && !user.isVirtualAccountsEnabled) {
       return (
         <div class="SmartCollect-Container">
@@ -48,9 +50,7 @@ export default class SmartCollectContainer extends React.Component {
       );
     }
 
-    const { isQuickGuideOpen, showOnboarding } = this.props.VAProductOnBoarding;
-
-    if (showOnboarding) {
+    if (showOnboarding && !user.isOrgAxis) {
       return <OnBoarding />;
     }
 

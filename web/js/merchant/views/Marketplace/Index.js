@@ -120,9 +120,10 @@ class MarketplaceContainer extends React.Component {
   };
 
   render() {
+    const { user } = this.props;
     const { isQuickGuideOpen, showOnboarding } = this.props.routeProductOnBoarding;
 
-    if (showOnboarding) {
+    if (showOnboarding && !user.isOrgAxis) {
       return <OnBoarding />;
     }
 
@@ -150,7 +151,7 @@ class MarketplaceContainer extends React.Component {
             <NavLink to="/route/transfers">Transfers</NavLink>
             <NavLink to="/route/reversals">Reversals</NavLink>
             <NavLink to="/route/accounts">Accounts</NavLink>
-            <ShowWhen additionalCondition={(user) => user.isRouteBatchUploadEnabled}>
+            <ShowWhen additionalCondition={(_user) => _user.isRouteBatchUploadEnabled}>
               <NavLink to="/route/batchuploads">
                 Batch Upload <span class="badge bg-success">NEW</span>
               </NavLink>

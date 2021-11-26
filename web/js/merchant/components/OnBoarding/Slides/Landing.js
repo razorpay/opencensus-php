@@ -3,7 +3,7 @@ import Button from 'common/new-ui/Button';
 import DataList from './DataList';
 import RTracking from 'react-tracking';
 import track from '../track';
-
+import ShowWhen from 'merchant/components/ShowWhen';
 @RTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_landing_page`))
 export default class OnBoardingLanding extends React.PureComponent {
   componentDidMount() {
@@ -52,9 +52,11 @@ export default class OnBoardingLanding extends React.PureComponent {
         )}
 
         {imageUrl && (
-          <div class="Landing--Image">
-            <img src={imageUrl} alt="landing-image" />
-          </div>
+          <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
+            <div class="Landing--Image">
+              <img src={imageUrl} alt="landing-image" />
+            </div>
+          </ShowWhen>
         )}
 
         <div class="Product--Details">

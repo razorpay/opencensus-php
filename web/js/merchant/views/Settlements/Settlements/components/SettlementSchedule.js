@@ -7,7 +7,7 @@ import HolidayModal from 'merchant/views/Settlements/Settlements/components/Moda
 import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { bindActionCreators } from 'redux';
-
+import { getCustomURL } from 'merchant/components/DocsLink';
 class SettlementSchedule extends Component {
   state = {
     showExample: false,
@@ -212,38 +212,41 @@ class SettlementSchedule extends Component {
               </Fragment>
             ) : null}
 
-            <div style={{ marginTop: '25px' }}>
-              <button
-                onClick={this.viewHolidayList}
-                style={{ width: '48%', margin: '0 1%' }}
-                class="btn btn-outline"
-              >
-                Bank Holidays
-              </button>
-              <a href="https://razorpay.com/settlement" target="_blank" rel="noopener noreferrer">
-                <button
-                  style={{ width: '48%', margin: '0 1%' }}
-                  class="btn btn-primary"
-                  onClick={() => {
-                    analyticsTrack({
-                      objectName: this.analyticsObjectName(),
-                      actionName: 'clicked',
-                      screen: `${this.props.location}`,
-                      properties: {
-                        action: 'settlement guide',
-                        ...getCommonAnalyticsProperties(window.rzp_user),
-                      },
-                    });
-                    window.rzpAnalytics({
-                      eventCategory: 'Settlement Revamp',
-                      eventAction: 'Settlement Guide',
-                      eventLabel: `View settlement Cycle`,
-                    });
-                  }}
-                >
-                  Settlement Guide
+            <div class="settlement-btn-container">
+              <div>
+                <button onClick={this.viewHolidayList} class="btn btn-default">
+                  Bank Holidays
                 </button>
-              </a>
+              </div>
+              <div>
+                <a
+                  href={getCustomURL('https://razorpay.com/settlement')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <button
+                    class="btn btn-primary"
+                    onClick={() => {
+                      analyticsTrack({
+                        objectName: this.analyticsObjectName(),
+                        actionName: 'clicked',
+                        screen: `${this.props.location}`,
+                        properties: {
+                          action: 'settlement guide',
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      });
+                      window.rzpAnalytics({
+                        eventCategory: 'Settlement Revamp',
+                        eventAction: 'Settlement Guide',
+                        eventLabel: `View settlement Cycle`,
+                      });
+                    }}
+                  >
+                    Settlement Guide
+                  </button>
+                </a>
+              </div>
             </div>
           </div>
         </div>

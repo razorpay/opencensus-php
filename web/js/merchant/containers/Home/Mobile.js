@@ -211,7 +211,7 @@ class AnalyticsMobile extends Component {
                   )}
                 </div>
               ) : (
-                <Link className="pull-right" to="/settlements">
+                <Link className="pull-right btn-text" to="/settlements">
                   <span className="text-no-wrap" onClick={trackSettlementsClick}>
                     View Settlements <i className="i i-chevron-right" />
                   </span>

@@ -1,3 +1,5 @@
+import { getCustomURL } from 'merchant/components/DocsLink';
+
 // Features
 export const FEATURES_DATA = [
   {
@@ -14,8 +16,7 @@ export const FEATURES_DATA = [
   {
     icon: '/dist/css/assets/product_onboarding/download_option.svg',
     title: 'Download Option',
-    desc:
-      'Let your customers save and download .pdf version of invoices for future reference.',
+    desc: 'Let your customers save and download .pdf version of invoices for future reference.',
   },
 ];
 
@@ -23,10 +24,10 @@ export const FEATURES_DATA = [
 export const FEATURES_LINKS = [
   {
     label: 'Know more',
-    url: 'https://razorpay.com/docs/invoices/',
+    url: getCustomURL('https://razorpay.com/docs/invoices/'),
   },
   {
     label: 'View API Docs',
-    url: 'https://razorpay.com/docs/api/invoices/',
+    url: getCustomURL('https://razorpay.com/docs/api/invoices/'),
   },
 ];

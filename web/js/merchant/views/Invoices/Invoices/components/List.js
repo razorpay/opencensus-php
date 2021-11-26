@@ -6,26 +6,23 @@ import CopyLink from 'merchant/components/CopyLink';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { getCustomerDisplayName } from 'common/utils/rzp-utils';
-import Button from 'common/new-ui/Button';
 
-const InvoiceListItem = props => {
-  let { invoice, onCopy } = props;
-  let customer = invoice.customer_details;
+const InvoiceListItem = (props) => {
+  const { invoice, onCopy } = props;
+  const customer = invoice.customer_details;
 
   return (
     <EntityItemRow id={invoice.id}>
       <td>
-        {do {
-          if (['link', 'ecod'].indexOf(invoice.type) !== -1) {
-            <NavLink to={`/paymentlinks/${invoice.id}`}>
-              <code>{invoice.id}</code>
-            </NavLink>;
-          } else {
-            <NavLink to={`/invoices/${invoice.id}`}>
-              <code>{invoice.id}</code>
-            </NavLink>;
+        <NavLink
+          to={
+            ['link', 'ecod'].indexOf(invoice.type) !== -1
+              ? `/paymentlinks/${invoice.id}`
+              : `/invoices/${invoice.id}`
           }
-        }}
+        >
+          <code>{invoice.id}</code>
+        </NavLink>
       </td>
       <td>
         <Time value={invoice.date || invoice.created_at} />
@@ -44,7 +41,7 @@ const InvoiceListItem = props => {
       <td>
         {invoice.short_url && (
           <CopyLink
-            onCopy={text => {
+            onCopy={(text) => {
               onCopy({
                 invoiceId: invoice.id,
                 text,
@@ -55,26 +52,23 @@ const InvoiceListItem = props => {
         )}
       </td>
       <td>
-        <InvoiceStatusLabel
-          status={invoice.status ? invoice.status.toLowerCase() : null}
-        />
+        <InvoiceStatusLabel status={invoice.status ? invoice.status.toLowerCase() : null} />
       </td>
     </EntityItemRow>
   );
 };
 
-export default props => {
-  let {
+export default (props) => {
+  const {
     type,
     invoices,
     isLoading,
     onCopy = () => {},
-    onDuplicate,
     EmptyList,
     isPaymentlinksV2Enabled,
   } = props;
   const isPaymentLinksType = type === 'link';
-  let label = isPaymentLinksType ? 'Payment Link' : 'Invoice';
+  const label = isPaymentLinksType ? 'Payment Link' : 'Invoice';
 
   return (
     <div class="table-responsive">
@@ -90,13 +84,8 @@ export default props => {
             <th>Status</th>
           </tr>
         </thead>
-        <TableBody
-          isLoading={isLoading}
-          colSpan={8}
-          rows={invoices}
-          emptyTableRow={EmptyList}
-        >
-          {invoices.map(invoice => (
+        <TableBody isLoading={isLoading} colSpan={8} rows={invoices} emptyTableRow={EmptyList}>
+          {invoices.map((invoice) => (
             <InvoiceListItem
               key={invoice.id}
               invoice={invoice}

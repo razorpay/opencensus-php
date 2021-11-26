@@ -30,6 +30,7 @@ const ItemsComponent = (props) => <Items {...props} isInvoiceView />;
 @connect(
   (state) => ({
     ...state.session,
+    user: state.session.user,
     invoices: state.invoices,
     items: state.items,
     invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.INVOICE),
@@ -93,7 +94,7 @@ export default class InvoicesContainer extends Component {
     const { isQuickGuideOpen, showOnboarding } = this.props.invoicesProductOnBoarding;
     const { user } = this.props;
 
-    if (showOnboarding) {
+    if (showOnboarding && !user.isOrgAxis) {
       return <OnBoarding />;
     }
 

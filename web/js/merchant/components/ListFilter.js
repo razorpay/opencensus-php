@@ -122,7 +122,7 @@ class ListFilter extends Component {
             </button>
           )}
           <button class="btn btn-primary btn-sm">Search</button>
-          <AsyncButton class="btn btn-sm btn-link" onClick={this.resetForm} text="Clear" />
+          <AsyncButton class="btn btn-sm btn-text" onClick={this.resetForm} text="Clear" />
         </div>
       </form>
     );

@@ -41,7 +41,6 @@ class CheckoutTheme extends Component {
   state = { brandColor: this.props.config.brand_color };
 
   componentWillMount() {
-    this.props.initialize(this.props.config);
     this.props.fetchLocale();
 
     const script = document.createElement('script');
@@ -53,6 +52,29 @@ class CheckoutTheme extends Component {
     script.src = 'https://cdn.razorpay.com/static/assets/color.js';
 
     document.head.appendChild(script);
+  }
+
+  componentDidMount() {
+    this.updateCheckoutClr();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.config.brand_color !== prevProps.config.brand_color) {
+      this.updateCheckoutClr();
+    }
+  }
+
+  updateCheckoutClr() {
+    const brand_color = this.props.config.brand_color
+      ? this.props.config.brand_color
+      : this.props.org?.merchant_styles?.checkout_theme_color;
+
+    this.props.initialize({
+      ...this.props.config,
+      brand_color: brand_color || '#528FF0',
+    });
+
+    this.setState({ brandColor: brand_color });
   }
 
   updatePreviewTextClr() {
@@ -426,7 +448,7 @@ class CheckoutTheme extends Component {
                 >
                   Payment pages
                 </a>
-                .
+                {''}.
               </ShowWhen>
             </div>
           </div>
@@ -471,7 +493,7 @@ class CheckoutTheme extends Component {
 }
 
 export default compose(
-  connect((state) => ({ ...state.config, user: state.session.user }), {
+  connect((state) => ({ ...state.config, user: state.session.user, org: state.session.org }), {
     uploadLogo,
     removeLogo,
     showNotification,

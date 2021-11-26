@@ -231,7 +231,9 @@ export default class AccountsListContainer extends ListContainer {
       <div class="LinkedAccountsList content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <TakeATourButton feature={RZPFeatures.ROUTE} />
+            <ShowWhen additionalCondition={(_user) => !_user.isOrgAxis}>
+              <TakeATourButton feature={RZPFeatures.ROUTE} />
+            </ShowWhen>
 
             <DocsLink title="Documentation" url="https://razorpay.com/docs/route/" />
 

@@ -1,11 +1,12 @@
 import { connect } from 'react-redux';
-import { NavLink, withRouter } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 import Pager from 'common/ui/Pager';
 import Spinner from 'common/ui/Spinner';
+import React from 'react';
 import Alert from 'common/ui/Forms/Alert';
 import HeaderAction from 'common/ui/HeaderAction';
 
@@ -29,17 +30,14 @@ import { track, trackSearchFilterForInternational } from '../ga';
 
 @withRouter
 @connect(
-  state => {
+  (state) => {
     return {
       ...state.invoices,
       ...state.session,
-      invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(
-        state,
-        RZPFeatures.INVOICE
-      ),
+      invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.INVOICE),
     };
   },
-  { ...InvoiceActions, handleProductQuickGuide }
+  { ...InvoiceActions, handleProductQuickGuide },
 )
 export default class InvoicesListContainer extends ListContainer {
   componentWillMount() {
@@ -66,7 +64,7 @@ export default class InvoicesListContainer extends ListContainer {
     return this.props.fetchInvoices(params);
   }
 
-  onDuplicate = invoiceId => {
+  onDuplicate = (invoiceId) => {
     this.props.history.push(`/invoices/new?duplicate_id=${invoiceId}`);
   };
 
@@ -80,7 +78,7 @@ export default class InvoicesListContainer extends ListContainer {
         subscriptions: '0',
       },
     })
-      .then(resp => {
+      .then((resp) => {
         this.setState({
           loadingAllList: false,
         });
@@ -96,7 +94,7 @@ export default class InvoicesListContainer extends ListContainer {
       .catch(() => {});
   }
 
-  onSearchAnalytics = params => {
+  onSearchAnalytics = (params) => {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
       track({
@@ -112,6 +110,7 @@ export default class InvoicesListContainer extends ListContainer {
     });
   };
 
+  // eslint-disable-next-line no-dupe-class-members
   componentDidMount() {
     track({
       eventAction: 'Go To - Invoices',
@@ -154,13 +153,13 @@ export default class InvoicesListContainer extends ListContainer {
           window.hj('trigger', 'create_invoice');
           window.hj('tagRecording', ['create_invoice']);
         }
-      }
+      },
     );
   };
 
   render() {
-    let { loading, invoices, user, mode } = this.props;
-    let { loadingAllList, totalInvoicesLength, status } = this.state;
+    const { loading, invoices, user, mode } = this.props;
+    const { loadingAllList, totalInvoicesLength, status } = this.state;
     let content;
 
     if (loadingAllList) {
@@ -191,9 +190,7 @@ export default class InvoicesListContainer extends ListContainer {
             onSearchAnalytics={this.onSearchAnalytics}
             onClearAnalytics={this.onClearAnalytics}
             isInttCurrenciesEnabled={user.isInttCurrenciesEnabled}
-            trackSearchFilterForInternational={
-              trackSearchFilterForInternational
-            }
+            trackSearchFilterForInternational={trackSearchFilterForInternational}
           />
 
           <Alert type={status.type} message={status.message} />
@@ -225,14 +222,15 @@ export default class InvoicesListContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <TakeATourButton feature={RZPFeatures.INVOICE} />
+            <ShowWhen additionalCondition={(_user) => !_user.isOrgAxis}>
+              <TakeATourButton feature={RZPFeatures.INVOICE} />
+            </ShowWhen>
 
             <DocsLink url="https://razorpay.com/docs/invoices/" />
 
             <ShowWhen
-              additionalCondition={user =>
-                (mode !== 'live' || !user.isRejected) &&
-                user.isAllowedEdit('invoices')
+              additionalCondition={(_user) =>
+                (mode !== 'live' || !_user.isRejected) && _user.isAllowedEdit('invoices')
               }
             >
               <span class="btn btn-primary" onClick={this.onClickNewInvoice}>

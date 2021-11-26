@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import { reduxForm } from 'redux-form';
 
@@ -20,16 +20,12 @@ import {
 } from 'merchant/reducers/onboarding';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import { RZPFeatures } from 'merchant/helpers/data';
-import { stringifyQueryParams } from 'common/utils/rzp-utils';
 
 @connect(
-  state => ({
+  (state) => ({
     ...state.items,
     session: state.session,
-    invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(
-      state,
-      RZPFeatures.INVOICE
-    ),
+    invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.INVOICE),
   }),
   {
     ...ItemActions,
@@ -37,7 +33,7 @@ import { stringifyQueryParams } from 'common/utils/rzp-utils';
     luminateRow,
     handleProductQuickGuide,
     fetchInvoices,
-  }
+  },
 )
 @reduxForm({
   form: 'newItem',
@@ -75,14 +71,14 @@ export default class ItemsListContainer extends ListContainer {
     });
   }
 
-  itemFormOnMount = item => {
+  itemFormOnMount = (item) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Invoices',
       eventAction: `Open Form - ${item ? 'Edit' : 'New'} Item`,
     });
   };
 
-  itemFormOnUnmount = item => {
+  itemFormOnUnmount = (item) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Invoices',
       eventAction: `Close Form - ${item ? 'Edit' : 'New'} Item`,
@@ -94,9 +90,9 @@ export default class ItemsListContainer extends ListContainer {
      * Taxes are to be shown when the merchant has GSTIN entered.
      * Size of modal changes if taxes are to be shown.
      */
-    let user = this.props.session.user;
-    let gstin = user.gstin || user.p_gstin;
-    let showTaxes = Boolean(gstin);
+    const user = this.props.session.user;
+    const gstin = user.gstin || user.p_gstin;
+    const showTaxes = Boolean(gstin);
 
     this.props.openModal({
       size: showTaxes ? 'regular' : 'small',
@@ -124,7 +120,7 @@ export default class ItemsListContainer extends ListContainer {
     });
   };
 
-  deleteItem = item => {
+  deleteItem = (item) => {
     this.context.confirm({
       message: 'Are you sure to delete the item?',
       affirmativeLabel: 'Delete',
@@ -132,7 +128,7 @@ export default class ItemsListContainer extends ListContainer {
       action: () =>
         this.props
           .deleteItem(item)
-          .then(response => {
+          .then(() => {
             this.setState({
               status: {
                 type: 'success',
@@ -140,7 +136,7 @@ export default class ItemsListContainer extends ListContainer {
               },
             });
           })
-          .catch(err => {
+          .catch((err) => {
             this.setState({
               status: {
                 type: 'error',
@@ -152,26 +148,26 @@ export default class ItemsListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, items, session, isInvoiceView } = this.props,
-      { mode } = session;
-    let status = this.state.status;
+    const { loading, items, session, isInvoiceView } = this.props;
+    const { mode } = session;
+    const status = this.state.status;
 
     return (
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar">
-            {isInvoiceView && <TakeATourButton feature={RZPFeatures.INVOICE} />}
+            {isInvoiceView && (
+              <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
+                <TakeATourButton feature={RZPFeatures.INVOICE} />
+              </ShowWhen>
+            )}
 
             <ShowWhen
-              additionalCondition={user =>
-                (mode !== 'live' || !user.isRejected) &&
-                user.isAllowedEdit('items')
+              additionalCondition={(user) =>
+                (mode !== 'live' || !user.isRejected) && user.isAllowedEdit('items')
               }
             >
-              <button
-                class="pull-right btn btn-primary"
-                onClick={() => this.showItemModal()}
-              >
+              <button class="pull-right btn btn-primary" onClick={() => this.showItemModal()}>
                 <i class="i i-plus" />
                 <span>New Item</span>
               </button>

@@ -421,7 +421,7 @@ export default class PaymentButtonEntity extends React.Component {
           </div>
           <button
             type="button"
-            class="btn-primary btn-sm panel-collapser collapsable-btn"
+            class="btn btn-primary btn-sm panel-collapser collapsable-btn"
             onClick={() =>
               this.setState((prevState) => ({ detailsCollapse: !prevState.detailsCollapse }))
             }

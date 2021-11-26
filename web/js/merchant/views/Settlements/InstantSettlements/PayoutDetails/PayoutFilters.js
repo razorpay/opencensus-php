@@ -35,7 +35,7 @@ const PayoutFilters = ({
         <button className="btn btn-outline btn-sm" onClick={handleFilterApply}>
           Search
         </button>
-        <button className="btn btn-sm btn-link" onClick={handleFilterClear}>
+        <button className="btn btn-sm btn-text" onClick={handleFilterClear}>
           Clear
         </button>
       </div>

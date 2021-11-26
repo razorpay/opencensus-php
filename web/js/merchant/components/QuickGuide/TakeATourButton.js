@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { handleProductQuickGuide } from 'merchant/reducers/onboarding';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
-
+import ShowWhen from 'merchant/components/ShowWhen';
 class TakeATourButton extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -40,10 +40,11 @@ class TakeATourButton extends Component {
 
   render() {
     return (
-      <span class="btn btn-link" onClick={this.onClick}>
-        <i class="i i-lightbulb" />
-        Need help? Take a tour
-      </span>
+      <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
+        <span class="btn btn-link" onClick={this.onClick}>
+          <i class="i i-lightbulb" /> Need help? Take a tour
+        </span>
+      </ShowWhen>
     );
   }
 }

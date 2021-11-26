@@ -7,7 +7,7 @@ import Time from 'common/ui/Time';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { CreateTicketEmitter } from '../../../TicketSupport/utils';
 import { bindActionCreators } from 'redux';
-
+import { getCustomURL } from 'merchant/components/DocsLink';
 class SettlementDetail extends Component {
   handleContactSupport = () => {
     this.props.closeModal();
@@ -91,7 +91,7 @@ class SettlementDetail extends Component {
     return (
       <>
         Because of some risk issues with your payments or with your razorpay account, your
-        settlements have been put on hold.'
+        settlements have been put on hold.
       </>
     );
   }
@@ -136,7 +136,11 @@ class SettlementDetail extends Component {
           </div>
         )}
 
-        <a href="https://razorpay.com/settlement" target="_blank" rel="noopener noreferrer">
+        <a
+          href={getCustomURL('https://razorpay.com/settlement')}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <button class="btn btn-primary">Settlement Guide</button>
         </a>
       </>

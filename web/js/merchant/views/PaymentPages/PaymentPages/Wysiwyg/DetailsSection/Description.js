@@ -12,6 +12,7 @@ import track from '../track/';
 
 const FILE_SIZE_LIMIT = 2; // 2MB limit
 const COLORS_LIST = [
+  '#212121',
   '#00bb55',
   '#528ff0',
   '#f05150',
@@ -267,7 +268,7 @@ export default class WysiwygDescription extends React.PureComponent {
     });
   }
 
-  updateDescription = debounce(::this.updateDescription, 200);
+  updateDescription = debounce(this.updateDescription, 200);
 
   render() {
     return (

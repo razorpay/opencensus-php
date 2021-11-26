@@ -1,5 +1,7 @@
+import React from 'react';
 import { connect } from 'react-redux';
-import { Field, reduxForm, formValueSelector } from 'redux-form';
+import { reduxForm, formValueSelector } from 'redux-form';
+import PropTypes from 'prop-types';
 import InlineField from 'common/ui/Forms/InlineField';
 import InputField from 'common/ui/Forms/InputField';
 import TypeAhead from 'common/ui/Select/TypeAhead';
@@ -11,7 +13,7 @@ import Item from 'merchant/models/Item';
 import { track } from '../../../ga';
 
 const selector = formValueSelector('newInvoice');
-@connect(state => {
+@connect((state) => {
   return {
     session: state.session,
     invoice_line_items: selector(state, 'line_items'),
@@ -40,7 +42,7 @@ export default class InvoiceLineItem extends React.Component {
      * Taxes are only to be shown when GSTIN is present.
      * The size of the modal depends on whether or not taxes are to be shown.
      */
-    let showTaxes = Boolean(this.gstin) && this.isCurrencyInr;
+    const showTaxes = Boolean(this.gstin) && this.isCurrencyInr;
     this.props.trackLineItem('item_new');
     this.props.openModal({
       size: showTaxes ? 'regular' : 'small',
@@ -64,29 +66,33 @@ export default class InvoiceLineItem extends React.Component {
    * with the line item params.
    * @return {Item}
    */
+
   getItemFromLineItem = () => {
     const { invoice_line_items, index, items } = this.props;
 
     const lineItemID = invoice_line_items[index].item_id;
-    if (!lineItemID) return;
+    if (!lineItemID) return false;
 
-    const item = items.filter(item => item.id === lineItemID);
+    const item = items.filter((_item) => _item.id === lineItemID);
     if (item.length === 1) {
       return item[0];
     }
+
+    return false;
   };
 
   /**
    * Method that opens the Edit Item modal
    */
-  quickEditItem = e => {
+
+  quickEditItem = (e) => {
     e.preventDefault();
 
     /**
      * Taxes are only to be shown when GSTIN is present.
      * The size of the modal depends on whether or not taxes are to be shown.
      */
-    let showTaxes = Boolean(this.gstin) && this.isCurrencyInr;
+    const showTaxes = Boolean(this.gstin) && this.isCurrencyInr;
 
     // Get Item that is to be edited.
     const selectedOption = this.props.invoice_line_items[this.props.index];
@@ -112,14 +118,15 @@ export default class InvoiceLineItem extends React.Component {
    * Updates item and closes modal.
    * @param {Item} item
    */
-  updateItem = item => {
+
+  updateItem = (item) => {
     this.updateLineItemRow(item);
 
     this.props.trackLineItem('existing_item');
     this.props.closeModal();
   };
 
-  selectItemAndCloseModal = item => {
+  selectItemAndCloseModal = (item) => {
     this.props.trackLineItem('itemupdate');
     /**
      * Need to fetch the item again with tax expanded, if there's no `tax` key
@@ -131,7 +138,7 @@ export default class InvoiceLineItem extends React.Component {
         .fetch(item.id, {
           'expand[]': 'tax',
         })
-        .then(fetchedItem => {
+        .then((fetchedItem) => {
           this.updateItem(fetchedItem);
         });
     } else {
@@ -149,8 +156,8 @@ export default class InvoiceLineItem extends React.Component {
     change(`${fieldName}.tax_ids`, null);
   };
 
-  setTaxes = item => {
-    let { fieldName } = this.props;
+  setTaxes = (item) => {
+    const { fieldName } = this.props;
 
     // Set HSN Code
     this.props.change(`${fieldName}.hsn_code`, item.hsn_code || null);
@@ -162,14 +169,11 @@ export default class InvoiceLineItem extends React.Component {
     this.props.change(`${fieldName}.tax_rate`, item.tax_rate || null);
 
     // Set taxes.
-    let cessTax = this.getCessFromItem(item);
+    const cessTax = this.getCessFromItem(item);
     this.props.change(`${fieldName}.taxes`, cessTax ? [cessTax] : []);
 
     // Set whether or not the item is tax-inclusive.
-    this.props.change(
-      `${fieldName}.tax_inclusive`,
-      item.tax_inclusive || false
-    );
+    this.props.change(`${fieldName}.tax_inclusive`, item.tax_inclusive || false);
   };
 
   /**
@@ -178,13 +182,13 @@ export default class InvoiceLineItem extends React.Component {
    * @param {Object} nextProps
    */
 
-  updateLineItemRow = item => {
+  updateLineItemRow = (item) => {
     if (!item) return;
 
     // Determine whether or not taxes are shown.
-    let showTaxes = Boolean(this.gstin) && this.isCurrencyInr;
+    const showTaxes = Boolean(this.gstin) && this.isCurrencyInr;
 
-    let { fieldName, gstSlabs } = this.props;
+    const { fieldName } = this.props;
 
     this.props.change(`${fieldName}.item_id`, item.id || 'NULL'); // since redux-form converts falsy values into empty strings
     this.props.change(`${fieldName}.name`, item.name);
@@ -207,7 +211,7 @@ export default class InvoiceLineItem extends React.Component {
      * Using a try-catch block here because document.querySelector
      * might throw an error if fieldName is weird.
      */
-    let elem = document.querySelector(`input[name="${fieldName}.quantity"]`);
+    const elem = document.querySelector(`input[name="${fieldName}.quantity"]`);
     if (elem) {
       setTimeout(() => {
         elem.focus();
@@ -217,7 +221,7 @@ export default class InvoiceLineItem extends React.Component {
          * at the beginning of the input element and not at the end
          * of the input element.
          */
-        let oldVal = elem.value;
+        const oldVal = elem.value;
         elem.value = '';
         elem.value = oldVal;
       }, 100);
@@ -225,10 +229,8 @@ export default class InvoiceLineItem extends React.Component {
   };
 
   calculateLineItemTotal() {
-    let fieldItem = this.props.invoice_line_items[this.props.index];
-    return (Number(fieldItem.amountInINR) * Number(fieldItem.quantity)).toFixed(
-      2
-    );
+    const fieldItem = this.props.invoice_line_items[this.props.index];
+    return (Number(fieldItem.amountInINR) * Number(fieldItem.quantity)).toFixed(2);
   }
 
   /**
@@ -236,7 +238,8 @@ export default class InvoiceLineItem extends React.Component {
    * @param {Item} item
    * @return {Number}
    */
-  getCessFromItem = item => {
+
+  getCessFromItem = (item) => {
     // Get cess rate.
     let cess = null;
     if (item && isTaxOfTypeCess(item.tax)) {
@@ -250,8 +253,9 @@ export default class InvoiceLineItem extends React.Component {
    * @param {Object} option
    * @return {Number}
    */
-  getCessFromOption = option => {
-    let { taxes } = option;
+
+  getCessFromOption = (option) => {
+    const { taxes } = option;
 
     if (taxes && taxes.length > 0) {
       for (let i = 0; i < taxes.length; i++) {
@@ -260,6 +264,8 @@ export default class InvoiceLineItem extends React.Component {
         }
       }
     }
+
+    return false;
   };
 
   /**
@@ -267,12 +273,12 @@ export default class InvoiceLineItem extends React.Component {
    * @param {Object} gstSlabs GST Slabs to use (might be given from nextProps)
    */
   updateCessAndGSTSlab(gstSlabs = this.props.gstSlabs) {
-    let selectedOption = this.props.invoice_line_items[this.props.index];
+    const selectedOption = this.props.invoice_line_items[this.props.index];
 
-    let { fieldName } = this.props;
+    const { fieldName } = this.props;
 
     // Get Tax object that's a cess and set values.
-    let cessTax = this.getCessFromOption(selectedOption);
+    const cessTax = this.getCessFromOption(selectedOption);
     if (cessTax && cessTax.rate) {
       this.props.change(`${fieldName}.cess`, cessTax.rate);
     } else {
@@ -286,17 +292,13 @@ export default class InvoiceLineItem extends React.Component {
     let gstSlab;
     if (
       gstSlabs &&
-      (typeof selectedOption.tax_rate !== 'undefined' ||
-        selectedOption.tax_rate !== null)
+      (typeof selectedOption.tax_rate !== 'undefined' || selectedOption.tax_rate !== null)
     ) {
       gstSlab = gstSlabs[selectedOption.tax_rate * 100];
 
       // Add to taxIDs array.
       if (gstSlab && gstSlab.mapping) {
-        this.props.change(
-          `${fieldName}.tax_ids`,
-          Object.values(gstSlab.mapping)
-        );
+        this.props.change(`${fieldName}.tax_ids`, Object.values(gstSlab.mapping));
         taxIDs = taxIDs.concat(Object.values(gstSlab.mapping));
       }
     }
@@ -321,8 +323,8 @@ export default class InvoiceLineItem extends React.Component {
     this.setSelectedItemAfterMount();
 
     // Set GSTIN
-    let user = this.props.session.user;
-    let gstin = user.gstin || user.p_gstin;
+    const user = this.props.session.user;
+    const gstin = user.gstin || user.p_gstin;
     this.gstin = gstin;
   }
 
@@ -330,15 +332,12 @@ export default class InvoiceLineItem extends React.Component {
    * Updates taxes and sets the selected item.
    */
   setSelectedItemAfterMount = () => {
-    let selectedOption = this.props.invoice_line_items[this.props.index];
+    const selectedOption = this.props.invoice_line_items[this.props.index];
     if (selectedOption.id) {
       this.updateCessAndGSTSlab();
 
       // Update selected item.
-      this.props.change(
-        `${this.props.fieldName}.selectedItem`,
-        this.getItemFromLineItem()
-      );
+      this.props.change(`${this.props.fieldName}.selectedItem`, this.getItemFromLineItem());
     }
   };
 
@@ -347,7 +346,7 @@ export default class InvoiceLineItem extends React.Component {
    */
   onRemove = () => {
     const { onRemove, index, invoice_line_items } = this.props;
-    let selectedOption = invoice_line_items[index];
+    const selectedOption = invoice_line_items[index];
 
     track({
       eventAction: 'Delete - Item',
@@ -379,9 +378,10 @@ export default class InvoiceLineItem extends React.Component {
    * update cess and GST, or unset taxes depending on what is passed.
    * @param {Object} prevProps
    */
+
   componentDidUpdate(prevProps) {
-    let prevSelectedOption = prevProps.invoice_line_items[prevProps.index];
-    let selectedOption = this.props.invoice_line_items[this.props.index];
+    const prevSelectedOption = prevProps.invoice_line_items[prevProps.index];
+    const selectedOption = this.props.invoice_line_items[this.props.index];
 
     /**
      * `this.props.initialize` has been called, meaning the Invoice was saved.
@@ -411,10 +411,7 @@ export default class InvoiceLineItem extends React.Component {
      * The code below is to mitigate that, and has taken from me two hours and my will to live.
      * Using setTimeout because some asshole decided JS has to be async.
      */
-    if (
-      this.props.invoice_line_items.length !==
-      prevProps.invoice_line_items.length
-    ) {
+    if (this.props.invoice_line_items.length !== prevProps.invoice_line_items.length) {
       if (this.props.applyTaxes) {
         this.updateCessAndGSTSlab();
       } else {
@@ -423,11 +420,11 @@ export default class InvoiceLineItem extends React.Component {
     }
   }
 
-  resetSelectedItemForChangingCurrency = props => {
+  resetSelectedItemForChangingCurrency = (props) => {
     props.change(`${props.fieldName}.amountInINR`, 0);
 
-    const selectedOption = props.invoice_line_items[props.index],
-      showTaxes = Boolean(this.gstin) && props.invoiceCurrency === 'INR';
+    const selectedOption = props.invoice_line_items[props.index];
+    const showTaxes = Boolean(this.gstin) && props.invoiceCurrency === 'INR';
 
     if (selectedOption.selectedItem && showTaxes) {
       this.setTaxes(selectedOption.selectedItem);
@@ -441,17 +438,9 @@ export default class InvoiceLineItem extends React.Component {
   }
 
   render() {
-    let {
-      fieldName,
-      gstSlabs,
-      index,
-      disabled,
-      items,
-      invoiceCurrency,
-      trackLineItem,
-    } = this.props;
-    let selectedOption = this.props.invoice_line_items[index];
-    let isEmptyRow = !(
+    const { fieldName, index, disabled, items, invoiceCurrency } = this.props;
+    const selectedOption = this.props.invoice_line_items[index];
+    const isEmptyRow = !(
       (selectedOption.item_id && selectedOption.item_id !== 'NULL') ||
       selectedOption.name
     );
@@ -459,13 +448,13 @@ export default class InvoiceLineItem extends React.Component {
     const { selectedItem = {} } = selectedOption;
 
     // Get total.
-    let lineItemTotal = this.calculateLineItemTotal();
-    let lineItemTotalFloat = parseFloat(lineItemTotal);
+    const lineItemTotal = this.calculateLineItemTotal();
+    const lineItemTotalFloat = parseFloat(lineItemTotal);
 
-    let { gstSlab } = this.state;
+    const { gstSlab } = this.state;
 
     // Calculate HSN, SAC details.
-    let itemHSNSAC = selectedOption.hsn_code || selectedItem.sac_code || null;
+    const itemHSNSAC = selectedOption.hsn_code || selectedItem.sac_code || null;
     let HSNSACLabel = '';
     if (selectedOption.hsn_code) {
       HSNSACLabel = 'HSN';
@@ -474,23 +463,15 @@ export default class InvoiceLineItem extends React.Component {
     }
 
     // Get cess rate.
-    let cess = selectedOption.cess;
+    const cess = selectedOption.cess;
 
     const selectedCurrency = selectedItem.currency || selectedOption.currency;
 
     const applyTaxes = this.props.applyTaxes && selectedCurrency === 'INR'; // Selected Item won't be exists for non-inr items
 
     return (
-      <tr
-        class={`${isEmptyRow ? 'lineItem--empty' : ''} ${
-          disabled ? 'lineItem--disabled' : ''
-        }`}
-      >
-        <td
-          class={`lineItem__item ${
-            selectedOption.item_id ? 'lineItem__item--added' : ''
-          }`}
-        >
+      <tr class={`${isEmptyRow ? 'lineItem--empty' : ''} ${disabled ? 'lineItem--disabled' : ''}`}>
+        <td class={`lineItem__item ${selectedOption.item_id ? 'lineItem__item--added' : ''}`}>
           <span class="remove-row-action" onClick={this.onRemove}>
             <i class="i-close" />
           </span>
@@ -499,7 +480,7 @@ export default class InvoiceLineItem extends React.Component {
             <div>
               {selectedOption && selectedOption.item_id && !disabled && (
                 <button
-                  class="btn btn-sm btn-link btn-purple edit-in-input ps-item__editbtn"
+                  class="btn btn-sm btn-text btn-purple edit-in-input ps-item__editbtn"
                   onClick={this.quickEditItem}
                 >
                   Edit
@@ -530,9 +511,8 @@ export default class InvoiceLineItem extends React.Component {
                   showClear={false}
                   onOptionChange={this.updateLineItemRow}
                   onQuickAdd={this.quickCreateItem}
-                  normalizeValue={value => {
-                    let selected =
-                      findBy(items || [], 'id', value) || selectedOption;
+                  normalizeValue={(value) => {
+                    const selected = findBy(items || [], 'id', value) || selectedOption;
                     if (selected) {
                       return selected.name;
                     }
@@ -568,7 +548,7 @@ export default class InvoiceLineItem extends React.Component {
           {selectedOption.item_id && applyTaxes && (
             <div class="tax-details">
               {gstSlab &&
-                gstSlab.groups.map(group => (
+                gstSlab.groups.map((group) => (
                   <p key={`${selectedOption.item_id}_${group}`}>
                     {group} @ {gstSlab.perGroup / 10000.0}%
                   </p>
@@ -600,7 +580,7 @@ export default class InvoiceLineItem extends React.Component {
           {selectedOption.item_id && applyTaxes && (
             <div class="tax-details">
               {gstSlab &&
-                gstSlab.groups.map(group => (
+                gstSlab.groups.map((group) => (
                   <p key={`${selectedOption.item_id}_${group}_rate`}>
                     {selectedOption.tax_inclusive ? '' : '+ '}
                     <Amount
@@ -608,7 +588,7 @@ export default class InvoiceLineItem extends React.Component {
                         (calculateTax(
                           lineItemTotalFloat,
                           selectedOption.tax_rate / 100,
-                          selectedOption.tax_inclusive
+                          selectedOption.tax_inclusive,
                         ) *
                           100) /
                         gstSlab.groups.length
@@ -622,11 +602,8 @@ export default class InvoiceLineItem extends React.Component {
                   {selectedOption.tax_inclusive ? '' : '+ '}
                   <Amount
                     value={
-                      calculateTax(
-                        lineItemTotalFloat,
-                        cess / 100,
-                        selectedOption.tax_inclusive
-                      ) * 100
+                      calculateTax(lineItemTotalFloat, cess / 100, selectedOption.tax_inclusive) *
+                      100
                     }
                     currency={invoiceCurrency}
                   />
@@ -635,11 +612,7 @@ export default class InvoiceLineItem extends React.Component {
               {(gstSlab || cess) && (
                 <div class="tax-calc-details">
                   <p>
-                    <em>
-                      Tax{' '}
-                      {selectedOption.tax_inclusive ? 'Inclusive' : 'Exclusive'}
-                      ,
-                    </em>
+                    <em>Tax {selectedOption.tax_inclusive ? 'Inclusive' : 'Exclusive'},</em>
                   </p>
                   <p>
                     <em>Rounded-off</em>

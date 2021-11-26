@@ -1,5 +1,5 @@
 import { Component, Fragment } from 'react';
-import { Field, reduxForm } from 'redux-form';
+import { reduxForm } from 'redux-form';
 import LineItem from './Item';
 import Amount from 'common/ui/Amount';
 import AmountInWords from 'common/ui/AmountInWords';
@@ -26,6 +26,7 @@ export default class InvoiceLineItemTable extends Component {
    * Removes an item from the Invoice.
    * @param {Number} index
    */
+
   onRemove = (index) => {
     const { fields } = this.props;
     fields.remove(index);
@@ -35,7 +36,7 @@ export default class InvoiceLineItemTable extends Component {
   };
 
   render() {
-    let {
+    const {
       fields,
       gstSlabs,
       items,
@@ -81,7 +82,7 @@ export default class InvoiceLineItemTable extends Component {
                       <td class="no-border">
                         {!disabled && (
                           <span
-                            class="text-primary cursor-pointer btn-link"
+                            class="text-primary cursor-pointer Btn--Link Button--transparent Button"
                             onClick={this.addInvoiceItem}
                           >
                             + Add Line Item

@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter, Redirect } from 'react-router-dom';
@@ -55,10 +54,14 @@ class InstantSettlements extends ListContainer {
   }
 
   get settleNowRestrictionMsg() {
-    if (!this.settlementRestricted) return;
+    if (!this.settlementRestricted) return null;
 
-    const { attempts_left, settlable_amount, max_amount_limit, settlements_count_limit } =
-      this.props.ondemand_restrictions.data;
+    const {
+      attempts_left,
+      settlable_amount,
+      max_amount_limit,
+      settlements_count_limit,
+    } = this.props.ondemand_restrictions.data;
     if (this.isOnDemandDisabled) {
       const restrictedItem = this.restrictedFeatures
         .filter((feat) => this.props.user.isFeatureEnabled(feat))
@@ -107,9 +110,7 @@ class InstantSettlements extends ListContainer {
         max_amount_limit,
         true,
       )} for the day.`;
-      /* eslint-disable */
-    } else return;
-    /* eslint-enable */
+    } else return null;
   }
 
   componentDidMount() {
@@ -281,7 +282,7 @@ class InstantSettlements extends ListContainer {
               <div className="settlement-actions-wrapper">
                 {
                   <div
-                    className="btn btn-link settlement-doc-btn"
+                    className="btn btn-text settlement-doc-btn"
                     onClick={this.viewSettlementCycle}
                   >
                     <span
@@ -291,7 +292,7 @@ class InstantSettlements extends ListContainer {
                         position: 'relative',
                         top: '2px',
                       }}
-                    />
+                    />{' '}
                     View Settlement Cycle
                   </div>
                 }

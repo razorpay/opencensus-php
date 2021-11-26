@@ -26,6 +26,7 @@ export default class Svelte extends React.Component {
           branding_logo: user.isOrgRZP ? null : org.payment_apps_logo_url,
           show_rzp_logo: user.isOrgRZP,
         },
+        custom_code: org.custom_code,
       },
       // Other keys are not required by Svelte app in isWYSIWYGMode
     };
