@@ -970,6 +970,12 @@ class Service extends Base\Service
         return app('settlements_dashboard')->merchantConfigGet($input);
     }
 
+    // RSR-1970 merchant config from merchant dashboard
+    public function merchantDashboardConfigGet(array $input) : array
+    {
+        return app('settlements_merchant_dashboard')->merchantDashboardConfigGet($input);
+    }
+
     public function merchantConfigCreate(array $input) : array
     {
         return app('settlements_dashboard')->merchantConfigCreate($input);

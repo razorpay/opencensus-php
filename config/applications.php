@@ -530,6 +530,17 @@ return [
                 'secret'    => env('SETTLEMENTS_PAYOUT_TEST_SECRET'),
             ],
         ],
+        'merchant_dashboard' => [
+            'mock' => env('SETTLEMENTS_MERCHANT_DASHBOARD_MOCK', false),
+            'live' => [
+                'key'       => env('SETTLEMENTS_MERCHANT_DASHBOARD_LIVE_KEY'),
+                'secret'    => env('SETTLEMENTS_MERCHANT_DASHBOARD_LIVE_SECRET'),
+            ],
+            'test' => [
+                'key'       => env('SETTLEMENTS_MERCHANT_DASHBOARD_TEST_KEY'),
+                'secret'    => env('SETTLEMENTS_MERCHANT_DASHBOARD_TEST_SECRET'),
+            ],
+        ],
         'secret'            => env('SETTLEMENTS_SERVICE_SECRET'),
     ],
 

@@ -61,10 +61,11 @@ class Base
     const X_REQUEST_ID          = 'X-Request-ID';
     const REQUEST_TIMEOUT       = 60;
 
-    const SERVICE_DASHBOARD     = 'dashboard';
-    const SERVICE_REMINDER      = 'reminder';
-    const SERVICE_PAYOUT        = 'payout';
-    const SERVICE_API           = 'api';
+    const SERVICE_DASHBOARD              = 'dashboard';
+    const SERVICE_REMINDER               = 'reminder';
+    const SERVICE_PAYOUT                 = 'payout';
+    // RSR-1970 merchant dashboard AUTH
+    const SERVICE_MERCHANT_DASHBOARD     = 'merchant_dashboard';
 
     /**
      * Settlements Base constructor.

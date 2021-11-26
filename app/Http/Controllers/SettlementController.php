@@ -714,4 +714,14 @@ class SettlementController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    // RSR-1970 merchant config from merchant dashboard
+    public function merchantDashboardConfigGet()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->merchantDashboardConfigGet($input);
+
+        return ApiResponse::json($data);
+    }
 }

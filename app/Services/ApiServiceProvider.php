@@ -520,6 +520,9 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerSettlementsDashboard();
 
+        // RSR-1970 changes
+        $this->registerSettlementsMerchantDashboard();
+
         $this->registerEinvoiceClient();
 
         $this->registerSettlementApi();
@@ -1399,6 +1402,23 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
             return new $implementation($app);
         });
+    }
+
+    /**
+     * RSR-1970 register settlement merchant dashboard class for settlements
+     * merchant dashboard requests
+     */
+    protected function registerSettlementsMerchantDashboard()
+    {
+        $this->app->singleton('settlements_merchant_dashboard', function($app)
+        {
+            $mock = $app['config']->get('applications.settlements_service.merchant_dashboard.mock');
+
+            $implementation = ($mock === true) ? Mock\Settlements\MerchantDashboard::class : Settlements\MerchantDashboard::class;
+
+            return new $implementation($app);
+        });
+
     }
 
     protected function registerSettlementsReminder()

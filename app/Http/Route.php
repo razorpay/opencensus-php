@@ -782,7 +782,7 @@ class Route
         'setl_transfer_status_update'              => ['post',     'settlements/transfer_status_update' ,            'SettlementController@transferStatusUpdate'                         ],
         'setl_entity_download_file'                => ['post',     'settlements/entities/get_file',                  'SettlementController@getSettlementServiceEntityFile'               ],
         'setl_optimizer_settlement_cron'           => ['post',     'settlements/optimizer/execute',                  'SettlementController@optimizerExternalSettlementsExecute'          ],
-
+        'setl_merchant_dashboard_config_get'       => ['post',     'settlements/dashboard/merchant_config/get',      'SettlementController@merchantDashboardConfigGet'                   ],
 
         'adj_fetch_by_id'                          => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                       => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
@@ -3237,6 +3237,7 @@ class Route
         'settlement_ondemand_create',
         'settlement_ondemand_fetch',
         'settlement_ondemand_fetch_by_id',
+        'setl_merchant_dashboard_config_get',
         'payment_links_get',
         'payment_links_create',
         'payment_links_update',
@@ -8286,6 +8287,7 @@ class Route
             'settlement_ondemand_fetch',
             'settlement_ondemand_fetch_by_id',
             'settlement_ondemand_razorpayx_webhook',
+            'setl_merchant_dashboard_config_get',
             'sms_callback',
             'splitz_evaluate',
             'splitz_preflight',

@@ -2,9 +2,9 @@
 
 namespace RZP\Services\Mock\Settlements;
 
-use RZP\Services\Settlements\Dashboard as BaseDahboard;
+use RZP\Services\Settlements\Dashboard as BaseDashboard;
 
-class Dashboard extends BaseDahboard
+class Dashboard extends BaseDashboard
 {
     public function migrateToPayout(array $input) : array
     {
