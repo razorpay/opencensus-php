@@ -140,17 +140,27 @@ class Base extends DSBase
             {
                 $isBeneBankDown = (new PayoutCore)->checkIfBeneBankIsDown($payout);
 
-                if($isBeneBankDown === true)
+                if ($isBeneBankDown === true)
                 {
-                    $toHoldPayout = $this->generateRandomNumberAndCheckIfPayoutToHold();
+                    $skipTestTransaction = $payout->merchant->isFeatureEnabled(Features::SKIP_TEST_TXN_FOR_DMT);
+
+                    if ($skipTestTransaction == true)
+                    {
+                        $toHoldPayout = true;
+                    }
+                    else
+                    {
+                        $toHoldPayout = $this->generateRandomNumberAndCheckIfPayoutToHold();
+                    }
 
                     if ($toHoldPayout === true)
                     {
                         $this->trace->info(
                             TraceCode::ON_HOLD_PAYOUT_CREATED,
                             [
-                                'payout_id' => $payout->getId(),
-                                'ifsc'      => $payout->fundAccount->account->getIfscCode(),
+                                'payout_id'     => $payout->getId(),
+                                'ifsc'          => $payout->fundAccount->account->getIfscCode(),
+                                'skip_test_txn' => $skipTestTransaction
                             ]);
 
                         return true;

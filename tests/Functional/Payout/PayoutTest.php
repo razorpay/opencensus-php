@@ -14289,6 +14289,38 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('beneficiary_bank_down', $payout['queued_reason']);
     }
 
+    public function testOnHoldPayoutForFeatureEnabledMerchantWithNoTestTransactionsAndBeneDown()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUTS_ON_HOLD]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::SKIP_TEST_TXN_FOR_DMT]);
+
+        $benebankConfig =
+            [
+                "BENEFICIARY" => [
+                    "SBIN" => [
+                        "status" => "started",
+                    ],
+                    "RZPB" => [
+                        "status" => "started",
+                    ],
+                    "default" => "started",
+                ]
+            ];
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
+
+        $this->expectWebhookEvent('payout.queued');
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('on_hold', $payout['status']);
+        $this->assertEquals('beneficiary_bank_down', $payout['queued_reason']);
+    }
+
     public function testCreatePayoutWhenOnHoldFeatureEnabledAndBeneUp()
     {
         $this->ba->privateAuth();

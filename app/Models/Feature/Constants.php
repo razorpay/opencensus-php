@@ -790,6 +790,13 @@ class Constants
     const PAYOUTS_ON_HOLD = 'payouts_on_hold';
 
     /**
+     * Even if the feature 'PAYOUTS_ON_HOLD' is set for merchants, 10% of the payouts may be sent as test transactions
+     * to detect uptime. If this flag is enabled ( solely for DMT merchants), the payout will never be sent as test
+     * transactions and will always be queued for a certain sla or until the uptime is detected.
+     */
+    const SKIP_TEST_TXN_FOR_DMT = 'skip_test_txn_for_dmt';
+
+    /**
      * Merchant feature used to not allow deduplication of fund accounts by changing the way
      * unique hashcode is computed. The unique hash computed now excludes beneficiary_name and
      *
@@ -1307,6 +1314,7 @@ class Constants
         self::COVID_19_RELIEF                 => true,
         self::BENE_NAME_IN_PAYOUT             => true,
         self::PAYOUTS_ON_HOLD                 => true,
+        self::SKIP_TEST_TXN_FOR_DMT           => true,
         self::SKIP_CONTACT_DEDUP_FA_BA        => true,
         self::PL_BLOCK_CUSTOMER_PREFILL       => true,
         self::ALLOW_VA_TO_VA_PAYOUTS          => true,
@@ -1354,7 +1362,7 @@ class Constants
         self::ONE_CC_MERCHANT_DASHBOARD       => true,
         self::ONE_CC_COUPONS                  => true,
         self::ONBOARD_TOKENIZATION            => true,
-        self::ORG_ANNOUNCEMENT_TAB_DISABLE     => true,
+        self::ORG_ANNOUNCEMENT_TAB_DISABLE    => true,
         self::ASYNC_TXN_FILL_DETAILS          => true,
         self::CREDIT_ID_BASED_NEW_QUERY       => true,
     ];
