@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Batch;
 
+use RZP\Http\RequestHeader;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 use RZP\Models\Admin;
@@ -2709,6 +2710,29 @@ class PayoutTest extends TestCase
         $this->assertEquals($expectedDataRow, trim($fileContent[1]));
     }
 
+    // This test is to ensure that there are no floating point inaccuracy losses when converting rupees to paise.
+    public function testLedgerTransactorEventAmounts()
+    {
+        $customTestCase = $this->testData[__FUNCTION__];
+
+        $headers = [
+            'HTTP_' . RequestHeader::X_Batch_Id => 'C3fzDCb4hA4F6b',
+        ];
+
+        // Add idempotency header to test data
+        $customTestCase['request']['server'] = $headers;
+
+        $this->ba->batchAuth();
+
+        // We are not creating a payouts batch entity, to simulate a dashboard based bulk payout request
+
+        $this->startTest($customTestCase);
+
+        $payout = $this->getDbLastEntity('payout');
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals($payout->getAmount(), $txn->getAmount() - $txn->getFee());
+    }
 
 
     protected function changeMerchantToExistingBulkRupeesType()

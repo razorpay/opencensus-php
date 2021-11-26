@@ -53,7 +53,8 @@ class BatchHelper
 
         if (empty($entry[self::PAYOUT][self::AMOUNT]) === true)
         {
-            $input[PayoutModel\Entity::AMOUNT] = $entry[self::PAYOUT][self::AMOUNT_IN_RUPEES] * 100;
+            // using bcmul() to avoid floating point inaccuracies
+            $input[PayoutModel\Entity::AMOUNT] = (int) bcmul($entry[self::PAYOUT][self::AMOUNT_IN_RUPEES], '100');
         }
         else
         {

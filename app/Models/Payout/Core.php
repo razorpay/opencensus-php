@@ -2146,7 +2146,8 @@ class Core extends Base\Core
         // Currently only shared fundAccount payout is pushed to ledger. So in case of direct, return.
         // In case env variable ledger.enabled is false, return.
         if (($this->app['config']->get('applications.ledger.enabled') === false) or
-            ($payout->getBalanceAccountType() === AccountType::DIRECT))
+            ($payout->getBalanceAccountType() === AccountType::DIRECT) or
+            ($payout->isBalanceTypePrimary() === true))
         {
             return;
         }
