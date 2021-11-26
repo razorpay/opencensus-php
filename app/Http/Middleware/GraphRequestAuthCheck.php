@@ -5,12 +5,17 @@ namespace App\Http\Middleware;
 use Auth;
 use Closure;
 use Response;
+use Request;
+use Trace;
+
+use App\Trace\TraceCode;
+use GraphQL\Language\Parser;
 
 class GraphRequestAuthCheck
 {
     const OPERATION_NAME = 'operationName';
 
-    const WHITELISTED_OPERATIONS = [
+    const WHITELISTED_QUERY_SELECTORS = [
         'userAuthentication',
         'organisationInformation',
         'registerEmail',
@@ -25,13 +30,14 @@ class GraphRequestAuthCheck
 
     public function handle($request, Closure $next)
     {
-        $user = Auth::guard('user')->user();
+        $start_time = microtime(true);
 
-        $operationName = $request->input(self::OPERATION_NAME);
+        $user = Auth::guard('user')->user();
 
         if (empty($user) === true)
         {
-            if ($this->operationPartOfWhitelist($operationName) === false)
+            $input = Request::all();
+            if ($this->isValidQuerySelector($input['query']) === false)
             {
                 // If user session does not exist
                 // Then only operations part of whitelist will be allowed
@@ -41,15 +47,61 @@ class GraphRequestAuthCheck
             }
         }
 
+        $end_time =  microtime(true);
+        
+        $time_taken = $end_time - $start_time;
+        
+        $operationName = $request->input(self::OPERATION_NAME);
+
+        Trace::info(TraceCode::GRAPH_REQUEST_AUTH_VALIDATION_TIME, [
+            'auth_validation_time' => $time_taken,
+            'operation_name'    => $operationName ?? null,
+        ]);
+
         return $next($request);
 
     }
 
-    private function operationPartOfWhitelist($operation)
+    /* This function will first check for the definition kind. All definition kind should be OperationDefinition.
+    Then it will check for the selector names of first node in graph AST tree. 
+    It will consider query as a valid if all the selector names of first node will be part of WHITELISTED_QUERY_SELECTORS.
+    If any selector is not part of whitelist then it will return as invalid query. */
+    private function isValidQuerySelector($query)
+    {
+        try {
+            $queryData = Parser::parse($query);
+
+            $definitions = json_decode($queryData)->definitions;
+
+            $isValidQuerySelector = true;
+
+            foreach($definitions as $definition) {
+                $definitionKind = $definition->kind;
+                if($definitionKind === "OperationDefinition") {
+                    $selectionSet = $definition->selectionSet;
+                    $selections = $selectionSet->selections;
+                    foreach($selections as $selection) {
+                        $selectorName = $selection->name->value;
+                        if ($this->isSelectorPartOfWhitelist($selectorName) === false){
+                            $isValidQuerySelector = false;
+                        }
+                    }
+                } else {
+                    $isValidQuerySelector = false;
+                }
+            }
+            return $isValidQuerySelector;
+        } catch (\Throwable $th) {
+            return false;       
+        }
+    }
+
+
+    private function isSelectorPartOfWhitelist($operation)
     {
         return in_array(
             $operation,
-            self::WHITELISTED_OPERATIONS,
+            self::WHITELISTED_QUERY_SELECTORS,
             true);
     }
 
