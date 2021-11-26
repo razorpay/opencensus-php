@@ -6,6 +6,7 @@ use ApiResponse;
 use Request;
 use RZP\Models\Pricing\Entity;
 use RZP\Models\Pricing\Type;
+use RZP\Trace\Tracer;
 
 class PricingController extends Controller
 {
@@ -29,11 +30,14 @@ class PricingController extends Controller
 
     public function postCalculateBuyPricingCost()
     {
-        $input = Request::all();
+        return Tracer::inSpan(['name' => 'buy_pricing.process_terminals_cost'], function()
+        {
+            $input = Request::all();
 
-        $data = $this->service()->processBuyPricingCostCalculation($input);
+            $data = $this->service()->processBuyPricingCostCalculation($input);
 
-        return ApiResponse::json($data);
+            return ApiResponse::json($data);
+        });
     }
 
     public function getPlan($id)
