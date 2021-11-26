@@ -22,6 +22,9 @@ import { tabsOrder, tabsMeta } from 'merchant/containers/Home/KeyMetrics/data';
 import { getQuery as getPaymentMethodsQuery } from 'merchant/containers/Home/PaymentMethods/data';
 import Home from 'merchant/containers/Home/Index';
 
+import { ThemeProvider } from 'styled-components';
+import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
+
 import css from '../../css/merchant.styl';
 import fontconfig from '../../dashboard.font';
 
@@ -161,10 +164,12 @@ class App extends Component {
 }
 
 render(
-  <Provider store={store}>
-    <Router>
-      <App />
-    </Router>
-  </Provider>,
+  <ThemeProvider theme={theme}>
+    <Provider store={store}>
+      <Router>
+        <App />
+      </Router>
+    </Provider>
+  </ThemeProvider>,
   document.getElementById('react-root')
 );
