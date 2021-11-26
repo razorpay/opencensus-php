@@ -60,8 +60,6 @@ class Core extends Base\Core
 
     const RAZORX_ASYNC_UPDATE_EXPERIMENT = 'pp_async_update_experiment';
 
-    const RAZORX_PAYMENT_PAGE_PROFANITY_CHECK = "payment_page_profanity_check";
-
     public function __construct()
     {
         parent::__construct();
@@ -2228,13 +2226,7 @@ class Core extends Base\Core
     {
         $mode = $this->app['basicauth']->getMode() ?? Mode::LIVE;
 
-        $variant = $this->app->razorx->getTreatment(
-            $paymentLink->getMerchantId(),
-            self::RAZORX_PAYMENT_PAGE_PROFANITY_CHECK,
-            $mode
-        );
-
-        if ($variant !== 'on')
+        if ($mode !== Mode::LIVE)
         {
             return;
         }
