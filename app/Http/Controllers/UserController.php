@@ -1,21 +1,20 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\User\Constants;
-use Illuminate\Support\Facades\Crypt;
-
 use Auth;
 use Input;
 use Cookie;
 use Session;
-
 use App\User;
 use App\Admin;
 use App\Merchant;
 use App\Http\ApiUrl;
+use App\User\Helper;
+use App\User\Constants;
 use App\Trace\TraceCode;
 use App\Http\AppResponse;
 use App\User\RecoverableException;
+use Illuminate\Support\Facades\Crypt;
 use App\Metrics\Constants as MetricConstants;
 use App\Merchant\Constants as MerchantConstants;
 use App\User\Constants as UserConstants;
@@ -212,6 +211,105 @@ class UserController extends Controller
         $this->checkCaptchaDisableInPayload($input);
     }
 
+    public function postRegisterSendOtp()
+    {
+        $timeStarted = microtime(true);
+
+        $input = Input::all();
+
+        // Lowercasing emails for consistency
+        if (isset($input['email']))
+        {
+            $input['email'] = mb_strtolower($input['email']);
+        }
+
+        list($error, $data) = (new User\Service)->registerWithOtp($input);
+
+        $timeEnd = microtime(true);
+
+        $timeTaken = $timeEnd - $timeStarted;
+
+        $this->traceDuration($timeTaken, TraceCode::SEND_SIGNUP_OTP_DURATION);
+
+        if(
+            isset($error["internal_error_code"]) and
+            in_array($error['internal_error_code'], Admin\ApiRequestAny::INTERNAL_ERROR_CODES)
+        )
+        {
+            $error = [$error];
+        }
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postRegisterVerifyOtp()
+    {
+        $timeStarted = microtime(true);
+
+        $input = Input::all();
+
+        // Lowercasing emails for consistency
+        if (isset($input['email']))
+        {
+            $input['email'] = mb_strtolower($input['email']);
+        }
+
+        $this->checkCaptchaDisableInPayload($input);
+
+        list($error, $data) = (new User\Service)->registerWithOtpVerify($input);
+
+        if (isset($input['email']))
+        {
+            $signupMedium = MetricConstants::EMAIL;
+        }
+        else
+        {
+            $signupMedium = MetricConstants::CONTACT_MOBILE;
+        }
+
+        $res = [];
+
+        if (empty($error) === true)
+        {
+            $genericUser = (new Helper)->createdGenericUser($data);
+            Auth::login($genericUser, false);
+            $this->app[Constants::SESSION]->put(Constants::DASHBOARD_USER_PAYLOAD, $genericUser);
+
+            $this->metrics->count(MetricConstants::USER_SIGNUP_COUNT,
+                EVENT_TRIGGER_COUNT,
+                [
+                    MetricConstants::SIGNUP_METHOD => MetricConstants::OTP,
+                    MetricConstants::SIGNUP_MEDIUM => $signupMedium,
+                ]);
+
+            $user = Auth::user();
+
+            $res = [
+                "id"                => $user->currentMerchant() ? $user->currentMerchant()->id : null,
+                "name"              => $user->currentMerchant() ? $user->currentMerchant()->name : null,
+                "email"             => $user->email,
+                "contact_mobile"    => $user->contact_mobile,
+                "user_id"           => $user->id
+            ];
+        }
+
+        $timeEnd = microtime(true);
+
+        $timeTaken = $timeEnd - $timeStarted;
+
+        $this->traceDuration($timeTaken, TraceCode::VERIFY_SIGNUP_OTP_DURATION);
+
+        if(
+            isset($error["internal_error_code"]) and
+            in_array($error['internal_error_code'], Admin\ApiRequestAny::INTERNAL_ERROR_CODES)
+        )
+        {
+            $error = [$error];
+        }
+
+        return AppResponse::jsonResponse($error, $res);
+    }
+
     public function postRegister()
     {
         $input = Input::all();
@@ -325,6 +423,7 @@ class UserController extends Controller
                 EVENT_TRIGGER_COUNT,
                 [
                     MetricConstants::LOGIN_METHOD => MetricConstants::PASSWORD,
+                    MetricConstants::LOGIN_MEDIUM => MetricConstants::EMAIL,
                     MetricConstants::LOGIN_ACTION => MetricConstants::NORMAL_LOGIN,
                 ]);
         }
@@ -445,6 +544,7 @@ class UserController extends Controller
                 EVENT_TRIGGER_COUNT,
                 [
                     MetricConstants::LOGIN_METHOD => MetricConstants::OTP,
+                    MetricConstants::LOGIN_MEDIUM => MetricConstants::EMAIL,
                     MetricConstants::LOGIN_ACTION => MetricConstants::OTP_LOGIN,
                 ]);
         }
@@ -507,6 +607,7 @@ class UserController extends Controller
                 EVENT_TRIGGER_COUNT,
                 [
                     MetricConstants::LOGIN_METHOD => MetricConstants::OTP,
+                    MetricConstants::LOGIN_MEDIUM => MetricConstants::EMAIL,
                     MetricConstants::LOGIN_ACTION => MetricConstants::OTP_LOGIN,
                 ]);
         }
@@ -540,6 +641,7 @@ class UserController extends Controller
                 EVENT_TRIGGER_COUNT,
                 [
                     MetricConstants::LOGIN_METHOD => MetricConstants::OAUTH,
+                    MetricConstants::LOGIN_MEDIUM => MetricConstants::EMAIL,
                     MetricConstants::LOGIN_ACTION => MetricConstants::NORMAL_LOGIN,
                 ]);
         }
@@ -564,6 +666,7 @@ class UserController extends Controller
                 EVENT_TRIGGER_COUNT,
                 [
                     MetricConstants::LOGIN_METHOD => $this->getLoginMethodFromSession(),
+                    MetricConstants::LOGIN_MEDIUM => MetricConstants::EMAIL,
                     MetricConstants::LOGIN_ACTION => MetricConstants::TWO_FA_OTP_VERIFICATION,
                 ]);
         }

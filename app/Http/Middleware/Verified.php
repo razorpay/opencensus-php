@@ -16,15 +16,24 @@ class Verified
 
         $routeName = Route::currentRouteName();
 
-        if ($user and
-           (($user->confirmed) ||
-            ($routeName === 'merchant' && $xSignUpFlowV2 === 'true')))
+        if (isset($user) === true)
         {
-            return $next($request);
+            // one of these conditions should be met:
+            // i. user has verified their email
+            // ii. user has verified their phone number
+            // iii. it's X signup flow on `merchant` route
+            $isUserVerified = (
+                ($user->confirmed) ||
+                ($user->contact_mobile_verified) ||
+                ($routeName === 'merchant' && $xSignUpFlowV2 === 'true')
+            );
+
+            if ($isUserVerified === true)
+            {
+                return $next($request);
+            }
         }
-        else
-        {
-            return response('Unauthorized.', 401);
-        }
+
+        return response('Unauthorized.', 401);
     }
 }
