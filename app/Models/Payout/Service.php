@@ -40,6 +40,7 @@ use RZP\Models\Application\ApplicationMerchantMaps;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
 use RZP\Models\FundAccount\Service as FundAccountService;
+use RZP\Services\RazorpayLabs\SlackApp as SlackAppService;
 use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
 use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
@@ -64,6 +65,7 @@ class Service extends Base\Service
      */
     protected $appframeworkCore;
 
+    protected $slackAppService;
 
     protected $workflowMigration;
 
@@ -90,6 +92,8 @@ class Service extends Base\Service
         $this->workflowConfigService = new WorkflowConfigService;
 
         $this->workflowMigration = new WorkflowMigration();
+
+        $this->slackAppService = new SlackAppService($this->app);
     }
 
     public function createPayoutEntry($input)
@@ -386,6 +390,44 @@ class Service extends Base\Service
         ]);
 
         return $this->core->prepareTemplateAndDispatchEmail($approverList);
+    }
+
+    public function sendPendingPayoutsNotificationToSlack()
+    {
+        $startAt = millitime();
+
+        $slackAppSubscribedMerchants = $this->slackAppService->getSubscribedMerchantList()['data'];
+
+        $input = [
+            'count' => 10,
+            'skip'  => 0,
+            Entity::STATUS => Status::PENDING,
+            Entity::PENDING_ON_ROLES => [ User\BankingRole::OWNER ],
+            'product' => Constants\Product::BANKING,
+            'expand'  => ['fund_account.contact' ,'user']
+        ];
+
+        foreach ($slackAppSubscribedMerchants as $merchantData)
+        {
+            $merchantId = $merchantData['merchant_id'];
+
+            $this->merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            $this->app['basicauth']->setMerchant($this->merchant);
+
+            $payouts = $this->fetchMultiple($input)['items'];
+
+            if(count($payouts) !== 0)
+            {
+                $payload = [
+                        'merchant_id' => $merchantId,
+                        'payouts'     => $payouts,
+                        'count'       => count($payouts)
+                    ];
+
+                $this->slackAppService->sendPendingPayoutNotificationRequestToSlack($payload);
+            }
+        }
     }
 
     public function bulkApproveFundAccountPayouts(array $input)

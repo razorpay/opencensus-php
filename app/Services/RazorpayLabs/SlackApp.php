@@ -18,7 +18,7 @@ class SlackApp
         $this->trace = $app['trace'];
     }
 
-    public function sendRequestToSlack(DowntimeEntity $downtime, String $downTimeStatus)
+    public function sendDowntimeRequestToSlack(DowntimeEntity $downtime, String $downTimeStatus)
     {
         $traceData = [
             'downtime'          => $downtime->toArrayPublic(),
@@ -29,29 +29,23 @@ class SlackApp
         // and not a merchant downtime
         if ($downtime->getMerchantId() === null)
         {
+            $payload = $this->getDowntimeNotificationPayload($downtime, $downTimeStatus);
+            $url = $this->getDowntimeNotificationUrl();
+
+            $this->trace->info(
+                TraceCode::SENDING_DOWNTIME_PAYLOAD_TO_SLACK_APP,
+                $traceData
+            );
+
             try {
-                $this->trace->info(
-                    TraceCode::SENDING_DOWNTIME_PAYLOAD_TO_SLACK_APP,
-                    $traceData
-                );
+                $this->sendRequestToSlack( $url, 'POST', $payload);
+            }
+            catch (\Requests_Exception $exception) {
 
-                Requests::request(
-                    $this->getUrl(),
-                    ['Content-Type' => 'application/json'],
-                    $this->getPayload($downtime, $downTimeStatus),
-                    'POST',
-                    ['auth' => $this->getRequestAuth()]
-                );
-
-                $this->trace->info(
-                    TraceCode::SENT_DOWNTIME_PAYLOAD_TO_SLACK_APP,
-                    $traceData
-                );
-            } catch (\Requests_Exception $exception) {
                 $this->trace->info(
                     TraceCode::CALL_TO_SLACK_APP_FAILED,
                     [
-                        'payload'   => $traceData,
+                        'payload'   => $payload,
                         'exception' => $exception->getMessage(),
                     ]
                 );
@@ -66,12 +60,117 @@ class SlackApp
         }
     }
 
+    public function sendPendingPayoutNotificationRequestToSlack($payload)
+    {
+        $url = $this->getPendingPayoutsNotficiationUrl();
+        $payload = json_encode($payload);
+
+        try {
+            $this->trace->info(
+                TraceCode::SENDING_PENDING_PAYOUT_NOTIFICATION_TO_SLACK_APP,
+                [
+                    'payload' => $payload,
+                    'url'     => $url,
+                    'method'  => 'POST'
+                ]
+            );
+
+            $this->sendRequestToSlack( $url, 'POST', $payload);
+        }
+        catch (\Requests_Exception $exception) {
+            $this->trace->info(
+                TraceCode::CALL_TO_SLACK_APP_FAILED,
+                [
+                    'exception' => $exception->getMessage(),
+                ]
+            );
+
+            throw $exception;
+        }
+    }
+
+    public function getSubscribedMerchantList()
+    {
+        try {
+            $this->trace->info(
+                TraceCode::FETCHING_LIST_OF_MERCHANTS_SUBSCRIBED_FROM_SLACK_APP
+                );
+
+            $url = $this->getUrlForMerchantList();
+
+            $response = $this->sendRequestToSlack( $url, 'GET');
+
+            $this->trace->info(
+                TraceCode::SUBSCRIBER_LIST_RECEIVED_FROM_SLACK_APP,
+                $response
+            );
+        }
+        catch (\Requests_Exception $exception) {
+            $this->trace->info(
+                TraceCode::FAILED_FETCHING_SUBSCRIBED_MERCHANT_LIST,
+                [
+                    'exception' => $exception->getMessage(),
+                ]
+            );
+
+            throw $exception;
+        }
+
+
+        return $response;
+    }
+
+    public function sendRequestToSlack($url, $method, $payload = array())
+    {
+            try {
+                $this->trace->info(
+                    TraceCode::SENDING_REQUEST_TO_SLACK_APP,
+                    [
+                        'payload' => $payload,
+                        'url'     => $url,
+                        'method'  => $method
+                    ]
+                );
+
+                $response = Requests::request(
+                    $url,
+                    ['Content-Type' => 'application/json'],
+                    $payload,
+                    $method,
+                    ['auth' => $this->getRequestAuth()]
+                );
+
+                $this->trace->info(
+                    TraceCode::SENT_REQUEST_TO_SLACK_APP,
+                    [
+                        'payload' => $payload,
+                        'response'=> $response,
+                        'url'     => $url,
+                        'method'  => $method
+                    ]
+                );
+            }
+            catch (\Requests_Exception $exception) {
+                $this->trace->info(
+                    TraceCode::CALL_TO_SLACK_APP_FAILED,
+                    [
+                        'payload'   => $payload,
+                        'exception' => $exception->getMessage(),
+                    ]
+                );
+
+                throw $exception;
+            }
+
+            return $response;
+    }
+
     private function getRequestAuth()
     {
         return [$this->config['user'], $this->config['password']];
     }
 
-    private function getPayload(DownTimeEntity $downtime, String $downTimeStatus)
+    private function getDowntimeNotificationPayload(DownTimeEntity $downtime, String $downTimeStatus)
     {
         return json_encode([
             'entity'        => 'event',
@@ -88,8 +187,18 @@ class SlackApp
         ]);
     }
 
-    private function getUrl()
+    private function getDowntimeNotificationUrl()
     {
         return $this->config['url'] . '/broadcast/rzp_downtime';
+    }
+
+    private function getUrlForMerchantList()
+    {
+        return $this->config['url'] . '/subscribed-merchants';
+    }
+
+    private function getPendingPayoutsNotficiationUrl()
+    {
+        return $this->config['url'] . '/notify-pending-payout';
     }
 }

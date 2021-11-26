@@ -99,8 +99,16 @@ class PayoutTest extends OAuthTestCase
 
     private $finL3RoleUser;
 
+    protected $slackApp;
+
+    protected $payoutService;
+
+    private $unitTestCase;
+
     protected function setUp(): void
     {
+        $this->unitTestCase = new \Tests\Unit\TestCase();
+
         $this->testDataFilePath = __DIR__ . '/helpers/PayoutTestData.php';
         parent::setUp();
 
@@ -1309,6 +1317,13 @@ class PayoutTest extends OAuthTestCase
 
     public function createPayoutWithWorkflowEntities($amount, $account, $purpose, $workflowId)
     {
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'     => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
+                'created_at'    => 1598967658
+            ]);
+
         $p = $this->createPayoutWithWorkflow(
             [
                 'account_number'        =>  $account ?? '2224440041626905',
@@ -15015,7 +15030,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotNull($payout['initiated_at']);
     }
 
-    
+
 
     public function testGetPayoutsAndGetBalanceForHighTpsMerchantsWithSubBalances()
     {
@@ -15831,5 +15846,60 @@ class PayoutTest extends OAuthTestCase
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
+    }
+
+    public function testPendingPayoutNotificationToSlackApp()
+    {
+        $this->setupSlackAppMock();
+
+        $expected = [
+            'merchant_id' => '10000000000000',
+            'count'       => 5
+        ];
+
+        $this->slackAppMock->shouldReceive('sendPendingPayoutNotificationRequestToSlack')
+            ->withArgs(function ($payload) use ($expected) {
+                return (($payload['merchant_id'] === $expected['merchant_id']) &&
+                    $payload['count'] === $expected['count']);
+            })->andReturn([]);
+
+        $this->slackAppMock->shouldReceive('getSubscribedMerchantList')
+            ->andReturn([
+                "status" => 1,
+                "msg" => "success",
+                "data" => [
+                    [
+                        "id" =>  1,
+                        "merchant_id" => "10000000000000",
+                        "slack_team_id" => "T025HQJDGKH",
+                        "slack_user_id" => "U02E6JHBV7S"
+                    ]
+                ]
+            ]);
+
+        $this->testGetPayoutsForPendingOnRoles();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWithWorkflowEntities(12345,'2224440041626905',Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0C');
+        $this->createPayoutWithWorkflowEntities(23456,'2224440041626905',Payout\Purpose::CASHBACK,'FXMwu4HMK7ZT0D');
+        $this->createPayoutWithWorkflowEntities(11111,'2224440041626905',Payout\Purpose::SALARY,'FXMwu4HMK7ZT0F');
+        $this->createPayoutWithWorkflowEntities(50000,'2224440041626905',Payout\Purpose::SALARY,'FXMwu4HMK7ZT0G');
+        $this->createPayoutWithWorkflowEntities(65432,'2224440041626905',Payout\Purpose::REFUND,'FXMwu4HMK7ZT0H');
+
+        $this->payoutService->sendPendingPayoutsNotificationToSlack();
+    }
+
+    private function setupSlackAppMock()
+    {
+        $this->app['rzp.mode']= 'live';
+
+        $this->payoutService = new Payout\Service();
+
+        $this->slackAppMock = Mockery::mock('RZP\Services\RazorpayLabs\SlackApp', [$this->app])->makePartial();
+
+        $this->slackAppMock->shouldAllowMockingProtectedMethods();
+
+        $this->unitTestCase->setPrivateProperty($this->payoutService, 'slackAppService', $this->slackAppMock);
     }
 }

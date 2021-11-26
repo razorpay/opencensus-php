@@ -215,6 +215,13 @@ class PayoutController extends Controller
         }
     }
 
+    public function sendPendingPayoutsNotificationToSlack()
+    {
+        $response = $this->service()->sendPendingPayoutsNotificationToSlack();
+
+        return ApiResponse::json($response);
+    }
+
     public function bulkRejectFundAccountPayouts()
     {
         $response = $this->service()->bulkRejectFundAccountPayout($this->input);

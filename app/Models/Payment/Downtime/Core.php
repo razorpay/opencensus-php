@@ -50,7 +50,7 @@ class Core extends Base\Core
             PaymentDowntimeEvent::dispatch($this->mode, Status::STARTED, serialize($downtime));
 
             (new SlackAppService($this->app))
-                ->sendRequestToSlack($downtime, Status::STARTED);
+                ->sendDowntimeRequestToSlack($downtime, Status::STARTED);
         }
 
         $this->refreshOngoingDowntimesCache($downtime);
@@ -78,7 +78,7 @@ class Core extends Base\Core
 
             PaymentDowntimeEvent::dispatch($this->mode, Status::STARTED, serialize($downtime), $lastSeverity);
 
-            (new SlackAppService($this->app))->sendRequestToSlack($downtime, Status::STARTED);
+            (new SlackAppService($this->app))->sendDowntimeRequestToSlack($downtime, Status::STARTED);
         }
 
         $this->refreshOngoingDowntimesCache($downtime);

@@ -21,7 +21,7 @@ class SlackAppTest extends TestCase
         $sampleDowntimeEntity = new Downtime\Entity(['status' => 'started']);
 
         $slackApp = new ReflectionClass(SlackApp::class);
-        $getPayload = $slackApp->getMethod('getPayload');
+        $getPayload = $slackApp->getMethod('getDowntimeNotificationPayload');
         $getPayload->setAccessible(true);
 
         $actualPayload = $getPayload
@@ -36,7 +36,7 @@ class SlackAppTest extends TestCase
     public function testGetUrl()
     {
         $slackApp = new ReflectionClass(SlackApp::class);
-        $getUrl = $slackApp->getMethod('getUrl');
+        $getUrl = $slackApp->getMethod('getDowntimeNotificationUrl');
         $getUrl->setAccessible(true);
 
         $actualUrl = $getUrl->invokeArgs(new SlackApp($this->app), []);

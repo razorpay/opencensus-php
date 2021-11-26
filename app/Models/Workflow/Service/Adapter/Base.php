@@ -314,11 +314,16 @@ abstract class Base
             $actorPropertyKey = Constants::NAME;
             $actorPropertyValue = Constants::SERVICE_RX . $ba->getMode(); // todo: make this generic
         }
-        else if ($ba->isStrictPrivateAuth() === true)
-        {
+        else if ($ba->isStrictPrivateAuth() === true) {
             $actorId = $merchant->getId();
             $actorType = Constants::MERCHANT;
             $actorPropertyValue = Constants::API;
+
+            if ($ba->isSlackApp() === true) {
+                $actorType = Constants::USER;
+                $actorId = $user->getId();
+                $actorPropertyValue = ($repo->merchant->getMerchantUserMapping($merchant->getId(), $user->getId(), null, Product::BANKING))->pivot->role;
+            }
         }
         else
         {

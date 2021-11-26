@@ -1413,6 +1413,7 @@ class Route
         'payout_send_pending_approval_email'       => ['post',     'payouts/pending-payouts-approval-email',         'PayoutController@pendingPayoutApprovalEmail'                       ],
 
         'payout_wf_config_migrate'                 => ['post',     'payouts_configs/migrate',                        'PayoutController@migrateWorkflowConfigsToWorkflowService'          ],
+        'payout_notification_to_slack_app'         => ['post',     'payout_notification/slack_app',                   'PayoutController@sendPendingPayoutsNotificationToSlack'],
 
         //Routes related to workflows microservice
         'wfs_config_create'                       => ['post',    'wf-service/configs',                               'WorkflowServiceController@createConfig'                            ],
@@ -3563,6 +3564,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'payout_notification_to_slack_app',
         'internal_merchants_fetch_by_params',
         'internal_feature_bulk_assign',
         'internal_feature_bulk_remove',
@@ -10498,6 +10500,9 @@ class Route
 
             // cron for generating merchant report
             'merchant_report',
+
+            //Cron to push pending payouts notification to slack app : X
+            'payout_notification_to_slack_app',
 
             'merchant_onboarding_escalations',
             'setcronjob_webhook',

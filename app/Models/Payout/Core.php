@@ -3500,8 +3500,9 @@ class Core extends Base\Core
         {
             // Admin / Worker(for scheduled payouts) actions
             // On these auth, one can only reject a workflow
-            if (($auth->isAdminAuth() === true) ||
-                ($auth->isProxyAuth() === false))
+            if ((($auth->isAdminAuth() === true) ||
+                    ($auth->isProxyAuth() === false)) and
+                    ($auth->isSlackApp() === false))
             {
                 if ($input[Entity::FORCE_REJECT] === true)
                 {
@@ -3540,8 +3541,9 @@ class Core extends Base\Core
             'input'     => $input,
         ]);
 
-        if (($auth->isAdminAuth() === true) ||
-            ($auth->isProxyAuth() === false))
+        if ((($auth->isAdminAuth() === true) ||
+                ($auth->isProxyAuth() === false)) and
+                ($auth->isSlackApp() === false))
         {
             throw new Exception\BadRequestValidationFailureException('Auth is not proxy for payout approval');
         }
