@@ -78,6 +78,18 @@ class Service extends Base\Service
                 'error' => $e->getMessage()
             ]);
         }
+
+        try
+        {
+            $core->pushWebAttributionDetailsToSegmentCron();
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
+                'type'  => 'pushWebAttributionDetailsToSegmentCron',
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 
     public function fetchOnboardingEscalations()

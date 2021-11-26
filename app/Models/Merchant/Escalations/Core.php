@@ -192,7 +192,7 @@ class Core extends Base\Core
             $this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties);
         }
 
-        $this->app['segment-analytics']->buildRequestAndSend();
+        $this->app['segment-analytics']->buildRequestAndSend(true);
     }
 
     public function pushTransactionDetailsToSegmentCron()
@@ -245,12 +245,11 @@ class Core extends Base\Core
 
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-                //$this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties);
-                
+                $this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties);
             }
         }
 
-        //$this->app['segment-analytics']->buildRequestAndSend();
+        $this->app['segment-analytics']->buildRequestAndSend(true);
     }
 
     public function handleMtuSegmentEvent()

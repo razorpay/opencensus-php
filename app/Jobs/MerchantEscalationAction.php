@@ -11,8 +11,6 @@ use RZP\Models\Merchant\Escalations\Actions;
 
 class MerchantEscalationAction extends Job
 {
-    protected $queueConfigKey = 'merchant_onboarding_escalation';
-
     protected $merchantId;
 
     protected $actionId;

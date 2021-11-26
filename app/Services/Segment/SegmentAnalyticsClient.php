@@ -232,7 +232,7 @@ class SegmentAnalyticsClient extends AbstractEventClient
         }
     }
 
-    public function buildRequestAndSend()
+    public function buildRequestAndSend($batch = false)
     {
         try {
             $eventData = $this->getEventTrackerData();
@@ -257,7 +257,7 @@ class SegmentAnalyticsClient extends AbstractEventClient
                     'batch' => $eventDataChunk['events']
                 ];
 
-                $this->sendEventRequest($headers, $url, $payload);
+                $this->sendEventRequest($headers, $url, $payload, $batch);
             }
 
             $this->flushEvents();
@@ -274,30 +274,31 @@ class SegmentAnalyticsClient extends AbstractEventClient
         }
     }
 
-//    protected function sendEventRequest(array $headers, string $url, array $eventData)
-//    {
-//        try
-//        {
-//            $request  = [
-//                'method'    => 'post',
-//                'url'       => $url,
-//                'headers'   => $headers,
-//                'content'   => json_encode($eventData),
-//                'options'   => [
-//                    'timeout'   => self::REQUEST_TIMEOUT
-//                ]
-//            ];
-//
-//            SegmentRequestJob::dispatch($request);
-//        }
-//        catch (\Exception $e)
-//        {
-//            $errorContext = [
-//                'class'     => get_class($this),
-//                'message'   => $e->getMessage(),
-//            ];
-//
-//            $this->trace->error(TraceCode::EVENT_QUEUE_SEND_FAILED, $errorContext);
-//        }
-//    }
+    protected function sendEventRequest(array $headers, string $url, array $eventData, $batch = false)
+    {
+        try
+        {
+            $request  = [
+                'method'    => 'post',
+                'url'       => $url,
+                'headers'   => $headers,
+                'content'   => json_encode($eventData),
+                'options'   => [
+                    'timeout'   => self::REQUEST_TIMEOUT
+                ],
+                'batch'     => $batch
+            ];
+
+            SegmentRequestJob::dispatch($request);
+        }
+        catch (\Exception $e)
+        {
+            $errorContext = [
+                'class'     => get_class($this),
+                'message'   => $e->getMessage(),
+            ];
+
+            $this->trace->error(TraceCode::EVENT_QUEUE_SEND_FAILED, $errorContext);
+        }
+    }
 }

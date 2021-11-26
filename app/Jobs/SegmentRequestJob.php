@@ -3,48 +3,26 @@
 
 namespace RZP\Jobs;
 
-
 use RZP\Http\Request\Requests;
 use RZP\Trace\TraceCode;
 
 class SegmentRequestJob extends RequestJob
 {
+    protected $queueConfigKey = 'merchant_onboarding_escalation';
+
     public $timeout = 600;
 
-    protected function isAttributionEvent($event)
+    protected function handleBatchRequest($method, $content)
     {
-        $type = $event['type'] ?? '';
-
-        if($type !== 'identify')
-        {
-            return false;
-        }
-
-        if(isset($event['traits']) === true and isset($event['traits']['user_days_till_last_transaction']) === true)
-        {
-            return true;
-        }
-
-        return false;
+        $this->response = Requests::$method(
+            $this->request['url'],
+            $this->request['headers'],
+            $content,
+            $this->request['options']);
     }
 
-    protected function handleRequest()
+    protected function handleSequentialRequest($method, $content)
     {
-        $this->traceRequest();
-
-        return;
-
-        $timeStarted = microtime(true);
-
-        $method = $this->request['method'];
-
-        $content = $this->request['content'];
-
-        if(empty($content) === true)
-        {
-            return;
-        }
-
         $jsonBody = json_decode($content, true);
         $batchBody = $jsonBody['batch'];
 
@@ -54,15 +32,6 @@ class SegmentRequestJob extends RequestJob
 
         foreach ($batchBody as $event)
         {
-            if($this->isAttributionEvent($event) === true)
-            {
-                $this->trace->info(TraceCode::SKIP_SEGMENT_JOB_REQUEST, [
-                    'event' => $event
-                ]);
-
-                return;
-            }
-
             $body = json_encode([
                 'batch' => [$event]
             ]);
@@ -74,9 +43,37 @@ class SegmentRequestJob extends RequestJob
                 $this->request['options']);
 
             $this->trace->info(TraceCode::SEGMENT_JOB_REQUEST, [
+                'type'          => 'sequential',
                 'request_body'  => $body,
                 'response_body' => $this->response
             ]);
+        }
+    }
+
+    protected function handleRequest()
+    {
+        $this->traceRequest();
+
+        $timeStarted = microtime(true);
+
+        $method = $this->request['method'];
+
+        $content = $this->request['content'];
+
+        $batch = $this->request['batch'];
+
+        if(empty($content) === true)
+        {
+            return;
+        }
+
+        if($batch === true)
+        {
+            $this->handleBatchRequest($method, $content);
+        }
+        else
+        {
+            $this->handleSequentialRequest($method, $content);
         }
 
         $timeTaken = microtime(true) - $timeStarted;
