@@ -215,7 +215,17 @@ class Tracing
             'transfer_fetch_multiple',
             'payment_transfer',
             'payment_fetch_transfers',
+
+            // tokenization
+            'token_create',
+            'token_fetch',
+            'token_fetch_cryptogram',
+            'token_delete',
+            'token_status',
+
+
             'buy_pricing_terminal_cost',
+
         ]);
     }
 
