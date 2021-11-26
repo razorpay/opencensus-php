@@ -158,7 +158,19 @@ export const fetchDisputes = (params) => fetchAll(params, Dispute, 'DISPUTES');
 export const disputesReducer = makeCollectionReducer('DISPUTES');
 
 export const fetchSubmerchants = (params) => fetchAll(params, Submerchant, 'SUB_MERCHANTS');
-export const submerchantsReducer = makeActionCollectionReducer('SUB_MERCHANTS');
+
+const submerchantsHandler = {
+  'SUB_MERCHANT_CREATE::SUCCESS': (state, action) => {
+    if (action.payload?.isInsertTable) {
+      return set(state, 'items', unshift(state.items, action.payload));
+    }
+    return state;
+  },
+};
+export const submerchantsReducer = makeActionCollectionReducer(
+  'SUB_MERCHANTS',
+  submerchantsHandler,
+);
 
 export const fetchRegistrationLinks = (params) =>
   fetchAll(params, RegistrationLink, 'REGISTRATION_LINKS');

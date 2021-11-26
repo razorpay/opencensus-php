@@ -19,6 +19,7 @@ import InputField from 'common/ui/Forms/InputField';
 import { required, email, isEmail } from 'common/utils/validators';
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import BatchValidate from 'merchant/containers/BatchNew/Validate';
+import { withRouter } from 'react-router-dom';
 
 import { trackAddNewMerchantEvents } from '../ga';
 import SelectBox from 'merchant/views/PartnerDashboard/SubMerchant/components/SelectBox';
@@ -29,6 +30,7 @@ import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 const gaEvents = setGaTrack('Dashboard - Partner Submerchant - BU');
 
+@withRouter
 @connect((state) => ({ ...state.session }), {
   create,
   showNotification,
@@ -97,16 +99,31 @@ export default class AddMerchant extends Component {
     }
   };
 
+  getIsInsertTable = () => {
+    const { merchantType } = this.state;
+    const { location } = this.props;
+    const addXIntent = merchantType === PRODUCT_TYPE.X;
+    const addPGIntent = merchantType === PRODUCT_TYPE.PG;
+    const currentPageX = location.pathname === '/partners/submerchants/x';
+    const currentPagePG = location.pathname === '/partners/submerchants';
+    if ((addXIntent && currentPageX) || (addPGIntent && currentPagePG)) {
+      return true;
+    }
+    return false;
+  };
+
   addNewMerchant = (params) => {
     this.trackUserEvent('partnerships.submerchant.add.product_group.single.action', {
       action: 'Send Invite',
     });
     const { user } = this.props;
     this.fetchReferralURL();
+    const isInsertTable = this.getIsInsertTable();
     return this.props
       .create({
         ...params,
         product: this.state.merchantType,
+        isInsertTable,
       })
       .then((response) => {
         const { id } = response;

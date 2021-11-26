@@ -1,19 +1,21 @@
-import ajax from 'merchant/utils/ajax';
-import { merchantFetch } from 'merchant/utils/ajax';
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import GenericEntity from './GenericEntity';
 
 export default class Submerchant extends GenericEntity {
   resourceUrl = 'submerchants';
 
-  create(data) {
+  create({ isInsertTable, ...data }) {
     return ajax({
       url: '/submerchants',
       method: 'POST',
       appendModeInURL: false,
       data,
-    }).then(response => ({
-      ...response.data,
-    }));
+    }).then((response) => {
+      return {
+        ...response.data,
+        isInsertTable,
+      };
+    });
   }
 
   invite(submerchantId, data) {
@@ -28,15 +30,15 @@ export default class Submerchant extends GenericEntity {
         },
       },
       {},
-      '/merchant/api'
-    ).then(response => response.data);
+      '/merchant/api',
+    ).then((response) => response.data);
   }
 
   resendInvite(submerchantId) {
     return merchantFetch({
       url: `submerchants/${submerchantId.replace('acc_', '')}/reset_password`,
       method: 'post',
-    }).then(response => response.data);
+    }).then((response) => response.data);
   }
 
   fetchAll(params = {}) {
@@ -47,7 +49,7 @@ export default class Submerchant extends GenericEntity {
       data.id = data.id.replace('acc_', '');
     }
 
-    return this.makeGenericAjaxCall({ data }).then(response => {
+    return this.makeGenericAjaxCall({ data }).then((response) => {
       return response;
     });
   }
