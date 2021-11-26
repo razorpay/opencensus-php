@@ -7,9 +7,13 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\PaymentLink\Entity;
 use RZP\Models\PaymentLink\PaymentPageItem;
 use RZP\Tests\Traits\PaymentLinkTestTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class EntityTest extends BaseTest
 {
+    use PaymentTrait;
+    use DbEntityFetchTrait;
     use PaymentLinkTestTrait;
 
     const TEST_PL_ID    = '100000000000pl';
@@ -168,5 +172,33 @@ class EntityTest extends BaseTest
 
         $paymentLink->setUdfJsonschemaId("someID");
         $this->assertEquals("someID", $paymentLink->getUdfJsonschemaId());
+    }
+
+    /**
+     * @group nocode_pp_entity
+     */
+    public function testGetCapturedPaymentsCount()
+    {
+        $this->ba->proxyAuth();
+
+        $data       = $this->createPaymentLinkAndOrderForThat();
+        $pl         = $data['payment_link'];
+        $order      = $data['payment_link_order']['order'];
+
+        $this->makePaymentForPaymentLinkWithOrderAndAssert($pl, $order);
+
+        $count  = 1;
+        while ($count < 6)
+        {
+            $this->assertEquals($count, $pl->getCapturedPaymentsCount());
+
+            $orderRes   = $this->startTest();
+            $orderId    = $order->stripDefaultSign($orderRes['order']['id']);
+            $this->makePaymentForPaymentLinkWithOrderAndAssert($pl, $this->getDbEntityById('order', $orderId));
+
+            $count++;
+        }
+
+        $this->assertEquals($count, $pl->getCapturedPaymentsCount());
     }
 }
