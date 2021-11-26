@@ -254,6 +254,24 @@ class ValidatorTest extends BaseTest
         $this->assertNull($this->paymentLinkvalidator->validateMinAmount([E::AMOUNT => $paise]));
     }
 
+    /**
+     * @group nocode_pp_validator
+     */
+    public function testValidateSelectedUdfFieldThrowErrorForInvalidValue()
+    {
+        $pl = $this->createPaymentLink();
+        $settings = [
+            E::UDF_SCHEMA => '[{"name":"email","required":true,"title":"Email","type":"string","pattern":"email","settings":{"position":1}}]'
+        ];
+        $pl->getSettingsAccessor()->upsert($settings)->save();
+
+        $this->assignEntityValueThroughReflection($pl);
+
+        $this->expectException(BadRequestException::class);
+
+        $this->paymentLinkvalidator->validateSelectedUdfField("name", "NO_NAME");
+    }
+
     protected function assignEntityValueThroughReflection(E $entity): void
     {
         $reflector = new \ReflectionClass($this->paymentLinkvalidator);
