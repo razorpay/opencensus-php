@@ -57,7 +57,11 @@ class Service extends Base\Service
             (new Detail\Core())->saveMerchantDetails($merchantInput, $this->merchant);
         }
 
-        return $this->core->processPartnerActivation($input, $merchantDetail, $this->merchant);
+        $response = $this->core->processPartnerActivation($input, $merchantDetail, $this->merchant);
+
+        $response[Detail\Constants::LOCK_COMMON_FIELDS] = (new Detail\Core())->fetchCommonFieldsToBeLocked($merchantDetail);
+
+        return $response;
     }
 
     public function getPartnerActivationDetails()

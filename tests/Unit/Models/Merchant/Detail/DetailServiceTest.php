@@ -18,6 +18,7 @@ class DetailServiceTest extends TestCase
     protected $deviceEntityMock;
     protected $merchantDetailEntityMock;
     protected $merchantBusinessDetailEntityMock;
+    protected $partnerActivationMock;
     protected $stakeholderEntityMock;
     protected $merchantRepoMock;
     protected $merchantMethodsMock;
@@ -157,9 +158,23 @@ class DetailServiceTest extends TestCase
 
         $this->repoMock->shouldReceive('transactionOnLiveAndTest')->andReturn([]);
 
-        $response = $this->merchantService->saveMerchantDetailsForActivation($merchantData);
+        $actualResponse = $this->merchantService->saveMerchantDetailsForActivation($merchantData);
 
-        $this->assertEquals([], $response);
+        $expectedResponse = [
+            'lock_common_fields' => [
+                'contact_name',
+                'contact_mobile',
+                'contact_email',
+                'business_type',
+                'bank_account_name',
+                'bank_account_number',
+                'bank_branch_ifsc',
+                'promoter_pan',
+                'promoter_pan_name'
+            ]
+        ];
+
+        $this->assertEquals($expectedResponse, $actualResponse);
     }
 
     public function testSaveInstantActivationDetails()
@@ -625,6 +640,18 @@ class DetailServiceTest extends TestCase
 
         $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('businessDetail')->andReturn($this->merchantBusinessDetailEntityMock);
 
+        $this->merchantEntityMock->shouldReceive('getAttribute')->with('partnerActivation')->andReturn($this->partnerActivationMock);
+
+        $this->merchantEntityMock->shouldReceive('load')->andReturn();
+
+        $this->partnerActivationMock->shouldReceive('getEntityName')->with()->andReturn('partner_activation');
+
+        $this->merchantDetailEntityMock->shouldReceive('getBusinessType')->with()->andReturn('not_yet_registered');
+
+        $this->partnerActivationMock->shouldReceive('isLocked')->andReturn(true);
+
+        $this->partnerActivationMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
+
         $this->merchantDetailEntityMock->shouldReceive('getValidator')->andReturn($this->merchantDetailValidator);
 
         $this->merchantDetailValidator->shouldReceive('validateIsNotLocked')->andReturn();
@@ -669,6 +696,8 @@ class DetailServiceTest extends TestCase
 
         // Merchant Business details Mocking
         $this->merchantBusinessDetailEntityMock = Mockery::mock('RZP\Models\Merchant\BusinessDetail\Entity');
+
+        $this->partnerActivationMock = Mockery::mock('RZP\Models\Partner\Activation\Entity');
 
         // Stakeholder Mocking
         $this->stakeholderEntityMock = Mockery::mock('RZP\Models\Merchant\Stakeholder\Entity');

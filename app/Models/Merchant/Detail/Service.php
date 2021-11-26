@@ -220,6 +220,13 @@ class Service extends Base\Service
             $this->app['diag']->trackOnboardingEvent(EventCode::KYC_SAVE_MODIFICATIONS_SUCCESS, $this->merchant, null, $input);
         }
 
+        $partnerActivation = (new Partner\Core())->getPartnerActivation($merchant);
+
+        if (empty($partnerActivation) === false)
+        {
+            $response[DetailConstants::LOCK_COMMON_FIELDS] = $this->core->fetchCommonFieldsToBeLocked($partnerActivation);
+        }
+
         return $response;
     }
 
