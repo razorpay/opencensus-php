@@ -114,7 +114,8 @@ class Validator extends Base\Validator
         'status'                            => 'sometimes|integer|min:2|max:5|nullable',
         Constants::CF_REQUESTOR_CATEGORY    => 'sometimes',
         Constants::CF_REQUESTOR_SUBCATEGORY => 'sometimes',
-        Constants::CF_REQUESTOR_ITEM        => 'sometimes'
+        Constants::CF_REQUESTOR_ITEM        => 'sometimes',
+        Constants::CF_CREATED_BY            => 'sometimes',
     ];
 
     protected static $getSupportDashboardXTicketsRules = [

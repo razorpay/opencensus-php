@@ -115,7 +115,9 @@ return [
             'method'  => 'GET',
             'content' => ['cf_requester_category'    => 'Merchant',
                           'cf_requestor_subcategory' => 'Activation',
-                          'cf_requester_item'        => '']
+                          'cf_requester_item'        => '',
+                          'cf_created_by'            => 'merchant'
+                ]
         ],
         'response' => [
             'content' => [

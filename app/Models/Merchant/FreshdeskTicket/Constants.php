@@ -30,6 +30,7 @@ class Constants
     const CF_TICKET_QUEUE           = 'cf_ticket_queue';
     const CF_PRODUCT                = 'cf_product';
     const CF_QUERY                  = 'cf_query';
+    const CF_CREATED_BY             = 'cf_created_by';
 
     //Flows
     const CUSTOMER = 'Customer';
@@ -95,7 +96,7 @@ class Constants
     // workflow constant
     const AUTOMATED_WORKFLOW_RESOLVE_TAGS   = ['automated_workflow_response'];
     // All custom fields allowed to be queried
-    const CUSTOM_FIELDS_LIST_FOR_QUERY = [self::CF_REQUESTOR_CATEGORY, self::CF_REQUESTOR_SUBCATEGORY , self::CF_REQUESTOR_ITEM];
+    const CUSTOM_FIELDS_LIST_FOR_QUERY = [self::CF_REQUESTOR_CATEGORY, self::CF_REQUESTOR_SUBCATEGORY , self::CF_REQUESTOR_ITEM, self::CF_CREATED_BY];
     // Fd instances to find ticket details
     const FD_INSTANCES_LIST_FOR_FETCHING_CUSTOMER_TICKETS = [self::RZP, self::RZPIND];
 

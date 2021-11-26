@@ -190,7 +190,7 @@ class FreshdeskTicketV2Test extends TestCase
     {
         $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_TICKET_FILTER);
 
-        $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000+AND+custom_string%3A%27Merchant%27+AND+custom_string%3A%27Activation%27%22&page=1', 'get',
+        $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000+AND+custom_string%3A%27Merchant%27+AND+custom_string%3A%27Activation%27+AND+custom_string%3A%27merchant%27%22&page=1', 'get',
                                                     $expectedRequestResponse['request'], $expectedRequestResponse['response'], 4);
 
         $this->createTicketsToFetch();
@@ -1636,6 +1636,7 @@ Team Razorpay',
                             'custom_fields' =>  [
                                 "cf_requestor_subcategory"  => "Activation",
                                 "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "merchant"
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
 
@@ -1646,6 +1647,7 @@ Team Razorpay',
                             'custom_fields' =>  [
                                 "cf_requestor_subcategory"  => "Merchant Activation",
                                 "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "merchant"
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
 
@@ -1657,6 +1659,7 @@ Team Razorpay',
                             'custom_fields' =>  [
                                 "cf_requestor_subcategory"  => "Activation",
                                 "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "merchant"
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
                         ],
@@ -1667,6 +1670,7 @@ Team Razorpay',
                             'custom_fields' =>  [
                                 "cf_requestor_subcategory"  => "Activation",
                                 "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "merchant"
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
                         ],
