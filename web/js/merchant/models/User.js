@@ -311,7 +311,8 @@ export default class User {
   get isSuperCheckoutEnabled() {
     return (
       this.isFeatureEnabled('one_cc_merchant_dashboard') &&
-      this.getExpStatus('dashboard_super_checkout')
+      this.getExpStatus('dashboard_super_checkout') &&
+      this.isOrgRZP
     );
   }
 
