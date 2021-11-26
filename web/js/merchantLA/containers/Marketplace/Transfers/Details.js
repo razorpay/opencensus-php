@@ -8,15 +8,9 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import setGaTrack from './ga';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import lazy from 'merchant/routes/LazyLoader';
 import { compose, bindActionCreators } from 'redux';
 
-const TransferDetails = lazy(() =>
-  import(
-    /* webpackChunkName: 'TransferDetails' */ 'merchantLA/components/Marketplace/Transfers/Details'
-  ),
-);
+import TransferDetails from 'merchantLA/components/Marketplace/Transfers/Details';
 
 const gaEvents = setGaTrack('LA Dashboard - Transfers');
 
@@ -113,19 +107,17 @@ class TransferDetailsContainer extends Component {
 
     return (
       <div class={`transfer-details-container ${reversal_id ? 'multi-content' : ''}`}>
-        <SuspenseWithLoader>
-          <TransferDetails
-            transfer={entity}
-            reversals={reversals}
-            isLoading={loading}
-            statusMsg={statusMsg}
-            onClose={onClose}
-            onReverse={onReverse}
-            showNotification={showNotificationFn}
-            parentAccountName={user.marketplace_merchant_name}
-            showRefundToCustomer={user.isAllowedLARefunds}
-          />
-        </SuspenseWithLoader>
+        <TransferDetails
+          transfer={entity}
+          reversals={reversals}
+          isLoading={loading}
+          statusMsg={statusMsg}
+          onClose={onClose}
+          onReverse={onReverse}
+          showNotification={showNotificationFn}
+          parentAccountName={user.marketplace_merchant_name}
+          showRefundToCustomer={user.isAllowedLARefunds}
+        />
         {reversal_id && (
           <ReversalDetails
             id={reversal_id}
@@ -159,5 +151,5 @@ const mapDispatchToProps = (dispatch) => {
 
 export default compose(
   withRouter,
-  connect(mapStateToProps)(mapDispatchToProps),
+  connect(mapStateToProps, mapDispatchToProps),
 )(TransferDetailsContainer);

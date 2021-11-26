@@ -16,7 +16,7 @@ import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
 import lazy from 'merchant/routes/LazyLoader';
-import SuspenseWithLoader from '../../../../common/new-ui/SuspenseWithLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 const TransferDetails = lazy(() =>
   import(

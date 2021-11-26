@@ -22,7 +22,7 @@ import RadioButton from 'common/ui/Forms/RadioButton';
 import DirectTransferBanner from './components/DirectTransferBanner';
 import { compose, bindActionCreators } from 'redux';
 import lazy from 'merchant/routes/LazyLoader';
-import SuspenseWithLoader from '../../../../common/new-ui/SuspenseWithLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 const DatePickerField = lazy(() =>
   import(/* webpackChunkName: 'DatePickerField' */ 'common/ui/Forms/DatePickerField'),

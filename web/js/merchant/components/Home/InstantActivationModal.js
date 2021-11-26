@@ -20,7 +20,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import lazy from 'merchant/routes/LazyLoader';
-import SuspenseWithLoader from '../../../common/new-ui/SuspenseWithLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 const CustomLottie = lazy(() =>
   import(/* webpackChunkName: 'CustomLottie' */ 'common/new-ui/Lottie'),
