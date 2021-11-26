@@ -7121,6 +7121,8 @@ class Route
         'bank_account_fetch'                           => '*',
         'pincode_get'                                  => '*',
         'user_update_contact'                          => '*',
+        'user_verify_and_update_mobile_otp'            => '*',
+        'user_contact_update_sent_otp'                 => '*',
         'user_verify_through_mode'                     => '*',
         'reporting_consumer_restrictions'              => '*',
         'payouts_scheduled_time_slots'                 => '*',
