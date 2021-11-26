@@ -7,11 +7,15 @@ use Request;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch;
+use RZP\Models\Gateway\File\Constants as GatewayConstants;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Services\UfhService;
+use RZP\Models\Merchant\Document;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Reconciliator\FileProcessor;
 use Symfony\Component\HttpFoundation;
+use RZP\Models\Merchant\Document\Entity;
 
 class Service extends Base\Service
 {
@@ -23,6 +27,8 @@ class Service extends Base\Service
     const MUTEX_LOCK_TIMEOUT = 1800;
 
     protected $fileProcessor = null;
+
+    protected $ufh;
 
     protected $mutex;
 
@@ -46,6 +52,8 @@ class Service extends Base\Service
         $this->mutex = $this->app['api.mutex'];
 
         $this->merchant = $this->repo->merchant->getSharedAccount();
+
+        $this->ufh = (new UfhService($this->app));
     }
 
     public function processLambda(string $type, array $input)
@@ -210,4 +218,81 @@ class Service extends Base\Service
 
         return File::allFiles($unzippedFolderPath);
     }
+
+    public function processLambdaFIRS(array $input)
+    {
+        $this->trace->info(TraceCode::LAMBDA_REQUEST,
+            [
+                'input'   => $input
+            ]);
+
+        list($file, $locationType) = $this->getFileDetails($input,'FIRS');
+
+        $fileDetails = $this->fileProcessor->getFileDetails($file, $locationType, false);
+
+        $file = new HttpFoundation\File\UploadedFile($fileDetails['file_path'],$this->fileProcessor->getFileName($file),$fileDetails['mime_type'],$fileDetails['size'],null,true);
+
+        $document = $this->uploadFileAndSaveInMerchantDocument($file,$input);
+
+        $documentMetaData = [
+            Entity::ID => $document->getId(),
+            Entity::FILE_STORE_ID => $document->getFileStoreId(),
+            Entity::MERCHANT_ID => $document->getMerchantId(),
+        ];
+
+        return $documentMetaData;
+    }
+
+    protected function uploadFileAndSaveInMerchantDocument(HttpFoundation\File\UploadedFile $file, array $input)
+    {
+        $filename = $file->getClientOriginalName();
+
+        $ufhService = $this->app['ufh.service'];
+
+        list($company, $gatewayMerchantId, $date) = explode('_',$filename);
+
+        $part = str_split($date,2);
+
+        $terminal = $this->repo->terminal->findMerchantIdByGatewayMerchantID($gatewayMerchantId);
+        $merchantId = $terminal->getMerchantId();
+        $merchant = $this->repo->merchant->find($merchantId);
+        $storageFileName = 'FIRS/'.$merchantId.'/'.$part[1].'/'.$part[0].'/'.$filename;
+        $type = 'firs_file';
+        $documentDate = strtotime($part[0].'/'.date('d').'/'.$part[1]);
+
+        $response = $ufhService->uploadFileAndGetResponse($file, $storageFileName, $type, $merchant);
+
+        $this->trace->info(TraceCode::UPLOAD_FILE_DETAILS,
+            [
+                'success'           => isset($response[GatewayConstants::ID]),
+            ]);
+
+        $this->deleteExistingZipFile($merchantId,$part);
+
+        $document = (new Document\Core)->saveInMerchantDocument($response,$merchantId,$type,$documentDate);
+
+        return $document;
+    }
+
+    protected function deleteExistingZipFile(string $merchantId, array $part)
+    {
+        $from = strtotime($part[0].'/01/'.$part[1]);
+        $to = strtotime("+1 Month",$from);
+
+        $ufhService = $this->app['ufh.service'];
+
+        $documentEntities = $this->repo->merchant_document->findDocumentsForMerchantIdAndDocumentTypeAndDate($merchantId,'firs_zip',$from,$to);
+
+        foreach($documentEntities as $documentEntity)
+        {
+            if ($documentEntity != null)
+            {
+                $ufhService->deleteFile($documentEntity->getPublicFileStoreId());
+                (new Document\Core)->deleteDocuments([$documentEntity->getFileStoreId()]);
+            }
+            break;
+        }
+    }
+
+
 }

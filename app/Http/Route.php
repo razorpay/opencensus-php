@@ -1762,6 +1762,11 @@ class Route
         'merchant_patch_purpose_code'              => ['patch',    'merchants/purpose/code',                         'MerchantController@patchMerchantPurposeCode'                       ],
         'user_fetch_purpose_code'                  => ['get',      'users/purpose/code',                             'UserController@getUserDetails'                                     ],
 
+        //FIRS Document Route
+        'firs_document_categorize'                 => ['post',      'merchant/firs',                                 'LambdaController@processLambdaFIRS'                                ],
+        'firs_document_fetch'                      => ['get',       'merchant/firs',                                 'DocumentController@fetchFIRSDocuments'                             ],
+        'firs_document_download'                   => ['get',       'merchant/firs/content',                         'DocumentController@DownloadFIRSDocuments'                          ],
+
         // Shield routes
         'shield_rules_get_multiple' => [
             'get',
@@ -3759,6 +3764,7 @@ class Route
         'daily_reconciliation_summary_fetch',
         'hourly_reconciliation_summary_fetch',
         'lambda_post_h2h',
+        'firs_document_categorize',
         'setcronjob_webhook',
         'bank_transfer_payment_receiver_backfill',
         'refund_processed_at_backfill',
@@ -4359,6 +4365,8 @@ class Route
         'purpose_code_fetch',
         'merchant_patch_purpose_code',
         'user_fetch_purpose_code',
+        'firs_document_fetch',
+        'firs_document_download',
         'merchant_features_fetch',
         'merchant_features_update',
         'merchant_create_key',
@@ -6894,6 +6902,10 @@ class Route
         'banking_draft_invitations_create'                => Permission::REJECT_PAYOUT,
         // growth service
         'growth_downtime_for_x'                           => Permission::ENABLE_DOWNTIME_NOTIFICATION_X_DASHBOARD,
+
+        //FIRS documents
+        'firs_document_fetch'                 =>'*',
+        'firs_document_download'              =>'*',
     ];
 
     public static $bankingRoutePermissions = [
@@ -7869,6 +7881,8 @@ class Route
             'purpose_code_fetch',
             'merchant_patch_purpose_code',
             'user_fetch_purpose_code',
+            'firs_document_fetch',
+            'firs_document_download',
             'merchant_checkout_preferences',
             'merchant_create_key',
             'merchant_create_key_with_otp',
@@ -10361,6 +10375,9 @@ class Route
             'risk_attributes_get',
 
             'create_risk_action',
+
+            'firs_document_fetch',
+            'firs_document_download',
         ],
 
         //
@@ -10907,6 +10924,7 @@ class Route
             'bank_transfer_process_file_rbl',
             'bank_transfer_process_file',
             'segment_create_update',
+            'firs_document_categorize',
         ],
 
         'merchants-risk' => [

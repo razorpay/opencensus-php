@@ -26,6 +26,7 @@ class Validator extends Base\Validator
         Entity::FILE          => 'sometimes|file|mimes:pdf,jpeg,jpg,png',
         Entity::FILE_STORE_ID => 'sometimes|string|max:14',
         Entity::SOURCE        => 'required_with:file_store_id|string|custom',
+        Entity::DOCUMENT_DATE => 'sometimes|integer'
     ];
 
     protected static $uploadDocumentRules = [
@@ -36,6 +37,12 @@ class Validator extends Base\Validator
     protected static $aadharUploadRules = [
         Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
         Entity::FILE          => 'required|file',
+    ];
+
+    protected static $firsDocumentRequestRules = [
+        'month'       => 'required|min:1|max:12',
+        'year'        => 'required|digits:4',
+        'document_id' => 'sometimes|string'
     ];
 
     /**

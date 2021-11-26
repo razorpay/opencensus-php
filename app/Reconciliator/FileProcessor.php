@@ -130,6 +130,11 @@ class FileProcessor
         }
     }
 
+    public function getFileName(SplFileInfo $file)
+    {
+        return $file->getFilename();
+    }
+
     /**
      * Downloads and stores the file in the storage directory
      *

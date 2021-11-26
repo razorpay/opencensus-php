@@ -6443,3 +6443,6 @@ ALTER TABLE qr_code_config
 ALTER TABLE qr_code_config
     ADD COLUMN deleted_at INTEGER DEFAULT NULL,
     ADD COLUMN cutoff_time INTEGER DEFAULT NULL;
+
+ALTER TABLE merchant_documents
+    ADD COLUMN document_date INTEGER UNSIGNED DEFAULT NULL;

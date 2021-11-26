@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Document;
 use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Gateway\File\Constants as GatewayConstants;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
@@ -477,6 +478,33 @@ class Core extends Base\Core
     public function getDocument(string $merchantId,string $validationId)
     {
         return $this->repo->merchant_document->findDocumentsForMerchantIdAndValidationId($merchantId,$validationId);
+    }
+
+    public function saveInMerchantDocument(array $response, string $merchantId, string $documentType, int $documentDate = null)
+    {
+        $input = [
+            Entity::FILE_STORE_ID => $response[GatewayConstants::ID],
+            Entity::SOURCE        => 'UFH',
+            Entity::DOCUMENT_TYPE => $documentType,
+            Entity::DOCUMENT_DATE => $documentDate,
+        ];
+
+        FileStoreEntity::verifyIdAndSilentlyStripSign($input[Entity::FILE_STORE_ID]);
+
+        $document = $inputDocument ?? (new Entity)->generateId();
+
+        $document->edit($input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $document->entity()->associate($merchant);
+
+        $document->merchant()->associate($merchant);
+
+        $this->repo->saveOrFail($document);
+
+        return $document;
+
     }
 
 }

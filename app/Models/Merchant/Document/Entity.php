@@ -21,6 +21,9 @@ class Entity extends Base\PublicEntity
     const VALIDATION_ID = 'validation_id';
     const ENTITY_ID     = 'entity_id';
 
+    //When the document is accounted for
+    const DOCUMENT_DATE = 'document_date';
+
     protected static $sign = 'doc';
 
     protected $entity = "merchant_document";
@@ -34,6 +37,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         self::SOURCE,
+        self::DOCUMENT_DATE,
     ];
 
     protected $public = [
@@ -43,12 +47,14 @@ class Entity extends Base\PublicEntity
         self::DOCUMENT_TYPE,
         self::OCR_VERIFY,
         self::SOURCE,
+        self::DOCUMENT_DATE,
     ];
 
     protected $dates = [
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
+        self::DOCUMENT_DATE,
     ];
 
     public function getFileStoreSource()
@@ -74,6 +80,11 @@ class Entity extends Base\PublicEntity
     public function getDocumentType()
     {
         return $this->getAttribute(self::DOCUMENT_TYPE);
+    }
+
+    public function getDocumentDate()
+    {
+        return $this->getAttribute(self::DOCUMENT_DATE);
     }
 
     public function getEntityType()

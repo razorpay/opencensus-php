@@ -561,6 +561,8 @@ class UserRolesScope
             'fetch_payments_scheduled_downtimes'                   => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS, Role::FINANCE, Role::SUPPORT],
             'fetch_payout_downtimes_enabled'                       => [Role::OWNER, Role::ADMIN],
             'file_get_signed_url'                                  => [Role::OWNER, Role::ADMIN],
+            'firs_document_fetch'                                  => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
+            'firs_document_download'                               => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
             'freshchat_get_chat_holidays_config_proxy'             => Role::ALL_ROLES,
             'fund_account_bulk_create'                             => [Role::OWNER, Role::ADMIN],
             'fund_account_create'                                  => [Role::OWNER, Role::ADMIN],

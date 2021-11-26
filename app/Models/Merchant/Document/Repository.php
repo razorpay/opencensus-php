@@ -15,6 +15,19 @@ class Repository extends Base\Repository
     ];
 
     /**
+     * fetch documents by Id
+     *
+     * @param string $id
+     * @return mixed
+     */
+    public function findDocumentById(string $id)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ID,'=',$id)
+                    ->first();
+    }
+
+    /**
      * @param $fileStoreId
      *
      * @return mixed
@@ -71,6 +84,26 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->where(Entity::ENTITY_TYPE, $entityType)
                     ->orderBy(Entity::CREATED_AT, 'asc')
+                    ->get();
+    }
+
+    /**
+     * Fetch all the documents by merchantId , documentType and documentDate
+     *
+     * @param string $merchantId
+     * @param string $documentType
+     * @param int $from
+     * @param int $to
+     * @return mixed
+     */
+
+    public function findDocumentsForMerchantIdAndDocumentTypeAndDate(string $merchantId, string $documentType, int $from, int $to)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::DOCUMENT_TYPE,$documentType)
+                    ->whereBetween(Entity::DOCUMENT_DATE, [$from, $to])
+                    ->whereNull(Entity::DELETED_AT)
                     ->get();
     }
 }

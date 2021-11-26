@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Config;
 use Illuminate\Http\UploadedFile;
+use RZP\Services\UfhService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Document\Source;
@@ -18,11 +19,15 @@ class MerchantDocumentTest Extends TestCase
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
+    protected $ufh;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/MerchantDocumentTestData.php';
 
         parent::setUp();
+
+        $this->ufh = (new UfhService($this->app));
     }
 
     public function testDeleteDocument()
@@ -422,4 +427,151 @@ class MerchantDocumentTest Extends TestCase
 
         return [$document, $fileStore];
     }
+
+    public function testFetchFIRSDocuments()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  time(),
+            'file_store_id' => 'DM6dXJfU4WzeAF',
+        ]);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  time(),
+            'file_store_id' => 'DO6dXJfU4WzeAK',
+        ]);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], date('m'),date('Y'));
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertCount(2,$content);
+        $this->assertEquals('firs_file',$content[0]['document_type']);
+        $this->assertEquals('firs_file',$content[1]['document_type']);
+
+    }
+
+    public function testDownloadFIRSDocuments()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $merchantDocument = $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  time(),
+            'file_store_id' => 'DM6dXJfU4WzeAF',
+        ]);
+
+
+        $request['url'] = sprintf($request['url'], date('m'),date('Y'),$merchantDocument['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $ufhService = \Mockery::mock('RZP\Services\UfhService')->makePartial();
+
+        $this->app->instance('ufh.service',$ufhService);
+
+        $ufhService->shouldReceive('getSignedUrl')->andReturn([
+            'signed_url' => 'firs/'.$merchantDetail['merchant_id'].'/'.date('Y').'/'.date('m').'/'."random_name.pdf"
+        ]);
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals('firs_file',$content['document_type']);
+        $this->assertArrayKeysExist($content,['signed_url','file_store_id','id', 'document_type', 'merchant_id', 'created_at']);
+
+    }
+
+    public function testDownloadFIRSDocumentsZIP()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $merchantDocument = $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_zip',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  time(),
+            'file_store_id' => 'DM6dXJfU4WzeAF',
+        ]);
+
+        $request['url'] = sprintf($request['url'], date('m'),date('Y'));
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $ufhService = \Mockery::mock('RZP\Services\UfhService')->makePartial();
+
+        $this->app->instance('ufh.service',$ufhService);
+
+        $ufhService->shouldReceive('getSignedUrl')->andReturn([
+            'signed_url' => 'firs/'.$merchantDetail['merchant_id'].'/'.date('Y').'/'.date('m').'/'."random_name.zip"
+        ]);
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals('firs_zip',$content['document_type']);
+        $this->assertArrayKeysExist($content,['signed_url','file_store_id','id', 'document_type', 'merchant_id', 'created_at']);
+
+    }
+
+    public function testDownloadFIRSDocumentsZIPFileNotPresent()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  time(),
+            'file_store_id' => 'DM6dXJfU4WzeAF',
+        ]);
+
+        $request['url'] = sprintf($request['url'], date('m'),date('Y'));
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $ufhService = \Mockery::mock('RZP\Services\UfhService')->makePartial();
+
+        $this->app->instance('ufh.service',$ufhService);
+
+        $ufhService->shouldReceive('getSignedUrl')->andReturn([
+            'signed_url' => 'firs/'.$merchantDetail['merchant_id'].'/'.date('Y').'/'.date('m').'/'."random_name.zip"
+        ]);
+
+        $ufhService->shouldReceive('downloadFiles')->andReturn('DO6dXJfU4WzeAK');
+
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals('firs_zip',$content['document_type']);
+        $this->assertEquals('firs/'.$merchantDetail['merchant_id'].'/'.date('Y').'/'.date('m').'/'."random_name.zip",$content['signed_url']);
+        $this->assertArrayKeysExist($content,['signed_url','file_store_id','id', 'document_type', 'merchant_id', 'created_at']);
+
+    }
+
 }
+

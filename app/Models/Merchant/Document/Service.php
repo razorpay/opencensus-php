@@ -5,8 +5,11 @@ namespace RZP\Models\Merchant\Document;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Models\GenericDocument;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
+use RZP\Services\UfhService;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Product;
@@ -14,6 +17,8 @@ use RZP\Models\Merchant\AccountV2;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
+use RZP\Models\Gateway\File\Constants as GatewayConstants;
+
 
 
 
@@ -33,6 +38,9 @@ class Service extends Base\Service
 
     protected $mutex;
 
+    protected $ufh;
+
+
     public function __construct()
     {
         parent::__construct();
@@ -42,6 +50,9 @@ class Service extends Base\Service
         $this->mutex = $this->app['api.mutex'];
 
         $this->entityRepo = $this->repo->merchant_document;
+
+        $this->ufh = (new UfhService($this->app));
+
     }
 
     /**
@@ -211,5 +222,118 @@ class Service extends Base\Service
 
             return [$stakeHolder, $account];
         }
+    }
+
+    //This function fetches all the FIRS documents for that merchant in a particular
+    //month and year.
+    public function fetchFIRSDocuments(array $input)
+    {
+        (new Validator)->validateInput('firsDocumentRequest',$input);
+
+        $merchantId = $this->merchant->getId();
+
+        $from = strtotime($input['month'].'/01/'.$input['year']);
+        $to = strtotime("+1 Month",$from);
+
+        $documents = $this->repo->merchant_document->findDocumentsForMerchantIdAndDocumentTypeAndDate($merchantId,'firs_file',$from,$to);
+
+        $documentMetaData=[];
+
+        foreach ($documents as $document)
+        {
+            $documentResponse = [
+                Entity::ID              => $document->getId(),
+                Entity::DOCUMENT_TYPE   => $document->getDocumentType(),
+                Entity::MERCHANT_ID     => $document->getMerchantId(),
+                Entity::FILE_STORE_ID   => $document->getFileStoreId(),
+                Entity::CREATED_AT      => $document->getCreatedAt(),
+            ];
+            array_push($documentMetaData,$documentResponse);
+        }
+
+        return $documentMetaData;
+    }
+
+    //This function returns signed_url to download/view the FIRS documents in a particular month and year
+    //for both individual files and as a zip.
+    public function downloadFIRSDocuments(array $input)
+    {
+        (new Validator)->validateInput('firsDocumentRequest',$input);
+
+        $merchantId = $this->merchant->getId();
+        $document = null;
+
+        if(isset($input['document_id'])===true)
+        {
+            $document = $this->repo->merchant_document->findDocumentById($input['document_id']);
+
+            $signedURL = (new GenericDocument\Service)->getDocumentDownloadLinkFromUFH([], $document->getPublicFileStoreId(), $document->getMerchantId());
+        }
+        else {
+
+            $from = strtotime($input['month'].'/01/'.$input['year']);
+            $to = strtotime("+1 Month",$from);
+
+            $documents = $this->repo->merchant_document->findDocumentsForMerchantIdAndDocumentTypeAndDate($merchantId,'firs_zip',$from,$to);
+
+            if(isset($documents[0])){
+                foreach ($documents as $file)
+                {
+                    $signedURL = (new GenericDocument\Service)->getDocumentDownloadLinkFromUFH([], $file->getPublicFileStoreId(), $file->getMerchantId());
+                    $document = $file;
+                    break;
+                }
+            }else{
+                list($signedURL,$document) = $this->downloadZipFIRSFiles($input,$merchantId);
+            }
+        }
+
+        $documentMetaData = [
+            Entity::ID              => $document->getId(),
+            Entity::DOCUMENT_TYPE   => $document->getDocumentType(),
+            Entity::MERCHANT_ID     => $document->getMerchantId(),
+            Entity::FILE_STORE_ID   => $document->getFileStoreId(),
+            Entity::CREATED_AT      => $document->getCreatedAt(),
+            Entity::SIGNED_URL      => $signedURL['signed_url'],
+        ];
+
+        $this->trace->info(TraceCode::FILES_DOWNLOAD,array_except($documentMetaData,[Entity::SIGNED_URL]));
+
+        return $documentMetaData;
+    }
+
+    //Function returns the signed_url to download the FIRS zip files for a month and year.
+    protected function downloadZipFIRSFiles(array $input, string $merchantId)
+    {
+        $from = strtotime($input['month'].'/01/'.$input['year']);
+        $to = strtotime("+1 Month",$from);
+
+        $ufhService = $this->app['ufh.service'];
+
+        $documents = $this->repo->merchant_document->findDocumentsForMerchantIdAndDocumentTypeAndDate($merchantId,'firs_file',$from,$to);
+
+        $fileIds=[];
+
+        foreach ($documents as $file)
+        {
+            array_push($fileIds,$file->getPublicFileStoreId());
+        }
+
+        $zipFileId = $ufhService->downloadFiles($fileIds,$merchantId);
+
+        $this->trace->info(TraceCode::BULK_DOWNLOAD,[
+            'success' => isset($zipFileId),
+        ]);
+
+        $documentDate = strtotime($input['month'].'/'.date('d').'/'.$input['year']);
+
+        $document = $this->core->saveInMerchantDocument([
+            GatewayConstants::ID => $zipFileId],
+            $merchantId,'firs_zip',$documentDate);
+
+        $signedURL = (new GenericDocument\Service)->getDocumentDownloadLinkFromUFH([], $document->getPublicFileStoreId(), $document->getMerchantId());
+
+        return [$signedURL,$document];
+
     }
 }

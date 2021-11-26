@@ -249,4 +249,52 @@ return [
             ],
         ],
     ],
+
+    'testFetchFIRSDocuments' => [
+        'request'  => [
+            'url'       => '/merchant/firs?month=%s&year=%s',
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
+
+    'testDownloadFIRSDocuments' => [
+        'request'  => [
+            'url'       => '/merchant/firs/content?month=%s&year=%s&document_id=%s',
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
+
+    'testDownloadFIRSDocumentsZIP' => [
+        'request' => [
+            'url'       => '/merchant/firs/content?month=%s&year=%s',
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
+
+    'testDownloadFIRSDocumentsZIPFileNotPresent' => [
+        'request' => [
+            'url'       => '/merchant/firs/content?month=%s&year=%s',
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
 ];

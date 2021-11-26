@@ -70,6 +70,10 @@ class Type
     const POA_IDENTIFICATION_NUMBER             = 'poa_identification_number';
     const IDENTIFICATION_NUMBER                 = 'identification_number';
 
+    //FIRS Documents
+    const FIRS_FILE                             = 'firs_file';
+    const FIRS_ZIP                              = 'firs_zip';
+
     const PROOF_TYPES = [
         self::INDIVIDUAL_PROOF_OF_ADDRESS,
         self::INDIVIDUAL_PROOF_OF_IDENTIFICATION,
@@ -137,6 +141,9 @@ class Type
         self::GST_CERTIFICATE,
         self::MSME_CERTIFICATE,
         self::BANK_STATEMENT,
+
+        self::FIRS_FILE,
+        self::FIRS_ZIP,
     ];
 
     const DOCUMENT_TYPE_TO_PROOF_TYPE_MAPPING = [
@@ -186,6 +193,9 @@ class Type
         self::GST_CERTIFICATE                 => self::BUSINESS_PROOF_OF_IDENTIFICATION,
         self::MSME_CERTIFICATE                => self::BUSINESS_PROOF_OF_IDENTIFICATION,
         self::BANK_STATEMENT                  => self::ADDITIONAL_DOCUMENTS,
+
+        self::FIRS_FILE                       => self::ADDITIONAL_DOCUMENTS,
+        self::FIRS_ZIP                        => self::ADDITIONAL_DOCUMENTS,
     ];
 
     /**

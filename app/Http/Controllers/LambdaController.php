@@ -20,4 +20,13 @@ class LambdaController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function processLambdaFIRS()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->processLambdaFIRS($input);
+
+        return ApiResponse::json($data);
+    }
 }

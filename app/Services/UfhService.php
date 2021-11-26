@@ -13,6 +13,7 @@ use RZP\Models\User\Role;
 use RZP\Models\Base\Entity;
 use RZP\Base\RepositoryManager;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Exception\BadRequestException;
 
@@ -48,6 +49,16 @@ class UfhService
 
     const METADATA          = 'metadata';
 
+    const FILE_IDS          = 'file_ids';
+
+    const CHANNEL           = 'channel';
+
+    const JOB_NAME          = 'job_name';
+
+    const MERCHANT_ID       = 'merchant_id';
+
+    const PREFIX            = 'prefix';
+
     // razorx flag
     const RAZORX_FLAG_UFH_VALIDATE_USER_ROLE_FOR_ACCESS = 'razorx_flag_ufh_validate_user_role_for_access';
 
@@ -60,6 +71,8 @@ class UfhService
     protected $trace;
 
     protected $env;
+
+    protected $route;
 
     /** @var UfhClient  */
     protected $ufhClient;
@@ -110,6 +123,8 @@ class UfhService
         }
 
         $this->ufhClient = $this->createUfhClient();
+
+        $this->route = $this->app['api.route'];
     }
 
     protected function createUfhClient()
@@ -207,6 +222,13 @@ class UfhService
         $this->trace->info(
             TraceCode::UFH_FILE_UPLOAD,
             array_except($requestData, [self::FILE]));
+
+        if($this->route->getCurrentRouteName() == 'firs_document_categorize')
+        {
+            $this->merchantId = $requestData[self::ENTITY_ID];
+        }
+
+        $this->ufhClient = $this->createUfhClient();
 
         try
         {
@@ -402,4 +424,20 @@ class UfhService
 
         return $requestData;
     }
+
+    public function downloadFiles(array $fileIds, string $merchantId)
+    {
+        $input = [
+            self::FILE_IDS          => $fileIds,
+            self::CHANNEL           => "Bulk",
+            self::JOB_NAME          => "bulk_job",
+            self::MERCHANT_ID       => $merchantId,
+            self::PREFIX            => "Firs",
+        ];
+
+        $response = $this->ufhClient->download($input);
+
+        return $response;
+    }
+
 }

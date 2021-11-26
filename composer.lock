@@ -8488,12 +8488,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/ufh-sdk-php.git",
-                "reference": "7a2814d31f73623a51e75a72296515373f9f52af"
+                "reference": "729545d216ada08c65dd965cf65de660f3030d1a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ufh-sdk-php/zipball/7a2814d31f73623a51e75a72296515373f9f52af",
-                "reference": "7a2814d31f73623a51e75a72296515373f9f52af",
+                "url": "https://api.github.com/repos/razorpay/ufh-sdk-php/zipball/729545d216ada08c65dd965cf65de660f3030d1a",
+                "reference": "729545d216ada08c65dd965cf65de660f3030d1a",
                 "shasum": ""
             },
             "require": {

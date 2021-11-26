@@ -1088,6 +1088,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FILE_DELETING                                         = 'FILE_DELETING';
     const DIRECTORY_DELETING                                    = 'DIRECTORY_DELETING';
     const FILES_DELETING                                        = 'FILES_DELETING';
+    const FILES_FETCHING                                        = 'FILES_FETCHING';
+    const FILES_DOWNLOAD                                        = 'FILES_DOWNLOAD';
+    const BULK_DOWNLOAD                                         = 'BULK_DOWNLOAD';
 
 
     // Gateway component error messages
