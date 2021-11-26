@@ -176,7 +176,7 @@ class Service extends Base\Service
         $response = $this->sendRequest($request, $mockResponse);
 
         $this->traceResponseTime(
-            Metric::MERCHANT_EXTERNAL_COUPONS_REQUEST_DURATION_MILLIS,
+            Metric::MERCHANT_EXTERNAL_COUPON_VALIDITY_REQUEST_TIME_MILLIS,
             $externalRequestStart
         );
 

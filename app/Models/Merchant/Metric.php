@@ -82,7 +82,7 @@ final class Metric
     const MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS = 'merchant_shipping_info_check_time_millis';
     const MERCHANT_SHIPPING_INFO_URL_UPDATE_FAILURE = 'merchant_shipping_info_url_update_failure';
     const MERCHANT_SHIPPING_INFO_CHECK_CALL_COUNT = 'merchant_shipping_info_check_call_count';
-    const MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_TIME_MILLIS = self::MERCHANT_EXTERNAL_PREFIX . 'shipping_info_call_time_millis';
+    const MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_TIME_MILLIS = self::MERCHANT_EXTERNAL_PREFIX . 'shipping_info_call_duration_millis';
     const MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT = self::MERCHANT_EXTERNAL_PREFIX . 'shipping_info_call_failure_count';
     const MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_COUNT = self::MERCHANT_EXTERNAL_PREFIX . 'shipping_info_call_count';
     const MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT = self::MERCHANT_EXTERNAL_PREFIX . 'shipping_info_call_invalid_request_count';
