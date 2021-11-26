@@ -279,6 +279,78 @@ final class P2pRoute
                 'merchant/devices/{device_id}/{action}',
                 'DeviceController@updateWithAction'
             ],
+        Requests::P2P_CUSTOMER_MANDATE_FETCH =>
+            [
+                'get',
+                'customer/mandates/{mandate_id}',
+                'MandateController@fetch'
+            ],
+        Requests::P2P_CUSTOMER_MANDATE_FETCH_ALL =>
+            [
+                'get',
+                'customer/mandates',
+                'MandateController@fetchAll'
+            ],
+        Requests::P2P_CUSTOMER_MANDATE_INITIATE_AUTHORIZE =>
+            [
+                'post',
+                'customer/mandate/{mandate_id}/authorize/initiate',
+                'MandateController@initiateAuthorize'
+            ],
+        Requests::P2P_CUSTOMER_MANDATE_AUTHORIZE =>
+            [
+                'post',
+                'customer/mandate/{mandate_id}/authorize',
+                'MandateController@authorizeMandate'
+            ],
+        Requests::P2P_CUSTOMER_MANDATE_INITIATE_REJECT =>
+            [
+                'post',
+                'customer/mandate/{mandate_id}/reject/initiate',
+                'MandateController@initiateReject'
+            ],
+        Requests::P2P_CUSTOMER_MANDATE_REJECT =>
+            [
+                'post',
+                'customer/mandate/{mandate_id}/reject',
+                'MandateController@rejectMandate'
+            ],
+        Requests::P2P_CUSTOMER_MANDATE_INITIATE_PAUSE =>
+            [
+                'post',
+                'customer/mandate/{mandate_id}/pause/initiate',
+                'MandateController@initiatePause'
+            ],
+        Requests::P2P_CUSTOMER_MANDATE_PAUSE =>
+            [
+                'post',
+                'customer/mandate/{mandate_id}/pause',
+                'MandateController@pauseMandate'
+            ],
+        Requests::P2P_CUSTOMER_MANDATE_INITIATE_UNPAUSE =>
+            [
+                'post',
+                'customer/mandate/{mandate_id}/unpause/initiate',
+                'MandateController@initiateUnpause'
+            ],
+        Requests::P2P_CUSTOMER_MANDATE_UNPAUSE =>
+            [
+                'post',
+                'customer/mandate/{mandate_id}/unpause',
+                'MandateController@unpauseMandate'
+            ],
+        Requests::P2P_CUSTOMER_MANDATE_INITIATE_REVOKE =>
+            [
+                'post',
+                'customer/mandate/{mandate_id}/revoke/initiate',
+                'MandateController@initiateRevoke'
+            ],
+        Requests::P2P_CUSTOMER_MANDATE_REVOKE =>
+            [
+                'post',
+                'customer/mandate/{mandate_id}/revoke',
+                'MandateController@revokeMandate'
+            ],
     ];
 
     public static $public = [
@@ -328,6 +400,18 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_CONCERNS_TRANSACTION_RAISE,
         Requests::P2P_CUSTOMER_CONCERNS_TRANSACTION_FETCH_ALL,
         Requests::P2P_CUSTOMER_CONCERNS_TRANSACTION_STATUS,
+        Requests::P2P_CUSTOMER_MANDATE_FETCH,
+        Requests::P2P_CUSTOMER_MANDATE_FETCH_ALL,
+        Requests::P2P_CUSTOMER_MANDATE_INITIATE_AUTHORIZE,
+        Requests::P2P_CUSTOMER_MANDATE_AUTHORIZE,
+        Requests::P2P_CUSTOMER_MANDATE_INITIATE_REJECT,
+        Requests::P2P_CUSTOMER_MANDATE_REJECT,
+        Requests::P2P_CUSTOMER_MANDATE_INITIATE_PAUSE,
+        Requests::P2P_CUSTOMER_MANDATE_PAUSE,
+        Requests::P2P_CUSTOMER_MANDATE_INITIATE_UNPAUSE,
+        Requests::P2P_CUSTOMER_MANDATE_UNPAUSE,
+        Requests::P2P_CUSTOMER_MANDATE_INITIATE_REVOKE,
+        Requests::P2P_CUSTOMER_MANDATE_REVOKE,
     ];
 
     public static $direct = [

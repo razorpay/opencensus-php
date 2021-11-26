@@ -1,0 +1,152 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/root.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "entity",
+    "count",
+    "items"
+  ],
+  "properties": {
+    "entity": {
+      "type": "string",
+      "enum": [
+        "collection"
+      ],
+      "default": null
+    },
+    "count": {
+      "type": "integer"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "client_id",
+          "device_id",
+          "customer_id",
+          "amount",
+          "amount_rule",
+          "merchant_name",
+          "reference_id",
+          "remarks",
+          "payer",
+          "payee",
+          "type",
+          "flow",
+          "mode",
+          "recurring_type",
+          "recurring_rule",
+          "recurring_value",
+          "umn",
+          "status",
+          "internal_status",
+          "start_date",
+          "end_date",
+          "upi",
+          "active"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "default": null,
+            "pattern": "^(.*)$"
+          },
+          "device_id": {
+            "type": "string",
+            "default": null,
+            "pattern": "^(.*)$"
+          },
+          "customer_id": {
+            "type": "string",
+            "default": null,
+            "pattern": "^(.*)$"
+          },
+          "amount": {
+            "type": "integer"
+          },
+          "amount_rule": {
+            "type": "string",
+            "pattern": "^(.*)$"
+          },
+          "merchant_name": {
+            "type": "string",
+            "pattern": "^(.*)$"
+          },
+          "reference_id": {
+            "type": "string",
+            "pattern": "^(.*)$"
+          },
+          "remarks": {
+            "type": "string",
+            "pattern": "^(.*)$"
+          },
+          "payer":{
+            "type": ["object", "null"]
+          },
+          "payee":{
+            "type": ["object", "null"]
+          },
+          "type": {
+            "type": "string",
+            "pattern": "^(.*)$"
+          },
+          "flow": {
+            "type": "string",
+            "default": null,
+            "pattern": "^(.*)$"
+          },
+          "mode": {
+            "type": "string",
+            "default": null,
+            "pattern": "^(.*)$"
+          },
+          "recurring-type": {
+            "type": "string",
+            "pattern": "^(.*)$"
+          },
+          "recurring-rule": {
+            "type": "string",
+            "pattern": "^(.*)$"
+          },
+          "recurring-value": {
+            "type": "string",
+            "pattern": "^(.*)$"
+          },
+          "expiry": {
+            "type": "integer"
+          },
+          "umn": {
+            "type": "string",
+            "pattern": "^(.*)$"
+          },
+          "status": {
+            "type": "string",
+            "pattern": "^(.*)$"
+          },
+          "internal_status": {
+            "type": "string",
+            "pattern": "^(.*)$"
+          },
+          "start-date": {
+            "type": "integer"
+          },
+          "end-date": {
+            "type": "integer"
+          },
+          "upi":{
+            "type": "string",
+            "pattern": "^(.*)$"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

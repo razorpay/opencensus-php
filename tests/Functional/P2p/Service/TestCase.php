@@ -97,6 +97,11 @@ class TestCase extends Functional\TestCase
         return new Base\TransactionHelper($this->fixtures, $this->exceptionHandler);
     }
 
+    protected function getMandatesHelper(): Base\MandatesHelper
+    {
+        return new Base\MandatesHelper($this->fixtures, $this->exceptionHandler);
+    }
+
     protected function registerMockExceptionHandler()
     {
         $this->exceptionHandler = $this->app->make(Base\MockExceptionHandler::class);

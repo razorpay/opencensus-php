@@ -54,4 +54,17 @@ class Requests
 
     const P2P_MERCHANT_BENEFICIARY_VALIDATE                = 'p2p_merchant_beneficiary_validate';
     const P2P_MERCHANT_DEVICE_UPDATE_WITH_ACTION           = 'p2p_merchant_device_update_with_action';
+
+    const P2P_CUSTOMER_MANDATE_FETCH_ALL                   = 'p2p_customer_mandate_fetch_all';
+    const P2P_CUSTOMER_MANDATE_FETCH                       = 'p2p_customer_mandate_fetch';
+    const P2P_CUSTOMER_MANDATE_INITIATE_AUTHORIZE          = 'p2p_customer_mandate_initiate_authorize';
+    const P2P_CUSTOMER_MANDATE_INITIATE_REJECT             = 'p2p_customer_mandate_initiate_reject';
+    const P2P_CUSTOMER_MANDATE_INITIATE_PAUSE              = 'p2p_customer_mandate_initiate_pause';
+    const P2P_CUSTOMER_MANDATE_INITIATE_UNPAUSE            = 'p2p_customer_mandate_initiate_unpause';
+    const P2P_CUSTOMER_MANDATE_INITIATE_REVOKE             = 'p2p_customer_mandate_initiate_revoke';
+    const P2P_CUSTOMER_MANDATE_AUTHORIZE                   = 'p2p_customer_mandate_authorize';
+    const P2P_CUSTOMER_MANDATE_REJECT                      = 'p2p_customer_mandate_reject';
+    const P2P_CUSTOMER_MANDATE_PAUSE                       = 'p2p_customer_mandate_pause';
+    const P2P_CUSTOMER_MANDATE_UNPAUSE                     = 'p2p_customer_mandate_unpause';
+    const P2P_CUSTOMER_MANDATE_REVOKE                      = 'p2p_customer_mandate_revoke';
 }

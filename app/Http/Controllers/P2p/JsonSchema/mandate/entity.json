@@ -1,0 +1,202 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://api.razorpay.com/v1/p2p/json_schema/mandate/entity.json",
+    "type": "object",
+    "required": [],
+    "properties": {
+        "client_id": {
+            "$id": "#/properties/client_id",
+            "type": "string",
+            "maxLength" : 14
+        },
+        "payer_id": {
+            "$id": "#/properties/payer_id",
+            "type": "string",
+            "maxLength" : 14
+        },
+        "payee_id": {
+            "$id": "#/properties/payee_id",
+            "type": "string",
+            "maxLength" : 14
+        },
+        "customer_id": {
+            "$id": "#/properties/customer_id",
+            "type": "string",
+            "maxLength" : 14
+        },
+        "device_id": {
+            "$id": "#/properties/device_id",
+            "type": "string",
+            "maxLength" : 14
+        },
+        "type": {
+            "$id": "#/properties/type",
+            "type": "string",
+            "maxLength" : 10,
+            "enum": ["pay", "collect"]
+        },
+        "flow": {
+            "$id": "#/properties/flow",
+            "type": "string",
+            "maxLength" : 10,
+            "enum": ["debit", "credit"]
+        },
+        "mode": {
+            "$id": "#/properties/mode",
+            "type": "string",
+            "maxLength" : 50
+        },
+        "amount": {
+            "$id": "#/properties/amount",
+            "type": "integer"
+        },
+        "amount_rule": {
+            "$id": "#/properties/amount_rule",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "merchant_name": {
+            "$id": "#/properties/merchant_name",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "reference_id": {
+            "$id": "#/properties/reference_id",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "action": {
+            "$id": "#/properties/action",
+            "type": ["string", "null"]
+        },
+        "start_date": {
+            "$id": "#/properties/start_date",
+            "type": "integer"
+        },
+        "end_date": {
+            "$id": "#/properties/end_date",
+            "type": "integer"
+        },
+        "recurring-type": {
+            "$id": "#/properties/recurring-type",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "recurring-rule": {
+            "$id": "#/properties/recurring-rule",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "recurring-value": {
+            "$id": "#/properties/recurring-value",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "expiry": {
+            "$id": "#/properties/expiry",
+            "type": "integer"
+        },
+        "umn": {
+            "$id": "#/properties/umn",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "status": {
+            "$id": "#/properties/status",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "remarks": {
+            "$id": "#/properties/remarks",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "method": {
+            "$id": "#/properties/method",
+            "type": "string",
+            "maxLength" : 50,
+            "enum": ["upi", "card"]
+        },
+        "gateway": {
+            "$id": "#/properties/gateway",
+            "type": "string",
+            "maxLength" : 50
+        },
+        "expire_at": {
+            "$id": "#/properties/expire_at",
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "description": {
+            "$id": "#/properties/description",
+            "type": ["string", "null"],
+            "maxLength" : 100
+        },
+        "error_code": {
+            "$id": "#/properties/error_code",
+            "type": ["string", "null"],
+            "maxLength" : 255
+        },
+        "error_description": {
+            "$id": "#/properties/error_description",
+            "type": ["string", "null"],
+            "maxLength" : 255
+        },
+        "gateway_error_code": {
+            "$id": "#/properties/gateway_error_code",
+            "type": ["string", "null"],
+            "maxLength" : 255
+        },
+        "currency": {
+            "$id": "#/properties/currency",
+            "type": "string",
+            "maxLength" : 10
+        },
+        "internal_status": {
+            "$id": "#/properties/internal_status",
+            "type": "string"
+        },
+        "created_at": {
+            "$id": "#/properties/created_at",
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "updated_at": {
+            "$id": "#/properties/updated_at",
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "deleted_at": {
+            "$id": "#/properties/deleted_at",
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "upi": {
+            "$id": "#/properties/upi",
+            "type": "string"
+        },
+        "parent_type": {
+            "$id": "#/properties/parent_type",
+            "type": "string",
+            "maxLength" : 14
+        },
+        "parent_id": {
+            "$id": "#/properties/parent_id",
+            "type": "string",
+            "maxLength" : 14
+        }
+    },
+    "actions": [
+        "fetchAll",
+        "fetch"
+    ]
+}
