@@ -13510,6 +13510,46 @@ The same has been enabled for the account.
         $this->assertNull($return);
     }
 
+    public function testAddMerchantUserMappingOnProductReturnsNullOnQueryException()
+    {
+        try
+        {
+            $this->fixtures->create('merchant', ['id' => '10000000000000']);
+        }
+        catch (\Illuminate\Database\QueryException $ex)
+        {
+            //The INSERT query failed due to a key constraint violation.
+            if ($ex->errorInfo[1] == 1062)
+            {
+                $queryException = $ex;
+            }
+        }
+
+        $validatorMock = $this->getMockBuilder(\RZP\Models\Merchant\Service::class)
+            ->setMethods(['addProductSwitchRole','getMerchantUserMappingForProduct'])
+            ->getMock();
+
+        $validatorMock->method('addProductSwitchRole')
+            ->will($this->throwException($queryException));
+
+        $validatorMock->method('getMerchantUserMappingForProduct')
+            ->will($this->returnCallback(
+                function ()
+                {
+                    return "mapping";
+                }));
+
+        $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
+
+        $method = $validatorMockReflectionObj->getMethod('addMerchantUserMappingOnProduct');
+
+        $method->setAccessible(true);
+
+        $return = $method->invoke($validatorMock, new \RZP\Models\Merchant\Entity, null);
+
+        $this->assertNull($return);
+    }
+
     public function testAddMerchantUserMappingOnProductThrowsException()
     {
         $this->expectException(BadRequestException::class);

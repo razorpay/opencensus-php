@@ -7835,6 +7835,33 @@ class Service extends Base\Service
         {
             return $this->addProductSwitchRole($product);
         }
+        catch (\Illuminate\Database\QueryException $ex)
+        {
+            //The INSERT query failed due to a unique constraint violation.
+            if ($ex->errorInfo[1] == 1062)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::ERROR_DUE_TO_DATABASE_LAG_DURING_PRODUCT_SWITCH);
+
+                // retry the call to product switch, this call should
+                $mapping = $this->getMerchantUserMappingForProduct($product, $merchant->getId(), null, true);
+
+                if (empty($mapping) === false)
+                {
+                    $this->trace->info(
+                        TraceCode::SUCCESSFUL_READ_FROM_MASTER_FOR_PRODUCT_SWITCH,
+                        [
+                            'merchant_id' => $merchant->getId(),
+                        ]);
+                    // return null to indicate that the mapping wasn't created
+                    return null;
+                }
+            }
+
+            throw $ex;
+        }
         catch (Throwable $ex)
         {
             //The INSERT query failed due to a unique constraint violation.
@@ -7850,6 +7877,11 @@ class Service extends Base\Service
 
                 if (empty($mapping) === false)
                 {
+                    $this->trace->info(
+                        TraceCode::SUCCESSFUL_READ_FROM_MASTER_FOR_PRODUCT_SWITCH,
+                        [
+                            'merchant_id' => $merchant->getId(),
+                        ]);
                     // return null to indicate that the mapping wasn't created
                     return null;
                 }

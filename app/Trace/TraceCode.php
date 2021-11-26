@@ -91,6 +91,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BLOCKING_RX_ACTIVATIONS_TEMPORARILY                   = 'BLOCKING_RX_ACTIVATIONS_TEMPORARILY';
 
     const ERROR_DUE_TO_DATABASE_LAG_DURING_PRODUCT_SWITCH       = 'ERROR_DUE_TO_DATABASE_LAG_DURING_PRODUCT_SWITCH';
+    const SUCCESSFUL_READ_FROM_MASTER_FOR_PRODUCT_SWITCH        = 'SUCCESSFUL_READ_FROM_MASTER_FOR_PRODUCT_SWITCH';
 
     const PRODUCT_SWITCH                                        = 'PRODUCT_SWITCH';
     const UTM_PARAMS                                            = 'UTM_PARAMS';
