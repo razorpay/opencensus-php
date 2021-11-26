@@ -1939,6 +1939,71 @@ return [
         ],
     ],
 
+    'testSortBySlotBookingDate' => [
+        'request'  => [
+            'url'     => '/admin/banking_account?count=20&skip=0&sales_team=self_serve&declaration_step=1&business_category=partnership&sort_slot_booked=asc',
+            'method'  => 'GET',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testFilterSlotBookingDate' => [
+        'request'  => [
+            'url'     => '/admin/banking_account?count=20&skip=0&sales_team=self_serve&declaration_step=1&business_category=partnership&sort_slot_booked=asc',
+            'method'  => 'GET',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testFilterFromToSlotBookingDate' => [
+        'request'  => [
+            'url'     => '/admin/banking_account?count=20&skip=0&sales_team=self_serve&declaration_step=1&business_category=partnership&sort_slot_booked=asc',
+            'method'  => 'GET',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testSortBankingAccountActivationCallLog' => [
+        'request'  => [
+            'url'     => '/admin/banking_account?count=20&skip=0&sales_team=self_serve&declaration_step=1&business_category=partnership&sort_follow_up_date=asc',
+            'method'  => 'GET',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testFilterBankingAccountActivationCallFollowUpDate' => [
+        'request'  => [
+            'url'     => '/admin/banking_account?count=20&skip=0&sales_team=self_serve&declaration_step=1&business_category=partnership&sort_follow_up_date=asc',
+            'method'  => 'GET',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testFetchBankingAccountRequests' => [
         'request'  => [
             'url'     => '/admin/banking_account',

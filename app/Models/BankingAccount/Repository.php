@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
+use Illuminate\Support\Facades\DB;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\BankingAccount\State as BankingAccountState;
@@ -203,6 +204,136 @@ class Repository extends Base\Repository
         $query->where($assigneeTeamColumn, '=', $assigneeTeam);
     }
 
+    public function addQueryParamFromSlotBooked($query, $params)
+    {
+        $slotBookingColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::BOOKING_DATE_AND_TIME);
+
+        $this->joinQueryActivationDetail($query);
+
+        // selecting only banking_accounts columns so that
+        // clashes between field names do not result in corrputed data
+        // For example, both merchants and banking_accounts have field 'channel'
+        $query->select($this->dbColumn('*'));
+
+        $fromSlotBookedTime = $params[Entity::FROM_SLOT_BOOKED];
+
+        $query->where($slotBookingColumn, '>', $fromSlotBookedTime);
+    }
+
+    public function addQueryParamToSlotBooked($query, $params)
+    {
+        $slotBookingColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::BOOKING_DATE_AND_TIME);
+
+        $this->joinQueryActivationDetail($query);
+
+        // selecting only banking_accounts columns so that
+        // clashes between field names do not result in corrputed data
+        // For example, both merchants and banking_accounts have field 'channel'
+        $query->select($this->dbColumn('*'));
+
+        $toSlotBookedTime = $params[Entity::TO_SLOT_BOOKED];
+
+        $query->where($slotBookingColumn, '<', $toSlotBookedTime);
+    }
+
+    public function addQueryParamSortSlotBooked($query, $params)
+    {
+        $slotBookingColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::BOOKING_DATE_AND_TIME);
+
+        $this->joinQueryActivationDetail($query);
+
+        // selecting only banking_accounts columns so that
+        // clashes between field names do not result in corrputed data
+        // For example, both merchants and banking_accounts have field 'channel'
+        $query->select($this->dbColumn('*'));
+
+        $sortSlotBooked = $params[Entity::SORT_SLOT_BOOKED];
+
+        if ($sortSlotBooked === 'asc')
+        {
+            $query->orderBy($slotBookingColumn, 'asc');
+        }
+        if ($sortSlotBooked === 'desc')
+        {
+            $query->orderBy($slotBookingColumn, 'desc');
+        }
+    }
+
+    public function addQueryParamFilterSlotBooked($query, $params)
+    {
+        $slotBookingColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::BOOKING_DATE_AND_TIME);
+
+        $this->joinQueryActivationDetail($query);
+
+        // selecting only banking_accounts columns so that
+        // clashes between field names do not result in corrputed data
+        // For example, both merchants and banking_accounts have field 'channel'
+        $query->select($this->dbColumn('*'));
+
+        $filterSlotBooked = $params[Entity::FILTER_SLOT_BOOKED];
+
+        if ($filterSlotBooked === '1')
+        {
+            $query->where($slotBookingColumn, '!=', null);
+        }
+        if ($filterSlotBooked === '0')
+        {
+            $query->where($slotBookingColumn, '=', null);
+        }
+    }
+
+    public function addQueryParamFromFollowUpDate($query, $params)
+    {
+        $followUpDateColumn = $this->repo->banking_account_call_log->dbColumn(\RZP\Models\BankingAccount\Activation\CallLog\Entity::FOLLOW_UP_DATE_AND_TIME);
+
+        $this->joinQueryActivationDetailCallLog($query);
+
+        // selecting banking_accounts columns and follow update so that
+        // filter and sorting can work on that
+        $query->select($this->dbColumn('*'), DB::raw('max(banking_account_call_log.follow_up_date_and_time) as latest_follow_up_date'));
+
+        $fromFollowUpDate = $params[Entity::FROM_FOLLOW_UP_DATE];
+
+        $query->where($followUpDateColumn, '>', $fromFollowUpDate);
+    }
+
+    public function addQueryParamToFollowUpDate($query, $params)
+    {
+        $followUpDateColumn = $this->repo->banking_account_call_log->dbColumn(\RZP\Models\BankingAccount\Activation\CallLog\Entity::FOLLOW_UP_DATE_AND_TIME);
+
+        $this->joinQueryActivationDetailCallLog($query);
+
+        // selecting banking_accounts columns and follow update so that
+        // filter and sorting can work on that
+        $query->select($this->dbColumn('*'), DB::raw('max(banking_account_call_log.follow_up_date_and_time) as latest_follow_up_date'));
+
+        $toFollowUpDate = $params[Entity::TO_FOLLOW_UP_DATE];
+
+        $query->where($followUpDateColumn, '<', $toFollowUpDate);
+    }
+
+    public function addQueryParamSortFollowUpDate($query, $params)
+    {
+        $followUpDateColumn = 'latest_follow_up_date';
+
+        $this->joinQueryActivationDetailCallLog($query);
+
+        // selecting banking_accounts columns and follow update so that
+        // filter and sorting can work on that
+        $query->select($this->dbColumn('*'), DB::raw('max(banking_account_call_log.follow_up_date_and_time) as latest_follow_up_date'));
+
+        $sortFollowUpDate = $params[Entity::SORT_FOLLOW_UP_DATE];
+
+        if ($sortFollowUpDate === 'asc')
+        {
+            $query->orderBy($followUpDateColumn, 'asc');
+        }
+        if ($sortFollowUpDate === 'desc')
+        {
+            $query->orderBy($followUpDateColumn, 'desc');
+        }
+    }
+
     /**
      * Filter out Balance Id for balances where gateway balance has updated in last 24 hours
      *
@@ -275,6 +406,24 @@ class Repository extends Base\Repository
         $bankingAccountIdColumn = $this->repo->banking_account->dbColumn(Entity::ID);
 
         $query->join($activationDetailTable, $bankingAccountIdColumn, '=', $bankingAccountIdForeignColumn);
+    }
+
+    protected function joinQueryActivationDetailCallLog(Base\BuilderEx $query)
+    {
+        $activationDetailCallLogTable = $this->repo->banking_account_call_log->getTableName();
+
+        if ($query->hasJoin($activationDetailCallLogTable) === true)
+        {
+            return;
+        }
+
+        $bankingAccountIdForeignColumn = $this->repo->banking_account_call_log->dbColumn(Activation\CallLog\Entity::BANKING_ACCOUNT_ID);
+
+        $bankingAccountIdColumn = $this->repo->banking_account->dbColumn(Entity::ID);
+
+        $query->join($activationDetailCallLogTable, $bankingAccountIdColumn, '=', $bankingAccountIdForeignColumn);
+
+        $query->groupBy($bankingAccountIdColumn);
     }
 
     public function addQueryParamMerchantBusinessName(Base\BuilderEx $query, array $params)
@@ -613,7 +762,7 @@ class Repository extends Base\Repository
             Entity::BENEFICIARY_EMAIL                   => $query->pluck(Entity::BENEFICIARY_EMAIL)->first()
         ];
     }
-  
+
     public function fetchMerchantsWithCaRblAccount(
         int $limit,
         int $skip,

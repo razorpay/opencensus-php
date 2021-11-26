@@ -150,12 +150,21 @@ class Entity extends Base\PublicEntity
     const MERCHANT_POC_CITY = 'merchant_poc_city';
     const IS_DOCUMENTS_WALKTHROUGH_COMPLETE = 'is_documents_walkthrough_complete';
     const SALES_TEAM = 'sales_team';
+    const BOOKING_DATE_AND_TIME = 'booking_date_and_time';
     const BUSINESS_PAN_VALIDATION = 'business_pan_validation';
     const DECLARATION_STEP = 'declaration_step';
     const BUSINESS_CATEGORY = 'business_category';
     const BANK_ACCOUNT_TYPE = 'bank_account_type';
     const ASSIGNEE_TEAM = 'assignee_team';
     const SOURCE = 'source';
+    const FILTER_SLOT_BOOKED = 'filter_slot_booked';
+    const SORT_SLOT_BOOKED = 'sort_slot_booked';
+    const FROM_SLOT_BOOKED = 'from_slot_booked';
+    const TO_SLOT_BOOKED = 'to_slot_booked';
+    const FROM_FOLLOW_UP_DATE = 'from_follow_up_date';
+    const TO_FOLLOW_UP_DATE = 'to_follow_up_date';
+    const SORT_FOLLOW_UP_DATE = 'sort_follow_up_date';
+    const LATEST_FOLLOW_UP_DATE = 'latest_follow_up_date';
 
     // Response attributes
     const BALANCE_TYPE       = 'balance_type';
@@ -272,6 +281,8 @@ class Entity extends Base\PublicEntity
         'bankingAccountDetails',
         'bankingAccountActivationDetails',
         self::BANKING_ACCOUNT_CALL_LOG,
+        // This is to enable sorting on this column from call logs entity
+        self::LATEST_FOLLOW_UP_DATE,
         'activationCallLog',
         'activationComments',
         self::REVIEWERS,

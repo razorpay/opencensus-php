@@ -157,7 +157,7 @@ class Service extends Base\Service
 
     public function forwardLMSRequest($path, $input)
     {
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_CRON_REQUEST,
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_LMS_REQUEST,
             [
                 'input'  => $input,
                 'method' => $this->request->getMethod(),

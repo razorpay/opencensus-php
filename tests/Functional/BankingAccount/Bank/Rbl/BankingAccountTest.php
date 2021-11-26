@@ -4341,6 +4341,199 @@ class BankingAccountTest extends TestCase
         return $bankingAccount;
     }
 
+    public function bookSlotForBankingAccount(string $bankingAccountId = null, int $slotBookingDateAndTime = null)
+    {
+        if ($bankingAccountId === null)
+        {
+            $attribute = ['activation_status' => 'activated'];
+
+            $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+
+            $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+            $this->ba->addXOriginHeader();
+
+            $payload = [
+                'activation_detail' => [
+                    ActivationDetail\Entity::BUSINESS_CATEGORY     => 'partnership',
+                    ActivationDetail\Entity::SALES_TEAM            => 'self_serve',
+                    ActivationDetail\Entity::BUSINESS_PAN          => 'RZPD38493L',
+                    ActivationDetail\Entity::BUSINESS_NAME         => 'ABC pvt',
+                    ActivationDetail\Entity::DECLARATION_STEP      => 1,
+                ]
+            ];
+
+            $bankingAccount = $this->createBankingAccountFromDashboard($payload);
+
+            $bankingAccountId = $bankingAccount['id'];
+
+            if(str_contains($bankingAccountId, Entity::getIdPrefix()) === false)
+            {
+                $bankingAccountId = $bankingAccount->getPublicId();
+            }
+        }
+
+        $slotBookingDateAndTime = $slotBookingDateAndTime ?: 1639960752;
+
+    $request = [
+        'url'     => '/banking_accounts/activation/' . $bankingAccountId . '/details/slot_booking',
+        'method'  => 'POST',
+        'content' => [
+            "admin_email"           => "superadmin@razorpay.com",
+            "booking_date_and_time" => $slotBookingDateAndTime,
+            "additional_details"    => [
+                "booking_id" => "SRF2345"
+            ]
+        ],
+    ];
+
+    $this->ba->bankingAccountServiceAppAuth();
+
+    return $this->makeRequestAndGetContent($request);
+}
+
+    public function testSortBySlotBookingDate()
+    {
+        $this->bookSlotForBankingAccount();
+
+        $this->ba->adminAuth('live');
+
+        $request = [
+            'request'  => [
+                'url'     => '/admin/banking_account?count=20&skip=0&sort_slot_booked=asc',
+                'method'  => 'GET',
+                'content' => [
+                    'expand' => ['merchant', 'merchant.merchantDetail'],
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'entity' => 'collection',
+                    'count'  => 0,
+                    'items'  => [
+                    ],
+                ],
+            ]
+        ];
+
+        $this->startTest($request);
+    }
+
+    public function testFilterSlotBookingDate()
+    {
+        $this->bookSlotForBankingAccount();
+
+        $this->ba->adminAuth('live');
+
+        $request  = [
+            'request' => [
+                'url'     => '/admin/banking_account?count=20&skip=0&sales_team=self_serve&declaration_step=1&business_category=partnership&filter_slot_booked=1',
+                'method'  => 'GET',
+                'content' => [
+                    'expand' => ['merchant','merchant.merchantDetail'],
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'entity' => 'collection',
+                    'count'  => 0,
+                    'items'  => [
+                    ],
+                ],
+            ]
+        ];
+
+        $this->startTest($request);
+    }
+
+    public function testFilterFromToSlotBookingDate()
+    {
+        $this->bookSlotForBankingAccount(null, 1639960752);
+
+        $this->ba->adminAuth('live');
+
+        $request  = [
+            'request' => [
+                'url'     => '/admin/banking_account?count=20&skip=0&sales_team=self_serve&from_slot_booked=1639960712&to_slot_booked=1639960792',
+                'method'  => 'GET',
+                'content' => [
+                    'expand' => ['merchant','merchant.merchantDetail'],
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'entity' => 'collection',
+                    'count'  => 0,
+                    'items'  => [
+                    ],
+                ],
+            ]
+        ];
+
+        $this->startTest($request);
+    }
+
+    public function testSortBankingAccountActivationCallLog()
+    {
+        $bankingAccount = $this->createBankingAccount();
+
+        $this->testCreateBankingAccountActivationCallLog($bankingAccount);
+
+        $this->testCreateBankingAccountActivationCallLog($bankingAccount, Status::PICKED, Status::CONNECTIVITY__DISCONNECTED_THE_CALL);
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/admin/banking_account?count=20&skip=0&sort_follow_up_date=asc',
+                'method'  => 'GET',
+                'content' => [
+                    'expand' => ['merchant','merchant.merchantDetail'],
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'entity' => 'collection',
+                    'count'  => 1,
+                    'items'  => [
+                    ],
+                ],
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testFilterBankingAccountActivationCallFollowUpDate()
+    {
+        $bankingAccount = $this->createBankingAccount();
+
+        $this->testCreateBankingAccountActivationCallLog($bankingAccount);
+
+        $this->testCreateBankingAccountActivationCallLog($bankingAccount, Status::PICKED, Status::CONNECTIVITY__DISCONNECTED_THE_CALL);
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/admin/banking_account?count=20&skip=0&from_follow_up_date=1641005860&to_follow_up_date=1641009860',
+                'method'  => 'GET',
+                'content' => [
+                    'expand' => ['merchant','merchant.merchantDetail'],
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'entity' => 'collection',
+                    'count'  => 1,
+                    'items'  => [
+                    ],
+                ],
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
 
     public function testUpdateActivationDetail(RZP\Models\BankingAccount\Entity $bankingAccount = null)
     {
