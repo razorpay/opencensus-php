@@ -173,9 +173,25 @@ class Processor extends Base\Core
         catch (\Exception $e)
         {
             $this->trace->traceException($e, Trace::INFO, TraceCode::QR_CODE_PAYMENT_FAILED,
-                                         ['input' => $input]);
+                                         [
+                                             'input' => $this->removePiiForLogging($input, ['card', 'vpa'])
+                                         ]);
             throw $e;
         }
+    }
+
+    public function removePiiForLogging(array $array, array $fields = [])
+    {
+        foreach ($fields as $field)
+        {
+            if (isset($array[$field]) === false)
+            {
+                continue;
+            }
+            unset($array[$field]);
+        }
+
+        return $array;
     }
 
     protected function createUnexpectedPayment(Entity $qrPayment)
