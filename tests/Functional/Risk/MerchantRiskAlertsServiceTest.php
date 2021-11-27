@@ -9,7 +9,6 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
-use RZP\Tests\Functional\Helpers\Salesforce\SalesforceTrait;
 
 class MerchantRiskAlertsServiceTest extends TestCase
 {
@@ -17,7 +16,6 @@ class MerchantRiskAlertsServiceTest extends TestCase
     use FreshdeskTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
-    use SalesforceTrait;
 
     public function setUp(): void
     {
@@ -40,15 +38,12 @@ class MerchantRiskAlertsServiceTest extends TestCase
         ]);
 
         $this->setUpFreshdeskClientMock();
-
-        $this->setUpSalesforceMock();
     }
 
     /**
      * Feature: https://docs.google.com/document/d/1DH4lbyePwYk8ngm-g6FwRXeAnnCg8HmpyasqM36LxRE/edit#
      */
-    //if salesPOC is businessops@razorpay.com then we have to exclude it from cc.
-    public function testExecuteFoHWorkflowShouldNotifyChargebackPoCAndExcludeSalesPOC()
+    public function testExecuteFoHWorkflowShouldNotifyChargebackPoC()
     {
 
         $this->fixtures->merchant->addFeatures('apps_exempt_risk_check');
@@ -63,31 +58,6 @@ class MerchantRiskAlertsServiceTest extends TestCase
             ]);
 
         $workflowActionId = $this->createMerchantRiskAlertsFoHWorkflow();
-
-        $this->mockSalesforceRequest('10000000000000','businessops@razorpay.com');
-
-        $response = $this->performWorkflowAction($workflowActionId, true);
-
-        $this->assertContains('ras-managed-merchant', $response['tagged']);
-    }
-
-    public function testExecuteFoHWorkflowShouldNotifyChargebackPoCAndSalesPOC()
-    {
-
-        $this->fixtures->merchant->addFeatures('apps_exempt_risk_check');
-
-        $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
-                                                    [
-                                                        'subject'   => 'Razorpay Account Review: test merchant | 10000000000000 | Funds under Review',
-                                                        'cc_emails' => ['chargeback.poc1@gmail.com', 'chargeback.poc2@gmail.com', 'sales.poc@gmail.com'],
-                                                    ],
-                                                    [
-                                                        'id' => '1234',
-                                                    ]);
-
-        $workflowActionId = $this->createMerchantRiskAlertsFoHWorkflow();
-
-        $this->mockSalesforceRequest('10000000000000','sales.poc@gmail.com');
 
         $response = $this->performWorkflowAction($workflowActionId, true);
 
@@ -133,7 +103,6 @@ class MerchantRiskAlertsServiceTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
-    //No chargeback and No Salesforce
     public function testTriggerExplicitNCEmailForFoHWorkflow()
     {
         $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
@@ -155,8 +124,6 @@ class MerchantRiskAlertsServiceTest extends TestCase
             [
                 'id' => '1234',
             ]);
-
-        $this->mockSalesforceRequest('10000000000000','businessops@razorpay.com');
 
         $workflowActionId = $this->createMerchantRiskAlertsFoHWorkflow();
 

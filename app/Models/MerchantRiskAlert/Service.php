@@ -31,8 +31,6 @@ class Service extends Base\Service
 {
     private $freshdeskConfig;
 
-    const EXCLUDE_EMAIL_FROM_CC_ON_RISK_EMAIL = "businessops@razorpay.com";
-
     public function __construct()
     {
         parent::__construct();
@@ -373,7 +371,7 @@ class Service extends Base\Service
 
             $merchantEmail = $merchant->merchantDetail->getContactEmail();
 
-            $ccEmails = (new Dispute\Service)->getCCEmailsWithSalesPOC($merchant->getId());
+            $ccEmails = (new Dispute\Service)->getDefaultDisputeEmails($merchant->getId());
 
             $mailSubject = (new TemplateEngine)->render($subject, $data);
 
@@ -892,5 +890,4 @@ class Service extends Base\Service
 
         $this->app['cache']->put($cacheKey, true, Constants::RAS_NC_WORKFLOW_CACHE_TTL);
     }
-
 }

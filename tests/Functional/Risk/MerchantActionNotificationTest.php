@@ -7,7 +7,6 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
-use RZP\Tests\Functional\Helpers\Salesforce\SalesforceTrait;
 
 class MerchantActionNotificationTest extends TestCase
 {
@@ -15,7 +14,6 @@ class MerchantActionNotificationTest extends TestCase
     use FreshdeskTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
-    use SalesforceTrait;
 
     private $freshdeskConfig;
 
@@ -52,8 +50,6 @@ class MerchantActionNotificationTest extends TestCase
         $this->freshdeskConfig = $this->app['config']->get('applications.freshdesk');
 
         $this->setUpFreshdeskClientMock();
-
-        $this->setUpSalesforceMock();
     }
 
     public function testFOHEmailBulkWorkflow()
@@ -64,13 +60,12 @@ class MerchantActionNotificationTest extends TestCase
 
         $expectedContent['group_id'] = (int) $this->freshdeskConfig['group_ids']['rzpind']['foh'];
 
+
         $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
                                                     $expectedContent,
                                                     [
                                                         'id' => '1234',
                                                     ]);
-
-        $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
 
         $this->startTest();
     }
@@ -84,8 +79,6 @@ class MerchantActionNotificationTest extends TestCase
                                                     [
                                                         'id' => '1234',
                                                     ]);
-
-        $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
 
         $this->startTest();
     }
@@ -102,12 +95,9 @@ class MerchantActionNotificationTest extends TestCase
                                                         'id' => '1234',
                                                     ]);
 
-        $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
-
         $this->startTest();
     }
 
-    // In docs provided the salesPOC is not required for International Disable
     public function testDisableInternationalTemporaryEmailBulkWorkflow()
     {
         $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
@@ -119,12 +109,10 @@ class MerchantActionNotificationTest extends TestCase
                                                     [
                                                         'id' => '1234',
                                                     ]);
-        $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
 
         $this->startTest();
     }
 
-    //// In docs provided the salesPOC is not required for International Disable
     public function testDisableInternationalPermanentEmailBulkWorkflow()
     {
         $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
@@ -136,7 +124,6 @@ class MerchantActionNotificationTest extends TestCase
                                                     [
                                                         'id' => '1234',
                                                     ]);
-        $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
 
         $this->startTest();
     }
@@ -144,9 +131,8 @@ class MerchantActionNotificationTest extends TestCase
 
     function getExpectedContent($action)
     {
-        $subject  = self::SUBJECT[$action];
-        $tag      = ['bulk_workflow_email'];
-        $ccEmails = ['chargeback.poc1@gmail.com', 'chargeback.poc2@gmail.com', 'abc@gmail.com'];
+        $subject = self::SUBJECT[$action];
+        $tag     = ['bulk_workflow_email'];
         if ($action == 'disable_international_temporary' or $action == 'disable_international_permanent')
         {
             $tag = ['bulk_workflow_email', 'international_disablement'];
@@ -166,7 +152,6 @@ class MerchantActionNotificationTest extends TestCase
                 'cf_product'      => 'Payment Gateway',
             ],
             'subject'         => $subject,
-            'cc_emails'       => $ccEmails,
         ];
     }
 }

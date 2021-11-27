@@ -9,7 +9,6 @@ use Lib\PhoneBook;
 
 use RZP\Exception;
 use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Dispute\File;
@@ -29,8 +28,6 @@ class Service extends Base\Service
     const RZP_DISPUTE_ID                  = 'rzp_dispute_id';
     const BULK_DISPUTE_CREATE_FILE_NAME   = 'bulk_disputes_create_status';
     const BULK_DISPUTE_EDIT_FILE_NAME     = 'bulk_disputes_edit_status';
-
-    const SALESPOC_EMAIL_TO_EXCLUDE_FROM_CC = "businessops@razorpay.com";
 
     const BULK_DISPUTE_CREATE_DATE_FORMAT = 'd/m/Y H:i:s';
 
@@ -343,37 +340,6 @@ class Service extends Base\Service
         $emails = $this->core()->getDefaultEmailsForDispute($merchant);
 
         return $emails;
-    }
-
-    public function addSalesPOCToCCEmails($merchantId,$ccEmails)
-    {
-        try
-        {
-            $salesPOCEmailId = $this->app['salesforce']->getSalesPOCForMerchantID($merchantId);
-
-            if ($salesPOCEmailId !== self::SALESPOC_EMAIL_TO_EXCLUDE_FROM_CC)
-            {
-                array_push($ccEmails, $salesPOCEmailId);
-            }
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e,
-                Logger::ERROR,
-                TraceCode:: ERROR_IN_FETCHING_SALES_POC,
-                [
-                    'merchantId' => $merchantId,
-                ]);
-        }
-
-        return array_unique($ccEmails);
-    }
-
-    public function getCCEmailsWithSalesPOC($merchantId)
-    {
-        $ccEmails = $this->getDefaultDisputeEmails($merchantId);
-
-        return $this->addSalesPOCToCCEmails($merchantId, $ccEmails);
     }
 
     /**
