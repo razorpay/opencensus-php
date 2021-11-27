@@ -90,7 +90,7 @@ const makeTheme = (it, org) => `
 .${org} #paymentpage-container #description.is-focused,
 .${org} .pair-value .form-control:focus,
 .${org} .form-control:focus,
-.${org} .PowerSelect--focused.material-input {
+.${org} .PowerSelect--focused.material-input,
 .${org} .pair-value .form-control:focus {
   border-color: ${it.primary} !important;
 }
