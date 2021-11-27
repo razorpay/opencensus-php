@@ -334,7 +334,7 @@ class LeafListItem extends React.Component {
       pending: 'Your request has been forwarded for approval',
       rejected: 'Your request has been rejected',
       action_required: 'Action required on your end to complete the process',
-      activated_action_required: 'We need some more details regarding your request',
+      activated_action_required: 'Payment method active on your checkout',
     };
     const displayName = (name) => {
       const displayTextStyle = {
