@@ -47,7 +47,7 @@ class TriggerAcsFullSync extends Job
 
             foreach ($batches as $batch)
             {
-                TriggerAcsSync::dispatch($this->mode, $batch);
+                TriggerAcsSync::dispatch($this->mode, $batch, $input['outbox_jobs']);
             }
 
             $this->delete();

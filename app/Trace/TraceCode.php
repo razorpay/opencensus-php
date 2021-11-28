@@ -5449,6 +5449,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACS_SYNC_EVENT_PUBLISHED                              = 'ACS_SYNC_EVENT_PUBLISHED';
     const ACS_SYNC_UNREPORTED_ACCOUNTS                          = 'ACS_SYNC_UNREPORTED_ACCOUNTS';
     const ACS_SYNC_UNKNOWN_MODE                                 = 'ACS_SYNC_UNKNOWN_MODE';
+    const ACS_SYNC_UNKNOWN_OUTBOX_JOB                           = 'ACS_SYNC_UNKNOWN_OUTBOX_JOB';
     const ACS_SYNC_UNKNOWN_TRIGGER                              = 'ACS_SYNC_UNKNOWN_TRIGGER';
     const ACS_SYNC_METADATA_ERROR                               = 'ACS_SYNC_METADATA_ERROR';
     const ACS_FETCH_ACCOUNT_DETAILS                             = 'ACS_FETCH_ACCOUNT_DETAILS';

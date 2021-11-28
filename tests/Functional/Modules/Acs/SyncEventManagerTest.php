@@ -9,9 +9,11 @@ use Razorpay\Outbox\Encrypt\AES256GCMEncrypt;
 use Razorpay\Outbox\Job\Core as OutboxCore;
 use Razorpay\Outbox\Job\Repository;
 use RZP\Constants\Mode;
+use RZP\Models\Consumer\Service as Consumer;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Email;
 use RZP\Modules\Acs\SyncEventManager;
+use RZP\Modules\Acs\SyncEventObserver;
 use RZP\Tests\Functional\TestCase;
 
 class SyncEventManagerTest extends TestCase
@@ -20,10 +22,20 @@ class SyncEventManagerTest extends TestCase
     {
         $liveModeAccountIds = ['Live1', 'Live2', 'Live3'];
         $testModeAccountIds = ['Test1', 'Test2', 'Test3'];
-        $manager = $this->getMockedManagerWithAccountIds($liveModeAccountIds, $testModeAccountIds);
 
-        $this->assertEquals($liveModeAccountIds, array_values($manager->getLiveAccountIds()));
-        $this->assertEquals($testModeAccountIds, array_values($manager->getTestAccountIds()));
+        $outboxJobs = [SyncEventObserver::ACS_OUTBOX_JOB_NAME];
+        $manager = $this->getMockedManagerWithAccountIds($liveModeAccountIds, $testModeAccountIds);
+        $this->assertEquals($liveModeAccountIds, array_keys($manager->getLiveAccountIds()));
+        $this->assertEquals($testModeAccountIds, array_keys($manager->getTestAccountIds()));
+        $this->assertEquals([$outboxJobs, $outboxJobs, $outboxJobs], array_values($manager->getLiveAccountIds()));
+        $this->assertEquals([$outboxJobs, $outboxJobs, $outboxJobs], array_values($manager->getTestAccountIds()));
+
+        $outboxJobs = [SyncEventObserver::ACS_OUTBOX_JOB_NAME, SyncEventObserver::CREDCASE_OUTBOX_JOB_NAME];
+        $manager = $this->getMockedManagerWithAccountIds($liveModeAccountIds, $testModeAccountIds, [], $outboxJobs);
+        $this->assertEquals($liveModeAccountIds, array_keys($manager->getLiveAccountIds()));
+        $this->assertEquals($testModeAccountIds, array_keys($manager->getTestAccountIds()));
+        $this->assertEquals([$outboxJobs, $outboxJobs, $outboxJobs], array_values($manager->getLiveAccountIds()));
+        $this->assertEquals([$outboxJobs, $outboxJobs, $outboxJobs], array_values($manager->getTestAccountIds()));
     }
 
     public function testHasUnreportedAccountIds()
@@ -40,76 +52,118 @@ class SyncEventManagerTest extends TestCase
         $this->assertTrue($manager->hasUnreportedAccountIds());
     }
 
-    public function testPublishJobSendsEventToOutbox()
+    public function testPublishJobSkipsSendEventToOutbox()
     {
-        Config::set('applications.acs.sync_enabled', true);
         $outboxMock = $this->createOutboxMock();
 
         $accountId = 'AccountId';
-        $mode = Mode::TEST;
+        $mode = Mode::LIVE;
+        $jobPayload = [
+            'owner_id'   => $accountId,
+            'owner_type' => Consumer::ConsumerTypeMerchant,
+            'domain'     => Consumer::ConsumerDomainRazorpay,
+        ];
+        $jobName = SyncEventObserver::CREDCASE_OUTBOX_JOB_NAME;
+
+        $outboxMock->expects($this::never())
+            ->method('send');
+
+        $manager = $this->getMockedManagerWithAccountIds();
+        $manager->publishOutboxJob(false, $jobName, $jobPayload, $mode, []);
+    }
+
+    public function testPublishJobSendsEventToOutbox()
+    {
+        $outboxMock = $this->createOutboxMock();
+
+        $accountId = 'AccountId';
+        $mode = Mode::LIVE;
         $metadata = ['dummyMetadata' => true, 'request_id' => app('request')->getId(), 'task_id' => app('request')->getTaskId()];
-        $expectedPayload = [
+        $jobPayload = [
             'account_id' => $accountId,
             'mode' => $mode,
             'mock' => false,
             'metadata' => $metadata
         ];
+        $jobName = SyncEventObserver::ACS_OUTBOX_JOB_NAME;
+
         $outboxMock->expects($this::once())
             ->method('send')
-            ->with(SyncEventManager::OUTBOX_JOB_NAME, $expectedPayload, $mode, false);
+            ->with($jobName, $jobPayload, $mode, false);
 
         $manager = $this->getMockedManagerWithAccountIds();
-        $manager->publishOutboxJob($accountId, $mode, $metadata);
+        $manager->publishOutboxJob(true, $jobName, $jobPayload, $mode, $metadata);
     }
 
-    public function testPublishJobSkipsSendsEventToOutbox()
+    public function testPublishJobsPublishesLiveSkipsTestAccounts()
     {
-        // assuming default to be false, similar to setting it like following
-        Config::set('applications.acs.sync_enabled', false);
-        $outboxMock = $this->createOutboxMock();
+        $acsSyncEnabled = true;
+        $credcaseSyncEnabled = false;
 
-        $accountId = 'AccountId';
-        $mode = Mode::TEST;
+        Config::set('applications.acs.sync_enabled', $acsSyncEnabled);
+        Config::set('applications.acs.credcase_sync_enabled', $credcaseSyncEnabled);
+
         $metadata = ['dummyMetadata' => true];
-        $outboxMock->expects($this->never())
-            ->method('send');
+        $payloadMetadata  = array_merge(['request_id' => $this->app['request']->getId(), 'task_id' => $this->app['request']->getTaskId()], $metadata);
+        $acsBasePayload = [
+            'mode' => Mode::LIVE,
+            'mock' => false,
+            'metadata' => $payloadMetadata,
+        ];
+        $credcaseBasePayload = [
+            'owner_type' => Consumer::ConsumerTypeMerchant,
+            'domain'     => Consumer::ConsumerDomainRazorpay,
+        ];
 
-        $manager = $this->getMockedManagerWithAccountIds();
-        $manager->publishOutboxJob($accountId, $mode, $metadata);
-    }
+        $allOutboxJobs = [SyncEventObserver::ACS_OUTBOX_JOB_NAME, SyncEventObserver::CREDCASE_OUTBOX_JOB_NAME];
 
-    public function testPublishJobsPublishesLiveSkipTestAccounts()
-    {
-        $metadata = ['dummyMetadata' => true];
-
-        $manager = $this->getMockedManagerWithAccountIds([], [], ['publishOutboxJob']);
+        // T1 starts
+        $manager = $this->getMockedManagerWithAccountIds([], [], ['publishOutboxJob'], $allOutboxJobs);
         $manager->expects($this->never())
             ->method('publishOutboxJob');
         $manager->publishOutboxJobs($metadata);
+        // T1 ends
 
+        // T2 starts
         $liveAccountIds = ['Live1'];
-        $manager = $this->getMockedManagerWithAccountIds($liveAccountIds, [], ['publishOutboxJob']);
-        $manager->expects($this->once())
-            ->method('publishOutboxJob')
-            ->with($liveAccountIds[0], Mode::LIVE, $metadata);
-        $manager->publishOutboxJobs($metadata);
-
-        $testAccountIds = ['Test1'];
-        $manager = $this->getMockedManagerWithAccountIds([], $testAccountIds, ['publishOutboxJob']);
-        $manager->expects($this->never())
-            ->method('publishOutboxJob');
-        $manager->publishOutboxJobs($metadata);
-
-        $liveAccountIds = ['Live1', 'Live2'];
-        $testAccountIds = ['Test1', 'Test2'];
-        $manager = $this->getMockedManagerWithAccountIds($liveAccountIds, $testAccountIds, ['publishOutboxJob']);
+        $manager = $this->getMockedManagerWithAccountIds($liveAccountIds, [], ['publishOutboxJob'], $allOutboxJobs);
+        $acsPayload = array_merge(['account_id' => $liveAccountIds[0]], $acsBasePayload);
+        $credcasePayload = array_merge(['owner_id' => $liveAccountIds[0]], $credcaseBasePayload);
         $manager->expects($this->exactly(2))
             ->method('publishOutboxJob')
             ->withConsecutive(
-                [$liveAccountIds[0], Mode::LIVE, $metadata],
-                [$liveAccountIds[1], Mode::LIVE, $metadata]
+                [$acsSyncEnabled, SyncEventObserver::ACS_OUTBOX_JOB_NAME, $acsPayload, Mode::LIVE, $metadata],
+                [$credcaseSyncEnabled, SyncEventObserver::CREDCASE_OUTBOX_JOB_NAME, $credcasePayload, Mode::LIVE, $metadata]
             );
         $manager->publishOutboxJobs($metadata);
+        // T2 ends
+
+        // T3 starts
+        $testAccountIds = ['Test1'];
+        $manager = $this->getMockedManagerWithAccountIds([], $testAccountIds, ['publishOutboxJob'], $allOutboxJobs);
+        $manager->expects($this->never())
+            ->method('publishOutboxJob');
+        $manager->publishOutboxJobs($metadata);
+        // T3 ends
+
+        // T4 starts
+        $liveAccountIds = ['Live1', 'Live2'];
+        $testAccountIds = ['Test1', 'Test2'];
+        $manager = $this->getMockedManagerWithAccountIds($liveAccountIds, $testAccountIds, ['publishOutboxJob'], $allOutboxJobs);
+        $acsPayload0 = array_merge(['account_id' => $liveAccountIds[0]], $acsBasePayload);
+        $credcasePayload0 = array_merge(['owner_id' => $liveAccountIds[0]], $credcaseBasePayload);
+        $acsPayload1 = array_merge(['account_id' => $liveAccountIds[1]], $acsBasePayload);
+        $credcasePayload1 = array_merge(['owner_id' => $liveAccountIds[1]], $credcaseBasePayload);
+        $manager->expects($this->exactly(4))
+            ->method('publishOutboxJob')
+            ->withConsecutive(
+                [$acsSyncEnabled, SyncEventObserver::ACS_OUTBOX_JOB_NAME, $acsPayload0, Mode::LIVE, $metadata],
+                [$credcaseSyncEnabled, SyncEventObserver::CREDCASE_OUTBOX_JOB_NAME, $credcasePayload0, Mode::LIVE, $metadata],
+                [$acsSyncEnabled, SyncEventObserver::ACS_OUTBOX_JOB_NAME, $acsPayload1, Mode::LIVE, $metadata],
+                [$credcaseSyncEnabled, SyncEventObserver::CREDCASE_OUTBOX_JOB_NAME, $credcasePayload1, Mode::LIVE, $metadata]
+            );
+        $manager->publishOutboxJobs($metadata);
+        // T4 ends
     }
 
     public function testLogForEntityFetchWithTransaction()
@@ -130,6 +184,7 @@ class SyncEventManagerTest extends TestCase
             'stats' => [
                 'total' => ['count' => 0],
             ],
+            'outbox_jobs' => [],
         ];
         $manager->expects($this->once())->method('logEntityFetch')->with($mockData);
 
@@ -159,6 +214,7 @@ class SyncEventManagerTest extends TestCase
                 'merchant_email' => ['count' => 1],
                 'total' => ['count' => 1],
             ],
+            'outbox_jobs' => [],
         ];
         $manager->expects($this->once())->method('logEntityFetch')->with($mockData);
 
@@ -173,6 +229,7 @@ class SyncEventManagerTest extends TestCase
             'stats' => [
                 'total' => ['count' => 0],
             ],
+            'outbox_jobs' => [SyncEventObserver::ACS_OUTBOX_JOB_NAME],
         ];
         $manager->expects($this->once())->method('logEntityUpdate')->with($mockData);
 
@@ -186,7 +243,8 @@ class SyncEventManagerTest extends TestCase
     protected function getMockedManagerWithAccountIds(
         $liveModeAccountIds = [],
         $testModeAccountIds = [],
-        $methods = []
+        $methods = [],
+        $outboxJobs = [SyncEventObserver::ACS_OUTBOX_JOB_NAME]
     )
     {
         $manager = $this->getMockBuilder(SyncEventManager::class)
@@ -198,14 +256,14 @@ class SyncEventManagerTest extends TestCase
             $merchant = new Merchant\Entity(['id' => $accountId]);
             $merchant->setConnection(Mode::LIVE);
 
-            $manager->recordAccountSync($merchant);
+            $manager->recordAccountSync($merchant, $outboxJobs);
         }
 
         foreach ($testModeAccountIds as $accountId) {
             $merchant = new Merchant\Entity(['id' => $accountId]);
             $merchant->setConnection(Mode::TEST);
 
-            $manager->recordAccountSync($merchant);
+            $manager->recordAccountSync($merchant, $outboxJobs);
         }
 
         return $manager;

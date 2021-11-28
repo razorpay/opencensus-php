@@ -7,9 +7,9 @@ use Illuminate\Foundation\Application;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Metric;
 use RZP\Constants\Mode;
-use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Consumer\Service as Consumer;
 use RZP\Trace\TraceCode;
 use Razorpay\Outbox\Job\Core as Outbox;
 
@@ -26,7 +26,6 @@ use Razorpay\Outbox\Job\Core as Outbox;
 class SyncEventManager
 {
     const SINGLETON_NAME = 'acs.syncManager';
-    const OUTBOX_JOB_NAME = 'acs.sync_account.v1';
 
     /** @var Application $app */
     public $app;
@@ -37,7 +36,7 @@ class SyncEventManager
     /** @var Outbox $outbox */
     public $outbox;
 
-    // accountIds are stored as [id => id] instead of plain arrays to behave as sets
+    // accountIds are stored as [id => [outboxJob1, outboxJob2, ...]]
     protected $liveAccountIds = [];
     protected $testAccountIds = [];
 
@@ -75,9 +74,9 @@ class SyncEventManager
             }
 
             $this->trace->critical(TraceCode::ACS_SYNC_UNREPORTED_ACCOUNTS, [
-                'liveAccountIds' => array_values($this->liveAccountIds),
-                'testAccountIds' => array_values($this->testAccountIds),
-                'metadata' => $this->getContext($this->app),
+                'liveAccountIds'        => array_values($this->liveAccountIds),
+                'testAccountIds'        => array_values($this->testAccountIds),
+                'metadata'              => $this->getContext($this->app),
             ]);
         }
     }
@@ -108,23 +107,30 @@ class SyncEventManager
             or $this->hasUnreportedTestAccountIds();
     }
 
+    private function mergeOutboxJobs(array & $accountIdMap, string $accountId, array $outboxJobs)
+    {
+        $accountIdMap[$accountId] = array_key_exists($accountId, $accountIdMap) ?
+            array_unique(array_merge($accountIdMap[$accountId], $outboxJobs)) : $outboxJobs;
+
+    }
+
     /**
      * Records account id to be published for sync
      *
      * @param PublicEntity $entity
-     *
+     * @param array $outboxJobs
      */
-    public function recordAccountSync(PublicEntity $entity)
+    public function recordAccountSync(PublicEntity $entity, array $outboxJobs)
     {
         $accountId = $entity->getMerchantId();
         $mode = $entity->getConnectionName();
 
         switch ($mode) {
             case Mode::LIVE:
-                $this->liveAccountIds[$accountId] = $accountId;
+                $this->mergeOutboxJobs($this->liveAccountIds, $accountId, $outboxJobs);
                 break;
             case Mode::TEST:
-                $this->testAccountIds[$accountId] = $accountId;
+                $this->mergeOutboxJobs($this->testAccountIds, $accountId, $outboxJobs);
                 break;
             default:
                 $this->trace->count(
@@ -134,6 +140,7 @@ class SyncEventManager
                 $this->trace->critical(TraceCode::ACS_SYNC_UNKNOWN_MODE, [
                     'accountId' => $accountId,
                     'mode' => $mode,
+                    'outbox_jobs' => $outboxJobs,
                 ]);
         }
 
@@ -142,10 +149,10 @@ class SyncEventManager
         {
             // we log before the stats are updated as we want to see the number of updates
             // already applied in the request flow before the current update
-            $logData = $this->getLogData($entity);
+            $logData = $this->getLogData($entity, $outboxJobs);
             $this->logEntityUpdate($logData);
-
             $entityName = $entity->getEntityName();
+
             if (array_key_exists($entityName, $this->stats) === false)
             {
                 $this->stats[$entityName] = ['count' => 0];
@@ -158,18 +165,64 @@ class SyncEventManager
     /**
      * Publishes sync events for account ids recorded to outbox.
      * Ideally this should be called only once after all the business logic has completed.
+     * @param array $metadata
      */
     public function publishOutboxJobs(array $metadata)
     {
-        foreach ($this->liveAccountIds as $accountId => $ignoredValue) {
-            $this->publishOutboxJob($accountId, Mode::LIVE, $metadata);
+        $acsSyncEnabled = $this->app['config']->get('applications.acs.sync_enabled');
+        $credcaseSyncEnabled = $this->app['config']->get('applications.acs.credcase_sync_enabled');
+
+        foreach ($this->liveAccountIds as $accountId => $outboxJobs) {
+            foreach ($outboxJobs as $outboxJob)  {
+                switch ($outboxJob) {
+                    case SyncEventObserver::ACS_OUTBOX_JOB_NAME:
+                        $payloadMetadata  = array_merge(['request_id' => $this->app['request']->getId(), 'task_id' => $this->app['request']->getTaskId()], $metadata);
+                        // TODO: verify and update as per sync request proto
+                        $jobPayload = [
+                            'account_id' => $accountId,
+                            'mode'       => Mode::LIVE,
+                            'mock'       => false,
+                            'metadata'   => $payloadMetadata,
+                        ];
+                        $this->publishOutboxJob($acsSyncEnabled, SyncEventObserver::ACS_OUTBOX_JOB_NAME,
+                            $jobPayload, Mode::LIVE, $metadata);
+                        break;
+                    case SyncEventObserver::CREDCASE_OUTBOX_JOB_NAME:
+                        $jobPayload = [
+                            'owner_id'   => $accountId,
+                            'owner_type' => Consumer::ConsumerTypeMerchant,
+                            'domain'     => Consumer::ConsumerDomainRazorpay,
+                        ];
+                        $this->publishOutboxJob($credcaseSyncEnabled, SyncEventObserver::CREDCASE_OUTBOX_JOB_NAME,
+                            $jobPayload, Mode::LIVE, $metadata);
+                        break;
+                    default:
+                        $this->trace->count(
+                            Metric::ACS_SYNC_ALERT_UNKNOWN_OUTBOX_JOB,
+                            [Metric::LABEL_OUTBOX_JOB => $outboxJob]
+                        );
+                        $this->trace->critical(TraceCode::ACS_SYNC_UNKNOWN_OUTBOX_JOB, [
+                            'accountId' => $accountId,
+                            'mode' => Mode::LIVE,
+                            'outbox_job' => $outboxJob,
+                        ]);
+                }
+            }
         }
 
-//        // Skipping publishing test accounts because we have decided to only sync live for now
-//        // Enabling this would need to use test mode outbox instance
+        // Skipping publishing test accounts because we have decided to only sync live for now
+        // Enabling this would need to use test mode outbox instance
 //        foreach ($this->testAccountIds as $accountId => $ignoredValue)
 //        {
-//            $this->publishOutboxJob($accountId, Mode::TEST, $metadata);
+//            $payloadMetadata  = array_merge(['request_id' => $this->app['request']->getId(), 'task_id' => $this->app['request']->getTaskId()], $metadata);
+//            $jobPayload = [
+//                'account_id' => $accountId,
+//                'mode'       => Mode::TEST,
+//                'mock'       => false,
+//                'metadata'   => $payloadMetadata,
+//            ];
+//            $this->publishOutboxJob($acsSyncEnabled, self::ACS_OUTBOX_JOB_NAME,
+//                $jobPayload, Mode::LIVE, $metadata);
 //        }
 
         $this->resetAccountParams();
@@ -183,38 +236,39 @@ class SyncEventManager
         $this->stats = ['total' => ['count' => 0]];
     }
 
-    public function publishOutboxJob(string $accountId, string $mode, array $metadata)
+    public function publishOutboxJob(bool $syncEnabled, string $jobName, array $jobPayload,
+                                     string $mode, array $metadata)
     {
-        // if account service sync is not enabled, do not publish outbox jobs
-        if ($this->app['config']->get('applications.acs.sync_enabled') === false)
+
+        // if sync is not enabled, do not publish outbox jobs
+        if ($syncEnabled == false)
         {
             return;
         }
 
-        $metricDimensions = array_merge([Metric::LABEL_RZP_MODE => $mode], $metadata);
-        $payloadMetadata  = array_merge(['request_id' => $this->app['request']->getId(), 'task_id' => $this->app['request']->getTaskId()], $metadata);
+        $metricDimensions = array_merge([
+            Metric::LABEL_RZP_MODE   => $mode,
+            Metric::LABEL_OUTBOX_JOB => $jobName,
+            ], $metadata);
+        $logDimensions = [
+            'job_name'      => $jobName,
+            'job_payload'   => $jobPayload
+        ];
         try {
-            // TODO: verify and update as per sync request proto
-            $jobPayload = [
-                'account_id' => $accountId,
-                'mode' => $mode,
-                'mock' => false,
-                'metadata' => $payloadMetadata,
-            ];
 
             // this needs to be in a transaction due to a hard check in outbox implementation
             // Also, since we are not using the any entities to do db operations,
             // we cannot use $entityRepo->connection()->transaction() as this will
             // default to the connection based on basic auth mode set
-            $this->app['repo']->transactionOnConnection(function () use ($mode, $jobPayload) {
-                $this->outbox->send(self::OUTBOX_JOB_NAME, $jobPayload, $mode, false);
+            $this->app['repo']->transactionOnConnection(function () use ($mode, $jobName, $jobPayload) {
+                $this->outbox->send($jobName, $jobPayload, $mode, false);
             }, $mode);
 
-            $this->trace->info(TraceCode::ACS_SYNC_EVENT_PUBLISHED, $jobPayload);
+            $this->trace->info(TraceCode::ACS_SYNC_EVENT_PUBLISHED, $logDimensions);
             $this->trace->count(Metric::ACS_SYNC_EVENT_PUBLISHED, $metricDimensions);
         } catch (\Throwable $e) {
             // Just logging and ignoring exception here to not mess with request flow
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::ACS_SYNC_EVENT_PUBLISH_FAILED, $jobPayload);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::ACS_SYNC_EVENT_PUBLISH_FAILED, $logDimensions);
             $this->trace->count(Metric::ACS_SYNC_ALERT_EVENT_PUBLISH_FAILED, $metricDimensions);
         }
     }
@@ -271,14 +325,14 @@ class SyncEventManager
         }
     }
 
-    public function getLogData(PublicEntity $entity, PublicCollection $collection = null)
+    public function getLogData(PublicEntity $entity, array $outboxJobs, PublicCollection $collection = null)
     {
         if ($collection == null)
         {
             $collection = new PublicCollection;
         }
         $runningInQueue = app()->runningInQueue();
-        $logData = ['route' => 'none', 'async_job_name' => 'none'];
+        $logData = ['route' => 'none', 'async_job_name' => 'none', 'outbox_jobs' => $outboxJobs];
         if ($runningInQueue === true)
         {
             $logData['async_job_name'] = app('worker.ctx')->getJobName();

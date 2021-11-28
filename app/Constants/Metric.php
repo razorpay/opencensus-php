@@ -26,6 +26,7 @@ class Metric
     const ENTITY_DELETED                        = 'entity_deleted';
     const ACS_SYNC_ALERT_UNREPORTED_ACCOUNTS    = 'acs_sync_alert_unreported_accounts';
     const ACS_SYNC_ALERT_UNKNOWN_MODE           = 'acs_sync_alert_unknown_mode';
+    const ACS_SYNC_ALERT_UNKNOWN_OUTBOX_JOB     = 'acs_sync_alert_unknown_outbox_job';
     const ACS_SYNC_EVENT_PUBLISHED              = 'acs_sync_event_published';
     const ACS_SYNC_ALERT_EVENT_PUBLISH_FAILED   = 'acs_sync_alert_event_publish_failed';
     const ACS_SYNC_ALERT_UNKNOWN_TRIGGER        = 'acs_sync_alert_unknown_trigger';
@@ -37,7 +38,7 @@ class Metric
 
     const HTTP_OUTGOING_REQUEST_SIZE            = 'http_outgoing_request_size.histogram';
     const HTTP_OUTGOING_RESPONSE_SIZE           = 'http_outgoing_response_size.histogram';
-  
+
     const HTTP_REQUEST_SIZE                     = 'http_request_size.histogram';
     const HTTP_RESPONSE_SIZE                    = 'http_response_size.histogram';
 
@@ -45,6 +46,7 @@ class Metric
 
     // Labels
     const LABEL_RZP_MODE                        = 'rzp_mode';
+    const LABEL_OUTBOX_JOB                      = 'outbox_job';
     const LABEL_STATUS                          = 'status';
     const LABEL_METHOD                          = 'method';
     const LABEL_ROUTE                           = 'route';

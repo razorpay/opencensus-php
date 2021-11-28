@@ -1107,6 +1107,7 @@ return [
 
     'acs' => [
         'sync_enabled' => env('ACS_SYNC_ENABLED', false),
+        'credcase_sync_enabled' => env('CREDCASE_CONSUMER_SYNC_ENABLED', false),
         'verbose_log' => env('ACS_VERBOSE_LOG_ENABLED', false),
     ],
 

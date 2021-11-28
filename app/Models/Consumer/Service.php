@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 class Service extends Base\Service
 {
     const ConsumerTypeApplication = "application";
+    const ConsumerTypeMerchant    = "merchant";
     const ConsumerDomainRazorpay  = "razorpay";
 
     /**
