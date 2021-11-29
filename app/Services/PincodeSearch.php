@@ -25,6 +25,8 @@ class PincodeSearch
 
     const CACHE_KEY_FORMAT = 'pincode:pincodesearch_%s';
 
+    const STATE_NAME = 'state_name:';
+
     protected $config;
 
     protected $cache;
@@ -44,9 +46,12 @@ class PincodeSearch
         $this->baseUrl = $this->config['url'];
     }
 
-    protected function getCacheKey(int $pincode)
+    protected function getCacheKey(int $pincode, bool $useStateName = false)
     {
-        $key = sprintf(static::CACHE_KEY_FORMAT, $pincode);
+        $key = sprintf(
+          ($useStateName === true ? self::STATE_NAME : '') . static::CACHE_KEY_FORMAT,
+          $pincode
+        );
 
         return $key;
     }
@@ -150,7 +155,7 @@ class PincodeSearch
             $response);
     }
 
-    public function fetchCityAndStateFromPincode($pincode): array
+    public function fetchCityAndStateFromPincode($pincode, $useStateName = false): array
     {
         $pincodeValidator = new Pincode\Validator(Pincode\Pincode::IN);
 
@@ -160,7 +165,7 @@ class PincodeSearch
                 $pincode . ' is not correct.');
         }
 
-        $key = $this->getCacheKey($pincode);
+        $key = $this->getCacheKey($pincode, $useStateName);
 
         if ($response = Cache::get($key))
         {
@@ -185,7 +190,8 @@ class PincodeSearch
 
         $response = [
             'city'          => $response['districtname'] ?? null,
-            'state'         => $response['circlename'] ?? null,
+            'state'         =>
+                ($useStateName === true ? ucwords(strtolower($response['statename'])) : $response['circlename']) ?? null,
             'state_code'    => IndianStates::getStateCode($response['statename']),
         ];
 
