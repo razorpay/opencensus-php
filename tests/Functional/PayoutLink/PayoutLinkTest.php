@@ -2473,9 +2473,11 @@ class PayoutLinkTest extends TestCase
 
     public function testGetDemoHostedPageData()
     {
-        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks')->makePartial()->shouldAllowMockingProtectedMethods();
 
-        $plMock->shouldReceive('getDemoHostedPageData')->andReturn([]);
+        $plMock->shouldReceive('makeRequest')->andReturn($this->mockedDemoPLData());
+
+        $plMock->shouldReceive('getEnvironment')->andReturn('testing');
 
         $this->app->instance('payout-links', $plMock);
 
@@ -2490,6 +2492,31 @@ class PayoutLinkTest extends TestCase
 
         // redirection request
         $this->assertResponseOk($response);
+
+        $this->assertContentTypeForResponse('text/html; charset=UTF-8', $response);
+    }
+
+    protected function mockedDemoPLData()
+    {
+        return [
+            'payout_link_response' => [
+                'id' => 'poutlk_HQ9ddkWljqA2Q8',
+                'status' => 'issued',
+                'amount' => 1,
+                'currency' => 'INR',
+                'description' => 'testing demp pl',
+                'contact_name' => 'test contact',
+                'contact_email' => 'test.email@rzp.com',
+                'contact_phone_number' => '9999988888',
+                'receipt' => 'receipt'
+            ],
+            'merchant_info' => [
+                'brand_logo' => 'logo-url',
+                'brand_color' => 'color',
+                'billing_label' => 'test merchant',
+            ],
+            'settings' => []
+        ];
     }
 
     public function testGenerateDemoOTP()
@@ -3149,4 +3176,31 @@ class PayoutLinkTest extends TestCase
         // reminders key should be there
         $this->assertArrayHasKey('reminders', $responseData);
     }
+
+    public function testGetHostedPageDataForAppAuth()
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('viewHostedPageData')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->payoutLinksCustomerPageAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetDemoHostedPageDataForAppAuth()
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('viewDemoHostedPageData')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->payoutLinksCustomerPageAuth();
+
+        $this->startTest();
+    }
+
 }

@@ -1551,6 +1551,7 @@ class Route
         'payout_update_pull_payout_status'         => ['post',      'payout-links/{id}/pullPayoutStatus',             'PayoutLinkController@pullPayoutStatus'                             ],
         'payout_links_bulk_resend_notification_admin' => ['post',   'payout-links/bulk-resend-notification',          'PayoutLinkController@bulkResendNotification'                       ],
         'payout_links_customer_hosted_page'        => ['get',       'payout-links/{x_entity_id}/view',                'PayoutLinkController@viewHostedPage'                               ],
+        'payout_links_customer_hosted_page_data'   => ['get',       'payout-links/{x_entity_id}/view-data',           'PayoutLinkController@viewHostedPageData'                           ],
         'payout_links_shopify_app_install'         => ['get',       'payout-links/shopify/install',                   'PayoutLinkController@installShopifyApp'                            ],
         'payout_links_shopify_app_uninstall'       => ['post',      'payout-links/shopify/uninstall',                 'PayoutLinkController@uninstallShopifyApp'                          ],
         'payout_links_shopify_app_customers'
@@ -1590,6 +1591,7 @@ class Route
                                           .'_cors' => ['options',   'demo/payout-links/{x_entity_id}'
                                                                      . '/verify-customer-otp',                         'PayoutLinkController@allowCors'                                   ],
         'payout_links_customer_hosted_page_demo'   => ['get',       'demo/payout-links/{x_entity_id}/view',            'PayoutLinkController@viewDemoHostedPage'                          ],
+        'payout_links_customer_hosted_page_demo_data' => ['get',       'demo/payout-links/{x_entity_id}/view-data',    'PayoutLinkController@viewDemoHostedPageData'                      ],
         'payout_links_initiate_demo'               => ['post',      'demo/payout-links/{x_entity_id}/initiate',        'PayoutLinkController@initiateDemo'                                ],
         'payout_links_initiate_demo_cors'          => ['options',   'demo/payout-links/{x_entity_id}/initiate',        'PayoutLinkController@allowCors'                                   ],
         'payout_cancel'                            => ['post',      'payouts/{id}/cancel',                            'PayoutController@cancelPayout'                                     ],
@@ -3561,6 +3563,8 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'payout_links_customer_hosted_page_data',
+        'payout_links_customer_hosted_page_demo_data',
         'payout_notification_to_slack_app',
         'internal_merchants_fetch_by_params',
         'internal_feature_bulk_assign',
@@ -11232,6 +11236,11 @@ class Route
             'ledger_fetch_multiple_transactions',
             'fetch_account_types_ledger',
             'fetch_fund_account_types_ledger',
+        ],
+
+        'payout_link_customer_page' => [
+            'payout_links_customer_hosted_page_data',
+            'payout_links_customer_hosted_page_demo_data',
         ],
 
         'card_vault' => [

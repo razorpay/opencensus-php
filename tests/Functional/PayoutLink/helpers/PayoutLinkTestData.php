@@ -2376,4 +2376,26 @@ return [
             ],
         ]
     ],
+
+    'testGetHostedPageDataForAppAuth' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/poutlk_12345/view-data',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [],
+        ]
+    ],
+
+    'testGetDemoHostedPageDataForAppAuth' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/demo/payout-links/poutlk_12345/view-data',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [],
+        ]
+    ],
 ];

@@ -27,7 +27,7 @@ class ProductIdentifier
 {
     const SECRET = 'secret';
 
-    const bankingApps = ['vendor_payments', 'payout_links', 'fts', 'workflows','xpayroll'];
+    const bankingApps = ['vendor_payments', 'payout_links', 'fts', 'workflows','xpayroll', 'payout_link_customer_page'];
 
     protected $app;
 

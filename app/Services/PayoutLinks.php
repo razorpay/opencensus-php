@@ -3,22 +3,19 @@
 namespace RZP\Services;
 
 use Config;
-use Illuminate\Support\Facades\Mail;
-use RZP\Mail\PayoutLink\CustomerDemoOtpInternal;
-use RZP\Mail\PayoutLink\SendDemoLinkInternal;
-use View;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Environment;
 use RZP\Http\Request\Requests;
 use RZP\Models\FundAccount\Type;
-use RZP\Models\Merchant;
 use RZP\Http\Response\StatusCode;
 use RZP\Models\PayoutLink\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\PayoutLink\Validator;
+use Illuminate\Support\Facades\Mail;
 use RZP\Models\BankingAccountService;
 use RZP\Models\Batch\Type as BatchType;
 use RZP\Exception\BadRequestException;
@@ -26,7 +23,9 @@ use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Batch\Core as BatchCore;
 use RZP\Models\User\Entity as UserEntity;
+use RZP\Mail\PayoutLink\SendDemoLinkInternal;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Mail\PayoutLink\CustomerDemoOtpInternal;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
@@ -403,7 +402,7 @@ class PayoutLinks
         return $response;
     }
 
-    public function getHostedPageData(string $payoutLinkId, MerchantEntity $merchant)
+    public function getHostedPageData(string $payoutLinkId, MerchantEntity $merchant = null)
     {
         $url = sprintf('%s/%s', $this->baseUrl, self::GET_HOSTED_PAGE_DATA);
 
@@ -418,6 +417,8 @@ class PayoutLinks
         $payoutMode = null;
 
         $payoutLinkInfo = $response['payout_link_response'];
+
+        $merchant = $merchant ?: $this->repo->merchant->findOrFail($payoutLinkInfo[self::MERCHANT_ID]);
 
         if (key_exists('payouts', $payoutLinkInfo)
             && key_exists('count', $payoutLinkInfo['payouts']))
@@ -1544,10 +1545,9 @@ class PayoutLinks
             'expire_by'                   => 0,
             'expired_at'                  => 0,
             'support_phone'               => '',
-
         ];
 
-        return View::make('payout_link.customer_hosted', $data);
+        return $data;
     }
 
     public function generateAndSendCustomerOtpDemo(string $payoutLinkId, array $input): array
@@ -1575,6 +1575,56 @@ class PayoutLinks
         $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
 
         return $this->makeRequest($url, $input);
+    }
+
+    public function viewHostedPageData(string $payoutLinkId)
+    {
+        $hostedData = $this->getHostedPageData($payoutLinkId);
+
+        return $this->formatHostedData($hostedData);
+    }
+
+    public function viewDemoHostedPageData(string $payoutLinkId)
+    {
+        $hostedData = $this->getDemoHostedPageData($payoutLinkId);
+
+        return $this->formatHostedData($hostedData);
+    }
+
+    private function formatHostedData(array $hostedData)
+    {
+        $userDetails = [
+            'name'          => $hostedData['user_name'],
+            'maskedPhone'   => $hostedData['user_phone'],
+            'maskedEmail'   => $hostedData['user_email'],
+        ];
+
+        $supportDetails = [
+            'supportPhone'  => $hostedData['support_phone'],
+            'supportEmail'  => $hostedData['support_email'],
+        ];
+
+        return [
+            'primary_color'             => $hostedData['primary_color'],
+            'logo'                      => $hostedData['merchant_logo_url'],
+            'client'                    => $hostedData['merchant_name'],
+            'amount'                    => strval($hostedData['amount']),
+            'userDetails'               => $userDetails,
+            'description'               => $hostedData['description'],
+            'receipt'                   => $hostedData['receipt'],
+            'apiHost'                   => $hostedData['api_host'] . '/v1/',
+            'payoutLinkId'              => $hostedData['payout_link_id'],
+            'status'                    => $hostedData['payout_link_status'],
+            'allowUpi'                  => $hostedData['allow_upi'],
+            'allowAmazonPay'            => $hostedData['allow_amazon_pay'],
+            'fundAccountDetails'        => json_decode($hostedData['fund_account_details'], true),
+            'purpose'                   => $hostedData['purpose'],
+            'payoutUtr'                 => $hostedData['payout_utr'],
+            'payoutMode'                => $hostedData['payout_mode'],
+            'payoutLinksCustomMessage'  => $hostedData['payout_links_custom_message'],
+            'expiredAt'                 => $hostedData['expired_at'],
+            'supportDetails'            => $supportDetails,
+        ];
     }
 
 }

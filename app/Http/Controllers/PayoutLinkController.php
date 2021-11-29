@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use View;
 use Request;
 use Redirect;
 use ApiResponse;
@@ -310,7 +311,7 @@ class PayoutLinkController extends Controller
     {
         $response = $this->app['payout-links']->getDemoHostedPageData($payoutLinkId);
 
-        return $response;
+        return View::make('payout_link.customer_hosted', $response);
     }
 
     public function generateAndSendCustomerOtpDemo(string $payoutLinkId)
@@ -388,6 +389,20 @@ class PayoutLinkController extends Controller
         $response = $this->app['payout-links']->expireCronjob();
 
         return ApiResponse::json($response);
+    }
+
+    public function viewHostedPageData($payoutLinkId)
+    {
+        $response = $this->app['payout-links']->viewHostedPageData($payoutLinkId);
+
+        return $response;
+    }
+
+    public function viewDemoHostedPageData($payoutLinkId)
+    {
+        $response = $this->app['payout-links']->viewDemoHostedPageData($payoutLinkId);
+
+        return $response;
     }
 
     private function addCorsHeadersFE(& $response)

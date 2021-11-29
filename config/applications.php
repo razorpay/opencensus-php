@@ -1129,4 +1129,8 @@ return [
             'impersonate_iframe_url' => env('SETU_IMPERSONATE_IFRAME_URL')
         ],
     ],
+
+    'payout_link_customer_page' => [
+        'secret'            => env('APP_PAYOUT_LINK_CUSTOMER_PAGE_SECRET'),
+    ],
 ];
