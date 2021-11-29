@@ -193,7 +193,7 @@ DetailsAction.propTypes = {
   kyc_access: PropTypes.shape({
     state: PropTypes.string.isRequired,
     rejection_count: PropTypes.number.isRequired,
-    token_expiry: PropTypes.string.isRequired,
+    token_expiry: PropTypes.number.isRequired,
   }),
 };
 
