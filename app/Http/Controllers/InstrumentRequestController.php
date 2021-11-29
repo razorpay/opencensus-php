@@ -177,14 +177,19 @@ class InstrumentRequestController extends BaseController
 
     protected function getAdminHeadersForInstrumentRequest() : array
     {
-        $this->trace->info(TraceCode::X_DASHBOARD_ADMIN_ORG_ID, [
-            'org_id' => $this->auth->getAdmin()->getPublicOrgId(),
-        ]);
+        if($this->auth->getAdmin()!== null) {
+            $this->trace->info(TraceCode::X_DASHBOARD_ADMIN_ORG_ID, [
+                'org_id' => $this->auth->getAdmin()->getPublicOrgId(),
+            ]);
+            return [
+                self::X_DASHBOARD_ADMIN_EMAIL => $this->getAdminEmail(),
+
+                self::X_DASHBOARD_ADMIN_ORG_ID => $this->auth->getAdmin()->getPublicOrgId()
+            ];
+        }
 
         return [
             self::X_DASHBOARD_ADMIN_EMAIL => $this->getAdminEmail(),
-
-            self::X_DASHBOARD_ADMIN_ORG_ID => $this->auth->getAdmin()->getPublicOrgId(),
         ];
     }
 
