@@ -575,7 +575,7 @@ class Service extends Base\Service
                 return [['Verification failed because of incorrect OTP.', self::LOGIN_UNAUTHENTICATED], null];
             }
 
-            return [['The email or password you have entered is incorrect. Click on “Forgot?” to rest your password. ', self::LOGIN_UNAUTHENTICATED], null];
+            return [['The email or password you have entered is incorrect. Click on “Forgot?” to reset your password. ', self::LOGIN_UNAUTHENTICATED], null];
         }
 
         Auth::login($genericUser, false);
