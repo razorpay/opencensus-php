@@ -100,7 +100,7 @@ class Service extends Base\Service
      *
      * @param  string $id customer_id
      * @param  string $tokenId token id
-     * @return entity token
+     * @return array token
      */
     public function fetch($id, $tokenId)
     {
@@ -186,7 +186,7 @@ class Service extends Base\Service
      *
      * @param string $id customer ID
      *
-     * @return entity tokens
+     * @return array tokens
      */
     public function fetchMultiple($id)
     {

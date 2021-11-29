@@ -73,6 +73,7 @@ class Entity extends Base\PublicEntity
     const UPLOAD_FORM_URL          = 'upload_form_url';
     const NACH                     = 'nach';
     const SUCCEED                  = 'succeed';
+    const SIGNED_FORM              = 'signed_form';
 
     const PAYMENT_ID       = 'payment_id';
     const CUSTOMER_CONTACT = 'customer_contact';
@@ -223,6 +224,41 @@ class Entity extends Base\PublicEntity
         $tokenArray[self::FIRST_PAYMENT_AMOUNT] = $this->getAmount();
 
         return $tokenArray;
+    }
+
+    public function toArrayTokenFieldsNach(Invoice\Entity $invoice = null, $tokenArray = null)
+    {
+        if ($this->getEntityType() === self::PAPER_MANDATE)
+        {
+            $paperMandate = $this->paperMandate;
+            $bankAccount = $paperMandate->bankAccount;
+
+            $publicArrayBankAccount = $bankAccount->toArrayHosted();
+
+            unset($publicArrayBankAccount[self::ID]);
+            unset($publicArrayBankAccount['entity']);
+
+            $nachArray[Entity::CREATE_FORM] = empty($paperMandate->getGeneratedFileID()) === true ? false : true;
+            $nachArray[Entity::FORM_REFERENCE1] = $paperMandate->getReference1();
+            $nachArray[Entity::FORM_REFERENCE2] = $paperMandate->getReference2();
+            $nachArray[Entity::PREFILLED_FORM] = $paperMandate->getGeneratedFormUrl($invoice);
+            $nachArray[Entity::PREFILLED_FORM_TRANSIENT] = $paperMandate->getGeneratedFormUrlTransient();
+
+            if ($this->shouldSendPrefilledFormDownload() === true)
+            {
+                $nachArray[Entity::PREFILLED_FORM_DOWNLOAD] = $paperMandate->getGeneratedFormUrlTransient();
+            }
+
+            $uploadFormUrl = $invoice === null ? null : $invoice->getShortUrl();
+            $nachArray[Entity::UPLOAD_FORM_URL] = $uploadFormUrl;
+            $nachArray[Invoice\Entity::DESCRIPTION] = $invoice->getDescription();
+            $tokenArray[Entity::NACH] = $nachArray;
+            $tokenArray[self::BANK_ACCOUNT] = $publicArrayBankAccount;
+
+            $tokenArray[self::FIRST_PAYMENT_AMOUNT] = $this->getAmount();
+
+            return $tokenArray;
+        }
     }
 
     public function getEntityType()

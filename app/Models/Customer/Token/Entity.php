@@ -6,7 +6,6 @@ use App;
 use Crypt;
 use Carbon\Carbon;
 use RZP\Base\BuilderEx;
-use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
@@ -21,8 +20,10 @@ use RZP\Models\Merchant\Account;
 use RZP\Models\Address;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\SubscriptionRegistration\SubscriptionRegistrationConstants;
-
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\PaperMandate\FileUploader;
+use RZP\Models\PaperMandate\PaperMandateUpload\Entity as PaperMandateUploadEntity;
+use RZP\Models\SubscriptionRegistration\Entity as SubscriptionRegistrationEntity;
 
 /**
  * @property Vpa\Entity  $vpa
@@ -947,6 +948,36 @@ class Entity extends Base\PublicEntity
             $publicArray[self::EXPIRED_AT] = $this->getUpiMandate()->getEndTime();
         }
 
+        if ($this->isNachToken() === true)
+        {
+            $app = App::getFacadeRoot();
+            
+            $subscriptionRegistration = $app['repo']->subscription_registration
+                ->findByTokenIdAndMerchant($this->getId(),$this->merchant->getId());
+
+            if ($subscriptionRegistration !== null)
+            {
+                $invoice = $app['repo']->invoice
+                    ->findByMerchantAndTokenRegistration($this->merchant, $subscriptionRegistration);
+
+                $publicArray= $subscriptionRegistration
+                    ->toArrayTokenFieldsNach($invoice, $publicArray);
+
+                $paperMandateUpload =
+                    $app['repo']->paper_mandate_upload
+                        ->findLatestByMandateId($subscriptionRegistration->paperMandate->getId())->first();
+
+                if ($paperMandateUpload !== null)
+                {
+                    $singedFormUrl = (new FileUploader($subscriptionRegistration->paperMandate))
+                        ->getSignedShortUrl($paperMandateUpload[PaperMandateUploadEntity::ENHANCED_FILE_ID]);
+
+                    $publicArray[SubscriptionRegistrationEntity::NACH]
+                    [SubscriptionRegistrationEntity::SIGNED_FORM] = $singedFormUrl;
+                }
+            }
+        }
+
         return $publicArray;
     }
 
@@ -1025,6 +1056,11 @@ class Entity extends Base\PublicEntity
     public function isUpiRecurringToken()
     {
         return (($this->isRecurring() === true) and ($this->getMethod() === Payment\Method::UPI));
+    }
+
+    public function isNachToken()
+    {
+        return ($this->getMethod() === Payment\Method::NACH);
     }
 
     public function isSaveVpaToken()
