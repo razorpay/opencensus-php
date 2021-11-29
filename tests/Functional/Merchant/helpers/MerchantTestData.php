@@ -8180,6 +8180,19 @@ return [
         ],
     ],
 
+    'testDisable2dot0AppsWithOrgMerchantFlags' => [
+        'request'  => [],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'          => "BAD_REQUEST_ERROR",
+                    'description'   =>"You do not have permission to access this feature.",
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testEditMerchantCategoryShouldResetMethods' => [
         'request'  => [
             'raw'    => json_encode([

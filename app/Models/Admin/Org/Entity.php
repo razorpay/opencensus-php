@@ -433,7 +433,6 @@ class Entity extends Base\Entity
         {
             return $this->loadedFeatures;
         }
-
         $cacheTtl = app('repo')->feature->getCacheTtl(Feature\Entity::FEATURE);
 
         $cacheTags = Feature\Entity::getCacheTagsForNames($this->entity, $this->getId());
@@ -443,7 +442,6 @@ class Entity extends Base\Entity
             ->cacheTags($cacheTags)
             ->pluck(Feature\Entity::NAME)
             ->toArray();
-
         return $this->loadedFeatures;
     }
 

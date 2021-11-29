@@ -201,6 +201,161 @@ class VirtualAccountTest extends TestCase
         $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
     }
 
+    public function testCreateVirtualAccountForOrgMerchantFeatureFlag()
+    {
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::WHITE_LABELLED_INVOICES,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature\Constants::WHITE_LABELLED_INVOICES,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $response = $this->createVirtualAccount();
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
+    }
+
+    public function testCreateVirtualAccount401ForOrgMerchantFeatureFlag()
+    {
+        $this->fixtures->create('feature', [
+            'name'          => Feature\Constants::WHITE_LABELLED_VA,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $response = $this->createVirtualAccount();
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testFetchVirtualAccountForOrgMerchantFeatureFlag()
+    {
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::WHITE_LABELLED_INVOICES,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature\Constants::WHITE_LABELLED_INVOICES,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $response = $this->createVirtualAccount();
+
+        $response = $this->fetchVirtualAccount($response['id']);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testFetchVirtualAccount401ForOrgMerchantFeatureFlag()
+    {
+        $this->fixtures->create('feature', [
+            'name'          => Feature\Constants::WHITE_LABELLED_VA,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $response = $this->fetchVirtualAccount('random_id_virt');
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testFetchMultipleVirtualAccountForOrgMerchantFeatureFlag()
+    {
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::WHITE_LABELLED_INVOICES,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature\Constants::WHITE_LABELLED_INVOICES,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->createVirtualAccount(['name' => 'First VA']);
+        $this->createVirtualAccount(['name' => 'Second VA']);
+
+        $response = $this->fetchVirtualAccounts();
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testFetchMultipleVirtualAccount401ForOrgMerchantFeatureFlag()
+    {
+        $this->fixtures->create('feature', [
+            'name'          => Feature\Constants::WHITE_LABELLED_VA,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $response = $this->fetchVirtualAccounts();
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testFetchPaymentsForVirtualAccountForOrgMerchantFeatureFlag()
+    {
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::WHITE_LABELLED_INVOICES,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature\Constants::WHITE_LABELLED_INVOICES,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $virtualAccount = $this->createVirtualAccount();
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
+
+        $response = $this->fetchVirtualAccountPayments($virtualAccount['id']);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testFetchPaymentsForVirtualAccount401ForOrgMerchantFeatureFlag()
+    {
+        $this->fixtures->create('feature', [
+            'name'          => Feature\Constants::WHITE_LABELLED_VA,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $response = $this->fetchVirtualAccountPayments('random_id_virt');
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
     public function testCreateVirtualAccountWithOrderIdFeatureEnabled()
     {
         $this->fixtures->merchant->addFeatures(['order_id_mandatory']);

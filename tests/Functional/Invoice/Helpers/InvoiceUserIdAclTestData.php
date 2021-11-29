@@ -43,6 +43,110 @@ return [
         ],
     ],
 
+    'testCreateInvoiceOrgAndMerchantFeature' => [
+        'request' => [
+            'url'    => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'line_items'    => [
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details' => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'line_items'    => [
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testFailCreateInvoiceMerchantFeature' => [
+        'request' => [
+            'url'    => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'line_items'    => [
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'description' => 'You do not have permission to access this feature.',
+                ],
+            ],
+            'status_code' => 400,
+       ],
+    ],
+
+    'testFailCreateInvoiceOrgFeature' => [
+        'request' => [
+            'url'    => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'line_items'    => [
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details' => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'line_items'    => [
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+
     'testGetInvoiceWithUserIdHeaderSuccess' => [
         'request' => [
             'url'    => '/invoices/inv_1000000invoice',

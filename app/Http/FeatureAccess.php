@@ -178,6 +178,48 @@ class FeatureAccess
         return ApiResponse::routeNotFound();
     }
 
+    public function verifyOrgAndMerchantFeatureAccess()
+    {
+        $orgAndMerchantRouteFeatures = $this->route->getCurrentRouteOrgAndMerchantFeatures();
+
+        // The current route does require any feature to be check.
+        if ((empty($orgAndMerchantRouteFeatures) === true) or
+            (isset($this->merchant) === false))
+        {
+            return null;
+        }
+        $orgEnableFeatures = $this->merchant->org->getEnabledFeatures();
+
+        $orgRouteFeatures = array_intersect($orgAndMerchantRouteFeatures, $orgEnableFeatures);
+
+        if (empty($orgRouteFeatures) === true)
+        {
+            return null;
+        }
+
+        $merchantEnableFeatures = $this->getMerchantRouteFeatures($orgAndMerchantRouteFeatures);
+
+        $this->trace->info(TraceCode::MERCHANT_FEATURE_ACCESS, [
+            "merchant_feature"     => $merchantEnableFeatures,
+            "orgAndMerchant"       => $orgAndMerchantRouteFeatures,
+        ]);
+
+        $routeFeatures = array_intersect($merchantEnableFeatures, $orgRouteFeatures);
+
+        // if org has any enabled feature for route
+        if (empty($routeFeatures) === false)
+        {
+            return null;
+        }
+
+        $this->trace->info(TraceCode::ORG_LEVEL_WHITELISTING_FEATURE_ACCESS_VALIDATION_FAILURE, [
+            Entity::ORG_ID      => $this->merchant->getOrgId(),
+            Entity::MERCHANT_ID => $this->merchant->getId(),
+        ]);
+
+        return ApiResponse::featurePermissionNotFound();
+    }
+
     /**
      * Returns an array of route features that are available with the
      * merchant in the current mode.
@@ -193,6 +235,11 @@ class FeatureAccess
         // in the $features array enabled, we allow the request
         //
         $merchantFeatures = $this->merchant->getEnabledFeatures();
+
+        $this->trace->info(TraceCode::MERCHANT_FEATURE_ACCESS_DB, [
+            "merchant_feature"     => $merchantFeatures,
+            "orgAndMerchant"       => $routeFeatures,
+        ]);
 
         return array_intersect($routeFeatures, $merchantFeatures);
     }

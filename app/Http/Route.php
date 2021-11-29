@@ -11398,6 +11398,51 @@ class Route
         'merchant_activation_save'     => [Feature::ORG_HIDE_ACTIVATION_FORM],
     ];
 
+    /**
+     * A route can belong to multiple features, mapped here
+     *  if feature is enabled for a org and merchant both: then it will allow access
+     */
+    public static $orgAndMerchantNameFeaturesMap = [
+        // white_labelled_invoices
+        'invoice_create'                        => [Feature::WHITE_LABELLED_INVOICES],
+        'invoice_update'                        => [Feature::WHITE_LABELLED_INVOICES],
+        'invoice_issue'                         => [Feature::WHITE_LABELLED_INVOICES],
+        'invoice_delete'                        => [Feature::WHITE_LABELLED_INVOICES],
+        'invoice_cancel'                        => [Feature::WHITE_LABELLED_INVOICES],
+        'invoice_fetch'                         => [Feature::WHITE_LABELLED_INVOICES],
+        'invoice_fetch_multiple'                => [Feature::WHITE_LABELLED_INVOICES],
+        'invoice_send_notification_private'     => [Feature::WHITE_LABELLED_INVOICES],
+        // white_labelled_route
+        'payment_transfer'                      => [Feature::WHITE_LABELLED_ROUTE],
+        'transfer_create'                       => [Feature::WHITE_LABELLED_ROUTE],
+        'payment_fetch_transfers'               => [Feature::WHITE_LABELLED_ROUTE],
+        'transfer_fetch'                        => [Feature::WHITE_LABELLED_ROUTE],
+        'transfer_fetch_multiple'               => [Feature::WHITE_LABELLED_ROUTE],
+//        'payment_fetch_multiple'                => [Feature::WHITE_LABELLED_ROUTE],
+        'transfer_create_reversal'              => [Feature::WHITE_LABELLED_ROUTE],
+        'transfer_edit'                         => [Feature::WHITE_LABELLED_ROUTE],
+        // white_labelled_virtual_accounts
+        'virtual_account_create'                => [Feature::WHITE_LABELLED_VA],
+        'virtual_account_fetch'                 => [Feature::WHITE_LABELLED_VA],
+        'virtual_account_fetch_multiple'        => [Feature::WHITE_LABELLED_VA],
+        'virtual_account_fetch_payments'        => [Feature::WHITE_LABELLED_VA],
+        'payment_bank_transfer_fetch'           => [Feature::WHITE_LABELLED_VA],
+        'payment_upi_transfer_fetch'            => [Feature::WHITE_LABELLED_VA],
+        'virtual_account_add_receivers'         => [Feature::WHITE_LABELLED_VA],
+        'virtual_account_close'                 => [Feature::WHITE_LABELLED_VA],
+        // white_labelled_qrcodes
+        'qr_code_create'                        => [Feature::WHITE_LABELLED_QRCODES],
+        'qr_code_close'                         => [Feature::WHITE_LABELLED_QRCODES],
+        'qr_code_fetch_multiple'                => [Feature::WHITE_LABELLED_QRCODES],
+        'qr_payment_fetch_for_qr_code'          => [Feature::WHITE_LABELLED_QRCODES],
+        'qr_code_fetch'                         => [Feature::WHITE_LABELLED_QRCODES],
+        // white_labelled_payment_links
+        'payment_links_create' => [Feature::WHITE_LABELLED_PL],
+        'payment_links_fetch_multiple' => [Feature::WHITE_LABELLED_PL],
+        'payment_links_update' => [Feature::WHITE_LABELLED_PL],
+        'payment_links_cancel' => [Feature::WHITE_LABELLED_PL],
+    ];
+
     /*
      * Routes that can be accessed by other org admins.
      * primarily razorpay org
@@ -12922,6 +12967,14 @@ class Route
         return $features[$route] ?? [];
     }
 
+    public static function getOrgAndMerchantFeaturesForRoute($route) : array
+    {
+        $features = self::$orgAndMerchantNameFeaturesMap;
+
+        return $features[$route] ?? [];
+    }
+
+
     /**
      * Returns the array of features, one of which is required to
      * access the current route.
@@ -12952,6 +13005,17 @@ class Route
         // This fetches an array of all features mapped to the route
         //
         return self::getOrgLevelFeaturesForRoute($currentRoute);
+    }
+
+
+    public function getCurrentRouteOrgAndMerchantFeatures(): array
+    {
+        $currentRoute = $this->getCurrentRouteName();
+        //
+        // A route can belong to multiple features
+        // This fetches an array of all features mapped to the route
+        //
+        return self::getOrgAndMerchantFeaturesForRoute($currentRoute);
     }
 
     public function isS2SPaymentRoute(): bool

@@ -28,7 +28,7 @@ class InvoiceMetricTest extends TestCase
 
         $mock = $this->createMetricsMock();
 
-        $mock->expects($this->at(12))
+        $mock->expects($this->at(15))
              ->method('count')
              ->withConsecutive(
                 [
@@ -106,7 +106,7 @@ class InvoiceMetricTest extends TestCase
                     ],
                 ]);
 
-        $mock->expects($this->at(1))
+        $mock->expects($this->at(3))
              ->method('histogram')
              ->withConsecutive(
                 [

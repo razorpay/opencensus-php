@@ -51,6 +51,7 @@ class PublicErrorDescription
     const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED                               = 'Password Change is not allowed for this Org';
     const BAD_REQUEST_ACCESS_TOKEN_INVALID                                      = 'Access Token is not valid or expired.';
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
+    const BAD_FEATURE_PERMISSION_NOT_FOUND                                      = "You do not have permission to access this feature.";
     const BAD_REQUEST_PAYMENT_NOT_FOUND                                         = 'The requested payment was not found on the server';
     const BAD_REQUEST_ROUTE_DISABLED                                            = 'The requested route is disabled.';
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                        = 'Razorpay API is only available over HTTPS.';

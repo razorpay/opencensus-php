@@ -88,6 +88,11 @@ class Response
         return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
     }
 
+    public function featurePermissionNotFound()
+    {
+        return $this->generateErrorResponse(ErrorCode::BAD_FEATURE_PERMISSION_NOT_FOUND);
+    }
+
     public function routeDisabled()
     {
         return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_ROUTE_DISABLED);

@@ -105,6 +105,12 @@ class Authenticate
         // Post process after authentication completes
         $ret = (new FeatureAccess)->verifyFeatureAccess($ret, $bearerToken);
 
+        // white listing org and merchants based on features
+        if ($ret === null)
+        {
+            $ret = (new FeatureAccess)->verifyOrgAndMerchantFeatureAccess();
+        }
+
         // null value indicates failure flow : do not validate further if previous validation failed
         if ($ret === null)
         {

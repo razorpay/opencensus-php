@@ -3,6 +3,7 @@
 namespace RZP\Models\Order;
 
 use RZP\Exception;
+use ApiResponse;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Diag\EventCode;
@@ -13,6 +14,8 @@ use RZP\Constants;
 use RZP\Models\BankAccount;
 use RZP\Base\ConnectionType;
 use RZP\Models\Bank\BankCodes;
+use RZP\Models\SubscriptionRegistration;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class Service extends Base\Service
@@ -80,6 +83,7 @@ class Service extends Base\Service
 
     public function createOrder(array $input)
     {
+        $this->checkRouteIsAccessible($input);
 
         $this->beforeCreate($input);
 
@@ -90,6 +94,67 @@ class Service extends Base\Service
         $order = $this->afterCreate($input, $order);
 
         return $order;
+    }
+
+    public function checkRouteIsAccessible( $input){
+
+        if(isset($input['transfers']))
+        {
+            $ret = $this->validateOrgMerchantFeatureAccess();
+
+            if($ret != null)
+            {
+                throw new BadRequestException(ErrorCode::BAD_FEATURE_PERMISSION_NOT_FOUND);
+            }
+        }
+
+    }
+
+    public function checkRouteIsAccessibleWithExpand($input){
+
+        $expands = $input['expand'] ?? [];
+
+        if( isset($expands[0]) && $expands[0] === 'transfers')
+        {
+            $ret = $this->validateOrgMerchantFeatureAccess();
+
+            if($ret != null)
+            {
+                throw new BadRequestException(ErrorCode::BAD_FEATURE_PERMISSION_NOT_FOUND);
+            }
+        }
+    }
+
+    public function validateOrgMerchantFeatureAccess(){
+
+        $orgId = $this->merchant->getOrgId();
+
+        $org = $this->repo->org->findOrFailPublic($orgId);
+
+        $orgEnableFeatures = $org->getEnabledFeatures();
+
+        $orgRouteFeatures = array_intersect([Feature\Constants::WHITE_LABELLED_ROUTE], $orgEnableFeatures);
+        if (empty($orgRouteFeatures) === true)
+        {
+            return null;
+        }
+
+        $merchantFeatures = $this->merchant->getEnabledFeatures();
+
+        $routeFeatures = array_intersect($orgRouteFeatures, $merchantFeatures);
+
+        // if org has any enabled feature for route
+        if (empty($routeFeatures) === false)
+        {
+            return null;
+        }
+
+        $this->trace->info(TraceCode::ORG_LEVEL_WHITELISTING_FEATURE_ACCESS_VALIDATION_FAILURE, [
+            \RZP\Models\Merchant\Entity::ORG_ID      => $this->merchant->getOrgId(),
+            Entity::MERCHANT_ID => $this->merchant->getId(),
+        ]);
+
+        return ApiResponse::featurePermissionNotFound();
     }
 
     public function create(array $input)
@@ -296,6 +361,8 @@ class Service extends Base\Service
 
     public function fetch($id, array $input = [])
     {
+        $this->checkRouteIsAccessibleWithExpand($input);
+
         $order = $this->repo->order->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
         return $order->toArrayPublic();

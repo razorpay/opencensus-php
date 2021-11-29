@@ -10490,6 +10490,360 @@ IFSC Code  ICIC0001206
         $this->startTest();
     }
 
+    public function testDisable2dot0AppsWithOrgMerchantFlagsInvoices()
+    {
+        $routesToDisable = [
+            [
+                'request' => [
+                    'url' => '/invoices',
+                    'method' => 'post',
+                ],
+                'name' => 'invoices_create',
+            ],
+            [
+                'request' => [
+                    'url' => '/invoices/some_id',
+                    'method' => 'patch',
+                ],
+                'name' => 'invoice_update',
+            ],
+            [
+                'request' => [
+                    'url' => '/invoices/some_id/issue',
+                    'method' => 'post',
+                ],
+                'name' => 'invoice_issue',
+            ],
+            [
+                'request' => [
+                    'url' => '/invoices/some_id',
+                    'method' => 'delete',
+                ],
+                'name' => 'invoice_delete',
+            ],
+            [
+                'request' => [
+                    'url' => '/invoices/some_id/cancel',
+                    'method' => 'post',
+                ],
+                'name' => 'invoice_cancel',
+            ],
+            [
+                'request' => [
+                    'url' => '/invoices/some_id',
+                    'method' => 'get',
+                ],
+                'name' => 'invoice_fetch',
+            ],
+            [
+                'request' => [
+                    'url' => '/invoices',
+                    'method' => 'get',
+                ],
+                'name' => 'invoice_fetch_multiple',
+            ],
+            [
+                'request' => [
+                    'url' => '/invoices/some_id/notify_by/email',
+                    'method' => 'post',
+                ],
+                'name' => 'invoice_send_notification_private',
+            ],
+        ];
+
+        $flags = [
+            Feature\Constants::WHITE_LABELLED_INVOICES
+        ];
+
+        foreach ($flags as $flag)
+        {
+            $this->fixtures->create('feature', [
+                'name'          => $flag,
+                'entity_id'     => '100000razorpay',
+                'entity_type'   => 'org',
+            ]);
+        }
+
+        $testData = $this->testData['testDisable2dot0AppsWithOrgMerchantFlags'];
+
+        $this->ba->privateAuth();
+
+        foreach( $routesToDisable as $route)
+        {
+            $response = $this->sendRequest($route["request"]);
+
+            $content = json_decode($response->getContent(), true);
+
+            $this->assertArraySelectiveEquals($testData['response']['content'], $content);
+        }
+    }
+
+    public function testDisable2dot0AppsWithOrgMerchantFlagsVA()
+    {
+        $routesToDisable = [
+            [
+                'request' => [
+                    'url' => '/virtual_accounts',
+                    'method' => 'post',
+                ],
+                'name' => 'virtual_account_create',
+            ],
+            [
+                'request' => [
+                    'url' => '/virtual_accounts/some_id',
+                    'method' => 'get',
+                ],
+                'name' => 'virtual_account_fetch',
+            ],
+            [
+                'request' => [
+                    'url' => '/virtual_accounts',
+                    'method' => 'get',
+                ],
+                'name' => 'virtual_account_fetch_multiple',
+            ],
+            [
+                'request' => [
+                    'url' => '/virtual_accounts/some_id/payments',
+                    'method' => 'get',
+                ],
+                'name' => 'virtual_account_fetch_payments',
+            ],
+            [
+                'request' => [
+                    'url' => '/payments/some_id/bank_transfer',
+                    'method' => 'get',
+                ],
+                'name' => 'payment_bank_transfer_fetch',
+            ],
+            [
+                'request' => [
+                    'url' => '/payments/some_id/upi_transfer',
+                    'method' => 'get',
+                ],
+                'name' => 'payment_upi_transfer_fetch',
+            ],
+            [
+                'request' => [
+                    'url' => '/virtual_accounts/some_id/receivers',
+                    'method' => 'post',
+                ],
+                'name' => 'virtual_account_add_receivers',
+            ],
+            [
+                'request' => [
+                    'url' => '/virtual_accounts/some_id/close',
+                    'method' => 'post',
+                ],
+                'name' => 'virtual_account_close',
+            ],
+        ];
+
+        $flags = [
+            Feature\Constants::WHITE_LABELLED_VA
+        ];
+
+        foreach ($flags as $flag)
+        {
+            $this->fixtures->create('feature', [
+                'name'          => $flag,
+                'entity_id'     => '100000razorpay',
+                'entity_type'   => 'org',
+            ]);
+
+            $this->fixtures->create('feature', [
+                'name'        => Feature\Constants::VIRTUAL_ACCOUNTS,
+                'entity_id'   => 10000000000000,
+                'entity_type' => 'merchant',
+            ]);
+        }
+
+        $testData = $this->testData['testDisable2dot0AppsWithOrgMerchantFlags'];
+
+        $this->ba->privateAuth();
+
+        foreach( $routesToDisable as $route)
+        {
+            $response = $this->sendRequest($route["request"]);
+
+            $content = json_decode($response->getContent(), true);
+
+            $this->assertArraySelectiveEquals($testData['response']['content'], $content);
+        }
+    }
+
+    public function testDisable2dot0AppsWithOrgMerchantFlagsQRCodes()
+    {
+        $routesToDisable = [
+            [
+                'request' => [
+                    'url' => '/payments/qr_codes',
+                    'method' => 'post',
+                ],
+                'name' => 'qr_code_create',
+            ],
+            [
+                'request' => [
+                    'url' => '/payments/qr_codes/some_id/close',
+                    'method' => 'post',
+                ],
+                'name' => 'qr_code_close',
+            ],
+            [
+                'request' => [
+                    'url' => '/payments/qr_codes',
+                    'method' => 'get',
+                ],
+                'name' => 'qr_code_fetch_multiple',
+            ],
+            [
+                'request' => [
+                    'url' => '/payments/qr_codes/some_id/payments',
+                    'method' => 'get',
+                ],
+                'name' => 'qr_payment_fetch_for_qr_code',
+            ],
+            [
+                'request' => [
+                    'url' => '/payments/qr_codes/some_id',
+                    'method' => 'get',
+                ],
+                'name' => 'qr_code_fetch',
+            ],
+        ];
+
+        $flags = [
+            Feature\Constants::WHITE_LABELLED_QRCODES
+        ];
+
+        foreach ($flags as $flag)
+        {
+            $this->fixtures->create('feature', [
+                'name'          => $flag,
+                'entity_id'     => '100000razorpay',
+                'entity_type'   => 'org',
+            ]);
+
+            $this->fixtures->create('feature', [
+                'name'        => Feature\Constants::QR_CODES,
+                'entity_id'   => 10000000000000,
+                'entity_type' => 'merchant',
+            ]);
+        }
+
+        $testData = $this->testData['testDisable2dot0AppsWithOrgMerchantFlags'];
+
+        $this->ba->privateAuth();
+
+        foreach( $routesToDisable as $route)
+        {
+            $response = $this->sendRequest($route["request"]);
+
+            $content = json_decode($response->getContent(), true);
+
+            $this->assertArraySelectiveEquals($testData['response']['content'], $content);
+        }
+    }
+
+    public function testDisable2dot0AppsWithOrgMerchantFlagsPL()
+    {
+        $routesToDisable = [
+            [
+                'request' => [
+                    'url' => '/payment_links',
+                    'method' => 'post',
+                ],
+                'name' => 'payment_links_create',
+            ],
+            [
+                'request' => [
+                    'url' => '/payment_links',
+                    'method' => 'get',
+                ],
+                'name' => 'payment_links_fetch_multiple',
+            ],
+            [
+                'request' => [
+                    'url' => '/payment_links/some_id',
+                    'method' => 'patch',
+                ],
+                'name' => 'payment_links_update',
+            ],
+            [
+                'request' => [
+                    'url' => '/payment_links/some_id/cancel',
+                    'method' => 'post',
+                ],
+                'name' => 'payment_links_cancel',
+            ],
+        ];
+
+        $flags = [
+            Feature\Constants::WHITE_LABELLED_PL
+        ];
+
+        foreach ($flags as $flag)
+        {
+            $this->fixtures->create('feature', [
+                'name'          => $flag,
+                'entity_id'     => '100000razorpay',
+                'entity_type'   => 'org',
+            ]);
+        }
+
+        $testData = $this->testData['testDisable2dot0AppsWithOrgMerchantFlags'];
+
+        $this->ba->privateAuth();
+
+        foreach( $routesToDisable as $route)
+        {
+            $response = $this->sendRequest($route["request"]);
+
+            $content = json_decode($response->getContent(), true);
+
+            $this->assertArraySelectiveEquals($testData['response']['content'], $content);
+        }
+    }
+
+    public function testDisable2dot0AppsWithOrgMerchantFlagsRoute()
+    {
+        $routesToDisable = [
+            [
+                'request' => [
+                    'url' => '/transfers/some_id',
+                    'method' => 'patch',
+                ],
+                'name' => 'transfer_edit',
+            ],
+        ];
+
+        $flags = [
+            Feature\Constants::WHITE_LABELLED_ROUTE
+        ];
+
+        foreach ($flags as $flag)
+        {
+            $this->fixtures->create('feature', [
+                'name'          => $flag,
+                'entity_id'     => '100000razorpay',
+                'entity_type'   => 'org',
+            ]);
+        }
+
+        $testData = $this->testData['testDisable2dot0AppsWithOrgMerchantFlags'];
+
+        $this->ba->privateAuth();
+
+        foreach( $routesToDisable as $route)
+        {
+            $response = $this->sendRequest($route["request"]);
+
+            $content = json_decode($response->getContent(), true);
+
+            $this->assertArraySelectiveEquals($testData['response']['content'], $content);
+        }
+    }
+
     public function testCreatedMerchantHasPlServiceFeatureFlag()
     {
         $content = $this->createMerchant();

@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Invoice;
 
+use RZP\Models\Feature\Constants;
+use RZP\Tests\Functional\Fixtures\Entity\Feature;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -28,13 +30,77 @@ class InvoiceUserIdAclTest extends TestCase
 
     public function testCreateInvoiceWithUserId()
     {
+        $this->fixtures->create('feature', [
+            'name'        => Constants::WHITE_LABELLED_INVOICES,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+        'name'          => Constants::WHITE_LABELLED_INVOICES,
+        'entity_id'     => '100000razorpay',
+        'entity_type'   => 'org',
+    ]);
         $testData = & $this->testData[__FUNCTION__];
 
         $testData['response']['content']['user_id'] = $this->merchantUser->getId();
 
         $this->startTest();
-
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
+    // feature present at org and merchant both
+    public function testCreateInvoiceOrgAndMerchantFeature()
+    {
+        $this->fixtures->create('feature', [
+            'name'        => Constants::WHITE_LABELLED_INVOICES,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Constants::WHITE_LABELLED_INVOICES,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['response']['content']['user_id'] = $this->merchantUser->getId();
+
+        $response = $this->startTest();
+        $this->assertEquals('invoice', $response['entity']);
+    }
+    // feature doesn't present in merchant , just present at org level
+    public function testFailCreateInvoiceMerchantFeature()
+    {
+
+        $this->fixtures->create('feature', [
+            'name'          => Constants::WHITE_LABELLED_INVOICES,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->startTest();
+    }
+
+    // feature doesn't present at org level, just present for merchant
+    public function testFailCreateInvoiceOrgFeature()
+    {
+        $this->fixtures->create('feature', [
+            'name'        => Constants::WHITE_LABELLED_INVOICES,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['response']['content']['user_id'] = $this->merchantUser->getId();
+
+        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertEquals('invoice', $response['entity']);
     }
 
     public function testGetInvoiceWithUserIdHeaderSuccess()

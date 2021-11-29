@@ -188,6 +188,19 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function getOrgFeatures($entityType, $entityId)
+    {
+        $response = new Base\Collection;
+
+        $response['assigned_features'] = $this->repo
+            ->feature
+            ->fetchByEntityTypeAndEntityId($entityType, $entityId);
+
+        $response['all_features'] =  array_keys(Constants::$featureValueMap);
+
+        return $response;
+    }
+
     /**
      * Delete the feature association with an entity
      *

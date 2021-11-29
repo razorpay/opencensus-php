@@ -7,6 +7,7 @@ use ApiResponse;
 
 use RZP\Models\Feature\Type;
 use RZP\Models\Feature\Constants;
+use RZP\Trace\TraceCode;
 
 class FeatureController extends Controller
 {
@@ -144,15 +145,20 @@ class FeatureController extends Controller
      *
      * @param string|null $entityType
      * @param string|null $entityId
-     *
      * @return \Illuminate\Http\Response
      */
     protected function getFeatures($entityType = null, $entityId = null)
     {
-        $data = $this->service()->getFeatures($entityType, $entityId);
+       if($entityType === Constants::ORG)
+       {
+           $data = $this->service()->getOrgFeatures($entityType, $entityId);
+       }else {
+           $data = $this->service()->getFeatures($entityType, $entityId);
+       }
 
         return ApiResponse::json($data);
     }
+
 
     public function getOnboardingDetails()
     {

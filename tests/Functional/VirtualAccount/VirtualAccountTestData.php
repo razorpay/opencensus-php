@@ -23,6 +23,105 @@ return [
         ],
     ],
 
+    'testCreateVirtualAccount401ForOrgMerchantFeatureFlag' => [
+        'error' => [
+            'code'          => "BAD_REQUEST_ERROR",
+            'description'   =>"You do not have permission to access this feature.",
+        ]
+    ],
+
+    'testCreateVirtualAccountForOrgMerchantFeatureFlag' => [
+        'name'            => 'Test virtual account',
+        'entity'          => 'virtual_account',
+        'status'          => 'active',
+        'description'     => 'VA for tests',
+        'receivers'  => [
+            [
+                'entity' => 'bank_account',
+                'ifsc'   => 'RAZR0000001',
+                'name'   => 'Test virtual account'
+            ],
+        ],
+    ],
+
+    'testFetchVirtualAccount401ForOrgMerchantFeatureFlag' => [
+        'error' => [
+            'code'          => "BAD_REQUEST_ERROR",
+            'description'   =>"You do not have permission to access this feature.",
+        ]
+    ],
+
+    'testFetchVirtualAccountForOrgMerchantFeatureFlag' => [
+        'name'            => 'Test virtual account',
+        'entity'          => 'virtual_account',
+        'status'          => 'active',
+        'description'     => 'VA for tests',
+        'receivers'  => [
+            [
+                'entity' => 'bank_account',
+                'ifsc'   => 'RAZR0000001',
+                'name'   => 'Test virtual account'
+            ],
+        ],
+    ],
+
+    'testFetchMultipleVirtualAccount401ForOrgMerchantFeatureFlag' => [
+        'error' => [
+            'code'          => "BAD_REQUEST_ERROR",
+            'description'   =>"You do not have permission to access this feature.",
+        ]
+    ],
+
+    'testFetchMultipleVirtualAccountForOrgMerchantFeatureFlag' => [
+        'entity' => 'collection',
+        'count'  => 2,
+        'items'  => [
+            [
+                'name'            => 'Second VA',
+                'entity'          => 'virtual_account',
+                'status'          => 'active',
+                'description'     => 'VA for tests',
+            ],
+            [
+                'name'            => 'First VA',
+                'entity'          => 'virtual_account',
+                'status'          => 'active',
+                'description'     => 'VA for tests',
+            ],
+        ],
+    ],
+
+    'testFetchPaymentsForVirtualAccountForOrgMerchantFeatureFlag' => [
+        'entity' => 'collection',
+        'count'  => 1,
+        'items'  => [
+            [
+                'entity'            => 'payment',
+                'amount'            => 5000,
+                'currency'          => 'INR',
+                'status'            => 'captured',
+                'order_id'          => null,
+                'invoice_id'        => null,
+                'method'            => 'bank_transfer',
+                'amount_refunded'   => 0,
+                'refund_status'     => null,
+                'captured'          => true,
+                'description'       => 'Test bank transfer',
+                'email'             => null,
+                'contact'           => null,
+                'error_code'        => null,
+                'error_description' => null,
+            ]
+        ],
+    ],
+
+    'testFetchPaymentsForVirtualAccount401ForOrgMerchantFeatureFlag' => [
+        'error' => [
+            'code'          => "BAD_REQUEST_ERROR",
+            'description'   =>"You do not have permission to access this feature.",
+        ]
+    ],
+
     'testCreateVirtualAccountWithOrderIdFeatureEnabled' => [
         'name'            => 'Test virtual account',
         'entity'          => 'virtual_account',

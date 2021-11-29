@@ -677,6 +677,16 @@ class Constants
     const ORG_SUB_MERCHANT_CREATE            = 'sub_merchant_create';
 
     /*
+     * Org level features for featured route access whitelisting
+     */
+    const WHITE_LABELLED_INVOICES                = 'white_labelled_invoices';
+    const WHITE_LABELLED_ROUTE                   = 'white_labelled_route';
+    const WHITE_LABELLED_VA                      = 'white_labelled_va';
+    const WHITE_LABELLED_QRCODES                 = 'white_labelled_qrcodes';
+    const WHITE_LABELLED_PL                      = 'white_labelled_pl';
+    const WHITE_LABELLED_SUBS                    = 'white_labelled_subs';
+
+    /*
      * Org level feature to hide activation form by deafult
      */
     const ORG_HIDE_ACTIVATION_FORM  = 'hide_activation_form';
@@ -1313,6 +1323,12 @@ class Constants
         self::FAV_FTA_DPRCN_FWD               => true,
         self::FAV_FTA_DPRCN_BCK               => true,
         self::PAYOUT_SERVICE_ENABLED          => true,
+        self::WHITE_LABELLED_INVOICES         => true,
+        self::WHITE_LABELLED_ROUTE            => true,
+        self::WHITE_LABELLED_VA               => true,
+        self::WHITE_LABELLED_QRCODES          => true,
+        self::WHITE_LABELLED_PL               => true,
+        self::WHITE_LABELLED_SUBS             => true,
         self::COVID_19_RELIEF                 => true,
         self::BENE_NAME_IN_PAYOUT             => true,
         self::PAYOUTS_ON_HOLD                 => true,
