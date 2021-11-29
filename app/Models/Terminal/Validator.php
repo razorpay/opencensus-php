@@ -858,10 +858,13 @@ class Validator extends Base\Validator
 
     protected static $upiMindgateEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:upi_mindgate',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
         Entity::UPI                        => 'sometimes|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::CATEGORY                   => 'sometimes|string|max:30',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
@@ -869,6 +872,9 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::NOTES                      => 'sometimes|string',
+        Entity::NETBANKING                 => 'sometimes|boolean|in:0',
+        Entity::CARD                       => 'sometimes|boolean|in:0',
     ];
 
     protected static $upiAirtelEditTerminalRules = [
@@ -1285,6 +1291,8 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
         Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::CATEGORY                   => 'sometimes|string|max:30',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::VPA                        => 'required_only_if:type.bharat_qr,1|string',
         Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean',
@@ -1293,6 +1301,10 @@ class Validator extends Base\Validator
         Entity::VIRTUAL_UPI_ROOT           => 'required_if:type.upi_transfer,1|string',
         Entity::VIRTUAL_UPI_MERCHANT_PREFIX=> 'sometimes_if:type.upi_transfer,1|string',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::NOTES                      => 'sometimes|string',
+        Entity::NETBANKING                 => 'sometimes|boolean|in:0,1',
+        Entity::CARD                       => 'sometimes|boolean|in:0,1',
     ];
 
     protected static $upiAxisTerminalRules = [
