@@ -168,6 +168,11 @@ export const SubmerchantSettlementStatusMap = {
   inactive: 'label-muted',
 };
 
+export const SubmerchantSettlementStatusMap_New = {
+  active: 'label-light-positive',
+  inactive: 'label-light-information',
+};
+
 export const XSubmerchantCAStatusMap = {
   'process started': 'label-info',
   'request Cancelled': 'label-danger',
@@ -230,6 +235,7 @@ export const OfferStatusLabel = statusLabel(offerStatusMap);
 export const RefundStatusLabel = statusLabel(refundStatusMap);
 export const CommissionInvoiceStatusLabel = statusLabel(commissionInvoiceStatusMap);
 export const SubmerchantSettlementLabel = statusLabel(SubmerchantSettlementStatusMap);
+export const SubmerchantSettlementLabelNew = statusLabel(SubmerchantSettlementStatusMap_New);
 export const QRCodeStatusLabel = statusLabel(qrCOdeStatusMap);
 export const XSubmerchantCAStatusLabel = statusLabel(XSubmerchantCAStatusMap);
 export const XSubmerchantVAStatusLabel = statusLabel(XSubmerchantVAStatusMap);

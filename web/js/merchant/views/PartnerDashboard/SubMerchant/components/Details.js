@@ -10,16 +10,35 @@ import AsyncButton from 'react-async-button';
 
 import {
   ActivationStatusLabel,
+  SubmerchantSettlementLabelNew,
   SubmerchantSettlementLabel,
   XSubmerchantCAStatusLabel,
   XSubmerchantVAStatusLabel,
 } from 'merchant/components/StatusLabel';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import SubMerchantKycStatusLabel from './SubMerchantKycStatusLabel';
+import DetailsAction from './DetailsAction';
 
 export default (props) => {
-  const { submerchant, isLoading, error, onResendInvite, product } = props;
+  const {
+    submerchant,
+    isLoading,
+    error,
+    onResendInvite,
+    product,
+    isSubMerchantKycResellerEnabled,
+    isReseller,
+    getPannelData,
+    trackUserEvent,
+  } = props;
+
+  const activation_status = submerchant?.details?.activation_status;
+  const smallWrapper = ['activated', 'activated_mcc_pending', 'under_review', 'rejected'].includes(
+    activation_status,
+  );
+  const isShowLargeWrapper = isReseller && isSubMerchantKycResellerEnabled && !smallWrapper;
   return (
-    <div class="content-wrapper content-sm txn-details">
+    <div class={`content-wrapper txn-details ${isShowLargeWrapper ? 'content-lg' : 'content-sm'}`}>
       {isLoading ? (
         <div class="page-spinner-container">
           <Spinner />
@@ -27,7 +46,11 @@ export default (props) => {
       ) : (
         <div class="panel panel-default SliderPanel SubmerchantDetail__Panel">
           <div class="panel-heading">
-            <div class="submerchant-name">{submerchant.name || 'Default Name'}</div>
+            <div class="submerchant-name">
+              {isReseller && isSubMerchantKycResellerEnabled
+                ? 'REQUEST KYC APPROVAL '
+                : submerchant.name || 'Default Name'}
+            </div>
             <ShowWhen additionalCondition={(user) => !user.isPartner('pure_platform')}>
               {submerchant.user && (
                 <div class="btn-toolbar pull-right">
@@ -59,7 +82,14 @@ export default (props) => {
                 <ShowWhen additionalCondition={() => product === PRODUCT_TYPE.PG}>
                   {/* Status of Activation */}
                   <EntityDetailRow label="Activation Status">
-                    {submerchant.details && submerchant.details.activation_status ? (
+                    {isReseller && isSubMerchantKycResellerEnabled ? (
+                      // New Label from experiment
+                      <SubMerchantKycStatusLabel
+                        activation_status={submerchant.details.activation_status}
+                        kyc_access={submerchant.kyc_access}
+                      />
+                    ) : // old ui
+                    submerchant.details && submerchant.details.activation_status ? (
                       <ActivationStatusLabel status={submerchant.details.activation_status} />
                     ) : (
                       <span class="label status-label label-warning">Not Submitted</span>
@@ -68,15 +98,27 @@ export default (props) => {
 
                   {/* Status of Settlement */}
                   <EntityDetailRow label="Settlement Status">
-                    <SubmerchantSettlementLabel
-                      status={
-                        submerchant.details &&
-                        submerchant.details.activation_status === 'activated' &&
-                        submerchant.hold_funds === false
-                          ? 'active'
-                          : 'inactive'
-                      }
-                    />
+                    {isReseller && isSubMerchantKycResellerEnabled ? (
+                      <SubmerchantSettlementLabelNew
+                        status={
+                          submerchant.details &&
+                          submerchant.details.activation_status === 'activated' &&
+                          submerchant.hold_funds === false
+                            ? 'active'
+                            : 'inactive'
+                        }
+                      />
+                    ) : (
+                      <SubmerchantSettlementLabel
+                        status={
+                          submerchant.details &&
+                          submerchant.details.activation_status === 'activated' &&
+                          submerchant.hold_funds === false
+                            ? 'active'
+                            : 'inactive'
+                        }
+                      />
+                    )}
                   </EntityDetailRow>
                 </ShowWhen>
 
@@ -133,6 +175,16 @@ export default (props) => {
                     )}
                   </div>
                 </ShowWhen>
+
+                {isReseller && isSubMerchantKycResellerEnabled && (
+                  <DetailsAction
+                    activation_status={submerchant.details.activation_status}
+                    kyc_access={submerchant.kyc_access}
+                    submerchant={submerchant}
+                    getPannelData={getPannelData}
+                    trackUserEvent={trackUserEvent}
+                  />
+                )}
               </div>
             </div>
           </div>

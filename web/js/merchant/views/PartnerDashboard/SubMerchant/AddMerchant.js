@@ -574,7 +574,7 @@ export default class AddMerchant extends Component {
                       A signup link has been sent to the following email
                     </span>
                   </div>
-                  <div>
+                  <div className="merchant-email-wrapper">
                     <span className="merchant-email">{this.state.merchantEmail}</span>
                   </div>
                 </div>

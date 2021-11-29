@@ -43,6 +43,8 @@ import { mediaWindowUrl } from './components/SocialShare';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import Loader from 'common/ui/Loader';
+import ActionButtonKYC from './components/ActionButtonKYC';
+import SubMerchantKycStatusLabel from './components/SubMerchantKycStatusLabel';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
@@ -89,6 +91,27 @@ const activationStatus = {
     ) : (
       <span class="status-label label label-warning">Not Submitted</span>
     ),
+};
+
+const activationStatus_NEW = {
+  title: (
+    <Fragment>
+      Activation Status&nbsp;
+      <span>
+        <i class="i i-info-circle" />
+        &nbsp;
+        <PopoverComponent align="top" theme="dark">
+          <PopoverBody>Current status of merchant's activation request</PopoverBody>
+        </PopoverComponent>
+      </span>
+    </Fragment>
+  ),
+  value: (submerchant) => (
+    <SubMerchantKycStatusLabel
+      activation_status={submerchant.details.activation_status}
+      kyc_access={submerchant.kyc_access}
+    />
+  ),
 };
 
 const settlementStatus = {
@@ -278,6 +301,18 @@ class ProductSubMerchantsList extends ListContainer {
     ),
   });
 
+  actions = {
+    title: 'Actions',
+    value: (submerchant) => (
+      <ActionButtonKYC
+        activation_status={submerchant.details.activation_status}
+        kyc_access={submerchant.kyc_access}
+        submerchant={submerchant}
+        trackUserEvent={this.trackUserEvent}
+      />
+    ),
+  };
+
   handleAddMerchant = () => {
     this.trackUserEvent('partnerships.submerchant.add', {
       source: 'welcome screen',
@@ -447,7 +482,7 @@ class ProductSubMerchantsList extends ListContainer {
   };
 
   render() {
-    const { user, product, referralData, location } = this.props;
+    const { user, product, referralData, location, isSubMerchantKycResellerEnabled } = this.props;
     let appIdColumn = [];
     let switchMerchantColumn = [];
     const referralUrl = referralData ? referralData[product].url : '';
@@ -481,11 +516,49 @@ class ProductSubMerchantsList extends ListContainer {
         </tabbed-container>
       );
     }
+
+    const getTableColumns_PG = () => {
+      let columns = [
+        this.name(user.isPartner('pure_platform')),
+        id,
+        email,
+        ...appIdColumn,
+        addedOn,
+        activationStatus,
+        settlementStatus,
+        ...switchMerchantColumn,
+      ];
+      if (this.props.isSubMerchantKycResellerEnabled && user.isPartner('reseller')) {
+        columns = [
+          this.name(user.isPartner('pure_platform')),
+          id,
+          email,
+          ...appIdColumn,
+          activationStatus_NEW,
+          this.actions,
+          // settlementStatus,
+          addedOn,
+          ...switchMerchantColumn,
+        ];
+      }
+      return columns;
+    };
+
+    // using this style to left align table content when reseller kyc experiment disabled
+    // as with experiment enabled we center align them
+    const disabledResellerKYCStyle = !isSubMerchantKycResellerEnabled
+      ? 'reseller-kyc-experiment-disabled'
+      : '';
+
     return (
       <tabbed-container>
         <content>
           <div class="sub-merchants-list">
-            <div className={`content-wrapper ${shouldShowWelcomeScreen ? 'partner-welcome' : ''}`}>
+            <div
+              className={`content-wrapper ${disabledResellerKYCStyle} ${
+                shouldShowWelcomeScreen ? 'partner-welcome' : ''
+              }`}
+            >
               {!shouldShowWelcomeScreen && (
                 <div className="submerchant-filter-wrapper">
                   <ListFilter
@@ -528,16 +601,7 @@ class ProductSubMerchantsList extends ListContainer {
                   count={this.state.count}
                   skip={this.state.skip}
                   paginate={this.paginate}
-                  columns={[
-                    this.name(user.isPartner('pure_platform')),
-                    id,
-                    email,
-                    ...appIdColumn,
-                    addedOn,
-                    activationStatus,
-                    settlementStatus,
-                    ...switchMerchantColumn,
-                  ]}
+                  columns={getTableColumns_PG()}
                   {...this.props}
                 />
               )}
@@ -552,9 +616,9 @@ class ProductSubMerchantsList extends ListContainer {
                     id,
                     email,
                     ...appIdColumn,
-                    addedOn,
                     xVirtualAccountStatus,
                     xCurrentAccountStatus,
+                    addedOn,
                   ]}
                   {...this.props}
                 />
@@ -657,6 +721,7 @@ export const PrimarySubMerchantList = connect(
   (state) => ({
     user: state.session.user,
     mode: state.session.mode,
+    isSubMerchantKycResellerEnabled: state.session.user.isSubMerchantKycResellerEnabled,
     ...state.submerchants,
   }),
   getDispatchToProps(PRODUCT_TYPE.PG),

@@ -140,7 +140,7 @@ export default class ActivationContainer extends Component {
         url: 'merchant/activation',
         // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
         mode: !!accountId ? this.props.session.mode : 'live',
-        accountId,
+        accountId: accountId || this.state.submerchantId,
       }),
       !accountId && merchantFetch('merchant/activation/business_categories'),
       !isLiteOnboarding && !this.isSourceRX && merchantFetch('merchant/aov-config'),
@@ -255,7 +255,7 @@ export default class ActivationContainer extends Component {
   };
 
   componentWillMount() {
-    this.fetchActivationDetails(this.props.accountId || this.state.submerchantId);
+    this.fetchActivationDetails(this.props.accountId);
   }
 
   componentDidMount() {

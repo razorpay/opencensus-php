@@ -13,11 +13,13 @@ import Details from 'merchant/views/PartnerDashboard/SubMerchant/components/Deta
 import InviteMerchant from './Invite';
 import { trackListEvents } from '../ga';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { isMobileAndTablet } from 'common/utils/rzp-utils';
 
 @withRouter
 @connect(
   (state) => ({
     user: state.session.user,
+    isSubMerchantKycResellerEnabled: state.session.user.isSubMerchantKycResellerEnabled,
     ...state.submerchant,
   }),
   {
@@ -32,12 +34,16 @@ import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 export default class SubmerchantDetailsContainer extends Component {
   state = {};
 
-  componentWillMount() {
+  getPannelData = () => {
     let product = PRODUCT_TYPE.PG;
     if (this.props.history.location.pathname.startsWith('/partners/submerchants/x')) {
       product = PRODUCT_TYPE.X;
     }
     this.props.fetchSubmerchantWithProduct(this.props.id, this.props.appId, product);
+  };
+
+  componentWillMount() {
+    this.getPannelData();
   }
 
   componentDidMount() {
@@ -73,11 +79,21 @@ export default class SubmerchantDetailsContainer extends Component {
   };
 
   trackUserEvent = (eventName, properties = {}) => {
-    const { user, tracking } = this.props;
+    const { user, tracking, item: submerchant } = this.props;
+    const activation_status = submerchant.details?.activation_status;
+    const kyc_access_state = submerchant.kyc_access?.state;
+    const rejection_count = submerchant.kyc_access?.rejection_count;
+    const is_mweb = isMobileAndTablet();
     const productGroup = this.getCurrentProduct();
+
     tracking.trackEvent(
       window.rzpQ.onbr().interaction(eventName, {
         partnerID: user.id,
+        submerchant_id: submerchant?.id,
+        activation_status,
+        kyc_access_state,
+        rejection_count,
+        is_mweb,
         productGroup,
         ...properties,
       }),
@@ -120,10 +136,20 @@ export default class SubmerchantDetailsContainer extends Component {
   };
 
   render() {
-    const { item: submerchant, loading, error, switchMerchant: _switchMerchant } = this.props;
+    const {
+      item: submerchant,
+      user,
+      loading,
+      error,
+      switchMerchant: _switchMerchant,
+      isSubMerchantKycResellerEnabled,
+    } = this.props;
     return (
       <div>
         <Details
+          getPannelData={this.getPannelData}
+          isReseller={user.isPartner('reseller')}
+          isSubMerchantKycResellerEnabled={isSubMerchantKycResellerEnabled}
           trackUserEvent={this.trackUserEvent}
           isLoading={loading}
           submerchant={submerchant}

@@ -177,3 +177,111 @@
 
   .list-filter-container
     width: calc(100% - 160px);
+
+  .data-table
+    th
+      text-align: center;
+    td 
+      text-align: center;
+      vertical-align: middle;
+
+      // to truncate name email
+      white-space: nowrap;
+      max-width: 220px;
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+
+    // aligining component SubMerchantKycStatusLabel in table
+    td:nth-child(4)
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+
+      .no-description
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 8px 0px;
+    
+  .reseller-kyc-experiment-disabled
+    .data-table
+      th
+        text-align: left;
+      td 
+        text-align: left;
+        vertical-align: middle;
+
+
+.submerchant-kyc-description
+  font-family: Lato;
+  font-size: 12px; 
+  font-weight: 400;
+  font-style: normal;
+  line-height: 17px;
+  min-height: 17px;
+  // color: #A8A8A8;
+
+// Styles for SubMerchant/components/DetailsAction.js
+.details-action-container
+  position: absolute;
+  left: 0;
+  right: 0;
+  padding-bottom: 70px;
+
+.action-kyc-request
+  white-space: nowrap;
+  display: flex;
+  justify-content: center;
+
+.action-kyc-request-disable
+  opacity: 30%;
+  pointer-events: none;
+
+.submerchant-details-action
+  display: flex;
+  padding-right: 20px;
+  border: 1px #162F561A;
+  border-style: solid none;
+  &:last-child
+    border-style: none;
+
+  .icon-container
+    flex: 0 0 14%;
+    display: flex;
+    justify-content: center;
+    margin-top: 18px;
+
+  .icon
+    max-width: 24px;
+    border-radius: 100%;
+    min-width 22px;
+  
+  .details-container
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+    .title 
+      color: #162F568A;
+      
+    .description
+      color: #162F56BD;
+      margin-top: 5px;
+      margin-bottom: 10px;
+
+      span
+        white-space:nowrap;
+
+    button 
+      margin-top: 16px;
+
+  .waiting-approval
+    display: flex
+    justify-content: center
+  
+  .default-img
+    margin: 17px 0;
+
+.request-access-kyc
+  background-color: #F8FBFF; 
+  margin-top: 16px
+
