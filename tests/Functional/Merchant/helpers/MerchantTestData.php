@@ -38,6 +38,47 @@ return [
         ]
     ],
 
+    'testInternationalEnableMerchantBulk' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000000'],
+                'action'       => "enable_international",
+                "international_products" => ["payment_gateway", "payment_pages", "payment_links", "invoices"],
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'total'     => 1,
+                'success'   => 1,
+                'failed'    => 0,
+                'failedIds' => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testInternationalDisableMerchantBulk' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000000'],
+                'action'       => "disable_international",
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'total'     => 1,
+                'success'   => 1,
+                'failed'    => 0,
+                'failedIds' => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testSuspendMerchantBulk' => [
         'request'  => [
             'method'  => 'PUT',

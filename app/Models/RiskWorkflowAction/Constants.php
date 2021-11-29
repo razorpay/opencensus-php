@@ -100,6 +100,14 @@ class Constants
         self::RISK_TAG_MS_RISK_REVIEW_DISABLE_LIVE . ',' .
         self::RISK_TAG_MS_RISK_REVIEW_WATCHLIST;
 
+    const RISK_ACTIONS_CSV_WITH_RISK_ATTRIBUTES=
+        Action::SUSPEND . ',' .
+        Action::HOLD_FUNDS . ',' .
+        Action::LIVE_DISABLE . ',' .
+        Action::UNSUSPEND . ',' .
+        Action::RELEASE_FUNDS . ',' .
+        Action::LIVE_ENABLE;
+
     const RISK_ACTIONS_CSV =
         Action::SUSPEND . ',' .
         Action::HOLD_FUNDS . ',' .

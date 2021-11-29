@@ -693,6 +693,46 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('groups', $result);
     }
 
+    public function testInternationalEnableMerchantBulk()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(false, 'whitelist');
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'product_international' => '0000000000']);
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::EDIT_MERCHANT_ENABLE_INTERNATIONAL]);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testInternationalDisableMerchantBulk()
+    {
+        $this->fixtures->edit('merchant', '10000000000000',
+                              ['international' => true, 'product_international' => '1111000000']);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'international_activation_flow' => 'whitelist']);
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::EDIT_MERCHANT_DISABLE_INTERNATIONAL]);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testSuspendMerchantBulk()
     {
         $this->createMerchantsForSuspendMerchantBulkTest();
