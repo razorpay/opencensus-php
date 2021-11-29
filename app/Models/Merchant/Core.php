@@ -1129,7 +1129,20 @@ class Core extends Base\Core
         }
     }
 
-    protected function addOrClearRiskTag($merchant, $riskAttributes)
+    protected function updateFraudTypeIfApplicable($merchant, $action, $fraudType)
+    {
+
+        if (in_array($action, Merchant\Action::RISK_ACTIONS_LIST_FOR_SETTING_FRAUD_TYPE) === false)
+        {
+            return;
+        }
+
+        $merchant->merchantDetail->setFraudType($fraudType);
+
+        $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
+    }
+
+    protected function addOrClearRiskTagAndSetFraudType($merchant, $riskAttributes, $action)
     {
         $merchantTags = $merchant->tagNames();
 
@@ -1137,10 +1150,14 @@ class Core extends Base\Core
             and (int)($riskAttributes[RiskActionConstants::CLEAR_RISK_TAGS]) === 1)
         {
             $this->deleteRiskTags($merchantTags, $merchant);
+
+            $this->updateFraudTypeIfApplicable($merchant, $action, '');
         }
         else if (isset($riskAttributes[RiskActionConstants::RISK_TAG]) === true)
         {
             array_push($merchantTags, $riskAttributes[RiskActionConstants::RISK_TAG]);
+
+            $this->updateFraudTypeIfApplicable($merchant, $action, $riskAttributes[RiskActionConstants::RISK_TAG]);
 
             $this->addTags($merchant->getId(), [
                 'tags'  => $merchantTags,
@@ -1215,7 +1232,7 @@ class Core extends Base\Core
                 $this->triggerWorkFlowForMerchantEditAction($originalMerchant, $merchant, $action);
             }
 
-            $this->addOrClearRiskTag($merchant, $riskAttributes);
+            $this->addOrClearRiskTagAndSetFraudType($merchant, $riskAttributes, $action);
 
             $this->repo->saveOrFail($merchant);
         });

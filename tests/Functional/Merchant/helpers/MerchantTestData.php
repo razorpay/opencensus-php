@@ -9893,6 +9893,30 @@ return [
         ],
     ],
 
+    'testBulkAssignRiskTagAndSetFraudType' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'risk_review_suspend',
+                'action'       => 'insert',
+                'merchant_ids' => [
+                    '10000000000000',
+                    'randInvalid_Id',
+                ],
+            ],
+            'url'     => '/merchants/tags/bulk',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'total_count'  => 2,
+                'failed_count' => 1,
+                'failed_ids'   => [
+                    'randInvalid_Id',
+                ],
+            ],
+        ],
+    ],
+
     'testEditBulkEnableLiveNewFlow' => [
         'request'  => [
             'method'  => 'PUT',

@@ -36,6 +36,15 @@ class Action
     const DISABLE_INTERNATIONAL_TEMPORARY = 'disable_international_temporary';
     const DISABLE_INTERNATIONAL_PERMANENT = 'disable_international_permanent';
 
+    const RISK_ACTIONS_LIST_FOR_SETTING_FRAUD_TYPE = [
+        self::SUSPEND,
+        self::UNSUSPEND,
+        self::HOLD_FUNDS,
+        self::RELEASE_FUNDS,
+        self::LIVE_DISABLE,
+        self::LIVE_ENABLE,
+    ];
+
 
     public static function exists($action)
     {

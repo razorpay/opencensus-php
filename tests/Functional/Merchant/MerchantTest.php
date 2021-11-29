@@ -12503,6 +12503,47 @@ IFSC Code  ICIC0001206
         $this->startTest();
     }
 
+    protected function assertFraudType($fraudType)
+    {
+        $merchantDetail = $this->getDbEntityById('merchant_detail', '10000000000000');
+
+        $this->assertEquals($fraudType, $merchantDetail->getFraudType());
+    }
+
+
+    public function testBulkAssignRiskTagAndSetFraudType()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                   => '10000000000000',
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest();
+
+        $this->assertFraudType('risk_review_suspend');
+
+        $testData['request']['content']['name'] = 'test_tag';
+
+        $this->startTest($testData);
+
+        $this->assertFraudType('risk_review_suspend');
+
+        $testData['request']['content']['action'] = 'delete';
+
+        $this->startTest($testData);
+
+        $this->assertFraudType('risk_review_suspend');
+
+        $testData['request']['content']['name'] = 'risk_review_suspend';
+
+        $this->startTest($testData);
+
+        $this->assertFraudType('');
+    }
+
     public function testEditBulkEnableLiveNewFlow()
     {
         $this->createMerchant([

@@ -2160,6 +2160,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_TAGS_BULK_REQUEST                            = 'MERCHANT_TAGS_BULK_REQUEST';
     const MERCHANT_TAGS_BULK_RESPONSE                           = 'MERCHANT_TAGS_BULK_RESPONSE';
     const MERCHANT_TAGS_BULK_EXCEPTION                          = 'MERCHANT_TAGS_BULK_EXCEPTION';
+    const BULK_ASSIGN_TAG_SET_FRAUD_TYPE_FAILED                 = 'BULK_ASSIGN_TAG_SET_FRAUD_TYPE_FAILED';
 
     const AUTO_DISABLED_METHODS_RESPONSE_TIME                   = 'AUTO_DISABLED_METHODS_RESPONSE_TIME';
     const BULK_ACTION_RESPONSE_TIME                             = 'BULK_ACTION_RESPONSE_TIME';

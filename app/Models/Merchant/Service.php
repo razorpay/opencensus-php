@@ -109,6 +109,7 @@ use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Models\Workflow\Action\Entity as WorkFlowActionEntity;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Models\Batch\Helpers\SubMerchant as SubMerchantBatchHelper;
+use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Models\Partner\SubMerchantBatchUtility as SubMerchantBatchUtil;
 use RZP\Models\Merchant\Detail\BusinessType as MerchantDetBusinessType;
 use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
@@ -3768,7 +3769,62 @@ class Service extends Base\Service
      */
     public function deleteTag($id, $tagName)
     {
-        return $this->core()->deleteTag($id, $tagName);
+        $tags = $this->core()->deleteTag($id, $tagName);
+
+        $this->unsetFraudTypeIfApplicable($id, $tags);
+
+        return $tags;
+    }
+
+    protected function updateFraudTypeIfApplicable($merchant, $fraudType)
+    {
+        $riskTags= explode(',', RiskActionConstants::RISK_TAGS_CSV);
+
+        if (in_array($fraudType, $riskTags) === true)
+        {
+            try
+            {
+                $merchant->merchantDetail->setFraudType($fraudType);
+
+                $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::BULK_ASSIGN_TAG_SET_FRAUD_TYPE_FAILED);
+            }
+        }
+    }
+
+    protected function unsetFraudTypeIfApplicable($merchantId, $tagsAfterDeletion)
+    {
+        $riskTags= explode(',', RiskActionConstants::RISK_TAGS_CSV);
+
+        foreach ($tagsAfterDeletion as $tag)
+        {
+            if (in_array(strtolower($tag), $riskTags) === true)
+            {
+                return;
+            }
+        }
+
+        try
+        {
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            $merchant->merchantDetail->setFraudType('');
+
+            $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::BULK_ASSIGN_TAG_SET_FRAUD_TYPE_FAILED);
+        }
     }
 
     /**
@@ -3784,6 +3840,8 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $merchant->tag($tagName);
+
+        $this->updateFraudTypeIfApplicable($merchant, $tagName);
 
         $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
 
