@@ -110,7 +110,8 @@ class LeafListItem extends React.Component {
                 Standard Pricing <i className="i i-external-link" style={{ marginLeft: '2px' }} />
               </a>
             </span>
-            . Processing the request roughly takes {instrumentsTat[requestSlug]} working days.
+            . Processing the request roughly takes {instrumentsTat && instrumentsTat[requestSlug]}{' '}
+            working days.
             <br /> <br />
           </div>
         ),
