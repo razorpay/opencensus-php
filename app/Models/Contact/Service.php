@@ -95,8 +95,19 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input): array
     {
+        $startTimeMs = round(microtime(true) * 1000);
+
         $entities = $this->core
             ->fetchMultiple($this->merchant, $input);
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $totalFetchTime = $endTimeMs - $startTimeMs;
+
+        $this->trace->info(TraceCode::CONTACT_API_FETCH_DURATION, [
+            'duration_ms'    => $totalFetchTime,
+            'merchant_id'    => $this->merchant->getId(),
+        ]);
 
         return $entities->toArrayPublic();
     }
