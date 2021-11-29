@@ -92,58 +92,64 @@ function CreditDetails(props) {
           {showCollapsible && (
             <div class="collapsible">
               <div class="history">
-                {creditItems.map((cItem) => (
-                  <div class={classList('container', cItem.expired && 'disabled')} key={cItem.id}>
-                    <div class="col-md-6 col-sm-6 col-lg-6 col-xs-12">
-                      <div class="row">
-                        {cItem.used === cItem.value ? (
-                          <>
-                            <strong>
-                              <Amount value={cItem.value} currency="INR" />
-                            </strong>{' '}
-                            All credits used
-                          </>
-                        ) : (
-                          <>
-                            <strong>
-                              <Amount value={cItem.value - cItem.used} currency="INR" />
-                            </strong>{' '}
-                            of <Amount value={cItem.value} currency="INR" /> is still unused
-                          </>
-                        )}
+                {creditItems.map((cItem) => {
+                  const isExpired =
+                    cItem.expired_at && moment().isAfter(moment(cItem.expired_at, 'X'));
+                  return (
+                    <div class={classList('container', cItem.expired && 'disabled')} key={cItem.id}>
+                      <div class="col-md-6 col-sm-6 col-lg-6 col-xs-12">
+                        <div class="row">
+                          {cItem.used === cItem.value ? (
+                            <>
+                              <strong>
+                                <Amount value={cItem.value} currency="INR" />
+                              </strong>{' '}
+                              All credits used
+                            </>
+                          ) : (
+                            <>
+                              <strong>
+                                <Amount value={cItem.value - cItem.used} currency="INR" />
+                              </strong>{' '}
+                              of <Amount value={cItem.value} currency="INR" /> is still unused
+                            </>
+                          )}
+                        </div>
+                        <div class="row">
+                          {`${getRemainingPercentage(cItem)}% consumed`}
+                          <br />
+                          <span
+                            class="progress-bar"
+                            style={{
+                              width: `${getRemainingPercentage(cItem) * 2}px`,
+                            }}
+                          />
+                          <span class="progress-bar-overlay" />
+                        </div>
                       </div>
-                      <div class="row">
-                        {`${getRemainingPercentage(cItem)}% consumed`}
-                        <br />
-                        <span
-                          class="progress-bar"
-                          style={{
-                            width: `${getRemainingPercentage(cItem) * 2}px`,
-                          }}
-                        />
-                        <span class="progress-bar-overlay" />
+                      <div class="col-md-6 col-sm-6 col-lg-6 col-xs-12">
+                        <div class="row">
+                          {isExpired ? (
+                            <strong>Expired</strong>
+                          ) : cItem.expired_at ? (
+                            <>
+                              Valid till{' '}
+                              <strong>{moment(cItem.expired_at, 'X').format('DD MMM YYYY')}</strong>
+                            </>
+                          ) : (
+                            'Unlimited Validity'
+                          )}
+                        </div>
+                        <div class="row">
+                          <strong>{cItem.campaign}</strong> coupon applied
+                          <Link to={`/credits/${cItem.id}`} class="m-l">
+                            View Details
+                          </Link>
+                        </div>
                       </div>
                     </div>
-                    <div class="col-md-6 col-sm-6 col-lg-6 col-xs-12">
-                      <div class="row">
-                        {cItem.expired_at ? (
-                          <>
-                            Valid till{' '}
-                            <strong>{moment(cItem.expired_at, 'X').format('DD MMM YYYY')}</strong>
-                          </>
-                        ) : (
-                          'Unlimited Validity'
-                        )}
-                      </div>
-                      <div class="row">
-                        <strong>{cItem.campaign}</strong> coupon applied
-                        <Link to={`/credits/${cItem.id}`} class="m-l">
-                          View Details
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
