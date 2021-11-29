@@ -208,7 +208,8 @@ class Service extends Base\Service
             'rx_icici_auto_kyc',
             'rx_icici_auto_kyc',
             'updated_lite_onboarding',
-            'optimizer_currency'
+            'optimizer_currency',
+            'rx_undo_payout_feature'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
