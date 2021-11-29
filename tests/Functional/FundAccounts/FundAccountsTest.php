@@ -441,6 +441,43 @@ class FundAccountsTest extends TestCase
         Queue::assertPushed(CreateAccount::class);
     }
 
+    public function testCreateVpaWithNewRegex()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->mockRazorxTreatment();
+
+        $response = $this->startTest();
+
+        $vpa = $this->getLastEntity('vpa', true);
+
+        $expectedVpaAttrs = [
+            'entity_type' => 'contact',
+            'entity_id'   => '1000000contact',
+            'username'    => '50100177856195',
+            'handle'      => 'HDFC.ifsc.npci',
+            'merchant_id' => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedVpaAttrs, $vpa);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|vpa|50100177856195|hdfcifscnpci';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
     public function testCreateWalletAccountFundAccount()
     {
         Queue::fake();

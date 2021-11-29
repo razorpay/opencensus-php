@@ -12,7 +12,7 @@ class Validator extends Base\Validator
 
     const MAX_LENGTH = '100';
 
-    const VPA_REGEX = '/^[a-zA-Z0-9][a-zA-Z0-9\.-]*@[a-zA-Z]+$/';
+    const VPA_REGEX = '/^[a-zA-Z0-9][a-zA-Z0-9\.-]*@[a-zA-Z]+(?:\.ifsc\.npci)?$/';
 
     /*
      * RZP\Models\FundAccount\Core::REGEX_FOR_REMOVING_WHITE_SPACES_AND_SPECIAL_CHARACTERS_FROM_VPA_USERNAME

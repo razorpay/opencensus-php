@@ -603,6 +603,31 @@ return [
         ],
     ],
 
+    'testCreateVpaWithNewRegex' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_1000000contact',
+                'vpa'      => [
+                    'address' => '50100177856195@HDFC.ifsc.npci',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_1000000contact',
+                'vpa'      => [
+                    'address' => '50100177856195@HDFC.ifsc.npci',
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
     'testCreateWalletAccountFundAccount' => [
         'request'  => [
             'content' => [
