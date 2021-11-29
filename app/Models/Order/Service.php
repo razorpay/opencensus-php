@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Diag\EventCode;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants;
@@ -219,7 +220,10 @@ class Service extends Base\Service
 
         $this->updateIfscMappingIfApplicable($input);
 
-        (new BankAccount\Validator())->validateIfscCode($input[Entity::BANK_ACCOUNT], $this->mode);
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_IFSC_VALIDATION) === true)
+        {
+            (new BankAccount\Validator())->validateIfscCode($input[Entity::BANK_ACCOUNT], $this->mode);
+        }
 
         // Get Bank Code from IFSC here.
         $bankCode   = strtoupper(substr($input[Entity::BANK_ACCOUNT][BankAccount\Entity::IFSC], 0, 4));

@@ -490,6 +490,18 @@ class OrderTest extends TestCase
         $this->assertEquals($order->getPayerName(), $bankAccountRequest['name']);
     }
 
+    public function testCreateOrderAccountInvalidBankIfscWithFeatureEnable()
+    {
+        $this->fixtures->merchant->addFeatures(['enable_ifsc_validation']);
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderAccountInvalidBankIfscWithFeatureDisabled()
+    {
+        $this->startTest();
+    }
+
     //Creating few UPI specific tests, as other TPV tests are of method netbanking.
     public function testCreateUpiTPVOrderOldRequestFormat()
     {
@@ -2569,7 +2581,7 @@ class OrderTest extends TestCase
 
         return $this->makeRequestAndGetContent($request);
     }
-    
+
     public function testCreateOrderWithConvenienceFeeConfigEmpty()
     {
         $data = $this->testData[__FUNCTION__];

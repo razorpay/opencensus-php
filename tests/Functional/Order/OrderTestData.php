@@ -507,6 +507,63 @@ return [
         ],
     ],
 
+
+    'testCreateOrderAccountInvalidBankIfscWithFeatureDisabled' => [
+        'request'   => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'bank_account'      => [
+                    'ifsc'           => 'UTIB0003089',
+                    'name'           => 'ThisIsAwesome',
+                    'account_number' => '040304030403040'
+                ],
+            ],
+            'url'     => '/orders',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
+    'testCreateOrderAccountInvalidBankIfscWithFeatureEnable' => [
+        'request'   => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'bank_account'      => [
+                    'ifsc'           => 'UTIB00030',
+                    'name'           => 'ThisIsAwesome',
+                    'account_number' => '040304030403040'
+                ],
+            ],
+            'url'     => '/orders',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid IFSC Code in Bank Account',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateUpiTPVOrderOldRequestFormat' => [
         'request' => [
             'content' => [
