@@ -1012,7 +1012,7 @@ class BasicAuthTest extends TestCase
 
         $this->createBankingAccount($bankingAccountAttributes);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/balance/account/6903';
+        $this->testData[__FUNCTION__]['request']['url'] = '/balances';
 
         $this->fixtures->create('balance',
             [

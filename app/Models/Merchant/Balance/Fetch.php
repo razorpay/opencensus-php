@@ -17,7 +17,7 @@ class Fetch extends BaseFetch
             Entity::ACCOUNT_TYPE   =>    'sometimes|string|custom',
         ],
         AuthType::PRIVATE_AUTH => [
-            Entity::ACCOUNT_NUMBER_SUFFIX  => 'filled|int|digits:4',
+            Entity::TYPE           =>    'sometimes|string|max:32',
         ],
     ];
     const ACCESSES = [
@@ -25,7 +25,7 @@ class Fetch extends BaseFetch
             Entity::TYPE,
         ],
         AuthType::PRIVATE_AUTH => [
-            Entity::ACCOUNT_NUMBER_SUFFIX,
+            Entity::TYPE,
         ],
         AuthType::ADMIN_AUTH =>  [
             Entity::MERCHANT_ID,

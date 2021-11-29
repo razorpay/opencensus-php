@@ -651,13 +651,23 @@ return [
     'testBalancesApiOnPrivateAuth' => [
         'request' => [
             'method'    => 'GET',
+            'content'   => [
+                'type' => 'banking'
+            ]
         ],
         'response' => [
             'content' => [
                     'entity' => 'collection',
-                    'count' => 1,
+                    'count' => 2,
                     'items' =>
                         [
+                                [
+                                    'type' => 'banking',
+                                    'currency' => 'INR',
+                                    'balance' => 800000,
+                                    'account_number' => 'XXXXXXXXXXXX6905',
+                                    'account_type' => 'direct',
+                                ],
                                 [
                                     'type' => 'banking',
                                     'currency' => 'INR',

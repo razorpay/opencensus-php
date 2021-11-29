@@ -403,9 +403,6 @@ class Route
 
         'balance_fetch'                            => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'merchant_balance_fetch'                   => ['get',      'balances',                                       'MerchantController@getAccountBalances'                             ],
-
-        //For slack app: fetches balance with the last 4 digits of the acc no. via private auth
-        'balance_fetch_by_account_suffix'          => ['get',      'balance/account/{accountSuffix}',                'MerchantController@getAccountBalancesByAccountNumberSuffix'        ],
         'merchant_primary_balance_fetch'           => ['get',      'primary_balance',                                'MerchantController@getPrimaryBalance'                              ],
         'internal_balance_fetch_by_merchant_id'    => ['get',      'internal_merchants/{id}/balance',                'MerchantController@getBalanceByMerchantId'                         ],
         'internal_balance_fetch_by_merchant_id_old'=> ['get',      'balances/{id}',                                  'MerchantController@getBalanceByMerchantId'                         ],
@@ -3226,7 +3223,7 @@ class Route
         'payout_create_with_otp',
         'payout_validate',
         'user_otp_create',
-        'balance_fetch_by_account_suffix',
+        'merchant_balance_fetch',
         'activated_banking_accounts_list',
         'payment_page_get_payments',
         'qr_code_fetch_multiple',
