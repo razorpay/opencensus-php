@@ -376,6 +376,26 @@ return [
         ],
     ],
 
+    'testCreateTicketRzpMobileSignup' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard/ticket/',
+            'method'  => 'POST',
+            'content' => [
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'custom_fields' => [
+                    'cf_requester_category'       => 'Merchant',
+                    'cf_requestor_subcategory'    => 'Activation'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'description'  => 'ticket description',
+            ],
+        ],
+    ],
+
     'testCreateTicketRzpWithHtmlTagsAndNoMerchantName' => [
         'request' => [
             'url'     => '/fd/support_dashboard/ticket/',

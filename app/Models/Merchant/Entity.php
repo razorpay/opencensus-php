@@ -645,6 +645,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SUSPENDED_AT);
     }
 
+    public function isSignupViaEmail()
+    {
+        return $this->getAttribute(self::SIGNUP_VIA_EMAIL) === 1;
+    }
+
     public function isArchived()
     {
         return ($this->getAttribute(self::ARCHIVED_AT) !== null);

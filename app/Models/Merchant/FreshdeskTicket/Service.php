@@ -378,7 +378,14 @@ class Service extends Base\Service
 
         $input = $this->$function($input);
 
-        (new Validator)->validateInput('create_' . studly_case($type) . '_ticket', $input);
+        if($this->merchant->isSignupViaEmail() === true)
+        {
+            (new Validator)->validateInput('create_' . studly_case($type) . '_ticket', $input);
+        }
+        else
+        {
+            (new Validator)->validateInput('create_' . studly_case($type) . '_ticket_mobile_signup', $input);
+        }
 
         $fdInstance = $this->getFdInstanceFromTypeAndInput($type, $input);
 
@@ -1354,14 +1361,14 @@ class Service extends Base\Service
 
         $emailId = "";
 
-        if (empty($user) === false)
+        if (empty($user) === false && $user->isSignupViaEmail() === true)
         {
             $emailId  = $user->getEmail();
         }
 
-        if (empty($emailId) === false)
+        if (empty($emailId) === false && $user->isSignupViaEmail() === true)
         {
-            if($input['email'] !== $emailId)
+            if(empty($input['email']) || $input['email'] !== $emailId)
             {
                 if (empty($input[Constants::CC_EMAILS]) === false)
                 {
@@ -1469,7 +1476,10 @@ class Service extends Base\Service
 
     protected function addMerchantDetailsToInput($input) : array
     {
-        $input['email'] = $this->merchant->getEmail();
+        if ($this->merchant->isSignupViaEmail() === true)
+        {
+            $input['email'] = $this->merchant->getEmail();
+        }
 
         $input['name'] = $this->merchant->getName() ?? '';
 

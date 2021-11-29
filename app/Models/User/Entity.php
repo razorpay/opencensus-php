@@ -317,6 +317,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CONTACT_MOBILE);
     }
 
+    public function isSignupViaEmail()
+    {
+        return $this->getAttribute(self::SIGNUP_VIA_EMAIL) === 1;
+    }
+
     public function setContactMobile($contact)
     {
         $this->setAttribute(self::CONTACT_MOBILE, $contact);

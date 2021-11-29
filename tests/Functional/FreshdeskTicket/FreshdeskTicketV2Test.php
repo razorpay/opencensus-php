@@ -26,7 +26,9 @@ class FreshdeskTicketV2Test extends TestCase
     protected $storkMock;
 
     const RZP_CREATE_TICKET = 'rzp_create_ticket';
-    
+
+    const RZP_CREATE_TICKET_MOBILE_SIGNUP = 'rzp_create_ticket_mobile_signup';
+
     const RZP_CREATE_TICKET_CHECKING_CC_EMAILS = 'rzp_create_ticket_checking_cc_emails';
     const RZP_CREATE_TICKET_SALESFORCE         = 'rzp_create_ticket_salesforce';
     const RZP_CREATE_TICKET_INTERNAL_AUTH      = 'rzp_create_ticket_internal_auth';
@@ -403,6 +405,42 @@ class FreshdeskTicketV2Test extends TestCase
         $frDueByFreshdeskFormat = $this->getTimeInFreshdeskFormat($frDueBy);
 
         $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
+            $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['signup_via_email' => 1]);
+
+        $this->fixtures->user->edit('MerchantUser01', ['signup_via_email' => 1]);
+
+        $response = $this->startTest();
+
+        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $fdInstance = $ticket['ticket_details']['fd_instance'];
+
+        $this->assertNotEquals('razorpayid0012', $ticket['id']);
+
+        $this->assertNotEquals('99', $response['id']);
+
+        $this->assertEquals($response['id'], $ticket['id']);
+
+        // in this test case, we didnt have average FR response time for category+priority. so we proxied the FR time given by Freshdesk
+
+        $this->assertEquals($frDueByFreshdeskFormat, $response['fr_due_by']);
+
+        $this->assertEquals($frDueByFreshdeskFormat, $ticket['ticket_details']['fr_due_by']);
+
+        $this->assertEquals('rzp', $fdInstance);
+    }
+
+    public function testCreateTicketRzpMobileSignup()
+    {
+        $frDueBy = time() + self::DAY * 2;
+
+        $frDueByFreshdeskFormat = $this->getTimeInFreshdeskFormat($frDueBy);
+
+        $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET_MOBILE_SIGNUP);
 
         $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
             $expectedRequestResponse['request'], $expectedRequestResponse['response']);
@@ -1435,6 +1473,37 @@ Team Razorpay',
                     ],
                     'priority' =>  1,
                 ]
+            ];
+        }
+
+        if ($key === self::RZP_CREATE_TICKET_MOBILE_SIGNUP)
+        {
+            return [
+                'request'   =>  [
+                    'description' => 'ticket description',
+                    'subject' => 'ticket subject',
+                    'custom_fields' => [
+                        'cf_requester_category'    => 'Merchant',
+                        'cf_requestor_subcategory' => 'Activation',
+                        'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                        'cf_merchant_id'           => '10000000000000',
+                    ],
+                    'phone' => '9876543210',
+                    'priority' =>  1,
+                ],
+                'response'  =>
+                    [
+                        'id'            => '99',
+                        'description'   => 'ticket description',
+                        'fr_due_by'     => $frDueByFreshdeskFormat,
+                        'custom_fields' => [
+                            'cf_requester_category'    => 'Merchant',
+                            'cf_requestor_subcategory' => 'Activation',
+                            'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                            'cf_merchant_id'           => '10000000000000',
+                        ],
+                        'priority' =>  1,
+                    ]
             ];
         }
 
