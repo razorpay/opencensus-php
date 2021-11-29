@@ -1368,6 +1368,7 @@ class Constants
         self::ASYNC_TXN_FILL_DETAILS          => true,
         self::CREDIT_ID_BASED_NEW_QUERY       => true,
         self::ENABLE_IFSC_VALIDATION          => true,
+        self::PUBLIC_SETTERS_VIA_OAUTH        => true,
     ];
     // Entity type constants
     const ACCOUNT                       = 'account';
