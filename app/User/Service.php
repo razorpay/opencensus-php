@@ -596,8 +596,9 @@ class Service extends Base\Service
         // 1. the request is from X and banking_role is present
         // 2. the request is from PG and role is present
         // Below conditions are false when a PG user logs into X for the first time or vice versa.
-        if ((($isBankingRequest === true) and ($user->currentMerchant()->banking_role !== null)) or
-            (($isBankingRequest === false) and ($user->currentMerchant()->role !== null)))
+        if ((empty($user->currentMerchant()) === false)  and
+            ((($isBankingRequest === true) and ($user->currentMerchant()->banking_role !== null)) or
+            (($isBankingRequest === false) and ($user->currentMerchant()->role === false))))
         {
             $res['currentMerchantId'] = $currentMerchantId;
         }
@@ -672,8 +673,9 @@ class Service extends Base\Service
         // 1. the request is from X and banking_role is present
         // 2. the request is from PG and role is present
         // Below conditions are false when a PG user logs into X for the first time or vice versa.
-        if ((($isBankingRequest === true) and ($user->currentMerchant()->banking_role !== null)) or
-            (($isBankingRequest === false) and ($user->currentMerchant()->role !== null)))
+        if ((empty($user->currentMerchant()) === false)  and
+            ((($isBankingRequest === true) and ($user->currentMerchant()->banking_role !== null)) or
+            (($isBankingRequest === false) and ($user->currentMerchant()->role === false))))
         {
             $res['currentMerchantId'] = $currentMerchantId;
         }
