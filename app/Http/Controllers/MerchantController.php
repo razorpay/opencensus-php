@@ -2,9 +2,11 @@
 
 namespace RZP\Http\Controllers;
 
+use App;
 use Request;
 use ApiResponse;
 use RZP\Exception;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Key;
 use RZP\Models\Report;
 use RZP\Models\Gateway;
@@ -16,6 +18,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\AccessMap;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\InheritanceMap;
@@ -576,6 +579,19 @@ class MerchantController extends Controller
     public function getAccountBalance()
     {
         $data = $this->service()->fetchBalance();
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $repo = App::getFacadeRoot()['repo'];
+        
+        if (isset($data[Balance\Entity::TYPE]) === true &&
+            isset($data[Balance\Entity::AMOUNT_CREDITS]) === true &&
+            $data[Balance\Entity::TYPE] === Balance\Type::PRIMARY &&
+            $merchant !== null &&
+            $merchant->isFeatureEnabled(Feature::OLD_CREDITS_FLOW) === false)
+        {
+            $data[Balance\Entity::AMOUNT_CREDITS] = $repo->credits->getMerchantCreditsOfType($merchant->getId(), Credits\Type::AMOUNT);
+        }
 
         return ApiResponse::json($data);
     }

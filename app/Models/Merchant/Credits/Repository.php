@@ -224,7 +224,11 @@ class Repository extends Base\Repository
                 ->first();
         }
 
-        return $query->getAttribute('sum');
+        if ($query->getAttribute('sum') !== null)
+        {
+            return $query->getAttribute('sum');
+        }
+        return 0;
     }
 
     /**

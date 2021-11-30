@@ -372,4 +372,45 @@ class BalanceTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testBalanceAndCreditMismatch()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->edit('balance', '10000000000000', ['credits' => 1234567]);
+
+        $credits1 = $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 100000,
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $credits2 = $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 5000,
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $credits3 = $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 100000,
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $credits4 = $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 5000,
+            'merchant_id' => '10000000000000',
+            'expired_at'  => time() - 2, // setting expiry as 2 seconds back from now
+        ]);
+
+        $balanceRequest = [
+            'url'    => '/balance',
+            'method' => 'GET',
+        ];
+
+        $response = $this->makeRequestAndGetContent($balanceRequest);
+
+        $this->assertEquals($credits1['value'] + $credits2['value'], $response[Balance::AMOUNT_CREDITS]);
+    }
 }
