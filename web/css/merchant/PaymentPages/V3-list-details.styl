@@ -171,30 +171,46 @@
   .stats
     padding: 20px
     background: #f3f4f7
+    display: flex
+    justify-content: space-between
+    align-items: center
+    @media (max-width: $screen-xs-max)
+      align-items: flex-end
+      flex-direction: column
 
-    .bold
-      font-size: 16px
-      color: #515978
+    .info
+      > .bold
+        font-size: 16px
+        color: #515978
+        @media (max-width: $screen-xs-max)
+          width: 100%
 
-    > *
-      display: inline-block
-      vertical-align: middle
-      font-size: 13px
-      color: #8991AE
+      > *
+        display: inline-block
+        font-size: 13px
+        color: #8991AE
+        @media (max-width: $screen-xs-max)
+          margin-right: 10px
+          margin-bottom: 5px
 
-      .bold
-        margin-left: 20px
+        .bold
+          margin-left: 20px
+          font-size: 16px
+          color: #515978
 
-        span
-          display: inline-block
+          span
+            display: inline-block
 
-        .rzp-whole
-          font-weight: bold
+          .rzp-whole
+            font-weight: bold
 
-      &:after
-        content: ''
-        border-right: 1px solid #a8afc4
-        margin: 0 16px
+        &:after
+          content: ''
+          border-right: 1px solid #a8afc4
+          margin: 0 16px
+          @media (max-width: $screen-xs-max)
+            content: none
+
 
   .report-download
     .rzp-popover

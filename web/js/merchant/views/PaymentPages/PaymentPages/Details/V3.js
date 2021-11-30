@@ -465,15 +465,17 @@ export default class PaymentPagesV3Entity extends React.Component {
           {this.props.mode === 'test' && <TestModeBanner />}
 
           <div class="stats">
-            <b class="bold">Transactions</b>
-            {this.getStatsTable(paymentPageEntity).map((st, ix) => (
-              <div key={ix}>
-                {st.title}
-                <b class="bold">{st.value}</b>
-              </div>
-            ))}
+            <div class="info">
+              <b class="bold">Transactions</b>
+              {this.getStatsTable(paymentPageEntity).map((st, ix) => (
+                <div key={ix}>
+                  {st.title}
+                  <b class="bold">{st.value}</b>
+                </div>
+              ))}
+            </div>
 
-            <div class="report-download btn-toolbar pull-right">
+            <div class="report-download btn-toolbar">
               <div
                 class="btn btn-default Button--invert report-download-trigger"
                 disabled={this.state.isExportInProgress}
