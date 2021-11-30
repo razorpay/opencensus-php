@@ -146,7 +146,6 @@ export class Info extends React.Component {
 export class Description extends React.Component {
   render() {
     const text = this.props.text;
-
     if (this.props.text) {
       return (
         <div class={classList('Input-desc', this.props.className)}>
@@ -163,7 +162,7 @@ export class Label extends React.Component {
     const text = this.props.text;
     if (text) {
       return (
-        <div class={this.props.className || 'Input-label'} {...this.props}>
+        <div class={`${this.props.className} Input-label` || 'Input-label'} {...this.props}>
           {typeof text === 'function' ? text() : text}
         </div>
       );
@@ -190,7 +189,7 @@ export class Error extends React.Component {
  * */
 export default class Field extends React.Component {
   constructor(props) {
-    super(props);
+    super();
     this.state = {
       mature: props.mature,
       error: '',
@@ -410,7 +409,7 @@ export default class Field extends React.Component {
 
     return (
       <div class={inputClass(this)}>
-        <Label text={allProps.label} />
+        <Label text={allProps.label} className={this.props.labelClass} />
         <div class="Input-content">
           {allProps.extraChildren}
           <div
@@ -446,7 +445,7 @@ class Check extends Field {
   className = 'Input--checkbox';
 
   state = {
-    value: this.props.defaultValue,
+    value: this.props?.defaultValue,
   };
 
   toggle = (e) => {
@@ -467,10 +466,9 @@ class Check extends Field {
 
   render() {
     const { label, fieldLabel, description, props } = separateDomProps(this.props);
-
     return (
       <div class={inputClass(this)}>
-        {label && <Label text={label} />}
+        {label && <Label text={label} className={this.props.labelClass} />}
         <div class="Input-content">
           <div class="Input-elWrapper">
             <label>
@@ -491,7 +489,11 @@ class Check extends Field {
               ) : (
                 <React.Fragment>
                   <div className="Input-checkbox" />
-                  <Label class="Input-inlineLabel" text={fieldLabel} {...this.props.labelProps} />
+                  <Label
+                    className="Input-inlineLabel"
+                    text={fieldLabel}
+                    {...this.props.labelProps}
+                  />
                 </React.Fragment>
               )}
             </label>
@@ -543,7 +545,7 @@ class Radio extends Field {
 
     return (
       <div class={inputClass(this)}>
-        <Label text={label} />
+        <Label text={label} className={this.props.labelClass} />
         <div class="Input-content">
           <div class="Input--radioLabels">
             {options.map((o, i) => {
@@ -575,7 +577,7 @@ class Radio extends Field {
                     onBlur={this.onBlur}
                   />
                   <div className="Input-radio" />
-                  <Label text={labelInput} class="Input-inlineLabel" />
+                  <Label text={labelInput} className="Input-inlineLabel }" />
                 </label>
               );
             })}
@@ -652,7 +654,7 @@ Field.Select = ({ options, ...props }) => (
 );
 
 /* Fields to be shown visually closer than other fields in form*/
-Field.Group = ({ label, className, children, ...otherProps }) => {
+Field.Group = ({ label, className, children, labelClass, ...otherProps }) => {
   return (
     <div class={classList('InputGroup', className, inputClass({ props: otherProps }))}>
       <Label text={label} />

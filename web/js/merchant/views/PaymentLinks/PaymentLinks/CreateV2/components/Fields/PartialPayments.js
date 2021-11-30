@@ -19,6 +19,7 @@ const PartialPayments = (props) => (
       class="Input--vTop"
       disabled={props.disabled}
       defaultValue={props.defaultValue}
+      labelClass="Input-label pb-8"
       onBlur={() => {
         track.lj.fields.partialPayment();
         track.segment.fields.partialPayment();

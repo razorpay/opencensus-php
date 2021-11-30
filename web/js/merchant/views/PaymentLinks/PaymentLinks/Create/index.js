@@ -33,7 +33,6 @@ import { getURLQueryParams, paiseToRupees, findBy, classList } from 'common/util
 import { trackOpenCreateForm, closePaymentLinkForm, trackSaveDuplicatePaymentLink } from '../ga';
 import { generateField } from './Utils';
 import track from './track';
-
 import { transformPLDetails_NewToOld } from 'merchant/views/PaymentLinks/PaymentLinks/js/transformer';
 
 const FORM_FIELDS = {

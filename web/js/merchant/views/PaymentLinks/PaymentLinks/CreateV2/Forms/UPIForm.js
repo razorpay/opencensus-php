@@ -1,3 +1,4 @@
+import React from 'react';
 import { classList } from 'common/utils/rzp-utils';
 
 import { Modal, ModalContent } from 'common/new-ui/Modal';
@@ -34,6 +35,7 @@ export default class UPIForm extends React.Component {
         onClose={props.onClose}
         disableSubmit={props.disableSubmit}
         onSubmit={this.onSubmit}
+        history={props.history}
       >
         <Amount
           disableCurrencySelect

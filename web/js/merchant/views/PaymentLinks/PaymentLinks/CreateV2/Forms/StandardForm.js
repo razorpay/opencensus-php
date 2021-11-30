@@ -11,6 +11,7 @@ import {
   PartialPayment,
   LinkExpiry,
   Notes,
+  MWebContactDetails,
 } from '../components/Fields';
 import { analyticsTrack } from 'common/utils/analytics';
 import { classList, getURLQueryParams, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -51,6 +52,7 @@ export default class StandardForm extends React.Component {
         onChange={props.onChange}
         onClose={props.onClose}
         disableSubmit={props.disableSubmit}
+        history={props.history}
       >
         <Amount
           isIntentDuplicate={props.isIntentDuplicate}
@@ -62,6 +64,13 @@ export default class StandardForm extends React.Component {
           disabled={props.disabled}
           defaultValue={formData.description}
           required={props.isDescriptionRequired}
+        />
+        <MWebContactDetails
+          disabled={props.disabled}
+          defaultContactNumber={formData.contact}
+          defaultEmailAddress={formData.email}
+          defaultContactValue={formData.sms_notify}
+          defaultEmailValue={formData.email_notify}
         />
         <ContactDetails
           disabled={props.disabled}

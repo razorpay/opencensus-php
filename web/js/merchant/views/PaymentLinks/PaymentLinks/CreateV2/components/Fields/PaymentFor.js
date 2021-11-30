@@ -7,6 +7,7 @@ const PaymentFor = (props) => (
     label="Payment For"
     class="Input--vTop"
     placeholder="Payment description"
+    labelClass="Input-label pb-8"
     onBlur={() => {
       track.lj.fields.paymentFor();
       track.segment.fields.paymentFor();

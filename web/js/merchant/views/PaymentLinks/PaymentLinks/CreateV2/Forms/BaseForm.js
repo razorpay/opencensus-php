@@ -11,6 +11,7 @@ export default function BaseForm(props) {
       isModalView={props.isModalView}
       onClose={props.onClose}
       disableSubmit={props.disableSubmit}
+      history={props.history}
     />
   );
 

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Input from 'common/new-ui/Input';
 
 import { isAmount, isEmail, isPhone, maxLength } from 'common/utils/validators';
-
+import { isMobileDevice } from 'merchant/components/Home/data';
 import Popover from 'common/ui/Popover';
 
 import DocsLink from 'merchant/components/DocsLink';
@@ -54,6 +54,7 @@ export default [
       {
         name: 'currency',
         _cmp: Input.CurrencySelect,
+        labelClass: 'Input-label pb-8',
         onChange: (currency) => {
           if (currency) {
             trackSelectCurrency(currency.name);
@@ -68,6 +69,7 @@ export default [
         placeholder: '0.00',
         required: true,
         autoFocus: true,
+        labelClass: 'Input-label pb-8',
         validator: (val) => {
           if (!isAmount(val)) {
             const decimal = val && val.split('.');
@@ -88,6 +90,7 @@ export default [
       name: 'partial_payment',
       fieldLabel: <span>Enable Partial Payment</span>,
       _cmp: Input.Check,
+      labelClass: 'pb-8',
       _autoRenderImpure: true,
     },
     {
@@ -115,39 +118,104 @@ export default [
     },
     description: 'This will be visible to the customer',
     _cmp: Input.Textarea,
+    labelClass: 'Input-label pb-8',
   },
-  {
-    label: 'Customer Details',
-    inlineFields: [
-      {
-        name: 'contact',
-        type: 'tel',
-        placeholder: 'Mobile',
-        size: 'half_big',
-        validator: (val) => {
-          if (!isPhone(val)) {
-            return 'Invalid phone';
-          }
-          return undefined;
-        },
+  // Loading custom comp for Mobile and Web View only for PL v1 flow because of difference in order
+  isMobileDevice()
+    ? {
+        label: 'Customer Details',
+        inlineFields: [
+          {
+            name: 'contact',
+            type: 'tel',
+            placeholder: 'Mobile',
+            size: 'half_big',
+            validator: (val) => {
+              if (!isPhone(val)) {
+                return 'Invalid phone';
+              }
+              return undefined;
+            },
+          },
+          {
+            name: 'sms_notify',
+            fieldLabel: 'Notify via SMS',
+            size: 'half_big',
+            _cmp: Input.Check,
+            labelClass: 'pb-8',
+            _autoRenderImpure: true,
+            onChange: (e) => {
+              if (e.target.value == '1') {
+                document.getElementsByName('contact')[0].focus();
+              }
+            },
+          },
+          {
+            name: 'email',
+            type: 'email',
+            placeholder: 'Email',
+            size: 'half_big',
+            validator: (val) => {
+              if (!isEmail(val)) {
+                return 'Invalid email';
+              }
+              return undefined;
+            },
+          },
+          {
+            name: 'email_notify',
+            fieldLabel: 'Notify via Email',
+            size: 'half_big',
+            _cmp: Input.Check,
+            labelClass: 'pb-8',
+            _autoRenderImpure: true,
+            description: () => (
+              <DocsLink
+                title="More ways to notify"
+                url="https://razorpay.com/app-store/"
+                style={{ paddingLeft: '0' }}
+              />
+            ),
+            onChange: (e) => {
+              if (e.target.value == '1') {
+                document.getElementsByName('email')[0].focus();
+              }
+            },
+          },
+        ],
+      }
+    : {
+        label: 'Customer Details',
+        inlineFields: [
+          {
+            name: 'contact',
+            type: 'tel',
+            placeholder: 'Mobile',
+            size: 'half_big',
+            validator: (val) => {
+              if (!isPhone(val)) {
+                return 'Invalid phone';
+              }
+              return undefined;
+            },
+          },
+          {
+            name: 'email',
+            type: 'email',
+            placeholder: 'Email',
+            size: 'half_big',
+            validator: (val) => {
+              if (!isEmail(val)) {
+                return 'Invalid email';
+              }
+              return undefined;
+            },
+          },
+        ],
       },
-      {
-        name: 'email',
-        type: 'email',
-        placeholder: 'Email',
-        size: 'half_big',
-        validator: (val) => {
-          if (!isEmail(val)) {
-            return 'Invalid email';
-          }
-          return undefined;
-        },
-      },
-    ],
-  },
   {
     label: 'Notify',
-    className: 'InputGroup--vTop InputGroup--near',
+    className: 'InputGroup--vTop InputGroup--near hidden-xs',
     inlineFields: [
       {
         name: 'sms_notify',
@@ -194,6 +262,7 @@ export default [
     label: (form) => getPaymentLinkFormLabel('receipt', form.props.user),
     validator: maxLength(40),
     size: 'half_big',
+    labelClass: 'Input-label pb-8',
   },
   {
     _name: 'hasNoExpiry',
@@ -205,6 +274,7 @@ export default [
     },
     _autoRenderImpure: true,
     className: 'Input--vTop',
+    labelClass: 'Input-label',
     onChange: (e) => {
       if (e.target.value == '0') {
         // 0 => unselected
@@ -274,6 +344,7 @@ export default [
     _when: function _when(form) {
       return form.props.paymentLinksRemindersSettings.isEnabled;
     },
+    labelClass: 'Input-label pb-8',
     _autoRenderImpure: true,
   },
   {
@@ -301,6 +372,7 @@ export default [
     label: 'Internal Notes',
     className: 'Input--vTop',
     _cmp: Input.PairList,
+    labelClass: 'Input-label pb-8',
     _when: function _when(form) {
       return !form.props.user.isCustomNotesDropdownEnabled;
     },

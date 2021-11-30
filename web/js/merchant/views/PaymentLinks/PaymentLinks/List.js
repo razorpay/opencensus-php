@@ -223,7 +223,7 @@ export default class PaymentLinksContainer extends ListContainer {
         : 'https://razorpay.com/docs/payment-links/api/new/';
       docsLinkProps.title = (
         <span>
-          Documentation <span class="badge bg-success m-r">new</span>
+          Documentation <span class="badge bg-success m-r hidden-xs">new</span>
           <Popover theme="dark" parentQuerySelector=".tether-element">
             <PopoverBody>
               New API Contract is applicable for your <br /> merchant profile

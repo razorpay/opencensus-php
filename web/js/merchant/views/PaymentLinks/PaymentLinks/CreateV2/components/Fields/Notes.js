@@ -6,6 +6,7 @@ const Notes = (props) => (
     class="Input--vTop"
     name="notes"
     label="Notes"
+    labelClass="Input-label pb-8"
     onAddNew={track.lj.fields.notes}
     defaultValue={props.defaultValue}
     onChange={props.onChange}

@@ -12,7 +12,7 @@ const Amount = (props) => {
       required
       disabled={props.disabled}
     >
-      <div class="Input-content">
+      <div class="Input-content pt-8">
         <Input.CurrencySelect
           autoRender
           name="currency"

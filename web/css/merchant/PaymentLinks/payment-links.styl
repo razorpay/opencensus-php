@@ -4,6 +4,8 @@ $max-width = 640px
   position: relative
   width: 92%
   margin: 80px auto
+  @media screen and (max-width: $screen-xs-max)
+    width: 100%
 
   .spinner-container
     height: 300px
@@ -19,6 +21,13 @@ $max-width = 640px
 
   .form-container
     padding: 30px 40px
+
+    .Input:not(.Input--vTop), .InputGroup:not(.InputGroup--vTop)
+      .Input-label
+        top: 7px
+        @media screen and (max-width: $screen-xs-max)
+          top: 0px !important
+    
 
   .Form--tabular
     .Input-content
@@ -43,7 +52,16 @@ $max-width = 640px
 
     &::-webkit-scrollbar
       display: none;
+    @media screen and (max-width: $screen-xs-max)
+      bottom: 56px
 
+  .pt-8
+    @media screen and (max-width: $screen-xs-max)
+        padding-top: 8px
+  .pb-8
+    @media screen and (max-width: $screen-xs-max)
+        padding-bottom: 8px
+  
   footer
     left: 0
     padding: 20px
@@ -53,6 +71,15 @@ $max-width = 640px
     bottom: 0
     position: absolute
     text-align: right
+    @media screen and (max-width: $screen-xs-max)
+      display flex
+      justify-content center
+      align-items center
+      position fixed
+      z-index 9999999999
+      background: #F6F6F6
+      
+  
 
     button
       vertical-align: top
@@ -79,7 +106,7 @@ $max-width = 640px
     font-weight: 600
     margin-bottom: 20px
     font-size: 18px !important
-
+    
   .Form
     margin-top: 36px
 
@@ -103,9 +130,14 @@ $max-width = 640px
     max-height: 480px
 
 
+
+
 /* Small screens for Payment Links Modal */
 @media (max-width: 972px)
   .PaymentLinks--Create
+    .field-Wrapper
+      position: absolute
+      top: 7px
     .Input-elWrapper
       width: 300px !important
 
@@ -114,6 +146,9 @@ $max-width = 640px
 
     .form-container
       padding: 30px
+      @media screen and (max-width: $screen-xs-max)
+        padding: 0px
+        margin-top: 8px
 
     .InputGroup
       &--inline
@@ -138,6 +173,7 @@ $max-width = 640px
       margin-bottom: 12px
       text-align: left
       float: unset
+      
 
 
 @media (max-width: 820px)
@@ -172,6 +208,8 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
       margin-bottom: 4px
       background: white
       font-size: 14px
+      @media screen and (max-width: $screen-xs-max)
+       margin-bottom: -40px
 
     .Form
       margin-top: 0

@@ -7,6 +7,7 @@ import LinkExpiry from './LinkExpiry';
 import Reminders from './Reminders';
 import Notes from './Notes';
 import PartialPayment from './PartialPayments';
+import MWebContactDetails from './MWebContactDetails';
 
 export {
   Amount,
@@ -18,4 +19,5 @@ export {
   Reminders,
   Notes,
   PartialPayment,
+  MWebContactDetails,
 };

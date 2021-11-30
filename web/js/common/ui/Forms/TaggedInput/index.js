@@ -6,16 +6,15 @@ export default class TaggedInput extends Component {
   handleOptionsChange = (value, select) => {
     if (
       value.length > 1 &&
-      (value.charAt(value.length - 1) === ',' ||
-        value.charAt(value.length - 1) === ' ')
+      (value.charAt(value.length - 1) === ',' || value.charAt(value.length - 1) === ' ')
     ) {
-      let result = value.slice(0, -1);
+      const result = value.slice(0, -1);
       this.createPills(result, select);
     }
   };
 
   updateOnBlur = (e, { select }) => {
-    let valueOnBlur = e.target.value;
+    const valueOnBlur = e.target.value;
 
     if (valueOnBlur) {
       const isValidValue = this.createPills(valueOnBlur, select);
@@ -23,13 +22,14 @@ export default class TaggedInput extends Component {
     }
   };
 
+  // eslint-disable-next-line consistent-return
   createPills = (value, select) => {
     let data = this.props.input.value || [];
     data = data.slice();
 
     let isValidEntry;
     if (this.props.validators) {
-      for (let validator of this.props.validators) {
+      for (const validator of this.props.validators) {
         isValidEntry = validator(value);
 
         if (!isValidEntry) {
@@ -53,8 +53,8 @@ export default class TaggedInput extends Component {
   };
 
   render() {
-    let data = this.props.input.value || [];
-    let { selected, options, onSearchInputChange, ...rest } = this.props;
+    const data = this.props.input.value || [];
+    const { selected, options, onSearchInputChange, ...rest } = this.props;
     return (
       <PowerSelectMultiple
         className="TaggedInput"
@@ -67,6 +67,7 @@ export default class TaggedInput extends Component {
           }
         }}
         onBlur={this.updateOnBlur}
+        // eslint-disable-next-line no-shadow
         onChange={({ options }) => {
           this.props.input.onChange(options);
         }}

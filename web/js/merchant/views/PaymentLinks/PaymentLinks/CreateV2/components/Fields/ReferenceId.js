@@ -9,6 +9,7 @@ const ReferenceId = (props) => (
     placeholder="123456"
     label="Reference Id"
     class="Input--vTop"
+    labelClass="Input-label pb-8"
     required={props.required}
     disabled={props.disabled}
     onBlur={() => {

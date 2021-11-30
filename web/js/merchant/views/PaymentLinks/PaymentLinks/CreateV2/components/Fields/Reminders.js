@@ -32,6 +32,7 @@ const Reminders = ({ config, hasNoExpiry, ...extraProps }) => {
       label="Reminders"
       description={description}
       class="Input--vTop"
+      labelClass="Input-label pb-8"
       onBlur={() => {
         track.lj.fields.reminders();
         track.segment.fields.reminders();

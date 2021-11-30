@@ -80,7 +80,7 @@ export default class PairList extends React.PureComponent {
   render() {
     return (
       <div class={classList(inputClass(this), !!this.state.pairs.length && 'isExpanded')}>
-        <Label text={this.props.label} />
+        <Label text={this.props.label} className={this.props.labelClass} />
         <div class="Input-content">
           {!!this.state.pairs.length &&
             this.state.pairs.map((pair, idx) => (

@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import Input from 'common/new-ui/Input';
 import moment from 'moment';
@@ -77,7 +78,8 @@ class LinkExpiry extends React.Component {
             autoRender
             label="Link Expiry"
             fieldLabel="No Expiry"
-            class="Input--vTop"
+            class="Input--vTop mobile-field"
+            labelClass="Input-label pb-8"
             onChange={this.handleHasNoDate}
             disabled={props.disabled}
             {...noExpiryProps}

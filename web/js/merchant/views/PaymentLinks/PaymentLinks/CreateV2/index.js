@@ -1,4 +1,8 @@
+import React from 'react';
+
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import moment from 'moment';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
@@ -54,7 +58,6 @@ export default class PaymentLinkCreateV2 extends React.Component {
 
   constructor(props) {
     super();
-
     let linkType;
     const params = getURLQueryParams(props.location.search);
 
@@ -87,7 +90,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
 
   componentDidMount() {
     this.prepareDataForPaymentLinkCreation()
-      .then((resp) => {
+      .then(() => {
         this.setState(
           {
             isLoading: false,
@@ -99,7 +102,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
           },
         );
       })
-      .catch((err) => {
+      .catch(() => {
         // TODO: Handle Error case
         this.setState({
           isLoading: false,
@@ -230,7 +233,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
     }
 
     if (notifyMedium.length > 0) {
-      notificationMSG += ' Sending via ' + notifyMedium.join(' and ');
+      notificationMSG += ` Sending via ${notifyMedium.join(' and ')}`;
     }
 
     track.lj.form.create();
@@ -243,7 +246,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
         });
 
         track.lj.form.success();
-        track.segment.form.success(resp, this.isIntentDuplicate ? true : false);
+        track.segment.form.success(resp, !!this.isIntentDuplicate);
 
         this.setState({
           isFormLocked: false,
@@ -258,7 +261,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
 
           setTimeout(this.props.onClose, 50);
         } else {
-          const redirectUrl = '/paymentlinks/' + entityId;
+          const redirectUrl = `/paymentlinks/${entityId}`;
 
           this.props.history.push(redirectUrl);
         }
@@ -271,7 +274,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
         });
 
         track.lj.form.fail({ response: error });
-        track.segment.form.fail(error, this.isIntentDuplicate ? true : false);
+        track.segment.form.fail(error, !!this.isIntentDuplicate);
 
         this.setState({
           isFormLocked: false,
@@ -280,24 +283,29 @@ export default class PaymentLinkCreateV2 extends React.Component {
   };
 
   updateDate = (newDate) => {
-    this.setState({
-      formData: {
-        ...this.state.formData,
-        expire_by: newDate,
-      },
+    this.setState((prevState) => {
+      return {
+        formData: {
+          ...prevState.formData,
+          expire_by: newDate,
+        },
+      };
     });
   };
 
   onChangeNotes = (pairs) => {
     const notes = onChangeNotes(pairs);
-    this.setState({
-      formData: {
-        ...this.state.formData,
-        notes,
-      },
+    this.setState((prevState) => {
+      return {
+        formData: {
+          ...prevState.formData,
+          notes,
+        },
+      };
     });
   };
 
+  // eslint-disable-next-line consistent-return
   onFieldChange = (event) => {
     const fieldValue = event.target.value;
     const fieldName = event.target.name;
@@ -306,6 +314,8 @@ export default class PaymentLinkCreateV2 extends React.Component {
     if (isInvalidField) return true;
 
     const formData = {
+      // some case is breaking in UI , TODO need to check and remove this
+      // eslint-disable-next-line react/no-access-state-in-setstate
       ...this.state.formData,
       [fieldName]: fieldValue,
     };
@@ -379,7 +389,6 @@ export default class PaymentLinkCreateV2 extends React.Component {
 
   render() {
     const { props, state } = this;
-
     const { linkType } = state;
     const showLinkTypeSelectionView = !linkType;
     const CurrentForm = PAYMENT_LINK_FORMS[linkType];
@@ -410,6 +419,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
             onSubmit={this.onFormSubmit}
             updateDate={this.updateDate}
             onChangeNotes={this.onChangeNotes}
+            history={props.history}
           />
         )}
       </div>

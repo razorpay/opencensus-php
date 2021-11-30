@@ -28,7 +28,7 @@ export default class Notify extends React.Component {
     const { props } = this;
     return (
       <Input.Group
-        class="InputGroup--inline InputGroup--near customer-notify"
+        class="InputGroup--inline InputGroup--near customer-notify hidden-xs"
         disabled={props.disabled}
       >
         <div class="Input-content">

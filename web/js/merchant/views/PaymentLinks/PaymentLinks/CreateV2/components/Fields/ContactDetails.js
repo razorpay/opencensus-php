@@ -4,7 +4,7 @@ import track from '../../track';
 const ContactDetails = (props) => {
   return (
     <Input.Group
-      class="InputGroup--inline InputGroup--vTop customer-details"
+      class="InputGroup--inline InputGroup--vTop customer-details hidden-xs"
       label="Customer Details"
       disabled={props.disabled}
     >

@@ -1,5 +1,7 @@
+import React from 'react';
 import Form from 'common/new-ui/Form';
 import Spinner from 'common/ui/Spinner';
+import { isMobileDevice } from 'merchant/components/Home/data';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 
 export const FORM_CLASS_NAME = 'PaymentLinks--Create-Form';
@@ -21,18 +23,26 @@ export default class FormWizard extends React.Component {
     const disableSubmit = invalidFields.length;
 
     if (this.state.disableSubmit !== disableSubmit) {
-      this.setState({ disableSubmit: disableSubmit });
+      this.setState({ disableSubmit });
     }
   };
+
+  redirectToListView = () => this.props.history.push('/paymentlinks');
 
   render() {
     const { props, state } = this;
     const disableSubmit = props.isLoading || state.disableSubmit;
-
     const title = !props.isLoading && props.title;
     return (
       <div class="PaymentLinks--CreateV2-wizard">
-        <div class="title">{title}</div>
+        <div class={props.isModalView ? 'title' : 'Paymentlink-layout-title'}>
+          {title}{' '}
+          {isMobileDevice() && (
+            <span onClick={this.redirectToListView}>
+              <i class="i i-close" />
+            </span>
+          )}
+        </div>
         <div class="form-container">
           <Form class={FORM_CLASS_NAME} onChange={props.onChange}>
             <main>
@@ -48,6 +58,12 @@ export default class FormWizard extends React.Component {
             <footer>
               {props.isModalView && (
                 <Button type="button" onClick={props.onClose}>
+                  Cancel
+                </Button>
+              )}
+
+              {isMobileDevice() && !props.isModalView && (
+                <Button type="button" onClick={this.redirectToListView}>
                   Cancel
                 </Button>
               )}
