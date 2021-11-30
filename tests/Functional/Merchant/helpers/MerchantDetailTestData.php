@@ -1018,6 +1018,7 @@ return [
                 'transaction_volume' => '5',
                 'department'         => '6',
                 'contact_mobile'     => '8722627189',
+                'contact_email'     => 'razorpay@razorpay.com'
             ],
         ],
     ],
@@ -1038,6 +1039,7 @@ return [
                 'department'         => '7',
                 'contact_mobile'     => null,
                 'role'               => null,
+                'contact_email'     => null,
             ],
         ],
     ],
@@ -2166,6 +2168,126 @@ return [
                 'contact_mobile'     => null,
                 'role'               => null,
             ],
+        ],
+    ],
+
+    'testPutPresignupDetailsWithEmail' => [
+        'request' => [
+            'content' => [
+                'business_type'     => '2',
+                'department'        => '7',
+                'contact_email'     => "yolomail@yolo.com",
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'      => '2',
+                'transaction_volume' => null,
+                'department'         => '7',
+                'contact_mobile'     => null,
+                'contact_email'      => "yolomail@yolo.com",
+                'role'               => null,
+            ],
+        ],
+    ],
+
+    'testPutPresignupDetailsWithEmailSignupViaEmail' => [
+        'request' => [
+            'content' => [
+                'business_type' => '2',
+                'department'    => '7',
+                'contact_email'         => 'yolo123@yolo.com'
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::PRE_SIGNUP_EMAIL_NOT_ALLOWED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPutPresignupDetailsWithMobileSignupViaMobile' => [
+        'request' => [
+            'content' => [
+                'business_type'     => '2',
+                'department'        => '7',
+                'contact_mobile'    => '9998880000'
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::PRE_SIGNUP_CONTACT_MOBILE_NOT_ALLOWED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPutPresignupDetailsWithEmailExists' => [
+        'request' => [
+            'content' => [
+                'business_type'     => '2',
+                'department'        => '7',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The contact email has already been taken.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPutPresignupDetailsWithContactMobileExists' => [
+        'request' => [
+            'content' => [
+                'business_type' => '2',
+                'department'    => '7',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The contact mobile has already been taken.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

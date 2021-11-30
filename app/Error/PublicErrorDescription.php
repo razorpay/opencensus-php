@@ -1521,4 +1521,7 @@ class PublicErrorDescription
     const BAD_REQUEST_EMAIL_SIGNUP_OTP_SEND_THRESHOLD_EXHAUSTED                     = 'Email Verification OTP could not be sent because threshold has been reached. Please try again later.';
     const BAD_REQUEST_REDIS_KEY_THRESHOLD_EXCEEDED                                  = 'Bad request, redis key threshold exceeded.';
     const BAD_REQUEST_SIGNUP_OTP_VERIFICATION_THRESHOLD_EXHAUSTED                   = 'Signup OTP verification attempt limit reached. Please try again later.';
+
+    const PRE_SIGNUP_EMAIL_NOT_ALLOWED                                              = 'Email not acceptable here when signed up with email.';
+    const PRE_SIGNUP_CONTACT_MOBILE_NOT_ALLOWED                                     = 'Contact mobile not acceptable here when signed up with contact mobile.';
 }

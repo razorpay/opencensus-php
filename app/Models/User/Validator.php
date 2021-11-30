@@ -101,6 +101,7 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::NAME                  => 'sometimes|string|max:200',
         Entity::CONTACT_MOBILE        => 'sometimes|nullable|max:15|contact_syntax',
+        Entity::EMAIL                 => 'sometimes|email|unique:users,email',
         Entity::SETTINGS              => 'nullable|associative_array',
     ];
 
@@ -222,7 +223,8 @@ class Validator extends Base\Validator
 
     protected static $preSignupRules = [
         Entity::NAME                  => 'sometimes|alpha_space|max:200',
-        Entity::CONTACT_MOBILE        => 'sometimes|nullable|max:15|contact_syntax',
+        Entity::CONTACT_MOBILE        => 'sometimes|max:15|contact_syntax|unique:users,contact_mobile',
+        Entity::EMAIL                 => 'sometimes|email'
     ];
 
     protected static $teamManagementRules = [
@@ -375,7 +377,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $createOTPSignupValidators = [
-        'captcha_only',
         'email_or_mobile_unique'
     ];
 

@@ -247,7 +247,8 @@ class Validator extends Base\Validator
         Entity::DEPARTMENT                      => 'sometimes|numeric|digits_between:1,7',
         Entity::BUSINESS_NAME                   => 'sometimes|string|max:255',
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
-        Entity::CONTACT_MOBILE                  => 'sometimes|max:15|contact_syntax',
+        Entity::CONTACT_MOBILE                  => 'sometimes|max:15|contact_syntax|unique:merchant_details',
+        Entity::CONTACT_EMAIL                   => 'sometimes|email|max:255|unique:merchant_details',
         Entity::BUSINESS_WEBSITE                => 'sometimes|max:255|custom',
     ];
 
@@ -445,6 +446,37 @@ class Validator extends Base\Validator
         DetailConstants::ADDITIONAL_APP_REASON          => 'required|string|min:100',
         DetailConstants::URL_TYPE                       => 'required|string|in:app',
     ];
+
+    /**
+     * If user has signup via email then we cannot allow email in pre_signup details
+     * if user has signup via contact mobile then we cannot allow contact mobile in pre_signup details
+     * @param array $input
+     * @param $merchant
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateSignupViaChannel(array $input, $merchant)
+    {
+        if (
+            ($merchant[Merchant\Entity::SIGNUP_VIA_EMAIL] === 1)
+            && (isset($input[Entity::CONTACT_EMAIL]) === true)
+            && (strlen($input[Entity::CONTACT_EMAIL]) !== 0)
+        )
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::PRE_SIGNUP_EMAIL_NOT_ALLOWED
+            );
+        }
+        else if (
+            ($merchant[Merchant\Entity::SIGNUP_VIA_EMAIL] === 0)
+            && (isset($input[Entity::CONTACT_MOBILE]) === true)
+            && (strlen($input[Entity::CONTACT_MOBILE]) !== 0)
+        )
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::PRE_SIGNUP_CONTACT_MOBILE_NOT_ALLOWED
+            );
+        }
+    }
 
     public function validateBusinessRegisteredState(string $attribute, $value)
     {

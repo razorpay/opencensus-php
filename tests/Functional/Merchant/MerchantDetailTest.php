@@ -1146,6 +1146,7 @@ We look forward to transacting with you!
             'transaction_volume' => "5",
             'department'         => "6",
             'contact_mobile'     => "8722627189",
+            'contact_email'      => "razorpay@razorpay.com",
         ];
 
         $this->fixtures->create('merchant_detail', $merchantDetailData);
@@ -1177,6 +1178,9 @@ We look forward to transacting with you!
         $this->verifyOnboardingEvent('banking');
 
         $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['response']['content'][Entity::CONTACT_EMAIL] =  $merchantDetail[Entity::CONTACT_EMAIL];
 
         $merchantUser = $this->fixtures->user->createBankingUserForMerchant($merchantDetail['merchant_id']);
 
@@ -4732,4 +4736,129 @@ You can now start accepting payments from https://www.example.com.
 
         $this->assertBankingEntitiesNullInLiveMode($merchantDetail);
     }
+
+    /**
+     * test to accept email in presignup details page
+     */
+    public function testPutPresignupDetailsWithEmail()
+    {
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->verifyOnboardingEvent('banking');
+
+        $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 0]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', ['merchant_id' => $merchant['id']]);
+
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant(
+            $merchant['id'], ['signup_via_email' => 0]
+        );
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->mockHubSpotClient('trackPreSignupEvent');
+
+        $this->startTest();
+    }
+
+    /**
+     * test to rejecting email in presignup details page if signed up with email
+     */
+    public function testPutPresignupDetailsWithEmailSignupViaEmail()
+    {
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->verifyOnboardingEvent('banking');
+
+        $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 1]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', ['merchant_id' => $merchant['id']]);
+
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant(
+            $merchant['id'], ['signup_via_email' => 1]
+        );
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    /**
+     * test to reject contact mobile in presignup details page if signed up with contact mobile
+     */
+    public function testPutPresignupDetailsWithMobileSignupViaMobile()
+    {
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->verifyOnboardingEvent('banking');
+
+        $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 0]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', ['merchant_id' => $merchant['id']]);
+
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant(
+            $merchant['id'], ['signup_via_email' => 0]
+        );
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testPutPresignupDetailsWithEmailExists()
+    {
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->verifyOnboardingEvent('banking');
+
+        $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 0, 'email' => 'someone@some.com']);
+        $merchant2 = $this->fixtures->create('merchant', ['signup_via_email' => 0, 'email' => 'someone@some.com']);
+
+        $merchantDetail = $this->fixtures->merchant_detail->createSane(['merchant_id' => $merchant['id'], 'contact_email' => 'someone@some.com']);
+        $merchantDetail2 = $this->fixtures->merchant_detail->createSane(['merchant_id' => $merchant2['id'], 'contact_email' => 'someone@some.com']);
+
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant(
+            $merchant['id'], ['signup_via_email' => 0]
+        );
+        $merchantUser2 = $this->fixtures->user->createBankingUserForMerchant(
+            $merchant2['id'], ['signup_via_email' => 0]
+        );
+
+        $testData["request"]["content"]["contact_email"] = $merchantDetail2["contact_email"];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail2['merchant_id'], $merchantUser2['id']);
+
+        $this->startTest();
+
+    }
+
+    public function testPutPresignupDetailsWithContactMobileExists()
+    {
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->verifyOnboardingEvent('banking');
+
+        $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 1]);
+        $merchant2 = $this->fixtures->create('merchant', ['signup_via_email' => 1]);
+
+        $merchantDetail = $this->fixtures->merchant_detail->createSane(['merchant_id' => $merchant['id'], 'contact_mobile' => '1234567890']);
+        $merchantDetail2 = $this->fixtures->merchant_detail->createSane(['merchant_id' => $merchant2['id'], 'contact_mobile' => '1234567890']);
+
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant(
+            $merchant['id'], ['signup_via_email' => 1]
+        );
+        $merchantUser2 = $this->fixtures->user->createBankingUserForMerchant(
+            $merchant2['id'], ['signup_via_email' => 1]
+        );
+
+        $testData["request"]["content"]["contact_mobile"] = $merchantDetail2["contact_mobile"];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail2['merchant_id'], $merchantUser2['id']);
+
+        $this->startTest();
+
+    }
+
 }

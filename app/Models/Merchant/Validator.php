@@ -155,6 +155,7 @@ class Validator extends Base\Validator
         Entity::PARTNERSHIP_URL                       => 'sometimes|max:2000',
         'reset_methods'                               => 'sometimes|boolean',
         Entity::PURPOSE_CODE                          => 'sometimes|string|max:5',
+        Entity::EMAIL                                 => 'sometimes|email|unique:merchants',
     ];
 
     protected static $editBillingLabelRules = [
@@ -193,6 +194,7 @@ class Validator extends Base\Validator
     protected static $editPreSignupRules = [
         Entity::NAME                        => 'required|min:4|string|max:200',
         Entity::WEBSITE                     => 'sometimes|active_url|max:255|nullable',
+        Entity::EMAIL                       => 'sometimes|email|unique:merchants',
     ];
 
     protected static $editNameRules = [

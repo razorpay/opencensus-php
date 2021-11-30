@@ -3592,6 +3592,11 @@ class Core extends Base\Core
             Entity::WEBSITE => $businessWebsite,
         ];
 
+        if (isset($input[Detail\Entity::CONTACT_EMAIL]) === true)
+        {
+            $preSignupInput[Entity::EMAIL] = $input[Detail\Entity::CONTACT_EMAIL];
+        }
+
         (new Validator)->validateInput('edit_pre_signup', $preSignupInput);
 
         $this->trace->info(TraceCode::MERCHANT_EDIT, ['input' => $preSignupInput]);

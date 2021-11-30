@@ -1020,6 +1020,8 @@ class Service extends Base\Service
 
         $merchant = $this->app['basicauth']->getMerchant();
 
+        (new Validator)->validateSignupViaChannel($input, $merchant);
+
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
         {
             $this->applyCoupon($input);
@@ -1047,8 +1049,9 @@ class Service extends Base\Service
 
                 $user = $this->merchant->primaryOwner($originProduct);
 
-                $userEditData['contact_mobile'] = $input['contact_mobile'] ?? null;
-                $userEditData['name']           = $input['contact_name'] ?? null;
+                $userEditData[User\Entity::CONTACT_MOBILE] = $input['contact_mobile'] ?? null;
+                $userEditData[User\Entity::NAME]           = $input['contact_name'] ?? null;
+                $userEditData[User\Entity::EMAIL]          = $input['contact_email'] ?? null;
 
                 $userEditData = array_filter($userEditData);
 

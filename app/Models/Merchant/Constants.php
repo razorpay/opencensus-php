@@ -373,6 +373,7 @@ final class Constants
         Detail\Entity::BUSINESS_NAME,
         Detail\Entity::CONTACT_MOBILE,
         Detail\Entity::BUSINESS_WEBSITE,
+        Detail\Entity::CONTACT_EMAIL,
     ];
 
     const ACTIVATION_MANDATORY_FIELDS = [
