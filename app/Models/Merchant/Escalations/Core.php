@@ -303,8 +303,15 @@ class Core extends Base\Core
                 'mtu'                         => true,
                 'first_transaction_timestamp' => Carbon::now()->getTimestamp(),
                 'activation_status'           => $merchant->merchantDetail->getActivationStatus(),
-                'previous_activation_status'  => $previousActivationStatus['name']
+                'previous_activation_status'  => $previousActivationStatus['name'],
             ];
+
+            $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);
+
+            if (empty($userDeviceDetail) === false)
+            {
+                $properties['signup_source'] = $userDeviceDetail->getSignupSource();
+            }
 
             $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
                 $merchant, $properties, SegmentEvent::MTU_TRANSACTED);

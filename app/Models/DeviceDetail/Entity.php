@@ -10,6 +10,10 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID            = 'merchant_id';
     const USER_ID                = 'user_id';
     const APPSFLYER_ID           = 'appsflyer_id';
+    /*
+     * added for identifying mobile app mtu transactions
+     */
+    const SIGNUP_SOURCE          = 'signup_source';
 
     const CREATED_AT             = 'created_at';
     const UPDATED_AT             = 'updated_at';
@@ -22,6 +26,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::USER_ID,
         self::APPSFLYER_ID,
+        self::SIGNUP_SOURCE,
     ];
 
     protected $public = [
@@ -29,10 +34,16 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::USER_ID,
         self::APPSFLYER_ID,
+        self::SIGNUP_SOURCE,
     ];
 
     public function getAppsFlyerId()
     {
         return $this->getAttribute(self::APPSFLYER_ID);
+    }
+
+    public function getSignupSource()
+    {
+        return $this->getAttribute(self::SIGNUP_SOURCE);
     }
 }

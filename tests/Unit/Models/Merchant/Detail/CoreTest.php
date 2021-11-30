@@ -11,6 +11,7 @@ use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Services\Segment\SegmentAnalyticsClient;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Detail\Status;
@@ -24,6 +25,8 @@ use RZP\Models\Merchant\Detail\Constants as DetailConstant;
 
 class CoreTest extends TestCase
 {
+    use DbEntityFetchTrait;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/CoreTestData.php';
@@ -90,6 +93,38 @@ class CoreTest extends TestCase
             ->willReturn(true);
 
         $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $this->createTransaction($merchantId, 'payment', 10000);
+        $this->createPayment($merchantId, 10000);
+
+        (new Escalations\Core)->handleMtuSegmentEvent();
+    }
+
+    public function testSegmentEventPushForFirstTransactionWithUserDeviceDetail()
+    {
+        $this->createAndFetchMocks();
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+            ->method('pushIdentifyAndTrackEvent')
+            ->willReturn(true);
+
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields');
+
+        $this->fixtures->on('live')->create('user_device_detail', [
+            'merchant_id' => $merchantDetail->getMerchantId()
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_user', [
+            'merchant_id' => $merchantDetail->getMerchantId()
+        ]);
 
         $merchantId = $merchantDetail->getMerchantId();
 

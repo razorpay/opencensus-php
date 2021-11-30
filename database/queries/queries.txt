@@ -6433,6 +6433,9 @@ ALTER TABLE card_mandates
 ALTER TABLE vpas
     ADD INDEX vpa_entity_id_entity_type_index (entity_id, entity_type);
 
+ALTER TABLE user_device_details
+    ADD COLUMN signup_source varchar(50) DEFAULT NULL;
+    
 ALTER TABLE qr_code_config
     DROP COLUMN payment_method,
     DROP COLUMN gateway,

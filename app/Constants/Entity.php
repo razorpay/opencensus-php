@@ -544,7 +544,7 @@ class Entity
     const MERCHANT_TNC                  = 'merchant_tnc';
     const MERCHANT_VERIFICATION_DETAIL  = 'merchant_verification_detail';
     const MERCHANT_BUSINESS_DETAIL      = 'merchant_business_detail';
-    
+
     const MERCHANT_CHECKOUT_DETAIL      = 'merchant_checkout_detail';
     const MERCHANT_SLABS                = 'merchant_slabs';
     const MERCHANT_1CC_CONFIGS          = 'merchant_1cc_configs';

@@ -3711,6 +3711,22 @@ return [
         ],
     ],
 
+
+    'testUserDeviceDetails' => [
+        'request' => [
+            'url'     => '/user/device-details',
+            'method'  => 'POST',
+            'content' => [
+                'appsflyer_id'  => '1123456789',
+                'signup_source' => 'mobile',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'appsflyer_id'  => '1123456789'
+            ],
+        ],
+    ],
     'testUserRegisterSendSignupOtpViaSms' => [
         'request' => [
             'url'     => '/users/register/otp',
@@ -3903,6 +3919,4 @@ return [
 
         ]
     ],
-
-
 ];

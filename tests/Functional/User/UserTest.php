@@ -5005,6 +5005,22 @@ class UserTest extends TestCase
 
     }
 
+    public function testUserDeviceDetails()
+    {
+        $user = $this->fixtures->create(
+            'user',
+            [
+                'contact_mobile' => '0123456789',
+                'contact_mobile_verified' => true,
+                'password' => 'hello123',
+            ]
+        );
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testMobileSendVerificationOtpUnverifiedEmail()
     {
         $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => false, 'confirm_token' => 'notnull']);

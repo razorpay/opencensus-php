@@ -32,6 +32,9 @@ class CreateUserDeviceDetail extends Migration
             $table->string(DeviceDetail::APPSFLYER_ID, 50)
                 ->nullable();
 
+            $table->string(DeviceDetail::SIGNUP_SOURCE, 50)
+                ->nullable();
+
             $table->integer(DeviceDetail::CREATED_AT);
 
             $table->integer(DeviceDetail::UPDATED_AT);

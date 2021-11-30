@@ -864,6 +864,20 @@ final class FactoryData
                                                ]
         );
 
+        $factory(\RZP\Models\DeviceDetail\Entity::class, [
+                'id'            => $faker->uniqueid,
+                'merchant_id'   => '10000000000000',
+                'user_id'       => 'MerchantUser01',
+            ]
+        );
+
+        $factory(\RZP\Models\Merchant\MerchantUser\Entity::class, [
+                'merchant_id'   => '10000000000000',
+                'user_id'       => 'MerchantUser01',
+                'role'          => 'owner'
+            ]
+        );
+
         $factory(\RZP\Models\Customer\Balance\Entity::class, [
                                                                'customer_id'   => 'factory:RZP\Models\Customer\Entity',
                                                                'merchant_id'   => '10000000000000',
