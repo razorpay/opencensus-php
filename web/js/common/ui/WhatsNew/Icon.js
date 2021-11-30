@@ -14,7 +14,7 @@ const WhatsNewLazyComponent = lazy(() =>
   import(/* webpackChunkName: "WhatsNewLazyComponent" */ 'common/ui/WhatsNew'),
 );
 
-const WhatsNewIcon = ({ user, showMobileNav, tracking, pushSlider }) => {
+const WhatsNewIcon = ({ user, showMobileNav, tracking }) => {
   const [isOpen, setOpen] = useState(false);
 
   const setUnreadMsgs = () => {
@@ -56,7 +56,9 @@ const WhatsNewIcon = ({ user, showMobileNav, tracking, pushSlider }) => {
           <WhatsNewLazyComponent />
         </Suspense>
       ),
-      onClose: () => { setOpen(false); }
+      onClose: () => {
+        setOpen(false);
+      },
     });
     setOpen(true);
   };
@@ -71,7 +73,7 @@ const WhatsNewIcon = ({ user, showMobileNav, tracking, pushSlider }) => {
           <span onClick={handleSliderToggleClick} class={classList(hasUnread && 'highlight')}>
             {user.isAnnouncementTextEnabled ? 'Announcements' : "What's New"}
           </span>
-          {hasUnread && <span class="bubble">{totalUnread}</span>}
+          {hasUnread && <span className="bubble">{totalUnread}</span>}
         </>
       );
     }
@@ -79,7 +81,7 @@ const WhatsNewIcon = ({ user, showMobileNav, tracking, pushSlider }) => {
     return (
       <>
         <i className="i i-horn" onClick={handleSliderToggleClick} />
-        {hasUnread && <span class="new-bubble">{totalUnread}</span>}
+        {hasUnread && <span className="new-bubble">{totalUnread}</span>}
       </>
     );
   };
@@ -92,6 +94,7 @@ const WhatsNewIcon = ({ user, showMobileNav, tracking, pushSlider }) => {
 };
 
 export default compose(
-  connect((state) => ({ user: state.session.user }), { pushSlider }),
+  // eslint-disable-next-line babel/new-cap
   RTracking(() => window.rzpQ.component('WhatsNewIcon')),
+  connect((state) => ({ user: state.session.user }), { pushSlider }),
 )(WhatsNewIcon);

@@ -1,14 +1,12 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Link, withRouter } from 'react-router-dom';
 
 import ProfileDropdown from 'merchantLA/containers/Header/ProfileDropdown';
 import { toggleMobileMenu } from 'merchantLA/reducers/app';
 
 import NavFragment from 'merchant/components/HeaderNav/NavFragment';
-import ModesDropdown from 'merchant/components/HeaderNav/SwitchMode';
 
-const analytics = action => {
+const analytics = (action) => {
   window.rzpAnalytics({
     eventCategory: 'LA Dashboard - Header',
     eventAction: action,
@@ -16,10 +14,10 @@ const analytics = action => {
 };
 
 @connect(
-  state => ({
+  (state) => ({
     activePageName: state.app.activePageName,
   }),
-  { toggleMobileMenu }
+  { toggleMobileMenu },
 )
 export default class HeaderNav extends Component {
   constructor(props) {
@@ -35,63 +33,48 @@ export default class HeaderNav extends Component {
 
   render() {
     const {
-        user,
-        mode,
-        modeFormatted,
-        onSwitchMode,
-        onSwitchMerchant,
-        showMobileNav,
-        analytics,
-        activePageName,
-      } = this.props,
-      fragmentSpecificProps = {
-        mode,
-      },
-      commonProps = {
-        user,
-        modeFormatted,
-        onSwitchMode,
-        onSwitchMerchant,
-      };
+      user,
+      mode,
+      modeFormatted,
+      onSwitchMode,
+      onSwitchMerchant,
+      showMobileNav,
+      activePageName,
+    } = this.props;
+    const fragmentSpecificProps = {
+      mode,
+    };
+    const commonProps = {
+      user,
+      modeFormatted,
+      onSwitchMode,
+      onSwitchMerchant,
+    };
 
     return (
-      <nav class="navbar navbar-default navbar-fixed-top">
-        <div class="container-fluid">
-          <div className="navbar-collapse" id="headerNav">
+      <nav className="navbar navbar-default navbar-fixed-top">
+        <div className="container-fluid navbar-container">
+          <div className="navbar-collapse" id="headerNav123">
             {showMobileNav && (
               <div className="pull-left navbar-toggle-container">
-                <button
-                  type="button"
-                  className="navbar-toggle"
-                  onClick={this.onToggleAppMenu}
-                >
-                  <span class="i-bar" />
-                  <span class="i-bar" />
-                  <span class="i-bar" />
+                <button type="button" className="navbar-toggle" onClick={this.onToggleAppMenu}>
+                  <span className="i-bar" />
+                  <span className="i-bar" />
+                  <span className="i-bar" />
                 </button>{' '}
                 {activePageName || 'Dashboard'}
               </div>
             )}
             <ul className="nav navbar-nav navbar-right">
-              {(!showMobileNav && (
-                <NavFragment
-                  analytics={analytics}
-                  {...fragmentSpecificProps}
-                  {...commonProps}
-                />
-              )) || (
-                <li>
-                  <ModesDropdown
-                    mode={mode}
-                    modeFormatted={modeFormatted}
-                    onSwitchMode={onSwitchMode}
-                  />
-                </li>
+              {!showMobileNav && (
+                <NavFragment analytics={analytics} {...fragmentSpecificProps} {...commonProps} />
               )}
-              <li id="profile-dropdown">
+              <li id="profile-dropdown" className="profile-dropdown-section">
                 <ProfileDropdown
                   analytics={analytics}
                   showMobileNav={showMobileNav}
+                  mode={mode}
+                  onSwitchMode={onSwitchMode}
                   {...commonProps}
                 />
               </li>

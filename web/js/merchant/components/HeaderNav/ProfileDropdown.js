@@ -193,6 +193,8 @@ export default class ProfileDropdown extends Component {
       analytics = () => {},
       trustedBadge,
       tracking,
+      mode,
+      onSwitchMode,
     } = this.props;
     const { badgeStatus } = trustedBadge || {};
     const isRTBEnabled = badgeStatus === STATUS.YES_ELIGIBLE_LIVE;
@@ -230,6 +232,7 @@ export default class ProfileDropdown extends Component {
                   <img
                     src="https://cdn.razorpay.com/static/assets/trustedbadge/rtb_user_icon_bg.svg"
                     className="rtb-user-bg-img"
+                    alt="trust badge"
                   />
                   <i className="rtb-nav-icon" />
                   Hey, Trusted Business
@@ -249,18 +252,18 @@ export default class ProfileDropdown extends Component {
           )}
         </DropdownTrigger>
         <DropdownContent>
-          <div class="dropdown-menu ProfileDropdown">
+          <div className="dropdown-menu ProfileDropdown">
             {user.current && (
-              <div class="media">
-                <div class="media-left">
-                  <div class="media-object">
+              <div className="media">
+                <div className="media-left">
+                  <div className="media-object">
                     <Image src={user.logo_url}>
-                      <img src="/dist/css/assets/business.svg" />
+                      <img src="/dist/css/assets/business.svg" alt="business" />
                     </Image>
                   </div>
                 </div>
-                <div class="media-body merchant-details-container">
-                  <div class="merchantname">{merchant.name}</div>
+                <div className="media-body merchant-details-container">
+                  <div className="merchantname">{merchant.name}</div>
                   {isRTBEnabled && (
                     <Link
                       onClick={() => {
@@ -302,14 +305,13 @@ export default class ProfileDropdown extends Component {
                           return analytics('Copy - Merchant ID');
                         }}
                       >
-                        <button class="btn btn-default btn-xs">Copy Merchant Id</button>
+                        <button className="btn btn-default btn-xs">Copy Merchant Id</button>
                       </CustomClipboard>
                     </GroupItem>
                   </Group>
                 </div>
               </div>
             )}
-
             {showMobileNav && (
               <React.Fragment>
                 {Object.keys(user.merchants).length > 1 && (
@@ -331,8 +333,8 @@ export default class ProfileDropdown extends Component {
                     userData.isOrgAllowedFunctionality('external_links')
                   }
                 >
-                  <div class="media media-action">
-                    <div class="media-body">
+                  <div className="media media-action">
+                    <div className="media-body">
                       <a
                         target="_blank"
                         rel="noreferrer"
@@ -354,43 +356,54 @@ export default class ProfileDropdown extends Component {
                     </div>
                   </div>
                 </ShowWhen>
+                {/* Test Mode and Live Mode Button Action added for m-web only */}
+                <div
+                  className={`media media-action ${mode === 'live' ? 'test-go' : 'live-go'}`}
+                  onClick={() => onSwitchMode(mode === 'live' ? 'test' : 'live')}
+                >
+                  <div className="media-body">Enable {mode === 'live' ? 'Test' : 'Live'} Mode</div>
+                </div>
               </React.Fragment>
             )}
-
             {user.isRazorxAnnouncementEnabled && (
               <>
-                <div class="media media-action">
-                  <div class="media-left">
-                    <div class="media-object">
+                <div className="media media-action">
+                  <div className="media-left">
+                    <div className="media-object">
                       <img
                         src="https://cdn.razorpay.com/static/assets/notifs/razorx.svg"
-                        alt=""
+                        alt="razorpay experiment"
                         height="24"
                       />
                     </div>
                   </div>
-                  <div class="media-body">
+                  <div className="media-body">
                     <a rel="noreferrer" href="https://x.razorpay.com" target="_blank">
                       Go to RazorpayX
                     </a>
                   </div>
                 </div>
                 {!showMobileNav && showRazorpayxToolTip && user.isRazorxAnnouncementEnabled && (
-                  <Popover persistent={true} theme="dark" align="left" class="razorpayx-popover">
+                  <Popover
+                    persistent={true}
+                    theme="dark"
+                    align="left"
+                    className="razorpayx-popover"
+                  >
                     <PopoverBody>You can switch to RazorpayX Dashboard from here</PopoverBody>
                   </Popover>
                 )}
               </>
             )}
-
-            <div class="media loggedin-as">
-              <div class="media-body">
+            <div className="media loggedin-as">
+              <div className="media-body">
                 <div>Logged in as</div>
                 <p className="account-details">
-                  <i class="i i-account" /> <span title={user.user.email}>{user.user.email}</span>
+                  <i className="i i-account" />{' '}
+                  <span title={user.user.email}>{user.user.email}</span>
                 </p>
                 <button
-                  class="btn btn-primary logout-btn"
+                  className="btn btn-primary logout-btn"
                   onClick={() => {
                     analyticsTrack({
                       objectName: 'user dropdown',
@@ -410,12 +423,12 @@ export default class ProfileDropdown extends Component {
               </div>
             </div>
             {user.role === rolesList.OWNER && user.partner_type === null && (
-              <div class="media loggedin-as">
-                <div class="media-body">
-                  <p class="small-txt">Partner with us and start earning on every referral</p>
+              <div className="media loggedin-as">
+                <div className="media-body">
+                  <p className="small-txt">Partner with us and start earning on every referral</p>
 
                   <a
-                    class="partner-link"
+                    className="partner-link"
                     style={{ color: '#528ff0', fontSize: '14px' }}
                     onClick={this.showPartnerIntent}
                   >

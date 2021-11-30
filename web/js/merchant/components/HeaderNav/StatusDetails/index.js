@@ -138,16 +138,35 @@ class StatusDetails extends React.Component {
     }
   };
 
+  handleDocumentClick = (event) => {
+    const target = event.target;
+    const sliderContent = document.querySelector('.content-wrapper.status-details');
+    const sliderToggle = document.querySelector('.status-details-slide-toggle');
+    const statusDetails = document.querySelector(
+      '.panel.panel-default.SliderPanel.status-details--container',
+    );
+    if (
+      (sliderContent && sliderContent.contains(target)) ||
+      (sliderToggle && sliderToggle.contains(target)) ||
+      (statusDetails && statusDetails.contains(target))
+    ) {
+      return;
+    }
+    this.hideSlider();
+  };
+
   componentDidMount() {
     this.intervalForDebounce = setInterval(() => {
       this.checkForDebounce();
     }, 1000);
     this.intervalForTime = setInterval(() => this.refreshData(), 300000);
+    document.addEventListener('click', this.handleDocumentClick, true);
   }
 
   componentWillUnmount() {
     clearInterval(this.intervalForTime);
     clearInterval(this.intervalForDebounce);
+    document.removeEventListener('click', this.handleDocumentClick, true);
   }
 
   hideSlider = () => {
@@ -186,18 +205,30 @@ class StatusDetails extends React.Component {
       overallStatus,
       methodsDown,
     } = this.state;
+    const { AppMode } = this.props;
 
     return (
       <main className={classList('status-details', sliderOpen && 'status-details--active')}>
-        {/* Hidden the Bank Downtime from M-web for now 17/11/21 till nav is fixed properly for m-web */}
-        <div className="status-details-slide-toggle hidden-xs">
-          <span onClick={this.handleSliderToggleClick}>Bank Downtimes</span>
-        </div>
+        {/* Hidden the Bank Downtime from Test Mode*/}
+        {AppMode === 'live' && (
+          <div className="status-details-slide-toggle">
+            {/* 
+              For not we will only use the icon not text so commented the text variant for
+              Kept the code commented for future references
+             */}
+            {/* {!showMobileNav ? (
+              <span onClick={this.handleSliderToggleClick}>Bank Downtimesss</span>
+            ) : ( */}
+            <i className="i i-downtime" onClick={this.handleSliderToggleClick} />
+            {/* )} */}
+          </div>
+        )}
+
         {sliderOpen ? (
           <Slider>
             <ErrorBoundary resetOnProps>
               <div className="content-wrapper content-sm txn-details status-details">
-                <div className="panel panel-default SliderPanel">
+                <div className="panel panel-default SliderPanel status-details--container">
                   <div className="panel-heading">
                     {mode === 'summary' ? (
                       <b>Payment Methods Status</b>

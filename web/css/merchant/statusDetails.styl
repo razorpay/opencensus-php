@@ -1,12 +1,42 @@
 $base-color = #162f56 
 $base-font-weight = 600
 
-.status-details 
+.status-details
+    &.status-details--active
+        .status-details-slide-toggle 
+            .i-downtime
+                color: #2B83EA
+
+                &:after
+                    background: #0b70e70d;
+                    @media screen and (max-width: $screen-sm-min)
+                        background #FFFFFF
     .status-details-slide-toggle 
         display: inline-block
         color: inherit
         cursor: pointer
+        /* 
+            making the change to support the icon 
+            if in future the text comes up we need to make it 15px 15px 12px 
+         */
         padding: 15px 15px 12px
+        @media screen and (max-width: $screen-sm-min)
+            padding: 15px 10px 12px
+        .i-downtime
+            font-size 24px
+            position relative
+            top 3px
+            @media screen and (max-width: $screen-sm-min)
+                color #FFFFFF
+            &:after
+                border-radius: 50%
+                height: 36px
+                width: 36px
+                position: absolute
+                content: ''
+                left: -6px
+                top: -6px
+                z-index -1
     
 .content-wrapper.status-details 
     .refresh-action

@@ -11,6 +11,7 @@
   "scripts": {
     "postinstall": "cd web && npm ci",
     "start": "node signup.js; cd web && npm start",
+    "start:all": "node signup.js; cd web && npm run start:all",
     "serve": "REDIRECTOR=true npm run start",
     "serve:signup": "nodemon signup.js --watch public/js/merchant/",
     "build": "node signup.js; cd web && npm run production:build",

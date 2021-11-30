@@ -1344,12 +1344,13 @@ div.feature-activation-banner {
 .layout.rzp {
 
   .navbar.navbar-fixed-top {
-    @media (max-width: 768px) {
+    @media screen and (max-width $screen-sm-min) {
       position relative
     }
     .navbar-collapse{
-      @media (max-width: 768px) {
-        padding 5px
+      @media screen and (max-width $screen-sm-min) {
+        border-top-width: 0
+        padding 0 5px
       }
     }
 
@@ -1378,10 +1379,8 @@ div.feature-activation-banner {
 
           background-color: currentColor;
         }
-
-        @media(max-width: 360px) {
-
-          margin-right: 10px;
+        @media screen and (max-width $screen-sm-min) {
+          margin 14px 10px
         }
       }
     }
@@ -1401,6 +1400,12 @@ div.feature-activation-banner {
 
     float: right;
     margin: 0 -15px 0 0;
+    @media screen and (max-width $screen-sm-min) {
+      height 60px
+      display flex
+      align-items center
+      padding-right 5px
+    }
 
     &> li {
 
@@ -1409,7 +1414,7 @@ div.feature-activation-banner {
   }
 }
 
-@media (max-width: $screen-sm-min) {
+@media screen and (max-width: $screen-sm-min) {
 
   .layout.rzp {
 
@@ -1432,6 +1437,7 @@ div.feature-activation-banner {
         .dropdown-menu.ProfileDropdown, .Dropdown--Notifications-menu {
           left: auto;
           right: 0;
+          top 55px
         }
       }
     }
@@ -1456,16 +1462,16 @@ div.feature-activation-banner {
   .dropdown__trigger
     i
       position relative
-      font-size: 18px
-      top: 1px
+      font-size: 24px
+      top: 3px
       &:after
         border-radius: 50%
         height: 36px
         width: 36px
         position: absolute
         content: ''
-        left: -9px
-        top: -9px
+        left: -6px
+        top: -6px
         z-index -1
     &.dropdown-toggle--large-icon
       i
@@ -1482,7 +1488,7 @@ div.feature-activation-banner {
         background: rgba(11, 112, 231, 0.05)
       @media (max-width: $screen-sm-min)
         &:after
-          background: rgba(11, 112, 231, 0.1);
+          background: #FFF;
 
 #app-switcher
   .dropdown--active
@@ -1572,12 +1578,12 @@ div.feature-activation-banner {
       align-items: center
       .close
         font-size: 23px;
-        color: rgba(22, 47, 86, 0.74);
-        opacity: 1;
+        color: #162f56bd;
+        opacity: 0.3;
         position: relative;
         top: 1px;
-    @media (max-width: $screen-sm-min)
-      top: 55px;
+    @media screen and (max-width: $screen-sm-min)
+      top: 60px;
       position: fixed;
       padding: 20px 0 4px 0
       right: 0;
@@ -1707,6 +1713,11 @@ div.feature-activation-banner {
 
       display: block;
       width: 100%;
+    }
+  }
+  &.profile-dropdown-section{
+    @media screen and (max-width: $screen-xs-max) {
+      margin-right 10px;
     }
   }
 }

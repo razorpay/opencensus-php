@@ -426,25 +426,28 @@ class WhatsNewOld extends Component {
   };
 
   getAnnouncementCta = () => {
-    const { user, showMobileNav } = this.props;
+    /* Commented that props destructuring as none is getting used here as of now kept it for as the below code is commented  */
+    // const { user, showMobileNav } = this.props;
     const { totalUnread } = this.state;
     const hasUnread = !!totalUnread;
-
-    if ((user.isAnnouncementTextEnabled || user.isWhatsNewTextEnabled) && !showMobileNav) {
-      return (
-        <>
-          <span onClick={this.handleSliderToggleClick} class={classList(hasUnread && 'highlight')}>
-            {user.isAnnouncementTextEnabled ? 'Announcements' : "What's New"}
-          </span>
-          {hasUnread && <span class="bubble">{totalUnread}</span>}
-        </>
-      );
-    }
+    /* to show icon for both mweb and dweb so commented that code as of now */
+    /* 
+      if ((user.isAnnouncementTextEnabled || user.isWhatsNewTextEnabled) && !showMobileNav) {
+        return (
+          <>
+            <span onClick={this.handleSliderToggleClick} className={classList(hasUnread && 'highlight')}>
+              {user.isAnnouncementTextEnabled ? 'Announcements' : "What's New"}
+            </span>
+            {hasUnread && <span className="bubble">{totalUnread}</span>}
+          </>
+        );
+      }
+    */
 
     return (
       <>
         <i className="i i-horn" onClick={this.handleSliderToggleClick} />
-        {hasUnread && <span class="new-bubble">{totalUnread}</span>}
+        {hasUnread && <span className="new-bubble">{totalUnread}</span>}
       </>
     );
   };
@@ -503,9 +506,9 @@ class WhatsNewOld extends Component {
     else if (announcements?.length) contentToShow = this.renderNotifications();
     else {
       contentToShow = (
-        <div class="Notifications-content-empty">
-          <img src="/img/notifications/no-notification.png" width="72px" />
-          <div class="title">No announcements right now</div>
+        <div className="Notifications-content-empty">
+          <img src="/img/notifications/no-notification.png" width="72px" alt="No Notification" />
+          <div className="title">No announcements right now</div>
         </div>
       );
     }
@@ -532,18 +535,18 @@ class WhatsNewOld extends Component {
         {isOpenSlider1 ? (
           <Slider closeButtonClass="announcement-title">
             <ErrorBoundary resetOnProps>
-              <div class="content-wrapper content-sm txn-details whats-new-old">
-                <div class="panel panel-default SliderPanel">
-                  <div class="panel-heading">
-                    <div class="heading-content">
-                      <div class="title">
+              <div className="content-wrapper content-sm txn-details whats-new-old">
+                <div className="panel panel-default SliderPanel">
+                  <div className="panel-heading">
+                    <div className="heading-content">
+                      <div className="title">
                         <b>Announcements</b>
                       </div>
                     </div>
                   </div>
-                  <div class="SliderPanel__Body" onScroll={debounce(this.trackOnCardView, 100)}>
-                    <div class="panel-body">
-                      <div class="whats-new-content">{contentToShow}</div>
+                  <div className="SliderPanel__Body" onScroll={debounce(this.trackOnCardView, 100)}>
+                    <div className="panel-body">
+                      <div className="whats-new-content">{contentToShow}</div>
                     </div>
                   </div>
                 </div>
@@ -661,34 +664,34 @@ const NotificationCard = ({
 
   return (
     <div
-      class={classList(
+      className={classList(
         'NotificationCard',
         isUnread ? 'active' : 'inactive', // Notification is not read and also not expiry
       )}
       ref={ref}
       id={id}
     >
-      <span class="NotificationCard-icon">
+      <span className="NotificationCard-icon">
         {iconMap[icon] ? (
-          <i class={`ico i ${iconMap[icon]}`}>{isUnread && <span class="red-bubble" />}</i>
+          <i className={`ico i ${iconMap[icon]}`}>{isUnread && <span className="red-bubble" />}</i>
         ) : (
-          <span class="ico">
+          <span className="ico">
             <img src={icon} width="32px" />
-            {isUnread && <span class="red-bubble" />}
+            {isUnread && <span className="red-bubble" />}
           </span>
         )}
       </span>
-      <div class="NotificationCard-body">
-        <div class="heading">
-          <div class="title">
+      <div className="NotificationCard-body">
+        <div className="heading">
+          <div className="title">
             <p>{title}</p>
           </div>
           {secondary_icon && secondary_icon.length ? (
-            <span class="NotificationCard-icon--secondary">
+            <span className="NotificationCard-icon--secondary">
               {iconMap[icon] ? (
-                <i class={`ico i ${iconMap[secondary_icon]}`} />
+                <i className={`ico i ${iconMap[secondary_icon]}`} />
               ) : (
-                <span class="ico">
+                <span className="ico">
                   <img src={secondary_icon} />
                 </span>
               )}
@@ -711,8 +714,8 @@ const NotificationCard = ({
             </video>
           )
         ) : null}
-        <div class="description">{description}</div>
-        <div class="action-buttons">
+        <div className="description">{description}</div>
+        <div className="action-buttons">
           {buttons?.map((btn, idx) => {
             const isExternal = /^http(s)?:\/\//.test(btn.url);
             const isHash = !isExternal && btn.url.indexOf('#') === 0;
@@ -741,14 +744,14 @@ const NotificationCard = ({
             return (
               <a
                 key={idx}
-                class={classList('btn', getButtonClass(btn.type))}
+                className={classList('btn', getButtonClass(btn.type))}
                 onClick={(e) => handleCTAClick(e, btn, urlPath, isExternal)}
                 href={urlPath}
                 target={isExternal ? '_blank' : ''}
                 rel="noreferrer"
               >
                 <b>
-                  {btn.label} {isExternal && <i class="i i-external-link" />}
+                  {btn.label} {isExternal && <i className="i i-external-link" />}
                 </b>
               </a>
             );

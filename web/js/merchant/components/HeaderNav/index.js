@@ -12,7 +12,6 @@ import { isMobileDevice } from 'merchant/components/Home/data';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import NavFragment from './NavFragment';
-import ModesDropdown from './SwitchMode';
 import AppSwitcher from './AppSwitcher';
 import ProfileDropdown from './ProfileDropdown';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
@@ -100,7 +99,7 @@ export default class HeaderNav extends Component {
     return (
       <div class="nav-wrapper">
         <nav class="navbar navbar-default navbar-fixed-top">
-          <div class="container-fluid">
+          <div class="container-fluid navbar-container">
             <div className="navbar-collapse" id="headerNav">
               {!showMobileNav && !user.isOrgRZP && !user.isOrgAxis && (
                 <img
@@ -120,17 +119,8 @@ export default class HeaderNav extends Component {
                 </div>
               )}
               <ul className="nav navbar-nav navbar-right">
-                {(!showMobileNav && (
+                {!showMobileNav && (
                   <NavFragment analytics={analytics} {...fragmentSpecificProps} {...commonProps} />
-                )) || (
-                  <li>
-                    <ModesDropdown
-                      mode={mode}
-                      modeFormatted={modeFormatted}
-                      onSwitchMode={onSwitchMode}
-                      isTestModeBlocked={user.isTestModeBlocked}
-                    />
-                  </li>
                 )}
                 <ShowWhen
                   additionalCondition={(usr) =>
@@ -159,7 +149,7 @@ export default class HeaderNav extends Component {
                 </ShowWhen>
                 {this.props.user.isOrgRZP && this.props.user.isInternalStatusPageEnabled && (
                   <li id="status-details">
-                    <StatusDetails />
+                    <StatusDetails AppMode={mode} showMobileNav={showMobileNav} />
                   </li>
                 )}
                 <ShowWhen
@@ -175,6 +165,8 @@ export default class HeaderNav extends Component {
                   <ProfileDropdown
                     analytics={analytics}
                     showMobileNav={showMobileNav}
+                    mode={mode}
+                    onSwitchMode={onSwitchMode}
                     {...commonProps}
                   />
                 </li>

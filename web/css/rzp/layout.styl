@@ -399,8 +399,14 @@ body {
   border-bottom: 0;
   background-color: #fff;
   box-shadow:0px 2px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(0, 0, 0, 0.05);
-  @media (max-width $screen-sm-min) {
+  @media screen and (max-width $screen-sm-min) {
     margin-left: 0;
+  }
+  .navbar-container{
+    @media screen and (max-width $screen-sm-min) {
+      margin 0 5px
+      height 60px
+    }
   }
 }
 
@@ -417,6 +423,9 @@ body {
 
     &.dropdown-toggle--large-icon {
       padding: 15px 15px 12px;
+    }
+    @media screen and (max-width: $screen-sm-min) {
+      padding: 15px 10px;
     }
   }
 }
@@ -1247,6 +1256,14 @@ tr:hover .row-action.btn-group {
 
     &:hover {
       background-color: #F7F8FA;
+    }
+    @media screen and (max-width $screen-sm-min) {
+      &.live-go{
+        border-left: 4px solid #1F890E;
+      }
+      &.test-go{
+        border-left: 4px solid #F9D328;
+      }
     }
   }
 
