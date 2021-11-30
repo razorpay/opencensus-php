@@ -688,6 +688,14 @@ class PennyTesting extends Base\Core
      */
     public function getAllowedMerchantAttributesDetails(Entity $merchantDetails): array
     {
+        // For linked accounts, we don't have promoter pan name so directly sending Business name.
+        if($merchantDetails->merchant->isLinkedAccount() === true)
+        {
+            return [
+                Constants::COMPANY_PAN_NAME  => $merchantDetails->getBusinessName()
+            ];
+        }
+
         switch ($merchantDetails->getBusinessType())
         {
             case BusinessType::NOT_YET_REGISTERED:

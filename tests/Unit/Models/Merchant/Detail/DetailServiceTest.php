@@ -129,6 +129,8 @@ class DetailServiceTest extends TestCase
 
         $this->merchantEntityMock->shouldReceive('getEntity')->andReturn($this->merchantEntityMock);
 
+        $this->merchantEntityMock->shouldReceive('isLinkedAccount')->andReturn(false);
+
         $response = $this->merchantService->saveMerchantDetailForPreSignUp($merchantData);
 
         $this->assertEquals([], $response);
@@ -147,6 +149,8 @@ class DetailServiceTest extends TestCase
         $this->repoMock->shouldReceive('driver')->with('merchant_business_detail')->andReturn($this->merchantBusinessDetailEntityMock);
 
         $this->merchantDetailEntityMock->shouldReceive('getMerchantId')->andReturn('1cXSLlUU8V9sXl');
+
+        $this->merchantEntityMock->shouldReceive('isLinkedAccount')->andReturn(false);
 
         $this->merchantDetailValidator->shouldReceive('validatePartnerActivationStatus')->andReturn();
 

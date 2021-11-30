@@ -161,6 +161,7 @@ class Constants
     const SOURCED_BY_WALNUT369            = 'sourced_by_walnut369';
     const WALLET                          = 'wallet';
 
+
     const ENACH_INTERMEDIATE              = 'enach_intermediate';
     const SAVE_VPA                        = 'save_vpa';
     const UPI_OTM                         = 'upi_otm';
@@ -706,6 +707,8 @@ class Constants
     const DIRECT_TRANSFER                   = 'direct_transfer';
 
     const DASHBOARD_INTERNAL               = 'DASHBOARD_INTERNAL';
+
+    const ROUTE_LA_PENNY_TESTING           = 'route_la_penny_testing';
 
     /**
      * Enables Offers on Subscription
@@ -1299,6 +1302,7 @@ class Constants
         self::AUTOMATED_LOC_ELIGIBLE          => true,
         self::PREVENT_TEST_MODE               => true,
         self::DIRECT_TRANSFER                 => true,
+        self::ROUTE_LA_PENNY_TESTING          => true,
         self::APPS_EXTEMPT_RISK_CHECK         => true,
         self::APPS_EXEMPT_CUSTOMER_FLAGGING   => true,
         self::EARLY_MANDATE_PRESENTMENT       => true,
@@ -1850,6 +1854,11 @@ class Constants
             'feature'       => self::DIRECT_TRANSFER,
             'display_name'  => 'Required to make direct transfers',
             'documentation' => '',
+        ],
+        self::ROUTE_LA_PENNY_TESTING => [
+            'feature'       => self::ROUTE_LA_PENNY_TESTING,
+            'display_name'  => 'For penny testing bank details of Linked Accounts',
+            'documentation' => ''
         ],
         self::APPS_EXTEMPT_RISK_CHECK => [
             'feature'       => self::APPS_EXTEMPT_RISK_CHECK,

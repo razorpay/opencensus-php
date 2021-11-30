@@ -75,6 +75,14 @@ class Factory
             ];
         }
 
+        // For Linked accounts, we only validate Bank Account details with BVS.
+        // Other validations are not required.
+        if($merchant->isLinkedAccount() === true){
+            return [
+                new BankAccount($merchant, $merchantDetails),
+            ];
+        }
+
         return [
             new CompanyPanOcr($merchant, $merchantDetails),
             new PersonalPanOcr($merchant, $merchantDetails),

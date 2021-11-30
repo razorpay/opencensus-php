@@ -907,6 +907,13 @@ class Entity extends Base\PublicEntity
         return isset($nonPurePlatformPartner) ? $nonPurePlatformPartner->isFeatureEnabled($featureName) : false;
     }
 
+    public function isFeatureEnabledOnParentMerchant(string $featureName)
+    {
+        $parentMerchant = $this->parent;
+
+        return isset($parentMerchant) ? $parentMerchant->isFeatureEnabled($featureName) : false;
+    }
+
     public function isAtLeastOneFeatureEnabled(array $features): bool
     {
         $assignedFeatures = $this->getEnabledFeatures();

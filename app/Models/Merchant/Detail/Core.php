@@ -74,6 +74,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
@@ -3018,14 +3019,23 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Entity          $merchantDetails
+     * @param Entity $merchantDetails
      * @param Merchant\Entity $merchant
      *
-     * @throws \Throwable
+     * @param bool $bankDetailsUpdated
+     * @throws Exception\InvalidPermissionException
+     * @throws LogicException
      */
-    protected function attemptPennyTesting(Entity $merchantDetails, Merchant\Entity $merchant)
+    protected function attemptPennyTesting(Entity $merchantDetails, Merchant\Entity $merchant, $bankDetailsUpdated=false)
     {
-        if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false)
+        if($merchant->isLinkedAccount() === true and
+            $merchant->isFeatureEnabledOnParentMerchant(FeatureConstants::ROUTE_LA_PENNY_TESTING) === false)
+        {
+            return;
+        }
+
+        if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false and
+                $merchant->isLinkedAccount() === false)
         {
             return;
         }
@@ -3037,13 +3047,7 @@ class Core extends Base\Core
             return;
         }
 
-        // no penny testing for linked accounts
-        if ($merchant->isLinkedAccount() === true)
-        {
-            return;
-        }
-
-        if ($this->shouldSkipBankAccountRegistration() == true)
+        if ($this->shouldSkipBankAccountRegistration() == true and $merchant->isLinkedAccount() === false)
         {
             return;
         }
@@ -3067,7 +3071,9 @@ class Core extends Base\Core
             return;
         }
 
-        if ($this->hasBankDetailsChanged($merchantDetails) or $pennyTestingAttemptsCount == 0)
+        if ($this->hasBankDetailsChanged($merchantDetails) or
+            $pennyTestingAttemptsCount == 0 or
+            $bankDetailsUpdated === true)
         {
             $this->updateDocumentVerificationStatus($merchant, Entity::BANK_ACCOUNT_NUMBER);
         }
