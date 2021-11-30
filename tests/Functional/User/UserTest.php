@@ -5358,4 +5358,117 @@ class UserTest extends TestCase
         $this->assertEquals($merchant["signup_via_email"], 1);
 
     }
+
+    public function testSendOTPForAddingEmailFromProfileSection()
+    {
+        Mail::fake();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 0, 'email' => null]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', ['merchant_id' => $merchant['id'], 'contact_email' => null]);
+
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant(
+            $merchant['id'], ['signup_via_email' => 0, 'email' => null, 'confirm_token' => 'notnull']
+        );
+
+        $testData['request']['content']['otp_auth_token'] = $this->app['token_service']->generate($merchantUser->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+
+        Mail::assertQueued(Otp::class, function ($mail)
+        {
+            $this->assertEquals('verify_user', $mail->input['action']);
+
+            $this->assertNotEmpty($mail->user);
+
+            $this->assertNotEmpty($mail->otp);
+
+            $this->assertEquals('emails.user.verify_user', $mail->view);
+
+            $mailSubject = "Razorpay | OTP to verify email";
+
+            $this->assertEquals($mailSubject, $mail->subject);
+
+            return true;
+        });
+
+    }
+
+    public function testAddEmailFromProfileSection()
+    {
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 0, 'email' => null]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', ['merchant_id' => $merchant['id'], 'contact_email' => null]);
+
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant(
+            $merchant['id'], ['signup_via_email' => 0, 'email' => null]
+        );
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testAddEmailFromProfileSectionNotOwner()
+    {
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 0, 'email' => null]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', ['merchant_id' => $merchant['id'], 'contact_email' => null]);
+
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant(
+            $merchant['id'], ['signup_via_email' => 0, 'email' => null], 'manager'
+        );
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testAddEmailFromProfileSectionEmailAlreadyPresent()
+    {
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 0, 'email' => 'someuser@some.com']);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', ['merchant_id' => $merchant['id'], 'contact_email' => 'someuser@some.com']);
+
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant(
+            $merchant['id'], ['signup_via_email' => 0, 'email' => 'someuser@some.com']
+        );
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testAddEmailFromProfileSectionEmailAlreadyTaken()
+    {
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 0, 'email' => null]);
+
+        $merchantDetail = $this->fixtures->merchant_detail->createSane(['merchant_id' => $merchant['id'], 'contact_email' => null]);
+
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant(
+            $merchant['id'], ['signup_via_email' => 0, 'email' => null]
+        );
+
+        $this->fixtures->user->createBankingUserForMerchant(
+            $merchant['id'], ['signup_via_email' => 1, 'email' => 'someuser@some.com']
+        );
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
 }

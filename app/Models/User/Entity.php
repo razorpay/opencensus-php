@@ -337,6 +337,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMAIL);
     }
 
+    public function setEmail(string $email)
+    {
+        $this->setAttribute(self::EMAIL, $email);
+    }
+
     public function getPassword()
     {
         return $this->getAttribute(self::PASSWORD);

@@ -3919,4 +3919,110 @@ return [
 
         ]
     ],
+
+    'testAddEmailFromProfileSection' => [
+        'request' => [
+            'url' => '/users/email/update/verify',
+            'method'  => 'POST',
+            'content' => [
+                "otp"=> '000007',
+                "email"=> 'someuser@some.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email_verified' => true,
+                'email' => 'someuser@some.com'
+            ]
+        ]
+    ],
+
+    'testAddEmailFromProfileSectionNotOwner' => [
+        'request' => [
+            'url' => '/users/email/update/verify',
+            'method'  => 'POST',
+            'content' => [
+                "otp"=> '000007',
+                "email"=> 'someuser@some.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION,
+        ],
+    ],
+
+    'testAddEmailFromProfileSectionEmailAlreadyPresent' => [
+        'request' => [
+            'url' => '/users/email/update/verify',
+            'method'  => 'POST',
+            'content' => [
+                "otp"=> '000007',
+                "email"=> 'someuser@some.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Email is already present.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddEmailFromProfileSectionEmailAlreadyTaken' => [
+        'request' => [
+            'url' => '/users/email/update/verify',
+            'method'  => 'POST',
+            'content' => [
+                "otp"=> '000007',
+                "email"=> 'someuser@some.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Customer with this email already exists',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS,
+        ],
+    ],
+
+    'testSendOTPForAddingEmailFromProfileSection' => [
+        'request' => [
+            'url' => '/users/email/update',
+            'method'  => 'POST',
+            'content' => [
+                "email"=> 'someuser@some.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'someuser@some.com'
+            ]
+        ]
+    ]
+
+
 ];

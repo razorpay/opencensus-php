@@ -1706,6 +1706,10 @@ class Route
         'otp_create'                               => ['post',     'otp/send',                                       'UserController@sendOtpWithContact'                                 ],
         'user_otp_verify'                          => ['post',     'users/verify_otp',                               'UserController@verifyOtpWithToken'                                 ],
 
+        // add email from profile section
+        'user_add_email'                          => ['post',       'users/email/update',                            'UserController@sendOtpForAddEmail'                                 ],
+        'user_add_email_verify'                   => ['post',       'users/email/update/verify',                     'UserController@verifyOtpForAddEmail'                               ],
+
         'user_fetch_for_merchant'                  => ['get',      'users/fetch_for_merchant/{id}',                  'UserController@getUserForMerchant'                                 ],
 
         // Tax groups and taxes
@@ -4591,6 +4595,8 @@ class Route
         'user_verify_through_mode',
         'user_contact_update_sent_otp',
         'user_verify_and_update_mobile_otp' ,
+        'user_add_email',
+        'user_add_email_verify',
         'user_update_contact_merchant',
         'user_account_unlock',
         'banking_account_statement_generate',
@@ -8461,6 +8467,8 @@ class Route
             'user_verify_through_mode',
             'user_contact_update_sent_otp',
             'user_verify_and_update_mobile_otp' ,
+            'user_add_email',
+            'user_add_email_verify',
             'user_otp_login_2fa_password',
             'user_fetch_admin',
             'validate_checkout_offers',
@@ -10235,6 +10243,8 @@ class Route
             'user_verify_through_mode',
             'user_contact_update_sent_otp',
             'user_verify_and_update_mobile_otp' ,
+            'user_add_email',
+            'user_add_email_verify',
             'user_otp_login_2fa_password',
             'validate_checkout_offers',
             'vault_token_create',

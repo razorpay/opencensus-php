@@ -908,6 +908,8 @@ class UserRolesScope
             'user_trigger_2fa_otp'                                 => Role::ALL_ROLES,
             'user_update_contact'                                  => [Role::OWNER, Role::ADMIN],
             'user_contact_update_sent_otp'                         => [Role::OWNER, Role::ADMIN],
+            'user_add_email'                                       => [Role::OWNER],
+            'user_add_email_verify'                                => [Role::OWNER],
             'user_update_contact_merchant'                         => [Role::OWNER, Role::ADMIN],
             'user_verify_contact'                                  => Role::ALL_ROLES,
             'user_verify_email'                                    => Role::ALL_ROLES,

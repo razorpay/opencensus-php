@@ -4397,6 +4397,97 @@ class Core extends Base\Core
         return $response;
     }
 
+    /**
+     * @param string $email
+     * @param Entity $user
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
+     * @throws ServerErrorException
+     */
+    protected function validateAddEmailAllowed(string $email, Entity $user)
+    {
+        $userMapping = $this->repo->merchant->getMerchantUserMapping($this->merchant->getId(), $user->getId());
+        $userRole = $userMapping->pivot->role;
+
+        if (($userRole === Role::OWNER) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION);
+        }
+
+        if($user->getEmail() !== NULL)
+        {
+            throw new BadRequestValidationFailureException('Email is already present.');
+        }
+
+        if ($this->checkIfEmailAlreadyExists($email)) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS
+            );
+        }
+    }
+
+    /**
+     * @param array $input
+     * @param Entity $user
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException|Exception\ServerErrorException
+     */
+    public function sendOtpForAddEmail(array $input, Entity $user)
+    {
+        $this->validateAddEmailAllowed($input[Entity::EMAIL], $user);
+        $user->setEmail($input[Entity::EMAIL]);
+        $input["token"] = $input[Entity::EMAIL];
+        $this->sendVerificationOtpViaEmail($input, $user);
+    }
+
+    /**
+     * @param array $input
+     * @param Entity $user
+     * @return array
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
+     * @throws Exception\ServerErrorException|Throwable
+     */
+    public function verifyOtpForAddEmail(array $input, Entity $user): array
+    {
+        $this->validateAddEmailAllowed($input[Entity::EMAIL], $user);
+
+        $email = $input[Entity::EMAIL];
+        $user->setEmail($email);
+        $input["token"] = $email;
+        $this->checkVerifyOtpVerificationLimitExceeded($email, Constants::EMAIL, $user);
+
+        $input = array_merge($input, $this->getLoginSignupOtpPayload($input, Constants::VERIFY_USER_ACTION));
+
+        $this->verifyLoginSignupOtp($email, $input, $user->getId());
+
+        if (isset($input[Entity::EMAIL]))
+        {
+            $this->resetEmailVerificationOtpSendLimit($email);
+        }
+
+        $this->resetVerifyOtpVerificationLimit($email);
+
+        $merchant = $this->merchant;
+        $merchant_detail = $merchant->merchantDetail()->first();
+
+        $this->repo->transactionOnLiveAndTest(function() use ($user, $merchant, $merchant_detail, $email)
+        {
+            $user->setEmail($email);
+            $user->setConfirmTokenNull();
+            $this->repo->saveOrFail($user);
+
+            $merchant->setEmail($email);
+            $this->repo->saveOrFail($merchant);
+
+            $merchant_detail->setContactEmail($email);
+            $this->repo->saveOrFail($merchant_detail);
+        });
+
+        return $user->toArrayPublic();
+
+    }
+
     public function getUserByVerifiedContact(array $input) {
         $response = null;
         $user = null;

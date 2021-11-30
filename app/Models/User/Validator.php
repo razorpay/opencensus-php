@@ -275,6 +275,16 @@ class Validator extends Base\Validator
         Entity::ACTION                => 'required|custom',
     ];
 
+    protected static $addEmailRules = [
+        Entity::OTP_AUTH_TOKEN => 'required|filled',
+        Entity::EMAIL          => 'required|email',
+    ];
+
+    protected static $addEmailVerifyRules = [
+        Entity::OTP             => 'required|filled|min:4',
+        Entity::EMAIL           => 'required|email',
+    ];
+
     protected static $actionValidators = [
         'product_role'
     ];

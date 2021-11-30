@@ -1702,6 +1702,35 @@ class Service extends Base\Service
         return (new DeviceDetail\Core)->createUserDeviceDetail($input);
     }
 
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function sendOtpForAddEmail(array $input): array
+    {
+        $this->validator->validateInput('add_email', $input);
+
+        $token = $input[Entity::OTP_AUTH_TOKEN];
+
+        $this->app['token_service']->verify($token, $this->user->getId());
+
+        $this->core()->sendOtpForAddEmail($input, $this->user);
+
+        return ['email' => $input[Entity::EMAIL]];
+    }
+
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function verifyOtpForAddEmail(array $input): array
+    {
+        $this->validator->validateInput('add_email_verify', $input);
+
+        return $this->core()->verifyOtpForAddEmail($input, $this->user);
+    }
+
     public function getUserByVerifiedContact(array $input) {
         $user = $this->core()->getUserByVerifiedContact($input);
 

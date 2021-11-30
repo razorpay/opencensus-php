@@ -510,4 +510,26 @@ class UserController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function sendOtpForAddEmail()
+    {
+        $input = Request::all();
+
+        /** @var Service $userService */
+        $userService = $this->service();
+        $response = $userService->sendOtpForAddEmail($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function verifyOtpForAddEmail()
+    {
+        $input = Request::all();
+
+        /** @var Service $userService */
+        $userService = $this->service();
+        $response = $userService->verifyOtpForAddEmail($input);
+
+        return ApiResponse::json($response);
+    }
 }
