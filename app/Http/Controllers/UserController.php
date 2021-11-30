@@ -289,7 +289,8 @@ class UserController extends Controller
                 "name"              => $user->currentMerchant() ? $user->currentMerchant()->name : null,
                 "email"             => $user->email,
                 "contact_mobile"    => $user->contact_mobile,
-                "user_id"           => $user->id
+                "user_id"           => $user->id,
+                "logged_in_via"     => (isset($input[UserConstants::EMAIL]) === true) ? UserConstants::EMAIL : UserConstants::CONTACT_MOBILE
             ];
         }
 
@@ -359,6 +360,15 @@ class UserController extends Controller
                         [
                             MetricConstants::TWO_FA_DURING_SIGNUP   => $twoFaDuringSignup,
                         ]);
+                }
+
+                if(isset($input["email"]) === true)
+                {
+                    $data["logged_in_via"] = UserConstants::EMAIL;
+                }
+                else
+                {
+                    $data["logged_in_via"] = UserConstants::CONTACT_MOBILE;
                 }
             }
         }

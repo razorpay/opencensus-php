@@ -398,11 +398,11 @@ class Service extends Base\Service
 
         if(isset($input["email"]) === true)
         {
-            $logged_in_via = "email";
+            $logged_in_via = Constants::EMAIL;
         }
         else
         {
-            $logged_in_via = "contact_mobile";
+            $logged_in_via = Constants::CONTACT_MOBILE;
         }
 
         return $this->handleLoginResponse($error, $genericUser, $logged_in_via);
@@ -457,11 +457,11 @@ class Service extends Base\Service
 
         if(isset($input["email"]) === true)
         {
-            $logged_in_via = "email";
+            $logged_in_via = Constants::EMAIL;
         }
         else
         {
-            $logged_in_via = "contact_mobile";
+            $logged_in_via = Constants::CONTACT_MOBILE;
         }
 
         return $this->handleLoginResponse($error, $genericUser, $logged_in_via);
@@ -476,13 +476,13 @@ class Service extends Base\Service
     {
         list($error, $genericUser) = $this->verifyVerificationOtpOnApi($input);
 
-        if(isset($input["email"]) === true)
+        if(isset($input[Constants::EMAIL]) === true)
         {
-            $logged_in_via = "email";
+            $logged_in_via = Constants::EMAIL;
         }
         else
         {
-            $logged_in_via = "contact_mobile";
+            $logged_in_via = Constants::CONTACT_MOBILE;
         }
 
         return $this->handleLoginResponse($error, $genericUser, $logged_in_via);
@@ -629,6 +629,7 @@ class Service extends Base\Service
                 if (empty($userId) === false)
                 {
                     Session::set(Constants::USER_ID, $userId);
+                    Session::set('logged_in_via', $logged_in_via);
                 }
                 else
                 {

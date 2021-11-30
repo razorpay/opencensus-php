@@ -13,6 +13,8 @@ class Constants
 
     const EMAIL = 'email';
 
+    const CONTACT_MOBILE = 'contact_mobile';
+
     const USER_ID = 'user_id';
 
     const SESSION = 'session';
