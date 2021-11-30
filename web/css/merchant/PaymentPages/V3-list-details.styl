@@ -123,6 +123,59 @@
       .InputGroup
         margin: 0
 
+      table
+        width: 100%
+        border-spacing: 0 12px
+        border-collapse: separate
+
+      tr
+        border-radius: 3px
+        padding: 16px
+        transform: translateY(8px)
+        opacity: 0
+        animation: move-up .3s ease-in forwards .2s
+
+        td.item-details-units
+          min-width: 148px
+
+        td
+          background: #f3f4f7
+          max-width: 112px
+          vertical-align: top
+          min-width: 80px
+
+          & > div
+            min-height: 64px
+            padding: 14px 12px
+            overflow-wrap: break-word
+
+          &:first-child
+            border-bottom-left-radius: 3px
+            border-top-left-radius: 3px
+            border-left: 3px solid #fbc9a1
+
+          &:last-child
+            border-bottom-right-radius: 3px
+            border-top-right-radius: 3px
+
+        &:nth-child(4n + 2)
+          transform: translateY(11px)
+
+          td
+            border-color: #c1a1fd
+
+        &:nth-child(4n + 3)
+          transform: translateY(14px)
+
+          td
+            border-color: #9bd7ff
+
+        &:nth-child(4n + 4)
+          transform: translateY(17px)
+
+          td
+            border-color: #b4e397
+
       .table-container
         .table
           display: flex
