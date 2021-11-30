@@ -5,9 +5,22 @@ $primary = #538FF0
     .checkbox-knob
       margin-left: 25px 
 
+    @media screen and (max-width: 820px)
+      .enable-wrapper
+        display: block
+        margin: 10px auto
+      .checkbox-knob
+        margin-left: 0
+
+    @media screen and (max-width: 359px)
+        .pair-value
+          padding-left: 0
+
+
     .status-text 
-      margin-left: 10px
+      margin-left: 5px
       vertical-align: middle
+      padding: 0 10px
 
     &.enabled 
       .status-text 
@@ -32,9 +45,16 @@ $primary = #538FF0
     border-top: 1px solid #EBEFF0 
     margin: 20px -20px 
     padding: 20px 20px 0 20px 
+    flex-wrap: wrap
+    line-height: 1.5
 
     .content 
       width: 70% 
+
+    @media screen and (max-width: 786px)
+      .content
+        width: auto
+        padding: 10px 0;
 
 .removable-select
   display: flex 
@@ -77,6 +97,10 @@ $primary = #538FF0
     display: inline-block 
     padding: 0px 2px 
     margin-left: 10px 
+
+  @media screen and (max-width: 359px)
+    .close-btn
+      margin-left: 6px
   
     i.i-close 
       color: #58666E 

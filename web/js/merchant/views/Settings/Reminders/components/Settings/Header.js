@@ -3,17 +3,19 @@ import SwitchField from 'common/ui/Forms/SwitchField';
 
 export default ({ disabled, type, isEnabled, onToggle }) => (
   <React.Fragment>
-    <span class="title">Reminders for {type}</span>
+    <span className="title">Reminders for {type}</span>
 
-    <SwitchField
-      class="m-l"
-      type="prime"
-      checked={isEnabled}
-      disabled={disabled}
-      onChange={onToggle}
-    />
-    <span class="status-text">{isEnabled ? 'Enabled' : 'Disabled'}</span>
+    <span className="enable-wrapper">
+      <SwitchField
+        class="m-l"
+        type="prime"
+        checked={isEnabled}
+        disabled={disabled}
+        onChange={onToggle}
+      />
+      <span className="status-text">{isEnabled ? 'Enabled' : 'Disabled'}</span>
+    </span>
 
-    <p class="description">Send automated reminders for unpaid {type} and get paid on time.</p>
+    <p className="description">Send automated reminders for unpaid {type} and get paid on time.</p>
   </React.Fragment>
 );
