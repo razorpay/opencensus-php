@@ -921,7 +921,7 @@ class Service extends Base\Service
             $browser = (new BrowserDetect())->detect();
 
             $browserDetails = [
-                Constants::DEVICE   => (new Helper())->getUserDevice($browser),
+                Constants::DEVICE   => $browser->deviceModel(),
                 Constants::BROWSER  => $browser->browserFamily(),
                 Constants::OS       => $browser->platformName(),
             ];
