@@ -334,8 +334,13 @@ class PGRouter
             $decodedResponse = json_decode($response->body, true);
         }
 
+        $traceData = $decodedResponse;
+
+        // SBB Issue - Axis Migs
+        unset($traceData["request"]["content"]);
+
         $this->trace->info(TraceCode::PG_ROUTER_RESPONSE,
-            ["response" => $decodedResponse ?? [],
+            ["response" => $traceData ?? [],
                 "statusCode" =>  $response->status_code
             ]);
 
