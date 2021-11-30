@@ -641,6 +641,9 @@ return [
         'Valid slug with only int and _ in validateSlug'    => ['validateSlug', '12312_13131', false],
         'Valid slug with only int and - in validateSlug'    => ['validateSlug', '12312-13131', false],
         'Invalid slug with only int and . in validateSlug'  => ['validateSlug', '12312.13131', true],
+
+        'Timestamp less than 15 minutes in validateExpireBy'    => ['validateExpireBy', Carbon::now(Timezone::IST)->getTimestamp(), true],
+        'Timestamp more than 15 minutes in validateExpireBy'    => ['validateExpireBy', Carbon::now(Timezone::IST)->addDay()->getTimestamp(), false],
     ],
 
     "testValidateTimesPayable"  => [
