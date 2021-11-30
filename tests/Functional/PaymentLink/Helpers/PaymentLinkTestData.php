@@ -2917,6 +2917,104 @@ return [
         ],
     ],
 
+    'testCreateSubscriptionButton' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                "view_type"     => "subscription_button",
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title subscription button',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => [
+                    [
+                        'plan_id'           => 'plan_1000000000plan',
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'user_id'       => User::MERCHANT_USER_ID,
+                'receipt'       => '00000000000001',
+                'amount'        => NULL,
+                'currency'      => 'INR',
+                'title'         => 'Sample title subscription button',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'          => 'amount',
+                            'description'   => 'SAMPLE DESCRIPTION',
+                            'amount'        => 100000,
+                            'currency'      => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'quantity_sold'     => 0,
+                        'total_amount_paid' => 0,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateSubscription' => [
+        'request'  => [
+            'url'     => '/subscription_buttons/pl_100000000000pl/create_subscription',
+            'method'  => 'post',
+            'content' => [
+                "payment_page_item_id"  => "ppi_10000000000ppi"
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'subscription_id'   => "plan_1000000000plan"
+            ],
+        ],
+    ],
+
+    'testCreateSubscriptionWithNoPlanIdShouldThrowException' => [
+        'request'  => [
+            'url'     => '/subscription_buttons/pl_100000000000pl/create_subscription',
+            'method'  => 'post',
+            'content' => [
+                "payment_page_item_id"  => "ppi_10000000000ppi"
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'plan is not present to create a subscription',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testPaymentHandleCreation'   => [
         'request'  => [
             'url'     => '/payment_handle',

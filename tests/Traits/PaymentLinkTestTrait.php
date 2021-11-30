@@ -77,6 +77,24 @@ trait PaymentLinkTestTrait
         return $this->fixtures->create('payment_page_item', $attributes);
     }
 
+    protected function createSubscriptionPaymentPageItem(
+        string $id = self::TEST_PPI_ID,
+        string $paymentLinkId = self::TEST_PL_ID,
+        array $attributes = []
+    ): PaymentLinkModel\PaymentPageItem\Entity
+    {
+        $attributes[PaymentLinkModel\PaymentPageItem\Entity::ID]              = $id;
+        $attributes[PaymentLinkModel\PaymentPageItem\Entity::PAYMENT_LINK_ID] = $paymentLinkId;
+
+        $defaultItem = [
+            PaymentLinkModel\PaymentPageItem\Entity::PLAN_ID    => self::TEST_PLAN_ID
+        ];
+
+        $attributes = array_merge($defaultItem, $attributes);
+
+        return $this->fixtures->create('payment_page_item', $attributes);
+    }
+
     protected function createPaymentPageItems(string $paymentLinkId = self::TEST_PL_ID, array $paymentPageItems = [])
     {
         $data = [];

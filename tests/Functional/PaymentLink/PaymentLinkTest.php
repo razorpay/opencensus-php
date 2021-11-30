@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Item;
 use RZP\Models\Order;
+use RZP\Models\Currency\Currency;
 use RZP\Models\PaymentLink\Entity;
 use RZP\Services\Elfin\Impl\Gimli;
 use RZP\Services\Elfin\Service as ElfinService;
@@ -49,6 +50,7 @@ class PaymentLinkTest extends TestCase
     const TEST_PPI_ID   = '10000000000ppi';
     const TEST_PPI_ID_2 = '10000000001ppi';
     const TEST_ORDER_ID = '10000000000ord';
+    const TEST_PLAN_ID  = '1000000000plan';
 
     protected function enableRazorXTreatmentForKeylessHeader()
     {
@@ -1869,6 +1871,71 @@ class PaymentLinkTest extends TestCase
             'pay_id'    => $payment['id'],
             'amount'    => 35000
         ]);
+    }
+
+    /**
+     * @group nocode_pp_subscription
+     */
+    public function testCreateSubscriptionButton()
+    {
+        $subscriptionModule = $this->app['module']->subscription;
+
+        $mockSubscription   = \Mockery::mock($subscriptionModule)->makePartial();
+
+        $mockSubscription->shouldReceive('fetchPlan')->andReturn([
+            PaymentLink\PaymentPageItem\Entity::ITEM    => [
+                Item\Entity::NAME           => "amount",
+                Item\Entity::AMOUNT         => 100000,
+                Item\Entity::CURRENCY       => Currency::INR,
+                Item\Entity::DESCRIPTION    => "SAMPLE DESCRIPTION"
+            ],
+            "interval"  => 23,
+            "period"    => 23,
+        ]);
+
+        $this->app['module']->subscription = $mockSubscription;
+
+        $this->startTest();
+    }
+
+    /**
+     * @group nocode_pp_subscription
+     */
+    public function testCreateSubscription()
+    {
+        $this->ba->directAuth();
+
+        $this->createPaymentLink(self::TEST_PL_ID, [
+            'view_type' => 'subscription_button'
+        ]);
+
+        $this->createSubscriptionPaymentPageItem();
+
+        $subscriptionModule = $this->app['module']->subscription;
+
+        $mockSubscription   = \Mockery::mock($subscriptionModule)->makePartial();
+
+        $mockSubscription->shouldReceive('createSubscription')->andReturn(["id" => 'plan_' . self::TEST_PLAN_ID]);
+
+        $this->app['module']->subscription = $mockSubscription;
+
+        $this->startTest();
+    }
+
+    /**
+     * @group nocode_pp_subscription
+     */
+    public function testCreateSubscriptionWithNoPlanIdShouldThrowException()
+    {
+        $this->ba->directAuth();
+
+        $this->createPaymentLink(self::TEST_PL_ID, [
+            'view_type' => 'subscription_button'
+        ]);
+
+        $this->createPaymentPageItem();
+
+        $this->startTest();
     }
 
     public function testPaymentHandleCreation()
