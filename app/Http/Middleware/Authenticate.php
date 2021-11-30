@@ -8,8 +8,9 @@ use Illuminate\Foundation\Application;
 use Symfony\Component\HttpFoundation\Response;
 
 use ApiResponse;
-use RZP\Http\Route;
 use RZP\Http\OAuth;
+use RZP\Http\Route;
+use RZP\Trace\Tracer;
 use RZP\Http\P2pRoute;
 use RZP\Http\FeatureAccess;
 use RZP\Http\Response\Header;
@@ -41,6 +42,8 @@ class Authenticate
 
     protected $router;
 
+    protected $requestContext;
+
     /**
      * Create a new filter instance.
      *
@@ -51,6 +54,8 @@ class Authenticate
         $this->app = $app;
 
         $this->ba = $this->app['basicauth'];
+
+        $this->requestContext = $app['request.ctx.v2'];
 
         $this->router = $this->app['router'];
 
@@ -115,6 +120,16 @@ class Authenticate
         if ($ret === null)
         {
             $ret = (new FeatureAccess)->verifyOrgLevelFeatureAccess();
+        }
+
+        $passport = $this->requestContext->passport;
+
+        if (($passport !== null) and
+            ($passport->consumer !== null) and
+            ($passport->consumer->type !== null) and
+            ($passport->consumer->id !== null))
+        {
+            Tracer::addAttribute($this->requestContext->passport->consumer->type, $this->requestContext->passport->consumer->id);
         }
 
         // Non-null value indicates failure flow
