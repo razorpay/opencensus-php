@@ -3452,6 +3452,30 @@ return [
         ]
     ],
 
+    'testGetPayoutsWithRemovingPayoutFeatureForMerchant' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts?account_number=2224440041626905',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testGetPayoutsWithRemovingPayoutFeatureForMerchantWithProxyAuth' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts?account_number=2224440041626905',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
     'testGetPayoutsForReferenceId' => [
         'request' => [
             'method'  => 'get',

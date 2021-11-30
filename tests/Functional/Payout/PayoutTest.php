@@ -3983,6 +3983,48 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotEquals($payouts['items'], null);
     }
 
+    public function testGetPayoutsWithRemovingPayoutFeatureForMerchant()
+    {
+        $this->createEsIndex();
+
+        $payout = $this->testCreatePayout();
+
+        $payout = $this->testCreatePayout();
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->removeFeatures(['payout']);
+
+        $payouts = $this->startTest();
+
+        $this->assertEquals($payouts['entity'], 'collection');
+
+        $this->assertEquals($payouts['count'], 2);
+
+        $this->assertNotEquals($payouts['items'], null);
+    }
+
+    public function testGetPayoutsWithRemovingPayoutFeatureForMerchantWithProxyAuth()
+    {
+        $this->createEsIndex();
+
+        $payout = $this->testCreatePayout();
+
+        $payout = $this->testCreatePayout();
+
+        $this->ba->proxyAuth();
+
+        $this->fixtures->merchant->removeFeatures(['payout']);
+
+        $payouts = $this->startTest();
+
+        $this->assertEquals($payouts['entity'], 'collection');
+
+        $this->assertEquals($payouts['count'], 2);
+
+        $this->assertNotEquals($payouts['items'], null);
+    }
+
     public function testCreatePayoutWithOtpWithIMPSLimit5L()
     {
         $balance = $this->getDbLastEntity('balance');

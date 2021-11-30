@@ -11307,7 +11307,6 @@ class Route
         'payout_update_status'                 => [Feature::PAYOUT],
         'payout_create_with_otp'               => [Feature::PAYOUT],
         'payout_fetch_by_id'                   => [Feature::PAYOUT],
-        'payout_fetch_multiple'                => [Feature::PAYOUT],
         'payout_approve'                       => [Feature::PAYOUT],
         'payout_reject'                        => [Feature::PAYOUT],
         'payout_create_internal'               => [Feature::PAYOUT],
