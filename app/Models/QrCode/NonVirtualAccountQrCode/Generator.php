@@ -6,6 +6,7 @@ use RZP\Models\Vpa;
 use RZP\Models\QrCode;
 use RZP\Models\Settings;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use BaconQrCode\Writer;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
@@ -410,8 +411,10 @@ class Generator extends QrCode\Generator
         //submerchant can belong to only one aggregator or fully managed at a time
         $partner = $partners->filter(function(Merchant\Entity $partner)
         {
-            return (($partner->isAggregatorPartner() === true) or ($partner->isFullyManagedPartner() === true));
-        })->first();
+            return ((($partner->isAggregatorPartner() === true)
+                    or ($partner->isFullyManagedPartner() === true))
+                    and ($partner->isFeatureEnabled(Feature\Constants::QR_IMAGE_PARTNER_NAME) === true));
+        })->last();
 
         if ($partner === null)
         {
