@@ -10,6 +10,7 @@ use Config;
 use Mockery;
 use Carbon\Carbon;
 
+use RZP\Exception;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Survey\Response\Service;
@@ -1325,7 +1326,9 @@ class SurveyTest extends TestCase
 
         $request = $this->testData[__FUNCTION__]['request']['content'];
 
-        $this->surveyResponseService->pushTypeFormResponsesToDataLake($request);
+        $response = $this->surveyResponseService->pushTypeFormResponsesToDataLake($request);
+
+        $this->assertEquals($this->testData[__FUNCTION__]['response']['content'], $response);
     }
 
     private function setupGetTypeformResponse()
@@ -1336,6 +1339,30 @@ class SurveyTest extends TestCase
             ->andReturnUsing(function ()
             {
                 return $this->testData['typeformResponsesTemplate'];
+            });
+    }
+
+    public function testPushTypeformResponsesToDatalakeInvalidTypeformResponse()
+    {
+        $this->ba->cronAuth('live');
+
+        $this->expectException(Exception\BadRequestException::class);
+
+        $this->setupGetTypeformResponseInvalidResponse();
+
+        $request = $this->testData[__FUNCTION__]['request']['content'];
+
+        $response = $this->surveyResponseService->pushTypeFormResponsesToDataLake($request);
+    }
+
+    private function setupGetTypeformResponseInvalidResponse()
+    {
+        $this->surveyResponseCoreMock
+            ->shouldReceive('getTypeformResponses')
+            ->times(1)
+            ->andReturnUsing(function ()
+            {
+                return $this->testData['typeformResponsesTemplateInvalidResponse'];
             });
     }
 }

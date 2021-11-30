@@ -4,6 +4,7 @@ namespace RZP\lib\DataParser;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 
 class TypeformParser extends Base implements DataParserInterface
 {
@@ -176,7 +177,12 @@ class TypeformParser extends Base implements DataParserInterface
 
     public function parseTypeformCompleteResponses($formData, $formId)
     {
-        if (array_key_exists('items', $this->input))
+        if (array_key_exists('items', $this->input) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+        try
         {
             $completeResponses = '';
 
@@ -184,6 +190,7 @@ class TypeformParser extends Base implements DataParserInterface
 
             foreach ($responses as $response)
             {
+                $metadata = [];
                 $metadata['uid']          = $response['hidden']['uid'];
                 $metadata['mid']          = $response['hidden']['mid'];
                 $metadata['source']       = $response['hidden']['source'];
@@ -192,50 +199,66 @@ class TypeformParser extends Base implements DataParserInterface
                 $metadata['submitted_at'] = $response['submitted_at'];
                 $metadata['survey_id']    = $formId;
 
+                $result = [];
+
                 $result['completed'] = true;
 
-                $result['metadata'] = $metadata;
+                $result['metadata'] = json_encode($metadata, JSON_FORCE_OBJECT);
 
                 $answers = $response['answers'];
+                $questionToAnswer = [];
                 foreach ($answers as $answer)
                 {
                     $answerType = $answer['type'];
 
                     if($answerType === 'number')
                     {
-                        $result['response']['survey_score'] = $answer['number'];
+                        $questionToAnswer['survey_score'] = $answer['number'];
                     }
                     else if($answerType === 'text')
                     {
                         $question = $formData[$answer['field']['id']]['question'];
-                        $result['response'][$question] = $answer['text'];
+                        $questionToAnswer[$question] = $answer['text'];
                     }
                     else if($answerType === 'choice')
                     {
                         $question = $formData[$answer['field']['id']]['question'];
-                        $result['response'][$question] = $answer['choice']['label'];
+                        $questionToAnswer[$question] = $answer['choice']['label'];
                     }
                     else
                     {
                         $question = $formData[$answer['field']['id']]['question'];
-                        $result['response'][$question] = $answer['choices']['labels'];
+                        $questionToAnswer[$question] = $answer['choices']['labels'];
                     }
                 }
+
+                $result['response'] = json_encode($questionToAnswer, JSON_FORCE_OBJECT);
 
                 $completeResponses  .= json_encode($result, JSON_FORCE_OBJECT) . ', ' . "\n";
             }
 
             return $completeResponses;
         }
-        else
+        catch (\Throwable $e)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+            $this->trace->info(
+                TraceCode::TYPEFORM_COMPLETE_RESPONSES_PARSING_ISSUE,
+                [
+                    'error' => $e,
+                ]);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, $e);
         }
     }
 
     public function parseTypeformIncompleteResponses($formData, $formId)
     {
-        if (array_key_exists('items', $this->input))
+        if (array_key_exists('items', $this->input) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+        try
         {
             $incompleteResponses = '';
 
@@ -243,12 +266,13 @@ class TypeformParser extends Base implements DataParserInterface
 
             foreach ($responses as $response)
             {
+                $result = [];
                 $metadata['initiated_at'] = $response['landed_at'];
                 $metadata['survey_id']    = $formId;
 
                 $result['completed'] = false;
 
-                $result['metadata'] = $metadata;
+                $result['metadata'] = json_encode($metadata, JSON_FORCE_OBJECT);
 
                 if((array_key_exists('metadata', $response)) and
                     (array_key_exists('referer', $response['metadata'])))
@@ -256,14 +280,22 @@ class TypeformParser extends Base implements DataParserInterface
                     $result['response']['survey_score'] = $this->getSurveyScoreForIncompleteResponses($response['metadata']['referer']);
                 }
 
+                $result['response'] = json_encode($result['response'], JSON_FORCE_OBJECT);
+
                 $incompleteResponses .= json_encode($result, JSON_FORCE_OBJECT) . ', ' . "\n";
             }
 
             return $incompleteResponses;
         }
-        else
+        catch(\Throwable $e)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+            $this->trace->info(
+                TraceCode::TYPEFORM_INCOMPLETE_RESPONSES_PARSING_ISSUE,
+                [
+                    'error' => $e,
+                ]);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, $e);
         }
     }
 
