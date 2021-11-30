@@ -17,6 +17,7 @@ use RZP\Http\Request\Requests;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Merchant;
+use RZP\Models\User\AxisUserRole;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
@@ -103,7 +104,7 @@ class Core extends Base\Core
 
         $invitation = (new Entity);
 
-        $this->merchant = $this->getDbMerchantById($input[Entity::MERCHANT_ID]);
+        $this->merchant = $this->repo->merchant->findByPublicId($input[Entity::MERCHANT_ID]);
 
         $invitation->merchant()->associate($this->merchant);
 

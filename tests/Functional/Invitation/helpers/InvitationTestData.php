@@ -51,7 +51,7 @@ return [
 
     'testDraftInvitationsCreate' => [
             'request' => [
-                'url'    => '/draft_invitations',
+                'url'    => '/banking_axis_invitations',
                 'method' => 'POST',
                 'content' => [
                     'email'       => 'testnonexistentuserinvite@razorpay.com',
@@ -71,6 +71,29 @@ return [
                 ]
             ]
         ],
+
+    'testDraftInvitationsSendMail' => [
+        'request' => [
+            'url'    => '/banking_axis_invitations',
+            'method' => 'POST',
+            'content' => [
+                'email'       => 'testnonexistentuserinvite@razorpay.com',
+                'role'        => 'authorised_signatory',
+                'sender_name' => 'sender_name',
+                'merchant_id' => '100XInviteMerc',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '100XInviteMerc',
+                'email'       => 'testnonexistentuserinvite@razorpay.com',
+                'role'        => 'authorised_signatory'
+            ]
+        ]
+    ],
 
     'testPostSendInvitationToNewUserInX' => [
         'request' => [
@@ -650,7 +673,7 @@ return [
 
     'testGetPendingInvitationsWithDraftStateAsTrue' => [
         'request' => [
-            'url'    => '/draft_invitations',
+            'url'    => '/banking_axis_invitations',
             'method' => 'get',
             'content' => [
                 'product' => 'primary'

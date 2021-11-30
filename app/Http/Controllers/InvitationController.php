@@ -66,11 +66,11 @@ class InvitationController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function createInvitationDraft()
+    public function sendAxisInvitations()
     {
         $input = Request::all();
 
-        $data = $this->service()->createInvitationDraft($input);
+        $data = $this->service()->sendAxisInvitations($input);
 
         return ApiResponse::json($data);
     }

@@ -3,6 +3,8 @@
 namespace RZP\Models\Invitation;
 
 use RZP\Models\Base;
+use RZP\Models\User\AxisUserRole;
+
 
 class Service extends Base\Service
 {
@@ -123,12 +125,20 @@ class Service extends Base\Service
      * @return array
      */
 
-    public function createInvitationDraft(array $input): array
+    public function sendAxisInvitations(array $input): array
     {
         $invitation = $this->core()->createInvitationDraft($input);
 
+        if($input[Entity::ROLE] == AxisUserRole::AUTHORISED_SIGNATORY) {
+
+            unset($input[Entity::MERCHANT_ID]);
+
+            $this->core()->create($input);
+
+        }
         return $invitation->toArrayPublic();
     }
+
 
     /**
      * Email Invitation Mail

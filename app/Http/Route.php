@@ -1747,8 +1747,8 @@ class Route
         'migrate_tokens_to_gateway_tokens'         => ['post',     'tokens/migrate/gateway_tokens',                  'CustomerController@postMigrateToGatewayTokens'                     ],
 
         //Draft invitation Links
-        'banking_draft_invitations_create'         => ['post',     'draft_invitations',                               'InvitationController@createInvitationDraft'                         ],
-        'draft_invitation_fetch'                   => ['get',      'draft_invitations',                               'InvitationController@listDraftInvitations'                          ],
+        'banking_axis_invitations_send'            => ['post',     'banking_axis_invitations',                        'InvitationController@sendAxisInvitations'                         ],
+        'draft_invitation_fetch'                   => ['get',      'banking_axis_invitations',                        'InvitationController@listDraftInvitations'                          ],
         'draft_invitation_accept'                  => ['put',      'draft_invitations/accept',                        'InvitationController@acceptDraftInvitations'                        ],
 
         // Risk Routes
@@ -3172,7 +3172,7 @@ class Route
         'order_reset_1cc',
         '1cc_pincode_get',
         'third_watch_address_check',
-        'banking_draft_invitations_create',
+        'banking_axis_invitations_send',
     ];
 
     public static $device = [
@@ -3556,7 +3556,7 @@ class Route
         // 1CC Routes
         'update_shipping_slabs',
         'update_cod_slabs',
-        'banking_draft_invitations_create',
+        'banking_axis_invitations_send',
     ];
 
     // Only routes defined in internalApps go here
@@ -4106,7 +4106,7 @@ class Route
         'setl_optimizer_settlement_cron',
 
         'third_watch_address_cod_score',
-        'banking_draft_invitations_create',
+        'banking_axis_invitations_send',
 
         'buy_pricing_terminal_cost',
 
@@ -5832,7 +5832,7 @@ class Route
         'risk_attributes_get',
 
         'create_risk_action',
-        'banking_draft_invitations_create',
+        'banking_axis_invitations_send',
         //growth service
         'growth_downtime_for_x',
     ];
@@ -6903,7 +6903,7 @@ class Route
         'create_risk_action'                              => Permission::MERCHANT_ACTIONS,
 
 
-        'banking_draft_invitations_create'                => Permission::REJECT_PAYOUT,
+        'banking_axis_invitations_send'                   => Permission::REJECT_PAYOUT,
         // growth service
         'growth_downtime_for_x'                           => Permission::ENABLE_DOWNTIME_NOTIFICATION_X_DASHBOARD,
 
@@ -7222,7 +7222,7 @@ class Route
         'coupon_validate'                              => Permission::COUPON_VALIDATE,
         'user_resend_verification_otp'                 => '*',
         'user_verify_email'                            => '*',
-        'banking_draft_invitations_create'             => Permission::REJECT_PAYOUT,
+        'banking_axis_invitations_send'                => Permission::REJECT_PAYOUT,
 
         //Purpose code routes permission
         'purpose_code_fetch'                  => Permission::VIEW_MERCHANT,
@@ -8541,7 +8541,7 @@ class Route
             'get_dispute_document_types_metadata',
             'patch_dispute_contest_by_id',
             'post_dispute_accept_by_id',
-            'banking_draft_invitations_create',
+            'banking_axis_invitations_send',
             'draft_invitation_fetch',
             'draft_invitation_accept',
 
@@ -10374,7 +10374,7 @@ class Route
             // Risk Audit Workflow Actions
             'w-actions_merchant_risk_audit_get',
 
-            'banking_draft_invitations_create',
+            'banking_axis_invitations_send',
             'draft_invitation_fetch',
             'draft_invitation_accept',
             'decrypt_merchant_website_comment',

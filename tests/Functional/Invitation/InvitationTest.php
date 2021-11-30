@@ -905,6 +905,17 @@ class InvitationTest extends TestCase
             ->first();
     }
 
+    public function testDraftInvitationsSendMail()
+    {
+        $invitation = $this->fixtures->create('invitation', ['email' => 'testteaminvite@razorpay.com']);
+
+        $xMerchantUser = $this->createXMerchantUser();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testEmailDraftInvitations()
     {
         $xMerchantUser = $this->createXMerchantUser();

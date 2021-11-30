@@ -33,6 +33,16 @@ class Role
     // Payment Link Agent - not publicly available
     const AGENT                 = 'agent';
 
+    const AUTHORISED_SIGNATORY = 'authorised_signatory';
+    const CC_ADMIN             = 'cc_admin';
+    const VIEWER               = 'view_only';
+    const MAKER                = 'maker';
+    const MAKER_ADMIN          = 'maker_admin';
+
+    const CHECKER_L1 = 'checker_l1';
+    const CHECKER_L2 = 'checker_l2';
+    const CHECKER_L3 = 'checker_l3';
+
     const ALL_ROLES = [
         self::MANAGER,
         self::OPERATIONS,
@@ -45,6 +55,16 @@ class Role
         self::SELLERAPP_PLUS,
         self::AUTH_LINK_AGENT,
         self::AUTH_LINK_SUPERVISOR,
+
+        self::CC_ADMIN,
+        self::VIEWER,
+        self::AUTHORISED_SIGNATORY,
+        self::CHECKER_L1,
+        self::CHECKER_L2,
+        self::CHECKER_L3,
+        self::MAKER_ADMIN,
+        self::MAKER,
+
     ];
 
     const WRITER_ROLES = [

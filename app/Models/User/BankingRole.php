@@ -31,12 +31,34 @@ class BankingRole
     const FINANCE_L2 = 'finance_l2';
     const FINANCE_L3 = 'finance_l3';
 
+    const AUTHORISED_SIGNATORY = 'authorised_signatory';
+    const CC_ADMIN             = 'cc_admin';
+    const VIEWER               = 'view_only';
+    const MAKER                = 'maker';
+    const MAKER_ADMIN          = 'maker_admin';
+
+    const CHECKER_L1 = 'checker_l1';
+    const CHECKER_L2 = 'checker_l2';
+    const CHECKER_L3 = 'checker_l3';
+
     protected static $defaultRoles = [
         self::OWNER,
         self::ADMIN,
         self::VIEW_ONLY,
         self::OPERATIONS,
         self::CHARTERED_ACCOUNTANT
+    ];
+
+    //initially adding axis roles array , eventually will switch to axisUserRole files
+    protected static $axisRoles = [
+        self::CC_ADMIN,
+        self::VIEWER,
+        self::MAKER,
+        self::MAKER_ADMIN,
+        self::AUTHORISED_SIGNATORY,
+        self::CHECKER_L1,
+        self::CHECKER_L2,
+        self::CHECKER_L3,
     ];
 
     protected static $workflowRoles = [
@@ -56,6 +78,19 @@ class BankingRole
         self::OWNER      => 'Owner',
         self::ADMIN      => 'Admin',
     ];
+
+    protected static $axisRoleToNameMap = [
+        self::CC_ADMIN               => 'cc_admin',
+        self::VIEWER                 => 'view_only',
+        self::MAKER                  => 'maker',
+        self::MAKER_ADMIN            => 'maker_admin',
+        self::CHECKER_L1             => 'checker_l1',
+        self::CHECKER_L2             => 'checker_l2',
+        self::CHECKER_L3             => 'checker_l3',
+        self::AUTHORISED_SIGNATORY   => 'authorised_signatory',
+
+    ];
+
 
     public static function isWorkflowRole(string $role): bool
     {
@@ -90,7 +125,7 @@ class BankingRole
 
     public static function getAllRoles(): array
     {
-        $bankingRoles = array_merge(self::$defaultRoles, self::$workflowRoles);
+        $bankingRoles = array_merge(self::$defaultRoles, self::$workflowRoles, self::$axisRoles);
 
         return $bankingRoles;
     }
