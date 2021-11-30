@@ -551,7 +551,6 @@ class Type
             self::HDFC_EMANDATE_DEBIT,
             self::REPORT,
             self::BENEFICIARY_FILE,
-            self::EMI_FILE,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
             self::BATCH_VALIDATED,
@@ -615,6 +614,7 @@ class Type
             self::YES_EMI_FILE_MAIL,
             self::ICICI_EMI_FILE_MAIL,
             self::SBI_EMI_OUTPUT_FILE,
+            self::EMI_FILE,
         ],
 
         self::BATCH_SERVICE_BUCKET_CONFIG => [
