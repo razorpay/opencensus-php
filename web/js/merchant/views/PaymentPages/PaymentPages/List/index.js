@@ -288,7 +288,7 @@ export default class PaymentPagesContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
-        <HeaderAction>
+        <HeaderAction responsive>
           <div class="btn-toolbar pull-right">
             <ShowWhen additionalCondition={() => !user.isOrgAxis}>
               <TakeATourButton feature={RZPFeatures.PP} onClick={track.takeTour} />
@@ -296,20 +296,22 @@ export default class PaymentPagesContainer extends ListContainer {
 
             <ShowWhen additionalCondition={() => user.isOrgAllowedFunctionality('external_links')}>
               <DocLink
-                class="btn btn-link settlement-doc-btn"
+                class="btn btn-link"
                 href="https://razorpay.com/docs/payment-pages/"
                 target="_blank"
                 onClick={track.viewDoc}
               >
                 Documentation&nbsp;
-                <span class="icon i-external-link" />
+                <i class="i i-external-link" />
               </DocLink>
             </ShowWhen>
 
             {isRoleAllowedEdit && (
-              <span class="btn btn-primary" onClick={this.handleProductQuickGuide}>
-                <i class="i i-plus" />
-                <span onClick={this.trackCreatePaymentPage}>Create Payment Page</span>
+              <span class="cta-container">
+                <span class="btn btn-primary" onClick={this.handleProductQuickGuide}>
+                  <i class="i i-plus" />
+                  <span onClick={this.trackCreatePaymentPage}>Create Payment Page</span>
+                </span>
               </span>
             )}
           </div>

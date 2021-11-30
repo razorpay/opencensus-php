@@ -258,7 +258,7 @@ export default class PaymentPagesV3Entity extends React.Component {
           <div class="panel panel-default">
             <div class="panel-heading">
               <div class="text">{paymentPageEntity.title}</div>
-              <div class="btn-toolbar pull-right">
+              <div class="btn-toolbar">
                 {isRoleAllowedEdit && isActive && (
                   <Button class="Button--primary--invert" onClick={this.openShareView}>
                     <i class="i i-share-outline" />
@@ -398,47 +398,37 @@ export default class PaymentPagesV3Entity extends React.Component {
                       )}
                     />
                   )}
-                <table>
-                  <tbody>
-                    {paymentPageEntity.payment_page_items.map((pi, ix) => (
-                      <tr key={ix}>
-                        <td>
-                          <div>
-                            <b>{pi.item.name}</b>
-                          </div>
-                        </td>
-                        <td>
-                          <div>
-                            <div class="title">Revenue</div>
-                            <Amount
-                              value={pi.total_amount_paid}
-                              currency={paymentPageEntity.currency}
-                            />
-                          </div>
-                        </td>
-                        <td>
-                          <div>
-                            <div class="title">Price</div>
-                            <Amount value={pi.item.amount} currency={paymentPageEntity.currency} />
-                          </div>
-                        </td>
-                        <td class="item-details-units">
-                          <div>
-                            <div class="title">Units Sold</div>
-                            <EditStock
-                              totalStock={pi.stock}
-                              quantitySold={pi.quantity_sold}
-                              editFn={editPaymentPage}
-                              paymentPageItemId={pi.id}
-                              trackerFn={trackDetailViewEdits}
-                              isRoleAllowedEdit={isRoleAllowedEdit}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <div class="table-container">
+                  {paymentPageEntity.payment_page_items.map((pi, ix) => (
+                    <div class="table" key={ix}>
+                      <div>
+                        <b>{pi.item.name}</b>
+                      </div>
+                      <div>
+                        <div class="title">Revenue</div>
+                        <Amount
+                          value={pi.total_amount_paid}
+                          currency={paymentPageEntity.currency}
+                        />
+                      </div>
+                      <div>
+                        <div class="title">Price</div>
+                        <Amount value={pi.item.amount} currency={paymentPageEntity.currency} />
+                      </div>
+                      <div class="item-details-units">
+                        <div class="title">Units Sold</div>
+                        <EditStock
+                          totalStock={pi.stock}
+                          quantitySold={pi.quantity_sold}
+                          editFn={editPaymentPage}
+                          paymentPageItemId={pi.id}
+                          trackerFn={trackDetailViewEdits}
+                          isRoleAllowedEdit={isRoleAllowedEdit}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

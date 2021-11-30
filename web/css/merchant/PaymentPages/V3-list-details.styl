@@ -62,6 +62,21 @@
     max-height: 2000px // This height must be able to fit in ~25 payment page items
     position: relative
     margin-bottom: 48px
+    @media (max-width: 768px)
+      overflow-x: auto
+
+  .panel-heading
+    display: flex
+    justify-content: space-between
+    align-items: center
+    @media (max-width: 768px)
+      flex-direction: column
+      align-items: flex-start
+
+      .dropdown__trigger.Dropdown--Notifications-toggle
+        padding: 0 !important
+
+      
 
   &.Entity--paymentpage-collapse
     &::after
@@ -108,58 +123,40 @@
       .InputGroup
         margin: 0
 
-      table
-        width: 100%
-        border-spacing: 0 12px
-        border-collapse: separate
-
-      tr
-        border-radius: 3px
-        padding: 16px
-        transform: translateY(8px)
-        opacity: 0
-        animation: move-up .3s ease-in forwards .2s
-
-        td.item-details-units
-          min-width: 148px
-
-        td
+      .table-container
+        .table
+          display: flex
+          flex-wrap: wrap
+          border: none
           background: #f3f4f7
-          max-width: 112px
-          vertical-align: top
-          min-width: 80px
+          border-left: 3px solid #fbc9a1
+          border-bottom-left-radius: 3px
+          border-top-left-radius: 3px
+          opacity: 0
+          animation: move-up .3s ease-in forwards .2s
+          transform: translateY(8px)
 
-          & > div
-            min-height: 64px
+
+          > div 
             padding: 14px 12px
-            overflow-wrap: break-word
+            flex: 2
 
-          &:first-child
-            border-bottom-left-radius: 3px
-            border-top-left-radius: 3px
-            border-left: 3px solid #fbc9a1
+          .item-details-units
+            flex: 3
+            @media (max-width:767px) 
+              flex-basis: 100%
 
-          &:last-child
-            border-bottom-right-radius: 3px
-            border-top-right-radius: 3px
-
-        &:nth-child(4n + 2)
-          transform: translateY(11px)
-
-          td
+          &:nth-child(4n + 2)
             border-color: #c1a1fd
+            transform: translateY(11px)
 
-        &:nth-child(4n + 3)
-          transform: translateY(14px)
-
-          td
+          &:nth-child(4n + 3)
             border-color: #9bd7ff
+            transform: translateY(14px)
 
-        &:nth-child(4n + 4)
-          transform: translateY(17px)
-
-          td
+          &:nth-child(4n + 4)
             border-color: #b4e397
+            transform: translateY(17px)
 
       .title
         color: #8991AE
@@ -240,6 +237,9 @@
       .entity-details, .item-details
         display: block
         width: 100%
+
+      .ClipboardCustom
+        display: block
 
     &.Entity--paymentpage-collapse
       .panel
