@@ -23,6 +23,7 @@ use RZP\Constants\Entity as EntityConstant;
 use RZP\Jobs\Transfers\TransferBackfillJob;
 use RZP\Models\Settlement\Entity as Settlement;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
+use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
 
 class Service extends Base\Service
 {
@@ -1058,6 +1059,42 @@ class Service extends Base\Service
      *
      * @param array $input
      */
+    public function dispatchBackfillJob(array $input)
+    {
+        $type = $input['type'] ?? '';
+
+        $merchantIds = array();
+
+        if ($type === 'parent_mids')
+        {
+            foreach ($input['merchant_ids'] as $id)
+            {
+                $merchantIds = array_merge($merchantIds, $this->repo->merchant->fetchActiveLinkedAccountMids($id));
+            }
+        }
+        elseif ($type === 'linked_account_mids')
+        {
+            $merchantIds = $input['merchant_ids'];
+        }
+        else
+        {
+            $merchantIds = $this->repo->merchant->fetchAllActiveLinkedAccounts();
+        }
+
+        $size = (count($merchantIds) % 2 === 0) ? count($merchantIds)/4 : count($merchantIds)/4+1; // divides array into 4 parts
+
+        $merchantIdChunks = array_chunk($merchantIds, $size);
+
+        foreach ($merchantIdChunks as $chunk)
+        {
+            LinkedAccountBankVerificationStatusBackfill::dispatch($this->mode, $chunk);
+        }
+
+        $this->trace->info(TraceCode::LA_BANK_VERIFICATION_STATUS_UPDATE_JOB_ENQUEUED,
+            [
+                'count'        => count($merchantIds)
+            ]);
+    }
 //    public function dispatchBackfillJob(array $input)
 //    {
 //        $midJun     = Carbon::createFromDate(2021, 6, 16, Timezone::IST)->getTimestamp();

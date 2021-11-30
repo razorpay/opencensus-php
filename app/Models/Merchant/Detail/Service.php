@@ -56,6 +56,7 @@ use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstant;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
+use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
@@ -2197,5 +2198,39 @@ class Service extends Base\Service
         {
             return $differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA][WorkflowObserver\Constants::APPROVED_TRANSACTION_LIMIT];
         }
+    }
+
+    public function updateLinkedAccountBankVerificationStatus($merchantIds)
+    {
+        $updateCount = 0;
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->trace->info(TraceCode::LA_MERCHANT_DETAILS_EDIT_REQUEST,
+                [
+                    'merchant_id' => $merchantId
+                ]);
+
+                $merchantDetail = $this->repo->merchant_detail->findOrFail($merchantId);
+
+                $merchantDetail->setBankDetailsVerificationStatus(BankDetailsVerificationStatus::VERIFIED);
+
+                $this->repo->merchant_detail->saveOrFail($merchantDetail);
+
+                $this->trace->info(TraceCode::LA_MERCHANT_DETAIL_SUGGESTED_FIELDS_UPDATED,
+                    [
+                        'merchant_id' => $merchantId
+                    ]);
+
+                $updateCount += 1;
+            }
+            catch (Throwable $e)
+            {
+                $this->trace->traceException($e,null, TraceCode::LA_MERCHANT_DETAIL_BANK_STATUS_UPDATE_FAILED);
+            }
+        }
+        return $updateCount;
     }
 }

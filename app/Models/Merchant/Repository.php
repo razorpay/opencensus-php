@@ -1215,6 +1215,19 @@ class Repository extends Base\Repository
         return $childMerchantIds;
     }
 
+    public function fetchActiveLinkedAccountMids($merchantId)
+    {
+        $childMerchantIds = $this->newQuery()
+            ->select(Entity::ID)
+            ->where('parent_id', $merchantId)
+            ->where(Entity::ACTIVATED, 1)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
+
+        return $childMerchantIds;
+    }
+
     public function fetchLinkedAccountsCount($merchantId)
     {
         $childMerchantIds = $this->newQuery()
@@ -1223,6 +1236,23 @@ class Repository extends Base\Repository
                                  ->count();
 
         return $childMerchantIds;
+    }
+
+    public function fetchAllActiveLinkedAccounts(int $createdAt=null)
+    {
+        $query = $this->newQuery()
+            ->whereNotNull(Entity::PARENT_ID)
+            ->select(Entity::ID)
+            ->where(Entity::ACTIVATED, 1);
+
+        if (empty($createdAt) === false)
+        {
+            $query->where($this->dbColumn(Entity::CREATED_AT), '>=', $createdAt);
+        }
+
+        return $query->get()
+            ->pluck(Entity::ID)
+            ->toArray();
     }
 
     public function fetchAllMids($offsetID,$limit)
