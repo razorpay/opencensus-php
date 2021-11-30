@@ -621,7 +621,7 @@ class AuthorizeTest extends TestCase
 
         $content = $this->timeoutOldPayment();
 
-        $this->assertEquals($content['count'], 1);
+        $this->assertEquals(1, $content['count']);
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -630,6 +630,148 @@ class AuthorizeTest extends TestCase
         $this->ba->privateAuth();
 
         $this->runRequestResponseFlow($testData);
+    }
+
+    private function getDefaultAndNewMerchantIdForPayment() : array
+    {
+        $newMerchant = $this->fixtures->create('merchant');
+
+        $tempPayment = $this->fixtures->create('payment:status_created');
+
+        return [
+            "default"   => $tempPayment[PaymentModel\Entity::MERCHANT_ID],
+            "new"       => $newMerchant[Merchant::ID]
+        ];
+    }
+
+    private function createPaymentsForTimeoutGetParams(int $totalPaymentsCount,
+                                                       int $excludeIncludePaymentsCount,
+                                                       string $defaultMerchantId,
+                                                       string $secondaryMerchantId,
+                                                       bool $exclude): array
+    {
+        $paymentsTimeoutAssertions  = [];
+
+        $excludeIncludeKey  = ($exclude === true) ? 'exclude_merchants' : 'include_merchants';
+        $excludeIncludeMid  = ($exclude === true) ? $secondaryMerchantId : $defaultMerchantId;
+        $paymentsToTimeout  = ($exclude === true) ? $totalPaymentsCount - $excludeIncludePaymentsCount  :
+                                                    $excludeIncludePaymentsCount;
+
+        $defaultTimeoutPaymentPresets = [
+            'created_at'    => time() - (60 * 100)
+        ];
+
+        /**
+         * Create N payments to fetch from
+         * N => $totalPaymentsCount => Total number of payments to create
+         * Total_Payments = Part_1 + Part_2
+         * N = X + Y
+         */
+        for ($i = 0; $i < $totalPaymentsCount; $i++)
+        {
+            $shouldTimeout = true;
+
+            $paymentPresetsForCurrentIteration = $defaultTimeoutPaymentPresets;
+
+            /**
+             * The first X out N 'Part_1' payments will be created with
+             * the secondary MID if excluded
+             * the default MID if included
+             *
+             * X => $excludeIncludePaymentsCount => number of payments to exclude or include i.e Part_1
+             *
+             * The remaining Y out N payments will be created (vice versa) i.e. with
+             * the secondary MID if included
+             * the default MID if excluded
+             *
+             * Y => $total - $excludeIncludePaymentsCount => number of payments remaining i.e Part_2
+             */
+            if ((($i < $excludeIncludePaymentsCount) and ($exclude === true)) or // Part_1
+                (($i >= $excludeIncludePaymentsCount) and ($exclude === false))) // Part_2
+            {
+                $paymentPresetsForCurrentIteration = array_merge($defaultTimeoutPaymentPresets,
+                                                                 ['merchant_id' => $secondaryMerchantId]);
+                $shouldTimeout = false;
+            }
+
+            $tempPayment = $this->fixtures->create('payment:status_created',
+                                                   $paymentPresetsForCurrentIteration);
+
+            $paymentsTimeoutAssertions[$tempPayment['public_id']] = $shouldTimeout;
+        }
+
+        return [
+            'paymentsToTimeout'         => $paymentsToTimeout,
+            'paymentsTimeoutAssertions' => $paymentsTimeoutAssertions,
+            'merchantFilterMergeable'   => [
+                $excludeIncludeKey => [ $excludeIncludeMid ]
+            ]
+        ];
+    }
+
+    /**
+     * This function performs the timeout action
+     * Asserts if the payments expected to be timed out throw a BAD_REQUEST_PAYMENT_TIMED_OUT error
+     *
+     * @param int   $paymentsToTimeout
+     * @param array $merchantFilterMergeable
+     * @param array $paymentsTimeoutAssertions
+     */
+    private function testTimeoutOldPaymentWithMerchantFilter(int $paymentsToTimeout,
+                                                             array $merchantFilterMergeable,
+                                                             array $paymentsTimeoutAssertions)
+    {
+        $content = $this->timeoutOldPayment($merchantFilterMergeable);
+
+        $this->assertEquals($paymentsToTimeout, $content['count']);
+
+        $this->ba->privateAuth();
+
+        $testData = $this->testData['testTimeoutOldPayment'];
+
+        foreach ($paymentsTimeoutAssertions as $publicId => $expectedToTimeout)
+        {
+            if ($expectedToTimeout === false)
+            {
+                continue;
+            }
+
+            $testData['request']['url'] = '/payments/' . $publicId;
+
+            $this->runRequestResponseFlow($testData);
+        }
+    }
+
+    public function testTimeoutOldPaymentWithMerchantFilterExclude()
+    {
+        $merchantIds = $this->getDefaultAndNewMerchantIdForPayment();
+
+        $params = $this->createPaymentsForTimeoutGetParams(6,
+                                                           2,
+                                                           $merchantIds['default'],
+                                                           $merchantIds['new'],
+                                                           true);
+        extract($params);
+
+        $this->testTimeoutOldPaymentWithMerchantFilter($paymentsToTimeout,
+                                                       $merchantFilterMergeable,
+                                                       $paymentsTimeoutAssertions);
+    }
+
+    public function testTimeoutOldPaymentWithMerchantFilterInclude()
+    {
+        $merchantIds = $this->getDefaultAndNewMerchantIdForPayment();
+
+        $params = $this->createPaymentsForTimeoutGetParams(6,
+                                                           4,
+                                                           $merchantIds['default'],
+                                                           $merchantIds['new'],
+                                                           false);
+        extract($params);
+
+        $this->testTimeoutOldPaymentWithMerchantFilter($paymentsToTimeout,
+                                                       $merchantFilterMergeable,
+                                                       $paymentsTimeoutAssertions);
     }
 
     public function testTimeoutAuthenticatedPayment()

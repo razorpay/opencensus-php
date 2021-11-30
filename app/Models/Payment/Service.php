@@ -2320,9 +2320,12 @@ class Service extends Base\Service
             $emandateRecurringType = $input['recurring_type'];
         }
 
+        $includeMerchantList = $input['include_merchants'] ?? [];
+        $excludeMerchantList = $input['exclude_merchants'] ?? [];
+
         foreach ($allMethods as $method)
         {
-            $count = $count + $this->timeoutOldPaymentsForMethod($limit, $method, $emandateRecurringType);
+            $count = $count + $this->timeoutOldPaymentsForMethod($limit, $method, $emandateRecurringType, $includeMerchantList, $excludeMerchantList);
         }
 
         return ['count' => $count];
@@ -2411,7 +2414,7 @@ class Service extends Base\Service
         return $count;
     }
 
-    public function timeoutOldPaymentsForMethod($limit, $method, $emandateRecurringType)
+    public function timeoutOldPaymentsForMethod($limit, $method, $emandateRecurringType, array $includeMerchantList, array $excludeMerchantList)
     {
         $count = 0;
 
@@ -2424,15 +2427,23 @@ class Service extends Base\Service
 
         $toTimestamp = $now - Payment\Entity::PAYMENT_TIMEOUT_DEFAULT_OLD;
 
-        $fromTimestamp = $this->repo->payment->fetchOldPaymentsMinCreatedForMethodForTimeout($method, $emandateRecurringType);
+        $fromTimestamp = $this->repo->payment->fetchOldPaymentsMinCreatedForMethodForTimeout($method,
+                                                                                             $emandateRecurringType,
+                                                                                             $includeMerchantList,
+                                                                                             $excludeMerchantList);
 
         if (isset($fromTimestamp) === false)
         {
             return;
         }
 
-        $payments = $this->repo->payment->fetchOldCreatedPaymentsForMethodForTimeout($fromTimestamp, $toTimestamp, $limit, $method, $emandateRecurringType);
-
+        $payments = $this->repo->payment->fetchOldCreatedPaymentsForMethodForTimeout($fromTimestamp,
+                                                                                     $toTimestamp,
+                                                                                     $limit,
+                                                                                     $method,
+                                                                                     $emandateRecurringType,
+                                                                                     $includeMerchantList,
+                                                                                     $excludeMerchantList);
 
         $total = count($payments);
 

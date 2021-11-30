@@ -1447,7 +1447,7 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function timeoutOldPayment()
+    protected function timeoutOldPayment($appendToPayload = null)
     {
         $this->ba->cronAuth();
 
@@ -1457,6 +1457,11 @@ trait PaymentTrait
                 'limit' => 10,
             ],
         ];
+
+        if ($appendToPayload !== null)
+        {
+            $request['content'] = array_merge($request['content'], $appendToPayload);
+        }
 
         return $this->makeRequestAndGetContent($request);
     }

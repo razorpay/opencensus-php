@@ -607,16 +607,18 @@ class Repository extends Base\Repository
     /**
      * Fetches old payments which can be timed-out at method level with respective
      * merchant relation.
-     * @param int $fromTimestamp
-     * @param int $toTimestamp
-     * @param int $limit
+     * @param int    $fromTimestamp
+     * @param int    $toTimestamp
+     * @param int    $limit
      * @param string $method
      * @param string $emandateRecurringType
-     * @return
+     * @param array  $includeMerchantList List of merchant IDs to be fetched
+     * @param array  $excludeMerchantList List of merchant IDs to be ignored
+     * @return mixed
      */
-    public function fetchOldCreatedPaymentsForMethodForTimeout(int $fromTimestamp, int $toTimestamp, int $limit, string $method, $emandateRecurringType)
+    public function fetchOldCreatedPaymentsForMethodForTimeout(int $fromTimestamp, int $toTimestamp, int $limit, string $method, $emandateRecurringType, array $includeMerchantList, array $excludeMerchantList)
     {
-        return $this->repo->useSlave(function() use ($fromTimestamp, $toTimestamp, $limit, $method, $emandateRecurringType)
+        return $this->repo->useSlave(function() use ($fromTimestamp, $toTimestamp, $limit, $method, $emandateRecurringType, $includeMerchantList, $excludeMerchantList)
         {
             $query = $this->newQuery()
                         ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
@@ -624,6 +626,15 @@ class Repository extends Base\Repository
                         ->where(Payment\Entity::CREATED_AT, '>=', $fromTimestamp)
                         ->where(Payment\Entity::CREATED_AT, '<=', $toTimestamp)
                         ->where(Payment\Entity::METHOD, '=', $method);
+
+            if (count($includeMerchantList) > 0)
+            {
+                $query->whereIn(Payment\Entity::MERCHANT_ID, $includeMerchantList);
+            }
+            else if (count($excludeMerchantList) > 0)
+            {
+                $query->whereNotIn(Payment\Entity::MERCHANT_ID, $excludeMerchantList);
+            }
 
             if ($emandateRecurringType !== null)
             {
@@ -672,21 +683,34 @@ class Repository extends Base\Repository
      * Fetches min created_at for particular method in created state.
      * @param string $method
      * @param string $emandateRecurringType
+     * @param array  $includeMerchantList List of merchant IDs to be fetched
+     * @param array  $excludeMerchantList List of merchant IDs to be ignored
      * @return int
      */
-    public function fetchOldPaymentsMinCreatedForMethodForTimeout(string $method, $emandateRecurringType)
+    public function fetchOldPaymentsMinCreatedForMethodForTimeout(string $method, $emandateRecurringType, array $includeMerchantList, array $excludeMerchantList)
     {
-        return $this->repo->useSlave(function() use ($method, $emandateRecurringType)
+        return $this->repo->useSlave(function() use ($method, $emandateRecurringType, $includeMerchantList, $excludeMerchantList)
         {
-          $query =  $this->newQueryWithConnection($this->getSlaveConnection())
+            $query =  $this->newQueryWithConnection($this->getSlaveConnection())
                       ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
                       ->status(Payment\Status::CREATED)
                       ->where(Payment\Entity::METHOD, '=', $method);
-          if ($emandateRecurringType !== null)
-          {
-              $query->where(Payment\Entity::RECURRING_TYPE, '=', $emandateRecurringType);
-          }
-          return $query->min(Entity::CREATED_AT);
+
+            if (count($includeMerchantList) > 0)
+            {
+                $query->whereIn(Payment\Entity::MERCHANT_ID, $includeMerchantList);
+            }
+            else if (count($excludeMerchantList) > 0)
+            {
+                $query->whereNotIn(Payment\Entity::MERCHANT_ID, $excludeMerchantList);
+            }
+
+            if ($emandateRecurringType !== null)
+            {
+                $query->where(Payment\Entity::RECURRING_TYPE, '=', $emandateRecurringType);
+            }
+
+            return $query->min(Entity::CREATED_AT);
         });
     }
 
