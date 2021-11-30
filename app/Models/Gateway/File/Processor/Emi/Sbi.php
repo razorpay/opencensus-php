@@ -262,8 +262,8 @@ class Sbi extends Base
                     $this->numpad($principalAmount, 17) .
                     'F' .
                     '0' .
-                    ' ' .
-                    $this->numpad('0', 7) .
+                    'A' .
+                    $this->numpad('9900', 7) .
                     $this->strpad('GG0001' . substr($mid, -4), 20) .
                     $this->numpad('0', 17) .
                     $this->numpad($emiAmount, 17) .
