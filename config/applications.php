@@ -1132,5 +1132,10 @@ return [
 
     'payout_link_customer_page' => [
         'secret'            => env('APP_PAYOUT_LINK_CUSTOMER_PAGE_SECRET'),
+
+    ],
+
+    'affordability' => [
+        'secret' => env('AFFORDABILITY_SECRET'),
     ],
 ];

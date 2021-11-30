@@ -3061,6 +3061,7 @@ class Route
         'update_shipping_slabs'                     => ['post',       'merchant/slabs/shipping',                               'MerchantController@updateShippingSlabs'                      ],
         'order_update_customer_details_1cc'         => ['patch',      'orders/1cc/{id}/customer/',                             'OrderController@updateCustomerDetailsFor1CCOrder'             ],
         'order_reset_1cc'                           => ['post',       'orders/1cc/{id}/reset',                                 'OrderController@reset1CCOrder'                                ],
+        'get_affordability_suite'                 => ['get',          'affordability',                                         'AffordabilityController@__invoke'                             ],
     ];
 
     public static $public = [
@@ -4116,6 +4117,8 @@ class Route
         'whitelisted_domain',
 
         'internal_pincode_get',
+
+        'get_affordability_suite',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -11245,7 +11248,11 @@ class Route
 
         'card_vault' => [
             'token_status'
-        ]
+        ],
+
+        'affordability' => [
+            'get_affordability_suite',
+        ],
     ];
 
     //
