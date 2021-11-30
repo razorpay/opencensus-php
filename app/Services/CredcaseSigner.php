@@ -173,7 +173,7 @@ class CredcaseSigner
                     if ($encryptedSecret === null)
                     {
                         $this->trace->count(self::METRIC_SIGN_REDIS_KEY_NOT_FOUND_TOTAL);
-                        throw new RuntimeException('Encrypted secret not found in redis');
+                        $this->trace->info(TraceCode::CREDCASE_SIGNER_REDIS_NOT_FOUND, ['key' => $publicKey]);
                     }
 
                     break;

@@ -4099,6 +4099,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CREDCASE_SIGNER_ERROR                                 = 'CREDCASE_SIGNER_ERROR';
     const CREDCASE_SIGNER_REDIS_ERROR                           = 'CREDCASE_SIGNER_REDIS_ERROR';
+    const CREDCASE_SIGNER_REDIS_NOT_FOUND                       = 'CREDCASE_SIGNER_REDIS_NOT_FOUND';
     const CREDCASE_SIGNER_INVOKED                               = 'CREDCASE_SIGNER_INVOKED';
 
     // See RZP/Modules/Migrate.
