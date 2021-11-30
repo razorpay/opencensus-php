@@ -820,9 +820,10 @@ class Notifier extends Base\Core
                 $template = 'sms.custom_invoice.bagic_revised';
                 $params = [
                     'first_name'    => $this->invoice->getCustomerName() ?? 'Customer',
-                    'policy_number' => $receipt,
+                    'policy_number' => $this->invoice->getNotes()['policy_number'] ?? '',
                     'amount'        => $this->invoice->getAmount() / 100,
                     'lob'           => $this->invoice->getNotes()['lob'] ?? '',
+                    'invoice_link'  => $invoiceLink,
                 ];
 
                 break;
