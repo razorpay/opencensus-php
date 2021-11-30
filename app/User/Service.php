@@ -589,9 +589,20 @@ class Service extends Base\Service
         $user = Auth::user();
 
         $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
-        $res['currentMerchantId']  = $currentMerchantId;
 
-        if(isset($logged_in_via))
+        $isBankingRequest = ApiUrl::isBankingOriginRequest();
+
+        // Return currentMerchantId in the response only if
+        // 1. the request is from X and banking_role is present
+        // 2. the request is from PG and role is present
+        // Below conditions are false when a PG user logs into X for the first time or vice versa.
+        if ((($isBankingRequest === true) and ($user->currentMerchant()->banking_role !== null)) or
+            (($isBankingRequest === false) and ($user->currentMerchant()->role !== null)))
+        {
+            $res['currentMerchantId']  = $currentMerchantId;
+        }
+
+        if (isset($logged_in_via))
         {
             $res["logged_in_via"] = $logged_in_via;
         }
