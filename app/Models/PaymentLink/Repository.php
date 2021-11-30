@@ -64,6 +64,8 @@ class Repository extends Base\Repository
 
             $data['mode'] = $this->app['rzp.mode'];
 
+            $data['view_type'] = $entity->getViewType();
+
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID, null, $data, 'This page has been deactivated');
         }
 

@@ -14,6 +14,7 @@ $is_performance_optimized   = $data['view_preferences']['page_load_optimization_
 <!doctype html>
 <html lang="en">
 <head>
+    <title>Razorpay.me - {{{ $data['merchant']['name'] }}}</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
@@ -50,7 +51,7 @@ $is_performance_optimized   = $data['view_preferences']['page_load_optimization_
             <script>
                 var Razorpay = {
                     config: {
-                        api: "{{ config('app.url') }}/"
+                        api: "https://api.razorpay.com/"
                     }
                 }
             </script>
@@ -67,6 +68,7 @@ $is_performance_optimized   = $data['view_preferences']['page_load_optimization_
           org: data.org,
           view_preferences: data.view_preferences,
           paymentData: data.payment_link,
+          environment: data.environment
         };
     </script>
 
@@ -77,7 +79,8 @@ $is_performance_optimized   = $data['view_preferences']['page_load_optimization_
             }
         </script>
 
-        <script src="https://cdn.razorpay.com/static/analytics/bundle.js"></script>
+        <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
+        <script src="https://cdn.razorpay.com/static/assets/color.js" defer></script>
         <script src="{{env('AWS_CF_CDN_URL')}}/static/payment-handle/bundle.js" defer onload="renderApp()"></script>
         <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
     @else

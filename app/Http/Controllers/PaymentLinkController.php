@@ -147,8 +147,14 @@ class PaymentLinkController extends Controller
         }
         catch(BadRequestException | BadRequestValidationFailureException $e)
         {
+            $view_type = $e->getData()[Entity::VIEW_TYPE];
+
             $data = ['error_code' => $e->getCode(), 'message' => $e->getMessage(), 'data' => $e->getData()];
 
+            if($view_type === ViewType::PAYMENT_HANDLE)
+            {
+                return View::make('payment_handle.error_payment_handle', ['data' => $data]);
+            }
             return View::make('payment_link.error_payment_link', ['data' => $data]);
         }
     }

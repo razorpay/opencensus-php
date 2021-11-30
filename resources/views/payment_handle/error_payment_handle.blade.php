@@ -22,10 +22,10 @@
     <link
       rel="stylesheet"
       type="text/css"
-      href="{{env('AWS_CF_CDN_URL')}}/static/payment-bundle/error.css"
+      href="{{env('AWS_CF_CDN_URL')}}/static/payment-handle/error.css"
     />
     <script src="{{env('AWS_CF_CDN_URL')}}/static/analytics/bundle.js" defer></script>
-    <script src="{{env('AWS_CF_CDN_URL')}}/static/payment-bundle/error.js" onload="renderApp()" defer></script>
+    <script src="{{env('AWS_CF_CDN_URL')}}/static/payment-handle/error.js" onload="renderApp()" defer></script>
   </head>
   <body>
       <div id="app-container"></div>

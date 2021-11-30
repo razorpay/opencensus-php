@@ -2019,6 +2019,30 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentHandleDeactivatedView()
+    {
+        $this->testPaymentHandleCreation();
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->app->instance('mode', 'live');
+
+//        activating merchant to make live request
+        $this->fixtures->merchant->activate('10000000000000');
+
+        // getting pl id for handle
+        $paymentHandle = $this->getDbLastEntity('payment_link', 'live');
+
+        $this->fixtures->on('live')->edit('payment_link', $paymentHandle->getId(), [ 'status' => 'inactive' , 'status_reason' => 'deactivated']);
+
+        // calling view get on deactivated payment handle
+        $view = $this->call('GET', "/v1/payment_pages/pl_" . $paymentHandle->getId() . "/view");;
+
+        $view->assertStatus(200);
+
+        $this->assertStringContainsString('payment-handle/error.js', $view->getContent());
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function assertDonationGoalTrackerRefundFlow(Entity $paymentLink, array $goalTrackerSubset, array $refundInput): void

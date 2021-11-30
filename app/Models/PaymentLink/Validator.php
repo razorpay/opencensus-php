@@ -745,6 +745,8 @@ class Validator extends Base\Validator
 
             $data['mode'] = $app['rzp.mode'];
 
+            $data['view_type'] = $paymentLink->getViewType();
+
             throw new BadRequestValidationFailureException("This account is suspended", null, $data);
         }
     }
