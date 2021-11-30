@@ -2,13 +2,11 @@
 
 namespace RZP\Tests\P2p\Service\Base;
 
-class MandatesHelper extends P2pHelper
+class MandateHelper extends P2pHelper
 {
-
 
     public function fetchAll(array $content = [])
     {
-
         $request = $this->request('mandates');
 
         $this->content($request, [], $content);

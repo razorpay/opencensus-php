@@ -12,63 +12,130 @@ class MandateController extends Controller
 {
     public function fetch()
     {
-        throw new RuntimeException("Not implemented ,api Implementation is on the way");
+        $input['id'] = $this->request()->route('mandate_id');
+
+        $response = $this->service->fetch($input);
+
+        return $this->response($response);
     }
 
     public function fetchAll()
     {
-        throw new RuntimeException("Not implemented ,api Implementation is on the way");
+        $input = $this->request()->all();
+
+        $response = $this->service->fetchAll($input);
+
+        return $this->response($response);
     }
 
     public function initiateAuthorize()
     {
-        throw new RuntimeException("Not implemented ,api Implementation is on the way");
+        $input = $this->request()->all();
+
+        $input['id'] = $this->request()->route('mandate_id');
+
+        $response = $this->service->initiateAuthorize($input);
+
+        return $this->response($response);
     }
 
     public function authorizeMandate()
     {
-        throw new RuntimeException("Not implemented ,api Implementation is on the way");
+        $input = $this->request()->all();
+
+        $input['id'] = $this->request()->route('mandate_id');
+
+        $response = $this->service->authorizeMandate($input);
+
+        return $this->response($response);
     }
 
     public function initiateReject()
     {
-        throw new RuntimeException("Not implemented ,api Implementation is on the way");
+        $input = $this->request()->all();
+
+        $input['id'] = $this->request()->route('mandate_id');
+
+        $response = $this->service->initiateReject($input);
+
+        return $this->response($response);
     }
 
     public function rejectMandate()
     {
-        throw new RuntimeException("Not implemented ,api Implementation is on the way");
+        $input = $this->request()->all();
+
+        $input['id'] = $this->request()->route('mandate_id');
+
+        $response = $this->service->rejectMandate($input);
+
+        return $this->response($response);
     }
 
     public function initiatePause()
     {
-        throw new RuntimeException("Not implemented ,api Implementation is on the way");
+        $input = $this->request()->all();
+
+        $input['id'] = $this->request()->route('mandate_id');
+
+        $response = $this->service->initiatePause($input);
+
+        return $this->response($response);
     }
 
 
     public function pauseMandate()
     {
-        throw new RuntimeException("Not implemented ,api Implementation is on the way");
+        $input = $this->request()->all();
+
+        $input['id'] = $this->request()->route('mandate_id');
+
+        $response = $this->service->pauseMandate($input);
+
+        return $this->response($response);
     }
 
     public function initiateUnPause()
     {
-        throw new RuntimeException("Not implemented ,api Implementation is on the way");
+        $input = $this->request()->all();
+
+        $input['id'] = $this->request()->route('mandate_id');
+
+        $response = $this->service->initiateUnPause($input);
+
+        return $this->response($response);
     }
 
     public function unpauseMandate()
     {
-        throw new RuntimeException("Not implemented ,api Implementation is on the way");
+        $input = $this->request()->all();
+
+        $input['id'] = $this->request()->route('mandate_id');
+
+        $response = $this->service->unpauseMandate($input);
+
+        return $this->response($response);
     }
 
     public function initiateRevoke()
     {
-        throw new RuntimeException("Not implemented ,api Implementation is on the way");
+        $input = $this->request()->all();
+
+        $input['id'] = $this->request()->route('mandate_id');
+
+        $response = $this->service->initiateRevoke($input);
+
+        return $this->response($response);
     }
 
     public function revokeMandate()
     {
-        throw new RuntimeException("Not implemented ,api Implementation is on the way");
+        $input = $this->request()->all();
+
+        $input['id'] = $this->request()->route('mandate_id');
+
+        $response = $this->service->revokeMandate($input);
+
+        return $this->response($response);
     }
 }
-
