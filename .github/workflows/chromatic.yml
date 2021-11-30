@@ -1,6 +1,9 @@
 name: Publish Build To Chromatic
 
-on: push
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
