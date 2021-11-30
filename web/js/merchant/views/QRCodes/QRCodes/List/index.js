@@ -74,7 +74,7 @@ export default class QRCodesListContainer extends ListContainer {
   render() {
     return (
       <div class="QRCode--List content-wrapper">
-        <HeaderAction>
+        <HeaderAction responsive>
           <div class="btn-toolbar pull-right">
             <TakeATourButton
               feature={RZPFeatures.QR_CODES}
@@ -83,12 +83,13 @@ export default class QRCodesListContainer extends ListContainer {
             />
 
             <DocsLink url="https://razorpay.com/docs/qr-codes/" onClick={track.docs} />
-
             <ShowWhen additionalCondition={(user) => user.isAllowedEdit('qr_codes')}>
-              <NavLink class="btn btn-primary" to="/qr_codes/new" onClick={this.onCreateQRCode}>
-                <i class="i i-plus" />
-                Create QR Codes
-              </NavLink>
+              <span className="cta-container">
+                <NavLink class="btn btn-primary" to="/qr_codes/new" onClick={this.onCreateQRCode}>
+                  <i class="i i-plus" />
+                  Create QR Codes
+                </NavLink>
+              </span>
             </ShowWhen>
           </div>
         </HeaderAction>

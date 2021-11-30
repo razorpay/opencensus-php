@@ -2,8 +2,6 @@ import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import { RZPFeatures } from 'merchant/helpers/data';
 
-import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
-
 import { paymentId, amount, email, contact, createdAt, status } from 'common/ui/item/pair';
 import Alert from 'common/ui/Forms/Alert';
 import HeaderAction from 'common/ui/HeaderAction';
@@ -44,7 +42,7 @@ export default class QRPaymentsListContainer extends ListContainer {
   render() {
     return (
       <div class="content-wrapper">
-        <HeaderAction>
+        <HeaderAction responsive>
           <div class="btn-toolbar pull-right">
             <TakeATourButton
               feature={RZPFeatures.QR_CODES}

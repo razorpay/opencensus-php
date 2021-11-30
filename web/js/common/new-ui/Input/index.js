@@ -189,7 +189,7 @@ export class Error extends React.Component {
  * */
 export default class Field extends React.Component {
   constructor(props) {
-    super();
+    super(props);
     this.state = {
       mature: props.mature,
       error: '',
@@ -577,7 +577,7 @@ class Radio extends Field {
                     onBlur={this.onBlur}
                   />
                   <div className="Input-radio" />
-                  <Label text={labelInput} className="Input-inlineLabel }" />
+                  <Label text={labelInput} className="Input-inlineLabel" />
                 </label>
               );
             })}
