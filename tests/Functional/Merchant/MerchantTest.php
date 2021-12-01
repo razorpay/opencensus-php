@@ -12877,19 +12877,19 @@ IFSC Code  ICIC0001206
 
         $this->startTest();
 
-        $this->assertFraudType('risk_review_suspend');
+        $this->assertFraudType('risk_review_suspend_tag');
 
         $testData['request']['content']['name'] = 'test_tag';
 
         $this->startTest($testData);
 
-        $this->assertFraudType('risk_review_suspend');
+        $this->assertFraudType('risk_review_suspend_tag');
 
         $testData['request']['content']['action'] = 'delete';
 
         $this->startTest($testData);
 
-        $this->assertFraudType('risk_review_suspend');
+        $this->assertFraudType('risk_review_suspend_tag');
 
         $testData['request']['content']['name'] = 'risk_review_suspend';
 

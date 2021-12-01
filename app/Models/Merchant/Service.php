@@ -3784,7 +3784,7 @@ class Service extends Base\Service
         {
             try
             {
-                $merchant->merchantDetail->setFraudType($fraudType);
+                $merchant->merchantDetail->setFraudType(sprintf(Constants::FRAUD_TYPE_TAG_TPL, $fraudType));
 
                 $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
             }

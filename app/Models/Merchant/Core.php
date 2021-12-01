@@ -1138,7 +1138,14 @@ class Core extends Base\Core
             return;
         }
 
-        $merchant->merchantDetail->setFraudType($fraudType);
+        if (strlen($fraudType) === 0)
+        {
+            $merchant->merchantDetail->setFraudType('');
+        }
+        else
+        {
+            $merchant->merchantDetail->setFraudType(sprintf(Constants::FRAUD_TYPE_TAG_TPL, $fraudType));
+        }
 
         $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
     }
