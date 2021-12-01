@@ -475,14 +475,13 @@ class Profile extends Component {
         </div>
       );
     }
-
     return (
       <div class="content-wrapper content-sm">
         <div class="profile-container">
           <Alert type="error" message={this.state.errors} showDismiss={false} />
-
-          {user && !user.user.org_enforced_second_factor_auth && <User2FASettings />}
-
+          {user && !user.user?.org_enforced_second_factor_auth && !!user.user?.signup_via_email && (
+            <User2FASettings />
+          )}
           <div class="panel panel-default">
             {user.current && (
               <div class="panel-heading">
@@ -506,7 +505,6 @@ class Profile extends Component {
           <IntoView hashedWith={SUPPORT_DETAILS}>
             <SupportDetails />
           </IntoView>
-
           <ShowWhen
             additionalCondition={(usr) =>
               usr.isAllowedView('profile_gst') && !usr.isUnregisteredBusiness
@@ -514,7 +512,6 @@ class Profile extends Component {
           >
             <Gst />
           </ShowWhen>
-
           {bankAccount ? (
             <IntoView hashedWith={UPDATE_BANK_ACC}>
               <BankAccountDetails
@@ -525,7 +522,6 @@ class Profile extends Component {
               />
             </IntoView>
           ) : null}
-
           {this.state.loggedInUserRole === 'owner' ||
           this.state.merchantCount > 1 ||
           this.state.loggedInUser.email !== user.email ? (
@@ -537,7 +533,6 @@ class Profile extends Component {
               isEmailSelfServeEnabled={user.isEmailSelfServeEnabled}
             />
           ) : null}
-
           {invitations.length ? (
             <Invitations
               invitations={invitations}
@@ -545,14 +540,12 @@ class Profile extends Component {
               onRejectClick={this.rejectInvitation}
             />
           ) : null}
-
           {!user.isMerchantRestricted && !this.state.hasMerchant ? <UpgradeMerchantForm /> : null}
           {
             <IntoView hashedWith={SETTELEMENT_CYCLE}>
               <SettlementDetails />
             </IntoView>
           }
-
           {user.international && (
             <PurposeCode onEditClick={this.editPurposeCodeHandler} user={user} />
           )}
