@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Card;
 use RZP\Http\RequestHeader;
 use RZP\Models\Card\Network;
+use RZP\Models\Payment\Downtime\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Environment;
 use RZP\Models\Payment\Method;
@@ -117,6 +118,14 @@ class DowntimeServiceProcessor implements ProcessorInterface
         );
 
         $this->validateRequiredKeys($input);
+
+        $this->trace->count(Metric::PG_AVAILABILITY_WEBHOOK_RECEIVED, [
+            'method' => $input['method'],
+            'action' => $input['action'],
+            'type' => $input['type'],
+            'severity' => $input['severity']
+        ]);
+
 
         $status = $input['action'];
 
