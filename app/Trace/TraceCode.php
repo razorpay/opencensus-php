@@ -5717,6 +5717,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REDIS_KEY_THRESHOLD_EXCEEDED                      = 'REDIS_KEY_THRESHOLD_EXCEEDED';
     const SIGNUP_OTP_VERIFICATION_THRESHOLD_EXHAUSTED          = 'SIGNUP_OTP_VERIFICATION_THRESHOLD_EXHAUSTED';
     const VERIFY_SIGNUP_OTP_REDIS_ERROR                        = 'VERIFY_SIGNUP_OTP_REDIS_ERROR';
+    const SKIP_ORG_DATA_IN_RESPONSE                         = 'SKIP_ORG_DATA_IN_RESPONSE';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

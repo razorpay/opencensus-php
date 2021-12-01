@@ -7,6 +7,7 @@ use RZP\Base\RepositoryManager;
 use RZP\Models\Admin\Org;
 use RZP\Models\Merchant as MerchantEntity;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Trace\TraceCode;
 
 class CheckoutView{
 
@@ -50,6 +51,12 @@ class CheckoutView{
         if(isset($variant) === true and
             $variant === "on" )
         {
+            $this->app['trace']->info(TraceCode::SKIP_ORG_DATA_IN_RESPONSE,
+                [
+                    "merchant_id" => $merchant->getPublicId(),
+                    "org_id"      => $merchant->getOrgId()
+                ]);
+
             return $data;
         }
 
