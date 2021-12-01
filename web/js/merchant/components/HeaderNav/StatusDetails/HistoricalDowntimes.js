@@ -5,6 +5,7 @@ import Spinner from 'common/ui/Spinner';
 import moment from 'moment';
 
 import { fetchHistoricalDowntimes } from './service';
+import { downtimeAnalyticsTrack } from './utilities';
 
 const initialState = {
   historicalDowntimes: [],
@@ -133,7 +134,17 @@ const HistoricalDowntimes = (props) => {
   }, [paymentMethod, skip, count]);
 
   const onPaginate = (params) => {
-    dispatch({ type: 'PAGINATE', payload: { skip: params.skip, count: params.count } });
+    dispatch({
+      type: 'PAGINATE',
+      payload: { skip: params.skip, count: params.count },
+    });
+
+    // analyticsTrack
+    downtimeAnalyticsTrack({
+      objectName: 'Downtime History viewed',
+      method: `${paymentMethod} scroll`,
+      count: params.skip + params.count,
+    });
   };
 
   useEffect(() => {
