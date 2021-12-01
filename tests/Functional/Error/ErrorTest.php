@@ -81,7 +81,6 @@ class ErrorTest extends TestCase
             }
 
             $foundErrorCode = false;
-
             foreach ($errorCodeBatches as $batchNo => $batch)
             {
                 if (array_key_exists($key, $batch))
@@ -89,7 +88,6 @@ class ErrorTest extends TestCase
                     $foundErrorCode = true;
                 }
             }
-
             if ($foundErrorCode === false)
             {
                 self::fail("Internal Error Code ".$key." defined in ErrorCode class but mapping not available in Common Error Repo");

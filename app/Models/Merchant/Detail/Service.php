@@ -31,6 +31,7 @@ use RZP\Models\Merchant\Constants;
 use Illuminate\Support\Facades\Mail;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant as MerchantMail;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Merchant\Document as Document;
@@ -198,6 +199,39 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    public function otpSendViaEmail($input)
+    {
+        if ((new User\Core())->checkIfEmailAlreadyExists($input[User\Entity::EMAIL]))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS);
+        }
+
+        return (new User\Service())->sendOtpEmailVerification($this->merchant, $this->user, $input);
+    }
+
+    public function postSaveEmail($input)
+    {
+        (new Validator)->validateInput('activation_email', $input);
+
+        $userInput = [
+            User\Entity::EMAIL  => $input[Merchant\Entity::EMAIL]
+        ];
+
+        $merchantInput = [
+            User\Entity::EMAIL => $input[Merchant\Entity::EMAIL]
+        ];
+
+        (new User\Service())->edit($this->user->getId(), $userInput);
+        (new Merchant\Service())->edit($this->merchant->getId(),$merchantInput);
+
+        $merchantDetails = $this->merchant->merchantDetail;
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input) {
+            $merchantDetails->setContactEmail($input[Merchant\Entity::EMAIL]);
+            $this->repo->saveOrFail($merchantDetails);
+        });
     }
 
     public function saveMerchantDetailsForActivation(array $input)

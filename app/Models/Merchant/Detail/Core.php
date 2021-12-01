@@ -48,6 +48,7 @@ use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\AvgOrderValue;
 use RZP\Models\Workflow\Action\MakerType;
+use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Mail\Merchant\RejectionSettlement;
@@ -293,6 +294,8 @@ class Core extends Base\Core
 
                     if ($this->canSubmit($input, $response, $activationFormMilestone) === true)
                     {
+                        $this->validateEmailVerificationIfApplicable($merchant);
+
                         // blacklisted merchant should not be allowed to submit l2 form
                         $merchantDetails->getValidator()->validateFullActivationForm($merchant);
 
@@ -907,7 +910,56 @@ class Core extends Base\Core
         //
         $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
 
+        $this->validateEmailVerificationIfApplicable($merchant);
+
         return $this->transactionInstantActivationDetails($input,$merchantDetails, $merchant);
+    }
+
+    protected function validateEmailVerificationIfApplicable(Merchant\Entity $merchant)
+    {
+        $user = $this->app['basicauth']->getUser();
+
+        /*
+         * If auth is not merchant auth then we'll skip this
+         */
+        if(empty($merchant->getEmail()) === true)
+        {
+            return;
+        }
+
+        if(empty($user) === true)
+        {
+            return;
+        }
+
+        if ($merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
+        {
+            return;
+        }
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return;
+        }
+
+        $partnerCore = (new PartnerCore());
+
+        if ($partnerCore->isFullyManagedSubMerchant($merchant) === true)
+        {
+            return;
+        }
+
+        $isSignedUpViaEmail = (bool) $user->getAttribute(UserEntity::SIGNUP_VIA_EMAIL);
+
+        if($isSignedUpViaEmail === true)
+        {
+            return;
+        }
+
+        if($user->getConfirmedAttribute() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Email is not verified');
+        }
     }
 
     /**
@@ -2288,6 +2340,11 @@ class Core extends Base\Core
 
     protected function pushHubspotEvent($merchant, $merchantDetails)
     {
+        if(empty($merchant->getEmail()) === true)
+        {
+            return;
+        }
+
         $properties = [
             'live'  => $merchant->isLive()
         ];
@@ -3841,6 +3898,7 @@ class Core extends Base\Core
     public function canSubmitActivationForm(
         Entity $merchantDetails, Merchant\Entity $merchant, $requiredFields)
     {
+
         if(count($requiredFields) > 0)
         {
             return false;

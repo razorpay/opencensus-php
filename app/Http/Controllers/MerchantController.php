@@ -1072,6 +1072,24 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function otpSendViaEmail()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->otpSendViaEmail($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postSaveEmail()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->postSaveEmail($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getActivationFiles(string $id)
     {
         $response = $this->service(E::MERCHANT_DETAIL)->fetchActivationFiles($id);

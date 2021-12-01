@@ -563,7 +563,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    protected function sendOtpEmailVerification(Merchant\Entity $merchant, Entity $user, array $merchantData = [], array $inputData = [])
+    public function sendOtpEmailVerification(Merchant\Entity $merchant, Entity $user, array $merchantData = [], array $inputData = [])
     {
         $merchantData['medium'] = 'email';
 

@@ -736,6 +736,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::RESTRICTED) === true);
     }
 
+    public function setEmail($email)
+    {
+        $this->setAttribute(self::EMAIL, $email);
+    }
+
     public function setRestricted(bool $restricted)
     {
         $this->setAttribute(self::RESTRICTED, $restricted);

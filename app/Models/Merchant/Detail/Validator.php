@@ -140,7 +140,7 @@ class Validator extends Base\Validator
         Entity::STAKEHOLDER                              => 'sometimes|array|custom',
         Entity::MERCHANT_AVG_ORDER_VALUE                 => 'filled|array|custom',
         Entity::CONTACT_NAME                             => 'sometimes|alpha_space|max:255',
-        Entity::CONTACT_EMAIL                            => 'filled|email|max:255',
+        Entity::CONTACT_EMAIL                            => 'sometimes|email|max:255',
         Entity::CONTACT_MOBILE                           => 'sometimes|max:15|contact_syntax',
         Entity::CONTACT_LANDLINE                         => 'sometimes|numeric|digits_between:8,11',
         Entity::BUSINESS_TYPE                            => 'filled|numeric|digits_between:1,10',
@@ -261,6 +261,10 @@ class Validator extends Base\Validator
         Constants::COMPANY_CIN => ['required', 'regex:/^([A-Z|a-z]{3}-\d{4}|[ulUL]\d{5}[A-Z|a-z]{2}\d{4}[A-Z|a-z]{3}\d{6})/'],
     ];
 
+    protected static $activationEmailRules = [
+        'email'                 => 'sometimes|email|max:255',
+    ];
+
     protected static $archiveFormRules = [
         Entity::ARCHIVE                         => 'required|boolean',
     ];
@@ -319,6 +323,9 @@ class Validator extends Base\Validator
         Entity::BUSINESS_REGISTERED_CITY    => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_PIN     => 'sometimes|size:6',
         Entity::ACTIVATION_FORM_MILESTONE   => 'sometimes|string|max:30|custom',
+        Entity::CONTACT_MOBILE              => 'sometimes|max:15|contact_syntax',
+        Entity::CONTACT_NAME                => 'sometimes|string|max:50',
+        Entity::CONTACT_EMAIL               => 'sometimes|email|max:255',
     ];
 
     protected static $instantActivationBatchRules = [

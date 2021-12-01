@@ -194,6 +194,12 @@ class DetailServiceTest extends TestCase
 
         $this->getMerchantIdMock();
 
+        $this->getMerchantEmailMock();
+
+        $this->getOrgId();
+
+        $this->isLinkedAccount();
+
         $this->createMerchantTestDependencyMocks();
 
         $response = [
@@ -549,6 +555,21 @@ class DetailServiceTest extends TestCase
     public function getMerchantIdMock()
     {
         $this->merchantEntityMock->shouldReceive('getMerchantId')->andReturn('1cXSLlUU8V9sXl');
+    }
+
+    public function getMerchantEmailMock()
+    {
+        $this->merchantEntityMock->shouldReceive('getEmail')->andReturn('wotever@gmail.com');
+    }
+
+    public function getOrgId()
+    {
+        $this->merchantEntityMock->shouldReceive('getOrgId')->andReturn('100000razorpay');
+    }
+
+    public function isLinkedAccount()
+    {
+        $this->merchantEntityMock->shouldReceive('isLinkedAccount')->andReturn(true);
     }
 
     public function getMerchantEditMocks()

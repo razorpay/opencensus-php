@@ -621,6 +621,8 @@ class Route
         'decrypt_merchant_website_comment'         => ['get',      'merchant/{actionId}/decrypt_website_comment',    'MerchantController@getDecryptedWebsiteCommentForWebsiteSelfServe'  ],
         'merchant_activation_details'              => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
         'merchant_activation_save'                 => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
+        'merchant_activation_otp_send'             => ['post',     'merchant/activation/otp/send',                   'MerchantController@otpSendViaEmail' ],
+        'merchant_activation_post_email'           => ['post',     'merchant/activation/email',                      'MerchantController@postSaveEmail' ],
         'is_admin_as_merchant'                     => ['get',      'merchant/is_admin_as_merchant',                  'MerchantController@isAdminLoggedInAsMerchant'                      ],
         'merchant_activation_upload_file'          => ['post',     'merchant/activation/upload',                     'MerchantController@postUploadActivationFile'                       ],
         'merchant_activation_reviewers'            => ['get',      'merchant/activation/reviewers',                  'MerchantController@getMerchantActivationReviewers'                 ],
@@ -4235,6 +4237,8 @@ class Route
     ];
 
     public static $proxy = [
+        'merchant_activation_post_email',
+        'merchant_activation_otp_send',
         'store_update_product',
         'store_upload_image',
         'store_create',
@@ -7500,6 +7504,8 @@ class Route
 
         'merchant_dashboard' => [
             'growth_get_asset_details',
+            'merchant_activation_post_email',
+            'merchant_activation_otp_send',
             'store_create',
             'store_get_by_merchant',
             'store_update',

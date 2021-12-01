@@ -334,6 +334,8 @@ class UserRolesScope
             'merchant_activation_business_categories'       => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::SELLERAPP,Role::FINANCE],
             'merchant_activation_gst_details'               => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_activation_save'                      => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
+            'merchant_activation_otp_send'                  => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
+            'merchant_activation_post_email'                => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_checkout_details'                     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_checkout_details_save'                => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_activation_update_website_status'     => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::RBL_SUPERVISOR, Role::SELLERAPP_PLUS,],

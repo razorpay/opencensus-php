@@ -25,6 +25,10 @@ class EmailNotificationService extends BaseNotificationService
         $merchant = $this->args[Constants::MERCHANT];
         $org      = $this->getOrg($merchant);
 
+        if (empty($merchant->getEmail()) === true){
+            return;
+        }
+
         try
         {
             $emailInstance = new MerchantOnboardingEmail(

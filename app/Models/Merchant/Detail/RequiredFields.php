@@ -14,7 +14,6 @@ class RequiredFields
         Entity::BUSINESS_REGISTERED_STATE,
 
         Entity::BUSINESS_TYPE,
-        Entity::CONTACT_EMAIL,
         Entity::CONTACT_MOBILE,
         Entity::CONTACT_NAME,
         Entity::PROMOTER_PAN_NAME,
