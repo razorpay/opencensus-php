@@ -32,6 +32,7 @@ class Constants
     const DOCUMENT_VERIFICATION_STATUS_KEY  = 'document_verification_status_key';
     const RETRY_ATTEMPT_COUNT               = 'retry_attempt_count';
     const RESPONSE_TIME_MILLI_SECONDS       = 'response_time_milli_seconds';
+    const BANK_DETAILS_VERIFICATION_ERROR   = 'bank_details_verification_error';
 
     const PLATFORMS = [
         self::RX,

@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Account;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail as MerchantDetail;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 class Entity extends Merchant\Entity
 {
@@ -154,6 +155,11 @@ class Entity extends Merchant\Entity
     public function getActivationStatus()
     {
         return $this->merchantDetail->getAttribute(self::ACTIVATION_STATUS);
+    }
+
+    public function getBankDetailsVerificationStatus()
+    {
+        return $this->merchantDetail->getBankDetailsVerificationStatus();
     }
 
     public function getRegisteredAddress(): array
@@ -348,19 +354,58 @@ class Entity extends Merchant\Entity
 
         return $accountDetails;
     }
+    /*
+     * Returns the combined activation status for different values of
+     * activation_status and bank_details_verification_status
+     */
+    protected function getCombinedActivationStatusForLinkedAccount($activationStatus, $bankDetailsVerificationStatus)
+    {
+        if($activationStatus === null)
+        {
+            return null;
+        }
 
+        switch ([$activationStatus , $bankDetailsVerificationStatus])
+        {
+            case [MerchantDetail\Status::ACTIVATED , Merchant\BvsValidation\Constants::VERIFIED]:
+                return Constants::ACTIVATED;
+
+            case [MerchantDetail\Status::ACTIVATED , Merchant\BvsValidation\Constants::INCORRECT_DETAILS]:
+            case [MerchantDetail\Status::ACTIVATED , Merchant\BvsValidation\Constants::NOT_MATCHED]:
+                return Constants::VERIFICATION_FAILED;
+
+            default:
+                return Constants::VERIFICATION_PENDING;
+        }
+    }
     /**
      * Returns the public response for the key activation_details.
      * Other attributes like can_submit and required_fields are dynamically computed and
      * returned from the Account\Service class :: toArrayPublic function
      *
+     * For linked accounts set the status based on the bank_details_verification_status and activation_status combined
+     * as defined in the getCombinedActivationStatus function.
      * @return array
      */
     protected function getActivationDetails(): array
     {
+        $activationStatus = $this->getActivationStatus();
+
+        $merchant = $this->merchantDetail->merchant;
+        $isLinkedAccount = $merchant->isLinkedAccount();
+
+        if(($isLinkedAccount === true) and
+            ($merchant->isFeatureEnabledOnParentMerchant(FeatureConstants::ROUTE_LA_PENNY_TESTING) === true))
+        {
+            $bankDetailsVerificationStatus = $this->getBankDetailsVerificationStatus();
+
+            $activationStatus = $this->getCombinedActivationStatusForLinkedAccount($activationStatus, $bankDetailsVerificationStatus);
+        }
+
         $activation_details = [
-            self::STATUS       => $this->getActivationStatus(),
-            self::ACTIVATED_AT => $this->getActivatedAt(),
+            self::STATUS       => $activationStatus,
+            self::ACTIVATED_AT => ($activationStatus === MerchantDetail\Status::ACTIVATED) ?
+                                   $this->getActivatedAt() : null
         ];
 
         return $activation_details;

@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Account;
 
 use RZP\Models\Merchant\Detail as MerchantDetail;
+use RZP\Models\Merchant\BvsValidation\Constants as BvsConstants;
 
 /**
  * Class Formatter
@@ -70,6 +71,10 @@ class Formatter
         {
             $fieldsPending = $verificationDetails[MerchantDetail\Entity::REQUIRED_FIELDS];
         }
+
+        $bankDetailsVerificationError = $this->core->getBankDetailsVerificationError($merchantDetails);
+
+        $response[$activationDetails][BvsConstants::BANK_DETAILS_VERIFICATION_ERROR] = $bankDetailsVerificationError;
 
         $response[$activationDetails][Entity::FIELDS_PENDING] = $fieldsPending;
 

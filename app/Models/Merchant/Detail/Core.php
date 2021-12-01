@@ -81,6 +81,7 @@ use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Workflow\Action\Entity as WorkFlowActionEntity;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
+use RZP\Models\Merchant\Account\Constants as AccountConstants;
 use RZP\Models\Merchant\Request\Constants as RequestConstants;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
 use RZP\Notifications\Dashboard\Events as DashboardNotificationEvent;
@@ -2667,6 +2668,36 @@ class Core extends Base\Core
         return [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields];
     }
 
+    //todo:: use combined activation function in account entity
+    protected function getCombinedActivationStatusForLinkedAccounts(Entity $merchantDetails)
+    {
+        $activationStatus = $merchantDetails->getActivationStatus();
+
+        $bankDetailsVerificationStatus = $merchantDetails->getBankDetailsVerificationStatus();
+
+        if($activationStatus === null)
+        {
+            return null;
+        }
+
+        $combinedActivationStatus = null;
+
+        switch ([$activationStatus , $bankDetailsVerificationStatus])
+        {
+            case [Status::ACTIVATED , Merchant\BvsValidation\Constants::VERIFIED]:
+            {
+                return AccountConstants::ACTIVATED;
+            }
+            case [Status::ACTIVATED , Merchant\BvsValidation\Constants::INCORRECT_DETAILS]:
+            case [Status::ACTIVATED , Merchant\BvsValidation\Constants::NOT_MATCHED]:
+            {
+                return AccountConstants::VERIFICATION_FAILED;
+            }
+            default:
+                return AccountConstants::VERIFICATION_PENDING;
+        }
+    }
+
     public function createResponse(Entity $merchantDetails): array
     {
         list($response, $merchantDetails) = Tracer::inSpan(['name' => 'create_response.refreshing_entities'], function() use($merchantDetails) {
@@ -2704,6 +2735,17 @@ class Core extends Base\Core
             $response['linked_account']             = true;
             $response['marketplace_merchant_name']  = $parentMerchant->getName();
             $response['marketplace_merchant_id']    = $parentMerchant->getId();
+
+
+            // If linked account and penny testing feature enabled on parent merchant, modify the activation_status based
+            // on bank_detail_verification_status and
+            // activation_status with the new status null, activated, verification_pending, verification_failed
+            if ($merchant->isFeatureEnabledOnParentMerchant(FeatureConstants::ROUTE_LA_PENNY_TESTING) === true)
+            {
+                $response[Entity::ACTIVATION_STATUS] = $this->getCombinedActivationStatusForLinkedAccounts($merchantDetails);
+
+                $response[BvsValidationConstants::BANK_DETAILS_VERIFICATION_ERROR] = $this->getBankDetailsVerificationError($merchantDetails);
+            }
         }
 
         $currentActivationState = $merchant->currentActivationState();
@@ -5592,5 +5634,29 @@ class Core extends Base\Core
         $commentEntity->entity()->associate($workFlowAction);
 
         $this->repo->saveOrFail($commentEntity);
+    }
+
+    public function getBankDetailsVerificationError(Entity $merchantDetails)
+    {
+        $validation = $this->repo->bvs_validation->getLatestArtefactValidationForOwnerIdAndOwnerType(
+            $merchantDetails->getId(),
+            Constant::MERCHANT,
+            Constant::BANK_ACCOUNT
+        );
+        if($validation === null)
+        {
+            return null;
+        }
+        $error_description = null;
+
+        if($validation->getErrorCode() === BvsValidationConstants::INPUT_DATA_ISSUE)
+        {
+            $error_description = $validation->getErrorDescription();
+        }
+        else
+        {
+            $error_description = $validation->getErrorCode();
+        }
+        return $error_description;
     }
 }

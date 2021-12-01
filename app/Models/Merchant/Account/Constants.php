@@ -141,6 +141,11 @@ class Constants
         self::B2BC,
     ];
 
+    //Linked account fetch response, activation status enum values
+    const ACTIVATED             = "activated";
+    const VERIFICATION_PENDING  = "verification_pending";
+    const VERIFICATION_FAILED   = "verification_failed";
+
     public static $validAddressTypes = [
         self::REGISTERED,
         self::OPERATION,
