@@ -451,7 +451,7 @@ class Validator extends Base\Validator
             $networkCode = $fundAccount->account->getNetworkCode();
 
             if (($cardIssuer === Issuer::SCBL) and
-                ($fundAccount->account->isAmex() === false))
+                ((new Card\Core)->checkAllowedNetworksForSCBL($fundAccount->account) === false))
             {
                 throw new BadRequestValidationFailureException(
                     Network::getFullName($networkCode) . " cards are not supported for issuer " . Issuer::SCBL,

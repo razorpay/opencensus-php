@@ -1639,6 +1639,38 @@ class FundAccountsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateFundAccountSCBLCardwithMastercard()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 652161,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => \RZP\Models\Card\Type::CREDIT,
+            'issuer'  => Issuer::SCBL
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testCreateFundAccountSCBLCardwithVisa()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 652161,
+            'network' => Network::$fullName[Network::VISA],
+            'type'    => \RZP\Models\Card\Type::CREDIT,
+            'issuer'  => Issuer::SCBL
+        ]);
+
+        $this->startTest();
+    }
+
     public function testCreateBankAccountFundAccountWithAllowedSpecialCharacters()
     {
         Queue::fake();

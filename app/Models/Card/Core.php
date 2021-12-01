@@ -166,7 +166,7 @@ class Core extends Base\Core
         );
 
         if (($cardIssuer === Issuer::SCBL) and
-            ($card->isAmex() === false))
+            ($this->checkAllowedNetworksForSCBL($card) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
@@ -234,6 +234,17 @@ class Core extends Base\Core
         (new Beneficiary)->enqueueForBeneficiaryRegistration($card, FundAccountType::CARD);
 
         return $card;
+    }
+
+    public function checkAllowedNetworksForSCBL($card)
+    {
+        $supportedNetworksForSCBL = [
+            Card\Network::$fullName[Card\Network::VISA],
+            Card\Network::$fullName[Card\Network::MC],
+            Card\Network::$fullName[Card\Network::AMEX]
+        ];
+
+        return in_array($card->getNetwork(), $supportedNetworksForSCBL, true);
     }
 
     public function edit($card, $input)

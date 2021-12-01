@@ -3497,6 +3497,62 @@ return [
         ],
     ],
 
+    'testCreateFundAccountSCBLCardwithMastercard' => [
+        'request'  => [
+            'content' => [
+                "account_type" => "card",
+                "contact_id"   => "cont_1000000contact",
+                "card"         => [
+                    "name"         => "Prashanth YV",
+                    "number"       => "6521618738419536",
+                    "cvv"          => "212",
+                    "expiry_month" => 10,
+                    "expiry_year"  => 29,
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'      => [
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testCreateFundAccountSCBLCardwithVisa' => [
+        'request'  => [
+            'content' => [
+                "account_type" => "card",
+                "contact_id"   => "cont_1000000contact",
+                "card"         => [
+                    "name"         => "Prashanth YV",
+                    "number"       => "6521618738419536",
+                    "cvv"          => "212",
+                    "expiry_month" => 10,
+                    "expiry_year"  => 29,
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'      => [
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
     'testCreateBankAccountFundAccountWithAllowedSpecialCharacters' => [
         'request'  => [
             'content' => [

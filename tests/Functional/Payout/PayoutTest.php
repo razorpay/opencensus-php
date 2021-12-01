@@ -10391,9 +10391,10 @@ class PayoutTest extends OAuthTestCase
     }
 
     /*
-     * From now on, we are not going to allow fund account creation for scbl cards having network other than amex.
+     * From now on, we are not going to allow fund account creation for scbl cards having network other than amex,
+     * mastercard and visa.
      */
-    public function testPayoutToSCBLCardWithNetworkOtherThanAmex()
+    public function testPayoutToSCBLCardWithNetworkOtherThanAmexMasterVisa()
     {
         $this->fixtures->create('feature', [
             'name'        => Feature\Constants::S2S,
@@ -10405,6 +10406,13 @@ class PayoutTest extends OAuthTestCase
             'name'        => Feature\Constants::PAYOUT_TO_CARDS,
             'entity_id'   => 10000000000000,
             'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 652161,
+            'network' => Network::$fullName[Network::RUPAY],
+            'type'    => Type::CREDIT,
+            'issuer'  => Issuer::SCBL
         ]);
 
         $countOfCardsBeforeFundAccountCreateRequest = count($this->getDbEntities('card'));
@@ -10421,10 +10429,110 @@ class PayoutTest extends OAuthTestCase
     }
 
     /*
-     * This test checks for the case if fund accounts for scbl cards with network other than amex are already created
-     * before this code went live, the payout creation should fail for those fund accounts.
+     * This test checks for the case if fund accounts for scbl cards with network other than amex, master card and
+     * visa are already created before this code went live, the payout creation should fail for those fund accounts.
      */
-    public function testPayoutToSCBLCardWithNetworkOtherThanAmexIfFundAccountAlreadyCreated()
+    public function testPayoutToSCBLCardWithNetworkOtherThanAmexMasterVisaIfFundAccountAlreadyCreated()
+    {
+        $card = $this->fixtures->create(
+            'card',
+            [
+                'merchant_id'        => '10000000000000',
+                'name'               => 'Prashanth YV',
+                'expiry_month'       => 10,
+                'expiry_year'        => 2030,
+                'iin'                => 652161,
+                'last4'              => '9536',
+                'network'            => Network::$fullName[Network::RUPAY],
+                'type'               => 'credit',
+                'issuer'             => 'SCBL',
+                'emi'                => 1,
+                'vault'              => 'rzpvault',
+                'vault_token'        => 'MjAzMDQwMDAwMDEyMTIxMg==',
+                'global_fingerprint' => '==gMxITMyEDMwADMwQDMzAjM'
+            ]);
+
+        $this->fixtures->create('fund_account', [
+            'id'           => '100000000001fa',
+            'source_id'    => '1000001contact',
+            'source_type'  => 'contact',
+            'account_type' => 'card',
+            'account_id'   => $card->getId(),
+            'merchant_id'  => 10000000000000,
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id']  = 'fa_100000000001fa';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testPayoutToSCBLCardWithMastercardIfFundAccountAlreadyCreated()
+    {
+        $card = $this->fixtures->create(
+            'card',
+            [
+                'merchant_id'        => '10000000000000',
+                'name'               => 'Prashanth YV',
+                'expiry_month'       => 10,
+                'expiry_year'        => 2030,
+                'iin'                => 340169,
+                'last4'              => '0137',
+                'network'            => Network::$fullName[Network::MC],
+                'type'               => 'credit',
+                'issuer'             => 'SCBL',
+                'emi'                => 1,
+                'vault'              => 'rzpvault',
+                'vault_token'        => 'MjAzMDQwMDAwMDEyMTIxMg==',
+                'global_fingerprint' => '==gMxITMyEDMwADMwQDMzAjM'
+            ]);
+
+        $this->fixtures->create('fund_account', [
+            'id'           => '100000000001fa',
+            'source_id'    => '1000001contact',
+            'source_type'  => 'contact',
+            'account_type' => 'card',
+            'account_id'   => $card->getId(),
+            'merchant_id'  => 10000000000000,
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id']  = 'fa_100000000001fa';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testPayoutToSCBLCardWithVisaIfFundAccountAlreadyCreated()
     {
         $card = $this->fixtures->create(
             'card',
@@ -10435,7 +10543,7 @@ class PayoutTest extends OAuthTestCase
                 'expiry_year'        => 2030,
                 'iin'                => 402874,
                 'last4'              => '2006',
-                'network'            => 'Visa',
+                'network'            => Network::$fullName[Network::VISA],
                 'type'               => 'credit',
                 'issuer'             => 'SCBL',
                 'emi'                => 1,
@@ -15103,8 +15211,6 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('processing', $publicResponse['status']);
         $this->assertNotNull($payout['initiated_at']);
     }
-
-
 
     public function testGetPayoutsAndGetBalanceForHighTpsMerchantsWithSubBalances()
     {

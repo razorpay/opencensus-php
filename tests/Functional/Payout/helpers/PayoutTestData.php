@@ -11551,7 +11551,7 @@ return [
         ],
     ],
 
-    'testPayoutToSCBLCardWithNetworkOtherThanAmex' => [
+    'testPayoutToSCBLCardWithNetworkOtherThanAmexMasterVisa' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/fund_accounts',
@@ -11560,7 +11560,7 @@ return [
                 "contact_id"   => "cont_1000001contact",
                 "card"         => [
                     "name"         => "Prashanth YV",
-                    "number"       => "4028740000502006",
+                    "number"       => "6521618738419536",
                     "cvv"          => "212",
                     "expiry_month" => 10,
                     "expiry_year"  => 29,
@@ -11571,7 +11571,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Visa cards are not supported for issuer SCBL',
+                    'description' => 'RuPay cards are not supported for issuer SCBL',
                 ]
             ],
             'status_code' => 400,
@@ -11582,7 +11582,7 @@ return [
         ],
     ],
 
-    'testPayoutToSCBLCardWithNetworkOtherThanAmexIfFundAccountAlreadyCreated' => [
+    'testPayoutToSCBLCardWithNetworkOtherThanAmexMasterVisaIfFundAccountAlreadyCreated' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts',
@@ -11599,7 +11599,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Visa cards are not supported for issuer SCBL',
+                    'description' => 'RuPay cards are not supported for issuer SCBL',
                 ]
             ],
             'status_code' => 400,
@@ -11607,6 +11607,60 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPayoutToSCBLCardWithMastercardIfFundAccountAlreadyCreated' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'fund_account_id' => 'fa_100000000001fa',
+                'amount'          => 100,
+                'mode'            => 'NEFT',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'refund'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000001fa',
+                'narration'       => 'Test Merchant Fund Transfer',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'NEFT'
+            ]
+        ],
+    ],
+
+    'testPayoutToSCBLCardWithVisaIfFundAccountAlreadyCreated' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'fund_account_id' => 'fa_100000000001fa',
+                'amount'          => 100,
+                'mode'            => 'NEFT',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'refund'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000001fa',
+                'narration'       => 'Test Merchant Fund Transfer',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'NEFT'
+            ]
         ],
     ],
 
