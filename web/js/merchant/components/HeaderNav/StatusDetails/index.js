@@ -18,7 +18,6 @@ import HistoricalDowntimes from './HistoricalDowntimes';
 import { classList } from 'common/utils/rzp-utils';
 import FailedStatus from './FailedStatus';
 import OverallStatus from './OverallStatus';
-import { downtimeAnalyticsTrack } from './utilities';
 
 // Initial state for status details page.
 const initialState = {
@@ -104,18 +103,18 @@ function StatusDetails(props) {
     errorInFetchingData,
   } = state;
 
-  const setOngoingDowntimes = useCallback(async () => {
+  const setOngoingDowntimes = useCallback(() => {
     dispatch({ type: SET_STATUSDETAIL_LOADING });
-
-    try {
-      const response = await fetchOngoingDowntimes();
-      dispatch({
-        type: SET_STATUSDETAIL,
-        payload: { ...state.statusDetails, ...response },
+    fetchOngoingDowntimes()
+      .then((response) => {
+        dispatch({
+          type: SET_STATUSDETAIL,
+          payload: { ...state.statusDetails, ...response },
+        });
+      })
+      .catch(() => {
+        dispatch({ type: SET_STATUSDETAIL_FAILURE });
       });
-    } catch (err) {
-      dispatch({ type: SET_STATUSDETAIL_FAILURE });
-    }
   }, [state.statusDetails]);
 
   const checkForDebounce = useCallback(() => {
@@ -138,7 +137,7 @@ function StatusDetails(props) {
     intervalForDebounce.current = setInterval(() => {
       checkForDebounce();
     }, 1000);
-    intervalForTime.current = setInterval(() => refreshData(), 300000);
+    intervalForTime.current = setInterval(() => refreshData(), 60000);
   }, [checkForDebounce, refreshData]);
 
   const endInterval = () => {
@@ -159,27 +158,9 @@ function StatusDetails(props) {
     setIsRefreshDisable(true);
   };
 
-  const switchToInfoView = async (pmtMethod) => {
-    let currentDowntimes = null;
-
+  const switchToInfoView = (pmtMethod) => {
     setMode('info');
     setPaymentMethod(pmtMethod);
-    await setOngoingDowntimes();
-
-    if (pmtMethod === 'Cards') {
-      currentDowntimes = cardDowntimes;
-    } else if (pmtMethod === 'UPI') {
-      currentDowntimes = upiDowntimes;
-    } else if (pmtMethod === 'Net Banking') {
-      currentDowntimes = netBankingDowntimes;
-    }
-
-    // analyticsTrack
-    downtimeAnalyticsTrack({
-      objectName: 'Downtime Details viewed',
-      method: paymentMethod,
-      currentDowntimes,
-    });
   };
 
   const switchToSummaryView = () => {
@@ -200,9 +181,6 @@ function StatusDetails(props) {
     sliderOpen();
 
     setIsSliderOpen(true);
-
-    // analyticsTrack
-    downtimeAnalyticsTrack({ objectName: 'Downtime Status page visited', method: 'Summary' });
   };
 
   const handleDocumentClick = useCallback(

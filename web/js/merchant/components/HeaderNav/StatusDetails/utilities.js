@@ -1,6 +1,3 @@
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
 export const getTimeinTwelveHourFormat = (dateObj) => {
   let hours = dateObj.getHours();
   let meridian = 'am';
@@ -15,17 +12,3 @@ export const getTimeinTwelveHourFormat = (dateObj) => {
   const time = `${hours}:${minutes} ${meridian}`;
   return time;
 };
-
-export const downtimeAnalyticsTrack = ({ objectName, method, ...restParams }) =>
-  analyticsTrack({
-    objectName,
-    actionName: 'clicked',
-    screen: 'Home page',
-    properties: {
-      itemName: 'Bank Downtimes',
-      location: 'Top Navigation',
-      method,
-      ...restParams,
-      ...getCommonAnalyticsProperties(window.rzp_user),
-    },
-  });
