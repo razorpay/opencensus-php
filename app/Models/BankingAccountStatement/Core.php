@@ -74,6 +74,8 @@ class Core extends Base\Core
      */
     protected $isRBLSinglePaymentsApiEnabled = false;
 
+    protected $creditBeforeDebitUtrs = [];
+
     protected $mutex;
 
     public function __construct()
@@ -300,6 +302,8 @@ class Core extends Base\Core
                 'banking_account_statement_process_' . $accountNumber . '_' . $channel,
                 function () use ($channel, $accountNumber, $input, $limit, $saveLimit, $merchant)
                 {
+                    $this->setCreditBeforeDebitUtrsFromRedis($accountNumber);
+
                     while ($saveLimit > 0)
                     {
                         $basEntities = $this->repo->banking_account_statement->fetchUnlinkedBasRecords($accountNumber, $channel, $limit);
@@ -352,6 +356,47 @@ class Core extends Base\Core
                 throw $e;
             }
         }
+    }
+
+    protected function setCreditBeforeDebitUtrsFromRedis(string $accountNumber)
+    {
+        $creditBeforeDebitUtrsRedis = (new AdminService)->getConfigKey(['key' => ConfigKey::BAS_CREDIT_BEFORE_DEBIT_UTRS]);
+
+        if (array_key_exists($accountNumber, $creditBeforeDebitUtrsRedis) === true)
+        {
+            $this->creditBeforeDebitUtrs += $creditBeforeDebitUtrsRedis[$accountNumber];
+        }
+    }
+
+    protected function updateCreditBeforeDebitUtrsInRedis(string $accountNumber)
+    {
+        $this->mutex->acquireAndRelease(
+            'bas_credit_before_debit_redis',
+            function () use ($accountNumber)
+            {
+                $creditBeforeDebitUtrsRedis = (new AdminService)->getConfigKey(['key' => ConfigKey::BAS_CREDIT_BEFORE_DEBIT_UTRS]);
+
+                $this->trace->info(
+                    TraceCode::BAS_CREDIT_BEFORE_DEBIT_REDIS_KEY_UPDATE,
+                    [
+                        Entity::ACCOUNT_NUMBER => $accountNumber,
+                        'current_redis_value'  => $creditBeforeDebitUtrsRedis,
+                        'updated_utr_list'     => $this->creditBeforeDebitUtrs,
+                    ]);
+
+                $creditBeforeDebitUtrsRedis[$accountNumber] = $this->creditBeforeDebitUtrs;
+
+                if (empty($creditBeforeDebitUtrsRedis[$accountNumber]) === true)
+                {
+                    unset($creditBeforeDebitUtrsRedis[$accountNumber]);
+                }
+
+                (new AdminService)->setConfigKeys([ConfigKey::BAS_CREDIT_BEFORE_DEBIT_UTRS => $creditBeforeDebitUtrsRedis]);
+            },
+            60,
+            TraceCode::BAS_CREDIT_BEFORE_DEBIT_KEY_UPDATE_FAILED,
+            3
+        );
     }
 
     /**
@@ -882,36 +927,148 @@ class Core extends Base\Core
     {
         foreach ($basEntities as $basEntity)
         {
-            list($sourceEntity, $isSourceAlreadyCreated) = $this->repo->transaction(function() use ($basEntity, $merchant)
+            try
             {
-                $startTime = microtime(true);
-
-                list($sourceEntity, $isSourceAlreadyCreated) = $this->processSourceEntity($basEntity);
-
-                $basEntity->source()->associate($sourceEntity);
-
-                $basEntity->transaction()->associate($sourceEntity->transaction);
-
-                (new Transaction\Core)->updatePostedDate($sourceEntity, $basEntity->getPostedDate());
-
-                $this->repo->saveOrFail($basEntity);
-
-                $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_ENTITY_LINKED, $basEntity->toArray());
-
-                $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_SOURCE_CREATION_V2,
+                list($sourceEntity, $isSourceAlreadyCreated) = $this->linkAccountStatementRecord($basEntity, $merchant);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_LINKING_FAILED,
                     [
-                        'source_entity'       => $sourceEntity->toArray(),
-                        'bas_id'              => $basEntity->getId(),
-                        'account_number'      => $basEntity->getAccountNumber(),
-                        'entity_linking_time' => (microtime(true) - $startTime) * 1000,
-                        'entity_id'           => $sourceEntity->getId(),
-                        'entity_type'         => $basEntity->getEntityType(),
+                        'bas_id'         => $basEntity->getId(),
+                        'utr'            => $basEntity->getUtr(),
+                        'account_number' => $basEntity->getAccountNumber(),
+                        'message'        => $e->getMessage(),
                     ]);
 
-                return [$sourceEntity, $isSourceAlreadyCreated];
-            });
+                if (($e->getMessage() == "Call to a member function isPostpaid() on null") and
+                    ($basEntity->getUtr() !== null))
+                {
+                    array_push($this->creditBeforeDebitUtrs, $basEntity->getUtr());
 
-            $this->fireWebhooksAfterSuccessfulMappingOfSourceEntity($sourceEntity, $isSourceAlreadyCreated);
+                    $this->updateCreditBeforeDebitUtrsInRedis($basEntity->getAccountNumber());
+
+                    list($sourceEntity, $isSourceAlreadyCreated) = $this->linkAccountStatementRecord($basEntity, $merchant);
+
+                }
+                else
+                {
+                    throw $e;
+                }
+            }
+
+            if (($basEntity->getType() === Type::DEBIT) and
+                (in_array($basEntity->getUtr(), $this->creditBeforeDebitUtrs) === true))
+            {
+                $this->reversePayoutForCreditBeforeDebit($basEntity);
+            }
+            else
+            {
+                $this->fireWebhooksAfterSuccessfulMappingOfSourceEntity($sourceEntity, $isSourceAlreadyCreated);
+            }
+        }
+    }
+
+    protected function linkAccountStatementRecord($basEntity, Merchant\Entity $merchant)
+    {
+        return $this->repo->transaction(function() use ($basEntity, $merchant)
+        {
+            $startTime = microtime(true);
+
+            list($sourceEntity, $isSourceAlreadyCreated) = $this->processSourceEntity($basEntity);
+
+            $basEntity->source()->associate($sourceEntity);
+
+            $basEntity->transaction()->associate($sourceEntity->transaction);
+
+            (new Transaction\Core)->updatePostedDate($sourceEntity, $basEntity->getPostedDate());
+
+            $this->repo->saveOrFail($basEntity);
+
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_ENTITY_LINKED, $basEntity->toArray());
+
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_SOURCE_CREATION_V2,
+                               [
+                                   'source_entity'       => $sourceEntity->toArray(),
+                                   'bas_id'              => $basEntity->getId(),
+                                   'account_number'      => $basEntity->getAccountNumber(),
+                                   'entity_linking_time' => (microtime(true) - $startTime) * 1000,
+                                   'entity_id'           => $sourceEntity->getId(),
+                                   'entity_type'         => $basEntity->getEntityType(),
+                               ]);
+
+            return [$sourceEntity, $isSourceAlreadyCreated];
+        });
+    }
+
+    protected function reversePayoutForCreditBeforeDebit(Entity $basEntity)
+    {
+        // reversal based on credit before debit should happen on getting debit entry in account statement.
+        if ($basEntity->getType() !== Type::DEBIT)
+        {
+            return;
+        }
+
+        $creditBasTemp = $this->repo->banking_account_statement->fetchByUtrAndType($basEntity->getUtr(),
+                                                                                   Type::CREDIT,
+                                                                                   $basEntity->getAccountNumber(),
+                                                                                   $basEntity->getChannel());
+
+        if (count($creditBasTemp) !== 1)
+        {
+            $this->trace->error(
+                TraceCode::BAS_CREDIT_BEFORE_DEBIT_REVERSE_PAYOUT_LOGIC_ERROR,
+                [
+                    'bas_id'         => $basEntity->getId(),
+                    'utr'            => $basEntity->getUtr(),
+                    'account_number' => $basEntity->getAccountNumber(),
+                    'credit_bas_count' => count($creditBasTemp),
+                ]);
+
+            return;
+        }
+
+        $creditBas = $creditBasTemp[0];
+
+        $payout = $this->fetchExistingPayoutForAccountStatement($basEntity,
+                                                                $temp,
+                                                                $temp,
+                                                                false);
+
+        if ($payout !== null)
+        {
+            $this->trace->info(
+                TraceCode::BAS_CREDIT_BEFORE_DEBIT_REVERSE_PAYOUT,
+                [
+                    [
+                        'bas_id'         => $basEntity->getId(),
+                        'utr'            => $basEntity->getUtr(),
+                        'account_number' => $basEntity->getAccountNumber(),
+                        'credit_bas_id'  => $creditBas->getId(),
+                        'payout_id'      => $payout->getId(),
+                        'payout_status'  => $payout->getStatus()
+                    ]
+                ]);
+
+            if ($payout->getStatus() !== Status::FAILED)
+            {
+                return;
+            }
+
+            (new Payout\Core)->handlePayoutReversed($payout,
+                                                    null,
+                                                    null,
+                                                    $creditBas);
+
+            if (($key = array_search($basEntity->getUtr(), $this->creditBeforeDebitUtrs)) !== false)
+            {
+                unset($this->creditBeforeDebitUtrs[$key]);
+
+                $this->updateCreditBeforeDebitUtrsInRedis($basEntity->getAccountNumber());
+            }
         }
     }
 
@@ -978,19 +1135,26 @@ class Core extends Base\Core
         // failure and map this external with bas record
         $remarks = null;
 
-        if ($basEntity->isTypeCredit() === true)
+        if (in_array($basEntity->getUtr(), $this->creditBeforeDebitUtrs) === true)
         {
-            list($sourceEntity, $isSourceAlreadyCreated) = $this->processReversal($basEntity, $remarks);
+            $sourceEntity = $this->processExternal($basEntity, $remarks);
         }
         else
         {
-            $sourceEntity = $this->processPayout($basEntity, $remarks);
-        }
+            if ($basEntity->isTypeCredit() === true)
+            {
+                list($sourceEntity, $isSourceAlreadyCreated) = $this->processReversal($basEntity, $remarks);
+            }
+            else
+            {
+                $sourceEntity = $this->processPayout($basEntity, $remarks);
+            }
 
-        if (($remarks != null) or
-            ($sourceEntity === null))
-        {
-            $sourceEntity = $this->processExternal($basEntity, $remarks);
+            if (($remarks != null) or
+                ($sourceEntity === null))
+            {
+                $sourceEntity = $this->processExternal($basEntity, $remarks);
+            }
         }
 
         $this->trace->info(TraceCode::BAS_ENTRY_SOURCE_MAPPING_DETAILS,
@@ -1597,8 +1761,9 @@ class Core extends Base\Core
      */
 
     protected function fetchExistingPayoutForAccountStatement(Entity $basEntity,
-                                                              & $createExternalSource,
-                                                              & $remarks)
+                                                              &$createExternalSource,
+                                                              &$remarks,
+                                                              bool $checkCmsRefNo = true)
     {
         $payouts = new Base\Collection;
 
@@ -1689,6 +1854,11 @@ class Core extends Base\Core
 
                 return null;
             }
+        }
+
+        if ($checkCmsRefNo === false)
+        {
+            return null;
         }
 
         if ($payouts->count() === 0)

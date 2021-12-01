@@ -9010,6 +9010,282 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertArraySubset($txnExpected, $txnActual, true);
     }
 
+    public function testRblAccountStatementCreditBeforeDebit()
+
+    {
+        (new Admin\Service)->setConfigKeys([
+                                               Admin\ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ['2224440041626905']]);
+
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'credit',
+                                    'amount'                    => 1355,
+                                    'channel'                   => 'rbl',
+                                    'account_number'            => 2224440041626905,
+                                    'bank_transaction_id'       => 'SDHDH',
+                                    'balance'                   => 11355,
+                                    'transaction_date'          => 1584987183,
+                                    'posted_date'               => 1584987183,
+                                ]);
+
+        $this->setupForRblPayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::FAILED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(Payout\Status::FAILED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
+
+        $mockedResponse = $this->getRblDataResponse();
+
+        $txn0 = $txn1 = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][1];
+
+        $txn0['txnBalance']['amountValue'] = '214.50';
+        $txn0['transactionSummary']['txnDesc'] = 'R-' . $txn0['transactionSummary']['txnDesc'];
+        $txn0['transactionSummary']['txnType'] = 'C';
+        $txn0['txnSrlNo'] = '876';
+
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0] = $txn0;
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basdBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        BankingAccountStatementJob::dispatch('test', [
+            'channel'           => Channel::RBL,
+            'account_number'    => 2224440041626905
+        ]);
+
+        $transactions = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'];
+
+        $txn = last($transactions);
+
+        $basEntities = $this->getDbEntities(EntityConstants::BANKING_ACCOUNT_STATEMENT);
+
+        $this->assertCount(3, $basEntities);
+
+        $this->assertEquals($basEntities[1]->getEntityType(), 'reversal');
+
+        $externals = $this->getDbEntities(EntityConstants::EXTERNAL);
+
+        $this->assertCount(1, $externals);
+
+        $this->assertEquals($externals[0]->getId(), $basEntities[0]->getEntityId());
+
+        $reversals = $this->getDbEntities(EntityConstants::REVERSAL);
+
+        $this->assertCount(1, $reversals);
+
+        $this->assertEquals($reversals[0]->getId(), $basEntities[1]->getEntityId());
+
+        $transactions = $this->getDbEntities(EntityConstants::TRANSACTION);
+
+        $this->assertCount(3, $transactions);
+
+        $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNotNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $basActual = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $basExpected = [
+            BasEntity::MERCHANT_ID         => $payout->getMerchantId(),
+            BasEntity::BANK_TRANSACTION_ID => trim($txn['txnId']),
+            BasEntity::TYPE                => 'debit',
+            BasEntity::AMOUNT              => 10095,
+            BasEntity::BALANCE             => 11355,
+            BasEntity::POSTED_DATE         => 1451937993,
+            BasEntity::TRANSACTION_DATE    => 1451932200,
+            BasEntity::DESCRIPTION         => trim($txn['transactionSummary']['txnDesc']),
+            BasEntity::CHANNEL             => 'rbl',
+            BasEntity::ENTITY_TYPE         => Payout\Entity::PAYOUT,
+            BasEntity::ENTITY_ID           => $payout->getId(),
+        ];
+
+        $this->assertArraySubset($basExpected, $basActual, true);
+    }
+
+    public function testRblAccountStatementCreditBeforeDebitUsingRedis()
+
+    {
+        (new Admin\Service)->setConfigKeys([
+                                               Admin\ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ['2224440041626905']]);
+
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'credit',
+                                    'amount'                    => 1355,
+                                    'channel'                   => 'rbl',
+                                    'account_number'            => 2224440041626905,
+                                    'bank_transaction_id'       => 'SDHDH',
+                                    'balance'                   => 11355,
+                                    'transaction_date'          => 1584987183,
+                                    'posted_date'               => 1584987183,
+                                ]);
+
+        $this->setupForRblPayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::FAILED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(Payout\Status::FAILED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
+
+        $mockedResponse = $this->getRblDataResponse();
+
+        $txn0 = $txn1 = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][1];
+
+        $txn0['txnBalance']['amountValue'] = '214.50';
+        $txn0['transactionSummary']['txnDesc'] = 'R-' . $txn0['transactionSummary']['txnDesc'];
+        $txn0['transactionSummary']['txnType'] = 'C';
+        $txn0['txnSrlNo'] = '876';
+
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0] = $txn0;
+
+        $mockedResponseOriginal = $mockedResponse;
+
+        unset($mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][1]);
+        $this->setMozartMockResponse($mockedResponse);
+
+        $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basdBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        BankingAccountStatementJob::dispatch('test', [
+            'channel'           => Channel::RBL,
+            'account_number'    => 2224440041626905
+        ]);
+
+        $UtrConfigKeyExpected = [
+            '2224440041626905' => ["123456"]
+        ];
+
+        $UtrConfigKeyActual = (new AdminService)->getConfigKey(['key' => ConfigKey::BAS_CREDIT_BEFORE_DEBIT_UTRS]);
+
+        $this->assertArraySubset($UtrConfigKeyExpected, $UtrConfigKeyActual);
+
+        $this->setMozartMockResponse($mockedResponseOriginal);
+
+        BankingAccountStatementJob::dispatch('test', [
+            'channel'           => Channel::RBL,
+            'account_number'    => 2224440041626905
+        ]);
+
+        $UtrConfigKeyAfterProcessing = (new AdminService)->getConfigKey(['key' => ConfigKey::BAS_CREDIT_BEFORE_DEBIT_UTRS]);
+
+        $this->assertEmpty($UtrConfigKeyAfterProcessing);
+
+        $transactions = $mockedResponseOriginal['data']['PayGenRes']['Body']['transactionDetails'];
+
+        $txn = last($transactions);
+
+        $basEntities = $this->getDbEntities(EntityConstants::BANKING_ACCOUNT_STATEMENT);
+
+        $this->assertCount(3, $basEntities);
+
+        $this->assertEquals($basEntities[1]->getEntityType(), 'reversal');
+
+        $externals = $this->getDbEntities(EntityConstants::EXTERNAL);
+
+        $this->assertCount(1, $externals);
+
+        $this->assertEquals($externals[0]->getId(), $basEntities[0]->getEntityId());
+
+        $reversals = $this->getDbEntities(EntityConstants::REVERSAL);
+
+        $this->assertCount(1, $reversals);
+
+        $this->assertEquals($reversals[0]->getId(), $basEntities[1]->getEntityId());
+
+        $transactions = $this->getDbEntities(EntityConstants::TRANSACTION);
+
+        $this->assertCount(3, $transactions);
+
+        $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNotNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $basActual = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $basExpected = [
+            BasEntity::MERCHANT_ID         => $payout->getMerchantId(),
+            BasEntity::BANK_TRANSACTION_ID => trim($txn['txnId']),
+            BasEntity::TYPE                => 'debit',
+            BasEntity::AMOUNT              => 10095,
+            BasEntity::BALANCE             => 11355,
+            BasEntity::POSTED_DATE         => 1451937993,
+            BasEntity::TRANSACTION_DATE    => 1451932200,
+            BasEntity::DESCRIPTION         => trim($txn['transactionSummary']['txnDesc']),
+            BasEntity::CHANNEL             => 'rbl',
+            BasEntity::ENTITY_TYPE         => Payout\Entity::PAYOUT,
+            BasEntity::ENTITY_ID           => $payout->getId(),
+        ];
+
+        $this->assertArraySubset($basExpected, $basActual, true);
+    }
+
     // this will check if we change the bulk fetch and select config key, the behaviour
     // runs as expected
     public function testRblAccountStatementFetchV2WithDifferentValueForBulkFetchAndSave()

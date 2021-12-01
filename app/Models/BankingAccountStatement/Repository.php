@@ -324,4 +324,14 @@ class Repository extends Base\Repository
 
         return $basEntities;
     }
+
+    public function fetchByUtrAndType(string $utr, string $type, string $accountNumber, string $channel)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->where(Entity::CHANNEL, $channel)
+                    ->where(Entity::UTR, $utr)
+                    ->where(Entity::TYPE, $type)
+                    ->get();
+    }
 }

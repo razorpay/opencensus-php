@@ -265,6 +265,9 @@ class ConfigKey
 
     const SUB_BALANCES_MAP = self::PREFIX . 'sub_balance_map';
 
+    // This will be used to get the utrs facing credit before debit issue.
+    const BAS_CREDIT_BEFORE_DEBIT_UTRS = self::PREFIX . 'bas_credit_before_debit_utrs';
+
 
     const PUBLIC_KEYS = [
         self::ASYNC_ESCALATION_HANDLING_ENABLED,
@@ -379,6 +382,7 @@ class ConfigKey
         self::RBL_CA_BALANCE_UPDATE_LIMITS,
         self::INTER_ACCOUNT_PAYOUT_MERCHANTS,
         self::SUB_BALANCES_MAP,
+        self::BAS_CREDIT_BEFORE_DEBIT_UTRS,
     ];
 
     const REDIS_CONFIG_MAP = [
