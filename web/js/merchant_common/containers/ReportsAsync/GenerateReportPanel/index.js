@@ -15,6 +15,7 @@ import SelectFormat from './SelectFormat';
 import EmailReport from './EmailReport';
 
 const marketplaceConfigTypes = ['transactions', 'payments', 'refunds', 'settlements'];
+
 @RTracking(() => window.rzpQ.component('GenerateReportPanel'))
 export default class GenerateReportPanel extends React.PureComponent {
   static defaultProps = {
@@ -168,7 +169,6 @@ export default class GenerateReportPanel extends React.PureComponent {
       configs,
       customConfigs,
       accounts,
-      emailReportOptions,
       showSelectAccount,
       onlyDailyOptionsInReferredAccounts,
     } = this.props;
@@ -243,7 +243,7 @@ export default class GenerateReportPanel extends React.PureComponent {
 
               <EmailReport
                 ref={(ref) => (this.emailReport = ref)}
-                emails={emailReportOptions}
+                emails={this.props.emailReportOptions}
                 isFormDisabled={isFormDisabled}
               />
             </div>
@@ -253,7 +253,7 @@ export default class GenerateReportPanel extends React.PureComponent {
               pendingState="Requesting..."
               type="submit"
               onClick={this.onGenerateReport}
-              disabled={isFormDisabled || !!dateRangeError || !emailReportOptions.length}
+              disabled={isFormDisabled || !!dateRangeError}
               class="m-t"
             >
               {isCustomConfig ? 'Download Report' : 'Generate Report'}
