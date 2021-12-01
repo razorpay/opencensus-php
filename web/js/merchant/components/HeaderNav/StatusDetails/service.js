@@ -47,6 +47,7 @@ export const fetchOngoingDowntimes = () => {
             vpaOperational,
             pspOperational,
             netBankingOperational,
+            isL1Loading: false,
             time,
             timeObj: now,
           });
@@ -291,6 +292,7 @@ export const fetchOngoingDowntimes = () => {
             vpaOperational,
             pspOperational,
             netBankingOperational,
+            isL1Loading: false,
             time,
             timeObj: now,
           });
