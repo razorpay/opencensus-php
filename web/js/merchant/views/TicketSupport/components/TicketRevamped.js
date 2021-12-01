@@ -1,9 +1,10 @@
 import { connect } from 'react-redux';
-import React from 'react';
+import React, { Fragment } from 'react';
 import moment from 'moment';
 import TicketStatus from './TicketStatus';
 import Attachment from './Attachment';
 import Message from './MessageRevamped';
+const RAZORPAY_LOGO = `https://razorpay.com/assets/razorpay-glyph.svg`;
 
 @connect((state) => {
   return {
@@ -39,26 +40,36 @@ export default class Ticket extends React.Component {
   render() {
     const { ticket, user, totalConversations } = this.props;
     const { showMoreConversation } = this.state;
+    const isTicketCreatedByAgent = ticket?.custom_fields?.cf_created_by === 'agent';
 
-    const img = this.props.logo_url ? (
+    let img = this.props.logo_url ? (
       <img className="img-round" style={{ margin: 0 }} src={this.props.logo_url} />
     ) : (
       <i className="i i-ticket-user img-round" />
     );
 
+    if (isTicketCreatedByAgent) {
+      img = <img className="img-round" style={{ margin: 0 }} src={RAZORPAY_LOGO} />;
+    }
+
     const category = ticket?.custom_fields?.cf_requestor_subcategory;
     const subCategory = ticket?.custom_fields?.cf_requester_item;
     const ticketConversationsLength = totalConversations?.length;
-
     if (ticket) {
       return (
         <div className="message-container">
           <div className="title-section">
             <div className="title-text-container">
               <div className="category-container">
-                <p className="title-text">{category}</p>
-                {category && subCategory && <p className="separator">&#183;</p>}
-                <p className="title-text">{subCategory}</p>
+                {isTicketCreatedByAgent ? (
+                  <p className="title-text">{ticket?.subject}</p>
+                ) : (
+                  <Fragment>
+                    <p className="title-text">{category}</p>
+                    {category && subCategory && <p className="separator">&#183;</p>}
+                    <p className="title-text">{subCategory}</p>
+                  </Fragment>
+                )}
               </div>
               <TicketStatus ticket={ticket} />
             </div>
@@ -72,8 +83,10 @@ export default class Ticket extends React.Component {
             <div className="user-section" onClick={this.toggleFullReply}>
               <div className="user-image">{img}</div>
               <div className="user-details">
-                <p className="user">{user?.name}</p>
-                {this.state.showFullMessage && <p className="message-to">To: Razorpay Account</p>}
+                <p className="user">{isTicketCreatedByAgent ? 'Razorpay Support' : user?.name}</p>
+                {this.state.showFullMessage && !isTicketCreatedByAgent && (
+                  <p className="message-to">To: Razorpay Account</p>
+                )}
                 <p className={`lh-18 ${this.state.showFullMessage ? '' : 'truncated'}`}>
                   {' '}
                   {ticket?.description_text}

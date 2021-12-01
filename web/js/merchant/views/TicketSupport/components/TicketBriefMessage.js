@@ -14,7 +14,11 @@ export default function TicketBriefMessage(props) {
   const isEscalated = getEscalationType(props.ticket) == 'escalated';
   return (
     <div class="Ticket-Brief-Message">
-      {ticketStatus === 'Work In Progress' || ticketStatus === 'Active' ? (
+      {props.ticketType === 'agent' ? (
+        <div class="Ticket-Brief-Message-Status-Desc text-danger">
+          <i class="i i-clock" /> Reply Before <b>{expectedResponseDate}</b>
+        </div>
+      ) : ticketStatus === 'Work In Progress' || ticketStatus === 'Active' ? (
         isEscalated ? (
           <div class="Ticket-Brief-Message-Status-Desc">
             <span>

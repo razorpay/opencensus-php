@@ -97,6 +97,7 @@ export default class Message extends React.Component {
       <div
         className={`message ${isTicketRevampFlowEnabled ? 'revamped' : ''}
           panel ticket-row-panel mt-0 border-bt-0 mb-0`}
+        style={{ paddingRight: 0 }}
       >
         <div className="panel-body p-v-24">
           <div className="row min-ht-56" onClick={this.toggleReplyState}>

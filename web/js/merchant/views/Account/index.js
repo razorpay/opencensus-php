@@ -6,12 +6,14 @@ import Balances from 'merchant/views/Account/Balances';
 import Credits from 'merchant/views/Account/Credits/List';
 import ManageTeam from 'merchant/views/Account/ManageTeam';
 import Referrals from 'merchant/views/Account/Referrals/List';
-import Tickets from 'merchant/views/TicketSupport/components/Tickets';
 import Conversations from 'merchant/views/TicketSupport/components/Conversations';
 import { CLICK_ON_BALANCES_TAB, CLICK_ON_CREDITS_TAB } from './ga';
 import { analyticsTrack } from 'common/utils/analytics';
+import TicketsContainer from '../TicketSupport/components/TicketsContainer';
+import Tickets from '../TicketSupport/components/Tickets';
+import { connect } from 'react-redux';
 
-export default function MyAccount() {
+const MyAccount = (props) => {
   return (
     <tabbed-container>
       {/* To make the header scrollable we just need to add this new class to the header component */}
@@ -68,7 +70,7 @@ export default function MyAccount() {
             }}
             to="/ticket-support/tickets"
           >
-            Support Tickets
+            {props.user.isMobileSignupActive ? `Support History` : `Support Tickets`}
           </NavLink>
         </ShowWhen>
       </header>
@@ -79,9 +81,16 @@ export default function MyAccount() {
         <Route path="/addfunds" component={Balances} />
         <Route path="/referrals" component={Referrals} />
         <Route path="/team" component={ManageTeam} />
-        <Route path="/ticket-support/tickets" component={Tickets} />
+        {props.user.isMobileSignupActive ? (
+          <Route path="/ticket-support/tickets" component={TicketsContainer} />
+        ) : (
+          <Route path="/ticket-support/tickets" component={Tickets} />
+        )}
+
         <Route path="/ticket-support/:instance/:id/conversation" component={Conversations} />
       </content>
     </tabbed-container>
   );
-}
+};
+
+export default connect((state) => ({ user: state.session.user }))(MyAccount);

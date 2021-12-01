@@ -9,6 +9,8 @@ import TicketBrief from './TicketBrief';
 import TicketBriefRevamped from './TicketBriefRevamped';
 import { raiseTicket } from '../utils';
 import FailedScreen from './FailedScreen';
+import { withRouter } from 'react-router';
+@withRouter
 @connect(
   (state) => {
     return {
@@ -25,6 +27,12 @@ import FailedScreen from './FailedScreen';
 export default class Tickets extends React.Component {
   componentDidMount() {
     this.goNext(1, true);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.match.params.ticketType !== this.props.match.params.ticketType) {
+      this.goNext(1, true);
+    }
   }
 
   state = {
@@ -65,7 +73,16 @@ export default class Tickets extends React.Component {
       bypass
     ) {
       const params = { page, per_page: this.state.size };
-      this.props.fetchSupportTickets(params).then(() => {
+      let filter = {
+        cf_created_by: this.props.match.params.ticketType,
+      };
+      if (!this.props.match.params.ticketType) {
+        filter = null;
+      }
+      if (this.props.match.params.ticketType === 'merchant') {
+        filter = null;
+      }
+      this.props.fetchSupportTickets(params, filter).then(() => {
         window.rzpAnalytics({
           eventCategory: 'Ticket Dashboard',
           eventAction: 'support tickets fetched',
@@ -125,7 +142,6 @@ export default class Tickets extends React.Component {
         OPEN_TICKETS.push(ticket);
       }
     });
-
     return (
       <div>
         {OPEN_TICKETS.length !== 0 && (
@@ -143,6 +159,7 @@ export default class Tickets extends React.Component {
           {OPEN_TICKETS.map((ticket, index) => {
             return user.isTicketRevampFlowEnabled ? (
               <TicketBriefRevamped
+                ticketType={this.props.match.params.ticketType}
                 user={user}
                 last={index == currentPageTickets.length - 1}
                 ticket={ticket}
@@ -150,6 +167,7 @@ export default class Tickets extends React.Component {
               />
             ) : (
               <TicketBrief
+                ticketType={this.props.match.params.ticketType}
                 user={user}
                 last={index == currentPageTickets.length - 1}
                 ticket={ticket}
@@ -202,6 +220,14 @@ export default class Tickets extends React.Component {
       total_tickets.push(...this.props.support_tickets.data[k]);
     });
     tickets = this.props.support_tickets.data[this.state.current_page] || [];
+    if (this.props.match.params.ticketType) {
+      if (this.props.match.params.ticketType === 'merchant') {
+        tickets = tickets.filter((ticket) => ticket.custom_fields.cf_created_by !== 'agent');
+      }
+    } else {
+      tickets = tickets.filter((ticket) => ticket.custom_fields.cf_created_by !== 'agent');
+    }
+
     const createTicket = raiseTicket;
     return (
       <div class="content-wrapper content-sm ticket-support">

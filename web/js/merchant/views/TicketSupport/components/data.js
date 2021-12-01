@@ -218,7 +218,6 @@ export const SAMPLE_TICKET = {
   source: 1,
   company_id: null,
   status: 100,
-  subject: '',
   association_type: null,
   to_emails: [],
   product_id: null,
@@ -227,6 +226,9 @@ export const SAMPLE_TICKET = {
   due_by: '2020-07-07T21:18:52Z',
   fr_due_by: '2020-07-07T13:18:52Z',
   is_escalated: false,
+  subject: 'Settlements are on hold',
+  description_text:
+    'Your settlements have been put on hold because of some issues with your bank account. We will not be able to process further settlements until the bank account details is updated from your en.. ',
   custom_fields: {},
   stats: {
     agent_responded_at: null,

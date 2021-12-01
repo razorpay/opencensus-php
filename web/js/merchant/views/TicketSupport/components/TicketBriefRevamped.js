@@ -15,7 +15,7 @@ export default class TicketBriefRevamped extends React.Component {
 
   render() {
     const ticket = this.props.ticket;
-
+    const isTicketCreatedByAgent = ticket?.custom_fields?.cf_created_by === 'agent';
     let subject = ticket.subject;
     subject = subject.replace('[Merchant]', '');
     const isScheduleCallbackEnabled = this.props.user.isScheduleCallbackEnabled;
@@ -39,13 +39,19 @@ export default class TicketBriefRevamped extends React.Component {
                           <p className="ticket-subject">{subject}</p>
                         ) : (
                           <p className="ticket-subject">
-                            {ticket.custom_fields.cf_requestor_subcategory}
-                            {ticket.custom_fields.cf_requester_item ? (
+                            {isTicketCreatedByAgent ? (
+                              subject
+                            ) : (
                               <Fragment>
-                                <span className="ticket-detail-separator">•</span>
-                                {ticket.custom_fields.cf_requester_item}
+                                {ticket.custom_fields.cf_requestor_subcategory}
+                                {ticket.custom_fields.cf_requester_item ? (
+                                  <Fragment>
+                                    <span className="ticket-detail-separator">•</span>
+                                    {ticket.custom_fields.cf_requester_item}
+                                  </Fragment>
+                                ) : null}
                               </Fragment>
-                            ) : null}
+                            )}
                           </p>
                         )}
 
@@ -91,7 +97,7 @@ export default class TicketBriefRevamped extends React.Component {
                       </p>
                     ) : (
                       <div class="Ticket-Status-Desc">
-                        <TicketBriefMessage ticket={ticket} />
+                        <TicketBriefMessage ticketType={this.props.ticketType} ticket={ticket} />
                       </div>
                     )
                   ) : null}

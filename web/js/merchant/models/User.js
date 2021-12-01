@@ -572,6 +572,10 @@ export default class User {
     return this.getExpStatus('razorpay_chat_bot');
   }
 
+  get isMobileSignupActive() {
+    return this.getExpStatus('mobile_signup_changes_active');
+  }
+
   get isRazorxAnnouncementEnabled() {
     return this.findTag('announcement_razorpayx');
   }

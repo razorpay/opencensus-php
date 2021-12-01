@@ -58,6 +58,7 @@ import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import NitroICICIBanner from '../../components/Announcements/NitroICICIBanner';
 import NitroCCCampaign from '../../components/Announcements/NitroCCCampaign';
+import SupportRequest from 'merchant/components/Announcements/SupportRequest';
 
 class AnalyticsDesktop extends Component {
   state = {
@@ -338,6 +339,9 @@ class AnalyticsDesktop extends Component {
       balance = Math.abs(current_balance.data.balance);
       negativeBalanceClassName = 'negative-balance';
     }
+    const ticketsRaisedByAgents = this.props.ticketsRaisedByAgents.filter((ticket) =>
+      new Date(ticket.created_at).getSeconds(),
+    );
 
     return (
       <div className="home-analytics-desktop">
@@ -347,6 +351,10 @@ class AnalyticsDesktop extends Component {
             !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
           }`}
         >
+          {ticketsRaisedByAgents.length && user.isMobileSignupActive ? (
+            <SupportRequest tickets={ticketsRaisedByAgents} />
+          ) : null}
+
           <CongratulatoryBanner user={user} />
           {/* nps banner */}
           {user.isAccepted && <NPSAnnouncement user={user} />}
@@ -828,6 +836,7 @@ const mapStateToProps = (state) => ({
   config: state.config,
   internationalProductsStatus: state.config.internationalProductsStatus,
   limitBreach: state.home.limitBreach,
+  ticketsRaisedByAgents: state.config.ticketsRaisedByAgents.data[1],
 });
 
 export default withRouter(

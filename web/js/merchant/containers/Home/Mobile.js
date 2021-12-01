@@ -29,12 +29,13 @@ import {
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
 import EasterEgg from 'merchant/components/EasterEgg';
-
+import SupportRequest from 'merchant/components/Announcements/SupportRequest';
 @connect(
   (state) => ({
     windowWidth: state.app.windowWidth,
     user: state.session.user,
     config: state.config,
+    ticketsRaisedByAgents: state.config.ticketsRaisedByAgents.data[1],
   }),
   { openModal },
 )
@@ -145,6 +146,9 @@ class AnalyticsMobile extends Component {
       current_balance.data.balance < 100 ||
       isOnDemandDisabled;
     const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
+    const ticketsRaisedByAgents = this.props.ticketsRaisedByAgents.filter((ticket) =>
+      new Date(ticket.created_at).getSeconds(),
+    );
 
     return (
       <div className="home-analytics-mobile">
@@ -154,6 +158,10 @@ class AnalyticsMobile extends Component {
             !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
           }`}
         >
+          {ticketsRaisedByAgents.length && user.isMobileSignupActive ? (
+            <SupportRequest tickets={ticketsRaisedByAgents} />
+          ) : null}
+
           {showInstantActivation && !user.isOnboardingV2Enabled ? (
             <Announcement mode={mode} user={user} payments={payments} />
           ) : null}

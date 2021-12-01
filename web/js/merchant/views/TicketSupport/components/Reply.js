@@ -59,11 +59,16 @@ export default class Reply extends React.Component {
   };
 
   reply = () => {
+    const isTicketCreatedByAgent = this.props.ticket?.custom_fields?.cf_created_by === 'agent';
+
     this.track('send reply clicked', 'Tickets');
 
     const bodyFormData = new FormData();
     bodyFormData.append('body', this.state.body);
-    bodyFormData.append('user_id', this.props.ticket.requester_id);
+    bodyFormData.append(
+      'user_id',
+      isTicketCreatedByAgent ? this.props.ticket.responder_id : this.props.ticket.requester_id,
+    );
 
     if (this.state.attachments && this.state.attachments.length) {
       this.state.attachments.forEach((attachment) => {

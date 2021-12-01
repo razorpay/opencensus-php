@@ -45,10 +45,11 @@ export function getResponseArrivalType(ticket) {
   const STATUS = statuses[ticket.status] && statuses[ticket.status].name;
   if (STATUS === 'Active' || STATUS === 'Work In Progress') {
     const today = new Date();
-    // const dueDate = new Date(ticket.fr_due_by);
-    const dueDate = new Date('2021-01-16T06:06:27Z');
-
-    if (today.getTime() < dueDate.getTime()) {
+    const dueDate = new Date(ticket.fr_due_by);
+    const isTicketCreatedByAgent = ticket.custom_fields.cf_created_by === 'agent';
+    if (isTicketCreatedByAgent) {
+      return 'reply-before-due';
+    } else if (today.getTime() < dueDate.getTime()) {
       return 'within-expected-time';
     }
 

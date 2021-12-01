@@ -1,43 +1,42 @@
-.Announcement_Banner
+:root {
+  --base-color: #FFFFFF;
+}
 
-  background: #ffffff
-  height: 50px
-  position: relative
-  border-radius: 2px
-  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.1)
+.Announcement_Banner {
+  background: #ffffff;
+  height: 50px;
+  position: relative;
+  border-radius: 2px;
+  box-shadow: 0 1px 4px 0 #0000001a;
   display: table;
   width: 100%;
 
   .title, .content, .close-btn {
-
     display: table-cell;
     vertical-align: middle;
   }
 
   .title, .close-btn {
-
     width: 0;
   }
 
   .close-btn {
-
     cursor: pointer;
     color: currentColor;
     font-size: 28px;
     padding-right: 15px;
   }
 
-  .title
+  .title {
     position: relative;
     height: 100%;
-    font-size: 50px
-    font-weight: bold
-    color: white
+    font-size: 50px;
+    font-weight: bold;
+    color: white;
     border-radius: 2px 0 0 2px;
     padding-right: 50px;
 
     .title-content {
-
       position: relative;
       font-size: 15px;
       line-height: 18px;
@@ -49,7 +48,6 @@
       display: table;
 
       .title-content-wrapper {
-
         display: table-cell;
         height: 100%;
         vertical-align: middle;
@@ -57,14 +55,12 @@
     }
 
     &:before, &:after {
-
       position: absolute;
       display: block;
-      content: "";
+      content: '';
     }
 
     &:before {
-
       bottom: 0;
       width: 60px;
       height: 100%;
@@ -75,7 +71,6 @@
     }
 
     &:after {
-
       top: 0;
       width: 60px;
       height: 100%;
@@ -84,394 +79,685 @@
       z-index: 0;
       transform: skewX(-30deg);
     }
+  }
 
-  .corner
+  .corner {
     display: none;
-    float: left
+    float: left;
+  }
 
-  .content
-    padding: 15px 15px 15px 8px
-    width: 100%
+  .content {
+    padding: 15px 15px 15px 8px;
+    width: 100%;
 
-    .dot--primary
-      color: $primary-color
-      margin: 0 4px
-    
-    .big-circle-seprator
-      display: inline-block
-      width: 9px
-      height: 9px
-      margin: 0px 24px
-      background-color: currentColor
-      border-radius: 50%
+    .dot--primary {
+      color: $primary-color;
+      margin: 0 4px;
+    }
 
-  .btn-link
-    font-weight: bold
-    text-decoration: none
+    .big-circle-seprator {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin: 0px 24px;
+      background-color: currentColor;
+      border-radius: 50%;
+    }
 
-    .i-chevron-right
-      top: 2px
-      left: 0
-      position: relative
+    .btn-link {
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .i-chevron-right {
+      top: 2px;
+      left: 0;
+      position: relative;
+    }
+  }
+
+  .content {
+    padding: 15px 15px 15px 8px;
+    width: 100%;
+
+    .dot--primary {
+      color: $primary-color;
+      margin: 0 4px;
+    }
+
+    .big-circle-seprator {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin: 0px 24px;
+      background-color: currentColor;
+      border-radius: 50%;
+    }
+  }
+
+  .btn-link {
+    font-weight: bold;
+    text-decoration: none;
+
+    .i-chevron-right {
+      top: 2px;
+      left: 0;
+      position: relative;
+    }
+  }
 
   @media (max-width: 1020px) {
-
     position: relative;
 
     .title, .content, .close-btn {
-
       display: block;
     }
 
     .title {
+      width: 100%;
+      padding-right: 0;
+      height: auto;
 
-       width: 100%;
-       padding-right: 0;
-       height: auto;
-
-       &:before, &:after {
-
-         display: none;
-       }
-
-       .title-content {
-
-         display: block;
-         padding: 12px 37px 12px 12px;
-
-         .title-content-wrapper {
-
-           display: block;
-         }
-       }
-     }
-
-     .content {
-
-       padding: 15px;
-     }
-
-     .close-btn {
-
-       position: absolute;
-       top: 0;
-       right: 12px;
-       z-index: 1;
-       color: #fff;
-     }
-  }
-
-.announcement-banner
-  &#announcement-banner-SEP21-ULTRALOC-BANNER, &#announcement-banner-nitro-settlements-banner
-    .content, .content .schedule-enable-container
-      display: flex
-      flex-wrap: wrap
-      align-items: center
-      height: 100%
-      span.display-inline
-        margin: 0 10px 0 0
-
-      a.Button--secondary
-        margin: 2px 0
-
-// added css to fix the announcement banner positioning for m-web
-.announcement-banner        
-  .schedule-enable-container
-    .scheduled-btn-act
-      @media screen and (max-width: $screen-xs-max) {
-        margin 10px 0 0
-        display inline-block
+      &:before, &:after {
+        display: none;
       }
 
-.Modal .modal-body.rzp-early-stl-modal
-  color: #58666E
-  padding: 0
+      .title-content {
+        display: block;
+        padding: 12px 37px 12px 12px;
 
-  .modal-header
-    padding: 15px 0
+        .title-content-wrapper {
+          display: block;
+        }
+      }
+    }
 
-  .modal-title
-    font-size: 24px
-    font-weight: bold
-    line-height: 32px
+    .content {
+      padding: 15px;
+    }
 
-  .help-block
-    color: #58666E
+    .close-btn {
+      position: absolute;
+      top: 0;
+      right: 12px;
+      z-index: 1;
+      color: #fff;
+    }
+  }
+}
 
-  .modal-subtitle
-    display: inline-block
-    margin: 25px 0 10px 0
-    font-size: 18px
-    font-weight: bold
-    line-height: 22px
+.announcement-banner {
+  &#announcement-banner-SEP21-ULTRALOC-BANNER, &#announcement-banner-nitro-settlements-banner {
+    .content, .content .schedule-enable-container {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      height: 100%;
 
-  .content-left, .content-right
-    display: inline-block
-    width: 50%
-    height: 100%
-    vertical-align: top
-    padding: 35px
+      span.display-inline {
+        margin: 0 10px 0 0;
+      }
 
-    button.close
-      margin: -30px -30px 0 0
+      a.Button--secondary {
+        margin: 2px 0;
+      }
+    }
+  }
+}
 
-  .content-left
-    border-radius: 2px 0 0 2px
-    background-color: #fff
-    border-right: 1px solid #E0E0E0
+// added css to fix the announcement banner positioning for m-web
+.announcement-banner {
+  .schedule-enable-container {
+    .scheduled-btn-act {
+      @media screen and (max-width: $screen-xs-max) {
+        margin: 10px 0 0;
+        display: inline-block;
+      }
+    }
+  }
+}
 
-    .form-action, button.close
-      display: none
+.Modal .modal-body.rzp-early-stl-modal {
+  color: #58666E;
+  padding: 0;
 
-  .content-right
-    background-color: #FAFAFA
-    position: relative
-    padding-left: 33px
+  .modal-header {
+    padding: 15px 0;
+  }
 
-    .modal-title
-      font-size: 18px
+  .modal-title {
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 32px;
+  }
 
-    form
+  .help-block {
+    color: #58666E;
+  }
+
+  .modal-subtitle {
+    display: inline-block;
+    margin: 25px 0 10px 0;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 22px;
+  }
+
+  .content-left, .content-right {
+    display: inline-block;
+    width: 50%;
+    height: 100%;
+    vertical-align: top;
+    padding: 35px;
+
+    button.close {
+      margin: -30px -30px 0 0;
+    }
+  }
+
+  .content-left {
+    border-radius: 2px 0 0 2px;
+    background-color: #fff;
+    border-right: 1px solid #E0E0E0;
+
+    .form-action, button.close {
+      display: none;
+    }
+  }
+
+  .content-right {
+    background-color: #FAFAFA;
+    position: relative;
+    padding-left: 33px;
+
+    .modal-title {
+      font-size: 18px;
+    }
+
+    form {
       margin-top: 24px;
+    }
 
-    .radio-label
-      .title
-        font-size: 16px
-        font-weight: bold
-        line-height: 19px
-      .description
-        color: #7B8199
+    .radio-label {
+      .title {
+        font-size: 16px;
+        font-weight: bold;
+        line-height: 19px;
+      }
 
-    .options-back-btn
-      display: none
+      .description {
+        color: #7B8199;
+      }
+    }
 
-  .form-action
-    position: absolute
-    bottom: 0
-    left: 0
-    width: 100%
-    text-align: right
-    border-top: 1px solid #E0E0E0
-    background-color: #F6F6F6
-    padding: 20px
+    .options-back-btn {
+      display: none;
+    }
+  }
 
-    .Button:first-child
-      margin-right: 20px
+  .form-action {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: right;
+    border-top: 1px solid #E0E0E0;
+    background-color: #F6F6F6;
+    padding: 20px;
 
-    .Button.Button--primary:last-child
-      margin: 0
+    .Button:first-child {
+      margin-right: 20px;
+    }
 
-  .features-list
-    color: #58666E
-    margin-top: 20px
-    .feature-item
-      margin: 20px 0
-    .feature-icon
-      width: 45px
-      display: inline-block
-      vertical-align: top
-      padding: 5px
-      img
-        width: 40px
-    .feature-title
-      font-weight: bold
-    .feature-text
-      color: #7B8199
-    .feature-content
-      display: inline-block
-      width: 85%
-      padding-left: 20px
+    .Button.Button--primary:last-child {
+      margin: 0;
+    }
+  }
 
-.success-modal
-  text-align: center
-  background-color: #FFFFFF
+  .features-list {
+    color: #58666E;
+    margin-top: 20px;
 
-  .success-banner-cnt
-    height: 400px
-    width: 100%
-    position: relative
+    .feature-item {
+      margin: 20px 0;
+    }
 
-    .banner-header
-      width: 100%
-      position: absolute
-      left: 0
-      top: 0
+    .feature-icon {
+      width: 45px;
+      display: inline-block;
+      vertical-align: top;
+      padding: 5px;
 
-    .banner
-      width: 34%
-      margin: 10% 33% 20px 33%
-      display: inline-block
+      img {
+        width: 40px;
+      }
+    }
 
-    .modal-title
-      margin: 20px 0
-      display: inline-block
+    .feature-title {
+      font-weight: bold;
+    }
 
-    .help-block
-      width: 57%
-      margin: 0 auto
+    .feature-text {
+      color: #7B8199;
+    }
 
-    .banner-footer
-      width: 100%
-      position: absolute
-      left: 0
-      bottom: 0
+    .feature-content {
+      display: inline-block;
+      width: 85%;
+      padding-left: 20px;
+    }
+  }
+}
 
-@media only screen and (max-width: 764px)
-  .Modal .modal-body.rzp-early-stl-modal
-    .content-left, .content-right
-      width: 100%
+.success-modal {
+  text-align: center;
+  background-color: #FFFFFF;
 
-    .content-left
-      min-height: 600px
+  .success-banner-cnt {
+    height: 400px;
+    width: 100%;
+    position: relative;
 
-      .form-action, button.close, .options-back-btn
-        display: block
+    .banner-header {
+      width: 100%;
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
 
-    .content-right
-      .options-back-btn
-        display: inline-block
+    .banner {
+      width: 34%;
+      margin: 10% 33% 20px 33%;
+      display: inline-block;
+    }
 
-    .features-list
-      .feature-content
-        width: 80%
+    .modal-title {
+      margin: 20px 0;
+      display: inline-block;
+    }
 
-  .success-modal
-    .success-banner-cnt
-      .help-block
-        width: 75%
-      .banner
-        width: 50%
-        margin: 60px 25% 20px 25%
+    .help-block {
+      width: 57%;
+      margin: 0 auto;
+    }
 
-  .Announcement_Banner
-    .pull-right
-      float: unset !important
+    .banner-footer {
+      width: 100%;
+      position: absolute;
+      left: 0;
+      bottom: 0;
+    }
+  }
+}
 
-.Announcement_Banner.with-tour
-  margin-top: 20px
+@media only screen and (max-width: 764px) {
+  .Modal .modal-body.rzp-early-stl-modal {
+    .content-left, .content-right {
+      width: 100%;
+    }
 
-.Announcement_Banner--hide
-  display: none
+    .content-left {
+      min-height: 600px;
 
-.Announcement_Banner.margin-bottom
-  margin-bottom: 20px
+      .form-action, button.close, .options-back-btn {
+        display: block;
+      }
+    }
 
-.debit-refund-notif
-  .title
-    font-size: 24px
-    font-weight: 700
-    color: #515978
-    margin-bottom: 17px
-    line-height: inherit
+    .content-right {
+      .options-back-btn {
+        display: inline-block;
+      }
+    }
 
-  .debit-refund-panel-body
-    padding-left: 35px
-    padding-bottom: 17px
+    .features-list {
+      .feature-content {
+        width: 80%;
+      }
+    }
+  }
 
-  h4.changing
-    margin: 15px 0px
-    font-size: 15px
-    color: #515978
-    font-weight: 700
+  .success-modal {
+    .success-banner-cnt {
+      .help-block {
+        width: 75%;
+      }
 
-  ul
-    font-family: Lato
-    font-style: normal
-    font-weight: normal
-    font-size: 14px
-    line-height: 20px
-    padding-left: 20px
-    color: #4A4A4A
-    padding-left: 0
-    margin-left: 10px
+      .banner {
+        width: 50%;
+        margin: 60px 25% 20px 25%;
+      }
+    }
+  }
 
-    li
-      margin-bottom: 12px
+  .Announcement_Banner {
+    .pull-right {
+      float: unset !important;
+    }
+  }
+}
 
-  table
-    border-collapse: collapse
+.Announcement_Banner.with-tour {
+  margin-top: 20px;
+}
 
-    td
-      padding: 7px 10px
-      border: 1px solid rgba(173, 188, 201, 0.18)
+.Announcement_Banner--hide {
+  display: none;
+}
 
-  .table
-    border-bottom: 0
+.Announcement_Banner.margin-bottom {
+  margin-bottom: 20px;
+}
 
-  .banner
-    position: absolute
-    right: 19px
-    top: 14px
+.debit-refund-notif {
+  .title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #515978;
+    margin-bottom: 17px;
+    line-height: inherit;
+  }
 
-  img
-    width: 300px
+  .debit-refund-panel-body {
+    padding-left: 35px;
+    padding-bottom: 17px;
+  }
 
-  .btn
-    margin-top: 25px
-    margin-bottom: 20px
-    width: 160px
+  h4.changing {
+    margin: 15px 0px;
+    font-size: 15px;
+    color: #515978;
+    font-weight: 700;
+  }
 
-  .svg-bg
-    background: url("assets/debit-refund-bg.png") no-repeat
-    height: 305px
-    width: 336px
-    position: absolute
-    top: -14px
-    left: -17px
-    z-index: -9
+  ul {
+    font-family: Lato;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 20px;
+    padding-left: 20px;
+    color: #4A4A4A;
+    padding-left: 0;
+    margin-left: 10px;
 
+    li {
+      margin-bottom: 12px;
+    }
+  }
 
-.announcement-banner-container.announcement-banner-container--fullpage
-  padding: 0
+  table {
+    border-collapse: collapse;
 
-.announcement-banner--fullpage
-  text-align: center
+    td {
+      padding: 7px 10px;
+      border: 1px solid rgba(173, 188, 201, 0.18);
+    }
+  }
 
-.Announcement_Banner
-  .content
-    padding: 8px 15px 8px 8px
+  .table {
+    border-bottom: 0;
+  }
 
-  .skew-pattern
-    &::before, &::after
-      content: ''
+  .banner {
+    position: absolute;
+    right: 19px;
+    top: 14px;
+  }
 
-  .skew-pattern-left
-    transform: skew(30deg)
+  img {
+    width: 300px;
+  }
 
-  .skew-pattern-right
-    transform: skew(330deg)
+  .btn {
+    margin-top: 25px;
+    margin-bottom: 20px;
+    width: 160px;
+  }
 
+  .svg-bg {
+    background: url('assets/debit-refund-bg.png') no-repeat;
+    height: 305px;
+    width: 336px;
+    position: absolute;
+    top: -14px;
+    left: -17px;
+    z-index: -9;
+  }
+}
 
-  .skew-pattern, .skew-pattern::before, .skew-pattern::after
-    position: absolute
-    display: block
-    background-color: currentColor
+.announcement-banner-container.announcement-banner-container--fullpage {
+  padding: 0;
+}
 
-  .skew-pattern
-    bottom: 0
-    width: 30px
-    height: 100%
-    opacity: 0.7
-    pointer-events: none
-    z-index: 0
+.announcement-banner--fullpage {
+  text-align: center;
+}
 
-    &::before
-      bottom: 0
-      width: 130px
-      height: 100%
-      opacity: 0.17
+.Announcement_Banner {
+  .content {
+    padding: 8px 15px 8px 8px;
+  }
 
-    &::after
-      bottom: 0
-      width: 230px
-      height: 100%
-      opacity: 0.17
+  .skew-pattern {
+    &::before, &::after {
+      content: '';
+    }
+  }
 
-  .skew-pattern-left
-    left: -20px
+  .skew-pattern-left {
+    transform: skew(30deg);
+  }
 
-  .skew-pattern-right
-    right: -20px
+  .skew-pattern-right {
+    transform: skew(330deg);
+  }
 
-    &::before, &::after
-      right: 0
+  .skew-pattern, .skew-pattern::before, .skew-pattern::after {
+    position: absolute;
+    display: block;
+    background-color: currentColor;
+  }
+
+  .skew-pattern {
+    bottom: 0;
+    width: 30px;
+    height: 100%;
+    opacity: 0.7;
+    pointer-events: none;
+    z-index: 0;
+
+    &::before {
+      bottom: 0;
+      width: 130px;
+      height: 100%;
+      opacity: 0.17;
+    }
+
+    &::after {
+      bottom: 0;
+      width: 230px;
+      height: 100%;
+      opacity: 0.17;
+    }
+  }
+
+  .skew-pattern-left {
+    left: -20px;
+  }
+
+  .skew-pattern-right {
+    right: -20px;
+
+    &::before, &::after {
+      right: 0;
+    }
+  }
+}
+
+.support-request-wrapper {
+  padding: 2px;
+  margin: 20px;
+  margin-bottom: 0;
+  padding-top: 20px;
+
+  .support-request-alert-container {
+    background: var(--base-color);
+    box-shadow: 0px 2px 4px #EDF0F594;
+    border-radius: 2px;
+    display: flex;
+    justify-content: flex-start;
+
+    .banner-meesage {
+      paddin-top: 0;
+      padding-left: 54px;
+      display: flex;
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 24px;
+      color: #162f56;
+      opacity: 0.8;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(75.53deg, rgba(209, 45, 45, 0.24) 18.41%, rgba(209, 45, 45, 0) 71.84%);
+
+      .banner-icon {
+        margin-right: 16px;
+      }
+    }
+
+    .ticket-seperator {
+      margin-left: 48px;
+      margin-right: 24px;
+      height: auto;
+      width: 1px;
+      border: 1px solid #EDF0F5;
+      margin-bottom: 16px;
+      margin-top: 16px;
+      margin-right: 8px;
+    }
+
+    .before-due-date-text {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .ticket-wrapper {
+      width: 100%;
+      padding: 16px;
+
+      .ticket {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px;
+        box-shadow: 0px 2px 4px #edf0f594;
+        border-radius: 2px;
+        border: 1px solid #EDF0F5;
+        width: 100%;
+
+        .ticket-title {
+          font-weight: 700;
+          font-size: 14px;
+          line-height: 20px;
+          color: #162f56de;
+          margin-bottom: 6px;
+
+          .ticket-replies {
+            color: #1F890E;
+            font-size: 13px;
+            margin-left: 16px;
+          }
+        }
+
+        .ticket-description {
+          font-size: 12px;
+          max-width: 598px;
+          line-height: 18px;
+          color: #162f568a;
+        }
+
+        .ticket-body {
+          color: #162f568a;
+        }
+
+        .banner-reply-button {
+          text-align: center;
+        }
+      }
+
+      .moreTickets {
+        font-weight: 700;
+        font-size: 12px;
+        line-height: 18px;
+        display: flex;
+        align-items: center;
+        text-align: center;
+        text-transform: capitalize;
+        color: #2B83EA;
+        flex: none;
+        margin-top: 6px;
+        margin-left: 16px;
+      }
+    }
+  }
+}
+
+@media (max-width: 1020px) {
+  .support-request-alert-container {
+    flex-wrap: wrap;
+  }
+
+  .ticket-wrapper {
+    padding: 0;
+    padding-bottom: 16px;
+  }
+
+  .ticket-detail-holder {
+    width: 100%;
+  }
+
+  .moreTickets {
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+
+  .ticket {
+    flex-wrap: wrap;
+    border: none;
+    box-shadow: none;
+
+    .banner-reply-button {
+      margin-top: 16px;
+      text-align: left;
+    }
+  }
+
+  .ticket-seperator {
+    display: none;
+  }
+
+  .banner-meesage {
+    padding: 16px;
+
+    .banner-icon {
+      img {
+        height: 16px;
+      }
+
+      img.circle-support-alert {
+        width: 32px;
+        height: 32px;
+      }
+    }
+
+    .banner-message-text {
+      width: auto;
+    }
+  }
+}
+
+img.circle-support-alert {
+  width: 32px;
+  height: 32px;
+}

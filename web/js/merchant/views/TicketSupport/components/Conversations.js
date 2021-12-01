@@ -228,6 +228,31 @@ export default class Conversations extends React.Component {
         ) : null}
       </h3>
     );
+
+    const isTicketCreatedByAgent = this.state.ticket.custom_fields.cf_created_by === 'agent';
+
+    if (MESSAGE === 'waiting-for-customer') {
+      message = (
+        <h3 class="fsz-14">
+          This query is open and our team is waiting for your reply. <br />
+          <span>
+            Please reply before: <b>{responseFormatTime}</b>
+          </span>
+        </h3>
+      );
+    }
+
+    if (MESSAGE === 'reply-before-due') {
+      message = (
+        <h3 class="fsz-14">
+          This query is open and our team is waiting for your reply. <br />
+          <span class="text-danger">
+            Please reply before: <b>{responseFormatTime}</b>
+          </span>
+        </h3>
+      );
+    }
+
     if (is_escalated) {
       message = (
         <h3 class="fsz-14">
@@ -247,10 +272,6 @@ export default class Conversations extends React.Component {
           </b>
         </h3>
       );
-    }
-    if (MESSAGE === 'waiting-for-customer') {
-      message = <h3 class="fsz-14">This query is open and our team is waiting for your reply.</h3>;
-      popup = `Support agent is waiting for your reply`;
     }
 
     if (MESSAGE === 'Closed') {
@@ -364,19 +385,21 @@ export default class Conversations extends React.Component {
                           {(moment().diff(this.state.ticket?.fr_due_by, 'hours') > 0 ||
                             is_escalated) && (
                             <span>
-                              <button
-                                className={`btn btn-outline grievance-related-btn ${
-                                  is_escalated ? 'btn-warning' : ''
-                                } ${!can_be_escalated ? 'disabled-style' : ''}`}
-                                onClick={() => {
-                                  if (can_be_escalated) {
-                                    this.openGrievanceFlow(this.state.ticket);
-                                  }
-                                }}
-                              >
-                                <i className="i i-followup" />{' '}
-                                {is_escalated ? 'Requested follow-up' : 'Request follow-up'}
-                              </button>
+                              {!isTicketCreatedByAgent && (
+                                <button
+                                  className={`btn btn-outline grievance-related-btn ${
+                                    is_escalated ? 'btn-warning' : ''
+                                  } ${!can_be_escalated ? 'disabled-style' : ''}`}
+                                  onClick={() => {
+                                    if (can_be_escalated) {
+                                      this.openGrievanceFlow(this.state.ticket);
+                                    }
+                                  }}
+                                >
+                                  <i className="i i-followup" />{' '}
+                                  {is_escalated ? 'Requested follow-up' : 'Request follow-up'}
+                                </button>
+                              )}
                               {!can_be_escalated ? (
                                 <Popover align="bottom" theme="dark">
                                   <PopoverBody>
@@ -480,9 +503,9 @@ export default class Conversations extends React.Component {
               <div className="row" style={{ marginBottom: '20px' }}>
                 <div className="col-xs-12">
                   <span>
-                    <Link
-                      to="/ticket-support/tickets"
+                    <a
                       onClick={() => {
+                        this.props.history.goBack();
                         window.rzpAnalytics({
                           eventCategory: 'Ticket Dashboard',
                           eventAction: 'view all tickets clicked',
@@ -492,7 +515,7 @@ export default class Conversations extends React.Component {
                     >
                       <i className="i i-arrow-back" />{' '}
                       <span style={{ fontSize: '16px' }}>View All Tickets</span>
-                    </Link>
+                    </a>
                   </span>
                 </div>
               </div>
@@ -542,19 +565,21 @@ export default class Conversations extends React.Component {
                         </button>
 
                         <span>
-                          <button
-                            className={`btn btn-outline grievance-related-btn ${
-                              is_escalated ? 'btn-warning' : ''
-                            } ${!can_be_escalated ? 'disabled-style' : ''}`}
-                            onClick={() => {
-                              if (can_be_escalated) {
-                                this.openGrievanceFlow(this.state.ticket);
-                              }
-                            }}
-                          >
-                            <i className="i i-followup" />{' '}
-                            {is_escalated ? 'Requested follow-up' : 'Request follow-up'}
-                          </button>
+                          {!isTicketCreatedByAgent && (
+                            <button
+                              className={`btn btn-outline grievance-related-btn ${
+                                is_escalated ? 'btn-warning' : ''
+                              } ${!can_be_escalated ? 'disabled-style' : ''}`}
+                              onClick={() => {
+                                if (can_be_escalated) {
+                                  this.openGrievanceFlow(this.state.ticket);
+                                }
+                              }}
+                            >
+                              <i className="i i-followup" />{' '}
+                              {is_escalated ? 'Requested follow-up' : 'Request follow-up'}
+                            </button>
+                          )}
                           {!can_be_escalated ? (
                             <Popover align="bottom" theme="dark">
                               <PopoverBody>

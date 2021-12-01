@@ -7,6 +7,7 @@ const LOCALE_FETCH = 'CONFIG_LOCALE_FETCH';
 const LOCALE_UPDATE = 'CONFIG_LOCALE_UPDATE';
 const LOCALE_SAVE = 'CONFIG_LOCALE_SAVE';
 const FEATURES_FETCH = 'FEATURES_FETCH';
+const FETCH_TICKET_RAISED_BY_AGENTS = 'FETCH_TICKET_RAISED_BY_AGENTS';
 const MERCHANT_LOGO_UPLOADED = 'MERCHANT_LOGO_UPLOADED';
 const CONFIG_SAVE = 'CONFIG_SAVE';
 const CONFIG_SAVE_EMAIL = 'CONFIG_SAVE_EMAIL';
@@ -37,9 +38,14 @@ export const fetchConfigAjax = () => {
   return merchantFetch('account/config');
 };
 
-export const fetchSupportTicketsApiCall = (params) => {
+export const fetchSupportTicketsApiCall = (params, filter) => {
+  let url = TICKET_BASE_URL;
+  if (filter) {
+    const key = Object.keys(filter)[0];
+    url = `${url}?${key}=${filter[key]}`;
+  }
   return merchantFetch({
-    url: TICKET_BASE_URL,
+    url,
     mode: 'live',
   }).then((res) => {
     return {
@@ -260,10 +266,25 @@ export const fetchFeatures = (currentUserId) => {
   };
 };
 
-export const fetchSupportTickets = (params) => {
+export const fetchTicketsRaisedByAgents = () => {
+  return {
+    type: FETCH_TICKET_RAISED_BY_AGENTS,
+    payload: fetchSupportTicketsApiCall(
+      {
+        page: 1,
+        per_page: 20,
+      },
+      {
+        cf_created_by: 'agent',
+      },
+    ),
+  };
+};
+
+export const fetchSupportTickets = (params, filter) => {
   return {
     type: FETCH_SUPPORT_TICKETS,
-    payload: fetchSupportTicketsApiCall(params),
+    payload: fetchSupportTicketsApiCall(params, filter),
   };
 };
 
@@ -407,6 +428,13 @@ export const updateEmailSettings = (data) => {
 const initialState = {
   loading: true,
   error: null,
+  ticketsRaisedByAgents: {
+    loading: false,
+    data: {
+      1: [],
+    },
+    tickets: [],
+  },
   refund_pricing: {
     rules: [],
     custom_pricing: true,
@@ -597,6 +625,15 @@ const configReducer = (state = initialState, action) => {
       support_tickets.loading = true;
       return merge(state, {
         support_tickets,
+      });
+    }
+
+    case `${FETCH_TICKET_RAISED_BY_AGENTS}::SUCCESS`: {
+      const STATE = deepClone(state.ticketsRaisedByAgents);
+      STATE.data[action.payload.query.page] = action.payload.data;
+      STATE.loading = false;
+      return merge(state, {
+        ticketsRaisedByAgents: STATE,
       });
     }
 

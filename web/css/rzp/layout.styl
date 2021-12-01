@@ -69,7 +69,7 @@ body {
   margin-top: 51px;
   @media (max-width $screen-sm-min) {
     margin-left: 0;
-    // if we are in the mobile and test mode to support the test banner this css is added 
+    // if we are in the mobile and test mode to support the test banner this css is added
     &.test-mode{
       margin-top 106px
     }
@@ -84,7 +84,7 @@ body {
 .banner-container {
   .announcement-banner-container {
     padding-bottom: 0;
-  }  
+  }
 }
 
 .btn {
@@ -1312,6 +1312,87 @@ tr:hover .row-action.btn-group {
     top: 120px !important
   }
 }
+  .support-request-dropdown-trigger{
+    position: relative;
+    top: 5px;
+    padding: 6px 10px;
+    background: rgba(209, 45, 45, 0.1);
+    border-radius: 30px;
+    color: #D12D2D;
+      .caret{
+      color: #D12D2D;
+      }
+  }
+
+.support-dropdown {
+  width: 448px;
+  padding-bottom: 0;
+
+  .support-dropdwon-title {
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 24px;
+    color: #162f56de;
+    padding-left: 24px;
+    padding-top: 10px;
+  }
+
+  .support-tickets-wrapper {
+    max-height: 350px;
+    overflow: scroll;
+
+    .support-ticket {
+      margin-top: 16px;
+      padding: 16px;
+      background: #FFFFFF;
+      text-align: left;
+      border: 1px solid #E4E4E4;
+      border-radius: 3px;
+      margin: 24px;
+
+      .support-ticket-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 6px;
+        font-weight: bold;
+
+        .support-ticket-title {
+          color: #162f56de;
+          font-size: 14px;
+          line-height: 20px;
+        }
+      }
+
+      .support-ticket-description {
+        margin-bottom: 12px;
+        color: #162f56de;
+        line-height: 20px;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 20px;
+      }
+
+      .reply-button-wrapper {
+        display: flex;
+        align-items: center;
+        font-weight: 700;
+
+        > a {
+          font-size: 12px;
+          font-weight: 700;
+        }
+
+        .reply-before-date {
+          margin-left: 12px;
+          font-size: 13px;
+          font-weight: 400;
+        }
+      }
+    }
+  }
+}
+
+
 
 ul.switch-modes-menu.nav.nav-stacked {
 
@@ -1548,11 +1629,11 @@ ul.switch-modes-menu.nav.nav-stacked {
   margin-top: 16px;
 }
 
-.lottie-wrapper 
-   > div:first-child 
+.lottie-wrapper
+   > div:first-child
       display: flex
 
-li.offers-for-you 
+li.offers-for-you
   margin-left: 15px
 
   a
@@ -1560,7 +1641,7 @@ li.offers-for-you
     color: #2B83EA !important
     font-weight: 700 !important
 
-    .lottie-wrapper 
+    .lottie-wrapper
       position: absolute
       width: 23%
       top: 7px
@@ -1586,7 +1667,7 @@ li.offers-for-you
     }
   }
 
-   
+
 .transfers-onhold-datepicker div.DateInput {
   width: 100%;
 }
@@ -1700,7 +1781,7 @@ span.transfer-scheduled-text.text-warning span.label--primary {
 i.i-payment-button
   color: #FBE165
 
-// nps survey typeform 
+// nps survey typeform
 .css-166tz6a.e1o3ysfi1
   .css-pgt1zi.e1o3ysfi2
     width: calc(100vw - 700px);

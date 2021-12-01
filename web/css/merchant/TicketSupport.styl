@@ -65,6 +65,29 @@
 
     padding: 30px 20px;
 
+    .col-xs-12 {
+        padding: 0;
+    }
+
+    .ticket-support {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .btn-top-tab {
+        background: rgba(22, 47, 86, 0.02);
+        color: rgba(22, 47, 86, 0.74);
+        margin-right: 10px;
+        box-shadow: none;
+        border: rgba(22, 47, 86, 0.1);
+
+        &.active {
+            color: #2B83EA;
+            background: #E7F1FD;
+            border: 0;
+        }
+    }
+
     .grievance-related-btn {
         &.disabled-style {
             cursor: not-allowed;
@@ -107,6 +130,7 @@
     .message-owner {
         color: #162F56;
         display: flex;
+        padding-left: 0;
 
         &.row-container {
             display: flex;
@@ -208,6 +232,10 @@
     .message {
         .row {
             overflow: hidden;
+        }
+
+        .col-xs-2 {
+            padding-left: 0;
         }
 
         &.ticket-row-panel {
@@ -335,6 +363,10 @@
         &.revamped {
             border-bottom: 1px solid rgba(22, 47, 86, 0.1);
             border-radius: 3px;
+
+            .col-xs-12, .col-xs-10 {
+                padding: 0;
+            }
 
             .panel {
                 border-radius: 3px;
@@ -677,13 +709,23 @@
     margin-top: 12px;
 }
 
+.support-history-container {
+    @media screen and (max-width: $screen-xs-max) {
+        margin: 0;
+    }
+
+    margin: 0 100px;
+}
+
 .no-tickets-present-container, .failed-loading-tickets-container {
     width: 37%;
     margin: auto;
     margin-top: 100px;
+
     @media screen and (max-width: $screen-xs-max) {
-        width 100%;
+        width: 100%;
     }
+
     .refresh-again {
         display: block;
         margin: auto;
@@ -839,7 +881,7 @@
             }
 
             .user-details {
-                width: 78%;
+                width: 75%;
                 margin-top: 6px;
 
                 .user {

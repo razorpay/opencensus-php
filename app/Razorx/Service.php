@@ -68,6 +68,8 @@ class Service extends Base\Service
             'show_schedule_callback',
             'ticket_creation_flow_revamp',
             'ticket_creation_flow_revamp_dashboard',
+            'razorpay_chat_bot',
+            'mobile_signup_changes_active',
             'hide_call_slots_10_12_2',
             'website_self_serve',
             'settlement_ux_revamp_p2',
