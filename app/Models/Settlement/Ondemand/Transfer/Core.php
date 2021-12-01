@@ -93,7 +93,7 @@ class Core extends Base\Core
 
         $splitAmount = [];
 
-        $maxIMPSLimit = (new OndemandPayout\Core)->fetchIMPSLimit();
+        $maxIMPSLimit = OndemandPayout\Core::MAX_IMPS_AMOUNT;
 
         while($totalAmountRemaining > 0)
         {

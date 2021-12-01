@@ -312,7 +312,7 @@ class Core extends Base\Core
         {
             case FundTransfer\Mode::IMPS:
 
-                $maxIMPSAmount = $this->fetchIMPSLimit();
+                $maxIMPSAmount = self::MAX_IMPS_AMOUNT;
 
                 while($totalAmountRemaining > 0)
                 {
@@ -419,15 +419,5 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($settlementOndemandPayout);
         }
-    }
-
-    public function fetchIMPSLimit()
-    {
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::UPDATED_IMPS_ONDEMAND) === true)
-        {
-            return self::MAX_IMPS_AMOUNT;
-        }
-
-        return self::PREVIOUS_MAX_IMPS_AMOUNT;
     }
 }
