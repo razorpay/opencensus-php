@@ -21,6 +21,11 @@ class MerchantDetail extends Base
         return $merchantDetail;
     }
 
+    public function createAssociateMerchant(array $attributes = array())
+    {
+        return $this->createEntityInTestAndLive('merchant_detail', $attributes);
+    }
+
     public function createSane(array $attributes = [])
     {
         return parent::create($attributes);

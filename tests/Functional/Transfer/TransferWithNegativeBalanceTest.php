@@ -53,6 +53,15 @@ class TransferWithNegativeBalanceTest extends TestCase
         );
         $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
 
+        $merchantDetailAttributes =  [
+            'merchant_id'   => $account['id'],
+            'contact_email' => $account['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
+
         $payment = $this->doAuthAndCapturePayment();
 
         $transfers[0] = [
@@ -103,6 +112,15 @@ class TransferWithNegativeBalanceTest extends TestCase
         );
         $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
 
+        $merchantDetailAttributes =  [
+            'merchant_id'   => $account['id'],
+            'contact_email' => $account['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
+
         $payment = $this->doAuthAndCapturePayment();
 
         $transfers[0] = [
@@ -151,6 +169,15 @@ class TransferWithNegativeBalanceTest extends TestCase
 
         $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
 
+        $merchantDetailAttributes =  [
+            'merchant_id'   => $account['id'],
+            'contact_email' => $account['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
+
         $payment = $this->doAuthAndCapturePayment();
 
         $transfers[0] = [
@@ -194,6 +221,15 @@ class TransferWithNegativeBalanceTest extends TestCase
 
         $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
 
+        $merchantDetailAttributes =  [
+            'merchant_id'   => $account['id'],
+            'contact_email' => $account['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
+
         $payment = $this->doAuthAndCapturePayment();
 
         $transfers[0] = [
@@ -233,6 +269,15 @@ class TransferWithNegativeBalanceTest extends TestCase
 
         $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
 
+        $merchantDetailAttributes =  [
+            'merchant_id'   => $account['id'],
+            'contact_email' => $account['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
+
         $payment = $this->doAuthAndCapturePayment();
 
         $transfers[0] = [
@@ -267,6 +312,15 @@ class TransferWithNegativeBalanceTest extends TestCase
         $this->fixtures->merchant->editBalance(1000);
 
         $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
+
+        $merchantDetailAttributes =  [
+            'merchant_id'   => $account['id'],
+            'contact_email' => $account['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
 
         $payment = $this->doAuthAndCapturePayment();
 
@@ -314,6 +368,15 @@ class TransferWithNegativeBalanceTest extends TestCase
         $this->fixtures->merchant->editBalance(1000);
 
         $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
+
+        $merchantDetailAttributes =  [
+            'merchant_id'   => $account['id'],
+            'contact_email' => $account['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
 
         $payment = $this->doAuthAndCapturePayment();
 

@@ -2269,6 +2269,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSACTION_IDS_DISPATCH_SUMMARY                      = 'TRANSACTION_IDS_DISPATCH_SUMMARY';
     const GENERATING_TRANSFERS_REPORT                           = 'GENERATING_TRANSFERS_REPORT';
     const ROUTE_TRANSFER_STATE_RAZORX_REQUEST                   = 'ROUTE_TRANSFER_STATE_RAZORX_REQUEST';
+    const VALIDATE_LINKED_ACCOUNT_ACTIVATION_STATUS             = 'VALIDATE_LINKED_ACCOUNT_ACTIVATION_STATUS';
 
     // Trace codes for transfers state machine data backfill
     const TRANSFER_BACKFILL_JOB_ENQUEUED                        = 'TRANSFER_BACKFILL_JOB_ENQUEUED';

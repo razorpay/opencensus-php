@@ -678,6 +678,8 @@ final class Constants
 
     const FD_SUB_CATEGORY_FUNDS_ON_HOLD      = 'Funds on hold';
 
+    const LINKED_ACCOUNT_PENNY_TESTING = 'linked_account_penny_testing';
+
     const CA_STATUS_MAP = [
         'created'       => 'Request received',
         'picked'        => 'Process started',

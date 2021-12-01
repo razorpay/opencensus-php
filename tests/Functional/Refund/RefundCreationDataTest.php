@@ -495,6 +495,15 @@ class RefundCreationDataTest extends TestCase
 
         $account = $this->fixtures->create('merchant:marketplace_account');
 
+        $merchantDetailAttributes =  [
+            'merchant_id'   => $account['id'],
+            'contact_email' => $account['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
+
         $transfers[0] = [
             'account' => 'acc_' . $account['id'],
             'amount'  => 1000,
@@ -548,6 +557,15 @@ class RefundCreationDataTest extends TestCase
 
         $account = $this->fixtures->create('merchant:marketplace_account');
 
+        $merchantDetailAttributes =  [
+            'merchant_id'   => $account['id'],
+            'contact_email' => $account['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
+
         $transfers[0] = [
             'account' => 'acc_' . $account['id'],
             'amount'  => 1000,
@@ -600,6 +618,15 @@ class RefundCreationDataTest extends TestCase
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $account = $this->fixtures->create('merchant:marketplace_account');
+
+        $merchantDetailAttributes =  [
+            'merchant_id'   => $account['id'],
+            'contact_email' => $account['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
 
         $transfers[0] = [
             'account' => 'acc_' . $account['id'],
@@ -659,6 +686,15 @@ class RefundCreationDataTest extends TestCase
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $account = $this->fixtures->create('merchant:marketplace_account');
+
+        $merchantDetailAttributes =  [
+            'merchant_id'   => $account['id'],
+            'contact_email' => $account['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
 
         $transfers[0] = [
             'account' => 'acc_' . $account['id'],

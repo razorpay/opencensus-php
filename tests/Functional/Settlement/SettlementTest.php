@@ -389,6 +389,15 @@ class SettlementTest extends TestCase
 
         $this->fixtures->merchant->activate('10000000000002');
 
+        $merchantDetailAttributes =  [
+            'merchant_id'   => $account['id'],
+            'contact_email' => $account['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
+
         $dt = Carbon::create(2018, 8, 14, 6, 1, 0, Timezone::IST);
 
         Carbon::setTestNow($dt);

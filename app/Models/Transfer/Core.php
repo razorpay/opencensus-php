@@ -69,6 +69,8 @@ class Core extends Base\Core
 
         $input = $inputArray[0];
 
+        $this->validateLinkedAccountActivationStatusAndBankVerificationStatus($input, $merchant);
+
         $validator->validateInput('create', $input);
 
         $validator->validateTransferMaxAmount($input[Entity::AMOUNT], $merchant);
@@ -117,6 +119,11 @@ class Core extends Base\Core
             $orderTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::ORDER, $payment->getApiOrderId(), $this->merchant);
         }
 
+        foreach ($input as $transfer)
+        {
+            $this->validateLinkedAccountActivationStatusAndBankVerificationStatus($transfer, $merchant);
+        }
+
         (new Validator)->validateTransfers($payment, $input, $orderTransfers);
 
         $totalTransferAmount = 0;
@@ -154,6 +161,31 @@ class Core extends Base\Core
         return $transfers;
     }
 
+    public function validateLinkedAccountActivationStatusAndBankVerificationStatus($input, $merchant)
+    {
+        $merchantDetail = null;
+
+        if (isset($input[ToType::ACCOUNT]) === true and
+            isset($input[ToType::BALANCE]) === false and
+            isset($input[ToType::CUSTOMER]) === false)
+        {
+            $this->trace->info(TraceCode::VALIDATE_LINKED_ACCOUNT_ACTIVATION_STATUS,
+            [
+               'transfer_input'     => $input,
+               'parent_merchant_id' => $merchant->getId()
+            ]);
+            $accountId = $input[ToType::ACCOUNT];
+
+            $linkedAccount = $this->repo
+                                  ->account
+                                  ->findByPublicIdAndMerchant($accountId, $merchant);
+
+            $validator = new Validator;
+
+            $validator->validateMerchantActivationStatusAndBankVerificationStatus($linkedAccount->merchantDetail);
+        }
+    }
+
     public function createForOrder(Order\Entity $order, array $transferInput)
     {
         $transfers = new Base\Collection();
@@ -163,6 +195,8 @@ class Core extends Base\Core
             $input[Entity::STATUS] = Status::CREATED;
 
             $input[Entity::ORIGIN] = Origin::ORDER_AUTOMATION;
+
+            $this->validateLinkedAccountActivationStatusAndBankVerificationStatus($input, $this->merchant);
 
             if (isset($input[Entity::ACCOUNT_CODE]) === true)
             {
@@ -192,7 +226,6 @@ class Core extends Base\Core
                 // extracts linked account notes and validates.
                 $this->getLinkedAccountNotes($input);
             }
-
             $transfer = Tracer::inSpan(['name' => 'order.transfer.create.build'], function() use ($order, $to, $input)
             {
                 return $this->buildTransferEntity($order, $to, $input, $this->merchant);

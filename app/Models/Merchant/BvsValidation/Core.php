@@ -8,9 +8,11 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Service;
 use RZP\Exception\LogicException;
 use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\BankAccount\Core as BankAccountCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 use RZP\Models\Merchant\BvsValidation\Entity as ValidationEntity;
@@ -26,7 +28,7 @@ class Core extends Base\Core
 
     const BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT_TTL_IN_SEC = 10800;
 
-    const BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_TTL_IN_SEC  = 36000; 
+    const BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_TTL_IN_SEC  = 36000;
 
     const DEFAULT_CALLBACK_HANDLER_FUNCTION = 'updateValidationStatusForMerchant';
 
@@ -159,6 +161,22 @@ class Core extends Base\Core
         $statusUpdater->updateValidationStatus();
 
         $this->repo->saveOrFail($merchantDetails);
+
+        $this->releaseLinkedAccountHoldFundsIfApplicable($merchant, $merchantDetails);
+
+    }
+
+    protected function releaseLinkedAccountHoldFundsIfApplicable($merchant, $merchantDetails)
+    {
+        if( $merchantDetails->isBankDetailStatusVerified() === true and
+            $merchant->isLinkedAccount() === true and
+            $merchant->getHoldFunds() === true and
+            $merchant->getHoldFundsReason() === Merchant\Constants::LINKED_ACCOUNT_PENNY_TESTING)
+        {
+            $releaseFundsInput[MerchantEntity::HOLD_FUNDS] = 0;
+
+            (new Service)->edit($merchant->getMerchantId(), $releaseFundsInput);
+        }
     }
 
     protected function UpdateValidationStatusForBankingAccount(string $merchantId, Entity $validation)

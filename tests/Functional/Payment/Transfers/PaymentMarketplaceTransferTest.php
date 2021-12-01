@@ -30,7 +30,16 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $this->payment = $this->doAuthAndCapturePayment();
 
-        $this->fixtures->create('merchant:marketplace_account');
+        $account = $this->fixtures->create('merchant:marketplace_account');
+
+        $merchantDetailAttributes =  [
+            'merchant_id'   => $account['id'],
+            'contact_email' => $account['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
 
         $this->ba->privateAuth();
     }
@@ -172,7 +181,16 @@ class PaymentMarketplaceTransferTest extends TestCase
     public function testFullTransfer()
     {
         $this->fixtures->merchant->addFeatures(['marketplace']);
-        $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
+        $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
+
+        $merchantDetailAttributes =  [
+            'merchant_id'   => $account['id'],
+            'contact_email' => $account['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
 
         $this->assertEquals(0, $this->getAccountBalance('10000000000001'));
         $this->assertEquals(0, $this->getAccountBalance('10000000000002'));

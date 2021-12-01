@@ -11,6 +11,9 @@ use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Balance\BalanceConfig;
+use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Merchant\Detail\Status as DetailStatus;
+use RZP\Models\Merchant\BvsValidation\Constants as BvsConstants;
 
 class Validator extends Base\Validator
 {
@@ -384,6 +387,35 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Exactly one of account, account_code & customer to be passed.'
+            );
+        }
+    }
+
+    public function validateMerchantActivationStatusAndBankVerificationStatus(Merchant\Detail\Entity $merchantDetail)
+    {
+        if($this->isLiveMode() === false)
+        {
+            return;
+        }
+        if ($merchantDetail->merchant->isFeatureEnabledOnParentMerchant(
+                FeatureConstants::ROUTE_LA_PENNY_TESTING) === false)
+        {
+            return;
+        }
+        $bankDetailsVerificationStatus = $merchantDetail->getBankDetailsVerificationStatus();
+
+        if ($bankDetailsVerificationStatus === BvsConstants::INCORRECT_DETAILS or
+            $bankDetailsVerificationStatus === BvsConstants::NOT_MATCHED or
+            $bankDetailsVerificationStatus === BvsConstants::FAILED)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Incorrect bank account details for this linked account'
+            );
+        }
+        elseif($bankDetailsVerificationStatus !== BvsConstants::VERIFIED)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Bank account verification is pending for this linked account.'
             );
         }
     }

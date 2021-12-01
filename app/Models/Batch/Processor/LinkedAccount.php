@@ -9,6 +9,7 @@ use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
 use RZP\Models\Merchant\Detail as MerchantDetail;
 use RZP\Models\Batch\Helpers\LinkedAccount as Helper;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 class LinkedAccount extends Base
 {
@@ -27,6 +28,11 @@ class LinkedAccount extends Base
      */
     protected $merchantDetailCore;
 
+    /**
+     * @var Merchant\Service
+     */
+    protected $merchantService;
+
     public function __construct(Entity $batch)
     {
         parent::__construct($batch);
@@ -34,6 +40,7 @@ class LinkedAccount extends Base
         $this->merchantCore       = new Merchant\Core;
         $this->bankAccountCore    = new BankAccount\Core;
         $this->merchantDetailCore = new MerchantDetail\Core;
+        $this->merchantService    = new Merchant\Service;
     }
 
     protected function processEntry(array & $entry)
@@ -78,8 +85,34 @@ class LinkedAccount extends Base
             $overriddenInput = Helper::getBankAccountInput($entry);
             $input = array_merge($buildInput, $overriddenInput);
 
-            $this->bankAccountCore->createOrChangeBankAccount($input, $account);
+            $this->repo->transactionOnLiveAndTest(function () use($input, $account, $accountId, &$status)
+            {
+                $this->bankAccountCore->createOrChangeBankAccount($input, $account);
 
+                //penny testing changes when bank details are updated and feature flag enabled for parent merchant.
+                if ($account->isFeatureEnabledOnParentMerchant(FeatureConstants::ROUTE_LA_PENNY_TESTING) === true)
+                {
+                    // putting funds on hold for this linked account until the new bank account is verified.
+                    $account->setHoldFundsReason(Merchant\Constants::LINKED_ACCOUNT_PENNY_TESTING);
+
+                    $this->repo->saveOrFail($account);
+
+                    $onHoldFundsInput[Merchant\Entity::HOLD_FUNDS] = true;
+
+                    Merchant\Account\Entity::verifyIdAndStripSign($accountId);
+
+                    $this->merchantService->edit($accountId, $onHoldFundsInput);
+                }
+            });
+
+            if ($account->isFeatureEnabledOnParentMerchant(FeatureConstants::ROUTE_LA_PENNY_TESTING) === true)
+            {
+                $this->merchantDetailCore->publicAttemptPennyTesting($account->merchantDetail, $account, true);
+
+                $this->merchantDetailCore->publicTriggerValidationRequests($account, $account->merchantDetail);
+
+                $this->repo->saveOrFail($account->merchantDetail);
+            }
             $status = Status::SUCCESS;
         }
         else

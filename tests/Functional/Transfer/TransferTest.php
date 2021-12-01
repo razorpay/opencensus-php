@@ -39,6 +39,15 @@ class TransferTest extends TestCase
 
         $account = $this->fixtures->create('merchant:marketplace_account');
 
+        $merchantDetailAttributes =  [
+            'merchant_id'   => $account['id'],
+            'contact_email' => $account['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
+
         $this->linkedAccountId = $account['id'];
     }
 
@@ -1120,6 +1129,15 @@ class TransferTest extends TestCase
         $this->fixtures->merchant->addFeatures([FeatureConstants::ALLOW_REVERSALS_FROM_LA], $this->linkedAccountId);
 
         $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
+
+        $merchantDetailAttributes =  [
+            'merchant_id'   => $account['id'],
+            'contact_email' => $account['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
 
         $payment = $this->doAuthAndCapturePayment();
 

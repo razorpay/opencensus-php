@@ -77,7 +77,8 @@ class Factory
 
         // For Linked accounts, we only validate Bank Account details with BVS.
         // Other validations are not required.
-        if($merchant->isLinkedAccount() === true){
+        if ($merchant->isLinkedAccount() === true)
+        {
             return [
                 new BankAccount($merchant, $merchantDetails),
             ];

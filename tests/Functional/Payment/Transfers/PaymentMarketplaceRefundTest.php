@@ -24,8 +24,27 @@ class PaymentMarketplaceRefundTest extends TestCase
 
         $this->payment = $this->doAuthAndCapturePayment();
 
-        $this->fixtures->create('merchant:marketplace_account');
-        $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
+        $account1 = $this->fixtures->create('merchant:marketplace_account');
+
+        $attributes1 =  [
+            'merchant_id'   => $account1['id'],
+            'contact_email' => $account1['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $attributes1);
+
+        $account2 = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
+
+        $attributes2 =  [
+            'merchant_id'   => $account2['id'],
+            'contact_email' => $account2['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $attributes2);
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 

@@ -3075,6 +3075,10 @@ class Core extends Base\Core
         return $stakeholder->getAadhaarEsignStatus() === 'verified';
     }
 
+    public function publicAttemptPennyTesting(Entity $merchantDetails, Merchant\Entity $merchant, $bankDetailsUpdated=false)
+    {
+        $this->attemptPennyTesting($merchantDetails, $merchant, $bankDetailsUpdated);
+    }
     /**
      * @param Entity $merchantDetails
      * @param Merchant\Entity $merchant
@@ -4782,6 +4786,11 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    public function publicTriggerValidationRequests(Merchant\Entity $merchant, Entity $merchantDetails, string $activationFormMilestone = '')
+    {
+        $this->triggerValidationRequests($merchant, $merchantDetails, $activationFormMilestone);
     }
 
     /**

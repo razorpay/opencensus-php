@@ -29,6 +29,15 @@ class LinkedAccountReversalTest extends TestCase
 
         $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
 
+        $merchantDetailAttributes =  [
+            'merchant_id'   => $account['id'],
+            'contact_email' => $account['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
+
         $this->linkedAccountId = $account['id'];
     }
 
