@@ -48,6 +48,7 @@ const ActivationProgress: React.FC = () => {
         objectName: `${isL1Submitted(data.activation_form_milestone) ? 'L2' : 'L1'} Form`,
         actionName: 'Loaded',
         screen: 'onboarding',
+        toCleverTap: true,
       });
     }
   }, [trackEvents]);

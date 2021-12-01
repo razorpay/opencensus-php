@@ -130,6 +130,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       properties: {
         tab: startCase(activeTabId),
       },
+      toCleverTap: true,
     });
   }, [activeTabId]);
 
@@ -200,6 +201,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       objectName: 'L1 Form',
       actionName: 'Submitted',
       screen: 'home page',
+      toCleverTap: true,
     });
     postData({ activation_form_milestone: 'L1' })
       .then((res) => {
@@ -211,6 +213,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
             properties: {
               status: 'sucess',
             },
+            toCleverTap: true,
           });
 
           const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
@@ -241,6 +244,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
             status: 'failure',
             errorMessage: e,
           },
+          toCleverTap: true,
         });
       });
   };
@@ -250,6 +254,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       objectName: 'L2 Form',
       actionName: 'Submitted',
       screen: 'home page',
+      toCleverTap: true,
     });
     const payload = isInstantActivationEnabled
       ? { activation_form_milestone: 'L2' }
@@ -264,6 +269,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
             properties: {
               Status: 'sucess',
             },
+            toCleverTap: true,
           });
 
           const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
@@ -289,6 +295,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
             status: 'failure',
             errorMessage: e?.errors,
           },
+          toCleverTap: true,
         });
       });
   };
@@ -319,6 +326,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       properties: {
         tab: startCase(activeTabId),
       },
+      toCleverTap: true,
     });
 
     switch (activeTabId) {
@@ -675,6 +683,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
                   properties: {
                     tab: startCase(tabId),
                   },
+                  toCleverTap: true,
                 });
               }
             }}

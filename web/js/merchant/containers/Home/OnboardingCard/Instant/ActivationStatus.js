@@ -103,6 +103,7 @@ class ActivationCard extends Component {
                       ctaLabel: 'Submit KYC',
                       ctaLocation: 'onboarding card',
                     },
+                    toCleverTap: true,
                   });
                 }}
               >
@@ -170,6 +171,7 @@ class ActivationCard extends Component {
                       ctaLabel: 'Submit KYC',
                       ctaLocation: 'onboarding card',
                     },
+                    toCleverTap: true,
                   });
                 }}
               >

@@ -44,6 +44,7 @@ const WelcomeModal = ({
         ctaLabel: 'Activate your account',
         ctaLocation: 'welcome modal',
       },
+      toCleverTap: true,
     });
     tracking.trackEvent(
       window.rzpQ.onbr().initiated('act.form_fill', {

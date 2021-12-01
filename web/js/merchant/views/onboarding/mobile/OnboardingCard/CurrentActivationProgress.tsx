@@ -32,6 +32,7 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; esc
         ctaLabel: 'Submit KYC',
         ctaLocation: 'Obnoarding banner',
       },
+      toCleverTap: true,
     });
 
     trackEvents({

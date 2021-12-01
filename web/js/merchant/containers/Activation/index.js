@@ -251,6 +251,7 @@ export default class ActivationContainer extends Component {
       objectName,
       actionName,
       screen: 'home page',
+      toCleverTap: true,
     });
   };
 

@@ -254,6 +254,7 @@ export default class ActivationContainer extends React.Component {
         objectName,
         actionName: 'Submitted',
         screen: 'home page',
+        toCleverTap: true,
       });
 
       return merchantFetch({

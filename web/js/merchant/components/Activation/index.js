@@ -422,6 +422,7 @@ export default class ActivationWizard extends React.Component {
         properties: {
           tab: mainFormTabs[this.state.activeTab],
         },
+        toCleverTap: true,
       });
     }
 
@@ -460,6 +461,7 @@ export default class ActivationWizard extends React.Component {
       properties: {
         tab: mainFormTabs[this.state.activeTab],
       },
+      toCleverTap: true,
     });
   }
 
@@ -612,6 +614,7 @@ export default class ActivationWizard extends React.Component {
       properties: {
         tab: mainFormTabs[currenActiveTab],
       },
+      toCleverTap: true,
     });
 
     const tracker = () =>
@@ -669,6 +672,7 @@ export default class ActivationWizard extends React.Component {
       properties: {
         tab: mainFormTabs[tabId],
       },
+      toCleverTap: true,
     });
 
     const tracker = () =>

@@ -81,6 +81,7 @@ export const analyticsTrack = ({
   activationType = 'kyc',
   user,
   isLJReqiuired = true,
+  toCleverTap = false,
 }) => {
   if (!objectName) {
     throw new Error('[analytics]: objectName cannot be empty');
@@ -112,9 +113,17 @@ export const analyticsTrack = ({
   const dataLakeEventName = `${activationType}.${actionName.split(' ').join('_')}`;
   const commonProperties = getCommonProperties({ screen, properties, user });
   if (window.analytics && window.analytics.track) {
-    window.analytics.track(eventName, {
-      ...commonProperties,
-    });
+    window.analytics.track(
+      eventName,
+      {
+        ...commonProperties,
+      },
+      {
+        integrations: {
+          CleverTap: toCleverTap,
+        },
+      },
+    );
   }
   if (window.rzpQ && window.rzpQ.push && isLJReqiuired) {
     switch (eventAction) {
