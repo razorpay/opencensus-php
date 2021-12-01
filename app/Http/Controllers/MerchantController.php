@@ -2299,6 +2299,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postAppsflyerAttributionDetails()
+    {
+        $input = Request::all();
+
+        $this->service(E::MERCHANT_DETAIL)->postAppsflyerAttributionDetails($input);
+
+        return ApiResponse::json([]);
+    }
+
     public function postMerchantCheckoutDetail()
     {
         $input = Request::all();

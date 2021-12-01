@@ -23,6 +23,7 @@ class DedupeTest extends OAuthTestCase
             ->setMethods(['getMerchantRiskScores'])
             ->getMock();
 
+        
         $mockMR->expects($this->any())
             ->method('getMerchantRiskScores')
             ->willReturn([

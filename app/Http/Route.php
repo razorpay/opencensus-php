@@ -647,6 +647,7 @@ class Route
         'merchant_aov_config'                      => ['get',      'merchant/aov-config',                            'MerchantController@getAovConfig'                                   ],
         'merchant_tnc_details'                     => ['get',      'merchant/tnc/{id}',                              'MerchantController@getMerchantTnc'                                 ],
         'merchant_tnc_save'                        => ['post',     'merchant/tnc',                                   'MerchantController@postMerchantTnc'                                ],
+        'appsflyer_attribution_details'            => ['post',     'appsflyer/attribution-details',                  'MerchantController@postAppsflyerAttributionDetails'],
         'merchant_checkout_details_save'           => ['post',     'merchant/checkout_details',                      'MerchantController@postMerchantCheckoutDetail'                     ],
         'merchant_checkout_details'                => ['get',      'merchant/checkout_details',                      'MerchantController@getMerchantCheckoutDetail'                      ],
         //merchant website details related routes
@@ -7392,6 +7393,7 @@ class Route
         'salesforce_event_website',
         'salesforce_event_website_cors',
 
+        'appsflyer_attribution_details',
         'merchant_tnc_details',
         'partner_kyc_approve_reject',
         'partner_kyc_approve_reject_cors',

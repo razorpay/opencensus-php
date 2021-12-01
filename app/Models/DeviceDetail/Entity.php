@@ -42,6 +42,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::APPSFLYER_ID);
     }
 
+    public function getUserId()
+    {
+        return $this->getAttribute(self::USER_ID);
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     public function getSignupSource()
     {
         return $this->getAttribute(self::SIGNUP_SOURCE);

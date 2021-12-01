@@ -1499,6 +1499,60 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function postAppsflyerAttributionDetails($input)
+    {
+        $this->trace->info(TraceCode::APPSFLYER_ATTRIBUTION_DETAILS, $input);
+
+        $eventName = $input['event_name'] ?? '';
+
+        if(empty($eventName) or $eventName !== 'install')
+        {
+            return;
+        }
+
+        $appsflyerId = $input['appsflyer_id'] ?? '';
+
+        if(empty($appsflyerId) === true)
+        {
+            $this->trace->info(TraceCode::APPSFLYER_ATTRIBUTION_DETAILS_ERROR, [
+                'data'  => $input,
+                'error' => 'missing appsflyer id'
+            ]);
+
+            return;
+        }
+
+        $userDeviceDetails = $this->repo->user_device_detail->fetchByAppsflyerId($appsflyerId);
+
+        if(empty($userDeviceDetails) === true)
+        {
+            $this->trace->info(TraceCode::APPSFLYER_ATTRIBUTION_DETAILS_ERROR, [
+                'data'  => $input,
+                'error' => 'missing user device details'
+            ]);
+
+            return;
+        }
+
+        $this->app['rzp.mode'] = Mode::LIVE;
+        $this->core()->setModeAndDefaultConnection(Mode::LIVE);
+
+        $merchantId = $userDeviceDetails->getMerchantId();
+
+        $segmentProperties = [];
+
+        foreach ($input as $key => $value)
+        {
+            $segmentProperties["app_" . $key] = $value;
+        }
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties);
+
+        $this->app['segment-analytics']->buildRequestAndSend(true);
+    }
+
     public function updateMerchantFraudType($input)
     {
         $merchantId = $input['merchant_id'];

@@ -23,6 +23,13 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function fetchByAppsflyerId(string $appsflyerId)
+    {
+        return $this->newQuery()
+            ->where(Entity::APPSFLYER_ID, '=', $appsflyerId)
+            ->first();
+    }
+
     public function fetchByMerchantIdAndUserRole(string $merchantId, $role = Role::OWNER)
     {
         $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
