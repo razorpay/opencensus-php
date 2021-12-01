@@ -426,7 +426,7 @@ class Service
      * @param  array $response
      * @return array
      */
-    protected function processVerifyResponse(array $response)
+    protected function processVerifyResponse(array $response): array
     {
         $verify = new Verify($this->gateway, []);
 
@@ -446,6 +446,18 @@ class Service
         if ($verify->gatewaySuccess === true)
         {
             $payment = $response[Response::DATA][Response::DATA][Entity::PAYMENT];
+
+            $amountAuthorized = $payment[Payment\Entity::AMOUNT_AUTHORIZED];
+            $currecy = $payment[Payment\Entity::CURRENCY];
+
+            if ((is_string($currecy) !== true) or
+                (is_integer($amountAuthorized) !== true))
+            {
+                throw new Exception\LogicException(
+                    'currecy and amount authorized is mandatory and should be of correct type',
+                    null,
+                    ['payment' => $payment]);
+            }
 
             $verify->setAmountMismatch(
                 $payment[Payment\Entity::AMOUNT_AUTHORIZED] !== $this->input[Entity::PAYMENT][Payment\Entity::AMOUNT]
@@ -503,7 +515,16 @@ class Service
                 $this->input[Entity::PAYMENT]);
         }
 
-        return $this->getAuthorizeFailedResponse($verify, $response);
+        if (($verify->apiSuccess === false) and
+            ($verify->gatewaySuccess === true))
+        {
+            return $this->getAuthorizeFailedResponse($verify, $response);
+        }
+
+        throw new Exception\LogicException(
+            'Should not have reached here',
+            null,
+            ['payment' => $this->input['payment']]);
     }
 
     /**
@@ -517,7 +538,7 @@ class Service
             ($verify->throwExceptionOnMismatch))
         {
             throw new Exception\RuntimeException(
-                'Payment amount verification failed.',
+                'Payment verification failed due to amount mismatch.',
                 [
                     'payment_id' => $this->input[Entity::PAYMENT][Payment\Entity::ID],
                     'gateway'    => $this->gateway
@@ -537,13 +558,12 @@ class Service
      * sets gateway status in verify object
      *
      * @param  Verify $verify
-     * @return array
      */
     protected function setGatewaySuccess(Verify $verify)
     {
         $body = $verify->verifyResponseBody;
 
-        $isSuccess = $body[Response::DATA]['success'];
+        $isSuccess = $body[Response::DATA]['success'] ?? false;
 
         $verify->gatewaySuccess  = $isSuccess;
     }
@@ -552,7 +572,6 @@ class Service
      * sets api payment status in verify object
      *
      * @param  Verify $verify
-     * @return array
      */
     protected function setApiSuccess(Verify $verify)
     {
@@ -574,44 +593,24 @@ class Service
      * @return array
      * @throws Exception\LogicException
      */
-    protected function getAuthorizeFailedResponse(Verify $verify, array $response)
+    protected function getAuthorizeFailedResponse(Verify $verify, array $response): array
     {
         $returnResponse = [];
 
-        if (($verify->apiSuccess === false) and
-            ($verify->gatewaySuccess === true))
+        $data = $response[Response::DATA][Response::DATA];
+
+        $acquirer[Payment\Entity::VPA]  = $data[Entity::UPI][Base\Entity::NPCI_REFERENCE_ID];
+        $acquirer[Payment\Entity::REFERENCE16] = $data[Entity::UPI][Base\Entity::NPCI_REFERENCE_ID];
+
+        $returnResponse['acquirer'] = $acquirer;
+
+        if ($verify->amountMismatch === true)
         {
-            $data = $response[Response::DATA][Response::DATA];
-
-            $acquirer[Payment\Entity::VPA]  = $data[Entity::UPI][Base\Entity::NPCI_REFERENCE_ID];
-            $acquirer[Payment\Entity::REFERENCE16] = $data[Entity::UPI][Base\Entity::NPCI_REFERENCE_ID];
-
-            $returnResponse['acquirer'] = $acquirer;
-
-            if ($verify->amountMismatch === true)
-            {
-                if ((is_string($verify->currency) === true) and
-                    (is_integer($verify->amountAuthorized) === true))
-                {
-                    $returnResponse[Payment\Entity::CURRENCY]             = $verify->currency;
-                    $returnResponse[Payment\Entity::AMOUNT_AUTHORIZED]    = $verify->amountAuthorized;
-                }
-                else
-                {
-                    throw new Exception\LogicException(
-                        'For gateways with amountMismatch, currency and amountAuthorized are mandatory',
-                        null,
-                        ['payment' => $this->input['payment']]);
-                }
-            }
-
-            return $returnResponse;
+            $returnResponse[Payment\Entity::CURRENCY]             = $verify->currency;
+            $returnResponse[Payment\Entity::AMOUNT_AUTHORIZED]    = $verify->amountAuthorized;
         }
 
-        throw new Exception\LogicException(
-            'Should not have reached here',
-            null,
-            ['payment' => $this->input['payment']]);
+        return $returnResponse;
     }
 
     /**

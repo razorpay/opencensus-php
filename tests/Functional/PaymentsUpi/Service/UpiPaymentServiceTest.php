@@ -303,7 +303,7 @@ class UpiPaymentServiceTest extends TestCase
      * Test Successful Collect Payment with pre-process through UPS
      * @return void
      */
-    public function testCollectPaymentSuccess()
+    public function testCollectPaymentSuccess($description = 'create_collect_success')
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                     ->setConstructorArgs([$this->app])
@@ -325,7 +325,7 @@ class UpiPaymentServiceTest extends TestCase
             })
         );
 
-        $this->testCollectPaymentCreateSuccess();
+        $this->testCollectPaymentCreateSuccess($description);
 
         $payment = $this->getDbLastpayment();
 
@@ -511,6 +511,25 @@ class UpiPaymentServiceTest extends TestCase
         $payment = $this->verifyPayment($payment->getPublicId());
 
         $this->assertSame($payment['payment']['verified'], 1);
+    }
+
+    /**
+     * Test verify amount mismatch
+     *
+     * @return void
+     */
+    public function testVerifyAmountMisMatch()
+    {
+        $this->testCollectPaymentSuccess('verify_amount_mismatch');
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertSame(Status::AUTHORIZED, $payment->getStatus());
+
+        $this->makeRequestAndCatchException(function() use ($payment)
+        {
+            $this->verifyPayment($payment->getPublicId());
+        }, Exception\RuntimeException::class, 'Payment verification failed due to amount mismatch.');
     }
 
     /**

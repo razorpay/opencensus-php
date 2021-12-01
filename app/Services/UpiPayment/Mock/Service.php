@@ -54,6 +54,7 @@ class Service extends UpiPaymentService
         switch ($description)
         {
             case 'create_collect_success':
+            case 'verify_amount_mismatch':
                 $response['data'] = [
                     'data' => [
                         'vpa' => 'razorpay@airtel'
@@ -227,6 +228,11 @@ class Service extends UpiPaymentService
                 'gateway_merchant_id' => 'MER0000000548542'
             ],
         ];
+
+        if ($data['payment']['description'] === 'verify_amount_mismatch')
+        {
+            $responseData['data']['payment']['amount_authorized'] = $data['payment']['amount'] + 100;
+        }
 
         $responseData['success'] = true;
 
