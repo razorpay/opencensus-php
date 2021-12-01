@@ -555,6 +555,9 @@ class Route
         'fts_channel_notification'                          => ['post',     'fts/channel/notify',                                               'FTSController@channelNotify'                                       ],
         'fts_account_balance_alert'                         => ['post',     'fts/account/balance',                                              'FTSController@lowBalanceAlert'                                     ],
         'fts_dashboard_fetch_account_balance'               => ['post',     'fts/dashboard/account/fetch_balance',                              'FTSController@fetchAccountBalance'                                 ],
+        'fts_dashboard_schedule_create'                     => ['post',     'fts/dashboard/schedules',                                          'FTSController@createSchedule'                                      ],
+        'fts_dashboard_schedule_delete'                     => ['delete',   'fts/dashboard/schedules',                                          'FTSController@deleteSchedule'                                      ],
+        'fts_dashboard_schedule_update'                     => ['patch',    'fts/dashboard/schedules',                                          'FTSController@updateSchedule'                                      ],
 
         'nodal_file_upload_retry'                  => ['post',     'nodal_file_upload/retry',                        'FundTransferAttemptController@nodalFileUploadThroughBeam',         ],
         'channel_health_check'                     => ['post',     'channel_health_check/{channel}',                 'FundTransferAttemptController@healthCheck',                        ],
@@ -5585,6 +5588,9 @@ class Route
         'fts_dashboard_fetch_account_balance',
         'fts_dashboard_fail_queued_transfer',
         'fts_dashboard_fail_queued_transfer_bulk',
+        'fts_dashboard_schedule_create',
+        'fts_dashboard_schedule_delete',
+        'fts_dashboard_schedule_update',
 
         'create_merchant_options_admin',
         'read_merchant_options_admin',
@@ -6677,6 +6683,9 @@ class Route
         'mozart_gateway_action'                             => Permission::GATEWAY_PVT,
         'fts_dashboard_fail_queued_transfer'                => Permission::FTS_FAIL_QUEUED_TRANSFER,
         'fts_dashboard_fail_queued_transfer_bulk'           => Permission::FTS_FAIL_QUEUED_TRANSFER,
+        'fts_dashboard_schedule_create'                     => Permission::FTS_ROUTING_RULES_UPDATE,
+        'fts_dashboard_schedule_delete'                     => Permission::FTS_ROUTING_RULES_UPDATE,
+        'fts_dashboard_schedule_update'                     => Permission::FTS_ROUTING_RULES_UPDATE,
 
         'reports_monthly_banking_invoice_admin'     => Permission::VIEW_MERCHANT_REPORT,
 
@@ -9047,6 +9056,9 @@ class Route
             'fts_dashboard_test_transactions_trigger',
             'fts_dashboard_fail_queued_transfer',
             'fts_dashboard_fail_queued_transfer_bulk',
+            'fts_dashboard_schedule_create',
+            'fts_dashboard_schedule_delete',
+            'fts_dashboard_schedule_update',
             'fund_account_bulk_create',
             'fund_account_create',
             'fund_account_create_public',

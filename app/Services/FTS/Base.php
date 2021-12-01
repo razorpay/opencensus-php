@@ -104,6 +104,14 @@ class Base
 
     const ACCOUNT_TYPE_MAPPING = '/account_type_mappings';
 
+    const SCHEDULE = '/channel_health_events/schedules';
+
+    const SCHEDULE_GET_ROUTE = '/routing/schedules';
+
+    const TRIGGER_STATUS_LOG_GET_ROUTE = '/routing/trigger_status_logs';
+
+    const CHANNEL_INFORMATION_STATUS_LOG_GET_ROUTE = '/routing/channel_information_status_logs';
+
     const FUND_TRANSFER_ATTEMPTS_INITIATE_URI = '/attempts/process';
 
     const FTS_ONE_OFF_DB_MIGRATE_URL = '/one_off_db_migrate';

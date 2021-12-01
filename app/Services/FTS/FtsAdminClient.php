@@ -28,6 +28,12 @@ class FtsAdminClient extends Base
 
     const ACCOUNT_TYPE_MAPPINGS = "account_type_mappings";
 
+    const SCHEDULES = "schedules";
+
+    const TRIGGER_STATUS_LOGS = "trigger_status_logs";
+
+    const CHANNEL_INFORMATION_STATUS_LOGS = "channel_information_status_logs";
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
@@ -120,6 +126,30 @@ class FtsAdminClient extends Base
             parent::ACCOUNT_TYPE_MAPPING,
             Requests::GET,
             $input)['body'][self::ACCOUNT_TYPE_MAPPINGS];
+    }
+
+    public function getSchedules(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::SCHEDULE_GET_ROUTE,
+            Requests::GET,
+            $input)['body'][self::SCHEDULES];
+    }
+
+    public function getTriggerStatusLogs(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::TRIGGER_STATUS_LOG_GET_ROUTE,
+            Requests::GET,
+            $input)['body'][self::TRIGGER_STATUS_LOGS];
+    }
+
+    public function getChannelInformationStatusLogs(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::CHANNEL_INFORMATION_STATUS_LOG_GET_ROUTE,
+            Requests::GET,
+            $input)['body'][self::CHANNEL_INFORMATION_STATUS_LOGS];
     }
 
     public function fetch(string $entity, string $id, array $input)

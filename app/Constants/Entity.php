@@ -426,6 +426,11 @@ class Entity
     const FTS_PREFERRED_ROUTING_WEIGHTS    = 'fts.preferred_routing_weights';
     const FTS_ACCOUNT_TYPE_MAPPINGS        = 'fts.account_type_mappings';
 
+    // FTS Routing V2
+    const FTS_SCHEDULES                       = 'fts.schedules';
+    const FTS_TRIGGER_STATUS_LOGS             = 'fts.trigger_status_logs';
+    const FTS_CHANNEL_INFORMATION_STATUS_LOGS = 'fts.channel_information_status_logs';
+
     const UFH_FILES                      = 'ufh.files';
 
     // capital-collections
@@ -1190,6 +1195,9 @@ class Entity
         self::FTS_PREFERRED_ROUTING_WEIGHTS => \RZP\Services\FTS\FtsAdminClient::class,
         self::FTS_ACCOUNT_TYPE_MAPPINGS     => \RZP\Services\FTS\FtsAdminClient::class,
         self::FTS_CHANNEL_HEALTH_EVENTS     => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_SCHEDULES                 => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_TRIGGER_STATUS_LOGS       => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_CHANNEL_INFORMATION_STATUS_LOGS => \RZP\Services\FTS\FtsAdminClient::class,
         self::UFH_FILES                     => \RZP\Services\UfhClient::class,
         self::PAYMENTS_NBPLUS_NETBANKING    => \RZP\Services\NbPlus\Netbanking::class,
         self::NBPLUS_EMANDATE_REGISTRATION  => \RZP\Services\NbPlus\Emandate::class,

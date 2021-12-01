@@ -1426,6 +1426,55 @@ class AdminFetch
                     Fetch::TYPE     => Fetch::TYPE_STRING,
                 ],
             ],
+            Entity::FTS_TRIGGER_STATUS_LOGS => [
+                'trigger_name' => [
+                    Fetch::LABEL => 'Trigger Name',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'channel' => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => Channel::getFtsSupportedChannels(),
+                ],
+                'mozart_identifier' => [
+                    Fetch::LABEL =>'Mozart Identifier',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'mode' => [
+                    Fetch::LABEL => 'Transfer Mode',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::FTS_CHANNEL_INFORMATION_STATUS_LOGS => [
+                'channel' => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => Channel::getFtsSupportedChannels(),
+                ],
+                'mozart_identifier' => [
+                    Fetch::LABEL =>'Mozart Identifier',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'mode' => [
+                    Fetch::LABEL => 'Transfer Mode',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::FTS_SCHEDULES => [
+                'channel' => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => Channel::getFtsSupportedChannels(),
+                ],
+                'mozart_identifier' => [
+                    Fetch::LABEL =>'Mozart Identifier',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'mode' => [
+                    Fetch::LABEL => 'Transfer Mode',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
         ];
     }
 

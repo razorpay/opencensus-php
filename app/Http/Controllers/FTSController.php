@@ -225,4 +225,25 @@ class FTSController extends Controller
         return ApiResponse::json($response['body'], $response['code']);
     }
 
+    public function createSchedule()
+    {
+        $response = $this->app['fts_fund_transfer']->createSchedule($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteSchedule()
+    {
+        $response = $this->app['fts_fund_transfer']->deleteSchedule($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateSchedule()
+    {
+        $response = $this->app['fts_fund_transfer']->updateSchedule($this->input);
+
+        return ApiResponse::json($response);
+    }
+
 }

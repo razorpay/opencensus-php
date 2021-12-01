@@ -1357,4 +1357,34 @@ class FundTransfer extends Base
             $input);
     }
 
+    public function createSchedule(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::SCHEDULE,
+            Requests::POST,
+            $input);
+    }
+
+    public function deleteSchedule(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::SCHEDULE,
+            Requests::DELETE,
+            $input);
+    }
+
+    public function updateSchedule(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::SCHEDULE,
+            Requests::PATCH,
+            $input);
+    }
+
 }
