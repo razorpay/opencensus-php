@@ -162,7 +162,7 @@ export class Label extends React.Component {
     const text = this.props.text;
     if (text) {
       return (
-        <div class={`${this.props.className} Input-label` || 'Input-label'} {...this.props}>
+        <div class={classList('Input-label', this.props.className)} {...this.props}>
           {typeof text === 'function' ? text() : text}
         </div>
       );
@@ -409,7 +409,7 @@ export default class Field extends React.Component {
 
     return (
       <div class={inputClass(this)}>
-        <Label text={allProps.label} className={this.props.labelClass} />
+        <Label text={allProps.label} className={classList('Input-label', this.props.labelClass)} />
         <div class="Input-content">
           {allProps.extraChildren}
           <div
@@ -468,7 +468,9 @@ class Check extends Field {
     const { label, fieldLabel, description, props } = separateDomProps(this.props);
     return (
       <div class={inputClass(this)}>
-        {label && <Label text={label} className={this.props.labelClass} />}
+        {label && (
+          <Label text={label} className={classList('Input-label', this.props.labelClass)} />
+        )}
         <div class="Input-content">
           <div class="Input-elWrapper">
             <label>
@@ -545,7 +547,7 @@ class Radio extends Field {
 
     return (
       <div class={inputClass(this)}>
-        <Label text={label} className={this.props.labelClass} />
+        <Label text={label} className={classList('Input-label', this.props.labelClass)} />
         <div class="Input-content">
           <div class="Input--radioLabels">
             {options.map((o, i) => {
