@@ -483,12 +483,14 @@ class Profile extends Component {
             <User2FASettings />
           )}
           <div class="panel panel-default">
-            {user.current && (
+            {user && user.current && (
               <div class="panel-heading">
                 Merchant Id: <strong>{user.id}</strong>
-                <a class="pull-right" onClick={this.openChangePasswordModal}>
-                  Change Password
-                </a>
+                {!!user.user?.signup_via_email && (
+                  <a class="pull-right" onClick={this.openChangePasswordModal}>
+                    Change Password
+                  </a>
+                )}
               </div>
             )}
 
