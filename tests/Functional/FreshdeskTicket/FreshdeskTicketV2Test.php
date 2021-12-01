@@ -25,6 +25,8 @@ class FreshdeskTicketV2Test extends TestCase
 
     protected $storkMock;
 
+    protected $ravenMock;
+
     const RZP_CREATE_TICKET = 'rzp_create_ticket';
 
     const RZP_CREATE_TICKET_MOBILE_SIGNUP = 'rzp_create_ticket_mobile_signup';
@@ -81,6 +83,34 @@ class FreshdeskTicketV2Test extends TestCase
 
         $this->app->razorx->method('getTreatment')
             ->willReturn($returnValue);
+    }
+
+    protected function mockRaven()
+    {
+        $this->ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+
+        $this->app->instance('raven', $this->ravenMock);
+    }
+
+    protected function expectRavenSendSmsRequest($ravenMock, $templateName, $receiver = '1234567890')
+    {
+        $ravenMock->shouldReceive('sendSms')
+            ->times(1)
+            ->with(
+                Mockery::on(function ($actualPayload) use ($templateName, $receiver)
+                {
+                    if (($templateName !== $actualPayload['template']) or
+                        ($receiver !== $actualPayload['receiver']))
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }),  true)
+            ->andReturnUsing(function ()
+            {
+                return ['success' => true];
+            });
     }
 
     protected function mockStork()
@@ -519,9 +549,9 @@ class FreshdeskTicketV2Test extends TestCase
     public function testCreateTicketRzpCheckingCCEmails()
     {
         /*Appending user emails to cc_emails only if merchant and user emails are different*/
-        
+
         $frDueBy = time() + self::DAY * 2;
-        
+
         $testcases = [
             [
                 'cc_emails'             => ['test@razorpay.com'],
@@ -532,7 +562,7 @@ class FreshdeskTicketV2Test extends TestCase
                 'userAndMerchantEqual'  => true,
             ],
         ];
-        
+
         foreach ($testcases as $testcase)
         {
             $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET_CHECKING_CC_EMAILS);
@@ -541,12 +571,12 @@ class FreshdeskTicketV2Test extends TestCase
             {
                 $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
                     [UserEntity::EMAIL => 'test@razorpay.com']);
-                
+
                 $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
             }
-            
+
             $expectedRequestResponse['response']['cc_emails'] = $testcase['cc_emails'];
-            
+
             $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
                 $expectedRequestResponse['request'], $expectedRequestResponse['response']);
 
@@ -1026,10 +1056,16 @@ class FreshdeskTicketV2Test extends TestCase
 
         $this->mockStork();
 
+        $this->mockRaven();
+
+        $this->expectRavenSendSmsRequest($this->ravenMock, 'sms.support.ticket_created', '9876543210');
+
+        $url = $this->app['config']->get('applications.dashboard.url');
+
         $this->expectStorkWhatsappRequest('support.ticket_created',
-        'Hi, 
-Thank you for reaching out. This is to inform you that your ticket number 99 has been registered. Our team is working on your request and will get back to you within 3 working days. 
-Team Razorpay');
+        'Hi, '.PHP_EOL.
+        'Thank you for reaching out. This is to inform you that your ticket number 99 has been registered. Our team is working on your request and will get back to you within 3 working days. You can track your ticket updates by logging into the dashboard : '. $url .' '.PHP_EOL.
+        'Team Razorpay');
 
         $this->testData[__FUNCTION__] = $this->testData['testCreateTicketRzp'];
 
@@ -1057,36 +1093,38 @@ Team Razorpay');
 
         $this->mockRazorxTreatment('on');
 
+        $url = $this->app['config']->get('applications.dashboard.url');
+
         $testcases = [
             [
                 'event'         => 'TICKET_DELAY_UPDATE_72HRS',
-                'expected_text' => 'Hi, 
-We are sorry about the delay regarding your ticket 12. We will revert back to you with a resolution for the same in the next 72 hrs. Please bear with us.
-Team Razorpay',
+                'expected_text' => 'Hi, '.PHP_EOL.
+                    'We are sorry about the delay regarding your ticket 12. We will revert back to you with a resolution for the same in the next 72 hrs. Please bear with us. You can track your ticket updates by logging into the dashboard : '. $url .' '.PHP_EOL.
+                    'Team Razorpay',
             ],
             [
                 'event'         => 'TICKET_DELAY_UPDATE_24HRS',
-                'expected_text' => 'Hi, 
-We are sorry about the delay regarding your ticket 12. We will revert back to you with a resolution for the same in the next 24 hrs. Please bear with us. 
-Team Razorpay',
+                'expected_text' => 'Hi, '.PHP_EOL.
+                    'We are sorry about the delay regarding your ticket 12. We will revert back to you with a resolution for the same in the next 24 hrs. Please bear with us. You can track your ticket updates by logging into the dashboard : '. $url .' '.PHP_EOL.
+                    'Team Razorpay',
             ],
             [
                 'event'         => 'TICKET_DETAILS_PENDING',
-                'expected_text' => 'Hi, 
-We require a few details from your end on the ticket 12. Request you to check your email and respond with the details for us to check and resolve the concern raised.
-Team Razorpay',
+                'expected_text' => 'Hi, '.PHP_EOL.
+                    'We require a few details from you on the ticket 12. Request you to check and respond with the details for us to resolve the concern raised. You can track your ticket updates by logging into the dashboard : '. $url .' '.PHP_EOL.
+                    'Team Razorpay',
             ],
             [
                 'event'         => 'TICKET_RESOLVED',
-                'expected_text' => 'Hi, 
-Your issue regarding the ticket 12 has been resolved and a response has been sent over to your email. If you are not satisfied with the resolution provided feel free to reopen the ticket by replying to the same email. 
-Team Razorpay',
+                'expected_text' => 'Hi, '.PHP_EOL.
+                    'Your issue regarding the ticket 12 has been resolved and a response has been sent over to you. If you are not satisfied with the resolution provided, feel free to reopen the ticket by replying to the same ticket. You can track your ticket updates by logging into the dashboard : '. $url .' '.PHP_EOL.
+                    'Team Razorpay',
             ],
             [
                 'event'         => 'TICKET_REOPENED',
-                'expected_text' => 'Hi, 
-We believe that your issue regarding the ticket 12 is still not resolved. Your ticket has been reopened and our team will take it up on priority and get back to you within 24 hrs.
-Team Razorpay',
+                'expected_text' => 'Hi, '.PHP_EOL.
+                    'We believe that your issue regarding the ticket 12 is still not resolved. Your ticket has been reopened and our team will take it up on priority and get back to you within 24 hrs. You can track your ticket updates by logging into the dashboard : '. $url .' '.PHP_EOL.
+                    'Team Razorpay',
             ],
         ];
 
@@ -1094,9 +1132,15 @@ Team Razorpay',
         {
             $expectedTemplate = 'support.'. strtolower($testcase['event']);
 
+            $smsTemplate = 'sms.'.$expectedTemplate;
+
             $this->mockStork();
 
+            $this->mockRaven();
+
             $this->expectStorkWhatsappRequest($expectedTemplate, $testcase['expected_text']);
+
+            $this->expectRavenSendSmsRequest($this->ravenMock, $smsTemplate, '9876543210');
 
             $this->testData[__FUNCTION__]['request']['content']['event'] = $testcase['event'];
 

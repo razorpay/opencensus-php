@@ -9,12 +9,12 @@ use RZP\Exception\InvalidArgumentException;
 class Handler extends BaseHandler
 {
     const SUPPORTED_CHANNELS_FOR_EVENTS = [
-        Events::TICKET_CREATED            => [Channel::WHATSAPP],
-        Events::TICKET_DELAY_UPDATE_24HRS => [Channel::WHATSAPP],
-        Events::TICKET_DELAY_UPDATE_72HRS => [Channel::WHATSAPP],
-        Events::TICKET_DETAILS_PENDING    => [Channel::WHATSAPP],
-        Events::TICKET_RESOLVED           => [Channel::WHATSAPP],
-        Events::TICKET_REOPENED           => [Channel::WHATSAPP],
+        Events::TICKET_CREATED            => [Channel::SMS, Channel::WHATSAPP],
+        Events::TICKET_DELAY_UPDATE_24HRS => [Channel::SMS, Channel::WHATSAPP],
+        Events::TICKET_DELAY_UPDATE_72HRS => [Channel::SMS, Channel::WHATSAPP],
+        Events::TICKET_DETAILS_PENDING    => [Channel::SMS, Channel::WHATSAPP],
+        Events::TICKET_RESOLVED           => [Channel::SMS, Channel::WHATSAPP],
+        Events::TICKET_REOPENED           => [Channel::SMS, Channel::WHATSAPP],
     ];
 
     protected function getSupportedchannels(string $event)

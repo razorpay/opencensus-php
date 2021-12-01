@@ -323,6 +323,9 @@ final class RazorxTreatment
     // Experiment to decide whether to send support related notifications on whatsapp
     const WHATSAPP_SUPPORT_NOTIFICATIONS = 'whatsapp_support_notifications';
 
+    // Experiment to decide whether to send support related notifications on sms
+    const SMS_SUPPORT_NOTIFICATIONS = 'sms_support_notifications';
+
     const SHOW_CREATE_TICKET_POPUP = 'show_create_ticket_popup';
 
     const  PAYMENT_LINK_END_STATE_VIEW_CHANGE = 'payment_link_end_state_view_change';
