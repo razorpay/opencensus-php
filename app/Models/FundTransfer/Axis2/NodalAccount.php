@@ -306,9 +306,13 @@ class NodalAccount extends NodalBase\FileProcessor
     {
         $fileInfo = [$file->getFullFileName()];
 
+        $bucketConfig = $this->getBucketConfig(FileStore\Type::FUND_TRANSFER_H2H, $this->env);
+
         $data =  [
             Service::BEAM_PUSH_FILES   => $fileInfo,
-            Service::BEAM_PUSH_JOBNAME => BeamConstants::AXIS2_SETTLEMENT_JOB_NAME
+            Service::BEAM_PUSH_JOBNAME => BeamConstants::AXIS2_SETTLEMENT_JOB_NAME,
+            Service::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
+            Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
         ];
 
         // In seconds

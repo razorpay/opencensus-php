@@ -25,6 +25,7 @@ use RZP\Constants\Entity as EntityConstant;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Models\FileStore\Entity as FileStoreEntity;
 use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
@@ -235,7 +236,7 @@ class Core extends Base\Core
 
         $jobName  = $this->getJobNameForBeamPush($channel, $fileType);
 
-        $response = $this->sendFile($filePath, $jobName, $fileType, $channel);
+        $response = $this->sendFile($filePath, $jobName, $fileType, $channel, $fileEntity);
 
         return [
             'response' => $response
@@ -405,15 +406,18 @@ class Core extends Base\Core
      * @param string $jobName
      * @param string $fileType
      * @param string $channel
+     * @param FileStoreEntity $fileStoreEntity
      * @return mixed
      */
-    protected function sendFile(string $filename, string $jobName, string $fileType, string $channel)
+    protected function sendFile(string $filename, string $jobName, string $fileType, string $channel, FileStoreEntity $fileStoreEntity)
     {
         $fileInfo = [$filename];
 
         $data =  [
             Service::BEAM_PUSH_FILES   => $fileInfo,
-            Service::BEAM_PUSH_JOBNAME => $jobName
+            Service::BEAM_PUSH_JOBNAME => $jobName,
+            Service::BEAM_PUSH_BUCKET_NAME   => $fileStoreEntity->getBucket(),
+            Service::BEAM_PUSH_BUCKET_REGION => $fileStoreEntity->getRegion(),
         ];
 
         // In seconds

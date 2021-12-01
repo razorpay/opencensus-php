@@ -67,6 +67,10 @@ return [
             'name'   => env('AWS_S3_RECON_SFTP_INPUT_BUCKET'),
             'region' => env('AWS_S3_RECON_SFTP_INPUT_BUCKET_REGION', 'ap-south-1')
         ],
+        'fund_transfer_sftp_bucket_config' => [
+            'name'   => env('AWS_S3_FUND_TRANSFER_SFTP_BUCKET'),
+            'region' => env('AWS_S3_FUND_TRANSFER_SFTP_BUCKET_REGION', 'ap-south-1')
+        ],
         'data_lake_segments_bucket_config' => [
             'name'   => env('AWS_S3_DATA_LAKE_SEGMENT_BUCKET'),
             'region' => env('AWS_S3_DATA_LAKE_SEGMENT_REGION', 'ap-south-1'),

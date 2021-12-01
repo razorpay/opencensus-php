@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Base\Beneficiary;
 
 use RZP\Exception;
+use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\Base\PublicCollection;
@@ -113,5 +114,14 @@ abstract class FileProcessor extends Beneficiary
         ] + $fileInfo;
 
         return $data;
+    }
+
+    public function getBucketConfig(string $type, string $env)
+    {
+        $config = $this->app['config']->get('filestore.aws');
+
+        $bucketType = Bucket::getBucketConfigName($type, $env);
+
+        return $config[$bucketType];
     }
 }

@@ -232,6 +232,7 @@ class Type
     const H2H_DEFAULT_BUCKET_CONFIG             = 'h2h_default_bucket_config';
     const BEAM_BUCKET_CONFIG                    = 'beam_bucket_config';
     const BATCH_SERVICE_BUCKET_CONFIG           = 'batch_service_bucket_config';
+    const FUND_TRANSFER_SFTP_BUCKET_CONFIG      = 'fund_transfer_sftp_bucket_config';
     const RECON_SFTP_INPUT_BUCKET_CONFIG        = 'recon_sftp_input_bucket';
     const DATA_LAKE_SEGMENTS_BUCKET_CONFIG       = 'data_lake_segments_bucket_config';
 
@@ -550,7 +551,6 @@ class Type
             self::HDFC_EMANDATE_REGISTER,
             self::HDFC_EMANDATE_DEBIT,
             self::REPORT,
-            self::BENEFICIARY_FILE,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
             self::BATCH_VALIDATED,
@@ -570,7 +570,6 @@ class Type
         self::ACTIVATION_BUCKET_CONFIG => MerchantDocumentType::VALID_DOCUMENTS,
 
         self::H2H_BUCKET_CONFIG => [
-            self::FUND_TRANSFER_H2H,
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_CANCEL,
@@ -619,6 +618,11 @@ class Type
 
         self::BATCH_SERVICE_BUCKET_CONFIG => [
             self::BATCH_SERVICE,
+        ],
+
+        self::FUND_TRANSFER_SFTP_BUCKET_CONFIG => [
+            self::FUND_TRANSFER_H2H,
+            self::BENEFICIARY_FILE,
         ],
 
         self::RECON_SFTP_INPUT_BUCKET_CONFIG => [

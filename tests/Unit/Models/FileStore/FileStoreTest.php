@@ -168,6 +168,10 @@ class FileStoreTest extends TestCase
                 'name'   => 'recon_sftp_bucket',
                 'region' => 'region5'
             ],
+            'fund_transfer_sftp_bucket_config' => [
+                'name'   => 'fund_transfer_sftp_bucket',
+                'region' => 'region5'
+            ],
         ];
 
         Config::set('filestore.aws', $bucketConfig);
@@ -195,7 +199,12 @@ class FileStoreTest extends TestCase
 
         $this->checkBucketAndRegion(
             'fund_transfer_h2h',
-            'h2h_bucket_config',
+            'fund_transfer_sftp_bucket_config',
+            $bucketConfig);
+
+        $this->checkBucketAndRegion(
+            'beneficiary_file',
+            'fund_transfer_sftp_bucket_config',
             $bucketConfig);
     }
 

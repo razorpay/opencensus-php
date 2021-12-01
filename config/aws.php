@@ -42,6 +42,8 @@ return [
     'recon_input_bucket'         => env('AWS_S3_RECON_INPUT_BUCKET'),
     'recon_sftp_input_bucket'    => env('AWS_S3_RECON_SFTP_INPUT_BUCKET'),
 
+    'fund_transfer_sftp_bucket_config'    => env('AWS_S3_FUND_TRANSFER_SFTP_BUCKET'),
+
     'sns_target_arn'        => [
         'sms'                    => [
             'live' => env('AWS_RAVEN_TARGET_ARN'),
