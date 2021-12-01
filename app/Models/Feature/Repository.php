@@ -289,12 +289,12 @@ class Repository extends Base\Repository
         $merchantId = $merchant->getId();
 
         $featureList = $this->findMerchantWithFeatures(
-                $merchantId,
-                [
-                    Constants::ES_AUTOMATIC,
-                    Constants::ES_AUTOMATIC_THREE_PM,
-                ])
-            ->pluck(Entity::NAME);
+            $merchantId,
+            [
+                Constants::ES_AUTOMATIC,
+                Constants::ES_AUTOMATIC_THREE_PM,
+            ])
+                            ->pluck(Entity::NAME);
 
         if($featureList->isEmpty() === true)
         {

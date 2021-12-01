@@ -84,6 +84,7 @@ use RZP\Mail\Merchant\SecondFactorAuth as SecondFactorAuthMail;
 use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
+use RZP\Models\Merchant\Detail\Status as DetailStatus;
 
 class Core extends Base\Core
 {
@@ -128,13 +129,13 @@ class Core extends Base\Core
 
         if (empty($planId) === true)
         {
-              throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_NO_DEFAULT_PLAN_IN_ORG,
-                    null,
-                    [
-                        'org_id'      => $org->getId(),
-                    ]
-                );
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_DEFAULT_PLAN_IN_ORG,
+                null,
+                [
+                    'org_id'      => $org->getId(),
+                ]
+            );
         }
 
         $merchant->setPricingPlan($planId);
@@ -338,7 +339,7 @@ class Core extends Base\Core
 
         if ($aggregatorOrgId !== null)
         {
-           $org = $this->repo->org->findOrFailPublic($aggregatorOrgId);
+            $org = $this->repo->org->findOrFailPublic($aggregatorOrgId);
 
             // Link sub-merchant to its aggregator's org
             $subMerchant->org()->associate($org);
@@ -461,24 +462,24 @@ class Core extends Base\Core
         // Removing this feature is complicated, but
         // blindly assigning the feature to everybody is not
         (new Feature\Core)->create([
-            Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
-            Feature\Entity::ENTITY_ID       => $merchant->getId(),
-            Feature\Entity::NAME            => Feature\Constants::OTP_AUTH_DEFAULT,
-        ], $shouldSync = true);
+                                       Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
+                                       Feature\Entity::ENTITY_ID       => $merchant->getId(),
+                                       Feature\Entity::NAME            => Feature\Constants::OTP_AUTH_DEFAULT,
+                                   ], $shouldSync = true);
 
         (new Feature\Core)->create([
-            Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
-            Feature\Entity::ENTITY_ID       => $merchant->getId(),
-            Feature\Entity::NAME            => Feature\Constants::NEW_BANKING_ERROR,
-         ], $shouldSync = true);
+                                       Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
+                                       Feature\Entity::ENTITY_ID       => $merchant->getId(),
+                                       Feature\Entity::NAME            => Feature\Constants::NEW_BANKING_ERROR,
+                                   ], $shouldSync = true);
 
         if ($merchant->isRazorpayOrgId() === false) {
 
             (new Feature\Core)->create([
-                Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
-                Feature\Entity::ENTITY_ID       => $merchant->getId(),
-                Feature\Entity::NAME            => Feature\Constants::DISABLE_NATIVE_CURRENCY,
-            ], $shouldSync = true);
+                                           Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
+                                           Feature\Entity::ENTITY_ID       => $merchant->getId(),
+                                           Feature\Entity::NAME            => Feature\Constants::DISABLE_NATIVE_CURRENCY,
+                                       ], $shouldSync = true);
 
         }
     }
@@ -488,10 +489,10 @@ class Core extends Base\Core
         // adding this feature for all merchants registering.
         // by default they should get payment link service feature
         (new Feature\Core)->create([
-            Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
-            Feature\Entity::ENTITY_ID       => $merchant->getId(),
-            Feature\Entity::NAME            => Feature\Constants::PAYMENTLINKS_V2,
-        ], $shouldSync = true);
+                                       Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
+                                       Feature\Entity::ENTITY_ID       => $merchant->getId(),
+                                       Feature\Entity::NAME            => Feature\Constants::PAYMENTLINKS_V2,
+                                   ], $shouldSync = true);
     }
 
     /**
@@ -510,8 +511,8 @@ class Core extends Base\Core
             ];
 
             Accessor::for($merchant, Constants::PARTNER)
-                ->upsert($data)
-                ->save();
+                    ->upsert($data)
+                    ->save();
         }
     }
 
@@ -645,10 +646,10 @@ class Core extends Base\Core
 
             $this->trace->info(
                 TraceCode::MERCHANT_BILLING_LABEL_UPDATE, [
-                    Entity::ID => $merchant->getId(),
-                    Entity::BILLING_LABEL => $merchant->getBillingLabel(),
-                    Detail\Entity::BUSINESS_DBA => $merchant->getDbaName(),
-                ]);
+                Entity::ID => $merchant->getId(),
+                Entity::BILLING_LABEL => $merchant->getBillingLabel(),
+                Detail\Entity::BUSINESS_DBA => $merchant->getDbaName(),
+            ]);
         });
     }
 
@@ -1289,7 +1290,7 @@ class Core extends Base\Core
     private function shouldValidateTag($useWorkflows)
     {
         if($useWorkflows === false ||
-            $this->app['api.route']->isWorkflowExecuteOrApproveCall() === true)
+           $this->app['api.route']->isWorkflowExecuteOrApproveCall() === true)
         {
             return true;
         }
@@ -1508,7 +1509,7 @@ class Core extends Base\Core
             }
             catch (\Exception $e)
             {
-                 $this->trace->traceException(
+                $this->trace->traceException(
                     $e,
                     null,
                     TraceCode::GRATIS_TO_POSTPAID_FAILED,
@@ -1571,8 +1572,8 @@ class Core extends Base\Core
     public function getMerchantConfirmedOwner(Merchant\Entity $merchant)
     {
         return $merchant->users()->where(Merchant\Detail\Entity::ROLE, '=', User\Role::OWNER)
-                                 ->whereNull(User\Entity::CONFIRM_TOKEN)
-                                 ->first();
+                        ->whereNull(User\Entity::CONFIRM_TOKEN)
+                        ->first();
     }
 
     /**
@@ -1603,24 +1604,24 @@ class Core extends Base\Core
         $merchant->getValidator()->validateInput($type, $input);
 
         $batches = $this->repo->transaction(function() use ($input, $type, $merchant)
+        {
+            $batches = [];
+
+            foreach ($input as $key => $file)
             {
-                $batches = [];
+                $batchType =  $type . '_' . $key;
 
-                foreach ($input as $key => $file)
-                {
-                    $batchType =  $type . '_' . $key;
+                $params = [
+                    Batch\Entity::FILE        => $file,
+                    Batch\Entity::TYPE        => $batchType
+                ];
 
-                    $params = [
-                        Batch\Entity::FILE        => $file,
-                        Batch\Entity::TYPE        => $batchType
-                    ];
+                $batch = (new Batch\Core)->create($params, $merchant);
 
-                    $batch = (new Batch\Core)->create($params, $merchant);
+                $batches[$batchType] = $batch->getId();
+            }
 
-                    $batches[$batchType] = $batch->getId();
-                }
-
-                return $batches;
+            return $batches;
         });
 
         $class = 'RZP\\Jobs\\' . studly_case($type) . 'Batch';
@@ -1700,10 +1701,10 @@ class Core extends Base\Core
             $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
 
             $emailChangedMail = new MerchantMail\OwnerEmailChange($currentOwner->toArrayPublic(),
-                $org,
-                $input['email'],
-                $merchant->getId(),
-                false
+                                                                  $org,
+                                                                  $input['email'],
+                                                                  $merchant->getId(),
+                                                                  false
             );
 
             Mail::queue($emailChangedMail);
@@ -1779,7 +1780,7 @@ class Core extends Base\Core
 
     public function getUserStatusForEmailUpdateSelfServe($userEmail, $merchant, $product)
     {
-         return [
+        return [
             Constants::IS_USER_EXIST    => $this->isUserExistForEmail($userEmail),
             Constants::IS_TEAM_MEMBER   => $this->hasUserAnyRoleForMerchantAndProduct($userEmail, $merchant, $product),
             Constants::IS_OWNER         => $this->isOwnerRoleExistForEmailUserAndProduct($userEmail, $product),
@@ -1820,9 +1821,9 @@ class Core extends Base\Core
     protected function hasUserAnyRoleForMerchantAndProduct($userEmail, $merchant, $product)
     {
         $teamUser = $merchant->users()
-            ->where(Entity::EMAIL, $userEmail)
-            ->where(Entity::PRODUCT, $product)
-            ->first();
+                             ->where(Entity::EMAIL, $userEmail)
+                             ->where(Entity::PRODUCT, $product)
+                             ->first();
 
         if (empty($teamUser) === true)
         {
@@ -1898,11 +1899,11 @@ class Core extends Base\Core
             }
 
             $body = $body . '<br />'
-                          . 'Razorpay Software Pvt Ltd' . '<br />'
-                          . 'Bank Account Number : 7911547334' . '<br />'
-                          . 'Kotak Mahindra Bank 5 C/ II, <br />'
-                          . 'MITTAL COURT,224, NARIMAN POINT,MUMBAI - 400 021, <br/>'
-                          . 'GREATER BOMBAY,MAHARASHTRA <br /><br />';
+                    . 'Razorpay Software Pvt Ltd' . '<br />'
+                    . 'Bank Account Number : 7911547334' . '<br />'
+                    . 'Kotak Mahindra Bank 5 C/ II, <br />'
+                    . 'MITTAL COURT,224, NARIMAN POINT,MUMBAI - 400 021, <br/>'
+                    . 'GREATER BOMBAY,MAHARASHTRA <br /><br />';
 
             if (array_key_exists($merchantId, self::MASTER_ID_MAPPING) === true)
             {
@@ -2066,8 +2067,8 @@ class Core extends Base\Core
         $this->trace->count(Metric::PARTNER_MARK_REQUEST, $dimensions);
 
         Accessor::for ($request, Constants::PARTNER)
-            ->upsert($data)
-            ->save();
+                ->upsert($data)
+                ->save();
     }
 
     /**
@@ -2321,11 +2322,11 @@ class Core extends Base\Core
         $this->sendPartnerInfoToSalesforce($partner);
 
         $this->trace->info(
-          TraceCode::PARTNER_CREATION_SUCCESSFUL,
-          [
-              Entity::PARTNER_ID    => $partner->getId(),
-              Entity::PARTNER_TYPE  => $partnerType,
-          ]
+            TraceCode::PARTNER_CREATION_SUCCESSFUL,
+            [
+                Entity::PARTNER_ID    => $partner->getId(),
+                Entity::PARTNER_TYPE  => $partnerType,
+            ]
         );
 
         return [
@@ -2452,12 +2453,12 @@ class Core extends Base\Core
             // even though access map already exists between the partner and submerchant.
 
             $this->trace->info(
-              TraceCode::PARTNER_MERCHANT_MAPPING_ALREADY_EXISTS,
-              [
-                  Entity::PARTNER_ID  => $partner->getId(),
-                  Entity::MERCHANT_ID => $submerchant->getId(),
-                  Constants::APP_TYPE => $appType,
-              ]
+                TraceCode::PARTNER_MERCHANT_MAPPING_ALREADY_EXISTS,
+                [
+                    Entity::PARTNER_ID  => $partner->getId(),
+                    Entity::MERCHANT_ID => $submerchant->getId(),
+                    Constants::APP_TYPE => $appType,
+                ]
             );
         }
         else
@@ -2580,9 +2581,9 @@ class Core extends Base\Core
                 if ($submerchant->primaryOwner() === null)
                 {
                     $this->trace->info(TraceCode::SUBMERCHANT_PRIMARY_OWNER_NOT_PRESENT,
-                        [
-                            'submerchant' => $submerchant,
-                        ]);
+                                       [
+                                           'submerchant' => $submerchant,
+                                       ]);
 
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PARTNER_OWNER_NOT_PRESENT_FOR_USER);
                 }
@@ -2863,11 +2864,11 @@ class Core extends Base\Core
         if ($merchant->getRestricted() === true)
         {
             $query = $merchant->users()
-                        ->where(function ($q)
-                        {
-                            $q->where(User\Entity::CONTACT_MOBILE_VERIFIED, 0)
-                            ->orWhereNull(User\Entity::CONTACT_MOBILE);
-                        });
+                              ->where(function ($q)
+                              {
+                                  $q->where(User\Entity::CONTACT_MOBILE_VERIFIED, 0)
+                                    ->orWhereNull(User\Entity::CONTACT_MOBILE);
+                              });
 
             $totalUsersWithNo2faSetup = $query->get()->count();
 
@@ -2880,11 +2881,11 @@ class Core extends Base\Core
                 $usersWithNo2faSetupToArrayMerchant = $usersWithNo2faSetup->callOnEveryItem('toArrayMerchant');
 
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
-                    null,
-                    [
-                        'total_users'   => $totalUsersWithNo2faSetup,
-                        'users'         => $usersWithNo2faSetupToArrayMerchant,
-                    ]);
+                                                        null,
+                                                        [
+                                                            'total_users'   => $totalUsersWithNo2faSetup,
+                                                            'users'         => $usersWithNo2faSetupToArrayMerchant,
+                                                        ]);
             }
         }
 
@@ -2905,7 +2906,7 @@ class Core extends Base\Core
 
         $secondFactorMail = new SecondFactorAuthMail($mailData);
 
-       Mail::send($secondFactorMail);
+        Mail::send($secondFactorMail);
 
         return [
             Entity::SECOND_FACTOR_AUTH => $merchant->isSecondFactorAuth(),
@@ -2979,15 +2980,15 @@ class Core extends Base\Core
         else
         {
             $accessMaps = $this->repo
-                               ->merchant_access_map
-                               ->fetchAccessMapForMerchantIdAndOwnerId($submerchantId, $partner->getId());
+                ->merchant_access_map
+                ->fetchAccessMapForMerchantIdAndOwnerId($submerchantId, $partner->getId());
 
             $appId = $accessMaps->first()->getEntityId();
         }
 
         $merchant = $this->repo
-                         ->merchant
-                         ->findSubmerchantByIdAndConnectedAppId($submerchantId, $appId);
+            ->merchant
+            ->findSubmerchantByIdAndConnectedAppId($submerchantId, $appId);
 
         $partnerUser = $partner->primaryOwner();
 
@@ -3140,11 +3141,11 @@ class Core extends Base\Core
         $appIds = $this->getPartnerApplicationIds($partner);
 
         $this->trace->info(TraceCode::PARTNER_FETCH_SUBMERCHANTS,
-            [
-                'partner_id' => $partner->getId(),
-                'app_ids'    => $appIds,
-                'params'     => $params,
-            ]);
+                           [
+                               'partner_id' => $partner->getId(),
+                               'app_ids'    => $appIds,
+                               'params'     => $params,
+                           ]);
 
         if ((empty($params[MerchantApplications\Entity::TYPE]) === false) and (empty($appIds) === false))
         {
@@ -3201,11 +3202,11 @@ class Core extends Base\Core
         $appIds = $this->getPartnerApplicationIds($partner);
 
         return $this->repo
-                    ->merchant
-                    ->fetchSubmerchantsByAppIds($appIds,
-                        [
-                            Detail\Entity::ACTIVATION_STATUS => Entity::ACTIVATED,
-                        ]);
+            ->merchant
+            ->fetchSubmerchantsByAppIds($appIds,
+                                        [
+                                            Detail\Entity::ACTIVATION_STATUS => Entity::ACTIVATED,
+                                        ]);
     }
 
     /**
@@ -3218,16 +3219,16 @@ class Core extends Base\Core
     public function fetchAffiliatedPartners(string $submerchantId): PublicCollection
     {
         return $this->repo
-                    ->merchant_access_map
-                    ->fetchAffiliatedPartnersForSubmerchant($submerchantId)
-                    ->unique(function ($item)
-                    {
-                        return $item->entityOwner->getId();
-                    })
-                    ->map(function ($item)
-                    {
-                        return $item->entityOwner;
-                    });
+            ->merchant_access_map
+            ->fetchAffiliatedPartnersForSubmerchant($submerchantId)
+            ->unique(function ($item)
+            {
+                return $item->entityOwner->getId();
+            })
+            ->map(function ($item)
+            {
+                return $item->entityOwner;
+            });
     }
 
     protected function isPartnerUserAddedToSubmerchant(Entity $partner, Entity $submerchant): bool
@@ -3482,18 +3483,18 @@ class Core extends Base\Core
         {
             // Assign Linked Account Admin role to the old owner.
             (new User\Core)->detachAndAttachMerchantUser($oldOwner,
-                                                        $merchant->getId(),
-                                                        Role::LINKED_ACCOUNT_ADMIN,
-                                                        $product);
+                                                         $merchant->getId(),
+                                                         Role::LINKED_ACCOUNT_ADMIN,
+                                                         $product);
         }
 
         if (empty($teamUser) === false)
         {
             // Assign Linked Account owner role to the team user.
             (new User\Core)->detachAndAttachMerchantUser($teamUser,
-                                                        $merchant->getId(),
-                                                        Role::LINKED_ACCOUNT_OWNER,
-                                                        $product);
+                                                         $merchant->getId(),
+                                                         Role::LINKED_ACCOUNT_OWNER,
+                                                         $product);
         }
         elseif (empty($existingUser) === false)
         {
@@ -4061,7 +4062,7 @@ class Core extends Base\Core
      * @throws Exception\LogicException
      */
     public function updateInternationalTypeform(Entity $merchant,
-                                                   Detail\Entity $merchantDetails)
+                                                Detail\Entity $merchantDetails)
     {
         $this->shouldActivateProductInternational($merchant, $merchantDetails);
 
@@ -4163,10 +4164,10 @@ class Core extends Base\Core
         }
 
         $this->trace->info(TraceCode::PARTNER_WEBHOOK_TRANSLATION,
-            [
-                'translation_gateway' => $translationGateway,
-                'partner_id'          => $partner->getId(),
-            ]);
+                           [
+                               'translation_gateway' => $translationGateway,
+                               'partner_id'          => $partner->getId(),
+                           ]);
 
         try
         {
@@ -4544,7 +4545,7 @@ class Core extends Base\Core
         }
 
         if((in_array(Constants::LIVE_SETTLEMENT_DEFAULT, $lists) === false) &&
-            (in_array(Constants::LIVE_SETTLEMENT_ON_DEMAND, $lists) === false))
+           (in_array(Constants::LIVE_SETTLEMENT_ON_DEMAND, $lists) === false))
         {
             if($merchant->isfeatureEnabled(Feature\Constants::ES_ON_DEMAND) === false)
             {
@@ -4561,11 +4562,11 @@ class Core extends Base\Core
         foreach ($lists as $list)
         {
             MailingListUpdate::dispatch(
-                                    $this->mode,
-                                    $merchantEmailList,
-                                    true,
-                                    $list)
-                                ->delay($iterationNumber % 901);
+                $this->mode,
+                $merchantEmailList,
+                true,
+                $list)
+                             ->delay($iterationNumber % 901);
         }
     }
 
@@ -4597,11 +4598,11 @@ class Core extends Base\Core
             foreach ($lists as $list)
             {
                 MailingListUpdate::dispatch(
-                                        $this->mode,
-                                        [$transactionReportEmail],
-                                        false,
-                                        $list)
-                                    ->delay($iterationNumber % 901);
+                    $this->mode,
+                    [$transactionReportEmail],
+                    false,
+                    $list)
+                                 ->delay($iterationNumber % 901);
             }
         }
     }
@@ -5021,8 +5022,8 @@ class Core extends Base\Core
         ];
 
         $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
-            $partner, null,
-            $data);
+                                                 $partner, null,
+                                                 $data);
 
         if ($partner->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM) === true)
         {
@@ -5433,6 +5434,164 @@ class Core extends Base\Core
         $this->app->hubspot->skipMerchantOnboardingComm($email);
     }
 
+    /**
+     * @throws \Throwable
+     */
+    public function enableM2MReferralsCron()
+    {
+        $merchantIds = $this->getMerchantsToEnableM2MReferrals();
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                (new Feature\Core)->create([
+
+                                               Feature\Entity::ENTITY_TYPE => E::MERCHANT,
+                                               Feature\Entity::ENTITY_ID   => $merchantId,
+                                               Feature\Entity::NAME        => Feature\Constants::M2M_REFERRAL,
+                                           ], $shouldSync = true);
+
+                $data = [
+                    Store\Constants::NAMESPACE                        => Store\ConfigKey::ONBOARDING_NAMESPACE,
+                    Store\ConfigKey::REFERRED_COUNT               => 0,
+                    Store\ConfigKey::REFERRAL_SUCCESS_POPUP_COUNT => 0
+                ];
+
+                (new Store\Core())->updateMerchantStore($merchantId, $data,Store\Constants::INTERNAL);
+
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_FAILED, [
+                    'reason'      => 'something went wrong while enabling m2m referral feature',
+                    'trace'       => $e->getMessage(),
+                    'merchant_id' => $merchantId
+                ]);
+            }
+        }
+    }
+
+    /**
+     * eg. if cron job run for each day then
+     * only those merchants will be returned who have transacted in the past day +
+     * merchants in activated state +
+     * merchants with payment is above a threshold +
+     * merchants activated for min time +
+     * merchants with feature already not created
+     * merchants belonging to razorpay org
+     * @param
+     *
+     * @return mixed
+     */
+    protected function getMerchantsToEnableM2MReferrals() : array
+    {
+
+        //get the last cron job run time
+        $lastCronTime = $this->cache->get(Constants::M2M_REFERRALS_ENABLE_CRON);
+
+        if (empty($lastCronTime))
+        {
+            $lastCronTime = Carbon::now()->subDays(Constants::M2M_REFERRAL_TIME_BOUND_THRESHOLD)->getTimestamp();
+        }
+        //update the last cron job run time to current
+        $this->cache->put(Constants::M2M_REFERRALS_ENABLE_CRON, Carbon::now()->getTimestamp());
+
+        // Filter out all merchants that have transacted since last time cron ran
+        $transactedMerchants = $this->repo->transaction->fetchTransactedMerchants(
+            'payment', $lastCronTime, true);
+
+        $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_TRACE, [
+            'last_cron_time'  => $lastCronTime,
+            'type'            => 'm2m_referral',
+            'filter'          => 'transactedMerchants',
+            'merchants_count' => count($transactedMerchants),
+        ]);
+
+        //filter merchants of string RAZORPAY ORG
+        // filter all merchants who are activated
+        $merchantIdList = $this->repo->merchant_detail->filterMerchantIdsByActivationStatus(
+            $transactedMerchants, [DetailStatus::ACTIVATED]);
+
+        $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_TRACE, [
+            'type'            => 'm2m_referral',
+            'filter'          => 'activatedMerchants',
+            'merchants_count' => count($merchantIdList),
+        ]);
+
+        // filter all merchants who've have been activated for min no of days and belonging to razorpay org
+        $merchantIdList = $this->repo->merchant->filterMerchantIdsWithMinActivatedTime(
+            $transactedMerchants, env(Constants::M2M_REFERRAL_ENABLE_AFTER_MIN_ACTIVATED_TIME));
+
+        $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_TRACE, [
+            'type'            => 'm2m_referral',
+            'filter'          => 'activatedMinTime',
+            'merchants_count' => count($merchantIdList),
+        ]);
+
+        // filter all merchants who've at least min no of transactions
+        $merchantIdList = $this->repo->transaction->filterMerchantsWithTransactionsCountAboveThreshold(
+            $merchantIdList, 'payment', env(Constants::M2M_REFERRAL_MIN_TRANSACTION_COUNT)
+        );
+
+        $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_TRACE, [
+            'merchants_count' => count($merchantIdList),
+            'filter'          => 'minPaymentTransaction',
+            'type'            => 'm2m_referral'
+        ]);
+
+
+        // filter all merchants who've at least min payment volume
+        $merchantsGMVList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold(
+            $merchantIdList, 'payment', env(Constants::M2M_REFERRAL_ENABLE_AFTER_MIN_TRANSACTION_VOLUME)
+        );
+
+        $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_TRACE, [
+            'merchants_count' => count($merchantsGMVList),
+            'filter'          => 'minPaymentVolumne',
+            'type'            => 'm2m_referral'
+        ]);
+
+        if (empty($merchantsGMVList) === true)
+        {
+            $this->trace->info(TraceCode::M2M_REFERRALS_CRON_SKIP, [
+                'merchants_count' => count($merchantsGMVList),
+                'type'            => 'm2m_referral',
+                'reason'          => 'no merchants found'
+            ]);
+
+            return [];
+        }
+
+        $merchantIdList = array_map(function($element) {
+            return $element[Entity::MERCHANT_ID];
+        }, $merchantsGMVList);
+
+        //filter already m2m referral enabled merchants
+
+        $m2mReferralEnabledMerchants = $this->repo->feature->getMerchantIdsHavingFeature(Feature\Constants::M2M_REFERRAL, $merchantIdList);
+
+        $merchantIdList = array_diff($merchantIdList, $m2mReferralEnabledMerchants);
+
+        $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_TRACE, [
+            'merchants_count' => count($merchantIdList),
+            'filter'          => 'featureNotAlreadyCreated',
+            'type'            => 'm2m_referral'
+        ]);
+
+        if (empty($merchantIdList) === true)
+        {
+            $this->trace->info(TraceCode::M2M_REFERRALS_CRON_SKIP, [
+                'merchants_count' => count($merchantIdList),
+                'type'            => 'm2m_referral',
+                'reason'          => 'no merchants found'
+            ]);
+
+            return [];
+        }
+
+        return $merchantIdList;
+    }
     public function uploadInvoiceForIncreaseTransactionLimit(Detail\Entity $merchantDetails, $invoiceProof)
     {
         $fileInputs = [

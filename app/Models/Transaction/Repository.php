@@ -512,6 +512,20 @@ class Repository extends Base\Repository
             ->pluck(Entity::MERCHANT_ID)
             ->toArray();
     }
+
+    public function filterMerchantsWithTransactionsCountAboveThreshold(array $merchantIdList,string $type, int $threshold)
+    {
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+                    ->where($this->dbColumn(Entity::TYPE), '=', $type)
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->selectRaw('COUNT(' . Entity::CREATED_AT . ') as txn_count,' . Entity::MERCHANT_ID)
+                    ->having('txn_count', '>=', $threshold)
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+    }
+
     public function fetchTransactedMerchants(string $type, int $createdAt, bool $regularMerchantsOnly = true)
     {
         $transactionsMerchantIdColumn  = $this->dbColumn(Entity::MERCHANT_ID);
@@ -550,6 +564,8 @@ class Repository extends Base\Repository
             ->get()
             ->toArray();
     }
+
+
 
     public function updateSettledAtToNow($txn)
     {
@@ -2501,4 +2517,47 @@ class Repository extends Base\Repository
 //                    ->pluck($settlementIdColumn)
 //                    ->pop();
 //    }
+
+    public function getSettlementIdForReversal(string $reversalId, string $merchantId)
+    {
+        $refundIdColumn = $this->repo->refund->dbColumn(Refund\Entity::ID);
+        $reversalIdColumn = $this->repo->refund->dbColumn(Refund\Entity::REVERSAL_ID);
+
+        $entityIdColumn = $this->repo->transaction->dbColumn(Entity::ENTITY_ID);
+        $typeColumn = $this->repo->transaction->dbColumn(Entity::TYPE);
+        $merchantIdColumn = $this->repo->transaction->dbColumn(Entity::MERCHANT_ID);
+        $settlementIdColumn = $this->repo->transaction->dbColumn(Entity::SETTLEMENT_ID);
+
+        return $this->newQuery()
+                    ->join(Table::REFUND, $entityIdColumn, $refundIdColumn)
+                    ->select($settlementIdColumn)
+                    ->where($typeColumn, 'refund')
+                    ->where($merchantIdColumn, $merchantId)
+                    ->where($reversalIdColumn, $reversalId)
+                    ->pluck($settlementIdColumn)
+                    ->pop();
+    }
+
+    public function fetchFirstTransactionDetails(
+        string $merchantId): array
+    {
+        $transactionIdColumn       = $this->dbColumn(Entity::ID);
+        $merchantIdColumn          = $this->dbColumn(Entity::MERCHANT_ID);
+        $createdAtColumn           = $this->dbColumn(Entity::CREATED_AT);
+        $transactionAmountColumn   = $this->dbColumn(Entity::AMOUNT);
+        $transactionCurrencyColumn = $this->dbColumn(Entity::CURRENCY);
+        $selectColumn              = [
+            $transactionIdColumn,
+            $transactionAmountColumn,
+            $transactionCurrencyColumn,
+            $merchantIdColumn
+        ];
+
+        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+                    ->select($selectColumn)
+                    ->where($this->dbColumn(Entity::TYPE), '=', 'payment')
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->first()
+                    ->toArray();
+    }
 }

@@ -90,11 +90,12 @@ class Core extends Base\Core
      *  Validating and Checking whether coupon and merchant is valid
      *
      * @param Merchant\Entity $merchant
-     * @param array $input
+     * @param array           $input
+     *
      * @return mixed
      * @throws Exception\BadRequestException
      */
-    protected function getCouponByCode(Merchant\Entity $merchant, array $input): Entity
+    public function getCouponByCode(Merchant\Entity $merchant, array $input): Entity
     {
         $coupon = $this->repo->coupon->fetchByCodeWithRelations($input[Entity::CODE], $merchant->getId());
 
@@ -124,13 +125,15 @@ class Core extends Base\Core
     {
         $couponCode = $input[Entity::CODE] ?? '';
 
+        $input[Entity::COUPON_CODE] = $couponCode;
+
         if (isset(Constants::COUPON_CONFIG[$couponCode]) === true)
         {
             $config = Constants::COUPON_CONFIG[$couponCode];
 
-            $exptName = $config[Constants::EXPERIMENT_NAME];
-
-            if ($this->isRazorxExperimentEnable($merchant->getId(), $exptName) === false)
+            $exptName = $config[Constants::EXPERIMENT_NAME]??null;
+            
+            if (empty($exptName)===false and (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(), $exptName) === false)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE,
@@ -151,12 +154,12 @@ class Core extends Base\Core
         }
         catch (\Throwable $exception)
         {
-            $this->app['diag']->trackOnboardingEvent($config[Constants::FAILED_EVENT_CODE], $merchant, $exception, [Entity::COUPON_CODE => $couponCode]);
+            $this->app['diag']->trackOnboardingEvent($config[Constants::FAILED_EVENT_CODE], $merchant, $exception, $input);
 
             throw $exception;
         }
 
-        $this->app['diag']->trackOnboardingEvent($config[Constants::SUCCESS_EVENT_CODE], $merchant, null, [Entity::COUPON_CODE => $couponCode]);
+        $this->app['diag']->trackOnboardingEvent($config[Constants::SUCCESS_EVENT_CODE], $merchant, null, $input);
 
         $hubspotInput = [Entity::COUPON_CODE => $couponCode];
 
@@ -191,18 +194,18 @@ class Core extends Base\Core
 
         $requestProduct = $this->app->basicauth->getRequestOriginProduct();
 
-        if($promotionProduct !== $requestProduct)
+        if ($promotionProduct !== $requestProduct)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE);
         }
 
         $merchantPromotion = $this->repo
-                                  ->merchant_promotion
-                                  ->findByMerchantAndPromotionId(
-                                      $merchant->getId(),
-                                      $promotion->getId()
-                                  );
+            ->merchant_promotion
+            ->findByMerchantAndPromotionId(
+                $merchant->getId(),
+                $promotion->getId()
+            );
 
         if ($merchantPromotion !== null)
         {

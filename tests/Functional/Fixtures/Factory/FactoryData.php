@@ -833,8 +833,14 @@ final class FactoryData
         );
         $factory(\RZP\Models\Merchant\BusinessDetail\Entity::class, [
                                                                      'id'            => $faker->uniqueid,
-                                                                     'merchant_id' => '10000000000000',
+                                                                     'merchant_id' => '10000000000000'
                                                                  ]
+        );
+        $factory(\RZP\Models\Merchant\M2MReferral\Entity::class, [
+                                                                      'id'            => $faker->uniqueid,
+                                                                      'merchant_id' => '10000000000000',
+                                                                      'status'      => 'signup'
+                                                                  ]
         );
         $factory(\RZP\Models\Merchant\Stakeholder\Entity::class, [
                                                                    'id'            => $faker->uniqueid,

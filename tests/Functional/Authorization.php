@@ -265,7 +265,14 @@ class Authorization
 
         $this->appAuth('rzp_' . $mode, $pwd);
     }
+    public function friendBuyWebhookAuth($mode = 'test')
+    {
+        $config = \Config::get('applications.friend_buy_webhook');
 
+        $pwd = $config['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
+    }
     public function vajraAuth($mode = 'test')
     {
         $this->appAuth('rzp_' . $mode, \Config::get('applications.vajra')['secret']);

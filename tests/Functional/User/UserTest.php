@@ -38,11 +38,16 @@ use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Models\User\Constants as UserConstants;
 use RZP\Models\BankingAccountStatement\Details;
 use RZP\Tests\Traits\TestsStorkServiceRequests;
+use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Models\Merchant\Store\Constants as StoreConstants;
+use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
 use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
+use RZP\Models\Merchant\M2MReferral\Status as M2MEntityStatus;
+use RZP\Models\Merchant\M2MReferral\Entity as M2MReferralEntity;
 use function GuzzleHttp\json_decode;
 
 class UserTest extends TestCase

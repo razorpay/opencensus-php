@@ -1439,6 +1439,22 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function filterMerchantIdsWithMinActivatedTime(array $mids, int $minActivatedTime,array $orgIdList = [Org\Entity::RAZORPAY_ORG_ID]): array
+    {
+        $timestamp                 = Carbon::now(Timezone::IST)->getTimestamp();
+        $merchantActivatedAtColumn = $this->repo->merchant->dbColumn(Entity::ACTIVATED_AT);
+        $merchantOrgIdColumn       = $this->repo->merchant->dbColumn(Entity::ORG_ID);
+
+        return $this->newQuery()
+                    ->select(Entity::ID)
+                    ->whereIn(Entity::ID, $mids)
+                    ->whereIn($merchantOrgIdColumn, $orgIdList)
+                    ->where($merchantActivatedAtColumn, "<=", $timestamp - $minActivatedTime)
+                    ->get()
+                    ->pluck(Entity::ID)
+                    ->toArray();
+    }
+
     public function getMerchantListEligibleForRTB($blacklistedMIDs)
     {
         $merchantId = $this->dbColumn(Entity::ID);
@@ -1466,4 +1482,5 @@ class Repository extends Base\Repository
 
         return $query->pluck($merchantId);
     }
+
 }

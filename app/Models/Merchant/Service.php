@@ -7597,6 +7597,12 @@ class Service extends Base\Service
         return $newPlan[0][PricingEntity::PLAN_ID];
     }
 
+    public function enableM2MReferralsCron()
+    {
+        $this->core()->enableM2MReferralsCron();
+
+        return ['success' => true];
+    }
     public function postIncreaseTransactionLimitSelfServe(array $input)
     {
         $this->trace->info(TraceCode::MERCHANT_INCREASE_TRANSACTION_LIMIT_INPUT,[

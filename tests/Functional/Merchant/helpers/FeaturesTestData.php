@@ -492,6 +492,7 @@ return [
                         'value'        => false,
                         'display_name' => 'Smart Collect'
                     ],
+
                 ]
             ],
             'status_code' => 200
@@ -678,6 +679,7 @@ return [
                         'value'        => false,
                         'display_name' => 'Smart Collect'
                     ],
+
                 ]
             ],
             'status_code' => 200
@@ -1210,7 +1212,7 @@ return [
                     'bepg_disable',
                     'first_data_s2s_flow',
                     'bin_issuer_validator',
-                    'offer_private_auth',
+                    'offer_private_auth'
                 ],
             ],
         ],
@@ -2117,6 +2119,63 @@ return [
         ],
     ],
 
+    'testAddM2MReferral' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['m2m_referral'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                [
+                    'name' => 'm2m_referral',
+                    'entity_type' => 'merchant',
+                    'entity_id'   => '10000000000000'
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testGetM2MReferralStatusReferralCountNotCrossedLimit' => [
+        'request'  => [
+            'url'     => '/feature/merchant/10000000000000/m2m_referral',
+            'method'  => 'GET',
+        ],
+        'response'  => [
+            'content'     => [
+                    'status' => true,
+                ],
+            'status_code' => 200,
+        ],
+    ],
+    'testGetNotExistingM2MReferralFeatureStatus' => [
+        'request'  => [
+            'url'     => '/feature/merchant/10000000000000/m2m_referral',
+            'method'  => 'GET',
+        ],
+        'response'  => [
+            'content'     => [
+                'status' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testGetM2MReferralStatusReferralCountCrossedLimit' => [
+        'request'  => [
+            'url'     => '/feature/merchant/10000000000000/m2m_referral',
+            'method'  => 'GET',
+        ],
+        'response'  => [
+            'content'     => [
+                'status' => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
     'testMerchantsWithFeatures' => [
         'request'   => [
             'content' => [

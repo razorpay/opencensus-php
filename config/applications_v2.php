@@ -1158,6 +1158,27 @@ return [
             ]
         ]
     ],
+    env('APP_V2_ID_FRIEND_BUY_WEBHOOK')          => [
+        "name"        => "friend_buy_webhook",
+        "credentials" => [
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_LIVE_FRIEND_BUY_WEBHOOK'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_FRIEND_BUY_WEBHOOK'),
+                "mode"     => "live",
+                "roles"    => [
+                    "app.friend_buy_webhook"
+                ]
+            ],
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_TEST_FRIEND_BUY_WEBHOOK'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_FRIEND_BUY_WEBHOOK'),
+                "mode"     => "test",
+                "roles"    => [
+                    "app.friend_buy_webhook"
+                ]
+            ]
+        ]
+    ],
     env('APP_V2_ID_YELLOWMESSENGER')            => [
         "name"        => "yellowmessenger",
         "credentials" => [

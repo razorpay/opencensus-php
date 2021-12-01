@@ -21,6 +21,7 @@ class DetailServiceTest extends TestCase
     protected $partnerActivationMock;
     protected $stakeholderEntityMock;
     protected $merchantRepoMock;
+    protected $m2mReferralRepoMock;
     protected $merchantMethodsMock;
     protected $merchantDocumentCoreMock;
     protected $merchantDetailValidator;
@@ -523,6 +524,8 @@ class DetailServiceTest extends TestCase
     public function getDriverAsMerchantMock()
     {
         $this->repoMock->shouldReceive('driver')->with('merchant')->andReturn($this->merchantRepoMock);
+
+        $this->repoMock->shouldReceive('driver')->with('m2m_referral')->andReturn($this->m2mReferralRepoMock);
     }
 
     public function getAdminAndPublicAuthMock()
@@ -715,6 +718,9 @@ class DetailServiceTest extends TestCase
 
         // Merchant Repo mocking
         $this->merchantRepoMock = Mockery::mock('RZP\Models\Merchant\Repository');
+
+        // M2M Referrals Repo mocking
+        $this->m2mReferralRepoMock = Mockery::mock('RZP\Models\Merchant\M2MReferral\Repository');
 
         // Merchant Mocking
         $this->merchantDetailEntityMock = Mockery::mock('RZP\Models\Merchant\Detail\Entity');

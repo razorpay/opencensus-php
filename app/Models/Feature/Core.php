@@ -5,6 +5,7 @@ namespace RZP\Models\Feature;
 use Mail;
 use Config;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
@@ -192,8 +193,8 @@ class Core extends Base\Core
         $this->checkCollectionsAuthTypeForDeletionIfApplicable($feature);
 
         $this->app['workflow']
-             ->setEntity($feature->getEntity())
-             ->handle($original, $dirty);
+            ->setEntity($feature->getEntity())
+            ->handle($original, $dirty);
 
         $this->repo->feature->deleteAndSyncIfApplicableOrFail($feature, $shouldSync);
 
@@ -303,7 +304,7 @@ class Core extends Base\Core
                 ]);
         }
         else if (($feature->getName() === Constants::LOAN) and
-            ($isLiveMode === true))
+                 ($isLiveMode === true))
         {
             $merchantEmail = $merchant->getEmail();
 
@@ -961,10 +962,59 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
-                      $feature
+                $feature
             );
         }
 
+    }
+
+    /**
+     * get status of feature
+     *
+     * @param $entityType
+     * @param $entityId
+     * @param $featureName
+     *
+     * @return array
+     */
+    public function getStatus($entityType, $entityId, $featureName)
+    {
+        $response['status'] = false;
+        try
+        {
+            $this->trace->info(
+                TraceCode::FEATURE_GET_STATUS_REQUEST,
+                [
+                    Entity::FEATURE     => $featureName,
+                    Entity::MERCHANT_ID => $entityId
+                ]);
+
+            $entityId = $this->merchant->getId();
+
+            $response = new Base\Collection;
+
+            $status = $this->repo
+                ->feature
+                ->findByEntityTypeEntityIdAndName($entityType, $entityId, $featureName);
+
+            $statusFactory = new Status\Factory();
+
+            $statusProcessor = $statusFactory->getStatusInstance($status);
+
+            $response['status'] = $statusProcessor->getFeatureStatus();
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::FEATURE_GET_STATUS_FAILED,
+                [
+                    Entity::FEATURE     => $featureName,
+                    Entity::MERCHANT_ID => $entityId,
+                    'error'             => $e->getMessage()
+                ]);
+        }
+
+        return $response->toArray();
     }
 
     private function checkCollectionsAuthTypeForDeletionIfApplicable($feature){

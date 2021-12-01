@@ -357,6 +357,7 @@ class UserRolesScope
             'growth_get_asset_details'                      => array_merge(Role::allExceptPaymentLinkRoles(), Role::LINKED_ACCOUNT_ROLES),
             'merchant_requests_create'                      => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],
             'merchant_store_fetch'                          => [Role::ADMIN, Role::OWNER, Role::SELLERAPP, Role::FINANCE, Role::MANAGER,Role::OPERATIONS],
+            'm2m_referral_link_get'                         => [Role::ADMIN, Role::OWNER, Role::SELLERAPP, Role::FINANCE, Role::MANAGER,Role::OPERATIONS],
             'mir_instruments_get'                           => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],
             'oauth_application_fetch_partner'               => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
             'offer_create'                                  => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::SELLERAPP,],
@@ -973,6 +974,8 @@ class UserRolesScope
             'update_serviceability_url'                           => [Role::OWNER, Role::ADMIN],
             'update_coupon_validity_url'                          => [Role::OWNER, Role::ADMIN],
             'update_fetch_coupons_url'                            => [Role::OWNER, Role::ADMIN],
+
+            'm2m_referral_link_get'                     => Role::READER_ROLES,
         ];
 
         /*
@@ -1007,6 +1010,8 @@ class UserRolesScope
             'merchant_edit_pre_signup_details' => true,
             'merchant_instant_activation_post' => true,
             'merchant_store_fetch'             => true,
+            'm2m_referral_link_get_public'     => true,
+            'm2m_referral_link_get'     => true,
             'merchant_activation_save'         => true,
             'merchant_document_upload'         => true,
         ];

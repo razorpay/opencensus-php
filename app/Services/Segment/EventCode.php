@@ -14,6 +14,10 @@ class EventCode
 
     const DEDUPE                    = 'Dedupe';
 
+    const ADVOCATE_REFERRAL_CREDITS          = 'Advocate Referral Credits';
+
+    const ADVOCATE_REFERRAL          = 'Advocate Referral';
+
     const MTU_TRANSACTED            = 'MTU Transacted';
 
     const KYC_FORM_SAVED            = 'KYC Form Saved';

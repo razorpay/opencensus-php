@@ -12,6 +12,15 @@ class Validator extends Base\Validator
     protected static $updateRules = [
         Constants::NAMESPACE                               => 'required|string|custom',
         ConfigKey::MTU_COUPON_POPUP_COUNT                  => 'filled|integer|min:1|max:5',
+        ConfigKey::REFERRED_COUNT                          => 'filled|integer',
+        ConfigKey::REFERRAL_LINK                           => 'filled|string',
+        ConfigKey::REFERRAL_CODE                           => 'filled|string',
+        ConfigKey::REFERRAL_SUCCESS_POPUP_COUNT            => 'filled|integer|min:0|max:5',
+        ConfigKey::IS_SIGNED_UP_REFEREE                    => 'filled|bool',
+        ConfigKey::REFERRAL_AMOUNT                         => 'filled|integer',
+        ConfigKey::REFERRAL_AMOUNT_CURRENCY                => 'filled|string',
+        ConfigKey::REFEREE_NAME                            => 'filled|array',
+        ConfigKey::REFEREE_ID                              => 'filled|array',
         ConfigKey::GST_DETAILS_FROM_PAN                    => 'filled|json',
         ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT  => 'filled|integer',
         ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT => 'filled|integer'
@@ -21,7 +30,7 @@ class Validator extends Base\Validator
         Constants::NAMESPACE => 'filled|string|custom',
     ];
 
-    public static $validRoles = [
+    public static    $validRoles  = [
         Constants::PUBLIC,
         Constants::INTERNAL,
     ];
@@ -44,7 +53,7 @@ class Validator extends Base\Validator
 
     }
 
-    public function validateUpdateRequest(array $input,string $role)
+    public function validateUpdateRequest(array $input, string $role)
     {
         $this->validateInput('update', $input);
 
@@ -60,7 +69,7 @@ class Validator extends Base\Validator
 
             if ($this->isPermittedAction($config, Constants::WRITE, $role) === false)
             {
-                throw new InvalidPermissionException('Not permitted action ' . $role.' for key '.$key);
+                throw new InvalidPermissionException('Not permitted action ' . $role . ' for key ' . $key);
             }
         }
     }

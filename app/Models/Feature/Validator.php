@@ -74,25 +74,25 @@ class Validator extends Base\Validator
         }
     }
 
-   public function validateZoho(Request $request)
-   {
+    public function validateZoho(Request $request)
+    {
         if (Merchant\Preferences::checkZohoHeaders($request->headers) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Payment failed');
         }
-   }
+    }
 
-   /**
-    * Validates that the feature is not in already assigned list of merchant
-    * features.
-    *
-    * @param array $assignedFeatureNames
-    *
-    * @throws Exception\BadRequestException
-    */
-   public function validateFeatureIsNotAlreadyAssigned(array $assignedFeatureNames)
-   {
+    /**
+     * Validates that the feature is not in already assigned list of merchant
+     * features.
+     *
+     * @param array $assignedFeatureNames
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateFeatureIsNotAlreadyAssigned(array $assignedFeatureNames)
+    {
         $feature = $this->entity;
 
         $name = $feature->getName();
@@ -109,65 +109,65 @@ class Validator extends Base\Validator
                     PublicEntity::MERCHANT_ID => $feature->getMerchantId(),
                 ]);
         }
-   }
+    }
 
-   public function validateStatus($attribute, $value)
-   {
-       $onboardingStatuses = Constants::ONBOARDING_STATUSES;
+    public function validateStatus($attribute, $value)
+    {
+        $onboardingStatuses = Constants::ONBOARDING_STATUSES;
 
-       if (in_array($value, $onboardingStatuses, true) === false)
-       {
-           throw new Exception\BadRequestValidationFailureException(
-              "Invalid status: $value",
-              $attribute);
-       }
-   }
+        if (in_array($value, $onboardingStatuses, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid status: $value",
+                $attribute);
+        }
+    }
 
-   public function validateProduct($attribute, $value)
-   {
-       $productFeatures = Constants::PRODUCT_FEATURES;
+    public function validateProduct($attribute, $value)
+    {
+        $productFeatures = Constants::PRODUCT_FEATURES;
 
-       if (in_array($value, $productFeatures, true) === false)
-       {
-           throw new Exception\BadRequestValidationFailureException(
-              "Invalid product: $value",
-              $attribute);
-       }
-   }
+        if (in_array($value, $productFeatures, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid product: $value",
+                $attribute);
+        }
+    }
 
-   public function validateSkipWorkflowPayoutSpecific($input)
-   {
+    public function validateSkipWorkflowPayoutSpecific($input)
+    {
 
-       if ($input[Entity::NAME] === Constants::SKIP_WF_AT_PAYOUTS)
-       {
-           $app = App::getFacadeRoot();
+        if ($input[Entity::NAME] === Constants::SKIP_WF_AT_PAYOUTS)
+        {
+            $app = App::getFacadeRoot();
 
-           $merchantId = null;
+            $merchantId = null;
 
-           $treatment = null;
+            $treatment = null;
 
-           if ($input[Entity::ENTITY_TYPE] === Constants::MERCHANT)
-           {
-               $merchantId = $input[Entity::ENTITY_ID];
+            if ($input[Entity::ENTITY_TYPE] === Constants::MERCHANT)
+            {
+                $merchantId = $input[Entity::ENTITY_ID];
 
-               $treatment = $app->razorx->getTreatment(
-                   $merchantId,
-                   Merchant\RazorxTreatment::SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE,
-                   $this->getMode()
-               );
-           }
+                $treatment = $app->razorx->getTreatment(
+                    $merchantId,
+                    Merchant\RazorxTreatment::SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE,
+                    $this->getMode()
+                );
+            }
 
-           if (($treatment === null) or
-               ($treatment !== 'on'))
-           {
-               throw new Exception\BadRequestException(
-                   ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
-                   Entity::NAME,
-                   Constants::SKIP_WF_AT_PAYOUTS
-               );
-           }
-       }
-   }
+            if (($treatment === null) or
+                ($treatment !== 'on'))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+                    Entity::NAME,
+                    Constants::SKIP_WF_AT_PAYOUTS
+                );
+            }
+        }
+    }
 
     public function validateRzpTrustedBadge($input)
     {
@@ -219,8 +219,8 @@ class Validator extends Base\Validator
             if ($merchant->getActivatedAt() === null || $merchant->isActivateForFourMonths() === false)
             {
                 $activationDate = Carbon::createFromTimestamp($merchant->getActivatedAt())
-                    ->timezone(\RZP\Constants\Timezone::IST)
-                    ->toDateString();
+                                        ->timezone(\RZP\Constants\Timezone::IST)
+                                        ->toDateString();
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
                     Entity::NAME,
@@ -234,52 +234,52 @@ class Validator extends Base\Validator
         }
     }
 
-   public function validateCovid19Relief($input)
-   {
-       if ($input[Entity::NAME] === Constants::COVID_19_RELIEF && $input[Entity::ENTITY_TYPE] === Constants::MERCHANT) {
-           $app = App::getFacadeRoot();
+    public function validateCovid19Relief($input)
+    {
+        if ($input[Entity::NAME] === Constants::COVID_19_RELIEF && $input[Entity::ENTITY_TYPE] === Constants::MERCHANT) {
+            $app = App::getFacadeRoot();
 
-           $merchantId = $input[Entity::ENTITY_ID];
+            $merchantId = $input[Entity::ENTITY_ID];
 
-           $merchant = $app['repo']->merchant->find($merchantId);
+            $merchant = $app['repo']->merchant->find($merchantId);
 
-           $variant = App::getFacadeRoot()->razorx->getTreatment(
-               $merchant->getId(),
-               Merchant\RazorxTreatment::COVID_19_DONATION_SHOW,
-               $this->getMode()
-           );
+            $variant = App::getFacadeRoot()->razorx->getTreatment(
+                $merchant->getId(),
+                Merchant\RazorxTreatment::COVID_19_DONATION_SHOW,
+                $this->getMode()
+            );
 
-           if ($variant !== 'on')
-           {
-               throw new Exception\BadRequestException(
-                   ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
-                   Entity::NAME,
-                   Constants::COVID_19_RELIEF,
-                   'Feature is not live right now'
-               );
-           }
+            if ($variant !== 'on')
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+                    Entity::NAME,
+                    Constants::COVID_19_RELIEF,
+                    'Feature is not live right now'
+                );
+            }
 
-           if ($merchant->merchantDetail === null or $merchant->merchantDetail->getBusinessType() === null)
-           {
-               throw new Exception\BadRequestException(
-                   ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
-                   Entity::NAME,
-                   Constants::COVID_19_RELIEF,
-                   'Merchant business type is not available'
-               );
-           }
+            if ($merchant->merchantDetail === null or $merchant->merchantDetail->getBusinessType() === null)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+                    Entity::NAME,
+                    Constants::COVID_19_RELIEF,
+                    'Merchant business type is not available'
+                );
+            }
 
-           $businessType = $merchant->merchantDetail->getBusinessType();
+            $businessType = $merchant->merchantDetail->getBusinessType();
 
-           if (in_array($businessType, [BusinessType::NGO, BusinessType::TRUST]))
-           {
-               throw new Exception\BadRequestException(
-                   ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
-                   Entity::NAME,
-                   Constants::COVID_19_RELIEF,
-                   'Cannot Enable covid 19 relief feature, since merchant business type is either NGO or TRUST'
-               );
-           }
-       }
-   }
+            if (in_array($businessType, [BusinessType::NGO, BusinessType::TRUST]))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+                    Entity::NAME,
+                    Constants::COVID_19_RELIEF,
+                    'Cannot Enable covid 19 relief feature, since merchant business type is either NGO or TRUST'
+                );
+            }
+        }
+    }
 }

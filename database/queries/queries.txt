@@ -6427,6 +6427,7 @@ CREATE TABLE merchant_1cc_configs
   deleted_at bigint DEFAULT NULL
 );
 
+
 ALTER TABLE card_mandates
    MODIFY COLUMN end_at bigint DEFAULT NULL;
 

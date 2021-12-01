@@ -4,11 +4,15 @@ namespace RZP\Models\Merchant;
 
 final class RazorxTreatment
 {
+    //Razorx treatment constant, allows system to show friend buy widget to merchant
+    const SHOW_FRIENDBUY_WIDGET = "show_friendbuy_widget";
+
     // Response filed filtering based on role
     const RESPONSE_FIELDS_FILTERING_FOR_ROLES = 'response_fields_filtering_for_roles';
 
     //Razorx treatment constant, allows system to call bvs for partnership deed verification.
     const AUTO_KYC_PARTNERSHIP = "auto_kyc_partnership";
+
 
     //Razorx treatment constant, allows system to auto populate gst number from pan.
     const BVS_GET_GST_DETAILS = "bvs_get_gst_details";

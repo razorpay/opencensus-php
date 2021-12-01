@@ -39,7 +39,10 @@ class Service extends Base\Service
 
     protected $merchantService;
 
-    public function __construct(Core $core = null, Validator $validator = null, Merchant\Service $merchantService = null)
+    protected $m2mReferralService;
+
+    public function __construct(Core $core = null, Validator $validator = null, Merchant\Service $merchantService = null,
+                                Merchant\M2MReferral\Service $m2mReferralService = null)
     {
         parent::__construct();
 
@@ -48,11 +51,15 @@ class Service extends Base\Service
         $this->validator = $validator ?? new Validator();
 
         $this->merchantService = $merchantService ?? new Merchant\Service();
+
+        $this->m2mReferralService = $m2mReferralService ?? new Merchant\M2MReferral\Service();
     }
 
     public function register(array $input, string $operation = 'create'): array
     {
         $this->traceRegisterInput($input);
+
+        $m2mReferralInput = $this->m2mReferralService->extractFriendBuyParams($input);
 
         $referrer = $input['ref'] ?? '';
 
@@ -145,7 +152,7 @@ class Service extends Base\Service
 
         $signupMethod = Constants::PASSWORD;
 
-        $this->signUpSuccess($user, $partnerIntent, $signupMethod);
+        $this->signUpSuccess($user, $partnerIntent, $signupMethod,$m2mReferralInput);
 
         return $data;
     }
@@ -201,14 +208,25 @@ class Service extends Base\Service
 
     }
 
-    protected function signUpSuccess($user, $partnerIntent, $signupMethod)
+    protected function signUpSuccess($user, $partnerIntent, $signupMethod,$m2mReferralInput=null)
     {
+        if (empty($m2mReferralInput))
+        {
+            $isM2MReferral = false;
+        }
+        else
+        {
+            $isM2MReferral = $this->m2mReferralService->sendSignUpEventIfApplicable($user[Entity::ID], $m2mReferralInput);
+        }
+
         $visitorId = $this->fetchVisitorIdFromCookie();
 
         $customProperties = [
             Entity::EMAIL                      => $user[Entity::EMAIL] ?? null,
             Entity::VISITOR_ID                 => $visitorId,
-            Merchant\Constants::PARTNER_INTENT => $partnerIntent
+            Merchant\Constants::PARTNER_INTENT => $partnerIntent,
+            'is_m2m_referral'                  => $isM2MReferral
+
         ];
 
         if ($user[Entity::SIGNUP_VIA_EMAIL] == 0)

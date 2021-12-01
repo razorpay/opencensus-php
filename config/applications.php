@@ -449,6 +449,24 @@ return [
         'secret'  => env('FRESHDESK_WEBHOOK_SECRET'),
     ],
 
+    'friend_buy' => [
+        // Api url for merchant risks service.
+        'url'                => env('FRIEND_BUY_URL'),
+        'mock'               => env('FRIEND_BUY_SERVICE_MOCK', false),
+        'response'           => env('FRIEND_BUY_SERVICE_MOCK_RESPONSE', 'success'),
+        'request_timeout'    => env('FRIEND_BUY_REQUEST_TIMEOUT', 4000),
+        'connection_timeout' => env('FRIEND_BUY_CONNECTION_TIMEOUT', 2000),
+        'auth'               => [
+            'key'           => env('FRIEND_BUY_API_AUTH_CLIENT_KEY'),
+            'secret'        => env('FRIEND_BUY_API_AUTH_SECRET_KEY'),
+        ],
+        'webhook'=> [
+            'hash_key'    => env('FRIEND_BUY_WEBHOOK_HASH_SECRET')
+        ]
+    ],
+    'friend_buy_webhook' => [
+        'secret'  => env('FRIEND_BUY_WEBHOOK_BASIC_AUTH_PASSWORD'),
+    ],
     'yellowmessenger'   => [
         'secret'  => env('YELLOWMESSENGER_SECRET'),
     ],

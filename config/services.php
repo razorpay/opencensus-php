@@ -112,7 +112,6 @@ return [
             'secret'    => env('MERCHANT_RISKS_CLIENT_SECRET')
         ],
     ],
-
     'segment_analytics' => [
         'url'                => env('SEGMENT_ANALYTICS_URL'),
         'mock'               => env('SEGMENT_ANALYTICS_MOCK', false),

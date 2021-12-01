@@ -10,13 +10,16 @@ use RZP\Constants\Timezone;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Notifications\Onboarding\Events;
+use RZP\Models\Merchant\Constants as MConstants;
 use RZP\Models\Coupon\Constants as CouponCodeConstants;
 use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\Merchant\MerchantActionNotification;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Account as MerchantAccount;
 use RZP\Models\Merchant\Escalations\Actions\Entity as ActionEntity;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
-
+use RZP\Models\Merchant\M2MReferral\Service as M2MService;
 class Core extends Base\Core
 {
     protected $cache;
@@ -295,16 +298,26 @@ class Core extends Base\Core
 
         foreach ($merchantIdList as $merchantId)
         {
-            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-            $previousActivationStatus = $this->repo->state->getPreviousActivationStatus($merchant->getId());
+                // fetch merchants first transaction details
+                $merchantsTransaction = $this->repo->transaction->fetchFirstTransactionDetails($merchantId);
 
-            $properties = [
-                'mtu'                         => true,
-                'first_transaction_timestamp' => Carbon::now()->getTimestamp(),
-                'activation_status'           => $merchant->merchantDetail->getActivationStatus(),
-                'previous_activation_status'  => $previousActivationStatus['name'],
-            ];
+                $previousActivationStatus = $this->repo->state->getPreviousActivationStatus($merchant->getId());
+
+                $isM2MReferral = (new M2MService())->sendMtuEventIfApplicable($merchant, $merchantsTransaction);
+
+                $properties = [
+                    'mtu'                         => true,
+                    'first_transaction_timestamp' => Carbon::now()->getTimestamp(),
+                    'activation_status'           => $merchant->merchantDetail->getActivationStatus(),
+                    'previous_activation_status'  => $previousActivationStatus['name'],
+                    'is_m2m_referral'             => $isM2MReferral,
+                    'amount'                      => $merchantsTransaction['amount']
+                ];
+
 
             $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);
 
@@ -313,8 +326,18 @@ class Core extends Base\Core
                 $properties['signup_source'] = $userDeviceDetail->getSignupSource();
             }
 
-            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
-                $merchant, $properties, SegmentEvent::MTU_TRANSACTED);
+                $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                    $merchant, $properties, SegmentEvent::MTU_TRANSACTED);
+
+
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(TraceCode::ESCALATION_MTU_SEGMENT_FAILURE, [
+                    'merchant_id' => $merchantId,
+                    'exception'   => $e->getMessage()
+                ]);
+            }
         }
 
         $this->app['segment-analytics']->buildRequestAndSend();

@@ -15330,80 +15330,8 @@ return [
                     0 => [
                         'entity' => 'payout',
                         'fund_account_id' => 'fa_100000000000fa',
-                        'fund_account' =>
-                            array (
-                                'id' => 'fa_100000000000fa',
-                                'entity' => 'fund_account',
-                                'contact_id' => 'cont_1000001contact',
-                                'account_type' => 'bank_account',
-                                'bank_account' =>
-                                    array (
-                                        'ifsc' => 'YESB0CMSNOC',
-                                        'bank_name' => 'Yes Bank',
-                                        'name' => 'random_name',
-                                        'notes' =>
-                                            array (
-                                            ),
-                                        'account_number' => '2224440041626905',
-                                    ),
-                                'contact' => [],
-                                'batch_id' => NULL,
-                                'active' => true,
-                            ),
                         'amount' => 10000,
                         'currency' => 'INR',
-                        'workflow_history' =>
-                            array (
-                                'current_level' => 1,
-                                'steps' =>
-                                    array (
-                                        0 =>
-                                            array (
-                                                'op_type' => 'or',
-                                                'level' => 1,
-                                                'total_reviewer_count' => 2,
-                                                'roles' =>
-                                                    array (
-                                                        0 =>
-                                                            array (
-                                                                'id' => 'RzpAdminRoleId',
-                                                                'name' => 'SuperAdmin',
-                                                                'reviewer_count' => 1,
-                                                                'checkers' =>
-                                                                    array (
-                                                                    ),
-                                                            ),
-                                                        1 =>
-                                                            array (
-                                                                'id' => 'RzpOwnerRoleId',
-                                                                'name' => 'Owner',
-                                                                'reviewer_count' => 1,
-                                                                'checkers' =>
-                                                                    array (
-                                                                    ),
-                                                            ),
-                                                    ),
-                                            ),
-                                        1 =>
-                                            array (
-                                                'op_type' => 'and',
-                                                'level' => 2,
-                                                'total_reviewer_count' => 1,
-                                                'roles' =>
-                                                    array (
-                                                        0 =>
-                                                            array (
-                                                                'id' => 'RzpFinL3RoleId',
-                                                                'name' => 'Finance L3',
-                                                                'reviewer_count' => 1,
-                                                                'checkers' =>
-                                                                    array (
-                                                                    ),
-                                                            ),
-                                                    ),
-                                            ),
-                                    ),
-                            ),
                         'notes' =>
                             array (
                             ),
@@ -15417,7 +15345,6 @@ return [
                         'reference_id' => NULL,
                         'narration' => 'Test Merchant Fund Transfer',
                         'batch_id' => NULL,
-                        'banking_account_id' => 'bacc_1000000lcustba',
                         'failure_reason' => NULL,
                         'fee_type' => NULL,
                         'scheduled_at' => NULL,

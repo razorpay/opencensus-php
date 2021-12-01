@@ -18,6 +18,9 @@ use RZP\Base\Database\LagChecker\HeartbeatLagChecker;
 class Route
 {
     protected static $apiRoutes = [
+        //friend buy
+        'friend_buy_reward_validation'  =>  ['post',    'friendbuy/reward_validation',  'ReferralController@performRewardValidation' ],
+
         // Dev routes
         'inspector_view_get'                      => ['get',      '_inspector',                                      'GenericController@getInspectorIndex'                               ],
 
@@ -69,6 +72,9 @@ class Route
 
         'merchant_store_add'                       => ['post',     'merchants/config/store',                                'MerchantController@updateMerchantStore'   ],
         'merchant_store_fetch'                     => ['get',      'merchants/config/store',                                'MerchantController@fetchMerchantStore'    ],
+
+        'm2m_referral_link_get' => ['get',  'merchants/onboarding/m2m_referral', 'ReferralController@fetchReferralDetails' ],
+        'm2m_referral_link_get_public'  => ['get',  'm2m_referral',  'ReferralController@fetchPublicReferralDetails' ],
 
         'merchant_report'                          => ['post',     'merchants/admin/report',                         'MerchantController@handleReport'                          ],
         'merchant_onboarding_escalations'          => ['post',     'merchants/onboarding/escalations',               'MerchantController@handleOnboardingEscalationsCron'],
@@ -2742,6 +2748,9 @@ class Route
         //cron job to retry penny testing for initiated case
         'retry_penny_testing_cron'                => ['post',      'merchants/retry_penny_testing',                           'MerchantController@retryPennyTestingCron'                 ],
 
+        //cron job to enable m2m referrals for merchants
+        'enable_m2m_referrals_cron'                => ['post',      'merchants/enable_m2m_referrals',                           'MerchantController@enableM2MReferralsCron'                 ],
+
         // low balance notification config apis
         'create_low_balance_config'               => ['post',       'low_balance_configs',                    'LowBalanceConfigController@create'],
         'create_low_balance_config_admin'         => ['post',       'low_balance_configs/admin',              'LowBalanceConfigController@adminCreate'],
@@ -3571,12 +3580,14 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'm2m_referral_link_get_public',
         'payout_links_customer_hosted_page_data',
         'payout_links_customer_hosted_page_demo_data',
         'payout_notification_to_slack_app',
         'internal_merchants_fetch_by_params',
         'internal_feature_bulk_assign',
         'internal_feature_bulk_remove',
+        'friend_buy_reward_validation',
         'internal_feature_get_all',
         'user_fetch_by_verified_contact_internal',
         'merchant_risk_alerts_foh_workflow_trigger_nc',
@@ -3906,6 +3917,7 @@ class Route
         'update_admin_through_batch',
         'merchant_create_terminal_internal',
         'retry_penny_testing_cron',
+        'enable_m2m_referrals_cron',
         'merchant_methods_edit_internal',
         'refund_create_batch_service',
         'credits_create_bulk_batch',
@@ -4255,6 +4267,7 @@ class Route
         'fetch_payments_scheduled_downtimes',
         'merchant_store_add',
         'merchant_store_fetch',
+        'm2m_referral_link_get',
         'bbps_bill_payments',
         'merchant_balance_fetch_by_id',
         'merchant_rtb_details_fetch',
@@ -5852,10 +5865,12 @@ class Route
     ];
 
     public static $routePermission = [
-        'admin_merchant_post_preferences'          => Permission::UPDATE_MERCHANT_PREFERENCE,
-        'merchant_activation_gst_details'          => Permission::VIEW_MERCHANT,
-        'merchant_business_detail_fetch'           => Permission::VIEW_MERCHANT,
-        'merchant_business_detail_save'            => Permission::EDIT_MERCHANT,
+        'm2m_referral_link_get'                     => Permission::VIEW_MERCHANT,
+        'm2m_referral_link_get_public'              => Permission::VIEW_MERCHANT,
+        'admin_merchant_post_preferences'           => Permission::UPDATE_MERCHANT_PREFERENCE,
+        'merchant_activation_gst_details'           => Permission::VIEW_MERCHANT,
+        'merchant_business_detail_fetch'            => Permission::VIEW_MERCHANT,
+        'merchant_business_detail_save'             => Permission::EDIT_MERCHANT,
         'los_service_dev_admin'                    => Permission::CAPITAL_DEVELOPER,
         'loc_service_dev_admin'                    => Permission::CAPITAL_DEVELOPER,
         'capital_marketplace_dev_admin'            => Permission::CAPITAL_DEVELOPER,
@@ -7519,6 +7534,7 @@ class Route
             'store_upload_image',
             'merchant_store_add',
             'merchant_store_fetch',
+            'm2m_referral_link_get',
             'merchant_edit_email_self_serve',
             'email_user_status_for_email_update',
             'merchant_fire_hubspot_event',
@@ -10432,6 +10448,7 @@ class Route
         // We create a new app because these routes when hit
         // won't have any merchant or admin in context.
         'dashboard_guest' => [
+            'm2m_referral_link_get_public',
             'user_login',
             'user_otp_login',
             'verify_user_otp_login',
@@ -10646,6 +10663,7 @@ class Route
             'terminal_service_sync_delete',
             'virtual_account_batch_migrate_yesbank',
             'transfer_settlements_update',
+            'enable_m2m_referrals_cron',
             'retry_penny_testing_cron',
             'payment_links_bulk_expire',
             'fee_recovery_payout_process',
@@ -11156,7 +11174,9 @@ class Route
             'fd_customer_dispute',
             'fd_consume_webhook',
         ],
-
+        'friend_buy_webhook' => [
+            'friend_buy_reward_validation',
+        ],
         'yellowmessenger' => [
             'care_service_chat_proxy',
         ],

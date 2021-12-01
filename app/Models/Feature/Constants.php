@@ -6,6 +6,13 @@ use RZP\Models\Merchant\Detail as MerchantDetail;
 
 class Constants
 {
+
+    //M2M referral feature metadata
+    const M2M_REFERRAL                          = 'm2m_referral';
+
+    //M2M referral environment keys
+    const M2M_REFERRAL_MAX_REFERRED_COUNT_ALLOWED           = "M2M_REFERRAL_MAX_REFERRED_COUNT_ALLOWED";
+
     const ENTITY_IDS                      = 'entity_ids';
     const ENTITY_TYPE                     = 'entity_type';
     const NAMES                           = 'names';
@@ -197,8 +204,8 @@ class Constants
 
     const CAPITAL_CARDS_COLLECTIONS       = 'capital_cards_collections';
     /**
-      Prevents user to switch to test mode from live mode
-    */
+    Prevents user to switch to test mode from live mode
+     */
     const PREVENT_TEST_MODE               = 'prevent_test_mode';
 
     /**
@@ -640,7 +647,7 @@ class Constants
      */
     const CHECKOUT_DISABLE_CARDSCAN          = 'checkout_disable_cardscan';
 
-   // for sending x banking accounts to pure partner
+    // for sending x banking accounts to pure partner
     const BANKING_ACCOUNTS_ISSUED = 'banking_accounts_issued';
 
     // feature for enabling refund arn webhook
@@ -803,6 +810,7 @@ class Constants
     const PAYOUTS_ON_HOLD = 'payouts_on_hold';
 
     /**
+     * Merchant feature used to control visibility of dcc markup on frontend
      * Even if the feature 'PAYOUTS_ON_HOLD' is set for merchants, 10% of the payouts may be sent as test transactions
      * to detect uptime. If this flag is enabled ( solely for DMT merchants), the payout will never be sent as test
      * transactions and will always be queued for a certain sla or until the uptime is detected.
@@ -888,6 +896,10 @@ class Constants
      */
     const ADDRESS_REQUIRED = 'address_required';
 
+    /**
+     * Merchant feature used to disable the Sift JS integration
+     */
+    const ENABLE_SIFT_JS   =   'enable_sift_js';
     /**
      * Merchant feature used to disable the Sift JS integration
      */
@@ -1370,6 +1382,8 @@ class Constants
         self::SEND_DCC_COMPLIANCE             => true,
         self::ORG_SUB_MERCHANT_MCC_PENDING    => true,
         self::SOURCED_BY_WALNUT369            => true,
+        self::M2M_REFERRAL                    => true,
+        self::ENABLE_SIFT_JS                  => true,
         self::DISABLE_SIFT_JS                 => true,
         self::API_BULK_APPROVALS              => true,
         self::NETWORK_TOKENIZATION            => true,
@@ -1840,7 +1854,7 @@ class Constants
             'display_name'  => 'Mark the merchant eligible for Automated Withdrawals',
             'documentation' => '',
         ],
-       self::PREVENT_TEST_MODE  => [
+        self::PREVENT_TEST_MODE  => [
             'feature'       => self::PREVENT_TEST_MODE,
             'display_name'  => 'Prevent user to switch to test mode from live mode',
             'documentation' => '',
@@ -1948,6 +1962,11 @@ class Constants
         self::DISPUTE_PRESENTMENT => [
             'feature'       => self::DISPUTE_PRESENTMENT,
             'display_name'  => 'Enable dispute presentment',
+            'documentation' => '',
+        ],
+        self::M2M_REFERRAL =>[
+            'feature'       => self::M2M_REFERRAL,
+            'display_name'  => 'M2M Referrals',
             'documentation' => '',
         ],
         self::API_BULK_APPROVALS => [

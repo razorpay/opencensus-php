@@ -27,6 +27,8 @@ class UserTest extends TestCase
 
     protected $merchantServiceMock;
 
+    protected $m2mReferralServiceMock;
+
     protected $userEntityMock;
 
     protected $coreMock;
@@ -47,6 +49,11 @@ class UserTest extends TestCase
 
     protected $merchantDetailRepoMock;
 
+    /**
+     * @var Mockery\LegacyMockInterface|Mockery\MockInterface|\RZP\Models\Merchant\M2MReferral\Entity
+     */
+    private $m2mReferralEntityMock;
+
     protected function setUp(): void
     {
 
@@ -55,7 +62,7 @@ class UserTest extends TestCase
         //wip, can be plugged out and run only once for all the tests.
         $this->createTestDependencyMocks();
 
-        $this->userService = new UserService($this->coreMock, $this->userValidator, $this->merchantServiceMock);
+        $this->userService = new UserService($this->coreMock, $this->userValidator, $this->merchantServiceMock,$this->m2mReferralServiceMock);
     }
 
     public function mockRedis()
@@ -76,12 +83,12 @@ class UserTest extends TestCase
             'input' => [
                 'user_id'               => '100002Razorpay',
                 'business_name'         => 'dummy-business',
-                'email'                 => 'dummy@example.com',
+                'email'                 => 'dummy5@example.com',
             ],
             'userData' => [
                 'id'                    => '100002Razorpay',
                 'name'                  => 'dummy',
-                'email'                 => 'dummy@example.com',
+                'email'                 => 'dummy5@example.com',
                 'password'              => 'blahblah123',
                 'password_confirmation' => 'blahblah123',
                 'contact_mobile'        => '9999999999',
@@ -90,7 +97,7 @@ class UserTest extends TestCase
             ],
             'merchantData' => [
                 'name'                  => 'dummy',
-                'email'                 => 'dummy@example.com',
+                'email'                 => 'dummy5@example.com',
                 'org_id'                => 'org100razorpay',
                 'signup_source'         => 'banking',
             ],
@@ -107,6 +114,12 @@ class UserTest extends TestCase
         $this->repoMock->shouldReceive('driver')->with('merchant')->andReturn($this->merchantRepoMock);
 
         $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantRepoMock);
+
+        $this->repoMock->shouldReceive('driver')->with('m2m_referral')->andReturn($this->m2mReferralEntityMock);
+
+        $this->m2mReferralServiceMock->shouldReceive('extractFriendBuyParams')->andReturn([]);
+
+        $this->m2mReferralServiceMock->shouldReceive('sendSignUpEventIfApplicable')->andReturn(true);
 
         $this->repoMock->shouldReceive('driver')->with('org')->andReturn($orgRepoMock);
 
@@ -656,6 +669,14 @@ class UserTest extends TestCase
         $this->merchantEntityMock->shouldReceive('getEmail')->andReturn('dummy@example.com');
 
         $mailMock->shouldReceive('queue')->withAnyArgs()->andReturn([]);
+
+        $this->m2mReferralEntityMock = Mockery::mock('RZP\Models\Merchant\M2MReferral\Entity');
+
+        $this->repoMock->shouldReceive('driver')->with('m2m_referral')->andReturn($this->m2mReferralEntityMock);
+
+        $this->m2mReferralServiceMock->shouldReceive('extractFriendBuyParams')->andReturn([]);
+
+        $this->m2mReferralServiceMock->shouldReceive('sendSignUpEventIfApplicable')->andReturn(true);
 
         $response = $this->userService->register($content['userData']);
 
@@ -2584,6 +2605,28 @@ class UserTest extends TestCase
         $this->assertNotNull($response);
     }
 
+    public function testDummy()
+    {
+        $input = [
+            'helloWorld'
+        ];
+
+        $request = Mockery::mock('Illuminate\Http\Request')->makePartial();
+
+        $this->app->instance('request', $request);
+
+        $request->shouldReceive('cookie')->withAnyArgs()->andReturn(true);
+
+        $this->m2mReferralEntityMock = Mockery::mock('RZP\Models\Merchant\M2MReferral\Entity');
+
+        $this->repoMock->shouldReceive('driver')->with('m2m_referral')->andReturn($this->m2mReferralEntityMock);
+
+        $response = $this->userService->addUtmParameters($input);
+
+        $this->assertNotNull($input);
+    }
+
+
     public function testNotifyUserAboutAccountLocked()
     {
         Mail::fake();
@@ -2652,6 +2695,10 @@ class UserTest extends TestCase
         $this->repoMock->shouldReceive('driver')->with('org')->andReturn($orgRepoMock);
 
         $this->repoMock->shouldReceive('driver')->with('user')->andReturn($this->userRepoMock);
+
+        $this->m2mReferralEntityMock = Mockery::mock('RZP\Models\Merchant\M2MReferral\Entity');
+
+        $this->repoMock->shouldReceive('driver')->with('m2m_referral')->andReturn($this->m2mReferralEntityMock);
 
         $orgRepoMock->shouldReceive('findByPublicId')->andReturn($orgEntityMock);
 
@@ -2862,6 +2909,9 @@ class UserTest extends TestCase
 
         // Merchant Service Mocking
         $this->merchantServiceMock = Mockery::mock('RZP\Models\Merchant\Service');
+
+        // M2M Referral Service Mocking
+        $this->m2mReferralServiceMock = Mockery::mock('RZP\Models\Merchant\M2MReferral\Service');
 
         // Org Repo Mocking
         $this->orgRepoMock = Mockery::mock('RZP\Models\Admin\Org\Repository');

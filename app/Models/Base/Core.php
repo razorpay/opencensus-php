@@ -63,6 +63,9 @@ class Core
      */
     protected $secret;
 
+    protected $cache;
+
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -88,7 +91,10 @@ class Core
 
         $this->secret = $batchApplication['aes_key'];
 
+        $this->cache = $this->app['cache'];
+
         $this->init();
+
     }
 
     /**

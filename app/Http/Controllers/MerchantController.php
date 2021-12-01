@@ -2082,6 +2082,16 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    /**
+     * @return mixed
+     */
+    public function enableM2MReferralsCron()
+    {
+        $response = $this->service()->enableM2MReferralsCron();
+
+        return ApiResponse::json($response);
+    }
+
     public function getGlobalMerchantConfigs($mid)
     {
         $response = $this->service()->getGlobalMerchantConfigs($mid);
@@ -2217,7 +2227,6 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
-
     public function handleReport()
     {
         $input = Request::all();

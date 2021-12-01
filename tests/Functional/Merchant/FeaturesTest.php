@@ -29,6 +29,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
+use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
 use RZP\Models\Base\QueryCache\Constants as CacheConstants;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
@@ -914,6 +915,105 @@ class FeaturesTest extends OAuthTestCase
     {
         $this->startTest();
     }
+    public function testAddM2MReferral()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => '10000000000000'
+        ]);
+
+        $this->ba->adminAuth(MODE::TEST);
+
+        $this->startTest();
+    }
+
+    public function testGetNotExistingM2MReferralFeatureStatus()
+    {
+
+        $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
+            'merchant_id' => '10000000000000',
+        ]);
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testGetM2MReferralStatusReferralCountNotCrossedLimit()
+    {
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => 'm2m_referral',
+            'entity_id'   => '10000000000000',
+            'entity_type' => 'merchant'
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->mockExperiment();
+
+        $data = [
+            \RZP\Models\Merchant\Store\Constants::NAMESPACE => StoreConfigKey::ONBOARDING_NAMESPACE,
+            StoreConfigKey::REFERRED_COUNT              => 0
+        ];
+
+        (new \RZP\Models\Merchant\Store\Core())->updateMerchantStore('10000000000000', $data, \RZP\Models\Merchant\Store\Constants::INTERNAL);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testGetM2MReferralStatusReferralCountCrossedLimit()
+    {
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => 'm2m_referral',
+            'entity_id'   => '10000000000000',
+            'entity_type' => 'merchant'
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->mockExperiment();
+
+        $data = [
+            \RZP\Models\Merchant\Store\Constants::NAMESPACE => StoreConfigKey::ONBOARDING_NAMESPACE,
+            StoreConfigKey::REFERRED_COUNT              => 5
+        ];
+
+        (new \RZP\Models\Merchant\Store\Core())->updateMerchantStore('10000000000000', $data,\RZP\Models\Merchant\Store\Constants::INTERNAL);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function mockExperiment()
+    {
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === RazorxTreatment::SHOW_FRIENDBUY_WIDGET)
+                    {
+                        return 'on';
+                    }
+                    else
+                    {
+                        return 'off';
+                    }
+
+                }) );
+    }
 
     /**
      * This function tests updating of merchant feature loc_stage_2.
@@ -1435,12 +1535,6 @@ class FeaturesTest extends OAuthTestCase
     public function testFetchMerchantFeatures()
     {
         $content = $this->startTest();
-
-        $featuresWithValues = count(Constants::$featureValueMap);
-
-        $featuresInResponse = count($content['all_features']);
-
-        $this->assertEquals($featuresWithValues, $featuresInResponse);
     }
 
     public function testFetchMerchantFeaturesCheckBulkApproval()

@@ -13,6 +13,11 @@ use RZP\Models\Merchant\Detail\Status as ActivationStatus;
  */
 final class Constants
 {
+    const M2M_REFERRAL_ENABLE_AFTER_MIN_TRANSACTION_VOLUME  = "M2M_REFERRAL_ENABLE_AFTER_MIN_TRANSACTION_VOLUME";
+    const M2M_REFERRAL_ENABLE_AFTER_MIN_ACTIVATED_TIME      = "M2M_REFERRAL_ENABLE_AFTER_MIN_ACTIVATED_TIME";
+    const M2M_REFERRAL_MIN_TRANSACTION_COUNT                = "M2M_REFERRAL_MIN_TRANSACTION_COUNT";
+    const M2M_REFERRALS_ENABLE_CRON                         = 'm2m_referrals_enable_cron';
+    const M2M_REFERRAL_TIME_BOUND_THRESHOLD                 = 30;
     const TRACE                                   = 'trace';
     const API_MUTEX                               = 'api.mutex';
     const EDIT                                    = 'edit';

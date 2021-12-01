@@ -180,8 +180,8 @@ class Service extends Base\Service
         $response = new Base\Collection;
 
         $response['assigned_features'] = $this->repo
-                                              ->feature
-                                              ->fetchByEntityTypeAndEntityId($entityType, $entityId);
+            ->feature
+            ->fetchByEntityTypeAndEntityId($entityType, $entityId);
 
         $response['all_features'] =  array_keys(Constants::$featureValueMap);
 
@@ -202,7 +202,7 @@ class Service extends Base\Service
     }
 
     /**
-     * Delete the feature association with an entity
+     * get the feature status associated with an entity
      *
      * @param string $entityType
      * @param string $entityId
@@ -217,32 +217,28 @@ class Service extends Base\Service
         // As in future iteration, there will be some checks added for Entity Type and ID
         // Exact requirement is not finalised yet. Only this will be rolled out in Iteration 1
 
+        $featureCore = new Core;
+
         $entityType = $entityType ?? Constants::MERCHANT;
 
         $entityId = $entityId ?? $this->merchant->getId();
 
-        $response = new Base\Collection;
+        $entityType = Constants::MERCHANT;
 
-        $status = $this->repo
-            ->feature
-            ->findByEntityTypeEntityIdAndName($entityType, $entityId, $featureName);
-
-        $response['status'] = $status !== null ? true : false;
-
-        return $response->toArray();
+        return $featureCore->getStatus($entityType, $entityId, $featureName);
     }
 
     /**
-    * Delete the feature association with an entity
-    *
-    * @param string $routeEndpoint
-    * @param string $entityId
-    * @param string $featureName
-    * @param array $input
-    *
-    * @return array
-    * @throws Exception\BadRequestException
-    */
+     * Delete the feature association with an entity
+     *
+     * @param string $routeEndpoint
+     * @param string $entityId
+     * @param string $featureName
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
     public function deleteEntityFeature(
         string $routeEndpoint,
         string $entityId,
@@ -252,11 +248,11 @@ class Service extends Base\Service
         $entityType = Type::getEntityTypeFromRoute($routeEndpoint);
 
         $feature = $this->repo
-                        ->feature
-                        ->findByEntityTypeEntityIdAndNameOrFail(
-                            $entityType,
-                            $entityId,
-                            $featureName);
+            ->feature
+            ->findByEntityTypeEntityIdAndNameOrFail(
+                $entityType,
+                $entityId,
+                $featureName);
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
@@ -600,10 +596,10 @@ class Service extends Base\Service
         foreach ($featureNames as $featureName)
         {
             $featureParams->push([
-                Entity::ENTITY_TYPE => $entityType,
-                Entity::ENTITY_ID   => $entityId,
-                Entity::NAME        => $featureName
-            ]);
+                                     Entity::ENTITY_TYPE => $entityType,
+                                     Entity::ENTITY_ID   => $entityId,
+                                     Entity::NAME        => $featureName
+                                 ]);
         }
 
         return $featureParams;
