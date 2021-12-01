@@ -44,6 +44,8 @@ class Entity extends Base\PublicEntity
 
     const FLOW       = 'flow';
 
+    const INSTRUMENT_SCHEMA = 'instrument_schema';
+
     protected $fillable = [
         self::BEGIN,
         self::END,
@@ -77,6 +79,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::AUTH_TYPE,
         self::INSTRUMENT,
+        self::INSTRUMENT_SCHEMA,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -95,6 +98,7 @@ class Entity extends Base\PublicEntity
         // self::NETWORK,
         // self::AUTH_TYPE,
         self::INSTRUMENT,
+        self::INSTRUMENT_SCHEMA,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -179,6 +183,8 @@ class Entity extends Base\PublicEntity
                 break;
         }
 
+        $this->setInstrumentSchemaAndGranularFields($array, $instrument);
+
         $array[self::INSTRUMENT] = array_filter($instrument);
     }
 
@@ -188,6 +194,28 @@ class Entity extends Base\PublicEntity
     }
 
     // ================= Setters ================
+
+    private function setInstrumentSchemaAndGranularFields(array & $array, array & $instrument)
+    {
+        if (($this->getType() !== "NA") && ($this->getType() !== "UNKNOWN"))
+        {
+            switch ($this->getMethod())
+            {
+                case Method::CARD:
+                    $instrument[self::TYPE] = $this->getType();
+                    break;
+
+                case Method::UPI:
+                    $instrument[self::FLOW] = $this->getType();
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        $array[self::INSTRUMENT_SCHEMA] = array_keys($instrument);
+    }
 
     public function setEndNow()
     {

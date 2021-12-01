@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Mail\Downtime;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
 use Razorpay\Trace\Logger as Trace;
@@ -50,30 +51,33 @@ class Service extends Base\Service
 
     public function getMethodDowntimeDataForMerchant(array $input): array
     {
-        $variant = $this->app->razorx->getTreatment(
-            $this->merchant->getMerchantId(),
-            Merchant\RazorxTreatment::SEND_MERCHANT_DOWNTIMES,
-            $this->mode
-        );
+        $sendMerchantDowntimesInFetchApi = $this->shouldSendMerchantDowntimes(Constants::FETCH_API);
 
         $this->trace->info(
-            TraceCode::PAYMENT_DOWNTIMES_MERCHANT_ID,
+            TraceCode::ENABLE_GRANULAR_DOWNTIMES,
             [
                 'merchantId' => $this->merchant->getMerchantId(),
-                'variant' => $variant
+                'sendMerchantDowntimesInFetchApi' => $sendMerchantDowntimesInFetchApi
             ]
         );
 
-        if (strtolower($variant) === 'on')
+        if ($sendMerchantDowntimesInFetchApi &&
+            ($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_GRANULAR_DOWNTIMES) === true))
         {
             $downtimes = $this->getRepository()->fetchOngoingPlatformAndMerchantDowntimes($this->merchant->getMerchantId());
+
+            return $downtimes->toArrayPublic();
         }
         else
         {
             $downtimes = $this->getRepository()->fetchOngoingDowntimes();
-        }
 
-        return $downtimes->toArrayPublic();
+            $downtimesArrayPublic = $downtimes->toArrayPublic();
+
+            $this->removeGranularDowntimeKeysFromCollection($downtimesArrayPublic);
+
+            return $downtimesArrayPublic;
+        }
     }
 
     public function fetchOngoingDowntimes(): array
@@ -104,7 +108,21 @@ class Service extends Base\Service
 
         $downtimes = $this->getRepository()->findOrFailPublic($id);
 
-        return $downtimes->toArrayPublic();
+        $sendMerchantDowntimesInFetchApi = $this->shouldSendMerchantDowntimes(Constants::FETCH_API);
+
+        if ($sendMerchantDowntimesInFetchApi &&
+            ($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_GRANULAR_DOWNTIMES) === true))
+        {
+            return $downtimes->toArrayPublic();
+        }
+        else
+        {
+            $downtimeArrayPublic = $downtimes->toArrayPublic();
+
+            $this->removeGranularDowntimeKeysFromEntity($downtimeArrayPublic);
+
+            return $downtimeArrayPublic;
+        }
     }
 
     public function triggerDowntimes(array $input, string $status): array
@@ -198,11 +216,14 @@ class Service extends Base\Service
                 }
             }
 
+            $sendMerchantDowntimesInWebhooks = $this->shouldSendMerchantDowntimes(Constants::WEBHOOKS);
+
             foreach ($merchantIds as $merchantId)
             {
                 $eventPayload = [
                     ApiEventSubscriber::MAIN        => $downtime,
                     ApiEventSubscriber::MERCHANT_ID => $merchantId,
+                    ApiEventSubscriber::WITH        => $sendMerchantDowntimesInWebhooks
                 ];
 
                 $this->app['events']->dispatch('api.payment.downtime.started', $eventPayload);
@@ -238,11 +259,14 @@ class Service extends Base\Service
                 }
             }
 
+            $sendMerchantDowntimesInWebhooks = $this->shouldSendMerchantDowntimes(Constants::WEBHOOKS);
+
             foreach ($merchantIds as $merchantId)
             {
                 $eventPayload = [
                     ApiEventSubscriber::MAIN        => $downtime,
                     ApiEventSubscriber::MERCHANT_ID => $merchantId,
+                    ApiEventSubscriber::WITH        => $sendMerchantDowntimesInWebhooks
                 ];
 
                 $this->app['events']->dispatch('api.payment.downtime.resolved', $eventPayload);
@@ -430,5 +454,31 @@ class Service extends Base\Service
                 ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
                 null, null, "Date range should be within 30 days");
         }
+    }
+
+    public function shouldSendMerchantDowntimes(string $communicationChannel):bool
+    {
+        return strtolower(
+                $this->app->razorx->getTreatment(
+                    $communicationChannel,
+                    Merchant\RazorxTreatment::SEND_MERCHANT_DOWNTIMES,
+                    $this->mode
+                )) === 'on';
+    }
+
+    public function removeGranularDowntimeKeysFromCollection(array & $downtimesArrayPublic)
+    {
+        if(isset($downtimesArrayPublic["items"]) === true) {
+            foreach ($downtimesArrayPublic["items"] as $key => $downtime) {
+                $this->removeGranularDowntimeKeysFromEntity($downtimesArrayPublic["items"][$key]);
+            }
+        }
+    }
+
+    public function removeGranularDowntimeKeysFromEntity(array & $downtimeArrayPublic)
+    {
+        unset($downtimeArrayPublic[Entity::INSTRUMENT_SCHEMA]);
+        unset($downtimeArrayPublic[Entity::INSTRUMENT][Entity::TYPE]);
+        unset($downtimeArrayPublic[Entity::INSTRUMENT][Entity::FLOW]);
     }
 }

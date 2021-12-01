@@ -42,6 +42,10 @@ class Constants
     const HISTORY_REFRESH_BATCH_SIZE = 7;
     const MAX_LOOKBACK_PERIOD        = 30;
 
+    // Send Merchant Downtimes Razorx
+    const WEBHOOKS = 'WEBHOOKS';
+    const FETCH_API = 'FETCH_API';
+
     public static function getMethodQueryInstrument($method)
     {
         switch ($method)

@@ -1454,9 +1454,23 @@ class ApiEventSubscriber extends Base\Core
 
     protected function getPaymentDowntimePayload(Downtime\Entity $downtime): array
     {
+        $downtimeArrayPublic = $downtime->toArrayPublic();
+
+        $sendMerchantDowntimesInWebhooks = (bool) $this->withPayload;
+
+        if($sendMerchantDowntimesInWebhooks === true)
+        {
+            $sendMerchantDowntimesInWebhooks = $this->listeningMerchant->isFeatureEnabled(Feature\Constants::ENABLE_GRANULAR_DOWNTIMES);
+        }
+
+        if(!$sendMerchantDowntimesInWebhooks)
+        {
+            (new Downtime\Service())->removeGranularDowntimeKeysFromEntity($downtimeArrayPublic);
+        }
+
         $payload = [
             Constants\Entity::PAYMENT_DOWNTIME => [
-                'entity' => $downtime->toArrayPublic(),
+                'entity' => $downtimeArrayPublic,
             ]
         ];
 

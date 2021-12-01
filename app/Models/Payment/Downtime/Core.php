@@ -251,6 +251,8 @@ class Core extends Base\Core
 
         $downtimes = (new Repository())->fetchOngoingDowntimes()->toArrayPublic();
 
+        (new Service())->removeGranularDowntimeKeysFromCollection($downtimes);
+
         return $downtimes['items'];
     }
 
@@ -260,6 +262,8 @@ class Core extends Base\Core
 
         $downtimes = (new Repository())->fetchResolvedDowntimes($params)->toArrayPublic();
 
+        (new Service())->removeGranularDowntimeKeysFromCollection($downtimes);
+
         return $downtimes['items'];
     }
 
@@ -268,6 +272,8 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::FETCH_SCHEDULED_DOWNTIMES_FROM_DB);
 
         $downtimes = (new Repository())->fetchScheduledDowntimes()->toArrayPublic();
+
+        (new Service())->removeGranularDowntimeKeysFromCollection($downtimes);
 
         return $downtimes['items'];
     }
