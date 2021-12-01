@@ -1,16 +1,28 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { analyticsTrack } from 'common/utils/analytics';
-
+import AddEmailModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import {
+  openModal as fnOpenModal,
+  closeModal as fnCloseModal,
+} from 'merchant_common/reducers/modals';
 
 import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import ChooseEmail from './ChooseEmail';
 
-@connect(null, { openModal, closeModal }, null, { withRef: true })
+@connect(
+  (state) => ({ user: state.session.user }),
+  { openModal: fnOpenModal, closeModal: fnCloseModal },
+  null,
+  {
+    withRef: true,
+  },
+)
 export default class EmailReport extends React.Component {
   state = {
     selectedEmails: [],
@@ -46,7 +58,9 @@ export default class EmailReport extends React.Component {
   };
 
   openChooseEmailModal = () => {
-    this.props.openModal({
+    const { openModal } = this.props;
+
+    openModal({
       size: 'small',
       component: (
         <ChooseEmail
@@ -58,9 +72,25 @@ export default class EmailReport extends React.Component {
       ),
     });
   };
+  openAddEmailModal = () => {
+    const { openModal } = this.props;
+
+    analyticsTrack({
+      objectName: 'add email',
+      actionName: 'clicked',
+      screen: 'reports',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+    openModal({
+      size: 'small',
+      component: <AddEmailModal screen="reports" />,
+    });
+  };
 
   render() {
-    const { emails, isFormDisabled } = this.props;
+    const { emails, user, isFormDisabled } = this.props;
     const { selectedEmails } = this.state;
     return (
       <div class="Input EmailReport">
@@ -69,27 +99,44 @@ export default class EmailReport extends React.Component {
             <div class={classList('Input-label', isFormDisabled && 'Input--disabled')}>
               Email Report To
             </div>
-            {selectedEmails.length > 1 ? (
-              <NoOfEmailsSelected noOfEmails={selectedEmails.length} />
-            ) : (
-              <SelectEmailCheckBox
-                selectedEmails={selectedEmails}
-                onChange={this.onChange}
-                defaultEmail={emails[0]}
-                isFormDisabled={isFormDisabled}
-              />
-            )}
+            {emails.length && !emails.every((email) => email === null) ? (
+              selectedEmails.length > 1 ? (
+                <NoOfEmailsSelected noOfEmails={selectedEmails.length} />
+              ) : (
+                <SelectEmailCheckBox
+                  selectedEmails={selectedEmails}
+                  onChange={this.onChange}
+                  defaultEmail={emails[0]}
+                  isFormDisabled={isFormDisabled}
+                />
+              )
+            ) : null}
+            {(!emails.length || emails.every((email) => email === null)) &&
+            user &&
+            user.role === rolesList.OWNER &&
+            !user.user?.signup_via_email ? (
+              <Button.Transparent
+                type="button"
+                class="Btn--link"
+                onClick={this.openAddEmailModal}
+                disabled={isFormDisabled}
+              >
+                Add Email
+              </Button.Transparent>
+            ) : null}
           </div>
-          <div class="Input ChooseEmail">
-            <Button.Transparent
-              type="button"
-              class="Btn--Link"
-              onClick={this.openChooseEmailModal}
-              disabled={isFormDisabled}
-            >
-              Choose email
-            </Button.Transparent>
-          </div>
+          {emails.length && !emails.every((email) => email === null) ? (
+            <div class="Input ChooseEmail">
+              <Button.Transparent
+                type="button"
+                class="Btn--Link"
+                onClick={this.openChooseEmailModal}
+                disabled={isFormDisabled}
+              >
+                Choose email
+              </Button.Transparent>
+            </div>
+          ) : null}
         </div>
       </div>
     );
