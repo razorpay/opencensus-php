@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import Modal from 'react-modal';
 import * as SliderActions from 'merchant_common/reducers/slider';
-import { isNone } from 'common/utils/rzp-utils';
 import { classList } from 'common/utils/rzp-utils';
 
 @withRouter
@@ -19,7 +18,7 @@ export default class ModalSlider extends Component {
   //  1. When slider `Close` button is clicked
   //  2. When clicking on the document except on the Slider view & on any links
   handleDocumentClick = (event) => {
-    let target = event.target;
+    const target = event.target;
 
     const powerselectMenu = document.querySelector('body > .tether-element > .PowerSelect__Menu');
     const notification = document.querySelector('body .layout > .Notifications');
@@ -60,7 +59,7 @@ export default class ModalSlider extends Component {
   };
 
   render() {
-    var className = 'ModalSlider__Overlay';
+    let className = 'ModalSlider__Overlay';
     if (this.props.expanded) {
       className += ' expanded';
     }

@@ -11,7 +11,7 @@ const initialState = {
   skip: '0',
   count: '5',
   length: 0,
-  isHistoricalLoading: false,
+  isHistoricalLoading: true,
 };
 
 const reducer = (state, action) => {
@@ -134,33 +134,30 @@ const HistoricalDowntimes = (props) => {
 
   const onPaginate = (params) => {
     dispatch({ type: 'PAGINATE', payload: { skip: params.skip, count: params.count } });
-    setDownTimes();
   };
 
   useEffect(() => {
     setDownTimes();
-  }, [paymentMethod, setDownTimes]);
+  }, [setDownTimes]);
 
   return (
-    historicalDowntimes.length > 0 && (
-      <section>
-        <p className="section-title">Past 30 Days Incidents</p>
-        {isHistoricalLoading ? (
-          <div className="page-spinner-container">
-            <Spinner />
+    <section>
+      <p className="section-title">Past 30 Days Incidents</p>
+      {isHistoricalLoading ? (
+        <div className="page-spinner-container">
+          <Spinner />
+        </div>
+      ) : (
+        <>
+          {historicalDowntimes?.map((historicalDowntime, idx) => (
+            <ShowHistoricalDowntime historicalDowntime={historicalDowntime} key={idx} />
+          ))}
+          <div className="status-pager">
+            <Pager count={count} skip={skip} length={length} onClick={onPaginate} />
           </div>
-        ) : (
-          <>
-            {state.historicalDowntimes?.map((historicalDowntime, idx) => (
-              <ShowHistoricalDowntime historicalDowntime={historicalDowntime} key={idx} />
-            ))}
-            <div className="status-pager">
-              <Pager count={count} skip={skip} length={length} onClick={onPaginate} />
-            </div>
-          </>
-        )}
-      </section>
-    )
+        </>
+      )}
+    </section>
   );
 };
 

@@ -5,7 +5,7 @@ const SLIDER_CLOSE = 'SLIDER_CLOSE';
 const SLIDER_EXPAND = 'SLIDER_EXPAND';
 const SLIDER_COMPACT = 'SLIDER_COMPACT';
 
-export const expandSlider = payload => {
+export const expandSlider = (payload) => {
   return {
     type: SLIDER_EXPAND,
     payload: {
@@ -15,7 +15,7 @@ export const expandSlider = payload => {
   };
 };
 
-export const compactSlider = payload => {
+export const compactSlider = (payload) => {
   return {
     type: SLIDER_COMPACT,
     payload: {
@@ -25,7 +25,7 @@ export const compactSlider = payload => {
   };
 };
 
-export const openSlider = payload => {
+export const openSlider = (payload) => {
   return {
     type: SLIDER_OPEN,
     payload: {
@@ -46,7 +46,7 @@ export const closeSlider = (payload = {}) => {
   };
 };
 
-let initialState = {
+const initialState = {
   isOpen: false,
   onOpenURL: null,
   onCloseURL: null,
