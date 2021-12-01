@@ -358,6 +358,13 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
     }
   };
 
+  const checkWhetherAcceptTermsError = (formikProps) => {
+    return (
+      Object.keys(formikProps.errors)?.includes('submit') &&
+      Object.keys(formikProps.errors)?.length == 1
+    );
+  };
+
   return (
     <Formik
       initialValues={initialValues}
@@ -375,7 +382,7 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
               {isLoading ? (
                 <Spinner center />
               ) : (
-                <div class="Wizard">
+                <div className="Wizard">
                   <ModalAsideNav
                     title="International activation form"
                     description={<p>Complete and submit the form to accept payments</p>}
@@ -396,8 +403,20 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
                       })}
                     </main>
                     <footer>
-                      <div class="left">
+                      <div className="left">
                         {isSavingForm !== null ? <Loader isSaving={isSavingForm} /> : ''}
+
+                        {/* Show message if all fields are not filled */}
+                        {activeTab === tabsData.length - 1 &&
+                          isSavingForm == null &&
+                          Object.keys(formikProps.errors)?.length > 0 &&
+                          (checkWhetherAcceptTermsError(formikProps) ? (
+                            ''
+                          ) : (
+                            <div className="text-danger">
+                              You have not answered all the previous mandatory questions
+                            </div>
+                          ))}
                       </div>
                       {activeTab > 0 && (
                         <Button type="button" onClick={handlePrev}>

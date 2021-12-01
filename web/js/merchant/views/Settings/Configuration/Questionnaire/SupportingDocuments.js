@@ -153,7 +153,7 @@ const SupportingDocuments = ({ disabled, saveFormData, showNotification }) => {
       <Input
         name="import_export_code"
         label="Import Export Code"
-        placeholder="Enter I/E code here"
+        placeholder="Enter I/E code here (Optional)"
         info="Example: U67190TN20"
         disabled={disabled}
         onBlur={handleChange}
@@ -223,7 +223,7 @@ const SupportingDocuments = ({ disabled, saveFormData, showNotification }) => {
               options={fileTypes}
               optionLabelPath="label"
               searchEnabled={false}
-              placeholder="--Select--"
+              placeholder="--Select-- (Optional)"
               optionComponent={({ option }) => <div class="option">{option.label}</div>}
               afterOptionsComponent={({ select }) => {
                 return (
