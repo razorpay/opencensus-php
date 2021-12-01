@@ -12920,7 +12920,7 @@ class Route
             $route->middleware('request_log_handler');
         }
 
-        if ((in_array($env, [Environment::TESTING , Environment::TESTING_DOCKER]) === true) and
+        if ((env('GENERATE_API_DOCS', false) === true) and
             (in_array($name, self::$skipApiDocumentation, true) === false))
         {
             $route->middleware('save_api_details');
