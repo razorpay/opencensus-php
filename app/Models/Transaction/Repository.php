@@ -2436,6 +2436,9 @@ class Repository extends Base\Repository
         $transactionTypeColumn = $this->dbColumn(Entity::TYPE);
         $transactionBalanceColumn = $this->dbColumn(Entity::BALANCE);
 
+        $merchantIdColumn = $this->repo->merchant->dbColumn(Entity::ID);
+        $merchantFeeModelColumn = $this->repo->merchant->dbColumn(Entity::FEE_MODEL);
+
         $transactionBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
         $transactionMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
         $transactionCreatedAtColumn = $this->dbColumn(Entity::CREATED_AT);
@@ -2453,11 +2456,13 @@ class Repository extends Base\Repository
             $transactionTypeColumn,
             $transactionMerchantIdColumn,
             $transactionBalanceColumn,
+            $merchantFeeModelColumn
         ];
 
         return $this->newQueryWithConnection($this->getSlaveConnection())
             ->select($selectColumn)
             ->leftjoin(Table::BALANCE, $balanceIdColumn, '=', $transactionBalanceIdColumn)
+            ->leftjoin(Table::MERCHANT, $merchantIdColumn, '=', $transactionMerchantIdColumn)
             // To fetch only banking transaction until pg use cases are onboarded
             ->where(function ($query) use ($transactionBalanceIdColumn, $balanceTypeColumn)
             {
