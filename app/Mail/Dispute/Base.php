@@ -5,6 +5,7 @@ namespace RZP\Mail\Dispute;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Dispute;
 
 class Base extends Mailable
 {
@@ -42,6 +43,13 @@ class Base extends Mailable
         $email = Constants::MAIL_ADDRESSES[Constants::DISPUTES];
 
         $this->cc($email);
+
+        $salesPOCEmailId = (new Dispute\Service)->getSalesPOCEmailId($this->data['merchant']['id']);
+
+        if ($salesPOCEmailId !== null)
+        {
+            $this->cc($salesPOCEmailId);
+        }
 
         return $this;
     }

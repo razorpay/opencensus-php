@@ -38,6 +38,7 @@ use RZP\Models\Dispute\File\Service as DisputeFileService;
 use RZP\Models\Dispute\Customer\FreshdeskTicket\ReasonCode;
 use RZP\Models\Dispute\Customer\FreshdeskTicket\Subcategory;
 use RZP\Mail\Dispute\BulkCreation as DisputeBulkCreationMail;
+use RZP\Tests\Functional\Helpers\Salesforce\SalesforceTrait;
 use RZP\Mail\Dispute\Admin\AcceptedAdmin as DisputeAcceptedForAdminMail;
 use RZP\Mail\Dispute\Admin\SubmittedAdmin as DisputeSubmittedForAdminMail;
 use RZP\Models\Dispute\Customer\FreshdeskTicket\Constants as FreshdeskConstants;
@@ -1541,6 +1542,8 @@ class DisputeTest extends TestCase
             'network' => Network::VISA,
         ]);
 
+        $this->mockSalesforceRequestforSalesPOC('10000000000000', "sales.poc@gmail.com", 2);
+
         $attributes1 = [
             'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
             'gateway_dispute_id'        => 'Dispute100001',
@@ -1629,7 +1632,7 @@ class DisputeTest extends TestCase
             }
 
             return ($mail->hasFrom('disputes@razorpay.com') and
-                ($mail->hasTo('test@razorpay.com')));
+                ($mail->hasTo('test@razorpay.com')) and ($mail->hasCC("sales.poc@gmail.com")));
         });
 
         $actualEmailStatus = $this->getEntityById('dispute', 'disp_' .$dispute1[Entity::ID], true)[Entity::EMAIL_NOTIFICATION_STATUS];
@@ -1650,8 +1653,10 @@ class DisputeTest extends TestCase
             'network' => Network::VISA,
         ]);
 
+        $payment = $this->fixtures->create('payment:captured');
+
         $attributes = [
-            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'payment_id'                => $payment->getId(),
             'gateway_dispute_id'        => 'Dispute100001',
             'gateway_dispute_status'    => 'open',
             'reason_id'                 => $reason['id'],
@@ -1664,6 +1669,8 @@ class DisputeTest extends TestCase
         $this->fixtures->create('dispute', $attributes);
 
         $testData = &$this->testData[__FUNCTION__];
+
+        $this->mockSalesforceRequestforSalesPOC($payment->getMerchantId(), "sales.poc@gmail.com");
 
         $this->startTest($testData);
 
@@ -1703,7 +1710,7 @@ class DisputeTest extends TestCase
             $this->assertStringEndsWith($attachmentFileExtension, $mail->rawAttachments[0]['name']);
 
             return ($mail->hasFrom('disputes@razorpay.com') and
-                ($mail->hasTo('test@razorpay.com')));
+                ($mail->hasTo('test@razorpay.com')) and ($mail->hasCC("sales.poc@gmail.com")));
         });
     }
 
@@ -2230,6 +2237,8 @@ class DisputeTest extends TestCase
     public function testBulkDisputeCreateMail($features, $disputeCreateInput, $expectedMailView, $expectedMailViewData = [])
     {
         $this->fixtures->merchant->addFeatures($features);
+
+        $this->mockSalesforceRequestforSalesPOC('10000000000000', "sales.poc@gmail.com", 5);
 
         $this->runTestBulkDisputeCreateMailSubject($disputeCreateInput, $expectedMailView, $expectedMailViewData);
 
@@ -3505,7 +3514,7 @@ class DisputeTest extends TestCase
         $this->ba->batchAppAuth();
 
         $response = $this->startTest();
-        
+
         $dispute = $this->getLastEntity('dispute', true);
 
         $this->assertEquals('pay_' . $payment['id'], $dispute['payment_id']);
@@ -3595,7 +3604,6 @@ class DisputeTest extends TestCase
                                  return $this->validateMethodAndContentForChargebackAutomation($actualMerchantIds, 'POST', $expectedMerchantIds);
                              }))
                              ->andReturnUsing(function() use ($expectedResponse) {
-
                                  return $expectedResponse;
                              });
 
@@ -3652,6 +3660,19 @@ class DisputeTest extends TestCase
         $this->salesforceMock->shouldAllowMockingProtectedMethods();
 
         $this->app['salesforce'] = $this->salesforceMock;
+
+    }
+
+    protected function mockSalesforceRequestforSalesPOC($expectedMerchantId, $expectedResponse,$times=1): void
+    {
+        $this->salesforceMock->shouldReceive('getSalesPOCForMerchantID')
+                             ->times($times)
+                             ->with(Mockery::on(function($actualMerchantId) use ($expectedMerchantId) {
+                                 return $actualMerchantId == $expectedMerchantId;
+                             }))
+                             ->andReturnUsing(function() use ($expectedResponse) {
+                                 return $expectedResponse;
+                             });
 
     }
 }

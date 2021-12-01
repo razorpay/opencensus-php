@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use Illuminate\Cache\RedisStore;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
+use RZP\Models\Dispute;
 
 class Freshdesk extends Base\Core
 {
@@ -162,7 +163,7 @@ class Freshdesk extends Base\Core
 
         $mailBody = $this->renderBody($merchantData);
 
-        $emailIds = $this->getEmailIds($merchant);
+        $emailIds = $this->getEmailIdsWithSalesPOC($merchant);
 
         $primaryEmailId = array_shift($emailIds);
 
@@ -195,5 +196,12 @@ class Freshdesk extends Base\Core
         }
 
         return $fdOutboundEmailRequest;
+    }
+
+    private function getEmailIdsWithSalesPOC($merchant): array
+    {
+        $emailIds = $this->getEmailIds($merchant);
+
+        return (new Dispute\Service)->addSalesPOCToCCEmails($merchant->getId(),$emailIds);
     }
 }

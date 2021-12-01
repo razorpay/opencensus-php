@@ -22,10 +22,13 @@ use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
+use RZP\Models\Dispute;
 
 class Core extends Base\Core
 {
     private $freshdeskConfig;
+
+    const EXCLUDE_EMAIL_FROM_CC_ON_RISK_EMAIL = "businessops@razorpay.com";
 
     public function __construct()
     {
@@ -599,6 +602,8 @@ class Core extends Base\Core
     {
         $merchantEmail = $merchant->merchantDetail->getContactEmail();
 
+        $ccEmails = (new Dispute\Service)->getCCEmailsWithSalesPOC($merchant->getId());
+
         list($mailViewTpl, $mailData, $tags) = $this->getEnablementMailTemplateAndData($merchant, $permissionsData);
 
         $mailData['merchant_email'] = $merchantEmail;
@@ -624,6 +629,11 @@ class Core extends Base\Core
                     'cf_product'      => 'Payment Gateway',
                 ],
             ];
+
+            if (empty($ccEmails) === false)
+            {
+                $fdOutboundEmailRequest['cc_emails'] = $ccEmails;
+            }
 
             $this->app['freshdesk_client']->sendOutboundEmail(
                 $fdOutboundEmailRequest, FreshdeskConstants::URLIND);
@@ -771,4 +781,5 @@ class Core extends Base\Core
 
         $emailData['international_settlement_cycle'] = $internationalDelay;
     }
+
 }

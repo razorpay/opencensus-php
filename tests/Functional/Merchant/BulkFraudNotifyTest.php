@@ -13,16 +13,20 @@ use RZP\Services\FreshdeskTicketClient;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Models\Merchant\Fraud\BulkNotification\File;
 use RZP\Models\Admin\Permission\Name as PermissionName;
+use RZP\Tests\Functional\Helpers\Salesforce\SalesforceTrait;
 
 class BulkFraudNotifyTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use SalesforceTrait;
 
     public function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/BulkFraudNotifyTestData.php';
 
         parent::setUp();
+
+        $this->setUpSalesforceMock();
     }
 
     public function testNotifyWithChargebackPocEmail()
@@ -48,6 +52,8 @@ class BulkFraudNotifyTest extends TestCase
             [null, $payment->getPublicId(), $payment->getMerchantId(), 123, null]
         ];
 
+        $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
+
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true);
     }
 
@@ -71,6 +77,8 @@ class BulkFraudNotifyTest extends TestCase
             ["arn", "payment_id", "merchant_id", "fd_ticket_id", "error"],
             [null, $payment->getPublicId(), $payment->getMerchantId(), 123, null]
         ];
+
+        $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
 
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, $addPermission);
     }
@@ -101,6 +109,8 @@ class BulkFraudNotifyTest extends TestCase
             [$arn, null, $payment->getMerchantId(), 123, null]
         ];
 
+        $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
+
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true);
     }
 
@@ -130,6 +140,8 @@ class BulkFraudNotifyTest extends TestCase
             [$arn, null, $payment->getMerchantId(), 123, null]
         ];
 
+        $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
+
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true);
     }
 
@@ -153,6 +165,8 @@ class BulkFraudNotifyTest extends TestCase
                 'arn' => $arn,
             ],
         ];
+
+        $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
 
         $expectedOutputFileRows = [
             ["arn", "payment_id", "merchant_id", "fd_ticket_id", "error"],
@@ -188,6 +202,8 @@ class BulkFraudNotifyTest extends TestCase
             [$arn, null, $payment->getMerchantId(), 123, null]
         ];
 
+        $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
+
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true);
     }
 
@@ -216,6 +232,8 @@ class BulkFraudNotifyTest extends TestCase
             ["arn", "payment_id", "merchant_id", "fd_ticket_id", "error"],
             [$arn, null, $payment->getMerchantId(), 123, null]
         ];
+
+        $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
 
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true);
     }
@@ -250,6 +268,8 @@ class BulkFraudNotifyTest extends TestCase
             ["arn", "payment_id", "merchant_id", "fd_ticket_id", "error"],
             [$arn, null, $payment->getMerchantId(), 123, null]
         ];
+
+        $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
 
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true);
     }
@@ -344,6 +364,8 @@ class BulkFraudNotifyTest extends TestCase
             [null, $payment2->getPublicId(), $payment2->getMerchantId(), 123, null]
         ];
 
+        $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
+
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true);
     }
 
@@ -381,6 +403,9 @@ class BulkFraudNotifyTest extends TestCase
             [null, $payment1->getPublicId(), $payment1->getMerchantId(), 123, null],
             [null, $payment2->getPublicId(), $payment2->getMerchantId(), 123, null]
         ];
+
+        $this->mockSalesforceRequest($payment1->getMerchantId(),'abc@gmail.com');
+        $this->mockSalesforceRequest($payment2->getMerchantId(),'abc@gmail.com');
 
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 2, true);
     }

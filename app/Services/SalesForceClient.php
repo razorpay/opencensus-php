@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Http\Request\Requests;
 use Requests_Exception;
@@ -13,6 +14,7 @@ use RZP\Http\RequestHeader;
 use RZP\Jobs\SalesforceRequestJob;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Exception\BadRequestException;
 
 class SalesForceClient
 {
@@ -370,8 +372,40 @@ class SalesForceClient
             }
 
         }
-         return $teamNameArray;
 
+        return $teamNameArray;
+    }
+
+    /*
+     * This function takes merchantId as input and return salesPOC or "salesforce owner email" for that merchant
+     */
+    public function getSalesPOCForMerchantID($merchantId)
+    {
+        $accessToken = $this->fetchAccessToken();
+
+        $salesPOCQuery = "select Owner.Email from Account where Merchant_ID__c = '$merchantId'";
+
+        $queryURL = $this->baseUrl . '/services/data/v34.0/query?q=' . $salesPOCQuery;
+        $request  = [
+            'url'     => $queryURL,
+            'method'  => self::GET,
+            'content' => [],
+            'options' => ['timeout' => 120],
+            'headers' => [
+                RequestHeader::CONTENT_TYPE  => 'application/json',
+                RequestHeader::AUTHORIZATION => sprintf('%s %s',RequestHeader::BEARER, $accessToken)
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetResponse($request);
+
+        if (empty($response['records']) ==true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, null, $response, 'Merchant Sales POC Data Not Found');
+        }
+
+        return $response['records'][0]['Owner']['Email'];
     }
 
     protected function parseAccessToken($response)
