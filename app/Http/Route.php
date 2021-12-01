@@ -1093,7 +1093,7 @@ class Route
 
         'payment_handle_create'                    => ['post',     'payment_handle',                                          'PaymentLinkController@createPaymentHandle'                ],
         'payment_handle_update'                    => ['patch',    'payment_handle/{id}',                                     'PaymentLinkController@updatePaymentHandle'                ],
-        'payment_handle_availability'              => ['get',      'payment_handle/{slug}/exists',                            'PaymentLinkController@slugExists'                         ],
+        'payment_handle_availability'              => ['get',      'payment_handle/{slug}/exists',                            'PaymentLinkController@handleExists'                       ],
         'payment_handle_get'                       => ['get',      'payment_handle',                                          'PaymentLinkController@getPaymentHandle'                   ],
         'payment_handle_suggestion'                => ['get',      'payment_handle/suggestion',                               'PaymentLinkController@suggestionPaymentHandle'            ],
 

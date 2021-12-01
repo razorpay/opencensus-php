@@ -464,9 +464,18 @@ class Service extends Base\Service
             $count = $input[Entity::COUNT];
         }
 
-        $suggestions = $this->core->suggestionPaymentHandle($count);
+        $suggestions[Entity::SUGGESTIONS] = $this->core->suggestionPaymentHandle($count);
 
         return $suggestions;
+    }
+
+    public function paymentHandleExists(string $slug) : bool
+    {
+        (new Validator)->isValidPaymentHandle($slug);
+
+        $gimli  = $this->app['elfin']->driver('gimli');
+
+        return $gimli->expand($slug) !== null;
     }
 
     protected function getPaymentLinkAndSetModeAndMerchant(string $id)

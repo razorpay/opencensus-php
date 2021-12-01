@@ -185,7 +185,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $updatePaymentHandleRules = [
-        Entity::SLUG            => 'required|min:4|max:30',
+        Entity::SLUG            => 'required',
     ];
 
     /**
@@ -495,16 +495,37 @@ class Validator extends Base\Validator
         }
     }
 
+    // custom validations as these error messages will be displayed directly on  mobile app
     public function isValidPaymentHandle($slug)
     {
+        if(strlen($slug) < 4)
+        {
+            throw new BadRequestValidationFailureException(
+                'Enter at least 4 characters'
+            );
+        }
+
+        if(strlen($slug) > 30)
+        {
+            throw new BadRequestValidationFailureException(
+            'Enter up to 30 characters only'
+            );
+        }
+
+        if($slug[0] !== '@')
+        {
+            throw new BadRequestValidationFailureException(
+                'Name must contain @ at beginning'
+            );
+        }
+
         $valid = preg_match('/^@+[A-Za-z0-9-_]+$/', $slug);
 
         if($valid !== 1)
         {
             throw new BadRequestValidationFailureException(
-                'Handle must contain @ at the start and must only contain alpha numeric, _ and - characters',
-                Entity::SLUG,
-                compact('slug'));
+                'Enter only alphabets (a-z), numbers (0-9), hyphen (-) and underscore (_)'
+            );
         }
     }
 

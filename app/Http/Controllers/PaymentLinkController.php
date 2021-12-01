@@ -376,4 +376,11 @@ class PaymentLinkController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function handleExists(string $slug)
+    {
+        $exists = $this->service()->paymentHandleExists($slug);
+
+        return ApiResponse::json(compact('exists'));
+    }
 }

@@ -114,6 +114,7 @@ class Entity extends Base\PublicEntity
 
     const COUNT                                   = 'count';
     const DEFAULT_PAYMENT_HANDLE_SUGGESTION_COUNT = 4;
+    const SUGGESTIONS                             = 'suggestions';
 
     //Settings applicable to Payment Button only
     const PP_BUTTON_DISABLE_BRANDING   = 'pp_button_disable_branding';
