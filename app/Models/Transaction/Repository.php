@@ -513,6 +513,19 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+    public function filterMerchantsWithFirstTransactionBetweenTimestamps(array $merchantIdList, int $from, int $to)
+    {
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+            ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
+            ->groupBy(Entity::MERCHANT_ID)
+            ->selectRaw('MIN(' . Entity::CREATED_AT . ') as first_created_at,' . Entity::MERCHANT_ID)
+            ->having('first_created_at', '>=', $from)
+            ->having('first_created_at', '<=', $to)
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
+
     public function filterMerchantsWithTransactionsCountAboveThreshold(array $merchantIdList,string $type, int $threshold)
     {
         return $this->newQueryWithConnection($this->getDataWarehouseConnection())
@@ -526,7 +539,7 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function fetchTransactedMerchants(string $type, int $createdAt, bool $regularMerchantsOnly = true)
+    public function fetchTransactedMerchants(string $type, int $from, int $to = null, bool $regularMerchantsOnly = true)
     {
         $transactionsMerchantIdColumn  = $this->dbColumn(Entity::MERCHANT_ID);
         $merchantIdColumn              = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
@@ -537,9 +550,14 @@ class Repository extends Base\Repository
             ->join(Table::MERCHANT, $merchantIdColumn, '=', $transactionsMerchantIdColumn)
             ->select(Entity::MERCHANT_ID)
             ->where($this->dbColumn(Entity::TYPE), '=', $type)
-            ->where($this->dbColumn(Entity::CREATED_AT), '>=', $createdAt);
+            ->where($this->dbColumn(Entity::CREATED_AT), '>=', $from);
 
-        if($regularMerchantsOnly === true)
+        if ($to !== null)
+        {
+            $query->where($this->dbColumn(Entity::CREATED_AT), '<=', $to);
+        }
+
+        if ($regularMerchantsOnly === true)
         {
             $query->where($merchantOrgIdColumn, '=',  Org\Entity::RAZORPAY_ORG_ID)
                 ->where($merchantParentIdColumn, '=', null);

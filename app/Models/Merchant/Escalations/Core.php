@@ -210,7 +210,7 @@ class Core extends Base\Core
 
         // Filter out all merchants that have transacted since last time cron ran
         $transactedMerchants = $this->repo->transaction->fetchTransactedMerchants(
-            'payment', $lastCronTime, false);
+            'payment', $lastCronTime, null, false);
 
         $this->trace->info(TraceCode::TRANSACTION_DETAILS_CRON_TRACE, [
             'last_cron_time'  => $lastCronTime,
@@ -259,6 +259,12 @@ class Core extends Base\Core
     {
         $lastCronTime = $this->getLastCronTime(Constants::SEGMENT_MTU_CACHE_KEY);
 
+        $from = Carbon::createFromTimestamp($lastCronTime)
+            ->subHour()
+            ->getTimestamp();
+
+        $to = Carbon::now()->subHour()->getTimestamp();
+
         /*
          * Update last Cron time instantly, since processing of cron may take another 5-10 mins
          * and during that time another payments can happen
@@ -267,7 +273,7 @@ class Core extends Base\Core
 
         // Filter out all merchants that have transacted since last time cron ran
         $transactedMerchants = $this->repo->transaction->fetchTransactedMerchants(
-            'payment', $lastCronTime, false);
+            'payment', $from, $to, false);
 
         $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
             'last_cron_time'  => $lastCronTime,
@@ -280,8 +286,8 @@ class Core extends Base\Core
 
         foreach ($merchantIdChunks as $merchantIdChunk)
         {
-            $filteredMerchants = $this->repo->transaction->filterMerchantsWithFirstTransactionAboveTimestamp(
-                $merchantIdChunk, $lastCronTime);
+            $filteredMerchants = $this->repo->transaction->filterMerchantsWithFirstTransactionBetweenTimestamps(
+                $merchantIdChunk, $from, $to);
 
             $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
                 'last_cron_time'  => $lastCronTime,

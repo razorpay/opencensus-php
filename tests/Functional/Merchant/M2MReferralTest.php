@@ -235,27 +235,29 @@ class M2MReferralTest extends TestCase
         $this->assertNotNull($data);
         $this->assertEquals(true, $data[StoreConfigKey::IS_SIGNED_UP_REFEREE]);
 
+        $createdAt = Carbon::now()->subHour()->getTimestamp();
+
         $transaction = $this->fixtures->create('payment', [
             'amount'      => 1000 * 100,   // in paisa
             'merchant_id' => $m2mReferral->getAttribute('merchant_id'),
-            'created_at'  => Carbon::now()->getTimestamp()
+            'created_at'  => $createdAt
         ]);
         $transaction = $this->fixtures->create('transaction', [
             'type'        => 'payment',
             'amount'      => 1000 * 100,   // in paisa
             'merchant_id' => $m2mReferral->getAttribute('merchant_id'),
-            'created_at'  => Carbon::now()->getTimestamp()
+            'created_at'  => $createdAt
         ]);
         $transaction = $this->fixtures->create('payment', [
             'amount'      => 50 * 100,   // in paisa
             'merchant_id' => $m2mReferral->getAttribute('merchant_id'),
-            'created_at'  => Carbon::now()->getTimestamp()
+            'created_at'  => $createdAt
         ]);
         $transaction = $this->fixtures->create('transaction', [
             'type'        => 'payment',
             'amount'      => 50 * 100,   // in paisa
             'merchant_id' => $m2mReferral->getAttribute('merchant_id'),
-            'created_at'  => Carbon::now()->getTimestamp()
+            'created_at'  => $createdAt
         ]);
         (new \RZP\Models\Merchant\Escalations\Core)->handleMtuSegmentEvent();
         $m2mReferral = $this->getDbLastEntity('m2m_referral');

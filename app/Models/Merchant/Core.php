@@ -5506,7 +5506,7 @@ class Core extends Base\Core
 
         // Filter out all merchants that have transacted since last time cron ran
         $transactedMerchants = $this->repo->transaction->fetchTransactedMerchants(
-            'payment', $lastCronTime, true);
+            'payment', $lastCronTime);
 
         $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_TRACE, [
             'last_cron_time'  => $lastCronTime,

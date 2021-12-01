@@ -96,7 +96,7 @@ class CoreTest extends TestCase
 
         $merchantId = $merchantDetail->getMerchantId();
 
-        $this->createTransaction($merchantId, 'payment', 10000);
+        $this->createTransaction($merchantId, 'payment', 10000, Carbon::now()->subHour()->getTimestamp());
         $this->createPayment($merchantId, 10000);
 
         (new Escalations\Core)->handleMtuSegmentEvent();
@@ -128,7 +128,7 @@ class CoreTest extends TestCase
 
         $merchantId = $merchantDetail->getMerchantId();
 
-        $this->createTransaction($merchantId, 'payment', 10000);
+        $this->createTransaction($merchantId, 'payment', 10000, Carbon::now()->subHour()->getTimestamp());
         $this->createPayment($merchantId, 10000);
 
         (new Escalations\Core)->handleMtuSegmentEvent();
@@ -183,10 +183,10 @@ class CoreTest extends TestCase
         $merchantId = $merchantDetail->getMerchantId();
 
         // Create new 2 transactions
-        $this->createTransaction($merchantId, 'payment', 10000);
+        $this->createTransaction($merchantId, 'payment', 10000, Carbon::now()->subHour()->getTimestamp());
         $this->createPayment($merchantId, 10000);
 
-        $this->createTransaction($merchantId, 'payment', 10000);
+        $this->createTransaction($merchantId, 'payment', 10000, Carbon::now()->subHour()->getTimestamp());
         $this->createPayment($merchantId, 10000);
 
         (new Escalations\Core)->handleMtuSegmentEvent();
