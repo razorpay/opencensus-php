@@ -103,7 +103,6 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE        => 'sometimes|nullable|max:15|contact_syntax',
         Entity::EMAIL                 => 'sometimes|email|unique:users,email',
         Entity::SETTINGS              => 'nullable|associative_array',
-        Entity::EMAIL                 => 'sometimes|email',
     ];
 
     protected static $oauthRequestRules = [
