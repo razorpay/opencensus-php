@@ -792,7 +792,7 @@ class UserRolesScope
             'refresh_payments_scheduled_downtimes'                 => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS, Role::FINANCE, Role::SUPPORT],
             'refund_cancel_batch'                                  => [Role::OWNER, Role::ADMIN],
             'refund_edit'                                          => [Role::OWNER, Role::ADMIN],
-            'refund_fetch_creation_data'                           => [Role::OWNER, Role::ADMIN],
+            'refund_fetch_creation_data'                           => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::MANAGER, Role::SUPPORT],
             'reporting_consumer_restrictions'                      => [Role::OWNER, Role::ADMIN],
             'reports_fetch_multiple'                               => [Role::OWNER, Role::ADMIN],
             'reports_generate'                                     => [Role::OWNER, Role::ADMIN],
