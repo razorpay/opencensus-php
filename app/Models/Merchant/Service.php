@@ -7362,7 +7362,7 @@ class Service extends Base\Service
      */
     public function createSalesforceLeadFromDashboard(array $input): array
     {
-        $merchant_id = array_pull($input, 'merchant_id');
+        $merchant_id = $input['merchant_id'];
 
         $merchant = $this->merchant;
 

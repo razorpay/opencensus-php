@@ -485,28 +485,28 @@ return [
         ],
     ],
 
-//    'testMerchantSignUpWithBankingPromotionWithEndAtInFuture' => [
-//        'request' => [
-//            'content' => [
-//                'business_type' => '2',
-//                'department'    => '7',
-//            ],
-//            'url'     => '/pre_signup',
-//            'method'  => 'PUT',
-//            'server' => [
-//                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
-//            ],
-//        ],
-//        'response' => [
-//            'content' => [
-//                'business_type'      => '2',
-//                'transaction_volume' => null,
-//                'department'         => '7',
-//                'contact_mobile'     => null,
-//                'role'               => null,
-//            ],
-//        ],
-//    ],
+    'testMerchantSignUpWithBankingPromotionWithEndAtInFuture' => [
+        'request' => [
+            'content' => [
+                'business_type' => '2',
+                'department'    => '7',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'business_type'      => '2',
+                'transaction_volume' => null,
+                'department'         => '7',
+                'contact_mobile'     => null,
+                'role'               => null,
+            ],
+        ],
+    ],
 
     'testUpdatePromotionWithoutPermission' => [
         'request' => [

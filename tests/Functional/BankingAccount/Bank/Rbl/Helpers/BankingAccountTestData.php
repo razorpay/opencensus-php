@@ -3001,7 +3001,6 @@ return [
                             'id' => 'admin_RzrpySprAdmnId'
                         ],
                         'state_log' => [
-                            'status' => 'picked'
                         ],
                     ],
                 ]
