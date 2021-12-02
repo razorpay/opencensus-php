@@ -140,7 +140,7 @@ export default class PaymentButtonsList extends ListContainer {
 
     return (
       <div class="PaymentButtons--ListingPage content-wrapper">
-        <HeaderAction>
+        <HeaderAction responsive>
           <div class="btn-toolbar pull-right">
             <ShowWhen additionalCondition={(_user) => !_user.isOrgAxis}>
               <TakeATourButton feature={RZPFeatures.PB} onSuccess={this.resetCopyPasteCodeStatus} />
@@ -149,9 +149,11 @@ export default class PaymentButtonsList extends ListContainer {
             <DocsLink url="https://razorpay.com/docs/payment-button/" />
 
             {isRoleAllowedEdit && user.isPaymentButtonEnabledByRazorX && (
-              <span class="btn btn-primary" onClick={this.openPaymentButtonsNewPage}>
-                <i class="i i-plus" />
-                <span>Create Payment Button</span>
+              <span class="cta-container">
+                <span class="btn btn-primary" onClick={this.openPaymentButtonsNewPage}>
+                  <i class="i i-plus" />
+                  <span>Create Payment Button</span>
+                </span>
               </span>
             )}
           </div>

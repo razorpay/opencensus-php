@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
@@ -5,15 +6,13 @@ import RTracking from 'react-tracking';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { subscriptionButtonTitle, createdAt } from 'common/ui/item/pair';
 
-import Amount from 'common/ui/Amount';
 import DataTable from 'common/ui/Table/DataTable';
 import HeaderAction from 'common/ui/HeaderAction';
-import DocsLink from 'merchant/components/DocsLink';
+import DocsLink, { DocLink } from 'merchant/components/DocsLink';
 import ListContainer from 'merchant/containers/ListContainer';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { DocLink } from 'merchant/components/DocsLink'
 
 import ListFilter from './ListFilter';
 import GetCodeModal from '../components/GetCodeModal'; // SuccessModal
@@ -38,8 +37,8 @@ const getActions = (openGetCodeModal) => ({
 const itemNames = {
   title: 'Items',
   value: (item) => {
-    const recurringItems = [],
-      oneTimeItems = [];
+    const recurringItems = [];
+    const oneTimeItems = [];
 
     item.payment_page_items.forEach((payment_page_item) => {
       if (payment_page_item.plan_id) {
@@ -65,10 +64,10 @@ const itemNames = {
                       </tr>
                     </thead>
                     <tbody>
-                      {recurringItems.map((item, index) => (
+                      {recurringItems.map((_item, index) => (
                         <tr key={index}>
-                          <td>{item.item.name}</td>
-                          <td class="text-right">{item.quantity_sold}</td>
+                          <td>{_item.item.name}</td>
+                          <td class="text-right">{_item.quantity_sold}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -94,10 +93,10 @@ const itemNames = {
                     </thead>
 
                     <tbody>
-                      {oneTimeItems.map((item, index) => (
+                      {oneTimeItems.map((_item, index) => (
                         <tr key={index}>
-                          <td>{item.item.name}</td>
-                          <td class="text-right">{item.quantity_sold}</td>
+                          <td>{_item.item.name}</td>
+                          <td class="text-right">{_item.quantity_sold}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -115,8 +114,8 @@ const itemNames = {
 const totalTransactions = {
   title: 'Transactions',
   value: (item) => {
-    const recurringItems = [],
-      oneTimeItems = [];
+    const recurringItems = [];
+    const oneTimeItems = [];
 
     item.payment_page_items.forEach((payment_page_item) => {
       if (payment_page_item.plan_id) {
@@ -128,8 +127,8 @@ const totalTransactions = {
 
     return (
       <React.Fragment>
-        <div>{recurringItems.reduce((total, item) => total + Number(item.quantity_sold), 0)}</div>
-        <div>{oneTimeItems.reduce((total, item) => total + Number(item.quantity_sold), 0)}</div>
+        <div>{recurringItems.reduce((total, _item) => total + Number(_item.quantity_sold), 0)}</div>
+        <div>{oneTimeItems.reduce((total, _item) => total + Number(_item.quantity_sold), 0)}</div>
       </React.Fragment>
     );
   },
@@ -224,16 +223,18 @@ export default class SubscriptionButtonsList extends ListContainer {
 
     return (
       <div class="PaymentButtons--ListingPage content-wrapper">
-        <HeaderAction>
+        <HeaderAction responsive>
           <div class="btn-toolbar pull-right">
             <TakeATourButton feature={RZPFeatures.PB} onSuccess={this.resetCopyPasteCodeStatus} />
 
             <DocsLink url="https://razorpay.com/docs/payment-button/subscription-buttons/" />
 
             {isRoleAllowedEdit && user.isSubscriptionButtonEnabled && (
-              <span class="btn btn-primary" onClick={this.openSubscriptionButtonsNewPage}>
-                <i class="i i-plus" />
-                <span>Create Subscription Button</span>
+              <span class="cta-container">
+                <span class="btn btn-primary" onClick={this.openSubscriptionButtonsNewPage}>
+                  <i class="i i-plus" />
+                  <span>Create Subscription Button</span>
+                </span>
               </span>
             )}
           </div>
@@ -274,18 +275,23 @@ export default class SubscriptionButtonsList extends ListContainer {
   }
 }
 
-const EmptyComponent = () => (
-  <div class="PaymentButton-empty-list">
-    <img src="/dist/css/assets/payment_button/empty-list.svg" width="280px" />
+function EmptyComponent() {
+  return (
+    <div class="PaymentButton-empty-list">
+      <img src="/dist/css/assets/payment_button/empty-list.svg" width="280px" />
 
-    <div class="description">
-      <h4>It’s Lonely Here!</h4>
-      <div>Create a Subscription Button to get Started</div>
-      <br />
-      Not sure where to start? See our getting{' '}
-      <DocLink target="_blank" href="https://razorpay.com/docs/payment-button/subscription-buttons/">
-        started guide <i class="i i-external-link" />
-      </DocLink>
+      <div class="description">
+        <h4>It’s Lonely Here!</h4>
+        <div>Create a Subscription Button to get Started</div>
+        <br />
+        Not sure where to start? See our getting{' '}
+        <DocLink
+          target="_blank"
+          href="https://razorpay.com/docs/payment-button/subscription-buttons/"
+        >
+          started guide <i class="i i-external-link" />
+        </DocLink>
+      </div>
     </div>
-  </div>
-);
+  );
+}
