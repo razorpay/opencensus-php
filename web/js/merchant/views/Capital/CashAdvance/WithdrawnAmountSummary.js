@@ -3,43 +3,12 @@ import Amount from 'common/ui/Amount';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 
-function computeRepaymentSchedule(repaymentDate, diffDays) {
-  const repaymentStartDate = moment(repaymentDate).subtract(diffDays, 'days');
-  const repaymentEndDate = moment(repaymentDate);
-
-  const startMonth = repaymentStartDate.format('MMM');
-  const startYear = repaymentStartDate.year();
-
-  const endMonth = repaymentEndDate.format('MMM');
-  const endYear = repaymentEndDate.year();
-
-  let repaymentSchedule = '';
-
-  if (startMonth === endMonth) {
-    repaymentSchedule = `${startMonth} ${repaymentStartDate.date()} - ${repaymentEndDate.date()}`;
-  } else if (startYear !== endYear) {
-    repaymentSchedule = `${startMonth} ${repaymentStartDate.date()} ${startYear} - ${endMonth} ${repaymentEndDate.date()} ${endYear}`;
-  } else if (startMonth !== endMonth) {
-    repaymentSchedule = `${startMonth} ${repaymentStartDate.date()} - ${endMonth} ${repaymentEndDate.date()}`;
-  }
-
-  return repaymentSchedule;
-}
-
-function WithdrawnAmountSummary({
-  showFirstWithdrawalOffer,
-  principle,
-  interest,
-  repaymentDate,
-  roi,
-  diffDays,
-}) {
+function WithdrawnAmountSummary({ showFirstWithdrawalOffer, principle, interest, roi, diffDays }) {
   const totalRepayableAmount = (principle + interest) * 100;
   const interestPopoverContent = `(${getFormattedAmountNew(
     principle * 100,
     true,
   )} X ${roi}%) * ${diffDays} ${diffDays > 1 ? 'days' : 'day'}`;
-  const repaymentSchedule = computeRepaymentSchedule(repaymentDate, diffDays);
 
   return (
     <div className="withdrawals__credit-meta card">
@@ -89,8 +58,7 @@ function WithdrawnAmountSummary({
         </div>
       ) : null}
       <div className="withdrawals__footer left-border">
-        This amount will be deducted in {diffDays} instalments from your settlement balance between{' '}
-        <strong>{repaymentSchedule}</strong> on a daily basis
+        This amount will be deducted in {diffDays} installments from your settlement balance
       </div>
     </div>
   );

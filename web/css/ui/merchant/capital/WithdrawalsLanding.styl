@@ -131,7 +131,7 @@
   .enable-automated-withdrawal-modal--description {
     font-size: 14px;
   }
-  
+
   .enable-automated-withdrawal-modal--repayable-text {
     font-size: 13px;
     color: rgba(22, 47, 86, 0.87);
@@ -155,8 +155,19 @@
   }
 }
 
-.automated-popover-container {
-  position: relative;
+.automated-popover-container-wrapper {
+  position: absolute;
+  left: 170px;
+  z-index: 99;
+  margin-bottom: 8px;
+  align-items: center;
+  &.custom-frequency {
+    left: 482px;
+  }
+  .automated-popover-container {
+    position: relative;
+    margin-left: 12px;
+  }
 }
 
 .automated-popover.rzp-popover.rzp-tooltip {
@@ -494,7 +505,7 @@
   font-size: 13px;
   position: absolute;
   bottom: 0px;
-  left: 460px;
+  right: 0px;
   @media (max-width: 1400px) and (min-width: 1300px) {
     left: 445px;
   }

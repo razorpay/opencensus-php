@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import moment from 'moment';
 
 import Input from 'common/new-ui/Input';
 import Amount from 'common/ui/Amount';
@@ -25,6 +26,8 @@ import {
   COLLECTIONS_PRODUCT_TYPES,
   COLLECTIONS_PAYMENT_REFERENCE_TYPE,
   COLLECTIONS_BALANCE_TYPE,
+  CASH_ADVANCE_FIRST_LOGIN_KEY,
+  REPAYMENT_FREQUENCY_TYPES,
 } from './constants';
 import CreditSummary from './CreditSummary';
 import WithdrawnAmountSummary from './WithdrawnAmountSummary';
@@ -37,12 +40,11 @@ import trackAutomatedCA from './ga/automated';
 import MaxWithdrawError from './MaxWithdrawError';
 import Repayments from 'merchant/models/Capital/Repayments';
 import Withdrawal from 'merchant/models/Capital/Withdrawals';
-import { loadCheckoutScript } from '../utils/index';
+import { loadCheckoutScript, checkifDateExpired } from 'merchant/views/Capital/utils';
 import { fetchRepayments } from 'merchant/reducers/capital/repayments';
 import Spinner from 'common/ui/Spinner';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import GromorAgreementModal from 'merchant/views/Capital/components/Modals/GromorAgreementModal';
-import { checkifDateExpired } from 'merchant/views/Capital/utils';
 import {
   trackHideBreakup,
   trackRepayDateClicked,
@@ -54,6 +56,7 @@ import {
   trackWithdrawNowConfirm,
   trackWithdrawStatus,
 } from './TrackEvents/trackEvents';
+import { getItem, setItem } from 'common/utils/localStorage';
 
 function updateRepaymentData(data, onResolve, onReject) {
   const repayment = new Repayments();
@@ -87,12 +90,12 @@ const getRepaidAmountBreakup = (balances) => {
 
 const parseRepaymentSchedule = (todayTimestamp, array) => {
   let data = {};
-  array.map((item) => {
-    if (parseInt(item.repayment_date) === todayTimestamp) {
+  array.forEach((item) => {
+    if (parseInt(item.repayment_date, 10) === todayTimestamp) {
       const amount =
-        parseInt(item.payment) -
-        (parseInt(item.interest_collected ? item.interest_collected : 0) +
-          parseInt(item.principal_collected ? item.principal_collected : 0));
+        parseInt(item.payment, 10) -
+        (parseInt(item.interest_collected ? item.interest_collected : 0, 10) +
+          parseInt(item.principal_collected ? item.principal_collected : 0, 10));
 
       data = {
         amount,
@@ -120,6 +123,12 @@ const computeMaxDueDate = (limit) => {
   return moment().add(limit - 1, 'days');
 };
 
+const checkIfFirstCashAdvanceLogin = () => {
+  const val = getItem(CASH_ADVANCE_FIRST_LOGIN_KEY);
+  if (val === null) return true;
+  return JSON.parse(val);
+};
+
 @withRouter
 @connect(
   (state) => ({
@@ -130,8 +139,8 @@ const computeMaxDueDate = (limit) => {
     merchantGromorEsignDetails: state.migrations.merchantGromorEsignDetails,
   }),
   {
-    fetchWithdrawalConfiguration: fetchWithdrawalConfiguration,
-    fetchSeedData: fetchSeedData,
+    fetchWithdrawalConfiguration,
+    fetchSeedData,
     fetchFunctionalWithdrawalConfigByMerchantID,
     showNotification,
     openModal,
@@ -166,17 +175,30 @@ export default class AmountWithdraw extends React.Component {
         interestRepaid: 0,
         totalRepaid: 0,
       },
+      showRepaymentInfoTooltip: checkIfFirstCashAdvanceLogin(),
     };
     this.state = this.initialState;
   }
 
   componentDidMount() {
     const {
-      fetchSeedData,
-      withdrawalConfigurationDetails: { data: { status, comments: { reason = '' } = {} } } = {},
+      withdrawalConfigurationDetails: {
+        data: { status, repayment_frequency, comments: { reason = '' } = {} },
+      } = {},
     } = this.props;
     const withdrawalInstance = new Withdrawal();
     const repaymentInstance = new Repayments();
+
+    // Setting localStorage key for repayment tooltip
+    if (
+      repayment_frequency &&
+      repayment_frequency === REPAYMENT_FREQUENCY_TYPES.BIMONTHLY &&
+      checkIfFirstCashAdvanceLogin()
+    ) {
+      setItem(CASH_ADVANCE_FIRST_LOGIN_KEY, false);
+
+      document.querySelector('body').addEventListener('click', this.hideRepaymentTooltip);
+    }
 
     // fetchSeedData();
     this.prefillData();
@@ -247,12 +269,19 @@ export default class AmountWithdraw extends React.Component {
           });
         });
     } else {
+      // eslint-disable-next-line
       this.setState({
         latestRepaymentDone: false,
         isRepaymentLoading: false,
       });
     }
   }
+
+  componentWillUnmount() {
+    document.querySelector('body').removeEventListener('click', this.hideRepaymentTooltip);
+  }
+
+  hideRepaymentTooltip = () => this.handleRepaymentInfoTooltipHover(false);
 
   fetchInstallment = (withdrawalInstance) => {
     return withdrawalInstance.fetchInstallments({
@@ -281,7 +310,7 @@ export default class AmountWithdraw extends React.Component {
   };
 
   gaEventDispatcher = (eventObject) => {
-    eventObject['eventCategory'] = 'Dashboard CA - Apply';
+    eventObject.eventCategory = 'Dashboard CA - Apply';
     window.rzpAnalytics(eventObject);
   };
 
@@ -317,7 +346,7 @@ export default class AmountWithdraw extends React.Component {
     trackWithdrawAmountUpdated(e.currentTarget.value);
     e.persist();
 
-    const amount = parseInt(e.currentTarget.value + '00');
+    const amount = parseInt(`${e.currentTarget.value}00`, 10);
     const errors = [];
     const errorConfig = {
       type: null,
@@ -326,21 +355,23 @@ export default class AmountWithdraw extends React.Component {
 
     if (amount > this.getMaxWithdrawableAmount()) {
       errors.push(
-        'Max. amount can be withdrawn is ₹' +
-          getFormattedAmountNew(this.getMaxWithdrawableAmount()),
+        `Max. amount can be withdrawn is ₹${getFormattedAmountNew(
+          this.getMaxWithdrawableAmount(),
+        )}`,
       );
       errorConfig.type = WITHDRAW_ERROR_TYPES.MAX_WITHDRAWAL_ERROR;
     } else if (amount < this.getMinWithdrawableAmount()) {
       errors.push(
-        'Min. amount can be withdrawn is ₹' +
-          getFormattedAmountNew(this.getMinWithdrawableAmount()),
+        `Min. amount can be withdrawn is ₹${getFormattedAmountNew(
+          this.getMinWithdrawableAmount(),
+        )}`,
       );
       errorConfig.showReasonCTA = false;
     } else if (amount > this.getInternalCreditBalance()) {
       errors.push(
-        'Amount cannot be more than the credit limit(₹' +
-          getFormattedAmountNew(this.getMinWithdrawableAmount()) +
-          ')',
+        `Amount cannot be more than the credit limit(₹${getFormattedAmountNew(
+          this.getMinWithdrawableAmount(),
+        )})`,
       );
       errorConfig.type = WITHDRAW_ERROR_TYPES.MIN_WITHDRAWAL_ERROR;
     }
@@ -374,18 +405,18 @@ export default class AmountWithdraw extends React.Component {
 
   getRepayableAmount = () => {
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
-    const { start_day_limit, interest } = withdrawalConfigurationDetails.configuration;
+    const { interest } = withdrawalConfigurationDetails.configuration;
     const startDay = moment();
 
-    const selectedDate = moment(this.state.selectedDueDate).endOf('day');
+    const selectedDate = this.getDueDate().endOf('day');
 
     const diffDays = selectedDate.diff(startDay, 'days');
 
-    const roi = parseInt(interest) / 100;
+    const roi = parseInt(interest, 10) / 100;
 
     const amount = {
-      principle: parseInt(this.state.withdrawalAmount),
-      interest: (diffDays * parseInt(this.state.withdrawalAmount) * roi) / 100,
+      principle: parseInt(this.state.withdrawalAmount, 10),
+      interest: (diffDays * parseInt(this.state.withdrawalAmount, 10) * roi) / 100,
       diffDays,
       roi,
     };
@@ -396,8 +427,8 @@ export default class AmountWithdraw extends React.Component {
   getInternalCreditBalance = () => {
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
     const internalBalance =
-      parseInt(withdrawalConfigurationDetails.configuration.internal_credit_limit) -
-      parseInt(withdrawalConfigurationDetails.principal_outstanding_balance || 0);
+      parseInt(withdrawalConfigurationDetails.configuration.internal_credit_limit, 10) -
+      parseInt(withdrawalConfigurationDetails.principal_outstanding_balance || 0, 10);
     return internalBalance > 0 ? internalBalance : 0;
   };
 
@@ -405,20 +436,19 @@ export default class AmountWithdraw extends React.Component {
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
     const {
       max_withdraw_amount,
-      internal_credit_limit,
       min_withdraw_amount,
     } = withdrawalConfigurationDetails.configuration;
 
-    const maxAmount = Math.min(parseInt(max_withdraw_amount), this.getInternalCreditBalance());
+    const maxAmount = Math.min(parseInt(max_withdraw_amount, 10), this.getInternalCreditBalance());
 
-    const minAmount = parseInt(min_withdraw_amount);
+    const minAmount = parseInt(min_withdraw_amount, 10);
     return maxAmount > 0 ? (maxAmount > minAmount ? maxAmount : minAmount) : 0;
   };
 
   getMinWithdrawableAmount = () => {
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
 
-    return parseInt(withdrawalConfigurationDetails.configuration.min_withdraw_amount);
+    return parseInt(withdrawalConfigurationDetails.configuration.min_withdraw_amount, 10);
   };
 
   canWithdraw = () => {
@@ -474,6 +504,7 @@ export default class AmountWithdraw extends React.Component {
       if (!order_id) return Promise.reject(new Error('No Order Id found'));
 
       return new Promise((resolve, reject) => {
+        // eslint-disable-next-line
         const razorpayInstance = new Razorpay({
           order_id,
           handler: (response) => updateRepaymentData(response, resolve, reject),
@@ -494,39 +525,43 @@ export default class AmountWithdraw extends React.Component {
       currency: 'INR',
     };
 
-    return Promise.resolve()
-      .then(() => this.handleRazorpayCheckoutPayment(RepaymentInstance, paymentParams))
-      .then(({ data }) => {
-        if (!data.breakups || !data.breakups.length) return Promise.reject('No Repayment Details');
-        const { principalRepaid, interestRepaid } = getRepaidAmountBreakup(data.breakups);
+    return (
+      Promise.resolve()
+        .then(() => this.handleRazorpayCheckoutPayment(RepaymentInstance, paymentParams))
+        // eslint-disable-next-line
+        .then(({ data }) => {
+          if (!data.breakups || !data.breakups.length)
+            return Promise.reject('No Repayment Details');
+          const { principalRepaid, interestRepaid } = getRepaidAmountBreakup(data.breakups);
 
-        const response = {
-          totalRepaid: principalRepaid + interestRepaid || 0,
-          principalRepaid,
-          interestRepaid,
-          repaymentMethod: data.payment_meta ? data.payment_meta.method : '',
-        };
+          const response = {
+            totalRepaid: principalRepaid + interestRepaid || 0,
+            principalRepaid,
+            interestRepaid,
+            repaymentMethod: data?.payment_meta ? data?.payment_meta?.method : '',
+          };
 
-        this.setState({
-          repaymentBreakdown: response,
-          latestRepaymentDone: true,
-        });
-      })
-      .catch(() => {
-        this.props.showNotification({
-          type: 'error',
-          message: 'Oops, Your repayment has been failed due to some internal error.',
-        });
-        this.setState({
-          latestRepaymentDone: false,
-          repaymentBreakdown: {
-            repaymentMethod: '',
-            principalRepaid: 0,
-            interestRepaid: 0,
-            totalRepaid: 0,
-          },
-        });
-      });
+          this.setState({
+            repaymentBreakdown: response,
+            latestRepaymentDone: true,
+          });
+        })
+        .catch(() => {
+          this.props.showNotification({
+            type: 'error',
+            message: 'Oops, Your repayment has been failed due to some internal error.',
+          });
+          this.setState({
+            latestRepaymentDone: false,
+            repaymentBreakdown: {
+              repaymentMethod: '',
+              principalRepaid: 0,
+              interestRepaid: 0,
+              totalRepaid: 0,
+            },
+          });
+        })
+    );
   };
 
   withdraw = async () => {
@@ -539,6 +574,8 @@ export default class AmountWithdraw extends React.Component {
 
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
     const { withdrawalAmount, selectedDueDate } = this.state;
+
+    const dueDate = this.getDueDate();
 
     trackWithdrawNowConfirm({
       amount: withdrawalAmount,
@@ -553,7 +590,7 @@ export default class AmountWithdraw extends React.Component {
         application_id: withdrawalConfigurationDetails.application_id,
         application_number: withdrawalConfigurationDetails.application_number,
         amount: withdrawalAmount * 100,
-        due_date: moment(selectedDueDate).utc().format(),
+        due_date: dueDate.utc().format(),
         drawn_at: moment().utc().format(),
         //TODO: right now BE has kept this as mandatory, remove this after
         // BE remove this validation
@@ -571,7 +608,6 @@ export default class AmountWithdraw extends React.Component {
         response.data.withdrawal.status !== STATUSES.REJECTED &&
         response.data.withdrawal.status !== STATUSES.FAILED
       ) {
-        const { withdrawalAmount, selectedDueDate } = this.state;
         trackWithdrawStatus({
           amount: withdrawalAmount,
           date: moment(selectedDueDate).format('DD-MM-YYYY'),
@@ -593,7 +629,6 @@ export default class AmountWithdraw extends React.Component {
           eventAction: 'Withdraw | Success',
         });
       } else {
-        const { withdrawalAmount, selectedDueDate } = this.state;
         trackWithdrawStatus({
           amount: withdrawalAmount,
           date: moment(selectedDueDate).format('DD-MM-YYYY'),
@@ -608,7 +643,6 @@ export default class AmountWithdraw extends React.Component {
         });
       }
     } catch (e) {
-      const { withdrawalAmount, selectedDueDate } = this.state;
       trackWithdrawStatus({
         amount: withdrawalAmount,
         date: moment(selectedDueDate).format('DD-MM-YYYY'),
@@ -741,6 +775,42 @@ export default class AmountWithdraw extends React.Component {
     );
   };
 
+  getRepaymentFrequency = () => {
+    return this.props.withdrawalConfigurationDetails.data.repayment_frequency;
+  };
+
+  isRepaymentFrequencyBimonthly = () => {
+    return this.getRepaymentFrequency() === REPAYMENT_FREQUENCY_TYPES.BIMONTHLY;
+  };
+
+  isRepaymentFrequencyCustom = () => {
+    return this.getRepaymentFrequency() === REPAYMENT_FREQUENCY_TYPES.CUSTOM;
+  };
+
+  getDueDate = () => {
+    switch (this.getRepaymentFrequency()) {
+      case REPAYMENT_FREQUENCY_TYPES.CUSTOM: {
+        return moment(this.state.selectedDueDate);
+      }
+      case REPAYMENT_FREQUENCY_TYPES.BIMONTHLY: {
+        const startOfMonth = moment().startOf('month').startOf('date');
+        const halfMonth = moment().startOf('month').add(14, 'days').endOf('date');
+        const {
+          repayment_date1,
+          repayment_date2,
+        } = this.props.withdrawalConfigurationDetails.data.configuration;
+
+        if (moment().isBetween(startOfMonth, halfMonth)) {
+          return moment().set('date', repayment_date2).endOf('day');
+        } else {
+          return moment().add(1, 'month').set('date', repayment_date1).endOf('day');
+        }
+      }
+      default:
+        return null;
+    }
+  };
+
   handleAutomatedTextMouseOver = () => {
     trackAutomatedCA.hoverAutomatedText({});
     const { isAutomatedTagPulsating } = this.state;
@@ -768,6 +838,7 @@ export default class AmountWithdraw extends React.Component {
       !canWithdraw && withdrawalErrorConfig.showReasonCTA && !isWithdrawalDisabled;
 
     return (
+      /*eslint-disable */
       <React.Fragment>
         {!this.state.isConfirmingWithdraw ? (
           <React.Fragment>
@@ -808,11 +879,11 @@ export default class AmountWithdraw extends React.Component {
           </div>
         )}
       </React.Fragment>
+      /*eslint-enable */
     );
   };
 
   openWithdrawErrorModal = () => {
-    const { repayDues, closeModal, openModal } = this.props;
     const {
       withdrawalAmount,
       withdrawalErrorConfig: { type: withdrawalErrorType },
@@ -824,12 +895,12 @@ export default class AmountWithdraw extends React.Component {
 
     const props = {
       amount: withdrawalAmount * 100,
-      closeModal: closeModal,
-      repayDues: repayDues,
+      closeModal: this.props.closeModal,
+      repayDues: this.props.repayDues,
       trackGA: this.gaEventDispatcher,
     };
 
-    const COMPONENT =
+    const RenderComp =
       withdrawalErrorType === WITHDRAW_ERROR_TYPES.MIN_WITHDRAWAL_ERROR
         ? MinWithdrawAmountModal
         : MaxWithdrawError;
@@ -840,16 +911,14 @@ export default class AmountWithdraw extends React.Component {
       props.maxWithdrawalAmount = this.getMaxWithdrawableAmount();
     }
 
-    openModal({
+    this.props.openModal({
       size: 'small',
-      component: <COMPONENT {...props} />,
+      component: <RenderComp {...props} />,
     });
   };
 
   openGromorSignModal = () => {
     const {
-      closeModal,
-      openModal,
       withdrawalConfigurationDetails,
       merchantGromorEsignDetails: {
         data: { due_at, email_id = '', name = 'You', leegality_url = '' } = {},
@@ -857,10 +926,10 @@ export default class AmountWithdraw extends React.Component {
     } = this.props;
 
     const handleModalClose = () => {
-      closeModal();
+      this.props.closeModal();
     };
 
-    openModal({
+    this.props.openModal({
       component: (
         <GromorAgreementModal
           onClose={handleModalClose}
@@ -1013,7 +1082,6 @@ export default class AmountWithdraw extends React.Component {
   withdrawableSection = () => {
     const {
       withdrawalAmount,
-      isConfirmingWithdrawalTC,
       selectedDueDate,
       showRepaymentDetailsBreakup,
       isAutomatedTagPulsating,
@@ -1077,7 +1145,7 @@ export default class AmountWithdraw extends React.Component {
                 </p>
               </span>
             </div>
-            <div class="cash-advance-first-withdrawal-background"></div>
+            <div class="cash-advance-first-withdrawal-background" />
           </React.Fragment>
         ) : null}
 
@@ -1100,10 +1168,13 @@ export default class AmountWithdraw extends React.Component {
             )
           ) : (
             <div>
-              <div className="flex" style={{ marginBottom: 8, alignItems: 'center' }}>
-                <h3 className="title text--secondary">Withdraw Amount</h3>
+              <div
+                className={`flex automated-popover-container-wrapper ${
+                  this.isRepaymentFrequencyCustom() ? 'custom-frequency' : ''
+                }`}
+              >
                 {user.isAutomatedLOCEligible && automated_loc && (
-                  <div style={{ marginLeft: 12 }} className="automated-popover-container">
+                  <div className="automated-popover-container">
                     <div className={`${isAutomatedTagPulsating ? 'pulsating-ring' : ''}`}>
                       <div
                         className="automated-tag"
@@ -1125,21 +1196,23 @@ export default class AmountWithdraw extends React.Component {
                 <div class="repayable-amount-hint">
                   <strong>{repayableAmount}</strong>
                   <span class="repayable-helper-text">&nbsp; will be the repayable amount</span>
-                  {user.isAutomatedLOCEligible && !automated_loc && (
-                    <div className="automated-withdrawal flex">
-                      <div className="automated-withdrawal-wrapper">
-                        <div style={{ fontSize: 14 }}>Automate your withdrawals</div>
-                        <Button.Transparent
-                          class="text-small enable-now-btn"
-                          onClick={this.handleEnableNowClickForAutomatedWithdrawal}
-                        >
-                          Enable Now
-                        </Button.Transparent>
-                      </div>
+                  {user.isAutomatedLOCEligible &&
+                    !automated_loc &&
+                    this.isRepaymentFrequencyCustom() && (
+                      <div className="automated-withdrawal flex">
+                        <div className="automated-withdrawal-wrapper">
+                          <div style={{ fontSize: 14 }}>Automate your withdrawals</div>
+                          <Button.Transparent
+                            class="text-small enable-now-btn"
+                            onClick={this.handleEnableNowClickForAutomatedWithdrawal}
+                          >
+                            Enable Now
+                          </Button.Transparent>
+                        </div>
 
-                      <div className="rounded-rectange" />
-                    </div>
-                  )}
+                        <div className="rounded-rectange" />
+                      </div>
+                    )}
                   <div class="flex">
                     <div class="text-small full-width no-margin text-strong p-r">
                       <strong>
@@ -1151,12 +1224,6 @@ export default class AmountWithdraw extends React.Component {
                         ) : (
                           <Button.Transparent onClick={this.toggleBreakup}>
                             Show Breakup
-                            <i class="i i-chevron-right" />
-                          </Button.Transparent>
-                        )}
-                        {this.state.showRepaymentDetailsBreakup && (
-                          <Button.Transparent class="pull-right" onClick={this.toggleBreakup}>
-                            Show Credit Details
                             <i class="i i-chevron-right" />
                           </Button.Transparent>
                         )}
@@ -1261,6 +1328,17 @@ export default class AmountWithdraw extends React.Component {
     );
   }
 
+  handleRepaymentInfoTooltipHover = (val) => {
+    this.setState((prev) => ({
+      ...prev,
+      showRepaymentInfoTooltip: val,
+    }));
+  };
+
+  isDueDate20 = () => {
+    return this.getDueDate().format('D') === '20';
+  };
+
   getWithdrawalForm(withdrawalAmount) {
     const {
       withdrawalConfigurationDetails: {
@@ -1273,13 +1351,14 @@ export default class AmountWithdraw extends React.Component {
     return (
       <div className="flex withdrawal-form-container">
         <Input.Group
-          label="I want to withdraw"
-          className="InputGroup--inline Input--vTop no-margin"
-          required
+          label="How much do you need?"
+          className={`InputGroup--inline Input--vTop no-margin ${
+            this.isRepaymentFrequencyBimonthly() ? 'less-right-space' : ''
+          }`}
         >
           <div className="Input-content">
             <Input
-              addonBefore={'₹'}
+              addonBefore="₹"
               type="number"
               addonAfter={<small>.00</small>}
               name="amount"
@@ -1294,45 +1373,114 @@ export default class AmountWithdraw extends React.Component {
             </div>
           )}
         </Input.Group>
-        <Input.ToCalendar
-          required={false}
-          className="Input--vTop no-margin"
-          data-name="date_slot"
-          format="DD-MM-YYYY"
-          label={
-            <div className="custom-parent">
-              I will repay the amount by
-              <small
-                className="help-content small"
-                style={{
-                  paddingLeft: '4px',
-                  position: 'relative',
-                }}
-              >
-                <i
-                  className="i i-info-outline"
-                  // onMouseOver={() => trackMouseOver('tenure')}
-                />
-                <Popover align="top" theme="dark" parentQuerySelector=".withdrawals__top-summary">
-                  <PopoverBody>
-                    <div className="text-center">
-                      Your equated repayments will start from tomorrow
-                    </div>
-                  </PopoverBody>
-                </Popover>
-              </small>
-            </div>
-          }
-          defaultValue={dateToShow}
-          onChange={this.handleDueDateChange}
-          onClick={() => trackRepayDateClicked(dateToShow)}
-          addonAfter={<i className="i i-date-range" />}
-          placement="topLeft"
-          allowToday={false}
-          disablePastDates={false}
-          disabledDate={this.isDateDisabled}
-        />
+        {this.isRepaymentFrequencyCustom() && (
+          <Input.ToCalendar
+            required={false}
+            className="Input--vTop no-margin"
+            data-name="date_slot"
+            format="DD-MM-YYYY"
+            label={
+              <div className="custom-parent">
+                I will repay the amount by
+                <small
+                  className="help-content small"
+                  style={{
+                    paddingLeft: '4px',
+                    position: 'relative',
+                  }}
+                >
+                  <i
+                    className="i i-info-outline"
+                    // onMouseOver={() => trackMouseOver('tenure')}
+                  />
+                  <Popover align="top" theme="dark" parentQuerySelector=".withdrawals__top-summary">
+                    <PopoverBody>
+                      <div className="text-center">
+                        Your equated repayments will start from tomorrow
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </small>
+              </div>
+            }
+            defaultValue={dateToShow}
+            onChange={this.handleDueDateChange}
+            onClick={() => trackRepayDateClicked(dateToShow)}
+            addonAfter={<i className="i i-date-range" />}
+            placement="topLeft"
+            allowToday={false}
+            disablePastDates={false}
+            disabledDate={this.isDateDisabled}
+          />
+        )}
         <div className="withdrawal-cta-container">{this.getWithdrawCTA()}</div>
+        {this.isRepaymentFrequencyBimonthly() && (
+          <div className="repayment-info-container flex">
+            <div className="side-border" />
+            <img
+              src="/dist/css/assets/capital/calendar2.svg"
+              className="calendar-icon"
+              alt="calendar"
+            />
+            <div
+              className="info-container flex"
+              onMouseOver={() => this.handleRepaymentInfoTooltipHover(true)}
+              onMouseLeave={() => this.handleRepaymentInfoTooltipHover(false)}
+            >
+              <div className="top-part flex">
+                <div className="repayment-label">Repay by</div>
+                <span className="icon i-info-outline info-icon" />
+              </div>
+              <div className="bottom-part">{this.getDueDate()?.format('DD MMMM, YYYY')}</div>
+              <Popover
+                align="right"
+                theme="dark"
+                parentQuerySelector=".withdrawals__top-summary"
+                persistent={this.state.showRepaymentInfoTooltip}
+              >
+                <PopoverBody>
+                  <div className="repayment-info-tooltip-container flex">
+                    <div className="flex top-label-container">
+                      <div className="top-label">Withdrawal Period</div>
+                      <div className="top-label">Repayment Dates</div>
+                    </div>
+                    <div className={`flex repayment-info ${this.isDueDate20() ? 'active' : ''}`}>
+                      <div className="side-border" />
+                      <div className="flex repayment-info--detail first-part">
+                        <div className="date-label">
+                          1st
+                          <span className="icon i-arrow-forward" />
+                          15th
+                        </div>
+                        <div className="text-label">of every month</div>
+                      </div>
+                      <div className="flex repayment-info--detail">
+                        <div className="date-label">20th</div>
+                        <div className="text-label">of the same month</div>
+                      </div>
+                    </div>
+
+                    <div className={`flex repayment-info ${!this.isDueDate20() ? 'active' : ''}`}>
+                      <div className="side-border" />
+                      <div className="flex repayment-info--detail first-part">
+                        <div className="date-label">
+                          16th
+                          <span className="icon i-arrow-forward" />
+                          last day
+                        </div>
+                        <div className="text-label">of every month</div>
+                      </div>
+                      <div className="flex repayment-info--detail">
+                        <div className="date-label">5th</div>
+                        <div className="text-label">of the next month</div>
+                      </div>
+                    </div>
+                  </div>
+                </PopoverBody>
+              </Popover>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -1356,7 +1504,7 @@ export default class AmountWithdraw extends React.Component {
           </Button.Transparent>
         </div>
         <div className="title-container">
-          <img height={16} src={`/dist/css/assets/success-tick-green.svg`} alt="Loading icon" />
+          <img height={16} src="/dist/css/assets/success-tick-green.svg" alt="Loading icon" />
           <h3 className="text--secondary">
             <strong>Withdrawal Request Successful!</strong>
           </h3>
@@ -1371,7 +1519,7 @@ export default class AmountWithdraw extends React.Component {
             <span className="text--secondary">
               <strong>
                 <Amount
-                  value={withdrawalAmount + '00'}
+                  value={`${withdrawalAmount}00`}
                   parentQuerySelector=".withdrawals__top-summary"
                 />
               </strong>
@@ -1449,7 +1597,7 @@ export default class AmountWithdraw extends React.Component {
             <span className="text--secondary">
               <strong>
                 <Amount
-                  value={withdrawalAmount + '00'}
+                  value={`${withdrawalAmount}00`}
                   parentQuerySelector=".withdrawals__top-summary"
                 />
               </strong>
@@ -1494,6 +1642,8 @@ export default class AmountWithdraw extends React.Component {
         return this.withdrawalSuccessView();
       case VIEWS.WITHDRAW_FAIL:
         return this.withdrawalFailedView();
+      default:
+        return null;
     }
   };
 
@@ -1531,15 +1681,18 @@ export default class AmountWithdraw extends React.Component {
             />
           );
         }
-      case VIEWS.WITHDRAW_SUCCESS:
+      case VIEWS.WITHDRAW_SUCCESS: {
         const meta = this.getRepayableAmount();
         return (
           <WithdrawnAmountSummary {...meta} repaymentDate={moment(this.state.selectedDueDate)} />
         );
+      }
+      default:
+        return null;
     }
   };
 
-  getLeftSection = (currentView) => {
+  getLeftSection = () => {
     const { withdrawalConfigurationDetails: { data = null } = {} } = this.props;
     const showFirstWithdrawalOffer = this.getFirstWithdrawalOffer();
 

@@ -20,6 +20,99 @@
     padding: 12px;
 .withdrawal-form-container
   flex: 1;
+  .InputGroup.less-right-space .Input-content .Input-content
+    margin-right: 0;
+  .repayment-info-container
+    flex: 1;
+    margin-left: 16px;
+    .rzp-tooltip-inner
+      width: 286px;
+      padding: 12px;
+      .repayment-info-tooltip-container
+        flex-direction: column;
+        width: 100%;
+        .top-label-container
+          border-bottom: 1px solid #5D6D86;
+          padding-bottom: 8px;
+          margin-bottom: 8px;
+          .top-label
+            font-weight: bold;
+            font-size: 10px;
+            line-height: 12px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            color: #C4CBD7;
+            &:first-child
+              margin-right: 24px;
+        .repayment-info
+          border-radius: 3px;
+          padding: 6px 8px;
+          transition: .3s ease-out;
+          position: relative;
+          &:first-child
+            margin-bottom: 8px;
+          &.active
+            background: #1F2430;
+            .side-border
+              display: block;
+            .repayment-info--detail .date-label
+              color: #DFE3E9;
+          .side-border
+            display: none;
+            width: 2px;
+            height: 32px;
+            background: #2A86F3;
+            border-radius: 0px 3px 3px 0px;
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+          .repayment-info--detail
+            flex-direction: column;
+            &.first-part
+              width: 130px;
+            .date-label
+              font-weight: bold;
+              font-size: 13px;
+              line-height: 16px;
+              color: #C4CBD7;
+              .i-arrow-forward
+                color: #FDFDFD;
+                margin: 0 5.5px;
+            .text-label
+              font-size: 13px;
+              line-height: 16px;
+              color: #79879C;
+    .side-border
+      width: 1px;
+      height: 141px;
+      background: linear-gradient(180deg, rgba(234, 234, 234, 0) 0%, rgba(22, 47, 86, 0.16) 20.83%, rgba(22, 47, 86, 0.16) 80.73%, rgba(234, 234, 234, 0) 100%);
+    .calendar-icon
+      width: 32px;
+      height: 32px;
+      margin: 38px 16px 0 48px;
+    .info-container
+      margin-top: 32px;
+      flex-direction: column;
+      cursor: pointer;
+      height: 30px;
+      .top-part
+        align-items: center;
+        .repayment-label
+          font-size: 14px;
+          line-height: 20px;
+          color: #8895A8;
+        .info-icon
+          color: #8895A8;
+          margin-left: 5px;
+          cursor: pointer;
+      .bottom-part
+        font-weight: bold;
+        font-size: 14px;
+        line-height: 20px;
+        color: #324664;
+        opacity: 0.87;
+
   .withdrawal-lead-form
     .Input-label
       margin-bottom: 7px;

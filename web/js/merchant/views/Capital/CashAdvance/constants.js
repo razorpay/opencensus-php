@@ -69,11 +69,11 @@ export const StatusPillClasses = {
 };
 
 export const STATUS_DESCRIPTIONS = {
-  [STATUSES.INITIATED]: 'Withdrawal request has been created, and yet to be' + ' shared with bank.',
-  [STATUSES.PROCESSED]: 'The amount has been successfully disbursed to your' + ' bank account.',
-  [STATUSES.DISBURSED]: 'The amount has been successfully disbursed to your' + ' bank account.',
-  [STATUSES.INITIATED]: 'The disbursal of the requested withdrawal is pending' + ' on the bank.',
-  [STATUSES.CREATED]: 'The withdrawal request has been successfully sent to' + ' the bank.',
+  [STATUSES.INITIATED]: 'Withdrawal request has been created, and yet to be shared with bank.',
+  [STATUSES.PROCESSED]: 'The amount has been successfully disbursed to your bank account.',
+  [STATUSES.DISBURSED]: 'The amount has been successfully disbursed to your bank account.',
+  [STATUSES.INITIATED]: 'The disbursal of the requested withdrawal is pending on the bank.',
+  [STATUSES.CREATED]: 'The withdrawal request has been successfully sent to the bank.',
   [STATUSES.FAILED]: 'Transfer didn’t happen for some reason on the bank side.',
   [STATUSES.REJECTED]: 'Transfer didn’t happen for some reason on the bank side.',
   [STATUSES.PARTIALLY_REPAID]: 'Some part of the repayment has been only collected.',
@@ -289,4 +289,12 @@ export const REPAYMENT_USER_METHODS_TYPE = {
 
 export const COLLECTIONS_PRODUCT_ENTITY_TYPE = {
   WITHDRAWALS: 'PRODUCT_ENTITY_TYPE_WITHDRAWAL',
+};
+
+export const CASH_ADVANCE_FIRST_LOGIN_KEY = 'CASH_ADVANCE_FIRST_LOGIN';
+
+export const REPAYMENT_FREQUENCY_TYPES = {
+  CUSTOM: 'CUSTOM',
+  BIMONTHLY: 'BIMONTHLY',
+  MONTHLY: 'MONTHLY',
 };
