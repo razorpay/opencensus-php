@@ -3543,6 +3543,11 @@ class Core extends Base\Core
 
             $receiver = $user->getEmail();
 
+            if(empty($receiver) === true)
+            {
+                $receiver = $input['email'] ?? null;
+            }
+
             $response = compact(
                 'token',
                 'receiver',
