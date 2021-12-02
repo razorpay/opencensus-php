@@ -222,7 +222,7 @@ RequestInterface
             (isset($data['subject']) === false)) {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
         }
-        if (isset($data['attachment']) === true )
+        if (isset($data['attachment']) === true && strlen($data['attachment'])!=0)
         {
             $ufhService = $this->app['ufh.service'];
             $signedUrlResponse = $ufhService->getSignedUrl($data['attachment'],[],$data["merchant_id"]);
