@@ -3,7 +3,7 @@ import Text from '@razorpay/blade-old/src/atoms/Text';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import View from '@razorpay/blade-old/src/atoms/View';
-import { ContactUsLinkButton } from '../styles';
+import { LinkButton } from '../styles';
 import { LoginCardArray } from '../data';
 import LoginCard from './LoginCard';
 
@@ -31,7 +31,7 @@ const DefaultView = () => {
             <View>
               <Text size="xsmall">Need help?</Text>
               <Space margin={[0, 0.5]}>
-                <ContactUsLinkButton
+                <LinkButton
                   as="a"
                   href="https://razorpay.com/support/#request/merchant"
                   target="_blank"
@@ -40,7 +40,7 @@ const DefaultView = () => {
                   <Text size="xsmall" color="primary.900">
                     Contact Us
                   </Text>
-                </ContactUsLinkButton>
+                </LinkButton>
               </Space>
             </View>
           </Flex>

@@ -1,6 +1,7 @@
 /* eslint-disable */
 import Styled from 'styled-components';
 import View from '@razorpay/blade-old/src/atoms/View';
+import Text from '@razorpay/blade-old/src/atoms/Text';
 import { BANK_NAMES } from '../utils';
 import { media } from '../breakpoints';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
@@ -108,7 +109,25 @@ export const ContentContainer = Styled(View)`
 
 `;
 
-export const ContactUsLinkButton = Styled(View)`
+export const LinkButton = Styled(View)`
   display: inline-block;
   text-decoration: none;
+`;
+
+export const CaptchaTextView = Styled(View)`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  @media (min-width: 768px) {
+    position: relative;
+  }
+`;
+
+export const CaptchaText = Styled(Text)`
+  color: ${({ theme }) => theme.colors.shade[960]};
+
+  @media (min-width: 768px) {
+    color: ${({ theme }) => theme.colors.light[970]};
+  }
 `;

@@ -11,7 +11,16 @@ import { fetchOrg, transformFetchOrgData } from './apis';
 import { getTheme } from './theme';
 import { BANK_NAMES } from '../utils';
 import { DesktopOnlyView } from '../commonStyles';
-import { Container, AbsoluteView, RelativeView, Image, ContentContainer } from './styles';
+import {
+  Container,
+  AbsoluteView,
+  RelativeView,
+  Image,
+  ContentContainer,
+  LinkButton,
+  CaptchaTextView,
+  CaptchaText,
+} from './styles';
 import DefaultView from './components/DefaultView';
 import OrgView from './components/OrgView';
 import Header from './components/Header';
@@ -97,41 +106,49 @@ const Signin = () => {
                         theme={getTheme(orgData.orgName)}
                         isGoogleOauthEnabled={orgData.orgName !== BANK_NAMES.AXIS}
                       />
-                      <DesktopOnlyView>
+                      <CaptchaTextView>
                         <Flex>
                           <Space padding={[2, 0]} margin="auto">
                             <Size maxWidth="232px">
                               <Flex flexWrap="wrap" justifyContent="center">
                                 <View>
-                                  <Text color="light.970" size="xsmall">
+                                  <CaptchaText size="xsmall">
                                     Protected by reCAPTCHA. Google
-                                  </Text>
+                                  </CaptchaText>
                                   <Space padding={[0, 0.25]}>
-                                    <Text color="primary.900" size="xsmall">
-                                      Privacy Policy
-                                    </Text>
+                                    <LinkButton
+                                      as="a"
+                                      href="https://policies.google.com/privacy"
+                                      target="_blank"
+                                    >
+                                      <Text color="primary.900" size="xsmall">
+                                        Privacy Policy
+                                      </Text>
+                                    </LinkButton>
                                   </Space>
                                   <Space padding={[0, 0.25]}>
-                                    <Text color="light.970" size="xsmall">
-                                      &
-                                    </Text>
+                                    <CaptchaText size="xsmall">&</CaptchaText>
                                   </Space>
                                   <Space padding={[0, 0.25]}>
-                                    <Text color="primary.900" size="xsmall">
-                                      Terms of Service
-                                    </Text>
+                                    <LinkButton
+                                      as="a"
+                                      href="https://policies.google.com/terms"
+                                      target="_blank"
+                                    >
+                                      <Text color="primary.900" size="xsmall">
+                                        Terms of Service
+                                      </Text>
+                                    </LinkButton>
                                   </Space>
                                   <Space padding={[0, 0.25]}>
-                                    <Text color="light.970" size="xsmall">
-                                      apply.
-                                    </Text>
+                                    <CaptchaText size="xsmall">apply.</CaptchaText>
                                   </Space>
                                 </View>
                               </Flex>
                             </Size>
                           </Space>
                         </Flex>
-                      </DesktopOnlyView>
+                      </CaptchaTextView>
                     </AbsoluteView>
                   </RelativeView>
                 </ContentContainer>
