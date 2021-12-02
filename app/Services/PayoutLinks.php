@@ -1622,6 +1622,7 @@ class PayoutLinks
             'payoutUtr'                 => $hostedData['payout_utr'],
             'payoutMode'                => $hostedData['payout_mode'],
             'payoutLinksCustomMessage'  => $hostedData['payout_links_custom_message'],
+            'expireBy'                  => $hostedData['expire_by'],
             'expiredAt'                 => $hostedData['expired_at'],
             'supportDetails'            => $supportDetails,
         ];
