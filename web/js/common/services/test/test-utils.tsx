@@ -35,6 +35,8 @@ const customRender = (
       isBDAndAovEnabled: true,
       isAadharEkycMandatory: true,
       isSyncBankVerificationEnabled: true,
+      isEmailMandatoryOnL1: true,
+      isEmailNonMandatoryOnL1: false,
     };
     return (
       <Provider store={reduxStore}>

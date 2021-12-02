@@ -120,7 +120,10 @@ export default function useActivation() {
       const businessDoc = getDefaultSelectedDocs(data, 'business');
       const additionalDoc = getDefaultSelectedDocs(data, 'additional');
 
-      const isContactDetailsTabComplete = isTabComplete(data, 'contact_details');
+      const isContactDetailsTabComplete = isTabComplete(
+        { ...data, isEmailNonMandatoryOnL1: experiments.isEmailNonMandatoryOnL1 },
+        'contact_details',
+      );
       const isBusinessOverviewTabComplete = isTabComplete(data, 'business_overview');
       const isBusinessDetailsTabComplete = isTabComplete(
         { ...data, isInstantActivationEnabled: experiments.isInstantActivationEnabled },

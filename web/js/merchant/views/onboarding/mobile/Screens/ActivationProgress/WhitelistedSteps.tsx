@@ -122,6 +122,34 @@ const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any
     (data.poi_verification_status !== 'initiated' ||
       (experiments.isSyncExperimentEnabled && !isL1Submitted(data.activation_form_milestone)));
 
+  const steps = [
+    {
+      name: 'Contact Details',
+      id: 'contact_details',
+      onClick,
+      isComplete: isContactDetailsCompleted,
+    },
+    {
+      name: 'Business Overview',
+      id: 'business_overview',
+      onClick,
+      isComplete: isBusinessOverviewCompleted,
+    },
+    {
+      name: 'Business Details',
+      id: 'business_details',
+      onClick,
+      isComplete: isBusinessDetailsCompleted && !shouldShowPoiError && !isCompanyPanInvalid,
+      hasErrorText:
+        shouldShowPoiError || isCompanyPanInvalid ? 'Unable to verify your PAN. Please update' : '',
+    },
+  ];
+  if (
+    (experiments.isEmailMandatoryOnL1 || experiments.isEmailNonMandatoryOnL1) &&
+    !user.user?.signup_via_email
+  )
+    [steps[0], steps[1], steps[2]] = [steps[1], steps[2], steps[0]];
+
   return (
     <Screen>
       <OnboardingStepCard
@@ -141,30 +169,7 @@ const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any
             ? 'We can’t support your business because it doesn’t meet our compliance requirements'
             : ''
         }
-        steps={[
-          {
-            name: 'Contact Details',
-            id: 'contact_details',
-            onClick,
-            isComplete: isContactDetailsCompleted,
-          },
-          {
-            name: 'Business Overview',
-            id: 'business_overview',
-            onClick,
-            isComplete: isBusinessOverviewCompleted,
-          },
-          {
-            name: 'Business Details',
-            id: 'business_details',
-            onClick,
-            isComplete: isBusinessDetailsCompleted && !shouldShowPoiError && !isCompanyPanInvalid,
-            hasErrorText:
-              shouldShowPoiError || isCompanyPanInvalid
-                ? 'Unable to verify your PAN. Please update'
-                : '',
-          },
-        ]}
+        steps={steps}
         showSettlement={!isDedupe}
         onCTAClick={onCTAClick}
         showCTA={canShowCTA}

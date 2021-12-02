@@ -33,8 +33,7 @@ test('ActivationForm Flow', async () => {
   render(<ActivationForm />, {});
   await waitForLoaderToFinish();
   expect(screen.getByText('Contact Name')).toBeInTheDocument();
-  const nextButton = screen.getByText('Next');
-  const [contactNameInput, contactEmailInput, contactNumber]: any = screen.getAllByTestId(
+  const [contactNameInput, contactNumber, contactEmailInput]: any = screen.getAllByTestId(
     'ds-text-input',
   );
 
@@ -44,7 +43,11 @@ test('ActivationForm Flow', async () => {
   expect(contactNameInput.value).toBe('Neeraj');
   expect(contactEmailInput.value).toBe('Neeraj@abc.com');
   expect(contactNumber.value).toBe('1234567890');
-  fireEvent.click(nextButton);
+  const tabButton = screen.getByText('Business Overview');
+  fireEvent.click(tabButton);
+
+  const nextButton = screen.getByText('Next');
+
   expect(screen.getByText('About Your Business')).toBeInTheDocument();
   const [businessTypeInput, businessCategorySelect, billingLabelInput]: any = screen.getAllByTestId(
     'ds-text-input',
@@ -88,9 +91,10 @@ test('ActivationForm Flow', async () => {
   fireEvent.change(pincodeInput, { target: { value: '530068' } });
   fireEvent.change(cityInput, { target: { value: 'Bangalore' } });
   fireEvent.change(stateInput, { target: { value: 'Karnataka' } });
+  fireEvent.click(nextButton);
   await waitFor(() => fireEvent.click(screen.getByText('Submit KYC')));
   fireEvent.click(screen.getByTestId('backIcon'));
-  fireEvent.click(screen.getByText('Contact Details'));
+  fireEvent.click(screen.getByText('Business Overview'));
   await waitFor(() => fireEvent.click(screen.getByText('Save and Exit')));
   await waitFor(() => fireEvent.click(screen.getByText('FAQs')));
 });

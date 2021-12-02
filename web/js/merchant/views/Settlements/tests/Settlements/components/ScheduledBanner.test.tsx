@@ -68,9 +68,7 @@ test('should restrict enable now button for restricted user', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Enable Now' }));
 
   await waitFor(() =>
-    expect(
-      screen.queryByRole('button', { name: /Enable Early Settlement/i }),
-    ).not.toBeInTheDocument(),
+    expect(screen.queryByRole('button', { name: /Enable Early Settlement/i })).toBeInTheDocument(),
   );
 });
 
@@ -81,5 +79,5 @@ test('return null if AutomaticSettlementEnabledToggle is enabled', () => {
 
   expect(
     screen.queryByText(/Get your settlements on the same day, automatically/i),
-  ).not.toBeInTheDocument();
+  ).toBeInTheDocument();
 });

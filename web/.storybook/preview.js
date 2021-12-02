@@ -18,6 +18,8 @@ const mockRazorXExp = {
   isBDAndAovEnabled: true,
   isAadharEkycMandatory: true,
   isSyncBankVerificationEnabled: true,
+  isEmailMandatoryOnL1: true,
+  isEmailNonMandatoryOnL1: false,
 };
 
 addParameters({

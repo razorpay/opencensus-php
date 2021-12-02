@@ -194,7 +194,7 @@ export default class Field extends React.Component {
       mature: props.mature,
       error: '',
       // eslint-disable-next-line react/no-unused-state
-      focus: true,
+      focus: false,
       character_length:
         props.tag === 'textarea' && props.defaultValue ? props.defaultValue.length : 0,
     };

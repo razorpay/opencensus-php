@@ -95,6 +95,7 @@ import RxCaInterest from './components/RxCaInterest';
 import { LOADING, FOOTER_BUTTONS } from './Constants';
 import { TypeAhead } from 'react-power-select';
 import EAadhard from './components/E-Aadhar';
+import CustomEmail from './components/CustomEmail';
 import SupportButton from 'merchant/components/Home/SupportButton';
 import { GTAG_KEYS, invokeGtag } from 'merchant/components/OnBoarding/utils';
 import { isValidGSTIN } from '../../../common/utils/rzp-utils';
@@ -117,7 +118,7 @@ let onAction = trackers;
 let NEEDS_CLARIFICATION_STEP, // To handle specific case for needs clarification screen
   DOCUMENT_UPLOAD_STEP, // To handle specific case for document step
   BANK_ACCOUNT_TAB; // To handle specific case for bank account step
-const BUSINESS_TYPE_FORM_STEP = 1; // If NGO is selected, then Document Upload would have 2 more fields
+let BUSINESS_TYPE_FORM_STEP = 1; // If NGO is selected, then Document Upload would have 2 more fields
 const BUSINESS_DETAILS_STEP = 2;
 let FORM_TABS, // Maintains naming of the tabs
   FORM_TABS_CONTENT, // Actual tab content corresponding to FORM_TABS
@@ -187,6 +188,8 @@ export default class ActivationWizard extends React.Component {
       (this.props.data.stakeholder && !!this.props.data.stakeholder.aadhaar_linked),
     ischeck: !this.props.user.isSyncExperimentEnabled,
     showInfoHeader: false,
+    tempContactEmail: '',
+    isEmailNonMandatory: true,
   };
 
   constructor(props) {
@@ -222,6 +225,9 @@ export default class ActivationWizard extends React.Component {
   }
   prepareTabs(props) {
     const { tracking } = props;
+    const canEmailVerify =
+      (props.user.isEmailMandatoryOnL1 || props.user.isEmailNonMandatoryOnL1) &&
+      !props.user.user?.signup_via_email;
 
     if (props.data.merchant_avg_order_value) {
       const aovValue = props.data.merchant_avg_order_value;
@@ -250,10 +256,27 @@ export default class ActivationWizard extends React.Component {
       }
     } else {
       // Main Activation form for merchant
+      this.mainTabs = mainFormTabs;
+      let mainTabsContent = mainFormTabsContent;
+      let mainFieldNamesMeta = mainFormFieldNamesMeta;
+      if (canEmailVerify) {
+        // for email verfication activation tab order has been changed.
+        // contact tab will be asked in the last step
+        BUSINESS_TYPE_FORM_STEP = 0; // If NGO is selected, then Document Upload would have 2 more fields
 
-      FORM_TABS = mainFormTabs;
-      FORM_TABS_CONTENT = mainFormTabsContent;
-      FORM_TABS_NAMES = mainFormFieldNamesMeta;
+        this.mainTabs = mainFormTabs.filter((_i, idx) => idx > 0);
+        this.mainTabs.splice(2, 0, mainFormTabs[0]);
+
+        mainTabsContent = mainFormTabsContent.filter((_i, idx) => idx > 0);
+        mainTabsContent.splice(2, 0, mainFormTabsContent[0]);
+
+        mainFieldNamesMeta = mainFormFieldNamesMeta.filter((_i, idx) => idx > 0);
+        mainFieldNamesMeta.splice(2, 0, mainFormFieldNamesMeta[0]);
+      }
+
+      FORM_TABS = this.mainTabs;
+      FORM_TABS_CONTENT = mainTabsContent;
+      FORM_TABS_NAMES = mainFieldNamesMeta;
 
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
@@ -266,11 +289,8 @@ export default class ActivationWizard extends React.Component {
           FORM_TABS.push('Needs Clarification');
         }
         const ndcFields =
-          getNeedsClarificationTabsData(
-            mainFormTabsContent,
-            props.data,
-            props.clarificationReasons,
-          ) || [];
+          getNeedsClarificationTabsData(mainTabsContent, props.data, props.clarificationReasons) ||
+          [];
         FORM_TABS_CONTENT.push(ndcFields);
         FORM_TABS_NAMES.push(ndcFields.map((f) => f?.name).filter((f) => Boolean(f)));
         NEEDS_CLARIFICATION_STEP = 5;
@@ -297,7 +317,7 @@ export default class ActivationWizard extends React.Component {
       }
 
       // Business Category in "Business Model" exists in main activation form. Setting value dynamically from props.
-      FORM_TABS_CONTENT[1][1][0].options = ['--Select--'].concat(
+      FORM_TABS_CONTENT[canEmailVerify ? 0 : 1][1][0].options = ['--Select--'].concat(
         Object.keys(props.categories).map((c) => ({
           name: c,
           label: props.categories[c].description,
@@ -305,7 +325,7 @@ export default class ActivationWizard extends React.Component {
       );
 
       // Set Biz type options dynamically based on current activation stage
-      FORM_TABS_CONTENT[1][0].options = getBusinessTypeOptions(this);
+      FORM_TABS_CONTENT[canEmailVerify ? 0 : 1][0].options = getBusinessTypeOptions(this);
 
       if (isPresent(props.data.business_name)) {
         this.state.business_name_selected_option = {
@@ -420,7 +440,7 @@ export default class ActivationWizard extends React.Component {
         actionName: 'Loaded',
         screen: 'KYC Document',
         properties: {
-          tab: mainFormTabs[this.state.activeTab],
+          tab: this.mainTabs[this.state.activeTab],
         },
         toCleverTap: true,
       });
@@ -453,13 +473,12 @@ export default class ActivationWizard extends React.Component {
     const query = QueryString.parse(this.props.location.search);
     this.handleActionBasedOnQuery(query);
     this.addVisitedFlag();
-
     this.props.trackEventsAction({
       objectName: 'Activation Tab',
       actionName: 'Loaded',
       screen: 'KYC Document',
       properties: {
-        tab: mainFormTabs[this.state.activeTab],
+        tab: this.mainTabs[this.state.activeTab],
       },
       toCleverTap: true,
     });
@@ -533,7 +552,7 @@ export default class ActivationWizard extends React.Component {
 
     this.state.activeTab = firstInValid;
     this.props.setCurrentTab({
-      tab_name: mainFormTabs[firstInValid],
+      tab_name: this.mainTabs[firstInValid],
     });
   }
 
@@ -592,14 +611,14 @@ export default class ActivationWizard extends React.Component {
         properties: {
           error: error,
           fieldLabel: fieldLabel,
-          tab: mainFormTabs[this.state.activeTab],
+          tab: this.mainTabs[this.state.activeTab],
         },
       });
       this.props.tracking.trackEvent(
         window.rzpQ.onbr().failed('Form Field Validation', {
           error: error,
           fieldLabel: fieldLabel,
-          tab: mainFormTabs[this.state.activeTab],
+          tab: this.mainTabs[this.state.activeTab],
         }),
       );
     }
@@ -612,7 +631,7 @@ export default class ActivationWizard extends React.Component {
       actionName: 'Clicked',
       screen: 'home page',
       properties: {
-        tab: mainFormTabs[currenActiveTab],
+        tab: this.mainTabs[currenActiveTab],
       },
       toCleverTap: true,
     });
@@ -621,7 +640,7 @@ export default class ActivationWizard extends React.Component {
       this.props.tracking.trackEvent(
         window.rzpQ.onbr().initiated(`${this.trackingType}.save_modifications`, {
           clickSource: 'save-next',
-          currentTabName: mainFormTabs[currenActiveTab],
+          currentTabName: this.mainTabs[currenActiveTab],
         }),
       );
     let callBack =
@@ -644,7 +663,6 @@ export default class ActivationWizard extends React.Component {
 
   prev = (e) => {
     const currenActiveTab = this.state.activeTab;
-
     let callBack =
       onAction &&
       function (result, error) {
@@ -665,12 +683,15 @@ export default class ActivationWizard extends React.Component {
   changeTab = ({ target }) => {
     const tabId = parseInt(target.getAttribute('data-index'));
     const currentActiveTab = this.state.activeTab;
+    this.setState({ tempContactEmail: '' }); // remove temp email on changing tab
+    this.setEnableAndDisableCheckbox(true);
+
     this.props.trackEventsAction({
       objectName: 'Activation Tab',
       actionName: 'Clicked',
       screen: 'KYC Document',
       properties: {
-        tab: mainFormTabs[tabId],
+        tab: this.mainTabs[tabId],
       },
       toCleverTap: true,
     });
@@ -678,7 +699,7 @@ export default class ActivationWizard extends React.Component {
     const tracker = () =>
       this.props.tracking.trackEvent(
         window.rzpQ.onbr().initiated(`${this.trackingType}.nav_action`, {
-          clickSource: mainFormTabs[tabId],
+          clickSource: this.mainTabs[tabId],
         }),
       );
     let callBack =
@@ -742,7 +763,7 @@ export default class ActivationWizard extends React.Component {
       activeTab: newActiveTab,
     });
     this.props.setCurrentTab({
-      tab_name: mainFormTabs[newActiveTab],
+      tab_name: this.mainTabs[newActiveTab],
     });
 
     const shouldSave = Object.keys(this.state.dirty).length ? true : null;
@@ -1058,6 +1079,9 @@ export default class ActivationWizard extends React.Component {
         operationPin &&
         operationState);
 
+    const isEmailVerified =
+      this.props.user?.user?.confirmed || !this.props.user.isEmailMandatoryOnL1;
+
     return (
       !hasSelectedBlacklistedCategory(this) &&
       isPromoterPANValid &&
@@ -1065,7 +1089,8 @@ export default class ActivationWizard extends React.Component {
       isCompanyNameValid &&
       promoterPANName &&
       businessCategory &&
-      isSyncExpEnable
+      isSyncExpEnable &&
+      isEmailVerified
     );
   }
 
@@ -1240,7 +1265,17 @@ export default class ActivationWizard extends React.Component {
     const businessCategories = await this.props.fetchBusinessCategory();
 
     const data =
-      !this.props.data.activation_form_milestone && !this.isLinkedAccountForm ? this.formData : {};
+      !this.props.data.activation_form_milestone && !this.isLinkedAccountForm
+        ? (this.props.user.isEmailMandatoryOnL1 || this.props.user.isEmailNonMandatoryOnL1) &&
+          !this.props.user.user?.signup_via_email
+          ? Object.entries(this.state.dirty).reduce((a, c) => {
+              if (c[0] !== '') {
+                a[c[0]] = c[1];
+              }
+              return a;
+            }, {})
+          : this.formData
+        : {};
 
     return this.props.submitForm({ data }).then((data) => {
       if (data?.errors) {
@@ -1489,12 +1524,22 @@ export default class ActivationWizard extends React.Component {
     const sideEffectFieldsToUpdate = {}; // Some fields might lead to other fields get dirty. So, they also needs to be updated alongside
     const { dirty, has_gstin } = this.state;
     const { data } = this.props;
-
+    const { isEmailMandatoryOnL1, isEmailNonMandatoryOnL1 } = this.props.user;
     const currentBusinessType = dirty.business_type || data.business_type;
     if (this.props.user.isSyncExperimentEnabled) {
       this.setState({ ischeck: false });
     }
 
+    if (
+      fieldName === 'contact_email' &&
+      !this.props.user.user?.signup_via_email &&
+      !this.isOnKYCTab() &&
+      (isEmailMandatoryOnL1 || isEmailNonMandatoryOnL1)
+    ) {
+      //don't allow to save value in BE.
+      this.setState({ tempContactEmail: fieldValue });
+      return;
+    }
     if (placeholder === 'Enter GSTIN') {
       this.showFullGstinList = false;
       this.setState((prevState) => ({
@@ -1782,6 +1827,26 @@ export default class ActivationWizard extends React.Component {
       this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
     });
     this.setState({ isAadharDocVisible: isChecked });
+  };
+
+  postSuccessfulEmailVerify = (payload) => {
+    try {
+      merchantFetch({
+        url: 'merchant/activation/email',
+        mode: 'live',
+        method: 'POST',
+        data: payload,
+      }).then(() => {
+        this.markTabIfActive(this.state.activeTab);
+        //enable the checkbox post success verification
+        this.setState({ isEmailNonMandatory: true });
+      });
+    } catch (err) {}
+  };
+
+  setEnableAndDisableCheckbox = (isEmailNonMandatory) => {
+    this.setState({ isEmailNonMandatory });
+    this.markTabIfActive(this.state.activeTab);
   };
 
   /* Find if all tabs are valid */
@@ -2346,7 +2411,9 @@ export default class ActivationWizard extends React.Component {
             isSaving={this.state.isSaving}
             defaultMsg={this.state.defaultMsg}
             footerButtons={footerButtons}
-            canSubmitL1Form={this.canSubmitL1Form && !this.state.callingAPI}
+            canSubmitL1Form={
+              this.canSubmitL1Form && this.state.isEmailNonMandatory && !this.state.callingAPI
+            }
             canSubmitNeedsClarification={
               this.hasFilledClarificationDetails && !this.state.callingAPI
             }
@@ -2476,6 +2543,26 @@ export function ActivationField(field) {
   }
   // Attach addition properties only if field is Custom Field i.e PowerSelect
   // Business Name has customField = true only for PG Activation (Not for RX Activation)
+
+  if (field.name === 'contact_email' && rest.customField) {
+    const {
+      activation_form_milestone,
+      isEmailNonMandatoryOnL1,
+      contact_name,
+      contact_email,
+      user,
+    } = this.props.user;
+
+    rest.contactEmail = this.state.tempContactEmail || contact_email;
+    rest.emailVerified = user?.confirmed;
+    rest.isEmailNonMandatoryOnL1 = isEmailNonMandatoryOnL1;
+    rest.postSuccessfulEmailVerify = this.postSuccessfulEmailVerify;
+    rest.setEnableAndDisableCheckbox = this.setEnableAndDisableCheckbox;
+    rest.contactName = this.state.dirty.contact_name || contact_name;
+    rest.activationMilestone = activation_form_milestone;
+    rest.sendErrorMessageToSegment = this.sendErrorMessageToSegment;
+  }
+
   if (field.name === 'business_name' && rest.customField) {
     rest.options = this.state.business_name_options || [];
     rest.selected = this.state.business_name_selected_option;
@@ -2582,6 +2669,10 @@ export function ActivationField(field) {
 
   if (rest.getLabel) {
     rest.label = rest.getLabel(this);
+  }
+
+  if (rest.addonAfter) {
+    rest.addonAfter = rest.addonAfter(this);
   }
 
   if (rest.getPlaceholder) {
@@ -2726,6 +2817,10 @@ function isFieldValid(field, activation) {
     return field.isFieldValid(activation);
   }
 
+  if (name === 'contact_email') {
+    return field.isFieldValid(activation);
+  }
+
   if (isFieldRequired && !value) {
     field.autoFocus = true; // To autofocus first unfilled required field
 
@@ -2787,6 +2882,8 @@ function CustomField(props) {
     description,
     gstinInputValue = '',
     showFullGstinList = true,
+    contactEmail,
+    emailVerified = false,
   } = props;
   let error = '';
 
@@ -2862,6 +2959,12 @@ function CustomField(props) {
       return (
         <div className={classList(disabled && 'Input--disabled')}>
           <EAadhard {...props} aadharStatus={aadharStatus} isAadharLinked={isAadharLinked} />
+        </div>
+      );
+    case 'contact_email':
+      return (
+        <div className={classList(disabled && 'Input--disabled')}>
+          <CustomEmail {...props} emailVerified={emailVerified} contactEmail={contactEmail} />
         </div>
       );
     default:

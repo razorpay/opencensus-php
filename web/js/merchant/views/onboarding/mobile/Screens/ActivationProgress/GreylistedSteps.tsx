@@ -143,6 +143,51 @@ const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any)
     experiments.isSyncExperimentEnabled &&
     getCompanyPanVerificationStatus(data?.company_pan_verification_status);
 
+  const steps = [
+    {
+      name: 'Contact Details',
+      id: 'contact_details',
+      onClick,
+      isComplete: isContactDetailsCompleted,
+    },
+    {
+      name: 'Business Overview',
+      id: 'business_overview',
+      onClick,
+      isComplete: isBusinessOverviewCompleted,
+    },
+    {
+      name: 'Business Details',
+      id: 'business_details',
+      onClick,
+      isComplete: isBusinessDetailsCompleted && !shouldShowPoiError && !isCompanyPanInvalid,
+      hasErrorText:
+        shouldShowPoiError || isCompanyPanInvalid ? 'Unable to verify your PAN. Please update' : '',
+    },
+    {
+      name: 'Bank and Business Details',
+      id: 'bank_details',
+      onClick,
+      isComplete: isBankAndCompanyDetailsCompleted && !hasBankVerificationFailed,
+      hasErrorText: hasBankVerificationFailed
+        ? isBankFieldDisabledField
+          ? 'You have reached maximum limit to changed the bank account details'
+          : 'Unable to verify your Bank details. Please update'
+        : '',
+    },
+    {
+      name: 'Documents Upload',
+      id: 'documents',
+      onClick,
+      isComplete: isDocumentsUploadCompleted,
+    },
+  ];
+  if (
+    (experiments.isEmailMandatoryOnL1 || experiments.isEmailNonMandatoryOnL1) &&
+    !user.user?.signup_via_email
+  )
+    [steps[0], steps[1], steps[2]] = [steps[1], steps[2], steps[0]];
+
   return (
     <View>
       <OnboardingStepCard
@@ -163,47 +208,7 @@ const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any)
             ? 'KYC details have been reviewed successfully and account has been activated'
             : ''
         }
-        steps={[
-          {
-            name: 'Contact Details',
-            id: 'contact_details',
-            onClick,
-            isComplete: isContactDetailsCompleted,
-          },
-          {
-            name: 'Business Overview',
-            id: 'business_overview',
-            onClick,
-            isComplete: isBusinessOverviewCompleted,
-          },
-          {
-            name: 'Business Details',
-            id: 'business_details',
-            onClick,
-            isComplete: isBusinessDetailsCompleted && !shouldShowPoiError && !isCompanyPanInvalid,
-            hasErrorText:
-              shouldShowPoiError || isCompanyPanInvalid
-                ? 'Unable to verify your PAN. Please update'
-                : '',
-          },
-          {
-            name: 'Bank and Business Details',
-            id: 'bank_details',
-            onClick,
-            isComplete: isBankAndCompanyDetailsCompleted && !hasBankVerificationFailed,
-            hasErrorText: hasBankVerificationFailed
-              ? isBankFieldDisabledField
-                ? 'You have reached maximum limit to changed the bank account details'
-                : 'Unable to verify your Bank details. Please update'
-              : '',
-          },
-          {
-            name: 'Documents Upload',
-            id: 'documents',
-            onClick,
-            isComplete: isDocumentsUploadCompleted,
-          },
-        ]}
+        steps={steps}
         showSettlement
         showCTA={!canShowCTA}
         canSubmitL2Form={!data.can_submit || !isAllTabCompleted}

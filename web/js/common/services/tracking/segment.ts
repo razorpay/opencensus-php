@@ -1,5 +1,6 @@
 import { getMode } from '../mode';
 import getMobileDetect from 'common/utils/mobileDetect';
+import axios from 'axios';
 import errorService from '@razorpay/universe-utils/errorService';
 import { Sections } from 'common/new-ui/ErrorBoundary';
 
@@ -9,6 +10,30 @@ export const titleCase = (sentence) => {
     .split(/\s+|_/)
     .map((word) => word.charAt(0).toUpperCase() + word.substr(1).toLowerCase())
     .join(' ');
+};
+
+const sendToLumberjack = ({ eventName, properties = {} }) => {
+  const body = {
+    mode: 'live',
+    key: window.LUMBERJACK_API_KEY,
+    events: [
+      {
+        event_type: 'pg-dashboard',
+        event: eventName,
+        event_version: 'v1',
+        timestamp: new Date().getTime(),
+        properties: {
+          ...properties,
+        },
+      },
+    ],
+  };
+
+  axios.post(window.LUMBERJACK_API_URL, JSON.stringify(body), {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 };
 
 const getCommonProperties = ({ screen, properties, user }) => {
@@ -125,6 +150,17 @@ export const analyticsTrack = ({
       },
     );
   }
+
+  //send LJ to pg-dashboard table
+  if (isLJReqiuired) {
+    sendToLumberjack({
+      eventName,
+      properties: {
+        ...commonProperties,
+      },
+    });
+  }
+
   if (window.rzpQ && window.rzpQ.push && isLJReqiuired) {
     switch (eventAction) {
       case 'initiated':
@@ -178,6 +214,15 @@ export const analyticsTrack = ({
         );
         break;
       default:
+        // all default eventAction event goes here
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .initiated(`${dataLakeEventName}_${eventAction}`, {
+              ...commonProperties,
+            }),
+        );
         break;
     }
   }

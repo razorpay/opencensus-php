@@ -51,7 +51,7 @@ import { initChatbot } from '../chatbot-init';
 import PartnerActivationRequiredModal from 'merchant/views/PartnerDashboard/Activation/Components/ActivationRequiredModal';
 import _refiner from 'refiner-js';
 
-initSentry("Merchant");
+initSentry('Merchant');
 
 @RTracking()
 class App extends Component {
@@ -255,8 +255,7 @@ class App extends Component {
         this.setLiveTransactionDone(user);
         if (user.isChatbotLive) {
           initChatbot(user);
-        }
-        else {
+        } else {
           setTimeout(() => {
             initChat(user);
           });
@@ -304,7 +303,8 @@ class App extends Component {
         // use partner mode if merchant kyc is not activated and it's enabled
         if (!user.isActivated && this.state.isPartnerModeEnabled) {
           this.fetchPartnerActivationStatus().then(({ data }) => {
-            const isCurrentPartnerKYCActivated = data?.partner_activation?.activation_status === 'activated';
+            const isCurrentPartnerKYCActivated =
+              data?.partner_activation?.activation_status === 'activated';
             if (user && isCurrentPartnerKYCActivated) {
               LocalStorageService.setItem(`is_partner_activated--${user.current}`, 'true');
               isPartnerKYCActivated = 'true';
@@ -328,7 +328,8 @@ class App extends Component {
             }
 
             this.props.updateSession({
-              partnerMode: currentPartnerMode, isUsingPartnerMode: this.state.isPartnerModeEnabled
+              partnerMode: currentPartnerMode,
+              isUsingPartnerMode: this.state.isPartnerModeEnabled,
             });
           });
         }
@@ -461,7 +462,8 @@ class App extends Component {
         this.setState({ nonGoLiveNPSSurveyPopup: takeNonGoLiveNPSSurvey });
       }
 
-      const newIsPartnerModeEnabled = location.pathname.startsWith('/partners/') && user.isIndependentPartnerKYCEnabled;
+      const newIsPartnerModeEnabled =
+        location.pathname.startsWith('/partners/') && user.isIndependentPartnerKYCEnabled;
       if (this.state.isPartnerModeEnabled !== newIsPartnerModeEnabled) {
         this.setState({
           isPartnerModeEnabled: newIsPartnerModeEnabled,
@@ -594,7 +596,7 @@ class App extends Component {
               this.fireMTUFunnelEvents(user);
             }
           })
-          .catch((err) => { });
+          .catch((err) => {});
         break;
       case 2:
         this.fireMTUAudienceEvents(user);
@@ -690,7 +692,7 @@ class App extends Component {
     return merchantFetch({ url: 'partner/activation', mode: 'live' });
   };
 
-  switchMode = (mode, callback = () => { }) => {
+  switchMode = (mode, callback = () => {}) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Header',
       eventAction: 'Switch - Mode',
@@ -869,6 +871,8 @@ class App extends Component {
       isL2AllowedForPoiInitiated: user.isL2AllowedForPoiInitiated,
       isUpdatedLiteOnboarding: user.isUpdatedLiteOnboarding,
       isSyncBankVerificationEnabled: user.isSyncBankVerificationEnabled,
+      isEmailMandatoryOnL1: user.isEmailMandatoryOnL1,
+      isEmailNonMandatoryOnL1: user.isEmailNonMandatoryOnL1,
     };
   };
 

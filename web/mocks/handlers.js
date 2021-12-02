@@ -296,6 +296,33 @@ export const handlers = [
     );
   }),
 
+  rest.post('*/merchant/api/test/merchant/activation/otp/send', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.delay(50),
+      ctx.json({
+        status_code: 200,
+        data: { token: 'dstrj34adf' },
+      }),
+    );
+  }),
+
+  rest.post('*/merchant/api/test/users/verify_email', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.delay(50),
+      ctx.json({
+        status_code: 200,
+        data: {
+          confirmed: true,
+          email: 'abc@gmail.com',
+          email_verified: true,
+          signup_via_email: 0,
+        },
+      }),
+    );
+  }),
+
   // Setllements
   rest.get('*/merchant/api/test/settlements/:id', (req, res, ctx) => {
     return res(

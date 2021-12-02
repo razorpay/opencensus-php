@@ -1173,6 +1173,12 @@ export default class User {
     return currentOrg === 'axis';
   }
 
+  get isSourceRX() {
+    const query = QueryString.parse(window.location.search);
+    const isSourceRX = !!(query && query.merchant && query.merchant === 'x');
+    return isSourceRX;
+  }
+
   get isWhiteLabelledOrg() {
     return this.isOrgAxis;
   }
@@ -1199,6 +1205,16 @@ export default class User {
 
   get isNPSAnnouncementPL() {
     return this.isFeatureEnabled('nps_survey_payment_links');
+  }
+
+  get isEmailMandatoryOnL1() {
+    if (this.isSourceRX) return false; // not required for Razorpay X;
+    return this.getExpStatus('mandatory_email_on_l1') && this.isOrgRZP;
+  }
+
+  get isEmailNonMandatoryOnL1() {
+    if (this.isSourceRX) return false; // not required for Razorpay X;
+    return this.getExpStatus('non_mandatory_email_on_l1') && this.isOrgRZP;
   }
 
   get isNPSAnnouncementPP() {

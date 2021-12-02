@@ -196,6 +196,7 @@ export default class ActivationContainer extends React.Component {
       bank_branch_ifsc,
       bank_account_name,
       bank_account_number,
+      contact_name,
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
@@ -223,6 +224,7 @@ export default class ActivationContainer extends React.Component {
       bank_branch_ifsc,
       bank_account_name,
       bank_account_number,
+      contact_name,
     });
 
     this.props.updateSession({
@@ -270,7 +272,7 @@ export default class ActivationContainer extends React.Component {
               : 'L1',
           ...data,
         },
-        accountId: this.props.accountId || this.props.submerchantId, 
+        accountId: this.props.accountId || this.props.submerchantId,
         // accountId for linked_accounts. Axios auto-ignore undefined keys in options
         // submerchantId for submerchant KYC
       })

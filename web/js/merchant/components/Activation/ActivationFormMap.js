@@ -138,6 +138,11 @@ const contactFields = [
     name: 'contact_mobile',
     type: 'tel',
     info: 'We will reach out to this phone for any account related issues.',
+    _disabledWhen: (activation) => {
+      const { isEmailMandatoryOnL1, isEmailNonMandatoryOnL1, user } = activation.props.user;
+      // if user signup from mobile disable the field
+      return (isEmailMandatoryOnL1 || isEmailNonMandatoryOnL1) && user?.contact_mobile_verified;
+    },
     onBlur: function onBlur(e, error) {
       this.sendErrorMessageToSegment(e, error);
     },
@@ -147,9 +152,54 @@ const contactFields = [
     name: 'contact_email',
     type: 'email',
     info: 'We will reach out to this email for any account related issues.',
+    customField: (activation) =>
+      !activation.isOnKYCTab() &&
+      !activation.props.user.user?.signup_via_email &&
+      (activation.props.user.isEmailMandatoryOnL1 || activation.props.user.isEmailNonMandatoryOnL1),
+    _autoRenderImpure: true,
+    isFieldValid: (activation) => {
+      const { user, data } = activation.props;
+      if (
+        (user.isEmailNonMandatoryOnL1 &&
+          !user.user?.confirmed &&
+          !activation.state.tempContactEmail) ||
+        ((user.contact_email || data.contact_email) && user.user?.confirmed)
+      ) {
+        return true;
+      }
+      return false;
+    },
     onBlur: function onBlur(e, error) {
       this.sendErrorMessageToSegment(e, error);
     },
+    _disabledWhen: (activation) => {
+      const { isEmailMandatoryOnL1, isEmailNonMandatoryOnL1, user } = activation.props.user;
+      // if user signup from mobile disable the field
+      return (
+        !activation.isOnKYCTab() &&
+        (isEmailMandatoryOnL1 || isEmailNonMandatoryOnL1) &&
+        !!user?.signup_via_email
+      );
+    },
+    addonAfter: (activation) => {
+      const {
+        isEmailMandatoryOnL1,
+        isEmailNonMandatoryOnL1,
+
+        user,
+      } = activation.props.user;
+      if (
+        !activation.isOnKYCTab() &&
+        (isEmailMandatoryOnL1 || isEmailNonMandatoryOnL1) &&
+        !!user?.signup_via_email
+      ) {
+        return <i className="i i-check text-success" />;
+      }
+      return null;
+    },
+    required: (activation) =>
+      !activation.props.user.isEmailNonMandatoryOnL1 &&
+      !!activation.props.user.user?.signup_via_email,
   },
 ];
 

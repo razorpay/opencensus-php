@@ -100,7 +100,12 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   const setActiveTabId = useActivationFormState((state) => state.setActiveTabId);
   const [isSaveAndExitModalOpen, setIsSaveAndExitModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isApiCalling, setIsApiCalling] = useState<boolean>(false);
   const [modalType, setModalType] = useState<ModalTypeT>('');
+
+  const isEmailVerificationRequired =
+    (experiments.isEmailMandatoryOnL1 || experiments.isEmailNonMandatoryOnL1) &&
+    !user.user?.signup_via_email;
 
   const trackEvents = useTrackEvents();
 
@@ -196,7 +201,12 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   const isBlackListCategory =
     status === 'success' && hasSelectedBlacklistCategory(data, businessCategoriesData);
 
+  const isCurrentTabActive = isEmailVerificationRequired
+    ? activeTabId === 'contact_details'
+    : activeTabId === 'business_details';
+
   const submitL1 = () => {
+    setIsApiCalling(true);
     trackEvents({
       objectName: 'L1 Form',
       actionName: 'Submitted',
@@ -205,6 +215,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     });
     postData({ activation_form_milestone: 'L1' })
       .then((res) => {
+        setIsApiCalling(false);
         if (res && res.activation_form_milestone === 'L1') {
           trackEvents({
             objectName: 'L1 Form',
@@ -236,6 +247,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         }
       })
       .catch((e) => {
+        setIsApiCalling(false);
         trackEvents({
           objectName: 'L1 Form',
           actionName: 'Result',
@@ -250,6 +262,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   };
 
   const submitL2 = () => {
+    setIsApiCalling(true);
     trackEvents({
       objectName: 'L2 Form',
       actionName: 'Submitted',
@@ -261,6 +274,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       : { submit: 1 };
     postData(payload)
       .then((res) => {
+        setIsApiCalling(false);
         if (res) {
           trackEvents({
             objectName: 'L2 Form',
@@ -287,6 +301,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         }
       })
       .catch((e) => {
+        setIsApiCalling(false);
         trackEvents({
           objectName: 'L2 Form',
           actionName: 'Result',
@@ -304,7 +319,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       return 'Submit And Verify';
     }
     if (
-      activeTabId === 'business_details' &&
+      isCurrentTabActive &&
       isInstantActivationEnabled &&
       (!isL1Submitted(activation_form_milestone) ||
         (!experiments.isL2AllowedForPoiInitiated
@@ -347,7 +362,13 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
             currentTabName: 'contact details',
           },
         });
-        setActiveTabId('business_overview');
+        if (isEmailVerificationRequired) {
+          if (!isL1Submitted(activation_form_milestone) && isInstantActivationEnabled) {
+            submitL1();
+          } else {
+            setActiveTabId('bank_details');
+          }
+        } else setActiveTabId('business_overview');
         break;
       case 'business_overview':
         trackEvents({
@@ -385,11 +406,13 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
             currentTabName: 'business details',
           },
         });
-        if (!isL1Submitted(activation_form_milestone) && isInstantActivationEnabled) {
-          submitL1();
-        } else {
-          setActiveTabId('bank_details');
-        }
+        if (!isEmailVerificationRequired) {
+          if (!isL1Submitted(activation_form_milestone) && isInstantActivationEnabled) {
+            submitL1();
+          } else {
+            setActiveTabId('bank_details');
+          }
+        } else setActiveTabId('contact_details');
         break;
       case 'bank_details':
         trackEvents({
@@ -512,7 +535,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         (submitted && (locked || activation_status === 'needs_clarification'))
       );
     } else if (
-      activeTabId === 'business_details' &&
+      isCurrentTabActive &&
       !isL1Submitted(activation_form_milestone) &&
       isInstantActivationEnabled
     ) {
@@ -526,7 +549,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     } else {
       return (
         false ||
-        (activeTabId === 'business_details' &&
+        (isCurrentTabActive &&
           isInstantActivationEnabled &&
           (!experiments.isL2AllowedForPoiInitiated
             ? isUnregisteredBusiness(data.business_type) &&
@@ -610,6 +633,9 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         </Tab>,
       );
     }
+
+    if (isEmailVerificationRequired) [tabs[0], tabs[1], tabs[2]] = [tabs[1], tabs[2], tabs[0]];
+
     return tabs;
   };
   return (
@@ -692,7 +718,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           </Tabs>
 
           {/* sync experiment */}
-          {activeTabId === 'business_details' &&
+          {isCurrentTabActive &&
             !isL1Submitted(activation_form_milestone) &&
             experiments.isSyncExperimentEnabled && (
               <AcknowledgementFooter ref={autoScrollRef}>
@@ -701,7 +727,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
                     name=""
                     title="I agree to Razorpay"
                     disabled={!isL1AllTabComplete}
-                    defaultChecked={isL1Acknowledge}
+                    checked={isL1Acknowledge}
                     onChange={(value) => {
                       if (value) {
                         refetch();
@@ -751,14 +777,20 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           >
             FAQs
           </Button>
-          <Button
-            onClick={() => handleNextClick()}
-            disabled={canSubmitActivationForm()}
-            icon="chevronRight"
-            iconAlign="right"
-          >
-            {getNextText()}
-          </Button>
+          {isApiCalling ? (
+            <Button type="button" disabled={true}>
+              Submitting ...
+            </Button>
+          ) : (
+            <Button
+              onClick={() => handleNextClick()}
+              disabled={canSubmitActivationForm()}
+              icon="chevronRight"
+              iconAlign="right"
+            >
+              {getNextText()}
+            </Button>
+          )}
         </StyledFooter>
       </Flex>
       <ActivationModal

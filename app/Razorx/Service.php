@@ -204,6 +204,8 @@ class Service extends Base\Service
             'dashboard_super_checkout',
             'lite_onboarding',
             'stores',
+            'mandatory_email_on_l1',
+            'non_mandatory_email_on_l1',
             'pp_donation_goal_tracker',
             'ftx_2021',
             'gstin_self_serve',

@@ -100,6 +100,8 @@ const isTabComplete = (data, tab, isUpdatedLiteOnboarding = false) => {
     if (key === 'bank_account_name' && isUpdatedLiteOnboarding) {
       return true;
     }
+    if (key === 'contact_email' && !data?.contact_email && data?.isEmailNonMandatoryOnL1)
+      return true;
     if (!isVisible(key, data)) return true;
     if (key === 'gstin' && data.gstin === '' && typeof data.hasGSTIN !== 'boolean') return true;
     return !!tabData[key].value && !tabData[key].error;

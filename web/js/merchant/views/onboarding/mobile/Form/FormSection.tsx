@@ -10,36 +10,48 @@ const StyledView = styled(View)`
   pointer-events: ${({ disabled }) => (disabled ? 'none' : 'all')};
 `;
 
+type size = 'xxsmall' | 'xsmall' | 'small' | 'medium' | 'large';
 interface FormSectionProps {
   title: string;
   subtitle?: string;
+  titleFontSize?: size;
+  subtitleFontSize?: size;
   last?: boolean;
   hasError?: boolean;
   visible?: boolean;
   disabled?: boolean;
+  isSuccess?: boolean;
+  padding?: number[] | string[] | number | string;
 }
 
 const FormSection: React.FC<FormSectionProps> = ({
   title,
   subtitle,
+  titleFontSize = 'xsmall',
+  subtitleFontSize = 'xxsmall',
   children,
   hasError = false,
   last = false,
   visible = true,
   disabled = false,
+  isSuccess = false,
+  padding = [2],
 }) => {
   if (!visible) {
     return null;
   }
   return (
-    <Card padding={[2]} margin={last ? 0 : [0, 0, 2, 0]}>
+    <Card padding={padding} margin={last ? 0 : [0, 0, 2, 0]}>
       <Space margin={[0, 0, 3, 0]}>
         <View>
-          <Text size="xsmall" weight="bold">
+          <Text size={titleFontSize} weight="bold">
             {title}
           </Text>
           {subtitle ? (
-            <Text size="xxsmall" color={hasError ? 'negative.900' : 'shade.970'}>
+            <Text
+              size={subtitleFontSize}
+              color={hasError ? 'negative.900' : isSuccess ? 'positive.900' : 'shade.970'}
+            >
               {subtitle}
             </Text>
           ) : null}
