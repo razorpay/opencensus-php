@@ -11,6 +11,7 @@ import { toggleMobileMenu } from 'merchant/reducers/app';
 import { isMobileDevice } from 'merchant/components/Home/data';
 
 import ShowWhen from 'merchant/components/ShowWhen';
+import NavFragment from './NavFragment';
 import AppSwitcher from './AppSwitcher';
 import ProfileDropdown from './ProfileDropdown';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
@@ -85,6 +86,9 @@ export default class HeaderNav extends Component {
       analytics,
       activePageName,
     } = this.props;
+    const fragmentSpecificProps = {
+      mode,
+    };
     const commonProps = {
       user,
       showGSTModal,
@@ -116,6 +120,9 @@ export default class HeaderNav extends Component {
                 </div>
               )}
               <ul className="nav navbar-nav navbar-right">
+                {!showMobileNav && (
+                  <NavFragment analytics={analytics} {...fragmentSpecificProps} {...commonProps} />
+                )}
                 {/* Will uncomment later. Please dont block this from going to prod  */}
                 {!showMobileNav && user.isMobileSignupActive && (
                   <li id="support-request">
