@@ -579,8 +579,8 @@ class Validator extends Base\Validator
         Entity::EXPECTED                   => 'sometimes|boolean',
         Entity::ACCOUNT_NUMBER             => 'sometimes_if:type.bharat_qr,1|string|max:50',
         Entity::IFSC_CODE                  => 'sometimes_if:type.bharat_qr,1|string|size:11',
-        Entity::GATEWAY_ACCESS_CODE        => 'required_without:mc_mpan|string',
-        Entity::GATEWAY_SECURE_SECRET      => 'required_without:mc_mpan|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4'
