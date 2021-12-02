@@ -24,6 +24,8 @@ class Core extends Base\Core
 
         $state->$makerEntityName()->associate($maker);
 
+        $state->merchant()->associate($bankingAccount->merchant);
+
         $state->bankingAccount()->associate($bankingAccount);
 
         $this->repo->saveOrFail($state);

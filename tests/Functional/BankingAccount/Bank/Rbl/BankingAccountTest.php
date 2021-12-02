@@ -2082,6 +2082,8 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals($finalStatus, $bankingAccountStateUpdate['status']);
 
+        $this->assertEquals('10000000000000', $bankingAccountStateUpdate['merchant_id']);
+
         $this->assertEquals($finalSubStatus, $bankingAccountStateUpdate['sub_status']);
 
         $this->assertEquals($finalBankStatus, $bankingAccountStateUpdate['bank_status']);
