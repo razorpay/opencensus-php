@@ -446,7 +446,6 @@ class Service extends Base\Service
         {
             $customer = (new Customer\Core())->createLocalCustomer($input[Entity::CUSTOMER], $this->merchant, false);
         }
-
         return $customer;
     }
 
@@ -936,13 +935,15 @@ class Service extends Base\Service
 
         if (empty($input[Entity::CUSTOMER]) === false)
         {
-            if ($this->merchant->isFeatureEnabled(Constants::CHECKOUT_VA_WITH_CUSTOMER) === true)
-            {
-                $input[Entity::CUSTOMER_ID] = $customer->getPublicId();
-            }
+            $input[Entity::CUSTOMER_ID] = $customer->getPublicId();
+        }
 
+        if ($this->merchant->isFeatureEnabled(Constants::CHECKOUT_VA_WITH_CUSTOMER) === false)
+        {
+            $this->trace->info(TraceCode::MERCHANT_FEATURE_NOT_EXIST);
             return null;
         }
+
         /*
          * Below flow is for single VA on checkout where for a customer,
          * single VA is to be created/updated w.r.t multiple orders

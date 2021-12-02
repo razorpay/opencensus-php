@@ -33,6 +33,7 @@ class VirtualAccountForOrderTest extends TestCase
 
     public function testSingleVirtualAccountForMultipleOrders()
     {
+        $this->fixtures->merchant->addFeatures(['checkout_va_with_customer']);
         $order1 = $this->fixtures->create('order');
 
         $virtualAccount1 = $this->createVirtualAccountForOrder($order1, ['customer_id' => $this->customer['id']]);
@@ -58,6 +59,8 @@ class VirtualAccountForOrderTest extends TestCase
 
     public function testVirtualAccountPaymentForMultipleOrder()
     {
+        $this->fixtures->merchant->addFeatures(['checkout_va_with_customer']);
+
         $order1 = $this->fixtures->create('order');
 
         $virtualAccount1 = $this->createVirtualAccountForOrder($order1, ['customer_id' => $this->customer['id']]);
@@ -117,6 +120,7 @@ class VirtualAccountForOrderTest extends TestCase
 
     public function testPayVirtualAccountForOlderUnpaidOrder()
     {
+        $this->fixtures->merchant->addFeatures(['checkout_va_with_customer']);
         $order1 = $this->fixtures->create('order');
 
         $virtualAccount1 = $this->createVirtualAccountForOrder($order1, ['customer_id' => $this->customer['id']]);
@@ -141,8 +145,34 @@ class VirtualAccountForOrderTest extends TestCase
         $this->assertEquals('refunded', $payment['status']);
     }
 
+    public function testCreateVirtualAccountForSameCustomerWithUnpaidOrderCheckoutVaWithCustomerFeatureIsNotEnabled()
+    {
+        $order1 = $this->fixtures->create('order');
+
+        $virtualAccount1 = $this->createVirtualAccountForOrder($order1, ['customer_id' => $this->customer['id']]);
+
+        $order2 = $this->fixtures->create('order', ['amount' => 50000]);
+
+        $virtualAccount2 = $this->createVirtualAccountForOrder($order2, ['customer_id' => $this->customer['id']]);
+
+        $this->assertNotEquals($virtualAccount1['id'], $virtualAccount2['id']);
+
+        $this->assertNotNull($virtualAccount1['customer_id']);
+        $this->assertEquals(Status::ACTIVE, $virtualAccount1['status']);
+        $this->assertNotNull($virtualAccount2['customer_id']);
+        $this->assertEquals(Status::ACTIVE, $virtualAccount2['status']);
+
+        $orderOneData = $this->getEntityById('order', $order1['id'], true);
+        $this->assertEquals('created', $orderOneData['status']);
+
+        $orderTwoData = $this->getEntityById('order', $order2['id'], true);
+        $this->assertEquals('created', $orderTwoData['status']);
+    }
+
     public function testPayVirtualAccountForOrderPartialPayment()
     {
+        $this->fixtures->merchant->addFeatures(['checkout_va_with_customer']);
+
         $order1 = $this->fixtures->create('order', ['partial_payment' => true]);
 
         $virtualAccount1 = $this->createVirtualAccountForOrder($order1, ['customer_id' => $this->customer['id']]);
