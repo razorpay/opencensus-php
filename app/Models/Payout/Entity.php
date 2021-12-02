@@ -2347,7 +2347,8 @@ class Entity extends Base\PublicEntity
     {
         $narration = $input[self::NARRATION] ?? null;
 
-        if (empty($narration) === false)
+        if ((empty($narration) === false) or
+            ($this->merchant->isFeatureEnabled(Features::NULL_NARRATION_ALLOWED)))
         {
             return;
         }

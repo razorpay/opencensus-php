@@ -202,6 +202,26 @@ class PayoutTest extends OAuthTestCase
         return $payout;
     }
 
+    public function testCreatePayoutWithNarrationNull()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NULL_NARRATION_ALLOWED]);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals(null, $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
+    }
+
     public function testCreatePayoutWithASyncFtsTransferCall()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_ASYNC_FTS_TRANSFER]);

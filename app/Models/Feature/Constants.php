@@ -860,6 +860,12 @@ class Constants
     const PAYOUT_ASYNC_FTS_TRANSFER = 'payout_async_fts_transfer';
 
     /**
+     * Feature flag to allow narration to be null in payouts instead of
+     * default billing label
+     */
+    const NULL_NARRATION_ALLOWED = 'null_narration_allowed';
+
+    /**
      * Feature flag for partner to skip onboarding notifications sent to submerchant
      */
     const SKIP_SUBM_ONBOARDING_COMM = 'skip_subm_onboarding_comm';
@@ -1366,6 +1372,7 @@ class Constants
         self::HDFC_CHECKOUT_2                 => true,
         self::SHOW_OLD_ERROR_DESC             => true,
         self::PAYOUT_ASYNC_FTS_TRANSFER       => true,
+        self::NULL_NARRATION_ALLOWED          => true,
         self::SKIP_SUBM_ONBOARDING_COMM       => true,
         self::ORG_CONTACT_VERIFY_DEFAULT      => true,
         self::SKIP_CUSTOMER_ID_CHECKOUT       => true,
