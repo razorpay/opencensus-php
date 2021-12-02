@@ -907,8 +907,7 @@ class Processor
         // using default auth amount as card change amount)
         if (($this->subscription->isActive() === true) or
             ($this->subscription->isHalted() === true) or
-            ($this->subscription->isAuthenticated() === true) or
-            ($this->subscription->isPending() === true))
+            ($this->subscription->isAuthenticated() === true))
         {
             $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
 
@@ -928,14 +927,9 @@ class Processor
                     $order = (new Order\Core)->create($orderPayLoad, $this->merchant);
 
                     $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($order->getId());
-
-                    return;
                 }
 
-                if ($this->subscription->isPending() !== true)
-                {
-                    return;
-                }
+                return;
             }
         }
 

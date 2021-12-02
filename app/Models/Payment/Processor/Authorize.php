@@ -4654,7 +4654,8 @@ trait Authorize
                 $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
 
                 if (($cardChange === true) and
-                    (empty($input[Payment\Entity::APP_TOKEN]) === true))
+                    (empty($input[Payment\Entity::APP_TOKEN]) === true) and
+                    ($input[Payment\Entity::METHOD] !== 'upi'))
                 {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_APP_TOKEN_ABSENT,
