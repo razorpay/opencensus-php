@@ -9,7 +9,7 @@ import View from '@razorpay/blade-old/src/atoms/View';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import { fetchOrg, transformFetchOrgData } from './apis';
 import { getTheme } from './theme';
-import { BANK_NAMES } from '../utils';
+import { BANK_NAMES, getHostName } from '../utils';
 import { DesktopOnlyView } from '../commonStyles';
 import {
   Container,
@@ -26,6 +26,18 @@ import OrgView from './components/OrgView';
 import Header from './components/Header';
 import { FullPageLoader } from '../../common/components/Loader';
 
+const DEFAULT_ORG_DATA = {
+  display_name: 'Razorpay Software Private Ltd',
+  business_name: 'Razorpay',
+  allow_sign_up: true,
+  checkout_logo_url: 'https://cdn.razorpay.com/logo.png',
+  email_logo_url: null,
+  custom_code: 'rzp',
+  background_image_url: null,
+  second_factor_auth_mode: 'sms',
+  hostname: 'dashboard.razorpay.com',
+};
+
 const Signin = () => {
   const [oneTapInfo, setOneTapInfo] = useState({
     isExpOn: true,
@@ -35,6 +47,11 @@ const Signin = () => {
   const [isFetchingOrgData, setFetchingOrgData] = useState(true);
 
   useEffect(() => {
+    if (getHostName() === DEFAULT_ORG_DATA.hostname) {
+      setOrgData(transformFetchOrgData(DEFAULT_ORG_DATA));
+      setFetchingOrgData(false);
+      return;
+    }
     setFetchingOrgData(true);
     fetchOrg()
       .then((res) => {

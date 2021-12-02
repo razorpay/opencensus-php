@@ -16,3 +16,7 @@ export const getCookie = (name) => {
   if (parts.length === 2) return parts[1].split(';')[0];
   return null;
 };
+
+export const getHostName = () => {
+  return window.location.hostname;
+};
