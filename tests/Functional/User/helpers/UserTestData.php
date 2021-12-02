@@ -3998,7 +3998,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Customer with this email already exists',
+                    'description' => PublicErrorDescription::BAD_REQUEST_EMAIL_ALREADY_EXISTS,
                 ],
             ],
             'status_code' => 400,
