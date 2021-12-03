@@ -276,11 +276,11 @@ class UserRolesScope
             'payment_page_send_receipt'                => Role::WRITER_ROLES,
             'payment_page_save_receipt_for_payment'    => Role::WRITER_ROLES,
 
-            'payment_handle_create'                    => [Role::OWNER, Role::ADMIN],
-            'payment_handle_update'                    => [Role::OWNER, Role::ADMIN],
-            'payment_handle_availability'              => [Role::OWNER, Role::ADMIN],
-            'payment_handle_get'                       => [Role::OWNER, Role::ADMIN],
-            'payment_handle_suggestion'                => [Role::OWNER, Role::ADMIN],
+            'payment_handle_create'                    => Role::WRITER_ROLES,
+            'payment_handle_update'                    => Role::WRITER_ROLES,
+            'payment_handle_availability'              => Role::WRITER_ROLES,
+            'payment_handle_get'                       => Role::WRITER_ROLES,
+            'payment_handle_suggestion'                => Role::WRITER_ROLES,
 
             'patch_dispute_contest_by_id'              => Role::READER_ROLES,
             'post_dispute_accept_by_id'                => Role::READER_ROLES,
