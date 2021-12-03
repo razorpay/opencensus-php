@@ -320,6 +320,9 @@ export default class Conversations extends React.Component {
     }
 
     const isScheduleCallbackEnabled = this.props.user.isScheduleCallbackEnabled;
+    const ticketType = this.state.ticket?.custom_fields?.cf_created_by || 'merchant';
+
+    const isLoading = this.state.conversations.loading || this.state.loadingTicket;
 
     return isNewSupportDashboard ? (
       <div class="content-wrapper content-sm ticket-support">
@@ -336,7 +339,7 @@ export default class Conversations extends React.Component {
                   <div className="col-xs-12">
                     <span>
                       <Link
-                        to="/ticket-support/tickets"
+                        to={`/ticket-support/tickets/${ticketType}`}
                         onClick={() => {
                           window.rzpAnalytics({
                             eventCategory: 'Ticket Dashboard',
@@ -352,13 +355,16 @@ export default class Conversations extends React.Component {
                   </div>
                 </div>
               </h3>
-              <TicketRevamped
-                logo_url={this.props.user.logo_url}
-                ticket={this.state.ticket}
-                totalConversations={total_conversations}
-                ticketID={TICKET_ID}
-                isReplyAdded={this.state.isReplyAdded}
-              />
+              {!isLoading && (
+                <TicketRevamped
+                  logo_url={this.props.user.logo_url}
+                  ticket={this.state.ticket}
+                  totalConversations={total_conversations}
+                  ticketID={TICKET_ID}
+                  isReplyAdded={this.state.isReplyAdded}
+                />
+              )}
+
               <div>
                 <div class="ticket-replies-container">
                   {isScheduleCallbackEnabled ? (
@@ -459,11 +465,11 @@ export default class Conversations extends React.Component {
                     </div>
                   ) : null}
 
-                  {this.state.conversations.loading || this.state.loadingTicket ? (
+                  {isLoading && (
                     <div className="ticket-cont-spinner">
                       <Spinner />
                     </div>
-                  ) : null}
+                  )}
                   {(isScheduleCallbackEnabled ? this.state.toggleReply : true) ? (
                     <ReplyRevamped
                       email={this.props.user.contact_email}
@@ -520,11 +526,14 @@ export default class Conversations extends React.Component {
                 </div>
               </div>
             </h3>
-            <Ticket
-              logo_url={this.props.user.logo_url}
-              ticket={this.state.ticket}
-              ticketID={TICKET_ID}
-            />
+            {!isLoading && (
+              <Ticket
+                logo_url={this.props.user.logo_url}
+                ticket={this.state.ticket}
+                ticketID={TICKET_ID}
+              />
+            )}
+
             <div>
               <h1 className="ticket-replies-title">
                 {total_conversations && total_conversations.length > 0 ? 'All Replies' : ''}
@@ -630,11 +639,11 @@ export default class Conversations extends React.Component {
                   </div>
                 ) : null}
 
-                {this.state.conversations.loading || this.state.loadingTicket ? (
+                {isLoading && (
                   <div className="ticket-cont-spinner">
                     <Spinner />
                   </div>
-                ) : null}
+                )}
                 {(isScheduleCallbackEnabled ? this.state.toggleReply : true) ? (
                   <Reply
                     email={this.props.user.contact_email}

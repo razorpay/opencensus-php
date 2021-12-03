@@ -36,11 +36,15 @@ export default class TicketBrief extends React.Component {
                 <div className="panel-body">
                   <div className="row">
                     <div className="col-xs-8">
-                      <Link to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/conversation`}>
+                      <Link
+                        to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/${this.props.ticketType}/conversation`}
+                      >
                         <p className="ticket-subject">{subject}</p>
                       </Link>
 
-                      <Link to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/conversation`}>
+                      <Link
+                        to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/${this.props.ticketType}/conversation`}
+                      >
                         <p className="ticket-short-details">
                           <span>Ticket # {ticket.ticket_id}</span>
                           <span className="ticket-detail-separator">•</span>

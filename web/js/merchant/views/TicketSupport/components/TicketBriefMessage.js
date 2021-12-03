@@ -16,7 +16,7 @@ export default function TicketBriefMessage(props) {
     <div class="Ticket-Brief-Message">
       {props.ticketType === 'agent' ? (
         <div class="Ticket-Brief-Message-Status-Desc text-danger">
-          <i class="i i-clock" /> Reply Before <b>{expectedResponseDate}</b>
+          <i class="i i-clock ticket-message-icn" /> Reply Before <b>{expectedResponseDate}</b>
         </div>
       ) : ticketStatus === 'Work In Progress' || ticketStatus === 'Active' ? (
         isEscalated ? (
@@ -33,7 +33,8 @@ export default function TicketBriefMessage(props) {
           </div>
         ) : (
           <div class="Ticket-Brief-Message-Status-Desc">
-            <i class="i i-clock" /> Response expected before <b>{expectedResponseDate}</b>
+            <i class="i i-clock ticket-message-icn" /> Response expected before{' '}
+            <b>{expectedResponseDate}</b>
           </div>
         )
       ) : ticketResponseArrivalType === 'waiting-for-customer' ? (

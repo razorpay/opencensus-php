@@ -23,7 +23,9 @@ export default class TicketBriefRevamped extends React.Component {
     const ticketStatus = STATUSES[ticket.status];
     // only date showed here
     return (
-      <Link to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/conversation`}>
+      <Link
+        to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/${this.props.ticketType}/conversation`}
+      >
         <div className="panel ticket-row-panel revamped">
           <div
             className="panel-header"
@@ -56,7 +58,7 @@ export default class TicketBriefRevamped extends React.Component {
                         )}
 
                         <Link
-                          to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/conversation`}
+                          to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/${this.props.ticketType}/conversation`}
                         >
                           <p className="ticket-short-details">
                             <span>Ticket # {ticket.ticket_id}</span>

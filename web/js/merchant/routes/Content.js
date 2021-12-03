@@ -512,7 +512,10 @@ export default class Content extends Component {
             myRole="owner admin"
             additionalCondition={(user) => user.isFdTicketsEnabled && !user.isComdelApiEnabled}
           />
-          <ShowWhenRoute path="/ticket-support/:instance/:id/conversation" component={MyAccount} />
+          <ShowWhenRoute
+            path="/ticket-support/:instance/:id/:ticketType/conversation"
+            component={MyAccount}
+          />
           <ShowWhenRoute
             path="/referrals"
             component={MyAccount}

@@ -146,20 +146,26 @@ export default class Tickets extends React.Component {
       <div>
         {OPEN_TICKETS.length !== 0 && (
           <h1 className="tickets-section-title">
-            Open queries ({OPEN_TICKETS.length})
-            <button
-              onClick={createTicket}
-              className="btn btn-outline pull-right raise-new-query-btn"
-            >
-              <i className="i i-plus" /> Raise New Query
-            </button>
+            {this.props.match.params.ticketType === 'agent' ? (
+              <span>'Razorpay is requesting some details'</span>
+            ) : (
+              <span>Open queries ({OPEN_TICKETS.length})</span>
+            )}
+            {this.props.match.params.ticketType !== 'agent' ? (
+              <button
+                onClick={createTicket}
+                className="btn btn-outline pull-right raise-new-query-btn"
+              >
+                <i className="i i-plus" /> Raise New Query
+              </button>
+            ) : null}
           </h1>
         )}
         <div>
           {OPEN_TICKETS.map((ticket, index) => {
             return user.isTicketRevampFlowEnabled ? (
               <TicketBriefRevamped
-                ticketType={this.props.match.params.ticketType}
+                ticketType={this.props.match.params.ticketType || 'merchant'}
                 user={user}
                 last={index == currentPageTickets.length - 1}
                 ticket={ticket}
@@ -167,7 +173,7 @@ export default class Tickets extends React.Component {
               />
             ) : (
               <TicketBrief
-                ticketType={this.props.match.params.ticketType}
+                ticketType={this.props.match.params.ticketType || 'merchant'}
                 user={user}
                 last={index == currentPageTickets.length - 1}
                 ticket={ticket}
@@ -194,6 +200,7 @@ export default class Tickets extends React.Component {
           {CLOSED_TICKETS.map((ticket, index) => {
             return user.isTicketRevampFlowEnabled ? (
               <TicketBriefRevamped
+                ticketType={this.props.match.params.ticketType || 'merchant'}
                 user={user}
                 last={index == currentPageTickets.length - 1}
                 ticket={ticket}
@@ -202,6 +209,7 @@ export default class Tickets extends React.Component {
             ) : (
               <TicketBrief
                 user={user}
+                ticketType={this.props.match.params.ticketType || 'merchant'}
                 last={index == currentPageTickets.length - 1}
                 ticket={ticket}
                 key={index}

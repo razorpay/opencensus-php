@@ -609,8 +609,7 @@
     justify-content: flex-start;
 
     .banner-meesage {
-      paddin-top: 0;
-      padding-left: 54px;
+      padding-left: 36px;
       display: flex;
       font-weight: 700;
       font-size: 16px;
@@ -624,6 +623,10 @@
       .banner-icon {
         margin-right: 16px;
       }
+
+      img.circle-support-alert {
+        filter: brightness(0.95);
+      }
     }
 
     .ticket-seperator {
@@ -631,9 +634,9 @@
       margin-right: 24px;
       height: auto;
       width: 1px;
-      border: 1px solid #EDF0F5;
-      margin-bottom: 16px;
-      margin-top: 16px;
+      border-left: 1px solid #EDF0F5;
+      margin-bottom: 12px;
+      margin-top: 12px;
       margin-right: 8px;
     }
 
@@ -683,6 +686,7 @@
 
         .banner-reply-button {
           text-align: center;
+          margin-right: 8px;
         }
       }
 
@@ -739,6 +743,7 @@
 
   .banner-meesage {
     padding: 16px;
+    padding-left: 16px;
 
     .banner-icon {
       img {
@@ -760,4 +765,8 @@
 img.circle-support-alert {
   width: 32px;
   height: 32px;
+}
+
+.support-request-header-dropdown-title {
+  margin-right: 5px;
 }

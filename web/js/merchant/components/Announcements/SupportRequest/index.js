@@ -3,6 +3,7 @@ import { getFormattedDate } from 'merchant/views/TicketSupport/utils';
 
 export default function SupportRequest({ tickets }) {
   const firstTicket = tickets.length > 0 ? tickets[0] : undefined;
+  const ticketType = firstTicket?.custom_fields?.cf_created_by || 'merchant';
   return (
     <div className="support-request-wrapper">
       <div className="support-request-alert-container">
@@ -28,7 +29,7 @@ export default function SupportRequest({ tickets }) {
             <div className="banner-reply-button">
               {firstTicket && (
                 <a
-                  href={`/app/ticket-support/rzpind/${firstTicket?.id}/conversation`}
+                  href={`/app/ticket-support/rzpind/${firstTicket?.id}/${ticketType}/conversation`}
                   className="btn btn-primary"
                   target="_blank"
                   rel="noreferrer"

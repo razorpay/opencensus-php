@@ -127,7 +127,7 @@ export default class HeaderNav extends Component {
                   <NavFragment analytics={analytics} {...fragmentSpecificProps} {...commonProps} />
                 )}
                 {/* Will uncomment later. Please dont block this from going to prod  */}
-                {!showMobileNav && user.isMobileSignupActive && (
+                {!showMobileNav && user.isMobileSignupCareActive && (
                   <li id="support-request">
                     <SupportRequestDropdown showMobileNav={showMobileNav} />
                   </li>

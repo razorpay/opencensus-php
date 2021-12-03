@@ -70,7 +70,7 @@ const MyAccount = (props) => {
             }}
             to="/ticket-support/tickets"
           >
-            {props.user.isMobileSignupActive ? `Support History` : `Support Tickets`}
+            {props.user.isMobileSignupCareActive ? `Support History` : `Support Tickets`}
           </NavLink>
         </ShowWhen>
       </header>
@@ -81,13 +81,16 @@ const MyAccount = (props) => {
         <Route path="/addfunds" component={Balances} />
         <Route path="/referrals" component={Referrals} />
         <Route path="/team" component={ManageTeam} />
-        {props.user.isMobileSignupActive ? (
+        {props.user.isMobileSignupCareActive ? (
           <Route path="/ticket-support/tickets" component={TicketsContainer} />
         ) : (
           <Route path="/ticket-support/tickets" component={Tickets} />
         )}
 
-        <Route path="/ticket-support/:instance/:id/conversation" component={Conversations} />
+        <Route
+          path="/ticket-support/:instance/:id/:ticketType/conversation"
+          component={Conversations}
+        />
       </content>
     </tabbed-container>
   );

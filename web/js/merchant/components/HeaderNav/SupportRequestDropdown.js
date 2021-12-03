@@ -55,7 +55,7 @@ class SupportTicketDropdown extends Component {
                   src="https://cdn.razorpay.com/static/assets/ticket-system/circle-alert.svg"
                   alt=""
                 />{' '}
-                Support Requests{' '}
+                <span class="support-request-header-dropdown-title">Support Requests</span>
                 {TicketsByaAgent.length ? <span>({TicketsByaAgent.length})</span> : null}{' '}
                 <span className="caret" />
               </span>{' '}
@@ -79,7 +79,9 @@ class SupportTicketDropdown extends Component {
                         <div className="reply-button-wrapper">
                           <a
                             target="_blank"
-                            href={`/app/ticket-support/rzpind/${supportTicket.id}/conversation`}
+                            href={`/app/ticket-support/rzpind/${supportTicket.id}/${
+                              supportTicket?.custom_fields?.cf_created_by || 'merchant'
+                            }/conversation`}
                             className="btn btn-primary"
                             rel="noreferrer"
                           >

@@ -172,7 +172,7 @@ class AnalyticsMobile extends Component {
             !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
           }`}
         >
-          {ticketsRaisedByAgents.length && user.isMobileSignupActive ? (
+          {ticketsRaisedByAgents.length && user.isMobileSignupCareActive ? (
             <SupportRequest tickets={ticketsRaisedByAgents} />
           ) : null}
 
