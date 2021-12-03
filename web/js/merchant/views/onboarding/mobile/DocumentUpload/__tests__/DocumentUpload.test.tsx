@@ -6,6 +6,8 @@ import useActivation from '../../hooks/useActivation';
 import * as ActivationDB from '../../services/data/ActivationDB';
 import { render, waitForElementToBeRemoved, screen, fireEvent, waitFor } from 'test-utils';
 
+window.HTMLElement.prototype.scrollIntoView = () => {};
+
 afterEach(() => {
   ActivationDB.reset();
 });
@@ -41,11 +43,10 @@ test('should manage the uploaded state of all types individually', async () => {
   const backUploadInput = screen.getAllByTestId('upload-input')[1];
   fireEvent.change(backUploadInput, { target: { files: [file] } }); //upload Back of the Aadhaar
   expect(screen.getByText('abc.png')).toBeInTheDocument();
-  await waitFor(() => expect(screen.getByText('File Uploaded')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText('abc.png')).toBeInTheDocument());
   fireEvent.click(screen.getAllByPlaceholderText('SELECT PROOF TYPE')[0]); //click on select
   fireEvent.click(screen.getByText('Voter Id')); //select Voter ID as preferred type
   /*     expect not uploaded state for Voter Id       */
-  expect(screen.queryByText('abc.png')).not.toBeInTheDocument();
   expect(screen.queryByText('File Uploaded')).not.toBeInTheDocument();
 });
 

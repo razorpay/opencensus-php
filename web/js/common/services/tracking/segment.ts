@@ -161,6 +161,16 @@ export const analyticsTrack = ({
     });
   }
 
+  //send LJ to pg-dashboard table
+  if (isLJReqiuired) {
+    sendToLumberjack({
+      eventName,
+      properties: {
+        ...commonProperties,
+      },
+    });
+  }
+
   if (window.rzpQ && window.rzpQ.push && isLJReqiuired) {
     switch (eventAction) {
       case 'initiated':

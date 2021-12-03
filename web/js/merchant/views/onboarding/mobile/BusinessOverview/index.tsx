@@ -23,13 +23,16 @@ import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
 import usePartnerActivation from '../hooks/usePartnerActivation';
 
-interface BusinessOverviewProps {
+interface IBusinessOverviewProps {
   isFormLocked?: boolean;
 }
 
-const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => {
+const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.ReactElement => {
   const { data, postData } = useActivation();
-  const { user, experiments } = useApp();
+  const {
+    user,
+    experiments: { isEmailNonMandatoryOnL2Form, isLiteOnboarding, canGenerateTnCPage },
+  } = useApp();
   const [status, businessCategoriesData] = useBusinessCategory('');
   const businessOverview = data.business_overview;
   const setBusinessOverviewCompleted = useActivationFormState(
@@ -146,6 +149,7 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
         business_subcategory: businessOverview.business_subcategory.value,
         merchant_avg_order_value: businessOverview.merchant_avg_order_value.value,
         business_model: businessOverview.business_model.value,
+        contact_name: isEmailNonMandatoryOnL2Form ? businessOverview.contact_name.value : '',
       }}
       initialErrors={{
         business_type: businessOverview.business_type.error,
@@ -195,6 +199,15 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
             50,
             'Business Description should be at least 50 Characters',
           ),
+          contact_name: Yup.string()
+            .trim()
+            .matches(/^[a-zA-Z\s]+$/, {
+              message: 'Name may only contain alphabets and spaces.',
+              excludeEmptyString: true,
+            })
+            .min(4, 'Contact Name should have at least 4 characters.')
+            .required('Contact Name is a required field.')
+            .nullable(),
         });
         return _schema;
       }}
@@ -312,7 +325,18 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                   </IconContainer>
                 </Container>
               </Field>
-              <Field last={experiments.isLiteOnboarding}>
+              <Field visible={isEmailNonMandatoryOnL2Form && !user.user?.signup_via_email}>
+                <TextInput
+                  width="auto"
+                  name="contact_name"
+                  label="Contact Name"
+                  value={formikProps.values.contact_name}
+                  errorText={formikProps.touched.contact_name && formikProps.errors.contact_name}
+                  disabled={isFormLocked || getFieldStatus('contact_name').isDisabled}
+                  helpText={getFieldStatus('contact_name').description || ''}
+                />
+              </Field>
+              <Field last={isLiteOnboarding}>
                 <Space margin={[3.7, 0, 0, 0]}>
                   <View>
                     <TextArea
@@ -334,7 +358,7 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                   </View>
                 </Space>
               </Field>
-              <Field visible={!experiments.isLiteOnboarding} last={!experiments.isLiteOnboarding}>
+              <Field visible={!isLiteOnboarding} last={!isLiteOnboarding}>
                 <Space margin={[3.7, 0, 0, 0]}>
                   <View>
                     <BusinessAOV
@@ -520,7 +544,7 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                       {websiteOption === '1' && (
                         <Space margin={[0, 0, 0, 3.5]}>
                           <Text color="shade.950" size="xsmall">
-                            {experiments.canGenerateTnCPage ? (
+                            {canGenerateTnCPage ? (
                               <WithoutWebsiteListText>
                                 <List>
                                   Receive payments from your customers in under 5 minutes using

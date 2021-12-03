@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import styled from 'styled-components';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
+import Checkbox from '@razorpay/blade-old/src/atoms/Checkbox';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import * as Yup from 'yup';
-import { Formik } from 'formik';
+import { Formik, Form } from 'formik';
 import Link from '@razorpay/commander-shield/src/shared/Link';
 import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 import { Select, Option } from 'common/components/Select';
@@ -38,6 +39,7 @@ import { useApp } from 'common/context/App';
 import GstinAutoPopulate from '../Fields/GstinAutoPopulate';
 import useGstin from '../hooks/useGstin';
 import useConfigDetails from '../hooks/useConfigDetails';
+import EmailVerify from '../EmailVerify';
 
 const StyledSeparator = styled(View)`
   height: 1px;
@@ -52,11 +54,11 @@ const Dot = styled(View)`
   border-radius: 50%;
 `;
 
-interface DocumentUploadProps {
+interface IDocumentUploadProps {
   isFormLocked?: boolean;
 }
 
-const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
+const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElement => {
   const { data, documentUpload, documentDelete, postData } = useActivation();
   const {
     user,
@@ -65,6 +67,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       isGstinAutoPopulate,
       isSyncBankVerificationEnabled,
       isUpdatedLiteOnboarding,
+      isEmailNonMandatoryOnL2Form,
     },
   } = useApp();
   const { gstinDetails } = useGstin();
@@ -74,6 +77,8 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
 
   const hasGSTIN = useActivationFormState((state) => state.has_gstin);
   const bizCatSubCatPair = getBizCatSubCatPair(data).join('-');
+  const hasNonMandatoryEmail = useActivationFormState((state) => state.has_non_mandatory_email);
+  const setHasNonMandatoryEmail = useActivationFormState((state) => state.setHasNonMandatoryEmail);
 
   const defaultAddressDoc = getDefaultSelectedDocs(data, 'address');
   const defaultBusinessDoc = getDefaultSelectedDocs(data, 'business');
@@ -85,6 +90,8 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
   const [bankDoc, setBankDoc] = useState<string>(defaultBankDoc);
   const [additionalDoc, setAdditionalDoc] = useState<string>(defaultAdditionalDoc);
   const [progress, setProgress] = useState<number>(0);
+  const emailVerifyRef = useRef<HTMLDivElement>(null);
+  const isEmailVerified = user?.user?.confirmed;
 
   const setDocumentUploadCompleted = useActivationFormState(
     (state) => state.setDocumentUploadCompleted,
@@ -145,6 +152,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
         businessDoc,
         bankDoc,
         additionalDoc,
+        hasNonMandatoryEmail,
       },
       isGstinMandatory,
       isUpdatedLiteOnboarding,
@@ -167,6 +175,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
           businessDoc,
           bankDoc,
           additionalDoc,
+          hasNonMandatoryEmail,
         },
         isGstinMandatory,
         isUpdatedLiteOnboarding,
@@ -204,12 +213,13 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
         businessDoc,
         bankDoc,
         additionalDoc,
+        hasNonMandatoryEmail,
       },
       isGstinMandatory,
       isUpdatedLiteOnboarding,
     );
     setDocumentUploadCompleted(isComplete);
-  }, [addressDoc, businessDoc, bankDoc, additionalDoc]);
+  }, [addressDoc, businessDoc, bankDoc, additionalDoc, data, hasNonMandatoryEmail]);
 
   const hasBankVerificationFailed =
     data?.bank_details_verification_status &&
@@ -242,6 +252,28 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       }
     }
   }, [hasBankVerificationFailed]);
+
+  useEffect(() => {
+    if (
+      emailVerifyRef.current &&
+      data &&
+      !isEmailVerified &&
+      isEmailNonMandatoryOnL2Form &&
+      !user.user?.signup_via_email
+    ) {
+      const thresholdToScroll = 950;
+      const top = emailVerifyRef.current.getBoundingClientRect().top;
+      setTimeout(() => {
+        if (emailVerifyRef.current && top < thresholdToScroll) {
+          emailVerifyRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'end',
+          });
+        }
+      }, 800);
+    }
+  }, [data]);
 
   const getMsmeDownloadLinksView = (header, cerificates) => {
     return (
@@ -288,6 +320,11 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
     data.stakeholder.aadhaar_linked
   );
   const isAnyDocumentNeeded = data.business_type !== '11' || shouldShowAddressProofField;
+  const canShowEmailVerification =
+    isEmailNonMandatoryOnL2Form &&
+    !user.user?.signup_via_email &&
+    (data?.activation_form_milestone === 'L1' || (data?.submitted && isEmailVerified));
+
   return (
     <>
       {shouldShowEsignFlow && <ESignVerification disabled={isFormLocked} />}
@@ -353,6 +390,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
           iata_certificate: getFormikInitialValues(documents.iata_certificate),
           sla_iata_certificate: getFormikInitialValues(documents.sla_iata_certificate),
           affiliation_certificate: getFormikInitialValues(documents.affiliation_certificate),
+          contact_email: isEmailNonMandatoryOnL2Form ? documents.contact_email.value : '',
         }}
         validationSchema={() => {
           return Yup.object().shape({
@@ -365,13 +403,17 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                 .nullable(),
               otherwise: Yup.string().trim().nullable(),
             }),
+            contact_email: Yup.string()
+              .email('Please enter a valid email id.')
+              .required('Contact Email is a required field.')
+              .nullable(),
           });
         }}
         enableReinitialize
         onSubmit={() => console.log('onSubmit')}
       >
         {(formikProps) => (
-          <form>
+          <Form onSubmit={(e) => e.preventDefault()}>
             {isVisible('address_proof', data) && (
               <FormSection title="Authorised Signatory's Address Proof">
                 <Field>
@@ -735,6 +777,25 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
               </FormSection>
             )}
 
+            <FormSection title="" last visible={canShowEmailVerification} padding={[0.5, 2, 2]}>
+              <View ref={emailVerifyRef}>
+                <Field last>
+                  <Space margin={[1, 0, 0, 3]}>
+                    <Checkbox
+                      title="Send all important communication and account updates on email"
+                      size="medium"
+                      onChange={(checked) => {
+                        setHasNonMandatoryEmail(checked);
+                        setDocumentUploadCompleted(!checked);
+                      }}
+                      checked={hasNonMandatoryEmail || isEmailVerified}
+                    />
+                  </Space>
+                  {(hasNonMandatoryEmail || isEmailVerified) && <EmailVerify />}
+                </Field>
+              </View>
+            </FormSection>
+
             <Space margin={[2, 0, 1.5, 0]}>
               <StyledSeparator />
             </Space>
@@ -753,7 +814,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                 terms and conditions
               </Link>
             </Text>
-          </form>
+          </Form>
         )}
       </Formik>
     </>

@@ -59,11 +59,10 @@ test('ActivationForm Flow', async () => {
   expect(businessTypeInput.value).toBe('Private Limited');
   expect(billingLabelInput.value).toBe('Some Label');
   fireEvent.click(nextButton);
-  await waitFor(() => {
-    expect(screen.getByText('Business PAN')).toBeInTheDocument();
-  });
+  await waitFor(() => expect(screen.getByText('PAN Details')).toBeInTheDocument());
 
   expect(screen.getByText('Authorised Signatory PAN')).toBeInTheDocument();
+  expect(screen.getByText('Address Details')).toBeInTheDocument();
   /* eslint-disable one-var */
   const [
       businessPanInput,
@@ -72,25 +71,21 @@ test('ActivationForm Flow', async () => {
       authSignatoryProofInput,
       authSignatoryNameInput,
       pincodeInput,
-      cityInput,
-      stateInput,
     ]: any = screen.getAllByTestId('ds-text-input'),
     addressInput = screen.getByTestId('ds-text-area');
 
   fireEvent.change(businessPanInput, { target: { value: 'ABCDE1234F' } });
-  fireEvent.change(buseinessNameInput, { target: { value: 'Neeraj' } });
+  fireEvent.change(buseinessNameInput, { target: { value: 'NEERAJ' } });
   fireEvent.change(authSignatoryProofInput, { target: { value: 'AAPFA3421J' } });
   fireEvent.change(authSignatoryNameInput, { target: { value: 'testName' } });
   fireEvent.change(cinInput, { target: { value: 'U74899DL2000PLC105530' } });
   expect(businessPanInput.value).toBe('ABCDE1234F');
-  expect(buseinessNameInput.value).toBe('Neeraj');
+  expect(buseinessNameInput.value).toBe('NEERAJ');
   expect(authSignatoryProofInput.value).toBe('AAPFA3421J');
   expect(authSignatoryNameInput.value).toBe('testName');
   expect(cinInput.value).toBe('U74899DL2000PLC105530');
   fireEvent.change(addressInput, { target: { value: 'Flat no 12, opp Adugodi Police Station' } });
   fireEvent.change(pincodeInput, { target: { value: '530068' } });
-  fireEvent.change(cityInput, { target: { value: 'Bangalore' } });
-  fireEvent.change(stateInput, { target: { value: 'Karnataka' } });
   fireEvent.click(nextButton);
   await waitFor(() => fireEvent.click(screen.getByText('Submit KYC')));
   fireEvent.click(screen.getByTestId('backIcon'));

@@ -20,6 +20,7 @@ const mockRazorXExp = {
   isSyncBankVerificationEnabled: true,
   isEmailMandatoryOnL1: true,
   isEmailNonMandatoryOnL1: false,
+  isEmailNonMandatoryOnL2Form: false,
 };
 
 addParameters({

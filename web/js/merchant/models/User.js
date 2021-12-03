@@ -1217,6 +1217,11 @@ export default class User {
     return this.getExpStatus('non_mandatory_email_on_l1') && this.isOrgRZP;
   }
 
+  get isEmailNonMandatoryOnL2Form() {
+    if (this.isSourceRX) return false; // not required for Razorpay X;
+    return this.getExpStatus('non_mandatory_email_verification_on_l2') && this.isOrgRZP;
+  }
+
   get isNPSAnnouncementPP() {
     return this.isFeatureEnabled('nps_survey_payment_pages');
   }

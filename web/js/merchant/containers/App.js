@@ -41,7 +41,7 @@ import initChat from 'merchant/components/Support/chat';
 import RTracking from 'react-tracking';
 import qs from 'query-string';
 import Wrapper from 'common/components/Bootstrap/Wrapper';
-import { fetchActiveTickets,fetchTicketsRaisedByAgents } from 'merchant/reducers/config.js';
+import { fetchActiveTickets, fetchTicketsRaisedByAgents } from 'merchant/reducers/config.js';
 import { fetchTrustedBadgeStatus } from 'merchant/reducers/trustedBadge.js';
 import LogoutDialog from 'merchant/components/LogoutDialog';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
@@ -898,6 +898,7 @@ class App extends Component {
       isSyncBankVerificationEnabled: user.isSyncBankVerificationEnabled,
       isEmailMandatoryOnL1: user.isEmailMandatoryOnL1,
       isEmailNonMandatoryOnL1: user.isEmailNonMandatoryOnL1,
+      isEmailNonMandatoryOnL2Form: user.isEmailNonMandatoryOnL2Form,
     };
   };
 

@@ -139,9 +139,17 @@ const contactFields = [
     type: 'tel',
     info: 'We will reach out to this phone for any account related issues.',
     _disabledWhen: (activation) => {
-      const { isEmailMandatoryOnL1, isEmailNonMandatoryOnL1, user } = activation.props.user;
+      const {
+        isEmailMandatoryOnL1,
+        isEmailNonMandatoryOnL1,
+        isEmailNonMandatoryOnL2Form,
+        user,
+      } = activation.props.user;
       // if user signup from mobile disable the field
-      return (isEmailMandatoryOnL1 || isEmailNonMandatoryOnL1) && user?.contact_mobile_verified;
+      return (
+        (isEmailMandatoryOnL1 || isEmailNonMandatoryOnL1 || isEmailNonMandatoryOnL2Form) &&
+        user?.contact_mobile_verified
+      );
     },
     onBlur: function onBlur(e, error) {
       this.sendErrorMessageToSegment(e, error);
@@ -169,15 +177,28 @@ const contactFields = [
       }
       return false;
     },
+    _when: (activation) => {
+      const { isEmailNonMandatoryOnL2Form, user } = activation.props.user;
+      return (
+        (activation.isNeedsClarificationMode() && activation.isOnKYCTab()) ||
+        (isEmailNonMandatoryOnL2Form && !!user?.signup_via_email) ||
+        !isEmailNonMandatoryOnL2Form
+      );
+    },
     onBlur: function onBlur(e, error) {
       this.sendErrorMessageToSegment(e, error);
     },
     _disabledWhen: (activation) => {
-      const { isEmailMandatoryOnL1, isEmailNonMandatoryOnL1, user } = activation.props.user;
+      const {
+        isEmailMandatoryOnL1,
+        isEmailNonMandatoryOnL1,
+        isEmailNonMandatoryOnL2Form,
+        user,
+      } = activation.props.user;
       // if user signup from mobile disable the field
       return (
         !activation.isOnKYCTab() &&
-        (isEmailMandatoryOnL1 || isEmailNonMandatoryOnL1) &&
+        (isEmailMandatoryOnL1 || isEmailNonMandatoryOnL1 || isEmailNonMandatoryOnL2Form) &&
         !!user?.signup_via_email
       );
     },
@@ -185,12 +206,12 @@ const contactFields = [
       const {
         isEmailMandatoryOnL1,
         isEmailNonMandatoryOnL1,
-
+        isEmailNonMandatoryOnL2Form,
         user,
       } = activation.props.user;
       if (
         !activation.isOnKYCTab() &&
-        (isEmailMandatoryOnL1 || isEmailNonMandatoryOnL1) &&
+        (isEmailMandatoryOnL1 || isEmailNonMandatoryOnL1 || isEmailNonMandatoryOnL2Form) &&
         !!user?.signup_via_email
       ) {
         return <i className="i i-check text-success" />;
@@ -198,7 +219,8 @@ const contactFields = [
       return null;
     },
     required: (activation) =>
-      !activation.props.user.isEmailNonMandatoryOnL1 &&
+      (!activation.props.user.isEmailNonMandatoryOnL1 ||
+        !activation.props.user.isEmailNonMandatoryOnL2Form) &&
       !!activation.props.user.user?.signup_via_email,
   },
 ];
@@ -1652,6 +1674,32 @@ const uploadFields = [
     className: 'document-group',
     _when: doesHaveAdditionalDocs,
     required: (activation) => isAdditonalDocRequired(activation.state, activation.props),
+  },
+  {
+    name: 'contact_email',
+    customField: (activation) =>
+      activation.props.user.isEmailNonMandatoryOnL2Form &&
+      !activation.props.user.user?.signup_via_email,
+    _autoRenderImpure: true,
+    isFieldValid: (activation) => {
+      const { user, data } = activation.props;
+      if (
+        (user.isEmailNonMandatoryOnL2Form && !user.user?.confirmed) ||
+        ((user.contact_email || data.contact_email) && user.user?.confirmed)
+      ) {
+        return true;
+      }
+      return false;
+    },
+    _when: (activation) => {
+      const { user } = activation.props;
+      return (
+        !activation.isOnKYCTab() &&
+        (user.activation_form_milestone === 'L1' || (user?.submitted && user.user?.confirmed)) &&
+        user.isEmailNonMandatoryOnL2Form &&
+        !user.user?.signup_via_email
+      );
+    },
   },
 ];
 

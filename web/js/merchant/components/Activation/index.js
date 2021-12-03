@@ -190,6 +190,7 @@ export default class ActivationWizard extends React.Component {
     showInfoHeader: false,
     tempContactEmail: '',
     isEmailNonMandatory: true,
+    isEmailOnL2: true,
   };
 
   constructor(props) {
@@ -685,6 +686,7 @@ export default class ActivationWizard extends React.Component {
     const currentActiveTab = this.state.activeTab;
     this.setState({ tempContactEmail: '' }); // remove temp email on changing tab
     this.setEnableAndDisableCheckbox(true);
+    this.setState({ isEmailOnL2: true });
 
     this.props.trackEventsAction({
       objectName: 'Activation Tab',
@@ -1524,7 +1526,11 @@ export default class ActivationWizard extends React.Component {
     const sideEffectFieldsToUpdate = {}; // Some fields might lead to other fields get dirty. So, they also needs to be updated alongside
     const { dirty, has_gstin } = this.state;
     const { data } = this.props;
-    const { isEmailMandatoryOnL1, isEmailNonMandatoryOnL1 } = this.props.user;
+    const {
+      isEmailMandatoryOnL1,
+      isEmailNonMandatoryOnL1,
+      isEmailNonMandatoryOnL2Form,
+    } = this.props.user;
     const currentBusinessType = dirty.business_type || data.business_type;
     if (this.props.user.isSyncExperimentEnabled) {
       this.setState({ ischeck: false });
@@ -1534,7 +1540,7 @@ export default class ActivationWizard extends React.Component {
       fieldName === 'contact_email' &&
       !this.props.user.user?.signup_via_email &&
       !this.isOnKYCTab() &&
-      (isEmailMandatoryOnL1 || isEmailNonMandatoryOnL1)
+      (isEmailMandatoryOnL1 || isEmailNonMandatoryOnL1 || isEmailNonMandatoryOnL2Form)
     ) {
       //don't allow to save value in BE.
       this.setState({ tempContactEmail: fieldValue });
@@ -1840,6 +1846,9 @@ export default class ActivationWizard extends React.Component {
         this.markTabIfActive(this.state.activeTab);
         //enable the checkbox post success verification
         this.setState({ isEmailNonMandatory: true });
+        if (this.props.user.isEmailNonMandatoryOnL2) {
+          this.setState({ isEmailOnL2: true });
+        }
       });
     } catch (err) {}
   };
@@ -1847,6 +1856,10 @@ export default class ActivationWizard extends React.Component {
   setEnableAndDisableCheckbox = (isEmailNonMandatory) => {
     this.setState({ isEmailNonMandatory });
     this.markTabIfActive(this.state.activeTab);
+  };
+
+  setEnableAndDisableCheckboxOnL2 = (isEmailOnL2) => {
+    this.setState({ isEmailOnL2 });
   };
 
   /* Find if all tabs are valid */
@@ -1864,7 +1877,7 @@ export default class ActivationWizard extends React.Component {
       }
     }
 
-    return isValid;
+    return isValid && (this.state.isEmailOnL2 || this.props.user.user?.confirmed);
   };
 
   /*
@@ -2558,6 +2571,8 @@ export function ActivationField(field) {
     rest.isEmailNonMandatoryOnL1 = isEmailNonMandatoryOnL1;
     rest.postSuccessfulEmailVerify = this.postSuccessfulEmailVerify;
     rest.setEnableAndDisableCheckbox = this.setEnableAndDisableCheckbox;
+    rest.setEnableAndDisableCheckboxOnL2 = this.setEnableAndDisableCheckboxOnL2;
+    rest.isChecked = this.props.user.user?.confirmed || !this.state.isEmailOnL2;
     rest.contactName = this.state.dirty.contact_name || contact_name;
     rest.activationMilestone = activation_form_milestone;
     rest.sendErrorMessageToSegment = this.sendErrorMessageToSegment;

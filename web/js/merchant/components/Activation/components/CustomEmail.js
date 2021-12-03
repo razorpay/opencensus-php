@@ -25,6 +25,8 @@ const CustomEmail = ({
   tracking,
   user,
   mode,
+  setEnableAndDisableCheckboxOnL2,
+  isChecked,
 }) => {
   const [email, setEmail] = useState(contactEmail || '');
   const [error, setError] = useState('');
@@ -72,6 +74,11 @@ const CustomEmail = ({
           setError('Please try again!!!');
         }
       });
+  };
+
+  const resetValue = () => {
+    setEmail('');
+    setIsOtpSend(false);
   };
 
   const verifyOTP = () => {
@@ -198,83 +205,101 @@ const CustomEmail = ({
 
   return (
     <div className="custom-email">
-      {isEmailVerified ? (
-        <VerifiedEmail />
-      ) : !activationMilestone ? (
-        <>
-          <Input
-            label="Contact Email"
-            name="contact_email"
-            type="email"
-            value={email}
-            onChange={onChangeHandler}
-            placeholder="contact@email.com"
-            className="Input--small is-mature"
-            propagatedError={isOtpSend ? '' : error}
-            _autoRenderImpure={true}
-            disabled={isOtpSend}
-            description={
-              !isOtpSend
-                ? 'All important communications and account updates will be sent to this email ID'
-                : ''
+      {user.isEmailNonMandatoryOnL2Form && (
+        <Input.Check
+          fieldLabel="Send all important communication and account updates on email"
+          extraClassName="Custom-input-space"
+          onChange={({ target }) => {
+            setEnableAndDisableCheckboxOnL2(!target.checked);
+            if (!target.checked) {
+              resetValue();
             }
-            onBlur={(e) => {
-              sendErrorMessageToSegment(e, error);
-            }}
-            required={!isEmailNonMandatoryOnL1}
-          />
+          }}
+          autoRender={true}
+          checked={isChecked}
+        />
+      )}
+      {isChecked || !user.isEmailNonMandatoryOnL2Form ? (
+        <div>
+          {isEmailVerified ? (
+            <VerifiedEmail />
+          ) : !activationMilestone || user.isEmailNonMandatoryOnL2Form ? (
+            <>
+              <Input
+                label="Contact Email"
+                name="contact_email"
+                type="email"
+                value={email}
+                onChange={onChangeHandler}
+                placeholder="contact@email.com"
+                className="Input--small is-mature"
+                propagatedError={isOtpSend ? '' : error}
+                autoRender={true}
+                disabled={isOtpSend}
+                description={
+                  !isOtpSend && !user.isEmailNonMandatoryOnL2Form
+                    ? 'All important communications and account updates will be sent to this email ID'
+                    : ''
+                }
+                onBlur={(e) => {
+                  sendErrorMessageToSegment(e, error);
+                }}
+                required={!isEmailNonMandatoryOnL1 || !user.isEmailNonMandatoryOnL2Form}
+              />
 
-          {!isOtpSend ? (
-            <div className="Input-content">
-              <AsyncBtn.Secondary
-                type="button"
-                className="send-otp-btn"
-                children="Verify With OTP >"
-                onClick={sendOTP}
-                isPending={isApiCalling}
-                pendingState="Sending OTP"
-                disabled={!email}
-              />
-              <div className="email-seprator" />
-              <Description text="You email will not be saved till it’s verified." />
-            </div>
-          ) : (
-            <div className="Input-content">
-              <Description text="6 digit OTP has been sent to your email ID" />
-              <div className="email-otp">
-                <OtpInput
-                  heading=""
-                  onComplete={updateOtpValue}
-                  onChange={updateOtpValue}
-                  wrong={wrongOtp}
-                />
-                {wrongOtp && <div className="email-error">{error}</div>}
-              </div>
-              <p className="m-t m-b resend-otp">
-                Didn’t receive an OTP?{' '}
-                <AsyncBtn.Transparent
-                  pendingState="Sending OTP..."
-                  onClick={() => {
-                    setIsOtpSend(false);
-                    setError('');
-                    setWrongOtp(false);
-                  }}
-                  showLoader={false}
-                >
-                  Start again
-                </AsyncBtn.Transparent>
-              </p>
-              <AsyncBtn.Secondary
-                type="button"
-                className={otp.length === 6 ? 'send-otp-btn' : ''}
-                children="Submit & Verify >"
-                isPending={isApiCalling}
-                disabled={otp.length !== 6}
-                pendingState="Verifying"
-              />
-            </div>
-          )}
-        </>
+              {!isOtpSend ? (
+                <div className="Input-content">
+                  <AsyncBtn.Secondary
+                    type="button"
+                    className="send-otp-btn"
+                    children="Verify With OTP >"
+                    onClick={sendOTP}
+                    isPending={isApiCalling}
+                    pendingState="Sending OTP"
+                    disabled={!email}
+                  />
+                  <div className="email-seprator" />
+                  <Description text="You email will not be saved till it’s verified." />
+                </div>
+              ) : (
+                <div className="Input-content">
+                  <Description text="6 digit OTP has been sent to your email ID" />
+                  <div className="email-otp">
+                    <OtpInput
+                      heading=""
+                      onComplete={updateOtpValue}
+                      onChange={updateOtpValue}
+                      wrong={wrongOtp}
+                    />
+                    {wrongOtp && <div className="email-error">{error}</div>}
+                  </div>
+                  <p className="m-t m-b resend-otp">
+                    Didn’t receive an OTP?{' '}
+                    <AsyncBtn.Transparent
+                      pendingState="Sending OTP..."
+                      onClick={() => {
+                        setIsOtpSend(false);
+                        setError('');
+                        setWrongOtp(false);
+                      }}
+                      showLoader={false}
+                    >
+                      Start again
+                    </AsyncBtn.Transparent>
+                  </p>
+                  <AsyncBtn.Secondary
+                    type="button"
+                    className={otp.length === 6 ? 'send-otp-btn' : ''}
+                    children="Submit & Verify >"
+                    isPending={isApiCalling}
+                    disabled={otp.length !== 6}
+                    pendingState="Verifying"
+                  />
+                </div>
+              )}
+            </>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );

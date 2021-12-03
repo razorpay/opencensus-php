@@ -40,7 +40,7 @@ const EmailVerify = ({ isFormLocked, contactName }: IEmailVerifyProps): React.Re
   const { data } = useActivation();
   const {
     user,
-    experiments: { isEmailNonMandatoryOnL1 },
+    experiments: { isEmailNonMandatoryOnL1, isEmailNonMandatoryOnL2Form },
   } = useApp();
   const { getFieldStatus } = usePartnerActivation();
   const contactDetails = data.contact_details;
@@ -129,7 +129,9 @@ const EmailVerify = ({ isFormLocked, contactName }: IEmailVerifyProps): React.Re
         <FormSection
           title=""
           padding={[0]}
-          visible={!data?.activation_form_milestone || isEmailVerified}
+          visible={
+            !data?.activation_form_milestone || isEmailVerified || isEmailNonMandatoryOnL2Form
+          }
         >
           <Field last>
             <TextInput
@@ -137,8 +139,10 @@ const EmailVerify = ({ isFormLocked, contactName }: IEmailVerifyProps): React.Re
               name="contact_email"
               label="Contact Email"
               helpText={
-                getFieldStatus('contact_name').description ||
-                'All important communications and account updates will be sent to this email ID'
+                !isEmailNonMandatoryOnL2Form
+                  ? getFieldStatus('contact_name').description ||
+                    'All important communications and account updates will be sent to this email ID'
+                  : ''
               }
               value={formikProps.values.contact_email}
               errorText={
@@ -171,7 +175,14 @@ const EmailVerify = ({ isFormLocked, contactName }: IEmailVerifyProps): React.Re
               }}
             />
           </Field>
-          {!data?.activation_form_milestone ? (
+          {isEmailVerified && isEmailNonMandatoryOnL2Form && (
+            <Space padding={[0.5, 0, 0]}>
+              <Text color="positive.960" size="small">
+                We have verified your email successfully.{' '}
+              </Text>
+            </Space>
+          )}
+          {!data?.activation_form_milestone || isEmailNonMandatoryOnL2Form ? (
             <>
               {!isEmailVerified && !isOtpSend && (
                 <Flex alignItems="flex-start" flexDirection="column">
@@ -197,7 +208,7 @@ const EmailVerify = ({ isFormLocked, contactName }: IEmailVerifyProps): React.Re
                         )}
                       </View>
                     </Space>
-                    {isEmailNonMandatoryOnL1 && !data.activation_form_milestone && (
+                    {(isEmailNonMandatoryOnL1 || isEmailNonMandatoryOnL2Form) && (
                       <Text size="small" color="shade.950">
                         You email will not be saved till it’s verified.
                       </Text>

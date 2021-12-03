@@ -471,7 +471,12 @@ class Check extends Field {
         {label && (
           <Label text={label} className={classList('Input-label', this.props.labelClass)} />
         )}
-        <div class="Input-content">
+        <div
+          className={classList(
+            'Input-content',
+            this.props.extraClassName ? this.props.extraClassName : '',
+          )}
+        >
           <div class="Input-elWrapper">
             <label>
               <input

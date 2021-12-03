@@ -37,6 +37,7 @@ const customRender = (
       isSyncBankVerificationEnabled: true,
       isEmailMandatoryOnL1: true,
       isEmailNonMandatoryOnL1: false,
+      isEmailNonMandatoryOnL2Form: false,
     };
     return (
       <Provider store={reduxStore}>

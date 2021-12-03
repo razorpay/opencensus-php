@@ -11,12 +11,6 @@ import {
   getDefaultSelectedDocs,
 } from '../services/utils';
 
-export const fetchActivationData = async () => {
-  const data = await fetch<any>({ url: 'merchant/activation', mode: 'live' });
-  const formattedData = activationFormatter(data);
-  return formattedData;
-};
-
 export const postActivation = (data) =>
   fetch<any>({ url: 'merchant/activation', method: 'POST', data, mode: 'live' });
 
@@ -51,18 +45,26 @@ export const deleteFile = (curDoc) =>
 export default function useActivation() {
   const snackbar = useSnackbar();
   const { experiments } = useApp();
-  const { status, data, refetch } = useQuery('activation', fetchActivationData, {
-    refetchOnMount: 'always',
-    staleTime: Infinity,
-    onError: (err: any) => {
-      if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+  const { status, data, refetch } = useQuery(
+    'activation',
+    async () => {
+      const response = await fetch<any>({ url: 'merchant/activation', mode: 'live' });
+      const formattedData = activationFormatter(response, experiments);
+      return formattedData;
     },
-  });
+    {
+      refetchOnMount: 'always',
+      staleTime: Infinity,
+      onError: (err: any) => {
+        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+      },
+    },
+  );
 
   const queryCache = useQueryCache();
   const [postData] = useMutation(postActivation, {
     onSuccess: (result) => {
-      const formattedData = activationFormatter(result);
+      const formattedData = activationFormatter(result, experiments);
       queryCache.setQueryData('activation', formattedData);
     },
     onError: (err: any) => {
@@ -72,7 +74,7 @@ export default function useActivation() {
 
   const [documentUpload] = useMutation(saveFile, {
     onSuccess: (result) => {
-      const formattedData = activationFormatter(result);
+      const formattedData = activationFormatter(result, experiments);
       queryCache.setQueryData('activation', formattedData);
     },
     onError: (err: any) => {
@@ -82,7 +84,7 @@ export default function useActivation() {
 
   const [documentDelete] = useMutation(deleteFile, {
     onSuccess: (result) => {
-      const formattedData = activationFormatter(result);
+      const formattedData = activationFormatter(result, experiments);
       queryCache.setQueryData('activation', formattedData);
     },
     onError: (err: any) => {
@@ -111,6 +113,7 @@ export default function useActivation() {
   const activeTabId = useActivationFormState((state) => state.active_tab_id);
   const setSameAddress = useActivationFormState((state) => state.setSameAddress);
   const setHasGSTIN = useActivationFormState((state) => state.setHasGSTIN);
+  const hasNonMandatoryEmail = useActivationFormState((state) => state.has_non_mandatory_email);
 
   useEffect(() => {
     if (status === 'success') {
@@ -141,6 +144,7 @@ export default function useActivation() {
           bankDoc,
           businessDoc,
           additionalDoc,
+          hasNonMandatoryEmail,
         },
         experiments.isGstinMandatory,
         experiments.isLiteOnboarding,

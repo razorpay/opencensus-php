@@ -1,5 +1,5 @@
 const contactDetailFields = ['contact_name', 'contact_mobile', 'contact_email'];
-const businessOverviewFields = [
+let businessOverviewFields = [
   'business_type',
   'business_subcategory',
   'business_category',
@@ -26,7 +26,7 @@ const businessDetailFields = [
 ];
 const bankAndCompanyDetailFields = ['bank_account_number', 'bank_account_name', 'bank_branch_ifsc'];
 const onboardingCardFields = ['business_type', 'business_subcategory', 'business_model'];
-const documentsUploadFields = [
+let documentsUploadFields = [
   'aadhar_front',
   'aadhar_back',
   'passport_front',
@@ -69,7 +69,14 @@ const getFieldObjects = (fields, data) => {
   return fieldObjects;
 };
 
-const activationFormatter = (data) => {
+const unquieArray = (value, index, self) => self.indexOf(value) === index;
+
+const activationFormatter = (data, experiments = {}) => {
+  if (experiments.isEmailNonMandatoryOnL2Form) {
+    documentsUploadFields = documentsUploadFields.concat('contact_email').filter(unquieArray);
+    businessOverviewFields = businessOverviewFields.concat('contact_name').filter(unquieArray);
+  }
+
   const contactDetails = getFieldObjects(contactDetailFields, data);
   const businessOverview = getFieldObjects(businessOverviewFields, data);
   const businessDetails = getFieldObjects(businessDetailFields, data);

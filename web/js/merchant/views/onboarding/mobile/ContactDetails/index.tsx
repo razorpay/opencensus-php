@@ -146,7 +146,9 @@ const ContactDetails: React.FC<IContactDetailsProps> = ({ isFormLocked }) => {
                     isFormLocked ||
                     getFieldStatus('contact_email').isDisabled ||
                     (!!user.user?.signup_via_email &&
-                      (experiments.isEmailMandatoryOnL1 || experiments.isEmailNonMandatoryOnL1))
+                      (experiments.isEmailMandatoryOnL1 ||
+                        experiments.isEmailNonMandatoryOnL1 ||
+                        experiments.isEmailNonMandatoryOnL2Form))
                   }
                   onChange={(value) => {
                     formikProps.setFieldTouched('contact_email');
@@ -154,7 +156,9 @@ const ContactDetails: React.FC<IContactDetailsProps> = ({ isFormLocked }) => {
                   }}
                   iconRight={
                     !!user.user?.signup_via_email &&
-                    (experiments.isEmailMandatoryOnL1 || experiments.isEmailNonMandatoryOnL1)
+                    (experiments.isEmailMandatoryOnL1 ||
+                      experiments.isEmailNonMandatoryOnL1 ||
+                      experiments.isEmailNonMandatoryOnL2Form)
                       ? 'check'
                       : ''
                   }

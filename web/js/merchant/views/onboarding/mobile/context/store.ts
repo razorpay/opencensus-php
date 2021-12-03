@@ -114,6 +114,8 @@ type State = {
   has_website_or_app: boolean;
   has_website: boolean;
   has_app: boolean;
+  has_non_mandatory_email: boolean;
+  is_email_mandatory: boolean;
   active_tab_id: string;
   isFAQOpen: boolean;
   fAQSection: string;
@@ -134,6 +136,8 @@ type State = {
   setHasWebsiteOrApp: (value: boolean) => void;
   setHasWebsite: (value: boolean) => void;
   setHasApp: (value: boolean) => void;
+  setHasNonMandatoryEmail: (value: boolean) => void;
+  setIsEmailMandatory: (value: boolean) => void;
   setActiveTabId: (value: string) => void;
   setIsFAQOpen: (value: boolean) => void;
   setFAQSection: (value: string) => void;
@@ -145,6 +149,8 @@ const useActivationFormState = create<State>((set) => ({
   has_website_or_app: false,
   has_website: false,
   has_app: false,
+  has_non_mandatory_email: false,
+  is_email_mandatory: false,
   active_tab_id: 'contact_details',
   isFAQOpen: false,
   is_l1_acknowledge: false,
@@ -164,6 +170,8 @@ const useActivationFormState = create<State>((set) => ({
   setL1Acknowledge: (value) => set({ is_l1_acknowledge: value }),
   setHasWebsiteOrApp: (value) => set({ has_website_or_app: value }),
   setHasApp: (value) => set({ has_app: value }),
+  setHasNonMandatoryEmail: (value) => set({ has_non_mandatory_email: value }),
+  setIsEmailMandatory: (value) => set({ is_email_mandatory: value }),
   setHasWebsite: (value) => set({ has_website: value }),
   setActiveTabId: (value) => set({ active_tab_id: value }),
   setIsFAQOpen: (value) => set({ isFAQOpen: value }),

@@ -21,8 +21,8 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
               PAN Details
             </div>
             <div
-              class="Textweb__Text-sc-1qrdpx3-0 gFWbzi"
-              color="shade.970"
+              class="Textweb__Text-sc-1qrdpx3-0 jSxWAC"
+              color="shade.950"
               data-testid="ds-text"
             >
               These details will be verified with the government database

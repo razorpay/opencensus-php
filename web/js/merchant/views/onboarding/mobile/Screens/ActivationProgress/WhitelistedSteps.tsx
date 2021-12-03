@@ -49,7 +49,8 @@ const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any
   const [modalType, setModalType] = useState<ModalTypeT>('');
 
   const isL1AllTabComplete =
-    isContactDetailsCompleted &&
+    (isContactDetailsCompleted ||
+      (experiments.isEmailNonMandatoryOnL2Form && !user.user?.signup_via_email)) &&
     isBusinessOverviewCompleted &&
     isBusinessDetailsCompleted &&
     (isL1Acknowledge || !experiments.isSyncExperimentEnabled);
@@ -149,6 +150,9 @@ const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any
     !user.user?.signup_via_email
   )
     [steps[0], steps[1], steps[2]] = [steps[1], steps[2], steps[0]];
+
+  //remove contact details from step
+  if (experiments.isEmailNonMandatoryOnL2Form && !user.user?.signup_via_email) steps.shift();
 
   return (
     <Screen>

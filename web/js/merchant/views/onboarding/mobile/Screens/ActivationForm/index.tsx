@@ -17,9 +17,10 @@ import {
   hasSelectedBlacklistCategory,
   isUnregisteredBusiness,
   checkIfDedupe,
+  getCompanyPanVerificationStatus,
 } from '../../services/utils';
 import { Tabs, Tab } from 'common/components/Tabs';
-import { useActivationFormState } from '../../context/store';
+import { isVisible, useActivationFormState } from '../../context/store';
 import useActivation from '../../hooks/useActivation';
 import useBusinessCategory from '../../hooks/useBusinessCategory';
 import BankDetails from '../../BankDetails';
@@ -138,6 +139,16 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       toCleverTap: true,
     });
   }, [activeTabId]);
+
+  useEffect(() => {
+    if (
+      experiments.isEmailNonMandatoryOnL2Form &&
+      !user.user?.signup_via_email &&
+      activeTabId === 'contact_details'
+    ) {
+      setActiveTabId('business_overview');
+    }
+  }, []);
 
   useEffect(() => {
     if (data) {
@@ -461,7 +472,10 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   };
 
   const isL1AllTabComplete =
-    isContactDetailsCompleted && isBusinessOverviewCompleted && isBusinessDetailsCompleted;
+    (isContactDetailsCompleted ||
+      (experiments.isEmailNonMandatoryOnL2Form && !user.user?.signup_via_email)) &&
+    isBusinessOverviewCompleted &&
+    isBusinessDetailsCompleted;
 
   const isAllTabCompleted =
     isL1AllTabComplete && isBankAndCompanyDetailsCompleted && isDocumentsUploadCompleted;
@@ -577,6 +591,17 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     !['initiated', 'verified'].includes(data?.bank_details_verification_status) &&
     experiments.isSyncBankVerificationEnabled;
 
+  const shouldShowPoiError: boolean =
+    !data.submitted &&
+    getPoiVerificationStatus(data?.poi_verification_status) &&
+    (!experiments.canSkipPoiValidation || experiments.isSyncExperimentEnabled);
+
+  const isCompanyPanInvalid: boolean =
+    isVisible('company_pan', data) &&
+    !data.submitted &&
+    experiments.isSyncExperimentEnabled &&
+    getCompanyPanVerificationStatus(data?.company_pan_verification_status);
+
   const getTabs = () => {
     const tabs = [
       <Tab
@@ -600,6 +625,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         title="Business Details"
         tabId="business_details"
         completed={isBusinessDetailsCompleted}
+        hasError={shouldShowPoiError || isCompanyPanInvalid}
       >
         <BusinessDetails isFormLocked={isFormLocked()} />
       </Tab>,
@@ -635,6 +661,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     }
 
     if (isEmailVerificationRequired) [tabs[0], tabs[1], tabs[2]] = [tabs[1], tabs[2], tabs[0]];
+    if (experiments.isEmailNonMandatoryOnL2Form && !user.user?.signup_via_email) tabs.shift();
 
     return tabs;
   };
@@ -684,6 +711,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           </StyledHeader>
         </Flex>
       </Space>
+
       {/* Form Tabs */}
       <Space margin={[0, 0, 8.75, 0]}>
         <StyledActivationForm>
@@ -793,6 +821,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           )}
         </StyledFooter>
       </Flex>
+
       <ActivationModal
         isOpen={isModalOpen}
         modalType={modalType}

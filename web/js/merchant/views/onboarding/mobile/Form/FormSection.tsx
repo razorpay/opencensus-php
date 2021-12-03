@@ -50,7 +50,7 @@ const FormSection: React.FC<FormSectionProps> = ({
           {subtitle ? (
             <Text
               size={subtitleFontSize}
-              color={hasError ? 'negative.900' : isSuccess ? 'positive.900' : 'shade.970'}
+              color={hasError ? 'negative.900' : isSuccess ? 'positive.900' : 'shade.950'}
             >
               {subtitle}
             </Text>

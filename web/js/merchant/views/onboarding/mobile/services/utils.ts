@@ -190,6 +190,7 @@ function onScreenDocuments(data, isUpdatedLiteOnboarding = false) {
         case 'form_80g_url':
         case 'form_12a_url':
         case additionalDoc:
+        case 'contact_email':
           return { ...prevValue, [key]: value };
         case 'shop_establishment_number':
           if (businessDoc === 'shop_establishment_certificate')
@@ -252,6 +253,8 @@ export function isDocumentTabComplete(
 
   const isDocumentFieldsFilled = Object.keys(tabData).every((key) => {
     if (optionalDocumentsFields[key] && isVisible(optionalDocumentsFields[key], data)) return true;
+    if ((!data?.hasNonMandatoryEmail || !!tabData[key].value) && key === 'contact_email')
+      return true;
     return !!tabData[key].value && !tabData[key].error;
   });
 
