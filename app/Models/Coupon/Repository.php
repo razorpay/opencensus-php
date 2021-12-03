@@ -40,7 +40,7 @@ class Repository extends Base\Repository
     {
         $allowedMerchantIds = [Merchant\Account::SHARED_ACCOUNT, $merchantId];
 
-        return $this->newQueryWithConnection($this->getSlaveConnection('live'))
+        return $this->newQuery()
                     ->where(Entity::CODE, '=', $code)
                     ->whereIn(Entity::MERCHANT_ID, $allowedMerchantIds)
                     ->with(['source'])
