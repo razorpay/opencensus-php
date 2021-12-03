@@ -8290,7 +8290,6 @@ class Route
             'read_merchant_options_admin',
             'read_options_by_id',
             'read_options_by_ref_id',
-            'reconciliate_via_batch_service',
             'refund_cancel_batch',
             'refund_create',
             'refund_edit',
