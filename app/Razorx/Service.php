@@ -216,6 +216,7 @@ class Service extends Base\Service
             'optimizer_currency',
             'show_multiple_vas_on_x',
             'rx_undo_payout_feature',
+            'rx_command_palette',
             'rx_tally_accrual',
             'rx_cohesive_pl_flows',
         ];
