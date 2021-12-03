@@ -274,7 +274,8 @@ class UpiPaymentServiceTest extends TestCase
 
         $payment = $this->getDbLastpayment();
 
-        $content = $this->mockServer('upi_airtel')->getAsyncCallbackContent($payment->toArray());
+        $content = $this->mockServer('upi_airtel')->getAsyncCallbackContent($payment->toArray(),
+            $this->terminal->toArray());
 
         $response = $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
 
@@ -329,7 +330,8 @@ class UpiPaymentServiceTest extends TestCase
 
         $payment = $this->getDbLastpayment();
 
-        $content = $this->mockServer('upi_airtel')->getAsyncCallbackContent($payment->toArray());
+        $content = $this->mockServer('upi_airtel')->getAsyncCallbackContent($payment->toArray(),
+            $this->terminal->toArray());
 
         $response = $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
 
@@ -390,7 +392,8 @@ class UpiPaymentServiceTest extends TestCase
 
         $payment = $this->getDbLastpayment();
 
-        $content = $this->mockServer('upi_airtel')->getAsyncCallbackContent($payment->toArray());
+        $content = $this->mockServer('upi_airtel')->getAsyncCallbackContent($payment->toArray(),
+            $this->terminal->toArray());
 
         $response = $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
 
@@ -472,7 +475,8 @@ class UpiPaymentServiceTest extends TestCase
 
         $payment = $this->getDbLastpayment();
 
-        $content = $this->mockServer('upi_airtel')->getAsyncCallbackContent($payment->toArray());
+        $content = $this->mockServer('upi_airtel')->getAsyncCallbackContent($payment->toArray(),
+            $this->terminal->toArray());
 
         $response = $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
 

@@ -154,6 +154,42 @@ trait CommonGatewayTrait
     }
 
     /**
+     * builds and returns pre-process action input
+     *
+     * @param array $input
+     * @return array
+     */
+    protected function getInputForPreProcess(array $input): array
+    {
+        $gateway = $this->gateway;
+
+        if ($gateway === 'mozart')
+        {
+            $gateway = $input['gateway'];
+        }
+
+        $terminal = '';
+
+        if (isset($input['terminal']) === true)
+        {
+            $terminal = $input['terminal'];
+
+            unset($input['terminal']);
+        }
+
+        $gatewayInput = [
+            'gateway'  => $input,
+            'terminal' => $terminal,
+            'payment'  => [
+                'gateway' => $gateway,
+                'id'      => '',
+            ]
+        ];
+
+        return $gatewayInput;
+    }
+
+    /**
      * Pre Process function will be callback function , The purpose it serves that it makes the callback
      * to comply with the contracts . Give a simple interface to work with.
      * @param array $input
@@ -161,14 +197,7 @@ trait CommonGatewayTrait
      */
     public function upiPreProcess(array $input)
     {
-        $gatewayInput = [
-            'gateway'  => $input,
-            'terminal' => '',    // Attaching it so mozart request sender does not fail
-            'payment'  => [
-                'gateway' => $this->gateway,
-                'id'      => '',
-            ]
-        ];
+        $gatewayInput = $this->getInputForPreProcess($input);
 
         $mozart = $this->getUpiMozartGatewayWithModeFromEnvironment();
 

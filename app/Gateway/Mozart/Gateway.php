@@ -1543,6 +1543,8 @@ class Gateway extends Base\Gateway
             ($input['gateway']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE))
         {
             $prefix = 'upiPayments';
+
+            $content = $input;
         }
 
         $url = $this->getUrlForMozartRequest($input, $prefix, $mode);
@@ -3224,13 +3226,38 @@ class Gateway extends Base\Gateway
             'api'. '_' . Payment\Gateway::UPI_AIRTEL . '_' . Action::PRE_PROCESS . '_' . 'v1',
             $mode);
 
+        $inputArray = json_decode($input, true);
+
         if ($variant === 'upi_airtel')
         {
+            $terminalData = [
+                'gateway' => Payment\Gateway::UPI_AIRTEL,
+                'gateway_merchant_id2' => $inputArray['payeeVPA'],
+            ];
+
+            $terminal = $this->app['repo']->terminal->findByGatewayAndTerminalData(Payment\Gateway::UPI_AIRTEL,
+                $terminalData);
+
+            if (empty($terminal) === true)
+            {
+                throw new Exception\RuntimeException(
+                    'No terminal found',
+                    [
+                        'input'     => $input,
+                        'action'    => Action::PRE_PROCESS,
+                        'gateway'   => Payment\Gateway::UPI_AIRTEL,
+                    ],
+                    null,
+                    ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND);
+            }
+
             $data = [
                 'payload'       => $input,
                 'gateway'       => Payment\Gateway::UPI_AIRTEL,
+                'terminal'      => $terminal,
                 'cps_route'     => Payment\Entity::UPI_PAYMENT_SERVICE,
             ];
+
             return $this->upiPreProcess($data);
         }
 

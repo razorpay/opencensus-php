@@ -176,6 +176,12 @@ class Server extends Base\Mock\Server
     {
         $input = json_decode($input, true);
 
+        if ((isset($input['entities']) === false) and
+            ($action === Action::PRE_PROCESS))
+        {
+            $input['entities'] = $input;
+        }
+
         $entities = $input['entities'];
 
         $gateway = $gateway === null ? $this->getGateway($entities) : $gateway;
@@ -248,7 +254,7 @@ class Server extends Base\Mock\Server
         ];
     }
 
-    public function getAsyncCallbackContent(array $payment)
+    public function getAsyncCallbackContent(array $payment,array $terminal = [])
     {
         $gateway = $payment['gateway'] ?? '';
 
@@ -271,6 +277,7 @@ class Server extends Base\Mock\Server
                     'amount' => $payment['amount'] / 100,
                     'hdnOrderID' => ltrim($payment['id'], 'pay_'),
                     'payerVPA'	=> $payment['vpa'],
+                    'payeeVPA'  => $terminal['gateway_merchant_id2'] ?? 'razorpay@mairtel',
                 ];
 
                 break;
@@ -285,6 +292,7 @@ class Server extends Base\Mock\Server
                     'hdnOrderID' => ltrim($payment['id'], 'pay_'),
                     'payerVPA'	=> $payment['vpa'],
                     'txnRefNo'	=> 'FT2129114821982611',
+                    'payeeVPA'  => $terminal['gateway_merchant_id2'] ?? 'razorpay@mairtel',
                 ];
         }
 
