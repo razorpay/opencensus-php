@@ -1,6 +1,9 @@
 import React from 'react';
 
 const RecommendationWidgetShimmer = ({ isMtuMerchant = false }) => {
+  if (isMtuMerchant) {
+    return null;
+  }
   return (
     <div className={`${isMtuMerchant ? 'hideShimer' : 'recommendation-shimmer '}`}>
       <div className="primary-shimmer">
