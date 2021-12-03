@@ -33,6 +33,7 @@ use RZP\Models\Admin\Org\Hostname\Entity as HostNameEntity;
 use RZP\Mail\Merchant\RazorpayX\AccountActivationConfirmation;
 use RZP\Mail\Merchant\InstantActivation as InstantActivationMail;
 use RZP\Mail\Merchant\RazorpayX\InstantActivation as RazorpayXInstantActivationMail;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 
 class Activate extends Base\Core
 {
@@ -232,6 +233,14 @@ class Activate extends Base\Core
         {
             $detailCore->updateActivationStatus($merchant, $activationStatusData, $merchant);
         }
+
+        $properties = [
+            'previousActivationStatus'    => null,
+            'currentActivationStatus'     => $merchantDetails->getActivationStatus()
+        ];
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $merchant, $properties, SegmentEvent::PAYMENTS_ENABLED);
 
         $this->activateMerchantPromotions($merchant);
 

@@ -26,6 +26,8 @@ class EventCode
 
     const L2_SUBMISSION             = 'L2 Submission';
 
+    const PAYMENTS_ENABLED           = 'Payments Enabled';
+
     const SIGNUP_SUCCESS            = 'Signup Success';
 
     const SIGNUP_EMAIL_SEND_VERIFICATION_SUCCESS = 'Signup Email Send Verification Success';

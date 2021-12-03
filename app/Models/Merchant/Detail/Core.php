@@ -2186,15 +2186,23 @@ class Core extends Base\Core
                     ->setOriginal($oldMerchantDetails)
                     ->setDirty($newMerchantDetails);
 
+                $isMerchantPreviouslyActivated = $merchant->isActivated();
+
                 (new Merchant\Activate)->activate($merchant, true, $shouldSave);
 
                 // request for default instruments when merchant is activated
                 $this->app['terminals_service']->requestDefaultMerchantInstruments($merchant->getId());
+
+                if(!$isMerchantPreviouslyActivated) {
+                    $this->paymentEnabledEvent($merchant, $oldMerchantDetails, $newMerchantDetails);
+                }
             }
 
             if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_MCC_PENDING) and
                 ($merchant->isLinkedAccount() === false))
             {
+                $isMerchantPreviouslyActivated = $merchant->isActivated();
+
                 (new Merchant\Activate)->activate($merchant, false, $shouldSave);
 
                 $shouldSave = true;
@@ -2202,6 +2210,10 @@ class Core extends Base\Core
                 // request for default instruments when merchant is activated
 
                 $this->app['terminals_service']->requestDefaultMerchantInstruments($merchant->getId());
+
+                if(!$isMerchantPreviouslyActivated) {
+                    $this->paymentEnabledEvent($merchant, $oldMerchantDetails, $newMerchantDetails);
+                }
             }
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::REJECTED)
@@ -2337,6 +2349,19 @@ class Core extends Base\Core
         $partnerActivationCore->markPartnerFormAsNCIfApplicable($merchant, $merchantDetails, $maker);
 
         return $merchantDetails;
+    }
+
+    public function paymentEnabledEvent($merchant, $oldMerchantDetails, $newMerchantDetails)
+    {
+
+        $properties = [
+            'previousActivationStatus'    => $oldMerchantDetails->getActivationStatus(),
+            'currentActivationStatus'     => $newMerchantDetails->getActivationStatus()
+        ];
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $merchant, $properties, SegmentEvent::PAYMENTS_ENABLED);
+
     }
 
     protected function pushHubspotEvent($merchant, $merchantDetails)
