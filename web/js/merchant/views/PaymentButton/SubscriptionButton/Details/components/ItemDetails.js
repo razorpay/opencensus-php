@@ -1,3 +1,5 @@
+import React from 'react';
+
 import TabsContainer from 'common/ui/Tabs';
 import { titleCase } from 'common/utils/rzp-utils';
 import { getPeriodLabel } from '../../Create/constants/billingCycle';
@@ -33,89 +35,69 @@ export default class ItemDetails extends React.Component {
       <TabsContainer
         class="item-details"
         tabNames={[
-          <b>{`Subscription Plans (${recurringPaymentsItems.length})`}</b>,
-          <b>{`One-Time Payments (${oneTimePaymentsItems.length})`}</b>,
+          <b key="1">{`Subscription Plans (${recurringPaymentsItems.length})`}</b>,
+          <b key="2">{`One-Time Payments (${oneTimePaymentsItems.length})`}</b>,
         ]}
       >
         <div>
-          <table>
-            <tbody>
-              {recurringPaymentsItems.map((pi, ix) => (
-                <tr key={ix}>
-                  <td>
-                    <div>
-                      <b>{pi.item.name}</b>
-                    </div>
-                  </td>
-                  <td>
-                    <div>
-                      <div class="title">Plan Amount</div>
-                      <Amount
-                        value={pi.total_amount_paid}
-                        currency={subscriptionButtonEntity.currency}
-                      />
-                    </div>
-                  </td>
-                  <td>
-                    <div>
-                      <div class="title">Billing Frequency</div>
-                      <div>
-                        {titleCase(
-                          getPeriodLabel(
-                            pi.product_config.plan_details.period,
-                            pi.product_config.plan_details.interval,
-                          ),
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div>
-                      <div class="title">Total Billing Cycles</div>
-                      <div>{pi.product_config.subscription_details.total_count}</div>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div class="table-container">
+            {recurringPaymentsItems.map((pi, ix) => (
+              <div key={ix} class="table">
+                <div>
+                  <b>{pi.item.name}</b>
+                </div>
+                <div>
+                  <div class="title">Plan Amount</div>
+                  <Amount
+                    value={pi.total_amount_paid}
+                    currency={subscriptionButtonEntity.currency}
+                  />
+                </div>
+                <div>
+                  <div class="title">Billing Frequency</div>
+                  <div>
+                    {titleCase(
+                      getPeriodLabel(
+                        pi.product_config.plan_details.period,
+                        pi.product_config.plan_details.interval,
+                      ),
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <div class="title">Total Billing Cycles</div>
+                  <div>{pi.product_config.subscription_details.total_count}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div>
-          <table>
-            <tbody>
-              {oneTimePaymentsItems.map((pi, ix) => (
-                <tr key={ix}>
-                  <td>
-                    <div>
-                      <b>{pi.item.name}</b>
-                    </div>
-                  </td>
-                  <td>
-                    <div>
-                      <div class="title">Amount</div>
-                      <Amount value={pi.item.amount} currency={subscriptionButtonEntity.currency} />
-                    </div>
-                  </td>
-                  <td>
-                    <div>
-                      <div class="title">Units sold</div>
-                      <div>{pi.quantity_sold}</div>
-                    </div>
-                  </td>
-                  <td>
-                    <div>
-                      <div class="title">Total Revenue</div>
-                      <Amount
-                        value={pi.total_amount_paid}
-                        currency={subscriptionButtonEntity.currency}
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div class="table-container">
+            {oneTimePaymentsItems.map((pi, ix) => (
+              <div key={ix} class="table">
+                <div>
+                  <b>{pi.item.name}</b>
+                </div>
+                <div>
+                  <div class="title">Amount</div>
+                  <Amount value={pi.item.amount} currency={subscriptionButtonEntity.currency} />
+                </div>
+                <div>
+                  <div class="title">Units sold</div>
+                  <div>{pi.quantity_sold}</div>
+                </div>
+                <div>
+                  <div class="title">Total Revenue</div>
+                  <Amount
+                    value={pi.total_amount_paid}
+                    currency={subscriptionButtonEntity.currency}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </TabsContainer>
     );

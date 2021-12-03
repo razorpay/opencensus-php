@@ -2,7 +2,6 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { fetchSubscriptions as fetchAll } from 'merchant/reducers/subscriptions';
 
-import Amount from 'common/ui/Amount';
 import ListContainer from 'merchant/containers/ListContainer';
 import SubscriptionsListFilter from 'merchant/views/Subscriptions/Subscriptions/components/ListFilter';
 
@@ -11,7 +10,7 @@ import { subscriptionId, planId, nextDueOn, createdAtShort, status } from 'commo
 import EntityTable from 'merchant/components/EntityTable';
 
 const SubscriptionsTable = (props) => {
-  let paymentColumns = [subscriptionId, planId, nextDueOn, createdAtShort, status];
+  const paymentColumns = [subscriptionId, planId, nextDueOn, createdAtShort, status];
 
   return <EntityTable title="Subscriptions" columns={paymentColumns} {...props} />;
 };
@@ -19,10 +18,6 @@ const SubscriptionsTable = (props) => {
 @withRouter
 @connect((state) => state.subscriptions, { fetchAll })
 export default class SubscriptionsList extends ListContainer {
-  constructor(props) {
-    super(props);
-  }
-
   // Hook to modify fetchAll of ListContainer
   fetchEntityList = (params) => {
     return this.props.fetchAll({
@@ -58,13 +53,15 @@ export default class SubscriptionsList extends ListContainer {
     return (
       <div>
         <div class="stats">
-          <b class="bold">Subscriptions</b>
-          {this.statsTable.map((st, ix) => (
-            <div key={ix}>
-              {st.title}
-              <b class="bold">{st.value}</b>
-            </div>
-          ))}
+          <div class="info">
+            <b class="bold">Subscriptions</b>
+            {this.statsTable.map((st, ix) => (
+              <div key={ix}>
+                {st.title}
+                <b class="bold">{st.value}</b>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div class="content-wrapper">

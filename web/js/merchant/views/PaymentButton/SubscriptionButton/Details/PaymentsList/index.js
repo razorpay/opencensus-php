@@ -2,7 +2,6 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
 
-import Button from 'common/new-ui/Button';
 import Amount from 'common/ui/Amount';
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentsListFilter from './PaymentsListFilter';
@@ -14,7 +13,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import { reportFormatOptions } from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectFormat';
 
 const PaymentsTable = (props) => {
-  let paymentColumns = [paymentId, amount, customer, createdAtShort, status];
+  const paymentColumns = [paymentId, amount, customer, createdAtShort, status];
 
   return <EntityTable title="Payments" columns={paymentColumns} {...props} />;
 };
@@ -49,13 +48,15 @@ export default class PaymentsList extends ListContainer {
     return (
       <div>
         <div class="stats">
-          <b class="bold">Transactions</b>
-          {this.getStatsTable(entity).map((st, ix) => (
-            <div key={ix}>
-              {st.title}
-              <b class="bold">{st.value}</b>
-            </div>
-          ))}
+          <div class="info">
+            <b class="bold">Transactions</b>
+            {this.getStatsTable(entity).map((st, ix) => (
+              <div key={ix}>
+                {st.title}
+                <b class="bold">{st.value}</b>
+              </div>
+            ))}
+          </div>
 
           <div class="report-download btn-toolbar pull-right">
             <div

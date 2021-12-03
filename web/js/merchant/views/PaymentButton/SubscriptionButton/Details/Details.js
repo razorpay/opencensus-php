@@ -258,7 +258,7 @@ export default class SubscriptionButtonEntityComponent extends React.Component {
           <div class="panel panel-default">
             <div class="panel-heading">
               <div class="text">{subscriptionButtonEntity.title}</div>
-              <div class="page-options pull-right">
+              <div class="page-options">
                 <Link
                   class="Button Button--primary--invert"
                   to={`/subscription_buttons/${subscriptionButtonEntity.id}/edit`}

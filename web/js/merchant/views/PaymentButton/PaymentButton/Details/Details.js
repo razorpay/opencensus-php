@@ -280,7 +280,7 @@ export default class PaymentButtonEntity extends React.Component {
           <div class="panel panel-default">
             <div class="panel-heading">
               <div class="text">{paymentButtonEntity.title}</div>
-              <div class="page-options pull-right">
+              <div class="page-options">
                 <Link
                   class="Button Button--primary--invert"
                   to={`/paymentbuttons/${paymentButtonEntity.id}/edit`}
@@ -372,50 +372,37 @@ export default class PaymentButtonEntity extends React.Component {
               </div>
 
               <div class="item-details">
-                <table>
-                  <tbody>
-                    {paymentButtonEntity.payment_page_items.map((pi, ix) => (
-                      <tr key={ix}>
-                        <td>
-                          <div>
-                            <b>{pi.item.name}</b>
-                          </div>
-                        </td>
-                        <td>
-                          <div>
-                            <div class="title">Revenue</div>
-                            <Amount
-                              value={pi.total_amount_paid}
-                              currency={paymentButtonEntity.currency}
-                            />
-                          </div>
-                        </td>
-                        <td>
-                          <div>
-                            <div class="title">Price</div>
-                            <Amount
-                              value={pi.item.amount}
-                              currency={paymentButtonEntity.currency}
-                            />
-                          </div>
-                        </td>
-                        <td class="item-details-units">
-                          <div>
-                            <div class="title">Units Sold</div>
-                            <EditStock
-                              isRoleAllowedEdit
-                              totalStock={pi.stock}
-                              quantitySold={pi.quantity_sold}
-                              editFn={editPaymentButton}
-                              paymentPageItemId={pi.id}
-                              trackerFn={() => {}}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <div class="table-container">
+                  {paymentButtonEntity.payment_page_items.map((pi, ix) => (
+                    <div key={ix} class="table">
+                      <div>
+                        <b>{pi.item.name}</b>
+                      </div>
+                      <div>
+                        <div class="title">Revenue</div>
+                        <Amount
+                          value={pi.total_amount_paid}
+                          currency={paymentButtonEntity.currency}
+                        />
+                      </div>
+                      <div>
+                        <div class="title">Price</div>
+                        <Amount value={pi.item.amount} currency={paymentButtonEntity.currency} />
+                      </div>
+                      <div class="item-details-units">
+                        <div class="title">Units Sold</div>
+                        <EditStock
+                          isRoleAllowedEdit
+                          totalStock={pi.stock}
+                          quantitySold={pi.quantity_sold}
+                          editFn={editPaymentButton}
+                          paymentPageItemId={pi.id}
+                          trackerFn={() => {}}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -442,15 +429,17 @@ export default class PaymentButtonEntity extends React.Component {
           {this.props.isTestMode && <TestModeBanner />}
 
           <div class="stats">
-            <b class="bold">Transactions</b>
-            {this.getStatsTable(paymentButtonEntity).map((st, ix) => (
-              <div key={ix}>
-                {st.title}
-                <b class="bold">{st.value}</b>
-              </div>
-            ))}
+            <div class="info">
+              <b class="bold">Transactions</b>
+              {this.getStatsTable(paymentButtonEntity).map((st, ix) => (
+                <div key={ix}>
+                  {st.title}
+                  <b class="bold">{st.value}</b>
+                </div>
+              ))}
+            </div>
 
-            <div class="report-download btn-toolbar pull-right">
+            <div class="report-download btn-toolbar">
               <div
                 class="btn btn-default Button--invert report-download-trigger"
                 disabled={this.state.isExportInProgress}
