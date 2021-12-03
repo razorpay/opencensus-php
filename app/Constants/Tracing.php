@@ -226,6 +226,10 @@ class Tracing
 
             'buy_pricing_terminal_cost',
 
+            // batch service routes
+            'nach_batch_process',
+            'emandate_batch_process'
+
         ]);
     }
 
