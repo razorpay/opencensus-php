@@ -25,7 +25,6 @@ use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Services\FTS\CreateAccount;
 use RZP\Exception\BadRequestException;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -138,25 +137,17 @@ class Core extends Base\Core
 
         $uniqueConsistentHash = null;
 
-        $variant = $this->app->razorx->getTreatment($merchant->getId(),
-                                                    RazorxTreatment::FUND_ACCOUNT_DUPLICATE_CHECK_VIA_UNIQUE_HASH,
-                                                    $this->mode,
-                                                    Entity::FUND_ACCOUNT_RX_RETRY_COUNT);
-
-        if (strtolower($variant) === 'on')
+        if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_CONTACT_DEDUP_FA_BA) === true)
         {
-            if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_CONTACT_DEDUP_FA_BA))
-            {
-                $uniqueConsistentHash = $this->generateUniqueHashForConsistentFundAccount($input[Entity::ACCOUNT_TYPE],
-                                                                                $merchant,
-                                                                                $accountDetails,
-                                                                                $source);
-            }
-                $uniqueHash = $this->generateUniqueHashForFundAccount($input[Entity::ACCOUNT_TYPE],
-                                                                      $merchant,
-                                                                      $accountDetails,
-                                                                      $source);
+            $uniqueConsistentHash = $this->generateUniqueHashForConsistentFundAccount($input[Entity::ACCOUNT_TYPE],
+                                                                                      $merchant,
+                                                                                      $accountDetails,
+                                                                                      $source);
         }
+        $uniqueHash = $this->generateUniqueHashForFundAccount($input[Entity::ACCOUNT_TYPE],
+                                                              $merchant,
+                                                              $accountDetails,
+                                                              $source);
 
         $hash = (empty($uniqueConsistentHash) === true)? $uniqueHash : $uniqueConsistentHash;
 
@@ -203,24 +194,21 @@ class Core extends Base\Core
                 }
 
             }
+            else{
+                $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetailsFromHash($uniqueHash);
 
-            if ((empty($uniqueHash) === false) and
-                (empty($uniqueConsistentHash) === true))
-            {
-                    $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetailsFromHash($uniqueHash);
+                if (empty($fundAccount) === false)
+                {
+                    $this->trace->info(
+                        TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND_USING_HASH,
+                        [
+                            Entity::ID          => $fundAccount->getId(),
+                            Entity::BATCH_ID    => $batchId,
+                            Entity::UNIQUE_HASH => $uniqueHash,
+                        ]);
 
-                    if (empty($fundAccount) === false)
-                    {
-                        $this->trace->info(
-                            TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND_USING_HASH,
-                            [
-                                Entity::ID          => $fundAccount->getId(),
-                                Entity::BATCH_ID    => $batchId,
-                                Entity::UNIQUE_HASH => $uniqueHash,
-                            ]);
-
-                        return $fundAccount;
-                    }
+                    return $fundAccount;
+                }
             }
 
             if (empty($fundAccount) === true)

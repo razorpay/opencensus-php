@@ -222,7 +222,6 @@ class RblBankingAccountStatementTest extends TestCase
             'off',
             'control',
             'control',
-            'control',
             'on'
         );
     }

@@ -973,7 +973,6 @@ class PayoutServiceTest extends TestCase
             'control',
             'on',
             'on',
-            'on',
             'on'//Just use this as on, rest everything as default.
         );
 

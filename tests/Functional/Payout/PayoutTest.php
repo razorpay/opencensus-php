@@ -15573,14 +15573,14 @@ class PayoutTest extends OAuthTestCase
     public function testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingRTGSMode()
     {
 
-       $this->mockRazorxTreatment(
+        $this->mockRazorxTreatment(
             'yesbank', 'off', 'off', 'off', 'off',
             'on', 'on', 'off', 'on',
             'on', 'off', 'on', 'on',
             'off', 'control', 'on',
-            'on', 'off', 'control', 'off',
+            'off', 'control', 'off',
             'on'
-       );
+        );
 
             $payloadUpdatedOne = null;
 
@@ -15639,7 +15639,7 @@ class PayoutTest extends OAuthTestCase
             'on', 'on', 'off', 'on',
             'on', 'off', 'on', 'on',
             'off', 'control', 'on',
-            'on', 'off', 'control', 'off',
+            'off', 'control', 'off',
             'on'
         );
 
@@ -15702,7 +15702,7 @@ class PayoutTest extends OAuthTestCase
             'on', 'on', 'off', 'on',
             'on', 'off', 'on', 'on',
             'off', 'control', 'on',
-            'on', 'off', 'control', 'off',
+            'off', 'control', 'off',
             'on'
         );
 
@@ -15760,7 +15760,7 @@ class PayoutTest extends OAuthTestCase
             'on', 'on', 'off', 'on',
             'on', 'off', 'on', 'on',
             'off', 'control', 'on',
-            'on', 'off', 'control', 'off',
+            'off', 'control', 'off',
             'on'
         );
 
@@ -15817,7 +15817,7 @@ class PayoutTest extends OAuthTestCase
             'on', 'on', 'off', 'on',
             'on', 'off', 'on', 'on',
             'off', 'control', 'on',
-            'on', 'off', 'control', 'off',
+            'off', 'control', 'off',
             'on'
         );
 
@@ -15873,7 +15873,7 @@ class PayoutTest extends OAuthTestCase
             'on', 'on', 'off', 'on',
             'on', 'off', 'on', 'on',
             'off', 'control', 'on',
-            'on', 'off', 'control', 'off',
+            'off', 'control', 'off',
             'on'
         );
 
@@ -15930,7 +15930,7 @@ class PayoutTest extends OAuthTestCase
             'on', 'on', 'off', 'on',
             'on', 'off', 'on', 'on',
             'off', 'control', 'on',
-            'on', 'off', 'control', 'off',
+            'off', 'control', 'off',
             'on'
         );
 
@@ -15983,7 +15983,7 @@ class PayoutTest extends OAuthTestCase
             'on', 'on', 'off', 'on',
             'on', 'off', 'on', 'on',
             'off', 'control', 'on',
-            'on', 'off', 'control', 'off',
+            'off', 'control', 'off',
             'on'
         );
 

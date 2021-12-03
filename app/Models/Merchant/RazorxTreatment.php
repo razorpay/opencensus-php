@@ -317,9 +317,6 @@ final class RazorxTreatment
     // covid 19 related donation
     const COVID_19_DONATION_SHOW = 'covid_19_donation_show';
 
-    // Experiment to check for duplicate fund accounts via unique hash column
-    const FUND_ACCOUNT_DUPLICATE_CHECK_VIA_UNIQUE_HASH = 'fund_account_duplicate_check_via_unique_hash';
-
     // Experiment to decide whether to send support related notifications on whatsapp
     const WHATSAPP_SUPPORT_NOTIFICATIONS = 'whatsapp_support_notifications';
 
