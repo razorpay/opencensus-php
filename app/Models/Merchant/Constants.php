@@ -239,6 +239,9 @@ final class Constants
     const FAQS                      =    "faqs";
     const THANKS                    =    "thanks";
 
+    const AGGREGATIONS              = "aggregations";
+    const FILTERS                   = "filters";
+
     const unregisteredMerchantMaximumTransactionLimit = [
         BusinessCategory::FINANCIAL_SERVICES        => 10000000,
         BusinessCategory::EDUCATION                 => 20000000,

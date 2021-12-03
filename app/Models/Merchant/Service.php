@@ -4699,7 +4699,52 @@ class Service extends Base\Service
     {
         $input = (new Core())->processMerchantAnalyticsQuery($this->merchant->getId(), $input);
 
-        return $this->app['eventManager']->query($input, self::REQUEST_TIMEOUT_MERCHANT_ANALYTICS);
+        $queries = $this->segregateQueries($input);
+
+        $response = [];
+
+        foreach($queries as $query)
+        {
+            $data = $this->app['eventManager']->query($query, self::REQUEST_TIMEOUT_MERCHANT_ANALYTICS);
+
+            if($data !== null)
+            {
+                $response = array_merge($response, $data);
+            }
+        }
+
+        return $response;
+    }
+
+    public function segregateQueries(array $input): array
+    {
+        $queries = [];
+
+        $aggregations = $input[Constants::AGGREGATIONS];
+        $filters = $input[Constants::FILTERS];
+
+        foreach($aggregations as $aggregationKey => $aggregationValue)
+        {
+            $query = [];
+
+            $query[Constants::AGGREGATIONS][$aggregationKey] =  $aggregationValue;
+
+            $allFilters = [];
+
+            foreach($filters as $filterKey => $filterValue)
+            {
+                if(($filterKey == Constants::DEFAULT) || (str_starts_with($aggregationKey, $filterKey) === true ))
+                {
+                    $allFilters[$filterKey] = $filterValue;
+                }
+            }
+
+            $query[Constants::FILTERS] = $allFilters;
+
+            array_push($queries, $query);
+        }
+
+        return $queries;
     }
 
     /**
