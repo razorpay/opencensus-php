@@ -64,12 +64,14 @@ export default class RegistrationLinksList extends ListContainer {
   render() {
     return (
       <div class="content-wrapper">
-        <HeaderAction>
+        <HeaderAction responsive>
           <div class="btn-toolbar pull-right">
-            <NavLink class="btn btn-primary" to="/registration_links/new">
-              <i class="i i-plus" />
-              <span>Create New Link</span>
-            </NavLink>
+            <span className="cta-container">
+              <NavLink class="btn btn-primary" to="/registration_links/new">
+                <i class="i i-plus" />
+                <span>Create New Link</span>
+              </NavLink>
+            </span>
           </div>
         </HeaderAction>
 

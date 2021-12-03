@@ -25,7 +25,14 @@ export function getCurrency(currencyISO) {
   return window.currencyList[currencyISO] || {};
 }
 
-export default ({ value, currency = 'INR', className, parentQuerySelector, ...attrs }) => {
+export default ({
+  value,
+  currency = 'INR',
+  className,
+  parentQuerySelector,
+  hidePaisa = false,
+  ...attrs
+}) => {
   if (!currency) {
     currency = 'INR';
   }
@@ -44,7 +51,7 @@ export default ({ value, currency = 'INR', className, parentQuerySelector, ...at
       <span class={`rzp-amount ${className ? className : ''}`} {...attrs}>
         <span class="rzp-currency" dangerouslySetInnerHTML={{ __html: currencySymbol }} />{' '}
         <span class="rzp-whole">{amount.split('.')[0]}</span>
-        <span class="rzp-paise">.{amount.split('.')[1]}</span>
+        {!hidePaisa && <span class="rzp-paise">.{amount.split('.')[1]}</span>}
       </span>
     </AmountTooltip>
   );

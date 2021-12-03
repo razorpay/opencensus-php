@@ -69,7 +69,7 @@ export default class TokensList extends ListContainer {
   render() {
     return (
       <div class="content-wrapper">
-        <HeaderAction>
+        <HeaderAction responsive>
           <div class="btn-toolbar pull-right">
             <DocsLink
               title="Documentation"

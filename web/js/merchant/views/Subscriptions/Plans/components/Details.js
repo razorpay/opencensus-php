@@ -50,7 +50,7 @@ export default ({ plan, isLoading, statusMsg, subscriptions }) => {
                 value={
                   plan.item.description
                     ? () => {
-                        return <span class="pre">{plan.item.description}</span>;
+                        return <span>{plan.item.description}</span>;
                       }
                     : null
                 }

@@ -80,9 +80,9 @@ export default class PlansListContainer extends ListContainer {
     const { docUrl } = this.props;
 
     return (
-      <div class="content-wrapper">
-        <HeaderAction>
-          <div class="btn-toolbar pull-right">
+      <div className="content-wrapper">
+        <HeaderAction responsive>
+          <div className="btn-toolbar pull-right">
             <TakeATourButton
               feature={RZPFeatures.SUBSCRIPTIONS}
               onClick={() => analytics.track('plan.search.help')}
@@ -93,17 +93,19 @@ export default class PlansListContainer extends ListContainer {
             )}
 
             <ShowWhen additionalCondition={(user) => user.isAllowedEdit('subscriptions')}>
-              <NavLink
-                to="/plans/new"
-                onClick={() => {
-                  analytics.track('plan.create.initiate');
-                }}
-              >
-                <button class="pull-right btn btn-primary">
-                  <i class="i i-plus" />
-                  <span>New Plan</span>
-                </button>
-              </NavLink>
+              <span className="cta-container">
+                <NavLink
+                  to="/plans/new"
+                  onClick={() => {
+                    analytics.track('plan.create.initiate');
+                  }}
+                >
+                  <button className="pull-right btn btn-primary">
+                    <i className="i i-plus" />
+                    <span>New Plan</span>
+                  </button>
+                </NavLink>
+              </span>
             </ShowWhen>
           </div>
         </HeaderAction>

@@ -42,6 +42,7 @@ import {
 } from './constants';
 import RTracking from 'react-tracking';
 import analytics from './analytics';
+import './index.styl';
 
 @connect(
   (state) => ({
@@ -173,7 +174,7 @@ class SubscriptionsController extends React.Component {
         <tabbed-container>
           {subscriptionProductOnBoarding.isQuickGuideOpen && <QuickGuide />}
 
-          <header id="subscriptions-header">
+          <header id="subscriptions-header" className="scrollable-tab-header">
             <ShowWhen additionalCondition={(user) => !user.isChargeAtWillEnabled}>
               <NavLink
                 exact

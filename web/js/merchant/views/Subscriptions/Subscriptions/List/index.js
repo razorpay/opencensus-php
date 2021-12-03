@@ -88,7 +88,33 @@ export default class SubscriptionsListContainer extends ListContainer {
   render() {
     const { user } = this.props;
     return (
-      <>
+      <div class="content-wrapper">
+        <HeaderAction responsive>
+          <div class="btn-toolbar pull-right">
+            <TakeATourButton
+              feature={RZPFeatures.SUBSCRIPTIONS}
+              onClick={() => analytics.track('subscription.search.help')}
+            />
+
+            <DocsLink
+              url="https://razorpay.com/docs/subscriptions/"
+              onClick={() => {
+                analytics.track('subscription.search.documentation');
+              }}
+            />
+            <span className="cta-container">
+              <NavLink
+                class="btn btn-primary"
+                to="/subscriptions/new"
+                onClick={() => analytics.track('subscription.create.initiate')}
+              >
+                <i class="i i-plus" />
+                <span>Create New Subscription</span>
+              </NavLink>
+            </span>
+          </div>
+        </HeaderAction>
+
         {user.isSubscriptionExpiryEnabled && (
           <ExpirySubscriptions
             location={this.props.location}
@@ -99,53 +125,26 @@ export default class SubscriptionsListContainer extends ListContainer {
           />
         )}
 
-        <div class="content-wrapper">
-          <HeaderAction>
-            <div class="btn-toolbar pull-right">
-              <TakeATourButton
-                feature={RZPFeatures.SUBSCRIPTIONS}
-                onClick={() => analytics.track('subscription.search.help')}
-              />
+        <SubscriptionsListFilter
+          form="subscriptionsListFilter"
+          count={this.state.count}
+          onSubmit={this.search}
+          onFieldChange={this.onFilterChange}
+          onSearchAnalytics={this.onSearchAnalytics}
+          onClearAnalytics={this.onClearAnalytics}
+          showSubscriptionExpiryFilter={user.isSubscriptionExpiryEnabled}
+        />
 
-              <DocsLink
-                url="https://razorpay.com/docs/subscriptions/"
-                onClick={() => {
-                  analytics.track('subscription.search.documentation');
-                }}
-              />
-
-              <NavLink
-                class="btn btn-primary"
-                to="/subscriptions/new"
-                onClick={() => analytics.track('subscription.create.initiate')}
-              >
-                <i class="i i-plus" />
-                <span>Create New Subscription</span>
-              </NavLink>
-            </div>
-          </HeaderAction>
-
-          <SubscriptionsListFilter
-            form="subscriptionsListFilter"
-            count={this.state.count}
-            onSubmit={this.search}
-            onFieldChange={this.onFilterChange}
-            onSearchAnalytics={this.onSearchAnalytics}
-            onClearAnalytics={this.onClearAnalytics}
-            showSubscriptionExpiryFilter={user.isSubscriptionExpiryEnabled}
-          />
-
-          <DataTable
-            title="Subscriptions"
-            columns={[subscriptionId, planId, ...link, customerId, nextDueOn, createdAt, status]}
-            count={this.state.count}
-            skip={this.state.skip}
-            paginate={this.onClickPaginate}
-            EmptyComponent={EmptyComponent}
-            {...this.props}
-          />
-        </div>
-      </>
+        <DataTable
+          title="Subscriptions"
+          columns={[subscriptionId, planId, ...link, customerId, nextDueOn, createdAt, status]}
+          count={this.state.count}
+          skip={this.state.skip}
+          paginate={this.onClickPaginate}
+          EmptyComponent={EmptyComponent}
+          {...this.props}
+        />
+      </div>
     );
   }
 }

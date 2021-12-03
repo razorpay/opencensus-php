@@ -102,7 +102,7 @@ export default class SubscriptionsSettings extends React.Component {
 
     return (
       <div class="Subscriptions--Settings content-wrapper">
-        <HeaderAction>
+        <HeaderAction responsive>
           <div class="btn-toolbar pull-right">
             <TakeATourButton
               feature={RZPFeatures.SUBSCRIPTIONS}
@@ -118,7 +118,7 @@ export default class SubscriptionsSettings extends React.Component {
 
         <div
           class="panel panel-default panel-theme"
-          style={user.isEmandateOnSubscriptionEnabled ? {} : { width: '854px' }}
+          style={user.isEmandateOnSubscriptionEnabled ? {} : { maxWidth: '854px' }}
         >
           {settings.error ? (
             <Alert type="error" message={settings.errors} showDismiss={false} />
@@ -136,6 +136,7 @@ export default class SubscriptionsSettings extends React.Component {
                   <div
                     class={classList(
                       user.isEmandateOnSubscriptionEnabled ? 'col-md-4' : 'col-md-6',
+                      'column',
                     )}
                   >
                     <ToggleCard
@@ -164,7 +165,7 @@ export default class SubscriptionsSettings extends React.Component {
                           Accept payments upto{' '}
                           <strong>
                             {' '}
-                            <Amount value={GATEWAY_MAX_LIMIT} />
+                            <Amount value={GATEWAY_MAX_LIMIT} hidePaisa />
                           </strong>
                           <br />
                           Payments above ₹ 5000 will ask the customer for OTP verification as well.
@@ -189,6 +190,7 @@ export default class SubscriptionsSettings extends React.Component {
                   <div
                     class={classList(
                       user.isEmandateOnSubscriptionEnabled ? 'col-md-4' : 'col-md-6',
+                      'column',
                     )}
                   >
                     <ToggleCard
@@ -210,9 +212,9 @@ export default class SubscriptionsSettings extends React.Component {
                           Accept payments upto{' '}
                           <strong>
                             {' '}
-                            <Amount value={UPI_MAX_LIMIT} />
+                            <Amount value={UPI_MAX_LIMIT} hidePaisa />
                           </strong>{' '}
-                          (For BFSI: <Amount value={GATEWAY_MAX_LIMIT} />)
+                          (For BFSI: <Amount value={GATEWAY_MAX_LIMIT} hidePaisa />)
                           <br />
                           Payments above ₹ 5000 will ask the customer for UPI PIN verification as
                           well.
@@ -222,7 +224,7 @@ export default class SubscriptionsSettings extends React.Component {
                   </div>
 
                   {user.isEmandateOnSubscriptionEnabled && (
-                    <div class="col-md-4">
+                    <div class="col-md-4 column">
                       <ToggleCard
                         title={
                           <>
@@ -236,7 +238,7 @@ export default class SubscriptionsSettings extends React.Component {
                           <>
                             Accept payments upto:{' '}
                             <strong>
-                              <Amount value={EMANDATE_MAX_LIMIT} />
+                              <Amount value={EMANDATE_MAX_LIMIT} hidePaisa />
                             </strong>
                           </>
                         }

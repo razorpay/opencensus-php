@@ -35,7 +35,7 @@ export default class EmandatePayments extends ListContainer {
   render() {
     return (
       <div class="content-wrapper">
-        <HeaderAction>
+        <HeaderAction responsive>
           <div class="btn-toolbar">
             <DocsLink url="https://razorpay.com/docs/recurring-payments/" />
           </div>
