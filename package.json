@@ -9,7 +9,8 @@
     "query-string": "^6.8.3"
   },
   "scripts": {
-    "postinstall": "cd web && npm ci",
+    "prepare:commitmessage": "exec < /dev/tty && git cz --hook || true",
+    "postinstall": "husky install && cd web && npm ci",
     "start": "node signup.js; cd web && npm start",
     "start:all": "node signup.js; cd web && npm run start:all",
     "serve": "REDIRECTOR=true npm run start",
@@ -40,18 +41,12 @@
     "eslint-plugin-react": "^7.25.1",
     "eslint-plugin-yml": "^0.9.0",
     "http-server": "^0.12.3",
-    "husky": "^4.2.5",
+    "husky": "^7.0.0",
     "jshint": "^2.13.0",
     "lint-staged": "^10.2.11",
     "nodemon": "^2.0.7",
     "prettier": "^2.0.5",
     "typescript": "3.9.5"
-  },
-  "husky": {
-    "hooks": {
-      "prepare-commit-msg": "exec < /dev/tty && git cz --hook || true",
-      "pre-commit": "lint-staged"
-    }
   },
   "config": {
     "commitizen": {

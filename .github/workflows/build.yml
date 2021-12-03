@@ -24,7 +24,7 @@ jobs:
       - name: Install Dependencies
         run: |
           npm config set unsafe-perm true
-          npm ci # Automatically installs npm ci in web too
+          HUSKY=0 npm ci # Automatically installs npm ci in web too
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
