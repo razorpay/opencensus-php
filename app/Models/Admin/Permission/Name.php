@@ -578,6 +578,8 @@ class Name
 
     const MANAGE_PAYOUT_DOWNTIME              = 'manage_payout_downtime';
     const VIEW_PAYOUT_DOWNTIME                = 'view_payout_downtime';
+    const MANAGE_FUND_LOADING_DOWNTIME        = 'manage_fund_loading_downtime';
+    const VIEW_FUND_LOADING_DOWNTIME          = 'view_fund_loading_downtime';
     const VAULT_TOKEN_CREATE                  = 'vault_token_create';
 
     const CURRENCY_FETCH_RATES                = 'currency_fetch_rates';

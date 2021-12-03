@@ -727,6 +727,8 @@ return [
 
     E::PAYOUT_DOWNTIMES => [],
 
+    E::FUND_LOADING_DOWNTIMES => [],
+
     E::REQUEST_LOG => [],
 
     E::MERCHANT_E_INVOICE => [],

@@ -2823,6 +2823,14 @@ class Route
         'fetch_payout_downtimes_enabled'          => ['get',       'payouts/downtimes/enabled',                               'PayoutDowntimeController@fetchPayoutDowntimesEnabled'       ],
         'fetch_payout_downtimes'                  => ['get',       'payouts/downtimes',                                       'PayoutDowntimeController@fetchPayoutDowntimes'              ],
 
+        // fund loading downtime routes
+        'create_fund_loading_downtime'            => ['post',      'fund_loading/downtime',                                        'FundLoadingDowntimeController@createFundLoadingDowntime'              ],
+        'update_fund_loading_downtime_by_id'      => ['patch',     'fund_loading/downtime/{id}',                                   'FundLoadingDowntimeController@updateFundLoadingDowntime'              ],
+        'fetch_fund_loading_downtime_by_id'       => ['get',       'fund_loading/downtime/{id}',                                   'FundLoadingDowntimeController@fetchFundLoadingDowntime'               ],
+        'list_active_fund_loading_downtimes'      => ['get',       'fund_loading/downtimes/active',                                'FundLoadingDowntimeController@listActiveFundLoadingDowntimes'         ],
+        'list_fund_loading_downtimes'             => ['get',       'fund_loading/downtimes',                                       'FundLoadingDowntimeController@listFundLoadingDowntimes'               ],
+        'delete_fund_loading_downtime_by_id'      => ['delete',    'fund_loading/downtime/{id}',                                   'FundLoadingDowntimeController@deleteFundLoadingDowntime'              ],
+
         // Routes related to payments rearch for fetching/writing data
         'api_entity_fetch'                        => ['get',     'entities/{entity}/{id}',                                 'CardPSController@FetchEntity'                                  ],
         'cps_backfill_entities'                   => ['get',     'cardps/backfill/{entity}/{column}',                      'CardPSController@BackfillRouteProxy'                           ],
@@ -5643,6 +5651,14 @@ class Route
         'fetch_payout_downtime_by_id',
         'fetch_payout_downtimes',
 
+        //fund loading downtime
+        'create_fund_loading_downtime',
+        'update_fund_loading_downtime_by_id',
+        'fetch_fund_loading_downtime_by_id',
+        'list_active_fund_loading_downtimes',
+        'list_fund_loading_downtimes',
+        'delete_fund_loading_downtime_by_id',
+
         // Recon for alert_email field of stork
         'admin_webhook_email_stork_recon',
 
@@ -6755,6 +6771,14 @@ class Route
         'update_payout_downtime_by_id'             => Permission::MANAGE_PAYOUT_DOWNTIME,
         'fetch_payout_downtime_by_id'              => Permission::VIEW_PAYOUT_DOWNTIME,
         'fetch_payout_downtimes'                   => Permission::VIEW_PAYOUT_DOWNTIME,
+
+        //fund loading downtime
+        'create_fund_loading_downtime'              => Permission::MANAGE_FUND_LOADING_DOWNTIME,
+        'update_fund_loading_downtime_by_id'        => Permission::MANAGE_FUND_LOADING_DOWNTIME,
+        'fetch_fund_loading_downtime_by_id'         => Permission::VIEW_FUND_LOADING_DOWNTIME,
+        'list_fund_loading_downtimes'               => Permission::VIEW_FUND_LOADING_DOWNTIME,
+        'delete_fund_loading_downtime_by_id'        => Permission::MANAGE_FUND_LOADING_DOWNTIME,
+        'list_active_fund_loading_downtimes'        => Permission::VIEW_FUND_LOADING_DOWNTIME,
 
         // Workflow Service requests
         'wfs_config_create'                        => Permission::WFS_CONFIG_CREATE,
@@ -8853,6 +8877,7 @@ class Route
             'create_payment_config_admin',
             'create_payment_config_bulk',
             'create_payout_downtime',
+            'create_fund_loading_downtime',
             'create_promotions_events',
             'create_submerchant_user',
             'create_virtual_account_from_order',
@@ -8905,6 +8930,7 @@ class Route
             'db_meta_query',
             'delete_additional_websites',
             'delete_config_key',
+            'delete_fund_loading_downtime_by_id',
             'delete_internal_instrument_request_by_id',
             'delete_low_balance_config_admin',
             'delete_merchant_notification_config',
@@ -9006,6 +9032,7 @@ class Route
             'fetch_batch_actions',
             'fetch_instrument_comment_list',
             'fetch_internal_instrument_requests',
+            'fetch_fund_loading_downtime_by_id',
             'fetch_merchant_balance_configs',
             'fetch_merchant_instrument_requests',
             'fetch_merchant_notification_config',
@@ -9253,6 +9280,8 @@ class Route
             'link_stakeholder_documents_v2',
             'linked_account_create_batch',
             'payment_transfer_batch',
+            'list_active_fund_loading_downtimes',
+            'list_fund_loading_downtimes',
             'list_low_balance_config_admin',
             'list_merchant_notification_config',
             'list_merchant_notification_config_admin',
@@ -10220,6 +10249,7 @@ class Route
             'update_free_payouts_attributes',
             'create_sub_balances',
             'sub_balance_adjustment',
+            'update_fund_loading_downtime_by_id',
             'update_late_auth_config_admin_bulk',
             'update_low_balance_config_admin',
             'update_merchant_notification_config',

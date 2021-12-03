@@ -1161,6 +1161,15 @@ return [
             ],
         ],
 
+        PermissionCategory::FUND_LOADING_DOWNTIME  => [
+            Permission::MANAGE_FUND_LOADING_DOWNTIME => [
+                'description' => 'Create, Update Fund loading Downtime',
+            ],
+            Permission::VIEW_FUND_LOADING_DOWNTIME => [
+                'description' => 'View Fund loading Downtime',
+            ],
+        ],
+
         // RZP White label wallet config
         PermissionCategory::WALLET_CONFIG => [
             Permission::CREATE_WALLET_CONFIG => [

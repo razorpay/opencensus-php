@@ -1600,6 +1600,20 @@ final class FactoryData
             'downtime_message' => 'RBL bank NEFT payments are down',
         ]);
 
+        $factory(\RZP\Models\FundLoadingDowntime\Entity::class, [
+            'id'               => $faker->uniqueid,
+            'type'             => 'Sudden Downtime',
+            'source'           => 'Partner Bank',
+            'channel'          => 'Yes Bank',
+            'mode'             => 'NEFT',
+            'start_time'       => Carbon::now(Timezone::IST)->getTimestamp(),
+            'end_time'         => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
+            'downtime_message' => 'Downtime message received and initiated',
+            'created_by'       => 'chirag.chiranjib@razorpay.com',
+            'created_at'       => $faker->timestamp,
+            'updated_at'       => $faker->timestamp,
+        ]);
+
         $factory(\RZP\Models\Merchant\Attribute\Entity::class, [
             'id'                 => $faker->uniqueid,
             'merchant_id'        => '10000000000000',

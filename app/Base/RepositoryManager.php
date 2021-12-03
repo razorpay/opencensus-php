@@ -109,6 +109,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\VirtualVpaPrefixHistory\Repository           $virtual_vpa_prefix_history
  * @property Models\Merchant\Reminders\Repository                $merchant_reminders
  * @property Models\PayoutDowntime\Repository                    $payout_downtimes
+ * @property Models\FundLoadingDowntime\Repository               $fund_loading_downtimes
  * @property Models\User\Repository                              $user
  * @property Models\Transfer\Repository                          $transfer
  * @property Models\Settlement\Ondemand\Repository               $settlement_ondemand

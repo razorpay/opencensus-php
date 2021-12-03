@@ -338,7 +338,8 @@ class Table
 
     const PROMOTION_EVENT      = 'promotions_events';
     //Payout downtimes table
-    const PAYOUT_DOWNTIMES     = 'payout_downtimes';
+    const PAYOUT_DOWNTIMES       = 'payout_downtimes';
+    const FUND_LOADING_DOWNTIMES = 'fund_loading_downtimes';
 
     const WORKFLOW_CONFIG      = 'workflow_config';
     const WORKFLOW_ENTITY_MAP  = 'workflow_entity_map';

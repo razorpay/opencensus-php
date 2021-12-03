@@ -516,6 +516,7 @@ class Entity
     const PROMOTION_EVENT = 'promotion_event';
     //payout downtime
     const PAYOUT_DOWNTIMES              = Table::PAYOUT_DOWNTIMES;
+    const FUND_LOADING_DOWNTIMES        = Table::FUND_LOADING_DOWNTIMES;
 
     const PAYOUTS_META                  = Table::PAYOUTS_META;
 
@@ -996,6 +997,7 @@ class Entity
         self::CONFIG                        => \RZP\Models\Payment\Config::class,
         self::PROMOTION_EVENT               => \RZP\Models\Promotion\Event::class,
         self::PAYOUT_DOWNTIMES              => \RZP\Models\PayoutDowntime::class,
+        self::FUND_LOADING_DOWNTIMES        => \RZP\Models\FundLoadingDowntime::class,
 
         self::PAYOUTS_META                  => \RZP\Models\PayoutMeta::class,
 

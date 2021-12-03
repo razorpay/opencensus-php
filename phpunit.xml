@@ -84,6 +84,7 @@
             <directory>./tests/Functional/PayoutDowntime/</directory>
             <directory>./tests/Functional/BankingAccountTpv/</directory>
             <directory>./tests/Functional/BankingAccountService/</directory>
+            <directory>./tests/Functional/FundLoadingDowntime/</directory>
             <directory>./tests/Functional/AutoGenerateApiDocsTest/</directory>
         </testsuite>
         <testsuite name="Features-2 Test Suite">

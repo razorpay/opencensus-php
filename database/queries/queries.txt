@@ -6431,6 +6431,22 @@ CREATE TABLE merchant_1cc_configs
 ALTER TABLE card_mandates
    MODIFY COLUMN end_at bigint DEFAULT NULL;
 
+CREATE TABLE `fund_loading_downtimes` (
+`id` char(14) COLLATE utf8_bin NOT NULL,
+`type` varchar(50) COLLATE utf8_bin NOT NULL,
+`source` varchar(20) COLLATE utf8_bin NOT NULL,
+`channel` varchar(20) COLLATE utf8_bin NOT NULL,
+`mode` varchar(20) COLLATE utf8_bin NOT NULL,
+`start_time` int NOT NULL,
+`end_time` int DEFAULT NULL,
+`downtime_message` text COLLATE utf8_bin,
+`created_by` varchar(255) COLLATE utf8_bin NOT NULL,
+`created_at` int NOT NULL,
+`updated_at` int NOT NULL,
+PRIMARY KEY (`id`),
+KEY `fund_loading_downtimes_start_time_end_time_index` (`start_time`,`end_time`),
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE utf8_bin
+
 ALTER TABLE vpas
     ADD INDEX vpa_entity_id_entity_type_index (entity_id, entity_type);
 

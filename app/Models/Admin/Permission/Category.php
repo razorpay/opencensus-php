@@ -61,6 +61,7 @@ class Category
     const RECON                        = 'recon';
     const FTS_DASHBOARD_ADMIN          = 'fts_dashboard_admin';
     const MERCHANT_BULK_UPDATE         = 'merchant_bulk_update';
+    const FUND_LOADING_DOWNTIME        = 'fund_loading_downtime';
     const COLLECTIONS                  = 'collections';
     const COUPON                       = 'coupon';
     const CREDITS                      = 'credits';
