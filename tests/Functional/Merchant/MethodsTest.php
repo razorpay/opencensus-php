@@ -565,7 +565,7 @@ class MethodsTest extends TestCase
             {
                 if (starts_with($tag, E::METHODS) === true)
                 {
-                    $this->assertContains(E::METHODS, $tag);
+                    $this->assertStringContainsString(E::METHODS, $tag);
                 }
             }
             return true;
@@ -580,7 +580,7 @@ class MethodsTest extends TestCase
             {
                 if (starts_with($tag, E::METHODS) === true)
                 {
-                    $this->assertContains(E::METHODS, $tag);
+                    $this->assertStringContainsString(E::METHODS, $tag);
                 }
             }
             return true;
@@ -602,7 +602,7 @@ class MethodsTest extends TestCase
             {
                 if (starts_with($tag, E::METHODS) === true)
                 {
-                    $this->assertContains(
+                    $this->assertStringContainsString(
                         implode(':', [
                             CacheConstants::QUERY_CACHE_PREFIX,
                             CacheConstants::DEFAULT_QUERY_CACHE_VERSION,

@@ -2877,7 +2877,6 @@ class Processor
     public function failMandateCanceledCardAutoRecurringPayment(Payment\Entity $payment)
     {
         $this->payment = $payment;
-
         $traceCode = TraceCode::PAYMENT_CARD_MANDATE_CANCELLED_BY_USER;
         $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_CANCELLED_BY_USER;
 
@@ -2885,7 +2884,16 @@ class Processor
 
         $this->updatePaymentFailed($exception, $traceCode);
 
-        throw $exception;
+        if ($payment->getCallbackUrl() === null)
+        {
+            throw $exception;
+        }
+
+        $returnData = [];
+
+        $this->fillReturnRequestDataForMerchant($payment,$returnData);
+
+        return $returnData;
     }
 
     public function failNotificationVerifyFailedCardAutoRecurringPayment(Payment\Entity $payment)

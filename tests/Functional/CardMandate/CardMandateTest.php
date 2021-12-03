@@ -952,4 +952,25 @@ class CardMandateTest extends TestCase
         return $this->mockMandateHQ($callable, 'createPreDebitNotification');
     }
 
+    public function testCallbackUrlRedirection()
+    {
+
+        $this->mockCheckBin();
+
+        $this->mockRegisterMandate();
+
+        $this->mandateConfirm = 'false';
+
+        $this->mockReportPayment();
+
+        $this->paymentInput[Payment::CALLBACK_URL]='https://www.facebook.com';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->paymentInput,
+        ];
+
+        $this->makeRequestAndGetRawContent($request);
+    }
 }
