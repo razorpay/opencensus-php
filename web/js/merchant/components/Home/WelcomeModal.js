@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { Link } from 'react-router-dom';
 import rTracking from 'react-tracking';
+import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { getItem } from 'common/utils/localStorage';
@@ -27,6 +28,7 @@ const WelcomeModal = ({
   isProductRecommendationEnabled,
   isOrgAxis,
   hideCTAs,
+  referee,
   trackEvents,
 }) => {
   const getLandingProduct = getItem('merchant_landing_page') || getItem('default_product_page');
@@ -85,12 +87,13 @@ const WelcomeModal = ({
   };
 
   useEffect(() => {
-    if (isFestive)
+    if (isFestive) {
       tracking.trackEvent(
         window.rzpQ.onbr().success('merchant_dashboard.display_welcomemodal', {
           ID: 'NOV20-PGFESTIVEMODAL',
         }),
       );
+    }
   }, [isFestive, tracking]);
 
   return (
@@ -114,9 +117,17 @@ const WelcomeModal = ({
           <h1 className="welcome-title prd-title">
             You are just one step away from accepting payments
           </h1>
-          <p className="product-desc">
-            Activate your account and find the right product for your business needs
-          </p>
+          {referee?.status === 'signup' ? (
+            <p className="product-desc">
+              Activate your account and start transacting to earn{' '}
+              {getFormattedAmountNew(referee.referral_amount, true)} worth transaction credits
+            </p>
+          ) : (
+            <p className="product-desc">
+              Activate your account and find the right product for your business needs
+            </p>
+          )}
+
           <div className="slideshow_wrapper">
             <div className="product-recommendation">
               <div className="payment-product">

@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-
+import Text from '@razorpay/blade-old/src/atoms/Text';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Space from '@razorpay/blade-old/src/atoms/Space';
 import Header from 'common/ui/Header';
 import Amount from 'common/ui/Amount';
 import Sticky from 'common/ui/Sticky';
@@ -28,13 +30,20 @@ import {
 } from './ga';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
+import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import EasterEgg from 'merchant/components/EasterEgg';
+import { getFormattedAmountNew } from 'common/utils/rzp-utils';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
+
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
 @connect(
   (state) => ({
     windowWidth: state.app.windowWidth,
     user: state.session.user,
     config: state.config,
+    can_refer: state.merchantReferral.data.can_refer,
+    referee: state.merchantReferral.data.referee,
+    transactionAmount: state.transactionAmount.amount,
     ticketsRaisedByAgents: state.config.ticketsRaisedByAgents.data[1],
   }),
   { openModal },
@@ -152,6 +161,11 @@ class AnalyticsMobile extends Component {
 
     return (
       <div className="home-analytics-mobile">
+        <Space padding={[2.5, 1, 0, 2]}>
+          <Text size="large" weight="bold" color="shade.950">
+            Welcome to your dashboard, {user.contact_name}!
+          </Text>
+        </Space>
         <div
           ref={(node) => onExtraContentMount(node)}
           className={`extra-content${showOnboardingBanner ? ' has-ob-banner' : ''}${
@@ -164,6 +178,18 @@ class AnalyticsMobile extends Component {
 
           {showInstantActivation && !user.isOnboardingV2Enabled ? (
             <Announcement mode={mode} user={user} payments={payments} />
+          ) : null}
+          {user.isPaymentsEnabled &&
+          this.props.transactionAmount <= 0 &&
+          this.props.referee?.status === 'signup' ? (
+            <AnnouncementBanner
+              title="Unlock Pending Credits"
+              theme="warning"
+              card_id="merchant_referral"
+            >
+              Accept your first payment of minimum ₹50 to unlock{' '}
+              {getFormattedAmountNew(this.props.referee.referral_amount, true)} transaction credits{' '}
+            </AnnouncementBanner>
           ) : null}
           {!user.isOnboardingV2Enabled ? (
             <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
@@ -178,7 +204,16 @@ class AnalyticsMobile extends Component {
               )}
             </div>
           ) : null}
-          {user.isOnboardingV2Enabled ? <OnboardingCard /> : null}
+
+          {this.props.can_refer ? (
+            <Space margin={[1, 2, 2, 2]}>
+              <View>
+                <M2MBanner />
+              </View>
+            </Space>
+          ) : null}
+
+          {user.isOnboardingV2Enabled ? <OnboardingCard referee={this.props.referee} /> : null}
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">
               <PersonaliseBanner track={trackPersonaliseBanner} />

@@ -45,6 +45,7 @@ import { fetchActiveTickets, fetchTicketsRaisedByAgents } from 'merchant/reducer
 import { fetchTrustedBadgeStatus } from 'merchant/reducers/trustedBadge.js';
 import LogoutDialog from 'merchant/components/LogoutDialog';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { fetchMerchantReferralDetail } from 'merchant/reducers/merchantReferral';
 import { fetchInstantSettlements, fetchPayments } from 'merchant/reducers/collection';
 import { bindActionCreators, compose } from 'redux';
 import { initChatbot } from '../chatbot-init';
@@ -274,6 +275,7 @@ class App extends Component {
       this.fetchSupportedCurrencies().then(({ data }) => {
         window.currencyList = data;
       }),
+      this.props.fetchMerchantReferralDetail(),
     ])
       .then((response) => {
         if (response[0].showInstantActivation) {
@@ -346,15 +348,19 @@ class App extends Component {
     const user = window.rzp_user;
     const { fetchPayments, openModal } = this.props;
     const EMAIL_REQUESTED = `email_requested_${user.user?.id}`;
-    if(user.user && user.role == rolesList.OWNER && !user.user?.signup_via_email && !user.user?.email && !getCookie(EMAIL_REQUESTED)) {
+    if (
+      user.user &&
+      user.role == rolesList.OWNER &&
+      !user.user?.signup_via_email &&
+      !user.user?.email &&
+      !getCookie(EMAIL_REQUESTED)
+    ) {
       fetchPayments({ count: 1, mode: 'live' }).then((res) => {
         if (res && res.success && res.data?.count > 0) {
           setCookie(EMAIL_REQUESTED, true, Infinity);
           openModal({
             size: 'medium',
-            component: (
-              <RequestEmailModal />
-            ),
+            component: <RequestEmailModal />,
           });
         }
       });
@@ -365,7 +371,6 @@ class App extends Component {
     window.addEventListener('resize', this.handleResize);
     const user = window.rzp_user;
     if (user) {
-
       this.openRequestEmailPopup();
       const hidden = {
         mid: `${user.id}`,
@@ -436,8 +441,6 @@ class App extends Component {
           );
         }
       }
-      
-      
     }
   }
 
@@ -1015,6 +1018,7 @@ const mapDispatchToProps = (dispatch) =>
       closeModal,
       fetchInstantSettlements,
       fetchTrustedBadgeStatus,
+      fetchMerchantReferralDetail,
       fetchPayments,
     },
     dispatch,

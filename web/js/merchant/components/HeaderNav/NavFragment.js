@@ -23,12 +23,14 @@ class NavFragment extends Component {
     const hideSwitchModeTooltip = storage.getItem(this.hideModePopoverToken);
     const showSwitchModeTooltip = storage.getItem(this.showModePopoverToken);
 
-    const { user, mode } = props;
+    const { user, mode, referee } = props;
     //number of day when payment get activated date to current date
     const numberOfDaysPaymentActivated =
       (user.activated_at && Math.abs(daysFromToday(user.activated_at))) || 0;
+    const isReferredMerchant = referee?.status === 'signup';
 
     this.canShowOnboardingOffers =
+      !isReferredMerchant &&
       user.activated &&
       mode === 'live' &&
       numberOfDaysPaymentActivated >= POST_INSTANTLY_ACTIVATED_DAYS_TO_SHOW_OFFER &&

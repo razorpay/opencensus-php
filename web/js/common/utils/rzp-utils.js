@@ -353,12 +353,14 @@ export const stringifyQueryParams = (params) => {
  * Use Case: utilize to populate filter form
  */
 export const getURLQueryParams = (url = document.location.hash) => {
-  let search = url.split('?')[1];
+  const search = url.split('?')[1];
   let params = {};
 
   if (search) {
+    /* split using '&' as separator
+    and get the key value pairs for query params. */
     params = search.split('&').reduce((prev, curr) => {
-      let [key, value] = curr.split('=');
+      const [key, value] = curr.split('=');
       prev[key] = value;
       return prev;
     }, {});

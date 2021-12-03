@@ -1,6 +1,6 @@
 import React from 'react';
 import { Story, Meta } from '@storybook/react/types-6-0.d';
-import Home from './index';
+import Home, { HomePropsT } from './index';
 
 export default {
   title: 'Onboarding/Home',
@@ -14,6 +14,10 @@ export default {
   },
 } as Meta;
 
-const Template: Story = (args) => <Home {...args} />;
+const Template: Story<HomePropsT> = (args) => <Home {...args} />;
 
 export const Default = Template.bind({});
+
+Template.args = {
+  referee: undefined,
+};

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
+import { fetchInternationalProductsStatus } from 'merchant/reducers/config';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import Header from 'common/ui/Header';
 import moment from 'moment';
@@ -24,7 +25,6 @@ import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAcco
 import InternationalRequestStatusAnnouncement from 'merchant/components/Announcements/InternationalRequestStatus';
 import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
 import { openModal } from 'merchant_common/reducers/modals';
-import { fetchInternationalProductsStatus } from 'merchant/reducers/config';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 import CovidKnowMore from 'common/ui/CovidKnowMore';
 import CreditPullModal from 'merchant/containers/CreditPullModal';
@@ -35,7 +35,11 @@ import {
   EVENT_CATEGORY_DASHBOARD_HOME,
 } from './ga';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
-import { handleNegativeBalanceLimit, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import {
+  handleNegativeBalanceLimit,
+  getCommonAnalyticsProperties,
+  getFormattedAmountNew,
+} from 'common/utils/rzp-utils';
 import Time from 'common/ui/Time';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -43,7 +47,7 @@ import { fetchUser } from 'merchant/reducers/session';
 import AsyncButton from 'react-async-button';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
-import { showKYCStatusModal, fetchEscalations } from 'merchant/reducers/home';
+import { showKYCStatusModal, fetchEscalations, showProductsModal } from 'merchant/reducers/home';
 import { isDedupe, getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import NCModal from 'merchant/components/Activation/NCModal';
 import DedupeModal from 'merchant/components/Home/DedupeModal';
@@ -56,6 +60,7 @@ import StartupCongratulationBanner from '../../components/Announcements/StartupC
 import CrossBorderPaymentsBanner from '../../components/Announcements/CrossBorderPaymentsBanner';
 import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import NitroICICIBanner from '../../components/Announcements/NitroICICIBanner';
 import NitroCCCampaign from '../../components/Announcements/NitroCCCampaign';
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
@@ -66,6 +71,7 @@ class AnalyticsDesktop extends Component {
     settlementExists: true,
     shouldShowTnCBannerForAxis: false,
   };
+
   constructor(props) {
     super(props);
 
@@ -368,6 +374,22 @@ class AnalyticsDesktop extends Component {
               shouldShowTnCBannerForAxis={shouldShowTnCBannerForAxis}
             />
           )}
+          {user.isPaymentsEnabled &&
+          this.props.transactionAmount <= 0 &&
+          this.props.referee?.status === 'signup' ? (
+            <AnnouncementBanner
+              title="Unlock Pending Credits"
+              theme="warning"
+              card_id="merchant_referral"
+            >
+              Accept your first payment of minimum ₹50 to unlock{' '}
+              {getFormattedAmountNew(this.props.referee.referral_amount, true)} transaction credits{' '}
+              <div class="big-circle-seprator" />
+              <a className="btn-link" onClick={() => this.props.showProductsModal()}>
+                Accept payments.
+              </a>{' '}
+            </AnnouncementBanner>
+          ) : null}
           {/* international onboarding banner */}
           {mode === 'live' &&
             user.instantActivation.isGraylistFlow &&
@@ -411,7 +433,6 @@ class AnalyticsDesktop extends Component {
                 />
               </AnnouncementBanner>
             )}
-
           {this.isCaptureSettingsDefault(items) && user.instantActivation.isWhitelistFlow === true && (
             <AnnouncementBanner
               title="Capture Settings"
@@ -555,6 +576,8 @@ class AnalyticsDesktop extends Component {
               </ErrorBoundary>
             </div>
           )}
+
+          {this.props.can_refer ? <M2MBanner /> : null}
 
           {user.canSwitchOnboardingCard ? (
             this.renderOnboardingAndRecommendationWidget()
@@ -836,6 +859,9 @@ const mapStateToProps = (state) => ({
   config: state.config,
   internationalProductsStatus: state.config.internationalProductsStatus,
   limitBreach: state.home.limitBreach,
+  can_refer: state.merchantReferral.data.can_refer,
+  referee: state.merchantReferral.data.referee,
+  transactionAmount: state.transactionAmount.amount,
   ticketsRaisedByAgents: state.config.ticketsRaisedByAgents.data[1],
 });
 
@@ -847,5 +873,6 @@ export default withRouter(
     fetchUser,
     showKYCStatusModal,
     fetchEscalations,
+    showProductsModal,
   })(AnalyticsDesktop),
 );

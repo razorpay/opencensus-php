@@ -8,21 +8,13 @@ exports[`Storyshots Onboarding/Home Default 1`] = `
         class="Viewweb__View-sc-1o0hmxm-0 eayzPs"
       >
         <div
-          class="Textweb__Text-sc-1qrdpx3-0 gWbxSD Spaceweb__Space-sc-1abqisc-0 ffxNUi"
-          color="shade.950"
-          data-testid="ds-text"
-        >
-          Welcome to your dashboard, 
-          !
-        </div>
-        <div
           class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 fsHGcL"
         />
         <div
           class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 fsHGcL"
         >
           <div
-            class="Viewweb__View-sc-1o0hmxm-0 Home__StatusUpdates-mcc624-0 lelEhH"
+            class="Viewweb__View-sc-1o0hmxm-0 Home__StatusUpdates-mcc624-0 btTCEi"
           />
         </div>
         <div

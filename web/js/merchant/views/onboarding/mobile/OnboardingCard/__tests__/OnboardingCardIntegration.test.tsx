@@ -18,7 +18,7 @@ const waitForOnboardingPageLoadingToFinish = () =>
 const App: React.FC = () => {
   const { status } = useActivation();
   if (status === 'loading') return <OnboardingCardShimmer />;
-  return <OnboardingCard />;
+  return <OnboardingCard referee={undefined} />;
 };
 test('should show paused message is case of block', async () => {
   ActivationDB.update({

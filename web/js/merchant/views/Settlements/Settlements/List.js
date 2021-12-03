@@ -73,8 +73,12 @@ class SettlementsListContainer extends ListContainer {
   get settleNowRestrictionMsg() {
     if (!this.settlementRestricted) return;
 
-    const { attempts_left, settlable_amount, max_amount_limit, settlements_count_limit } =
-      this.props.ondemand_restrictions.data;
+    const {
+      attempts_left,
+      settlable_amount,
+      max_amount_limit,
+      settlements_count_limit,
+    } = this.props.ondemand_restrictions.data;
     if (this.isOnDemandDisabled) {
       const restrictedItem = this.restrictedFeatures
         .filter((feat) => this.props.user.isFeatureEnabled(feat))

@@ -16,6 +16,7 @@ import OnboardingCardShimmer from './OnboardingCardShimmer';
 import { checkIfDedupe, isUnregisteredBusiness, setLocalStorage } from '../services/utils';
 import { ActivationModal, ModalTypeT } from '../ActivationModals';
 import { useApp } from 'common/context/App';
+import { IReferee } from '../Screens/Home';
 
 const Separator = styled(View)`
   height: 1px;
@@ -37,7 +38,10 @@ const AccountBlock = styled(View)`
   padding: 4px 8px;
 `;
 
-const OnboardingCard: React.FC = () => {
+interface IOnboardingCardProps {
+  referee: IReferee | undefined;
+}
+const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
   const { user, experiments } = useApp();
   const { status: activationQueryStatus, data: activationData } = useActivation();
   const { status: escalationsStatus, data: escalationsData } = useEscalation();
@@ -156,7 +160,11 @@ const OnboardingCard: React.FC = () => {
         </Flex>
 
         <Separator $onboardingMilestone={activationData.activation_form_milestone} />
-        <CurrentActivationProgress data={activationData} escalation={escalationsData} />
+        <CurrentActivationProgress
+          data={activationData}
+          escalation={escalationsData}
+          referee={referee}
+        />
         <ActivationModal
           isOpen={isModalOpen}
           modalType={modalType}

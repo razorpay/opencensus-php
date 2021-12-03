@@ -14,6 +14,6 @@ export default {
   },
 } as Meta;
 
-const Template: Story = (args) => <OnboardingCard {...args} />;
+const Template: Story = (args) => <OnboardingCard referee={undefined} {...args} />;
 
 export const Default = Template.bind({});

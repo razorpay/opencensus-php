@@ -9,24 +9,9 @@ import { ContentContainer } from '../commonStyles';
 import { AbsoluteView, RelativeView, Container } from './styles';
 import Header from './components/Header';
 import InfoContainer from './components/InfoContainer';
+import RefereeBanner from './components/RefereeBanner';
+import { getURLQueryParams } from '../utils';
 import { setCookie } from 'common/utils/cookies';
-
-export const getURLQueryParams = (url = document.location.hash) => {
-  const search = url.split('?')[1];
-  let params = {};
-
-  if (search) {
-    /* split using '&' as separator
-      and get the key value pairs for query params. */
-    params = search.split('&').reduce((prev, curr) => {
-      const [key, value] = curr.split('=');
-      prev[key] = value;
-      return prev;
-    }, {});
-  }
-
-  return params;
-};
 
 const SignUp = () => {
   const [oneTapInfo, setOneTapInfo] = useState({
@@ -105,16 +90,19 @@ const SignUp = () => {
                   handleOnClick={handleLoginClick}
                   isSignUpFromWebsite={isSignUpFromWebsite}
                 />
-                <RelativeView>
-                  <AbsoluteView>
-                    <Auth
-                      appName="dashboard"
-                      authClientId={window.OAUTH_CLIENT_ID}
-                      oneTapInfo={oneTapInfo}
-                    />
-                  </AbsoluteView>
-                  <InfoContainer handleContactUsClick={handleContactUsClick} />
-                </RelativeView>
+                <Flex flexDirection="column" justifyContent="space-around">
+                  <RelativeView>
+                    <RefereeBanner />
+                    <AbsoluteView>
+                      <Auth
+                        appName="dashboard"
+                        authClientId={window.OAUTH_CLIENT_ID}
+                        oneTapInfo={oneTapInfo}
+                      />
+                    </AbsoluteView>
+                    <InfoContainer handleContactUsClick={handleContactUsClick} />
+                  </RelativeView>
+                </Flex>
               </ContentContainer>
             </Flex>
           </Size>

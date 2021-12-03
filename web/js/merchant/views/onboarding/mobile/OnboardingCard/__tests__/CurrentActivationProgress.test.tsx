@@ -21,7 +21,13 @@ const App: React.FC = () => {
   const { status: escalationsStatus, data: escalationsData } = useEscalation();
   if (activationQueryStatus === 'loading' || escalationsStatus === 'loading')
     return <OnboardingCardShimmer />;
-  return <CurrentActivationProgress data={activationData} escalation={escalationsData} />;
+  return (
+    <CurrentActivationProgress
+      referee={undefined}
+      data={activationData}
+      escalation={escalationsData}
+    />
+  );
 };
 
 test('should render correct message for poi_verification_status = incorrect_details', async () => {

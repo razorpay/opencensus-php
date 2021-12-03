@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Step, StepTitle, StepContent, possibleStatuses } from './Step';
 import RTracking from 'react-tracking';
 import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
+import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import SettlementSchedule from 'merchant/views/Settlements/Settlements/components/SettlementSchedule';
 import { openModal } from 'merchant_common/reducers/modals';
 import * as EventsActions from 'merchant/reducers/trackEvents';
@@ -55,6 +56,7 @@ class ActivationCard extends Component {
 
     const activationState = getActivationState(user, user.isUnregisteredBusiness);
     const L2_dedupe_blocked = activationState === 'L2_dedupe_blocked';
+    const isReferredMerchant = this.props.referee?.status === 'signup';
 
     switch (activationState) {
       case 'L1_Start': {
@@ -62,18 +64,27 @@ class ActivationCard extends Component {
         status = possibleStatuses.active;
         content = (
           <>
-            <div>
-              Submit a few KYC details to start accepting payments and receive{' '}
-              <a
-                className="btn-link"
-                target="_blank"
-                rel="noopener noreferrer"
-                href="http://razorpay.com/settlement"
-              >
-                settlement
-              </a>{' '}
-              in your account
-            </div>
+            {isReferredMerchant ? (
+              <div>
+                Complete this step to start transacting and unlock{' '}
+                <strong>
+                  {getFormattedAmountNew(this.props.referee.referral_amount, true)} credits
+                </strong>
+              </div>
+            ) : (
+              <div>
+                Submit a few KYC details to start accepting payments and receive{' '}
+                <a
+                  className="btn-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href="http://razorpay.com/settlement"
+                >
+                  settlement
+                </a>{' '}
+                in your account
+              </div>
+            )}
             <div>
               <Link
                 to="/activation"
@@ -141,7 +152,15 @@ class ActivationCard extends Component {
             >
               settlement
             </a>{' '}
-            in your account
+            in your account{' '}
+            {isReferredMerchant ? (
+              <div>
+                and unlock{' '}
+                <strong>
+                  {getFormattedAmountNew(this.props.referee.referral_amount, true)} credits
+                </strong>
+              </div>
+            ) : null}
             <div>
               <Link
                 to="/activation"
@@ -808,6 +827,7 @@ class ActivationCard extends Component {
 const mapStateToProps = (state) => ({
   showProducts: state.home.instantActivations.showProductsModal,
   limitBreach: state.home.limitBreach,
+  referee: state.merchantReferral.data.referee,
 });
 
 export default compose(

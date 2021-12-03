@@ -53,6 +53,7 @@ import remindersReducer from 'merchant/reducers/reminders';
 import commissionInvoices from 'merchant/reducers/commissionInvoices/list';
 import commissionInvoice from 'merchant/reducers/commissionInvoices/details';
 import rewardsReducer from 'merchant/reducers/checkoutRewards';
+import merchantReferralReducer from 'merchant/reducers/merchantReferral';
 import storefrontReducer from 'merchant/reducers/storefront';
 
 import {
@@ -202,6 +203,7 @@ export default combineReducers({
   rewards: rewardsReducer,
   qr_codes: qrCodesReducer,
   migrations: MigrationReducer,
+  merchantReferral: merchantReferralReducer,
   superCheckout: superCheckoutReducer,
   trackEvents: trackEventsReducer,
 });

@@ -55,6 +55,8 @@ import { showOrHideHighlightMode, updateSession } from 'merchant/reducers/sessio
 import { merchantFetch } from 'merchant/utils/ajax';
 import User from 'merchant/models/User';
 import { analyticsTrack } from 'common/utils/analytics';
+import M2MSuccessModal from 'merchant/components/M2M/M2MSuccessModal';
+import { fetchModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
 
 const DATE_RANGE_PRESETS = [
   ['Past 7 Days', -7, 'days'],
@@ -101,6 +103,7 @@ const recentActivityTitle = 'Recent Activity';
       lateAuthConfig: state.config.lateAuthConfig,
       support_detail: state.supportdetails.merchantSupportDetail,
       showTnCModal: state.home.showTnCModal,
+      referee: state.merchantReferral.data.referee,
     };
   },
   {
@@ -226,6 +229,8 @@ export default class HomeContainer extends Component {
       dismissDiwaliPromotion: false,
       hideDiwaliPromotion: getItem('hide_diwali_promotional_banner') || false,
       hasMinTransactionSD: false,
+      referredMerchants: [],
+      referredMerchantsAmount: 0,
     };
 
     /*
@@ -690,8 +695,8 @@ export default class HomeContainer extends Component {
     this.props.fetchBalanceConfig();
     this.props.fetchLateAuthConfig();
     this.setScrollAmountToStickHeader();
-
     this.props.fetchSupportDetail();
+    this.fetchReferredMerchants();
 
     window.addEventListener('resize', this.onResize);
 
@@ -870,6 +875,17 @@ export default class HomeContainer extends Component {
     const prevDate = moment(prev, 'DD/MM/YYYY');
     if (currDate > prevDate) return true;
     else return false;
+  };
+
+  fetchReferredMerchants = async () => {
+    const res = await fetchModalConfigDetails('onboarding');
+
+    if (res?.data?.referral_success_popup_count != 0) {
+      this.setState({
+        referredMerchants: res.data.referee_name,
+        referredMerchantsAmount: res.data.referral_amount,
+      });
+    }
   };
 
   render() {
@@ -1098,6 +1114,7 @@ export default class HomeContainer extends Component {
                     isOrgAxis={user.isOrgAxis}
                     isProductRecommendationEnabled={user.isProductRecommendationEnabled}
                     hideCTAs={this.hideWelcomeModalCTAs}
+                    referee={this.props.referee}
                   />
                 </ModalContent>
               </Modal>
@@ -1228,6 +1245,12 @@ export default class HomeContainer extends Component {
           />
         )}
 
+        {this.state.referredMerchants?.length > 0 && (
+          <M2MSuccessModal
+            referredMerchants={this.state.referredMerchants}
+            referredMerchantsAmount={this.state.referredMerchantsAmount}
+          />
+        )}
         {isMobile ? <Mobile {...commonProps} /> : <Desktop {...commonProps} />}
 
         {showRBIChangesBanners && <CardPaymentsBlockedModal />}

@@ -35,6 +35,7 @@ function toggleDropdown() {
   (state) => ({
     activePageName: state.app.activePageName,
     user: state.session.user,
+    referee: state.merchantReferral.data.referee,
   }),
   { toggleMobileMenu },
 )
@@ -85,9 +86,11 @@ export default class HeaderNav extends Component {
       showMobileNav,
       analytics,
       activePageName,
+      referee,
     } = this.props;
     const fragmentSpecificProps = {
       mode,
+      referee,
     };
     const commonProps = {
       user,

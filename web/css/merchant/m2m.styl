@@ -1,0 +1,58 @@
+.refferal-banner
+  background-color: #FFFFFF
+  box-shadow: 0px 4px 10px rgba(11, 112, 231, 0.05)
+  border-radius: 2px
+  display flex
+  margin: 20px 20px 0px
+  .banner-info
+    width: 75%
+    padding: 16px 30px
+    display: flex
+    flex-direction: column
+    justify-content: center
+    .heading
+      font-size: 20px
+      line-height: 30px
+      color: rgba(22, 47, 86, 0.87)
+      font-weight: bold
+    .desc
+      font-size: 16px
+      line-height: 24px
+      color: rgba(22, 47, 86, 0.74)
+    .mobile-view
+      display: none
+  .action
+    margin auto
+    cursor: pointer
+  @media(max-device-width: 768px)
+    margin: 0
+    background: #FFFFFF
+    box-shadow: 0px 4px 10px rgba(11, 112, 231, 0.05)
+    border-radius: 2px
+    flex-direction row-reverse
+    .banner-illustration
+      transform: scaleX(-1)
+      position: relative
+      top: 16px
+    .banner-info
+      width: 100%
+      padding: 16px 0 16px 16px
+      .heading
+        font-weight: bold
+        font-size: 14px
+        line-height: 20px
+        color: rgba(22, 47, 86, 0.74)
+        margin-bottom: 8px
+      .desc
+        font-size: 12px
+        line-height: 18px
+        color: rgba(22, 47, 86, 0.54)
+        margin-bottom: 5px
+      .desktop-view
+        display: none
+      .mobile-view
+        display: block
+      .action-cta
+        font-size: 12px
+    .action
+      display: none

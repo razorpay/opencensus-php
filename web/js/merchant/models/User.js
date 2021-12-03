@@ -283,6 +283,13 @@ export default class User {
     return this.activation_status === 'activated_mcc_pending';
   }
 
+  get isPaymentsEnabled() {
+    return (
+      ['instantly_activated', 'activated_mcc_pending', 'activated'].indexOf(
+        this.activation_status,
+      ) > -1
+    );
+  }
   // KYC form submitted
   get isSubmitted() {
     return !!parseInt(this.submitted, 10);

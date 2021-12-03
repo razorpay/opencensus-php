@@ -1,7 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
 import { withRouter, RouteComponentProps, Link as Redirect } from 'react-router-dom';
-import { isUnregisteredBusiness, checkIfDedupe, isL1Submitted } from '../services/utils';
+import {
+  isUnregisteredBusiness,
+  checkIfDedupe,
+  isL1Submitted,
+  getFormatedCurrency,
+} from '../services/utils';
 import Link from '@razorpay/commander-shield/src/shared/Link';
 import { getMode, switchMode } from 'common/services/mode';
 import Info from './Info';
@@ -9,18 +14,18 @@ import Buttons from './Buttons';
 import * as Messages from './Constants';
 import { useApp } from 'common/context/App';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
+import { IReferee } from '../Screens/Home';
 
 const InlineText = styled.span`
   color: #162f5661;
 `;
 
-const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; escalation: any }> = ({
-  data,
-  escalation,
-  history,
-}) => {
+const CurrentActivationProgress: React.FC<
+  RouteComponentProps & { data: any; escalation: any; referee: IReferee | undefined }
+> = ({ data, escalation, history, referee }) => {
   const { user, experiments } = useApp();
   const trackEvents = useTrackEvents();
+  const isReferredMerchant = referee?.status === 'signup';
 
   const onCTAClick = () => {
     history.push('/onboarding/steps');
@@ -402,6 +407,12 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; esc
 
   if (data.activation_form_milestone === 'L1' && isInstantActivationEnabled) {
     const isLimitReached = escalation && escalation?.amount >= escalation?.limit?.payment;
+    let greListedDescription = Messages.GREYLIST_STEP.description;
+    if (isReferredMerchant) {
+      greListedDescription = `${greListedDescription} and unlock ${getFormatedCurrency(
+        referee?.referral_amount,
+      )} credits`;
+    }
     if (!!data.activated || isLimitReached) {
       return (
         <>
@@ -419,22 +430,21 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; esc
     }
     return (
       <>
-        <Info
-          title={Messages.GREYLIST_STEP.title}
-          description={Messages.GREYLIST_STEP.description}
-        />
+        <Info title={Messages.GREYLIST_STEP.title} description={greListedDescription} />
         <Buttons.Primary onClick={onCTAClick} title="Submit KYC" icon="arrowRight" />
       </>
     );
   }
-
   if (!isL1Submitted(data.activation_form_milestone) || !isInstantActivationEnabled) {
+    let description = Messages.ACTIVATION_PROGRESS.description;
+    if (isReferredMerchant) {
+      description = `Complete this step to start transcating and unlock ${getFormatedCurrency(
+        referee?.referral_amount,
+      )} credits`;
+    }
     return (
       <>
-        <Info
-          title={Messages.ACTIVATION_PROGRESS.title}
-          description={Messages.ACTIVATION_PROGRESS.description}
-        />
+        <Info title={Messages.ACTIVATION_PROGRESS.title} description={description} />
         <Buttons.Primary
           onClick={onCTAClick}
           title={isInstantActivationEnabled ? 'Submit KYC' : 'Fill Remaining Details'}
