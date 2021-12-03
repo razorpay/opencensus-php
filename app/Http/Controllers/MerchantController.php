@@ -3,7 +3,6 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Input;
-use Illuminate\Http\Request;
 
 use App\Api;
 use App\User;
@@ -11,8 +10,10 @@ use App\Generic;
 use App\Merchant;
 use App\Http\AppResponse;
 use App\Mailers\MiscMailer;
+use Illuminate\Http\Request;
 use App\Admin\ApiRequestAny;
 use App\Splitz\Service as SplitzService;
+use App\MerchantDetails\Service as DetailService;
 
 class MerchantController extends Controller
 {
@@ -304,5 +305,14 @@ class MerchantController extends Controller
         $data = (new SplitzService())->getSplitzVariantBulk($merchantId);
 
         return AppResponse::jsonResponse([], $data);
+    }
+
+    public function getMerchantDetails()
+    {
+        $response = [];
+
+        $response = (new DetailService)->updateMerchantDetails($response);
+
+        return AppResponse::jsonResponse([], $response);
     }
 }
