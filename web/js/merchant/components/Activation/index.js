@@ -238,6 +238,7 @@ export default class ActivationWizard extends React.Component {
         this.state.selected_aov = `${aovValue.min_aov}-${aovValue.max_aov}`;
       }
     }
+    this.mainTabs = mainFormTabs;
 
     if (this.isLinkedAccountForm) {
       // Activation form for linked account
@@ -257,7 +258,6 @@ export default class ActivationWizard extends React.Component {
       }
     } else {
       // Main Activation form for merchant
-      this.mainTabs = mainFormTabs;
       let mainTabsContent = mainFormTabsContent;
       let mainFieldNamesMeta = mainFormFieldNamesMeta;
       if (canEmailVerify) {
