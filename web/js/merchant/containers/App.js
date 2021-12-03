@@ -45,11 +45,13 @@ import { fetchActiveTickets,fetchTicketsRaisedByAgents } from 'merchant/reducers
 import { fetchTrustedBadgeStatus } from 'merchant/reducers/trustedBadge.js';
 import LogoutDialog from 'merchant/components/LogoutDialog';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { fetchInstantSettlements } from 'merchant/reducers/collection';
+import { fetchInstantSettlements, fetchPayments } from 'merchant/reducers/collection';
 import { bindActionCreators, compose } from 'redux';
 import { initChatbot } from '../chatbot-init';
 import PartnerActivationRequiredModal from 'merchant/views/PartnerDashboard/Activation/Components/ActivationRequiredModal';
 import _refiner from 'refiner-js';
+import { getCookie, setCookie } from 'common/utils/cookies';
+import RequestEmailModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail/RequestEmailModal';
 
 initSentry('Merchant');
 
@@ -340,10 +342,31 @@ class App extends Component {
       });
   }
 
+  openRequestEmailPopup() {
+    const user = window.rzp_user;
+    const { fetchPayments, openModal } = this.props;
+    const EMAIL_REQUESTED = `email_requested_${user.user?.id}`;
+    if(user.user && user.role == rolesList.OWNER && !user.user?.signup_via_email && !user.user?.email && !getCookie(EMAIL_REQUESTED)) {
+      fetchPayments({ count: 1, mode: 'live' }).then((res) => {
+        if (res && res.success && res.data?.count > 0) {
+          setCookie(EMAIL_REQUESTED, true, Infinity);
+          openModal({
+            size: 'medium',
+            component: (
+              <RequestEmailModal />
+            ),
+          });
+        }
+      });
+    }
+  }
+
   componentDidMount() {
     window.addEventListener('resize', this.handleResize);
     const user = window.rzp_user;
     if (user) {
+
+      this.openRequestEmailPopup();
       const hidden = {
         mid: `${user.id}`,
         source: 'dashboard',
@@ -413,6 +436,8 @@ class App extends Component {
           );
         }
       }
+      
+      
     }
   }
 
@@ -989,6 +1014,7 @@ const mapDispatchToProps = (dispatch) =>
       closeModal,
       fetchInstantSettlements,
       fetchTrustedBadgeStatus,
+      fetchPayments,
     },
     dispatch,
   );
