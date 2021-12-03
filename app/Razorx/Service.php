@@ -216,6 +216,7 @@ class Service extends Base\Service
             'show_multiple_vas_on_x',
             'rx_undo_payout_feature',
             'rx_tally_accrual',
+            'rx_cohesive_pl_flows',
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
