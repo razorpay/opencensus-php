@@ -60,6 +60,8 @@ class Validator extends Base\Validator
     // The max payout amount allowed for merchant payouts on demand is 2 Cr
     const MAX_LIMIT_MERCHANT_ON_DEMAND_PAYOUT_AMOUNT = 2000000000;
 
+    const MIN_TRANSACTION_AMOUNT_ALLOWED_IN_PAISE = 100;
+
     const APPROVE_PAYOUT_RULES = 'approve_payout';
 
     const CANCEL_PAYOUT = 'cancel_payout';
@@ -117,7 +119,7 @@ class Validator extends Base\Validator
      */
     protected static $fundAccountPayoutCompositeRules = [
         Entity::PURPOSE                              => 'required|filled|string|max:30|alpha_dash_space',
-        Entity::AMOUNT                               => 'required|integer|min:100',
+        Entity::AMOUNT                               => 'required|integer|min:100|custom',
         Entity::CURRENCY                             => 'required|size:3|in:INR',
         Entity::NOTES                                => 'sometimes|notes',
         Entity::BALANCE_ID                           => 'sometimes|filled|size:14',
@@ -145,7 +147,7 @@ class Validator extends Base\Validator
      */
     protected static $fundAccountPayoutRules = [
         Entity::PURPOSE              => 'required|filled|string|max:30|alpha_dash_space',
-        Entity::AMOUNT               => 'required|integer|min:100',
+        Entity::AMOUNT               => 'required|integer|custom',
         Entity::CURRENCY             => 'required|size:3|in:INR',
         Entity::NOTES                => 'sometimes|notes',
         Entity::BALANCE_ID           => 'sometimes|filled|size:14',
@@ -1120,6 +1122,17 @@ class Validator extends Base\Validator
             {
                 throw new Exception\BadRequestValidationFailureException(
                     "The amount may not be greater than " . $maxPayoutAmountLimit . ".",
+                    Entity::AMOUNT,
+                    [
+                        Entity::AMOUNT => $input[Entity::AMOUNT],
+                    ]
+                );
+            }
+
+            if ($input[Entity::AMOUNT] < self::MIN_TRANSACTION_AMOUNT_ALLOWED_IN_PAISE)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Minimum transaction amount should be 100 paise",
                     Entity::AMOUNT,
                     [
                         Entity::AMOUNT => $input[Entity::AMOUNT],

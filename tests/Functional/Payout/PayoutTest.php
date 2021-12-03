@@ -202,6 +202,15 @@ class PayoutTest extends OAuthTestCase
         return $payout;
     }
 
+    public function testErrorDescriptionForMinimumTransactionAmount()
+    {
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+    }
+
     public function testCreatePayoutWithNarrationNull()
     {
         $this->ba->privateAuth();
