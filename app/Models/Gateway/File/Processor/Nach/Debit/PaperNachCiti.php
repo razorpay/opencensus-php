@@ -638,7 +638,7 @@ class PaperNachCiti extends Debit\Base
 
     protected function increaseAllowedSystemLimits()
     {
-        RuntimeManager::setMemoryLimit('8192');
+        RuntimeManager::setMemoryLimit('11264');
 
         RuntimeManager::setTimeLimit(7200);
 
