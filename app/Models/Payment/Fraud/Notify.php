@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Shield;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\Merchant\RiskMobileSignupHelper;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Payment\Fraud\Notifications\Config;
 use RZP\Models\Payment\Fraud\Constants\Notification as Constants;
@@ -54,6 +55,11 @@ class Notify
             if (is_null($fraudType) === true)
             {
                 return;
+            }
+
+            if (RiskMobileSignupHelper::isEligibleForMobileSignUp($merchant) === true)
+            {
+                $fraudType = sprintf('%s_mobile_signup', $fraudType);
             }
 
             $settings = Constants::getSettingsForFraudType($fraudType);

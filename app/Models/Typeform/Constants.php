@@ -54,14 +54,53 @@ class Constants
 
     const MERCHANT_KEY = 'merchant';
 
-    const SMS_INTERNATIONAL_ENABLEMENT_APPROVED_TPL = 'sms.internation_enablement.approved';
-    const SMS_INTERNATIONAL_ENABLEMENT_REJECTED_TPL = 'sms.internation_enablement.rejected';
+    const EMAIL_SIGNUP  = 'EMAIL_SIGNUP';
+    const MOBILE_SIGNUP = 'MOBILE_SIGNUP';
 
-    const WHATSAPP_INTERNATIONAL_ENABLEMENT_APPROVED_TPL = "Request to enable 'International Payments' for MID - {merchant_id} in the name of M/s. {business_name} held with Razorpay has been evaluated and approved. Please check your registered email for more details";
-    const WHATSAPP_INTERNATIONAL_ENABLEMENT_REJECTED_TPL = "We regret to inform you that the request to enable 'International Payments' for MID - {merchant_id} in the name of M/s. {business_name} held with Razorpay has not been approved by our banking partners. Please check your registered email for more details";
+    const SMS_INTERNATIONAL_ENABLEMENT_APPROVED_TPL = [
+        self::MOBILE_SIGNUP => self::SMS_INTL_ENABLEMENT_APPROVED_MOBILE_SIGNUP,
+        self::EMAIL_SIGNUP  => self::SMS_INTL_ENABLEMENT_APPROVED_EMAIL_SIGNUP,
+    ];
 
-    const WHATSAPP_INTERNATIONAL_ENABLEMENT_APPROVED_TPL_NAME = 'International_payments.approved';
-    const WHATSAPP_INTERNATIONAL_ENABLEMENT_REJECTED_TPL_NAME = 'International_payments.rejected';
+    const SMS_INTERNATIONAL_ENABLEMENT_REJECTED_TPL = [
+        self::MOBILE_SIGNUP => self::SMS_INTL_ENABLEMENT_REJECT_MOBILE_SIGNUP,
+        self::EMAIL_SIGNUP  => self::SMS_INTL_ENABLEMENT_REJECT_EMAIL_SIGNUP,
+    ];
+
+    const SMS_INTL_ENABLEMENT_APPROVED_EMAIL_SIGNUP = 'sms.internation_enablement.approved';
+    const SMS_INTL_ENABLEMENT_REJECT_EMAIL_SIGNUP   = 'sms.internation_enablement.rejected';
+
+    const SMS_INTL_ENABLEMENT_APPROVED_MOBILE_SIGNUP = 'sms.risk.international_acceptance_mobile_signup';
+    const SMS_INTL_ENABLEMENT_REJECT_MOBILE_SIGNUP   = 'sms.risk.international_rejection_mobile_signup';
+
+    const WHATSAPP_INTL_ENABLEMENT_APPROVED_EMAIL_SIGNUP_TPL         = "Request to enable 'International Payments' for MID - {merchant_id} in the name of M/s. {business_name} held with Razorpay has been evaluated and approved. Please check your registered email for more details";
+    const WHATSAPP_INTL_ENABLEMENT_REJECT_EMAIL_SIGNUP_TPL           = "We regret to inform you that the request to enable 'International Payments' for MID - {merchant_id} in the name of M/s. {business_name} held with Razorpay has not been approved by our banking partners. Please check your registered email for more details";
+    const WHATSAPP_INTL_ENABLEMENT_APPROVED_EMAIL_SIGNUP_TPL_NAME    = 'International_payments.approved';
+    const WHATSAPP_INTL_ENABLEMENT_REJECT_EMAIL_SIGNUP_TPL_NAME      = 'International_payments.rejected';
+
+    const WHATSAPP_INTL_ENABLEMENT_APPROVED_MOBILE_SIGNUP_TPL         = "Hi {merchantName}, your request to enable international payments for your Razorpay account for MID - {merchant_id} in the name of M/s. {business_name} has been evaluated and approved. Please check link {supportTicketLink} for more details";
+    const WHATSAPP_INTL_ENABLEMENT_REJECT_MOBILE_SIGNUP_TPL           = "Hi {merchantName}, we regret to inform you that your request to enable international payments for {merchant_id} in the name of M/s. {business_name} held with Razorpay has not been approved by our banking partners. Please check link {supportTicketLink} for more details";
+    const WHATSAPP_INTL_ENABLEMENT_APPROVED_MOBILE_SIGNUP_TPL_NAME    = 'whatsapp_risk_international_acceptance_mobile_signup';
+    const WHATSAPP_INTL_ENABLEMENT_REJECT_MOBILE_SIGNUP_TPL_NAME      = 'whatsapp_risk_international_rejection_mobile_signup';
+
+    const WHATSAPP_INTERNATIONAL_ENABLEMENT_APPROVED_TPL = [
+      self::EMAIL_SIGNUP        => self::WHATSAPP_INTL_ENABLEMENT_APPROVED_EMAIL_SIGNUP_TPL,
+      self::MOBILE_SIGNUP       => self::WHATSAPP_INTL_ENABLEMENT_APPROVED_MOBILE_SIGNUP_TPL,
+    ];
+
+    const WHATSAPP_INTERNATIONAL_ENABLEMENT_REJECTED_TPL = [
+        self::EMAIL_SIGNUP        => self::WHATSAPP_INTL_ENABLEMENT_REJECT_EMAIL_SIGNUP_TPL,
+        self::MOBILE_SIGNUP       => self::WHATSAPP_INTL_ENABLEMENT_REJECT_MOBILE_SIGNUP_TPL,
+    ];
+
+    const WHATSAPP_INTERNATIONAL_ENABLEMENT_APPROVED_TPL_NAME = [
+        self::EMAIL_SIGNUP        => self::WHATSAPP_INTL_ENABLEMENT_APPROVED_EMAIL_SIGNUP_TPL_NAME,
+        self::MOBILE_SIGNUP       => self::WHATSAPP_INTL_ENABLEMENT_APPROVED_MOBILE_SIGNUP_TPL_NAME,
+    ];
+    const WHATSAPP_INTERNATIONAL_ENABLEMENT_REJECTED_TPL_NAME = [
+        self::EMAIL_SIGNUP        => self::WHATSAPP_INTL_ENABLEMENT_REJECT_EMAIL_SIGNUP_TPL_NAME,
+        self::MOBILE_SIGNUP       => self::WHATSAPP_INTL_ENABLEMENT_REJECT_MOBILE_SIGNUP_TPL_NAME,
+    ];
 
     const REJECTION_REASON_PRIORITY = [
         self::REJECT_REASON_MERCHANT_LOOKS_SAFE     => 3,

@@ -124,6 +124,22 @@ class Constants
         self::RAS_TRIGGER_REASON_WEBSITE_CHECKER,
     ];
 
+    // Mobile signup templates
+    // Generic
+    const FOH_GENERIC_CONFIRMATION_WHATSAPP_TEMPLATE_MOBILE_SIGNUP          = 'Hi {merchantName}, we regret to inform you that payment settlements to your Razorpay account are under review due to a risk alert raised by our banking partners. Please check link {supportTicketLink} and help us with the required clarification to re-enable settlements.';
+    const FOH_GENERIC_CONFIRMATION_WHATSAPP_TEMPLATE_NAME_MOBILE_SIGNUP     = 'whatsapp_risk_foh_confirmation_mobile_signup';
+    const FOH_GENERIC_CONFIRMATION_SMS_TEMPLATE_MOBILE_SIGNUP               = 'sms.risk.foh_confirmation_mobile_signup';
+    const RAS_NC_WHATSAPP_TEMPLATE                                          = 'Hi {merchant name}, we have received a risk alert against your Razorpay account from our banking partners. To resolve this issue on priority, please check link {supportTicketLink} for more details and help us with the required clarifications.';
+    const RAS_NC_WHATSAPP_TEMPLATE_NAME                                     = 'whatsapp_risk_RAS_NC_mobile_signup';
+    const RAS_NC_SMS_TEMPLATE                                               = 'sms.risk.RAS_NC_mobile_signup';
+    // Website Checker
+    const FOH_SMS_WEBSITE_CHECKER_CONFIRMATION_TEMPLATE_MOBILE_SIGNUP                   = 'sms.merchant_risk.website_checker.funds_on_hold.confirmation';
+    const FOH_SMS_WEBSITE_CHECKER_NEEDS_CLARIFICATION_TEMPLATE_MOBILE_SIGNUP            = 'sms.merchant_risk.website_checker.funds_on_hold.needs_clarification';
+    const FOH_WEBSITE_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE_NAME_MOBILE_SIGNUP  = 'merchant_risk.website_checker.funds_on_hold.needs_clarification';
+    const FOH_WEBSITE_CHECKER_CONFIRMATION_WHATSAPP_TEMPLATE_NAME_MOBILE_SIGNUP         = 'merchant_risk.website_checker.funds_on_hold.confirmation';
+    const FOH_WEBSITE_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE_MOBILE_SIGNUP       = 'We have observed that your registered website(s) is(are) no longer operating at the moment. Please check your registered email ID with subject: Razorpay Account Website Clarification: {merchantName} | {merchantId} for more details.';
+    const FOH_WEBSITE_CHECKER_CONFIRMATION_WHATSAPP_TEMPLATE_MOBILE_SIGNUP              = 'We have put your settlement under review as we observed your registered website(s) is(are) no longer live. Please check your registered email ID for an email with subject: Razorpay Account Review: {merchantName} | {merchantId} and help us with clarification to re-enable settlements.';
+
     // Fd Sub Category
     const FD_SUB_CATEGORY_NEED_CLARIFICATION = 'Need Clarification';
     const FD_SUB_CATEGORY_FUNDS_ON_HOLD      = 'Funds on hold';

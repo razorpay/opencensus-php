@@ -19,6 +19,7 @@ use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Payment\Method as PaymentMethod;
+use RZP\Models\Merchant\RiskMobileSignupHelper;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
@@ -501,16 +502,55 @@ class Core extends Base\Core
 
     private function sendEnablementRequestClosureNotifications(Merchant $merchant, array $data)
     {
-        $this->sendEnablementClosureSms($merchant, $data);
+        if (RiskMobileSignupHelper::isEligibleForMobileSignUp($merchant) === true)
+        {
+            try
+            {
+                list($mailViewTpl, $mailData, $tags) = $this->getEnablementMailTemplateAndData($merchant, $data);
 
-        $this->sendEnablementClosureWhatsappMessage($merchant, $data);
+                $mailData['merchant_email'] = 'test@razorpay.com';
 
-        $this->sendEnablementClosureEmail($merchant, $data);
+                $requestParams = [
+                    'type'          =>  'Question',
+                    'tags'          =>  $tags,
+                    'status'        =>  5,
+                    'subCategory'   =>  'International Enablement',
+                ];
+
+                $fdTicket = (new RiskMobileSignupHelper())->createFdTicket($merchant, $mailViewTpl, Constants::IE_MAIL_SUBJECT, $mailData, $requestParams);
+
+                $supportTicketLink = (new RiskMobileSignupHelper())->getSupportTicketLink($fdTicket, $merchant);
+
+                $this->sendEnablementClosureSms($merchant, $data, $supportTicketLink);
+
+                $this->sendEnablementClosureWhatsappMessage($merchant, $data, $supportTicketLink);
+            }
+            catch (\Throwable $e)
+            {
+                $this->app['trace']->traceException($e,
+                                                    Trace::CRITICAL,
+                                                    TraceCode::INTERNATIONAL_ENABLEMENT_MOBILE_SIGNUP_NOTIF_FAILED,
+                                                    [
+                                                        'merchant_id' => $merchant->getId(),
+                                                    ]
+                );
+            }
+        }
+        else
+        {
+            $this->sendEnablementClosureSms($merchant, $data);
+
+            $this->sendEnablementClosureWhatsappMessage($merchant, $data);
+
+            $this->sendEnablementClosureEmail($merchant, $data);
+        }
     }
 
-    private function sendEnablementClosureSms(Merchant $merchant, array $permissionsData)
+    private function sendEnablementClosureSms(Merchant $merchant, array $permissionsData, $supportTicketLink = null)
     {
         $mode = $this->app['rzp.mode'];
+
+        $signUpMethod = (isset($supportTicketLink) === true) ? Constants::MOBILE_SIGNUP : Constants::EMAIL_SIGNUP;
 
         $receiver = $merchant->merchantDetail->getContactMobile();
 
@@ -519,13 +559,13 @@ class Core extends Base\Core
             return;
         }
 
-        $template = Constants::SMS_INTERNATIONAL_ENABLEMENT_REJECTED_TPL;
+        $template = Constants::SMS_INTERNATIONAL_ENABLEMENT_REJECTED_TPL[$signUpMethod];
 
         foreach ($permissionsData as $permissionData)
         {
             if ($permissionData['approved'] === true)
             {
-                $template = Constants::SMS_INTERNATIONAL_ENABLEMENT_APPROVED_TPL;
+                $template = Constants::SMS_INTERNATIONAL_ENABLEMENT_APPROVED_TPL[$signUpMethod];
             }
         }
 
@@ -535,9 +575,16 @@ class Core extends Base\Core
             'source'   => 'api.' . $mode .'.international_enablement',
             'params'   => [
                 'merchant_id'   => $merchant->getId(),
-                'business_name' => $merchant->getName(),
+                'merchantId'    => $merchant->getId(),
+                'merchantName'  => $merchant->getName(),
+                'business_name' => $merchant->merchantDetail->getBusinessName(),
             ]
         ];
+
+        if (isset($supportTicketLink) === true)
+        {
+            $payload['params']['supportTicketLink'] = $supportTicketLink;
+        }
 
         try
         {
@@ -561,8 +608,10 @@ class Core extends Base\Core
         }
     }
 
-    private function sendEnablementClosureWhatsappMessage(Merchant $merchant, array $permissionsData)
+    private function sendEnablementClosureWhatsappMessage(Merchant $merchant, array $permissionsData, $supportTicketLink = null)
     {
+        $signUpMethod = (isset($supportTicketLink) === true) ? Constants::MOBILE_SIGNUP : Constants::EMAIL_SIGNUP;
+
         $mode = $this->app['rzp.mode'];
 
         $receiver = $merchant->merchantDetail->getContactMobile();
@@ -572,19 +621,26 @@ class Core extends Base\Core
             'ownerType' => 'merchant',
             'params'    => [
                 'merchant_id'   => $merchant->getId(),
-                'business_name' => $merchant->getName(),
+                'merchantId'    => $merchant->getId(),
+                'merchantName'  => $merchant->getName(),
+                'business_name' => $merchant->merchantDetail->getBusinessName(),
             ]
         ];
 
-        $template = Constants::WHATSAPP_INTERNATIONAL_ENABLEMENT_REJECTED_TPL;
-        $templateName = Constants::WHATSAPP_INTERNATIONAL_ENABLEMENT_REJECTED_TPL_NAME;
+        if (isset($supportTicketLink) === true)
+        {
+            $whatsAppPayload['params']['supportTicketLink'] = $supportTicketLink;
+        }
+
+        $template = Constants::WHATSAPP_INTERNATIONAL_ENABLEMENT_REJECTED_TPL[$signUpMethod];
+        $templateName = Constants::WHATSAPP_INTERNATIONAL_ENABLEMENT_REJECTED_TPL_NAME[$signUpMethod];
 
         foreach ($permissionsData as $permissionData)
         {
             if ($permissionData['approved'] === true)
             {
-                $template = Constants::WHATSAPP_INTERNATIONAL_ENABLEMENT_APPROVED_TPL;
-                $templateName = Constants::WHATSAPP_INTERNATIONAL_ENABLEMENT_APPROVED_TPL_NAME;
+                $template = Constants::WHATSAPP_INTERNATIONAL_ENABLEMENT_APPROVED_TPL[$signUpMethod];
+                $templateName = Constants::WHATSAPP_INTERNATIONAL_ENABLEMENT_APPROVED_TPL_NAME[$signUpMethod];
             }
         }
 
@@ -606,7 +662,7 @@ class Core extends Base\Core
 
         list($mailViewTpl, $mailData, $tags) = $this->getEnablementMailTemplateAndData($merchant, $permissionsData);
 
-        $mailData['merchant_email'] = $merchantEmail;
+        $mailData['merchant_email'] = $merchant->merchantDetail->getContactMobile();;
 
         $mailBody = View::make($mailViewTpl, $mailData)->render();
 
@@ -660,7 +716,7 @@ class Core extends Base\Core
     {
         $data = [
             'merchant_id'   => $merchant->getId(),
-            'business_name' => $merchant->getName(),
+            'business_name' => $merchant->merchantDetail->getBusinessName(),
         ];
 
         $approvedPermList = [];

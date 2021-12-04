@@ -34,11 +34,6 @@ class MerchantRiskAlertsServiceTest extends TestCase
             'contact_email' => 'merchant.email@gmail.com',
         ]);
 
-        $this->fixtures->create('merchant_email', [
-            'type'  => 'chargeback',
-            'email' => 'chargeback.poc1@gmail.com,chargeback.poc2@gmail.com',
-        ]);
-
         $this->setUpFreshdeskClientMock();
 
         $this->setUpSalesforceMock();
@@ -52,6 +47,11 @@ class MerchantRiskAlertsServiceTest extends TestCase
     {
 
         $this->fixtures->merchant->addFeatures('apps_exempt_risk_check');
+
+        $this->fixtures->create('merchant_email', [
+            'type'  => 'chargeback',
+            'email' => 'chargeback.poc1@gmail.com,chargeback.poc2@gmail.com',
+        ]);
 
         $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
             [
@@ -76,6 +76,11 @@ class MerchantRiskAlertsServiceTest extends TestCase
 
         $this->fixtures->merchant->addFeatures('apps_exempt_risk_check');
 
+        $this->fixtures->create('merchant_email', [
+            'type'  => 'chargeback',
+            'email' => 'chargeback.poc1@gmail.com,chargeback.poc2@gmail.com',
+        ]);
+
         $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
                                                     [
                                                         'subject'   => 'Razorpay Account Review: test merchant | 10000000000000 | Funds under Review',
@@ -92,6 +97,52 @@ class MerchantRiskAlertsServiceTest extends TestCase
         $response = $this->performWorkflowAction($workflowActionId, true);
 
         $this->assertContains('ras-managed-merchant', $response['tagged']);
+    }
+
+    public function testExecuteFoHWorkflowNotifyMobileSignup()
+    {
+        $this->fixtures->merchant->addFeatures('apps_exempt_risk_check');
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'signup_via_email' => 0,
+        ]);
+
+        $this->fixtures->edit('merchant_detail', '10000000000000', [
+            'contact_mobile' => '9991119991',
+        ]);
+
+        $this->fixtures->create('merchant_email', [
+            'type'  => 'chargeback',
+            'email' => null,
+        ]);
+
+        $expectedContent = [
+            'group_id'        => 82000655429,
+            'tags'            => ['RAS_FOH', 'RAS_CUSTOMER_FLAG_FOH'],
+            'type'            => 'Question',
+            'priority'        => 1,
+            'phone'           => '9991119991',
+            'custom_fields'   => [
+                'cf_ticket_queue'           => 'Merchant',
+                'cf_category'               => 'Risk Report_Merchant',
+                'cf_subcategory'            => 'Funds on hold',
+                'cf_product'                => 'Payment Gateway',
+                'cf_created_by'             => 'agent',
+                'cf_merchant_id_dashboard'  => 'merchant_dashboard_10000000000000',
+                'cf_merchant_id'            => '10000000000000',
+            ],
+            'subject'         => 'Razorpay Account Review: test merchant | 10000000000000 | Funds under Review',
+        ];
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets', 'post',
+                                                    $expectedContent,
+                                                    [
+                                                        'id' => '1234',
+                                                    ]);
+
+        $workflowActionId = $this->createMerchantRiskAlertsFoHWorkflow();
+
+        $this->performWorkflowAction($workflowActionId, true);
     }
 
     protected function createMerchantRiskAlertsFoHWorkflow()
@@ -136,6 +187,11 @@ class MerchantRiskAlertsServiceTest extends TestCase
     //No chargeback and No Salesforce
     public function testTriggerExplicitNCEmailForFoHWorkflow()
     {
+        $this->fixtures->create('merchant_email', [
+            'type'  => 'chargeback',
+            'email' => 'chargeback.poc1@gmail.com,chargeback.poc2@gmail.com',
+        ]);
+
         $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
             [
                 'status'          => 6, // 6->wating on customer,
@@ -172,8 +228,54 @@ class MerchantRiskAlertsServiceTest extends TestCase
 
     }
 
+    public function testTriggerExplicitNCMobileSignupFoHWorkflow()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'signup_via_email' => 0,
+        ]);
+
+        $this->fixtures->edit('merchant_detail', '10000000000000', [
+            'contact_mobile' => '9991119991',
+        ]);
+
+        $this->fixtures->create('merchant_email', [
+            'type'  => 'chargeback',
+            'email' => null,
+        ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets', 'post',
+                                                    [
+                                                        'group_id'        => 82000147768,
+                                                        'tags'            => ['RAS_FOH', 'RAS_NC_FLOW_FOH'],
+                                                        'priority'        => 1,
+                                                        'phone'           => '9991119991',
+                                                        'custom_fields'   => [
+                                                            'cf_ticket_queue'           => 'Merchant',
+                                                            'cf_category'               => 'Risk Report_Merchant',
+                                                            'cf_subcategory'            => 'Fraud alerts',
+                                                            'cf_product'                => 'Payment Gateway',
+                                                            'cf_created_by'             => 'agent',
+                                                            'cf_merchant_id_dashboard'  => 'merchant_dashboard_10000000000000',
+                                                            'cf_merchant_id'            => '10000000000000',
+                                                        ],
+                                                        'subject'         => 'Razorpay Account Review: test merchant | 10000000000000 | Risk Clarification',
+                                                    ],
+                                                    [
+                                                        'id' => '1234',
+                                                    ]);
+
+        $workflowActionId = $this->createMerchantRiskAlertsFoHWorkflow();
+
+         $this->triggerNeedsClarificationRequestFromAdmin($workflowActionId);
+    }
+
     public function testTriggerExplicitNCEmailForFoHWorkflowSecondAttemptShouldFail()
     {
+        $this->fixtures->create('merchant_email', [
+            'type'  => 'chargeback',
+            'email' => 'chargeback.poc1@gmail.com,chargeback.poc2@gmail.com',
+        ]);
+
         $workflowActionId = $this->createMerchantRiskAlertsFoHWorkflow();
 
         $this->triggerNeedsClarificationRequestFromAdmin($workflowActionId);

@@ -586,6 +586,22 @@ final class Constants
     const DISABLE_LIVE_WHATSAPP_TEMPLATE      = 'We have disabled your account as we observed suspicious account activity on your account - {merchant_id} in the name of M/s. {business_name} held with Razorpay.  Please check your registered email for an email with subject Razorpay Account disabled: {merchant_name} | {merchant_id} for more details';
     const DISABLE_LIVE_DASHBOARD_TEMPLATE_TAG = 'mra_disabled';
 
+    // Mobile signup templates
+    //FOH Notification templates
+    const FOH_SMS_TEMPLATE_MOBILE_SIGNUP           = 'sms.risk.foh_confirmation_mobile_signup';
+    const FOH_WHATSAPP_TEMPLATE_NAME_MOBILE_SIGNUP = 'whatsapp_risk_foh_confirmation_mobile_signup';
+    const FOH_WHATSAPP_TEMPLATE_MOBILE_SIGNUP      = 'Hi {merchantName}, we regret to inform you that payment settlements to your Razorpay account are under review due to a risk alert raised by our banking partners. Please check link {supportTicketLink} and help us with the required clarification to re-enable settlements.';
+
+    //Suspend Notification templates
+    const SUSPEND_ACCOUNT_SMS_TEMPLATE_MOBILE_SIGNUP           = 'sms.risk.suspend_DL_mobile_signup';
+    const SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE_NAME_MOBILE_SIGNUP = 'whatsapp_risk_suspend_DL_mobile_signup';
+    const SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE_MOBILE_SIGNUP      = 'Hi {merchantName}, we had to suspend your Razorpay account as we observed some suspicious activity on it - {merchant_id} in the name of M/s. {business_name}. Please check link {supportTicketLink} for more details';
+
+    //Disable Live Notification templates
+    const DISABLE_LIVE_SMS_TEMPLATE_MOBILE_SIGNUP           = 'sms.risk.suspend_DL_mobile_signup';
+    const DISABLE_LIVE_WHATSAPP_TEMPLATE_NAME_MOBILE_SIGNUP = 'whatsapp_risk_suspend_DL_mobile_signup';
+    const DISABLE_LIVE_WHATSAPP_TEMPLATE_MOBILE_SIGNUP      = 'Hi {merchantName}, we had to suspend your Razorpay account as we observed some suspicious activity on it - {merchant_id} in the name of M/s. {business_name}. Please check link {supportTicketLink} for more details';
+
     //Disable International (temporary) Notification templates
     const DISABLE_INTERNATIONAL_TEMPORARY_SMS_TEMPLATE           = 'sms.risk.international_disablement_email_signup';
     const DISABLE_INTERNATIONAL_TEMPORARY_EMAIL_TEMPLATE         = 'emails.merchant.risk.generic.disable_international_temporary.confirmation';
@@ -616,6 +632,32 @@ final class Constants
     const MERCHANT_RISK_ACTION_DASHBOARD_TAG = [
         Action::RELEASE_FUNDS => self::FOH_DASHBOARD_TEMPLATE_TAG,
         Action::LIVE_ENABLE   => self::DISABLE_LIVE_DASHBOARD_TEMPLATE_TAG,
+    ];
+
+    const MERCHANT_RISK_ACTIONS_MOBILE_SIGNUP_TEMPLATE_MAP = [
+        Action::SUSPEND => [
+            self::SMS_TEMPLATE              => self::SUSPEND_ACCOUNT_SMS_TEMPLATE_MOBILE_SIGNUP,
+            self::WHATSAPP_TEMPLATE_NAME    => self::SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE_NAME_MOBILE_SIGNUP,
+            self::WHATSAPP_TEMPLATE         => self::SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE_MOBILE_SIGNUP,
+            self::EMAIL_TEMPLATE            => self::DISABLE_LIVE_EMAIL_TEMPLATE,
+            self::EMAIL_SUBJECT             => self::DISABLE_LIVE_EMAIL_SUBJECT,
+        ],
+
+        Action::HOLD_FUNDS => [
+            self::SMS_TEMPLATE               => self::FOH_SMS_TEMPLATE_MOBILE_SIGNUP,
+            self::WHATSAPP_TEMPLATE_NAME     => self::FOH_WHATSAPP_TEMPLATE_NAME_MOBILE_SIGNUP,
+            self::WHATSAPP_TEMPLATE          => self::FOH_WHATSAPP_TEMPLATE_MOBILE_SIGNUP,
+            self::EMAIL_TEMPLATE             => self::FOH_EMAIL_TEMPLATE,
+            self::EMAIL_SUBJECT              => self::FOH_EMAIL_SUBJECT,
+        ],
+
+        Action::LIVE_DISABLE => [
+            self::SMS_TEMPLATE               => self::DISABLE_LIVE_SMS_TEMPLATE_MOBILE_SIGNUP,
+            self::WHATSAPP_TEMPLATE_NAME     => self::DISABLE_LIVE_WHATSAPP_TEMPLATE_NAME_MOBILE_SIGNUP,
+            self::WHATSAPP_TEMPLATE          => self::DISABLE_LIVE_WHATSAPP_TEMPLATE_MOBILE_SIGNUP,
+            self::EMAIL_TEMPLATE             => self::DISABLE_LIVE_EMAIL_TEMPLATE,
+            self::EMAIL_SUBJECT              => self::DISABLE_LIVE_EMAIL_SUBJECT,
+        ],
     ];
 
     const MERCHANT_RISK_ACTIONS_TEMPLATE_MAP = [

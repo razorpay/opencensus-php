@@ -4,6 +4,7 @@ namespace RZP\Models\Dispute;
 
 use DB;
 use Mail;
+use View;
 use Carbon\Carbon;
 
 use RZP\Exception;
@@ -11,6 +12,7 @@ use RZP\Jobs\NotifyRas;
 use RZP\Models\Feature;
 use RZP\Services\Mutex;
 use RZP\Diag\EventCode;
+use RZP\Services\Stork;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Dispute\Constants as DisputeConstants;
@@ -83,11 +85,15 @@ class Core extends Base\Core
      */
     protected $mutex;
 
+    protected $freshdeskConfig;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->freshdeskConfig = $this->app['config']->get('applications.freshdesk');
     }
 
     /**
@@ -788,15 +794,25 @@ class Core extends Base\Core
 
                 try
                 {
-                    Mail::queue(new DisputeMailer\BulkCreation($bulkMailData));
+                    $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-                    $this->trace->info(
-                        TraceCode::DISPUTE_BULK_MAIL_QUEUED,
-                        [
-                            'dispute_ids' => $disputeIds,
-                            'merchant_id' => $merchantId,
-                            'phase'       => $disputePhase,
-                        ]);
+                    if ($bulkMailData[Entity::PHASE] === Phase::CHARGEBACK
+                        and Merchant\RiskMobileSignupHelper::isEligibleForMobileSignUp($merchant) === true)
+                    {
+                        $this->sendChargebackNotifMobileSignUp($merchant, $bulkMailData);
+                    }
+                    else
+                    {
+                        Mail::queue(new DisputeMailer\BulkCreation($bulkMailData));
+
+                        $this->trace->info(
+                            TraceCode::DISPUTE_BULK_MAIL_QUEUED,
+                            [
+                                'dispute_ids' => $disputeIds,
+                                'merchant_id' => $merchantId,
+                                'phase'       => $disputePhase,
+                            ]);
+                    }
 
                     $this->repo->transaction(function() use ($disputeIds)
                     {
@@ -831,6 +847,121 @@ class Core extends Base\Core
                 }
             }
         }
+    }
+
+    protected function getFormattedAmount($amount, $currency)
+    {
+        return Currency\Currency::getSymbol($currency) . ' ' . ((float) ($amount / Currency\Currency::getDenomination($currency)));
+    }
+
+    protected function createDisputesDataTable($disputes)
+    {
+        $tableData = [];
+
+        foreach ($disputes as $dispute)
+        {
+            $tableRow['dispute_id']          = $dispute['id'];
+            $tableRow['payment_id']          = $dispute['payment_id'];
+            $tableRow['amount']              = $this->getFormattedAmount($dispute['amount'], $dispute['currency']);
+            $tableRow['case_id']             = $dispute['gateway_dispute_id'];
+            $tableRow['phase']               = $dispute['phase'];
+            $tableRow['respond_by']          = date('d F Y', $dispute['respond_by']);
+            $tableRow['gateway_code']        = $dispute['gateway_code'];
+            $tableRow['gateway_description'] = $dispute['gateway_description'];
+            $tableRow['notes']               = json_encode($dispute['payment_notes']);
+            $tableRow['customer_contact']    = $dispute['customer_contact'];
+            $tableRow['order_receipt']       = $dispute['order_receipt'];
+            $tableData[] = $tableRow;
+        }
+
+        return $tableData;
+    }
+
+    protected function sendChargebackNotifMobileSignUp($merchant, $bulkMailData)
+    {
+        try
+        {
+           $viewTemplate = $merchant->isFeatureEnabled(Feature\Constants::DISPUTE_PRESENTMENT) === true
+                ? 'emails.dispute.bulk_creation_dispute_presentment_enabled'
+                : 'emails.dispute.bulk_creation';
+
+            $currentDate = Carbon::now(Timezone::IST)->format('d/m/Y');
+
+            $subject = sprintf('Razorpay | Chargeback Alert - %s [%s] | %s', $merchant->getName(), $merchant->getId(), $currentDate);
+
+            $requestParams = [
+                'type'          =>  'Question',
+                'tags'          =>  ['bulk_dispute_email'],
+                'groupId'       =>  (int) $this->freshdeskConfig['group_ids']['rzpind']['chargeback'],
+                'category'      =>  FreshdeskConstants::CHARGEBACKS_CATEGORY,
+                'subCategory'   =>  FreshdeskConstants::SERVICE_CHARGEBACK_SUBCATEGORY,
+            ];
+
+            $mailBody =  View::make($viewTemplate, $bulkMailData)->with('disputesDataTable', $this->createDisputesDataTable($bulkMailData['disputes']))->render();
+
+            $fdTicket = (new Merchant\RiskMobileSignupHelper())->createFdTicket($merchant, $viewTemplate, $subject, $bulkMailData, $requestParams, $mailBody);
+
+            $supportTicketLink = (new Merchant\RiskMobileSignupHelper())->getSupportTicketLink($fdTicket, $merchant);
+
+            $data = [
+                'merchantName'          =>  $merchant->getName(),
+                'supportTicketLink'     =>  $supportTicketLink,
+            ];
+
+            $this->sendSms($merchant, DisputeConstants::CHARGEBACK_SMS_TEMPLATE_NAME, $data);
+
+            $this->sendWhatsappMessage($merchant, DisputeConstants::CHARGEBACK_WHATSAPP_TEMPLATE_NAME,
+                                       DisputeConstants::CHARGEBACK_WHATSAPP_TEMPLATE, $data);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::CHARGEBACK_MOBILE_SIGNUP_SEND_NOTIF_ERROR,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]
+            );
+        }
+    }
+
+    private function sendSms($merchant, $smsTemplate, $params)
+    {
+        $receiver = $merchant->merchantDetail->getContactMobile();
+
+        if (empty($receiver) === true)
+        {
+            return;
+        }
+
+        $payload = [
+            'receiver' => $receiver,
+            'template' => $smsTemplate,
+            'source'   => 'api.merchant.risk.chargeback',
+            'params'   => $params
+        ];
+
+        $this->app['raven']->sendSms($payload);
+    }
+
+    private function sendWhatsappMessage($merchant, $whatsappTemplateName, $whatappTemplate, $params)
+    {
+        $receiver = $merchant->merchantDetail->getContactMobile();
+
+        $whatsAppPayload = [
+            'ownerId'       => $merchant->getId(),
+            'ownerType'     => 'merchant',
+            'template_name' => $whatsappTemplateName,
+            'params'        => $params
+        ];
+
+        (new Stork)->sendWhatsappMessage(
+            $this->mode,
+            $whatappTemplate,
+            $receiver,
+            $whatsAppPayload
+        );
     }
 
     protected function generateInputForMerchantEdit(Entity $dispute, array $input): array

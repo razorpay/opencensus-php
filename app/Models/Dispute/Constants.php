@@ -17,4 +17,8 @@ class Constants
     const GATEWAY_DISPUTE_SOURCE_NETWORK = 'network';
 
     const DEFAULT_DEDUCTION_REVERSAL_AT_IN_SECONDS = (24 * 60 * 60) * 45;
+
+    const CHARGEBACK_SMS_TEMPLATE_NAME      = 'sms.risk.chargeback_notification_mobile_signup';
+    const CHARGEBACK_WHATSAPP_TEMPLATE_NAME = 'whatsapp_risk_chargeback_notification_mobile_signup';
+    const CHARGEBACK_WHATSAPP_TEMPLATE      = 'Hi {merchantName}, we have received chargeback against payment(s) processed on your Razorpay Account. We request you to kindly respond with proof of service within the specified deadline to contest the chargeback with the bank. Please check link {supportTicketLink} for more details';
 }

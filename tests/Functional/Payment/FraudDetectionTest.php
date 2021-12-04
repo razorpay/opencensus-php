@@ -14,12 +14,14 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\BusinessDetail;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
 use RZP\Mail\Payment\Fraud\DomainMismatch as DomainMismatchMail;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 
 class FraudDetectionTest extends TestCase
 {
     use PaymentTrait;
+    use FreshdeskTrait;
     use EventsTrait;
 
     protected function setUp(): void
@@ -230,13 +232,16 @@ class FraudDetectionTest extends TestCase
         );
     }
 
-    public function testFraudDetectedByShieldWebsiteMismatch()
+    public function runFraudDetectedByShieldWebsiteMismatch($mobileSignUpTest = false)
     {
-        Mail::fake();
-
-        $this->mockRaven();
+        if ($mobileSignUpTest === false)
+        {
+            $this->mockRaven();
+        }
 
         $this->mockRazorx();
+
+        $this->setUpFreshdeskClientMock();
 
         $merchant_phone = '9999999999';
         $merchant_id = '10000000000000';
@@ -273,7 +278,50 @@ class FraudDetectionTest extends TestCase
         $testPayment['referer'] = $testDomain . '/dummy/path';
         $testPayment['card']['number'] = '4012010000000007';
 
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testFraudDetectedByShieldWebsiteMismatch'];
+
+        $expectedContent = [
+            'group_id'        => 82000147768,
+            'tags'            => ['website_mismatch'],
+            'priority'        => 1,
+            'phone'           => '9999999999',
+            'custom_fields'   => [
+                'cf_ticket_queue'           => 'Merchant',
+                'cf_category'               => 'Risk Report_Merchant',
+                'cf_subcategory'            => 'Website Mismatch',
+                'cf_product'                => 'Payment Gateway',
+                'cf_created_by'             => 'agent',
+                'cf_merchant_id_dashboard'  => 'merchant_dashboard_10000000000000',
+                'cf_merchant_id'            => '10000000000000',
+            ],
+        ];
+
+        if ($mobileSignUpTest === true)
+        {
+            $this->fixtures->edit('merchant', '10000000000000', [
+                'signup_via_email' => 0,
+            ]);
+
+            $this->fixtures->create('merchant_email', [
+                'type'  => 'chargeback',
+                'email' => null,
+            ]);
+
+
+            $this->expectFreshdeskRequestAndRespondWith('tickets', 'post',
+                                                        $expectedContent,
+                                                        [
+                                                            'id' => '1234',
+                                                        ]);
+        }
+        else
+        {
+            $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
+                                                        [],
+                                                        [
+                                                            'id' => '1234',
+                                                        ]);
+        }
 
 
         $response = $this->runRequestResponseFlow($data, function() use ($testPayment)
@@ -294,24 +342,21 @@ class FraudDetectionTest extends TestCase
             $riskEntity['reason']
         );
 
-        Mail::assertQueued(DomainMismatchMail::class, function ($mail)
+        if ($mobileSignUpTest === false)
         {
-            $this->assertEquals($mail->view, 'emails.payment.fraud.domain_mismatch');
-            return true;
-        });
-
-        $this->assertRavenRequest(function($input) use ($merchant_id, $merchant_phone, $testDomain)
-        {
-            $this->assertArraySubset([
-                'receiver'  => $merchant_phone,
-                'source'    => 'api.test.payment',
-                'template'  => 'sms.payment.fraud.domain_mismatch',
-                'params'    => [
-                    'merchant_id'     => $merchant_id,
-                    'referer_domain' => $testDomain
-                ],
-            ], $input);
-        });
+            $this->assertRavenRequest(function($input) use ($merchant_id, $merchant_phone, $testDomain)
+            {
+                $this->assertArraySubset([
+                                             'receiver'  => $merchant_phone,
+                                             'source'    => 'api.test.payment',
+                                             'template'  => 'sms.risk.url_mismatch_email_signup',
+                                             'params'    => [
+                                                 'merchant_id'     => $merchant_id,
+                                                 'referer_domain' => $testDomain
+                                             ],
+                                         ], $input);
+            });
+        }
 
         // Second round of payment, this time mail / sms should not be sent.
         $this->resetRavenMock();
@@ -334,9 +379,20 @@ class FraudDetectionTest extends TestCase
             $riskEntity['reason']
         );
 
-        Mail::assertNothingSent();
+        if ($mobileSignUpTest === false)
+        {
+            $this->assertNoRavenRequest();
+        }
+    }
 
-        $this->assertNoRavenRequest();
+    public function testFraudDetectedByShieldWebsiteMismatch()
+    {
+        $this->runFraudDetectedByShieldWebsiteMismatch();
+    }
+
+    public function testFraudDetectedByShieldWebsiteMismatchMobileSignup()
+    {
+        $this->runFraudDetectedByShieldWebsiteMismatch(true);
     }
 
     public function testFraudNotDetectedByShield()

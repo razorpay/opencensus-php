@@ -433,6 +433,7 @@ return [
                 'merchant_risk' => env('FRESHDESK_IND_GROUP_MERCHANT_RISK_ID'),
                 'foh'           => env('FRESHDESK_IND_GROUP_FOH_NOTIFICATION_ID'),
                 'byers_risk'    => env('FRESHDESK_IND_GROUP_BUYERS_RISK_ID'),
+                'chargeback'    => env('FRESHDESK_IND_GROUP_CHARGEBACK_ID'),
             ]
         ],
 

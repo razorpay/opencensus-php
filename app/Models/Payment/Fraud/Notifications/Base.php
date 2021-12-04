@@ -5,11 +5,14 @@ namespace RZP\Models\Payment\Fraud\Notifications;
 use App;
 use Mail;
 
+use RZP\Services\Stork;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\Merchant\RiskMobileSignupHelper;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Payment\Fraud\Constants\Notification as Constants;
+use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
 
 abstract class Base
 {
@@ -37,6 +40,8 @@ abstract class Base
 
     protected $config;
 
+    protected $merchantFreshdeskTicket;
+
     /**
      * @param MerchantEntity $merchant
      * @param PaymentEntity $payment
@@ -56,6 +61,11 @@ abstract class Base
 
     public function notifyMerchant()
     {
+        if ($this->shouldNotify(Constants::FRESHDESK_TICKET) === true)
+        {
+            $this->createFreshdeskTicketForMerchant();
+        }
+
         if ($this->shouldNotify(Constants::EMAIL) === true)
         {
             $this->emailMerchant();
@@ -65,6 +75,39 @@ abstract class Base
         {
             $this->smsMerchant();
         }
+
+        if ($this->shouldNotify(Constants::WHATSAPP) === true)
+        {
+            $this->sendWhatsappToMerchant();
+        }
+    }
+
+    private function createFreshdeskTicketForMerchant()
+    {
+        [$mailBody, $mailSubject, $emailPayload, $requestParams] = $this->getFreshdeskTicketData();
+
+        (new RiskMobileSignupHelper())->createFdTicket($this->merchant,
+                                                       $mailBody,
+                                                       $mailSubject,
+                                                       $emailPayload,
+                                                       $requestParams);
+    }
+
+    private function sendWhatsappToMerchant()
+    {
+        $whatsAppPayload = [
+            'ownerId'       => $this->merchant->getId(),
+            'ownerType'     => 'merchant',
+            'template_name' => $this->config->getWhatsappTemplateName(),
+            'params'        => $this->getWhatsappData(),
+        ];
+
+        (new Stork)->sendWhatsappMessage(
+            $this->mode,
+            $this->config->getWhatsappTemplate(),
+            $this->merchant->merchantDetail->getContactMobile(),
+            $whatsAppPayload
+        );
     }
 
     private function emailMerchant()
@@ -75,6 +118,8 @@ abstract class Base
         {
             $mailer = $this->config->getEmailHandler();
 
+            $provider = $this->config->getEmailProvider();
+
             $this->trace->info(
                 TraceCode::FRAUD_NOTIFICATION_EMAIL_SENDING,
                 [
@@ -83,7 +128,15 @@ abstract class Base
                     'fraud_type'  => $this->config->getFraudType(),
                 ]);
 
-            Mail::queue(new $mailer($data));
+            if ($provider === Constants::FRESHDESK)
+            {
+                $this->app['freshdesk_client']->sendOutboundEmail(
+                    $data, FreshdeskConstants::URLIND);
+            }
+            else
+            {
+                Mail::queue(new $mailer($data));
+            }
         }
     }
 
@@ -122,7 +175,7 @@ abstract class Base
                 {
                     return false;
                 }
-                
+
                 if ($config->emailInstantly() === true)
                 {
                     return true;
@@ -131,19 +184,49 @@ abstract class Base
                 $notifyIntervalInSecs = $config->getEmailInterval();
 
                 break;
-            
+
             case Constants::SMS:
                 if ($config->isSmsEnabled() === false)
                 {
                     return false;
                 }
-                
+
                 if ($config->smsInstantly() === true)
                 {
                     return true;
                 }
 
                 $notifyIntervalInSecs = $config->getSmsInterval();
+
+                break;
+
+            case Constants::WHATSAPP:
+                if ($config->isWhatsappEnabled() === false)
+                {
+                    return false;
+                }
+
+                if ($config->whatsappInstantly() === true)
+                {
+                    return true;
+                }
+
+                $notifyIntervalInSecs = $config->getWhatsappInterval();
+
+                break;
+
+            case Constants::FRESHDESK_TICKET:
+                if ($config->isFreshdeskTicketEnabled() === false)
+                {
+                    return false;
+                }
+
+                if ($config->freshdeskTicketInstantly() === true)
+                {
+                    return true;
+                }
+
+                $notifyIntervalInSecs = $config->getFreshdeskTicketInterval();
 
                 break;
 
@@ -169,4 +252,8 @@ abstract class Base
     abstract protected function getSmsData();
 
     abstract protected function getEmailData();
+
+    abstract protected function getWhatsappData();
+
+    abstract protected function getFreshdeskTicketData();
 }

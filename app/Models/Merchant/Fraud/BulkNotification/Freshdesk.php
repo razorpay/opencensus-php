@@ -5,10 +5,12 @@ namespace RZP\Models\Merchant\Fraud\BulkNotification;
 use Carbon\Carbon;
 use Monolog\Logger;
 use RZP\Models\Base;
+use RZP\Services\Stork;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use Illuminate\Cache\RedisStore;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
 use RZP\Models\Dispute;
 
@@ -56,6 +58,67 @@ class Freshdesk extends Base\Core
         }
     }
 
+    protected function sendNotificationForMobileSignup($merchant, $merchantData)
+    {
+        try
+        {
+            $requestParams = [
+                'type'            => 'Service request',
+                'priority'        => 3,
+                'tags'            => ['bulk_fraud_email'],
+                'group_id'        => $this->getGroupId($merchantData[0][Constants::MERCHANT_DATA_KEY_SOURCE_OF_NOTIFICATION]),
+            ];
+
+            $fdTicket = (new Merchant\RiskMobileSignupHelper())->createFdTicket($merchant,
+                                                                                null,
+                                                                                sprintf(Constants::FRESHDESK_EMAIL_SUBJECT, $merchant->getName(), $merchant->getId(), Carbon::now(Timezone::IST)->format('d/m/Y')),
+                                                                                $merchantData,
+                                                                                $requestParams,
+                                                                                $this->renderBody($merchantData));
+
+            $supportTicketLink = (new Merchant\RiskMobileSignupHelper())->getSupportTicketLink($fdTicket, $merchant);
+
+            $params = [
+                'supportTicketLink' =>  $supportTicketLink,
+                'merchantName'      =>  $merchant->getName(),
+            ];
+
+            $contactNo = $merchant->merchantDetail->getContactMobile();
+
+            $this->app['raven']->sendSms([
+                                             'receiver' => $contactNo,
+                                             'template' => Constants::SMS_TEMPLATE,
+                                             'source'   => Merchant\Constants::SMS_SOURCE,
+                                             'params'   => $params,
+                                         ]);
+
+            (new Stork)->sendWhatsappMessage(
+                $this->mode,
+                Constants::WHATSAPP_TEMPLATE,
+                $contactNo, [
+                    'ownerId'       => $merchant->getId(),
+                    'ownerType'     => 'merchant',
+                    'template_name' => Constants::WHATSAPP_TEMPLATE_NAME,
+                    'params'        => $params
+                ]
+            );
+
+            return (int) $fdTicket['ticket_id'];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::BULK_FRAUD_NOTIFY_MOBILE_SIGNUP_FAILED,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]);
+
+            return (int) $fdTicket['ticket_id'] ?? null;
+        }
+    }
+
     protected function notifySingle(array $merchantData, array &$merchantOutput, string $merchantId)
     {
         $redisKey = sprintf(Constants::REDIS_KEY_FMT, Carbon::now(Timezone::IST)->format("d_m_Y"), $merchantId);
@@ -72,16 +135,24 @@ class Freshdesk extends Base\Core
             'request_payload' => $fdOutboundEmailRequest,
         ]);
 
-        $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest, FreshdeskConstants::URLIND);
+        if (Merchant\RiskMobileSignupHelper::isEligibleForMobileSignUp($merchant) === true)
+        {
+            $fdTicketId = $this->sendNotificationForMobileSignup($merchant, $merchantData);
+        }
+        else
+        {
+            $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest, FreshdeskConstants::URLIND);
+
+            $this->trace->debug(TraceCode::MERCHANT_BULK_FRAUD_NOTIFICATION_FRESHDESK_RESPONSE, [
+                'entity_id' => $this->entity->getId(),
+                'response'  => $response,
+            ]);
+
+            $fdTicketId = $response['id'] ?? null;
+        }
+
 
         $this->cache->set($redisKey, $notifyCount + 1, Constants::REDIS_KEY_TTL);
-
-        $this->trace->debug(TraceCode::MERCHANT_BULK_FRAUD_NOTIFICATION_FRESHDESK_RESPONSE, [
-            'entity_id' => $this->entity->getId(),
-            'response'  => $response,
-        ]);
-
-        $fdTicketId = $response['id'] ?? null;
 
         $this->setMerchantOutputRows($fdTicketId, $merchantOutput);
     }
@@ -159,7 +230,7 @@ class Freshdesk extends Base\Core
 
     private function getFdRequestPayload(Merchant\Entity $merchant, array $merchantData): array
     {
-        $mailSubject = sprintf('Razorpay | Unauthorized transaction Alert - %s [%s] | %s', $merchant->getName(), $merchant->getId(), Carbon::now(Timezone::IST)->format('d/m/Y'));
+        $mailSubject = sprintf(Constants::FRESHDESK_EMAIL_SUBJECT, $merchant->getName(), $merchant->getId(), Carbon::now(Timezone::IST)->format('d/m/Y'));
 
         $mailBody = $this->renderBody($merchantData);
 

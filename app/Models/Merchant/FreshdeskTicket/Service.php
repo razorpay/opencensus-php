@@ -6,6 +6,7 @@ use Illuminate\Support\Str;
 use RZP\Base\JitValidator;
 use RZP\Constants\Mode;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Order;
 use RZP\Models\Payment\Refund;
@@ -1389,7 +1390,9 @@ class Service extends Base\Service
     {
         if (empty($this->merchant) === true)
         {
-            $this->merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+            [$merchant, $merchantDetails] = (new Merchant\Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
+
+            $this->merchant = $merchant;
         }
 
         return $this->postTicketV2(TYPE::SUPPORT_DASHBOARD, $input);

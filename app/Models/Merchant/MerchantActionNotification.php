@@ -12,6 +12,8 @@ use RZP\Trace\TraceCode;
 use RZP\lib\TemplateEngine;
 use RZP\Base\RepositoryManager;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\FreshdeskTicket;
+use RZP\Models\Merchant\FreshdeskTicket\Type as FreshdeskTicketType;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
 
 class MerchantActionNotification
@@ -238,7 +240,6 @@ class MerchantActionNotification
     {
         try
         {
-
             $merchantId = $merchant->getId();
 
             $merchantDetail = $merchant->merchantDetail;
@@ -260,7 +261,33 @@ class MerchantActionNotification
 
             $templates = Constants::MERCHANT_RISK_ACTIONS_TEMPLATE_MAP[$action];
 
-            $this->sendEmail($merchant, $templates[Constants::EMAIL_TEMPLATE], $templates[Constants::EMAIL_SUBJECT], $params, $action);
+            if (RiskMobileSignupHelper::isEligibleForMobileSignUp($merchant) === true)
+            {
+                $templates = Constants::MERCHANT_RISK_ACTIONS_MOBILE_SIGNUP_TEMPLATE_MAP[$action];
+
+                $groupIdMapping = [
+                    Action::HOLD_FUNDS      =>  $this->freshdeskConfig['group_ids']['rzpind']['foh'],
+                    Action::SUSPEND         =>  $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                    Action::LIVE_DISABLE    =>  $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                ];
+
+                $requestParams = [
+                    'type'          =>  'Question',
+                    'tags'          =>  ['bulk_workflow_email'],
+                    'groupId'       =>  (int) $groupIdMapping[$action],
+                    'subCategory'   =>  Constants::FD_SUB_CATEGORY_FUNDS_ON_HOLD,
+                ];
+
+                $fdTicket = (new RiskMobileSignupHelper())->createFdTicket($merchant, $templates[Constants::EMAIL_TEMPLATE], $templates[Constants::EMAIL_SUBJECT], $params, $requestParams);
+
+                $supportTicketLink = (new RiskMobileSignupHelper())->getSupportTicketLink($fdTicket, $merchant);
+
+                $params['supportTicketLink'] = $supportTicketLink;
+            }
+            else
+            {
+                $this->sendEmail($merchant, $templates[Constants::EMAIL_TEMPLATE], $templates[Constants::EMAIL_SUBJECT], $params, $action);
+            }
 
             $this->sendSms($merchant, $templates[Constants::SMS_TEMPLATE], $params);
 

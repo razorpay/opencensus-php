@@ -327,6 +327,7 @@ class Validator extends Base\Validator
     {
         return [
             Constants::SERVICE_REQUEST_TICKET_TYPE,
+            Constants::QUESTION_TICKET_TYPE,
         ];
     }
 
@@ -377,6 +378,8 @@ class Validator extends Base\Validator
     protected function getValidCustomFieldCategory()
     {
         return [
+            Constants::RISK_REPORT_CATEGORY,
+            Constants::CHARGEBACKS_CATEGORY,
             Constants::ACTIVATION_CF_CATEGORY,
         ];
     }
@@ -394,7 +397,13 @@ class Validator extends Base\Validator
     protected function getValidCustomFieldSubCategory()
     {
         return [
+            Constants::SERVICE_CHARGEBACK_SUBCATEGORY,
+            Constants::FD_SUB_CATEGORY_FUNDS_ON_HOLD,
+            Constants::FD_SUB_CATEGORY_NEED_CLARIFICATION,
             Constants::ACTIVATION_CF_SUBCATEGORY,
+            Constants::FD_SUB_CATEGORY_FRAUD_ALERTS,
+            Constants::FD_SUB_CATEGORY_WEBSITE_MISMATCH,
+            Constants::FD_SUB_CATEGORY_INTERNATIONAL_ENABLEMENT,
         ];
     }
 

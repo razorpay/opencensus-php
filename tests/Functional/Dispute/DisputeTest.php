@@ -35,6 +35,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Dispute\File\Service as DisputeFileService;
+use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
 use RZP\Models\Dispute\Customer\FreshdeskTicket\ReasonCode;
 use RZP\Models\Dispute\Customer\FreshdeskTicket\Subcategory;
 use RZP\Mail\Dispute\BulkCreation as DisputeBulkCreationMail;
@@ -45,11 +46,10 @@ use RZP\Models\Dispute\Customer\FreshdeskTicket\Constants as FreshdeskConstants;
 
 class DisputeTest extends TestCase
 {
+    use FreshdeskTrait;
     use DisputeTrait;
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
-
-    use DbEntityFetchTrait;
 
     protected $druidMock;
 
@@ -74,6 +74,8 @@ class DisputeTest extends TestCase
         $this->setUpDruidMock();
 
         $this->setUpSalesforceMock();
+
+        $this->setUpFreshdeskClientMock();
     }
 
     protected function mockRazorxTreatment(string $returnValue = 'On')
@@ -2234,13 +2236,11 @@ class DisputeTest extends TestCase
     /**
      * @dataProvider functionTestBulkDisputeCreateMailProvider
      */
-    public function testBulkDisputeCreateMail($features, $disputeCreateInput, $expectedMailView, $expectedMailViewData = [])
+    public function testBulkDisputeCreateMail($features, $disputeCreateInput, $expectedMailView, $expectedMailViewData = [], $mobileSignupTest)
     {
         $this->fixtures->merchant->addFeatures($features);
 
-        $this->mockSalesforceRequestforSalesPOC('10000000000000', "sales.poc@gmail.com", 5);
-
-        $this->runTestBulkDisputeCreateMailSubject($disputeCreateInput, $expectedMailView, $expectedMailViewData);
+        $this->runTestBulkDisputeCreateMailSubject($disputeCreateInput, $expectedMailView, $expectedMailViewData, $mobileSignupTest);
 
     }
 
@@ -2252,33 +2252,53 @@ class DisputeTest extends TestCase
                 'dispute_create_input'     => [],
                 'expected_mail_view'       => 'bulk_creation_dispute_presentment_enabled',
                 'expected_mail_view_data'  => ['hasDeductAtOnset' => false],
+                'mobile_signup_test'       => false,
             ],
             'no_dispute_presentment_and_no_deduct_at_onset' => [
                 'features'                 => [],
                 'dispute_create_input'     => [],
                 'expected_mail_view'       => 'bulk_creation',
                 'expected_mail_view_data'  => ['hasDeductAtOnset' => false],
+                'mobile_signup_test'       => false,
             ],
             'dispute_presentment_and_deduct_at_onset' => [
                 'features'                 => ['dispute_presentment'],
                 'dispute_create_input'     => ['deduct_at_onset' => true],
                 'expected_mail_view'       => 'bulk_creation_dispute_presentment_enabled',
                 'expected_mail_view_data'  => ['hasDeductAtOnset' => true],
+                'mobile_signup_test'       => false,
             ],
             'no_dispute_presentment_deduct_at_onset' => [
                 'features'                 => [],
                 'dispute_create_input'     => ['deduct_at_onset' => true],
                 'expected_mail_view'       => 'bulk_creation',
                 'expected_mail_view_data'  => ['hasDeductAtOnset' => true],
+                'mobile_signup_test'       => false,
+            ],
+            'no_dispute_presentment_and_no_deduct_at_onset_mobile_signup' => [
+                'features'                 => [],
+                'dispute_create_input'     => [],
+                'expected_mail_view'       => 'bulk_creation',
+                'expected_mail_view_data'  => ['hasDeductAtOnset' => false],
+                'mobile_signup_test'       => true,
+            ],
+            'dispute_presentment_and_deduct_at_onset_mobile_signup' => [
+                'features'                 => ['dispute_presentment'],
+                'dispute_create_input'     => ['deduct_at_onset' => true],
+                'expected_mail_view'       => 'bulk_creation_dispute_presentment_enabled',
+                'expected_mail_view_data'  => ['hasDeductAtOnset' => true],
+                'mobile_signup_test'       => true,
             ],
         ];
     }
 
     // ---------------------------- helper methods-------------------------------
 
-    protected function runTestBulkDisputeCreateMailSubject($disputeCreateInput, $expectedMailView, $expectedMailViewData = [])
+    protected function runTestBulkDisputeCreateMailSubject($disputeCreateInput, $expectedMailView, $expectedMailViewData = [], $mobileSignupTest = false)
     {
         Mail::fake();
+
+        $this->mockSalesforceRequestforSalesPOC('10000000000000', "sales.poc@gmail.com", $mobileSignupTest === true ? 4 : 5);
 
         $this->ba->cronAuth();
 
@@ -2294,6 +2314,48 @@ class DisputeTest extends TestCase
           Phase::RETRIEVAL,
           Phase::FRAUD,
         ];
+
+        if ($mobileSignupTest === true)
+        {
+            $this->fixtures->create('merchant_detail', [
+                'merchant_id'    => '10000000000000',
+                'contact_mobile' => '9991119991',
+            ]);
+
+            $this->fixtures->edit('merchant', '10000000000000', [
+                'signup_via_email' => 0,
+            ]);
+
+            $this->fixtures->create('merchant_email', [
+                'type'  => 'chargeback',
+                'email' => null,
+            ]);
+
+            $expectedContent = [
+                'type'          =>  'Question',
+                'group_id'        => 82000327895,
+                'tags'          =>  ['bulk_dispute_email'],
+                'priority'        => 1,
+                'phone'           => '9991119991',
+                'custom_fields'   => [
+                    'cf_ticket_queue'           => 'Merchant',
+                    'cf_category'               => 'Chargebacks',
+                    'cf_subcategory'            => 'Service Chargeback',
+                    'cf_product'                => 'Payment Gateway',
+                    'cf_created_by'             =>  'agent',
+                    'cf_merchant_id_dashboard'  => 'merchant_dashboard_10000000000000',
+                    'cf_merchant_id'            => '10000000000000',
+                ],
+            ];
+
+            $this->expectFreshdeskRequestAndRespondWith('tickets', 'post',
+                                                        $expectedContent,
+                                                        [
+                                                            'id'        => '1234',
+                                                            'priority'  => 1,
+                                                            'fr_due_by' => 'today',
+                                                        ]);
+        }
 
         foreach ($disputePhases as $disputePhase)
         {
@@ -2317,14 +2379,17 @@ class DisputeTest extends TestCase
 
             $this->startTest($testData);
 
-            Mail::assertQueued(DisputeBulkCreationMail::class, function ($mail) use ($expectedMailView)
+            if ($mobileSignupTest === false)
             {
-                $this->assertEquals($this->getBulkDisputeMailExpectedSubject($mail), $mail->subject);
+                Mail::assertQueued(DisputeBulkCreationMail::class, function ($mail) use ($expectedMailView)
+                {
+                    $this->assertEquals($this->getBulkDisputeMailExpectedSubject($mail), $mail->subject);
 
-                $this->assertEquals('emails.dispute.' . $expectedMailView, $mail->view);
+                    $this->assertEquals('emails.dispute.' . $expectedMailView, $mail->view);
 
-                return true;
-            });
+                    return true;
+                });
+            }
         }
 
     }

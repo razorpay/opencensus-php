@@ -44,11 +44,6 @@ class MerchantActionNotificationTest extends TestCase
             'contact_email' => 'merchant.email@gmail.com',
         ]);
 
-        $this->fixtures->create('merchant_email', [
-            'type'  => 'chargeback',
-            'email' => 'chargeback.poc1@gmail.com,chargeback.poc2@gmail.com',
-        ]);
-
         $this->freshdeskConfig = $this->app['config']->get('applications.freshdesk');
 
         $this->setUpFreshdeskClientMock();
@@ -72,6 +67,11 @@ class MerchantActionNotificationTest extends TestCase
 
         $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
 
+        $this->fixtures->create('merchant_email', [
+            'type'  => 'chargeback',
+            'email' => 'chargeback.poc1@gmail.com,chargeback.poc2@gmail.com',
+        ]);
+
         $this->startTest();
     }
 
@@ -87,6 +87,56 @@ class MerchantActionNotificationTest extends TestCase
 
         $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
 
+        $this->fixtures->create('merchant_email', [
+            'type'  => 'chargeback',
+            'email' => 'chargeback.poc1@gmail.com,chargeback.poc2@gmail.com',
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testFOHBulkWorkflowFdTicketCreate()
+    {
+        $expectedContent = [
+            'group_id'        => 82000655429,
+            'tags'            => ['bulk_workflow_email'],
+            'priority'        => 1,
+            'phone'           => '9991119991',
+            'custom_fields'   => [
+                'cf_ticket_queue'           => 'Merchant',
+                'cf_category'               => 'Risk Report_Merchant',
+                'cf_subcategory'            => 'Funds on hold',
+                'cf_product'                => 'Payment Gateway',
+                'cf_created_by'             =>  'agent',
+                'cf_merchant_id_dashboard'  => 'merchant_dashboard_10000000000000',
+                'cf_merchant_id'            => '10000000000000',
+            ],
+            'subject'         => 'Razorpay Account Review: test merchant | 10000000000000 | Funds under Review',
+        ];
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'signup_via_email' => 0,
+        ]);
+
+        $this->fixtures->on('live')->edit('merchant_detail', '10000000000000', [
+            'contact_mobile' => '9991119991',
+        ]);
+
+        $this->fixtures->on('test')->edit('merchant_detail', '10000000000000', [
+            'contact_mobile' => '9991119991',
+        ]);
+
+        $this->fixtures->create('merchant_email', [
+            'type'  => 'chargeback',
+            'email' => null,
+        ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets', 'post',
+                                                    $expectedContent,
+                                                    [
+                                                        'id' => '1234',
+                                                    ]);
+
         $this->startTest();
     }
 
@@ -101,6 +151,10 @@ class MerchantActionNotificationTest extends TestCase
                                                     [
                                                         'id' => '1234',
                                                     ]);
+        $this->fixtures->create('merchant_email', [
+            'type'  => 'chargeback',
+            'email' => 'chargeback.poc1@gmail.com,chargeback.poc2@gmail.com',
+        ]);
 
         $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
 
@@ -121,6 +175,11 @@ class MerchantActionNotificationTest extends TestCase
                                                     ]);
         $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
 
+        $this->fixtures->create('merchant_email', [
+            'type'  => 'chargeback',
+            'email' => 'chargeback.poc1@gmail.com,chargeback.poc2@gmail.com',
+        ]);
+
         $this->startTest();
     }
 
@@ -136,6 +195,12 @@ class MerchantActionNotificationTest extends TestCase
                                                     [
                                                         'id' => '1234',
                                                     ]);
+
+        $this->fixtures->create('merchant_email', [
+            'type'  => 'chargeback',
+            'email' => 'chargeback.poc1@gmail.com,chargeback.poc2@gmail.com',
+        ]);
+
         $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
 
         $this->startTest();

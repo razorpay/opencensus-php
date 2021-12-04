@@ -134,4 +134,17 @@ class Constants
     const NOTIFICATION_EVENT = 'event';
 
     const SUBCATEGORY_CAPITAL = 'Capital';
+    const QUESTION_TICKET_TYPE  = 'Question';
+
+    // Sub Categories
+    const FD_SUB_CATEGORY_FUNDS_ON_HOLD             = 'Funds on hold';
+    const SERVICE_CHARGEBACK_SUBCATEGORY            = 'Service Chargeback';
+    const FD_SUB_CATEGORY_NEED_CLARIFICATION        = 'Need Clarification';
+    const FD_SUB_CATEGORY_FRAUD_ALERTS              = 'Fraud alerts';
+    const FD_SUB_CATEGORY_WEBSITE_MISMATCH          = 'Website Mismatch';
+    const FD_SUB_CATEGORY_INTERNATIONAL_ENABLEMENT  = 'International Enablement';
+
+    // Categories
+    const RISK_REPORT_CATEGORY               = 'Risk Report_Merchant';
+    const CHARGEBACKS_CATEGORY               = 'Chargebacks';
 }

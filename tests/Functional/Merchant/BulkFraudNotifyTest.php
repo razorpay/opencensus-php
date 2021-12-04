@@ -13,6 +13,7 @@ use RZP\Services\FreshdeskTicketClient;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Models\Merchant\Fraud\BulkNotification\File;
 use RZP\Models\Admin\Permission\Name as PermissionName;
+use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
 use RZP\Tests\Functional\Helpers\Salesforce\SalesforceTrait;
 
 class BulkFraudNotifyTest extends TestCase
@@ -20,11 +21,15 @@ class BulkFraudNotifyTest extends TestCase
     use RequestResponseFlowTrait;
     use SalesforceTrait;
 
+    use FreshdeskTrait;
+
     public function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/BulkFraudNotifyTestData.php';
 
         parent::setUp();
+
+        $this->setUpFreshdeskClientMock();
 
         $this->setUpSalesforceMock();
     }
@@ -369,6 +374,66 @@ class BulkFraudNotifyTest extends TestCase
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true);
     }
 
+    public function testNotifySingleForOneMerchantMobileSignup()
+    {
+        /** @var Models\Payment\Entity $payment */
+        $payment1 = $this->fixtures->create('payment');
+
+        /** @var Models\Payment\Entity $payment */
+        $payment2 = $this->fixtures->create('payment');
+
+        $fileData = [
+            [
+                'reported_to_razorpay_at' => '11/08/2021',
+                'payment_method' => '',
+                'reported_by' => 'Visa',
+                'payment_id' => $payment1->getPublicId(),
+                'type' => '',
+                'arn' => ''
+            ],
+            [
+                'reported_to_razorpay_at' => '11/08/2021',
+                'payment_method' => '',
+                'reported_by' => 'Visa',
+                'payment_id' => $payment2->getPublicId(),
+                'type' => '',
+                'arn' => ''
+            ],
+        ];
+
+        $expectedOutputFileRows = [
+            ["arn", "payment_id", "merchant_id", "fd_ticket_id", "error"],
+            [null, $payment1->getPublicId(), $payment1->getMerchantId(), 123, null],
+            [null, $payment2->getPublicId(), $payment2->getMerchantId(), 123, null]
+        ];
+
+        $expectedContent = [
+            'group_id'        => 82000147768,
+            'tags'            => ['bulk_fraud_email'],
+            'priority'        => 1,
+            'phone'           => '9991119991',
+            'custom_fields'   => [
+                'cf_ticket_queue'           => 'Merchant',
+                'cf_category'               => 'Risk Report_Merchant',
+                'cf_subcategory'            => 'Fraud alerts',
+                'cf_product'                => 'Payment Gateway',
+                'cf_created_by'             => 'agent',
+                'cf_merchant_id_dashboard'  => 'merchant_dashboard_10000000000000',
+                'cf_merchant_id'            => '10000000000000',
+            ],
+        ];
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets', 'post',
+                                                    $expectedContent,
+                                                    [
+                                                        'id'        => 123,
+                                                        'priority'  => 1,
+                                                        'fr_due_by' => 'today',
+                                                    ]);
+
+        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true, true);
+    }
+
     public function testNotifyForMultipleMerchant()
     {
         /** @var Models\Payment\Entity $payment */
@@ -410,19 +475,39 @@ class BulkFraudNotifyTest extends TestCase
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 2, true);
     }
 
-    private function prepareAndDoTest(array $fileData, array $expectedOutputFileRows, int $expectFdCallCount, bool $addPermission)
+    private function prepareAndDoTest(array $fileData, array $expectedOutputFileRows, int $expectFdCallCount, bool $addPermission, bool $mobileSignupTest = false)
     {
         $testData = &$this->testData['commonTestData'];
 
         $testData['request']['files']['file'] = $this->getBulkFraudNotifyUploadedXLSXFileFromFileData($fileData);
 
-        $this->mockFreshdesk($expectFdCallCount);
+        if ($mobileSignupTest === false)
+        {
+            $this->mockFreshdesk($expectFdCallCount);
+        }
 
         $this->ba->adminAuth();
 
         if ($addPermission === true)
         {
             $this->addAdminPermission();
+        }
+
+        if ($mobileSignupTest === true)
+        {
+            $this->fixtures->edit('merchant', '10000000000000', [
+                'signup_via_email' => 0,
+            ]);
+
+            $this->fixtures->create('merchant_detail', [
+                'merchant_id'    => '10000000000000',
+                'contact_mobile' => '9991119991',
+            ]);
+
+            $this->fixtures->create('merchant_email', [
+                'type'  => 'chargeback',
+                'email' => null,
+            ]);
         }
 
         $response = $this->startTest($testData);

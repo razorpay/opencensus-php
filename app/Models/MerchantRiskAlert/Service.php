@@ -260,6 +260,52 @@ class Service extends Base\Service
         }
     }
 
+    protected function sendNotificationForMobileSignup($merchant, $notificationType, $rasTriggerReason, $input)
+    {
+        try
+        {
+            $fdRasReasonTag = sprintf(Constants::FD_TAG_RAS_REASON_FOH, strtoupper($rasTriggerReason));
+
+            $fdTags = [Constants::FD_TAG_RAS_FOH, $fdRasReasonTag];
+
+            [$subject, $viewTemplate, $data, $fdSubcategory, $notificationType, $rasTriggerReason, $groupId, $emailConfigId]
+                = $this->getEmailData($merchant, $notificationType, $rasTriggerReason, $input);
+
+            $requestParams = [
+                'type'          =>  'Question',
+                'tags'          =>  $fdTags,
+                'groupId'       =>  $groupId,
+                'subCategory'   =>  $fdSubcategory,
+            ];
+
+            $fdTicket = (new Merchant\RiskMobileSignupHelper())->createFdTicket($merchant, $viewTemplate, $subject, $data, $requestParams);
+
+            $supportTicketLink = (new Merchant\RiskMobileSignupHelper())->getSupportTicketLink($fdTicket, $merchant);
+
+            $smsContent = $this->getSmsData($merchant, $notificationType, $rasTriggerReason, $supportTicketLink);
+
+            $this->sendSms($merchant, $smsContent);
+
+            $whatsAppContent = $this->getWhatsAppData($merchant, $notificationType, $rasTriggerReason, $supportTicketLink);
+
+            $this->sendWhatsappMessage($merchant, $whatsAppContent);
+
+            return $fdTicket['ticket_id'];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::RAS_FOH_SEND_NOTIFICATION_FAILED,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]);
+
+            return $fdTicket['ticket_id'] ?? '';
+        }
+    }
+
     public function sendNotificationsIfApplicable(Merchant\Entity $merchant, array $input, string $notificationType)
     {
         $rasTriggerReason = $this->getRasTriggerReasonFromPayload($input);
@@ -271,17 +317,24 @@ class Service extends Base\Service
             return;
         }
 
-        $smsContent = $this->getSmsData($merchant, $notificationType, $rasTriggerReason);
+        if (Merchant\RiskMobileSignupHelper::isEligibleForMobileSignUp($merchant) === true)
+        {
+            return $this->sendNotificationForMobileSignup($merchant, $notificationType, $rasTriggerReason, $input);
+        }
+        else
+        {
+            $smsContent = $this->getSmsData($merchant, $notificationType, $rasTriggerReason);
 
-        $this->sendSms($merchant, $smsContent);
+            $this->sendSms($merchant, $smsContent);
 
-        $whatsAppContent = $this->getWhatsAppData($merchant, $notificationType, $rasTriggerReason);
+            $whatsAppContent = $this->getWhatsAppData($merchant, $notificationType, $rasTriggerReason);
 
-        $this->sendWhatsappMessage($merchant, $whatsAppContent);
+            $this->sendWhatsappMessage($merchant, $whatsAppContent);
 
-        $emailContent = $this->getEmailData($merchant, $notificationType, $rasTriggerReason, $input);
+            $emailContent = $this->getEmailData($merchant, $notificationType, $rasTriggerReason, $input);
 
-        return $this->sendEmail($merchant, $emailContent, $input);
+            return $this->sendEmail($merchant, $emailContent, $input);
+        }
     }
 
     private function getMaker()
@@ -299,7 +352,7 @@ class Service extends Base\Service
         return $maker;
     }
 
-    private function sendSms(Merchant\Entity $merchant, array $content)
+    private function sendSms($merchant, array $content)
     {
         $receiver = $merchant->merchantDetail->getContactMobile();
 
@@ -342,7 +395,7 @@ class Service extends Base\Service
         }
     }
 
-    private function sendWhatsappMessage(Merchant\Entity $merchant, array $content)
+    private function sendWhatsappMessage($merchant, array $content)
     {
         $mode = $this->app['rzp.mode'];
 
@@ -365,7 +418,7 @@ class Service extends Base\Service
         );
     }
 
-    private function sendEmail(Merchant\Entity $merchant, array $content, array $input)
+    private function sendEmail($merchant, array $content, array $input)
     {
         try
         {
@@ -619,7 +672,7 @@ class Service extends Base\Service
         return [$subject, $viewTemplate, $data, $fdSubcategory, $notificationType, $rasTriggerReason, $groupId, $emailConfigId];
     }
 
-    private function getSmsData(Merchant\Entity $merchant, string $notificationType, string $rasTriggerReason)
+    private function getSmsData(Merchant\Entity $merchant, string $notificationType, string $rasTriggerReason, $supportTicketLink = null)
     {
         $template = '';
         $data     = '';
@@ -631,7 +684,9 @@ class Service extends Base\Service
                 throw new Exception\LogicException('Need clarification notification not enabled');
             }
 
-            $template = Constants::FOH_SMS_HEALTH_CHECKER_NEEDS_CLARIFICATION_TEMPLATE[$rasTriggerReason];
+            $template = (isset($supportTicketLink) === false)
+                ? Constants::FOH_SMS_HEALTH_CHECKER_NEEDS_CLARIFICATION_TEMPLATE[$rasTriggerReason]
+                : Constants::FOH_SMS_WEBSITE_CHECKER_NEEDS_CLARIFICATION_TEMPLATE_MOBILE_SIGNUP;
 
             $data = [
                 'merchantId'   => $merchant->getId(),
@@ -642,7 +697,9 @@ class Service extends Base\Service
         {
             if ($this->isHealthCheckTriggerReason($rasTriggerReason) === true)
             {
-                $template = Constants::FOH_SMS_HEALTH_CHECKER_CONFIRMATION_TEMPLATE[$rasTriggerReason];
+                $template = (isset($supportTicketLink) === false)
+                    ? Constants::FOH_SMS_HEALTH_CHECKER_CONFIRMATION_TEMPLATE[$rasTriggerReason]
+                    : Constants::FOH_SMS_WEBSITE_CHECKER_CONFIRMATION_TEMPLATE_MOBILE_SIGNUP;
 
                 $data = [
                     'merchantId'   => $merchant->getId(),
@@ -651,7 +708,9 @@ class Service extends Base\Service
             }
             else
             {
-                $template = Constants::FOH_SMS_GENERIC_CONFIRMATION_TEMPLATE;
+                $template = (isset($supportTicketLink) === false)
+                ? Constants::FOH_SMS_GENERIC_CONFIRMATION_TEMPLATE
+                : Constants::FOH_GENERIC_CONFIRMATION_SMS_TEMPLATE_MOBILE_SIGNUP;
 
                 $data = [
                     'merchantName' => $merchant->getName(),
@@ -659,10 +718,15 @@ class Service extends Base\Service
             }
         }
 
+        if (isset($supportTicketLink) === true)
+        {
+            $data['supportTicketLink'] = $supportTicketLink;
+        }
+
         return [$template, $data, $notificationType, $rasTriggerReason];
     }
 
-    private function getWhatsAppData(Merchant\Entity $merchant, string $notificationType, string $rasTriggerReason)
+    private function getWhatsAppData(Merchant\Entity $merchant, string $notificationType, string $rasTriggerReason, $supportTicketLink = null)
     {
         $templateName = '';
         $template     = '';
@@ -675,9 +739,16 @@ class Service extends Base\Service
                 throw new Exception\LogicException('Need clarification notification not enabled');
             }
 
-            $templateName = Constants::FOH_HEALTH_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE_NAME[$rasTriggerReason];
-
-            $template = Constants::FOH_HEALTH_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE[$rasTriggerReason];
+            if (isset($supportTicketLink) === true)
+            {
+                $templateName   = Constants::FOH_WEBSITE_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE_NAME_MOBILE_SIGNUP;
+                $template       = Constants::FOH_WEBSITE_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE_MOBILE_SIGNUP;
+            }
+            else
+            {
+                $templateName   = Constants::FOH_HEALTH_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE_NAME[$rasTriggerReason];
+                $template       = Constants::FOH_HEALTH_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE[$rasTriggerReason];
+            }
 
             $data = [
                 'merchantId'   => $merchant->getId(),
@@ -688,9 +759,16 @@ class Service extends Base\Service
         {
             if ($this->isHealthCheckTriggerReason($rasTriggerReason) === true)
             {
-                $templateName = Constants::FOH_HEALTH_CHECKER_CONFIRMATION_WHATSAPP_TEMPLATE_NAME[$rasTriggerReason];
-
-                $template = Constants::FOH_HEALTH_CHECKER_CONFIRMATION_WHATSAPP_TEMPLATE[$rasTriggerReason];
+                if (isset($supportTicketLink) === true)
+                {
+                    $templateName   = Constants::FOH_WEBSITE_CHECKER_CONFIRMATION_WHATSAPP_TEMPLATE_NAME_MOBILE_SIGNUP;
+                    $template       = Constants::FOH_WEBSITE_CHECKER_CONFIRMATION_WHATSAPP_TEMPLATE_MOBILE_SIGNUP;
+                }
+                else
+                {
+                    $templateName   = Constants::FOH_HEALTH_CHECKER_CONFIRMATION_WHATSAPP_TEMPLATE_NAME[$rasTriggerReason];
+                    $template       = Constants::FOH_HEALTH_CHECKER_CONFIRMATION_WHATSAPP_TEMPLATE[$rasTriggerReason];
+                }
 
                 $data = [
                     'merchantId'   => $merchant->getId(),
@@ -699,14 +777,26 @@ class Service extends Base\Service
             }
             else
             {
-                $templateName = Constants::FOH_GENERIC_CONFIRMATION_WHATSAPP_TEMPLATE_NAME;
-
-                $template = Constants::FOH_GENERIC_CONFIRMATION_WHATSAPP_TEMPLATE;
+                if (isset($supportTicketLink) === true)
+                {
+                    $templateName   = Constants::FOH_GENERIC_CONFIRMATION_WHATSAPP_TEMPLATE_NAME_MOBILE_SIGNUP;
+                    $template       = Constants::FOH_GENERIC_CONFIRMATION_WHATSAPP_TEMPLATE_MOBILE_SIGNUP;
+                }
+                else
+                {
+                    $templateName   = Constants::FOH_GENERIC_CONFIRMATION_WHATSAPP_TEMPLATE_NAME;
+                    $template       = Constants::FOH_GENERIC_CONFIRMATION_WHATSAPP_TEMPLATE;
+                }
 
                 $data = [
                     'merchantName' => $merchant->getName(),
                 ];
             }
+        }
+
+        if (isset($supportTicketLink) === true)
+        {
+            $data['supportTicketLink'] = $supportTicketLink;
         }
 
         return [$templateName, $template, $data, $notificationType, $rasTriggerReason];
@@ -821,6 +911,60 @@ class Service extends Base\Service
         return $this->app['merchant_risk_alerts']->identifyBlacklistCountryAlerts($input);
     }
 
+    public function sendMobileSignUpNotificationForNC($merchant)
+    {
+        try
+        {
+            $merchantName = $merchant->getName() ?? '';
+
+            $data = [
+                Merchant\Entity::MERCHANT_ID => $merchant->getId(),
+                'merchant_name'              => $merchantName,
+                'merchantName'               => $merchantName,
+            ];
+
+            $rasTriggerReason = Constants::RAS_TRIGGER_REASON_NC_FLOW;
+
+            $fdRasReasonTag = sprintf(Constants::FD_TAG_RAS_REASON_FOH, strtoupper($rasTriggerReason));
+
+            $fdTags = [Constants::FD_TAG_RAS_FOH, $fdRasReasonTag];
+
+            $requestParams = [
+                'type'          =>  'Question',
+                'tags'          =>  $fdTags,
+                'subCategory'   =>  Constants::FD_SUB_CATEGORY_FRAUD_ALERTS,
+            ];
+
+            $fdTicket = (new Merchant\RiskMobileSignupHelper())->createFdTicket($merchant, Constants::FOH_ADMIN_TRIGGER_NEEDS_CLARIFICATION_TPL, Constants::FOH_ADMIN_TRIGGER_NEEDS_CLARIFICATION_SUBJECT, $data, $requestParams);
+
+            $supportTicketLink = (new Merchant\RiskMobileSignupHelper())->getSupportTicketLink($fdTicket, $merchant);
+
+            $data['supportTicketLink'] = $supportTicketLink;
+
+            $smsContent = [Constants::RAS_NC_SMS_TEMPLATE, $data, Constants::FOH_NC_NOTIFICATION, $rasTriggerReason];
+
+            $whatsappContent = [Constants::RAS_NC_WHATSAPP_TEMPLATE_NAME, Constants::RAS_NC_WHATSAPP_TEMPLATE, $data, Constants::FOH_NC_NOTIFICATION, $rasTriggerReason];
+
+            $this->sendSms($merchant, $smsContent);
+
+            $this->sendWhatsappMessage($merchant, $whatsappContent);
+
+            return $fdTicket['ticket_id'];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::RAS_FOH_NC_FLOW_SEND_NOTIFICATION_FAILED,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]);
+
+            return $fdTicket['ticket_id'] ?? '';
+        }
+    }
+
     /**
      * @throws BadRequestValidationFailureException
      */
@@ -836,7 +980,16 @@ class Service extends Base\Service
 
         (new Validator)->validateTriggerNeedsClarificationRequest($action);
 
-        $ticketId = $this->sendOutboundEmailForTriggerNeedsClarification($action);
+        $merchant = (new Merchant\Repository())->findOrFail($action->getEntityId());
+
+        if (Merchant\RiskMobileSignupHelper::isEligibleForMobileSignUp($merchant) === false)
+        {
+            $ticketId = $this->sendOutboundEmailForTriggerNeedsClarification($merchant);
+        }
+        else
+        {
+            $ticketId = $this->sendMobileSignUpNotificationForNC($merchant);
+        }
 
         $this->addCommentToWorkflowForTriggerNeedsClarification($action, $ticketId);
 
@@ -845,10 +998,8 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
-    protected function sendOutboundEmailForTriggerNeedsClarification($action)
+    protected function sendOutboundEmailForTriggerNeedsClarification($merchant)
     {
-        $merchant = (new Merchant\Repository)->findOrFail($action->getEntityId());
-
         $subject = Constants::FOH_ADMIN_TRIGGER_NEEDS_CLARIFICATION_SUBJECT;
 
         $viewTemplate = Constants::FOH_ADMIN_TRIGGER_NEEDS_CLARIFICATION_TPL;
