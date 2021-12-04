@@ -203,10 +203,31 @@ class Service extends Base\Service
 
     public function otpSendViaEmail($input)
     {
-        if ((new User\Core())->checkIfEmailAlreadyExists($input[User\Entity::EMAIL]))
+        $email = $input[User\Entity::EMAIL];
+
+        $user = $this->user;
+
+        try
+        {
+            $emailUser = $this->repo->user->findByEmail($email);
+        }
+        catch (Exception\BadRequestException $e)
+        {
+            $emailUser = null;
+        }
+
+        if ((empty($emailUser) === false) and
+            ($user->getId() !== $emailUser->getId()) and
+            (new User\Core())->checkIfEmailAlreadyExists($input[User\Entity::EMAIL]))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS);
         }
+
+        $userInput = [
+            User\Entity::EMAIL  => $input[User\Entity::EMAIL]
+        ];
+
+        (new User\Service())->edit($this->user->getId(), $userInput);
 
         return (new User\Service())->sendOtpEmailVerification($this->merchant, $this->user, $input);
     }
