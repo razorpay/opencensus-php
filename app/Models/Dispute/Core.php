@@ -1632,13 +1632,6 @@ class Core extends Base\Core
     {
         $payment = $dispute->payment;
 
-        if (($payment === null) or
-            ($payment->isInternational() === true)
-        )
-        {
-            return RecoveryMethod::RISK_OPS_REVIEW;
-        }
-
         if ($dispute->isCustomerDispute() === true)
         {
             return RecoveryMethod::REFUND;

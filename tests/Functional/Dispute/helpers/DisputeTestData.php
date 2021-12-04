@@ -1472,6 +1472,23 @@ return [
         ],
     ],
 
+    'testDisputeFetchDeductAtOnsetFilter'    => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/admin/dispute?deduct_at_onset=1',
+        ],
+        'response'  => [
+            'content'       => [
+                'count'         => 1,
+                'items'         => [
+                    [
+                        'deduct_at_onset' => true,
+                    ],
+                ]
+            ],
+        ],
+    ],
+
     'testDisputeFetchCountProxyAuth'    => [
         'request'   => [
             'method'        => 'get',

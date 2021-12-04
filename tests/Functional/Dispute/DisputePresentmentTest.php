@@ -14,8 +14,6 @@ use RZP\Models\Payment\Refund;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Mail;
 use RZP\Tests\Traits\TestsWebhookEvents;
-use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Mail\Dispute\Admin\DisputePresentmentRiskOpsReview;
 
 class DisputePresentmentTest extends TestCase
@@ -706,10 +704,6 @@ class DisputePresentmentTest extends TestCase
                 'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'wallet_mpesa'],
                 'expected_recovery_method' => 'risk_ops_review',
             ],
-            [
-                'payment_edit_input'       => ['international' => true, 'method' => 'card'], // international payments -> always risk ops review
-                'expected_recovery_method' => 'risk_ops_review',
-            ],
         ];
 
         foreach ($testcases as $testcase)
@@ -788,6 +782,69 @@ class DisputePresentmentTest extends TestCase
             'amount'    => 1000000,
             'entity_id' => 'adj_' . $adjustment['id'],
         ], $transaction);
+    }
+
+    public function testAcceptDisputeNonINRRecoveryViaAdjustment()
+    {
+        $this->setUpForInitiateDraftEvidenceTest([
+            'amount'        => 10,
+            'base_amount'   => 100,
+        ], 'payment:captured', [
+            'amount'        => 10,
+            'base_amount'   => 100,
+            'international' => true,
+        ]);
+
+
+
+        [$paymentBefore, $disputeBefore] = $this->getEntitiesByTypeAndIdMultiple(
+            'payment', 'randomPayId123',
+            'dispute', '0123456789abcd'
+        );
+
+        $this->ba->privateAuth();
+
+        $this->acceptDispute('disp_0123456789abcd');
+
+        [$paymentAfter, $disputeAfter, $adjustment, $transaction] = $this->getEntitiesByTypeAndIdMultiple(
+            'payment', 'randomPayId123',
+            'dispute', '0123456789abcd',
+            'adjustment', null,
+            'transaction', null
+        );
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'       => 0,
+            'status'                => 'open',
+            'deduction_source_type' => null,
+            'deduction_source_id'   => null,
+        ], $disputeBefore);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'       => 100,
+            'status'                => 'lost',
+            'deduction_source_type' => 'adjustment',
+            'deduction_source_id'   => Adjustment\Entity::verifyIdAndSilentlyStripSign($adjustment['id']),
+            'internal_status'       => 'lost_merchant_debited',
+        ], $disputeAfter);
+
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'    => '10000000000000',
+            'entity_type'    => 'dispute',
+            'entity_id'      => '0123456789abcd',
+            'amount'         => -100,
+            'currency'       => 'INR',
+            'description'    => 'Debit disputed amount V2',
+            'transaction_id' => Transaction\Entity::verifyIdAndSilentlyStripSign($transaction['id']),
+        ], $adjustment);
+
+
+        $this->assertArraySelectiveEquals([
+            'amount'    => 100,
+            'entity_id' => 'adj_' . $adjustment['id'],
+        ], $transaction);
+
     }
 
 
