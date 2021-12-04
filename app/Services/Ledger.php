@@ -66,6 +66,7 @@ class Ledger
         'fetchLedgerConfigFormFieldOptions' => 'FetchLedgerConfigFormFieldOptions',
         'fetchAccountTypes'                 => 'FetchAccountTypes',
         'fetchFundAccountTypes'             => 'FetchFundAccountTypes',
+        'deleteMerchants'                   => 'DeleteMerchants',
     ];
 
     // Headers
@@ -381,6 +382,19 @@ class Ledger
     public function fetchAccountTypes($input, bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchAccountTypes'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param $input
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function deleteMerchants($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::DashboardURL . '/' . self::URLS['deleteMerchants'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 

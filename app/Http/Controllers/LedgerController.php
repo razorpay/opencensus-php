@@ -154,4 +154,11 @@ class LedgerController extends Controller
 
         return ApiResponse::json($response['body'], $response['code']);
     }
+
+    public function deleteMerchants()
+    {
+        $response = $this->app['ledger']->deleteMerchants($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
 }

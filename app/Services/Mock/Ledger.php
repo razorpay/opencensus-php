@@ -100,22 +100,22 @@ class Ledger extends BaseLedger
     public function createAccountsInBulk($input, bool $throwExceptionOnFailure = false): array
     {
         $response = [
-                    "accounts" => [
-                    [
-                        "merchant_id"       => "sampleMerchant",
-                        "status"            => "IN_REVIEW",
-                        "name"              => "test name",
-                        "parent_account_id" => "Parent00000002",
-                        "currency"          => "INR",
-                        "description"       => "sample description",
-                        "account_category"  => "asset",
-                        "business_category" => "nominal",
-                        "entities"          => [
-                            "product" => ["card"]
-                        ]
-                    ],
+            "accounts" => [
+                [
+                    "merchant_id"       => "sampleMerchant",
+                    "status"            => "IN_REVIEW",
+                    "name"              => "test name",
+                    "parent_account_id" => "Parent00000002",
+                    "currency"          => "INR",
+                    "description"       => "sample description",
+                    "account_category"  => "asset",
+                    "business_category" => "nominal",
+                    "entities"          => [
+                        "product" => ["card"]
                     ]
-                ];
+                ],
+            ]
+        ];
 
         return [
             'code' => 200,
@@ -332,28 +332,28 @@ class Ledger extends BaseLedger
             "tenant"                => "X",
             "transactor_event_name" => "XPositiveAdjustmentProcessed",
             "rule" => [
-            "transactor_event"       => "positive_adjustment_processed"
+                "transactor_event"       => "positive_adjustment_processed"
             ],
             "config" => [
-            "ledger_entries" => [
+                "ledger_entries" => [
                     [
                         "account_discovery_config" => [
-                                "account_category"  => "expense",
-                                "account_type"      => "cash",
-                                "fund_account_type" => "adjustment",
-                                "identifiers"       => [],
-                            ],
+                            "account_category"  => "expense",
+                            "account_type"      => "cash",
+                            "fund_account_type" => "adjustment",
+                            "identifiers"       => [],
+                        ],
                         "direction" => "debit",
                         "formula"   => "amount",
                     ],
                     [
                         "account_discovery_config" => [
-                                "account_category"  => "liability",
-                                "account_type"      => "payable",
-                                "fund_account_type" => "merchant_va",
-                                "identifiers" => [
-                                    "banking_account_id" => "$"."banking_account_id"
-                                ]
+                            "account_category"  => "liability",
+                            "account_type"      => "payable",
+                            "fund_account_type" => "merchant_va",
+                            "identifiers" => [
+                                "banking_account_id" => "$"."banking_account_id"
+                            ]
                         ],
                         "direction" => "credit",
                         "formula"   => "amount",
@@ -1201,4 +1201,22 @@ class Ledger extends BaseLedger
             'body' => $response
         ];
     }
+
+    public function deleteMerchants($input, bool $throwExceptionOnFailure = false): array
+    {
+     $response = [
+         "merchant_ids_not_deleted" => [
+              "sampleMerchant1"
+         ],
+         "merchant_ids_not_exist" => [
+              "sampleMerchant2"
+         ]
+     ];
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
+
 }

@@ -3034,6 +3034,7 @@ class Route
         'fetch_ledger_config_form_field_options_ledger'   => ['post',      'ledger_service/fetch_ledger_config_form_field_options', 'LedgerController@fetchLedgerConfigFormFieldOptions'],
         'fetch_account_types_ledger'                      => ['post',      'ledger_service/fetch_account_types',                    'LedgerController@fetchAccountTypes'],
         'fetch_fund_account_types_ledger'                 => ['post',      'ledger_service/fetch_fund_account_types',               'LedgerController@fetchFundAccountTypes'],
+        'delete_merchants_ledger'                         => ['post',      'ledger_service/delete_merchants',                       'LedgerController@deleteMerchants'      ],
 
         'merchant_risk_data'                      => ['get',       'merchants/{id}/risk/data',                              'MerchantController@getMerchantRiskData'],
 
@@ -5847,6 +5848,7 @@ class Route
         'fetch_ledger_config_form_field_options_ledger',
         'fetch_account_types_ledger',
         'fetch_fund_account_types_ledger',
+        'delete_merchants_ledger',
 
         'merchant_risk_data',
         'complete_submerchant_onboarding',
@@ -6936,6 +6938,7 @@ class Route
         'fetch_ledger_config_form_field_options_ledger'   => Permission::LEDGER_VIEW_DASHBOARD,
         'fetch_account_types_ledger'                      => Permission::LEDGER_VIEW_DASHBOARD,
         'fetch_fund_account_types_ledger'                 => Permission::LEDGER_VIEW_DASHBOARD,
+        'delete_merchants_ledger'                         => Permission::LEDGER_VIEW_DASHBOARD,
 
         'merchant_risk_data'                              => Permission::GET_MERCHANT_RISK_DATA,
         'bulk_fraud_notify'                               => Permission::BULK_FRAUD_NOTIFY,
@@ -10414,6 +10417,7 @@ class Route
             'fetch_ledger_config_form_field_options_ledger',
             'fetch_account_types_ledger',
             'fetch_fund_account_types_ledger',
+            'delete_merchants_ledger',
 
             'merchant_risk_data',
             'oauth_application_update_admin',
@@ -11318,6 +11322,7 @@ class Route
             'ledger_fetch_multiple_transactions',
             'fetch_account_types_ledger',
             'fetch_fund_account_types_ledger',
+            'delete_merchants_ledger',
         ],
 
         'payout_link_customer_page' => [
