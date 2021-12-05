@@ -326,12 +326,18 @@ class Service extends Base\Service
 
         $slotBookingDateTime = $bookingDetails['slotDateAndTime'];
 
-        $epochSlotBookingDateTime = strtotime($slotBookingDateTime.' Asia/Kolkata');
+        $epochSlotBookingDateTime = strtotime($slotBookingDateTime);
 
         if($channel === 'rbl')
         {
             // check in db if slot is already booked for the same id and dateAnTime
             $activationDetail = $this->app['repo']->banking_account_activation_detail->findByBankingAccountId($id);
+
+            $this->trace->addDebug(TraceCode::SLOT_BOOKING_AND_SAVED_TIME,
+                                   [
+                                       'booking time' => $epochSlotBookingDateTime,
+                                       'Saved time' => $activationDetail['booking_date_and_time']
+                                   ]);
 
             if(empty($activationDetail['booking_date_and_time']) === false && $activationDetail['booking_date_and_time'] === $epochSlotBookingDateTime)
             {

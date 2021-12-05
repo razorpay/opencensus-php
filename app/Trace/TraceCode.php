@@ -5316,6 +5316,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANKING_ACCOUNT_SERVICE_ERROR_PERSON_API_FAILURE                                   = 'BANKING_ACCOUNT_SERVICE_ERROR_PERSON_API_FAILURE';
     const BANKING_ACCOUNT_SERVICE_ERROR_SIGNATORY_API_FAILURE                                = 'BANKING_ACCOUNT_SERVICE_ERROR_SIGNATORY_API_FAILURE';
     const BANKING_ACCOUNT_SERVICE_CRON_REQUEST                                               = 'BANKING_ACCOUNT_SERVICE_CRON_REQUEST';
+    const SLOT_BOOKING_AND_SAVED_TIME                                                        = 'SLOT_BOOKING_AND_SAVED_TIME';
     const BANKING_ACCOUNT_SERVICE_LMS_REQUEST                                                = 'BANKING_ACCOUNT_SERVICE_LMS_REQUEST';
     const BANKING_ACCOUNT_SERVICE_LMS_ERROR                                                  = 'BANKING_ACCOUNT_SERVICE_LMS_ERROR';
     const BANKING_ACCOUNT_SERVICE_DELETE_SIGNATORY_REQUEST                                   = 'BANKING_ACCOUNT_SERVICE_DELETE_SIGNATORY_REQUEST';

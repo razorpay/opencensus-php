@@ -487,7 +487,7 @@ class BankingAccountServiceTest extends TestCase
             'merchant_poc_email'        => 'rzp@gmail.com',
             'merchant_poc_phone_number' => '9177278079',
             'sales_team'                => Validator::SELF_SERVE,
-            'booking_date_and_time'     => strtotime('17-Nov-2021 11:30:00'.' Asia/Kolkata')
+            'booking_date_and_time'     => strtotime('17-Nov-2021 11:30:00')
         ]);
 
         $response = $this->startTest();
