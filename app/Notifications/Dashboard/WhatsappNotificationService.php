@@ -20,14 +20,16 @@ class WhatsappNotificationService extends BaseNotificationService
     {
         $merchant = $this->args[Constants::MERCHANT];
 
-        $users = $this->getRecipients($merchant);
+        $recipients = $this->getRecipients($merchant);
+
+        $recipients = array_unique($recipients);
 
         $payload = $this->getPayload();
 
         $isWhatsappEnabled = (new MerchantCore())->isRazorxExperimentEnable($merchant->getId(),
                                                                             RazorxTreatment::WHATSAPP_NOTIFICATIONS);
 
-        if ((empty($users) === true) or
+        if ((empty($recipients) === true) or
             ($isWhatsappEnabled === false))
         {
             return;
@@ -35,9 +37,9 @@ class WhatsappNotificationService extends BaseNotificationService
 
         try
         {
-            foreach ($users as $user)
+            foreach ($recipients as $recipient)
             {
-                $receiver = $user[User\Constants::CONTACT_MOBILE];
+                $receiver = $recipient;
 
                 if (empty($receiver) === true)
                 {
@@ -101,11 +103,13 @@ class WhatsappNotificationService extends BaseNotificationService
 
     private function getRecipients(MerchantEntity $merchant)
     {
-        $users = $merchant->users()
-                          ->whereIn(UserEntity::ROLE, Events::RECIPIENT_ROLES[$this->event])
-                          ->get()
-                          ->toArray();
+        $recipients = $merchant->users()
+                               ->whereIn(UserEntity::ROLE, Events::RECIPIENT_ROLES[$this->event])
+                               ->where(UserEntity::CONTACT_MOBILE_VERIFIED, 1)
+                               ->get()
+                               ->pluck(UserEntity::CONTACT_MOBILE)
+                               ->toArray();
 
-        return $users;
+        return $recipients;
     }
 }

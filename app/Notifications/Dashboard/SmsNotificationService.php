@@ -20,23 +20,24 @@ class SmsNotificationService extends BaseNotificationService
     {
         $merchant = $this->args[Constants::MERCHANT];
 
-        $users = $this->getRecipients($merchant);
+        $recipients = $this->getRecipients($merchant);
 
-        if (empty($users) === true)
+        $recipients = array_unique($recipients);
+
+        if (empty($recipients) === true)
         {
             return;
         }
 
         try
         {
-            foreach ($users as $user)
+            foreach ($recipients as $recipient)
             {
                 $payload = $this->getPayload();
 
-                $payload[Constants::RECEIVER] = $user[User\Constants::CONTACT_MOBILE];
+                $payload[Constants::RECEIVER] = $recipient;
 
-                if ((empty($payload[Constants::RECEIVER]) === true) or
-                    ($user[User\Entity::CONTACT_MOBILE_VERIFIED] === false))
+                if ((empty($payload[Constants::RECEIVER]) === true))
                 {
                     continue;
                 }
@@ -74,7 +75,7 @@ class SmsNotificationService extends BaseNotificationService
 
         $payload[Constants::PARAMS] = array_merge($payload[Constants::PARAMS], $this->args[Constants::PARAMS] ?? []);
 
-        $allowedKeys = Events::WHATSAPP_TEMPLATE_KEYS[$this->event] ?? [];
+        $allowedKeys = Events::SMS_TEMPLATE_KEYS[$this->event] ?? [];
 
         $payload[Constants::PARAMS] = array_only($payload[Constants::PARAMS], $allowedKeys);
 
@@ -88,11 +89,13 @@ class SmsNotificationService extends BaseNotificationService
 
     private function getRecipients(MerchantEntity $merchant)
     {
-        $users = $merchant->users()
+        $recipients = $merchant->users()
                           ->whereIn(UserEntity::ROLE, Events::RECIPIENT_ROLES[$this->event])
+                          ->where(UserEntity::CONTACT_MOBILE_VERIFIED, 1)
                           ->get()
+                          ->pluck(UserEntity::CONTACT_MOBILE)
                           ->toArray();
 
-        return $users;
+        return $recipients;
     }
 }
