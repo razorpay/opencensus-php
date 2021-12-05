@@ -192,6 +192,43 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals($qrPayment['payment_id'], $payment['id']);
     }
 
+    public function testProcessBqrBankTransferDuplicate()
+    {
+        $this->enableRazorXTreatmentForQrBankTransfer();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->merchant->addFeatures(['qr_image_content']);
+
+        $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer']);
+
+        $qrBankAccount = $this->getDbLastEntity('bank_account');
+
+        $this->assertEquals('qr_' . $qrBankAccount['entity_id'], $qrCode['id']);
+        $this->assertEquals('qr_code', $qrBankAccount['type']);
+
+        $accountNumberPos = strpos($qrCode['image_content'], '0827');
+        $accountNumber    = substr($qrCode['image_content'], $accountNumberPos + 15, 16);
+        $ifsc             = substr($qrCode['image_content'], $accountNumberPos + 4, 11);
+
+        $this->assertEquals($accountNumber, $qrBankAccount['account_number']);
+        $this->assertEquals($ifsc, $qrBankAccount['ifsc_code']);
+
+        $this->processOrNotifyBankTransfer($accountNumber, $ifsc, '1234utr');
+
+        $qrPaymentRequest = $this->getDbLastEntityToArray('qr_payment_request');
+        $this->assertEquals($qrPaymentRequest['is_created'], 1);
+        $this->assertEquals($qrPaymentRequest['expected'], 1);
+        $this->assertEquals($qrPaymentRequest['failure_reason'],'');
+
+        $this->processOrNotifyBankTransfer($accountNumber, $ifsc, '1234utr');
+
+        $qrPaymentRequest = $this->getDbLastEntityToArray('qr_payment_request');
+        $this->assertEquals($qrPaymentRequest['is_created'], 0);
+        $this->assertNull($qrPaymentRequest['expected']);
+        $this->assertEquals($qrPaymentRequest['failure_reason'], "QR_PAYMENT_DUPLICATE_NOTIFICATION");
+    }
+
     public function testProcessBqrIciciBankTransferAndRefund()
     {
         $qrCode = $this->getQrCodeForBankTransfer(Gateway::BT_ICICI, '111222');
