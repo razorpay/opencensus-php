@@ -27,6 +27,7 @@ use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\PaperMandate\PaperMandateUpload;
+use RZP\Models\Order\Product\Core as ProductCore;
 use RZP\Models\Payment\Processor\Upi as UpiPayment;
 use \RZP\Models\UpiMandate\Frequency as UpiFrequency;
 use \RZP\Models\UpiMandate\Validator as UpiValidator;
@@ -74,6 +75,8 @@ class Core extends Base\Core
         $invoice = $this->repo->transaction(
             function() use ($input, $merchant, $batch, $order, $batchId)
             {
+                $productsArray = array_pull($input, 'products');
+
                 $customer = $this->createCustomer($input, $merchant);
 
                 if(isset($input['subscription_registration']['method'])  and
@@ -85,6 +88,12 @@ class Core extends Base\Core
                 $subscriptionRegistration = $this->createSubscriptionRegistration($input, $merchant, $customer);
 
                 $invoice = $this->createInvoice($input, $merchant, $subscriptionRegistration, $batch, $order, $batchId);
+
+                if($productsArray!==null)
+                {
+                    $newOrder = $invoice->order;
+                    $this->associateProducts($newOrder, $productsArray);
+                }
 
                 return $invoice;
             }
@@ -99,6 +108,11 @@ class Core extends Base\Core
         $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_CREATED,$tokenRegistration->getMetricDimensions());
 
         return $invoice;
+    }
+
+    protected function associateProducts($order, array $productsArray)
+    {
+        (new ProductCore)->createMany($order, $productsArray);
     }
 
     public function migrateNach(
@@ -610,6 +624,7 @@ class Core extends Base\Core
             Order\Entity::RECEIPT         => $receipt,
             Order\Entity::PAYMENT_CAPTURE => true,
             Order\Entity::NOTES           => $input[Order\Entity::NOTES] ?? [],
+            Order\Entity::PRODUCTS        => $input[Order\Entity::PRODUCTS] ?? [],
         ];
 
         $this->trace->info(
@@ -1012,6 +1027,7 @@ class Core extends Base\Core
             Order\Entity::PAYMENT_CAPTURE  => true,
             Order\Entity::METHOD           => $tokenRegistration->getMethod(),
             Order\Entity::NOTES            => $previousOrder->getNotes()->toArray(),
+            Order\Entity::PRODUCTS         => $previousOrder->products->toArrayPublic()['items'],
             Order\Entity::RECEIPT          => 'auto_crg_' . Base\UniqueIdEntity::generateUniqueId(),
         ];
 
