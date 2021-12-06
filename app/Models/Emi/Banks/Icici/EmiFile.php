@@ -101,7 +101,7 @@ class EmiFile extends Base\EmiFile
                 'Card PAN'                         => $this->getCardNumber($emiPayment->card),
                 'Amount'                           => $principalAmount,
                 'Auth Code'                        => $this->getAuthCode($emiPayment),
-                'Scheme Code'                      => $issuerPlanId,
+                'Scheme Code'                      => substr($issuerPlanId, 0, 4).'P199'.substr($issuerPlanId, -2),
                 'MID'                              => '',
                 'TID'                              => '',
                 'Discount/ Cashback Amount'        => 'NA',
@@ -123,7 +123,7 @@ class EmiFile extends Base\EmiFile
                 'Subvention Amount (Rs.)'          => $subventionAmount,
                 'Interest Rate'                    => $rate,
                 'Customer Processing Fee'          => '',
-                'Customer Processing Amount (Rs.)' => '',
+                'Customer Processing Amount (Rs.)' => '199',
                 'Product Category'                 => '',
                 'Product Sub-Category 1'           => '',
                 'Product Sub-Category 2'           => '',
@@ -137,7 +137,6 @@ class EmiFile extends Base\EmiFile
                 'Reward Point'                     => '',
             ];
         }
-
         $this->totalTransactions = $totalTransactions;
 
         $this->totalAmount = $totalAmount;
