@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Mail\Downtime;
+use RZP\Models\Gateway\Downtime\Webhook\Constants\DowntimeService;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Feature;
@@ -198,6 +199,8 @@ class Service extends Base\Service
 
     public function eventDowntimeStarted(Entity $downtime, $lastSeverity=null)
     {
+        $downtimeType = ($downtime->getMerchantId() === null) ? DowntimeService::PLATFORM : DowntimeService::MERCHANT;
+
         try
         {
             $merchantIds = [];
@@ -220,6 +223,8 @@ class Service extends Base\Service
 
             foreach ($merchantIds as $merchantId)
             {
+                $this->trace->count(Metric::DOWNTIME_WEBHOOK_ATTEMPTED_COUNT, ['$downtimeType' => $downtimeType]);
+
                 $eventPayload = [
                     ApiEventSubscriber::MAIN        => $downtime,
                     ApiEventSubscriber::MERCHANT_ID => $merchantId,
