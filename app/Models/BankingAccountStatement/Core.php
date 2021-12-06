@@ -39,6 +39,10 @@ class Core extends Base\Core
 
     const DASHBOARD_FILE_URL = '%sufh/file/%s';
 
+    const DELAY = 'delay';
+
+    const ATTEMPT_NUMBER = 'attempt_number';
+
     const DEFAULT_BANKING_ACCOUNT_STATEMENT_RATE_LIMIT = 6;
 
     const DEFAULT_RX_BAS_FORCED_FETCH_TIME_IN_HOURS = 8;
@@ -83,6 +87,21 @@ class Core extends Base\Core
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+    }
+
+    /** @var Details\Entity $basDetails  */
+    public $basDetails = null;
+
+    public function getBasDetails(string $accountNumber = null, string $channel = null)
+    {
+        if (($this->basDetails === null) and
+            ($accountNumber !== null) and
+            ($channel !== null))
+        {
+            $this->basDetails = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
+        }
+
+        return $this->basDetails;
     }
 
     /**
@@ -141,8 +160,7 @@ class Core extends Base\Core
 
                     $this->repo->saveOrFail($bankingAccount);
 
-                    /** @var BASDetails\Entity $basDetailEntity */
-                    $basDetailEntity = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
+                    $basDetailEntity = $this->getBasDetails($accountNumber, $channel);
 
                     $basDetailEntity->setLastStatementAttemptAt();
 
@@ -227,7 +245,7 @@ class Core extends Base\Core
                 'banking_account_statement_fetch_' . $accountNumber . '_' . $channel,
                 function () use ($channel, $accountNumber, $input)
                 {
-                    $basDetailEntity = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
+                    $basDetailEntity = $this->getBasDetails($accountNumber, $channel);
 
                     $basDetailEntity->setLastStatementAttemptAt();
 
@@ -292,7 +310,7 @@ class Core extends Base\Core
             $saveLimit = self::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_IN_TOTAL_DEFAULT;
         }
 
-        $basDetails = (new BASDetails\Repository)->fetchByAccountNumberAndChannel($accountNumber, $channel);
+        $basDetails = $this->getBasDetails($accountNumber, $channel);
 
         $merchant = $basDetails->merchant;
 
@@ -2139,15 +2157,23 @@ class Core extends Base\Core
                  $gatewayBalanceChangeAt > $statementClosingBalanceChangeAt and
                  $gatewayBalanceChangeAt > $lastStatementAttemptAt))
             {
-                $accountNumbersToDispatch[$numberOfAccountsSelected] = ['account_number' => $bankingAccountDetail->getAccountNumber(),
-                    'balance_id' => $bankingAccountDetail->getBalanceId(), 'rule' => self::RBL_STATEMENT_FETCH_BALANCE_CHANGED_RULE];
+                $accountNumbersToDispatch[$numberOfAccountsSelected] = [
+                    BASDetails\Entity::ACCOUNT_NUMBER => $bankingAccountDetail->getAccountNumber(),
+                    BASDetails\Entity::BALANCE_ID     => $bankingAccountDetail->getBalanceId(),
+                    BASDetails\Entity::CHANNEL        => $bankingAccountDetail->getChannel(),
+                    'rule'                            => self::RBL_STATEMENT_FETCH_BALANCE_CHANGED_RULE,
+                ];
 
                 $numberOfAccountsSelected++;
             }
             else
             {
-                array_push($otherAccounts, ['account_number' => $bankingAccountDetail->getAccountNumber(),
-                            'balance_id' => $bankingAccountDetail->getBalanceId(), 'rule' => self::RBL_STATEMENT_FETCH_OTHERS_RULE]);
+                array_push($otherAccounts, [
+                    BASDetails\Entity::ACCOUNT_NUMBER => $bankingAccountDetail->getAccountNumber(),
+                    BASDetails\Entity::BALANCE_ID     => $bankingAccountDetail->getBalanceId(),
+                    BASDetails\Entity::CHANNEL        => $bankingAccountDetail->getChannel(),
+                    'rule'                            => self::RBL_STATEMENT_FETCH_OTHERS_RULE
+                ]);
             }
 
             if ($numberOfAccountsSelected >= $limit)
@@ -2188,7 +2214,9 @@ class Core extends Base\Core
 
             array_push($accountNumbersDispatched, $accountNumberDetails['account_number']);
 
-            $this->dispatchBankingAccountStatementJob($channel, $accountNumberDetails['account_number'], $cronDispatchDelay);
+            $accountNumberDetails[self::DELAY] = $cronDispatchDelay;
+
+            $this->dispatchBankingAccountStatementJob($accountNumberDetails);
         }
 
         return ['accounts_processed' => $accountNumbersDispatched];
@@ -2196,27 +2224,32 @@ class Core extends Base\Core
 
     // Adding a delay in dispatch and default is 0 min delay.
     // This delay can be made channel specific and can be kept in redis
-    public function dispatchBankingAccountStatementJob(string $channel,
-                                                       string $accountNumber,
-                                                       int $delay = 0,
-                                                       int $attemptNumber = 0)
+    public function dispatchBankingAccountStatementJob(array $accountDetails)
     {
+        $channel       = array_pull($accountDetails, BASDetails\Entity::CHANNEL);
+        $accountNumber = array_pull($accountDetails, BASDetails\Entity::ACCOUNT_NUMBER);
+        $balanceId     = array_pull($accountDetails, BASDetails\Entity::BALANCE_ID);
+        $delay         = array_pull($accountDetails, self::DELAY, 0);
+        $attemptNumber = array_pull($accountDetails, self::ATTEMPT_NUMBER, 0);
+
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_DISPATCH_JOB_REQUEST,
             [
-                'channel'        => $channel,
-                'account_number' => $accountNumber,
-                'delay'          => $delay,
-                'attempt_number' => $attemptNumber
+                BASDetails\Entity::CHANNEL        => $channel,
+                BASDetails\Entity::ACCOUNT_NUMBER => $accountNumber,
+                BASDetails\Entity::BALANCE_ID     => $balanceId,
+                self::DELAY                       => $delay,
+                self::ATTEMPT_NUMBER              => $attemptNumber
             ]);
 
         $job = $this->getAccountStatementJobForChannel($channel, $accountNumber);
 
         $job::dispatch($this->mode,
                        [
-                           'channel'        => $channel,
-                           'account_number' => $accountNumber,
-                           'attempt_number' => $attemptNumber
+                           BASDetails\Entity::CHANNEL        => $channel,
+                           BASDetails\Entity::ACCOUNT_NUMBER => $accountNumber,
+                           BASDetails\Entity::BALANCE_ID     => $balanceId,
+                           self::ATTEMPT_NUMBER              => $attemptNumber
                        ])->delay($delay);
     }
 

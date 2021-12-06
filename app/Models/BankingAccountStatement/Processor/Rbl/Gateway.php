@@ -316,7 +316,14 @@ class Gateway extends BaseProcessor
         {
             $delay = self::RBL_ACCOUNT_STATEMENT_DISPATCH_DELAY;
 
-            (new BankingAccountStatementCore)->dispatchBankingAccountStatementJob($this->channel, $this->accountNumber, $delay);
+            $data = [
+                BasDetails\Entity::CHANNEL        => $this->basDetails->getChannel(),
+                BasDetails\Entity::ACCOUNT_NUMBER => $this->accountNumber,
+                BasDetails\Entity::BALANCE_ID     => $this->basDetails->getBalanceId(),
+                'delay'                           => $delay
+            ];
+
+            (new BankingAccountStatementCore)->dispatchBankingAccountStatementJob($data);
         }
 
         return $finalFormattedResponse;
@@ -527,7 +534,14 @@ class Gateway extends BaseProcessor
         {
             $delay = self::RBL_ACCOUNT_STATEMENT_DISPATCH_DELAY;
 
-            (new BankingAccountStatementCore)->dispatchBankingAccountStatementJob($this->channel, $this->accountNumber, $delay);
+            $data = [
+                BasDetails\Entity::CHANNEL        => $this->channel,
+                BasDetails\Entity::ACCOUNT_NUMBER => $this->accountNumber,
+                BasDetails\Entity::BALANCE_ID     => $this->basDetails->getBalanceId(),
+                'delay'                           => $delay
+            ];
+
+            (new BankingAccountStatementCore)->dispatchBankingAccountStatementJob($data);
         }
 
         return $finalFormattedResponse;

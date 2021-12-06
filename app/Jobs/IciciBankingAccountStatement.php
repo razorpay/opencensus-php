@@ -73,6 +73,10 @@ class IciciBankingAccountStatement extends Job
         {
             parent::handle();
 
+            $BASCore = new BAS\Core;
+
+            $BASCore->getBasDetails($this->params['account_number'], $this->params['channel']);
+
             $enableRateLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_ENABLE_RATE_LIMIT_FLOW]);
 
             if ($enableRateLimit === 1)
@@ -89,10 +93,11 @@ class IciciBankingAccountStatement extends Job
                 $this->trace->debug(
                     TraceCode::BANKING_ACCOUNT_STATEMENT_RATE_LIMITED,
                     [
-                        'channel'                   => $this->params['channel'],
-                        'account_number'            => $this->params['account_number'],
-                        'rate_limit_request_number' => $rateLimitRequestNumber,
-                        'redis_key_name'            => $redisKeyName
+                        BAS\Entity::CHANNEL            => $this->params['channel'],
+                        BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
+                        BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
+                        'rate_limit_request_number'    => $rateLimitRequestNumber,
+                        'redis_key_name'               => $redisKeyName
                     ]);
 
                 $rateLimitReleaseDelay = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY]);
@@ -109,10 +114,12 @@ class IciciBankingAccountStatement extends Job
                 $this->trace->info(
                     TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_INIT,
                     [
-                        'channel'                   => $this->params['channel'],
-                        'account_number'            => $this->params['account_number'],
-                        'rate_limit_request_number' => $rateLimitRequestNumber,
-                        'redis_key_name'            => $redisKeyName
+                        BAS\Entity::CHANNEL            => $this->params['channel'],
+                        BAS\Entity::ACCOUNT_NUMBER     => $this->params['account_number'],
+                        BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
+                        BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
+                        'rate_limit_request_number'    => $rateLimitRequestNumber,
+                        'redis_key_name'               => $redisKeyName
                     ]);
 
                 $workerStartTime = Carbon::now()->getTimestamp();
@@ -123,10 +130,12 @@ class IciciBankingAccountStatement extends Job
 
                 $this->trace->info(TraceCode::BAS_FETCH_PROCESSED_BY_QUEUE,
                                    [
-                                       'account_number' => $this->params['account_number'],
-                                       'channel'        => $this->params['channel'],
-                                       'start_time'     => $workerStartTime,
-                                       'end_time'       => $workerEndTime
+                                       BAS\Entity::CHANNEL            => $this->params['channel'],
+                                       BAS\Entity::ACCOUNT_NUMBER     => $this->params['account_number'],
+                                       BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
+                                       BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
+                                       'start_time'                   => $workerStartTime,
+                                       'end_time'                     => $workerEndTime
                                    ]);
 
                 $this->dispatchJobForStatementProcessing($this->params);
@@ -139,10 +148,7 @@ class IciciBankingAccountStatement extends Job
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED, [
-                'channel'           => $this->params['channel'],
-                'account_number'    => $this->params['account_number']
-            ]);
+                TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED, $this->params);
 
             $this->checkRetry();
         }
@@ -159,24 +165,13 @@ class IciciBankingAccountStatement extends Job
 
         try
         {
-            $accountNumber = $this->params['account_number'];
-
-            $channel = $this->params['channel'];
-
             $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_DISPATCH_JOB_REQUEST,
-                [
-                    'channel'        => $channel,
-                    'account_number' => $accountNumber,
-                    'delay'          => $delay,
-                ]);
+                $this->params + ['delay' => $delay]);
 
-            BankingAccountStatementProcessor::dispatch($this->mode,
-                [
-                    'channel'        => $channel,
-                    'account_number' => $accountNumber,
-                ])->delay($delay);
+            unset($params['attempt_number']);
 
+            BankingAccountStatementProcessor::dispatch($this->mode, $params)->delay($delay);
         }
         catch (\Throwable $e)
         {
@@ -184,11 +179,10 @@ class IciciBankingAccountStatement extends Job
             {
                 $this->trace->info(
                     TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_DISPATCH_JOB_RETRY,
+                    $this->params +
                     [
-                        'channel'        => $this->params['channel'],
-                        'account_number' => $this->params['account_number'],
-                        'delay'          => $delay,
-                        'retry_count'    => $retryCount+1,
+                        'delay'       => $delay,
+                        'retry_count' => $retryCount + 1,
                     ]);
 
                 return $this->dispatchJobForStatementProcessing($params, $retryCount+1);
@@ -206,25 +200,28 @@ class IciciBankingAccountStatement extends Job
     {
         if ($this->attemptNumber < self::MAX_RETRY_ATTEMPT)
         {
-            $workerRetryDelay = self::MAX_RETRY_DELAY * pow(2, $this->attemptNumber);
+            $data                           = $this->params;
+            $data[BAS\Core::DELAY]          = self::MAX_RETRY_DELAY * pow(2, $this->attemptNumber);
+            $data[BAS\Core::ATTEMPT_NUMBER] = $this->attemptNumber + 1;
 
-            (new BAS\Core)->dispatchBankingAccountStatementJob($this->params['channel'], $this->params['account_number'], $workerRetryDelay, $this->attemptNumber + 1);
+            (new BAS\Core)->dispatchBankingAccountStatementJob($data);
 
-            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_RELEASED, [
-                'channel'               => $this->params['channel'],
-                'account_number'        => $this->params['account_number'],
-                'attempt_number'        => $this->attemptNumber,
-                'worker_retry_delay'    => $workerRetryDelay
-            ]);
+            $data['attempt_number'] = $this->attemptNumber;
+
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_RELEASED, $data);
         }
         else
         {
-            $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_DELETED, [
-                'channel'           => $this->params['channel'],
-                'account_number'    => $this->params['account_number'],
-                'job_attempts'      => $this->attemptNumber,
-                'message'           => 'Deleting the job after configured number of tries. Still unsuccessful.'
-            ]);
+            $traceData                 = $this->params;
+            $traceData['job_attempts'] = $this->attemptNumber;
+            $traceData['message']      = 'Deleting the job after configured number of tries. Still unsuccessful.';
+
+            if (array_key_exists('balance_id', $traceData) === true)
+            {
+                unset($traceData['account_number']);
+            }
+
+            $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_DELETED, $traceData);
 
             $operation = 'icici banking account statement fetch job failed';
 

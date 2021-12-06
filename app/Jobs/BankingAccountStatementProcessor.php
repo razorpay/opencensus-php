@@ -53,28 +53,17 @@ class BankingAccountStatementProcessor extends Job
         {
             parent::handle();
 
+            $BASCore = new BAS\Core;
+
+            $BASCore->getBasDetails($this->params['account_number'], $this->params['channel']);
+
             $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESSOR_JOB_INIT,
                 [
-                    'channel'           => $this->params['channel'],
-                    'account_number'    => $this->params['account_number']
+                    BAS\Entity::CHANNEL            => $this->params['channel'],
+                    BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
+                    BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
                 ]);
-
-            $BASCore = new BAS\Core;
-
-            if ($BASCore->checkReArchFlow($this->params['account_number'], $this->params['channel']) === false)
-            {
-                $this->trace->info(
-                    TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESSOR_JOB_CALLED_BUT_V2_FEATURE_NOT_ENABLED,
-                    [
-                        'channel'           => $this->params['channel'],
-                        'account_number'    => $this->params['account_number'],
-                    ]);
-
-                $this->delete();
-
-                return;
-            }
 
             $workerStartTime = Carbon::now()->getTimestamp();
 
@@ -84,10 +73,11 @@ class BankingAccountStatementProcessor extends Job
 
             $this->trace->info(TraceCode::BAS_PROCESSED_BY_QUEUE,
                 [
-                    'account_number'     => $this->params['account_number'],
-                    'channel'            => $this->params['channel'],
-                    'start_time'         => $workerStartTime,
-                    'end_time'           => $workerEndTime,
+                    BAS\Entity::CHANNEL            => $this->params['channel'],
+                    BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
+                    BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
+                    'start_time'                   => $workerStartTime,
+                    'end_time'                     => $workerEndTime,
                 ]);
 
             $this->delete();
@@ -97,10 +87,7 @@ class BankingAccountStatementProcessor extends Job
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESSOR_JOB_FAILED, [
-                'channel'           => $this->params['channel'],
-                'account_number'    => $this->params['account_number']
-            ]);
+                TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESSOR_JOB_FAILED, $this->params);
 
             $this->checkRetry();
         }
@@ -112,12 +99,11 @@ class BankingAccountStatementProcessor extends Job
         {
             $workerRetryDelay = self::MAX_RETRY_DELAY * pow(2, $this->attempts());
 
-            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESSOR_JOB_RELEASED, [
-                'channel'               => $this->params['channel'],
-                'account_number'        => $this->params['account_number'],
-                'attempt_number'        => 1 + $this->attempts(),
-                'worker_retry_delay'    => $workerRetryDelay
-            ]);
+            $data                           = $this->params;
+            $data[BAS\Core::DELAY]          = $workerRetryDelay;
+            $data[BAS\Core::ATTEMPT_NUMBER] = 1 + $this->attempts();
+
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESSOR_JOB_RELEASED, $data);
 
             $this->release($workerRetryDelay);
         }
@@ -125,12 +111,12 @@ class BankingAccountStatementProcessor extends Job
         {
             $this->delete();
 
-            $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESSOR_JOB_DELETED, [
-                'channel'           => $this->params['channel'],
-                'account_number'    => $this->params['account_number'],
-                'job_attempts'      => $this->attempts(),
-                'message'           => 'Deleting the job after configured number of tries. Still unsuccessful.'
-            ]);
+            $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESSOR_JOB_DELETED,
+                                $this->params +
+                                [
+                                    'job_attempts' => $this->attempts(),
+                                    'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
+                                ]);
 
             $operation = 'banking account statement processor job failed';
 

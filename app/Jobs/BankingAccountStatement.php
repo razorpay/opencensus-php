@@ -55,16 +55,21 @@ class BankingAccountStatement extends Job
         {
             parent::handle();
 
+            $BASCore = new BAS\Core;
+
+            $BASCore->getBasDetails($this->params['account_number'], $this->params['channel']);
+
             $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_INIT,
                 [
-                    'channel'           => $this->params['channel'],
-                    'account_number'    => $this->params['account_number']
+                    'channel'        => $BASCore->getBasDetails()->getChannel(),
+                    'balance_id'     => $BASCore->getBasDetails()->getBalanceId(),
+                    'bas_details_id' => $BASCore->getBasDetails()->getId()
                 ]);
 
             $workerStartTime = Carbon::now()->getTimestamp();
 
-            $result = (new BAS\Core)->processStatementForAccount($this->params);
+            $result = $BASCore->processStatementForAccount($this->params);
 
             $workerEndTime = Carbon::now()->getTimestamp();
 
@@ -79,13 +84,21 @@ class BankingAccountStatement extends Job
         }
         catch (\Throwable $e)
         {
+            $data = ['channel' => $this->params['channel']];
+
+            if (array_key_exists('balance_id', $this->params) === true)
+            {
+                $data['balance_id'] = $this->params['balance_id'];
+            }
+            else
+            {
+                $data['account_number'] = $this->params['account_number'];
+            }
+
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED, [
-                'channel'           => $this->params['channel'],
-                'account_number'    => $this->params['account_number']
-            ]);
+                TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED, $data);
 
             $this->checkRetry();
         }
@@ -99,23 +112,43 @@ class BankingAccountStatement extends Job
 
             $this->release($workerRetryDelay);
 
-            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_RELEASED, [
+            $data = [
                 'channel'               => $this->params['channel'],
-                'account_number'        => $this->params['account_number'],
                 'attempt_number'        => 1 + $this->attempts(),
                 'worker_retry_delay'    => $workerRetryDelay
-            ]);
+            ];
+
+            if (array_key_exists('balance_id', $this->params) === true)
+            {
+                $data['balance_id'] = $this->params['balance_id'];
+            }
+            else
+            {
+                $data['account_number'] = $this->params['account_number'];
+            }
+
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_RELEASED, $data);
         }
         else
         {
             $this->delete();
 
-            $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_DELETED, [
+            $data = [
                 'channel'           => $this->params['channel'],
-                'account_number'    => $this->params['account_number'],
                 'job_attempts'      => $this->attempts(),
                 'message'           => 'Deleting the job after configured number of tries. Still unsuccessful.'
-            ]);
+            ];
+
+            if (array_key_exists('balance_id', $this->params) === true)
+            {
+                $data['balance_id'] = $this->params['balance_id'];
+            }
+            else
+            {
+                $data['account_number'] = $this->params['account_number'];
+            }
+
+            $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_DELETED, $data);
 
             $operation = 'banking account statement fetch job failed';
 
