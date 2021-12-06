@@ -583,6 +583,11 @@ class Entity extends Base\PublicEntity
         Status::CANCELLED,
     ];
 
+    const UPDATE_BLOCKED_END_STATES = [
+        Status::EXPIRED,
+        Status::CANCELLED,
+    ];
+
     // -------------------------------------- Mutators ---------------
 
     // Following 2 mutators are for converting '' (empty strings)

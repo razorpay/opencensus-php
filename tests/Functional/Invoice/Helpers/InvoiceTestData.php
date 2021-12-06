@@ -5337,6 +5337,51 @@ return [
         'response' => [
             'content' => [],
         ],
-    ]
+    ],
+    'testFetchIssuedLinkOlderThanSixMonths' => [
+        'request' => [
+            'url' => 'url_to_be_replaced',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'receipt'       => '00000000000001',
+                'customer_details' => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'line_items'   => [],
+                'status'       => 'issued',
+                'view_less'    => true,
+                'amount'       => 1000,
+                'description'  => 'For special service',
+                'currency'     => 'INR',
+                'payment_id'   => null,
+            ]
+        ]
+    ],
+    'testFetchCancelledAndExpiredLinkOlderThanSixMonths' => [
+        'request' => [
+            'url' => 'url_to_be_replaced',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
     // ----------------------------------------------------------------------
 ];

@@ -22,12 +22,14 @@ use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\MocksRazorx;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 
 class InvoiceTest extends TestCase
 {
+    use MocksRazorx;
     use TestsMetrics;
     use PaymentTrait;
     use CreatesInvoice;
@@ -3033,6 +3035,61 @@ class InvoiceTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertStringContainsString('signed_pdf_url', $response->getContent());
+    }
+
+    public function testFetchIssuedLinkOlderThanSixMonths()
+    {
+        $this->mockRazorxTreatmentV2(RazorxTreatment::FAIL_OLD_INVOICE_ID_FETCH, 'on');
+        
+        $this->testCreateIssuedLinkWithAmountAndDesc();
+
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $oldTimeStamp = Carbon::now(Timezone::IST)->subDays(181)->timestamp;
+
+        $this->fixtures->edit('invoice', $invoice->getId(), ['created_at' => $oldTimeStamp]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/invoices/'.$invoice->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testFetchCancelledAndExpiredLinkOlderThanSixMonths()
+    {
+        $this->mockRazorxTreatmentV2(RazorxTreatment::FAIL_OLD_INVOICE_ID_FETCH, 'on');
+
+        $this->testCreateIssuedLinkWithAmountAndDesc();
+
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $oldTimeStamp = Carbon::now(Timezone::IST)->subDays(181)->timestamp;
+
+        $this->fixtures->edit(
+            'invoice',
+            $invoice->getId(),
+            [
+                'created_at' => $oldTimeStamp,
+                'status' => 'cancelled',
+                'cancelled_at' => Carbon::now(Timezone::IST)->timestamp
+            ]
+        );
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/invoices/'.$invoice->getPublicId();
+
+        $this->startTest();
+
+        $this->fixtures->edit(
+            'invoice',
+            $invoice->getId(),
+            [
+                'created_at' => $oldTimeStamp,
+                'status' => 'expired',
+                'cancelled_at' => null,
+                'expired_at' => Carbon::now(Timezone::IST)->timestamp
+            ]
+        );
+
+        $this->startTest();
     }
 
     // -------------------- Protected methods --------------------

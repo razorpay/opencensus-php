@@ -1333,4 +1333,43 @@ class Validator extends Base\Validator
                 ]);
         }
     }
+
+    public function validateLinkShouldBeFound()
+    {
+        $invoice = $this->entity;
+
+        $app = App::getFacadeRoot();
+
+        $mode = $app['rzp.mode'];
+
+        $variant = $app->razorx->getTreatment(
+            $invoice->getMerchantId(),
+            Merchant\RazorxTreatment::FAIL_OLD_INVOICE_ID_FETCH,
+            $mode
+        );
+
+        if ($variant !== 'on')
+        {
+            return;
+        }
+
+        if (($invoice->getType() === Type::LINK) &&
+            (in_array($invoice->getStatus(), Entity::UPDATE_BLOCKED_END_STATES) === true))
+        {
+            $oldTimestamp = Carbon::today(Timezone::IST)->subDays(180)->getTimestamp();
+
+            if (($invoice->getCreatedAt() < $oldTimestamp) === true)
+            {
+                $data = [
+                    'model' => Entity::class,
+                    'attributes' => $invoice->getPublicId(),
+                    'operation'  => 'find',
+                    'message'    => 'This link cannot be retrieved now since it is older than six months.'
+                ];
+
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+            }
+        }
+    }
 }

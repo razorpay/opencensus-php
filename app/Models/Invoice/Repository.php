@@ -144,6 +144,8 @@ class Repository extends Base\Repository
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
         }
 
+        $invoice->getValidator()->validateLinkShouldBeFound();
+
         return $invoice;
     }
 
