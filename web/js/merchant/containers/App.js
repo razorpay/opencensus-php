@@ -237,6 +237,7 @@ class App extends Component {
     this.props.fetchConfig();
     this.props.fetchRefundPricing();
     this.props.fetchTrustedBadgeStatus();
+    this.props.fetchMerchantReferralDetail();
 
     Promise.all([
       this.fetchUser().then(({ data }) => {
@@ -275,7 +276,6 @@ class App extends Component {
       this.fetchSupportedCurrencies().then(({ data }) => {
         window.currencyList = data;
       }),
-      this.props.fetchMerchantReferralDetail(),
     ])
       .then((response) => {
         if (response[0].showInstantActivation) {
