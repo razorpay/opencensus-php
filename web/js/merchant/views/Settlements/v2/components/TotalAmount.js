@@ -12,7 +12,7 @@ const TotalAmount = ({ type, value, infoText, infoComp, isNew }) => {
         <Amount value={value} currency="INR" />
       )}
       <i class="i i-info-circle">
-        <PopoverComponent align="left" theme="dark" data-testid="total-amount-popover">
+        <PopoverComponent align="bottom" theme="dark" data-testid="total-amount-popover">
           <PopoverBody>{infoComp ? <span>{infoComp}</span> : <span>{infoText}</span>}</PopoverBody>
         </PopoverComponent>
       </i>

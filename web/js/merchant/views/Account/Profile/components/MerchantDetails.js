@@ -637,7 +637,7 @@ const MerchantDetails = ({
               <span>Limit per transaction</span>
               <small class="help-content">
                 <i class="i i-info-circle" />
-                <Popover align="right" theme="dark">
+                <Popover align="top" theme="dark">
                   <PopoverBody>
                     <div>The maximum INR limit for only a single transaction.</div>
                   </PopoverBody>

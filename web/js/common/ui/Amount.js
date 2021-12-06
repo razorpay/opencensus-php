@@ -1,6 +1,7 @@
 import React from 'react';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { getFormattedAmount, classList } from 'common/utils/rzp-utils';
+import useViewport, { ViewportProvider } from 'merchant/hooks/useViewPort';
 
 const currencies = {
   INR: {
@@ -30,6 +31,7 @@ export default ({
   currency = 'INR',
   className,
   parentQuerySelector,
+  // eslint-disable-next-line no-unused-vars
   hidePaisa = false,
   ...attrs
 }) => {
@@ -47,13 +49,15 @@ export default ({
 
   // TODO: pointer-events: allow, but cursor be as per inherit
   return (
-    <AmountTooltip currency={currency} parentQuerySelector={parentQuerySelector}>
-      <span class={`rzp-amount ${className ? className : ''}`} {...attrs}>
-        <span class="rzp-currency" dangerouslySetInnerHTML={{ __html: currencySymbol }} />{' '}
-        <span class="rzp-whole">{amount.split('.')[0]}</span>
-        {!hidePaisa && <span class="rzp-paise">.{amount.split('.')[1]}</span>}
-      </span>
-    </AmountTooltip>
+    <ViewportProvider>
+      <AmountTooltip currency={currency} parentQuerySelector={parentQuerySelector}>
+        <span class={`rzp-amount ${className ? className : ''}`} {...attrs}>
+          <span class="rzp-currency" dangerouslySetInnerHTML={{ __html: currencySymbol }} />{' '}
+          <span class="rzp-whole">{amount.split('.')[0]}</span>
+          <span class="rzp-paise">.{amount.split('.')[1]}</span>
+        </span>
+      </AmountTooltip>
+    </ViewportProvider>
   );
 };
 
@@ -62,6 +66,8 @@ export function AmountTooltip({ children, currency = 'INR', customClass, parentQ
   if (!currency) {
     currency = 'INR';
   }
+
+  const context = useViewport();
 
   let currencySymbol = currencies[currency] ? currencies[currency].symbol : currency;
 
@@ -75,13 +81,15 @@ export function AmountTooltip({ children, currency = 'INR', customClass, parentQ
   return (
     <span className={classList('help-content help-content--currency', customClass)}>
       {children || <span>{currencySymbol}</span>}
-      <Popover align="top" theme="dark" parentQuerySelector={parentQuerySelector}>
-        <PopoverBody>
-          <div style={{ textAlign: 'center' }}>
-            {currencySymbol} - {currencyName} ({currency})
-          </div>
-        </PopoverBody>
-      </Popover>
+      {context !== 'PHONE' && (
+        <Popover align="top" theme="dark" parentQuerySelector={parentQuerySelector}>
+          <PopoverBody>
+            <div style={{ textAlign: 'center' }}>
+              {currencySymbol} - {currencyName} ({currency})
+            </div>
+          </PopoverBody>
+        </Popover>
+      )}
     </span>
   );
 }

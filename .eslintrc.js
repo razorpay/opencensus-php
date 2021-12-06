@@ -47,6 +47,7 @@ module.exports = {
     __VERSION__: false,
     __CONFIG__: false,
     __APP_NAME__: false,
+    __webpack_public_path__: true,
   },
   overrides: [
     {
