@@ -8626,6 +8626,8 @@ class Route
             'admin_merchant_post_preferences',
             'merchant_activation_gst_details',
             'merchant_upload',
+            'banking_account_service_routes',
+            'banking_account_service_pincode_serviceability_check',
             'rbl_current_account_serviceability_get_admin',
             'merchant_business_detail_fetch',
             'merchant_business_detail_save',
