@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import Slider from 'common/ui/Slider';
 import { openSlider } from 'merchant_common/reducers/slider';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import {
   fetchOngoingDowntimes,
   fetchScheduledDowntimes,
@@ -226,7 +226,7 @@ class StatusDetails extends React.Component {
 
         {sliderOpen ? (
           <Slider>
-            <ErrorBoundary resetOnProps>
+            <ErrorBoundary resetOnProps rank={Ranks.P1} team={Teams.BANKING}>
               <div className="content-wrapper content-sm txn-details status-details">
                 <div className="panel panel-default SliderPanel status-details--container">
                   <div className="panel-heading">
