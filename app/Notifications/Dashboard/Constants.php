@@ -21,4 +21,6 @@ class Constants
     const IFSC_CODE                      = 'ifsc_code';
 
     const UPDATED_TRANSACTION_LIMIT      = 'updated_transaction_limit';
+
+    const MERCHANT_NAME                  = 'merchant_name';
 }

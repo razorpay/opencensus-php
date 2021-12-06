@@ -6,10 +6,10 @@ namespace RZP\Models\Workflow\Observer;
 use App;
 use RZP\Models\Merchant;
 use RZP\Models\State\Name as StateName;
-use RZP\Notifications\Dashboard\Events;
 use RZP\Models\Workflow\Action\Differ\Entity;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Admin\Permission\Name as PermissionName;
+use RZP\Notifications\Dashboard\Events as DashboardEvents;
 use RZP\Notifications\Dashboard\Constants as DashboardConstants;
 use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 
@@ -31,6 +31,17 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
         PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL  => SegmentEvent::WEBSITE_SELF_SERVE_WORKFLOW,
 
         PermissionName::INCREASE_TRANSACTION_LIMIT    => SegmentEvent::TRANSACTION_LIMIT_SELF_SERVE_WORKFLOW
+    ];
+
+    const PERMISSION_VS_EVENTS = [
+
+        PermissionName::UPDATE_MERCHANT_WEBSITE       => DashboardEvents::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON,
+
+        PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL  => DashboardEvents::BUSINESS_WEBSITE_ADD_REJECTION_REASON,
+
+        PermissionName::INCREASE_TRANSACTION_LIMIT    => DashboardEvents::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON,
+
+        PermissionName::EDIT_MERCHANT_GSTIN_DETAIL    => DashboardEvents::REJECTION_REASON_NOTIFICATION,
     ];
 
     public function __construct($input)
@@ -68,8 +79,9 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
 
             $args = [
                 Merchant\Constants::MERCHANT     => $merchant,
-                Events::EVENT                    => Events::REJECTION_REASON_NOTIFICATION,
+                DashboardEvents::EVENT           => self::PERMISSION_VS_EVENTS[$this->permissionName],
                 Merchant\Constants::PARAMS       => [
+                    DashboardConstants::MERCHANT_NAME     => $merchant[Merchant\Entity::NAME],
                     DashboardConstants::MESSAGE_BODY      => $rejectionReason[Constants::MESSAGE_BODY],
                     DashboardConstants::MESSAGE_SUBJECT   => $rejectionReason[Constants::MESSAGE_SUBJECT],
                 ]

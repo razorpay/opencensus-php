@@ -39,7 +39,6 @@ use RZP\Models\Workflow\Action\Differ\Entity;
 use RZP\Models\User\Constants as UserConstants;
 use Rzp\Credcase\Migrate\V1\RotateApiKeyRequest;
 use Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest;
-use RZP\Mail\Merchant\RejectionReasonNotification;
 use RZP\Models\Workflow\Observer\EmailChangeObserver;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
 use RZP\Services\Mock\DruidService as MockDruidService;

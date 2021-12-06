@@ -23,11 +23,18 @@ class Events
 
     const INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE        = 'INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE';
 
-    const REJECTION_REASON_NOTIFICATION                     = 'REJECTION_REASON_NOTIFICATION';
+    const BUSINESS_WEBSITE_ADD_REJECTION_REASON             = 'BUSINESS_WEBSITE_ADD_REJECTION_REASON';
+
+    const BUSINESS_WEBSITE_UPDATE_REJECTION_REASON          = 'BUSINESS_WEBSITE_UPDATE_REJECTION_REASON';
+
+    const INCREASE_TRANSACTION_LIMIT_REJECTION_REASON       = 'INCREASE_TRANSACTION_LIMIT_REJECTION_REASON';
 
     const GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS           = 'GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS';
 
     const GSTIN_UPDATED_ON_WORKFLOW_APPROVE                 = 'GSTIN_UPDATED_ON_WORKFLOW_APPROVE';
+
+    const REJECTION_REASON_NOTIFICATION                     = 'REJECTION_REASON_NOTIFICATION';
+
 
     // Event vs sms templates mapping
     const SMS_TEMPLATES = [
@@ -37,6 +44,9 @@ class Events
         self::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE     => 'sms.dashboard.bank_account_change_penny_testing_failure',
         self::BANK_ACCOUNT_CHANGE_SUCCESSFUL                => 'sms.dashboard.bank_account_change_successful',
         self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE    => 'sms.dashboard.increase_transaction_limit_request_approve',
+        self::BUSINESS_WEBSITE_ADD_REJECTION_REASON         => 'sms.dashboard.merchant_business_website_add_rejection',
+        self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON      => 'sms.dashboard.merchant_business_website_update_rejection',
+        self::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON   => 'sms.dashboard.increase_transaction_limit_rejection',
     ];
 
     /**
@@ -50,6 +60,9 @@ class Events
         self::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE     => [],
         self::BANK_ACCOUNT_CHANGE_SUCCESSFUL                => [Constants::BENEFICIARY_NAME, Constants::ACCOUNT_NUMBER, Constants::IFSC_CODE],
         self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE    => [Constants::UPDATED_TRANSACTION_LIMIT],
+        self::BUSINESS_WEBSITE_ADD_REJECTION_REASON         => [Constants::MERCHANT_NAME],
+        self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON      => [Constants::MERCHANT_NAME],
+        self::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON   => [Constants::MERCHANT_NAME],
     ];
 
     // Event vs whatsapp templates mapping
@@ -60,6 +73,9 @@ class Events
         self::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE     => 'whatsapp.merchant.dashboard.bank_account_change_penny_testing_failure',
         self::BANK_ACCOUNT_CHANGE_SUCCESSFUL                => 'whatsapp.merchant.dashboard.bank_account_change_successful',
         self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE    => 'whatsapp.merchant.dashboard.increase_transaction_limit_request_approve',
+        self::BUSINESS_WEBSITE_ADD_REJECTION_REASON         => 'whatsapp.merchant.dashboard.merchant_business_website_add_rejection',
+        self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON      => 'whatsapp.merchant.dashboard.merchant_business_website_update_rejection',
+        self::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON   => 'whatsapp.merchant.dashboard.increase_transaction_limit_rejection',
     ];
 
     /**
@@ -72,6 +88,9 @@ class Events
         self::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE     => [],
         self::BANK_ACCOUNT_CHANGE_SUCCESSFUL                => [Constants::BENEFICIARY_NAME, Constants::ACCOUNT_NUMBER, Constants::IFSC_CODE],
         self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE    => [Constants::UPDATED_TRANSACTION_LIMIT],
+        self::BUSINESS_WEBSITE_ADD_REJECTION_REASON         => [Constants::MERCHANT_NAME],
+        self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON      => [Constants::MERCHANT_NAME],
+        self::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON   => [Constants::MERCHANT_NAME],
     ];
 
     // Event vs email templates mapping
@@ -82,9 +101,12 @@ class Events
         self::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE     => 'emails.merchant.bankaccount_change_penny_testing_failure',
         self::BANK_ACCOUNT_CHANGE_SUCCESSFUL                => 'emails.merchant.bankaccount_change',
         self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE    => 'emails.merchant.increase_transaction_limit_request_approve',
-        self::REJECTION_REASON_NOTIFICATION                 => 'emails.merchant.rejection_reason_notification',
         self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS       => 'emails.merchant.gstin_updated_self_serve',
         self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE             => 'emails.merchant.gstin_updated_on_workflow_approve',
+        self::BUSINESS_WEBSITE_ADD_REJECTION_REASON         => 'emails.merchant.rejection_reason_notification',
+        self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON      => 'emails.merchant.rejection_reason_notification',
+        self::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON   => 'emails.merchant.rejection_reason_notification',
+        self::REJECTION_REASON_NOTIFICATION                 => 'emails.merchant.rejection_reason_notification',
     ];
 
     // Event vs email Tags mapping
@@ -95,9 +117,12 @@ class Events
         self::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE     => MailTags::ACCOUNT_CHANGED,
         self::BANK_ACCOUNT_CHANGE_SUCCESSFUL                => MailTags::ACCOUNT_CHANGED,
         self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE    => MailTags::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE,
-        self::REJECTION_REASON_NOTIFICATION                 => MailTags::UPDATE_REJECTION_REASON,
         self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS       => MailTags::GSTIN_UPDATED_VALIDATION_SUCCESS,
         self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE             => MailTags::GSTIN_UPDATED_WORKFLOW_APPROVE,
+        self::BUSINESS_WEBSITE_ADD_REJECTION_REASON         => MailTags::MERCHANT_BUSINESS_WEBSITE_ADD_REJECTION_REASON,
+        self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON      => MailTags::MERCHANT_BUSINESS_WEBSITE_UPDATE_REJECTION_REASON,
+        self::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON   => MailTags::MERCHANT_INCREASE_TRANSACTION_LIMIT_REJECTION_REASON,
+        self::REJECTION_REASON_NOTIFICATION                 => MailTags::UPDATE_REJECTION_REASON,
     ];
 
     // Event vs email subject mapping
@@ -108,9 +133,12 @@ class Events
         self::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE     => 'Razorpay | Update on bank account change request for %s(MID: %s)',
         self::BANK_ACCOUNT_CHANGE_SUCCESSFUL                => 'Razorpay | Bank account change successful for %s(MID: %s)',
         self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE    => 'Razorpay: Transaction Limit updated successfully for %s(MID: %s)',
-        self::REJECTION_REASON_NOTIFICATION                 => '%s',
         self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS       => 'Razorpay | Gstin updated for %s(MID: %s)',
         self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE             => 'Razorpay | Gstin updated for %s(MID: %s)',
+        self::BUSINESS_WEBSITE_ADD_REJECTION_REASON         => '%s',
+        self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON      => '%s',
+        self::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON   => '%s',
+        self::REJECTION_REASON_NOTIFICATION                 => '%s',
     ];
 
     // Event vs recipients role mapping
@@ -121,21 +149,27 @@ class Events
         self::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE     => [UserRole::OWNER, UserRole::ADMIN],
         self::BANK_ACCOUNT_CHANGE_SUCCESSFUL                => [UserRole::OWNER, UserRole::ADMIN],
         self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE    => [UserRole::OWNER],
-        self::REJECTION_REASON_NOTIFICATION                 => [UserRole::OWNER],
         self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS       => [UserRole::OWNER],
         self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE             => [UserRole::OWNER],
+        self::BUSINESS_WEBSITE_ADD_REJECTION_REASON         => [UserRole::OWNER],
+        self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON      => [UserRole::OWNER],
+        self::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON   => [UserRole::OWNER],
+        self::REJECTION_REASON_NOTIFICATION                 => [UserRole::OWNER],
     ];
 
     // Event vs supported channel mapping
     const SUPPORTED_CHANNELS_FOR_EVENTS = [
-        Events::MERCHANT_BUSINESS_WEBSITE_ADD               => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
-        Events::MERCHANT_BUSINESS_WEBSITE_UPDATE            => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
-        Events::BANK_ACCOUNT_CHANGE_REQUEST                 => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
-        Events::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE   => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
-        Events::BANK_ACCOUNT_CHANGE_SUCCESSFUL              => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
-        Events::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE  => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
-        Events::REJECTION_REASON_NOTIFICATION               => [Channel::EMAIL],
-        Events::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS     => [Channel::EMAIL],
-        Events::GSTIN_UPDATED_ON_WORKFLOW_APPROVE           => [Channel::EMAIL],
+        self::MERCHANT_BUSINESS_WEBSITE_ADD                 => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::MERCHANT_BUSINESS_WEBSITE_UPDATE              => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::BANK_ACCOUNT_CHANGE_REQUEST                   => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE     => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::BANK_ACCOUNT_CHANGE_SUCCESSFUL                => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE    => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::BUSINESS_WEBSITE_ADD_REJECTION_REASON         => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON      => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON   => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS       => [Channel::EMAIL],
+        self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE             => [Channel::EMAIL],
+        self::REJECTION_REASON_NOTIFICATION                 => [Channel::EMAIL],
     ];
 }

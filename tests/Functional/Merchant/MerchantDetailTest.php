@@ -3964,7 +3964,7 @@ We look forward to transacting with you!
 
     private function saveBusinessWebsiteMakerFlow(array $predefinedMerchantDetails = [], string $permissionName = PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL, bool $addTestCredentials = true)
     {
-        [$merchantId , $userId] = $this->setupMerchantWithMerchantDetails(['has_key_access' => true], $predefinedMerchantDetails);
+        [$merchantId , $userId] = $this->setupMerchantWithMerchantDetails(['name' => 'Test name', 'has_key_access' => true], $predefinedMerchantDetails);
 
         if($addTestCredentials === true)
         {
@@ -4200,18 +4200,15 @@ You can now start accepting payments from https://www.example.com.
         $this->startTest();
     }
 
-    public function testRejectionReasonMerchantNotificationForWebsiteSelfServe()
+    public function testRejectionReasonMerchantNotificationForWebsiteUpdateSelfServe()
     {
         Mail::fake();
-
-
-        // will uncomment once SMS and Whatsapp templates are approved
-
-        //$this->mockRavenAndStorkForRejectionReason();
 
         $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated'], PermissionName::UPDATE_MERCHANT_WEBSITE);
 
         [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::UPDATE_MERCHANT_WEBSITE);
+
+        $this->mockRavenAndStorkForUpdateWebsiteRejectionReason();
 
         $this->validateBusinessWebsiteWorkflowReject($merchantId, $workflowActionId);
 
@@ -4237,24 +4234,24 @@ You can now start accepting payments from https://www.example.com.
         $this->startTest();
     }
 
-    protected function mockRavenAndStorkForRejectionReason()
+    protected function mockRavenAndStorkForUpdateWebsiteRejectionReason()
     {
         $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
 
         $this->app->instance('raven', $ravenMock);
 
         $expectedRavenParametersForTemplate = [
-            'messageBody' => 'Test body'
+            'merchant_name' => 'Test name'
         ];
 
-        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.rejection_reason_notification', '1234567890', $expectedRavenParametersForTemplate);
+        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.merchant_business_website_update_rejection', '1234567890', $expectedRavenParametersForTemplate);
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app->instance('stork_service', $storkMock);
 
         $this->expectStorkWhatsappRequest($storkMock,
-            'Test body
+            'Hi Test name, Your request for updating the website/app has been rejected. Please click on https://dashboard.razorpay.com/app/profile/rejection_update_website to know more.
 -Team Razorpay',
             '1234567890'
         );
@@ -4758,6 +4755,63 @@ You can now start accepting payments from https://www.example.com.
         $this->assertBankingEntitiesNullInLiveMode($merchantDetail);
     }
 
+    public function testRejectionReasonMerchantNotificationForWebsiteAddSelfServe()
+    {
+        Mail::fake();
+
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['activation_status' => 'activated'], PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+
+        [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+
+        $this->mockRavenAndStorkForAddWebsiteRejectionReason();
+
+        $this->validateBusinessWebsiteWorkflowReject($merchantId, $workflowActionId);
+
+        $user = $this->getDbLastEntity('user');
+
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) use($user)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('Test body', $data['messageBody']);
+
+            $this->assertEquals('emails.merchant.rejection_reason_notification', $mail->view);
+
+            $mail->hasTo($user['email']);
+
+            return true;
+        });
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    protected function mockRavenAndStorkForAddWebsiteRejectionReason()
+    {
+        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $expectedRavenParametersForTemplate = [
+            'merchant_name' => 'Test name'
+        ];
+
+        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.merchant_business_website_add_rejection', '1234567890', $expectedRavenParametersForTemplate);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkWhatsappRequest($storkMock,
+                                          'Hi Test name, Your request for adding your website/app to your Razorpay account has been rejected. Please click on https://dashboard.razorpay.com/app/profile/rejection_add_website to know more.
+-Team Razorpay',
+                                          '1234567890'
+        );
+    }
+
     /**
      * test to accept email in presignup details page
      */
@@ -4879,7 +4933,5 @@ You can now start accepting payments from https://www.example.com.
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail2['merchant_id'], $merchantUser2['id']);
 
         $this->startTest();
-
     }
-
 }

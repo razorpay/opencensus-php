@@ -247,6 +247,12 @@ class MailTags
 
     const GSTIN_UPDATED_WORKFLOW_APPROVE                = 'gstin_updated_workflow_approve';
 
+    const MERCHANT_BUSINESS_WEBSITE_UPDATE_REJECTION_REASON       = 'merchant_business_website_update_rejection_reason';
+
+    const MERCHANT_BUSINESS_WEBSITE_ADD_REJECTION_REASON          = 'merchant_business_website_add_rejection_reason';
+
+    const MERCHANT_INCREASE_TRANSACTION_LIMIT_REJECTION_REASON    = 'merchant_increase_transaction_limit_rejection_reason';
+
     /**
      * Razorpay Trusted Business/Badge Constants
      */

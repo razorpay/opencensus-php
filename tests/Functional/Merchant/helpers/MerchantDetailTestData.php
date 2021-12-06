@@ -2628,7 +2628,7 @@ return [
         ],
     ],
 
-    'testRejectionReasonMerchantNotificationForWebsiteSelfServe' => [
+    'testRejectionReasonMerchantNotificationForWebsiteUpdateSelfServe' => [
         'request'  => [
             'content' => [
             ],
@@ -2757,6 +2757,26 @@ return [
         ],
         'response' => [
             'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testRejectionReasonMerchantNotificationForWebsiteAddSelfServe' => [
+        'request'  => [
+            'content' => [
+            ],
+            'url'     => '/merchant/business_website_status',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'workflow_exists'          => true,
+                'workflow_status'          => 'rejected',
+                'rejection_reason_message' => 'Test body'
             ],
             'status_code' => 200,
         ],
