@@ -34,11 +34,11 @@ class CreateVpas extends Migration
                   ->nullable();
 
             // Used the charset and collation present currently on production for username and handle
-            $table->char(Entity::USERNAME, 50)
+            $table->char(Entity::USERNAME, 255)
                   ->charset(self::UTF8MB4)
                   ->collation(self::UTF8MB4_0900_AI_CI);
 
-            $table->char(Entity::HANDLE, 20)
+            $table->char(Entity::HANDLE, 255)
                   ->charset(self::UTF8MB4)
                   ->collation(self::UTF8MB4_0900_AI_CI);
 

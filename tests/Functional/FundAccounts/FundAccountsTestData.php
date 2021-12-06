@@ -609,7 +609,7 @@ return [
                 'account_type' => 'vpa',
                 'contact_id'   => 'cont_1000000contact',
                 'vpa'      => [
-                    'address' => '50100177856195@HDFC.ifsc.npci',
+                    'address' => '50100177856195@HDFC0000041.ifsc.npci',
                 ],
             ],
             'url'     => '/fund_accounts',
@@ -621,7 +621,7 @@ return [
                 'account_type' => 'vpa',
                 'contact_id'   => 'cont_1000000contact',
                 'vpa'      => [
-                    'address' => '50100177856195@HDFC.ifsc.npci',
+                    'address' => '50100177856195@HDFC0000041.ifsc.npci',
                 ],
             ],
             'status_code' => 201

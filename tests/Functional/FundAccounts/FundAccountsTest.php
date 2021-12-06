@@ -441,7 +441,7 @@ class FundAccountsTest extends TestCase
             'entity_type' => 'contact',
             'entity_id'   => '1000000contact',
             'username'    => '50100177856195',
-            'handle'      => 'HDFC.ifsc.npci',
+            'handle'      => 'HDFC0000041.ifsc.npci',
             'merchant_id' => '10000000000000',
         ];
 
@@ -449,7 +449,7 @@ class FundAccountsTest extends TestCase
 
         $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
 
-        $expectedHashInput = '10000000000000|contact|1000000contact|vpa|50100177856195|hdfcifscnpci';
+        $expectedHashInput = '10000000000000|contact|1000000contact|vpa|50100177856195|hdfc0000041ifscnpci';
 
         $expectedHash = hash('sha3-256', $expectedHashInput);
 

@@ -6452,7 +6452,7 @@ ALTER TABLE vpas
 
 ALTER TABLE user_device_details
     ADD COLUMN signup_source varchar(50) DEFAULT NULL;
-    
+
 ALTER TABLE qr_code_config
     DROP COLUMN payment_method,
     DROP COLUMN gateway,
