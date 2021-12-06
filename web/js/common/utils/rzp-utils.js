@@ -1363,3 +1363,5 @@ export function getErrorMessageFromResponse(errors) {
 export const linkFromSource = (link = '', source = '') => {
   return link.indexOf(source) >= 0;
 };
+
+export const isLoggedInViaMobile = () => localStorage?.getItem('loggedInVia') === 'contact_mobile';

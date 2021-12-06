@@ -827,6 +827,9 @@ app
         request
           .success(function (data) {
             if (data.success) {
+              if (data.data) {
+                localStorage?.setItem('loggedInVia', data.data.logged_in_via);
+              }
               isLoginWithGoogle = true;
               user
                 .identity(true)
@@ -982,6 +985,9 @@ app
         let request = $http(payload);
         request.success(function (data) {
           if (data.success) {
+            if (data.data) {
+              localStorage?.setItem('loggedInVia', data.data.logged_in_via);
+            }
             user
               .identity(true)
               .then(function (userDetails) {
@@ -1270,6 +1276,9 @@ app
         updateSpinnerState('show');
         request.success(function (data) {
           if (data.success) {
+            if (data.data) {
+              localStorage?.setItem('loggedInVia', data.data.logged_in_via);
+            }
             $localStorage.new_user_signup = true;
             $scope.signup.account_type = $scope.signup.data.invitation ? 'team_member' : 'merchant';
             trackDrip('account_created');
@@ -2334,6 +2343,9 @@ app
         $scope.alerts.resetAlerts();
         request.success(function (data) {
           if (data.success) {
+            if (data.data) {
+              localStorage?.setItem('loggedInVia', data.data.logged_in_via);
+            }
             if (payload.data.otp && payload.data.otp.length) {
               fireDLSuccessEvents('login.2fa_otp', {
                 source: 'sign_in',
@@ -2669,6 +2681,9 @@ app
         $scope.alerts.resetAlerts();
         request.success(function (data) {
           if (data.success) {
+            if (data.data) {
+              localStorage?.setItem('loggedInVia', data.data.logged_in_via);
+            }
             fireDLSuccessEvents('login.2fa_otp', {
               source: 'sign_in',
               sessionId: window.session_id,

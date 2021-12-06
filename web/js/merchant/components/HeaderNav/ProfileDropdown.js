@@ -17,7 +17,7 @@ import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr'
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import logoutGoogleAccount from '../../../common/utils/logoutGoogle';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, isLoggedInViaMobile } from 'common/utils/rzp-utils';
 import RTracking from 'react-tracking';
 import { track as trackPartnerOnbr } from 'merchant/views/PartnerDashboard/Onboarding/ga';
 
@@ -399,8 +399,12 @@ export default class ProfileDropdown extends Component {
               <div className="media-body">
                 <div>Logged in as</div>
                 <p className="account-details">
-                  <i className="i i-account" />{' '}
-                  <span title={user.user.email}>{user.user.email}</span>
+                  <i class="i i-account" />
+                  {isLoggedInViaMobile() ? (
+                    <span title={user.user.contact_mobile}>{user.user.contact_mobile}</span>
+                  ) : (
+                    <span title={user.user.email}>{user.user.email}</span>
+                  )}
                 </p>
                 <button
                   className="btn btn-primary logout-btn"
