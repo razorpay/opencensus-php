@@ -18,6 +18,7 @@ use RZP\Models\Workflow\Observer as Observer;
 use RZP\Models\Workflow\Action\Differ\Core as DifferCore;
 use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Models\Workflow\Action\Differ\Service as DifferService;
+use RZP\Models\Workflow\Observer\Constants as WorkflowObserverConstants;
 
 
 class Service extends Base\Service
@@ -317,7 +318,7 @@ class Service extends Base\Service
         ];
     }
 
-    protected function getWorkflowRejectionReason(Action\Entity $actionEntity)
+    protected function getWorkflowObserverDataByActionId(Action\Entity $actionEntity)
     {
         $differEntity = (new DifferCore)->fetchRequest($actionEntity->getId());
 
@@ -326,10 +327,7 @@ class Service extends Base\Service
             DifferEntity::ACTION_ID                 => $actionEntity->getId(),
         ]);
 
-        if (key_exists(Observer\Constants::REJECTION_REASON, $differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA]) === true)
-        {
-            return json_decode($differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA][Observer\Constants::REJECTION_REASON],true);
-        }
+        return $differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA] ?? [];
     }
 
     public function getWorkflowDetailsWithRejectionMessage(?Action\Entity $actionEntity)
@@ -343,11 +341,19 @@ class Service extends Base\Service
 
         if ($actionEntity->getState() === Name::REJECTED)
         {
-            $rejectionReason = $this->getWorkflowRejectionReason($actionEntity);
-            if ((empty($rejectionReason) === false) and
-                (empty($rejectionReason[Observer\Constants::MESSAGE_BODY]) === false))
+            $observerData = $this->getWorkflowObserverDataByActionId($actionEntity);
+
+            $showRejection =  $observerData[WorkflowObserverConstants::SHOW_REJECTION_REASON_ON_DASHBOARD] ?? 'true';
+
+            if (($showRejection === 'true') and
+                (isset($observerData[WorkflowObserverConstants::REJECTION_REASON])))
             {
-                $response = array_merge($response, [Observer\Constants::REJECTION_REASON_MESSAGE => $rejectionReason[Observer\Constants::MESSAGE_BODY]]);
+                $rejectionReason = json_decode($observerData[WorkflowObserverConstants::REJECTION_REASON], true);
+
+                if (key_exists(Observer\Constants::MESSAGE_BODY, $rejectionReason))
+                {
+                    $response = array_merge($response, [Observer\Constants::REJECTION_REASON_MESSAGE => $rejectionReason[Observer\Constants::MESSAGE_BODY]]);
+                }
             }
         }
 

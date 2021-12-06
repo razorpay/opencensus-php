@@ -236,6 +236,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ENTITY_ID);
     }
 
+    public function getWorkflowEntityName()
+    {
+        return $this->getAttribute(self::ENTITY_NAME);
+    }
+
     public function getCurrentLevel() : int
     {
         return $this->getAttribute(self::CURRENT_LEVEL);

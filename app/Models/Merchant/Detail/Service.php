@@ -1949,7 +1949,7 @@ class Service extends Base\Service
         return sprintf(DEConstants::GSTIN_SELF_SERVE_INPUT_CACHE_KEY_FORMAT, $this->merchant->getId());
     }
 
-    protected function getGstinSelfServeInputFromCache()
+    public function getGstinSelfServeInputFromCache()
     {
         $cacheKey = $this->getGstinSelfServeInputCacheKey();
 

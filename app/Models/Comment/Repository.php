@@ -34,6 +34,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchByActionId(
+        string $actionId): Base\PublicCollection
+    {
+        return $this->newQuery()
+            ->where(Entity::ENTITY_ID, '=', $actionId)
+            ->where(Entity::ENTITY_TYPE, '=', E::WORKFLOW_ACTION)
+            ->get();
+    }
+
     protected function validateEntityType($attribute, $value)
     {
         if (in_array($value, self::VALID_ENTITY_TYPE, true) === false)

@@ -2544,7 +2544,7 @@ return [
         'request'  => [
             'content' => [
             ],
-            'url'     => '/merchant/business_website_status',
+            'url'     => '/merchant/additional_website/details',
             'method'  => 'GET',
             'server'  => [
                 'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
@@ -2632,7 +2632,7 @@ return [
         'request'  => [
             'content' => [
             ],
-            'url'     => '/merchant/business_website_status',
+            'url'     =>  '/merchant/business_website_status',
             'method'  => 'GET',
             'server'  => [
                 'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
@@ -2781,4 +2781,64 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testNeedClarificationOnWorkflow' => [
+        'request'   => [
+            'url'     => '/merchant/{workflowId}/need_clarification',
+            'method'  => 'PUT',
+            'content' => [
+                'body'    => 'needs clarification body',
+                'subject' => 'needs clarification subject',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'added_comment' => ['comment' =>  'need_clarification_comment : needs clarification body' ] ,
+                'added_tag'     => 'awaiting-customer-response',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testMerchantWorkflowDetailForMerchantWorkflowType' => [
+        'request'  => [
+            'content' => [
+            ],
+            'url'     => '/merchant/{workflowType}/details',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'workflow_exists'          => true,
+                'workflow_status'          => 'rejected',
+                'rejection_reason_message' => 'Test body',
+                'needs_clarification'      => null,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testSubmitMerchantWorkflowClarification' => [
+        'request'  => [
+            'content' => [
+                'merchant_workflow_clarification'       => ' Merchant test workflow clarification ',
+                'clarification_documents_ids'           =>  ['doc_randomId1']
+            ],
+            'url'     => '/merchant/{workflowType}/clarification',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+    ]
+
+
 ];

@@ -591,6 +591,11 @@ class Validator extends Base\Validator
         'fee'    => 'required|integer',
     ];
 
+    protected static $merchantWorkflowClarificationRules = [
+        Constants::MERCHANT_WORKFLOW_CLARIFICATION          => 'required|string',
+        Constants::WORKFLOW_CLARIFICATION_DOCUMENTS_IDS     => 'sometimes|array'
+    ];
+
     public function validateMerchantForProductInternational(Entity $merchant)
     {
         $merchant = $merchant?: $this->entity;

@@ -675,6 +675,7 @@ class UserRolesScope
             'merchant_tpv_create'                                  => [Role::OWNER, Role::ADMIN],
             'merchant_verify_attributes'                           => [Role::OWNER, Role::ADMIN],
             'merchant_workflow_details'                            => Role::ALL_ROLES,
+            'merchant_workflow_clarification'                      => [Role::OWNER, Role::ADMIN],
             'merchants_risk_service'                               => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'mpans_fetch'                                          => [Role::OWNER, Role::ADMIN],
             'mpans_issue'                                          => [Role::OWNER, Role::ADMIN],

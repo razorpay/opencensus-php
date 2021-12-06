@@ -65,11 +65,13 @@ use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Jobs\BackFillReferredApplication;
 use RZP\Jobs\BackFillMerchantApplications;
+use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Merchant\Fraud\HealthChecker;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
+use RZP\Models\Comment\Entity as CommentEntity;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Workflow\Action as WorkflowAction;
 use RZP\Jobs\MerchantSupportingEntitiesCreateJob;
@@ -4918,9 +4920,9 @@ class Core extends Base\Core
 
             case (CE::BANK_ACCOUNT):
 
-                $merchantDetail = $merchant->merchantDetail;
+                $bankAccount = $this->repo->bank_account->getBankAccount($merchant);
 
-                return [$merchantDetail->getMerchantId(), $merchantDetail->getEntity()];
+                return [$bankAccount->getId(), $bankAccount->getEntity()];
 
             default:
 
@@ -5667,6 +5669,53 @@ class Core extends Base\Core
                 (new Merchant1ccConfig\Core())->createAndSaveConfig($this->merchant, $input);
             }
         );
+    }
+
+    protected function addMerchantWorkflowClarificationComments(WorkflowAction\Entity $action, string $clarification , array $documentIds = [])
+    {
+        $clarificationCommentEntity = (new CommentCore)->create([
+            CommentEntity::COMMENT  => $clarification
+        ]);
+
+        $clarificationCommentEntity->entity()->associate($action);
+
+        $this->repo->saveOrFail($clarificationCommentEntity);
+
+        if (empty($documentIds) === false)
+        {
+            $documentUrls = Constants::MERCHANT_WORKFLOW_CLARIFICATION_FILES_PREFIX;
+
+            foreach ($documentIds as $documentId)
+            {
+                $documentUrls .= sprintf(Constants::UFH_FILE_URL,
+                    $this->app->config->get('applications.dashboard.url'),
+                    str_replace('doc_' , '' , $documentId)
+                );
+            }
+
+            $documentsUrlCommentEntity = (new CommentCore)->create([
+                CommentEntity::COMMENT =>  $documentUrls
+            ]);
+
+            $documentsUrlCommentEntity->entity()->associate($action);
+
+            $this->repo->saveOrFail($documentsUrlCommentEntity);
+        }
+
+        $this->trace->info(TraceCode::MERCHANT_CLARIFICATION_COMMENT_ADDED);
+    }
+
+    public function postMerchantWorkflowClarification(WorkflowAction\Entity $action, array $input)
+    {
+        $this->repo->transactionOnLiveAndTest(function () use ($action, $input) {
+            $this->addMerchantWorkflowClarificationComments($action, $input[Constants::MERCHANT_WORKFLOW_CLARIFICATION], $input[Constants::WORKFLOW_CLARIFICATION_DOCUMENTS_IDS]);
+
+            $action->untag(WorkflowAction\Constants::WORKFLOW_NEEDS_MERCHANT_CLARIFICATION_TAG);
+
+            $action->tag(WorkflowAction\Constants::WORKFLOW_MERCHANT_RESPONDED_TAG);
+
+            $this->repo->workflow_action->saveOrFail($action);
+        });
     }
 
     private function triggerCommunicationIfApplicable($merchant,$action,$triggerCommunication)

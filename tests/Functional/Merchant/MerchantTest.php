@@ -3356,6 +3356,8 @@ class MerchantTest extends TestCase
         });
 
         $this->assertBankAccountUpdateRequestAndPennyTestingFailedMailQueued();
+
+        return $merchantId;
     }
 
     public function testAddCommentForBankAccountUpdateWorkflow()
@@ -3473,6 +3475,28 @@ class MerchantTest extends TestCase
         $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
     }
 
+    public function testBankAccountUpdateWorkflowNeedsClarification()
+    {
+        // triggers a bank account update workflow
+        $merchantId = $this->testUpdateBankAccountPennyTestingEventNameMismatch();
+
+        $this->raiseNeedWorkflowClarificationFromMerchantAndAssert([
+            'expected_whatsapp_text'    => 'Hi testname, we need a few more details to process the request on updating your Razorpay bank account number. Please click https://dashboard.razorpay.com/app/profile/clarification_update_bank_account to share the details. -Team Razorpay',
+            'expected_index_of_comment' => 2,
+            'expected_sms_template'     => 'sms.dashboard.merchant_bank_account_needs_clarification',
+            'expected_deep_link'        => 'https://dashboard.razorpay.com/app/profile/clarification_update_bank_account'
+        ]);
+
+        return $merchantId;
+    }
+
+    public function testBankAccountUpdateGetWorkflowNeedsClarificationQuery()
+    {
+        $merchantId = $this->testBankAccountUpdateWorkflowNeedsClarification();
+
+        $this->getNeedsClarificationQueryAndAssert($merchantId, 'bank_detail_update');
+    }
+
     protected function mockStorkForBankAccountUpdate($merchantId)
     {
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
@@ -3486,16 +3510,14 @@ Account Number 0000009999999999999
 IFSC Code ICIC0001206
 We will update you once the changes have been approved.
 -Team Razorpay',
-            '1234567890',
-            $merchantId
+            '1234567890'
         );
 
         $this->expectStorkWhatsappRequest($storkMock,
             'Thank you for raising a request from your dashboard to update your bank account details.
 We checked and see that the penny drop testing for the mentioned bank account has failed. Our experts are looking into this and will get back to you with an update within the next 24 hours.
 -Team Razorpay',
-            '1234567890',
-            $merchantId
+            '1234567890'
         );
 
         $this->expectStorkWhatsappRequest($storkMock,
@@ -3504,12 +3526,11 @@ Beneficiary Name Test R4zorpay:
 Account Number 0000009999999999999
 IFSC Code  ICIC0001206
 -Team Razorpay',
-            '1234567890',
-            $merchantId
+            '1234567890'
         );
     }
 
-    protected function expectStorkWhatsappRequest($storkMock, $text, $destination = '9876543210', $ownerId = '10000000000000'): void
+    protected function expectStorkWhatsappRequest($storkMock, $text, $destination = '9876543210'): void
     {
         $storkMock->shouldReceive('sendWhatsappMessage')
             ->times(1)
@@ -3520,7 +3541,6 @@ IFSC Code  ICIC0001206
                 }),
                 Mockery::on(function ($actualText) use($text)
                 {
-
                     $actualText = trim(preg_replace('/\s+/', ' ', $actualText));
 
                     $text = trim(preg_replace('/\s+/', ' ', $text));
@@ -3540,13 +3560,8 @@ IFSC Code  ICIC0001206
                     }
                     return true;
                 }),
-                Mockery::on(function ($input) use ($ownerId)
+                Mockery::on(function ($input)
                 {
-                    if ($input['ownerId'] !== $ownerId)
-                    {
-                        return false;
-                    }
-
                     return true;
                 }))
             ->andReturnUsing(function ()
@@ -11203,7 +11218,7 @@ IFSC Code  ICIC0001206
 
         $user = $this->fixtures->create('user', ['email' => 'testingemail@gmail.com', 'contact_mobile' => '1234567890', 'contact_mobile_verified' => true]);
 
-        $this->createMerchantUserMapping($user['id'], $merchantId, 'admin');
+        $this->createMerchantUserMapping($user['id'], $merchantId, 'owner');
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
@@ -13218,7 +13233,7 @@ IFSC Code  ICIC0001206
 
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
 
-        $this->mockRavenAndStorkForTransactionLimitSelfServe($merchantId);
+        $this->mockRavenAndStorkForTransactionLimitSelfServe();
 
         $this->setupWorkflow('increase_transaction_limit', PermissionName::INCREASE_TRANSACTION_LIMIT, 'test');
 
@@ -13268,48 +13283,9 @@ IFSC Code  ICIC0001206
 
     public function testRegisteredIncreaseTransactionLimitWorkflowApprove()
     {
-        Mail::fake();
+        $this->mockRavenAndStorkForTransactionLimitSelfServe();
 
-        $predefinedMerchant = [
-            'name'               => 'testname',
-            'activated'          => 1,
-            'max_payment_amount' => 10000
-        ];
-
-        $predefinedMerchantDetails = [
-            'business_type'      => 4,
-            'business_category'  => Merchant\Detail\BusinessCategory::OTHERS
-        ];
-
-        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
-
-        $this->mockRavenAndStorkForTransactionLimitSelfServe($merchantId);
-
-        $druidService = $this->getMockBuilder(MockDruidService::class)
-            ->setConstructorArgs([$this->app])
-            ->onlyMethods([ 'getDataFromDruid'])
-            ->getMock();
-
-        $this->app->instance('druid.service', $druidService);
-
-        $dataFromDruid = $this->testData['testGetRiskData']['druid_response'];
-
-        $dataFromDruid['Domestic_cts_overall_merchant_id'] = $merchantId;
-
-        $dataFromDruid['Domestic_FTS_merchant_id'] = $merchantId;
-
-        $druidService->method('getDataFromDruid')
-            ->willReturn([null, [$dataFromDruid]]);
-
-        $testData = $this->testData['testUnregisteredIncreaseTransactionLimitWorkflowApprove'];
-
-        $this->testData[__FUNCTION__] = $testData;
-
-        $this->setupWorkflow('increase_transaction_limit', PermissionName::INCREASE_TRANSACTION_LIMIT, 'test');
-
-        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
-
-        $this->startTest();
+        $merchantId = $this->createTransactionLimitUpdateWorkflow();
 
         $workflowAction = $this->getLastEntity('workflow_action', true);
 
@@ -13349,6 +13325,73 @@ IFSC Code  ICIC0001206
 
             return true;
         });
+    }
+
+    public function testTransactionLimitUpdateWorkflowNeedsClarification()
+    {
+        $merchantId = $this->createTransactionLimitUpdateWorkflow();
+
+        $this->raiseNeedWorkflowClarificationFromMerchantAndAssert([
+            'expected_whatsapp_text'    => 'Hi testname, we need a few more details to process the request on updating your transaction limit to 1000000. Please click https://dashboard.razorpay.com/app/profile/clarification_increase_transaction_limit to share the details. -Team Razorpay',
+            'expected_index_of_comment' => 1,
+            'expected_sms_template'     => 'sms.dashboard.increase_transaction_limit_needs_clarification',
+            'expected_deep_link'        => 'https://dashboard.razorpay.com/app/profile/clarification_increase_transaction_limit'
+        ]);
+
+        return $merchantId;
+    }
+
+    public function testTransactionLimitUpdateGetWorkflowNeedsClarificationQuery()
+    {
+        $merchantId = $this->testTransactionLimitUpdateWorkflowNeedsClarification();
+
+        $this->getNeedsClarificationQueryAndAssert($merchantId, 'increase_transaction_limit');
+    }
+
+    protected function createTransactionLimitUpdateWorkflow()
+    {
+        Mail::fake();
+
+        $predefinedMerchant = [
+            'name'               => 'testname',
+            'activated'          => 1,
+            'max_payment_amount' => 10000,
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_type'      => 4,
+            'business_category'  => Merchant\Detail\BusinessCategory::OTHERS
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $druidService = $this->getMockBuilder(MockDruidService::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods([ 'getDataFromDruid'])
+            ->getMock();
+
+        $this->app->instance('druid.service', $druidService);
+
+        $dataFromDruid = $this->testData['testGetRiskData']['druid_response'];
+
+        $dataFromDruid['Domestic_cts_overall_merchant_id'] = $merchantId;
+
+        $dataFromDruid['Domestic_FTS_merchant_id'] = $merchantId;
+
+        $druidService->method('getDataFromDruid')
+            ->willReturn([null, [$dataFromDruid]]);
+
+        $testData = $this->testData['testUnregisteredIncreaseTransactionLimitWorkflowApprove'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->setupWorkflow('increase_transaction_limit', PermissionName::INCREASE_TRANSACTION_LIMIT, 'test');
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
+
+        $this->startTest();
+
+        return $merchantId;
     }
 
     public function testIncreaseTransactionLimitRoleFailure()
@@ -13521,7 +13564,7 @@ IFSC Code  ICIC0001206
         $this->startTest();
     }
 
-    protected function mockRavenAndStorkForTransactionLimitSelfServe($merchantId)
+    protected function mockRavenAndStorkForTransactionLimitSelfServe()
     {
         $this->enableRazorXTreatmentForFeature('whatsapp_notifications');
 
@@ -13543,8 +13586,7 @@ IFSC Code  ICIC0001206
             'With regards to the request we received an update from the partner banks to increase the transaction limit to ₹8000
 The same has been enabled for the account.
 -Team Razorpay',
-            '1234567890',
-            $merchantId
+            '1234567890'
         );
     }
 
@@ -13565,7 +13607,7 @@ The same has been enabled for the account.
 
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
 
-        $this->mockRavenAndStorkForTransactionLimitSelfServe($merchantId);
+        $this->mockRavenAndStorkForTransactionLimitSelfServe();
 
         $prestoService = $this->getMockBuilder(Mock\DataLakePresto::class)
             ->setConstructorArgs([$this->app])
@@ -13635,7 +13677,7 @@ The same has been enabled for the account.
         });
     }
 
-    protected function testRejectionReasonNotificationForMerchantWorkflowType(string $merchantId, string $workflowType)
+    protected function testMerchantWorkflowDetailForMerchantWorkflowType(string $merchantId, string $workflowType)
     {
         Mail::fake();
 
@@ -13791,7 +13833,7 @@ The same has been enabled for the account.
 
         $this->startTest();
 
-        $this->testRejectionReasonNotificationForMerchantWorkflowType($merchantId,MerchantConstants::INCREASE_TRANSACTION_LIMIT);
+        $this->testMerchantWorkflowDetailForMerchantWorkflowType($merchantId,MerchantConstants::INCREASE_TRANSACTION_LIMIT);
     }
 
     public function testGetCheckoutRouteWithTokenForCardCountry()
@@ -13821,6 +13863,105 @@ The same has been enabled for the account.
         $this->assertTrue($tokens['count'] > 0);
 
         $this->assertTrue(array_key_exists('country', $tokens['items'][0]['card']) === true);
+    }
+
+    protected function raiseNeedWorkflowClarificationFromMerchantAndAssert($data)
+    {
+        /*
+         * commenting this as sms and whatsapp will be enabled in later for needs workflow clarification
+        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
+
+        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->expectRavenSendSmsRequest($ravenMock,$data['expected_sms_template'], '1234567890');
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkWhatsappRequest($storkMock,
+            $data['expected_whatsapp_text'],
+            '1234567890'
+        );
+        */
+
+        $this->esClient->indices()->refresh();
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $testData = $this->testData['testNeedClarificationOnWorkflow'];
+
+        $testData['request']['url'] = '/merchant/' . $workflowAction['id'] . '/need_clarification';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $request = [
+            'method' => 'GET',
+            'url'    => '/w-actions/' . $workflowAction['id'] . '/details',
+            'content' => []
+        ];
+
+        $this->addPermissionToBaAdmin(PermissionName::VIEW_WORKFLOW_REQUESTS);
+
+        $res = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($res['id'], $workflowAction['id']);
+
+        $expectedComment = 'need_clarification_comment : needs clarification body';
+
+        $this->assertEquals($expectedComment, $res['comments'][$data['expected_index_of_comment']]['comment']);
+
+        $this->assertEquals('awaiting-customer-response', $res['tagged'][0]);
+
+        $this->assertWorkflowNeedsClarificationMailQueued($data['expected_deep_link']);
+    }
+
+    protected function assertWorkflowNeedsClarificationMailQueued($deepLink, $messageBody = 'needs clarification body')
+    {
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) use ($deepLink, $messageBody)
+        {
+            if ($mail->view === 'emails.merchant.needs_clarification_on_workflow')
+            {
+                $this->assertEquals($deepLink, $mail->viewData['workflow_clarification_submit_link']);
+
+                $this->assertEquals($messageBody, $mail->viewData['messageBody']);
+
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    protected function getNeedsClarificationQueryAndAssert($merchantId, $workflowType)
+    {
+        $user = $this->fixtures->user->create();
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantId,
+            'role'        => Role::OWNER,
+        ]);
+
+        $testData = $this->testData['testMerchantWorkflowDetailForMerchantWorkflowType'];
+
+        $testData['response']['content'] = [
+            'workflow_exists'          => true,
+            'workflow_status'          => 'open',
+            'needs_clarification'      => 'needs clarification body',
+        ];
+
+        $testData['request']['url'] = "/merchant/" . $workflowType . "/details";
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $user['id']);
+
+        $this->startTest();
     }
 
     public function testUpdateChargebackPOC()

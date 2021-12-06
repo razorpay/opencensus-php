@@ -834,6 +834,7 @@ class Service extends Base\Service
             $this->core()->sendMailForEditMerchantEmailSelfServe($ownerUser, $input[Entity::EMAIL]);
 
             $this->trace->info(TraceCode::EMAIL_SENT_FOR_EDIT_MERCHANT_EMAIL, []);
+
         }
 
         return $status;
@@ -7493,21 +7494,8 @@ class Service extends Base\Service
         }
     }
 
-    private function getWebsiteSelfServeWorkflowAction()
+    private function getWebsiteSelfServeWorkflowAction($entityId, $entity)
     {
-        $merchantCore = new Merchant\Core;
-
-        $merchant = $this->merchant;
-
-        [$entityId, $entity] = $merchantCore->fetchWorkflowData(Constants::ADDITIONAL_WEBSITE, $merchant);
-
-        $this->trace->info(
-            TraceCode::GET_WEBSITE_SELF_SERVE_WORKFLOW_ACTION,
-            [
-                'entity_id'  => $entityId,
-                'entity'     => $entity
-            ]);
-
         $action = (new Action\Core())->fetchLastUpdatedWorkflowActionInPermissionList(
             $entityId,
             $entity,
@@ -7519,7 +7507,7 @@ class Service extends Base\Service
 
     public function getWebsiteSelfServeWorkflowDetails()
     {
-        $action = $this->getWebsiteSelfServeWorkflowAction();
+        $action = $this->getActionForMerchantWorkflow(Constants::ADDITIONAL_WEBSITE);
 
         return (new WorkflowService)->getWorkflowDetailsWithRejectionMessage($action);
     }
@@ -7788,6 +7776,69 @@ class Service extends Base\Service
 
     public function getMerchantWorkflowDetails(string $workflowType)
     {
+        $action = $this->getActionForMerchantWorkflow($workflowType);
+
+        $response = (new WorkflowService)->getWorkflowDetailsWithRejectionMessage($action);
+
+        $permission = empty($action) ? null : $action->permission->name;
+
+        $needsClarification =  (new WorkFlowActionCore())->getNeedsClarificationBodyFromWorkflowComment($action);
+
+        return array_merge($response, [
+            'needs_clarification'      => $needsClarification,
+            'permission'               => $permission,
+            'request_under_validation' => $this->isRequestUnderValidationForMerchantWorkflow($workflowType),
+            'tags'                     => $this->getWorkflowTags($action),
+        ]);
+    }
+
+    protected function getWorkflowTags($action)
+    {
+        if (empty($action) === true)
+        {
+            return [];
+        }
+
+        $tags = $action->getTagsAttribute();
+
+        $tags =  $tags->map(function ($tag)
+        {
+            return $tag->slug;
+        });
+
+        return $tags;
+    }
+
+    protected function isRequestUnderValidationForMerchantWorkflow(string $workflowType)
+    {
+        switch ($workflowType)
+        {
+            case Constants::GSTIN_UPDATE_SELF_SERVE :
+                return $this->isGstinUpdateUnderBvsValidation();
+                break;
+            case Constants::BANK_DETAIL_UPDATE :
+                return $this->isBankAccountUpdateUnderBvsValidation();
+            default:
+                return false;
+        }
+    }
+
+    protected function isGstinUpdateUnderBvsValidation()
+    {
+        $data = (new Detail\Service())->getGstinSelfServeInputFromCache();
+
+        return is_null($data) === false;
+    }
+
+    protected function isBankAccountUpdateUnderBvsValidation()
+    {
+        $bankAccountCore = (new BankAccount\Core);
+
+        $bankAccountCore->isBankAccountUpdatePennyTestingInProgress($this->merchant);
+    }
+
+    protected function getActionForMerchantWorkflow($workflowType)
+    {
         $merchant = $this->merchant;
 
         $merchantCore = new Merchant\Core;
@@ -7801,12 +7852,61 @@ class Service extends Base\Service
                 'entity'     => $entity
             ]);
 
+        switch ($workflowType)
+        {
+            case Constants::GSTIN_UPDATE_SELF_SERVE :
+                return $this->getWorkflowActionForGstinUpdateSelfServe($entityId, $entity);
+
+            case Constants::ADDITIONAL_WEBSITE :
+                return $this->getWebsiteSelfServeWorkflowAction($entityId, $entity);
+
+            default:
+                return  (new Action\Core())->fetchLastUpdatedWorkflowActionInPermissionList(
+                    $entityId,
+                    $entity,
+                    [Constants::MERCHANT_WORKFLOWS[$workflowType][Constants::PERMISSION]]
+                );
+        }
+    }
+
+    protected function getWorkflowActionForGstinUpdateSelfServe($entityId, $entity)
+    {
         $action = (new Action\Core())->fetchLastUpdatedWorkflowActionInPermissionList(
             $entityId,
             $entity,
-            [Constants::MERCHANT_WORKFLOWS[$workflowType][Constants::PERMISSION]]);
+            Permission::UPDATE_MERCHANT_GSTIN_DETAIL, Permission::EDIT_MERCHANT_GSTIN_DETAIL
+        );
 
-        return (new WorkflowService)->getWorkflowDetailsWithRejectionMessage($action);
+        return $action;
+    }
+
+    public function postMerchantWorkflowClarification(string $workflowType, array $input)
+    {
+        $this->trace->info(TraceCode::POST_MERCHANT_WORKFLOW_CLARIFICATION, $input);
+
+        (new Validator)->validateInput('merchant_workflow_clarification', $input);
+
+        $merchant = $this->merchant;
+
+        $merchantCore = new Merchant\Core;
+
+        [$entityId, $entity] = $merchantCore->fetchWorkflowData($workflowType, $merchant);
+
+        $this->trace->info(
+            TraceCode::GET_MERCHANT_WORKFLOW_DETAILS,
+            [
+                'entity_id'  => $entityId,
+                'entity'     => $entity
+            ]);
+
+        $action = $this->getActionForMerchantWorkflow($workflowType);
+
+        if (empty($action) === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_OPEN_WORKFLOW_NOT_FOUND);
+        }
+
+        return (new Core)->postMerchantWorkflowClarification($action, $input);
     }
 
     private function isMerchantKamOrDirectSales($merchantInfo): bool

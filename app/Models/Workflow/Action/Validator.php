@@ -33,6 +33,11 @@ class Validator extends Base\Validator
         Entity::OWNER_ID              => 'sometimes|nullable|string|max:14',
     ];
 
+    protected static $needClarificationRules = [
+        Constants::MESSAGE_BODY       => 'required|string|max:310',
+        Constants::MESSAGE_SUBJECT    => 'required|string|max:100',
+    ];
+
     public function validateLiveActionsOnEntity(string $entityId, string $entity, string $permissionName)
     {
         $entityId = PublicEntity::stripDefaultSign($entityId);
@@ -142,6 +147,17 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ACTION_INVALID_TYPE);
+        }
+    }
+
+    public function validateWorkflowActionForNeedMerchantClarification(Entity $action)
+    {
+        $permissionName = $action->permission->getName();
+
+        if (in_array($permissionName,Constants::WORKFLOWS_FOR_NEED_MERCHANT_CLARIFICATION, true) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_WORKFLOW_FOR_NEED_MERCHANT_CLARIFICATION);
         }
     }
 

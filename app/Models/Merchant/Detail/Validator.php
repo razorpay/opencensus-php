@@ -1420,7 +1420,10 @@ class Validator extends Base\Validator
         $additionalWebsites = $merchantDetails->getAdditionalWebsites();
 
         //check that no. of additional websites should not be more than 5
-        $merchantDetails->getValidator()->validateAdditionalWebsiteLimit($additionalWebsites);
+        if($additionalWebsites != null)
+        {
+            $merchantDetails->getValidator()->validateAdditionalWebsiteLimit($additionalWebsites);
+        }
     }
 
     public function validateMerchantHasBusinessWebsiteSet($businessWebsite)

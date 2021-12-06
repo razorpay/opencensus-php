@@ -742,6 +742,10 @@ return [
             Permission::PROXY_MERCHANT_GET_TERMINALS   => [
                 'assignable' => true,
             ],
+            Permission::MERCHANT_CLARIFICATION_ON_WORKFLOW  => [
+                'description' => 'to raise needs clarification on workflow',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::SETTLEMENT => [

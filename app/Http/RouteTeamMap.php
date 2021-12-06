@@ -229,6 +229,8 @@ class RouteTeamMap
         'additional_website_status'                => [self::TEAM_PAYMENTS_DASHBOARD],
         'increase_transaction_limit_self_serve'    => [self::TEAM_PAYMENTS_DASHBOARD],
         'merchant_workflow_details'                => [self::TEAM_PAYMENTS_DASHBOARD],
+        'merchant_workflow_clarification'          => [self::TEAM_PAYMENTS_DASHBOARD],
+        'workflow_needs_merchant_clarification'    => [self::TEAM_PAYMENTS_DASHBOARD],
 
         'merchant_store_add'                              => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_store_fetch'                            => [self::TEAM_PAYMENTS_GROWTH],

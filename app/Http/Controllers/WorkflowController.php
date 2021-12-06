@@ -168,6 +168,15 @@ class WorkflowController extends Controller
         return ApiResponse::json($result);
     }
 
+    public function postNeedClarificationOnWorkflow(string $actionId)
+    {
+        $input = Request::all();
+
+        $result = $this->service(E::WORKFLOW_ACTION)->needsMerchantClarificationOnWorkflow($actionId, $input);
+
+        return ApiResponse::json($result);
+    }
+
     public function getActionsForRiskAudit(string $merchantId)
     {
         $input = Request::all();

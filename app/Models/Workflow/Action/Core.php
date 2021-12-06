@@ -20,6 +20,11 @@ use RZP\Models\Workflow\Helper;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\BulkWorkflowAction;
+use RZP\Models\Comment\Core as CommentCore;
+use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Notifications\Dashboard\Events as DashboardEvents;
+use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
+use RZP\Notifications\Dashboard\Constants as MerchantNotificationsConstants;
 
 use RZP\Models\Workflow;
 use RZP\Models\Workflow\Base;
@@ -1012,5 +1017,96 @@ class Core extends Base\Core
             ->fetchLastUpdatedWorkflowActionInPermissionIds($entityId, $entityName, $permissionIdList);
 
         return $action;
+    }
+
+    public function addNeedClarificationComment(Entity $workFlowAction, array $input)
+    {
+        $comment = $this->getNeedWorkFlowClarificationComment($input);
+
+        $commentEntity = (new CommentCore())->create([
+            'comment' => $comment
+        ]);
+
+        $commentEntity->entity()->associate($workFlowAction);
+
+        $this->repo->saveOrFail($commentEntity);
+
+        return $commentEntity;
+    }
+
+    public function getNeedsClarificationBodyFromWorkflowComment($action)
+    {
+        if (empty($action) === true)
+        {
+            return null;
+        }
+
+        $comments = $this->repo->comment->fetchByActionId($action->getId());
+
+        $comments =  $comments->map(function ($comment)
+        {
+            return $comment->toArrayPublic()['comment'];
+        });
+
+        foreach ($comments as $comment)
+        {
+            if (strpos($comment, Constants::NEEDS_WORKFLOW_CLARIFICATION_COMMENT_KEY) !== false)
+            {
+                return substr($comment, strlen(Constants::NEEDS_WORKFLOW_CLARIFICATION_COMMENT_KEY));
+            }
+        }
+
+        return null;
+    }
+
+    public function notifyMerchantForNeedClarification(Entity $action, array $input)
+    {
+        $workflowPermission = $action->permission->getName();
+
+        $diff = (new Differ\Service)->fetchRequest($action->getId());
+
+        $payload = $diff[Differ\Entity::PAYLOAD];
+
+        $merchantId = $this->getMerchantIdForWorkflowAction($action, $payload);
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $event = MerchantNotificationsConstants::WORKFLOW_PERMISSION_VS_NEEDS_CLARIFICATION_EVENT[$workflowPermission];
+
+        $params = array_merge($payload, [
+            MerchantNotificationsConstants::MERCHANT_NAME                      => $merchant->getName(),
+            MerchantNotificationsConstants::MESSAGE_SUBJECT                    => $input[Constants::MESSAGE_SUBJECT],
+            MerchantNotificationsConstants::MESSAGE_BODY                       => $input[Constants::MESSAGE_BODY],
+            MerchantNotificationsConstants::WORKFLOW_CLARIFICATION_SUBMIT_LINK => MerchantNotificationsConstants::EVENT_VS_WORKFLOW_CLARIFICATION_SUBMIT_LINK[$event],
+        ]);
+
+        $args = [
+            MerchantConstants::MERCHANT             => $merchant,
+            DashboardEvents::EVENT                  => $event,
+            MerchantNotificationsConstants::PARAMS  => $params
+        ];
+
+        (new DashboardNotificationHandler($args))->send();
+    }
+
+    protected function getMerchantIdForWorkflowAction(Entity $action, $payload)
+    {
+        if (($action->getWorkflowEntityName() === Constants::MERCHANT) or
+            ($action->getWorkflowEntityName() === Constants::MERCHANT_DETAIL))
+        {
+            return $action->getEntityId();
+        }
+
+        if (key_exists(Merchant\Entity::MERCHANT_ID, $payload) === true)
+        {
+            return $payload[Merchant\Entity::MERCHANT_ID];
+        }
+
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_FOUND_FOR_NEED_MERCHANT_CLARIFICATION);
+    }
+
+    protected function getNeedWorkFlowClarificationComment(array $input)
+    {
+        return Constants::NEEDS_WORKFLOW_CLARIFICATION_COMMENT_KEY . $input[Constants::MESSAGE_BODY];
     }
 }

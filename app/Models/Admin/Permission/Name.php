@@ -51,6 +51,7 @@ class Name
     const EDIT_MERCHANT_COMMENTS              = 'edit_merchant_comments';
     const EDIT_MERCHANT_BANK_DETAIL           = 'edit_merchant_bank_detail';
     const EDIT_MERCHANT_GSTIN_DETAIL          = 'edit_merchant_gstin_detail';
+    const UPDATE_MERCHANT_GSTIN_DETAIL        = 'update_merchant_gstin_detail';
     const EDIT_IIN_RULE                       = 'edit_iin_rule';
     const EDIT_IIN_RULE_BULK                  = 'edit_iin_rule_bulk';
     const IIN_BATCH_UPLOAD                    = 'iin_batch_upload';
@@ -557,6 +558,9 @@ class Name
     const GENERATE_TDS_CHALLAN_ZIP            = 'generate_tds_challan_zip';
     const UPDATE_TAX_PAYMENT_SETTINGS         = 'update_tax_payment_settings';
     const VIEW_TAX_PAYMENTS                   = 'view_tax_payments';
+
+    // permission to raise needs clarification on workflow
+    const MERCHANT_CLARIFICATION_ON_WORKFLOW  = 'merchant_clarification_on_workflow';
 
     const VIEW_INTERNAL_INSTRUMENT_REQUEST   = 'view_internal_instrument_request';
     const UPDATE_INTERNAL_INSTRUMENT_REQUEST = 'update_internal_instrument_request';

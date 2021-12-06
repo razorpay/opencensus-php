@@ -1073,6 +1073,24 @@ return [
         ],
     ],
 
+    'testNeedClarificationOnWorkflow' => [
+        'request'   => [
+            'url'     => '/merchant/{workflowId}/need_clarification',
+            'method'  => 'PUT',
+            'content' => [
+                'body'    => 'needs clarification body',
+                'subject' => 'needs clarification subject',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'added_comment' => ['comment' =>  'need_clarification_comment : needs clarification body' ],
+                'added_tag'     => 'awaiting-customer-response',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testCorrectMerchantOwnerForBankingWherePrimaryOwnerHasAdminRole' => [
         'request'   => [
             'method'  => 'PUT',
@@ -10205,7 +10223,7 @@ return [
         ],
     ],
 
-    'testRejectionReasonNotificationForMerchantWorkflowType' => [
+    'testMerchantWorkflowDetailForMerchantWorkflowType' => [
         'request'  => [
             'content' => [
             ],
@@ -10219,7 +10237,8 @@ return [
             'content'     => [
                 'workflow_exists'          => true,
                 'workflow_status'          => 'rejected',
-                'rejection_reason_message' => 'Test body'
+                'rejection_reason_message' => 'Test body',
+                'needs_clarification'      => null,
             ],
             'status_code' => 200,
         ],

@@ -2560,6 +2560,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postMerchantWorkflowClarification(string $workflowType)
+    {
+        $input = Request::all();
+
+        $this->service()->postMerchantWorkflowClarification($workflowType, $input);
+
+        return ApiResponse::json([], 200);
+    }
+
     public function postAddAdditionalWebsiteSelfServe(string $urlType)
     {
         $input = Request::all();

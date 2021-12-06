@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Workflow\Action;
 
-use RZP\Models\Base;
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Role;
 use RZP\Models\Workflow\Constants;
+use RZP\Models\Workflow\Action\Constants as WorkflowActionConstants;
 
 class Service extends Base\Service
 {
@@ -291,5 +293,42 @@ class Service extends Base\Service
         $actions = $this->repo->workflow_action->fetch($input);
 
         return $actions;
+    }
+
+    /**
+     * @param $actionId
+     * @param $input
+     */
+    public function needsMerchantClarificationOnWorkflow($actionId, $input)
+    {
+        $this->trace->info(TraceCode::WORKFLOW_NEEDS_MERCHANT_CLARIFICATION, [
+            Entity::ID => $actionId,
+        ]);
+
+        (new Validator)->validateInput('need_clarification', $input);
+
+        Entity::verifyIdAndStripSign($actionId);
+
+        $workFlowAction = $this->repo->workflow_action->findOrFailPublic($actionId);
+
+        (new Validator)->validateWorkflowActionForNeedMerchantClarification($workFlowAction);
+
+        $commentEntity = $this->repo->transactionOnLiveAndTest(function() use ($workFlowAction, $input) {
+
+            $workFlowAction->tag(WorkflowActionConstants::WORKFLOW_NEEDS_MERCHANT_CLARIFICATION_TAG);
+
+            $comment = $this->core()->addNeedClarificationComment($workFlowAction, $input);
+
+            $this->repo->workflow_action->saveOrFail($workFlowAction);
+
+            return $comment;
+        });
+
+        $this->core()->notifyMerchantForNeedClarification($workFlowAction, $input);
+
+        return [
+            WorkflowActionConstants::ADDED_COMMENT => $commentEntity->toArrayPublic(),
+            WorkflowActionConstants::ADDED_TAG     => str_replace(' ', '-', strtolower(WorkflowActionConstants::WORKFLOW_NEEDS_MERCHANT_CLARIFICATION_TAG)),
+        ];
     }
 }

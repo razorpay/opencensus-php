@@ -4126,6 +4126,101 @@ You can now start accepting payments from https://www.example.com.
         });
     }
 
+    public function testWebsiteAddWorkflowNeedsClarification()
+    {
+        Mail::fake();
+
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['activation_status' => 'activated']);
+
+        $this->raiseNeedWorkflowClarificationFromMerchantAndAssert([
+            'expected_whatsapp_text'    => 'Hi testname, we need a few more details to process the request on adding website/app to your Razorpay account. Please click https://dashboard.razorpay.com/app/profile/clarification_add_website to share the details. -Team Razorpay',
+            'expected_index_of_comment' => 2,
+            'expected_sms_template'     => 'sms.dashboard.merchant_business_website_add_needs_clarification',
+            'expected_deep_link'        => 'https://dashboard.razorpay.com/app/profile/clarification_add_website'
+        ]);
+
+        return $merchantId;
+    }
+
+    public function testWebsiteUpdateWorkflowNeedsClarification()
+    {
+        Mail::fake();
+
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated'], PermissionName::UPDATE_MERCHANT_WEBSITE);
+
+        $this->raiseNeedWorkflowClarificationFromMerchantAndAssert([
+            'expected_whatsapp_text'    => 'Hi testname, we need a few more details to process the request on updating your Razorpay website/app. Please click https://dashboard.razorpay.com/app/profile/clarification_update_website to share the details. -Team Razorpay',
+            'expected_index_of_comment' => 2,
+            'expected_sms_template'     => 'sms.dashboard.merchant_business_website_update_needs_clarification',
+            'expected_deep_link'        => 'https://dashboard.razorpay.com/app/profile/clarification_update_website'
+        ]);
+
+        return $merchantId;
+    }
+
+    public function testWebsiteUpdateGetWorkflowNeedsClarificationQuery()
+    {
+        $merchantId = $this->testWebsiteUpdateWorkflowNeedsClarification();
+
+        $this->getNeedsClarificationQueryAndAssert($merchantId, 'update_business_website');
+    }
+
+    protected function raiseNeedWorkflowClarificationFromMerchantAndAssert($data)
+    {
+        /*
+         * commenting this as sms and whatsapp will be enabled in later for needs workflow clarification
+         *
+        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
+
+        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->expectRavenSendSmsRequest($ravenMock,$data['expected_sms_template'], '1234567890');
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkWhatsappRequest($storkMock,
+            $data['expected_whatsapp_text'],
+            '1234567890'
+        );
+        */
+
+        $this->esClient->indices()->refresh();
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $testData = $this->testData['testNeedClarificationOnWorkflow'];
+
+        $testData['request']['url'] = '/merchant/' . $workflowAction['id'] . '/need_clarification';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $request = [
+            'method' => 'GET',
+            'url'    => '/w-actions/' . $workflowAction['id'] . '/details',
+            'content' => []
+        ];
+
+        $this->addPermissionToBaAdmin(PermissionName::VIEW_WORKFLOW_REQUESTS);
+
+        $res = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($res['id'], $workflowAction['id']);
+
+        $expectedComment = 'need_clarification_comment : needs clarification body';
+
+        $this->assertEquals($expectedComment, $res['comments'][$data['expected_index_of_comment']]['comment']);
+
+        $this->assertEquals('awaiting-customer-response', $res['tagged'][0]);
+
+        $this->assertWorkflowNeedsClarificationMailQueued($data['expected_deep_link']);
+    }
+
     public function testUpdateBusinessWebsiteWorkflowReject()
     {
         Mail::fake();
@@ -4232,6 +4327,23 @@ You can now start accepting payments from https://www.example.com.
         $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
 
         $this->startTest();
+    }
+
+    protected function assertWorkflowNeedsClarificationMailQueued($deepLink, $messageBody = 'needs clarification body')
+    {
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) use ($deepLink, $messageBody)
+        {
+            if ($mail->view === 'emails.merchant.needs_clarification_on_workflow')
+            {
+                $this->assertEquals($deepLink, $mail->viewData['workflow_clarification_submit_link']);
+
+                $this->assertEquals($messageBody, $mail->viewData['messageBody']);
+
+                return true;
+            }
+
+            return false;
+        });
     }
 
     protected function mockRavenAndStorkForUpdateWebsiteRejectionReason()
@@ -4528,6 +4640,63 @@ You can now start accepting payments from https://www.example.com.
         $this->assertContains('https://play.google.com/store/apps/details?id=com.abc.app.test', $merchantDetails->getAdditionalWebsites());
     }
 
+    public function testSubmitMerchantWorkflowClarification()
+    {
+        Mail::fake();
+
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated'], PermissionName::UPDATE_MERCHANT_WEBSITE);
+
+        $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::UPDATE_MERCHANT_WEBSITE);
+
+        $workflowAction = $this->getDbLastEntity('workflow_action');
+
+        $this->assertNotEmpty($workflowAction);
+
+        $workflowAction->tag('awaiting-customer-response');
+
+        $workflowAction->save();
+
+        $testData                   =&  $this->testData[__FUNCTION__];
+        $testData['request']['url'] =   '/merchant/update_business_website/clarification';
+
+        $this->startTest();
+
+        $this->esClient->indices()->refresh();
+
+        // get workflow action details in Admin Auth
+        $this->ba->adminAuth();
+
+        $request = [
+            'method' => 'GET',
+            'url'    => '/w-actions/w_action_' . $workflowAction->getId() . '/details',
+            'content' => []
+        ];
+
+        $workflowAction = $this->getLastEntity('workflow_action' , true);
+
+        $this->assertNotEmpty($workflowAction);
+
+        $this->addPermissionToBaAdmin(PermissionName::VIEW_WORKFLOW_REQUESTS);
+
+        $res = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($res['id'], $workflowAction['id']);
+
+        $expectedComment1 = ' Merchant test workflow clarification ';
+
+        $this->assertEquals($res['comments'][2]['comment'], $expectedComment1);
+
+        $expectedComment2 =  'Files shared by merchant: ' . $this->app->config->get('applications.dashboard.url') . 'admin/entity/ufh.files/live/file_randomId1 ,  ';
+
+        $this->assertEquals($res['comments'][3]['comment'], $expectedComment2);
+
+        $expectedTags = ['customer-responded'];
+
+        $this->assertArrayHasKey('tagged', $res );
+
+        $this->assertArraySelectiveEquals($expectedTags , $res['tagged']);
+    }
+
     public function assertBankingEntitiesNotNullInTestMode($merchantDetail)
     {
         $bankAccount = $this->getDbEntity('bank_account',
@@ -4755,6 +4924,32 @@ You can now start accepting payments from https://www.example.com.
         $this->assertBankingEntitiesNullInLiveMode($merchantDetail);
     }
 
+    protected function getNeedsClarificationQueryAndAssert($merchantId, $workflowType)
+    {
+        $user = $this->fixtures->user->create();
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id' => $user['id'],
+            'merchant_id' => $merchantId,
+            'role' => Role::OWNER,
+        ]);
+
+        $testData = $this->testData['testMerchantWorkflowDetailForMerchantWorkflowType'];
+
+        $testData['response']['content'] = [
+            'workflow_exists' => true,
+            'workflow_status' => 'open',
+            'needs_clarification' => 'needs clarification body',
+        ];
+
+        $testData['request']['url'] = "/merchant/" . $workflowType . "/details";
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $user['id']);
+
+    }
+
     public function testRejectionReasonMerchantNotificationForWebsiteAddSelfServe()
     {
         Mail::fake();
@@ -4935,3 +5130,4 @@ You can now start accepting payments from https://www.example.com.
         $this->startTest();
     }
 }
+

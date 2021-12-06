@@ -239,8 +239,12 @@ final class Constants
     const FAQS                      =    "faqs";
     const THANKS                    =    "thanks";
 
-    const AGGREGATIONS              = "aggregations";
-    const FILTERS                   = "filters";
+    const MERCHANT_WORKFLOW_CLARIFICATION                =  "merchant_workflow_clarification";
+    const WORKFLOW_CLARIFICATION_DOCUMENTS_IDS           =  "clarification_documents_ids";
+    const UFH_FILE_URL                                   = "%sadmin/entity/ufh.files/live/file_%s ,  ";
+    const MERCHANT_WORKFLOW_CLARIFICATION_FILES_PREFIX   = 'Files shared by merchant: ';
+    const AGGREGATIONS                                   = "aggregations";
+    const FILTERS                                        = "filters";
 
     const unregisteredMerchantMaximumTransactionLimit = [
         BusinessCategory::FINANCIAL_SERVICES        => 10000000,
@@ -437,9 +441,9 @@ final class Constants
             self::ENTITY       => \RZP\Constants\Entity::MERCHANT,
         ],
         self::GSTIN_UPDATE_SELF_SERVE      => [
-            self::PERMISSION  => Permission::EDIT_MERCHANT_GSTIN_DETAIL,
+            self::PERMISSION  => Permission::UPDATE_MERCHANT_GSTIN_DETAIL,
             self::ENTITY      => \RZP\Constants\Entity::MERCHANT_DETAIL,
-        ]
+        ],
     ];
 
     // Merchant Email Types For Instrumentation

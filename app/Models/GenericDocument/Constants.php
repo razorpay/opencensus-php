@@ -31,15 +31,17 @@ class Constants
     const DOCUMENT_UPLOAD_MUTEX_LOCK_TIMEOUT = '30';
     const DOCUMENT_UPLOAD_MUTEX_RETRY_COUNT  = '2';
 
-    const KYC_PROOF                = 'kyc_proof';
-    const TRADEMARK_LOGO           = 'trademark_logo';
-    const DISPUTE_EVIDENCE         = 'dispute_evidence';
-    const INTERNATIONAL_ENABLEMENT = 'international_enablement';
+    const KYC_PROOF                         = 'kyc_proof';
+    const TRADEMARK_LOGO                    = 'trademark_logo';
+    const DISPUTE_EVIDENCE                  = 'dispute_evidence';
+    const INTERNATIONAL_ENABLEMENT          = 'international_enablement';
+    const MERCHANT_WORKFLOW_CLARIFICATION   = 'merchant_workflow_clarification';
 
     const PURPOSE_TYPE = [
         self::KYC_PROOF,
         self::TRADEMARK_LOGO,
         self::DISPUTE_EVIDENCE,
         self::INTERNATIONAL_ENABLEMENT,
+        self::MERCHANT_WORKFLOW_CLARIFICATION
     ];
 }

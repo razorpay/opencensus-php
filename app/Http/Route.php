@@ -1350,6 +1350,8 @@ class Route
         'workflow_merchants_create_payout_get'     => ['get',      'merchants/workflows/permissions/create_payout',  'WorkflowController@getMerchantIdsForCreatePayoutWorkflowPermission'],
         'workflow_observer_data_update'            => ['put',      'workflows/{id}/observer_data',                   'WorkflowController@updateWorkflowObserverData'                     ],
         'workflow_observer_data_fetch'             => ['get',      'workflows/{id}/observer_data',                   'WorkflowController@getWorkflowObserverData'                        ],
+        'workflow_needs_merchant_clarification'    => ['put',      'merchant/{workflowId}/need_clarification',       'WorkflowController@postNeedClarificationOnWorkflow'                ],
+
         // UPI
         'p2p_fetch_private'                        => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
         'customer_collect_request_fetch_private'   => ['get',      'customers/{customer_id}/requests/collect',       'P2pController@fetchCollectRequestsPrivate'                         ],
@@ -2677,6 +2679,8 @@ class Route
 
         'increase_transaction_limit_self_serve'    => ['post',     'merchant/transaction_limit',                                'MerchantController@postIncreaseTransactionLimitSelfServe' ],
         'merchant_workflow_details'                => ['get',      'merchant/{workflowType}/details',                           'MerchantController@getMerchantWorkflowDetails'            ],
+        'merchant_workflow_clarification'          => ['post',     'merchant/{workflowType}/clarification',                     'MerchantController@postMerchantWorkflowClarification'     ],
+
 
         'add_additional_website_self_serve'        => ['post',      'merchant/additional_website/{urlType}',                     'MerchantController@postAddAdditionalWebsiteSelfServe'    ],
         'additional_website_status'                => ['get',       'merchant/additional_website_status',                        'MerchantController@getAdditionalWebsiteWorkflowStatus'   ],
@@ -4580,6 +4584,7 @@ class Route
         'subscription_fetch_emandate_detail',
         'increase_transaction_limit_self_serve',
         'merchant_workflow_details',
+        'merchant_workflow_clarification',
         'user_edit_self',
         'user_otp_create',
         'user_verify_contact',
@@ -4908,6 +4913,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'workflow_needs_merchant_clarification',
         'merchant_update_fraud_type',
         'admin_merchant_post_preferences',
         'merchant_risk_alerts_foh_workflow_trigger_nc',
@@ -6141,6 +6147,7 @@ class Route
         'merchant_get_pricing'                     => Permission::VIEW_MERCHANT_PRICING,
         'merchant_invoice_update_gstin'            => Permission::MERCHANT_INVOICE_EDIT,
         'merchant_details_fetch'                   => Permission::VIEW_MERCHANT,
+        'workflow_needs_merchant_clarification'    => Permission::MERCHANT_CLARIFICATION_ON_WORKFLOW,
         'setl_retry'                               => Permission::RETRY_SETTLEMENT,
         'payout_retry'                             => Permission::RETRY_SETTLEMENT,
         'setl_update_channel_bulk'                 => Permission::SETTLEMENT_BULK_UPDATE,
@@ -8492,6 +8499,7 @@ class Route
             'update_survey_tracker',
             'increase_transaction_limit_self_serve',
             'merchant_workflow_details',
+            'merchant_workflow_clarification',
             'update_payment_config',
             'update_wait_timeout',
             'upi_get_bank_list',
@@ -8626,6 +8634,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'workflow_needs_merchant_clarification',
             'splitz_evaluate_bulk_proxy',
             'merchant_update_fraud_type',
             'admin_merchant_post_preferences',
@@ -10471,6 +10480,8 @@ class Route
             'risk_attributes_get',
 
             'create_risk_action',
+
+            'merchant_workflow_clarification',
 
             'firs_document_fetch',
             'firs_document_download',

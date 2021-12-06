@@ -937,6 +937,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_WORKFLOW_EDIT_IN_PROGRESS                          = 'Workflow edit on the same payout rule is active';
     const BAD_REQUEST_PAYOUT_INVALID_STATE                                      = 'Payout is not in pending state';
     const BAD_REQUEST_USER_ROLE_NOT_SUPPORTED_FOR_WORKFLOW                      = 'User role is not supported for workflows';
+    const BAD_REQUEST_OPEN_WORKFLOW_NOT_FOUND                                   = 'No open workflow found to submit clarification';
 
     const BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED                                = 'This service can only be accessed by superadmins';
 
@@ -944,6 +945,9 @@ class PublicErrorDescription
 
     const BAD_REQUEST_INVALID_OAUTH_MAIL_TYPE                                   = 'Invalid type sent for oauth mail.';
     const BAD_REQUEST_AUTH_SERVICE_ERROR                                        = 'There was an error completing this request';
+
+    const BAD_REQUEST_INVALID_WORKFLOW_FOR_NEED_MERCHANT_CLARIFICATION          = 'Workflow not supported for need merchant clarification';
+    const BAD_REQUEST_MERCHANT_NOT_FOUND_FOR_NEED_MERCHANT_CLARIFICATION        = 'Did not found merchant to notify for need clarification';
 
     const BAD_REQUEST_COUPON_LIMIT_REACHED                                      = 'Coupon code limit reached';
     const BAD_REQUEST_COUPON_ALREADY_USED                                       = 'Coupon code already used';

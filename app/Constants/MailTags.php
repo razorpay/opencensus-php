@@ -243,8 +243,13 @@ class MailTags
 
     const UPDATE_REJECTION_REASON                       = 'update_rejection_reason';
 
-    const GSTIN_UPDATED_VALIDATION_SUCCESS              = 'gstin_updated_validation_success';
+    // Mail tags for needs clarification on workflow
+    const MERCHANT_CLARIFICATION_ON_BANK_ACCOUNT_WORKFLOW       =  'merchant_clarification_on_bank_account_workflow';
+    const MERCHANT_CLARIFICATION_ON_TRANSACTION_LIMIT_WORKFLOW  =  'merchant_clarification_on_transaction_limit_workflow';
+    const MERCHANT_CLARIFICATION_ON_WEBSITE_UPDATE_WORKFLOW     =  'merchant_clarification_on_website_update_workflow';
+    const MERCHANT_CLARIFICATION_ON_WEBSITE_ADD_WORKFLOW        =  'merchant_clarification_on_website_add_workflow';
 
+    const GSTIN_UPDATED_VALIDATION_SUCCESS              = 'gstin_updated_validation_success';
     const GSTIN_UPDATED_WORKFLOW_APPROVE                = 'gstin_updated_workflow_approve';
 
     const MERCHANT_BUSINESS_WEBSITE_UPDATE_REJECTION_REASON       = 'merchant_business_website_update_rejection_reason';
