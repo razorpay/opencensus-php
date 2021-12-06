@@ -2123,8 +2123,12 @@ class Route
         'banking_account_service_routes'                        => ['any',      'merchant/banking_application/business/{path?}',         'BasController@forwardRequest'                  ],
         'banking_account_service_cron_routes'                   => ['any',      'bas/banking_application/cron/{path?}',                  'BasController@forwardCronRequest'              ],
 
-        'banking_account_service_pincode_serviceability_check'   => ['get',     'bas/banking_application/check_pin_code_serviceability', 'BasController@checkPinCodeServiceability'      ],
-        'banking_account_service_common_serviceability_check' =>    ['post',    'bas/allocate_lead',                                     'BasController@checkCommonServiceability'       ],
+        // this endpoint checks serviceability only for ICICI
+        'banking_account_service_pincode_serviceability_check'        => ['get',     'bas/banking_application/check_pin_code_serviceability', 'BasController@checkPinCodeServiceability'      ],
+        // this endpoint checks serviceability for both ICICI and RBL
+        'banking_account_service_pincode_serviceability_check_bulk'   => ['get',     'bas/banking_application/check_pin_code_serviceability_bulk', 'BasController@checkPinCodeServiceabilityBulk'      ],
+        // this endpoint checks serviceability and allocates a bank for the merchant
+        'banking_account_service_common_serviceability_check'         => ['post',    'bas/allocate_lead',                                     'BasController@checkCommonServiceability'       ],
 
         'banking_account_slot_book'                           =>    ['post',    'booking/slot/book',                                     'BasController@slotBookForBankingAccount'      ],
         'banking_account_get_free_slot'                       =>    ['get',     'booking/slot/availableSlots',                           'BasController@getFreeSlotForBankingAccount'   ],
@@ -7279,11 +7283,12 @@ class Route
         'update_survey_tracker'                        => '*',
 
         //Banking account service
-        'banking_account_service_routes'                        => '*',
-        'banking_account_service_pincode_serviceability_check'  => '*',
-        'banking_account_service_common_serviceability_check'   => '*',
-        'banking_account_slot_book'                             => '*',
-        'banking_account_get_free_slot'                         => '*',
+        'banking_account_service_routes'                             => '*',
+        'banking_account_service_pincode_serviceability_check'       => '*',
+        'banking_account_service_pincode_serviceability_check_bulk'  => '*',
+        'banking_account_service_common_serviceability_check'        => '*',
+        'banking_account_slot_book'                                  => '*',
+        'banking_account_get_free_slot'                              => '*',
 
         // Payout Links - Shopify Integration
         'payout_links_integrate_app'                   => '*',
@@ -7484,6 +7489,9 @@ class Route
         'payout_links_verify_customer_otp_demo_cors',
         'payout_links_initiate_demo',
         'payout_links_initiate_demo_cors',
+
+        // Banking Account Service
+        'banking_account_service_pincode_serviceability_check_bulk',
     ];
 
     /**
@@ -7654,6 +7662,7 @@ class Route
             'bank_transfer_process_test',
             'banking_account_create',
             'banking_account_create_dashboard',
+            'banking_account_service_pincode_serviceability_check_bulk',
             'get_banking_account_slot_booking_details',
             'banking_accounts_get',
             'banking_account_update_dashboard',

@@ -161,6 +161,26 @@ class BankingAccountService
             ];
         }
 
+        else if($path === 'is_serviceable_bulk' and $method === 'GET')
+        {
+            $result = [
+                'data' => [
+                    [
+                      'bank'           => 'RBL',
+                      'account_type'   => '',
+                      'reasons'        => ['PIN_CODE_UNSERVICEABLE'],
+                      'is_serviceable' => false
+                    ],
+                    [
+                        'bank'           => 'ICICI',
+                        'account_type'   => '',
+                        'reasons'        => null,
+                        'is_serviceable' => true
+                    ],
+                ]
+            ];
+        }
+
         else if($path === 'business/10000000000000/application/10000000000000/signatory' and $method === 'POST')
         {
             $result = [

@@ -402,6 +402,36 @@ return [
         ],
     ],
 
+    'testPinCodeServiceabilityBulk' => [
+        'request'  => [
+            'url'     => '/bas/banking_application/check_pin_code_serviceability_bulk',
+            'method'  => 'GET',
+            'content' => [
+                'pin_code' => '833216',
+                'business_type' => 'PRIVATE_LIMITED',
+                'business_category' => 'ECOMMERCE',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'data' => [
+                    [
+                        'bank'           => 'RBL',
+                        'account_type'   => '',
+                        'reasons'        => ['PIN_CODE_UNSERVICEABLE'],
+                        'is_serviceable' => false
+                    ],
+                    [
+                        'bank'           => 'ICICI',
+                        'account_type'   => '',
+                        'reasons'        => null,
+                        'is_serviceable' => true
+                    ],
+                ]
+            ],
+        ],
+    ],
+
     'testSlotBookingForBankingAccount' => [
         'request'  => [
             'url'     => '/booking/slot/book',

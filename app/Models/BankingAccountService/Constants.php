@@ -53,6 +53,8 @@ class Constants
 
     const BAS_PIN_CODE_SERVICEABILITY   = 'is_serviceable';
 
+    const BAS_PIN_CODE_SERVICEABILITY_BULK   = 'is_serviceable_bulk';
+
     const ALLOCATE_LEAD                 = "allocate_lead";
 
     const SIGNATORY_PATH                = 'signatory';

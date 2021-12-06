@@ -432,6 +432,14 @@ class BankingAccountServiceTest extends TestCase
         $this->assertEquals(true, $response['data']['serviceable']);
     }
 
+    public function testPinCodeServiceabilityBulk()
+    {
+        $this->ba->directAuth();
+
+        $response = $this->startTest();
+
+    }
+
     public function testSlotBookingForBankingAccount()
     {
         $this->ba->proxyAuth();

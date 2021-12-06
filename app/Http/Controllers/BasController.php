@@ -94,6 +94,15 @@ class BasController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function checkPinCodeServiceabilityBulk()
+    {
+        $input = Request::all();
+
+        $data =  $this->service->checkPinCodeServiceabilityBulk($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function checkCommonServiceability(){
 
         $input = Request::all();

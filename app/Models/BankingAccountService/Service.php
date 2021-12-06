@@ -464,6 +464,11 @@ class Service extends Base\Service
         return $this->bankingAccountService->sendRequestAndProcessResponse($basPinCodeServiceabilityPath, 'GET', $input);
     }
 
+    public function checkPinCodeServiceabilityBulk($input)
+    {
+        return $this->bankingAccountService->sendRequestAndProcessResponse(Constants::BAS_PIN_CODE_SERVICEABILITY_BULK, 'GET', $input);
+    }
+
     public function checkCommonServiceability($input)
     {
         return $this->bankingAccountService->sendRequestAndProcessResponse(Constants::ALLOCATE_LEAD, 'POST', $input);
