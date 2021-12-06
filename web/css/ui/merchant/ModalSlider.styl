@@ -16,9 +16,10 @@ $slider-width = 500px
   transition: .3s, .24s opacity;
   z-index: 5;
 
-  @media (max-width: 650px) {
-    max-width: 92%;
+  @media screen and (max-width: $screen-sm-min) {
+    top: 60px;
     width: 100%;
+    z-index: 1030;
   }
 
   &.ReactModal__Overlay--after-open {
@@ -35,6 +36,23 @@ $slider-width = 500px
           }
         }
       }
+    }
+  }
+  .test-mode-indicator-line{
+    // no need to show this indicator for d-web
+    display: none;
+    @media screen and (max-width: $screen-sm-min) {
+      display: block;
+      height: 5px;
+      background: #f9d328;
+      width: 100%;
+      position: fixed;
+      top: 60px;
+      /* 
+        Given this test indicator line z-index 6 to show on top 
+        as the slide panel is having z-index 5 already 
+      */
+      z-index: 6;
     }
   }
   .close-secondary {
@@ -75,10 +93,10 @@ $slider-width = 500px
   button.close {
     padding: 10px;
     position: absolute;
-    top: 16px;
-    margin-left: -53px;
-    left: 100%;
+    top: 10px;
+    right: 10px;
     z-index: 2;
+    opacity: 0.5;
   }
 
   .rzp-error-boundary, .content-wrapper {
@@ -120,6 +138,7 @@ $slider-width = 500px
 
   .SliderPanel__Body {
     > .panel-body {
+      margin-top: 65px;
       padding-bottom: 80px;
     }
   }
@@ -136,6 +155,7 @@ $slider-width = 500px
 }
 
 .SliderPanel__Body {
+  overflow-y: scroll;
   .empty-table-message {
     padding: 30px 50px;
   }

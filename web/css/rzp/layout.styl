@@ -67,7 +67,7 @@ body {
 .main-content {
   margin-left: $sidebar-width;
   margin-top: 51px;
-  @media (max-width $screen-sm-min) {
+  @media screen and (max-width $screen-sm-min) {
     margin-left: 0;
     // if we are in the mobile and test mode to support the test banner this css is added
     &.test-mode{
@@ -1035,20 +1035,32 @@ tr:hover .row-action.btn-group {
   display: inline-block;
 }
 
+.ModalSlider__Content, .MultiSlider__Content {
+  .txn-details {
+    .panel-heading {
+      position: fixed;
+      z-index: 1;
+      width: 500px // as the slide pannel is of fixed 500px for D-web
+      .btn-toolbar {
+        padding-top: 20px;
+      }
+    }
+  }
+}
+
 .txn-details {
   > .panel {
     border: none;
 
     > .panel-heading {
       background-color: #fff;
-      line-height: 74px;
+      line-height: 64px;
       vertical-align: middle;
       padding-top: 0;
       padding-bottom: 0;
       font-size: 18px;
-
-      .btn-toolbar {
-        padding-top: 26px;
+      @media screen and (max-width $screen-sm-min) {
+        width: 100%;
       }
 
       > .i {
@@ -1057,6 +1069,12 @@ tr:hover .row-action.btn-group {
 
       .i + strong {
         margin-left: 8px;
+        @media screen and (max-width $screen-sm-min) {
+          font-size: 14px;
+          position: relative;
+          top: -3px;
+          margin-left: 5px;
+        }
       }
 
       > .close {

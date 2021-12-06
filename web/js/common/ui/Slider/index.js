@@ -1,9 +1,9 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import { getItem } from 'common/utils/localStorage';
 import Modal from 'react-modal';
 import * as SliderActions from 'merchant_common/reducers/slider';
-import { isNone } from 'common/utils/rzp-utils';
 import { classList } from 'common/utils/rzp-utils';
 
 @withRouter
@@ -19,7 +19,7 @@ export default class ModalSlider extends Component {
   //  1. When slider `Close` button is clicked
   //  2. When clicking on the document except on the Slider view & on any links
   handleDocumentClick = (event) => {
-    let target = event.target;
+    const target = event.target;
 
     const powerselectMenu = document.querySelector('body > .tether-element > .PowerSelect__Menu');
     const notification = document.querySelector('body .layout > .Notifications');
@@ -60,10 +60,19 @@ export default class ModalSlider extends Component {
   };
 
   render() {
-    var className = 'ModalSlider__Overlay';
+    let className = 'ModalSlider__Overlay';
     if (this.props.expanded) {
       className += ' expanded';
     }
+    // Method to get the current mode of the merchant
+    const mode = () => {
+      if (window) {
+        /* querying loaclStorage to get the item  */
+        return getItem(`rzp_mode--${window.rzp_user.current}`);
+      }
+      return null;
+    };
+
     return (
       <Modal
         isOpen={this.props.isOpen}
@@ -73,6 +82,8 @@ export default class ModalSlider extends Component {
         contentLabel="SliderModal"
         ariaHideApp={false}
       >
+        {/* To show the test mode indicator horizontal Line on top of the slide pannel if user is in test mode */}
+        {mode() && mode() === 'test' && <div className="test-mode-indicator-line" />}
         <button
           type="button"
           className={classList('close close-primary', this.props.closeButtonClass)}
