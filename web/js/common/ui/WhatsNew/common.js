@@ -1,6 +1,7 @@
 import moment from 'moment';
 import { getItem } from 'common/utils/localStorage';
 import store from 'merchant/store';
+import { getAssetTrackingProperties } from '../../../merchant/models/GrowthService/commonUtils';
 
 export const getExperimentVersion = (user) => {
   if (user.isAnnouncementTextEnabled) return 2.1;
@@ -10,15 +11,14 @@ export const getExperimentVersion = (user) => {
 };
 
 export const getNotificationTrackingProperties = (notification) => {
-  return {
-    id: notification.id,
-    campaign: notification.campaign,
-    campaign_description: notification.campaign_description,
-    version: notification.sub_campaign || notification.version,
-    version_description: notification.sub_campaign_description || notification.version_description,
-    target_product_feature: notification.target_product_feature,
-    target_metric: notification.target_metric,
-  };
+  const oldTrackingData = (({
+    version,
+    version_description,
+    target_metric,
+    target_product_feature,
+  }) => ({ version, version_description, target_metric, target_product_feature }))(notification);
+
+  return getAssetTrackingProperties(notification.id, notification.tracking_data, oldTrackingData);
 };
 
 export const getNotificationsReadData = (merchant_id) => {

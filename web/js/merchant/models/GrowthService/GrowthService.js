@@ -64,7 +64,7 @@ export default class GrowthService extends GenericEntity {
 
         response.data.response.asset_data.forEach((assetEntry) => {
           assetEntry.templates.forEach((template) => {
-            assetData.push({ ...template.data, ...assetEntry.tracking_data });
+            assetData.push({ ...template.data, tracking_data: assetEntry.tracking_data });
           });
         });
         return assetData;

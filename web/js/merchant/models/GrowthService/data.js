@@ -44,11 +44,35 @@ export const assetNames = {
   ANNOUNCEMENT: 'ANNOUNCEMENT',
 };
 
+const trackingDataSchema = yup
+  .object()
+  .optional()
+  .default(undefined)
+  .shape({
+    campaign: yup.string().required().strict(true),
+    campaign_description: yup.string().required().strict(true),
+    sub_campaign: yup.string().optional().strict(true),
+    sub_campaign_description: yup.string().optional().strict(true),
+    campaign_id: yup.string().optional().strict(true),
+    sub_campaign_id: yup.string().optional().strict(true),
+    meta: yup
+      .object()
+      .optional()
+      .shape({
+        product_feature: yup.string().optional().strict(true),
+      }),
+  });
+
+const urlTest = yup
+  .mixed()
+  .required()
+  .test('checkString', 'error: error in checking string', (text) => typeof text === 'string');
+
 export const announcementSchema = yup.object().shape({
-  title: yup.string().required(),
-  description: yup.string().required(),
-  icon: yup.string().required(),
-  id: yup.string().required(),
+  title: yup.string().required().strict(true),
+  description: yup.string().required().strict(true),
+  icon: yup.string().required().strict(true),
+  id: yup.string().required().strict(true),
   start_ts: yup.number().strict(true).required(),
   end_ts: yup.number().strict(true).required(),
   buttons: yup
@@ -56,16 +80,9 @@ export const announcementSchema = yup.object().shape({
     .required()
     .of(
       yup.object().shape({
-        type: yup.string().required(),
-        label: yup.string().required(),
-        url: yup
-          .mixed()
-          .required()
-          .test(
-            'checkString',
-            'error: error in checking string',
-            (text) => typeof text === 'string',
-          ),
+        type: yup.string().required().strict(true),
+        label: yup.string().required().strict(true),
+        url: urlTest,
       }),
     ),
   l2_content: yup
@@ -80,17 +97,11 @@ export const announcementSchema = yup.object().shape({
         .default(undefined)
         .of(
           yup.object().shape({
-            type: yup.string().required(),
-            label: yup.string().required(),
-            url: yup
-              .mixed()
-              .required()
-              .test(
-                'checkString',
-                'error: error in checking string',
-                (text) => typeof text === 'string',
-              ),
+            type: yup.string().required().strict(true),
+            label: yup.string().required().strict(true),
+            url: urlTest,
           }),
         ),
     }),
+  tracking_data: trackingDataSchema,
 });

@@ -9,6 +9,7 @@ import { classList } from 'common/utils/rzp-utils';
 import debounce from 'common/utils/debounce';
 import { connect } from 'react-redux';
 import { sendDataToSalesForce } from 'common/utils/common-api';
+import { getNotificationTrackingProperties } from '../../../common/ui/WhatsNew/common';
 
 const getButtonClass = (type) => {
   switch (type) {
@@ -49,16 +50,7 @@ export default class AnnouncementDetails extends React.Component {
         (notificationEntry) => notificationEntry.id === this.props.id,
       ) || {};
 
-    return {
-      id: notification.id,
-      campaign: notification.campaign,
-      campaign_description: notification.campaign_description,
-      version: notification.sub_campaign || notification.version,
-      version_description:
-        notification.sub_campaign_description || notification.version_description,
-      target_product_feature: notification.target_product_feature,
-      target_metric: notification.target_metric,
-    };
+    return getNotificationTrackingProperties(notification);
   }
 
   componentDidMount() {

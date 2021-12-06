@@ -32,11 +32,11 @@ import lazy from 'merchant/routes/LazyLoader';
 import './WhatsNew.styl';
 import {
   getNotificationsReadData,
-  getNotificationTrackingProperties,
   getExperimentVersion,
   getButtonClass,
   iconMap,
   getQueryData,
+  getNotificationTrackingProperties,
 } from './common';
 import MobileAppQRCode from 'merchant/components/MobileAppQRCode';
 import debounce from 'common/utils/debounce';

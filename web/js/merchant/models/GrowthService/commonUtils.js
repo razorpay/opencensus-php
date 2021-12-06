@@ -47,3 +47,30 @@ export const isValidAssetData = (data = {}, type = '') => {
     return false;
   }
 };
+
+export const getAssetTrackingProperties = (id = '', tracking_data = {}, oldTrackingData = {}) => {
+  const {
+    campaign,
+    campaign_description,
+    sub_campaign,
+    sub_campaign_description,
+    campaign_id,
+    sub_campaign_id,
+    meta,
+  } = tracking_data;
+  const { version, version_description, target_metric, target_product_feature } = oldTrackingData;
+  let product_feature;
+  if (meta) product_feature = meta.product_feature;
+
+  return {
+    id,
+    campaign,
+    campaign_description,
+    version: sub_campaign || version,
+    version_description: sub_campaign_description || version_description,
+    campaign_id,
+    sub_campaign_id,
+    target_metric,
+    product_feature: product_feature || target_product_feature,
+  };
+};

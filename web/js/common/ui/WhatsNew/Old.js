@@ -32,7 +32,7 @@ import Loader from 'common/ui/Loader';
 import { fetchAnnouncements } from 'merchant/reducers/growthService';
 import getSurveyForm from 'merchant/components/Announcements/CSATSurveyBanner/getSurveyForm';
 import moment from 'moment';
-import { getButtonClass, iconMap, getQueryData } from './common';
+import { getButtonClass, iconMap, getQueryData, getNotificationTrackingProperties } from './common';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
@@ -105,19 +105,6 @@ class WhatsNewOld extends Component {
     return 2.3;
   }
 
-  getNotificationTrackingProperties(notification) {
-    return {
-      id: notification.id,
-      campaign: notification.campaign,
-      campaign_description: notification.campaign_description,
-      version: notification.sub_campaign || notification.version,
-      version_description:
-        notification.sub_campaign_description || notification.version_description,
-      target_product_feature: notification.target_product_feature,
-      target_metric: notification.target_metric,
-    };
-  }
-
   componentDidUpdate = (prevProps) => {
     if (prevProps.loading !== this.props.loading) {
       this.setUnreadMsgs();
@@ -139,12 +126,12 @@ class WhatsNewOld extends Component {
       const notifEndTS = announcements[i].end_ts;
       const notifID = announcements[i].id;
 
-      if (notifID) ID.push(this.getNotificationTrackingProperties(announcements[i]));
+      if (notifID) ID.push(getNotificationTrackingProperties(announcements[i]));
       if (lastReadTS < notifStartTS && moment().unix() < notifEndTS) {
         totalUnread++;
 
-        if (notifID) unreadID.push(this.getNotificationTrackingProperties(announcements[i]));
-      } else if (notifID) readID.push(this.getNotificationTrackingProperties(announcements[i]));
+        if (notifID) unreadID.push(getNotificationTrackingProperties(announcements[i]));
+      } else if (notifID) readID.push(getNotificationTrackingProperties(announcements[i]));
     }
 
     trackLoad(totalUnread);
@@ -310,8 +297,8 @@ class WhatsNewOld extends Component {
       const notifID = notification.id;
 
       if (notifID) {
-        ID.push(this.getNotificationTrackingProperties(notification));
-        readID.push(this.getNotificationTrackingProperties(notification));
+        ID.push(getNotificationTrackingProperties(notification));
+        readID.push(getNotificationTrackingProperties(notification));
       }
     });
 
@@ -355,7 +342,7 @@ class WhatsNewOld extends Component {
       window.rzpQ.merchantActions().initiated(eventName, {
         CTAValue: value,
         url,
-        ...this.getNotificationTrackingProperties(notification),
+        ...getNotificationTrackingProperties(notification),
         id,
         growth_service: user.isGrowthServiceEnabled,
       }),
