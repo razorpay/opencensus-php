@@ -78,6 +78,12 @@ class Validator extends Base\Validator
         'merchants.*'                => 'required|string|filled|size:14'
     ];
 
+    protected static $emiBlacklistedCategories = [
+        '5094',
+        '5944',
+        '7631'
+    ];
+
     protected function validateMethodBanks(array $input)
     {
         if (isset($input['disabled_banks']) === false)
@@ -144,6 +150,15 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Upi and upi_type cannot be set at the same time',
                 'upi');
+        }
+    }
+
+    public function validateCategoryForEmi(string $mcc)
+    {
+        if (in_array($mcc, self::$emiBlacklistedCategories)) {
+            throw new Exception\BadRequestValidationFailureException(
+                'EMI cannot be enabled for this MCC: '.$mcc,
+                'emi');
         }
     }
 }

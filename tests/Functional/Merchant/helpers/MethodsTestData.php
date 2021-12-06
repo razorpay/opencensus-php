@@ -90,6 +90,56 @@ return [
         ],
     ],
 
+    'testBulkMethodUpdateCreditEmiEnableInvalidCategory' => [
+        'request' => [
+            'url' => '/methods/bulkupdate',
+            'method' => 'put',
+            'content' => [
+                'merchants' => ['10000000000000'],
+                'methods' => [
+                    'emi' => [
+                        'credit' => '1',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total' => 1,
+                'success'=> 0,
+                'failed'=> 1,
+                'failedIds'=> [
+                    '10000000000000'
+                ]
+            ],
+        ],
+    ],
+
+    'testBulkMethodUpdateDebitEmiEnableInvalidCategory' => [
+        'request' => [
+            'url' => '/methods/bulkupdate',
+            'method' => 'put',
+            'content' => [
+                'merchants' => ['10000000000000'],
+                'methods' => [
+                    'emi' => [
+                        'debit' => '1',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total' => 1,
+                'success'=> 0,
+                'failed'=> 1,
+                'failedIds'=> [
+                    '10000000000000'
+                ]
+            ],
+        ],
+    ],
+
     'testBulkMethodUpdateEnableBanks' => [
         'request' => [
             'url' => '/methods/bulkupdate',
@@ -336,6 +386,56 @@ return [
                     'credit',
                 ]
             ],
+        ],
+    ],
+
+    'testEnableCreditEmiInvalidCategory' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/methods',
+            'method' => 'put',
+            'content'   => [
+                'emi'  => [
+                    'credit' => '1',
+                ],
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'EMI cannot be enabled for this MCC: 5944',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+                'class' => RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+    ],
+
+    'testEnableDebitEmiInvalidCategory' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/methods',
+            'method' => 'put',
+            'content'   => [
+                'emi'  => [
+                    'debit' => '1',
+                ],
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'EMI cannot be enabled for this MCC: 5944',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

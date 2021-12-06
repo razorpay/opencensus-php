@@ -52,6 +52,7 @@ class Core extends Base\Core
                 'merchant_id' => $merchant->getId(),
                 'input' => $input,
                 'current_methods' => $methods->toArrayAdmin(),
+                'category' => $merchant->getCategory(),
             ]);
 
         if (isset($input['custom_text']) === true)
@@ -70,6 +71,12 @@ class Core extends Base\Core
 
         // Setup workflow
         $workflow = $this->app['workflow']->setOriginal(clone $methods);
+
+        if ((isset($input['emi']['credit']) ===  true) || isset($input['emi']['debit']) === true)
+        {
+            $mcc = $merchant->getCategory();
+            (new Validator)->validateCategoryForEmi($mcc);
+        }
 
         $methods->setMethods($input);
 
@@ -1019,4 +1026,5 @@ class Core extends Base\Core
 
         return $provider;
     }
+
 }

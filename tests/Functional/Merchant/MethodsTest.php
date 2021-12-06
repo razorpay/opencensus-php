@@ -135,6 +135,42 @@ class MethodsTest extends TestCase
 
     }
 
+    public function testBulkMethodUpdateCreditEmiEnableInvalidCategory()
+    {
+        $this->fixtures->merchant->disableAllMethods('10000000000000');
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['category' => '5944']);
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->disableEmi('10000000000000');
+
+        $this->startTest();
+
+    }
+
+    public function testBulkMethodUpdateDebitEmiEnableInvalidCategory()
+    {
+        $this->fixtures->merchant->disableAllMethods('10000000000000');
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['category' => '5944']);
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->disableEmi('10000000000000');
+
+        $this->startTest();
+
+    }
+
     public function testBulkMethodUpdateEnableBanks()
     {
         $this->fixtures->merchant->disableAllMethods('10000000000000');
@@ -390,6 +426,42 @@ class MethodsTest extends TestCase
         $this->fixtures->merchant->disableEmi('10000000000000');
 
         $this->startTest();
+    }
+
+    public function testEnableCreditEmiInvalidCategory()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['category' => '5944']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+    }
+
+    public function testEnableDebitEmiInvalidCategory()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['category' => '5944']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
     }
 
     public function testEnableDebitEmi()
