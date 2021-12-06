@@ -5745,6 +5745,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VERIFY_SIGNUP_OTP_REDIS_ERROR                        = 'VERIFY_SIGNUP_OTP_REDIS_ERROR';
     const SKIP_ORG_DATA_IN_RESPONSE                         = 'SKIP_ORG_DATA_IN_RESPONSE';
 
+    //FIRS Document Processor Job
+    const FIRS_DOCUMENT_PROCESSOR_JOB_INIT                  = 'FIRS_DOCUMENT_PROCESSOR_JOB_INIT';
+    const FIRS_DOCUMENT_PROCESSOR_JOB_FAILED                = 'FIRS_DOCUMENT_PROCESSOR_JOB_FAILED';
+    const FIRS_DOCUMENT_PROCESSOR_JOB_RELEASED              = 'FIRS_DOCUMENT_PROCESSOR_JOB_RELEASED';
+    const FIRS_DOCUMENT_PROCESSOR_JOB_DELETED               = 'FIRS_DOCUMENT_PROCESSOR_JOB_DELETED';
+    const FIRS_DOCUMENT_PROCESSOR_JOB_COMPLETED             = 'FIRS_DOCUMENT_PROCESSOR_JOB_COMPLETED';
+
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

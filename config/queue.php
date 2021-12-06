@@ -416,6 +416,11 @@ return [
         'test'       => env('AWS_TRUSTED_BADGE_TEST_QUEUE'),
         'live'       => env('AWS_TRUSTED_BADGE_LIVE_QUEUE'),
     ],
+
+    'firs_document_process' => [
+        'test'       => env('AWS_FIRS_DOCUMENT_TEST_QUEUE'),
+        'live'       => env('AWS_FIRS_DOCUMENT_LIVE_QUEUE'),
+    ],
     /*
     |--------------------------------------------------------------------------
     | Raw SQS Mappings
@@ -433,6 +438,9 @@ return [
         // mapping for settlement service txn processing jobs
         env('AWS_PROCESS_TXNS_TEST_QUEUE') => 'RZP\\Jobs\\ProcessSettlementServiceTxns',
         env('AWS_PROCESS_TXNS_LIVE_QUEUE') => 'RZP\\Jobs\\ProcessSettlementServiceTxns',
+
+        env('AWS_FIRS_DOCUMENT_TEST_QUEUE') => 'RZP\\Jobs\\MerchantFirsDocuments',
+        env('AWS_FIRS_DOCUMENT_LIVE_QUEUE') => 'RZP\\Jobs\\MerchantFirsDocuments',
     ],
 
     /*

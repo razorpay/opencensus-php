@@ -175,7 +175,7 @@ trait FileHandlerTrait
         return $extension;
     }
 
-    public function getH2HFileFromAws($key, $useKeyForFileName = false, $bucket = 'h2h_bucket', $region = null)
+    public function getH2HFileFromAws($key, $useKeyForFileName = false, $bucket = 'h2h_bucket', $region = null, bool $configKey = false)
     {
         if ($useKeyForFileName === false)
         {
@@ -197,7 +197,7 @@ trait FileHandlerTrait
             }
         }
 
-        return $this->getFileFromAws($key, $fullPath, $bucket, $region);
+        return $this->getFileFromAws($key, $fullPath, $bucket, $region, $configKey);
     }
 
     public function deleteFileIfExists()
@@ -419,7 +419,8 @@ trait FileHandlerTrait
         string $key,
         string $filePath,
         string $bucketConfigKey = 'settlement_bucket',
-        string $region = null)
+        string $region = null,
+        bool $configKey = false)
     {
         $config =  \Config::get('aws');
 
@@ -432,8 +433,16 @@ trait FileHandlerTrait
 
         $s3 = Handler::getClient($region);
 
+        if($configKey)
+        {
+            $bucket = $bucketConfigKey;
+        }
+        else{
+            $bucket = $config[$bucketConfigKey];
+        }
+
         $request = [
-            'Bucket'    => $config[$bucketConfigKey],
+            'Bucket'    => $bucket,
             'Key'       => $key,
             'SaveAs'    => $filePath
         ];

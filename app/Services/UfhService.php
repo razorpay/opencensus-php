@@ -223,7 +223,7 @@ class UfhService
             TraceCode::UFH_FILE_UPLOAD,
             array_except($requestData, [self::FILE]));
 
-        if($this->route->getCurrentRouteName() == 'firs_document_categorize')
+        if($type == 'firs_file')
         {
             $this->merchantId = $requestData[self::ENTITY_ID];
         }
@@ -286,13 +286,19 @@ class UfhService
         }
     }
 
-    public function deleteFile(string $fileId)
+    public function deleteFile(string $fileId,string $merchantId = null, string $type = null)
     {
         $this->trace->info(
             TraceCode::AWS_FILE_DELETE,
             [
                 self::FILE_ID => $fileId,
             ]);
+
+        if($type == 'firs_zip')
+        {
+            $this->merchantId = $merchantId;
+            $this->ufhClient = $this->createUfhClient();
+        }
 
         try
         {

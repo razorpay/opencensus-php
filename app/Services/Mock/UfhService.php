@@ -150,7 +150,7 @@ class UfhService extends BaseUfhClient
         ];
     }
 
-    public function deletefile(string $fileId) {}
+    public function deletefile(string $fileId, string $merchantId = null, string $type =null) {}
 
 
     protected function isDisputeEvidenceFileId($fileId): string

@@ -84,7 +84,7 @@ class Service extends Base\Service
         return $batches->toArrayPublic();
     }
 
-    protected function getFileDetails(array & $input, string $type)
+    protected function getFileDetails(array & $input, string $type,bool $configKey = false)
     {
         if (isset($input['key']) === true)
         {
@@ -96,7 +96,7 @@ class Service extends Base\Service
             if (($type === Batch\Type::NACH) or
                 (in_array($target, self::SFTP_BUCKET_TARGETS, true)))
             {
-                $filePath = $this->getH2HFileFromAws($key, true, 'sftp_bucket', 'ap-south-1');
+                $filePath = $this->getH2HFileFromAws($key, true, 'sftp_bucket', 'ap-south-1',$configKey);
             }
             else
             {
@@ -126,7 +126,7 @@ class Service extends Base\Service
                     unset($input['region']);
                 }
 
-                $filePath = $this->getH2HFileFromAws($key, true, $bucketConfig, $bucketRegion);
+                $filePath = $this->getH2HFileFromAws($key, true, $bucketConfig, $bucketRegion,$configKey);
             }
 
             $file = new HttpFoundation\File\File($filePath);
@@ -226,7 +226,9 @@ class Service extends Base\Service
                 'input'   => $input
             ]);
 
-        list($file, $locationType) = $this->getFileDetails($input,'FIRS');
+        $configKey = true;
+
+        list($file, $locationType) = $this->getFileDetails($input,'FIRS',$configKey);
 
         $fileDetails = $this->fileProcessor->getFileDetails($file, $locationType, false);
 
@@ -287,7 +289,7 @@ class Service extends Base\Service
         {
             if ($documentEntity != null)
             {
-                $ufhService->deleteFile($documentEntity->getPublicFileStoreId());
+                $ufhService->deleteFile($documentEntity->getPublicFileStoreId(),$merchantId,'firs_zip');
                 (new Document\Core)->deleteDocuments([$documentEntity->getFileStoreId()]);
             }
             break;

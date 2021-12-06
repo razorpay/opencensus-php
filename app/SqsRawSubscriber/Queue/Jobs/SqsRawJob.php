@@ -81,7 +81,13 @@ class SqsRawJob extends SqsJob
      */
     protected function makeCommand(string $commandName, array $body): string
     {
-        $payload = json_decode($body['Message'], true);
+        if($commandName == 'RZP\\Jobs\\MerchantFirsDocuments')
+        {
+            $payload = $body;
+        }
+        else{
+            $payload = json_decode($body['Message'], true);
+        }
 
         $data = [
             'payload' => $payload
