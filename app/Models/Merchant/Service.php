@@ -7880,7 +7880,7 @@ class Service extends Base\Service
         $action = (new Action\Core())->fetchLastUpdatedWorkflowActionInPermissionList(
             $entityId,
             $entity,
-            Permission::UPDATE_MERCHANT_GSTIN_DETAIL, Permission::EDIT_MERCHANT_GSTIN_DETAIL
+            [Permission::UPDATE_MERCHANT_GSTIN_DETAIL, Permission::EDIT_MERCHANT_GSTIN_DETAIL]
         );
 
         return $action;

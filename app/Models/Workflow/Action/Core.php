@@ -1080,6 +1080,12 @@ class Core extends Base\Core
             MerchantNotificationsConstants::WORKFLOW_CLARIFICATION_SUBMIT_LINK => MerchantNotificationsConstants::EVENT_VS_WORKFLOW_CLARIFICATION_SUBMIT_LINK[$event],
         ]);
 
+        if (($workflowPermission === Permission\Name::INCREASE_TRANSACTION_LIMIT) and
+            (isset($payload[Merchant\Entity::MAX_PAYMENT_AMOUNT]) === true))
+        {
+            $params[Merchant\Entity::MAX_PAYMENT_AMOUNT] = $payload[Merchant\Entity::MAX_PAYMENT_AMOUNT]/100;
+        }
+
         $args = [
             MerchantConstants::MERCHANT             => $merchant,
             DashboardEvents::EVENT                  => $event,

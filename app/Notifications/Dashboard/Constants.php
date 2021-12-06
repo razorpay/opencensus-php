@@ -37,12 +37,16 @@ class Constants
         PermissionName::UPDATE_MERCHANT_WEBSITE       => Events::NEED_CLARIFICATION_FOR_WEBSITE_UPDATE_WORKFLOW,
         PermissionName::INCREASE_TRANSACTION_LIMIT    => Events::NEED_CLARIFICATION_FOR_TRANSACTION_LIMIT_UPDATE_WORKFLOW,
         PermissionName::EDIT_MERCHANT_BANK_DETAIL     => Events::NEED_CLARIFICATION_FOR_BANK_ACCOUNT_UPDATE_WORKFLOW,
+        PermissionName::EDIT_MERCHANT_GSTIN_DETAIL    => Events::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW,
+        PermissionName::UPDATE_MERCHANT_GSTIN_DETAIL  => Events::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW,
     ];
 
     const EVENT_VS_WORKFLOW_CLARIFICATION_SUBMIT_LINK   = [
         Events::NEED_CLARIFICATION_FOR_WEBSITE_ADD_WORKFLOW              => 'https://dashboard.razorpay.com/app/profile/clarification_add_website',
         Events::NEED_CLARIFICATION_FOR_WEBSITE_UPDATE_WORKFLOW           => 'https://dashboard.razorpay.com/app/profile/clarification_update_website',
         Events::NEED_CLARIFICATION_FOR_TRANSACTION_LIMIT_UPDATE_WORKFLOW => 'https://dashboard.razorpay.com/app/profile/clarification_increase_transaction_limit',
-        Events::NEED_CLARIFICATION_FOR_BANK_ACCOUNT_UPDATE_WORKFLOW      => 'https://dashboard.razorpay.com/app/profile/clarification_update_bank_account'
+        Events::NEED_CLARIFICATION_FOR_BANK_ACCOUNT_UPDATE_WORKFLOW      => 'https://dashboard.razorpay.com/app/profile/clarification_update_bank_account',
+        Events::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW             => 'https://dashboard.razorpay.com/app/profile/clarification_update_gstin',
+        Events::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                => 'https://dashboard.razorpay.com/app/profile/clarification_update_gstin',
     ];
 }

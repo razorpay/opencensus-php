@@ -3114,16 +3114,22 @@ We look forward to transacting with you!
 
         $this->updateUploadDocumentData(__FUNCTION__, 'gstin_self_serve_certificate');
 
-        $this->assertGstinSelfServeStatusAndRejectionReason('not_started');
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  false,
+            'request_under_validation' =>  false
+        ]);
 
         $this->startTest();
 
         $this->assertCacheDataForGstinSelfServe($merchant['id']);
 
-        $this->assertGstinSelfServeStatusAndRejectionReason('in_progress');
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  false,
+            'request_under_validation' =>  true
+        ]);
     }
 
-    public function testUpdateGstinSelfServeValidationFailWorkflowApprove()
+    public function testAddGstinSelfServeValidationFailWorkflowApprove()
     {
         Config(['services.bvs.mock' => true]);
 
@@ -3131,7 +3137,10 @@ We look forward to transacting with you!
 
         extract($this->setupMerchantForGstinSelfServeTest());
 
-        $this->assertGstinSelfServeStatusAndRejectionReason('not_started');
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  false,
+            'request_under_validation' =>  false
+        ]);
 
         $this->setupWorkflow('edit_gstin_details', 'edit_merchant_gstin_detail');
 
@@ -3147,7 +3156,13 @@ We look forward to transacting with you!
 
         $this->esClient->indices()->refresh();
 
-        $this->assertGstinSelfServeStatusAndRejectionReason('in_progress');
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  true,
+            'workflow_status'          =>  'open',
+            'needs_clarification'      =>  null,
+            'request_under_validation' =>  false,
+            'permission'               => 'edit_merchant_gstin_detail'
+        ]);
 
         $workflowAction = $this->getLastEntity('workflow_action', true);
 
@@ -3167,15 +3182,90 @@ We look forward to transacting with you!
 
             $this->assertEquals('18AABCU9603R1ZM', $mail->viewData['gstin']);
 
+            $this->assertEquals('added', $mail->viewData['gstin_operation']);
+
             return true;
         });
 
         $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
 
-        $this->assertGstinSelfServeStatusAndRejectionReason('not_started');
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  true,
+            'workflow_status'          =>  'executed',
+            'needs_clarification'      =>  null,
+            'request_under_validation' =>  false
+        ]);
     }
 
-    public function testUpdateGstinSelfServeValidationFailWorkflowReject()
+    public function testUpdateGstinSelfServeValidationFailWorkflowApprove()
+    {
+        Config(['services.bvs.mock' => true]);
+
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateGstinSelfServe'];
+
+        extract($this->setupMerchantForGstinSelfServeTest(false));
+
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  false,
+            'request_under_validation' =>  false
+        ]);
+
+        $this->setupWorkflow('edit_gstin_details', 'update_merchant_gstin_detail');
+
+        $this->updateUploadDocumentData(__FUNCTION__, 'gstin_self_serve_certificate');
+
+        $this->startTest();
+
+        $this->processBvsResponseForGstinSelfServe('failed');
+
+        $this->assertCacheDataNullForGstinSelfServe($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $this->esClient->indices()->refresh();
+
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  true,
+            'workflow_status'          =>  'open',
+            'needs_clarification'      =>  null,
+            'request_under_validation' =>  false,
+            'permission'               => 'update_merchant_gstin_detail'
+        ]);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->assertWorkflowDataForGstInSelfServe($workflowAction, false);
+
+        $this->performWorkflowAction($workflowAction['id'], true);
+
+        $merchantDetail = $this->getEntityById('merchant_detail', $merchant['id'], true);
+
+        $this->assertArraySelectiveEquals([
+            'gstin'                       => '18AABCU9603R1ZM',
+        ], $merchantDetail);
+
+        Mail::assertQueued(MerchantDashboardEmail::class, function ($mail)
+        {
+            $this->assertEquals('emails.merchant.gstin_updated_on_workflow_approve', $mail->view);
+
+            $this->assertEquals('18AABCU9603R1ZM', $mail->viewData['gstin']);
+
+            $this->assertEquals('updated', $mail->viewData['gstin_operation']);
+
+            return true;
+        });
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  true,
+            'workflow_status'          =>  'executed',
+            'needs_clarification'      =>  null,
+            'request_under_validation' =>  false
+        ]);
+    }
+
+    public function testAddGstinSelfServeValidationFailWorkflowReject()
     {
         Config(['services.bvs.mock' => true]);
 
@@ -3183,7 +3273,11 @@ We look forward to transacting with you!
 
         extract($this->setupMerchantForGstinSelfServeTest());
 
-        $this->assertGstinSelfServeStatusAndRejectionReason('not_started');
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  false,
+            'needs_clarification'      =>  null,
+            'request_under_validation' =>  false
+        ]);
 
         $this->setupWorkflow('edit_gstin_details', 'edit_merchant_gstin_detail');
 
@@ -3222,7 +3316,96 @@ We look forward to transacting with you!
 
         $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
 
-        $this->assertGstinSelfServeStatusAndRejectionReason('not_started', 'Test body');
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  true,
+            'needs_clarification'      =>  null,
+            'workflow_status'          => 'rejected',
+            'rejection_reason_message' => 'Test body'
+        ]);
+    }
+
+    public function testUpdateGstinSelfServeValidationFailWorkflowReject()
+    {
+        Config(['services.bvs.mock' => true]);
+
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateGstinSelfServe'];
+
+        extract($this->setupMerchantForGstinSelfServeTest(false));
+
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  false,
+            'needs_clarification'      =>  null,
+            'request_under_validation' =>  false
+        ]);
+
+        $this->mockRavenAndStorkForUpdateGstinRejectionReason();
+
+        $this->setupWorkflow('edit_gstin_details', 'update_merchant_gstin_detail');
+
+        $this->updateUploadDocumentData(__FUNCTION__, 'gstin_self_serve_certificate');
+
+        $this->startTest();
+
+        $this->processBvsResponseForGstinSelfServe('failed');
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->assertWorkflowDataForGstInSelfServe($workflowAction, false);
+
+        $this->rejectWorkFlowWithRejectionReason($workflowAction['id']);
+
+        $merchantDetail = $this->getEntityById('merchant_detail', $merchant['id'], true);
+
+        $this->assertCacheDataNullForGstinSelfServe($merchant['id']);
+
+        $this->assertArraySelectiveEquals([
+            'gstin'                       => 'abcdefghijklmno',
+        ], $merchantDetail);
+
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) use($user)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('Test body', $data['messageBody']);
+
+            $this->assertEquals('emails.merchant.rejection_reason_notification', $mail->view);
+
+            $mail->hasTo($user['email']);
+
+            return true;
+        });
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  true,
+            'needs_clarification'      =>  null,
+            'workflow_status'          => 'rejected',
+            'rejection_reason_message' => 'Test body'
+        ]);
+    }
+
+    protected function mockRavenAndStorkForUpdateGstinRejectionReason()
+    {
+        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $expectedRavenParametersForTemplate = [
+            'merchant_name' => 'Test name'
+        ];
+
+        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.merchant_gstin_rejection', '1234567890', $expectedRavenParametersForTemplate);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkWhatsappRequest($storkMock,
+                                          'Hi Test name, Your request for updating the GSTIN has been rejected. Please click on https://dashboard.razorpay.com/app/profile/rejection_update_gstin to know more.
+-Team Razorpay',
+                                          '1234567890'
+        );
     }
 
     public function testUpdateGstinSelfServeValidationPassDeleteOldRejectionReason()
@@ -3249,7 +3432,12 @@ We look forward to transacting with you!
 
         $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
 
-        $this->assertGstinSelfServeStatusAndRejectionReason('not_started', 'Test body');
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  true,
+            'needs_clarification'      =>  null,
+            'workflow_status'          => 'rejected',
+            'rejection_reason_message' => 'Test body'
+        ]);
 
         $this->setBvsValidationDetailForGstinUpdateSelfServe();
 
@@ -3261,7 +3449,11 @@ We look forward to transacting with you!
 
         $this->esClient->indices()->refresh();
 
-        $this->assertGstinSelfServeStatusAndRejectionReason('not_started');
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  true,
+            'needs_clarification'      =>  null,
+            'workflow_status'          => 'rejected',
+        ]);
     }
 
     public function testUpdateGstinSelfServeWhenInProgressShouldFail()
@@ -3274,7 +3466,10 @@ We look forward to transacting with you!
 
         $this->startTest();
 
-        $this->assertGstinSelfServeStatusAndRejectionReason('in_progress');
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  false,
+            'request_under_validation' =>  true
+        ]);
 
         // changing the content and asserting that the data in cache didnt get over-written(changes to address, state and pin)
 
@@ -3393,7 +3588,7 @@ We look forward to transacting with you!
         $this->initiateGstinSelfServe();
     }
 
-    public function testGstinSelfServeBvsValidationSuccess()
+    public function testAddGstinSelfServeBvsValidationSuccess()
     {
         extract($this->setupMerchantForGstinSelfServeTest());
 
@@ -3401,7 +3596,10 @@ We look forward to transacting with you!
 
         $this->setBvsValidationDetailForGstinUpdateSelfServe();
 
-        $this->assertGstinSelfServeStatusAndRejectionReason('in_progress');
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  false,
+            'request_under_validation' =>  true
+        ]);
 
         $this->processBvsResponseForGstinSelfServe();
 
@@ -3426,7 +3624,8 @@ We look forward to transacting with you!
                 'business_registered_address' => '1302, 13, ORCHID, 18 B G KHER ROAD, WORLI MUMBAI',
                 'business_registered_pin'     => '400018',
                 'business_registered_city'    => 'Mumbai City',
-                'business_registered_state'   => 'MH'
+                'business_registered_state'   => 'MH',
+                'gstin_operation'             => 'added'
             ], $mail->viewData);
 
             return true;
@@ -3434,7 +3633,61 @@ We look forward to transacting with you!
 
         $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
 
-        $this->assertGstinSelfServeStatusAndRejectionReason('not_started');
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  false,
+            'request_under_validation' =>  false
+        ]);
+    }
+
+    public function testUpdateGstinSelfServeBvsValidationSuccess()
+    {
+        extract($this->setupMerchantForGstinSelfServeTest(false));
+
+        $this->initiateGstinSelfServe();
+
+        $this->setBvsValidationDetailForGstinUpdateSelfServe();
+
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  false,
+            'request_under_validation' =>  true
+        ]);
+
+        $this->processBvsResponseForGstinSelfServe();
+
+        $merchantDetail = $this->getEntityById('merchant_detail', $merchant['id'], true);
+
+        $this->assertCacheDataNullForGstinSelfServe($merchant['id']);
+
+        $this->assertArraySelectiveEquals([
+            'gstin'                       => '18AABCU9603R1ZM',
+            'business_registered_address' => '1302, 13, ORCHID, 18 B G KHER ROAD, WORLI MUMBAI',
+            'business_registered_pin'     => '400018',
+            'business_registered_city'    => 'Mumbai City',
+            'business_registered_state'   => 'MH'
+        ], $merchantDetail);
+
+        Mail::assertQueued(MerchantDashboardEmail::class, function ($mail)
+        {
+            $this->assertEquals('emails.merchant.gstin_updated_self_serve', $mail->view);
+
+            $this->assertArraySelectiveEquals([
+                'gstin'                       => '18AABCU9603R1ZM',
+                'business_registered_address' => '1302, 13, ORCHID, 18 B G KHER ROAD, WORLI MUMBAI',
+                'business_registered_pin'     => '400018',
+                'business_registered_city'    => 'Mumbai City',
+                'business_registered_state'   => 'MH',
+                'gstin_operation'             => 'updated'
+            ], $mail->viewData);
+
+            return true;
+        });
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  false,
+            'request_under_validation' =>  false
+        ]);
     }
 
     public function testGstinSelfServeBvsValidationSuccessInvalidStateFail()
@@ -3447,7 +3700,10 @@ We look forward to transacting with you!
 
         $this->setBvsValidationDetailForGstinUpdateSelfServe($registeredAddress);
 
-        $this->assertGstinSelfServeStatusAndRejectionReason('in_progress');
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  false,
+            'request_under_validation' =>  true
+        ]);
 
         $this->processBvsResponseForGstinSelfServe();
 
@@ -3506,7 +3762,7 @@ We look forward to transacting with you!
         $this->performWorkflowAction($workflowActionId, false);
     }
 
-    protected function assertWorkflowDataForGstInSelfServe($workflowAction)
+    protected function assertWorkflowDataForGstInSelfServe($workflowAction, $isAddGstinflow = true)
     {
         $this->assertGstInCertificateUrlInWorkflowComment($workflowAction['id']);
 
@@ -3514,11 +3770,13 @@ We look forward to transacting with you!
         $action = $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
             substr($workflowAction['id'], 9))[0]['_source'];
 
+        $permission = ($isAddGstinflow) ? 'edit_merchant_gstin_detail' : 'update_merchant_gstin_detail';
+
         $this->assertEquals('open', $action['state']);
         $this->assertEquals( 'POST', $action['method']);
         $this->assertEquals('RZP\Http\Controllers\MerchantController@postGstinUpdateWorkflow', $action['controller']);
         $this->assertEquals('merchant_gstin_self_serve_update', $action['route']);
-        $this->assertEquals('edit_merchant_gstin_detail', $action['permission']);
+        $this->assertEquals($permission, $action['permission']);
 
         $this->assertArraySelectiveEquals([
                 'gstin'         => '18AABCU9603R1ZM',
@@ -3528,7 +3786,7 @@ We look forward to transacting with you!
 
         $this->assertArraySelectiveEquals( [
             'old' => [
-                'gstin' => null
+                'gstin' => ($isAddGstinflow) ? null : 'abcdefghijklmno'
             ],
             'new' => [
                 'gstin' => '18AABCU9603R1ZM'
@@ -3554,6 +3812,7 @@ We look forward to transacting with you!
             'gstin_certificate_file_id' => '1cXSLlUU8V9sXl',
             'merchant_id'               => $merchantId,
             'validation_id'             => $bvsValidationEntity['validation_id'],
+            'is_add_gstin_operation'    => true,
         ], $data);
     }
 
@@ -3856,37 +4115,42 @@ We look forward to transacting with you!
         }
     }
 
-    protected function assertGstinSelfServeStatusAndRejectionReason($expectedStatus, $rejectionReason = null)
+    protected function assertGstinSelfServeStatusAndRejectionReason($content)
     {
-        $data = $this->testData['getSelfServeGetStatus'];
+        $data = $this->testData['testGstinSelfServeStatus'];
 
-        $data['response']['content'] = [
-            'status'           => $expectedStatus,
-            'rejection_reason' => $rejectionReason
-        ];
+        $data['response']['content'] = $content;
 
        $this->startTest($data);
     }
 
-    protected function setupMerchantForGstinSelfServeTest()
+    protected function setupMerchantForGstinSelfServeTest($isAddGstinFlow = true)
     {
         Mail::fake();
 
-        $merchant = $this->fixtures->merchant->create(['activated' => true]);
+        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
+
+        $merchant = $this->fixtures->merchant->create([
+            'activated' => true,
+            'name' => 'Test name'
+        ]);
 
         $this->fixtures->create('merchant_detail', [
             'merchant_id'       => $merchant['id'],
+            'contact_name'      => $merchant['name'],
             'promoter_pan_name' => 'randomLegalName',
             'business_name'     => 'randomTradeName',
             'business_registered_address' => '1302, 13, Test, 18 B G KHER ROAD',
             'business_registered_pin'     => '451111',
             'business_registered_city'    => 'Pune',
-            'business_registered_state'   => 'MP'
+            'business_registered_state'   => 'MP',
+            'gstin'                       => ($isAddGstinFlow) ? null : 'abcdefghijklmno'
         ]);
 
-        $this->fixtures->merchant->addFeatures('gstin_self_serve', $merchant['id']);
-
-        $user = $this->fixtures->create('user');
+        $user = $this->fixtures->create('user', [
+            'contact_mobile'          => '1234567890',
+            'contact_mobile_verified' => true,
+        ]);
 
         $mappingData = [
             'user_id'     => $user['id'],
@@ -4133,9 +4397,9 @@ You can now start accepting payments from https://www.example.com.
         $merchantId = $this->saveBusinessWebsiteMakerFlow(['activation_status' => 'activated']);
 
         $this->raiseNeedWorkflowClarificationFromMerchantAndAssert([
-            'expected_whatsapp_text'    => 'Hi testname, we need a few more details to process the request on adding website/app to your Razorpay account. Please click https://dashboard.razorpay.com/app/profile/clarification_add_website to share the details. -Team Razorpay',
+            'expected_whatsapp_text'    => 'Hi Test name, we need a few more details to process the request on adding website/app to your Razorpay account. Please click https://dashboard.razorpay.com/app/profile/clarification_add_website to share the details. -Team Razorpay',
             'expected_index_of_comment' => 2,
-            'expected_sms_template'     => 'sms.dashboard.merchant_business_website_add_needs_clarification',
+            'expected_sms_template'     => 'sms.dashboard.merchant_website_add_needs_clarification',
             'expected_deep_link'        => 'https://dashboard.razorpay.com/app/profile/clarification_add_website'
         ]);
 
@@ -4149,9 +4413,9 @@ You can now start accepting payments from https://www.example.com.
         $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated'], PermissionName::UPDATE_MERCHANT_WEBSITE);
 
         $this->raiseNeedWorkflowClarificationFromMerchantAndAssert([
-            'expected_whatsapp_text'    => 'Hi testname, we need a few more details to process the request on updating your Razorpay website/app. Please click https://dashboard.razorpay.com/app/profile/clarification_update_website to share the details. -Team Razorpay',
+            'expected_whatsapp_text'    => 'Hi Test name, we need a few more details to process the request on updating your Razorpay website/app. Please click https://dashboard.razorpay.com/app/profile/clarification_update_website to share the details. -Team Razorpay',
             'expected_index_of_comment' => 2,
-            'expected_sms_template'     => 'sms.dashboard.merchant_business_website_update_needs_clarification',
+            'expected_sms_template'     => 'sms.dashboard.merchant_website_update_needs_clarification',
             'expected_deep_link'        => 'https://dashboard.razorpay.com/app/profile/clarification_update_website'
         ]);
 
@@ -4167,9 +4431,6 @@ You can now start accepting payments from https://www.example.com.
 
     protected function raiseNeedWorkflowClarificationFromMerchantAndAssert($data)
     {
-        /*
-         * commenting this as sms and whatsapp will be enabled in later for needs workflow clarification
-         *
         $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
@@ -4186,7 +4447,6 @@ You can now start accepting payments from https://www.example.com.
             $data['expected_whatsapp_text'],
             '1234567890'
         );
-        */
 
         $this->esClient->indices()->refresh();
 

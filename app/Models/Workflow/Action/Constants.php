@@ -43,6 +43,8 @@ class Constants
         Permission\Name::EDIT_MERCHANT_WEBSITE_DETAIL,
         Permission\Name::UPDATE_MERCHANT_WEBSITE,
         Permission\Name::EDIT_MERCHANT_BANK_DETAIL,
+        Permission\Name::UPDATE_MERCHANT_GSTIN_DETAIL,
+        Permission\Name::EDIT_MERCHANT_GSTIN_DETAIL,
         Permission\Name::ADD_ADDITIONAL_WEBSITE,
         Permission\Name::INCREASE_TRANSACTION_LIMIT,
     ];

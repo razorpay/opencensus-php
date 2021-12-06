@@ -1723,9 +1723,17 @@ class Service extends Base\Service
     {
         $this->validator->validateInput('gstin_self_serve', $input);
 
-        $this->merchant->getValidator()->validateIsActivated($this->merchant);
+        $this->trace->info(TraceCode::GSTIN_UPDATE_SELF_SERVE_INITIATED, [
+            Entity::GSTIN => $input[Entity::GSTIN]
+        ]);
 
-        $this->trace->info(TraceCode::GSTIN_UPDATE_SELF_SERVE_INITIATED, []);
+        $isAddAction = $this->isAddGstinSelfServeAction($this->merchant->merchantDetail);
+
+        // only activated merchants can update gstin detail
+        if ($isAddAction === false)
+        {
+            $this->merchant->getValidator()->validateIsActivated($this->merchant);
+        }
 
         $payload = $this->getUpdateGstinSelfServeBvsPayload($input);
 
@@ -1749,13 +1757,13 @@ class Service extends Base\Service
             Merchant\Entity::MERCHANT_ID               => $this->merchant->getId(),
             BvsConstant::VALIDATION_ID                 => $validation->getValidationId(),
             DetailConstants::GSTIN_CERTIFICATE_FILE_ID => $fileId,
+            DEConstants::IS_ADD_GSTIN_OPERATION        => $isAddAction,
         ]);
 
         $this->storeGstinSelfServeInput($input);
 
         return $input;
     }
-
 
     public function handleGstinSelfServeCallback(Entity $detail, Merchant\BvsValidation\Entity $validation)
     {
@@ -1794,9 +1802,9 @@ class Service extends Base\Service
         $this->repo->merchant_detail->saveOrFail($detail);
 
         // if any previous rejected workflow of gstin exist : do not show rejection reason for any old rejected workflow
-        $this->stopShowingRejectionReasonForGstInSelfServe($detail->getId(), $detail->getEntity());
+        $this->stopShowingRejectionReasonForGstInSelfServe($detail->getId(), $detail->getEntity(), $input[DEConstants::IS_ADD_GSTIN_OPERATION]);
 
-        $this->sendMailForGstinUpdatedSelfServe();
+        $this->sendMailForGstinUpdatedSelfServe($input[DEConstants::IS_ADD_GSTIN_OPERATION], true);
 
         $this->trace->info(TraceCode::GSTIN_UPDATED_WITH_REGISTERED_ADDRESS, []);
     }
@@ -1859,6 +1867,11 @@ class Service extends Base\Service
         return $stateCode;
     }
 
+    protected function isAddGstinSelfServeAction(Entity $merchantDetail)
+    {
+        return empty($merchantDetail->getGstin()) === true;
+    }
+
     protected function handleGstinSelfServeCallbackFailure(Entity $oldDetailEntity)
     {
         $input = $this->getGstinSelfServeInputFromCache();
@@ -1869,8 +1882,10 @@ class Service extends Base\Service
             Entity::GSTIN => $input[Entity::GSTIN],
         ]);
 
+        $permissionName = ($input[DetailConstants::IS_ADD_GSTIN_OPERATION]) ? Permission\Name::EDIT_MERCHANT_GSTIN_DETAIL : Permission\Name::UPDATE_MERCHANT_GSTIN_DETAIL;
+
         $this->app['workflow']
-            ->setPermission(Permission\Name::EDIT_MERCHANT_GSTIN_DETAIL)
+            ->setPermission($permissionName)
             ->setRouteName(DetailConstants::GSTIN_UPDATE_SELF_SERVE_ROUTE_NAME)
             ->setRouteParams([])
             ->setInput($input)
@@ -1893,16 +1908,19 @@ class Service extends Base\Service
 
         $this->addGstinCertificateUrlInWorkflowCommentForGstinSelfServe(
             $input[DetailConstants::GSTIN_CERTIFICATE_FILE_ID],
-            $oldDetailEntity
+            $oldDetailEntity,
+            $permissionName
         );
     }
 
-    protected function stopShowingRejectionReasonForGstInSelfServe($entityId, $entity)
+    protected function stopShowingRejectionReasonForGstInSelfServe($entityId, $entity, $isAddOperation)
     {
+        $permissionName = ($isAddOperation) ? Permission\Name::EDIT_MERCHANT_GSTIN_DETAIL : Permission\Name::UPDATE_MERCHANT_GSTIN_DETAIL;
+
         $action = (new WorkFlowActionCore())->fetchLastUpdatedWorkflowActionInPermissionList(
             $entityId,
             $entity,
-            [Permission\Name::EDIT_MERCHANT_GSTIN_DETAIL]
+            [$permissionName]
         );
 
         if ((empty($action) === false) and
@@ -1927,7 +1945,7 @@ class Service extends Base\Service
 
         $this->repo->merchant_detail->saveOrFail($merchantDetails);
 
-        $this->sendMailForGstinUpdatedSelfServe(DashboardEvents::GSTIN_UPDATED_ON_WORKFLOW_APPROVE);
+        $this->sendMailForGstinUpdatedSelfServe($input[DetailConstants::IS_ADD_GSTIN_OPERATION], false);
     }
 
     protected function storeGstinSelfServeInput($input)
@@ -1975,11 +1993,11 @@ class Service extends Base\Service
         ];
     }
 
-    protected function addGstinCertificateUrlInWorkflowCommentForGstinSelfServe($fileId, $merchantDetail)
+    protected function addGstinCertificateUrlInWorkflowCommentForGstinSelfServe($fileId, $merchantDetail, $permissionName)
     {
         $workFlowAction = (new WorkFlowActionCore())->fetchOpenActionOnEntityOperation($merchantDetail->getId(),
             $merchantDetail->getEntity(),
-            Permission\Name::EDIT_MERCHANT_GSTIN_DETAIL
+            $permissionName
         )->first();
 
         if (is_null($workFlowAction) === true)
@@ -2010,12 +2028,25 @@ class Service extends Base\Service
         ]);
     }
 
-    protected function sendMailForGstinUpdatedSelfServe($event = DashboardEvents::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS)
+    protected function sendMailForGstinUpdatedSelfServe($isAddOperation, $isBvsValidationSuccessEvent)
     {
+        $event = '';
+
+        if ($isBvsValidationSuccessEvent === true)
+        {
+            $event = ($isAddOperation) ?  DashboardEvents::GSTIN_ADDED_ON_BVS_VALIDATION_SUCCESS : DashboardEvents::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS;
+        }
+        else
+        {
+            $event = ($isAddOperation) ? DashboardEvents::GSTIN_ADDED_ON_WORKFLOW_APPROVE : DashboardEvents::GSTIN_UPDATED_ON_WORKFLOW_APPROVE;
+        }
+
         $args = [
             Constants::MERCHANT         => $this->merchant,
             DashboardEvents::EVENT      => $event,
-            Constants::PARAMS           => []
+            Constants::PARAMS           => [
+                DetailConstants::GSTIN_OPERATION => ($isAddOperation) ? DetailConstants::ADDED : DetailConstants::UPDATED
+            ]
         ];
 
         (new DashboardNotificationHandler($args))->send();

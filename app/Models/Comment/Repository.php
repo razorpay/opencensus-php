@@ -38,9 +38,10 @@ class Repository extends Base\Repository
         string $actionId): Base\PublicCollection
     {
         return $this->newQuery()
-            ->where(Entity::ENTITY_ID, '=', $actionId)
-            ->where(Entity::ENTITY_TYPE, '=', E::WORKFLOW_ACTION)
-            ->get();
+                    ->where(Entity::ENTITY_ID, '=', $actionId)
+                    ->where(Entity::ENTITY_TYPE, '=', E::WORKFLOW_ACTION)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->get();
     }
 
     protected function validateEntityType($attribute, $value)

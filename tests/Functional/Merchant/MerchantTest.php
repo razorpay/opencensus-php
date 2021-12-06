@@ -13332,7 +13332,7 @@ IFSC Code  ICIC0001206
         $merchantId = $this->createTransactionLimitUpdateWorkflow();
 
         $this->raiseNeedWorkflowClarificationFromMerchantAndAssert([
-            'expected_whatsapp_text'    => 'Hi testname, we need a few more details to process the request on updating your transaction limit to 1000000. Please click https://dashboard.razorpay.com/app/profile/clarification_increase_transaction_limit to share the details. -Team Razorpay',
+            'expected_whatsapp_text'    => 'Hi testname, we need a few more details to process the request on updating your transaction limit to 10000. Please click https://dashboard.razorpay.com/app/profile/clarification_increase_transaction_limit to share the details. -Team Razorpay',
             'expected_index_of_comment' => 1,
             'expected_sms_template'     => 'sms.dashboard.increase_transaction_limit_needs_clarification',
             'expected_deep_link'        => 'https://dashboard.razorpay.com/app/profile/clarification_increase_transaction_limit'
@@ -13867,8 +13867,6 @@ The same has been enabled for the account.
 
     protected function raiseNeedWorkflowClarificationFromMerchantAndAssert($data)
     {
-        /*
-         * commenting this as sms and whatsapp will be enabled in later for needs workflow clarification
         $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
@@ -13885,7 +13883,6 @@ The same has been enabled for the account.
             $data['expected_whatsapp_text'],
             '1234567890'
         );
-        */
 
         $this->esClient->indices()->refresh();
 

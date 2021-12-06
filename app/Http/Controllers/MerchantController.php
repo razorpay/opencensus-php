@@ -583,7 +583,7 @@ class MerchantController extends Controller
         $merchant = $this->app['basicauth']->getMerchant();
 
         $repo = App::getFacadeRoot()['repo'];
-        
+
         if (isset($data[Balance\Entity::TYPE]) === true &&
             isset($data[Balance\Entity::AMOUNT_CREDITS]) === true &&
             $data[Balance\Entity::TYPE] === Balance\Type::PRIMARY &&

@@ -29,7 +29,7 @@
                                     <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 20px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">Hey,</p>
 
                                     <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 20px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
-                                        Your GSTIN has been updated successfully. The details are provided below.
+                                        Your GSTIN has been {{$gstin_operation}} successfully to your Razorpay Account. The details are provided below.
                                         <br>
                                         <strong> GSTIN:</strong> {{$gstin}}
                                     </p>

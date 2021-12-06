@@ -132,6 +132,10 @@ class Constants
     const GSTIN_CERTIFICATE_FILE_ID                         = 'gstin_certificate_file_id';
     const REJECTION_REASON                                  = 'rejection_reason';
     const STATUS                                            = 'status';
+    const IS_ADD_GSTIN_OPERATION                            = 'is_add_gstin_operation';
+    const GSTIN_OPERATION                                   = 'gstin_operation';
+    const ADDED                                             = 'added';
+    const UPDATED                                           = 'updated';
 
     const DOCUMENT_VERIFICATION_STATUS          = 'document_verification_status';
     const OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME = 'ocr_match_percentage_with_pan_name';

@@ -238,13 +238,13 @@ final class Constants
     const NEEDS_CLARIFICATION       =    "needs_clarification";
     const FAQS                      =    "faqs";
     const THANKS                    =    "thanks";
+    const AGGREGATIONS              =    "aggregations";
+    const FILTERS                   =    "filters";
 
     const MERCHANT_WORKFLOW_CLARIFICATION                =  "merchant_workflow_clarification";
     const WORKFLOW_CLARIFICATION_DOCUMENTS_IDS           =  "clarification_documents_ids";
     const UFH_FILE_URL                                   = "%sadmin/entity/ufh.files/live/file_%s ,  ";
     const MERCHANT_WORKFLOW_CLARIFICATION_FILES_PREFIX   = 'Files shared by merchant: ';
-    const AGGREGATIONS                                   = "aggregations";
-    const FILTERS                                        = "filters";
 
     const unregisteredMerchantMaximumTransactionLimit = [
         BusinessCategory::FINANCIAL_SERVICES        => 10000000,

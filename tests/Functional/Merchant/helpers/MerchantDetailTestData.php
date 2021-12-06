@@ -2540,6 +2540,26 @@ return [
         ],
     ],
 
+    'testGstinSelfServeStatus' => [
+        'request'  => [
+            'content' => [
+            ],
+            'url'     => '/merchant/gstin_update_self_serve/details',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'workflow_exists'          => true,
+                'workflow_status'          => 'rejected',
+                'rejection_reason_message' => 'Test body'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testBusinessWebsiteOpenWorkflowStatus' => [
         'request'  => [
             'content' => [
@@ -2838,7 +2858,5 @@ return [
             ],
             'status_code' => 200,
         ],
-    ]
-
-
+    ],
 ];
