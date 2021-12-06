@@ -1,10 +1,18 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import InlineFallbackComponent from './FallbackComponent';
 import errorService from '@razorpay/universe-utils/errorService';
-// TODO: Fix the import .ts issue
-import { Ranks, Teams } from './constants'; // Failing to load in .ts format
-import { getTeamName } from 'common/new-ui/ErrorBoundary/utils';
-import { withRouter } from 'react-router-dom';
+
+enum Ranks {
+  P0 = 'P0',
+  P1 = 'P1',
+  P2 = 'P2',
+  P3 = 'P3',
+}
+
+enum Sections {
+  ANALYTICS = 'analytics',
+  HOME = 'home',
+}
 
 interface FallbackComponentProps extends React.FC<any> {
   eventId?: string | null;
@@ -15,9 +23,7 @@ interface Props {
   FallbackComponent?: FallbackComponentProps;
   tags?: any;
   rank?: Ranks;
-  team?: Teams;
   resetOnProps?: any;
-  location?: any;
 }
 
 interface State {
@@ -26,7 +32,7 @@ interface State {
   eventId: string | null;
 }
 
-class ErrorBoundary extends Component<Props, State> {
+export default class ErrorBoundary extends Component<Props, State> {
   state = {
     error: false,
     info: null,
@@ -35,18 +41,9 @@ class ErrorBoundary extends Component<Props, State> {
 
   private node = React.createRef<HTMLDivElement>();
   componentDidCatch(error: Error, info: ErrorInfo): void {
-    const rank = this.props.rank || errorService.ErrorRank.P0;
-    let tags = this.props.tags;
-
-    const pathname = this.props?.location?.pathname;
-    const team = getTeamName(pathname);
-
-    // merge tags with extra tags
-    tags = { ...tags, route: pathname, team };
-
     errorService.captureError(error, {
-      tags,
-      rank,
+      tags: this.props.tags,
+      rank: this.props.rank || errorService.ErrorRank.P0,
       extra: {
         info,
       },
@@ -63,7 +60,6 @@ class ErrorBoundary extends Component<Props, State> {
 
   render(): ReactNode {
     const { children, FallbackComponent } = this.props;
-
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { error, info, eventId } = this.state;
 
@@ -111,8 +107,4 @@ class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-export default withRouter(ErrorBoundary);
-
-export { InlineFallbackComponent, Ranks, Teams };
+export { InlineFallbackComponent, Ranks, Sections };

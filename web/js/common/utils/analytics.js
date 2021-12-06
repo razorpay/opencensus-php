@@ -1,7 +1,7 @@
 import { titleCase } from './rzp-utils';
 import { getCookie } from 'common/utils/cookies';
 import errorService from '@razorpay/universe-utils/errorService';
-import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import { Sections } from 'common/new-ui/ErrorBoundary';
 
 export const sendToLumberjack = ({ eventName, properties = {} }) => {
   const body = {
@@ -26,13 +26,6 @@ export const sendToLumberjack = ({ eventName, properties = {} }) => {
     headers: {
       'Content-Type': 'application/json',
     },
-  }).catch((error) => {
-    errorService.captureError(error, {
-      tags: {
-        team: Teams.PLATFORM,
-      },
-      rank: Ranks.P2,
-    });
   });
 };
 
@@ -41,9 +34,8 @@ const throwAnalyticsException = (errorMessage) => {
 
   errorService.captureError(error, {
     tags: {
-      team: Teams.PLATFORM,
+      section: Sections.ANALYTICS,
     },
-    rank: Ranks.P2,
   });
 };
 
