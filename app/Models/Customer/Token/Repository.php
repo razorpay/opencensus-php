@@ -37,6 +37,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
+                    ->whereNotNull(Token\Entity::USED_AT)
                     ->where(function($query)
                     {
                         $query->whereNull(Token\Entity::EXPIRED_AT)
