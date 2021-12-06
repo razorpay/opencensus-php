@@ -6069,12 +6069,18 @@ class Service extends Base\Service
             $this->storeRelevantPreSignUpSourceInfoForBanking($utmParams, $merchant);
         }
 
-        //3. Send this Event to Hubspot
-        /** @var HubspotClient $hubspotClient */
-        $hubspotClient = $this->app->hubspot;
-        $hubspotClient->trackHubspotEvent($merchant->getEmail(), [
-            'product_switch' => true
-        ]);
+        // for users signed up with mobile number and have not added an email,
+        // we cannot trigger a hubspot event since hubspot works with email as its primary source.
+        // Ref: https://razorpay.slack.com/archives/C021KESTRLH/p1638519054298100
+        if(empty($merchant->getEmail()) === false)
+        {
+            //3. Send this Event to Hubspot
+            /** @var HubspotClient $hubspotClient */
+            $hubspotClient = $this->app->hubspot;
+            $hubspotClient->trackHubspotEvent($merchant->getEmail(), [
+                'product_switch' => true
+            ]);
+        }
     }
 
     public function storeRelevantPreSignUpSourceInfoForBanking(array $utmParams, Merchant\Entity $merchant)

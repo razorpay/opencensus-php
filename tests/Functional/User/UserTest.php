@@ -23,6 +23,7 @@ use RZP\Services\HubspotClient;
 use RZP\Mail\User\PasswordReset;
 use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
+use RZP\Error\PublicErrorDescription;
 use Illuminate\Support\Facades\Redis;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Exception\BadRequestException;
@@ -5369,7 +5370,6 @@ class UserTest extends TestCase
         Mail::fake();
 
         $testData = & $this->testData[__FUNCTION__];
-        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
         $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 0, 'email' => null]);
 
@@ -5406,8 +5406,6 @@ class UserTest extends TestCase
 
     public function testAddEmailFromProfileSection()
     {
-        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
-
         $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 0, 'email' => null]);
 
         $merchantDetail = $this->fixtures->create('merchant_detail', ['merchant_id' => $merchant['id'], 'contact_email' => null]);
@@ -5423,15 +5421,22 @@ class UserTest extends TestCase
 
     public function testAddEmailFromProfileSectionNotOwner()
     {
-        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
         $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 0, 'email' => null]);
 
         $merchantDetail = $this->fixtures->create('merchant_detail', ['merchant_id' => $merchant['id'], 'contact_email' => null]);
 
         $merchantUser = $this->fixtures->user->createBankingUserForMerchant(
-            $merchant['id'], ['signup_via_email' => 0, 'email' => null], 'manager'
+            $merchant['id'], ['signup_via_email' => 0, 'email' => null], 'admin'
         );
+
+        $mappingData = [
+            'user_id'     => $merchantUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'admin',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
 
@@ -5440,7 +5445,6 @@ class UserTest extends TestCase
 
     public function testAddEmailFromProfileSectionEmailAlreadyPresent()
     {
-        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
         $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 0, 'email' => 'someuser@some.com']);
 
@@ -5457,7 +5461,6 @@ class UserTest extends TestCase
 
     public function testAddEmailFromProfileSectionEmailAlreadyTaken()
     {
-        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
         $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 0, 'email' => null]);
 
@@ -5474,6 +5477,46 @@ class UserTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
 
         $this->startTest();
+    }
+
+    public function testAddEmailFromProfileSectionForXNonOwnerUser()
+    {
+        $testData = & $this->testData['testAddEmailFromProfileSectionNotOwner'];
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $testData['response'] = [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION,
+                ],
+            ],
+            'status_code' => 400,
+        ];
+
+        $testData['exception'] = [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION,
+        ];
+
+        $this->testAddEmailFromProfileSectionNotOwner();
+    }
+
+    public function testSendOTPForAddingEmailFromProfileSectionForX()
+    {
+        $testData = & $this->testData['testSendOTPForAddingEmailFromProfileSection'];
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->testSendOTPForAddingEmailFromProfileSection();
+
+    }
+
+    public function testAddEmailFromProfileSectionForXOwnerUser()
+    {
+        $testData = & $this->testData['testAddEmailFromProfileSection'];
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->testAddEmailFromProfileSection();
     }
 
 }

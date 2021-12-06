@@ -136,6 +136,8 @@ class UserRolePermissionsMap
                  Permission::MERCHANT_SUB_VIRTUAL_ACCOUNT_TRANSFER,
 
                  Permission::COUPON_VALIDATE,
+
+                 Permission::ADD_MERCHANT_EMAIL,
              ],
 
              BankingRole::ADMIN => [

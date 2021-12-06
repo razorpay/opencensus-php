@@ -7305,6 +7305,10 @@ class Route
         'user_verify_email'                            => '*',
         'banking_axis_invitations_send'                => Permission::REJECT_PAYOUT,
 
+        // Add Email
+        'user_add_email'                                => Permission::ADD_MERCHANT_EMAIL,
+        'user_add_email_verify'                         => Permission::ADD_MERCHANT_EMAIL,
+
         //Purpose code routes permission
         'purpose_code_fetch'                  => Permission::VIEW_MERCHANT,
         'merchant_patch_purpose_code'         => Permission::EDIT_MERCHANT,

@@ -825,6 +825,8 @@ class Name
     const PAYMENTS_TERMINAL_FETCH_MULTIPLE      = 'payments_terminal_fetch_multiple';
     const PROXY_MERCHANT_GET_TERMINALS          = 'proxy_merchant_get_terminals';
 
+    const ADD_MERCHANT_EMAIL                    = 'add_merchant_email';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,
