@@ -14,9 +14,9 @@ import setGaTrack from 'merchant/containers/BatchNew/ga';
 import RTracking from 'react-tracking';
 
 import ModalHeader from 'common/ui/ModalHeader';
-import InputField from 'common/ui/Forms/InputField';
+import InputField from './components/InputField';
 
-import { required, email, isEmail } from 'common/utils/validators';
+import { required, email, isEmail, isMobile, maxLength } from 'common/utils/validators';
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import BatchValidate from 'merchant/containers/BatchNew/Validate';
 import { withRouter } from 'react-router-dom';
@@ -53,6 +53,7 @@ export default class AddMerchant extends Component {
       merchantType: '',
       merchantEmail: '',
       merchantName: '',
+      merchantContact: '',
       referralData: '',
       isFormValid: false,
     };
@@ -63,9 +64,12 @@ export default class AddMerchant extends Component {
     this.state = state;
   }
 
-  get sampleUrl() {
+  sampleUrl = () => {
+    if (this.props.user.isPartnershipForXEnabled) {
+      return '/files/sample_submerchant_batch.xlsx';
+    }
     return '/files/sample_submerchant_link.xlsx';
-  }
+  };
 
   getModalHeaderText = () => {
     switch (this.state.step) {
@@ -128,8 +132,7 @@ export default class AddMerchant extends Component {
       .then((response) => {
         const { id } = response;
         // go to referral link screen only partner is reseller
-        // currently disabled for X until referral link for x is fixed
-        if (user && user.isPartner('reseller') && this.state.merchantType === PRODUCT_TYPE.PG) {
+        if (user && user.isPartner('reseller')) {
           this.setState((prevState) => ({
             step: prevState.step + 1,
             merchantEmail: params.email,
@@ -303,8 +306,20 @@ export default class AddMerchant extends Component {
     this.setState((prevState) => ({ step: prevState.step - 1 }));
   };
 
+  isNumber = (str) => {
+    const pattern = /^\d+$/;
+    return pattern.test(str);
+  };
+
+  optionalMobileValidator = (value) => {
+    if (value) {
+      if (isMobile(value)) return undefined;
+      else return 'Invalid Contact';
+    } else return undefined;
+  };
+
   handleFormChange = (e) => {
-    let { merchantName, merchantEmail } = this.state;
+    let { merchantName, merchantEmail, merchantContact } = this.state;
     const { name: FieldName, value } = e.target;
     switch (FieldName) {
       case 'name':
@@ -319,6 +334,14 @@ export default class AddMerchant extends Component {
         });
         merchantEmail = value;
         break;
+      case 'contact_mobile':
+        if (this.isNumber(value) || !value) {
+          this.setState({
+            merchantContact: value,
+          });
+          merchantContact = value;
+        } else e.preventDefault();
+        break;
       default:
         console.warn('incorrect field name');
     }
@@ -328,7 +351,11 @@ export default class AddMerchant extends Component {
     } else {
       isEmailValid = true;
     }
-    const isFormValid = merchantName && isEmailValid;
+    let isPhoneNumberValid = true;
+    if (merchantContact) {
+      isPhoneNumberValid = merchantContact && isMobile(merchantContact);
+    }
+    const isFormValid = merchantName && isEmailValid && isPhoneNumberValid;
     this.setState({
       isFormValid,
     });
@@ -465,7 +492,7 @@ export default class AddMerchant extends Component {
                     onValidation={this.onValidation}
                     batchType="partner_submerchant_invite"
                     batchTypeText="text"
-                    sampleUrl={this.sampleUrl}
+                    sampleUrl={this.sampleUrl()}
                     gaEvents={gaEvents}
                     validateBatch={this.props.validateBatch}
                     maxRows={500}
@@ -509,6 +536,7 @@ export default class AddMerchant extends Component {
                       component={InputField}
                       class="form-control"
                       autoFocus
+                      placeholder="Affiliate's name"
                       validate={required()}
                       onChange={this.handleFormChange}
                       onFocus={this.handleFormFocus}
@@ -522,14 +550,11 @@ export default class AddMerchant extends Component {
                       name="email"
                       component={InputField}
                       validate={emailValidators}
-                      placeholder={emailMandatory ? '' : 'Optional'}
+                      placeholder={emailMandatory ? "Affiliate's email id" : 'Optional'}
                       class="form-control"
                       onChange={this.handleFormChange}
                       onFocus={this.handleFormFocus}
                     />
-                    <span class="help-block">
-                      The Razorpay sign-up link will be sent to this email.
-                    </span>
 
                     {!emailMandatory && (
                       <span class="help-block">
@@ -538,6 +563,32 @@ export default class AddMerchant extends Component {
                       </span>
                     )}
                   </div>
+
+                  {this.props.user.isPartnershipForXEnabled ? (
+                    <div class="form-group">
+                      <label>Contact Number</label>
+                      <Field
+                        maxLength={10}
+                        name="contact_mobile"
+                        component={InputField}
+                        value={this.state.merchantContact}
+                        class="form-control"
+                        placeholder="Affiliate's 10 digit mobile number"
+                        validate={[
+                          this.optionalMobileValidator,
+                          maxLength(10, 'Mobile number should have 10 digits'),
+                        ]}
+                        onChange={this.handleFormChange}
+                        onFocus={this.handleFormFocus}
+                      />
+                    </div>
+                  ) : null}
+
+                  <span class="help-block">
+                    Razorpay account access link will be sent to your affiliate's email{' '}
+                    {/* MobileNumber SMS Text will be added later */}
+                    {/* {this.state.merchantContact ? 'and phone number' : ''} */}
+                  </span>
 
                   <div class="Modal__Actions clearfix" style={{ textAlign: 'right' }}>
                     <ShowWhen
@@ -571,11 +622,15 @@ export default class AddMerchant extends Component {
                 <div className="text-container">
                   <div>
                     <span className="success-text">
-                      A signup link has been sent to the following email
+                      Razorpay account access link will be sent to your affiliate's email at
                     </span>
                   </div>
                   <div className="merchant-email-wrapper">
-                    <span className="merchant-email">{this.state.merchantEmail}</span>
+                    <span className="merchant-email">
+                      {this.state.merchantEmail}
+                      {/* MobileNumber SMS Text will be added later */}
+                      {/* {this.state.merchantContact ? `and +91-${this.state.merchantContact}` : ''} */}
+                    </span>
                   </div>
                 </div>
               </div>

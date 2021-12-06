@@ -103,12 +103,9 @@ export default function ReferralBox({
             ''
           )}
         </SelectBox>
-        {/* Temporary disable this until X referral flow is fixed*/}
-        {/* <SelectBox
-          label={'RazorpayX'}
-          description={
-            'Refer merchants to RazorpayX products like Current account to process payouts'
-          }
+        <SelectBox
+          label="RazorpayX"
+          description="Refer merchants to RazorpayX products like Current account to process payouts"
           onClick={() => setProductType(PRODUCT_TYPE.X)}
           checked={productType === PRODUCT_TYPE.X}
         >
@@ -122,7 +119,7 @@ export default function ReferralBox({
           ) : (
             ''
           )}
-        </SelectBox> */}
+        </SelectBox>
       </div>
     </div>
   );

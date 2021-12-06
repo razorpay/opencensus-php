@@ -32,6 +32,7 @@ export default (props) => {
     trackUserEvent,
   } = props;
 
+  const contact_mobile = submerchant?.user?.contact_mobile;
   const activation_status = submerchant?.details?.activation_status;
   const smallWrapper = ['activated', 'activated_mcc_pending', 'under_review', 'rejected'].includes(
     activation_status,
@@ -73,6 +74,11 @@ export default (props) => {
 
                 {/* Registered email of sub-merchant */}
                 <EntityDetailRow value={submerchant.email} label="Registered Email" />
+
+                {/* Registered contact number of sub-merchant */}
+                {contact_mobile && (
+                  <EntityDetailRow value={contact_mobile} label="Contact Number" />
+                )}
 
                 {/* Creation date of merchant */}
                 <EntityDetailRow label="Added On">

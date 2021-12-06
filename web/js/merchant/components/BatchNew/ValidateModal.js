@@ -97,8 +97,21 @@ class BatchValidateModal extends Component {
                   </a>
                   &nbsp;for the template.
                 </li>
+                {batchType === 'partner_submerchant_invite' && user.isPartnershipForXEnabled && (
+                  <li>
+                    Name and email fields are mandatory for each account &amp; phone number is
+                    optional
+                  </li>
+                )}
                 <li>The number of accounts in the file should not exceed 500.</li>
-                <li>Once the file is processed email invite will be sent to all accounts.</li>
+                {batchType === 'partner_submerchant_invite' ? (
+                  // // MobileNumber SMS Text will be added later
+                  // <li>Once file is processed invite will be sent to all accounts on email/sms.</li>
+                  <li>Once file is processed invite will be sent to all accounts on email.</li>
+                ) : (
+                  <li>Once the file is processed email invite will be sent to all accounts.</li>
+                )}
+
                 <li>These accounts will be listed under affiliate accounts on your dashboard.</li>
               </ol>
             </div>
