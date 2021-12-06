@@ -9,6 +9,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const HTTP_REQUEST_RESPONSE_SIZE                            = 'HTTP_REQUEST_RESPONSE_SIZE';
 
+    const TOKEN_REQUESTOR_CARD_NUMBER_DECRYPTION                = 'TOKEN_REQUESTOR_CARD_NUMBER_DECRYPTION';
+
     /*
      * Payment component error messages
      */

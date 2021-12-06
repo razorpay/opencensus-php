@@ -2,11 +2,15 @@
 
 namespace RZP\Models\Customer\Token;
 
+use Aws\Ec2\Exception\Ec2Exception;
+use phpseclib\Crypt\AES;
+use RZP\Encryption\AESEncryption;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Feature;
+use RZP\Encryption;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
@@ -510,9 +514,47 @@ class Service extends Base\Service
         return $token->toArrayPublic();
     }
 
+    public function decryptCardNumberIfApplicable(& $input)
+    {
+        $this->trace->info(TraceCode::TOKEN_REQUESTOR_CARD_NUMBER_DECRYPTION,[$input]);
+        if (empty($input['card']['encrypted_number']) === true)
+        {
+            return;
+        }
+
+        try {
+            $params = [
+                AESEncryption::MODE => AES::MODE_CBC,
+                AESEncryption::IV => $this->app['config']->get('applications.tokenisation.flipkart_secure_IV'),
+                AESEncryption::SECRET => $this->app['config']->get('applications.tokenisation.flipkart_secure_key'),
+            ];
+
+            $cipher = base64_decode($input["card"]["encrypted_number"]);
+
+            $Decryptor = new Encryption\AESEncryption($params);
+
+            $plainText = $Decryptor->decrypt($cipher);
+        }
+        catch (\Exception $e)
+        {
+            throw new \Exception(ErrorCode::BAD_REQUEST_DECRYPTION_FAILED);
+        }
+
+        if (empty($plainText) === true)
+        {
+            throw new \Exception(ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE);
+        }
+
+        unset($input["card"]["encrypted_number"]);
+
+        $input["card"]["number"] = $plainText;
+    }
+
     // todo Rename this to createTokenAndTokenizeCard
     public function createNetworkToken($input)
     {
+        $this->decryptCardNumberIfApplicable($input);
+
         if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
         {
             list($token, $serviceProviderTokens) = $this->core->createTokenAndTokenizedCard($input);

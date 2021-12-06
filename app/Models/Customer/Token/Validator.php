@@ -72,16 +72,16 @@ class Validator extends Base\Validator
         Entity::CARD                 => 'required|array',
         Entity::CUSTOMER_ID          => 'sometimes|public_id',
         Entity::METHOD               => 'required|in:card',
-        Entity::AUTHENTICATION_DATA  => 'sometimes',
+        Entity::AUTHENTICATION       => 'sometimes',
+        Entity::NOTES                => 'sometimes',
     ];
 
+
     protected static $createNetworkTokenAuthenticationDataRules = [
-        'platform'          => 'required|string',
-        'cavv'              => 'required|string',
-        'cavv_algorithm'    => 'required|string',
-        'eci'               => 'required|string',
-        'xid'               => 'required|string',
+        "provider"              => "string",
+        "provider_reference_id" => "string",
     ];
+
 
     protected static $fetchCryptogramRules = [
         'id'     => 'required|public_id',

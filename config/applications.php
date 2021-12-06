@@ -1157,4 +1157,9 @@ return [
     'affordability' => [
         'secret' => env('AFFORDABILITY_SECRET'),
     ],
+
+    'tokenisation' => [
+        'flipkart_secure_key' => env('FLIPKART_SECURE_KEY'),
+        'flipkart_secure_IV'  => env('FLIPKART_SECURE_IV'),
+    ],
 ];

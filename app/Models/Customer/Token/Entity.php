@@ -126,6 +126,7 @@ class Entity extends Base\PublicEntity
      * authentication data key in the input
      */
     const AUTHENTICATION_DATA   = 'authenitaction_data';
+    const AUTHENTICATION        = 'authentication';
 
     /**
      * Signifies whether user consent has been taken for a saved card for tokenisation

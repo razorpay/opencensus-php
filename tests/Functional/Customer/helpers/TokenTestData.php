@@ -25,6 +25,86 @@ return [
         ],
     ],
 
+    'testCreateTokenEncrypted' => [
+        'request' => [
+            'url' => '/tokens',
+            'method' => 'post',
+            'content' => [
+                "customer_id"=> "cust_1Aa00000000001",
+                "method"=> "card",
+                "card"=> [
+                    "encrypted_number"=> "FNDLK39VNguRh52WutDOTErz0LjpoYIG2foMEa//yPE=",
+                    "cvv"=> "123",
+                    "expiry_month"=> "12",
+                    "expiry_year"=> "21",
+                    "name"=> "Gaurav Kumar"
+                ],
+                "authentication"=> [
+                    "provider"=> "razorpay",
+                    "provider_reference_id"=> "pay_123wkejnsakd"
+                ],
+                "notes"=> []
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testCreateTokenWithoutEncryptedAndPlainTextCardNumber' => [
+        'request' => [
+            'url' => '/tokens',
+            'method' => 'post',
+            'content' => [
+                "customer_id"=> "cust_1Aa00000000001",
+                "method"=> "card",
+                "card"=> [
+                    "cvv"=> "123",
+                    "expiry_month"=> "12",
+                    "expiry_year"=> "21",
+                    "name"=> "Gaurav Kumar"
+                ],
+                "authentication"=> [
+                    "provider"=> "razorpay",
+                    "provider_reference_id"=> "pay_123wkejnsakd"
+                ],
+                "notes"=> []
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testCreateTokenEncryptedWithInvalidData' => [
+        'request' => [
+            'url' => '/tokens',
+            'method' => 'post',
+            'content' => [
+                "customer_id"=> "cust_1Aa00000000001",
+                "method"=> "card",
+                "card"=> [
+                    "encrypted_number"=> "rlB8mdvErUA2/hebcJUZ0tB1QjmjbFr/UmhFaE7Stao=",
+                    "cvv"=> "123",
+                    "expiry_month"=> "12",
+                    "expiry_year"=> "21",
+                    "name"=> "Gaurav Kumar"
+                ],
+                "authentication"=> [
+                    "provider"=> "razorpay",
+                    "provider_reference_id"=> "pay_123wkejnsakd"
+                ],
+                "notes"=> []
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testFetchToken' => [
         'request' => [
             'url' => '/tokens/fetch',

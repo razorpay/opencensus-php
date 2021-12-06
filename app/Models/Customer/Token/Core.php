@@ -1381,9 +1381,9 @@ class Core extends Base\Core
 
         (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN, $input);
 
-        if (empty($input[Token\Entity::AUTHENTICATION_DATA]) === false)
+        if (empty($input[Token\Entity::AUTHENTICATION]) === false)
         {
-            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA, $input[Token\Entity::AUTHENTICATION_DATA]);
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA, $input[Token\Entity::AUTHENTICATION]);
         }
 
         if (empty($input[Token\Entity::CUSTOMER_ID]) === false)
