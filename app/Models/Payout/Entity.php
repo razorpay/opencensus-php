@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\View as View;
 
 use App;
 use RZP\Constants;
@@ -1643,35 +1644,27 @@ class Entity extends Base\PublicEntity
 
         $processByTime = $statusDetails[Attempt\Entity::PARAMETERS][Attempt\Constants::PROCESSED_BY_TIME] ?? null;
 
-        $statusDetailsDescription = StatusDetails::STATUS_REASONS_WITH_DESCRIPTION[$statusDetailsReason] ?? null;
+        if($statusDetailsReason === null)
+        {
+            $statusDetailsDescription = null;
+        }
 
-        $statusDescriptionTime = Carbon::createFromTimestamp($processByTime, 'Asia/Kolkata')->format("dS F Y, h:i A") ?? null;
+        else
+        {
+            $beneBankName = $this->provideBeneBankName() ?? 'beneficiary bank';
 
-        if ($statusDetailsReason === StatusDetails::BENEFICIARY_BANK_CONFIRMATION_PENDING)
-       {
-           // time contains only date in case if it is not NEFT and RTGS
+            // templates will be picked as per status
+            //  currently for processing status
+            $statusDetailsDescription = View::make('status_details.processing_status',
+                [
+                'beneficiary_bank'  => $beneBankName,
+                'processByTime'     => $processByTime,
+                'reason'            => $statusDetailsReason,
+                'mode'              => $this->getMode(),
+                ])->render();
 
-           if (($this->getMode() !== 'NEFT') and ($this->getMode() !== 'RTGS'))
-           {
-               $statusDescriptionTime = Carbon::createFromTimestamp($processByTime, 'Asia/Kolkata')->format("dS F Y") ?? null;
-           }
-           $beneBankName = $this->provideBeneBankName() ?? 'beneficiary bank';
-
-           $statusDetailsDescription = str_replace('beneficiary bank',$beneBankName, $statusDetailsDescription);
-       }
-
-       if($statusDetailsReason === StatusDetails::BANK_WINDOW_CLOSED)
-       {
-           $mode = $this->getMode();
-
-           $statusDetailsDescription = str_replace('mode',$mode,$statusDetailsDescription);
-
-       }
-
-       if ($statusDetailsDescription != null)
-       {
-           $statusDetailsDescription = str_replace('time stamp', $statusDescriptionTime, $statusDetailsDescription) ?? null;
-       }
+            $statusDetailsDescription = rtrim($statusDetailsDescription);
+        }
 
         $statusDetailsArray =
                 [
