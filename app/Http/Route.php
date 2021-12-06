@@ -575,6 +575,7 @@ class Route
         'virtual_account_create_for_internal'      => ['post',     'virtual_accounts/internal',                      'VirtualAccountController@createForInternal'                        ],
         'virtual_account_order_create'             => ['post',     'orders/{id}/virtual_accounts',                   'VirtualAccountController@createForOrder'                           ],
         'virtual_account_edit'                     => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
+        'merchant_virtual_account_edit'            => ['patch',    'merchant/virtual_accounts/{id}',                 'VirtualAccountController@merchantVAupdate'                         ],
         'virtual_account_close'                    => ['post',     'virtual_accounts/{id}/close',                    'VirtualAccountController@closeVirtualAccount'                      ],
         'virtual_account_fetch'                    => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
         'virtual_account_fetch_multiple'           => ['get',      'virtual_accounts',                               'VirtualAccountController@list'                                     ],
@@ -4548,6 +4549,8 @@ class Route
         'fetch_merchant_products',
         'add_additional_website_self_serve',
         'additional_website_status',
+        //update VA
+        'merchant_virtual_account_edit',
 
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
@@ -6515,6 +6518,7 @@ class Route
         'virtual_accounts_close_bulk'              => Permission::CREATE_VIRTUAL_ACCOUNTS,
         'virtual_account_bulk_create_for_banking'  => Permission::CREATE_BANKING_VIRTUAL_ACCOUNTS,
         'virtual_account_bulk_close_for_banking'   => Permission::CREATE_BANKING_VIRTUAL_ACCOUNTS,
+        'merchant_virtual_account_edit'            => Permission::CREATE_VIRTUAL_ACCOUNTS,
         'entity_balance_id_update'                 => Permission::UPDATE_ENTITY_BALANCE_ID,
         'merchant_balance_bulk_backfill_ids'       => Permission::MERCHANT_BALANCE_BULK_BACKFILL,
         'terminal_bank_bulk'                       => Permission::EDIT_TERMINAL,
@@ -8564,6 +8568,7 @@ class Route
             'virtual_account_banking_fetch_multiple',
             'virtual_account_close',
             'virtual_account_configs',
+            'merchant_virtual_account_edit',
             'qr_code_create',
             'qr_code_close',
             'qr_code_fetch',
@@ -11435,6 +11440,7 @@ class Route
         'qr_payment_fetch_for_qr_code'         => [Feature::QR_CODES],
         'virtual_account_create'               => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_edit'                 => [Feature::VIRTUAL_ACCOUNTS],
+        'merchant_virtual_account_edit'        => [Feature::EDIT_SINGLE_VA],
         'virtual_account_close'                => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch'                => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_multiple'       => [Feature::VIRTUAL_ACCOUNTS],

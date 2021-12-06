@@ -1460,4 +1460,132 @@ return [
             ],
         ],
     ],
+
+    'testMerchantVAUpdateExpiry' => [
+        'request' => [
+            'url' =>'/merchant/virtual_accounts/{id}',
+            'method' => 'patch',
+            'content' => [
+                'close_by' => '31-12-2022 23:00',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'close_by' => 1672507800,
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testMerchantVAUpdateInvalidExpiry' => [
+        'request' => [
+            'url' =>'/merchant/virtual_accounts/{id}',
+            'method' => 'patch',
+            'content' => [
+                'close_by' => '32-13-2021',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Expiry Date is not a valid date.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_EXPIRY_DATE,
+        ],
+    ],
+
+    'testMerchantVAUpdateInvalidFormat' => [
+        'request' => [
+            'url' =>'/merchant/virtual_accounts/{id}',
+            'method' => 'patch',
+            'content' => [
+                'close_by' => '2022-11-3',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Expiry Date is not a valid date.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_EXPIRY_DATE,
+        ],
+    ],
+
+    'testMerchantVAUpdateExpiryLessThanCurrent' => [
+        'request' => [
+            'url' =>'/merchant/virtual_accounts/{id}',
+            'method' => 'patch',
+            'content' => [
+                'close_by' => '30-11-2021 00:00',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Expiry Date cannot be less than system date.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_EXPIRY_LESS_THAN_CURRENT_TIME,
+        ],
+    ],
+
+    'testMerchantVAUpdateClosed' => [
+        'request' => [
+            'url' =>'/merchant/virtual_accounts/{id}',
+            'method' => 'patch',
+            'content' => [
+                'close_by' => '31-12-2022',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The virtual account is closed.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_CLOSED,
+        ],
+    ],
+
+    'testMerchantVAUpdateFeatureNotEnabled' => [
+        'request' => [
+            'url' =>'/merchant/virtual_accounts/{id}',
+            'method' => 'patch',
+            'content' => [
+                'close_by' => '1-2-2023',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        ],
+
 ];

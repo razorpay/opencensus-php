@@ -58,6 +58,19 @@ class VirtualAccountController extends Controller
     }
 
     /**
+     * @param string $id
+     * @return mixed
+     * This function is used to update the expiry of the VA
+     */
+    public function merchantVAupdate(string $id)
+    {
+        $input = Request::all();
+        $response = $this->service()->editVirtualAccount($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
      * This function is used for the offline payments
      * We create an order first and then create a VA using that
      */

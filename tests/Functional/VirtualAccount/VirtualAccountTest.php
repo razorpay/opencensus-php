@@ -2478,4 +2478,158 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($response['ActCode'], '1');
         $this->assertEquals($response['Message'], 'INVALID');
     }
+
+    public function testMerchantVAUpdateExpiry()
+    {
+        $closeTimeStamp = Carbon::now()->timestamp + 1000;
+        $virtualAccount = $this->createVirtualAccount();
+
+        $this->fixtures->edit(
+            "virtual_account",
+            $virtualAccount['id'],
+            ['close_by' => $closeTimeStamp]
+        );
+
+        $this->merchantId = '10000000000000';
+
+        //add feature
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EDIT_SINGLE_VA, '10000000000000');
+
+        $testData = $this->testData['testMerchantVAUpdateExpiry'];
+        $va_id = $virtualAccount['id'];
+
+        $testData['request']['url'] = '/merchant/virtual_accounts/' . $va_id;
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testMerchantVAUpdateInvalidExpiry()
+    {
+        $closeTimeStamp = Carbon::now()->timestamp + 1000;
+        $virtualAccount = $this->createVirtualAccount();
+
+        $this->fixtures->edit(
+            "virtual_account",
+            $virtualAccount['id'],
+            ['close_by' => $closeTimeStamp]
+        );
+
+        $this->merchantId = '10000000000000';
+
+        //add feature
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EDIT_SINGLE_VA, '10000000000000');
+
+        $testData = $this->testData['testMerchantVAUpdateInvalidExpiry'];
+        $va_id = $virtualAccount['id'];
+
+        $testData['request']['url'] = '/merchant/virtual_accounts/' . $va_id;
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testMerchantVAUpdateInvalidFormat()
+    {
+        $closeTimeStamp = Carbon::now()->timestamp + 1000;
+        $virtualAccount = $this->createVirtualAccount();
+
+        $this->fixtures->edit(
+            "virtual_account",
+            $virtualAccount['id'],
+            ['close_by' => $closeTimeStamp]
+        );
+
+        $this->merchantId = '10000000000000';
+
+        //add feature
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EDIT_SINGLE_VA, '10000000000000');
+
+        $testData = $this->testData['testMerchantVAUpdateInvalidFormat'];
+        $va_id = $virtualAccount['id'];
+
+        $testData['request']['url'] = '/merchant/virtual_accounts/' . $va_id;
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testMerchantVAUpdateExpiryLessThanCurrent()
+    {
+        $closeTimeStamp = Carbon::now()->timestamp + 1000;
+        $virtualAccount = $this->createVirtualAccount();
+
+        $this->fixtures->edit(
+            "virtual_account",
+            $virtualAccount['id'],
+            ['close_by' => $closeTimeStamp]
+        );
+
+        $this->merchantId = '10000000000000';
+
+        //add feature
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EDIT_SINGLE_VA, '10000000000000');
+
+        $testData = $this->testData['testMerchantVAUpdateExpiryLessThanCurrent'];
+        $va_id = $virtualAccount['id'];
+
+        $testData['request']['url'] = '/merchant/virtual_accounts/' . $va_id;
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testMerchantVAUpdateClosed()
+    {
+        $closeTimeStamp = Carbon::now()->timestamp + 1000;
+        $virtualAccount = $this->createVirtualAccount();
+
+        $this->fixtures->edit(
+            "virtual_account",
+            $virtualAccount['id'],
+            ['close_by' => $closeTimeStamp, 'status' => 'closed']
+        );
+
+        $this->merchantId = '10000000000000';
+
+        //add feature
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EDIT_SINGLE_VA, '10000000000000');
+
+        $testData = $this->testData['testMerchantVAUpdateClosed'];
+        $va_id = $virtualAccount['id'];
+
+        $testData['request']['url'] = '/merchant/virtual_accounts/' . $va_id;
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testMerchantVAUpdateFeatureNotEnabled()
+    {
+        $closeTimeStamp = Carbon::now()->timestamp + 1000;
+        $virtualAccount = $this->createVirtualAccount();
+
+        $this->fixtures->edit(
+            "virtual_account",
+            $virtualAccount['id'],
+            ['close_by' => $closeTimeStamp]
+        );
+
+        $this->merchantId = '10000000000000';
+
+        $testData = $this->testData['testMerchantVAUpdateFeatureNotEnabled'];
+        $va_id = $virtualAccount['id'];
+
+        $testData['request']['url'] = '/merchant/virtual_accounts/' . $va_id;
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($testData);
+    }
+
 }

@@ -3,6 +3,7 @@
 namespace RZP\Models\VirtualAccount;
 
 use Carbon\Carbon;
+use DateTime;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
@@ -264,6 +265,55 @@ class Service extends Base\Service
         );
 
         return $virtualAccount->toArrayPublic();
+    }
+
+    /* update the expiry of VA */
+    public function editVirtualAccount(string $id, array $input)
+    {
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_EDIT_REQUEST,
+            [
+                'id'   => $id,
+                'data' => $input
+            ]);
+
+        $virtualAccount = $this->repo
+            ->virtual_account
+            ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $virtualAccount->getValidator()->validateOfPrimaryBalance();
+
+        $virtualAccount->getValidator()->validateInput('editVA', $input);
+
+        if ($virtualAccount->isClosed() === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_CLOSED);
+        }
+
+        /* converting string to epoch */
+        $close_by = DateTime::createFromFormat("d-m-Y H:i", $input['close_by'], new \DateTimeZone('Asia/Kolkata'));
+
+        if (false === $close_by) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_EXPIRY_DATE);
+        }
+
+        $close_by_timestamp = $close_by->getTimestamp();
+
+        if (Carbon::now()->timestamp >= $close_by_timestamp) {
+           throw new Exception\BadRequestException(
+               ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_EXPIRY_LESS_THAN_CURRENT_TIME);
+       }
+
+        $input['close_by'] = $close_by_timestamp;
+
+        $virtualAccount = $this->core->edit($virtualAccount, $input);
+
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_EDITED,
+            $virtualAccount->toArrayPublic()
+        );
+
+        return $virtualAccount->toArrayPublic();
+
     }
 
     public function closeVirtualAccountsByCloseBy()

@@ -372,6 +372,8 @@ class PublicErrorDescription
     const BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE                               = 'A virtual account with this descriptor is unavailable at this time.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS                     = 'Request failed because another virtual account operation is in progress';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_RECEIVER_ALREADY_PRESENT                  = 'Receiver type is already present for the virtual account';
+    const BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_EXPIRY_DATE                       = 'Expiry Date is not a valid date.';
+    const BAD_REQUEST_VIRTUAL_ACCOUNT_EXPIRY_LESS_THAN_CURRENT_TIME             = 'Expiry Date cannot be less than system date.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_RECEIVER_WITH_ORDER                   = 'Can\'t add receiver to existing VA with order';
 
     const BAD_REQUEST_BANK_TRANSFER_FEE_CALCULATED_GREATER_THAN_PAYMENT_AMOUNT  = 'Fee calculated is greater than the payment amount.';

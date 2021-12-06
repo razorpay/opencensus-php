@@ -43,6 +43,13 @@ class Validator extends Base\Validator
         Entity::CLOSE_BY        => 'filled|epoch|custom',
     ];
 
+    protected static $editVARules = [
+        Entity::NAME            => 'filled|string|max:40',
+        Entity::DESCRIPTION     => 'sometimes|nullable|string|max:2048',
+        Entity::NOTES           => 'sometimes|notes',
+        Entity::CLOSE_BY        => 'required|string',
+    ];
+
     protected static $editForOrderRules = [
         Entity::STATUS          => 'sometimes',
         Entity::NOTES           => 'sometimes|notes',

@@ -184,6 +184,7 @@ class UserRolesScope
             'virtual_account_fetch_multiple'        => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
             'virtual_account_fetch_payments'        => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
             'virtual_account_edit'                  => Role::WRITER_ROLES,
+            'merchant_virtual_account_edit'         => [Role::OWNER, Role::ADMIN],
             'virtual_account_close'                 => Role::WRITER_ROLES,
             'virtual_account_add_receivers'         => Role::WRITER_ROLES,
             'virtual_vpa_prefix_save'               => Role::WRITER_ROLES,

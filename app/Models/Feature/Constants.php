@@ -1004,6 +1004,8 @@ class Constants
 
     const ENABLE_IFSC_VALIDATION       = 'enable_ifsc_validation';
 
+    const EDIT_SINGLE_VA = 'edit_single_va';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1415,6 +1417,7 @@ class Constants
         self::ENABLE_IFSC_VALIDATION          => true,
         self::PUBLIC_SETTERS_VIA_OAUTH        => true,
         self::ENABLE_GRANULAR_DOWNTIMES       => true,
+        self::EDIT_SINGLE_VA                  => true,
     ];
     // Entity type constants
     const ACCOUNT                       = 'account';
