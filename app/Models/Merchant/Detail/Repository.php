@@ -335,16 +335,56 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function filterActivationNotStartedMerchantIds(int $from, int $to): array
+    public function filterL1NotSubmittedMerchantIds(int $from, int $to): array
     {
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+            ->select(Entity::MERCHANT_ID)
+            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->WhereNull(Entity::ACTIVATION_FORM_MILESTONE)
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
 
+    public function filterL2BankDetailsNotSubmittedMerchantIds(int $from, int $to): array
+    {
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+            ->select(Entity::MERCHANT_ID)
+            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->Where(Entity::ACTIVATION_FORM_MILESTONE, '=', 'L1')
+            ->where(function($query)
+            {
+                $query->whereNull(Entity::BANK_ACCOUNT_NUMBER)
+                    ->orWhereNull(Entity::BANK_BRANCH_IFSC);
+            })
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
+
+    public function filterL2AadharDetailsNotSubmittedMerchantIds(int $from, int $to): array
+    {
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+            ->select(Entity::MERCHANT_ID)
+            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->Where(Entity::ACTIVATION_FORM_MILESTONE, '=', 'L1')
+            ->WhereNotNull(Entity::BANK_BRANCH_IFSC)
+            ->WhereNotNull(Entity::BANK_ACCOUNT_NUMBER)
+            ->WhereNotNull(Entity::BANK_ACCOUNT_NAME)
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
+
+    public function filterL1MilestoneSubmittedMerchants(int $from, int $to): array
+    {
         return $this->newQuery()
-                    ->select(Entity::MERCHANT_ID)
-                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
-                    ->WhereNull(Entity::ACTIVATION_FORM_MILESTONE)
-                    ->get()
-                    ->pluck(Entity::MERCHANT_ID)
-                    ->toArray();
+            ->select(Entity::MERCHANT_ID)
+            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->Where(Entity::ACTIVATION_FORM_MILESTONE, '=', 'L1')
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
     }
 
 }

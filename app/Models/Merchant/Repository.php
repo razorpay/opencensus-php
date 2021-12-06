@@ -442,6 +442,21 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    public function fetchAllInstantlyActivatedMerchants(int $from, int $to)
+    {
+        return $this->newQuery()
+            ->leftJoin(Table::MERCHANT_DETAIL, Entity::ID, Detail\Entity::MERCHANT_ID)
+            ->select(Entity::ID)
+            ->where(Entity::LIVE, '=', 1)
+            ->where(Entity::ACTIVATED, '=', 1)
+            ->whereBetween(Entity::ACTIVATED_AT,[$from, $to])
+            ->where(Detail\Entity::ACTIVATION_STATUS, '=', Detail\Status::INSTANTLY_ACTIVATED)
+            ->whereNull(Entity::SUSPENDED_AT)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
+
     public function fetchMerchantFromEntity($entity)
     {
         if ($entity->hasRelation('merchant'))

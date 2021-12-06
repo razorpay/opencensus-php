@@ -24,6 +24,7 @@ class Service extends Base\Service
                 'error' => $e->getMessage()
             ]);
         }
+
         try
         {
             $core->triggerPaymentEscalations($timeBound);
@@ -35,28 +36,78 @@ class Service extends Base\Service
                 'error' => $e->getMessage()
             ]);
         }
+
         try
         {
-            $core->sendNotifications($input);
+            $core->sendL1NotSubmittedNotifications($input);
         }
         catch (\Exception $e)
         {
-            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
-                'type'  => 'sendNotifications',
+            $this->trace->info(TraceCode::SEND_NOTIFICATION_ATTEMPT_FAILED, [
+                'type'  => 'sendL1NotSubmittedNotification',
                 'error' => $e->getMessage()
             ]);
         }
+
+        try
+        {
+            $core->sendL1NotSubmittedIn1HourNotifications($input);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::SEND_NOTIFICATION_ATTEMPT_FAILED, [
+                'type'  => 'sendL1NotSubmittedNotificationIn1Hr',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        try
+        {
+            $core->sendL2BankDetailsNotSubmittedNotifications($input);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::SEND_NOTIFICATION_ATTEMPT_FAILED, [
+                'type'  => 'sendL2BankDetailsNotSubmittedNotification',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        try
+        {
+            $core->sendL2AadharNotSubmittedNotifications($input);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::SEND_NOTIFICATION_ATTEMPT_FAILED, [
+                'type'  => 'sendL2AadharNotSubmittedNotifications',
+                'error' => $e->getMessage()
+            ]);
+        }
+
         try
         {
             $core->sendOnboardingVerifyEmailNotification($input);
         }
         catch (\Exception $e)
         {
-            $this->trace->info(TraceCode::SEND_ONBOARDING_VERFIY_EMAIL_NOTIFICATION_FAILED, [
+            $this->trace->info(TraceCode::SEND_NOTIFICATION_ATTEMPT_FAILED, [
                 'type'  => 'sendOnboardingVerifyEmailNotification',
                 'error' => $e->getMessage()
             ]);
         }
+
+        try
+        {
+            $core->sendNotificationsToInstantlyActivatedButNotTransactedMerchants($input);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::SEND_NOTIFICATION_ATTEMPT_FAILED, [
+                'type' => 'sendNotificationsToInstantlyActivatedButNotTransactedMerchants', 'error' => $e->getMessage()
+            ]);
+        }
+
 //        try
 //        {
 //            $core->sendNotificationsToCouponCodeEligibleMerchant($input);
@@ -67,6 +118,7 @@ class Service extends Base\Service
 //                'type' => 'sendCouponCodeEligibleMerchantNotMTUNotification', 'error' => $e->getMessage()
 //            ]);
 //        }
+
         try
         {
             $core->pushTransactionDetailsToSegmentCron();

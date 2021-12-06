@@ -29,12 +29,16 @@ class Handler extends BaseHandler
         Events::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
         Events::FUNDS_ON_HOLD                               => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
         Events::FUNDS_ON_HOLD_REMINDER                      => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
-        Events::ONBOARDING_ACTIVATION_L1_PENDING            => [Channel::SMS, Channel::WHATSAPP],
+        Events::L1_NOT_SUBMITTED_IN_1_DAY                   => [Channel::SMS, Channel::WHATSAPP],
+        Events::L1_NOT_SUBMITTED_IN_1_HOUR                  => [Channel::SMS, Channel::WHATSAPP],
+        Events::L2_BANK_DETAILS_NOT_SUBMITTED_IN_1_HOUR     => [Channel::SMS, Channel::WHATSAPP],
+        Events::L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR   => [Channel::SMS, Channel::WHATSAPP],
         Events::PAYMENTS_ENABLED                            => [Channel::SMS, Channel::WHATSAPP],
         Events::ONBOARDING_VERIFY_EMAIL                     => [Channel::SMS, Channel::WHATSAPP],
         Events::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
         Events::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
-        Events::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU       => [Channel::SMS]
+        Events::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU       => [Channel::SMS],
+        Events::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED      => [Channel::SMS, Channel::WHATSAPP],
     ];
 
     private $activationStatus;
@@ -90,7 +94,8 @@ class Handler extends BaseHandler
             $this->trace->info(TraceCode::SEND_NOTIFICATION_ATTEMPT_FAILED, [
                 'merchant' => $merchantId,
                 'type'     => 'sendNotification',
-                'error'    => $e->getMessage()
+                'error'    => $e->getMessage(),
+                'event'    => $event
             ]);
         }
     }

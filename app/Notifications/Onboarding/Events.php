@@ -6,7 +6,7 @@ namespace RZP\Notifications\Onboarding;
 
 class Events
 {
-    const PAYMENTS_ENABLED     = 'PAYMENTS_ENABLED';
+    const PAYMENTS_ENABLED                            = 'PAYMENTS_ENABLED';
     const UNREGISTERED_PAYMENTS_ENABLED               = 'UNREGISTERED_PAYMENTS_ENABLED';
     const UNREGISTERED_SETTLEMENTS_ENABLED            = 'UNREGISTERED_SETTLEMENTS_ENABLED';
     const REGISTERED_PAYMENTS_ENABLED                 = 'REGISTERED_PAYMENTS_ENABLED';
@@ -15,7 +15,6 @@ class Events
     const NEEDS_CLARIFICATION                         = 'NEEDS_CLARIFICATION';
     const PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   = 'PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION';
     const PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED = 'PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED';
-    const ONBOARDING_ACTIVATION_L1_PENDING            = 'ONBOARDING_ACTIVATION_L1_PENDING';
     const ACTIVATED_MCC_PENDING                       = "ACTIVATED_MCC_PENDING";
     const FUNDS_ON_HOLD                               = 'FUNDS_ON_HOLD';
     const FUNDS_ON_HOLD_REMINDER                      = 'FUNDS_ON_HOLD_REMINDER';
@@ -25,6 +24,11 @@ class Events
     const ACTIVATED_MCC_PENDING_ACTION_REQUIRED       = 'ACTIVATED_MCC_PENDING_ACTION_REQUIRED';
     const ONBOARDING_VERIFY_EMAIL                     = 'ONBOARDING_VERIFY_EMAIL';
     const COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU       = 'COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU';
+    const L1_NOT_SUBMITTED_IN_1_DAY                   = 'L1_NOT_SUBMITTED_IN_1_DAY';
+    const L2_BANK_DETAILS_NOT_SUBMITTED_IN_1_HOUR     = 'L2_BANK_DETAILS_NOT_SUBMITTED_IN_1_HOUR';
+    const L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR   = 'L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR';
+    const INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED      = 'INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED';
+    const L1_NOT_SUBMITTED_IN_1_HOUR                  = 'L1_NOT_SUBMITTED_IN_1_HOUR';
 
     const SMS_TEMPLATES = [
         self::PAYMENTS_ENABLED                            => 'sms.onboarding.payments_enabled',
@@ -43,8 +47,12 @@ class Events
         self::FUNDS_ON_HOLD                               => 'sms.onboarding.funds_on_hold',
         self::FUNDS_ON_HOLD_REMINDER                      => 'sms.onboarding.funds_on_hold_reminder',
         self::ONBOARDING_VERIFY_EMAIL                     => 'sms.onboarding.onboarding_verify_email',
-        self::ONBOARDING_ACTIVATION_L1_PENDING            => 'sms.onboarding.l1_activation_not_started_in_1_day',
+        self::L1_NOT_SUBMITTED_IN_1_DAY                   => 'sms.onboarding.l1_activation_not_started_in_1_day',
+        self::L2_BANK_DETAILS_NOT_SUBMITTED_IN_1_HOUR     => 'sms.onboarding.Onboarding_L2_not_submit_bank_details_SMS1A',
         self::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU       => 'sms.onboarding.coupon_code_eligible_merchant_not_mtu',
+        self::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED      => 'sms.onboarding.Onboarding_IA_SMS2',
+        self::L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR   => 'sms.onboarding.Onboarding_L2_not_submit_Aadhaar_SMS3',
+        self::L1_NOT_SUBMITTED_IN_1_HOUR                  => 'sms.onboarding.Onboarding_L1_not_submit_SMS2',
     ];
 
 
@@ -67,9 +75,13 @@ class Events
         self::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => 'whatsapp.merchant.onboarding.activated_mcc_pending_hard_limit_breach',
         self::FUNDS_ON_HOLD                               => 'whatsapp.merchant.onboarding.funds_on_hold',
         self::FUNDS_ON_HOLD_REMINDER                      => 'whatsapp.merchant.onboarding.funds_on_hold_reminder',
-        self::ONBOARDING_ACTIVATION_L1_PENDING            => 'whatsapp.merchant.onboarding.onboarding_activation_l1_pending',
+        self::L1_NOT_SUBMITTED_IN_1_DAY                   => 'whatsapp.merchant.onboarding.onboarding_activation_l1_pending',
+        self::L2_BANK_DETAILS_NOT_SUBMITTED_IN_1_HOUR     => 'whatsapp.merchant.onboarding.Onboarding_L2_not_submit_bank_details_WA1',
+        self::L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR   => 'whatsapp.merchant.onboarding.Onboarding_L2_not_submit_Aadhaar_WA3',
         self::PAYMENTS_ENABLED                            => 'whatsapp.merchant.onboarding.payments_enabled',
         self::ONBOARDING_VERIFY_EMAIL                     => 'whatsapp.merchant.onboarding.onboarding_verify_email',
+        self::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED      => 'whatsapp.merchant.onboarding.Onboarding_IA_WA2',
+        self::L1_NOT_SUBMITTED_IN_1_HOUR                  => 'sms.onboarding.Onboarding_L1_not_submit_WA2_A'
     ];
 
     const EMAIL_TEMPLATES = [

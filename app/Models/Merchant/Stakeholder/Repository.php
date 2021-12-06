@@ -21,4 +21,14 @@ class Repository extends Base\Repository
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->get();
     }
+
+    public function fetchEsignCompletedMerchants(array $merchantIdList)
+    {
+        return $this->newQuery()
+            ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
+            ->where(Entity::AADHAAR_ESIGN_STATUS, '=', 'verified')
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
 }

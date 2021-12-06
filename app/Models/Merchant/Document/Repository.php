@@ -106,4 +106,15 @@ class Repository extends Base\Repository
                     ->whereNull(Entity::DELETED_AT)
                     ->get();
     }
+
+    public function filterMerchantIdsWithUploadedDocuments(array $merchantIdList, string $documentType)
+    {
+        return $this->newQuery()
+            ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
+            ->where(Entity::DOCUMENT_TYPE, $documentType)
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
+
 }
