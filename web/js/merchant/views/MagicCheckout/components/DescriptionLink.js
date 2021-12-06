@@ -1,6 +1,6 @@
 const DescriptionLink = ({ children, href = '/', onClick = () => {} }) => {
   return (
-    <a href={href} onClick={onClick} class="super-checkout-description-link">
+    <a href={href} onClick={onClick} class="magic-checkout-description-link">
       <u>{children}</u>
     </a>
   );

@@ -6,13 +6,13 @@ import { sendToLumberjack } from 'common/utils/analytics';
 const objectName = 'super_checkout_landing_page2';
 const screen = 'SuperCheckoutOnboarding';
 
-const SuperCheckoutFeatures = (props) => {
+const MagicCheckoutFeatures = (props) => {
   useEffect(() => {
     sendToLumberjack({
       eventName: `${objectName}_loaded`,
       properties: {
         screen,
-        status: props.super_checkout_status,
+        status: props.magic_checkout_status,
         merchant_id: props.user.current,
       },
     });
@@ -23,7 +23,7 @@ const SuperCheckoutFeatures = (props) => {
       eventName: `${objectName}_back_clicked`,
       properties: {
         screen,
-        status: props.super_checkout_status,
+        status: props.magic_checkout_status,
         merchant_id: props.user.current,
       },
     });
@@ -35,8 +35,8 @@ const SuperCheckoutFeatures = (props) => {
 };
 
 const mapStateToProps = (state) => ({
-  super_checkout_status: state.superCheckout.status,
+  magic_checkout_status: state.magicCheckout.status,
   user: state.session.user,
 });
 
-export default connect(mapStateToProps, null)(SuperCheckoutFeatures);
+export default connect(mapStateToProps, null)(MagicCheckoutFeatures);

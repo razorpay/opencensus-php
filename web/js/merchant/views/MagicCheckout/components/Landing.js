@@ -2,38 +2,38 @@ import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import Landing from 'merchant/components/OnBoarding/Slides/Landing';
 import { RZPFeatures } from 'merchant/helpers/data';
-import { LANDING_CONTENT } from 'merchant/views/SuperCheckout/data';
-import DescriptionLink from 'merchant/views/SuperCheckout/components/DescriptionLink';
+import { LANDING_CONTENT } from 'merchant/views/MagicCheckout/data';
+import DescriptionLink from 'merchant/views/MagicCheckout/components/DescriptionLink';
 import {
   loadWaitlistForm,
   loadFeedbackForm,
-} from 'merchant/views/SuperCheckout/utils/waitlistForm';
-import { updateSuperCheckoutStatus } from 'merchant/reducers/superCheckout';
+} from 'merchant/views/MagicCheckout/utils/waitlistForm';
+import { updateMagicCheckoutStatus } from 'merchant/reducers/magicCheckout';
 import { sendToLumberjack } from 'common/utils/analytics';
 
 const objectName = 'super_checkout_landing_page1';
 const screen = 'SuperCheckoutOnboarding';
 
-const SuperCheckoutLanding = (props) => {
+const MagicCheckoutLanding = (props) => {
   useEffect(() => {
-    if (!props.superCheckout.loading) {
+    if (!props.magicCheckout.loading) {
       sendToLumberjack({
         eventName: `${objectName}_loaded`,
         properties: {
           screen,
-          status: props.superCheckout.status,
+          status: props.magicCheckout.status,
           merchant_id: props.user.current,
         },
       });
     }
-  }, [props.superCheckout.loading]);
+  }, [props.magicCheckout.loading]);
 
   const onReadMoreClicked = (callback) => {
     sendToLumberjack({
       eventName: `super_checkout_read_more_clicked`,
       properties: {
         screen,
-        status: props.superCheckout.status,
+        status: props.magicCheckout.status,
         merchant_id: props.user.current,
       },
     });
@@ -60,7 +60,7 @@ const SuperCheckoutLanding = (props) => {
                 eventName: 'super_checkout_waitlist_form_loaded',
                 properties: {
                   screen,
-                  status: props.superCheckout.status,
+                  status: props.magicCheckout.status,
                   merchant_id: props.user.current,
                 },
               });
@@ -69,7 +69,7 @@ const SuperCheckoutLanding = (props) => {
                   eventName: 'super_checkout_waitlist_form_filled',
                   properties: {
                     screen,
-                    status: props.superCheckout.status,
+                    status: props.magicCheckout.status,
                     merchant_id: props.user.current,
                   },
                 });
@@ -99,7 +99,7 @@ const SuperCheckoutLanding = (props) => {
       )}
       {status === 'deactivated' && (
         <div>
-          We are sorry to see you opt out of using Razorpay’s Super Checkout experience. Please tell
+          We are sorry to see you opt out of using Razorpay’s Magic Checkout experience. Please tell
           us what went wrong by sharing your feedback with us via
           <DescriptionLink
             onClick={(e) => {
@@ -108,7 +108,7 @@ const SuperCheckoutLanding = (props) => {
                 eventName: 'super_checkout_feedback_form_opened',
                 properties: {
                   screen,
-                  status: props.superCheckout.status,
+                  status: props.magicCheckout.status,
                   merchant_id: props.user.current,
                 },
               });
@@ -117,7 +117,7 @@ const SuperCheckoutLanding = (props) => {
           >
             this
           </DescriptionLink>
-          form. You can Re-activate Super Checkout at your end. For any queries, please raise a
+          form. You can Re-activate Magic Checkout at your end. For any queries, please raise a
           support ticket.
         </div>
       )}
@@ -135,22 +135,22 @@ const SuperCheckoutLanding = (props) => {
     <Landing
       {...props}
       next={onReadMoreClicked}
-      title="Super Checkout"
-      feature={RZPFeatures.SUPER_CHECKOUT}
+      title="Magic Checkout"
+      feature={RZPFeatures.MAGIC_CHECKOUT}
       ytVideoUrl="https://www.youtube-nocookie.com/embed/ItrlJ6WgfKg"
-      heading={getHeadingComponent(LANDING_CONTENT[props.superCheckout.status])}
-      desc={descriptionContainer(props.superCheckout.status)}
+      heading={getHeadingComponent(LANDING_CONTENT[props.magicCheckout.status])}
+      desc={descriptionContainer(props.magicCheckout.status)}
     />
   );
 };
 
 const mapStateToProps = (state) => ({
   user: state.session.user,
-  superCheckout: state.superCheckout,
+  magicCheckout: state.magicCheckout,
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  updateStatus: (payload) => dispatch(updateSuperCheckoutStatus(payload)),
+  updateStatus: (payload) => dispatch(updateMagicCheckoutStatus(payload)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(SuperCheckoutLanding);
+export default connect(mapStateToProps, mapDispatchToProps)(MagicCheckoutLanding);

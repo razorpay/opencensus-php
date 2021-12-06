@@ -102,7 +102,7 @@ import instrumentRequestsReducer from 'merchant/reducers/instrumentRequests';
 import navigatorReducer from 'merchant/reducers/navigator/details';
 import supportDetailReducer from 'merchant/reducers/support_detail';
 import fetchTransactionReducer from 'merchant/reducers/fetchTransaction';
-import superCheckoutReducer from 'merchant/reducers/superCheckout';
+import magicCheckoutReducer from 'merchant/reducers/magicCheckout';
 import trackEventsReducer from './reducers/trackEvents';
 
 export default combineReducers({
@@ -203,7 +203,7 @@ export default combineReducers({
   rewards: rewardsReducer,
   qr_codes: qrCodesReducer,
   migrations: MigrationReducer,
+  magicCheckout: magicCheckoutReducer,
   merchantReferral: merchantReferralReducer,
-  superCheckout: superCheckoutReducer,
   trackEvents: trackEventsReducer,
 });

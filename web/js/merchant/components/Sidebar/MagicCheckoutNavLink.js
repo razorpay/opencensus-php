@@ -5,9 +5,9 @@ import { sendToLumberjack } from 'common/utils/analytics';
 const objectName = 'super_checkout_nav_tab';
 const screen = 'Dashboard';
 
-const SuperCheckoutNavLink = ({ children, user }) => {
+const MagicCheckoutNavLink = ({ children, user }) => {
   useEffect(() => {
-    if (user.isSuperCheckoutEnabled) {
+    if (user.isMagicCheckoutEnabled) {
       sendToLumberjack({
         eventName: `${objectName}_displayed`,
         properties: {
@@ -28,7 +28,7 @@ const SuperCheckoutNavLink = ({ children, user }) => {
     });
   };
 
-  if (!user.isSuperCheckoutEnabled) return null;
+  if (!user.isMagicCheckoutEnabled) return null;
 
   return children(onClick);
 };
@@ -37,4 +37,4 @@ const mapStateToProps = (state) => ({
   user: state.session.user,
 });
 
-export default connect(mapStateToProps, null)(SuperCheckoutNavLink);
+export default connect(mapStateToProps, null)(MagicCheckoutNavLink);

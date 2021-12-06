@@ -125,8 +125,8 @@ const LoansCollections = lazy(() =>
   import(/* webpackChunkName: "Loans" */ 'merchant/views/Capital/Loans/LoansCollections'),
 );
 
-const SuperCheckout = lazy(() =>
-  import(/* webpackChunkName: "SuperCheckout" */ 'merchant/views/SuperCheckout'),
+const MagicCheckout = lazy(() =>
+  import(/* webpackChunkName: "MagicCheckout" */ 'merchant/views/MagicCheckout'),
 );
 
 // Can be removed with old navigation removal
@@ -359,10 +359,14 @@ export default class Content extends Component {
             additionalCondition={(user) => user.isAllowedView('payment_pages')}
           />
 
+          <Route path="/super-checkout">
+            <Redirect to="/magic-checkout" />
+          </Route>
+
           <ShowWhenRoute
-            path="/super-checkout"
-            component={SuperCheckout}
-            additionalCondition={(user) => user.isSuperCheckoutEnabled}
+            path="/magic-checkout"
+            component={MagicCheckout}
+            additionalCondition={(user) => user.isMagicCheckoutEnabled}
           />
 
           <ShowWhenRoute

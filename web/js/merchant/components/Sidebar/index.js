@@ -26,7 +26,7 @@ const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads)?/;
 const PAYMENTBUTTON_ROUTES_REGEX = /^\/paymentbuttons(\/subscription_buttons)?/;
 const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions(\/batchuploads)?|plans|addons|recurring_payments|tokens|authlinks|registration_links)/;
 const PARTNER_DASHBOARD_REGEX = /^\/(submerchants(\/(applications|settings))?|commissions)/;
-const SUPER_CHECKOUT_REGEX = /^\/(super-checkout)/;
+const MAGIC_CHECKOUT_REGEX = /^\/(magic-checkout)/;
 
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 
@@ -46,7 +46,7 @@ const BASE_ROUTES = {
   partnerDashboard: '/submerchants',
   smartCollect: '/smartcollect/virtualaccounts',
   bbps: '/bbps',
-  superCheckout: '/super-checkout',
+  magicCheckout: '/magic-checkout',
   stores: '/stores/products',
 };
 
@@ -132,9 +132,9 @@ export default class Sidebar extends Component {
       this.prevRoute = user.isChargeAtWillEnabled ? 'recurring_payments' : 'subscriptions';
 
       this.prevRoute = user.isRegistrationLinkBasedRole ? 'registration_links' : this.prevRoute;
-    } else if (SUPER_CHECKOUT_REGEX.test(pathname)) {
-      routes.superCheckout = pathname.match(SUPER_CHECKOUT_REGEX)[0];
-      this.prevRoute = 'superCheckout';
+    } else if (MAGIC_CHECKOUT_REGEX.test(pathname)) {
+      routes.magicCheckout = pathname.match(MAGIC_CHECKOUT_REGEX)[0];
+      this.prevRoute = 'magicCheckout';
     }
 
     if (user.isRegistrationLinkBasedRole) {

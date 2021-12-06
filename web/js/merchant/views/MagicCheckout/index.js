@@ -3,24 +3,24 @@ import { OnBoardingWrapper, FeatureEnableSliderButton } from 'merchant/component
 import { connect } from 'react-redux';
 import { RZPFeatures } from 'merchant/helpers/data';
 import Slider, { SliderDots } from 'common/new-ui/Slider';
-import { fetchSuperCheckoutStatus } from 'merchant/reducers/superCheckout';
-import { FEATURES_DATA } from 'merchant/views/SuperCheckout/data';
-import SuperCheckoutLanding from 'merchant/views/SuperCheckout/components/Landing';
-import SuperCheckoutFeatures from 'merchant/views/SuperCheckout/components/Features';
+import { fetchMagicCheckoutStatus } from 'merchant/reducers/magicCheckout';
+import { FEATURES_DATA } from 'merchant/views/MagicCheckout/data';
+import MagicCheckoutLanding from 'merchant/views/MagicCheckout/components/Landing';
+import MagicCheckoutFeatures from 'merchant/views/MagicCheckout/components/Features';
 import { AsyncBtn } from 'common/new-ui/Button';
-import JoinWaitlistButton from 'merchant/views/SuperCheckout/components/JoinWaitlistButton';
+import JoinWaitlistButton from 'merchant/views/MagicCheckout/components/JoinWaitlistButton';
 
-const SuperCheckout = ({ active, user, superCheckout, fetchStatus }) => {
+const MagicCheckout = ({ active, user, magicCheckout, fetchStatus }) => {
   useEffect(() => {
     fetchStatus();
   }, []);
 
   const getNextBtnProp = (merchantId, state, sliderProps) => (
-    <JoinWaitlistButton merchantId={merchantId} superCheckout={state}>
+    <JoinWaitlistButton merchantId={merchantId} magicCheckout={state}>
       {(onClick, buttonText) => (
         <FeatureEnableSliderButton
           isLocalEnabler
-          feature={RZPFeatures.SuperCheckout}
+          feature={RZPFeatures.MagicCheckout}
           onClick={onClick}
           page={sliderProps.active}
           sliderProps={sliderProps}
@@ -31,7 +31,7 @@ const SuperCheckout = ({ active, user, superCheckout, fetchStatus }) => {
   );
 
   const calloutElement = (merchantId, state) => (
-    <JoinWaitlistButton merchantId={merchantId} superCheckout={state}>
+    <JoinWaitlistButton merchantId={merchantId} magicCheckout={state}>
       {(onClick, buttonText, isPending) => (
         <div class="Button-Container callout-button">
           <AsyncBtn.Secondary onClick={onClick} isPending={isPending}>
@@ -43,21 +43,21 @@ const SuperCheckout = ({ active, user, superCheckout, fetchStatus }) => {
   );
 
   return (
-    <OnBoardingWrapper class="SuperCheckout">
+    <OnBoardingWrapper class="MagicCheckout">
       <Slider active={active} afterSlide={getOnBoardingSliderDots()}>
         {(sliderProps) => (
-          <SuperCheckoutLanding
-            callout={calloutElement(user.current, superCheckout)}
+          <MagicCheckoutLanding
+            callout={calloutElement(user.current, magicCheckout)}
             {...sliderProps}
           />
         )}
 
         {(sliderProps) => (
-          <SuperCheckoutFeatures
+          <MagicCheckoutFeatures
             {...sliderProps}
-            title="What makes Super Checkout great?"
-            nextBtn={getNextBtnProp(user.current, superCheckout, sliderProps)}
-            feature={RZPFeatures.SuperCheckout}
+            title="What makes Magic Checkout great?"
+            nextBtn={getNextBtnProp(user.current, magicCheckout, sliderProps)}
+            feature={RZPFeatures.MagicCheckout}
             featureLinks={[]}
             features={FEATURES_DATA}
           />
@@ -73,11 +73,11 @@ function getOnBoardingSliderDots() {
 
 const mapStateToProps = (state) => ({
   user: state.session.user,
-  superCheckout: state.superCheckout,
+  magicCheckout: state.magicCheckout,
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  fetchStatus: () => dispatch(fetchSuperCheckoutStatus()),
+  fetchStatus: () => dispatch(fetchMagicCheckoutStatus()),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(SuperCheckout);
+export default connect(mapStateToProps, mapDispatchToProps)(MagicCheckout);

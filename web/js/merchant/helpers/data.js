@@ -132,7 +132,7 @@ export const RZPFeatures = {
   OFFERS: 'offers',
   REWARDS: 'rewards',
   QR_CODES: 'qr_codes',
-  SUPER_CHECKOUT: 'super_checkout',
+  MAGIC_CHECKOUT: 'magic_checkout',
   STORES: 'stores',
 };
 

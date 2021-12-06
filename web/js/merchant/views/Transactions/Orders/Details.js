@@ -4,7 +4,7 @@ import OrderDetails from 'merchant/views/Transactions/Orders/components/OrderDet
 import * as OrderActions from 'merchant/reducers/orders/details';
 import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 import { bindActionCreators } from 'redux';
-import SuperCheckoutOrderDetails from 'merchant/views/Transactions/Orders/components/SuperCheckoutOrderDetails';
+import MagicCheckoutOrderDetails from 'merchant/views/Transactions/Orders/components/MagicCheckoutOrderDetails';
 
 class OrderDetailsContainer extends Component {
   componentWillMount() {
@@ -58,7 +58,7 @@ class OrderDetailsContainer extends Component {
 
     if ('line_items_total' in order) {
       return (
-        <SuperCheckoutOrderDetails
+        <MagicCheckoutOrderDetails
           order={order}
           payments={payments}
           onTogglePayments={this.fetchOrderPayments}

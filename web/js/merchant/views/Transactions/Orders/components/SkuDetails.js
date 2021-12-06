@@ -23,7 +23,7 @@ export default ({ line_items }) => {
 
   return (
     <div class="sku-details-container">
-      <div class="super-checkout-sku-list">
+      <div class="magic-checkout-sku-list">
         {skuList.length &&
           skuList.map((row, index) => (
             <div key={index}>{row.map((item) => item.sku).join(',')}</div>
@@ -32,7 +32,7 @@ export default ({ line_items }) => {
       {skuList.length > 3 && (
         <button
           type="button"
-          class="super-checkout-collapse-btn"
+          class="magic-checkout-collapse-btn"
           onClick={(_) => setSkuCollapsed((visible) => !visible)}
         >
           {isSkuCollapsed ? (

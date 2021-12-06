@@ -1,9 +1,9 @@
 import { merge, set } from 'common/utils/immutable';
 import { merchantFetch } from 'merchant/utils/ajax';
 
-export const REFRESH_SUPER_CHECKOUT_STATUS = 'REFRESH_SUPER_CHECKOUT_STATUS';
+export const REFRESH_MAGIC_CHECKOUT_STATUS = 'REFRESH_MAGIC_CHECKOUT_STATUS';
 
-export const fetchSuperCheckoutStatus = (params) => {
+export const fetchMagicCheckoutStatus = (params) => {
   const url = 'merchant/checkout_details';
 
   const payload = merchantFetch({
@@ -12,12 +12,12 @@ export const fetchSuperCheckoutStatus = (params) => {
   });
 
   return {
-    type: REFRESH_SUPER_CHECKOUT_STATUS,
+    type: REFRESH_MAGIC_CHECKOUT_STATUS,
     payload,
   };
 };
 
-export const updateSuperCheckoutStatus = (data, params) => {
+export const updateMagicCheckoutStatus = (data, params) => {
   const url = 'merchant/checkout_details';
 
   const payload = merchantFetch({
@@ -31,7 +31,7 @@ export const updateSuperCheckoutStatus = (data, params) => {
   });
 
   return {
-    type: REFRESH_SUPER_CHECKOUT_STATUS,
+    type: REFRESH_MAGIC_CHECKOUT_STATUS,
     payload,
   };
 };
@@ -42,15 +42,15 @@ const initialState = {
   error: null,
 };
 
-export default function superCheckoutReducer(state = initialState, action) {
+export default function magicCheckoutReducer(state = initialState, action) {
   switch (action.type) {
-    case `${REFRESH_SUPER_CHECKOUT_STATUS}::SUCCESS`:
+    case `${REFRESH_MAGIC_CHECKOUT_STATUS}::SUCCESS`:
       return merge(state, {
         loading: false,
         status: action.payload?.data?.status_1cc || 'available',
         error: null,
       });
-    case `${REFRESH_SUPER_CHECKOUT_STATUS}::PENDING`:
+    case `${REFRESH_MAGIC_CHECKOUT_STATUS}::PENDING`:
       return set(state, 'loading', true);
     default:
       return state;

@@ -315,7 +315,7 @@ export default class User {
     return this.isFeatureEnabled('covid');
   }
 
-  get isSuperCheckoutEnabled() {
+  get isMagicCheckoutEnabled() {
     return (
       this.isFeatureEnabled('one_cc_merchant_dashboard') &&
       this.getExpStatus('dashboard_super_checkout') &&

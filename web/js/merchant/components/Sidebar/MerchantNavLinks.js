@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import MainNavLink from 'merchant_common/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import * as LocalStorageService from 'common/utils/localStorage';
-import SuperCheckoutNavLink from 'merchant/components/Sidebar/SuperCheckoutNavLink';
+import MagicCheckoutNavLink from 'merchant/components/Sidebar/MagicCheckoutNavLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
@@ -200,18 +200,18 @@ function MerchantNavLinks(props) {
         }
       />
 
-      <SuperCheckoutNavLink>
+      <MagicCheckoutNavLink>
         {(onClick) => (
           <MainNavLink
-            label="Super Checkout"
-            icon="i i-super-checkout"
+            label="Magic Checkout"
+            icon="i i-magic-checkout"
             type="product"
-            to={routes.superCheckout}
+            to={routes.magicCheckout}
             isNew={true}
             onClick={onClick}
           />
         )}
-      </SuperCheckoutNavLink>
+      </MagicCheckoutNavLink>
 
       <MainNavLink
         label="BBPS"

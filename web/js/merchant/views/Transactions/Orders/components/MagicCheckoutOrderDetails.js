@@ -4,7 +4,7 @@ import Alert from 'common/ui/Forms/Alert';
 import DataTable from 'common/ui/Table/DataTable';
 import ListGroupToggler from 'common/ui/Toggler/ListGroupToggler';
 import { OrderStatusLabel } from 'merchant/components/StatusLabel';
-import SuperCheckoutLabel from 'merchant/components/SuperCheckout/SuperCheckoutLabel';
+import MagicCheckoutLabel from 'merchant/components/MagicCheckout/MagicCheckoutLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { paymentId, amount, status, createdAt } from 'common/ui/item/pair';
 import Definition from 'common/ui/Definition';
@@ -50,7 +50,7 @@ export default (props) => {
           <div class="SliderPanel__Body">
             <Alert type={statusMsg.type} message={statusMsg.message} />
             <div class="panel-body">
-              <EntityDetailRow label="Order Type" value={() => <SuperCheckoutLabel />} />
+              <EntityDetailRow label="Order Type" value={() => <MagicCheckoutLabel />} />
 
               {order.line_items && (
                 <EntityDetailRow

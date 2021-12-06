@@ -33,11 +33,11 @@ export const LANDING_CONTENT = {
   },
   live: {
     icon_classes: 'i-waitlist-tick tick-green',
-    heading: `You are Live with Super Checkout ${String.fromCodePoint('0x1F60E')}`,
+    heading: `You are Live with Magic Checkout ${String.fromCodePoint('0x1F60E')}`,
   },
   deactivated: {
     icon_classes: 'i-error error-red',
-    heading: `You are no longer using Super checkout ${String.fromCodePoint('0x1F615')}`,
+    heading: `You are no longer using Magic checkout ${String.fromCodePoint('0x1F615')}`,
   },
 };
 
