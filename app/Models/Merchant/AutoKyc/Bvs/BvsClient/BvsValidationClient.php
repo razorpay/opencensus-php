@@ -141,7 +141,7 @@ class BvsValidationClient extends BaseClient
         $createValidation->setRules($rules);
 
         if($artefact->getPlatform() === Constant::PG) {
-            $metadata = $this->newMetadata($artefact->getOwnerId());
+            $metadata = $this->newMetadata($artefact->getOwnerId(), $artefact->getType());
         }
 
         if (isset($metadata)) $createValidation->setMetadata($metadata);
@@ -186,11 +186,15 @@ class BvsValidationClient extends BaseClient
      * post onboarding flow.
      *
      * @param string $merchant_id
+     * @param string $artefactType
      * @return string
-     *
      */
-    public function getValidationFlow(string $merchant_id): string
+    public function getValidationFlow(string $merchant_id, string $artefactType): string
     {
+        if($artefactType == Constant::COMMON){
+            return Constant::MANUAL_VERIFICATION_FLOW;
+        }
+
         [$merchant, $merchantDetailsEntity] = (new DetailCore())->getMerchantAndDetailEntities($merchant_id);
 
         if($merchantDetailsEntity->getActivationStatus() === Status::ACTIVATED or
@@ -266,9 +270,10 @@ class BvsValidationClient extends BaseClient
     /**
      *
      * @param string $merchant_id
+     * @param string $artefactType
      * @return validationV1\Metadata|null
      */
-    private function newMetadata(string $merchant_id): ?validationV1\Metadata {
+    private function newMetadata(string $merchant_id, string $artefactType): ?validationV1\Metadata {
 
         $variant = $this->app->razorx->getTreatment(
             $merchant_id,
@@ -296,7 +301,7 @@ class BvsValidationClient extends BaseClient
         $metadataArray = [
             Constant::USER_AGENT => $headers->get(RequestHeader::X_USER_AGENT),
             Constant::IP => $headers->get(RequestHeader::X_DASHBOARD_IP),
-            Constant::FLOW => $this->getValidationFlow($merchant_id),
+            Constant::FLOW => $this->getValidationFlow($merchant_id, $artefactType),
             Constant::SOURCE => $this->getSourceForMetaData($headers, $requestContext->getInternalAppName())
         ];
 

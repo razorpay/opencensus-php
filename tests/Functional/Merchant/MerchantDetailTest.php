@@ -2089,6 +2089,10 @@ We look forward to transacting with you!
 
     public function testUpdateKYCClarificationReason()
     {
+        // used for mocking meta data request's response to BVS, artefact common.
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
         $merchantId = $merchantDetail['merchant_id'];
@@ -2101,7 +2105,24 @@ We look forward to transacting with you!
 
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
+        $this->mockRazorX(__FUNCTION__, 'BVS_MANUAL_VERIFICATION_DATA', 'on', $merchantId);
+
         $this->startTest();
+
+        // Tests that a new row is added in bvs_validation table with common artefact_type for this merchant.
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
+
+        $expected = [
+            "merchant_id" =>  $merchantId,
+            "artefact_type" => "common"
+        ];
+
+        $actual  = [
+            "merchant_id" => $bvsValidationEntity['owner_id'],
+            "artefact_type" => $bvsValidationEntity['artefact_type']
+        ];
+
+        $this->assertEquals($expected, $actual);
     }
 
     public function testUpdateKYCClarificationReasonWithFailure()

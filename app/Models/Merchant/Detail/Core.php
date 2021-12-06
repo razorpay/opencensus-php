@@ -95,6 +95,7 @@ use RZP\Notifications\Dashboard\Constants as DashboardNotificationConstants;
 use RZP\Models\Merchant\Fraud\HealthChecker\Constants as HealthCheckerConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification\Constants as NCConstants;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
+use RZP\Models\Merchant\AutoKyc\Bvs\ManualVerificationRequestDispatcher;
 
 
 class Core extends Base\Core
@@ -1752,6 +1753,7 @@ class Core extends Base\Core
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $merchant, $segmentProperties, SegmentEvent::KYC_FORM_SAVED);
 
+        $this->triggerRequestToBvs($merchant,Status::NEEDS_CLARIFICATION,$input);
         return $merchantDetails;
     }
 
@@ -2042,6 +2044,67 @@ class Core extends Base\Core
     }
 
     /**
+     * Trigger request to BVS to inform about Manual Verification event
+     * @param Merchant\Entity $merchant
+     * @param string $activationStatus
+     * @param array $data
+     */
+    protected function triggerRequestToBvs(Merchant\Entity $merchant, string $activationStatus, $data = []) : void {
+        try {
+            $variant = $this->app->razorx->getTreatment(
+                $merchant->getId(),
+                RazorxTreatment::BVS_MANUAL_VERIFICATION_DATA,
+                $this->app['basicauth']->getMode() ?? "live"
+            );
+
+            if(strcmp($variant, Constant::ON) != 0) {
+                return;
+            }
+
+            if(!isset($data)){
+                $data = [];
+            }
+
+            $requestContext =  $this->app['request.ctx'];
+            $request        =  $this->app['request'];
+
+            if($this->app['basicauth']->isAdminLoggedInAsMerchantOnDashboard()){
+                return;
+            }
+
+            if(isset($requestContext)===false || isset($request)===false){
+                return;
+            }
+
+            if(!($requestContext->isAdminDashboard() || $requestContext->getInternalAppName()==='dashboard')){
+                return;
+            }
+
+            switch ($activationStatus)
+            {
+                case Status::ACTIVATED:
+                    $workflow_id = $request->route('id');
+                    (new ManualVerificationRequestDispatcher\Activated($merchant, $workflow_id))->triggerBVSRequest();
+                    break;
+                case Status::NEEDS_CLARIFICATION:
+                    (new ManualVerificationRequestDispatcher\NeedsClarification($merchant, $data))->triggerBVSRequest();
+                    break;
+                case Status::REJECTED:
+                    $workflow_id = $request->route('id');
+                    (new ManualVerificationRequestDispatcher\Rejected($merchant, $workflow_id, $data))->triggerBVSRequest();
+                    break;
+                case Status::ACTIVATED_MCC_PENDING:
+                    (new ManualVerificationRequestDispatcher\ActivatedMccPending($merchant))->triggerBVSRequest();
+                    break;
+            }
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException($e,  Trace::CRITICAL, TraceCode::BVS_MANUAL_VERIFICATION_REQUEST_ERROR);
+        }
+    }
+
+    /**
      * This function is used for archiving merchant activation form
      * @param Entity $merchantDetails
      * @param array $input
@@ -2190,6 +2253,7 @@ class Core extends Base\Core
 
                 (new Merchant\Activate)->activate($merchant, true, $shouldSave);
 
+                $this->triggerRequestToBvs($merchant,Status::ACTIVATED);
                 // request for default instruments when merchant is activated
                 $this->app['terminals_service']->requestDefaultMerchantInstruments($merchant->getId());
 
@@ -2207,8 +2271,8 @@ class Core extends Base\Core
 
                 $shouldSave = true;
 
+                $this->triggerRequestToBvs($merchant,Status::ACTIVATED_MCC_PENDING);
                 // request for default instruments when merchant is activated
-
                 $this->app['terminals_service']->requestDefaultMerchantInstruments($merchant->getId());
 
                 if(!$isMerchantPreviouslyActivated) {
@@ -2245,6 +2309,9 @@ class Core extends Base\Core
                         }
                     }
                 }
+
+                $this->triggerRequestToBvs($merchant, Status::REJECTED, $rejectionReasons);
+
             }
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION)

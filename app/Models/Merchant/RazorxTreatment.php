@@ -375,6 +375,9 @@ final class RazorxTreatment
     // Experiment to send create validation metadata to BVS
     const BVS_CREATE_VALIDATION_METADATA = 'BVS_CREATE_VALIDATION_METADATA';
 
+    // Experiment to send manual verification data to BVS
+    const BVS_MANUAL_VERIFICATION_DATA = 'BVS_MANUAL_VERIFICATION_DATA';
+
     // Experiment for removal of extra fields during onboarding
     const LITE_ONBOARDING = 'lite_onboarding';
 
@@ -385,7 +388,7 @@ final class RazorxTreatment
 
     // Experiment for sending auth header for Stores
     const KEYLESS_HEADER_STORES = 'keyless_header_stores';
-    
+
     // Experiment for sending auth header for Payment Pages
     const KEYLESS_HEADER_PP = 'keyless_header_pp';
 

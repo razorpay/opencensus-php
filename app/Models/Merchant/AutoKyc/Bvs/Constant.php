@@ -65,6 +65,24 @@ class Constant
     const NEEDS_CLARIFICATION           = 'needs clarification';
     const POST_ONBOARDING_EDIT          = 'post onboarding edit';
 
+    //Manual Verification BVS
+    const DATA                       = "data";
+    const ACTIVATED                  = 'activated';
+    const REJECTED                   = 'rejected';
+    const MANUAL_VERIFICATION_STATUS = "status";
+    const MERCHANT_DATA              = "merchant_data";
+    const CLARIFICATION_DATA         = "clarification_data";
+    const DOCUMENTS                  = "documents";
+    const KYC_DETAILS                = "Kyc_details";
+    const PAN_NAME                   = 'pan_name';
+    const PROMOTER_PAN               = 'promoter_pan';
+    const PROMOTER_PAN_NAME          = 'promoter_pan_name';
+    const BANK_ACCOUNT_NUMBER        = 'bank_account_number';
+    const ACTIVATED_MCC_PENDING      = 'activated_mcc_pending';
+    const WORKFLOW_ACTION_ID         = 'workflow_action_id';
+    const REJECTION_REASONS          = 'rejection_reasons';
+    const MANUAL_VERIFICATION_FLOW   = 'manual_verification';
+
     // Razorx Experiment for BVS metadata
     const LIVE_MODE  = 'live';
     const ON         = 'on';
@@ -72,6 +90,7 @@ class Constant
     // Config names
     const PERSONAL_PAN_OCR           = 'personal_pan_ocr';
     const BUSINESS_PAN_OCR           = 'business_pan_ocr';
+    const COMMON_MANUAL_VERIFICATION = 'common_manual_verification';
     const GST_CERTIFICATE_OCR_CONFIG = 'gst_in_ocr';
     const MSME_OCR                   = 'msme_ocr';
     const SHOP_ESTABLISHMENT_OCR     = 'shop_establishment_ocr';
@@ -111,6 +130,7 @@ class Constant
     const SHOP_ESTABLISHMENT = 'shop_establishment';
     const GST_CERTIFICATE    = 'gst_certificate';
     const MSME               = 'msme';
+    const COMMON             = 'common';
     const PARTNERSHIP_DEED   = 'partnership_deed';
 
     //
