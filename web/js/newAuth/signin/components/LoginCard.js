@@ -3,7 +3,7 @@ import Size from '@razorpay/blade-old/src/atoms/Size';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import View from '@razorpay/blade-old/src/atoms/View';
-import { CustomLinkButton } from '../styles';
+import { CustomLinkButton, Image } from '../styles';
 
 const LoginCard = ({ cardData, cardOrder }) => {
   let hoverEventFired = false;
@@ -48,7 +48,7 @@ const LoginCard = ({ cardData, cardOrder }) => {
     type === 'with-image' ? (
       <Space margin={[0, 0, 1, 0]}>
         <Size maxWidth="400px">
-          <img src={imgSrc} alt={imgAlt} />
+          <Image src={imgSrc} alt={imgAlt} />
         </Size>
       </Space>
     ) : (

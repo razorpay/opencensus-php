@@ -9,13 +9,14 @@ export const LoginCardArray = [
     id: 'Sep22-AppStore-Zapier-GTM-LoginCard',
   },
   {
-    type: 'default',
-    title: 'Payment Buttons',
+    type: 'with-image',
+    imgSrc: 'img/ftx.png',
+    imgAlt: 'Register for FTX’21!',
+    title: 'Register for FTX’21!',
     desc:
-      'Start accepting payments on your website or blog in less than 5 minutes. No coding needed.',
-    ctaURL:
-      'https://razorpay.com/payment-buttons/?utm_source=signup&utm_medium=banner&utm_campaign=paymentbuttons',
-    ctaText: 'Learn More',
-    id: 'login_payment_buttons',
+      'Catch top speakers like Ankur Warikoo(Nearbuy), Amitabh Kant(NITI Aayog), Nithin Kamath(Zerodha) & more live!',
+    ctaURL: 'https://razorpay.com/ftx/?coupon_code=welcometoftx21',
+    ctaText: 'Get your free ticket now!',
+    id: 'FTX21-LOGINCARD',
   },
 ];
