@@ -38,7 +38,6 @@ class NavFragment extends Component {
       user.isOnboardingCouponEnabled;
 
     this.isNewMerchantPostMTUCouponLive = user.created_at > TRANSACTION_TIMESTAMP;
-    this.isMtuOfferShowed = storage.getItem(`showed_popup--${user.current}`);
 
     this.state = {
       showSwitchModeTooltip: !hideSwitchModeTooltip && showSwitchModeTooltip,
@@ -159,7 +158,7 @@ class NavFragment extends Component {
           this.setState({
             transactionAmount: payment,
           });
-          if (payment > 0 && (this.isMtuOfferShowed === 'visited' || mtuCount > 0)) {
+          if (payment > 0 && mtuCount > 0) {
             this.redeemOnboardingCoupon();
           }
         }

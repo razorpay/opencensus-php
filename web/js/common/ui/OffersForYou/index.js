@@ -54,7 +54,6 @@ const OffersForYou = ({
       ),
       size: 'xlarge',
     });
-    LocalStorageService.setItem(`showed_popup--${window.rzp_user.current}`, 'visited');
   };
 
   useEffect(() => {
