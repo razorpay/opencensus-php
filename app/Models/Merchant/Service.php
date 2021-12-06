@@ -835,36 +835,55 @@ class Service extends Base\Service
 
             $this->trace->info(TraceCode::EMAIL_SENT_FOR_EDIT_MERCHANT_EMAIL, []);
 
+            return $status;
         }
 
-        return $status;
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ASSOCIATED_WITH_ANOTHER_ACCOUNT);
     }
+
+    /**
+     * Old flow: Used for changing the owner of the team.
+     * Transfers the owner role to the email user and makes the current owner as manager
+     *
+     * Temporarily deprecating the API for mobile signup.
+     * Issue - After the ownership transfer, the old owner of merchant 1 whose email has been changed, can also login
+     * to merchant 2 account using his mobile contact
+     *
+     * Merchant 1	  Merchant 2
+     * abc@xyz.com    def@xyz.com  (old email)
+     * 12345          67890        (mobile contact)
+     *
+     * If email of Merchant 2 is changed to abc@xyz.com, then login can be done from abc@xyz.com, 12345 and 67890
+     */
 
     public function editMerchantEmailAndTransferOwnershipToEmailUser(array $input): array
     {
-        (new Validator())->validateInput('editMerchantEmailSelfServe', $input);
+        //(new Validator())->validateInput('editMerchantEmailSelfServe', $input);
+        //
+        //$input[Entity::EMAIL]   = mb_strtolower($input[Entity::EMAIL]);
+        //
+        //$this->trace->info(TraceCode::MERCHANT_EDIT_EMAIL_REQUEST, $input);
+        //
+        //$merchant = $this->app['basicauth']->getMerchant();
+        //
+        //$user = $this->repo->user->getUserFromEmailOrFail($input[Entity::EMAIL]);
+        //
+        //// user to whom ownership is being transfered should not have any cross org merchant
+        //(new Validator())->validateUserDoesNotBelongToMerchantsInMultipleOrgsForEmailUpdate($user);
+        //
+        //// this flow is used by owner user only : basic auth user is same as owner user
+        //$currentOwner = $this->app['basicauth']->getUser();
+        //
+        //$this->core()->editMerchantEmailAndTransferOwnershipToUser($user, $currentOwner, $merchant, $input);
+        //
+        //$this->invalidatePreviousRequestForEmailUpdate($merchant, $currentOwner);
+        //
+        //return  [
+        //    Constants::LOGOUT_SESSIONS_FOR_USERS => [$user->getId(), $currentOwner->getId()]
+        //];
 
-        $input[Entity::EMAIL]   = mb_strtolower($input[Entity::EMAIL]);
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ROUTE_DISABLED);
 
-        $this->trace->info(TraceCode::MERCHANT_EDIT_EMAIL_REQUEST, $input);
-
-        $merchant = $this->app['basicauth']->getMerchant();
-
-        $user = $this->repo->user->getUserFromEmailOrFail($input[Entity::EMAIL]);
-
-        // user to whom ownership is being transfered should not have any cross org merchant
-        (new Validator())->validateUserDoesNotBelongToMerchantsInMultipleOrgsForEmailUpdate($user);
-
-        // this flow is used by owner user only : basic auth user is same as owner user
-        $currentOwner = $this->app['basicauth']->getUser();
-
-        $this->core()->editMerchantEmailAndTransferOwnershipToUser($user, $currentOwner, $merchant, $input);
-
-        $this->invalidatePreviousRequestForEmailUpdate($merchant, $currentOwner);
-
-        return  [
-            Constants::LOGOUT_SESSIONS_FOR_USERS => [$user->getId(), $currentOwner->getId()]
-        ];
     }
 
     public function editMerchantEmailCreateNewUserAndTransferOwnerShip($input)

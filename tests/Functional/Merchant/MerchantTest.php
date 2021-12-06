@@ -4789,109 +4789,115 @@ IFSC Code  ICIC0001206
         });
     }
 
-    public function testMerchantEmailUpdateUserStatusForEmailUserExistInTeam()
-    {
-        Mail::fake();
+    //Temporarily deprecating the API for mobile signup.
 
-        $merchant = $this->fixtures->create('merchant');
-        $user = $this->fixtures->create('user', ['email' => 'abctest@gmail.com']);
-        $this->createMerchantUserMapping($user['id'], $merchant['id'], 'owner');
+    //public function testMerchantEmailUpdateUserStatusForEmailUserExistInTeam()
+    //{
+    //    Mail::fake();
+    //
+    //    $merchant = $this->fixtures->create('merchant');
+    //    $user = $this->fixtures->create('user', ['email' => 'abctest@gmail.com']);
+    //    $this->createMerchantUserMapping($user['id'], $merchant['id'], 'owner');
+    //
+    //    $existingTeamUser = $this->fixtures->user->createEntityInTestAndLive('user', [
+    //        'email' => 'newowner@gmail.com'
+    //    ]);
+    //    $this->createMerchantUserMapping($existingTeamUser['id'], $merchant['id'], 'manager');
+    //
+    //    $testData = $this->testData['testMerchantEmailGetUserStatus'];
+    //
+    //    $testData['response']['content'] = [
+    //        'is_user_exist'  => true,
+    //        'is_team_member' => true,
+    //        'is_owner'       => false,
+    //    ];
+    //
+    //    $this->testData[__FUNCTION__] = $testData;
+    //
+    //    $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+    //
+    //    $this->startTest();
+    //
+    //    $this->assertCacheDataForMerchantEmailUpdate($merchant['id'], null);
+    //
+    //    Mail::assertNotQueued(MerchantMail\OwnerEmailChange::class);
+    //
+    //    Mail::assertNotQueued(PasswordAndEmailResetMail::class);
+    //}
 
-        $existingTeamUser = $this->fixtures->user->createEntityInTestAndLive('user', [
-            'email' => 'newowner@gmail.com'
-        ]);
-        $this->createMerchantUserMapping($existingTeamUser['id'], $merchant['id'], 'manager');
+    //Temporarily deprecating the API for mobile signup.
 
-        $testData = $this->testData['testMerchantEmailGetUserStatus'];
+    //public function testMerchantEmailUpdateUserStatusForEmailUserExistInNonTeamNonOwner()
+    //{
+    //    Mail::fake();
+    //
+    //    $merchant1 = $this->fixtures->create('merchant');
+    //    $user = $this->fixtures->create('user', ['email' => 'abctest@gmail.com']);
+    //    $this->createMerchantUserMapping($user['id'], $merchant1['id'], 'owner');
+    //
+    //    $merchant2 = $this->fixtures->create('merchant');
+    //    $nonTeamExistingUser = $this->fixtures->user->createEntityInTestAndLive('user', [
+    //        'email' => 'newowner@gmail.com'
+    //    ]);
+    //    $this->createMerchantUserMapping($nonTeamExistingUser['id'], $merchant2['id'], 'manager');
+    //
+    //    $testData = $this->testData['testMerchantEmailGetUserStatus'];
+    //
+    //    $testData['response']['content'] = [
+    //        'is_user_exist'  => true,
+    //        'is_team_member' => false,
+    //        'is_owner'       => false,
+    //    ];
+    //
+    //    $this->testData[__FUNCTION__] = $testData;
+    //
+    //    $this->ba->proxyAuth('rzp_test_' . $merchant1['id'], $user['id']);
+    //
+    //    $this->startTest();
+    //
+    //    $this->assertCacheDataForMerchantEmailUpdate($merchant1['id'], null);
+    //
+    //    Mail::assertNotQueued(MerchantMail\OwnerEmailChange::class);
+    //
+    //    Mail::assertNotQueued(PasswordAndEmailResetMail::class);
+    //}
 
-        $testData['response']['content'] = [
-            'is_user_exist'  => true,
-            'is_team_member' => true,
-            'is_owner'       => false,
-        ];
+    //Temporarily deprecating the API for mobile signup.
 
-        $this->testData[__FUNCTION__] = $testData;
-
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
-
-        $this->startTest();
-
-        $this->assertCacheDataForMerchantEmailUpdate($merchant['id'], null);
-
-        Mail::assertNotQueued(MerchantMail\OwnerEmailChange::class);
-
-        Mail::assertNotQueued(PasswordAndEmailResetMail::class);
-    }
-
-    public function testMerchantEmailUpdateUserStatusForEmailUserExistInNonTeamNonOwner()
-    {
-        Mail::fake();
-
-        $merchant1 = $this->fixtures->create('merchant');
-        $user = $this->fixtures->create('user', ['email' => 'abctest@gmail.com']);
-        $this->createMerchantUserMapping($user['id'], $merchant1['id'], 'owner');
-
-        $merchant2 = $this->fixtures->create('merchant');
-        $nonTeamExistingUser = $this->fixtures->user->createEntityInTestAndLive('user', [
-            'email' => 'newowner@gmail.com'
-        ]);
-        $this->createMerchantUserMapping($nonTeamExistingUser['id'], $merchant2['id'], 'manager');
-
-        $testData = $this->testData['testMerchantEmailGetUserStatus'];
-
-        $testData['response']['content'] = [
-            'is_user_exist'  => true,
-            'is_team_member' => false,
-            'is_owner'       => false,
-        ];
-
-        $this->testData[__FUNCTION__] = $testData;
-
-        $this->ba->proxyAuth('rzp_test_' . $merchant1['id'], $user['id']);
-
-        $this->startTest();
-
-        $this->assertCacheDataForMerchantEmailUpdate($merchant1['id'], null);
-
-        Mail::assertNotQueued(MerchantMail\OwnerEmailChange::class);
-
-        Mail::assertNotQueued(PasswordAndEmailResetMail::class);
-    }
-
-    public function testMerchantEmailUpdateUserStatusForEmailUserExistInNonTeamOwner()
-    {
-        Mail::fake();
-
-        $merchant1 = $this->fixtures->create('merchant');
-        $user = $this->fixtures->create('user', ['email' => 'abctest@gmail.com']);
-        $this->createMerchantUserMapping($user['id'], $merchant1['id'], 'owner');
-
-        $merchant2 = $this->fixtures->create('merchant');
-        $nonTeamExistingUser = $this->fixtures->user->createEntityInTestAndLive('user', [
-            'email' => 'newowner@gmail.com'
-        ]);
-        $this->createMerchantUserMapping($nonTeamExistingUser['id'], $merchant2['id'], 'owner');
-
-        $testData = $this->testData['testMerchantEmailGetUserStatus'];
-
-        $testData['response']['content'] =  [
-            'is_user_exist'  => true,
-            'is_team_member' => false,
-            'is_owner'       => true,
-        ];
-
-        $this->testData[__FUNCTION__] = $testData;
-
-        $this->ba->proxyAuth('rzp_test_' . $merchant1['id'], $user['id']);
-
-        $this->startTest();
-
-        $this->assertCacheDataForMerchantEmailUpdate($merchant1['id'], null);
-
-        Mail::assertNotQueued(MerchantMail\OwnerEmailChange::class);
-
-        Mail::assertNotQueued(PasswordAndEmailResetMail::class);
-    }
+    //public function testMerchantEmailUpdateUserStatusForEmailUserExistInNonTeamOwner()
+    //{
+    //    Mail::fake();
+    //
+    //    $merchant1 = $this->fixtures->create('merchant');
+    //    $user = $this->fixtures->create('user', ['email' => 'abctest@gmail.com']);
+    //    $this->createMerchantUserMapping($user['id'], $merchant1['id'], 'owner');
+    //
+    //    $merchant2 = $this->fixtures->create('merchant');
+    //    $nonTeamExistingUser = $this->fixtures->user->createEntityInTestAndLive('user', [
+    //        'email' => 'newowner@gmail.com'
+    //    ]);
+    //    $this->createMerchantUserMapping($nonTeamExistingUser['id'], $merchant2['id'], 'owner');
+    //
+    //    $testData = $this->testData['testMerchantEmailGetUserStatus'];
+    //
+    //    $testData['response']['content'] =  [
+    //        'is_user_exist'  => true,
+    //        'is_team_member' => false,
+    //        'is_owner'       => true,
+    //    ];
+    //
+    //    $this->testData[__FUNCTION__] = $testData;
+    //
+    //    $this->ba->proxyAuth('rzp_test_' . $merchant1['id'], $user['id']);
+    //
+    //    $this->startTest();
+    //
+    //    $this->assertCacheDataForMerchantEmailUpdate($merchant1['id'], null);
+    //
+    //    Mail::assertNotQueued(MerchantMail\OwnerEmailChange::class);
+    //
+    //    Mail::assertNotQueued(PasswordAndEmailResetMail::class);
+    //}
 
     public function testMerchantEmailUpdateCreateNewOwnerDetachOldOwner()
     {
@@ -5044,86 +5050,98 @@ IFSC Code  ICIC0001206
         Mail::assertNotQueued(MerchantMail\OwnerEmailChange::class);
     }
 
-    public function testMerchantEmailUpdateEmailUserExistNotInTeamReAttachOldOwner()
-    {
-        $this->merchantEmailUpdateForExistingEmailUser(false, true, false, true);
-    }
+    //Temporarily deprecating the API for mobile signup.
 
-    public function testMerchantEmailUpdateEmailUserExistNotInTeamDetachOldOwnerSetContactEmail()
-    {
-        $this->merchantEmailUpdateForExistingEmailUser(false, false, true, false);
-    }
+    //public function testMerchantEmailUpdateEmailUserExistNotInTeamReAttachOldOwner()
+    //{
+    //    $this->merchantEmailUpdateForExistingEmailUser(false, true, false, true);
+    //}
 
-    public function testMerchantEmailUpdateEmailUserExistInTeamReAttachOldOwner()
-    {
-        $this->merchantEmailUpdateForExistingEmailUser(true, true, false, true);
-    }
+    //Temporarily deprecating the API for mobile signup.
 
-    public function testMerchantEmailUpdateEmailUserExistInTeamDetachOldOwnerSetContactEmail()
-    {
-        $this->merchantEmailUpdateForExistingEmailUser(true, false, true, false);
-    }
+    //public function testMerchantEmailUpdateEmailUserExistNotInTeamDetachOldOwnerSetContactEmail()
+    //{
+    //    $this->merchantEmailUpdateForExistingEmailUser(false, false, true, false);
+    //}
 
-    public function testMerchantEmailUpdateEmailUserExistContactEmailAlreadyTakenPass()
-    {
-        $this->testData[__FUNCTION__] = $this->testData['testMerchantEmailUpdateExistingUser'];
+    //Temporarily deprecating the API for mobile signup.
 
-        $merchant = $this->fixtures->create('merchant', [
-            'email' => 'oldcontact@gmail.com'
-        ]);
+    //public function testMerchantEmailUpdateEmailUserExistInTeamReAttachOldOwner()
+    //{
+    //    $this->merchantEmailUpdateForExistingEmailUser(true, true, false, true);
+    //}
 
-        // this merchant has new owner's email as contact email
-         $this->fixtures->create('merchant', [
-            'email' => 'newowner@gmail.com'
-        ]);
+    //Temporarily deprecating the API for mobile signup.
 
-        $oldOwnerUser = $this->fixtures->create('user',[
-            'email'                   => 'oldowner@gmail.com',
-            'contact_mobile'          => '8839106483',
-            'name'                    => 'ownername',
-            'contact_mobile_verified' => true,
-        ]);
+    //public function testMerchantEmailUpdateEmailUserExistInTeamDetachOldOwnerSetContactEmail()
+    //{
+    //    $this->merchantEmailUpdateForExistingEmailUser(true, false, true, false);
+    //}
 
-        $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner');
+    //Temporarily deprecating the API for mobile signup.
 
-        $this->fixtures->create('user', ['email' => 'newowner@gmail.com']);
+    //public function testMerchantEmailUpdateEmailUserExistContactEmailAlreadyTakenPass()
+    //{
+    //    $this->testData[__FUNCTION__] = $this->testData['testMerchantEmailUpdateExistingUser'];
+    //
+    //    $merchant = $this->fixtures->create('merchant', [
+    //        'email' => 'oldcontact@gmail.com'
+    //    ]);
+    //
+    //    // this merchant has new owner's email as contact email
+    //     $this->fixtures->create('merchant', [
+    //        'email' => 'newowner@gmail.com'
+    //    ]);
+    //
+    //    $oldOwnerUser = $this->fixtures->create('user',[
+    //        'email'                   => 'oldowner@gmail.com',
+    //        'contact_mobile'          => '8839106483',
+    //        'name'                    => 'ownername',
+    //        'contact_mobile_verified' => true,
+    //    ]);
+    //
+    //    $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner');
+    //
+    //    $this->fixtures->create('user', ['email' => 'newowner@gmail.com']);
+    //
+    //    $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $oldOwnerUser['id']);
+    //
+    //    $this->startTest();
+    //
+    //    $this->assertMerchantContactEmailForEmailUpdate($merchant['id'], true);
+    //}
 
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $oldOwnerUser['id']);
+    //Temporarily deprecating the API for mobile signup.
 
-        $this->startTest();
-
-        $this->assertMerchantContactEmailForEmailUpdate($merchant['id'], true);
-    }
-
-    public function testMerchantEmailUpdateEmailUserExistUserHasCrossOrgMerchantFail()
-    {
-        $merchant = $this->fixtures->create('merchant', [
-            'email' => 'oldcontact@gmail.com'
-        ]);
-
-        $oldOwnerUser = $this->fixtures->create('user',[
-            'email'                   => 'oldowner@gmail.com',
-            'contact_mobile'          => '8839106483',
-            'name'                    => 'ownername',
-            'contact_mobile_verified' => true,
-        ]);
-
-        $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner');
-
-        $existingUser = $this->fixtures->create('user', ['email' => 'newowner@gmail.com']);
-
-        $crossOrg =  $this->fixtures->create('org');
-
-        $crossOrgMerchant = $this->fixtures->create('merchant', [
-            'org_id' => $crossOrg['id']
-        ]);
-
-        $this->createMerchantUserMapping($existingUser['id'], $crossOrgMerchant['id'], 'owner');
-
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $oldOwnerUser['id']);
-
-        $this->startTest();
-    }
+    //public function testMerchantEmailUpdateEmailUserExistUserHasCrossOrgMerchantFail()
+    //{
+    //    $merchant = $this->fixtures->create('merchant', [
+    //        'email' => 'oldcontact@gmail.com'
+    //    ]);
+    //
+    //    $oldOwnerUser = $this->fixtures->create('user',[
+    //        'email'                   => 'oldowner@gmail.com',
+    //        'contact_mobile'          => '8839106483',
+    //        'name'                    => 'ownername',
+    //        'contact_mobile_verified' => true,
+    //    ]);
+    //
+    //    $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner');
+    //
+    //    $existingUser = $this->fixtures->create('user', ['email' => 'newowner@gmail.com']);
+    //
+    //    $crossOrg =  $this->fixtures->create('org');
+    //
+    //    $crossOrgMerchant = $this->fixtures->create('merchant', [
+    //        'org_id' => $crossOrg['id']
+    //    ]);
+    //
+    //    $this->createMerchantUserMapping($existingUser['id'], $crossOrgMerchant['id'], 'owner');
+    //
+    //    $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $oldOwnerUser['id']);
+    //
+    //    $this->startTest();
+    //}
 
     protected function merchantEmailUpdateCreateNewOwner($reAttachCurrentOwner, $setContactEmail, $isCurrentOwnerOnX)
     {
