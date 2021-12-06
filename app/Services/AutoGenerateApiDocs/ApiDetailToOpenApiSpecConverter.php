@@ -7,9 +7,13 @@ class ApiDetailToOpenApiSpecConverter
 
     protected $apiDetails;
 
-    public function __construct(ApiDetails $apiDetails)
+    protected $additionalSimilarApiDetails;
+
+    public function __construct(ApiDetails $apiDetails, array $additionalSimilarApiDetails = [])
     {
         $this->apiDetails = $apiDetails;
+
+        $this->additionalSimilarApiDetails = $additionalSimilarApiDetails;
     }
 
     public function convert()
@@ -83,15 +87,29 @@ class ApiDetailToOpenApiSpecConverter
         }
     }
 
-    protected function getOpenApiContentSpec(string $contentType, array $inputData)
+    protected function getOpenApiContentSpec(string $contentType, array $inputSets)
     {
+        $inputSetSchema = [];
+
+        foreach ($inputSets as $inputData)
+        {
+            if (empty($inputData) === false )
+            {
+                $inputSetSchema[] = array_merge( $this->getParamsSchema($inputData) , ['example' => $inputData] );
+            }
+        }
+
         $schemaSpec = [ ];
 
-        if (empty($inputData) === false )
-        {
-            $schemaSpec['schema'] = $this->getParamsSchema($inputData);
+        $isMultipleInputSets = count($inputSetSchema) > 1 ? true : false;
 
-            $schemaSpec['schema']['example'] = $inputData;
+        if ($isMultipleInputSets === false)
+        {
+            $schemaSpec['schema'] = array_first($inputSetSchema);
+        }
+        else
+        {
+            $schemaSpec['schema']['oneOf'] = $inputSetSchema;
         }
 
         return  [
@@ -103,7 +121,7 @@ class ApiDetailToOpenApiSpecConverter
     {
         return [
                 'description'   =>  $this->apiDetails->getRequestDescription(),
-                'content'       => $this->getOpenApiContentSpec($this->apiDetails->getResponseContentType(), $this->apiDetails->getRequestData())
+                'content'       => $this->getOpenApiContentSpec($this->apiDetails->getResponseContentType(), $this->getRequestInputSets())
             ];
     }
 
@@ -113,9 +131,11 @@ class ApiDetailToOpenApiSpecConverter
             'description' => $this->apiDetails->getResponseDescription(),
         ];
 
-        if(empty($this->apiDetails->getResponseData()) === false)
+        $responseSets = $this->getRequestResponseSets();
+
+        if(empty($responseSets) === false)
         {
-            $responseSpec['content'] =   $this->getOpenApiContentSpec($this->apiDetails->getResponseContentType(), $this->apiDetails->getResponseData() );
+            $responseSpec['content'] =   $this->getOpenApiContentSpec($this->apiDetails->getResponseContentType(), $responseSets );
         }
 
         return [
@@ -197,4 +217,57 @@ class ApiDetailToOpenApiSpecConverter
         return $urlSpec;
     }
 
+    protected function getRequestInputSets()
+    {
+        $inputSets = [];
+
+        $primaryInputSets = $this->apiDetails->getRequestData();
+
+        if(empty($primaryInputSets) === false)
+        {
+            $inputSets[] = $primaryInputSets;
+        }
+
+        if(empty($this->additionalSimilarApiDetails) === false)
+        {
+            foreach($this->additionalSimilarApiDetails as $additionalSimilarApiDetail)
+            {
+                $inputData = $additionalSimilarApiDetail->getRequestData();
+
+                if(empty($inputData) === false)
+                {
+                    $inputSets[] =  $inputData;
+                }
+            }
+        }
+
+        return $inputSets;
+    }
+
+    protected function getRequestResponseSets()
+    {
+        $responseSets = [];
+
+        $primaryResponseSets = $this->apiDetails->getResponseData();
+
+        if(empty($primaryResponseSets) === false)
+        {
+            $responseSets[] = $primaryResponseSets;
+        }
+
+        if(empty($this->additionalSimilarApiDetails) === false)
+        {
+            foreach($this->additionalSimilarApiDetails as $additionalSimilarApiDetail)
+            {
+                $responseData = $additionalSimilarApiDetail->getResponseData();
+
+                if (empty($responseData) === false)
+                {
+                    $responseSets[] = $responseData;
+                }
+            }
+        }
+
+        return $responseSets;
+    }
 }

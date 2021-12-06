@@ -58,20 +58,33 @@ class GenerateOpenApiSpecifications
     {
         foreach($this->allApisDetails as $apiIdentifier => $apis)
         {
+            $primaryApiDetails = null;
+
+            $additionalApiDetails = [];
+
             foreach ($apis as $apiDataUniqueIdentifier => $apiDetails)
             {
-                $this->getOpenSpecification(unserialize($apiDetails));
-                //@todo continue loop with any of, for now skipping it
-                continue;
+                $apiDetailObj = unserialize($apiDetails);
+
+                if ($primaryApiDetails === null)
+                {
+                    $primaryApiDetails = $apiDetailObj;
+                }
+                else
+                {
+                    $additionalApiDetails[] =$apiDetailObj;
+                }
             }
+
+            $this->getOpenSpecification($primaryApiDetails, $additionalApiDetails);
         }
 
         file_put_contents($this->openApiSpecFilePath, json_encode($this->openApiSpecification));
     }
 
-    protected function getOpenSpecification(ApiDetails $apiDetails)
+    protected function getOpenSpecification(ApiDetails $primaryApiDetails, array $additionalApiDetails = [])
     {
-        $this->openApiSpecification['paths'][explode('?', $apiDetails->getRequestUrlWithVariable())[0]] = (new ApiDetailToOpenApiSpecConverter($apiDetails))->convert();
+        $this->openApiSpecification['paths'][explode('?', $primaryApiDetails->getRequestUrlWithVariable())[0]] = (new ApiDetailToOpenApiSpecConverter($primaryApiDetails, $additionalApiDetails))->convert();
     }
 
 }

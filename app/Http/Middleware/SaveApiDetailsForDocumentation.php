@@ -58,7 +58,9 @@ final class SaveApiDetailsForDocumentation
 
         $response = $next($request);
 
-        $responseData = method_exists($response, 'getData') ? $response->getData() : [];
+        $responseData       = method_exists($response, 'getData') ? $response->getData() : [];
+
+        $responseStatusCode = method_exists($response,'getStatusCode') ? $response->getStatusCode() : AutoGenerateApiDocs\ApiDetails::API_RESPONSE_CODE_200;
 
         if(is_object($responseData))
         {
@@ -68,7 +70,7 @@ final class SaveApiDetailsForDocumentation
         $apiDetails = new AutoGenerateApiDocs\ApiDetails(
             $request->url(),
             $request->getMethod(),
-            AutoGenerateApiDocs\ApiDetails::API_RESPONSE_CODE_200,
+            $responseStatusCode,
             $requestData,
             (array)$responseData,
             $apiDescr,
