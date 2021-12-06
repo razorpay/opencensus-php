@@ -12,7 +12,6 @@ import ModalHeader from 'common/ui/ModalHeader';
 import NewInvitation from '../components/NewInvitation';
 import { analyticsTrack } from 'common/utils/analytics';
 import ChangeOwner from 'merchant/views/Settings/EmailSelfServe/components/SameTeam/ChangeOwner';
-import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import {
   removeMember as removeMemberReducer,
   updateMember as updateMemberReducer,
@@ -245,19 +244,11 @@ class MembersActions extends Component {
   };
 
   render() {
-    const { member, items, isEmailSelfServeEnabled, user } = this.props;
+    const { member } = this.props;
 
+    // change action is no longer permitted/needed
     if (isOwner(member)) {
-      if (items.length == 1 || !isEmailSelfServeEnabled || !user.isOrgRZP) return null;
-      return (
-        <TwoFactorVerificationContext.Consumer>
-          {(context) => (
-            <button class="btn btn-primary" onClick={() => this.change(context)}>
-              Change
-            </button>
-          )}
-        </TwoFactorVerificationContext.Consumer>
-      );
+      return null;
     }
 
     return (
