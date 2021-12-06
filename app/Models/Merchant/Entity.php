@@ -975,14 +975,6 @@ class Entity extends Base\PublicEntity
         return($this->isDCCEnabled() === true && $this->isInternational() === true);
     }
 
-    /** TODO  Temporary method for supporting rollout, to be removed and caller should rely on isDCCEnabled only
-     * @return bool
-     */
-    public function issDCCS2SEnabled(): bool
-    {
-        return ($this->isFeatureEnabled(Feature\Constants::ENABLE_DCC_S2S) === true);
-    }
-
     public function isEarlyMandatePresentmentEnabled(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::EARLY_MANDATE_PRESENTMENT) === true);

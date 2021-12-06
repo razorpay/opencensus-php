@@ -8853,12 +8853,6 @@ trait Authorize
             return false;
         }
 
-        //TODO Remove this condition once rollout complete, should work on DCC common feature flag only
-        if ($payment->merchant->issDCCS2SEnabled() === false)
-        {
-            return false;
-        }
-
         if (($payment->isCard() === false) or ($payment->merchant->isDCCEnabledInternationalMerchant() === false))
         {
             return false;

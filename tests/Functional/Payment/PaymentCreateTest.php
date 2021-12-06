@@ -1179,8 +1179,6 @@ class PaymentCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['s2s']);
 
-        $this->fixtures->merchant->addFeatures(['enable_dcc_s2s']);
-
         $response = $this->doS2SPrivateAuthPayment($payment);
 
         $this->assertFalse($this->redirectToDCCInfo);

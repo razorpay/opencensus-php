@@ -36,6 +36,7 @@ class PaymentCreateDCCTest extends TestCase
     {
         $payment = $this->payment;
         $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['disable_native_currency']);
         $responseContent = $this->doS2SPrivateAuthAndCapturePayment($payment);
 
         $this->assertFalse($this->redirectToDCCInfo);
@@ -54,7 +55,6 @@ class PaymentCreateDCCTest extends TestCase
         $payment = $this->payment;
         $payment['currency'] = 'EUR';
         $this->fixtures->merchant->addFeatures(['s2s']);
-        $this->fixtures->merchant->addFeatures(['enable_dcc_s2s']);
         $responseContent = $this->doS2SPrivateAuthAndCapturePayment($payment);
 
         $this->assertTrue($this->redirectToDCCInfo);
@@ -82,7 +82,6 @@ class PaymentCreateDCCTest extends TestCase
     {
         $payment = $this->payment;
         $this->fixtures->merchant->addFeatures(['s2s']);
-        $this->fixtures->merchant->addFeatures(['enable_dcc_s2s']);
         $responseContent = $this->doS2SPrivateAuthAndCapturePayment($payment);
 
         $this->assertTrue($this->redirectToDCCInfo);
@@ -110,7 +109,6 @@ class PaymentCreateDCCTest extends TestCase
     {
         $payment = $this->payment;
         $this->fixtures->merchant->addFeatures(['s2s','s2s_json']);
-        $this->fixtures->merchant->addFeatures(['enable_dcc_s2s']);
         $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
 
         $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
@@ -156,7 +154,6 @@ class PaymentCreateDCCTest extends TestCase
     {
         $payment = $this->payment;
         $this->fixtures->merchant->addFeatures(['s2s','s2s_json']);
-        $this->fixtures->merchant->addFeatures(['enable_dcc_s2s']);
 
         $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
 
@@ -243,8 +240,6 @@ class PaymentCreateDCCTest extends TestCase
         $payment = $this->payment;
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
-
-        $this->fixtures->merchant->addFeatures(['enable_dcc_s2s']);
 
         $this->doAuthAndCapturePayment($payment);
 

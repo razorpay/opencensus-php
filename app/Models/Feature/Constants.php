@@ -184,7 +184,6 @@ class Constants
     const DIRECT_SETTLEMENT               = 'direct_settlement';
 
     const AVS                             = 'avs';
-    const ENABLE_DCC_S2S                  = 'enable_dcc_s2s';
 
     const COVID                           = 'covid';
     const SR_SENSITIVE                    = 'sr_sensitive';
@@ -1242,7 +1241,6 @@ class Constants
         self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,
         self::REDIRECTION_ONHOLD              => true,
         self::DISABLE_NATIVE_CURRENCY         => true,
-        self::ENABLE_DCC_S2S                  => true,
         self::PAYMENT_CREATED_WEBHOOK         => true,
         self::PAYMENT_CONFIG_ENABLED          => false,
         self::CYBERSOURCE_VAS                 => true,
