@@ -1,5 +1,7 @@
+// eslint-disable-next-line strict
 'use strict';
 /* Controllers */
+/*global angular */
 angular
   .module('app.controllers', ['ngCookies'])
   .controller('AppCtrl', [
@@ -9,10 +11,11 @@ angular
     'theme',
     'organization',
     'tracking',
-    function ($scope, $localStorage, $window, theme, organization, tracking) {
+
+    ($scope, $localStorage, $window, theme, organization, tracking) => {
       isSmartDevice($window) && angular.element($window.document.body).addClass('smart');
 
-      var baseTheme = {
+      const baseTheme = {
         transparent: 'rgba(0,0,0,0.2)',
         transparentDark: 'rgba(0,0,0,0.4)',
         textLight: 'rgba(255,255,255,0.9)',
@@ -23,7 +26,7 @@ angular
         tertiary: '#ffffff',
       };
 
-      organization.fetchCurrentOrg().then(function (data) {
+      organization.fetchCurrentOrg().then((data) => {
         if (data.custom_code) {
           switch (data.custom_code) {
             case 'hdfc':
@@ -34,11 +37,10 @@ angular
               );
               break;
 
-            case 'icici':
+            case 'icic':
               theme.apply(
                 angular.extend(baseTheme, {
-                  navBg: '#F07937',
-                  primary: '#0A3D6B',
+                  ...data.merchant_styles,
                 }),
               );
               break;
@@ -59,6 +61,9 @@ angular
                   navBgUrl: data.background_image_url,
                 }),
               );
+              break;
+
+            default:
               break;
           }
         }
@@ -98,15 +103,17 @@ angular
       }
       $scope.$watch(
         'app.settings',
-        function () {
+
+        () => {
           $localStorage.settings = $scope.app.settings;
         },
         true,
       );
 
+      // eslint-disable-next-line no-shadow
       function isSmartDevice($window) {
         // Adapted from http://www.detectmobilebrowsers.com
-        var ua = $window.navigator.userAgent || $window.navigator.vendor || $window.opera;
+        const ua = $window.navigator.userAgent || $window.navigator.vendor || $window.opera;
         // Checks for iOs, Android, Blackberry, Opera Mini, and Windows mobile devices
         return /iPhone|iPod|iPad|Silk|Android|BlackBerry|Opera Mini|IEMobile/.test(ua);
       }
@@ -122,18 +129,17 @@ angular
     'modeFactory',
     'user',
     '$modal',
-    function ($scope, modeFactory, user, $modal) {
+
+    ($scope, modeFactory, user) => {
       $scope.modes = modeFactory.getModes;
       $scope.mode = modeFactory.getMode;
-      $scope.selectMode = function (mode) {
-        user.identity().then(function (data) {
-          var userData = data;
-          if (mode == 'live' && parseInt(userData.activated) !== 1) {
-            var modalInstance = $modal.open({
-              templateUrl: 'activationModalContent.html',
-              controller: 'activationModalCtrl',
-              size: 'sm',
-            });
+
+      $scope.selectMode = (mode) => {
+        user.identity().then((data) => {
+          const userData = data;
+
+          if (mode == 'live' && parseInt(userData.activated, 10) !== 1) {
+            // empty
           } else {
             modeFactory.selectMode(mode);
           }
@@ -146,28 +152,32 @@ angular
     '$http',
     '$state',
     'user',
-    function ($scope, $http, $state, $user) {
-      $user.identity(true).then(function (data) {
-        $scope.merchants = $.map(data.merchants || [], function (v) {
+
+    ($scope, $http, $state, $user) => {
+      $user.identity(true).then((data) => {
+        /*global $ */
+        $scope.merchants = $.map(data.merchants || [], (v) => {
           return v;
         });
       });
 
-      $scope.initRoleSelector = function (element) {
-        element.on('select2:select', function (e) {
-          var merchantId = e.params.data.id;
+      $scope.initRoleSelector = (element) => {
+        element.on('select2:select', (e) => {
+          const merchantId = e.params.data.id;
 
           if (merchantId) {
-            var request = $http.get('/settings/merchants/switch/' + merchantId);
+            const request = $http.get(`/settings/merchants/switch/${merchantId}`);
             request
-              .success(function (data) {
+
+              .success((data) => {
                 if (data.success) {
                   location.reload();
                 } else {
                   $scope.alerts.addAlert('danger', null, true);
                 }
               })
-              .error(function () {
+
+              .error(() => {
                 $scope.alerts.addAlert('danger', null, true);
               });
           }
@@ -178,11 +188,13 @@ angular
   .controller('activationModalCtrl', [
     '$scope',
     '$modalInstance',
-    function ($scope, $modalInstance) {
-      $scope.ok = function () {
+
+    ($scope, $modalInstance) => {
+      $scope.ok = () => {
         $modalInstance.close();
       };
-      $scope.cancel = function () {
+
+      $scope.cancel = () => {
         $modalInstance.dismiss('cancel');
       };
     },
@@ -191,12 +203,15 @@ angular
     '$scope',
     '$modalInstance',
     'message',
-    function ($scope, $modalInstance, message) {
+
+    ($scope, $modalInstance, message) => {
       $scope.message = message;
-      $scope.ok = function () {
+
+      $scope.ok = () => {
         $modalInstance.close();
       };
-      $scope.cancel = function () {
+
+      $scope.cancel = () => {
         $modalInstance.dismiss('cancel');
       };
     },

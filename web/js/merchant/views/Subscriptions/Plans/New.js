@@ -334,7 +334,7 @@ export default class AddPlan extends Component {
                 />
                 <button
                   type="button"
-                  class="btn btn-default btn-half"
+                  class="btn btn-half btn-outline"
                   onClick={() => {
                     analytics.track(actionLabel.cancelInitiate, this.cloneOptions);
                     this.context

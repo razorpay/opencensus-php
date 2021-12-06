@@ -4,22 +4,17 @@ import { connect } from 'react-redux';
 import Banner from 'common/ui/Banner';
 import { TypeAhead } from 'react-power-select';
 
-import Input, { Label, Description } from 'common/new-ui/Input';
+import Input from 'common/new-ui/Input';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import Form from 'common/new-ui/Form';
 import Button from 'common/new-ui/Button';
 import QuickAdd from 'common/ui/Select/QuickAdd';
 
-import {
-  findBy,
-  getKeysSeparatedByPipe,
-  classList,
-} from 'common/utils/rzp-utils';
+import { getKeysSeparatedByPipe, classList } from 'common/utils/rzp-utils';
 import {
   validateAlphanumericWithMaxLength,
   validateAlphanumericWithStrictLength,
 } from 'common/utils/validators';
-import { closeModal } from 'merchant_common/reducers/modals';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -34,15 +29,6 @@ import CustomerCreation from 'merchant/views/Customers/New';
 
 import AccountDetailsSummary from '../components/Modals/AccountDetailsSummary';
 
-const CustomCustomerOption = ({ option }) => {
-  return (
-    <div class="custom-powerselect-options">
-      {option.name && <b>{option.name} : </b>}
-      {option.email || option.contact}
-    </div>
-  );
-};
-
 import {
   DESCRIPTOR_LENGTH_BANK_ACCOUNT,
   DESCRIPTOR_LENGTH_VPA,
@@ -53,9 +39,18 @@ import {
   getStyle_AddOnAfter_VPA,
 } from 'merchant/views/SmartCollect/VirtualAccounts/helpers';
 
+const CustomCustomerOption = ({ option }) => {
+  return (
+    <div class="custom-powerselect-options">
+      {option.name && <b>{option.name} : </b>}
+      {option.email || option.contact}
+    </div>
+  );
+};
+
 @withRouter
 @connect(
-  state => {
+  (state) => {
     const customers = state.customers.items;
 
     return {
@@ -68,14 +63,13 @@ import {
     };
   },
   {
-    closeModal,
     luminateRow,
     showNotification,
     saveVirtualAccount,
     fetchCustomersForAutocomplete,
     fetchConfigForVirtualAccount,
     ...ModalActions,
-  }
+  },
 )
 export default class CreateVirtualAccount extends Component {
   state = {
@@ -83,11 +77,7 @@ export default class CreateVirtualAccount extends Component {
     close_by: null,
     _internals: {
       hasBankAccount: !this.props.user.isVACreationBankAccountDisabled,
-      hasVPA:
-        !this.props.isTestMode ||
-        this.props.user.isVACreationBankAccountDisabled
-          ? true
-          : false,
+      hasVPA: !!(!this.props.isTestMode || this.props.user.isVACreationBankAccountDisabled),
     },
   };
 
@@ -116,7 +106,7 @@ export default class CreateVirtualAccount extends Component {
       });
   }
 
-  onCopyAccountDetailsSummary = virtualaccount => {
+  onCopyAccountDetailsSummary = (virtualaccount) => {
     window.rzpAnalytics &&
       window.rzpAnalytics({
         eventCategory: 'Dashboard - Smart Collect',
@@ -125,7 +115,7 @@ export default class CreateVirtualAccount extends Component {
       });
   };
 
-  handleSubmit = formData => {
+  handleSubmit = (formData) => {
     const { descriptorVPA, descriptorBankAccount, description } = formData;
     const { notes, close_by, _internals, customer } = this.state;
 
@@ -161,14 +151,12 @@ export default class CreateVirtualAccount extends Component {
 
     if (_internals.hasVPA) {
       reqPayload.receivers.types.push('vpa');
-      reqPayload.receivers.vpa = descriptorVPA
-        ? { descriptor: descriptorVPA }
-        : {};
+      reqPayload.receivers.vpa = descriptorVPA ? { descriptor: descriptorVPA } : {};
     }
 
     return this.props
       .saveVirtualAccount(reqPayload)
-      .then(virtualAccount => {
+      .then((virtualAccount) => {
         window.rzpAnalytics &&
           window.rzpAnalytics({
             eventCategory: 'Dashboard - Smart Collect',
@@ -184,7 +172,7 @@ export default class CreateVirtualAccount extends Component {
         if (IS_MODAL_VIEW) {
           setTimeout(this.props.onClose, 50);
         } else {
-          const redirectUrl = '/virtualaccounts/' + entityId;
+          const redirectUrl = `/virtualaccounts/${entityId}`;
           this.props.history.push(redirectUrl);
         }
 
@@ -202,6 +190,7 @@ export default class CreateVirtualAccount extends Component {
           ),
         });
 
+        /*global props */
         this.props.onCreateVA && this.props.onCreateVA(props);
       })
       .catch(({ errors }) => {
@@ -212,9 +201,9 @@ export default class CreateVirtualAccount extends Component {
       });
   };
 
-  selectCustomerAndCloseModal = customer => {
+  selectCustomerAndCloseModal = (customer) => {
     this.setState({
-      customer: customer,
+      customer,
     });
 
     this.props.closeModal();
@@ -235,51 +224,38 @@ export default class CreateVirtualAccount extends Component {
     });
   };
 
-  handleNotesChange = notes => {
+  handleNotesChange = (notes) => {
     this.setState({ notes });
   };
 
   handleSelectCustomer = ({ option }) => {
     // For setting in redux-form
     this.setState({
-      customer_id: option ? option.id : null,
       customer: option, // For display purpose only in TypeAhead
     });
   };
 
-  updateDate = newDate => {
+  updateDate = (newDate) => {
     this.setState({ close_by: newDate });
   };
 
-  setRefForm = el => (this.formEl = el);
+  setRefForm = (el) => (this.formEl = el);
 
   render() {
-    let {
-      customers = [],
-      customersLoading,
-      onClose,
-      user,
-      va_config,
-      isTestMode,
-    } = this.props;
+    const { customers = [], customersLoading, onClose, user, va_config, isTestMode } = this.props;
 
     const IS_MODAL_VIEW = !!onClose;
 
     const { _internals } = this.state;
-    const disableSubmit =
-      customersLoading || (!_internals.hasVPA && !_internals.hasBankAccount);
+    const disableSubmit = customersLoading || (!_internals.hasVPA && !_internals.hasBankAccount);
 
     let descriptorLimit_BankAccount, descriptorLimit_VPA;
 
     if (va_config && Object.keys(va_config).length) {
-      if (
-        va_config.hasOwnProperty('bank_account') &&
-        va_config.bank_account.isDescriptorEnabled
-      ) {
-        let bankAccountHandle = va_config.bank_account.prefix;
+      if (va_config.hasOwnProperty('bank_account') && va_config.bank_account.isDescriptorEnabled) {
+        const bankAccountHandle = va_config.bank_account.prefix;
 
-        descriptorLimit_BankAccount =
-          DESCRIPTOR_LENGTH_BANK_ACCOUNT - bankAccountHandle.length;
+        descriptorLimit_BankAccount = DESCRIPTOR_LENGTH_BANK_ACCOUNT - bankAccountHandle.length;
       }
 
       if (
@@ -287,7 +263,7 @@ export default class CreateVirtualAccount extends Component {
         va_config.vpa.isDescriptorEnabled &&
         va_config.vpa.prefix
       ) {
-        let vpaHandle = va_config.vpa.prefix.split('.')[1];
+        const vpaHandle = va_config.vpa.prefix.split('.')[1];
 
         descriptorLimit_VPA = DESCRIPTOR_LENGTH_VPA - vpaHandle.length;
       }
@@ -306,12 +282,13 @@ export default class CreateVirtualAccount extends Component {
 
             {user.isVACreationBankAccountDisabled && (
               <Banner>
-                Bank transfer is temporarily unavailable. Use UPI transfer
-                option to create Virtual UPI ID to accept payments.{' '}
+                Bank transfer is temporarily unavailable. Use UPI transfer option to create Virtual
+                UPI ID to accept payments.{' '}
                 <a
                   class="highlight"
                   target="_blank"
                   href="https://lp.razorpay.com/unregistered-businesses-faqs-0"
+                  rel="noreferrer"
                 >
                   Know more
                   <i class="i i-external-link" style={{ marginLeft: '5px' }} />
@@ -326,46 +303,33 @@ export default class CreateVirtualAccount extends Component {
                     _name="hasBankAccount"
                     fieldLabel="Bank Transfer ( NEFT, RTGS, IMPS )"
                     defaultValue={_internals.hasBankAccount}
-                    disabled={
-                      isTestMode || user.isVACreationBankAccountDisabled
-                    }
-                    onChange={e =>
-                      this.setState({
+                    disabled={isTestMode || user.isVACreationBankAccountDisabled}
+                    onChange={(e) =>
+                      this.setState((previousState) => ({
+                        ...previousState,
                         _internals: {
-                          ...this.state._internals,
+                          ...previousState._internals,
                           hasBankAccount: e.target.checked,
                         },
-                      })
+                      }))
                     }
                   />
                   {!!descriptorLimit_BankAccount && (
                     <Input
                       name="descriptorBankAccount"
-                      label={() => (
-                        <span style={{ fontWeight: 'normal' }}>
-                          Account Descriptor
-                        </span>
-                      )}
+                      label={() => <span style={{ fontWeight: 'normal' }}>Account Descriptor</span>}
                       size="vpa_custom"
-                      validator={val => {
-                        if (
-                          !validateAlphanumericWithMaxLength(
-                            val,
-                            descriptorLimit_BankAccount
-                          )
-                        ) {
+                      validator={(val) => {
+                        if (!validateAlphanumericWithMaxLength(val, descriptorLimit_BankAccount)) {
                           return `Enter only Alphanumeric, upto ${descriptorLimit_BankAccount} characters`;
+                        } else {
+                          return null;
                         }
                       }}
-                      onChange={e => {
-                        let val = e.target.value;
+                      onChange={(e) => {
+                        const val = e.target.value;
 
-                        if (
-                          validateAlphanumericWithMaxLength(
-                            val,
-                            descriptorLimit_BankAccount
-                          )
-                        ) {
+                        if (validateAlphanumericWithMaxLength(val, descriptorLimit_BankAccount)) {
                           e.target.value = val.toUpperCase();
                         }
                       }}
@@ -377,9 +341,7 @@ export default class CreateVirtualAccount extends Component {
                       disabled={!_internals.hasBankAccount}
                       style={getStyle_DescriptorInput_BankAccount(va_config)}
                       addonBefore={
-                        <span
-                          style={getStyle_AddOnBefore_BankAccount(va_config)}
-                        >
+                        <span style={getStyle_AddOnBefore_BankAccount(va_config)}>
                           {va_config.bank_account.prefix}
                         </span>
                       }
@@ -397,31 +359,27 @@ export default class CreateVirtualAccount extends Component {
                         fieldLabel="UPI Transfer"
                         defaultValue={_internals.hasVPA}
                         disabled={user.isVACreationBankAccountDisabled}
-                        onChange={e =>
-                          this.setState({
+                        onChange={(e) =>
+                          this.setState((previousState) => ({
+                            ...previousState,
                             _internals: {
-                              ...this.state._internals,
+                              ...previousState._internals,
                               hasVPA: e.target.checked,
                             },
-                          })
+                          }))
                         }
                       />
 
                       {!!descriptorLimit_VPA && (
                         <Input
                           name="descriptorVPA"
-                          label={() => (
-                            <span style={{ fontWeight: 'normal' }}>UPI ID</span>
-                          )}
+                          label={() => <span style={{ fontWeight: 'normal' }}>UPI ID</span>}
                           size="vpa_custom"
-                          validator={val => {
-                            if (
-                              !validateAlphanumericWithStrictLength(
-                                val,
-                                descriptorLimit_VPA
-                              )
-                            ) {
+                          validator={(val) => {
+                            if (!validateAlphanumericWithStrictLength(val, descriptorLimit_VPA)) {
                               return `Enter only Alphanumeric, ${descriptorLimit_VPA} characters`;
+                            } else {
+                              return null;
                             }
                           }}
                           description={
@@ -457,19 +415,14 @@ export default class CreateVirtualAccount extends Component {
                     disabled={customersLoading}
                     class="ps-in-modal"
                     searchIndices={['id', 'name', 'email', 'contact']}
-                    placeholder={`${
-                      customersLoading ? 'Loading...' : 'Select a customer'
-                    }`}
+                    placeholder={`${customersLoading ? 'Loading...' : 'Select a customer'}`}
                     showClear={true}
                     selected={this.state.customer}
                     selectedOptionLabelPath="selectedDisplayName"
                     optionComponent={CustomCustomerOption}
                     onChange={this.handleSelectCustomer}
-                    afterOptionsComponent={props => (
-                      <QuickAdd
-                        {...props}
-                        onClick={this.openCreateCustomerModal}
-                      />
+                    afterOptionsComponent={(props) => (
+                      <QuickAdd {...props} onClick={this.openCreateCustomerModal} />
                     )}
                   />
                 </div>
@@ -504,7 +457,7 @@ export default class CreateVirtualAccount extends Component {
           <footer>
             {/* Action Button 1 */}
             {IS_MODAL_VIEW && (
-              <Button type="button" onClick={onClose}>
+              <Button class="btn-outline" type="button" onClick={onClose}>
                 Cancel
               </Button>
             )}
@@ -519,10 +472,7 @@ export default class CreateVirtualAccount extends Component {
     );
 
     return IS_MODAL_VIEW ? (
-      <Modal
-        class={classList('VirtualAccount', content && 'animate-down')}
-        onClose={onClose}
-      >
+      <Modal class={classList('VirtualAccount', content && 'animate-down')} onClose={onClose}>
         <ModalContent>{content}</ModalContent>
       </Modal>
     ) : (

@@ -139,6 +139,14 @@ app
         sms_and_email: 'phone number and email',
       };
 
+      var LOGIN_HEADING = {
+        icic: 'ICICI Bank Eazypay Pro powered by Razorpay',
+      };
+
+      var LOGIN_TEXT = {
+        icic: 'ICICI Bank Eazypay Pro and Razorpay',
+      };
+
       // initialize onetap only when not X and if optimize experiment(isOneTapExpOn) returns true
       if ($scope.currentService != 'X') {
         $scope.isOneTapExpOn = true;
@@ -157,6 +165,12 @@ app
         $scope.isOrgICICI = $scope.organization.custom_code === 'icic';
         $scope.second_factor_auth_mode =
           OTP_AUTH_MODE[$scope.organization.second_factor_auth_mode] || 'phone number/email';
+        $scope.loginHeading =
+          LOGIN_HEADING[$scope.organization.custom_code] ||
+          `Powered by Razorpay and ${$scope.organization.business_name}`;
+        $scope.loginText =
+          LOGIN_TEXT[$scope.organization.custom_code] ||
+          `${$scope.organization.business_name} and Razorpay`;
       });
 
       $scope.forms = {};
@@ -1572,7 +1586,7 @@ app
       $scope.quickSendDetails = function (detailField, key) {
         $scope.signup.merchantData[detailField] = key;
 
-        var reqPayload = Object.assign({}, $scope.signup.merchantData);
+        var reqPayload = { ...$scope.signup.merchantData };
         // Business name cannot be empty or null
         if (!reqPayload.business_name) {
           delete reqPayload['business_name'];

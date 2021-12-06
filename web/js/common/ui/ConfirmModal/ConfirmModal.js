@@ -29,7 +29,7 @@ const ConfirmModal = (props) => {
           {typeof message === 'function' ? message() : <p>{message}</p>}
 
           <div class="Modal__actions">
-            <button type="button" class="btn btn-default" onClick={props.onAbort}>
+            <button type="button" class="btn btn-outline" onClick={props.onAbort}>
               {props.options.abortLabel}
             </button>
             <AsyncButton
@@ -53,10 +53,12 @@ ConfirmModal.defaultProps = {
 };
 
 ConfirmModal.propTypes = {
-  show: PropTypes.bool.isRequired,
+  show: PropTypes.bool,
   options: PropTypes.object,
   onAbort: PropTypes.func,
   onAffirm: PropTypes.func,
+  abortLabel: PropTypes.string,
+  affirmativeLabel: PropTypes.string,
 };
 
 const mapStateToProps = (state) => {

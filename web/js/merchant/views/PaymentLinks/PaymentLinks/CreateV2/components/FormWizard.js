@@ -57,7 +57,7 @@ export default class FormWizard extends React.Component {
 
             <footer>
               {props.isModalView && (
-                <Button type="button" onClick={props.onClose}>
+                <Button class="btn-outline" type="button" onClick={props.onClose}>
                   Cancel
                 </Button>
               )}

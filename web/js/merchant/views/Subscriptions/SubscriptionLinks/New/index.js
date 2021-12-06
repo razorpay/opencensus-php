@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
@@ -62,7 +62,7 @@ const tabs = ['Plan Details', 'Add Ons', 'Link Details', 'Review'];
     fetchSubscriptionOffers,
   },
 )
-export default class NewSubscriptionLink extends Component {
+export default class NewSubscriptionLink extends React.Component {
   state = {
     currentTab: 0,
     validTabs: [false, false, false, false],
@@ -614,6 +614,7 @@ export default class NewSubscriptionLink extends Component {
 
               {currentTab > 0 && (
                 <Button
+                  class="btn-outline"
                   onClick={() => {
                     analytics.track(`subscription.create.previous${currentTab}`);
                     this.changeTab(-1);

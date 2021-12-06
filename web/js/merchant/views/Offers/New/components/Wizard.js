@@ -1,3 +1,4 @@
+import React from 'react';
 import { ModalAsideNav } from 'common/new-ui/Wizard';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import Form from 'common/new-ui/Form';
@@ -58,15 +59,16 @@ export default class CreateOfferWizard extends React.Component {
   };
 
   changeTab = (step) => () => {
-    const currentTab = this.state.currentTab + step;
-
     const validTabs = [...this.state.validTabs];
     validTabs[this.state.currentTab] = true;
-
-    this.setState({ currentTab, validTabs });
+    this.setState((prevState) => ({
+      currentTab: prevState.currentTab + step,
+      validTabs,
+    }));
   };
 
   renderForm() {
+    const { currentTab } = this.state;
     if (this.props.isLoading) {
       return (
         <div class="page-spinner-container">
@@ -75,11 +77,9 @@ export default class CreateOfferWizard extends React.Component {
       );
     }
 
-    {
-      this.props.error && <Alert type="error" message={this.props.error} />;
+    if (this.props.error) {
+      return <Alert type="error" message={this.props.error} />;
     }
-
-    const { currentTab } = this.state;
     return this.TABS_DATA[currentTab].render();
   }
 
@@ -125,7 +125,7 @@ export default class CreateOfferWizard extends React.Component {
 
         <footer>
           {currentTab > 0 && (
-            <Button type="button" onClick={this.changeTab(-1)}>
+            <Button class="btn-outline" type="button" onClick={this.changeTab(-1)}>
               Previous
             </Button>
           )}
