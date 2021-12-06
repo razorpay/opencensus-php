@@ -8404,8 +8404,7 @@ trait Authorize
         $this->updateAuthorizedOrderStatus($payment);
 
         // We will be updating the details in upi_mandate too.
-        $this->updateRecurringEntitiesForUpiIfApplicable($payment, $data);
-
+        $this->updateRecurringEntitiesForUpiIfApplicable($payment, $data);      
         // store billing_address for AVS
         $this->validateAndSaveBillingAddressForAVSIfApplicable($payment);
     }
@@ -9617,7 +9616,7 @@ trait Authorize
 
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        if(($token === null) || (empty($token->getBillingAddress()) === false))
+        if($token === null)
         {
             return;
         }
@@ -9629,12 +9628,13 @@ trait Authorize
             return;
         }
 
+        $tokenBillingAddress = $payment->fetchBillingAddressFromCustomerToken();
+
         $billingAddressToSave = $paymentBillingAddress->getBillingAddress();
 
         $billingAddressToSave['type'] = Address\Type::BILLING_ADDRESS;
 
-        if (isset($billingAddressToSave['postal_code']) === true)
-        {
+        if (isset($billingAddressToSave['postal_code']) === true) {
             // address entity stores zip code as "zipcode"
             // in input, we get zip code as "postal_code"
             $billingAddressToSave['zipcode'] = $billingAddressToSave['postal_code'];
@@ -9642,7 +9642,14 @@ trait Authorize
             unset($billingAddressToSave['postal_code']);
         }
 
-        (new Address\Core)->create($token, Address\Type::TOKEN, $billingAddressToSave);
+        if (empty($tokenBillingAddress) === true) 
+        {
+            (new Address\Core)->create($token, Address\Type::TOKEN, $billingAddressToSave);
+        } 
+        else 
+        {
+            (new Address\Core)->edit($tokenBillingAddress, $billingAddressToSave);
+        }
     }
 
 

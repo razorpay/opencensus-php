@@ -4938,11 +4938,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function fetchBillingAddress()
     {
-        $billingAddress = $this->fetchBillingAddressFromCustomerToken();
+        $billingAddress = $this->fetchBillingAddressFromPayment();
 
-        if($billingAddress === null)
+        if ($billingAddress === null) 
         {
-            $billingAddress = $this->fetchBillingAddressFromPayment();
+            $billingAddress = $this->fetchBillingAddressFromCustomerToken();
         }
 
         return $billingAddress;

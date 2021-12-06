@@ -163,7 +163,7 @@ class PaymentCreateAVSTest extends TestCase
 
         $secondPaymentEntity = $this->getDbLastPayment();
 
-        //$this->validatePaymentBillingAddress($secondPaymentEntity, $secondBillingAddressArray);
+        $this->validatePaymentBillingAddress($secondPaymentEntity, $secondBillingAddressArray);
 
         $customerTokenAddressEntity = (new Repository)->fetchAddressesForEntity(
             $secondPaymentEntity->getGlobalOrLocalTokenEntity(),[Entity::TYPE => Type::BILLING_ADDRESS]);
@@ -173,7 +173,7 @@ class PaymentCreateAVSTest extends TestCase
 
         // customer token address remains same. It can be changed only when,
         // customer address changes at issuer bank's end
-        $this->validateBillingAddress($firstBillingAddressArray, $customerTokenAddressEntity->first());
+        $this->validateBillingAddress($secondBillingAddressArray, $customerTokenAddressEntity->first());
     }
 
     public function testCreatePaymentAVSIncorrectBillingAddress()
