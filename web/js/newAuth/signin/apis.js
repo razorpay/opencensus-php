@@ -23,7 +23,8 @@ export const transformFetchOrgData = (data) => {
     orgName: data.custom_code,
     secondFactorAuthMode: OTP_AUTH_MODE[data.second_factor_auth_mode] || 'phone number/email',
     businessName: data.business_name,
-    isSignupAllowed: data.allow_sign_up,
+    // hiding the signup button for banking URLs from frontend for now until backend fixes the inconsistency
+    isSignupAllowed: data.custom_code === 'rzp',
     backgroundImgUrl: data.background_image_url,
   };
 };

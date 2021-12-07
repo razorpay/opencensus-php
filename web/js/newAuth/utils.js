@@ -4,10 +4,26 @@ export const ROUTES = {
 };
 
 export const BANK_NAMES = {
+  /** https://icicibank.razorpay.com/signin */
   ICICI: 'icic',
+  /** https://hdfc.razorpay.com/signin */
   HDFC: 'hdfc',
+  /** https://bankofbaroda.razorpay.com/signin */
   BOB: 'bob',
+  /** https://axis.razorpay.com/signin */
   AXIS: 'axis',
+  /** https://ndmlpaygov.razorpay.com/signin */
+  NSDL: 'nsdl',
+  /** https://hsbc.razorpay.com/signin */
+  HSBC: 'HSBC',
+  /** https://sib.razorpay.com/signin */
+  SIBL: 'SIBL',
+  /** https://citibank.razorpay.com/signin */
+  CITI: 'citi',
+  /** https://jkbank.razorpay.com/signin */
+  JKB: 'jkb',
+  /** https://bajaj.razorpay.com/signin */
+  BAJAJ: 'bajaj',
 };
 
 export const getCookie = (name) => {

@@ -5,6 +5,7 @@ import Text from '@razorpay/blade-old/src/atoms/Text';
 import { BANK_NAMES } from '../utils';
 import { media } from '../breakpoints';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
+import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 
 export const Container = Styled(View)`
   overflow-y: auto;
@@ -125,9 +126,9 @@ export const CaptchaTextView = Styled(View)`
 `;
 
 export const CaptchaText = Styled(Text)`
-  color: ${({ theme }) => theme.colors.shade[960]};
+  color: ${({ textColor, theme }) => getColor(theme, textColor.mobile)};
 
   @media (min-width: 768px) {
-    color: ${({ theme }) => theme.colors.light[970]};
+    color: ${({ textColor, theme }) => getColor(theme, textColor.desktop)};
   }
 `;

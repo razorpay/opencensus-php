@@ -1,5 +1,4 @@
 import React from 'react';
-import Size from '@razorpay/blade-old/src/atoms/Size';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
@@ -11,6 +10,14 @@ import {
   CustomSecondaryButton,
   FullHeightFlex,
 } from '../../commonStyles';
+
+const Logo = ({ src, width, height }) => {
+  return (
+    <div style={{ width, height }}>
+      <img style={{ width: '100%' }} src={src} alt="Company Logo" />
+    </div>
+  );
+};
 
 const Header = ({ handleOnClick, orgData }) => {
   const SignupButtonDesktopView = (
@@ -39,9 +46,7 @@ const Header = ({ handleOnClick, orgData }) => {
       <DesktopOnlyView>
         <Flex justifyContent="space-between">
           <HeaderView>
-            <Size maxWidth="150px">
-              <img src={orgData.logo} alt="Company Logo" />
-            </Size>
+            <Logo src={orgData.logo} width={150} height={40} />
             {orgData.isSignupAllowed && SignupButtonDesktopView}
           </HeaderView>
         </Flex>
@@ -51,9 +56,7 @@ const Header = ({ handleOnClick, orgData }) => {
         <HeaderView>
           <FullHeightFlex justifyContent="space-around" alignItems="center">
             <View>
-              <Size maxWidth="120px">
-                <img src={orgData.logo} alt="Company Logo" />
-              </Size>
+              <Logo src={orgData.logo} width={120} height={55} />
               {orgData.isSignupAllowed && SignupButtonMobileView}
             </View>
           </FullHeightFlex>

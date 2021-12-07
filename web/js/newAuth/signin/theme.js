@@ -64,3 +64,32 @@ export const getTheme = (org) => {
       return theme;
   }
 };
+
+export const getBankingCaptchaColor = (org) => {
+  switch (org) {
+    case BANK_NAMES.ICICI:
+    case BANK_NAMES.AXIS:
+      return {
+        primary: { desktop: 'dark.970', mobile: 'dark.970' },
+        secondary: { desktop: 'primary.900', mobile: 'primary.900' },
+      };
+
+    case BANK_NAMES.HDFC:
+      return {
+        primary: { desktop: 'light.970', mobile: 'dark.970' },
+        secondary: { desktop: 'red.900', mobile: 'red.900' },
+      };
+
+    case BANK_NAMES.BOB:
+      return {
+        primary: { desktop: 'light.970', mobile: 'dark.970' },
+        secondary: { desktop: 'primary.900', mobile: 'primary.900' },
+      };
+
+    default:
+      return {
+        primary: { desktop: 'light.970', mobile: 'light.970' },
+        secondary: { desktop: 'light.970', mobile: 'light.970' },
+      };
+  }
+};

@@ -6,9 +6,8 @@ import Size from '@razorpay/blade-old/src/atoms/Size';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import View from '@razorpay/blade-old/src/atoms/View';
-import Text from '@razorpay/blade-old/src/atoms/Text';
 import { fetchOrg, transformFetchOrgData } from './apis';
-import { getTheme } from './theme';
+import { getBankingCaptchaColor, getTheme } from './theme';
 import { BANK_NAMES, getHostName } from '../utils';
 import { DesktopOnlyView } from '../commonStyles';
 import {
@@ -92,6 +91,8 @@ const Signin = () => {
     window.location.href = '/signup';
   };
 
+  const captchaTextColor = getBankingCaptchaColor(orgData.orgName);
+
   return (
     <ThemeProvider theme={theme}>
       {isFetchingOrgData ? (
@@ -129,7 +130,7 @@ const Signin = () => {
                             <Size maxWidth="232px">
                               <Flex flexWrap="wrap" justifyContent="center">
                                 <View>
-                                  <CaptchaText size="xsmall">
+                                  <CaptchaText textColor={captchaTextColor.primary} size="xsmall">
                                     Protected by reCAPTCHA. Google
                                   </CaptchaText>
                                   <Space padding={[0, 0.25]}>
@@ -138,13 +139,18 @@ const Signin = () => {
                                       href="https://policies.google.com/privacy"
                                       target="_blank"
                                     >
-                                      <Text color="primary.900" size="xsmall">
+                                      <CaptchaText
+                                        textColor={captchaTextColor.secondary}
+                                        size="xsmall"
+                                      >
                                         Privacy Policy
-                                      </Text>
+                                      </CaptchaText>
                                     </LinkButton>
                                   </Space>
                                   <Space padding={[0, 0.25]}>
-                                    <CaptchaText size="xsmall">&</CaptchaText>
+                                    <CaptchaText textColor={captchaTextColor.primary} size="xsmall">
+                                      &
+                                    </CaptchaText>
                                   </Space>
                                   <Space padding={[0, 0.25]}>
                                     <LinkButton
@@ -152,13 +158,18 @@ const Signin = () => {
                                       href="https://policies.google.com/terms"
                                       target="_blank"
                                     >
-                                      <Text color="primary.900" size="xsmall">
+                                      <CaptchaText
+                                        textColor={captchaTextColor.secondary}
+                                        size="xsmall"
+                                      >
                                         Terms of Service
-                                      </Text>
+                                      </CaptchaText>
                                     </LinkButton>
                                   </Space>
                                   <Space padding={[0, 0.25]}>
-                                    <CaptchaText size="xsmall">apply.</CaptchaText>
+                                    <CaptchaText textColor={captchaTextColor.primary} size="xsmall">
+                                      apply.
+                                    </CaptchaText>
                                   </Space>
                                 </View>
                               </Flex>
