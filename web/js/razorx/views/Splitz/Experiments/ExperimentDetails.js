@@ -418,7 +418,7 @@ export default class ExperimentDetails extends React.Component {
                           {rule.value}
                         </div>
                       ) : (
-                        <div>{rule.value}</div>
+                        <div>{experimentHelpers.stringifyNull(rule.value)}</div>
                       )}
                     </div>
                     {i < audienceRules.rules.length - 1 && (

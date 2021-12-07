@@ -590,7 +590,7 @@ export default class AddEditExperiment extends React.Component {
                       <input
                         type="text"
                         placeholder="Value"
-                        value={rule.value}
+                        value={experimentHelpers.stringifyNull(rule.value)}
                         onChange={(e) => {
                           const newRules = [...rules];
                           newRules[i] = {

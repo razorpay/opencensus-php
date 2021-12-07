@@ -1,3 +1,5 @@
+export const stringifyNull = (value) => (value === null ? 'null' : value);
+
 export const getAudienceRules = (audience) => {
   audience = JSON.parse(audience);
   const ruleCondition = Object.keys(audience)[0];
@@ -23,7 +25,7 @@ export const createAudienceRules = (audienceRules) =>
         {
           var: [rule.key],
         },
-        rule.value,
+        rule.value === 'null' ? null : rule.value,
       ],
     })),
   });
