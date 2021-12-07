@@ -20,7 +20,6 @@ const SignUp = () => {
   });
   const { auth_source } = getURLQueryParams(window.location.search);
   const isSignUpFromWebsite = auth_source && auth_source === 'website';
-
   useEffect(() => {
     if (isSignUpFromWebsite) {
       setCookie('auth_source', auth_source);
@@ -90,19 +89,17 @@ const SignUp = () => {
                   handleOnClick={handleLoginClick}
                   isSignUpFromWebsite={isSignUpFromWebsite}
                 />
-                <Flex flexDirection="column" justifyContent="space-around">
-                  <RelativeView>
-                    <RefereeBanner />
-                    <AbsoluteView>
-                      <Auth
-                        appName="dashboard"
-                        authClientId={window.OAUTH_CLIENT_ID}
-                        oneTapInfo={oneTapInfo}
-                      />
-                    </AbsoluteView>
-                    <InfoContainer handleContactUsClick={handleContactUsClick} />
-                  </RelativeView>
-                </Flex>
+                <RelativeView>
+                  <RefereeBanner />
+                  <AbsoluteView>
+                    <Auth
+                      appName="dashboard"
+                      authClientId={window.OAUTH_CLIENT_ID}
+                      oneTapInfo={oneTapInfo}
+                    />
+                  </AbsoluteView>
+                  <InfoContainer handleContactUsClick={handleContactUsClick} />
+                </RelativeView>
               </ContentContainer>
             </Flex>
           </Size>

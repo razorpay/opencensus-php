@@ -9,8 +9,8 @@ export const AbsoluteView = Styled(View)`
   border-radius: 2px;
   margin: 0 auto;
   flex-grow: 1;
-  height: 100%;
-  max-width: 100%;
+  height: calc(100% - 62px);
+  width: 100%;
   background-color: ${({ theme }) => theme.colors.background[100]};
   @media (min-width: 415px) {
     height: 577px;
@@ -32,6 +32,7 @@ export const RelativeView = Styled(View)`
   border-radius: 4px;
   display: flex;
   flex-grow: 1;
+  flex-direction: column;
   @media ${media.mobile} {
     height: auto;
     margin-bottom: 30px;
@@ -39,11 +40,11 @@ export const RelativeView = Styled(View)`
   @media ${media.tab} {
     height: 480px;
     flex-grow: initial;
-    display: block;
     position: relative;
     background: ${({ theme }) => theme.colors.background[400]};
     padding-left: 384px;
     margin: 48px 0;
+    justify-content: space-around;
   }
 `;
 
