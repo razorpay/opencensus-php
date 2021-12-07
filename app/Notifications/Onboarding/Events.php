@@ -81,7 +81,7 @@ class Events
         self::PAYMENTS_ENABLED                            => 'whatsapp.merchant.onboarding.payments_enabled',
         self::ONBOARDING_VERIFY_EMAIL                     => 'whatsapp.merchant.onboarding.onboarding_verify_email',
         self::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED      => 'whatsapp.merchant.onboarding.Onboarding_IA_WA2',
-        self::L1_NOT_SUBMITTED_IN_1_HOUR                  => 'sms.onboarding.Onboarding_L1_not_submit_WA2_A'
+        self::L1_NOT_SUBMITTED_IN_1_HOUR                  => 'whatsapp.merchant.onboarding.Onboarding_L1_not_submit_WA2_A'
     ];
 
     const EMAIL_TEMPLATES = [
