@@ -25,6 +25,10 @@ class RefundsUpdater extends Base
                 [
                     'payout_id' => $this->payout->getPublicId(),
                 ]);
+
+            //Throw exception for enabling retries to handle errors while updating refund status.
+            //Default retry mechanism of payout source updater will be used.
+            throw $e;
         }
     }
 }
