@@ -282,6 +282,38 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
         $this->assertEquals('REJECTED', $enach['status']);
     }
 
+    public function testDebitFileRejectResponseWithEmptyErrorCode()
+    {
+        $this->makeDebitPayment();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $fileStatuses = [
+            'status'     => 'REJECTED',
+            'error_code' => '',
+            'error_desc' => 'Record Level Error:Invalid Mandate Info......',
+        ];
+
+        Carbon::setTestNow(Carbon::now()->addDays(29));
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals('BAD_REQUEST_EMANDATE_INACTIVE', $payment['internal_error_code']);
+
+        $enach = $this->getDbEntities('enach', ['payment_id' => $payment['id']])->first()->toArray();
+
+        $this->assertEquals('', $enach['error_code']);
+        $this->assertEquals('Record Level Error:Invalid Mandate Info......', $enach['error_message']);
+
+        $this->assertEquals('REJECTED', $enach['status']);
+    }
+
     public function testDebitFilePendingResponse()
     {
         $this->makeDebitPayment();

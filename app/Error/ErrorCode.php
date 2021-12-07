@@ -2415,6 +2415,7 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_NOT_FOUND                                            = 'BAD_REQUEST_MERCHANT_NOT_FOUND';
     const BAD_REQUEST_KEYS_REGENERATED_PREVIOUSLY                                   = 'BAD_REQUEST_KEYS_REGENERATED_PREVIOUSLY';
     const BAD_REQUEST_OPEN_WORKFLOW_NOT_FOUND                                       = 'BAD_REQUEST_OPEN_WORKFLOW_NOT_FOUND';
+    const BAD_REQUEST_EMANDATE_INACTIVE                                             = 'BAD_REQUEST_EMANDATE_INACTIVE';
 
     static function getConstants()
     {
