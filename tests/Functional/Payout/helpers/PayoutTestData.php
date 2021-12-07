@@ -2797,6 +2797,12 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'field' => 'fund_account_id',
+            'data'  =>  [
+                'fund_account_id' => 'fa_100000000001fa',
+                'contact_id'      => '1000000contact',
+            ],
+
         ],
     ],
 
@@ -2859,6 +2865,12 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'field' => 'fund_account_id',
+            'data'  =>  [
+                'fund_account_id' => 'fa_100000000001fa',
+                'contact_id'      => '1000000contact',
+            ],
+
         ],
     ],
 

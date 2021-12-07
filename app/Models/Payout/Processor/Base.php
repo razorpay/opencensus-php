@@ -1716,7 +1716,12 @@ class Base extends BaseCore
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Payouts cannot be created on an inactive fund account',
-                Payout\Entity::FUND_ACCOUNT_ID);
+                Payout\Entity::FUND_ACCOUNT_ID,
+                [
+                    Payout\Entity::FUND_ACCOUNT_ID => $fundAccountId,
+                    Payout\Entity::CONTACT_ID      =>  "cont_" . $fundAccount->getSourceId(),
+                ]
+            );
         }
 
         if (optional($fundAccount->source)->isActive() === false)
@@ -1725,7 +1730,12 @@ class Base extends BaseCore
 
             throw new Exception\BadRequestValidationFailureException(
                 'Payouts cannot be created on an inactive ' . $sourceEntity . ' fund account',
-                Payout\Entity::FUND_ACCOUNT_ID);
+                Payout\Entity::FUND_ACCOUNT_ID,
+                [
+                    Payout\Entity::FUND_ACCOUNT_ID => $fundAccountId,
+                    Payout\Entity::CONTACT_ID      =>  "cont_" . $fundAccount->getSourceId(),
+                ]
+            );
         }
 
         $this->blockVaToVaPayouts($payout, $fundAccount, $input);

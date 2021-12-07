@@ -2279,10 +2279,13 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutToInactiveFundAccount()
     {
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'active' => 0]);
+
         $this->fixtures->create(
             'fund_account',
             [
                 'id'           => '100000000001fa',
+                'source_id'    => '1000000contact',
                 'account_type' => 'bank_account',
                 'account_id'   => '1000000lcustba',
                 'active'       => 0,
