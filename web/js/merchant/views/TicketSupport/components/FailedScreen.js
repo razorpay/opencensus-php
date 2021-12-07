@@ -9,9 +9,11 @@ export default function FailedScreen(props) {
       <p class="text-center error-p">
         There was an error while loading your queries. We apologize for the inconvenience.
       </p>
-      <a className="h-link refresh-again" onClick={props.tryAgain}>
-        <i className="i i-refresh" /> <b>Try Again</b>
-      </a>
+      {props.tryAgain && (
+        <a className="h-link refresh-again" onClick={props.tryAgain}>
+          <i className="i i-refresh" /> <b>Try Again</b>
+        </a>
+      )}
     </div>
   );
 }

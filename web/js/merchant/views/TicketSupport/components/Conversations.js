@@ -31,6 +31,7 @@ import Reply from './Reply';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import TicketRevamped from './TicketRevamped';
 import ReplyRevamped from './ReplyRevamped';
+import FailedScreen from './FailedScreen';
 
 @withRouter
 @connect(
@@ -51,6 +52,7 @@ import ReplyRevamped from './ReplyRevamped';
 export default class Conversations extends React.Component {
   state = {
     ticket: SAMPLE_TICKET,
+    error: false,
     conversations: {
       data: { 1: [] },
       loading: false,
@@ -113,7 +115,17 @@ export default class Conversations extends React.Component {
   loadTicketDetails() {
     return merchantFetch({ url: `${TICKET_BASE_URL}/${this.props.match.params.id}`, mode: 'live' })
       .then((e) => {
-        this.setState({ ticket: e.data, loadingTicket: false });
+        let ticket = e.data;
+        let error = false;
+        if (Array.isArray(e.data)) {
+          ticket = SAMPLE_TICKET;
+          error = true;
+        }
+        this.setState({
+          ticket,
+          loadingTicket: false,
+          error,
+        });
         this.trackRenderTicket();
       })
       .catch((e) => {
@@ -323,11 +335,12 @@ export default class Conversations extends React.Component {
     const ticketType = this.state.ticket?.custom_fields?.cf_created_by || 'merchant';
 
     const isLoading = this.state.conversations.loading || this.state.loadingTicket;
-
     return isNewSupportDashboard ? (
       <div class="content-wrapper content-sm ticket-support">
         <div className="panel">
-          {this.state?.conversations?.loading ? (
+          {this.state.error ? (
+            <FailedScreen />
+          ) : this.state?.conversations?.loading ? (
             <div className="ticket-cont-spinner">
               <Spinner />
             </div>

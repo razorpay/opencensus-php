@@ -233,7 +233,11 @@ class App extends Component {
     }
 
     this.props.fetchGST();
-    this.props.fetchTicketsRaisedByAgents();
+
+    if(this.props.user.isMobileSignupCareActive){
+      this.props.fetchTicketsRaisedByAgents();
+    };
+
     this.props.fetchConfig();
     this.props.fetchRefundPricing();
     this.props.fetchTrustedBadgeStatus();
