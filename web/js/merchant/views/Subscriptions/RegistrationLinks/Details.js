@@ -292,7 +292,7 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
                     </EntityDetailRow>
 
                     {this.isNACHMethod && !isCancelled && (
-                      <EntityDetailRow label="NACH form">
+                      <EntityDetailRow label="NACH form" pairClass="nach-form">
                         <NACHDetails
                           registrationLinkId={entity.id}
                           downloadSignedNACHFile={

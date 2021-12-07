@@ -1,84 +1,65 @@
-.Subscription--Expiry {
-  margin: -24px -24px 24px;
-}
-@media screen and (max-width: 767px){
-  .Subscriptions-Container {
-    .announcement-banner-container {
-      padding: 10px;
-      .btn-link {
-        padding-left: 0;
-      }
-    }
-    .Subscriptions--Settings {
-      .panel-theme {
-        border: none;
-      }
-      .panel-heading, .panel-body, .column {
-        padding-left: 0;
-        padding-right: 0;
-      }
-      .panel-heading {
-        display: flex;
-        justify-content: space-between;
-        align-items: center
-        > .btn-link {
-            padding-right: 0;
-        }
-      }
-    }
-    .tabbed-header-actions.rzp {
-      border-bottom: 1px solid #e2e8ea;
-    }
-    .Subscription--Expiry {
-      margin: -16px -20px 16px;
-      background-color: #f2f4f8;
-      border: 0;
-      padding: 20px 20px 0;
-      .card {
-        padding: 5px;
-        padding-right: 8px;
-        width: calc(50% - 5px);
-        min-width: 110px;
-        min-height: 50px;
-        margin-bottom: 16px;
-        margin-top: 0;
-        .details {
-          font-size: 11px;
-        }
-        .count {
-          font-size: 18px;
-          margin-right: 15px;
-          margin-left: 5px;
-        }
-        &:not(:last-child) {
-          margin-right: 10px;
-        }
-        &:nth-child(2) {
-          margin-right: 0;
-        }
-        &.active:after {
-          content: unset;
-        }
-      }
-    }
-  }
-  .content-wrapper.Token--Details .actions {
-    display: flex;
-    align-items: flex-start;
-    > .pair-value {
-      & button:first-of-type {
-        margin: 4px 8px 8px 0px;
-      }
-    }
-  }
-  .RegistrationLinks--Details {
-    .nach-form .pair-value{
-      > a {
-        margin-left: 0;
-        &:first-of-type {
-          margin-bottom: 10px;
-        }
-      }
-    }
-  }
-}
+.Subscription--Expiry
+  margin -24px -24px 24px
+
+@media screen and (max-width 767px)
+  .Subscriptions-Container
+    .announcement-banner-container
+      padding 10px
+      .btn-link
+        padding-left 0
+
+    .Subscriptions--Settings
+      .panel-theme
+        border none
+      .panel-heading, .panel-body, .column
+        padding-left 0
+        padding-right 0
+      .panel-heading
+        display flex
+        justify-content space-between
+        align-items center
+        > .btn-link
+            padding-right 0
+
+    .tabbed-header-actions.rzp
+      border-bottom 1px solid #e2e8ea
+  
+    .Subscription--Expiry
+      margin -16px -20px 16px
+      background-color #f2f4f8
+      border 0
+      padding 20px 20px 0
+      .card
+        padding 5px
+        padding-right 8px
+        width calc(50% - 5px)
+        min-width 110px
+        min-height 50px
+        margin-bottom 16px
+        margin-top 0
+        .details
+          font-size 11px
+        .count
+          font-size 18px
+          margin-right 15px
+          margin-left 5px
+        &:not(:last-child)
+          margin-right 10px
+        &:nth-child(2)
+          margin-right 0
+        &.active:after
+          content unset
+
+  .content-wrapper.Token--Details .actions
+    display flex
+    align-items flex-start
+    > .pair-value
+      & button:first-of-type
+        margin 4px 8px 8px 0px
+
+  .RegistrationLinks--Details
+    .nach-form .pair-value
+      > a
+        margin-left 0
+        &:first-of-type
+          margin-bottom 10px
