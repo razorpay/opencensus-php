@@ -325,9 +325,9 @@ return [
         ],
     ],
 
-    'testGetUserInternalFromPayoutsServiceApp' =>[
+    'testGetActorInfo' =>[
         'request' => [
-            'url'    => '/users_internal/id',
+            'url'    => '/actor_info_internal/id',
             'method' => 'GET',
             'server' => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -335,27 +335,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'contact_mobile'          => null,
-                'contact_mobile_verified' => false,
-                'confirmed'               => true,
-                'merchants'               => [
-                    [
-                        'activated'    => false,
-                        'archived_at'  => null,
-                        'suspended_at' => null,
-                        'role'         => 'owner',
-                    ],
-                ],
-                'invitations'             => [
-                ],
-                'settings'                => [
-                ],
-                'actor_info' =>
-                    [
-                        'actor_type' => '',
-                        'actor_property_key' => 'role',
-                        'actor_property_value' => ''
-                    ],
+                'actor_type' => 'user',
+                'actor_property_key' => 'role',
+                'actor_property_value' => 'owner'
             ],
         ],
     ],

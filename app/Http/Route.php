@@ -1689,6 +1689,9 @@ class Route
         'user_delete_incorrect_password_count'     => ['post',     'users/incorrect_password_count',                 'UserController@removeIncorrectPasswordCount'                       ],
         'user_fetch_by_verified_contact_internal'  => ['post',     'users_internal/fetch_by_verified_contact',       'UserController@getUserByVerifiedContact'                           ],
 
+        //actor info
+        'fetch_actor_info_internal'                => ['get',      'actor_info_internal/{user_id}',                  'UserController@getActorInfo'                                       ],
+
         //user device details
         'user_device_detail_save'                  => ['post',     'user/device-details',                            'UserController@postSaveDeviceDetails'                              ],
 
@@ -3661,6 +3664,7 @@ class Route
         'vendor_payment_verify_otp',
         'payout_fetch_by_id_internal',
         'user_fetch_internal',
+        'fetch_actor_info_internal',
         'los_d2c_bureau_report_fetch',
         'los_d2c_bureau_details_create',
         'offline_verification_webhook',
@@ -11338,6 +11342,7 @@ class Route
             'payment_fetch_by_id_internal',
             'create_payment_payout_service_axis_cc',
             'user_fetch_internal',
+            'fetch_actor_info_internal',
         ],
 
         'ledger' => [

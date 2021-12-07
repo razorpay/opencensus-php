@@ -861,6 +861,16 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function getActorInfo(string $id): array
+    {
+        $this->trace->info(TraceCode::FETCH_ACTOR_INFO_REQUEST,
+            [
+                'user_id' => $id
+            ]);
+
+        return $this->core->getActorInfo($id);
+    }
+
     public function getUserEntity(string $id): array
     {
         if ($this->auth->isPrivilegeAuth() === true)

@@ -475,15 +475,28 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetUserInternalFromPayoutsServiceApp()
+    public function testGetActorInfo()
     {
         $user = $this->fixtures->create('user');
 
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/users_internal/' . $user['id'];
+        $testData['request']['url'] = '/actor_info_internal/' . $user['id'];
 
         $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $testData['request']['headers']['X-Razorpay-Account'] = $merchant->getId();
 
         $this->ba->appAuthTest($this->config['applications.payouts_service.secret']);
 

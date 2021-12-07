@@ -26,6 +26,7 @@ use RZP\Services\TokenService;
 use RZP\Services\HubspotClient;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Admin\Admin\Token;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Http\UserRolePermissionsMap;
@@ -2923,14 +2924,24 @@ class Core extends Base\Core
 
         $response[Entity::MERCHANTS]   = $merchantsUnique;
 
-        if ($this->app['basicauth']->isPayoutService() === true)
-        {
-            $actorInfo = Adapter\Base::getActorInfo();
-
-            $response[Entity::ACTOR_INFO] = $actorInfo;
-        }
-
         return $response;
+    }
+
+    public function getActorInfo(string $id): array
+    {
+        $user = $this->repo->user->findOrFailPublic($id);
+
+        $this->trace->info(TraceCode::USER_DETAILS,
+            [
+                'user_id' => $user->getId(),
+            ]);
+
+        /** @var $ba BasicAuth */
+        $ba = app('basicauth');
+
+        $ba->setUser($user);
+
+        return Adapter\Base::getActorInfo();
     }
 
     /**
