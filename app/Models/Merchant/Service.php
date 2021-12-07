@@ -4720,6 +4720,20 @@ class Service extends Base\Service
     {
         $input = (new Core())->processMerchantAnalyticsQuery($this->merchant->getId(), $input);
 
+        $variant = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            RazorxTreatment::HARVESTER_SEGREGATE_QUERIES,
+            $this->app['basicauth']->getMode() ?? "live"
+        );
+
+        if(strcmp($variant, Constants::RAZORX_EXPERIMENT_ON) != 0) {
+            return $this->app['eventManager']->query($input, self::REQUEST_TIMEOUT_MERCHANT_ANALYTICS);
+        }
+
+        if(isset($input[Constants::AGGREGATIONS]) === false) {
+            return $this->app['eventManager']->query($input, self::REQUEST_TIMEOUT_MERCHANT_ANALYTICS);
+        }
+        
         $queries = $this->segregateQueries($input);
 
         $response = [];

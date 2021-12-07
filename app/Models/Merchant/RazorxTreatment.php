@@ -381,6 +381,9 @@ final class RazorxTreatment
     // Experiment for removal of extra fields during onboarding
     const LITE_ONBOARDING = 'lite_onboarding';
 
+    // Experiment to send manual verification data to BVS
+    const HARVESTER_SEGREGATE_QUERIES = 'HARVESTER_SEGREGATE_QUERIES';
+
     //Experiment for removal of extra fields in payment response
     const DISALLOW_ORG_DATA_IN_RESPONSE = 'disallow_org_data_in_response';
 
