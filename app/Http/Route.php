@@ -619,6 +619,7 @@ class Route
         'merchant_replace_key'                     => ['put',      'keys/{id}',                                      'KeyController@putKeys'                                             ],
         'merchant_replace_key_with_otp'            => ['put',      'keys/otp/{id}',                                  'KeyController@putKeysWithOtp'                                      ],
         'admin_key_migrate_to_credcase'            => ['post',     'admin/keys/migrate_to_credcase',                 'KeyController@migratetoCredcase'                                   ],
+        'bulk_regenerate_api_keys'                 => ['post',     'regenerate-api-key/bulk',                        'KeyController@bulkRegenerateApiKey'                                ],
         'admin_key_migrate_impersonation_grants'   => ['post',     'admin/keys/migrate_impersonation_grants',        'MerchantController@migrateImpersonationGrants'                     ],
         'admin_consumer_migrate_apps_to_credcase'  => ['post',     'admin/consumers/migrate_apps_to_credcase',       'ConsumerController@migrateInternalApplicationsToCredcase'          ],
         'merchant_gst_fetch'                       => ['get',      'merchant/gst',                                   'MerchantController@getGSTDetails'                                  ],
@@ -5890,6 +5891,8 @@ class Route
 
         'decrypt_merchant_website_comment',
 
+        'bulk_regenerate_api_keys',
+
         // razorpay trusted badge
         'trusted_badge_blacklist',
 
@@ -5899,6 +5902,7 @@ class Route
         'banking_axis_invitations_send',
         //growth service
         'growth_downtime_for_x',
+
     ];
 
     public static $routePermission = [
@@ -6978,6 +6982,9 @@ class Route
         'w-actions_merchant_risk_audit_get'               => Permission::VIEW_ALL_WORKFLOW,
 
         'decrypt_merchant_website_comment'                => Permission::DECRYPT_MERCHANT_WEBSITE_COMMENT,
+
+        'bulk_regenerate_api_keys'                        => Permission::BULK_REGENERATE_API_KEYS,
+
         'trusted_badge_blacklist'                         => Permission::TRUSTED_BADGE_BLACKLIST,
         'risk_attributes_get'                             => Permission::MERCHANT_ACTIONS,
         'create_risk_action'                              => Permission::MERCHANT_ACTIONS,
@@ -6990,6 +6997,7 @@ class Route
         //FIRS documents
         'firs_document_fetch'                 =>'*',
         'firs_document_download'              =>'*',
+
     ];
 
     public static $bankingRoutePermissions = [
@@ -10489,6 +10497,8 @@ class Route
             'draft_invitation_fetch',
             'draft_invitation_accept',
             'decrypt_merchant_website_comment',
+            'bulk_regenerate_api_keys',
+
 
             'risk_attributes_get',
 

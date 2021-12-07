@@ -20,6 +20,12 @@ class Validator extends Base\Validator
         Entity::OTP             => 'required|filled|min:4',
         Entity::TOKEN           => 'required|unsigned_id'
     ];
+
+    protected static $bulkRegenerateApiKeyRules = [
+        Constants::MERCHANT_IDS => 'required|array|min:1',
+        Constants::REASON       => 'required|string'
+    ];
+
     /**
      * This validator is used before operations on key
      * to verify it's not one of the demo keys on

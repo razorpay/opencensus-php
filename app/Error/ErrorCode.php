@@ -2412,6 +2412,8 @@ class ErrorCode
     const SERVER_ERROR_VERIFY_SIGNUP_OTP_REDIS_ERROR                                = 'SERVER_ERROR_VERIFY_SIGNUP_OTP_REDIS_ERROR';
     const BAD_REQUEST_INVALID_AFFORDABILITY_COMPONENT                               = 'BAD_REQUEST_INVALID_AFFORDABILITY_COMPONENT';
 
+    const BAD_REQUEST_MERCHANT_NOT_FOUND                                            = 'BAD_REQUEST_MERCHANT_NOT_FOUND';
+    const BAD_REQUEST_KEYS_REGENERATED_PREVIOUSLY                                   = 'BAD_REQUEST_KEYS_REGENERATED_PREVIOUSLY';
     const BAD_REQUEST_OPEN_WORKFLOW_NOT_FOUND                                       = 'BAD_REQUEST_OPEN_WORKFLOW_NOT_FOUND';
 
     static function getConstants()

@@ -256,6 +256,8 @@ class MailTags
     const GSTIN_ADDED_VALIDATION_SUCCESS                = 'gstin_added_validation_success';
     const GSTIN_ADDED_WORKFLOW_APPROVE                  = 'gstin_added_workflow_approve';
 
+    const BULK_API_KEYS_REGENERATE                      = 'bulk_api_keys_regenerate';
+
     const MERCHANT_BUSINESS_WEBSITE_UPDATE_REJECTION_REASON       = 'merchant_business_website_update_rejection_reason';
 
     const MERCHANT_BUSINESS_WEBSITE_ADD_REJECTION_REASON          = 'merchant_business_website_add_rejection_reason';

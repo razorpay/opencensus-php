@@ -2,7 +2,9 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Mail;
 use RZP\Tests\Functional\TestCase;
+use RZP\Mail\Merchant as MerchantMail;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class KeyTest extends TestCase
@@ -279,4 +281,76 @@ class KeyTest extends TestCase
 
         $this->startTest();
     }
+
+    protected function getActiveAPIKeyIds($merchantId, $userId)
+    {
+        $request = [
+            'url'     => '/keys',
+            'content' => [],
+            'method'  => 'GET'
+        ];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $userId);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $keys     = $response['items'];
+
+        $keyIds   = [];
+
+        foreach ($keys as $key)
+        {
+            $keyIds[] = $key['id'];
+        }
+
+        return $keyIds;
+    }
+
+    public function testBulkRegenerateApiKey()
+    {
+        Mail::fake();
+
+        $merchantDetail             = $this->fixtures->create('merchant_detail');
+
+        $merchantId                 = $merchantDetail->getEntityId();
+
+        $user                       = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $testData                   = & $this->testData[__FUNCTION__];
+
+        $expectedFailedMerchant     =  $merchant = $this->fixtures->create('merchant', ['has_key_access' => false]);
+
+        $expectedFailedMerchantId   = $expectedFailedMerchant['id'];
+
+        $this->fixtures->merchant->setHasKeyAccess(true, $merchantId);
+
+        $testData['request']['content']['merchant_ids'][]   = $merchantId;
+
+        $testData['request']['content']['merchant_ids'][]   = $expectedFailedMerchantId;
+
+        $testData['response']['content']['success_mids'][]  = $merchantId;
+
+        $testData['response']['content']['failed_mids'][$expectedFailedMerchantId]   = 'You are not allowed to perform this operation';
+
+        $initialActiveKeyIds = $this->getActiveAPIKeyIds($merchantId, $user->getId());
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $updatedActiveKeyIds = $this->getActiveAPIKeyIds($merchantId, $user->getId());
+
+        $this->assertNotEquals($updatedActiveKeyIds, $initialActiveKeyIds);
+
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) use($user)
+        {
+            $this->assertEquals('emails.merchant.bulk_regenerate_api_keys', $mail->view);
+
+            $mail->hasTo($user->getEmail());
+
+            return true;
+        });
+
+    }
+
 }

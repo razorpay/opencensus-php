@@ -183,5 +183,29 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NO_KEY_ACCESS,
         ]
-    ]
+    ],
+
+    'testBulkRegenerateApiKey' => [
+        'request'  => [
+            'content' => [
+                'merchant_ids'  => [ 'random_mid' ],
+                'reason'        => "This is test reason"
+            ],
+            'url'     => '/regenerate-api-key/bulk',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'success_mids'  => [ ],
+                'failed_mids'   => [ 'random_mid' => 'Merchant not found/Invalid Merchant Id' ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+
+
 ];

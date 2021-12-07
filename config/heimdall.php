@@ -746,6 +746,10 @@ return [
             Permission::PROXY_MERCHANT_GET_TERMINALS   => [
                 'assignable' => true,
             ],
+            Permission::BULK_REGENERATE_API_KEYS   => [
+                'assignable'  => true,
+                'workflow'    => false,
+            ],
             Permission::MERCHANT_CLARIFICATION_ON_WORKFLOW  => [
                 'description' => 'to raise needs clarification on workflow',
                 'assignable'  => true,

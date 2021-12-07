@@ -57,4 +57,13 @@ class KeyController extends Controller
 
         return ApiResponse::json($summary);
     }
+
+    public function bulkRegenerateApiKey()
+    {
+        $input = Request::all();
+
+        $keys = $this->service()->bulkRegenerateApiKey($input);
+
+        return ApiResponse::json($keys);
+    }
 }

@@ -1531,4 +1531,7 @@ class PublicErrorDescription
 
     const PRE_SIGNUP_EMAIL_NOT_ALLOWED                                              = 'Email not acceptable here when signed up with email.';
     const PRE_SIGNUP_CONTACT_MOBILE_NOT_ALLOWED                                     = 'Contact mobile not acceptable here when signed up with contact mobile.';
+
+    const BAD_REQUEST_MERCHANT_NOT_FOUND                                            = 'Merchant not found/Invalid Merchant Id';
+    const BAD_REQUEST_KEYS_REGENERATED_PREVIOUSLY                                   = 'Merchant has already generated keys within 24 hours';
 }

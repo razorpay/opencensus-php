@@ -11,6 +11,9 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
 use RZP\Modules\Migrate\Migrate;
+use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Notifications\Dashboard\Events as DashboardNotificationEvent;
+use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 
 class Service extends Base\Service
 {
@@ -129,5 +132,81 @@ class Service extends Base\Service
         $targetOpts = $input['target'] ?? [];
 
         return $migrate->migrateAsync($sourceOpts, $targetOpts, $dryRun);
+    }
+
+    protected function regenerateApiKeyForMerchantId($merchantId)
+    {
+        $merchantEntity = $this->repo->merchant->find($merchantId);
+
+        if($merchantEntity === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_FOUND, null);
+        }
+
+        if ($merchantEntity->getHasKeyAccess() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NO_KEY_ACCESS);
+        }
+
+        $keys = $this->repo->key->getKeysForMerchant($merchantId);
+
+        if( count($keys) > 1 ){
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_KEYS_REGENERATED_PREVIOUSLY, null);
+        }
+
+        $key = array_first($keys);
+
+        $keyId = $key->getPublicId();
+
+        (new Core)->rollKey($merchantId, $keyId, [], $this->mode);
+
+        $args = [
+            MerchantConstants::MERCHANT                   => $merchantEntity,
+            DashboardNotificationEvent::EVENT             => DashboardNotificationEvent::BULK_REGENERATE_API_KEYS,
+            MerchantConstants::PARAMS                     => []
+        ];
+
+        (new DashboardNotificationHandler($args))->send();
+    }
+
+    public function bulkRegenerateApiKey(array $input)
+    {
+        $validator = new Validator();
+
+        $validator->validateInput('bulk-regenerate-api-key', $input);
+
+        $successMids = [];
+
+        $failedMids  = [];
+
+        foreach ($input['merchant_ids'] as $merchantId)
+        {
+            try{
+                $this->regenerateApiKeyForMerchantId($merchantId);
+
+                $successMids[] = $merchantId;
+
+            }catch (\Exception $exception)
+            {
+                $failedMids[$merchantId] =  $exception->getMessage();
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::BULK_REGENERATE_API_KEYS,
+            [
+                Constants::MERCHANT_IDS => $input[Constants::MERCHANT_IDS],
+                Constants::REASON       => $input[Constants::REASON],
+                Constants::SUCCESS_MIDS => $successMids,
+                Constants::FAILED_MIDS  => $failedMids
+            ]);
+
+        return [
+                Constants::SUCCESS_MIDS => $successMids,
+                Constants::FAILED_MIDS  => $failedMids
+            ];
     }
 }

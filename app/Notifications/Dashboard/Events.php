@@ -41,6 +41,8 @@ class Events
 
     const GSTIN_UPDATED_ON_WORKFLOW_APPROVE                         = 'GSTIN_UPDATED_ON_WORKFLOW_APPROVE';
 
+    const BULK_REGENERATE_API_KEYS                          = 'BULK_REGENERATE_API_KEYS';
+
     const GSTIN_ADDED_ON_BVS_VALIDATION_SUCCESS                     = 'GSTIN_ADDED_ON_BVS_VALIDATION_SUCCESS';
 
     const GSTIN_ADDED_ON_WORKFLOW_APPROVE                           = 'GSTIN_ADDED_ON_WORKFLOW_APPROVE';
@@ -155,6 +157,7 @@ class Events
         self::NEED_CLARIFICATION_FOR_TRANSACTION_LIMIT_UPDATE_WORKFLOW => 'emails.merchant.needs_clarification_on_workflow',
         self::NEED_CLARIFICATION_FOR_WEBSITE_UPDATE_WORKFLOW           => 'emails.merchant.needs_clarification_on_workflow',
         self::NEED_CLARIFICATION_FOR_WEBSITE_ADD_WORKFLOW              => 'emails.merchant.needs_clarification_on_workflow',
+        self::BULK_REGENERATE_API_KEYS                                 => 'emails.merchant.bulk_regenerate_api_keys',
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW             => 'emails.merchant.needs_clarification_on_workflow',
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                => 'emails.merchant.needs_clarification_on_workflow',
     ];
@@ -180,6 +183,7 @@ class Events
         self::NEED_CLARIFICATION_FOR_TRANSACTION_LIMIT_UPDATE_WORKFLOW => MailTags::MERCHANT_CLARIFICATION_ON_TRANSACTION_LIMIT_WORKFLOW,
         self::NEED_CLARIFICATION_FOR_WEBSITE_UPDATE_WORKFLOW           => MailTags::MERCHANT_CLARIFICATION_ON_WEBSITE_UPDATE_WORKFLOW,
         self::NEED_CLARIFICATION_FOR_WEBSITE_ADD_WORKFLOW              => MailTags::MERCHANT_CLARIFICATION_ON_WEBSITE_ADD_WORKFLOW,
+        self::BULK_REGENERATE_API_KEYS                                 => MailTags::BULK_API_KEYS_REGENERATE,
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW             => MailTags::MERCHANT_CLARIFICATION_ON_GSTIN_UPDATE_WORKFLOW,
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                => MailTags::MERCHANT_CLARIFICATION_ON_GSTIN_ADD_WORKFLOW
     ];
@@ -205,6 +209,7 @@ class Events
         self::NEED_CLARIFICATION_FOR_TRANSACTION_LIMIT_UPDATE_WORKFLOW => '%s',
         self::NEED_CLARIFICATION_FOR_WEBSITE_UPDATE_WORKFLOW           => '%s',
         self::NEED_CLARIFICATION_FOR_WEBSITE_ADD_WORKFLOW              => '%s',
+        self::BULK_REGENERATE_API_KEYS                                 => 'API key De-activated',
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW             => '%s',
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                => '%s',
     ];
@@ -226,6 +231,7 @@ class Events
         self::GSTIN_ADD_REJECTION_REASON                               => [UserRole::OWNER],
         self::GSTIN_ADDED_ON_BVS_VALIDATION_SUCCESS                    => [UserRole::OWNER],
         self::GSTIN_ADDED_ON_WORKFLOW_APPROVE                          => [UserRole::OWNER],
+        self::BULK_REGENERATE_API_KEYS                                 => [UserRole::OWNER, UserRole::ADMIN],
         self::NEED_CLARIFICATION_FOR_BANK_ACCOUNT_UPDATE_WORKFLOW      => [UserRole::OWNER],
         self::NEED_CLARIFICATION_FOR_TRANSACTION_LIMIT_UPDATE_WORKFLOW => [UserRole::OWNER],
         self::NEED_CLARIFICATION_FOR_WEBSITE_UPDATE_WORKFLOW           => [UserRole::OWNER],
@@ -257,5 +263,6 @@ class Events
         self::NEED_CLARIFICATION_FOR_WEBSITE_ADD_WORKFLOW              => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW             => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                => [Channel::EMAIL],
+        self::BULK_REGENERATE_API_KEYS                                 => [Channel::EMAIL],
     ];
 }
