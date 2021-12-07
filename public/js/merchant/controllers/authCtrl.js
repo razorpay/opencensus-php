@@ -163,6 +163,7 @@ app
         $scope.isOrgHDFC = $scope.organization.custom_code === 'hdfc';
         $scope.isOrgAXIS = $scope.organization.custom_code === 'axis';
         $scope.isOrgICICI = $scope.organization.custom_code === 'icic';
+        $scope.isMerchantStyles = $scope.organization.merchant_styles ? true : false;
         $scope.second_factor_auth_mode =
           OTP_AUTH_MODE[$scope.organization.second_factor_auth_mode] || 'phone number/email';
         $scope.loginHeading =

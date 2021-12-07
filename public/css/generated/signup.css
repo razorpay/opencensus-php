@@ -62,6 +62,9 @@
     overflow-y: scroll;
 }
 
+#auth-container.org-bg {
+    background: #f0f3f4;
+}
 
 .app-header-fixed {
     padding-top: unset;

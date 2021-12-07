@@ -1,4 +1,4 @@
-<div class="{{isOrgICICI ? 'auth-container org-bg' : 'auth-container'}}" id="auth-container" ng-controller="AuthCtrl">
+<div class="{{(isOrgICICI && !isMerchantStyles) ? 'auth-container org-bg' : 'auth-container'}}" id="auth-container" ng-controller="AuthCtrl">
   <div class="topbar-container" style='display: none;'>
     <div class="container">
       <div ng-class="{'showMe': showTopbar, 'msg': true}">
