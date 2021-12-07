@@ -1674,7 +1674,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->attributes[self::EMAIL] ?? null;
     }
-
+    
     public function setEmail($email)
     {
         $this->setEmailAttribute($email);

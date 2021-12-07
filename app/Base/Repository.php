@@ -117,6 +117,11 @@ class Repository extends \Razorpay\Spine\Repository
         $this->entityFetch = E::getEntityFetch($this->entity);
     }
 
+    public function setMerchant($merchant)
+    {
+        $this->merchant = $merchant;
+    }
+
     public static function getTableNameForEntity(string $entity)
     {
         return E::getTableNameForEntity($entity);

@@ -16075,19 +16075,23 @@ class PayoutTest extends OAuthTestCase
                     $payload['count'] === $expected['count']);
             })->andReturn([]);
 
-        $this->slackAppMock->shouldReceive('getSubscribedMerchantList')
-            ->andReturn([
-                "status" => 1,
-                "msg" => "success",
-                "data" => [
-                    [
-                        "id" =>  1,
-                        "merchant_id" => "10000000000000",
-                        "slack_team_id" => "T025HQJDGKH",
-                        "slack_user_id" => "U02E6JHBV7S"
-                    ]
+        $response = new \Requests_Response;
+
+        $response->body = json_encode([
+            "status" => 1,
+            "msg" => "success",
+            "data" => [
+                [
+                    "id" =>  1,
+                    "merchant_id" => "acc_10000000000000",
+                    "slack_team_id" => "T025HQJDGKH",
+                    "slack_user_id" => "U02E6JHBV7S"
                 ]
-            ]);
+            ]
+        ]);
+
+        $this->slackAppMock->shouldReceive('sendRequestToSlack')
+            ->andReturn($response);
 
         $this->testGetPayoutsForPendingOnRoles();
 

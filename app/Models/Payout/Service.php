@@ -75,6 +75,8 @@ class Service extends Base\Service
 
     protected const ON_HOLD_FETCH_LIMIT = 5000;
 
+    protected const PAYOUT_NOTIFICATION_COUNT = 5;
+
     protected $compositePayoutSaveOrFail = true;
 
     public function __construct()
@@ -394,39 +396,66 @@ class Service extends Base\Service
 
     public function sendPendingPayoutsNotificationToSlack()
     {
-        $startAt = millitime();
-
-        $slackAppSubscribedMerchants = $this->slackAppService->getSubscribedMerchantList()['data'];
-
-        $input = [
-            'count' => 10,
-            'skip'  => 0,
-            Entity::STATUS => Status::PENDING,
-            Entity::PENDING_ON_ROLES => [ User\BankingRole::OWNER ],
-            'product' => Constants\Product::BANKING,
-            'expand'  => ['fund_account.contact' ,'user']
-        ];
-
-        foreach ($slackAppSubscribedMerchants as $merchantData)
+        try
         {
-            $merchantId = $merchantData['merchant_id'];
+            $slackAppSubscribedMerchants = $this->slackAppService->getSubscribedMerchantList()['data'];
 
-            $this->merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+            $input = [
+                'count' => self::PAYOUT_NOTIFICATION_COUNT,
+                'skip'  => 0,
+                Entity::STATUS => Status::PENDING,
+                Entity::PENDING_ON_ROLES => [ User\BankingRole::OWNER ],
+                'product' => Constants\Product::BANKING,
+                'expand'  => ['fund_account.contact' ,'user']
+            ];
 
-            $this->app['basicauth']->setMerchant($this->merchant);
-
-            $payouts = $this->fetchMultiple($input)['items'];
-
-            if(count($payouts) !== 0)
+            foreach ($slackAppSubscribedMerchants as $merchantData)
             {
-                $payload = [
-                        'merchant_id' => $merchantId,
-                        'payouts'     => $payouts,
-                        'count'       => count($payouts)
-                    ];
+                // Here slack app send merchant id with acc_ prefix, stripping that
+                $merchantId = substr($merchantData['merchant_id'],4);
 
-                $this->slackAppService->sendPendingPayoutNotificationRequestToSlack($payload);
+                try
+                {
+                    $this->merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                    $this->app['basicauth']->setMerchant($this->merchant);
+
+                    $this->repo->payout->setMerchant($this->merchant);
+
+                    $payouts = $this->fetchMultiple($input)['items'];
+
+                    if(count($payouts) !== 0)
+                    {
+                        $payload = [
+                            'merchant_id' => $merchantId,
+                            'payouts'     => $payouts,
+                            'count'       => count($payouts)
+                        ];
+
+                        $this->slackAppService->sendPendingPayoutNotificationRequestToSlack($payload);
+                    }
+                }
+                catch (\Exception $exception)
+                {
+                    $this->trace->info(
+                        TraceCode::PENDING_PAYOUT_NOTIFICATION_TO_SLACK_APP_FAILED,
+                        [
+                            'exception' => $exception->getMessage(),
+                        ]
+                    );
+                }
             }
+        }
+        catch (\Requests_Exception $exception)
+        {
+            $this->trace->info(
+                TraceCode::PENDING_PAYOUT_NOTIFICATION_TO_SLACK_APP_FAILED,
+                [
+                    'exception' => $exception->getMessage(),
+                ]
+            );
+
+            throw $exception;
         }
     }
 

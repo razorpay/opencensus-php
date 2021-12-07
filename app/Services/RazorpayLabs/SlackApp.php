@@ -78,7 +78,7 @@ class SlackApp
             $this->sendRequestToSlack( $url, 'POST', $payload);
         }
         catch (\Requests_Exception $exception) {
-            $this->trace->info(
+            $this->trace->error(
                 TraceCode::CALL_TO_SLACK_APP_FAILED,
                 [
                     'exception' => $exception->getMessage(),
@@ -100,13 +100,17 @@ class SlackApp
 
             $response = $this->sendRequestToSlack( $url, 'GET');
 
+            $responseBody = $this->jsonToArray($response->body, true);
+
             $this->trace->info(
                 TraceCode::SUBSCRIBER_LIST_RECEIVED_FROM_SLACK_APP,
-                $response
+                [
+                    'response' => $responseBody
+            ]
             );
         }
         catch (\Requests_Exception $exception) {
-            $this->trace->info(
+            $this->trace->error(
                 TraceCode::FAILED_FETCHING_SUBSCRIBED_MERCHANT_LIST,
                 [
                     'exception' => $exception->getMessage(),
@@ -117,7 +121,7 @@ class SlackApp
         }
 
 
-        return $response;
+        return $responseBody;
     }
 
     public function sendRequestToSlack($url, $method, $payload = array())
@@ -200,5 +204,30 @@ class SlackApp
     private function getPendingPayoutsNotficiationUrl()
     {
         return $this->config['url'] . '/notify-pending-payout';
+    }
+
+    protected function jsonToArray($json)
+    {
+        if (empty($json) === true)
+        {
+            return [];
+        }
+
+        $decodeJson = json_decode($json, true);
+
+        switch (json_last_error())
+        {
+            case JSON_ERROR_NONE:
+                return $decodeJson;
+            default:
+
+                $this->trace->error(
+                    TraceCode::SLACK_APP_SERVICE_ERROR,
+                    ['json' => $json]);
+
+                throw new Exception\RuntimeException(
+                    'Failed to convert json to array',
+                    ['json' => $json]);
+        }
     }
 }
