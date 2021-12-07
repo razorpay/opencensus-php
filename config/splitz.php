@@ -118,7 +118,7 @@ return [
         // Ultra phase 2
         'ULTRA_P2_CASH_ADVANCE_ANNOUNCEMENT_SPLITZ' => env('ULTRA_P2_CASH_ADVANCE_ANNOUNCEMENT_SPLITZ', ''),
         'ULTRA_P2_CASH_ADVANCE_BANNER_SPLITZ' => env('ULTRA_P2_CASH_ADVANCE_BANNER_SPLITZ', ''),
-        
+
         // Cards Go Live
         'CARDS_GO_LIVE_SUBSCRIPTIONS_SPLITZ' => env('CARDS_GO_LIVE_SUBSCRIPTIONS_SPLITZ', ''),
         'CARDS_GO_LIVE_CAW_SPLITZ' => env('CARDS_GO_LIVE_CAW_SPLITZ', ''),
@@ -139,6 +139,11 @@ return [
 
         //Nitro CC Announcement
         'NITRO_CC_ANNOUNCEMENT' => env('NITRO_CC_ANNOUNCEMENT', ''),
+
+        //Nitro CC Announcement
+        'CATALYST_FL_BANNER' => env('CATALYST_FL_BANNER', ''),
+        'CATALYST_EF_BANNER' => env('CATALYST_EF_BANNER', ''),
+        'CATALYST_G_BANNER' => env('CATALYST_G_BANNER', ''),
 
     ]
 ];

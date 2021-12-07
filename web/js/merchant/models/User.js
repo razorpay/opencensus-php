@@ -437,6 +437,16 @@ export default class User {
     );
   }
 
+  get isCatalystBannerFL() {
+    return getSplitzExperimentVariant('catalyst_banner_fl_experiment')?.variables?.result === 'on';
+  }
+  get isCatalystBannerEF() {
+    return getSplitzExperimentVariant('catalyst_banner_ef_experiment')?.variables?.result === 'on';
+  }
+  get isCatalystBannerG() {
+    return getSplitzExperimentVariant('catalyst_banner_g_experiment')?.variables?.result === 'on';
+  }
+
   get isProjectKeystoneCashAdvanceEnabled() {
     return (
       getSplitzExperimentVariant('keystone_cash_advance_experiment')?.variables?.result === 'on'

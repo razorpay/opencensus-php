@@ -248,4 +248,25 @@ export default {
     // prod experiment ids,
     'IJsF9QOizHHLXC',
   ],
+  catalyst_banner_fl_experiment: [
+    // beta experiment ids
+    'IScORMIXWZ7mKa',
+
+    // prod experiment ids,
+    'IStH22WVrNzGLq',
+  ],
+  catalyst_banner_ef_experiment: [
+    // beta experiment ids
+    'IScRMg9IVGaRXC',
+
+    // prod experiment ids,
+    'IStJ2bbF6rQbff',
+  ],
+  catalyst_banner_g_experiment: [
+    // beta experiment ids
+    'IScTk3pKyJE6rz',
+
+    // prod experiment ids,
+    'IStJqD0T3wzexZ',
+  ],
 };
