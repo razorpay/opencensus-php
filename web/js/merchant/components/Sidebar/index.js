@@ -26,7 +26,7 @@ const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads)?/;
 const PAYMENTBUTTON_ROUTES_REGEX = /^\/paymentbuttons(\/subscription_buttons)?/;
 const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions(\/batchuploads)?|plans|addons|recurring_payments|tokens|authlinks|registration_links)/;
 const PARTNER_DASHBOARD_REGEX = /^\/(submerchants(\/(applications|settings))?|commissions)/;
-const MAGIC_CHECKOUT_REGEX = /^\/(magic-checkout)/;
+const MAGIC_CHECKOUT_REGEX = /^\/(magic)/;
 
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 
@@ -46,7 +46,7 @@ const BASE_ROUTES = {
   partnerDashboard: '/submerchants',
   smartCollect: '/smartcollect/virtualaccounts',
   bbps: '/bbps',
-  magicCheckout: '/magic-checkout',
+  magicCheckout: '/magic',
   stores: '/stores/products',
 };
 

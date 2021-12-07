@@ -360,11 +360,11 @@ export default class Content extends Component {
           />
 
           <Route path="/super-checkout">
-            <Redirect to="/magic-checkout" />
+            <Redirect to="/magic" />
           </Route>
 
           <ShowWhenRoute
-            path="/magic-checkout"
+            path="/magic"
             component={MagicCheckout}
             additionalCondition={(user) => user.isMagicCheckoutEnabled}
           />

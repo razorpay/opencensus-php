@@ -137,7 +137,7 @@ const MagicCheckoutLanding = (props) => {
       next={onReadMoreClicked}
       title="Magic Checkout"
       feature={RZPFeatures.MAGIC_CHECKOUT}
-      ytVideoUrl="https://www.youtube-nocookie.com/embed/ItrlJ6WgfKg"
+      ytVideoUrl="https://www.youtube-nocookie.com/embed/TdZa73eheww"
       heading={getHeadingComponent(LANDING_CONTENT[props.magicCheckout.status])}
       desc={descriptionContainer(props.magicCheckout.status)}
     />
