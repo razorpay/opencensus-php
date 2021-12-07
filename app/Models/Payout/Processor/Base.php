@@ -466,10 +466,11 @@ class Base extends BaseCore
         {
             $this->trace->info(TraceCode::SYNC_FTS_FUND_TRANSFER_INIT,
                                [
-                                   'payout_id'   => $payout->getId(),
-                                   'fta_id'      => $fta->getId(),
-                                   'merchant_id' => $payout->getMerchantId(),
+                                   'payout_id'    => $payout->getId(),
+                                   'fta_id'       => $fta->getId(),
+                                   'merchant_id'  => $payout->getMerchantId(),
                                    'current_time' => microtime(true),
+                                   'balance_id'   => $payout->getBalanceId(),
                                ]);
 
             $transferService = App::getFacadeRoot()['fts_fund_transfer'];
@@ -500,11 +501,12 @@ class Base extends BaseCore
             $this->trace->info(
                 TraceCode::SYNC_FTS_FUND_TRANSFER_COMPLETE,
                 [
-                    'payout_id'   => $payout->getId(),
-                    'fta_id'      => $fta->getId(),
-                    'merchant_id' => $payout->getMerchantId(),
-                    'response'    => $ftsResponse,
+                    'payout_id'    => $payout->getId(),
+                    'fta_id'       => $fta->getId(),
+                    'merchant_id'  => $payout->getMerchantId(),
+                    'response'     => $ftsResponse,
                     'current_time' => microtime(true),
+                    'balance_id'   => $payout->getBalanceId(),
                 ]);
         }
         catch (\Throwable $exception)
@@ -517,6 +519,7 @@ class Base extends BaseCore
                     'payout_id'   => $payout->getId(),
                     'fta_id'      => $fta->getId(),
                     'merchant_id' => $payout->getMerchantId(),
+                    'balance_id'  => $payout->getBalanceId(),
                 ]);
 
             // If any exception is raised while making sync call, we push the fta to queue as fall back.
@@ -2231,13 +2234,13 @@ class Base extends BaseCore
                 if ($asyncIngressFlag === false)
                 {
                     PayoutPostCreateProcessLowPriority::dispatch($this->mode, $payout->getId(), $payout->toBeQueued());
-                }
 
-                $this->trace->info(
-                    TraceCode::PAYOUT_CREATE_SUBMITTED_REQUEST_ENQUEUED_LOW_PRIORITY,
-                    [
-                        'payout_id' => $payout->getId(),
-                    ]);
+                    $this->trace->info(
+                        TraceCode::PAYOUT_CREATE_SUBMITTED_REQUEST_ENQUEUED_LOW_PRIORITY,
+                        [
+                            'payout_id' => $payout->getId(),
+                        ]);
+                }
             }
             else
             {

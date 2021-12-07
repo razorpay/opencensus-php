@@ -2221,7 +2221,7 @@ class Service extends Base\Service
                 'metadata' => $metadata
             ]);
 
-        $id = $metadata[Entity::ID];
+        $id = array_pull($metadata, Entity::ID, '');
 
         if ($this->checkDuplicatePrimaryKeyError($exception->getMessage(), $entityName, $id) === false)
         {

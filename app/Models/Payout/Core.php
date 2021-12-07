@@ -1130,7 +1130,9 @@ class Core extends Base\Core
 
             $payout->setUpdatedAt(Carbon::now()->getTimestamp());
 
-            $payout->setFailureReason('payout entity creation failed');
+            $payout->setFailureReason('Payout failed due to technical failure. Please retry after 30 min');
+
+            $payout->setStatusCode("FTS_ATTEMPT_CREATE_FAILED");
 
             $this->app->events->dispatch('api.payout.failed', [$payout]);
         }
