@@ -730,6 +730,8 @@ class Core extends Base\Core
         /**
          * @var Entity[] $contacts
          */
+        $startTimeMs = round(microtime(true) * 1000);
+
         foreach ($contacts as $contact)
         {
             if ($contact->getType() == Type::VENDOR)
@@ -738,16 +740,36 @@ class Core extends Base\Core
             }
         }
 
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $totalFetchTime = $endTimeMs - $startTimeMs;
+
+        $this->trace->info(TraceCode::VENDOR_DETAILS_FETCH_DURATION, [
+            'duration_ms'    => $totalFetchTime,
+            'merchant_id'    => $this->merchant->getId(),
+        ]);
+
         if (empty($contactIds))
         {
             return $contacts;
         }
 
         try {
+            $startTimeMs = round(microtime(true) * 1000);
+
             $vendors = $this->vendorPaymentService->getVendorBulk(
                 $this->merchant,
                 ['contact_ids' => $contactIds]
             )['items'];
+
+            $endTimeMs = round(microtime(true) * 1000);
+
+            $totalFetchTime = $endTimeMs - $startTimeMs;
+
+            $this->trace->info(TraceCode::VENDOR_SERVICE_FETCH_DURATION, [
+                'duration_ms'    => $totalFetchTime,
+                'merchant_id'    => $this->merchant->getId(),
+            ]);
         } catch (BadRequestException $exception) {
             $this->trace->traceException($exception);
 

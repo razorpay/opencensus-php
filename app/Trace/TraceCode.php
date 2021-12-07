@@ -2702,6 +2702,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RZP_FEES_CONTACT_CREATE_REQUEST                       = 'RZP_FEES_CONTACT_CREATE_REQUEST';
     const RZP_FEES_CONTACT_FUND_ACCOUNT_DOES_NOT_EXIST          = 'RZP_FEES_CONTACT_FUND_ACCOUNT_DOES_NOT_EXIST';
     const CONTACT_API_FETCH_DURATION                            = 'CONTACT_API_FETCH_DURATION';
+    const VENDOR_SERVICE_FETCH_DURATION                         = 'VENDOR_SERVICE_FETCH_DURATION';
+    const VENDOR_DETAILS_FETCH_DURATION                         = 'VENDOR_DETAILS_FETCH_DURATION';
 
     // Trace codes for Sub virtual account CRUD
     const SUB_VIRTUAL_ACCOUNT_CREATED                               = 'SUB_VIRTUAL_ACCOUNT_CREATED';
