@@ -15,7 +15,6 @@ import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import '../../css/merchant.styl';
 import '../../dashboard.font';
-import { ViewportProvider } from 'merchant/hooks/useViewPort';
 
 (async () => {
   if (localStorage.referrer === 'chrome-extension') {
@@ -25,15 +24,13 @@ import { ViewportProvider } from 'merchant/hooks/useViewPort';
 
 render(
   <Provider store={store}>
-    <ViewportProvider>
-      <ConfirmModalProvider>
-        <Router basename="/app">
-          <ErrorBoundary>
-            <App />
-          </ErrorBoundary>
-        </Router>
-      </ConfirmModalProvider>
-    </ViewportProvider>
+    <ConfirmModalProvider>
+      <Router basename="/app">
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
+      </Router>
+    </ConfirmModalProvider>
   </Provider>,
   document.getElementById('react-root'),
 );

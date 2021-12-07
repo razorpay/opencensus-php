@@ -49,20 +49,33 @@ export default ({
 
   // TODO: pointer-events: allow, but cursor be as per inherit
   return (
+    <AmountTooltip currency={currency} parentQuerySelector={parentQuerySelector}>
+      <span class={`rzp-amount ${className ? className : ''}`} {...attrs}>
+        <span class="rzp-currency" dangerouslySetInnerHTML={{ __html: currencySymbol }} />{' '}
+        <span class="rzp-whole">{amount.split('.')[0]}</span>
+        <span class="rzp-paise">.{amount.split('.')[1]}</span>
+      </span>
+    </AmountTooltip>
+  );
+};
+
+const wrapper = (Component) => ({ ...props }) => {
+  return (
     <ViewportProvider>
-      <AmountTooltip currency={currency} parentQuerySelector={parentQuerySelector}>
-        <span class={`rzp-amount ${className ? className : ''}`} {...attrs}>
-          <span class="rzp-currency" dangerouslySetInnerHTML={{ __html: currencySymbol }} />{' '}
-          <span class="rzp-whole">{amount.split('.')[0]}</span>
-          <span class="rzp-paise">.{amount.split('.')[1]}</span>
-        </span>
-      </AmountTooltip>
+      <Component {...props} />
     </ViewportProvider>
   );
 };
 
+export const AmountTooltip = wrapper(AmountTooltipContainer);
+
 // Get the currencySymbolMapping from user.getCurrencyList
-export function AmountTooltip({ children, currency = 'INR', customClass, parentQuerySelector }) {
+export function AmountTooltipContainer({
+  children,
+  currency = 'INR',
+  customClass,
+  parentQuerySelector,
+}) {
   if (!currency) {
     currency = 'INR';
   }
