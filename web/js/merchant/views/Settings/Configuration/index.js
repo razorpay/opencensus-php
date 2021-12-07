@@ -25,6 +25,7 @@ import { fetchUser } from 'merchant/reducers/session';
 import CovidKnowMore from 'common/ui/CovidKnowMore';
 import IntoView from 'common/ui/IntoView';
 import rolesList from 'merchant/helpers/permissions/roles-list';
+import TokenisationConsent from './TokenisationConsent';
 import {
   FLASH_CHECKOUT,
   CAPTURE_SETTINGS,
@@ -33,6 +34,7 @@ import {
   REFUND_SETTINGS,
   WHATSAPP_NOTIF,
 } from './deeplink-constants';
+import { getFeature } from 'common/utils/features';
 import EasterEgg from 'merchant/components/EasterEgg';
 
 class CongfigurationContainer extends Component {
@@ -279,6 +281,10 @@ class CongfigurationContainer extends Component {
       });
   };
 
+  shouldShowConsentForTokenisation = () => {
+    const showConsent = getFeature(this.props.features, 'disable_collect_consent');
+    return Object.keys(showConsent).length > 0;
+  };
   render() {
     const {
       mode,
@@ -319,6 +325,9 @@ class CongfigurationContainer extends Component {
               onSwitchChange={this.handleCovidReliefOptinAndOut}
               isLoading={this.state.isLoading}
             />
+            <ShowWhen additionalCondition={this.shouldShowConsentForTokenisation}>
+              <TokenisationConsent />
+            </ShowWhen>
             {user.isOrgAllowedFunctionality('flashcheckout') && (
               <IntoView hashedWith={FLASH_CHECKOUT}>
                 <FlashCheckout org={org} />
@@ -330,7 +339,6 @@ class CongfigurationContainer extends Component {
             <IntoView hashedWith={REFUND_SETTINGS}>
               <DefaultRefundSpeed org={org} />
             </IntoView>
-
             <ShowWhen
               additionalCondition={(usr) =>
                 usr.isOrgRZP &&
@@ -343,7 +351,6 @@ class CongfigurationContainer extends Component {
             >
               <FeeBearerSelfserver />
             </ShowWhen>
-
             {mode === 'live' && showInternationalPaymentsCard && (
               <InternationalPayments
                 user={user}
@@ -383,6 +390,7 @@ export default compose(
         configState: state.config,
         mode: state.session.mode,
         org: state.session.org,
+        features: state.config.features,
       };
     },
     { ...ConfigActions, ...NotificationActions, openModal, closeModal, fetchUser },
