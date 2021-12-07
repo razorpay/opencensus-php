@@ -7317,7 +7317,7 @@ return [
                 'merchant_id'     => '10000000000000',
                 'risk_attributes' => [
                     'trigger_communication' => '1',
-                    'risk_tag'              => 'risk_review_suspend',
+                    'risk_tag'              => 'risk_international_disablement',
                     'risk_source'           => 'high_fts',
                     'risk_reason'           => 'high_fts',
                 ],
@@ -7370,7 +7370,7 @@ return [
                 'merchant_id'     => '10000000000000',
                 'risk_attributes' => [
                     'trigger_communication' => '1',
-                    'risk_tag'              => 'risk_review_suspend',
+                    'risk_tag'              => 'risk_international_disablement',
                     'risk_source'           => 'high_fts',
                     'risk_reason'           => 'high_fts',
                 ],
@@ -7400,7 +7400,7 @@ return [
                 'merchant_id'     => '10000000000000',
                 'risk_attributes' => [
                     'trigger_communication' => '2',
-                    'risk_tag'              => 'risk_review_suspend',
+                    'risk_tag'              => 'risk_international_disablement',
                     'risk_reason'           => 'high_fts'
                 ],
             ],
@@ -7429,7 +7429,7 @@ return [
                 'merchant_id'     => '10000000000000',
                 'risk_attributes' => [
                     'trigger_communication' => '3',
-                    'risk_tag'              => 'risk_review_suspend',
+                    'risk_tag'              => 'risk_international_disablement',
                     'risk_source'           => 'high_fts',
                     'risk_reason'           => 'high_fts',
                 ],
@@ -7444,6 +7444,36 @@ return [
                 'description' => "The selected trigger communication is invalid.",
                 'reason'      => "input_validation_failed",
                 'field'       => "trigger_communication",
+            ],]
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantInternationalDisableActionNewRouteValidationFailureInvalidRiskTag' => [
+        'request'   => [
+            'content' => [
+                'action'          => 'disable_international',
+                'merchant_id'     => '10000000000000',
+                'risk_attributes' => [
+                    'trigger_communication' => '1',
+                    'risk_tag'              => 'risk_review_suspend',
+                    'risk_source'           => 'high_fts',
+                    'risk_reason'           => 'high_fts',
+                ],
+            ],
+            'url'     => '/risk-actions/create',
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            "status_code" => 400,
+            'content'     => ['error' => [
+                'code'        => "BAD_REQUEST_ERROR",
+                'description' => "The selected risk tag is invalid.",
+                'reason'      => "input_validation_failed",
+                'field'       => "risk_tag",
             ],]
         ],
         'exception' => [

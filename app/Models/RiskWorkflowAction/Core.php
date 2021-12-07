@@ -67,9 +67,7 @@ class Core extends Base\Core
 
         if ($riskAction == Action::ENABLE_INTERNATIONAL)
         {
-            return [
-                ProductInternationalMapper::INTERNATIONAL_PRODUCTS => $riskAttributes[ProductInternationalMapper::INTERNATIONAL_PRODUCTS],
-            ];
+            return [];
         }
 
         $params = [
@@ -162,13 +160,6 @@ class Core extends Base\Core
 
             $routePermission = Permission\Name::$actionMap[$riskAction];
 
-            $internationalProducts = null;
-            if (isset($riskAttributes[ProductInternationalMapper::INTERNATIONAL_PRODUCTS]) === true)
-            {
-                $internationalProducts = $riskAttributes[ProductInternationalMapper::INTERNATIONAL_PRODUCTS];
-                unset($riskAttributes[ProductInternationalMapper::INTERNATIONAL_PRODUCTS]);
-            }
-
             $input = [
                 Constants::ACTION          => $riskAction,
                 'use_workflows'            => false,
@@ -177,7 +168,8 @@ class Core extends Base\Core
 
             if ($riskAction === Action::ENABLE_INTERNATIONAL)
             {
-                $input[ProductInternationalMapper::INTERNATIONAL_PRODUCTS] = $internationalProducts;
+                $input[ProductInternationalMapper::INTERNATIONAL_PRODUCTS] = $riskAttributes[ProductInternationalMapper::INTERNATIONAL_PRODUCTS];
+                unset($input[Constants::RISK_ATTRIBUTES]);
             }
 
             if (isset($bulkActionId))

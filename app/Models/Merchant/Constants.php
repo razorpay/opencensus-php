@@ -611,14 +611,14 @@ final class Constants
     const DISABLE_INTERNATIONAL_TEMPORARY_EMAIL_TEMPLATE         = 'emails.merchant.risk.generic.disable_international_temporary.confirmation';
     const DISABLE_INTERNATIONAL_TEMPORARY_EMAIL_SUBJECT          = 'Razorpay Account Review:  {merchant_name} | {merchant_id} | International Payment Acceptance Paused';
     const DISABLE_INTERNATIONAL_TEMPORARY_WHATSAPP_TEMPLATE_NAME = 'whatsapp_risk_international_disablement_email_signup';
-    const DISABLE_INTERNATIONAL_TEMPORARY_WHATSAPP_TEMPLATE      = 'Hi {merchantName}, we regret to inform you that acceptance of international payments has been paused on your Razorpay account due to a risk alert raised by our banking partners. Please check your registered email ID for more details.';
+    const DISABLE_INTERNATIONAL_TEMPORARY_WHATSAPP_TEMPLATE      = 'Hi {merchantName}, we regret to inform you that acceptance of international payments has been paused on your Razorpay account due to a risk alert raised by our banking partners. Please check your registered email ID for more details';
 
     //Disable International (permanent) Notification Template
     const DISABLE_INTERNATIONAL_PERMANENT_SMS_TEMPLATE           = 'sms.risk.international_disablement_email_signup';
     const DISABLE_INTERNATIONAL_PERMANENT_EMAIL_TEMPLATE         = 'emails.merchant.risk.generic.disable_international_permanent.confirmation';
     const DISABLE_INTERNATIONAL_PERMANENT_EMAIL_SUBJECT          = 'Razorpay Account Review:  {merchant_name} | {merchant_id} | International Disablement';
     const DISABLE_INTERNATIONAL_PERMANENT_WHATSAPP_TEMPLATE_NAME = 'whatsapp_risk_international_disablement_email_signup';
-    const DISABLE_INTERNATIONAL_PERMANENT_WHATSAPP_TEMPLATE      = 'Hi {merchantName}, we regret to inform you that acceptance of international payments has been paused on your Razorpay account due to a risk alert raised by our banking partners. Please check your registered email ID for more details.';
+    const DISABLE_INTERNATIONAL_PERMANENT_WHATSAPP_TEMPLATE      = 'Hi {merchantName}, we regret to inform you that acceptance of international payments has been paused on your Razorpay account due to a risk alert raised by our banking partners. Please check your registered email ID for more details';
 
 
     const MERCHANT_RISK_ACTION_CRON_ADD_TAG_MAP = [

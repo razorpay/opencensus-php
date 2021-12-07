@@ -27,12 +27,11 @@ class Validator extends Base\Validator
     protected static $createDisableInternationalRiskAttributesRules              = [
         Constants::RISK_REASON           => 'required|string|in:' . Constants::RISK_REASONS_CSV,
         Constants::RISK_SOURCE           => 'required|string|in:' . Constants::RISK_SOURCES_CSV,
-        Constants::RISK_TAG              => 'sometimes|string|in:' . Constants::RISK_TAGS_CSV,
+        Constants::RISK_TAG              => 'sometimes|string|in:' . Constants::RISK_TAG_INTERNATIONAL_DISABLEMENT,
         Constants::TRIGGER_COMMUNICATION => 'required|string|in:0,1,2',
     ];
 
     protected static $createEnableInternationalRiskAttributesRules = [
         ProductInternationalMapper::INTERNATIONAL_PRODUCTS => 'required|array',
-        Constants::CLEAR_RISK_TAGS                         => 'sometimes|string|in:0,1',
     ];
 }

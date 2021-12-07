@@ -84,6 +84,7 @@ class Constants
     const RISK_TAG_MS_RISK_REVIEW_WATCHLIST     = 'ms_risk_review_watchlist';
     const RISK_TAG_MS_RISK_REVIEW_ONHOLD        = 'ms_risk_review_onhold';
     const RISK_TAG_MS_RISK_REVIEW_DISABLE_LIVE  = 'ms_risk_review_disable_live';
+    const RISK_TAG_INTERNATIONAL_DISABLEMENT    = 'risk_international_disablement';
 
     //risk tag allowed values
     const RISK_TAGS_CSV =

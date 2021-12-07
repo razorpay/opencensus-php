@@ -90,7 +90,7 @@ return [
                 'action'          => 'disable_international',
                 'risk_attributes' => [
                     'trigger_communication' => '1',
-                    'risk_tag'              => 'risk_review_suspend',
+                    'risk_tag'              => 'risk_international_disablement',
                     'risk_source'           => 'high_fts',
                     'risk_reason'           => 'high_fts'
                 ],
@@ -112,7 +112,7 @@ return [
                 'action'          => 'disable_international',
                 'risk_attributes' => [
                     'trigger_communication' => '2',
-                    'risk_tag'              => 'risk_review_suspend',
+                    'risk_tag'              => 'risk_international_disablement',
                     'risk_source'           => 'high_fts',
                     'risk_reason'           => 'high_fts'
                 ],

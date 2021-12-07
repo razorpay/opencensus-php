@@ -161,7 +161,6 @@ class MerchantActionNotificationTest extends TestCase
         $this->startTest();
     }
 
-    // In docs provided the salesPOC is not required for International Disable
     public function testDisableInternationalTemporaryEmailBulkWorkflow()
     {
         $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
@@ -183,7 +182,6 @@ class MerchantActionNotificationTest extends TestCase
         $this->startTest();
     }
 
-    //// In docs provided the salesPOC is not required for International Disable
     public function testDisableInternationalPermanentEmailBulkWorkflow()
     {
         $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
