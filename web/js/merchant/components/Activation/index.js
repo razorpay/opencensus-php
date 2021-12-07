@@ -2132,7 +2132,7 @@ export default class ActivationWizard extends React.Component {
       showRxCA = true;
     }
     // track hubspot event
-    if (this.state.tabs[1]) {
+    if (this.state.tabs[1] && window.trackHubs) {
       window.trackHubs({
         name: 'update_property',
         data: {
@@ -2140,7 +2140,7 @@ export default class ActivationWizard extends React.Component {
         },
       });
     }
-    if (this.state.tabs[2]) {
+    if (this.state.tabs[2] && window.trackHubs) {
       window.trackHubs({
         name: 'update_property',
         data: {
