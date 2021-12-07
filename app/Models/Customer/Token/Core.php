@@ -346,9 +346,10 @@ class Core extends Base\Core
     {
         $token = $this->repo->token->getByPublicIdAndMerchant($id, $this->merchant);
 
-        if  (($token === null) or
-            (($token->getEntityId() !== $subscriptionId) and
-            ($token->getEntityType() !== Constants\Entity::SUBSCRIPTION)))
+        // removed (($token->getEntityId() !== $subscriptionId) check
+        // because one token id can be associated to more than one subscription
+
+        if  (($token === null) or ($token->getEntityType() !== Constants\Entity::SUBSCRIPTION))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_ID,
