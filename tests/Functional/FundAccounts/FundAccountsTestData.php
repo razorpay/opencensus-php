@@ -4001,7 +4001,7 @@ return [
         ]
     ],
 
-    'testCapitalCollectionsInternalContactFundaccountCreation' => [
+    'testCapitalCollectionsInternalContactFundAccountCreation' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/fund_accounts_internal',
@@ -4035,7 +4035,7 @@ return [
         ],
     ],
 
-    'testCapitalCollectionsInternalContactFundaccountCreationByOtherInternalAppFailure' => [
+    'testCapitalCollectionsInternalContactFundAccountCreationByOtherInternalAppFailure' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/fund_accounts_internal',
@@ -4068,7 +4068,7 @@ return [
         ],
     ],
 
-    'testXpayrollInternalContactFundaccountCreation' => [
+    'testXpayrollInternalContactFundAccountCreation' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/fund_accounts_internal',
@@ -4102,7 +4102,7 @@ return [
         ],
     ],
 
-    'testXpayrollInternalContactFundaccountCreationByOtherInternalAppFailure' => [
+    'testXpayrollInternalContactFundAccountCreationByOtherInternalAppFailure' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/fund_accounts_internal',

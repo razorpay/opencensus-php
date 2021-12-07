@@ -2153,7 +2153,7 @@ class FundAccountsTest extends TestCase
         Queue::assertPushed(FundAccountDetailsPropagatorJob::class,1);
     }
 
-    public function testCapitalCollectionsInternalContactFundaccountCreation()
+    public function testCapitalCollectionsInternalContactFundAccountCreation()
     {
         $this->ba->capitalCollectionsAuth();
 
@@ -2174,7 +2174,7 @@ class FundAccountsTest extends TestCase
         $this->assertEquals($fundAccount->contact['id'], $contact['id']);
     }
 
-    public function testCapitalCollectionsInternalContactFundaccountCreationByOtherInternalAppFailure()
+    public function testCapitalCollectionsInternalContactFundAccountCreationByOtherInternalAppFailure()
     {
         $contact = $this->fixtures->create('contact',
             [
@@ -2189,7 +2189,7 @@ class FundAccountsTest extends TestCase
         $this->startTest();
     }
 
-    public function testXpayrollInternalContactFundaccountCreation()
+    public function testXpayrollInternalContactFundAccountCreation()
     {
         $this->ba->xPayrollAuth();
 
@@ -2211,12 +2211,12 @@ class FundAccountsTest extends TestCase
 
         $this->assertEquals($contactDb['type'],'rzp_xpayroll');
 
-        $this->assertEquals($contactDb['id'],$contact['id']);
+        $this->assertEquals($contactDb['id'], $contact['id']);
 
-        $this->assertEquals($fundAccount->contact['id'],$contact['id']);
+        $this->assertEquals($fundAccount->contact['id'], $contact['id']);
     }
 
-    public function testXpayrollInternalContactFundaccountCreationByOtherInternalAppFailure()
+    public function testXpayrollInternalContactFundAccountCreationByOtherInternalAppFailure()
     {
         $this->ba->xPayrollAuth();
 
@@ -2231,5 +2231,63 @@ class FundAccountsTest extends TestCase
         $this->ba->payoutLinksAppAuth();
 
         $this->startTest();
+    }
+
+    public function testXpayrollInternalContactFundAccountDuplicateCreation()
+    {
+        $this->testXpayrollInternalContactFundAccountCreation();
+
+        $contact = $this->getDbLastEntity('contact');
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $fundAccountCountBefore = count($this->getDbEntities('fund_account'));
+
+        $this->testData[__FUNCTION__] = $this->testData['testXpayrollInternalContactFundAccountCreation'];
+
+        $this->testData[__FUNCTION__]['request']['content']['contact_id'] = $contact->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['content']['contact_id'] = $contact->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['status_code'] = 200;
+
+        $this->ba->xpayrollAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($fundAccount->getPublicId(), $response['id']);
+
+        $fundAccountCountAfter = count($this->getDbEntities('fund_account'));
+
+        $this->assertEquals($fundAccountCountBefore, $fundAccountCountAfter);
+    }
+
+    public function testCapitalCollectionsInternalContactFundAccountDuplicateCreation()
+    {
+        $this->testCapitalCollectionsInternalContactFundAccountCreation();
+
+        $contact = $this->getDbLastEntity('contact');
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $fundAccountCountBefore = count($this->getDbEntities('fund_account'));
+
+        $this->testData[__FUNCTION__] = $this->testData['testCapitalCollectionsInternalContactFundAccountCreation'];
+
+        $this->testData[__FUNCTION__]['request']['content']['contact_id'] = $contact->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['content']['contact_id'] = $contact->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['status_code'] = 200;
+
+        $this->ba->capitalCollectionsAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($fundAccount->getPublicId(), $response['id']);
+
+        $fundAccountCountAfter = count($this->getDbEntities('fund_account'));
+
+        $this->assertEquals($fundAccountCountBefore, $fundAccountCountAfter);
     }
 }

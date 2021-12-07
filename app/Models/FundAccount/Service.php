@@ -323,9 +323,9 @@ class Service extends Base\Service
 
         $createDuplicate = true;
 
-        if ((($this->auth->isPrivateAuth() === true) or
-             ($this->auth->isPublicAuth() === true)) or
-            ($this->isAllowedInternalAppForDeDuplicateFA()))
+        if (($this->auth->isPrivateAuth() === true) or
+            ($this->auth->isPublicAuth() === true) or
+            ($this->isAllowedInternalAppForDeDuplicateFA() === true))
         {
             $createDuplicate = false;
         }
@@ -348,10 +348,12 @@ class Service extends Base\Service
 
     protected function isAllowedInternalAppForDeDuplicateFA(): bool
     {
-        return ($this->auth->isPayoutLinkApp() or
-                $this->auth->isVendorPaymentApp() or
-                $this->auth->isSettlementsApp() or
-                $this->auth->isScroogeApp());
+        return (($this->auth->isPayoutLinkApp() === true) or
+                ($this->auth->isVendorPaymentApp() === true) or
+                ($this->auth->isSettlementsApp() === true) or
+                ($this->auth->isScroogeApp() === true) or
+                ($this->auth->isXPayrollApp() === true) or
+                ($this->auth->isCapitalCollectionsApp() === true));
     }
 
     protected function handleFundAccountCreationForCustomer(array $input)
