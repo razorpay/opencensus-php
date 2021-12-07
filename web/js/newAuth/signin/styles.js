@@ -116,12 +116,13 @@ export const LinkButton = Styled(View)`
 `;
 
 export const CaptchaTextView = Styled(View)`
-  position: absolute;
-  bottom: 0;
+  position: relative;
+  background-color: #fff;
+  top: -3px;
   left: 0;
   right: 0;
   @media (min-width: 768px) {
-    position: relative;
+    background-color: transparent;
   }
 `;
 

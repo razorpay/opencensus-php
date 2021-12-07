@@ -69,6 +69,7 @@
     "start": "STAGE=development node tools/build.js --project=merchant",
     "debug": "STAGE=development node --nolazy --inspect-brk=9229 tools/build.js --project=merchant",
     "start:all": "STAGE=development run-p build:*",
+    "start:newAuth": "STAGE=development node tools/build.js --project=newAuth",
     "build:merchant": "node tools/build.js --project=merchant",
     "build:merchantLA": "node tools/build.js --project=merchantLA",
     "build:razorx": "node tools/build.js --project=razorx",
