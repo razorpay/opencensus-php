@@ -1119,7 +1119,7 @@ class Repository extends \Razorpay\Spine\Repository
 
     public function getSlaveConnection(string $mode = null)
     {
-        if ($this->app['env'] === 'testing')
+        if (in_array($this->app['env'], ['testing', 'dev', 'testing_docker'], true) === true)
         {
             return Config::get('database.default');
         }

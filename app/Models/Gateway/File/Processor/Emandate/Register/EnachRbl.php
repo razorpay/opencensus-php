@@ -170,9 +170,13 @@ class EnachRbl extends Base
             $fileInfo[] = $fullFileName;
         }
 
+        $bucketConfig = $this->getBucketConfig(self::FILE_TYPE);
+
         $data = [
-            BeamService::BEAM_PUSH_FILES   => $fileInfo,
-            BeamService::BEAM_PUSH_JOBNAME => BeamConstants::RBL_ENACH_REGISTER_FILE_JOB_NAME
+            BeamService::BEAM_PUSH_FILES         => $fileInfo,
+            BeamService::BEAM_PUSH_JOBNAME       => BeamConstants::RBL_ENACH_REGISTER_FILE_JOB_NAME,
+            BeamService::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
+            BeamService::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
         ];
 
         // In seconds

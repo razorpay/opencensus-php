@@ -554,7 +554,6 @@ class Type
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
             self::BATCH_VALIDATED,
-            self::UBI_NETBANKING_REFUND,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [
@@ -579,7 +578,6 @@ class Type
             self::CITI_NACH_DEBIT_SUMMARY,
             self::CITI_NACH_EARLY_DEBIT,
             self::CITI_NACH_EARLY_DEBIT_SUMMARY,
-            self::CITI_NACH_COMBINED_CANCEL,
             self::FIRST_DATA_PARES_FILE,
             self::SBI_UPI_REFUND,
         ],
@@ -629,6 +627,14 @@ class Type
             self::FSB_NETBANKING_REFUND,
             self::ICICI_NACH_REGISTER,
             self::ICICI_NACH_COMBINED_DEBIT,
+            self::ICICI_NACH_COMBINED_CANCEL,
+            self::CITI_NACH_REGISTER,
+            self::CITI_NACH_DEBIT,
+            self::CITI_NACH_DEBIT_SUMMARY,
+            self::CITI_NACH_COMBINED_CANCEL,
+            self::RBL_ENACH_REGISTER,
+            self::RBL_ENACH_DEBIT,
+            self::UBI_NETBANKING_REFUND,
             self::JKB_NETBANKING_REFUND,
             self::AIRTELMONEY_WALLET_FAILED_REFUND,
             self::AXIS_MIGS_FAILED_REFUND,
@@ -690,6 +696,7 @@ class Type
             self::AXIS_EMANDATE_DEBIT,
             self::ENACH_NPCI_NB_DEBIT_ICICI,
             self::ENACH_NPCI_NB_DEBIT,
+            self::ENACH_NPCI_NB_CANCEL,
             self::BDBL_NETBANKING_REFUND,
         ],
 

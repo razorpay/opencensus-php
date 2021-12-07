@@ -251,9 +251,13 @@ class PaperNachCiti extends Debit\Base
             $fileInfo[] = $fullFileName;
         }
 
+        $bucketConfig = $this->getBucketConfig(self::FILE_TYPE);
+
         $data = [
-            BeamService::BEAM_PUSH_FILES   => $fileInfo,
-            BeamService::BEAM_PUSH_JOBNAME => BeamConstants::CITIBANK_NACH_FILE_JOB_NAME
+            BeamService::BEAM_PUSH_FILES         => $fileInfo,
+            BeamService::BEAM_PUSH_JOBNAME       => BeamConstants::CITIBANK_NACH_FILE_JOB_NAME,
+            BeamService::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
+            BeamService::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
         ];
 
         // In seconds

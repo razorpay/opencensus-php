@@ -28,6 +28,7 @@ class Ubi extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_UBI;
     const GATEWAY_CODE           = [IFSC::UBIN, IFSC::CORP, IFSC::ANDB, Payment\Processor\Netbanking::ANDB_C];
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
+    const BASE_STORAGE_DIRECTORY = 'Ubi/Refund/Netbanking/';
 
     protected function formatDataForFile(array $data)
     {
@@ -90,5 +91,12 @@ class Ubi extends Base
     protected function addGatewayEntitiesToDataWithPaymentIds(array $data, array $paymentIds)
     {
         return $data;
+    }
+
+    protected function getFileToWriteNameWithoutExt(): string
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 }

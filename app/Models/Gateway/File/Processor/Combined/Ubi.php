@@ -102,7 +102,7 @@ class Ubi extends Base
                     'channel'   => 'tech_alerts',
                     'filetype'  => self::BEAM_FILE_TYPE,
                     'subject'   => 'Ubi Combined File send failure',
-                    'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SETTLEMENT_ALERTS]
+                    'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::NBPLUS_TECH]
                 ];
 
                 $this->app['beam']->beamPush($beamData, $timelines, $mailInfo);
