@@ -7,8 +7,9 @@ use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Base\PublicEntity;
+use RZP\Reconciliator\Base\SubReconciliator\Upi;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Upi\UpiPaymentServiceReconciliate
 {
     const COLUMN_RRN                = 'partner_txn_id';
     const COLUMN_PAYMENT_ID         = 'till_id';

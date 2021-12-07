@@ -2281,6 +2281,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::CPS_ROUTE) === Payment\Entity::NB_PLUS_SERVICE);
     }
 
+    public function isRoutedThroughUpiPaymentService()
+    {
+        return ($this->getAttribute(self::CPS_ROUTE) === Payment\Entity::UPI_PAYMENT_SERVICE);
+    }
+
     public function isPushPaymentMethod()
     {
         return ($this->isBankTransfer() === true) or
