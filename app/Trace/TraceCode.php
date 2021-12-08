@@ -2501,6 +2501,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_DEVICE_DETAIL_DOES_NOT_EXIST                     = 'USER_DEVICE_DETAIL_DOES_NOT_EXIST';
     const USER_DEVICE_CREATE_DETAIL                             = 'USER_DEVICE_CREATE_DETAIL';
     const USER_DEVICE_DETAIL_SAVE_FAILED                        = 'USER_DEVICE_DETAIL_SAVE_FAILED';
+    const USER_DEVICE_CREATE_DETAIL_REQUEST                     = 'USER_DEVICE_CREATE_DETAIL_REQUEST';
 
     //Trace codes for 2fa features
     const LOCKED_USER_LOGIN                                     = 'LOCKED_USER_LOGIN';

@@ -15,6 +15,12 @@ class Core extends Base\Core
         $userId = $user['id'];
         $merchantId = $this->merchant->getId();
 
+        $this->trace->info(TraceCode::USER_DEVICE_CREATE_DETAIL_REQUEST,[
+            "merchant_id" => $merchantId,
+            "user_id"     => $userId,
+            "data"        => $input
+        ]);
+
         try
         {
             (new Validator())->validateInput('apps_flyer_id_input', $input);
