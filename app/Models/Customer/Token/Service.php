@@ -5,6 +5,7 @@ namespace RZP\Models\Customer\Token;
 use Aws\Ec2\Exception\Ec2Exception;
 use phpseclib\Crypt\AES;
 use RZP\Encryption\AESEncryption;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Customer;
@@ -784,14 +785,39 @@ class Service extends Base\Service
             'status'   => $input['status']
         ];
 
-        $vaultToken = $this->core->updateStatus($input);
+        $token = $this->core->updateStatus($input);
 
-        $response['vault_token'] = $vaultToken;
+        $this->triggerStatusWebhook($input, $token);
+
+        $response['vault_token'] = $token->card['vault_token'];
 
         $this->trace->info(
             TraceCode::VAULT_TOKEN_STATUS_UPDATE_SERVICE,
             ['input' => $input]);
 
         return $response;
+    }
+
+    protected function triggerStatusWebhook($input, $dbToken)
+    {
+        $serviceProviderTokens = $this->core->fetchToken($dbToken);
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $dbToken,
+            ApiEventSubscriber::WITH => $serviceProviderTokens,
+        ];
+
+        if ($input[Token\Entity::STATUS] === 'active')
+        {
+            $this->app['events']->dispatch('api.token.service_provider.activated', $eventPayload);
+        }
+        elseif ($input[Token\Entity::STATUS] === 'suspended')
+        {
+            $this->app['events']->dispatch('api.token.service_provider.cancelled', $eventPayload);
+        }
+        elseif ($input[Token\Entity::STATUS] === 'deactivated')
+        {
+            $this->app['events']->dispatch('api.token.service_provider.deactivated', $eventPayload);
+        }
     }
 }

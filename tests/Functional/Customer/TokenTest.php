@@ -10,10 +10,12 @@ use RZP\Models\Customer\Token;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Tests\Traits\TestsWebhookEvents;
 
 class TokenTest extends TestCase
 {
     use PaymentTrait;
+    use TestsWebhookEvents;
 
     protected function setUp(): void
     {
@@ -986,12 +988,51 @@ class TokenTest extends TestCase
 
     public function testTokenStatusLive()
     {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ($route, $method, $input)
+        {
+            $response['success'] = true;
+            $token = base64_encode('I2lCam2io3vfu1');
+
+            $response['token'] = 'I2lCam2io3vfu1';
+            $response['fingerprint'] = strrev($token);
+            $response['status'] = 'activated';
+
+            $response['service_provider_tokens'] = [
+                [
+                    'id'             => 'spt_1234abcd',
+                    'entity'         => 'service_provider_token',
+                    'provider_type'  => 'network',
+                    'provider_name'  => 'visa',
+                    'interoperable'  => true,
+                    'status'         => 'suspended',
+                    'provider_data'  => [
+                        'token_reference_number' => $token,
+                        'card_reference_number'  => strrev($token),
+                        'token_iin'              => '400000',
+                        'token_expiry_month'     => '12',
+                        'token_expiry_year'      => '2023',
+                    ],
+                ]
+            ];
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
         $this->ba->privateAuth();
 
         $createPayload = $this->testData['testCreateToken'];
 
         $response = $this->startTest($createPayload);
-
 
         $statusPayload = $this->testData['testTokenStatusLive'];
 
@@ -1004,6 +1045,8 @@ class TokenTest extends TestCase
         ];
 
         $this->ba->appAuth('rzp_test','');
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
 
         $statusResponse = $this->startTest($statusPayload);
 

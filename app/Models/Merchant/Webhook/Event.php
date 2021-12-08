@@ -132,6 +132,13 @@ class Event
     const PAYMENT_LINKS_PRODUCT_REJECTED              = 'product.payment_links.rejected';
     const PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED   = 'product.payment_links.instantly_activated';
 
+    //toeknisation events
+    const TOKEN_SERVICE_PROVIDER_ACTIVATED                   = 'token.service_provider.activated';
+    const TOKEN_SERVICE_PROVIDER_SUSPENDED                   = 'token.service_provider.cancelled';
+    const TOKEN_SERVICE_PROVIDER_DEACTIVATED                 = 'token.service_provider.deactivated';
+    const TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED              = 'token.service_provider.deactivated';
+
+
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
@@ -245,6 +252,10 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW,
         self::ZAPIER_PAYMENT_PAGE_PAID_V1,
         self::SHIPROCKET_PAYMENT_PAGE_PAID_V1,
+        self::TOKEN_SERVICE_PROVIDER_ACTIVATED,
+        self::TOKEN_SERVICE_PROVIDER_SUSPENDED,
+        self::TOKEN_SERVICE_PROVIDER_DEACTIVATED,
+        self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED,
     ];
 
     /**
@@ -366,6 +377,10 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW,
         self::ZAPIER_PAYMENT_PAGE_PAID_V1,
         self::SHIPROCKET_PAYMENT_PAGE_PAID_V1,
+        self::TOKEN_SERVICE_PROVIDER_ACTIVATED,
+        self::TOKEN_SERVICE_PROVIDER_SUSPENDED,
+        self::TOKEN_SERVICE_PROVIDER_DEACTIVATED,
+        self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED,
     ];
 
     // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
@@ -483,6 +498,10 @@ class Event
         self::PAYMENT_PENDING                             => 41,
         self::PAYOUT_LINK_EXPIRED                         => 42,
         self::SHIPROCKET_PAYMENT_PAGE_PAID_V1             => 43,
+        self::TOKEN_SERVICE_PROVIDER_ACTIVATED            => 43,
+        self::TOKEN_SERVICE_PROVIDER_SUSPENDED            => 44,
+        self::TOKEN_SERVICE_PROVIDER_DEACTIVATED          => 45,
+        self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED       => 46,
     ];
 
     /**
@@ -600,6 +619,10 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION   => [Product::PRIMARY],
         self::PAYMENT_LINKS_PRODUCT_REJECTED              => [Product::PRIMARY],
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW          => [Product::PRIMARY],
+        self::TOKEN_SERVICE_PROVIDER_ACTIVATED            => [Product::PRIMARY],
+        self::TOKEN_SERVICE_PROVIDER_SUSPENDED            => [Product::PRIMARY],
+        self::TOKEN_SERVICE_PROVIDER_DEACTIVATED          => [Product::PRIMARY],
+        self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED       => [Product::PRIMARY],
     ];
 
     /**
@@ -711,6 +734,10 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION   => Entity::MERCHANT_PRODUCT,
         self::PAYMENT_LINKS_PRODUCT_REJECTED              => Entity::MERCHANT_PRODUCT,
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW          => Entity::MERCHANT_PRODUCT,
+        self::TOKEN_SERVICE_PROVIDER_ACTIVATED            => Entity::TOKEN,
+        self::TOKEN_SERVICE_PROVIDER_SUSPENDED            => Entity::TOKEN,
+        self::TOKEN_SERVICE_PROVIDER_DEACTIVATED          => Entity::TOKEN,
+        self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED       => Entity::TOKEN,
     ];
 
     public static $eventsToFeatureMap = [
@@ -790,6 +817,10 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION   => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_LINKS_PRODUCT_REJECTED              => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW          => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+        self::TOKEN_SERVICE_PROVIDER_ACTIVATED            => Feature\Constants::NETWORK_TOKENIZATION_LIVE,
+        self::TOKEN_SERVICE_PROVIDER_SUSPENDED            => Feature\Constants::NETWORK_TOKENIZATION_LIVE,
+        self::TOKEN_SERVICE_PROVIDER_DEACTIVATED          => Feature\Constants::NETWORK_TOKENIZATION_LIVE,
+        self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED       => Feature\Constants::NETWORK_TOKENIZATION_LIVE,
     ];
 
     /**

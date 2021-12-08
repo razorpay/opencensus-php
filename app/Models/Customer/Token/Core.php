@@ -1555,7 +1555,7 @@ class Core extends Base\Core
 
         (new Card\Core)->updateCard($token['card_id'], $tokenData);
 
-        return $token->card['vault_token'];
+        return $token;
     }
 
     public function getExpiryTimestamp($expiryMonth, $expiryYear)

@@ -913,6 +913,27 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onTokenServiceProviderActivated($token)
+    {
+        $payload = $this->getTokenServiceProviderPayload($token);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function onTokenServiceProviderCancelled($token)
+    {
+        $payload = $this->getTokenServiceProviderPayload($token);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function onTokenServiceProviderDeactivated($token)
+    {
+        $payload = $this->getTokenServiceProviderPayload($token);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     // payouts can be rejected with comment in workflows. passing that comment in payload for consumption by merchant.
     protected function getPayoutRejectCommentInPayload(Payout\Entity $payout, array $payload): array
     {
@@ -1809,5 +1830,22 @@ class ApiEventSubscriber extends Base\Core
             $payload[Payout\Entity::PAYOUT][Payout\Entity::ENTITY][Payout\Entity::STATUS_DETAILS] = $statusDetails;
         }
         return $payload;
+    }
+
+    protected function getTokenServiceProviderPayload($token): array
+    {
+        $serviceProviderTokens = $this->withPayload;
+
+        $publicToken = $token->toArrayPublicTokenizedCard($serviceProviderTokens);
+
+        $partialPayload[Constants\Entity::TOKEN] = [
+            'entity' => $publicToken,
+        ];
+
+        $partialPayload[Constants\Entity::SERVICE_PROVIDER_TOKEN] = [
+            'entity' => $serviceProviderTokens,
+        ];
+
+        return $partialPayload;
     }
 }

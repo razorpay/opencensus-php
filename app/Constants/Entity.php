@@ -596,6 +596,9 @@ class Entity
 
     const ONE_CLICK_CHECKOUT    = 'one_click_checkout';
 
+    // Network Tokenization
+    const SERVICE_PROVIDER_TOKEN = 'service_provider_token';
+
 
     /**
      * Defines a map of entites which are currently

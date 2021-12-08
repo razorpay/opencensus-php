@@ -405,5 +405,5 @@ return [
             'class'                 => \RZP\Exception\BadRequestException::class,
             'internal_error_code'   => 'BAD_REQUEST_NO_RECORDS_FOUND',
         ],
-    ]
+    ],
 ];
