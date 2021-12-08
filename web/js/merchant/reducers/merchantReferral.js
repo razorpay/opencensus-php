@@ -14,7 +14,7 @@ const initialState = {
 export const fetchMerchantReferralDetail = () => {
   return {
     type: FETCH_MERCHANT_REFERRAL_DETAILS,
-    payload: merchantFetch('merchants/onboarding/m2m_referral'),
+    payload: merchantFetch({ url: 'merchants/onboarding/m2m_referral', mode: 'live' }),
   };
 };
 
