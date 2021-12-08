@@ -246,4 +246,24 @@ class FTSController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function createMerchantConfigurations()
+    {
+        $response = $this->app['fts_fund_transfer']->createMerchantConfigurations($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteMerchantConfigurations()
+    {
+        $response = $this->app['fts_fund_transfer']->deleteMerchantConfigurations($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function patchMerchantConfigurations()
+    {
+        $response = $this->app['fts_fund_transfer']->patchMerchantConfigurations($this->input);
+
+        return ApiResponse::json($response);
+    }
 }

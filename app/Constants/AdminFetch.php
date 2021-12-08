@@ -1475,6 +1475,16 @@ class AdminFetch
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
             ],
+            Entity::FTS_MERCHANT_CONFIGURATIONS => [
+                'merchant_id'       => [
+                    Fetch::LABEL    => 'Merchant Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'config_key'       => [
+                    Fetch::LABEL    => 'Config Key',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+            ],
         ];
     }
 

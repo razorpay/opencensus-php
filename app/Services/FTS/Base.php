@@ -116,6 +116,8 @@ class Base
 
     const FTS_ONE_OFF_DB_MIGRATE_URL = '/one_off_db_migrate';
 
+    const FTS_MERCHANT_CONFIGURATIONS_URL = '/merchant_configurations';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'admin_email';

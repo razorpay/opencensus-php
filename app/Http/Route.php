@@ -558,6 +558,10 @@ class Route
         'fts_dashboard_schedule_create'                     => ['post',     'fts/dashboard/schedules',                                          'FTSController@createSchedule'                                      ],
         'fts_dashboard_schedule_delete'                     => ['delete',   'fts/dashboard/schedules',                                          'FTSController@deleteSchedule'                                      ],
         'fts_dashboard_schedule_update'                     => ['patch',    'fts/dashboard/schedules',                                          'FTSController@updateSchedule'                                      ],
+        'fts_dashboard_merchant_configurations_create'      => ['post',     'fts/dashboard/merchant_configurations',                            'FTSController@createMerchantConfigurations'                        ],
+        'fts_dashboard_merchant_configurations_delete'      => ['delete',   'fts/dashboard/merchant_configurations',                            'FTSController@deleteMerchantConfigurations'                        ],
+        'fts_dashboard_merchant_configurations_patch'       => ['patch',    'fts/dashboard/merchant_configurations',                            'FTSController@patchMerchantConfigurations'                         ],
+
 
         'nodal_file_upload_retry'                  => ['post',     'nodal_file_upload/retry',                        'FundTransferAttemptController@nodalFileUploadThroughBeam',         ],
         'channel_health_check'                     => ['post',     'channel_health_check/{channel}',                 'FundTransferAttemptController@healthCheck',                        ],
@@ -5627,6 +5631,9 @@ class Route
         'fts_dashboard_schedule_create',
         'fts_dashboard_schedule_delete',
         'fts_dashboard_schedule_update',
+        'fts_dashboard_merchant_configurations_create',
+        'fts_dashboard_merchant_configurations_delete',
+        'fts_dashboard_merchant_configurations_patch',
 
         'create_merchant_options_admin',
         'read_merchant_options_admin',
@@ -6736,6 +6743,9 @@ class Route
         'fts_dashboard_schedule_create'                     => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_schedule_delete'                     => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_schedule_update'                     => Permission::FTS_ROUTING_RULES_UPDATE,
+        'fts_dashboard_merchant_configurations_create'      => Permission::FTS_ROUTING_RULES_UPDATE,
+        'fts_dashboard_merchant_configurations_delete'      => Permission::FTS_ROUTING_RULES_UPDATE,
+        'fts_dashboard_merchant_configurations_patch'       => Permission::FTS_ROUTING_RULES_UPDATE,
 
         'reports_monthly_banking_invoice_admin'     => Permission::VIEW_MERCHANT_REPORT,
 

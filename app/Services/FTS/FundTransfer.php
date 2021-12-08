@@ -1387,4 +1387,34 @@ class FundTransfer extends Base
             $input);
     }
 
+    public function createMerchantConfigurations(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FTS_MERCHANT_CONFIGURATIONS_URL,
+            Requests::POST,
+            $input);
+    }
+
+    public function deleteMerchantConfigurations(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FTS_MERCHANT_CONFIGURATIONS_URL,
+            Requests::DELETE,
+            $input);
+    }
+
+    public function patchMerchantConfigurations(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FTS_MERCHANT_CONFIGURATIONS_URL,
+            Requests::PATCH,
+            $input);
+    }
+
 }

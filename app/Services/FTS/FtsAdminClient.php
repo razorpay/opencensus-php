@@ -34,6 +34,8 @@ class FtsAdminClient extends Base
 
     const CHANNEL_INFORMATION_STATUS_LOGS = "channel_information_status_logs";
 
+    const MERCHANT_CONFIGURATIONS = "merchant_configurations";
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
@@ -150,6 +152,14 @@ class FtsAdminClient extends Base
             parent::CHANNEL_INFORMATION_STATUS_LOG_GET_ROUTE,
             Requests::GET,
             $input)['body'][self::CHANNEL_INFORMATION_STATUS_LOGS];
+    }
+
+    public function getMerchantConfigurations(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::FTS_MERCHANT_CONFIGURATIONS_URL,
+            Requests::GET,
+            $input)['body'][self::MERCHANT_CONFIGURATIONS];
     }
 
     public function fetch(string $entity, string $id, array $input)
