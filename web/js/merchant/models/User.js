@@ -315,6 +315,10 @@ export default class User {
     return this.isFeatureEnabled('covid');
   }
 
+  get isRepaymentBannerEnabled() {
+    return this.getExpStatus('free_credit_recovery_banner');
+  }
+
   get isMagicCheckoutEnabled() {
     return (
       this.isFeatureEnabled('one_cc_merchant_dashboard') &&

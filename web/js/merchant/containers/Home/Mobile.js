@@ -34,6 +34,7 @@ import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import EasterEgg from 'merchant/components/EasterEgg';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
+import RepaymentAnnouncment from 'merchant/components/Announcements/PaymentRecovery';
 
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
 @connect(
@@ -213,6 +214,7 @@ class AnalyticsMobile extends Component {
             </Space>
           ) : null}
 
+          {user.isRepaymentBannerEnabled && <RepaymentAnnouncment userId={user.current} />}
           {user.isOnboardingV2Enabled ? <OnboardingCard referee={this.props.referee} /> : null}
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">

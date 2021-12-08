@@ -21,6 +21,7 @@ import Announcement from 'merchant/components/Announcements/Instant';
 import NPSAnnouncement from 'merchant/components/Announcements/NPSAnnouncement';
 import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
 import CovidCampaignAnnouncement from 'merchant/components/Announcements/CovidCampaign';
+import RepaymentAnnouncment from 'merchant/components/Announcements/PaymentRecovery';
 import CatalystCampaignBannerPhase2 from 'merchant/components/Announcements/CatalystCampaignBannerPhase2';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import InternationalRequestStatusAnnouncement from 'merchant/components/Announcements/InternationalRequestStatus';
@@ -352,6 +353,7 @@ class AnalyticsDesktop extends Component {
 
     return (
       <div className="home-analytics-desktop">
+        {/* Announcement Banner Start */}
         <div
           ref={(node) => onExtraContentMount(node)}
           className={`extra-content${showOnboardingBanner ? ' has-ob-banner' : ''}${
@@ -598,9 +600,14 @@ class AnalyticsDesktop extends Component {
           <ShowWhen additionalCondition={(usr) => usr.isNitroCCCampaignEnabled}>
             <NitroCCCampaign productName="home" />
           </ShowWhen>
+
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
+
           {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}
+
+          {/* Free Credits Repayments Banner */}
+          {user.isRepaymentBannerEnabled && <RepaymentAnnouncment userId={user.current} />}
 
           {user.isNeostoneFlowEnabled('neostone-tracker') && (
             <div className="nss-tracker-wrapper">
@@ -615,6 +622,9 @@ class AnalyticsDesktop extends Component {
           )}
 
           {this.props.can_refer ? <M2MBanner /> : null}
+
+          {/* Announcement Banners End */}
+          {/* TODO: Move announcement section to different file */}
 
           {user.canSwitchOnboardingCard ? (
             this.renderOnboardingAndRecommendationWidget()
