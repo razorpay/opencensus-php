@@ -408,7 +408,8 @@ trait Capture
 
             (new Payment\Metric)->pushExceptionMetrics($e, Payment\Metric::PAYMENT_CAPTURE_FAILED);
 
-            if ($this->causedByLostConnection($e))
+            if (($e instanceof \Exception) and
+                ($this->causedByLostConnection($e)))
             {
                 $this->trace->traceException(
                     $e,
@@ -420,6 +421,12 @@ trait Capture
             }
             else
             {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYMENT_CAPTURE_FAILURE
+                );
+
                 throw $e;
             }
         }
