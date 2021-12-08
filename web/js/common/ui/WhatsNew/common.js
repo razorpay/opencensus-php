@@ -27,7 +27,7 @@ export const getNotificationsReadData = (merchant_id) => {
   const user = store.getState().session.user;
   const { announcements } = store.getState().growthService.announcements;
 
-  if (user.isGrowthServiceEnabled) {
+  if (user.isGSAnnouncementsEnabled) {
     notifications.push(...announcements);
   } else {
     if (window.old_notifications) notifications.push(...window.old_notifications);

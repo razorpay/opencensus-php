@@ -16,6 +16,7 @@ import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
 import { getItem } from 'common/utils/localStorage';
+import DashboardBanner from '../../../common/ui/DashboardBanner';
 
 @connect((state) => {
   return {
@@ -34,17 +35,21 @@ export default class PaymentPagesContainer extends Component {
 
     return (
       <>
-        <ShowWhen
-          additionalCondition={(currentUser) =>
-            currentUser.isPartOfZapierIntegrationExperiment &&
-            !getItem(`zapier-integration-banner-${user.current}`)
-          }
-        >
-          <ZapierLaunchBanner
-            fromWhere="payment-pages"
-            bannerKey={`zapier-integration-banner-${user.current}`}
-          />
-        </ShowWhen>
+        <div className="banner-container">
+          <DashboardBanner />
+          <ShowWhen
+            additionalCondition={(currentUser) =>
+              currentUser.isPartOfZapierIntegrationExperiment &&
+              !getItem(`zapier-integration-banner-${user.current}`) &&
+              !currentUser.isGSBannersEnabled
+            }
+          >
+            <ZapierLaunchBanner
+              fromWhere="payment-pages"
+              bannerKey={`zapier-integration-banner-${user.current}`}
+            />
+          </ShowWhen>
+        </div>
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}
           <header id="link-header">

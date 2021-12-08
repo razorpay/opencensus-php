@@ -69,14 +69,12 @@ class Announcement extends Component {
     entries.forEach((entry) => {
       if (entry.isIntersecting && entry.intersectionRatio === 1)
         this.timeoutID = setTimeout(() => {
-          const { card_id, tracking } = this.props;
+          const { card_id, tracking, trackingData } = this.props;
           const title = this.getTitle();
+          const payload = trackingData ? { ...trackingData } : { title, card_id };
 
           tracking?.trackEvent(
-            window.rzpQ?.merchantActions().success('merchant_dashboard.impression_banner', {
-              title,
-              card_id,
-            }),
+            window.rzpQ?.merchantActions().success('merchant_dashboard.impression_banner', payload),
           );
           if (this.bannerRef?.current) this.observer?.unobserve(this.bannerRef.current);
         }, 5000);
@@ -85,16 +83,14 @@ class Announcement extends Component {
   };
 
   componentDidMount() {
-    const { card_id, tracking } = this.props;
+    const { card_id, tracking, trackingData } = this.props;
     const bannerContainer = document.getElementById(`announcement-banner-${card_id}`);
     const title = this.getTitle();
+    const banner_text = bannerContainer?.querySelector('.content')?.textContent;
+    const payload = trackingData ? { ...trackingData } : { title, card_id, banner_text };
 
     tracking?.trackEvent(
-      window.rzpQ?.merchantActions().success('merchant_dashboard.display_banner', {
-        title,
-        banner_text: bannerContainer?.querySelector('.content')?.textContent,
-        card_id,
-      }),
+      window.rzpQ?.merchantActions().success('merchant_dashboard.display_banner', payload),
     );
     if (this.bannerRef?.current) this.observer?.observe(this.bannerRef.current);
   }
@@ -110,31 +106,27 @@ class Announcement extends Component {
   };
 
   trackBannerClose = () => {
-    const { card_id, tracking } = this.props;
+    const { card_id, tracking, trackingData } = this.props;
     const bannerContainer = document.getElementById(`announcement-banner-${card_id}`);
     const title = this.getTitle();
+    const banner_text = bannerContainer?.querySelector('.content')?.textContent;
+    const payload = trackingData ? { ...trackingData } : { title, card_id, banner_text };
 
     tracking?.trackEvent(
-      window.rzpQ?.merchantActions().success('merchant_dashboard.banner_close', {
-        title,
-        banner_text: bannerContainer?.querySelector('.content')?.textContent,
-        card_id,
-      }),
+      window.rzpQ?.merchantActions().success('merchant_dashboard.banner_close', payload),
     );
   };
 
   trackOnHover = () => {
-    const { card_id, tracking } = this.props;
+    const { card_id, tracking, trackingData } = this.props;
     const title = this.getTitle();
     this.setState({
       hovered: true,
     });
+    const payload = trackingData ? { ...trackingData } : { title, card_id };
 
     tracking.trackEvent(
-      window.rzpQ?.merchantActions().success('merchant_dashboard.hover_banner', {
-        title,
-        card_id,
-      }),
+      window.rzpQ?.merchantActions().success('merchant_dashboard.hover_banner', payload),
     );
   };
 
@@ -162,17 +154,18 @@ class Announcement extends Component {
     // the condition after && is because some CTA text are wrapped in strong, b, etc. tags, so checking if their parent is a or button, then fire an event.
     if (node !== 'A' && node !== 'BUTTON' && parentNode !== 'A' && parentNode !== 'BUTTON') return;
 
-    const { card_id, tracking } = this.props;
+    const { card_id, tracking, trackingData } = this.props;
     const link = node === 'A' ? e.target?.href : e.target?.parentElement?.href;
     const title = this.getTitle();
+    const banner_text = e.target?.closest('.content')?.textContent;
+    const cta_value = e.target?.textContent?.trim();
+    const payload = trackingData ? { ...trackingData } : { title, card_id, banner_text };
 
     tracking?.trackEvent(
       window.rzpQ?.merchantActions().initiated('merchant_dashboard.click_banner_cta', {
-        title,
-        banner_text: e.target?.closest('.content')?.textContent,
-        card_id,
-        cta_value: e.target?.textContent?.trim(),
+        ...payload,
         link,
+        cta_value,
       }),
     );
   };

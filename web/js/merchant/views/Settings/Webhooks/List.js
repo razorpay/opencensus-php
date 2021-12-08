@@ -14,6 +14,7 @@ import DocsLink from 'merchant/components/DocsLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import CSATSurveyBanner from 'merchant/components/Announcements/CSATSurveyBanner';
+import DashboardBanner from '../../../../common/ui/DashboardBanner';
 
 class WebhooksContainer extends ListContainer {
   fetchEntityList(params) {
@@ -69,7 +70,10 @@ class WebhooksContainer extends ListContainer {
 
     return (
       <>
-        <CSATSurveyBanner user={this.props.user} />
+        <div className="banner-container">
+          <DashboardBanner />
+          <CSATSurveyBanner user={this.props.user} />
+        </div>
         <div className="content-wrapper" style={{ minHeight: '350px' }}>
           {/* passing the new props to the HeaderAction component to support the m-web view */}
           <HeaderAction responsive>

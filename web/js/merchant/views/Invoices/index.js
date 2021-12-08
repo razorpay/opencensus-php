@@ -16,6 +16,7 @@ import Items from 'merchant/views/Invoices/Items/List';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
 import { getItem } from 'common/utils/localStorage';
+import DashboardBanner from '../../../common/ui/DashboardBanner';
 
 import OnBoarding, {
   getIsInvoicesEnabled,
@@ -100,18 +101,22 @@ export default class InvoicesContainer extends Component {
 
     return (
       <React.Fragment>
-        <ShowWhen
-          additionalCondition={(currentUser) =>
-            currentUser.isPartOfZapierIntegrationExperiment &&
-            !getItem(`zapier-integration-banner-${user.current}`)
-          }
-        >
-          <ZapierLaunchBanner
-            fromWhere="invoices"
-            bannerKey={`zapier-integration-banner-${user.current}`}
-          />
-        </ShowWhen>
-        <PayPalForInvoice />
+        <div className="banner-container">
+          <DashboardBanner />
+          <ShowWhen
+            additionalCondition={(currentUser) =>
+              currentUser.isPartOfZapierIntegrationExperiment &&
+              !currentUser.isGSBannersEnabled &&
+              !getItem(`zapier-integration-banner-${user.current}`)
+            }
+          >
+            <ZapierLaunchBanner
+              fromWhere="invoices"
+              bannerKey={`zapier-integration-banner-${user.current}`}
+            />
+          </ShowWhen>
+          <PayPalForInvoice />
+        </div>
 
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}

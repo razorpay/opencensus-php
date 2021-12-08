@@ -45,10 +45,10 @@ export default class GrowthService extends GenericEntity {
     };
   };
 
-  fetchAssetData = (merchant_id, channel_id, assetName) => {
+  fetchAssetData = (channel_id, assetName) => {
     return this.makeGenericAjaxCall({
       data: {
-        merchant_id,
+        merchant_id: this.user?.current,
         channel_id,
         asset: assetName,
         ...this.getPayloadData(),
@@ -72,13 +72,12 @@ export default class GrowthService extends GenericEntity {
       .catch((_) => null);
   };
 
-  getAnnouncements = async (merchant_id, fromWhere) => {
+  getAnnouncements = async (fromWhere) => {
     let announcements = [];
 
     if (Array.isArray(window.old_notifications)) announcements.push(...window.old_notifications);
-    if (this.user.isGrowthServiceEnabled) {
+    if (this.user.isGSAnnouncementsEnabled) {
       const new_announcements = await this.fetchAssetData(
-        merchant_id,
         getChannelID(fromWhere, this.user.isOrgRZP),
         assetNames.ANNOUNCEMENT,
       );
@@ -96,5 +95,25 @@ export default class GrowthService extends GenericEntity {
     sortAssetData(announcements, assetNames.ANNOUNCEMENT);
 
     return announcements;
+  };
+
+  getBanners = async (fromWhere) => {
+    const totalBannersLimit = 1;
+    let banners = [];
+
+    if (this.user.isGSBannersEnabled) {
+      const gsBanners = await this.fetchAssetData(
+        getChannelID(fromWhere, this.user.isOrgRZP),
+        assetNames.BANNER,
+      );
+
+      if (Array.isArray(gsBanners)) banners.push(...gsBanners);
+    }
+
+    banners = banners.filter((banner) => isValidAssetData(banner, assetNames.BANNER));
+    sortAssetData(banners, assetNames.BANNER);
+    if (banners.length) banners = banners.slice(0, totalBannersLimit);
+
+    return banners;
   };
 }

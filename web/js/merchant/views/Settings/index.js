@@ -18,6 +18,7 @@ import PaymentMethods from 'merchant/views/Settings/PaymentMethods';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
+import DashboardBanner from '../../../common/ui/DashboardBanner';
 
 const analyticsGoTo = (name) => {
   window.rzpAnalytics({
@@ -74,98 +75,103 @@ class Settings extends Component {
     const { tracking } = this.props;
 
     return (
-      <tabbed-container>
-        {/* To make the header scrollable we just need to add this new class to the header component */}
-        <header id="settings-header" className="scrollable-tab-header">
-          <ShowWhen additionalCondition={(user) => user.isAllowedView('configuration')}>
-            <NavLink
-              to="/config"
-              onClick={() => {
-                analyticsGoTo('Configuration');
-                tracking.trackEvent(
-                  window.rzpQ.onbr().initiated('dash.settings_action', {
-                    action: 'View_Configurations',
-                  }),
-                );
-              }}
-            >
-              Configuration
-            </NavLink>
-          </ShowWhen>
-
-          <ShowWhen additionalCondition={(user) => user.isAllowedView('webhooks')}>
-            <NavLink
-              to="/webhooks"
-              onClick={() => {
-                analyticsGoTo('Webhooks');
-                tracking.trackEvent(
-                  window.rzpQ.onbr().initiated('dash.settings_action', {
-                    action: 'View_Webhook_Tab',
-                  }),
-                );
-              }}
-            >
-              Webhooks
-            </NavLink>
-          </ShowWhen>
-
-          <ShowWhen additionalCondition={(user) => user.isAllowedView('api_keys')}>
-            <NavLink
-              to="/keys"
-              onClick={() => {
-                analyticsGoTo('API Keys');
-                tracking.trackEvent(
-                  window.rzpQ.onbr().initiated('dash.settings_action', {
-                    action: 'View_API_Key_Tab',
-                  }),
-                );
-              }}
-            >
-              API Keys
-            </NavLink>
-          </ShowWhen>
-
-          <NavLink to="/reminders" onClick={() => analyticsGoTo('Reminders')}>
-            Reminders
-          </NavLink>
-
-          {this.state.isConnectedAppsFound ? (
-            <ShowWhen additionalCondition={(user) => user.isAllowedView('applications')}>
-              <NavLink to="/applications">Applications</NavLink>
+      <>
+        <div className="banner-container">
+          <DashboardBanner />
+        </div>
+        <tabbed-container>
+          {/* To make the header scrollable we just need to add this new class to the header component */}
+          <header id="settings-header" className="scrollable-tab-header">
+            <ShowWhen additionalCondition={(user) => user.isAllowedView('configuration')}>
+              <NavLink
+                to="/config"
+                onClick={() => {
+                  analyticsGoTo('Configuration');
+                  tracking.trackEvent(
+                    window.rzpQ.onbr().initiated('dash.settings_action', {
+                      action: 'View_Configurations',
+                    }),
+                  );
+                }}
+              >
+                Configuration
+              </NavLink>
             </ShowWhen>
-          ) : null}
 
-          <ShowWhen additionalCondition={(user) => this.isPaymentMethodEnabled(user)}>
-            <NavLink to="/payment-methods" onClick={() => analyticsGoTo('Payment Methods')}>
-              Payment Methods
+            <ShowWhen additionalCondition={(user) => user.isAllowedView('webhooks')}>
+              <NavLink
+                to="/webhooks"
+                onClick={() => {
+                  analyticsGoTo('Webhooks');
+                  tracking.trackEvent(
+                    window.rzpQ.onbr().initiated('dash.settings_action', {
+                      action: 'View_Webhook_Tab',
+                    }),
+                  );
+                }}
+              >
+                Webhooks
+              </NavLink>
+            </ShowWhen>
+
+            <ShowWhen additionalCondition={(user) => user.isAllowedView('api_keys')}>
+              <NavLink
+                to="/keys"
+                onClick={() => {
+                  analyticsGoTo('API Keys');
+                  tracking.trackEvent(
+                    window.rzpQ.onbr().initiated('dash.settings_action', {
+                      action: 'View_API_Key_Tab',
+                    }),
+                  );
+                }}
+              >
+                API Keys
+              </NavLink>
+            </ShowWhen>
+
+            <NavLink to="/reminders" onClick={() => analyticsGoTo('Reminders')}>
+              Reminders
             </NavLink>
-          </ShowWhen>
-        </header>
-        <TestModeBanner />
-        <ErrorBoundary resetOnProps>
-          <content>
-            <Route path="/config" component={Configuration} />
-            <Route path="/webhooks" component={Webhooks} />
-            <Route
-              path="/keys"
-              component={(props) => (
-                <ApiKeys
-                  {...props}
-                  onWebsiteAdd={this.onWebsiteAdd}
-                  isWebsiteInWorkflow={this.state.isWebsiteInWorkflow}
-                />
-              )}
-            />
-            <Route path="/reminders" component={Reminders} />
 
             {this.state.isConnectedAppsFound ? (
-              <Route exact path="/applications" component={Applications} />
+              <ShowWhen additionalCondition={(user) => user.isAllowedView('applications')}>
+                <NavLink to="/applications">Applications</NavLink>
+              </ShowWhen>
             ) : null}
 
-            <Route path="/payment-methods" component={PaymentMethods} />
-          </content>
-        </ErrorBoundary>
-      </tabbed-container>
+            <ShowWhen additionalCondition={(user) => this.isPaymentMethodEnabled(user)}>
+              <NavLink to="/payment-methods" onClick={() => analyticsGoTo('Payment Methods')}>
+                Payment Methods
+              </NavLink>
+            </ShowWhen>
+          </header>
+          <TestModeBanner />
+          <ErrorBoundary resetOnProps>
+            <content>
+              <Route path="/config" component={Configuration} />
+              <Route path="/webhooks" component={Webhooks} />
+              <Route
+                path="/keys"
+                component={(props) => (
+                  <ApiKeys
+                    {...props}
+                    onWebsiteAdd={this.onWebsiteAdd}
+                    isWebsiteInWorkflow={this.state.isWebsiteInWorkflow}
+                  />
+                )}
+              />
+              <Route path="/reminders" component={Reminders} />
+
+              {this.state.isConnectedAppsFound ? (
+                <Route exact path="/applications" component={Applications} />
+              ) : null}
+
+              <Route path="/payment-methods" component={PaymentMethods} />
+            </content>
+          </ErrorBoundary>
+        </tabbed-container>
+      </>
     );
   }
 }

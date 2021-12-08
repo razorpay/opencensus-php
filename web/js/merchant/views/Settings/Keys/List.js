@@ -14,6 +14,7 @@ import NewKey from 'merchant/views/Settings/Keys/components/NewKey';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import CSATSurveyBanner from 'merchant/components/Announcements/CSATSurveyBanner';
+import DashboardBanner from '../../../../common/ui/DashboardBanner';
 
 class KeysListContainer extends ListContainer {
   fetchEntityList() {
@@ -98,7 +99,10 @@ class KeysListContainer extends ListContainer {
 
     return (
       <>
-        <CSATSurveyBanner user={this.props.session.user} />
+        <div className="banner-container">
+          <DashboardBanner />
+          <CSATSurveyBanner user={this.props.session.user} />
+        </div>
         <div class="content-wrapper">
           <Alert type={status.type} message={status.message} />
           <KeysList

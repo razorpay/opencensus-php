@@ -43,6 +43,7 @@ import {
 import RTracking from 'react-tracking';
 import analytics from './analytics';
 import './index.styl';
+import DashboardBanner from '../../../common/ui/DashboardBanner';
 
 @connect(
   (state) => ({
@@ -158,18 +159,21 @@ class SubscriptionsController extends React.Component {
 
     return (
       <div class={classList('Subscriptions-Container')}>
-        {userInfo.isChargeAtWillEnabled && !showPaperNachBanner && (
-          <Announcement
-            title="UPI Mandate Update"
-            canBeClosed={true}
-            theme="primary"
-            key={`as-presented-${userInfo.current}`}
-            id="as-presnted-banner"
-            message="You can now charge customers on UPI Autopay any time as per your business requirement and not just monthly basis"
-          />
-        )}
-        {showPaperNachBanner && <PaperNachBanner url={PAPER_NACH_CARD_BANNER_URL} />}
-        <CardsGoLiveBanner url={cardsGoLiveBannerUrl} />
+        <div className="banner-container">
+          <DashboardBanner />
+          {userInfo.isChargeAtWillEnabled && !showPaperNachBanner && (
+            <Announcement
+              title="UPI Mandate Update"
+              canBeClosed={true}
+              theme="primary"
+              key={`as-presented-${userInfo.current}`}
+              id="as-presnted-banner"
+              message="You can now charge customers on UPI Autopay any time as per your business requirement and not just monthly basis"
+            />
+          )}
+          {showPaperNachBanner && <PaperNachBanner url={PAPER_NACH_CARD_BANNER_URL} />}
+          <CardsGoLiveBanner url={cardsGoLiveBannerUrl} />
+        </div>
 
         <tabbed-container>
           {subscriptionProductOnBoarding.isQuickGuideOpen && <QuickGuide />}

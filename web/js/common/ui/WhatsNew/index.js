@@ -79,7 +79,7 @@ class WhatsNew extends Component {
   id = this.props.user.current;
 
   componentWillMount = () => {
-    this.props.fetchAnnouncements(this.id, 'home');
+    this.props.fetchAnnouncements({ fromWhere: 'home' });
     this.setLastReadTS();
   };
 
@@ -246,7 +246,7 @@ class WhatsNew extends Component {
         unreadID: this.state.unreadID,
         count_unread_IDs: this.state.unreadID?.length,
         lazy: true,
-        growth_service: user.isGrowthServiceEnabled,
+        growth_service: user.isGSAnnouncementsEnabled,
       }),
     );
 
@@ -263,7 +263,7 @@ class WhatsNew extends Component {
         unreadID,
         experimentVersion: getExperimentVersion(user),
         lazy: true,
-        growth_service: user.isGrowthServiceEnabled,
+        growth_service: user.isGSAnnouncementsEnabled,
       }),
     );
 
@@ -296,7 +296,7 @@ class WhatsNew extends Component {
         ...getNotificationTrackingProperties(notification),
         id,
         lazy: true,
-        growth_service: user.isGrowthServiceEnabled,
+        growth_service: user.isGSAnnouncementsEnabled,
       }),
     );
   };
@@ -318,7 +318,7 @@ class WhatsNew extends Component {
         window.rzpQ.merchantActions().success('dashboard.notification_section.tool_tip.display', {
           tooltip_display_count: tooltipViewCount + 1,
           lazy: true,
-          growth_service: this.props.user.isGrowthServiceEnabled,
+          growth_service: this.props.user.isGSAnnouncementsEnabled,
         }),
       );
 

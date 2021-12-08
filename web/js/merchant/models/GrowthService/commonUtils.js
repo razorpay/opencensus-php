@@ -1,12 +1,12 @@
-import {
-  routeToChannelIDMap,
-  bankingRouteToChannelIDMap,
-  assetNames,
-  announcementSchema,
-} from './data';
+import { routeToChannelIDMap, assetNames, growthAssetSchema } from './data';
 
-export const getChannelID = (fromWhere = 'home', isRzpORG = true) => {
-  const routeMap = isRzpORG ? routeToChannelIDMap : bankingRouteToChannelIDMap;
+const getRouteMap = (isOrgRZP = true) => {
+  if (isOrgRZP) return routeToChannelIDMap.rzp;
+  else return routeToChannelIDMap.banking;
+};
+
+export const getChannelID = (fromWhere = 'home', isOrgRZP = true) => {
+  const routeMap = getRouteMap(isOrgRZP);
   const channelID =
     routeMap[fromWhere]?.[window.APP_ENV] ||
     routeMap.default[window.APP_ENV] ||
@@ -25,10 +25,17 @@ const sortAnnouncements = (announcements = []) => {
   });
 };
 
+const sortBanners = (banners = []) => {
+  banners.sort((first, second) => second.override_priority - first.override_priority);
+};
+
 export const sortAssetData = (data = [], type = '') => {
   switch (type) {
     case assetNames.ANNOUNCEMENT:
       sortAnnouncements(data);
+      break;
+    case assetNames.BANNER:
+      sortBanners(data);
       break;
     default:
       break;
@@ -37,12 +44,7 @@ export const sortAssetData = (data = [], type = '') => {
 
 export const isValidAssetData = (data = {}, type = '') => {
   try {
-    switch (type) {
-      case assetNames.ANNOUNCEMENT:
-        return announcementSchema.isValidSync(data);
-      default:
-        return false;
-    }
+    return growthAssetSchema[type].isValidSync(data);
   } catch (_) {
     return false;
   }

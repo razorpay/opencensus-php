@@ -461,10 +461,12 @@ export default class User {
     return getSplitzExperimentVariant('nitro_corporate_cards')?.variables?.result === 'on';
   }
 
-  get isGrowthServiceEnabled() {
-    return (
-      getSplitzExperimentVariant('growth_service_rollout_experiment')?.variables?.result === 'on'
-    );
+  get isGSAnnouncementsEnabled() {
+    return getSplitzExperimentVariant('gs_announcements_experiment')?.variables?.result === 'on';
+  }
+
+  get isGSBannersEnabled() {
+    return getSplitzExperimentVariant('gs_banners_experiment')?.variables?.result === 'on';
   }
 
   get isProjectMoonshineEnabled() {

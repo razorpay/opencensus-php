@@ -16,6 +16,7 @@ import { trackOnDemandTabClick } from './trackEvents';
 import ShowWhen from 'merchant/components/ShowWhen';
 import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import DashboardBanner from '../../../common/ui/DashboardBanner';
 
 const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
   const [settlementExists, setSettlementExists] = useState(true);
@@ -75,11 +76,14 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
         )}
 
         <CashAdvanceOrNitroBanner productName="Settlements" />
-        <ShowWhen additionalCondition={(usr) => usr.isUltraCampaignBannerEnabled}>
-          <UltraCampaignBanner productName="Settlements" />
-        </ShowWhen>
-        <ShowWhen additionalCondition={(usr) => usr.isUltraP2CashAdvanceCampaignBannerEnabled}>
-          <UltraP2CashAdvanceBanner productName="Settlements" />
+        <DashboardBanner />
+        <ShowWhen additionalCondition={(usr) => !usr.isGSBannersEnabled}>
+          <ShowWhen additionalCondition={(usr) => usr.isUltraCampaignBannerEnabled}>
+            <UltraCampaignBanner productName="Settlements" />
+          </ShowWhen>
+          <ShowWhen additionalCondition={(usr) => usr.isUltraP2CashAdvanceCampaignBannerEnabled}>
+            <UltraP2CashAdvanceBanner productName="Settlements" />
+          </ShowWhen>
         </ShowWhen>
       </div>
 

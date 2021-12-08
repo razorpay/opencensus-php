@@ -23,6 +23,7 @@ import OnBoarding, {
 import QuickGuide, { getPaymentButtonsQuickGuideIsClosed } from './QuickGuide';
 import CardPaymentsBlockedBanner from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Banner';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import DashboardBanner from '../../../common/ui/DashboardBanner';
 
 @connect(
   (state) => {
@@ -111,6 +112,7 @@ export default class PaymentButtonsContainer extends React.Component {
     return (
       <>
         <div className="banner-container">
+          <DashboardBanner />
           {user.isSubscriptionButtonEnabled && user.isCardRecurringPaymentsBlocked && (
             <CardPaymentsBlockedBanner />
           )}

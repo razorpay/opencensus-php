@@ -29,6 +29,7 @@ import { fetchOpen as fetchOpenDisputes } from 'merchant/reducers/disputes/detai
 import { bindActionCreators } from 'redux';
 import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import DashboardBanner from '../../../common/ui/DashboardBanner';
 
 let url = 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app';
 if (getMobileOperatingSystem() == 'iOS') {
@@ -115,8 +116,10 @@ class TransactionsContainer extends Component {
               />
             </AnnouncementBanner>
           </ShowWhen>
-
-          <ShowWhen additionalCondition={(usr) => usr.isCatalystCampaignEnabled}>
+          <DashboardBanner />
+          <ShowWhen
+            additionalCondition={(usr) => usr.isCatalystCampaignEnabled && !usr.isGSBannersEnabled}
+          >
             <CatalystCampaignBanner productName="Transactions" />
           </ShowWhen>
         </div>

@@ -65,7 +65,7 @@ class WhatsNewOld extends Component {
   id = this.props.user.current;
 
   componentWillMount = () => {
-    this.props.fetchAnnouncements(this.id, 'home');
+    this.props.fetchAnnouncements({ fromWhere: 'home' });
     this.setLastReadTS();
   };
 
@@ -85,7 +85,7 @@ class WhatsNewOld extends Component {
       window.rzpQ &&
         window.rzpQ.merchantActions().success('merchant_dashboard.display_notification', {
           experimentVersion: this.getExperimentVersion(),
-          growth_service: this.props.user.isGrowthServiceEnabled,
+          growth_service: this.props.user.isGSAnnouncementsEnabled,
         }),
     );
 
@@ -144,7 +144,7 @@ class WhatsNewOld extends Component {
           readID,
           unreadID,
           experimentVersion: this.getExperimentVersion(),
-          growth_service: this.props.user.isGrowthServiceEnabled,
+          growth_service: this.props.user.isGSAnnouncementsEnabled,
         }),
       );
     }
@@ -285,7 +285,7 @@ class WhatsNewOld extends Component {
       window.rzpQ.merchantActions().success('dashboard.notification_section.read', {
         unreadID: this.state.unreadID,
         count_unread_IDs: this.state.unreadID?.length,
-        growth_service: user.isGrowthServiceEnabled,
+        growth_service: user.isGSAnnouncementsEnabled,
       }),
     );
 
@@ -312,7 +312,7 @@ class WhatsNewOld extends Component {
         readID,
         unreadID,
         experimentVersion: this.getExperimentVersion(),
-        growth_service: user.isGrowthServiceEnabled,
+        growth_service: user.isGSAnnouncementsEnabled,
       }),
     );
 
@@ -344,7 +344,7 @@ class WhatsNewOld extends Component {
         url,
         ...getNotificationTrackingProperties(notification),
         id,
-        growth_service: user.isGrowthServiceEnabled,
+        growth_service: user.isGSAnnouncementsEnabled,
       }),
     );
   };
@@ -384,7 +384,7 @@ class WhatsNewOld extends Component {
       this.props.tracking.trackEvent(
         window.rzpQ.merchantActions().success('dashboard.notification_section.tool_tip.display', {
           tooltip_display_count: tooltipViewCount + 1,
-          growth_service: this.props.user.isGrowthServiceEnabled,
+          growth_service: this.props.user.isGSAnnouncementsEnabled,
         }),
       );
       this.showTooltip();

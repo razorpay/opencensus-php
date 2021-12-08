@@ -30,7 +30,7 @@ const WhatsNewIcon = ({ user, showMobileNav, tracking }) => {
           unreadID,
           experimentVersion: getExperimentVersion(user),
           lazy: true,
-          growth_service: user.isGrowthServiceEnabled,
+          growth_service: user.isGSAnnouncementsEnabled,
         }),
       );
     }
@@ -42,7 +42,7 @@ const WhatsNewIcon = ({ user, showMobileNav, tracking }) => {
         window.rzpQ.merchantActions().success('merchant_dashboard.display_notification', {
           experimentVersion: getExperimentVersion(user),
           lazy: true,
-          growth_service: user.isGrowthServiceEnabled,
+          growth_service: user.isGSAnnouncementsEnabled,
         }),
     );
 

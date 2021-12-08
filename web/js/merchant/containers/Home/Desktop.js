@@ -65,6 +65,7 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import NitroICICIBanner from '../../components/Announcements/NitroICICIBanner';
 import NitroCCCampaign from '../../components/Announcements/NitroCCCampaign';
+import DashboardBanner from 'common/ui/DashboardBanner';
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
 
 class AnalyticsDesktop extends Component {
@@ -545,60 +546,65 @@ class AnalyticsDesktop extends Component {
               </Link>
             </AnnouncementBanner>
           )}
-          <ShowWhen additionalCondition={(usr) => usr.isAbcBannerEnabled}>
+          <ShowWhen
+            additionalCondition={(usr) => usr.isAbcBannerEnabled && !usr.isGSBannersEnabled}
+          >
             <ABCBanner user={user} />
           </ShowWhen>
           <ShowWhen additionalCondition={(usr) => usr.isStartupCongratulationBannerEnabled}>
             <StartupCongratulationBanner user={user} />
           </ShowWhen>
-          <ShowWhen additionalCondition={(usr) => usr.isCrossBorderPaymentsCampaignEnabled}>
-            <CrossBorderPaymentsBanner productName="CrossBorderPayment-Create" />
-          </ShowWhen>
-          <ShowWhen
-            additionalCondition={(usr) =>
-              usr.isNitroIciciBrandedCampaignEnabled || usr.isNitroIciciRemarketingCampaignEnabled
-            }
-          >
-            <NitroICICIBanner productName="home" />
-          </ShowWhen>
-          <ShowWhen additionalCondition={(usr) => usr.isCatalystBannerFL}>
-            <CatalystCampaignBannerPhase2
-              productName="Transactions"
-              title="Boost your revenue 🚀"
-              bannerText="Use Payment Links to retarget users and boost conversions by up to 40%"
-              cardId="NOV21-CATALYSTP1V2FL"
-              cta1Text="Know More"
-              cta2Text="Try Now"
-              cta2Link="paymentlinks/new"
-              type="FL"
-            />
-          </ShowWhen>
-          <ShowWhen additionalCondition={(usr) => usr.isCatalystBannerEF}>
-            <CatalystCampaignBannerPhase2
-              productName="Transactions"
-              title="Boost your revenue 🚀"
-              bannerText="Use Payment Links for instant payment collection by offering 100+ payment methods"
-              cardId="NOV21-CATALYSTP1V2FL"
-              cta1Text="Know More"
-              cta2Text="Try Now"
-              cta2Link="paymentlinks/new"
-              type="EF"
-            />
-          </ShowWhen>
-          <ShowWhen additionalCondition={(usr) => usr.isCatalystBannerG}>
-            <CatalystCampaignBannerPhase2
-              productName="Transactions"
-              title="Grow your business 🚀"
-              bannerText="Use payment links for payment collections. 100+ payment modes available. Set reminders and never miss any payment."
-              cardId="NOV21-CATALYSTP1V2GE"
-              cta1Text="Know More"
-              cta2Text="Try Now"
-              cta2Link="paymentlinks/new"
-              type="G"
-            />
-          </ShowWhen>
-          <ShowWhen additionalCondition={(usr) => usr.isNitroCCCampaignEnabled}>
-            <NitroCCCampaign productName="home" />
+          <DashboardBanner />
+          <ShowWhen additionalCondition={(usr) => !usr.isGSBannersEnabled}>
+            <ShowWhen additionalCondition={(usr) => usr.isCrossBorderPaymentsCampaignEnabled}>
+              <CrossBorderPaymentsBanner productName="CrossBorderPayment-Create" />
+            </ShowWhen>
+            <ShowWhen
+              additionalCondition={(usr) =>
+                usr.isNitroIciciBrandedCampaignEnabled || usr.isNitroIciciRemarketingCampaignEnabled
+              }
+            >
+              <NitroICICIBanner productName="home" />
+            </ShowWhen>
+            <ShowWhen additionalCondition={(usr) => usr.isCatalystBannerFL}>
+              <CatalystCampaignBannerPhase2
+                productName="Transactions"
+                title="Boost your revenue 🚀"
+                bannerText="Use Payment Links to retarget users and boost conversions by up to 40%"
+                cardId="NOV21-CATALYSTP1V2FL"
+                cta1Text="Know More"
+                cta2Text="Try Now"
+                cta2Link="paymentlinks/new"
+                type="FL"
+              />
+            </ShowWhen>
+            <ShowWhen additionalCondition={(usr) => usr.isCatalystBannerEF}>
+              <CatalystCampaignBannerPhase2
+                productName="Transactions"
+                title="Boost your revenue 🚀"
+                bannerText="Use Payment Links for instant payment collection by offering 100+ payment methods"
+                cardId="NOV21-CATALYSTP1V2FL"
+                cta1Text="Know More"
+                cta2Text="Try Now"
+                cta2Link="paymentlinks/new"
+                type="EF"
+              />
+            </ShowWhen>
+            <ShowWhen additionalCondition={(usr) => usr.isCatalystBannerG}>
+              <CatalystCampaignBannerPhase2
+                productName="Transactions"
+                title="Grow your business 🚀"
+                bannerText="Use payment links for payment collections. 100+ payment modes available. Set reminders and never miss any payment."
+                cardId="NOV21-CATALYSTP1V2GE"
+                cta1Text="Know More"
+                cta2Text="Try Now"
+                cta2Link="paymentlinks/new"
+                type="G"
+              />
+            </ShowWhen>
+            <ShowWhen additionalCondition={(usr) => usr.isNitroCCCampaignEnabled}>
+              <NitroCCCampaign productName="home" />
+            </ShowWhen>
           </ShowWhen>
 
           {/* capital banner*/}

@@ -22,6 +22,7 @@ import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
+import DashboardBanner from '../../../common/ui/DashboardBanner';
 
 @connect(
   (state) => {
@@ -88,68 +89,73 @@ export default class OfferIndex extends Component {
       : '/offers/new?offer_creation_modal_type=basic';
 
     return (
-      <tabbed-container>
-        <header id="link-header">
-          <NavLink exact to="/offers">
-            Offers
-          </NavLink>
-        </header>
+      <>
+        <div className="banner-container">
+          <DashboardBanner />
+        </div>
+        <tabbed-container>
+          <header id="link-header">
+            <NavLink exact to="/offers">
+              Offers
+            </NavLink>
+          </header>
 
-        <TestModeBanner />
-        <ErrorBoundary resetOnProps>
-          <Switch>
-            <Route path="/offers">
-              <content>
-                <div className="content-wrapper">
-                  <HeaderAction>
-                    <div className="btn-toolbar pull-right">
-                      <TakeATourButton feature={RZPFeatures.OFFERS} />
-                      <DocsLink url="https://razorpay.com/docs/offers/" />
-                      <ShowWhen
-                        additionalCondition={(user) =>
-                          (this.props.mode !== 'live' || !user.isRejected) &&
-                          user.isAllowedEdit('offers')
-                        }
-                      >
-                        <NavLink class="btn btn-primary" exact to={createOfferRoute}>
-                          <i className="i i-plus" />
-                          <span
-                            onClick={() => {
-                              this.props.tracking.trackEvent(
-                                window.rzpQ.merchantActions().initiated('Offer_create'),
-                              );
-                            }}
-                          >
-                            Create New Offer
-                          </span>
-                        </NavLink>
-                        <NavLink
-                          class="btn btn-primary"
-                          exact
-                          to="/offers/new?offer_creation_modal_type=no-cost-emi"
+          <TestModeBanner />
+          <ErrorBoundary resetOnProps>
+            <Switch>
+              <Route path="/offers">
+                <content>
+                  <div className="content-wrapper">
+                    <HeaderAction>
+                      <div className="btn-toolbar pull-right">
+                        <TakeATourButton feature={RZPFeatures.OFFERS} />
+                        <DocsLink url="https://razorpay.com/docs/offers/" />
+                        <ShowWhen
+                          additionalCondition={(user) =>
+                            (this.props.mode !== 'live' || !user.isRejected) &&
+                            user.isAllowedEdit('offers')
+                          }
                         >
-                          <i className="i i-plus" />
-                          <span
-                            onClick={() => {
-                              this.props.tracking.trackEvent(
-                                window.rzpQ.merchantActions().initiated('nocostemi_create'),
-                              );
-                            }}
+                          <NavLink class="btn btn-primary" exact to={createOfferRoute}>
+                            <i className="i i-plus" />
+                            <span
+                              onClick={() => {
+                                this.props.tracking.trackEvent(
+                                  window.rzpQ.merchantActions().initiated('Offer_create'),
+                                );
+                              }}
+                            >
+                              Create New Offer
+                            </span>
+                          </NavLink>
+                          <NavLink
+                            class="btn btn-primary"
+                            exact
+                            to="/offers/new?offer_creation_modal_type=no-cost-emi"
                           >
-                            Create No Cost EMI
-                          </span>
-                        </NavLink>
-                      </ShowWhen>
-                    </div>
-                  </HeaderAction>
-                  <Alert type={status.type} message={status.message} />
-                  <List {...this.props} />
-                </div>
-              </content>
-            </Route>
-          </Switch>
-        </ErrorBoundary>
-      </tabbed-container>
+                            <i className="i i-plus" />
+                            <span
+                              onClick={() => {
+                                this.props.tracking.trackEvent(
+                                  window.rzpQ.merchantActions().initiated('nocostemi_create'),
+                                );
+                              }}
+                            >
+                              Create No Cost EMI
+                            </span>
+                          </NavLink>
+                        </ShowWhen>
+                      </div>
+                    </HeaderAction>
+                    <Alert type={status.type} message={status.message} />
+                    <List {...this.props} />
+                  </div>
+                </content>
+              </Route>
+            </Switch>
+          </ErrorBoundary>
+        </tabbed-container>
+      </>
     );
   }
 }

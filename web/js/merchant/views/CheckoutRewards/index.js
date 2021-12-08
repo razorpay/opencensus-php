@@ -24,6 +24,7 @@ import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
+import DashboardBanner from '../../../common/ui/DashboardBanner';
 
 @connect(
   (state) => {
@@ -102,7 +103,10 @@ export default class CheckoutRewardsIndex extends Component {
 
     return (
       <div className="checkout-rewards-main-container">
-        <CheckoutRewardsAnnouncement userId={user.current} />
+        <div className="banner-container">
+          <DashboardBanner />
+          <CheckoutRewardsAnnouncement userId={user.current} />
+        </div>
         <tabbed-container>
           <header id="link-header">
             <NavLink exact to="/checkout-rewards">

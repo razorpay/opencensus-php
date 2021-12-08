@@ -109,6 +109,11 @@
       text-decoration: none;
     }
 
+    .banner-text-link {
+      font-weight: bold;  
+      display: inline-block;
+    }
+
     .i-chevron-right {
       top: 2px;
       left: 0;
@@ -182,6 +187,44 @@
       right: 12px;
       z-index: 1;
       color: #fff;
+    }
+  }
+
+  &.growth-service-banner {
+    .content {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      justify-content: space-between;
+
+      .banner-cta-group {
+        display: flex;
+        width: min-content;
+
+        .Button--primary, .Button--secondary, .banner-text-link {
+          width: max-content;
+        }
+      }
+
+      @media (max-width: 1024px) {
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+
+        .banner-description-group {
+          margin-right: 10px;
+        }
+
+        .banner-cta-group {
+          margin-top: 5px;
+
+          .Button--primary, .Button--secondary, .banner-text-link {
+            width: max-content;
+            margin-top: 0;
+            margin-left: 0;
+          }
+        }
+      }
     }
   }
 }

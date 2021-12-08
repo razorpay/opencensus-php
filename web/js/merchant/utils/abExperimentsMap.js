@@ -178,13 +178,20 @@ export default {
     'ICUOfCJSNQQD15',
   ],
 
-  growth_service_rollout_experiment: [
+  gs_announcements_experiment: [
     // prod
     'HjnC4NvQhMA1u3',
 
     // beta
     'HjnDnqN0s8GXnV',
-    'HjnHKyoeyjvoRJ',
+  ],
+
+  gs_banners_experiment: [
+    // prod
+    'IUYQx3yRryEY64',
+
+    // beta
+    'IMixjTEYeDBCN9',
   ],
 
   project_moonshine: [
