@@ -17,6 +17,8 @@ class Get extends Base
 {
     const GET_PAYOUT_BY_ID_SERVICE_URI = '/payouts/';
 
+    const GET_PAYOUT_ANALYTICS_SERVICE_URI = '/payouts/analytics';
+
     // payout get service name for singleton class
     const PAYOUT_SERVICE_GET = 'payout_service_get';
 
@@ -29,7 +31,7 @@ class Get extends Base
     {
         $this->trace->info(TraceCode::PAYOUT_GET_REQUEST_FROM_MICROSERVICE,
             [
-                'id'          => $id,
+                'id' => $id,
                 'merchant_id' => $merchantId
             ]);
 
@@ -43,4 +45,29 @@ class Get extends Base
 
         return $response;
     }
+
+    
+    /**
+     * @param array $input
+     * @param string $merchantId
+     * @return array
+     */
+    public function GetPayoutsAnalyticsViaMicroservice(string $merchantId)
+    {
+        $this->trace->info(TraceCode::PAYOUT_GET_REQUEST_FROM_MICROSERVICE,
+            [
+                'merchant_id' => $merchantId
+            ]);
+
+        $headers = [Passport::PASSPORT_JWT_V1 => $this->app['basicauth']->getPassportJwt($this->baseUrl)];
+
+        $response = $this->makeRequestAndGetContent([],
+            self::GET_PAYOUT_ANALYTICS_SERVICE_URI,
+            Requests::GET,
+            $headers
+        );
+
+        return $response;
+    }
+
 }

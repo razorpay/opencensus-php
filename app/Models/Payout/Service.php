@@ -2346,4 +2346,26 @@ class Service extends Base\Service
 
         return $input;
     }
+
+    public function axisCCPayoutAnalytics()
+    {
+
+        if ($this->app['basicauth']->authCreds->checkIfOrgAxisCC() === false)
+        {
+            //Currently this should be called only for axis cc merchant.
+            // So throwing error if condition is not met
+            $this->trace->info(
+                TraceCode::PAYOUT_AXIS_CC_GET_PAYOUT_ANALYTICS_REQUEST,
+                [
+                    'is_axis' => false,
+                ]
+            );
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
+
+        $response = $this->core->fetchPayoutAnalyticsfromPayoutsService($this->merchant);
+
+        return $response;
+    }
 }

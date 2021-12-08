@@ -139,6 +139,46 @@ class PayoutServiceTest extends TestCase
         $this->app->instance(PayoutServiceGet::PAYOUT_SERVICE_GET, $payoutServiceGetMock);
     }
 
+
+    public function mockPayoutServiceGetAnalytics($fail = false, $request = [])
+    {
+        // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
+        // are going to be sent to payout service.
+        $payoutServiceGetMock = Mockery::mock('RZP\Services\PayoutService\Get',
+            [$this->app])->makePartial();
+
+        $defaultRequest['headers']['X-Passport-JWT-V1'] = "";
+
+        $request = array_merge($defaultRequest, $request);
+
+        $payoutServiceGetMock->shouldReceive('sendRequest')
+            ->withArgs(
+                function($arg) use ($request) {
+                    try
+                    {
+                        // Using this method only here as we want to check if the keys in the
+                        // request are coming properly or not.
+                        $this->assertArrayKeySelectiveEquals($request, $arg);
+
+                        return true;
+                    }
+                    catch (\Throwable $e)
+                    {
+                        return false;
+                    }
+                }
+            )
+            ->andReturn(
+            // We are returning this response only as we don't have a use case of supporting
+            // response based on $request, if needed, that can also be added here using
+            // andReturnUsing method instead of andReturn
+                $this->getResponseForPayoutAnalyticsServiceMock($fail)
+            );
+
+        $this->app->instance(PayoutServiceGet::PAYOUT_SERVICE_GET, $payoutServiceGetMock);
+    }
+
+
     public function mockPayoutServiceQueuedInitiate($fail = false, $request = [])
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request content that
@@ -539,6 +579,29 @@ class PayoutServiceTest extends TestCase
         $this->mockPayoutServiceGet();
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testGetPayoutAnalytics()
+    {
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $org = $this->getLastEntity('org', true);
+
+        $this->fixtures->org->edit($org['id'], ['custom_code' => 'axis_cc']);
+
+        $org = $this->getLastEntity('org', true);
+
+        $orgId = trim($org['id'],"org_");
+
+        $this->fixtures->merchant->edit('10000000000000',['org_id' => $orgId]);
+
+        $this->mockPayoutServiceGetAnalytics();
+
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
@@ -1491,5 +1554,70 @@ class PayoutServiceTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
 
         $this->startTest();
+    }
+
+    public function getResponseForPayoutAnalyticsServiceMock($fail, $status = 'processing')
+    {
+        $response = new Requests_Response();
+
+        if ($fail === true)
+        {
+            $response->body = json_encode(
+                [
+                    "error"   =>
+                        [
+                            "code"        => ErrorCode::BAD_REQUEST_ERROR,
+                            "description" => "Service Failure",
+                            "field"      => null
+                        ]
+                ]);
+            $response->status_code = 400;
+            $response->success = true;
+        }
+        else
+        {
+            $response->body = json_encode(
+                [
+                   'data' =>
+                   [
+                       'payouts_count' =>
+                       [
+                           'result' => [
+                               [
+                                   'value' => 3
+                               ]
+                               ],
+                               'last_updated_at' => 1637643003
+                       ],
+                       'payouts_daywise' => [
+                           'result' => [
+                               [
+                                  'value' => 0,
+                                  'timestamp' =>  1635051003,
+                               ],
+                               [
+                                   'value' => 100,
+                                   'timestamp' => 1635137403,
+                               ]
+                           ],
+                           'last_updated_at' => 1637643003
+                       ],
+                       'payouts' =>
+                           [
+                               'result' => [
+                                   [
+                                       'value' => 300
+                                   ]
+                               ],
+                               'last_updated_at' => 1637643003
+                           ],
+                   ]
+                ]);
+
+            $response->status_code = 200;
+            $response->success = true;
+        }
+
+        return $response;
     }
 }

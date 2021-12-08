@@ -189,6 +189,53 @@ return [
         ],
     ],
 
+    'testGetPayoutAnalytics' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/analytics',
+            'server' => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+            ],
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'data' => [
+                    'payouts_count' => [
+                        'result' => [
+                                    [
+                                        'value' => 3
+                                    ]
+                                    ],
+                                   'last_updated_at' => 1637643003
+                            ],
+                    'payouts_daywise' => [
+                        'result' => [
+                                [
+                                    'value' => 0,
+                                    'timestamp' =>  1635051003,
+                                ],
+                                [
+                                    'value' => 100,
+                                    'timestamp' => 1635137403,
+                                ]
+                            ],
+                            'last_updated_at' => 1637643003
+                        ],
+                    'payouts' => [
+                        'result' => [
+                                    [
+                                        'value' => 300
+                                    ]
+                                ],
+                                'last_updated_at' => 1637643003
+                            ],
+                    ]
+            ],
+        ],
+    ],
+
     'testValidatePayoutFailCase' => [
         'request'  => [
             'method'  => 'POST',

@@ -517,4 +517,11 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function payoutAnalytics()
+    {
+        $data = $this->service()->axisCCPayoutAnalytics();
+
+        return ApiResponse::json($data);
+    }
 }

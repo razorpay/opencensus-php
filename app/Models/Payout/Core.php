@@ -1507,6 +1507,7 @@ class Core extends Base\Core
         return $payout;
     }
 
+
     //get payout by id from payouts service
     public function fetchFromPayoutsService(string $id, Merchant\Entity $merchant): array
     {
@@ -4176,5 +4177,18 @@ class Core extends Base\Core
         }
 
         return ['Queued email count' => $count];
+    }
+
+    public function fetchPayoutAnalyticsfromPayoutsService(Merchant\Entity $merchant): array
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_GET_REQUEST_FROM_MICROSERVICE,
+            [
+                'merchant_id' => $merchant->getId()
+            ]);
+
+        $response = $this->payoutGetApiServiceClient->GetPayoutsAnalyticsViaMicroservice($merchant->getId());
+
+        return $response;
     }
 }

@@ -110,7 +110,6 @@ class Base
         }
     }
 
-
     public function getRequest(array $input, string $action, string $method, array $headers = [])
     {
         $request = [
