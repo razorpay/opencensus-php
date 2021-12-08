@@ -88,8 +88,8 @@ export const getBankingCaptchaColor = (org) => {
 
     default:
       return {
-        primary: { desktop: 'light.970', mobile: 'light.970' },
-        secondary: { desktop: 'light.970', mobile: 'light.970' },
+        primary: { desktop: 'light.970', mobile: 'dark.970' },
+        secondary: { desktop: 'primary.900', mobile: 'primary.900' },
       };
   }
 };
