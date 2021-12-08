@@ -18,6 +18,7 @@ import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import Announcement from 'merchant/components/Announcements/Instant';
+import BaseDashboardBanner from '../../../common/ui/DashboardBanner/BaseDashboardBanner';
 import NPSAnnouncement from 'merchant/components/Announcements/NPSAnnouncement';
 import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
 import CovidCampaignAnnouncement from 'merchant/components/Announcements/CovidCampaign';
@@ -278,6 +279,11 @@ class AnalyticsDesktop extends Component {
       return [ProductRecommendationWidget, onboardingCard];
     }
     return [onboardingCard, ProductRecommendationWidget];
+  };
+
+  cta1ClickHandler = () => {
+    const { history = {} } = this?.props;
+    history?.push('/qr_codes');
   };
 
   render() {
@@ -550,6 +556,18 @@ class AnalyticsDesktop extends Component {
             additionalCondition={(usr) => usr.isAbcBannerEnabled && !usr.isGSBannersEnabled}
           >
             <ABCBanner user={user} />
+          </ShowWhen>
+          <ShowWhen additionalCondition={(usr) => usr.isQrCodeEnable}>
+            <BaseDashboardBanner
+              title="QR Codes"
+              bannerText="QR Codes Get unlimited branded QR and collect payments via UPI and cards"
+              bannerId="OCT21-QR-GTM"
+              cta1Text="Try Now"
+              cta1ClickHandler={this.cta1ClickHandler}
+              cta2Text="Learn More"
+              cta2Link="https://razorpay.com/docs/qr-codes/"
+              productName="dashboard_home"
+            />
           </ShowWhen>
           <ShowWhen additionalCondition={(usr) => usr.isStartupCongratulationBannerEnabled}>
             <StartupCongratulationBanner user={user} />

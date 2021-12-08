@@ -124,6 +124,7 @@ return [
 
         // PP Zapier Banner
         'PP_ZAPIER_BANNER_SPLITZ' => env('PP_ZAPIER_BANNER_SPLITZ', ''),
+        'QR_CODE_EXPERIMENT' => env('QR_CODE_EXPERIMENT', ''),
 
         //Cross Border Payments Announcement
         'CROSS_BORDER_PAYMENTS_ANNOUNCEMENT' => env('CROSS_BORDER_PAYMENTS_ANNOUNCEMENT', ''),

@@ -326,6 +326,9 @@ export default class User {
       this.isOrgRZP
     );
   }
+  get isSuperCheckoutEnabledFeatureFLag() {
+    return this.isFeatureEnabled('one_cc_merchant_dashboard');
+  }
 
   get isPaymentPagesEnabled() {
     const { isEnabled } = getOnBoardingDataFromLocalState('payment_pages');
@@ -483,6 +486,9 @@ export default class User {
 
   get isPartOfNeostone() {
     return getSplitzExperimentVariant('neostone_experiment')?.variables?.result === 'on';
+  }
+  get isQrCodeEnable() {
+    return getSplitzExperimentVariant('QR_code_experiment')?.variables?.result === 'on';
   }
 
   isNeostoneFlowEnabled = (showState = '') => {

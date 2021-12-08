@@ -276,4 +276,11 @@ export default {
     // prod experiment ids,
     'IStJqD0T3wzexZ',
   ],
+  QR_code_experiment: [
+    // beta experiment ids
+    'IRPaSxQ2IA9qdb',
+
+    // prod experiment ids,
+    'IEEVIgNmiPJuUU',
+  ],
 };
