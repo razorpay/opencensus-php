@@ -2392,6 +2392,13 @@ class Route
         'fund_account_delete'                      => ['delete',   'fund_accounts/{id}',                             'FundAccountController@delete'                                      ],
         'fund_account_bulk_create'                 => ['post',     'fund_accounts/bulk',                             'FundAccountController@createFundAccountBulk'                       ],
 
+        // corporate cards routes
+        'corporate_card_token_create'              => ['post',     'corporate_cards/token/{token}',                  'CorporateCardController@create'                                    ],
+        'corporate_card_update'                    => ['patch',    'corporate_cards/{id}',                           'CorporateCardController@update'                                    ],
+        'corporate_card_get'                       => ['get',      'corporate_cards/{id}',                           'CorporateCardController@get'                                       ],
+        'corporate_card_list'                      => ['get',      'corporate_cards',                                'CorporateCardController@list'                                      ],
+        'corporate_card_iframe_form'               => ['get',      'corporate_cards/iframe/form',                    'CorporateCardController@renderForm'                                ],
+
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
@@ -4275,6 +4282,9 @@ class Route
     ];
 
     public static $proxy = [
+        'corporate_card_get',
+        'corporate_card_update',
+        'corporate_card_list',
         'merchant_activation_post_email',
         'merchant_activation_otp_send',
         'store_update_product',
@@ -4692,7 +4702,6 @@ class Route
         'terminals_proxy_update_optimizer_provider',
         'terminals_proxy_get_merchant_optimizer_provider',
         'terminals_proxy_get_optimizer_merchant_methods',
-
         'payout_links_merchant_settings_post',
         'payout_links_merchant_settings_get',
         'payout_links_merchant_on_boarding_status',
@@ -7022,6 +7031,7 @@ class Route
         'accounting_payouts_sync_status'               => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_payouts_sync'                      => Permission::SYNC_ACCOUNTING_INTEGRATION,
         'accounting_payouts_waitlist'                  => Permission::WAITLIST_ACCOUNTING_INTEGRATION,
+
         'accounting_integration_get_domain'            => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_integration_get_organization'      => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_integration_set_organization'      => Permission::CREATE_ACCOUNTING_INTEGRATION,
@@ -7135,6 +7145,9 @@ class Route
         'contact_get'                                  => Permission::VIEW_CONTACT,
         'contact_list'                                 => Permission::VIEW_CONTACT,
         'contact_create'                               => Permission::CREATE_CONTACT,
+        'corporate_card_update'                        => Permission::EDIT_CORPORATE_CARD,
+        'corporate_card_get'                           => Permission::VIEW_CORPORATE_CARD,
+        'corporate_card_list'                          => Permission::VIEW_CORPORATE_CARD,
         'bulk_contact_create'                          => Permission::CREATE_CONTACT_BULK,
         'contact_update'                               => Permission::UPDATE_CONTACT,
 //        'contact_delete'                               => Permission::DELETE_CONTACT,
@@ -7359,6 +7372,8 @@ class Route
         'upi_read_async',
         'upi_get_key_list',
         'account',
+        'corporate_card_iframe_form',
+        'corporate_card_token_create',
         'payment_create_checkout_get',
         'pages_view_by_slug',
         'invoice_view_live',
@@ -7589,6 +7604,9 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'corporate_card_get',
+            'corporate_card_update',
+            'corporate_card_list',
             'growth_get_asset_details',
             'merchant_activation_post_email',
             'merchant_activation_otp_send',
@@ -11992,6 +12010,9 @@ class Route
         'contact_get',
         'contact_list',
         'contact_create',
+        'corporate_card_get',
+        'corporate_card_update',
+        'corporate_card_list',
         'bulk_contact_create',
         'contact_update',
         'contact_delete',

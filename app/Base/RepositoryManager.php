@@ -88,6 +88,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Mpan\Repository                              $mpan
  * @property Models\Merchant\Document\Repository                 $merchant_document
  * @property Models\Card\Repository                              $card
+ * @property Models\CorporateCard\Repository                     $corporate_card
  * @property Models\CardMandate\Repository                       $card_mandate
  * @property Models\CardMandate\CardMandateNotification\Repository $card_mandate_notification
  * @property Models\Settlement\Bucket\Repository                 $settlement_bucket

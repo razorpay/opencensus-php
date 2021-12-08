@@ -1351,6 +1351,20 @@ final class FactoryData
                                                   ]
         );
 
+        $factory(\RZP\Models\CorporateCard\Entity::class, [
+                'id'           => $faker->uniqueid,
+                'name'         => $faker->name,
+                'holder_name'  => $faker->name,
+                'last4'        => $faker->word,
+                'vault_token'  => $faker->word,
+                'expiry_month' => $faker->word,
+                'expiry_year'  => $faker->word,
+                'merchant_id'  => '10000000000000',
+                'created_at'   => $faker->timestamp,
+                'updated_at'   => $faker->timestamp,
+            ]
+        );
+
         $factory(\RZP\Models\SubVirtualAccount\Entity::class, [
                                                                 'id'                    => $faker->uniqueid,
                                                                 'active'                => true,

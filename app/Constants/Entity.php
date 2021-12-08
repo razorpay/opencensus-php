@@ -41,6 +41,7 @@ class Entity
     const REPORT                     = 'report';
     const COUNTER                    = 'counter';
     const CONTACT                    = 'contact';
+    const CORPORATE_CARD             = 'corporate_card';
     const DISPUTE                    = 'dispute';
     const DISPUTE_EVIDENCE           = 'dispute_evidence';
     const DISPUTE_EVIDENCE_DOCUMENT  = 'dispute_evidence_document';

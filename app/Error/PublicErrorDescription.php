@@ -380,6 +380,8 @@ class PublicErrorDescription
 
     const BAD_REQUEST_IIN_NOT_EXISTS                                            = 'IIN does not exist';
 
+    const BAD_REQUEST_CORPORATE_CARD_INVALID_EXPIRY_DATE                        = 'Expiry date is not valid';
+
     const BAD_REQUEST_EDIT_TRANSACTION_LIMIT_REQUEST_MADE_IN_LAST_30_DAYS       = 'Bad Request Edit Transaction Limit Request Made In Last 30 Days';
     const BAD_REQUEST_EDIT_TRANSACTION_LIMIT_CTS_OR_FTS_MORE_THAN_5             = 'The transaction limit cannot be updated for your account. Please reach out to our support team for further clarification';
 
@@ -543,6 +545,7 @@ class PublicErrorDescription
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                 = 'Error occurred because of invalid data';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                 = 'Hash Data is invalid.';
     const BAD_REQUEST_BATCH_UPLOAD_INVALID_TOKEN                                = 'Token expired or invalid';
+    const BAD_REQUEST_CORPORATE_CARD_INVALID_TOKEN                              = 'Token expired or invalid';
     const BAD_REQUEST_EMANDATE_TOKEN_PASSED_IN_FIRST_RECURRING                  = 'Token should not be passed in first E-mandate recurring payment';
     const BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING              = 'Token is not confirmed for recurring payments';
     const BAD_REQUEST_TOKEN_STATUS_ALREADY_PAID                                 = 'Payment has already been done for this token';

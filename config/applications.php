@@ -214,16 +214,18 @@ return [
     ],
 
     'card_vault' => [
-        'mock'          => env('CARD_VAULT_MOCK', false),
-        'key'           => env('CARD_VAULT_KEY'),
-        'secret'        => env('CARD_VAULT_SECRET'),
-        'mpan_key'      => env('CARD_VAULT_MPAN_KEY'),
-        'mpan_secret'   => env('CARD_VAULT_MPAN_SECRET'),
-        'url'           => env('CARD_VAULT_URL'),
-        'key_id'        => env('CARD_KMS_KEY_ID'),
-        'region'        => env('AWS_REGION'),
-        'version'       => env('CARD_KMS_VERSION'),
-        'kms_mock'      => env('CARD_KMS_MOCK'),
+        'mock'             => env('CARD_VAULT_MOCK', false),
+        'key'              => env('CARD_VAULT_KEY'),
+        'secret'           => env('CARD_VAULT_SECRET'),
+        'mpan_key'         => env('CARD_VAULT_MPAN_KEY'),
+        'mpan_secret'      => env('CARD_VAULT_MPAN_SECRET'),
+        'razorpayx_key'    => env('CARD_VAULT_RAZORPAYX_KEY'),
+        'razorpayx_secret' => env('CARD_VAULT_RAZORPAYX_SECRET'),
+        'url'              => env('CARD_VAULT_URL'),
+        'key_id'           => env('CARD_KMS_KEY_ID'),
+        'region'           => env('AWS_REGION'),
+        'version'          => env('CARD_KMS_VERSION'),
+        'kms_mock'         => env('CARD_KMS_MOCK'),
     ],
 
     'cps' => [

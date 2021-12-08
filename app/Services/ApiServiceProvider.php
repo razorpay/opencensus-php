@@ -213,6 +213,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new CardVault($app, 'mpan');
         });
 
+        $this->app->singleton('razorpayx.cardVault', function($app)
+        {
+            $cardVaultMock = $app['config']->get('applications.card_vault.mock');
+
+            if ($cardVaultMock === true)
+            {
+                return new Mock\CardVault($app);
+            }
+
+            return new CardVault($app, 'razorpayx');
+        });
+
         $this->app->singleton('cps', function($app)
         {
             $cpsMock = $app['config']->get('applications.cps.mock');

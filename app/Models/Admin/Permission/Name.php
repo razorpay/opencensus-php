@@ -482,6 +482,8 @@ class Name
     const MERCHANT_CONFIG_LOGO                = 'merchant_config_logo';
     const VIEW_CONTACT                        = 'view_contact';
     const CREATE_CONTACT                      = 'create_contact';
+    const EDIT_CORPORATE_CARD                 = 'edit_corporate_card';
+    const VIEW_CORPORATE_CARD                 = 'view_corporate_card';
     const CREATE_CONTACT_BULK                 = 'create_contact_bulk';
     const UPDATE_CONTACT                      = 'update_contact';
     const DELETE_CONTACT                      = 'delete_contact';
@@ -672,7 +674,6 @@ class Name
     const MANUALLY_LINK_RBL_ACCOUNT_STATEMENT = 'manually_link_rbl_account_statement';
 
     const MERCHANT_RISK_ALERT_FOH          = 'merchant_risk_alert_foh';
-
     const MERCHANT_RISK_CONSTRUCTIVE_ACTION = 'merchant_risk_constructive_action';
 
     // NPS survey create

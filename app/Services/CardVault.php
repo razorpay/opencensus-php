@@ -36,6 +36,7 @@ class CardVault
     // card-vault namespaces
     const CARD      =   'card';
     const MPAN      =   'mpan';
+    const RAZORPAYX =   'razorpayx';
 
     protected $baseUrl;
 
@@ -52,6 +53,14 @@ class CardVault
     protected $namespace;
 
     protected $kmsClient;
+    /**
+     * @var string
+     */
+    private $key;
+    /**
+     * @var string
+     */
+    private $secret;
 
     public function __construct($app, $namespace = 'card')
     {
@@ -74,22 +83,16 @@ class CardVault
              'region'  => $this->config['region']
         ]);
 
-        if ($namespace === self::CARD)
-        {
-            $this->key = $this->config['key'];
-
-            $this->secret = $this->config['secret'];
-        }
-        else
-        {
+        // default for cards
+        $keyName = 'key';
+        $secretName = 'secret';
+        if ($namespace != self::CARD) {
             $keyName = $namespace . '_key';
-
             $secretName = $namespace . '_secret';
-
-            $this->key = $this->config[$keyName];
-
-            $this->secret = $this->config[$secretName];
         }
+
+        $this->key = $this->config[$keyName];
+        $this->secret = $this->config[$secretName];
     }
 
     public function ping()
