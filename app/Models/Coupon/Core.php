@@ -132,7 +132,7 @@ class Core extends Base\Core
             $config = Constants::COUPON_CONFIG[$couponCode];
 
             $exptName = $config[Constants::EXPERIMENT_NAME]??null;
-            
+
             if (empty($exptName)===false and (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(), $exptName) === false)
             {
                 throw new Exception\BadRequestException(
@@ -169,6 +169,19 @@ class Core extends Base\Core
         }
 
         $this->app->salesforce->sendCouponInfo($merchant, $hubspotInput);
+
+        $merchantBalance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(),
+            Merchant\Balance\Type::PRIMARY);
+
+        if (empty($merchantBalance) === false)
+        {
+            $segmentProperties = [
+                Merchant\Service::SEGMENT_FREE_CREDITS_AVAILABLE => $merchantBalance->getAmountCredits()
+            ];
+
+            $this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties);
+        }
+
 
         return [
             'message' => self::SUCCESS_MESSAGE

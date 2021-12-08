@@ -241,13 +241,21 @@ class Core extends Base\Core
 
                 $merchantId = $data['merchant_details_merchant_id'];
 
+                $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                $merchantBalance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(),
+                    Merchant\Balance\Type::PRIMARY);
+
+                if (empty($merchantBalance) === false)
+                {
+                    $segmentProperties[Merchant\Service::SEGMENT_FREE_CREDITS_AVAILABLE] = $merchantBalance->getAmountCredits();
+                }
+
                 $this->trace->info(TraceCode::TRANSACTION_DETAILS_CRON_TRACE, [
                     'type'          => 'transaction_cron',
                     'merchant_id'   => $merchantId,
                     'segment_properties'    => $segmentProperties
                 ]);
-
-                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
                 $this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties);
             }

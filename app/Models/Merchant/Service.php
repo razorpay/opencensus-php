@@ -170,6 +170,7 @@ class Service extends Base\Service
     const SEGMENT_DATA_PG_ONLY                          = 'pg_only';
     const SEGMENT_DATA_PL_ONLY                          = 'pl_only';
     const SEGMENT_DATA_PP_ONLY                          = 'pp_only';
+    const SEGMENT_FREE_CREDITS_AVAILABLE                = 'free_credits_available';
 
     const DEFAULT_MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION   =   24;
     // Should be decided by marketing team
