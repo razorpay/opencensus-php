@@ -59,6 +59,7 @@ class Constants
     const SECONDARY_MESSAGE        = 'secondary_message';
     const MERCHANT_REFERENCE       = 'merchant_reference';
     const PAYMENT_CREATED_AT       = 'payment_created_at';
+    const MERCHANT_ACTIVATED_AT    = 'merchant_activated_at';
     const BUSINESS_SUPPORT_DETAILS = 'business_support_details';
     const CURRENCY                 = 'currency';
     const ACQUIRER_DATA            = 'acquirer_data';

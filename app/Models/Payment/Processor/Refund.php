@@ -3974,11 +3974,12 @@ trait Refund
         //
 
         $queryParams = [
-            RefundEntity::PAYMENT_ID            => $payment->getId(),
-            RefundEntity::GATEWAY               => $payment->getGateway(),
-            RefundConstants::METHOD             => $payment->getMethod(),
-            RefundConstants::MERCHANT_ID        => $payment->getMerchantId(),
-            RefundConstants::PAYMENT_CREATED_AT => strval($payment->getCreatedAt()),
+            RefundEntity::PAYMENT_ID               => $payment->getId(),
+            RefundEntity::GATEWAY                  => $payment->getGateway(),
+            RefundConstants::METHOD                => $payment->getMethod(),
+            RefundConstants::MERCHANT_ID           => $payment->getMerchantId(),
+            RefundConstants::PAYMENT_CREATED_AT    => strval($payment->getCreatedAt()),
+            RefundConstants::MERCHANT_ACTIVATED_AT => strval($payment->merchant->getActivatedAt()),
         ];
 
         // setting default amount when actual refund amount is not known yet
