@@ -17,9 +17,12 @@ export function sendLink(id, data) {
   if (data.email) reqPayload.emails = [data.email];
   if (data.contact) reqPayload.contacts = [data.contact];
 
+  // won't be required once below TODO is addressed
+  const modifiedId = id.replace('store', 'pl');
+
   // TODO: to be changed for stores, reusing PP share
   return merchantFetch({
-    url: `payment_pages/${id}/notify`,
+    url: `payment_pages/${modifiedId}/notify`,
     method: 'post',
     data: reqPayload,
   });

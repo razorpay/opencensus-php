@@ -9,6 +9,8 @@ import { isEmail, isPhone } from 'common/utils/validators';
 
 import SocialShareOptions from './SocialShareOptions';
 
+import { sendLink } from '../../model';
+
 export default class extends React.PureComponent {
   state = {};
 
@@ -27,8 +29,7 @@ export default class extends React.PureComponent {
       return;
     }
 
-    this.props
-      .handleAction(formData)
+    sendLink(this.props.id, formData)
       .then((resp) => {
         if (resp.data) {
           this.props.showNotification({

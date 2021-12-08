@@ -8,11 +8,11 @@ import OrdersList from './Orders/List';
 import ProductsList from './Products/List';
 import ShareModal from './components/Share';
 import StoresSettingsModal from './components/StoresSettingsModal';
+import Spinner from 'common/ui/Spinner';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchStore } from 'merchant/reducers/storefront';
-import Spinner from 'common/ui/Spinner';
 
 @connect(
   (state) => ({
@@ -39,6 +39,7 @@ export default class StoresContainer extends React.Component {
           showNotification={this.props.showNotification}
           title={this.props.store.entity.data.title}
           url={this.props.store.entity.data.store_url}
+          id={this.props.store.entity.data.id}
         />
       ),
     });
