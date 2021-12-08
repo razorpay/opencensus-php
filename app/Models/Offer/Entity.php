@@ -229,6 +229,40 @@ class Entity extends Base\PublicEntity
         SubscriptionOfferEntity::REDEMPTION_TYPE,
     ];
 
+    /** @var string[] List of columns/keys that are allowed to be exposed to the public for affordability widget. */
+    protected $visibleForAffordability = [
+        self::ID,
+        self::NAME,
+        self::PAYMENT_METHOD,
+        self::PAYMENT_METHOD_TYPE,
+        self::IINS,
+        self::PAYMENT_NETWORK,
+        self::ISSUER,
+        self::INTERNATIONAL,
+        self::TYPE,
+        self::PERCENT_RATE,
+        self::MAX_CASHBACK,
+        self::FLAT_CASHBACK,
+        self::EMI_SUBVENTION,
+        self::EMI_DURATIONS,
+        self::MIN_AMOUNT,
+        self::LINKED_OFFER_IDS,
+        self::PROCESSING_TIME,
+        self::STARTS_AT,
+        self::ENDS_AT,
+        self::DISPLAY_TEXT,
+        self::ERROR_MESSAGE,
+        self::ACTIVE,
+        self::BLOCK,
+        self::TERMS,
+        self::DEFAULT_OFFER,
+        self::MAX_ORDER_AMOUNT,
+        self::PRODUCT_TYPE,
+        SubscriptionOfferEntity::APPLICABLE_ON,
+        SubscriptionOfferEntity::NO_OF_CYCLES,
+        SubscriptionOfferEntity::REDEMPTION_TYPE,
+    ];
+
     protected $defaults = [
         self::ACTIVE           => 1,
         self::BLOCK            => 1,
@@ -275,6 +309,15 @@ class Entity extends Base\PublicEntity
         self::DEFAULT_OFFER       => 'boolean',
         self::MAX_ORDER_AMOUNT    => 'int',
     ];
+
+    /**
+     * Get list of columns that are allowed to be visivle
+     * @return string[]
+     */
+    public static function getVisibleForAffordability(): array
+    {
+        return (new static())->visibleForAffordability;
+    }
 
     public function build(array $input = [], string $operation = 'create')
     {

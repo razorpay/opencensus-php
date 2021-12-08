@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Offer;
 
+use Illuminate\Support\Arr;
 use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -20,6 +21,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Offer\SubscriptionOffer;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Currency\Core as CurrencyCore;
+use Throwable;
 
 class Core extends Base\Core
 {
@@ -279,6 +281,30 @@ class Core extends Base\Core
         $defaultOffers = $this->repo->offer->fetchAllDefaultOffersForMerchant($merchantId);
 
         return $defaultOffers;
+    }
+
+    /**
+     * Returns all default offers for a merchant sorted in descending order by
+     * offer usage i.e. popularity.
+     *
+     * @param string $merchantId
+     *
+     * @return array
+     * @throws Throwable
+     */
+    public function fetchOffersForAffordability(string $merchantId): array
+    {
+        $offers = $this->repo->offer->fetchAllActiveOffersForMerchant($merchantId)->toArray();
+
+        $offerUsages = $this->repo->offer->getOffersUsage(array_column($offers, 'id'));
+
+        array_multisort($offerUsages, SORT_DESC, $offers);
+
+        foreach ($offers as &$offer) {
+            $offer = Arr::only($offer, Entity::getVisibleForAffordability());
+        }
+
+        return $offers;
     }
 
     public function fetchSharedOffers()

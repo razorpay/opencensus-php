@@ -3,6 +3,7 @@
 namespace RZP\Models\Affordability;
 
 use RZP\Models\Base;
+use RZP\Models\Offer\Core as OfferCore;
 
 class Service extends Base\Service
 {
@@ -68,7 +69,7 @@ class Service extends Base\Service
 
     protected function fetchOffersComponent(array &$data): void
     {
-        $data['entities']['offers']['items'] = [];
+        $data['entities']['offers']['items'] = (new OfferCore())->fetchOffersForAffordability($this->merchant->getId());
     }
 
     protected function fetchPaylaterComponent(array &$data): void
