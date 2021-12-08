@@ -744,43 +744,6 @@ class Constants
             ]
         ],
         [
-            'id'          => 'whats-new-JUN21-RXCC-GROWTH',
-            'title'       => 'Qualified for Corporate Cards!',
-            'description' => 'Make recurring and international spends with exclusive access to a credit card for your business.',
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/corporate-cards.svg',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Apply Now',
-                    'id'    => 'whats-new-JUN21-RXCC-GROWTH-cta1',
-                    'url'   => '/capital/corporate-cards',
-                ],
-                [
-                    'type'  => 'primary-inverted',
-                    'label' => 'Know more',
-                    'id'    => 'announcement-details-l2',
-                    'url'   => '/announcements/whats-new-JUN21-RXCC-GROWTH/'
-                ],
-            ],
-            'start_ts'    => 1623888000,
-            'end_ts'      => 1631836800,
-            'filters'     => [
-                'features' => ['capital_cards_eligible'],
-                'not_features' => ['capital_cards'],
-            ],
-            'l2_content'  => [
-                'content'     => "<div><div> RazorpayX Corporate Card is designed for growing businesses with NO requirement of fixed deposit and up to 50 days of the free credit period. It is also exclusively available at a zero joining fee for top Razorpay users</div><div class='image'> <img src='https://cdn.razorpay.com/static/assets/whats-new/corporate-cards.png' /></div><div> Make effortless digital payments: Stop using your personal cards to avoid compliance and audit hassles. Use a universally accepted Visa Card for your business expenses with no personal liability.</div><div class='paragraph'> Get control with a smart dashboard: Get better visibility into your spending with a user-friendly dashboard. Quickly limit the usage of cards and types of expenses to reduce overcharges. Also, easily apply for add-on cards tailored to your team.</div><div> Dynamic limit, Rewards and Cashback: Get cashback on timely repayments and access to 100+ Visa Business Platinum rewards in addition to the exclusive rewards from our partners. You also get a credit limit that grows with an increase in your revenue.</div></div>",
-                'buttons'     => [
-                    [
-                        'type'  => 'button',
-                        'label' => 'Apply Now',
-                        'id'    => 'whats-new-JUN21-RXCC-GROWTH-cta1',
-                        'url'   => '/capital/corporate-cards',
-                    ],
-                ],
-            ],
-        ],
-        [
             'id'          => 'JUL21-CC-FEATURELAUNCH',
             'title'       => 'New on Corporate Cards!',
             'description' => 'Physical Cards, Rewards & Add-on cards are here now!',
