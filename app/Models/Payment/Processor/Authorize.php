@@ -6812,7 +6812,8 @@ trait Authorize
                 // state and a different function is called for that.
                 //
                 if (($payment->order->getPaymentCapture() === true) and
-                    ($payment->isFileBasedEmandateRegistrationPayment() === false))
+                    ($payment->isFileBasedEmandateRegistrationPayment() === false) and
+                    ($payment->isCod() === false))
                 {
                     assertTrue($payment->hasBeenCaptured() === true);
                 }
