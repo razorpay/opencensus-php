@@ -670,7 +670,7 @@ return [
             'content' => [
                 'otp'            => '0007',
                 'token'          => 'Gvt61zZ3Iwzcqy',
-                'contact_mobile' => '0123456789',
+                'contact_mobile' => '9012345678',
                 'captcha'        => 'faked'
             ],
         ],
@@ -1064,7 +1064,7 @@ return [
             'content' => [
                 'otp'            => '0007',
                 'token'          => 'Gvt61zZ3Iwzcqy',
-                'contact_mobile' => '0123456789',
+                'contact_mobile' => '9012345678',
                 'captcha'        => 'faked',
             ],
         ],
@@ -3603,7 +3603,7 @@ return [
             'content' => [
                 'otp'            => '0007',
                 'token'          => 'Gvt61zZ3Iwzcqy',
-                'contact_mobile' => '0123456789',
+                'contact_mobile' => '9012345678',
                 'captcha'        => 'faked'
             ],
         ],
@@ -3632,7 +3632,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'contact_mobile'          => '0123456789',
+                'contact_mobile'          => '9012345678',
                 'contact_mobile_verified' => true,
                 'confirmed'               => true,
                 'merchants'               => [

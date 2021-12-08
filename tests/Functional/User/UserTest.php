@@ -610,12 +610,12 @@ class UserTest extends TestCase
 
     public function testMobileLoginWithPassword()
     {
-        $user = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
 
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'        => '0123456789',
+            'contact_mobile'        => '9012345678',
             'password'              => 'hello123',
             'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
@@ -649,12 +649,12 @@ class UserTest extends TestCase
 
     public function testMobileFailedLoginWrongPassword()
     {
-        $user = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
 
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'        => '0123456789',
+            'contact_mobile'        => '9012345678',
             'password'              => 'hello1234',
             'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
@@ -673,7 +673,7 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'        => '0123456789',
+            'contact_mobile'        => '9012345678',
             'password'              => 'hello123',
             'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
@@ -687,13 +687,13 @@ class UserTest extends TestCase
 
     public function testMobileFailedLoginWithPasswordMultipleAccounts()
     {
-        $user1 = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
-        $user2 = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+        $user1 = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+        $user2 = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
 
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'        => '0123456789',
+            'contact_mobile'        => '9012345678',
             'password'              => 'hello1234',
             'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
@@ -766,12 +766,12 @@ class UserTest extends TestCase
         $this->app['raven']->method('generateOtp')
             ->willReturn($smsPayload);
 
-        $user = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
 
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'        => '0123456789',
+            'contact_mobile'        => '9012345678',
         ];
 
         $testData['request']['content'] = $content;
@@ -785,13 +785,13 @@ class UserTest extends TestCase
 
     public function testMobileOtpLoginWithPasswordMultipleAccounts()
     {
-        $user1 = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
-        $user2 = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+        $user1 = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+        $user2 = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
 
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'        => '0123456789',
+            'contact_mobile'        => '9012345678',
         ];
 
         $testData['request']['content'] = $content;
@@ -801,16 +801,34 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testMobileOtpLoginMultipleAccountsAssociatedWithCountryCode()
+    {
+        $user1 = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+        $this->fixtures->create('user', ['contact_mobile' => '+91'. $user1['contact_mobile'], 'password' => 'hello123', 'contact_mobile_verified' => true]);
+
+        $testData = & $this->testData['testMobileOtpLoginWithPasswordMultipleAccounts'];
+
+        $content = [
+            'contact_mobile'        => $user1['contact_mobile'],
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+    }
+
     public function testMobileOtpLoginUserUnverified()
     {
         Mail::fake();
 
-        $user = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'contact_mobile_verified' => false]);
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'contact_mobile_verified' => false]);
 
         $testData = &$this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'                 => '0123456789',
+            'contact_mobile'                 => '9012345678',
         ];
 
         $testData['request']['content'] = $content;
@@ -831,7 +849,7 @@ class UserTest extends TestCase
 
         $ravenMock->expects($this->once())->method('verifyOtp');
 
-        $user = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'contact_mobile_verified' => true]);
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'contact_mobile_verified' => true]);
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -1410,12 +1428,12 @@ class UserTest extends TestCase
 
     public function testMobileSendVerificationOtpVerifiedUser()
     {
-        $user = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true, 'confirm_token' => null]);
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true, 'confirm_token' => null]);
 
         $testData = &$this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'        => '0123456789',
+            'contact_mobile'        => '9012345678',
             'password'              => 'hello123',
         ];
 
@@ -1428,12 +1446,12 @@ class UserTest extends TestCase
 
     public function testMobileSendVerificationOtpWrongPassword()
     {
-        $user = $this->fixtures->create('user', ['contact_mobile'        => '0123456789', 'password' => 'hello123']);
+        $user = $this->fixtures->create('user', ['contact_mobile'        => '9012345678', 'password' => 'hello123']);
 
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'        => '0123456789',
+            'contact_mobile'        => '9012345678',
             'password'              => 'hello1234',
         ];
 
@@ -1446,13 +1464,13 @@ class UserTest extends TestCase
 
     public function testMobileSendVerificationOtpMultipleAccounts()
     {
-        $user1 = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
-        $user2 = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+        $user1 = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+        $user2 = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
 
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'        => '0123456789',
+            'contact_mobile'        => '9012345678',
         ];
 
         $testData['request']['content'] = $content;
@@ -1460,6 +1478,24 @@ class UserTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
+    }
+
+    public function testMobileSendVerificationOtpMultipleAccountsAssociatedWithCountryCodes()
+    {
+        $user1 = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+        $this->fixtures->create('user', ['contact_mobile' => '+91'. $user1['contact_mobile'], 'password' => 'hello123', 'contact_mobile_verified' => true]);
+
+        $testData = & $this->testData['testMobileSendVerificationOtpMultipleAccounts'];
+
+        $content = [
+            'contact_mobile'        => $user1['contact_mobile'],
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
     }
 
     public function testVerificationMailVerifyOtp()
@@ -1495,7 +1531,7 @@ class UserTest extends TestCase
 
         $ravenMock->expects($this->once())->method('verifyOtp');
 
-        $user = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'contact_mobile_verified' => false]);
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'contact_mobile_verified' => false]);
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -1524,12 +1560,12 @@ class UserTest extends TestCase
         $this->app['raven']->method('generateOtp')
             ->willReturn($smsPayload);
 
-        $user = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
 
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'        => '0123456789',
+            'contact_mobile'        => '9012345678',
             'token'                 => 'BUIj3m2Nx2VvVj'
         ];
 
@@ -2535,7 +2571,7 @@ class UserTest extends TestCase
     public function testMobileLoginWithIncorrectPasswordCountCaptchaDisabled()
     {
         $user = $this->fixtures->create('user', [
-            'contact_mobile' => '0123456789',
+            'contact_mobile' => '9012345678',
             'password'         => 'P@ssw0rd',
             'contact_mobile_verified' => true
         ]);
@@ -2543,7 +2579,7 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'        => '0123456789',
+            'contact_mobile'        => '9012345678',
             'password'              => 'hello123',
             'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
@@ -4945,7 +4981,7 @@ class UserTest extends TestCase
         $user = $this->fixtures->create(
             'user',
             [
-                'contact_mobile' => '0123456789',
+                'contact_mobile' => '9012345678',
                 'contact_mobile_verified' => true,
                 UserEntity::SECOND_FACTOR_AUTH => 1
             ]
@@ -4961,7 +4997,7 @@ class UserTest extends TestCase
         $user = $this->fixtures->create(
             'user',
             [
-                'contact_mobile' => '0123456789',
+                'contact_mobile' => '9012345678',
                 'contact_mobile_verified' => true,
                 'password' => 'hello123',
                 UserEntity::SECOND_FACTOR_AUTH => 1
@@ -4982,7 +5018,7 @@ class UserTest extends TestCase
         $user = $this->fixtures->create(
             'user',
             [
-                'contact_mobile' => '0123456789',
+                'contact_mobile' => '9012345678',
                 'contact_mobile_verified' => true,
                 'password' => 'hello123',
                 UserEntity::SECOND_FACTOR_AUTH => 1
@@ -5003,7 +5039,7 @@ class UserTest extends TestCase
         $user = $this->fixtures->create(
             'user',
             [
-                'contact_mobile' => '0123456789',
+                'contact_mobile' => '9012345678',
                 'contact_mobile_verified' => true,
                 'password' => 'hello123',
                 UserEntity::SECOND_FACTOR_AUTH => 1
@@ -5029,7 +5065,7 @@ class UserTest extends TestCase
         $user = $this->fixtures->create(
             'user',
             [
-                'contact_mobile' => '0123456789',
+                'contact_mobile' => '9012345678',
                 'contact_mobile_verified' => true,
                 'password' => 'hello123',
             ]
@@ -5042,12 +5078,12 @@ class UserTest extends TestCase
 
     public function testMobileSendVerificationOtpUnverifiedEmail()
     {
-        $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => false, 'confirm_token' => 'notnull']);
+        $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => false, 'confirm_token' => 'notnull']);
 
         $testData = &$this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'        => '0123456789',
+            'contact_mobile'        => '9012345678',
             'password'              => 'hello123',
         ];
 
@@ -5060,12 +5096,12 @@ class UserTest extends TestCase
 
     public function testMobileOtpLoginMobileAndEmailUnverified()
     {
-        $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'contact_mobile_verified' => false, 'confirm_token' => "notnull"]);
+        $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'contact_mobile_verified' => false, 'confirm_token' => "notnull"]);
 
         $testData = &$this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'                 => '0123456789',
+            'contact_mobile'                 => '9012345678',
         ];
 
         $testData['request']['content'] = $content;
@@ -5096,7 +5132,7 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'        => '0123456789',
+            'contact_mobile'        => '9012345678',
         ];
 
         $testData['request']['content'] = $content;
@@ -5108,9 +5144,26 @@ class UserTest extends TestCase
         $this->assertNotEmpty($response['token']);
     }
 
+    public function testUserRegisterSendSignupOtpViaSmsMobileExistsWithCountryCode()
+    {
+        $user1 = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+
+        $testData = & $this->testData['testUserRegisterSendSignupOtpViaSmsMobileExists'];
+
+        $content = [
+            'contact_mobile'        => '+91'. $user1["contact_mobile"],
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+    }
+
     public function testUserRegisterSendSignupOtpViaSmsMobileExists()
     {
-        $user1 = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+        $user1 = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -5191,7 +5244,7 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'        => '0123456789',
+            'contact_mobile'        => '9012345678',
             'captcha'               => 'faked',
             'token'                 => 'token',
             'otp'                   => '0008',
@@ -5252,7 +5305,7 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'        => '0123456789',
+            'contact_mobile'        => '9012345678',
         ];
 
         $testData['request']['content'] = $content;
@@ -5278,7 +5331,7 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'        => '0123456789',
+            'contact_mobile'        => '9012345678',
             'captcha'               => 'faked',
             'token'                 => 'token',
             'otp'                   => '0008',
@@ -5296,7 +5349,7 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'        => '0123456789',
+            'contact_mobile'        => '9012345678',
             'captcha'               => 'faked',
             'token'                 => 'token',
             'otp'                   => '0008',

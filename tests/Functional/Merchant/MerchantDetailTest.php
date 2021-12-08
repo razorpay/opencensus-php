@@ -5389,5 +5389,31 @@ You can now start accepting payments from https://www.example.com.
 
         $this->startTest();
     }
+
+    public function testPutPresignupDetailsWithContactMobileExistsWithCountryCode()
+    {
+        $testData = &$this->testData['testPutPresignupDetailsWithContactMobileExists'];
+
+        $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 1]);
+        $merchant2 = $this->fixtures->create('merchant', ['signup_via_email' => 1]);
+
+        $merchantDetail = $this->fixtures->merchant_detail->createSane(['merchant_id' => $merchant['id'], 'contact_mobile' => '1234567890']);
+        $merchantDetail2 = $this->fixtures->merchant_detail->createSane(['merchant_id' => $merchant2['id'], 'contact_mobile' => '+911234567890']);
+
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant(
+            $merchant['id'], ['signup_via_email' => 1]
+        );
+        $merchantUser2 = $this->fixtures->user->createBankingUserForMerchant(
+            $merchant2['id'], ['signup_via_email' => 1]
+        );
+
+        $testData["request"]["content"]["contact_mobile"] = $merchantDetail2["contact_mobile"];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail2['merchant_id'], $merchantUser2['id']);
+
+        $this->startTest($testData);
+
+    }
+
 }
 

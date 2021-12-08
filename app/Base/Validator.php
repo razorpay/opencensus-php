@@ -3,6 +3,8 @@
 namespace RZP\Base;
 
 use App;
+use Lib\PhoneBook;
+use libphonenumber\NumberParseException;
 use Razorpay\Trace\Logger;
 
 use RZP\Exception;

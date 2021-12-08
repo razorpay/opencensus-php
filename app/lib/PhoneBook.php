@@ -26,11 +26,12 @@ class PhoneBook
      * RFC3966          - Format for using in html links - tel:+91-99876-54321
      */
 
-    const E164          = 'e164';
-    const INTERNATIONAL = 'international';
-    const NATIONAL      = 'national';
-    const DOMESTIC      = 'domestic';
-    const RFC3966       = 'rfc3966';
+    const E164            = 'e164';
+    const INTERNATIONAL   = 'international';
+    const NATIONAL        = 'national';
+    const DOMESTIC        = 'domestic';
+    const RFC3966         = 'rfc3966';
+    const SPACE_SEPARATED = 'space_separated';
 
     const FORMATS = [
         self::E164          => PhoneNumberFormat::E164,
@@ -153,6 +154,12 @@ class PhoneBook
                 $contact = $number->getNationalNumber();
                 break;
 
+            case self::SPACE_SEPARATED:
+                $countryCode = $number->getCountryCode();
+                $nationalNumber = $number->getNationalNumber();
+                $contact = '+' . $countryCode . ' ' . $nationalNumber;
+                break;
+
             // Standardized format E164 - +919987654321
             default:
                 $contact = $libphonenumber->format($number, PhoneNumberFormat::E164);
@@ -202,5 +209,20 @@ class PhoneBook
     public function getPhoneNumber()
     {
         return $this->phoneNumber;
+    }
+
+    /**
+     * Get different mobile number formats
+     * @return array
+     */
+    public function getMobileNumberFormats(): array
+    {
+        return [
+            $this->format(PhoneBook::E164),
+            $this->format(PhoneBook::INTERNATIONAL),
+            $this->format(PhoneBook::DOMESTIC),
+            $this->format(PhoneBook::NATIONAL),
+            $this->format(PhoneBook::SPACE_SEPARATED),
+        ];
     }
 }

@@ -6,12 +6,14 @@ use App;
 
 use RZP\Base;
 use RZP\Exception;
+use Lib\PhoneBook;
 use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\IndianStates;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Document\Type;
+use libphonenumber\NumberParseException;
 use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
@@ -453,6 +455,33 @@ class Validator extends Base\Validator
         DetailConstants::ADDITIONAL_APP_REASON          => 'required|string|min:100',
         DetailConstants::URL_TYPE                       => 'required|string|in:app',
     ];
+
+    protected static $uniqueContactMobileRules = [
+      Entity::CONTACT_MOBILE                            => 'filled|unique:merchant_details',
+    ];
+
+    protected static $preSignupValidators = [
+        'unique_contact_mobile'
+    ];
+
+    /**
+     * @param $input
+     * @throws NumberParseException
+     */
+    public function validateUniqueContactMobile($input)
+    {
+        if(isset($input[Entity::CONTACT_MOBILE]) === false)
+        {
+            return;
+        }
+
+        $validMobileNumberFormats = (new PhoneBook($input[Entity::CONTACT_MOBILE]))->getMobileNumberFormats();
+        foreach ($validMobileNumberFormats as $mobileNumber)
+        {
+            $this->validateInput('unique_contact_mobile', [Entity::CONTACT_MOBILE => $mobileNumber]);
+        }
+
+    }
 
     /**
      * If user has signup via email then we cannot allow email in pre_signup details

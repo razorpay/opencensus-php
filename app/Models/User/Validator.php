@@ -6,6 +6,7 @@ use App;
 use Hash;
 use Request;
 use RZP\Base;
+use Lib\PhoneBook;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Diag\EventCode;
@@ -15,6 +16,7 @@ use RZP\Models\Merchant;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Hashing\BcryptHasher;
 use RZP\Exception\BadRequestException;
+use libphonenumber\NumberParseException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -543,30 +545,24 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * @param array $input
+     * @throws NumberParseException
+     */
     protected function validateEmailOrMobileUnique(array $input)
     {
-        $inputField = '';
-
         if (isset($input[Entity::EMAIL]) === true)
         {
-            $input = ['email' => $input[Entity::EMAIL]];
-
-            $inputField = 'Email';
+            $this->validateInput('createEmailUnique', [Entity::EMAIL => $input[Entity::EMAIL]]);
         }
         else if (isset($input[Entity::CONTACT_MOBILE]) === true)
         {
-            $input = ['contact_mobile' => $input[Entity::CONTACT_MOBILE]];
-
-            $inputField = 'Mobile';
+            $validMobileNumberFormats = (new PhoneBook($input[Entity::CONTACT_MOBILE]))->getMobileNumberFormats();
+            foreach ($validMobileNumberFormats as $mobileNumber)
+            {
+                $this->validateInput('createMobileUnique', [Entity::CONTACT_MOBILE => $mobileNumber]);
+            }
         }
-        else
-        {
-            //Throw runtime exception
-        }
-
-        $validatorFunction = 'create' . $inputField . 'Unique';
-
-        $this->validateInput($validatorFunction, $input);
     }
 
     /**

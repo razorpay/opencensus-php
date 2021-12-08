@@ -8,6 +8,7 @@ use Config;
 use Throwable;
 use Carbon\Carbon;
 use RZP\Exception;
+use Lib\PhoneBook;
 use RZP\Models\Base;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
@@ -34,6 +35,7 @@ use Illuminate\Hashing\BcryptHasher;
 use RZP\Models\BankingAccountService;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
+use libphonenumber\NumberParseException;
 use RZP\Models\Workflow\Service\Adapter;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Notifications\Onboarding\Events;
@@ -118,6 +120,7 @@ class Core extends Base\Core
      * @param array $input
      * @return array|null
      * @throws BadRequestException
+     * @throws NumberParseException
      */
     public function sendSignupOtpViaSms(array $input): ?array
     {
@@ -214,7 +217,9 @@ class Core extends Base\Core
     /**
      * @param array $input
      * @return bool
-     * @throws BadRequestException|ServerErrorException
+     * @throws BadRequestException
+     * @throws NumberParseException
+     * @throws ServerErrorException
      */
     public function verifySignupOtp(array $input): bool
     {
@@ -1170,7 +1175,7 @@ class Core extends Base\Core
         // So, we'll just return a dummy token.
         try
         {
-            $receiver = $this->repo->user->getUserFromMobileOrFail($input[Entity::CONTACT_MOBILE]);
+            $receiver = $this->getSingleUserByMobileOrFail($input[Entity::CONTACT_MOBILE]);
         }
         catch (Throwable $e)
         {
@@ -1253,13 +1258,17 @@ class Core extends Base\Core
     }
 
     /**
+     * @param array $input
+     * @return Entity
      * @throws BadRequestException
+     * @throws NumberParseException
+     * @throws Throwable
      */
     public function fetchUser(array $input)
     {
         if (isset($input[Entity::CONTACT_MOBILE]) === true)
         {
-            $user = $this->repo->user->getUserFromMobileOrFail($input[Entity::CONTACT_MOBILE]);
+            $user = $this->getSingleUserByMobileOrFail($input[Entity::CONTACT_MOBILE]);
 
             $user = $this->isMobileVerified($user);
 
@@ -1897,13 +1906,17 @@ class Core extends Base\Core
     }
 
     /**
+     * @param array $input
+     * @return null
      * @throws BadRequestException
+     * @throws NumberParseException
+     * @throws Throwable
      */
     public function fetchUserForVerification(array $input)
     {
         if (isset($input[Entity::CONTACT_MOBILE]) === true)
         {
-            $user = $this->repo->user->getUserFromMobileOrFail($input[Entity::CONTACT_MOBILE]);
+            $user = $this->getSingleUserByMobileOrFail($input[Entity::CONTACT_MOBILE]);
 
             return $user;
         }
@@ -2834,19 +2847,87 @@ class Core extends Base\Core
     }
 
     /**
+     * @param $mobile
+     * @return null
+     * @throws BadRequestException
+     * @throws NumberParseException
+     * @throws Throwable
+     */
+    public function getSingleUserByMobileOrFail($mobile)
+    {
+        $validMobileNumberFormats = (new PhoneBook($mobile))->getMobileNumberFormats();
+
+        $user = null;
+        $userCount = 0;
+
+        foreach ($validMobileNumberFormats as $mobileNumber)
+        {
+            // - if multiple users exist for a mobile number format, `getUserFromMobileOrFail` will raise an exception
+            // - if no users exist for a mobile number, check for the next format
+            // - $userCount keeps a track of how many users across multiple formats are present.
+            //   if this exceeds 1, throw an exception
+            try
+            {
+                $user = $this->repo->user->getUserFromMobileOrFail($mobileNumber);
+                $userCount += 1;
+                if($userCount > 1)
+                {
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED,
+                        null,
+                        [
+                            'internal_error_code' => ErrorCode::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED,
+                        ]
+                    );
+                }
+            }
+            catch (Throwable $e)
+            {
+                switch ($e->getCode())
+                {
+                    case ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED:
+                        break;
+                    default:
+                        throw $e;
+                }
+            }
+        }
+
+        // if none of the mobile number formats are associated with any user, raise an exception
+        if(empty($user) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED,
+                null,
+                [
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED,
+                ]
+            );
+        }
+
+        return $user;
+    }
+
+    /**
      * Takes in mobile number and checks if users
-     * corresponding to that mobile number already exist.
+     * corresponding to any format of that mobile number already exist.
      *
      * @param string $mobile
      * @return bool
+     * @throws NumberParseException
      */
     public function checkIfMobileAlreadyExists(string $mobile): bool
     {
-        $users = $this->repo->user->findByMobile($mobile);
+        $validMobileNumberFormats = (new PhoneBook($mobile))->getMobileNumberFormats();
 
-        if($users->count() > 0)
+        foreach ($validMobileNumberFormats as $mobileNumber)
         {
-            return true;
+            $users = $this->repo->user->findByMobile($mobileNumber);
+
+            if($users->count() > 0)
+            {
+                return true;
+            }
         }
 
         return false;
