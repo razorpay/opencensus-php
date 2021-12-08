@@ -9,33 +9,41 @@ class IndianStates
     const AR = 'AR';
     const AS = 'AS';
     const BI = 'BI';
+    const BR = 'BR';
     const CH = 'CH';
     const CT = 'CT';
     const DN = 'DN';
     const DD = 'DD';
     const DL = 'DL';
     const GO = 'GO';
+    const GA = 'GA';
     const GJ = 'GJ';
     const HA = 'HA';
     const HP = 'HP';
+    const HR = 'HR';
     const JK = 'JK';
     const JH = 'JH';
     const KA = 'KA';
     const KE = 'KE';
+    const KL = 'KL';
     const LD = 'LD';
     const MP = 'MP';
     const MH = 'MH';
     const MA = 'MA';
     const ME = 'ME';
     const MI = 'MI';
+    const MN = 'MN';
     const NA = 'NA';
+    const NL = 'NL';
     const OR = 'OR';
-    const PO = 'PO';
     const PB = 'PB';
+    const PO = 'PO';
+    const PY = 'PY';
     const RJ = 'RJ';
     const SK = 'SK';
     const TN = 'TN';
     const TR = 'TR';
+    const TS = 'TS';
     const TG = 'TG';
     const UP = 'UP';
     const UT = 'UT';
@@ -84,9 +92,27 @@ class IndianStates
         'WEST BENGAL'                   => self::WB,
     ];
 
-    public static function getStateCode(string $value)
+    // State codes which don't match with above
+    protected static $gstStateCodeMap = [
+        'BIHAR'                         => self::BR,
+        'GOA'                           => self::GA,
+        'HARYANA'                       => self::HR,
+        'KERALA'                        => self::KL,
+        'MANIPUR'                       => self::MN,
+        'NAGALAND'                      => self::NL,
+        'PONDICHERRY'                   => self::PY,
+        'TELANGANA'                     => self::TS,
+        'TRIPURA'                       => self::TR,
+    ];
+
+    public static function getStateCode(string $value, bool $useGstCodes = false)
     {
         $value = strtoupper($value);
+
+        if ($useGstCodes === true and isset(self::$gstStateCodeMap[$value]) === true)
+        {
+            return self::$gstStateCodeMap[$value];
+        }
 
         if (isset(self::$stateCodeMap[$value]) === true)
         {

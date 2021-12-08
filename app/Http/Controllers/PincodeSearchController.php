@@ -11,7 +11,13 @@ class PincodeSearchController extends Controller
     {
         $url = Request::path();
 
-        $data = $this->app['pincodesearch']->fetchCityAndStateFromPincode($id, strpos($url, '1cc') !== false);
+        $useStateName = $useGstCodes = strpos($url, '1cc') !== false;
+
+        $data = $this->app['pincodesearch']->fetchCityAndStateFromPincode(
+            $id,
+            $useStateName,
+            $useGstCodes
+          );
 
         return ApiResponse::json($data);
     }

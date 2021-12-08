@@ -155,7 +155,7 @@ class PincodeSearch
             $response);
     }
 
-    public function fetchCityAndStateFromPincode($pincode, $useStateName = false): array
+    public function fetchCityAndStateFromPincode($pincode, $useStateName = false, $useGstCodes = false): array
     {
         $pincodeValidator = new Pincode\Validator(Pincode\Pincode::IN);
 
@@ -192,7 +192,7 @@ class PincodeSearch
             'city'          => $response['districtname'] ?? null,
             'state'         =>
                 ($useStateName === true ? ucwords(strtolower($response['statename'])) : $response['circlename']) ?? null,
-            'state_code'    => IndianStates::getStateCode($response['statename']),
+            'state_code'    => IndianStates::getStateCode($response['statename'], $useGstCodes),
         ];
 
         $this->cache->put($key, $response, static::CACHE_TTL);
