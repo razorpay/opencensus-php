@@ -371,6 +371,8 @@ class TokenTest extends TestCase
         $this->assertEquals('2023', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
 
         $this->assertArrayNotHasKey('customer_id', $response);
+
+        $this->assertArrayHasKey('notes', $response);
     }
 
     public function testCreateTokenAndTokenizeCardMC()

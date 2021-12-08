@@ -53,7 +53,7 @@ class Validator extends Base\Validator
         Entity::DEBIT_TYPE          => 'required_only_if:auth_type,migrated|string|in:max_amount,fixed_amount',
         Entity::FREQUENCY           => 'required_only_if:auth_type,migrated|string|in:adhoc,monthly,quarterly,yearly',
         Entity::STATUS              => 'sometimes|nullable',
-        Entity::NOTES               => 'sometimes|nullable'
+        Entity::NOTES               => 'sometimes|notes'
     ];
 
     protected static $createDirectRules = [
@@ -74,7 +74,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID          => 'sometimes|public_id',
         Entity::METHOD               => 'required|in:card',
         Entity::AUTHENTICATION       => 'sometimes',
-        Entity::NOTES                => 'sometimes',
+        Entity::NOTES                => 'sometimes|notes',
     ];
 
     protected static $createNetworkCardRules = [

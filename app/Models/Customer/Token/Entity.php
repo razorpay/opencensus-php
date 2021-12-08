@@ -20,6 +20,7 @@ use RZP\Models\PaymentsUpi\Vpa;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Address;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\SubscriptionRegistration\SubscriptionRegistrationConstants;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -33,7 +34,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, NotesTrait;
 
     const MERCHANT_ID               = 'merchant_id';
     const CUSTOMER_ID               = 'customer_id';
@@ -308,7 +309,6 @@ class Entity extends Base\PublicEntity
         self::EXPIRED_AT,
         self::START_TIME,
         self::STATUS,
-        self::NOTES,
     ];
 
     protected $appends = [
@@ -566,11 +566,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
-    public function getNotes()
-    {
-        return $this->getAttribute(self::NOTES);
-    }
-
     public function getRecurringStatus()
     {
         return $this->getAttribute(self::RECURRING_STATUS);
@@ -636,11 +631,6 @@ class Entity extends Base\PublicEntity
     public function setStatus($status)
     {
         $this->setAttribute(self::STATUS, $status);
-    }
-
-    public function setNotes($notes)
-    {
-        $this->setAttribute(self::NOTES, $notes);
     }
 
     public function setRecurringStatus($recurringStatus)
@@ -842,14 +832,6 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function setPublicNotesAttribute(array & $array)
-    {
-        if ($this->getMethod() !== Payment\Method::CARD)
-        {
-            unset($array[self::NOTES]);
-        }
-    }
-
     protected function setPublicMrnAttribute(array & $array)
     {
         $array[self::MRN] = null;
@@ -1034,7 +1016,7 @@ class Entity extends Base\PublicEntity
             }
         }
 
-        $publicArray[self::NOTES] = [];
+        $publicArray[self::NOTES] = $this->getNotes();
 
         return $publicArray;
     }

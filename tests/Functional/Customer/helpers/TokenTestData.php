@@ -17,6 +17,9 @@ return [
                     'expiry_year' => '23',
                     'name' => 'Gaurav Kumar',
                 ],
+                'notes' => [
+                    'test' => 'test',
+                ],
             ],
         ],
         'response' => [
@@ -156,6 +159,9 @@ return [
                     'expiry_month' => '12',
                     'expiry_year' => '23',
                 ],
+                'notes' => [
+                    'test1' => 'test2'
+                ]
             ],
         ],
         'response' => [

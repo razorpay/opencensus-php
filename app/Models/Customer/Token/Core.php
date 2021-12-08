@@ -1347,7 +1347,8 @@ class Core extends Base\Core
         $createTokenInput = [
             Entity::METHOD      => Method::CARD,
             Entity::CARD_ID     => $card->getId(),
-            Entity::STATUS      => $tokenStatus
+            Entity::STATUS      => $tokenStatus,
+            Entity::NOTES       => $input['notes'] ?? [],
         ];
 
         $token->build($createTokenInput);
@@ -1413,6 +1414,7 @@ class Core extends Base\Core
         $createTokenInput = [
             Entity::METHOD      => Method::CARD,
             Entity::CARD_ID     => $card->getId(),
+            Entity::NOTES       => $input['notes'] ?? [],
         ];
 
         $token->build($createTokenInput);
