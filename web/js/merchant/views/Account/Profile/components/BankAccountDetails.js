@@ -7,6 +7,12 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import { UPDATE_BANK_ACC } from '../deeplink-constants';
+import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
+import NeedsClarificationModal from './WorkflowRequests/NeedsClarificationModal';
+import { WORKFLOWS } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
+import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
+import rolesList from 'merchant/helpers/permissions/roles-list';
+
 const BankAccountDetails = ({
   bankAccount,
   onChangeBankAccountDetails,
@@ -14,8 +20,16 @@ const BankAccountDetails = ({
   settlement_amount,
   location,
   user,
+  openModal,
 }) => {
   const bankAccountSectionRef = useRef(null);
+
+  const openNeedsClarificationModal = ({ workflowType }) => {
+    openModal({
+      size: 'small',
+      component: <NeedsClarificationModal workflowType={workflowType} />,
+    });
+  };
 
   useEffect(() => {
     if (
@@ -85,7 +99,25 @@ const BankAccountDetails = ({
       <div class="list-group details-row-container">
         <DetailRow label="IFSC Code" value={bankAccount.ifsc} />
         <DetailRow label="Account Number" value={bankAccount.account_number} />
-        <DetailRow label="Beneficiary" value={bankAccount.name} />
+        <DetailRow
+          label={() => (
+            <div class="bank-account">
+              <span>Beneficiary</span>
+              <WorkflowStatus
+                roles={[rolesList.OWNER]}
+                workflowType={WORKFLOWS.BANK_DETAIL_UPDATE}
+                reviewStatus=" Your request to update your bank account has been received. Our team is going
+                    through the information provided by you."
+                onReplyClick={() =>
+                  openNeedsClarificationModal({
+                    workflowType: WORKFLOWS.BANK_DETAIL_UPDATE,
+                  })
+                }
+              />
+            </div>
+          )}
+          value={bankAccount.name}
+        />
       </div>
     </div>
   );
@@ -93,6 +125,11 @@ const BankAccountDetails = ({
 
 const mapStateToProps = (state) => ({
   user: state.session.user,
+  workflows: state.workflows,
 });
 
-export default withRouter(connect(mapStateToProps, {})(BankAccountDetails));
+export default withRouter(
+  connect(mapStateToProps, {
+    openModal: fnOpenModal,
+  })(BankAccountDetails),
+);

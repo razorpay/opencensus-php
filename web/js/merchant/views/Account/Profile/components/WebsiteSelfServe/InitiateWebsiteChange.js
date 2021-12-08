@@ -14,13 +14,7 @@ function InitiateWebsiteChange(props) {
 
     props.openModal({
       size: 'small',
-      component: (
-        <UpdateWebsiteDetails
-          flowType={props.flowType}
-          getWebsiteWorkflowStatus={props.getWebsiteWorkflowStatus}
-          getAdditionalWebsiteWorkflowStatus={props.getAdditionalWebsiteWorkflowStatus}
-        />
-      ),
+      component: <UpdateWebsiteDetails flowType={props.flowType} />,
     });
 
     // Avoid tracking for additional website flow

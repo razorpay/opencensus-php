@@ -31,10 +31,21 @@ import UpdateBillingLabel from './components/UpdateBillingLabel';
 import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import IntoView from 'common/ui/IntoView';
-import { SUPPORT_DETAILS, UPDATE_BANK_ACC, SETTELEMENT_CYCLE } from './deeplink-constants';
+import {
+  SUPPORT_DETAILS,
+  UPDATE_BANK_ACC,
+  SETTELEMENT_CYCLE,
+  NC_UPDATE_BANK_ACC,
+  NC_UPDATE_GSTIN,
+} from './deeplink-constants';
 import { CreateTicketEmitter } from '../../TicketSupport/utils';
 import { compose, bindActionCreators } from 'redux';
-
+import NeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NeedsClarificationModal';
+import {
+  workflowNames,
+  getWorkflowTypeForRoute,
+} from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
+import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 class Profile extends Component {
   state = {
     loggedInUser: {},
@@ -81,6 +92,44 @@ class Profile extends Component {
         isWebsiteInWorkflow: data,
       });
     });
+  }
+
+  openNeedsClarificationModal() {
+    const { location, openModal, fetchWorkflowStatus } = this.props;
+
+    if (!this.isAdminOrOwner() || !location || !location.pathname) return;
+
+    const needsClarification = location.pathname.includes('clarification');
+    const workflowRoute = location.pathname.split('/').pop();
+    const workflowType = getWorkflowTypeForRoute(workflowRoute);
+
+    if (needsClarification && workflowRoute && workflowType) {
+      fetchWorkflowStatus(workflowType).then((response) => {
+        const workflow = response?.data;
+        if (
+          workflow &&
+          workflow.workflow_exists &&
+          ['open', 'approved'].includes(workflow?.workflow_status) &&
+          workflow?.needs_clarification
+        ) {
+          if (workflow?.tags?.includes('awaiting-customer-response')) {
+            openModal({
+              size: 'small',
+              component: <NeedsClarificationModal workflowType={workflowType} />,
+            });
+          } else if (workflow?.tags?.includes('customer-responded')) {
+            this.props.showNotification({
+              type: 'success',
+              message: `You’ve already submitted response for ${workflowNames[workflowType]}`,
+            });
+          }
+        }
+      });
+    }
+  }
+
+  componentDidMount() {
+    this.openNeedsClarificationModal();
   }
 
   isAdminOrOwner() {
@@ -512,10 +561,12 @@ class Profile extends Component {
               usr.isAllowedView('profile_gst') && !usr.isUnregisteredBusiness
             }
           >
-            <Gst />
+            <IntoView hashedWith={[NC_UPDATE_GSTIN]}>
+              <Gst />
+            </IntoView>
           </ShowWhen>
           {bankAccount ? (
-            <IntoView hashedWith={UPDATE_BANK_ACC}>
+            <IntoView hashedWith={[NC_UPDATE_BANK_ACC, UPDATE_BANK_ACC]}>
               <BankAccountDetails
                 bankAccount={bankAccount}
                 isBankAccountChangeAllowed={this.state.isBankAccountChangeAllowed}
@@ -575,6 +626,7 @@ const mapDispatchToProps = (dispatch) => {
       fetchUser,
       updateSession,
       fetchSettlementAmount,
+      fetchWorkflowStatus: fetchWorkflowStatusReducer,
     },
     dispatch,
   );

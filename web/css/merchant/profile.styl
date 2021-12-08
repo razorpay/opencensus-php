@@ -212,6 +212,26 @@ $light-blue-color = #2B83EA;
   .notify-error
     color #f05050
 
+.bank-account
+  width 50%
+
+  .help-content
+    padding-left 5px
+
+  .bank-account__change-info
+    width 200%
+    margin-top 10px
+    padding-left 10px
+
+    &.inprogress
+      border-left 4px solid #CD8214
+
+    &.rejected
+      border-left 4px solid #D12D2D
+
+    &.success
+      border-left 4px solid #1F890E  
+
 .gst-invoice-note
   border-left 3px solid #CD8214
   padding-left 10px
@@ -536,3 +556,39 @@ $light-blue-color = #2B83EA;
   margin-left: 15px
   cursor: pointer
 }
+
+
+.workflow-status
+  width 200%
+  margin-top 10px
+  padding-left 10px
+
+  &.inprogress
+    border-left 4px solid #CD8214
+
+  &.rejected
+    border-left 4px solid #D12D2D
+
+  &.success
+    border-left 4px solid #1F890E
+
+.needs-clarification-form
+  button[type=submit]
+    margin-top: 40px
+  
+  .notify-error
+    color #f05050
+
+  .Dropzone
+    margin-top: 20px
+
+  textarea
+    overflow scroll
+    background-color rgba(224, 228, 249, 0.1)
+    border none
+    border-bottom 2px solid rgba(22, 47, 86, 0.1)
+
+  textarea.Input-el
+    max-height 150px
+    resize none
+    height 140px

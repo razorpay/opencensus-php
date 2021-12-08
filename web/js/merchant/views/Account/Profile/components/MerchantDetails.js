@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import rTracking from 'react-tracking';
@@ -19,18 +19,27 @@ import UserContactMobile from './UserContactMobile';
 import { analyticsTrack } from 'common/utils/analytics';
 import Button from 'common/new-ui/Button';
 import GenerateTnCPage from 'merchant/components/Home/GenerateTnCPage';
-import { EMAIL_UPDATE, CONTACT_NUMBER_UPDATE, BILLING_LABEL } from '../deeplink-constants';
+import {
+  EMAIL_UPDATE,
+  CONTACT_NUMBER_UPDATE,
+  BILLING_LABEL,
+  NC_INCREASE_TXN_LIMIT,
+  NC_UPDATE_WEBSITE,
+  NC_ADD_WEBSITE,
+} from '../deeplink-constants';
 import IntoView from 'common/ui/IntoView';
 import TextHighlighter from 'common/ui/TextHighlighter';
-import { merchantFetch } from 'merchant/utils/ajax';
-import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 import InitiateWebsiteChange from './WebsiteSelfServe/InitiateWebsiteChange';
 import { FLOWS } from './WebsiteSelfServe/Constants';
 import UpdateTransactionLimit from './UpdateTransactionLimit';
 import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import NeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NeedsClarificationModal';
+import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
+import { WORKFLOWS } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 
-function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
+function renderWebsites(user, handleEditWebsite, websiteWorkflow) {
   return (
     <div>
       {user.business_website ? (
@@ -42,8 +51,8 @@ function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
       ) : (
         '--'
       )}
-      {(isWebsiteInWorkflow.workflow_exists === false ||
-        !['open', 'approved'].includes(isWebsiteInWorkflow.workflow_status)) &&
+      {(websiteWorkflow?.workflow_exists === false ||
+        !['open', 'approved'].includes(websiteWorkflow?.workflow_status)) &&
         user.role === 'owner' &&
         user.isAccepted &&
         user.isWebsiteSelfServeOn && (
@@ -59,7 +68,7 @@ function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
   );
 }
 
-function renderAdditionalWebsites(user, handleEditWebsite, isAdditionalWebsiteInWorkflow) {
+function renderAdditionalWebsites(user, handleEditWebsite, additionalWebsiteWorkflow) {
   const hasAdditionalWebsites = isPresent(user.additional_websites);
   const isLimitReached = hasAdditionalWebsites ? user.additional_websites.length === 5 : false;
 
@@ -81,8 +90,8 @@ function renderAdditionalWebsites(user, handleEditWebsite, isAdditionalWebsiteIn
       </div>
       {user.business_website &&
         user.isAdditionalDomainWhitelistSelfServeOn &&
-        (isAdditionalWebsiteInWorkflow.workflow_exists === false ||
-          !['open', 'approved'].includes(isAdditionalWebsiteInWorkflow.workflow_status)) &&
+        (additionalWebsiteWorkflow?.workflow_exists === false ||
+          !['open', 'approved'].includes(additionalWebsiteWorkflow?.workflow_status)) &&
         (user.role === 'owner' || user.role === 'admin') &&
         !isLimitReached && (
           <div>
@@ -101,96 +110,26 @@ function renderAdditionalWebsites(user, handleEditWebsite, isAdditionalWebsiteIn
 
 const MerchantDetails = ({
   user,
+  workflows,
   changeDisplayName,
   changeBillingLabel,
   openModal,
   closeModal,
   tracking,
-  showNotification,
+  fetchWorkflowStatus,
 }) => {
-  const [isWebsiteInWorkflow, setisWebsiteInWorkflow] = useState(false);
-  const [transactionLimitWorkflowStatus, settransactionLimitWorkflowStatus] = useState(false);
-  const [isAdditionalWebsiteInWorkflow, setisAdditionalWebsiteInWorkflow] = useState(false);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const getWebsiteWorkflowStatus = async () => {
-    try {
-      const response = await merchantFetch({
-        url: `merchant/business_website_status`,
-        method: 'GET',
-        mode: 'live',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response) setisWebsiteInWorkflow(response.data);
-    } catch ({ errors }) {
-      showNotification({
-        type: 'error',
-        message: errors,
-      });
-    }
+  const openNeedsClarificationModal = ({ workflowType, clarificationReason, onResponseSubmit }) => {
+    openModal({
+      size: 'small',
+      component: (
+        <NeedsClarificationModal
+          workflowType={workflowType}
+          clarificationReason={clarificationReason}
+          onResponseSubmit={onResponseSubmit}
+        />
+      ),
+    });
   };
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const getTransactionLimitWorkflowStatus = async () => {
-    try {
-      const response = await merchantFetch({
-        url: `merchant/increase_transaction_limit/details`,
-        method: 'GET',
-        mode: 'live',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response) settransactionLimitWorkflowStatus(response.data);
-    } catch ({ errors }) {
-      showNotification({
-        type: 'error',
-        message: errors,
-      });
-    }
-  };
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const getAdditionalWebsiteWorkflowStatus = async () => {
-    try {
-      const response = await merchantFetch({
-        url: `merchant/add_additional_website/details`,
-        method: 'GET',
-        mode: 'live',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response) {
-        setisAdditionalWebsiteInWorkflow(response.data);
-      }
-    } catch ({ errors }) {
-      showNotification({
-        type: 'error',
-        message: errors,
-      });
-    }
-  };
-
-  useEffect(() => {
-    // Only fetch request if user is owner, other users shouldn't see the error
-    if (user.role === 'owner') getWebsiteWorkflowStatus();
-  }, []);
-
-  useEffect(() => {
-    // Only fetch request if user is owner, other users shouldn't see the error
-    if (user.role === 'owner') getTransactionLimitWorkflowStatus();
-  }, []);
-
-  useEffect(() => {
-    // Only fetch request if user is owner, other users shouldn't see the error
-    if (user.role === 'owner' || user.role === 'admin') getAdditionalWebsiteWorkflowStatus();
-  }, []);
 
   let activationName = 'KYC';
   let trackerName = 'kyc.form_fill';
@@ -211,8 +150,6 @@ const MerchantDetails = ({
             openModal={openModal}
             closeModal={closeModal}
             flowType={flowType}
-            getWebsiteWorkflowStatus={getWebsiteWorkflowStatus}
-            getAdditionalWebsiteWorkflowStatus={getAdditionalWebsiteWorkflowStatus}
           />
         ),
       });
@@ -220,7 +157,10 @@ const MerchantDetails = ({
       openModal({
         size: 'small',
         component: (
-          <EditWebsiteDetailsModal onClose={closeModal} onWebsiteAdd={getWebsiteWorkflowStatus} />
+          <EditWebsiteDetailsModal
+            onClose={closeModal}
+            onWebsiteAdd={() => fetchWorkflowStatus(WORKFLOWS.UPDATE_BUSINESS_WEBSITE)}
+          />
         ),
       });
     }
@@ -259,7 +199,11 @@ const MerchantDetails = ({
   const onUpdateTransactionLimitClick = () => {
     openModal({
       size: 'small',
-      component: <UpdateTransactionLimit onComplete={getTransactionLimitWorkflowStatus} />,
+      component: (
+        <UpdateTransactionLimit
+          onComplete={() => fetchWorkflowStatus(WORKFLOWS.INCREASE_TRANSACTION_LIMIT)}
+        />
+      ),
     });
 
     // Track when user click on edit limit
@@ -314,8 +258,8 @@ const MerchantDetails = ({
     user.role === 'owner' &&
     user.isOrgRZP &&
     user.isTransactionLimitUpdateSelfServeOn &&
-    (transactionLimitWorkflowStatus.workflow_exists === false ||
-      !['open', 'approved'].includes(transactionLimitWorkflowStatus.workflow_status)) &&
+    (workflows.increase_transaction_limit?.workflow_exists === false ||
+      !['open', 'approved'].includes(workflows.increase_transaction_limit?.workflow_status)) &&
     isMerchantAllowedToEditLimit();
 
   return (
@@ -503,68 +447,78 @@ const MerchantDetails = ({
             )}
           />
 
-          <DetailRow
-            label={() => (
-              <div class="website-self-serve__listItem">
-                <span>Business Website/App details</span>
-                <small class="help-content">
-                  <i class="i i-info-outline" />
-                  <Popover align="top" theme="dark">
-                    <PopoverBody>
-                      <div>
+          <IntoView hashedWith={[NC_UPDATE_WEBSITE]}>
+            <DetailRow
+              label={() => (
+                <div class="website-self-serve__listItem">
+                  <span>Business Website/App details</span>
+                  <small class="help-content">
+                    <i class="i i-info-outline" />
+                    <Popover align="top" theme="dark">
+                      <PopoverBody>
                         <div>
-                          These are the verified websites on which payments can be integrated
+                          <div>
+                            These are the verified websites on which payments can be integrated
+                          </div>
                         </div>
-                      </div>
-                    </PopoverBody>
-                  </Popover>
-                </small>
-                {isWebsiteInWorkflow.workflow_status &&
-                  ['open', 'activated'].includes(isWebsiteInWorkflow.workflow_status) && (
-                    <div class="website-self-serve__change-info">
-                      {user.has_key_access === true
+                      </PopoverBody>
+                    </Popover>
+                  </small>
+                  <WorkflowStatus
+                    roles={[rolesList.OWNER]}
+                    workflowType={WORKFLOWS.UPDATE_BUSINESS_WEBSITE}
+                    reviewStatus={
+                      user.has_key_access === true
                         ? 'Your request to update the website is under review.'
-                        : 'Your request to update the website is under review. We will provide the API keys for the new website once the review is complete.'}
-                    </div>
-                  )}
-                {isWebsiteInWorkflow.workflow_status &&
-                  ['rejected'].includes(isWebsiteInWorkflow.workflow_status) && (
-                    <div class="website-self-serve__change-info reject">
-                      {isWebsiteInWorkflow.rejection_reason_message}
-                    </div>
-                  )}
-              </div>
-            )}
-            value={() => renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow)}
-          />
-
-          <DetailRow
-            label={() => (
-              <div class="website-self-serve__listItem">
-                <span>Additional Business Website/App</span>
-                <small class="help-content">
-                  <i class="i i-info-outline" />
-                  <Popover align="top" theme="dark">
-                    <PopoverBody>
-                      <div>
+                        : 'Your request to update the website is under review. We will provide the API keys for the new website once the review is complete.'
+                    }
+                    onReplyClick={() =>
+                      openNeedsClarificationModal({
+                        workflowType: WORKFLOWS.UPDATE_BUSINESS_WEBSITE,
+                      })
+                    }
+                  />
+                </div>
+              )}
+              value={() =>
+                renderWebsites(user, handleEditWebsite, workflows.update_business_website)
+              }
+            />
+          </IntoView>
+          <IntoView hashedWith={[NC_ADD_WEBSITE]}>
+            <DetailRow
+              label={() => (
+                <div class="website-self-serve__listItem">
+                  <span>Additional Business Website/App</span>
+                  <small class="help-content">
+                    <i class="i i-info-outline" />
+                    <Popover align="top" theme="dark">
+                      <PopoverBody>
                         <div>
-                          You can add second website/app to use Razorpay on that website/app
+                          <div>
+                            You can add second website/app to use Razorpay on that website/app
+                          </div>
                         </div>
-                      </div>
-                    </PopoverBody>
-                  </Popover>
-                </small>
-                {isAdditionalWebsiteInWorkflow.workflow_status === 'open' && (
-                  <div class="website-self-serve__change-info">
-                    Your request to add the website is under review.
-                  </div>
-                )}
-              </div>
-            )}
-            value={() =>
-              renderAdditionalWebsites(user, handleEditWebsite, isAdditionalWebsiteInWorkflow)
-            }
-          />
+                      </PopoverBody>
+                    </Popover>
+                  </small>
+                  <WorkflowStatus
+                    roles={[rolesList.OWNER, rolesList.ADMIN]}
+                    workflowType={WORKFLOWS.ADD_ADDITIONAL_WEBSITE}
+                    reviewStatus="Your request to add the website is under review."
+                    onReplyClick={() =>
+                      openNeedsClarificationModal({
+                        workflowType: WORKFLOWS.ADD_ADDITIONAL_WEBSITE,
+                      })
+                    }
+                  />
+                </div>
+              )}
+              value={() =>
+                renderAdditionalWebsites(user, handleEditWebsite, workflows.add_additional_website)
+              }
+            />
+          </IntoView>
         </React.Fragment>
       )}
 
@@ -631,45 +585,43 @@ const MerchantDetails = ({
         )}
 
       {user.merchant && (
-        <DetailRow
-          label={() => (
-            <div class="transaction-limit">
-              <span>Limit per transaction</span>
-              <small class="help-content">
-                <i class="i i-info-circle" />
-                <Popover align="top" theme="dark">
-                  <PopoverBody>
-                    <div>The maximum INR limit for only a single transaction.</div>
-                  </PopoverBody>
-                </Popover>
-              </small>
-
-              {transactionLimitWorkflowStatus.workflow_status &&
-                ['open', 'activated'].includes(transactionLimitWorkflowStatus.workflow_status) && (
-                  <div class="transaction-limit__change-info inprogress">
-                    You request to increase to transaction limit has been received. Our team is
-                    going through the information provided by you.
-                  </div>
+        <IntoView hashedWith={[NC_INCREASE_TXN_LIMIT]}>
+          <DetailRow
+            label={() => (
+              <div class="transaction-limit">
+                <span>Limit per transaction</span>
+                <small class="help-content">
+                  <i class="i i-info-circle" />
+                  <Popover align="top" theme="dark">
+                    <PopoverBody>
+                      <div>The maximum INR limit for only a single transaction.</div>
+                    </PopoverBody>
+                  </Popover>
+                </small>
+                <WorkflowStatus
+                  roles={[rolesList.OWNER]}
+                  workflowType={WORKFLOWS.INCREASE_TRANSACTION_LIMIT}
+                  reviewStatus="You request to increase to transaction limit has been received. Our team is going through the information provided by you."
+                  onReplyClick={() =>
+                    openNeedsClarificationModal({
+                      workflowType: WORKFLOWS.INCREASE_TRANSACTION_LIMIT,
+                    })
+                  }
+                />
+              </div>
+            )}
+            value={() => (
+              <div>
+                <Amount value={user.merchant.max_payment_amount} currency="INR" />
+                {showTransactionLimitEdit && (
+                  <Button.Transparent onClick={onUpdateTransactionLimitClick}>
+                    <i class="i i-edit p-l" />
+                  </Button.Transparent>
                 )}
-              {transactionLimitWorkflowStatus.workflow_status &&
-                ['rejected'].includes(transactionLimitWorkflowStatus.workflow_status) && (
-                  <div class="transaction-limit__change-info rejected">
-                    {transactionLimitWorkflowStatus.rejection_reason_message}
-                  </div>
-                )}
-            </div>
-          )}
-          value={() => (
-            <div>
-              <Amount value={user.merchant.max_payment_amount} currency="INR" />
-              {showTransactionLimitEdit && (
-                <Button.Transparent onClick={onUpdateTransactionLimitClick}>
-                  <i class="i i-edit p-l" />
-                </Button.Transparent>
-              )}
-            </div>
-          )}
-        />
+              </div>
+            )}
+          />
+        </IntoView>
       )}
 
       {user.canGenerateTnCPage && !user.business_website && !user.isAccepted && (
@@ -711,8 +663,7 @@ const MerchantDetails = ({
   );
 };
 
-export default connect(null, {
+export default connect((state) => ({ workflows: state.workflows }), {
   openModal: fnOpenModal,
   closeModal: fnCloseModal,
-  showNotification: fnShowNotification,
 })(rTracking()(MerchantDetails));

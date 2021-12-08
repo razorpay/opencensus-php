@@ -11,6 +11,8 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, autoPrefixUrls } from 'common/utils/rzp-utils';
 import FileUpload from 'merchant/components/File/Upload';
 import { FLOWS } from './Constants';
+import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
+import { WORKFLOWS } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 
 function WebsiteFields({
   flowType,
@@ -214,7 +216,7 @@ function UpdateWebsiteDetails(props) {
           message: `${type} submitted successfully`,
         });
 
-        props.getWebsiteWorkflowStatus();
+        props.fetchWorkflowStatus(WORKFLOWS.UPDATE_BUSINESS_WEBSITE);
         props.closeModal();
         analyticsTrack({
           objectName: `Website submit result`,
@@ -295,7 +297,7 @@ function UpdateWebsiteDetails(props) {
           message: `${type} submitted successfully`,
         });
 
-        props.getAdditionalWebsiteWorkflowStatus();
+        props.fetchWorkflowStatus(WORKFLOWS.ADD_ADDITIONAL_WEBSITE);
         props.closeModal();
       }
     } catch ({ errors }) {
@@ -606,6 +608,7 @@ const mapDispatchToProps = (dispatch) => {
     {
       ...ModalActions,
       ...NotificationsActions,
+      fetchWorkflowStatus: fetchWorkflowStatusReducer,
     },
     dispatch,
   );
