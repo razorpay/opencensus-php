@@ -31,6 +31,8 @@ class Constants
     const WORKFLOW_CLARIFICATION_SUBMIT_LINK      = 'workflow_clarification_submit_link';
 
     const MAX_PAYMENT_AMOUNT                      = 'max_payment_amount';
+  
+    const FEATURE                                 = 'feature';
 
     const WORKFLOW_PERMISSION_VS_NEEDS_CLARIFICATION_EVENT = [
         PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL  => Events::NEED_CLARIFICATION_FOR_WEBSITE_ADD_WORKFLOW,

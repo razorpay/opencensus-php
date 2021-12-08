@@ -55,6 +55,8 @@ class Events
 
     const NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW              = 'NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW';
 
+    const FEATURE_UPDATE_NOTIFICATION                               = 'FEATURE_UPDATE_NOTIFICATION';
+
     // Event vs sms templates mapping
     const SMS_TEMPLATES = [
         self::MERCHANT_BUSINESS_WEBSITE_ADD                            => 'sms.dashboard.merchant_business_website_add',
@@ -67,6 +69,7 @@ class Events
         self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON                 => 'sms.dashboard.merchant_business_website_update_rejection',
         self::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON              => 'sms.dashboard.increase_transaction_limit_rejection',
         self::GSTIN_UPDATE_REJECTION_REASON                            => 'sms.dashboard.merchant_gstin_rejection',
+        self::FEATURE_UPDATE_NOTIFICATION                              => 'sms.dashboard.feature_enabled',
         self::NEED_CLARIFICATION_FOR_TRANSACTION_LIMIT_UPDATE_WORKFLOW => 'sms.dashboard.increase_transaction_limit_needs_clarification',
         self::NEED_CLARIFICATION_FOR_BANK_ACCOUNT_UPDATE_WORKFLOW      => 'sms.dashboard.merchant_bank_account_needs_clarification',
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW             => 'sms.dashboard.merchant_gstin_needs_clarification',
@@ -89,6 +92,7 @@ class Events
         self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON                 => [Constants::MERCHANT_NAME],
         self::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON              => [Constants::MERCHANT_NAME],
         self::GSTIN_UPDATE_REJECTION_REASON                            => [Constants::MERCHANT_NAME],
+        self::FEATURE_UPDATE_NOTIFICATION                              => [Constants::FEATURE],
         self::NEED_CLARIFICATION_FOR_TRANSACTION_LIMIT_UPDATE_WORKFLOW => [Constants::MERCHANT_NAME, Constants::MAX_PAYMENT_AMOUNT],
         self::NEED_CLARIFICATION_FOR_BANK_ACCOUNT_UPDATE_WORKFLOW      => [Constants::MERCHANT_NAME],
         self::NEED_CLARIFICATION_FOR_WEBSITE_UPDATE_WORKFLOW           => [Constants::MERCHANT_NAME],
@@ -108,6 +112,7 @@ class Events
         self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON                 => 'whatsapp.merchant.dashboard.merchant_business_website_update_rejection',
         self::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON              => 'whatsapp.merchant.dashboard.increase_transaction_limit_rejection',
         self::GSTIN_UPDATE_REJECTION_REASON                            => 'whatsapp.merchant.dashboard.merchant_gstin_rejection',
+        self::FEATURE_UPDATE_NOTIFICATION                              => 'whatsapp.merchant.dashboard.feature_enabled',
         self::NEED_CLARIFICATION_FOR_TRANSACTION_LIMIT_UPDATE_WORKFLOW => 'whatsapp.merchant.dashboard.increase_transaction_limit_needs_clarification',
         self::NEED_CLARIFICATION_FOR_BANK_ACCOUNT_UPDATE_WORKFLOW      => 'whatsapp.merchant.dashboard.merchant_bank_account_needs_clarification',
         self::NEED_CLARIFICATION_FOR_WEBSITE_UPDATE_WORKFLOW           => 'whatsapp.merchant.dashboard.merchant_business_website_update_needs_clarification',
@@ -129,6 +134,7 @@ class Events
         self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON                 => [Constants::MERCHANT_NAME],
         self::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON              => [Constants::MERCHANT_NAME],
         self::GSTIN_UPDATE_REJECTION_REASON                            => [Constants::MERCHANT_NAME],
+        self::FEATURE_UPDATE_NOTIFICATION                              => [Constants::FEATURE],
         self::NEED_CLARIFICATION_FOR_TRANSACTION_LIMIT_UPDATE_WORKFLOW => [Constants::MERCHANT_NAME, Constants::MAX_PAYMENT_AMOUNT],
         self::NEED_CLARIFICATION_FOR_BANK_ACCOUNT_UPDATE_WORKFLOW      => [Constants::MERCHANT_NAME],
         self::NEED_CLARIFICATION_FOR_WEBSITE_UPDATE_WORKFLOW           => [Constants::MERCHANT_NAME],
@@ -145,6 +151,7 @@ class Events
         self::BANK_ACCOUNT_CHANGE_SUCCESSFUL                           => 'emails.merchant.bankaccount_change',
         self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE               => 'emails.merchant.increase_transaction_limit_request_approve',
         self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS                  => 'emails.merchant.gstin_updated_self_serve',
+        self::FEATURE_UPDATE_NOTIFICATION                              => 'emails.merchant.feature_enabled',
         self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE                        => 'emails.merchant.gstin_updated_on_workflow_approve',
         self::BUSINESS_WEBSITE_ADD_REJECTION_REASON                    => 'emails.merchant.rejection_reason_notification',
         self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON                 => 'emails.merchant.rejection_reason_notification',
@@ -169,6 +176,7 @@ class Events
         self::BANK_ACCOUNT_CHANGE_REQUEST                              => MailTags::ACCOUNT_CHANGE_REQUEST,
         self::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE                => MailTags::ACCOUNT_CHANGED,
         self::BANK_ACCOUNT_CHANGE_SUCCESSFUL                           => MailTags::ACCOUNT_CHANGED,
+        self::FEATURE_UPDATE_NOTIFICATION                              => MailTags::FEATURE_ENABLED,
         self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE               => MailTags::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE,
         self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS                  => MailTags::GSTIN_UPDATED_VALIDATION_SUCCESS,
         self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE                        => MailTags::GSTIN_UPDATED_WORKFLOW_APPROVE,
@@ -199,6 +207,7 @@ class Events
         self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS                  => 'Razorpay | Gstin updated for %s(MID: %s)',
         self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE                        => 'Razorpay | Gstin updated for %s(MID: %s)',
         self::BUSINESS_WEBSITE_ADD_REJECTION_REASON                    => '%s',
+        self::FEATURE_UPDATE_NOTIFICATION                              => '%s',
         self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON                 => '%s',
         self::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON              => '%s',
         self::GSTIN_UPDATE_REJECTION_REASON                            => '%s',
@@ -231,6 +240,7 @@ class Events
         self::GSTIN_ADD_REJECTION_REASON                               => [UserRole::OWNER],
         self::GSTIN_ADDED_ON_BVS_VALIDATION_SUCCESS                    => [UserRole::OWNER],
         self::GSTIN_ADDED_ON_WORKFLOW_APPROVE                          => [UserRole::OWNER],
+        self::FEATURE_UPDATE_NOTIFICATION                              => [UserRole::OWNER],
         self::BULK_REGENERATE_API_KEYS                                 => [UserRole::OWNER, UserRole::ADMIN],
         self::NEED_CLARIFICATION_FOR_BANK_ACCOUNT_UPDATE_WORKFLOW      => [UserRole::OWNER],
         self::NEED_CLARIFICATION_FOR_TRANSACTION_LIMIT_UPDATE_WORKFLOW => [UserRole::OWNER],
@@ -262,6 +272,7 @@ class Events
         self::NEED_CLARIFICATION_FOR_WEBSITE_UPDATE_WORKFLOW           => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::NEED_CLARIFICATION_FOR_WEBSITE_ADD_WORKFLOW              => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW             => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::FEATURE_UPDATE_NOTIFICATION                              => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                => [Channel::EMAIL],
         self::BULK_REGENERATE_API_KEYS                                 => [Channel::EMAIL],
     ];

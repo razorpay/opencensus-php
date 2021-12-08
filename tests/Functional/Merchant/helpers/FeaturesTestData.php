@@ -1052,6 +1052,22 @@ return [
             ]
         ]
     ],
+    'testAddMerchantVirtualAccountsFeatureAdminAuthNotify' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['virtual_accounts'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'should_sync' => true,
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
 
     'verifyProductOnboardingSubmissionStatus' => [
         'request'  => [

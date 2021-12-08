@@ -168,6 +168,10 @@ class Constants
     const SOURCED_BY_WALNUT369            = 'sourced_by_walnut369';
     const WALLET                          = 'wallet';
 
+    const FEATURE                         = 'feature';
+    const DISPLAY_NAME                    = 'display_name';
+    const CONTACT_NAME                    = 'contact_name';
+    const DOCUMENTATION                   = 'documentation';
 
     const ENACH_INTERMEDIATE              = 'enach_intermediate';
     const SAVE_VPA                        = 'save_vpa';

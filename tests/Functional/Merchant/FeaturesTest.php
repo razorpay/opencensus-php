@@ -22,11 +22,13 @@ use Illuminate\Cache\Events\CacheMissed;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Mail\Merchant\MerchantDashboardEmail;
 use RZP\Tests\Functional\Helpers\FileUploadTrait;
 use RZP\Mail\Merchant\EsEligible as EsEligibleMail;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
@@ -45,6 +47,7 @@ class FeaturesTest extends OAuthTestCase
     use VirtualAccountTrait;
     use CustomBrandingTrait;
     use PaymentTrait;
+    use TestsBusinessBanking;
 
     const DEFAULT_MERCHANT_ID    = '10000000000000';
     const ONBOARDING_MERCHANT_ID = '10000000001017';
@@ -1325,6 +1328,152 @@ class FeaturesTest extends OAuthTestCase
         $this->startTest($testData);
     }
 
+    protected function expectRavenSendSmsRequest($ravenMock, $templateName, $receiver, $expectedParms = [])
+    {
+        $ravenMock->shouldReceive('sendSms')
+                  ->times(2)
+                  ->with(
+                      Mockery::on(function ($actualPayload) use ($templateName, $receiver, $expectedParms)
+                      {
+                          $this->assertArraySelectiveEquals($expectedParms, $actualPayload['params']);
+
+                          if (($templateName !== $actualPayload['template']) or
+                              ($receiver !== $actualPayload['receiver']))
+                          {
+                              s($templateName);
+                              return false;
+                          }
+
+                          return true;
+                      }),  Mockery::on(function ($mockInTestMode)
+                  {
+                      if ($mockInTestMode === true)
+                      {
+                          return false;
+                      }
+                      return true;
+                  }))
+                  ->andReturnUsing(function ()
+                  {
+                      return ['sms_id' => '10000000000sms'];
+                  });
+    }
+
+    protected function expectStorkWhatsappRequest($storkMock, $text, $destination): void
+    {
+        $storkMock->shouldReceive('sendWhatsappMessage')
+                  ->times(2)
+                  ->with(
+                      Mockery::on(function ($mode)
+                      {
+                          return true;
+                      }),
+                      Mockery::on(function ($actualText) use($text)
+                      {
+                          $actualText = trim(preg_replace('/\s+/', ' ', $actualText));
+
+                          $text = trim(preg_replace('/\s+/', ' ', $text));
+
+                          if ($actualText !== $text)
+                          {
+                              return false;
+                          }
+
+                          return true;
+                      }),
+                      Mockery::on(function ($actualReceiver) use($destination)
+                      {
+                          if ($actualReceiver !== $destination)
+                          {
+                              return false;
+                          }
+                          return true;
+                      }),
+                      Mockery::on(function ($input)
+                      {
+                          return true;
+                      }))
+                  ->andReturnUsing(function ()
+                  {
+                      $response = new \Requests_Response;
+
+                      $response->body = json_encode(['key' => 'value']);
+
+                      return $response;
+                  });
+    }
+
+    public function mockRavenAndStorkForFeatureEnabledVirtualAccounts()
+    {
+        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $expectedRavenParametersForTemplate = [
+            'feature' => 'Smart Collect'
+        ];
+
+        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.feature_enabled', '1234567890', $expectedRavenParametersForTemplate);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkWhatsappRequest($storkMock,
+                                          'Hi,
+Smart Collect has been enabled on your Razorpay account. You can now start using Smart Collect for live transactions.
+Regards,
+-Team Razorpay',
+                                          '1234567890'
+        );
+    }
+
+    private function setupMerchantWithMerchantDetails()
+    {
+        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
+
+        $merchantId = self::ONBOARDING_MERCHANT_ID;
+
+        $attributes = ['id' => $merchantId, 'org_id' => Org::RZP_ORG];
+
+        $detailsAttributes = ['merchant_id' => $merchantId, 'contact_email' => 'test@gmail.com'];
+
+        $this->fixtures->on(Mode::LIVE)->create('merchant', $attributes);
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $detailsAttributes);
+
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $detailsAttributes);
+
+        $this->fixtures->user->createUserForMerchant($merchantId, [
+            'contact_mobile'          => '1234567890',
+            'contact_mobile_verified' => true,
+        ], 'owner', 'live');
+
+        return $merchantId;
+    }
+
+    /**
+     * This function tests updating of merchant feature loc_stage_1.
+     */
+    public function testAddMerchantVirtualAccountsFeatureAdminAuthNotify()
+    {
+        Mail::fake();
+
+        $merchantId = $this->setupMerchantWithMerchantDetails();
+
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->mockRavenAndStorkForFeatureEnabledVirtualAccounts();
+
+        $this->bulkUpdateFeatureActivationStatus(Constants::VIRTUAL_ACCOUNTS, $merchantId , 'approved');
+
+        Mail::assertQueued(MerchantDashboardEmail::class, function ($mail)
+        {
+            $this->assertEquals('Smart Collect', $mail->viewData['feature']);
+            return true;
+        });
+    }
+
     /**
      * This function tests updating of merchant feature loc_stage_1.
      */
@@ -1482,7 +1631,7 @@ class FeaturesTest extends OAuthTestCase
         // Test the fetch status route
         $this->getMarketplaceOnboardingResponseStatus();
 
-        Mail::assertQueued(FeatureEnabledEmail::class, function ($mail)
+        Mail::assertQueued(MerchantDashboardEmail::class, function ($mail)
         {
             $this->assertEquals('Route', $mail->viewData['feature']);
 

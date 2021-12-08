@@ -23,6 +23,7 @@ use RZP\Mail\Merchant\EsEligible;
 use RZP\Mail\Merchant\FeatureEnabled;
 use RZP\Models\Merchant\SlackActions;
 use RZP\Mail\Loc\CashAdvanceEligible;
+use RZP\Notifications\Dashboard\Events;
 use RZP\Jobs\SkipOnboardingCommFromHubSpot;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Customer\Token;
@@ -31,6 +32,8 @@ use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
+use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
+use RZP\Notifications\Dashboard\Constants as DashboardNotificationConstants;
 
 class Core extends Base\Core
 {
@@ -234,18 +237,23 @@ class Core extends Base\Core
             (($shouldSync === true) or ($isLiveMode === true)) and
             (in_array($feature->getName(), Constants::$skipFeaturesEnableMail, true) === false))
         {
-            $visibleFeatures = Constants::$visibleFeaturesMap;
             $featureName     = $feature->getName();
-            $merchantEmail   = $merchant->getEmail();
 
-            $data['feature']       = $visibleFeatures[$featureName]['display_name'];
-            $data['documentation'] = $visibleFeatures[$featureName]['documentation'];
-            $data['contact_name']  = $merchant->getName();
-            $data['contact_email'] = $merchantEmail;
+            $visibleFeatures = Constants::$visibleFeaturesMap;
 
-            $featureUpdateEmail = new FeatureEnabled($data, $merchant);
+            $featureDisplayName = $visibleFeatures[$featureName][Constants::DISPLAY_NAME];
 
-            Mail::queue($featureUpdateEmail);
+            $data = [
+                Merchant\Constants::MERCHANT     => $merchant,
+                Events::EVENT                    => Events::FEATURE_UPDATE_NOTIFICATION,
+                Merchant\Constants::PARAMS       => [
+                    DashboardNotificationConstants::MESSAGE_SUBJECT   => $featureDisplayName. ' enabled for Live mode',
+                    Constants::FEATURE                                => $featureDisplayName,
+                    Constants::DOCUMENTATION                          => $visibleFeatures[$featureName][Constants::DOCUMENTATION],
+                ]
+            ];
+
+            (new DashboardNotificationHandler($data))->send();
 
             $this->trace->info(
                 TraceCode::FEATURE_ENABLED_MERCHANT_NOTIFIED,
@@ -254,7 +262,6 @@ class Core extends Base\Core
                     Entity::SHOULD_SYNC       => $shouldSync,
                     Mode::LIVE                => $isLiveMode,
                     Entity::NEW_FEATURE       => $feature,
-                    Merchant\Entity::EMAIL    => $merchantEmail
                 ]);
         }
 
@@ -792,7 +799,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        $this->sendFeatureActivationEmail($merchant, $feature, $shouldSync, $isLiveMode);
+        $this->sendFeatureActivationNotificaton($merchant, $feature, $shouldSync, $isLiveMode);
     }
 
     /**
@@ -829,7 +836,7 @@ class Core extends Base\Core
      * @param bool            $shouldSync
      * @param bool            $isLiveMode
      */
-    protected function sendFeatureActivationEmail(
+    protected function sendFeatureActivationNotificaton(
         Merchant\Entity $merchant,
         Entity $feature,
         bool $shouldSync,
@@ -837,7 +844,7 @@ class Core extends Base\Core
     {
         $merchantId = $feature->getEntityId();
 
-        if (($this->shouldNotifyViaEmail($merchant, $feature, $shouldSync, $isLiveMode) === false) or
+        if (($this->shouldNotifyViaNotification($merchant, $feature, $shouldSync, $isLiveMode) === false) or
             (in_array($feature->getName(), Constants::$skipFeaturesEnableMail, true) === true))
         {
             $this->trace->info(
@@ -851,20 +858,23 @@ class Core extends Base\Core
             return;
         }
 
-        $merchantEmail   = $merchant->getEmail();
-
         $featureName     = $feature->getName();
 
         $visibleFeatures = Constants::$visibleFeaturesMap;
 
-        $data['feature']       = $visibleFeatures[$featureName]['display_name'];
-        $data['documentation'] = $visibleFeatures[$featureName]['documentation'];
-        $data['contact_name']  = $merchant->getName();
-        $data['contact_email'] = $merchantEmail;
+        $featureDisplayName = $visibleFeatures[$featureName][Constants::DISPLAY_NAME];
 
-        $featureUpdateEmail = new FeatureEnabled($data, $merchant);
+        $data = [
+            Merchant\Constants::MERCHANT     => $merchant,
+            Events::EVENT                    => Events::FEATURE_UPDATE_NOTIFICATION,
+            Merchant\Constants::PARAMS       => [
+                DashboardNotificationConstants::MESSAGE_SUBJECT   => $featureDisplayName. ' enabled for Live mode',
+                Constants::FEATURE                                => $featureDisplayName,
+                Constants::DOCUMENTATION                          => $visibleFeatures[$featureName][Constants::DOCUMENTATION],
+            ]
+        ];
 
-        Mail::queue($featureUpdateEmail);
+        (new DashboardNotificationHandler($data))->send();
 
         $this->trace->info(
             TraceCode::FEATURE_ENABLED_MERCHANT_NOTIFIED,
@@ -872,7 +882,6 @@ class Core extends Base\Core
                 PublicEntity::MERCHANT_ID => $merchantId,
                 Mode::LIVE                => $isLiveMode,
                 Entity::NEW_FEATURE       => $feature,
-                Merchant\Entity::EMAIL    => $merchantEmail
             ]);
     }
 
@@ -885,7 +894,7 @@ class Core extends Base\Core
      *
      * @return bool
      */
-    protected function shouldNotifyViaEmail(
+    protected function shouldNotifyViaNotification(
         Merchant\Entity $merchant,
         Entity $feature,
         bool $shouldSync,
