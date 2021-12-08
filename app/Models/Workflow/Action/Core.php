@@ -21,6 +21,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\BulkWorkflowAction;
 use RZP\Models\Comment\Core as CommentCore;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Notifications\Dashboard\Events as DashboardEvents;
 use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
@@ -1080,10 +1081,10 @@ class Core extends Base\Core
             MerchantNotificationsConstants::WORKFLOW_CLARIFICATION_SUBMIT_LINK => MerchantNotificationsConstants::EVENT_VS_WORKFLOW_CLARIFICATION_SUBMIT_LINK[$event],
         ]);
 
-        if (($workflowPermission === Permission\Name::INCREASE_TRANSACTION_LIMIT) and
-            (isset($payload[Merchant\Entity::MAX_PAYMENT_AMOUNT]) === true))
+        if(($workflowPermission === Permission\Name::INCREASE_TRANSACTION_LIMIT) and
+           (isset($payload[MerchantEntity::MAX_PAYMENT_AMOUNT]) === true))
         {
-            $params[Merchant\Entity::MAX_PAYMENT_AMOUNT] = $payload[Merchant\Entity::MAX_PAYMENT_AMOUNT]/100;
+            $params[MerchantEntity::MAX_PAYMENT_AMOUNT] = $payload[MerchantEntity::MAX_PAYMENT_AMOUNT]/100;
         }
 
         $args = [

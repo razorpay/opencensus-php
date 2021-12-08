@@ -35,15 +35,15 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
 
     const PERMISSION_VS_EVENTS = [
 
-        PermissionName::UPDATE_MERCHANT_WEBSITE       => DashboardEvents::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON,
+        PermissionName::UPDATE_MERCHANT_WEBSITE        => DashboardEvents::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON,
 
-        PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL  => DashboardEvents::BUSINESS_WEBSITE_ADD_REJECTION_REASON,
+        PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL   => DashboardEvents::BUSINESS_WEBSITE_ADD_REJECTION_REASON,
 
-        PermissionName::INCREASE_TRANSACTION_LIMIT    => DashboardEvents::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON,
+        PermissionName::INCREASE_TRANSACTION_LIMIT     => DashboardEvents::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON,
 
-        PermissionName::UPDATE_MERCHANT_GSTIN_DETAIL  => DashboardEvents::GSTIN_UPDATE_REJECTION_REASON,
+        PermissionName::UPDATE_MERCHANT_GSTIN_DETAIL   => DashboardEvents::GSTIN_UPDATE_REJECTION_REASON,
 
-        PermissionName::EDIT_MERCHANT_GSTIN_DETAIL    => DashboardEvents::GSTIN_ADD_REJECTION_REASON,
+        PermissionName::EDIT_MERCHANT_GSTIN_DETAIL     => DashboardEvents::GSTIN_ADD_REJECTION_REASON,
     ];
 
     public function __construct($input)

@@ -3210,6 +3210,8 @@ We look forward to transacting with you!
             'request_under_validation' =>  false
         ]);
 
+        $this->mockRavenAndStorkForUpdateGstWorkflowApprove();
+
         $this->setupWorkflow('edit_gstin_details', 'update_merchant_gstin_detail');
 
         $this->updateUploadDocumentData(__FUNCTION__, 'gstin_self_serve_certificate');
@@ -3263,6 +3265,32 @@ We look forward to transacting with you!
             'needs_clarification'      =>  null,
             'request_under_validation' =>  false
         ]);
+    }
+
+    protected function mockRavenAndStorkForUpdateGstWorkflowApprove()
+    {
+        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $expectedRavenParametersForTemplate = [
+            'gstin'                       => '18AABCU9603R1ZM'
+        ];
+
+        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.merchant_gstin_workflow_approve', '1234567890', $expectedRavenParametersForTemplate);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkWhatsappRequest($storkMock,
+            'Hey,
+Your GSTIN has been updated successfully to
+GSTIN: 18AABCU9603R1ZM
+Cheers,
+Team Razorpay',
+            '1234567890'
+        );
     }
 
     public function testAddGstinSelfServeValidationFailWorkflowReject()
@@ -3647,6 +3675,8 @@ We look forward to transacting with you!
 
         $this->setBvsValidationDetailForGstinUpdateSelfServe();
 
+        $this-> mockRavenAndStorkForUpdateGstBvsValidationSuccess();
+
         $this->assertGstinSelfServeStatusAndRejectionReason([
             'workflow_exists'          =>  false,
             'request_under_validation' =>  true
@@ -3688,6 +3718,38 @@ We look forward to transacting with you!
             'workflow_exists'          =>  false,
             'request_under_validation' =>  false
         ]);
+    }
+
+    protected function mockRavenAndStorkForUpdateGstBvsValidationSuccess()
+    {
+        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $expectedRavenParametersForTemplate = [
+            'gstin'                       => '18AABCU9603R1ZM',
+            'business_registered_address' => '1302, 13, ORCHID, 18 B G KHER ROAD, WORLI MUMBAI',
+            'business_registered_pin'     => '400018',
+            'business_registered_city'    => 'Mumbai City',
+            'business_registered_state'   => 'MH'
+        ];
+
+        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.merchant_gstin_auto_updated', '1234567890', $expectedRavenParametersForTemplate);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkWhatsappRequest($storkMock,
+            'Hey,
+Your GSTIN have been updated successfully. The details are provided below.
+GSTIN: 18AABCU9603R1ZM
+Your registered address is updated as below as per GSTIN certificate
+Registered address: 1302, 13, ORCHID, 18 B G KHER ROAD, WORLI MUMBAI, 400018, Mumbai City, MH
+Cheers,
+Team Razorpay',
+            '1234567890'
+        );
     }
 
     public function testGstinSelfServeBvsValidationSuccessInvalidStateFail()

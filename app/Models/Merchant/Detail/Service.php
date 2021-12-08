@@ -1804,7 +1804,7 @@ class Service extends Base\Service
         // if any previous rejected workflow of gstin exist : do not show rejection reason for any old rejected workflow
         $this->stopShowingRejectionReasonForGstInSelfServe($detail->getId(), $detail->getEntity(), $input[DEConstants::IS_ADD_GSTIN_OPERATION]);
 
-        $this->sendMailForGstinUpdatedSelfServe($input[DEConstants::IS_ADD_GSTIN_OPERATION], true);
+        $this->sendNotificationForGstinUpdatedSelfServe($input[DEConstants::IS_ADD_GSTIN_OPERATION], true);
 
         $this->trace->info(TraceCode::GSTIN_UPDATED_WITH_REGISTERED_ADDRESS, []);
     }
@@ -1945,7 +1945,7 @@ class Service extends Base\Service
 
         $this->repo->merchant_detail->saveOrFail($merchantDetails);
 
-        $this->sendMailForGstinUpdatedSelfServe($input[DetailConstants::IS_ADD_GSTIN_OPERATION], false);
+        $this->sendNotificationForGstinUpdatedSelfServe($input[DetailConstants::IS_ADD_GSTIN_OPERATION], false);
     }
 
     protected function storeGstinSelfServeInput($input)
@@ -2028,7 +2028,7 @@ class Service extends Base\Service
         ]);
     }
 
-    protected function sendMailForGstinUpdatedSelfServe($isAddOperation, $isBvsValidationSuccessEvent)
+    protected function sendNotificationForGstinUpdatedSelfServe($isAddOperation, $isBvsValidationSuccessEvent)
     {
         $event = '';
 
@@ -2041,11 +2041,18 @@ class Service extends Base\Service
             $event = ($isAddOperation) ? DashboardEvents::GSTIN_ADDED_ON_WORKFLOW_APPROVE : DashboardEvents::GSTIN_UPDATED_ON_WORKFLOW_APPROVE;
         }
 
+        $merchantDetails = $this->merchant->merchantDetail;
+
         $args = [
             Constants::MERCHANT         => $this->merchant,
             DashboardEvents::EVENT      => $event,
             Constants::PARAMS           => [
-                DetailConstants::GSTIN_OPERATION => ($isAddOperation) ? DetailConstants::ADDED : DetailConstants::UPDATED
+                Entity::GSTIN                       => $merchantDetails[Entity::GSTIN],
+                Entity::BUSINESS_REGISTERED_ADDRESS => $merchantDetails[Entity::BUSINESS_REGISTERED_ADDRESS],
+                Entity::BUSINESS_REGISTERED_PIN     => $merchantDetails[Entity::BUSINESS_REGISTERED_PIN],
+                Entity::BUSINESS_REGISTERED_CITY    => $merchantDetails[Entity::BUSINESS_REGISTERED_CITY],
+                Entity::BUSINESS_REGISTERED_STATE   => $merchantDetails[Entity::BUSINESS_REGISTERED_STATE],
+                DetailConstants::GSTIN_OPERATION    => ($isAddOperation) ? DetailConstants::ADDED : DetailConstants::UPDATED
             ]
         ];
 
