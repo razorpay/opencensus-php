@@ -179,9 +179,12 @@ class CardVault extends Base\Core
         return $this->app['card.cardVault']->createTokenizedCard($input);
     }
 
-    public function fetchCryptogram($cardVaultToken, $merchant)
+    public function fetchCryptogram($serviceProviderTokenId, $merchant)
     {
-        $input['token'] = $cardVaultToken;
+        $input = [
+            'is_service_provider_token' => true,
+            'service_provider_token'    => $serviceProviderTokenId,
+        ];
 
         $input = $this->setMerchantDetails($input, $merchant);
 

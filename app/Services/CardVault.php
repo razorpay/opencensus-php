@@ -27,7 +27,9 @@ class CardVault
     const TOKENEX_TOKEN     = 'tokenex_token';
     const TOKENEX_TOKENS    = 'tokenex_tokens';
     const X_RAZORPAY_TASKID = 'X-Razorpay-TaskId';
-    const TOKENEX_VAULT_MAPPING = 'tokenex_vault_mapping';
+
+    const TOKENEX_VAULT_MAPPING   = 'tokenex_vault_mapping';
+    const SERVICE_PROVIDER_TOKENS = 'service_provider_tokens';
 
     const REQUEST_TIMEOUT = 20;
 
@@ -365,13 +367,10 @@ class CardVault
 
         $success = $responseBody[self::SUCCESS];
 
-        // in detokenize response will contain card number
-        unset($responseBody[self::VALUE]);
-
         $this->trace->info(
             TraceCode::CARD_VAULT_RESPONSE,
             [
-                'response'  => $responseBody,
+                'response'  => $this->getRedactedData($responseBody),
                 'namespace' => $this->namespace,
                 'status_code' => $response->status_code,
             ]);
@@ -397,6 +396,17 @@ class CardVault
                 throw new Exception\RuntimeException('card vault request failed', $data);
             }
         }
+    }
+
+    protected function getRedactedData($response)
+    {
+        // in detokenize response will contain card number
+        unset($response[self::VALUE]);
+
+        // in network tokenization response will contain tokenized card number, cryptogram value etc
+        unset($response[self::SERVICE_PROVIDER_TOKENS]);
+
+        return $response;
     }
 
     public function createVaultToken(array $input): array

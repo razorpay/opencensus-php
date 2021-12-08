@@ -1316,6 +1316,13 @@ class Core extends Base\Core
 
         (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN, $input);
 
+        (new Validator)->validateInput(Validator::CREATE_NETWORK_CARD, $input[Entity::CARD]);
+
+        if (strlen($input[Entity::CARD]['expiry_year']) === 2)
+        {
+            $input[Entity::CARD]['expiry_year'] = '20' . $input[Entity::CARD]['expiry_year'];
+        }
+
         if (empty($input[Token\Entity::AUTHENTICATION_DATA]) === false)
         {
             (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA, $input[Token\Entity::AUTHENTICATION_DATA]);
@@ -1433,18 +1440,18 @@ class Core extends Base\Core
         return $token;
     }
 
-    public function fetchCryptogram($token, $merchant)
+    public function fetchCryptogram($serviceProviderTokenId, $merchant)
     {
-        $response = (new Card\Core)->fetchCryptogram($token->card, $merchant);
+        $response = (new Card\Core)->fetchCryptogram($serviceProviderTokenId, $merchant);
 
-        return $response['service_provider_tokens'];
+        return $response[Entity::SERVICE_PROVIDER_TOKENS];
     }
 
     public function fetchToken($token)
     {
         $response = (new Card\Core)->fetchToken($token->card);
 
-        return $response['service_provider_tokens'];
+        return $response[Entity::SERVICE_PROVIDER_TOKENS];
     }
 
     public function deleteToken($token)
@@ -1452,6 +1459,8 @@ class Core extends Base\Core
         $response = (new Card\Core)->deleteToken($token->card);
 
         $token->setExpiredAt(Carbon::now()->getTimestamp());
+
+        $token->setStatus(Entity::DEACTIVATED);
 
         $this->repo->saveOrFail($token);
 

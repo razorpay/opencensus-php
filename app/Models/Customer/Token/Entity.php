@@ -142,6 +142,7 @@ class Entity extends Base\PublicEntity
     const ENTITY        = 'entity';
     const PROVIDER_DATA = 'provider_data';
     const INTEROPERABLE = 'interoperable';
+    const STATUS_REASON = 'status_reason';
 
     /*
      * provider data attributes
@@ -151,6 +152,17 @@ class Entity extends Base\PublicEntity
     const TOKEN_REFERENCE_NUMBER = 'token_reference_number';
     const CARD_REFERENCE_NUMBER  = 'card_reference_number';
     const TOKEN_IIN              = 'token_iin';
+    const TOKEN_EXPIRY_MONTH     = 'token_expiry_month';
+    const TOKEN_EXPIRY_YEAR      = 'token_expiry_year';
+
+    /*
+    * status field values
+    */
+    const DEACTIVATED         = 'deactivated';
+    const EXPIRED             = 'expired';
+    const DEACTIVATED_BY_BANK = 'deactivated_by_bank';
+
+    const SERVICE_PROVIDER_TOKENS = 'service_provider_tokens';
 
     protected static $sign      = 'token';
 
@@ -349,6 +361,12 @@ class Entity extends Base\PublicEntity
     public static $providerDataUnsetAttributes = [
         self::TOKEN_NUMBER,
         self::CRYPTOGRAM_VALUE,
+    ];
+
+    public static $providerDataUnsetNullAttributes = [
+        self::TOKEN_IIN,
+        self::TOKEN_EXPIRY_MONTH,
+        self::TOKEN_EXPIRY_YEAR,
     ];
 
     public function customer()
@@ -978,49 +996,47 @@ class Entity extends Base\PublicEntity
 
             foreach ($serviceProviderTokens as $provider)
             {
-                $provider[self::STATUS] = ($this->isExpired() === true) ? 'deactivated' : $provider[self::STATUS];
+                if ($this->isExpired() === true)
+                {
+                    $provider[self::STATUS] = self::DEACTIVATED;
+
+                    $provider[self::STATUS_REASON] = self::EXPIRED;
+                }
+                elseif ($provider[self::STATUS] === self::DEACTIVATED)
+                {
+                    $provider[self::STATUS_REASON] = self::DEACTIVATED_BY_BANK;
+                }
 
                 foreach (self::$providerDataUnsetAttributes as $attribute)
                 {
                     unset($provider[self::PROVIDER_DATA][$attribute]);
                 }
 
+                foreach (self::$providerDataUnsetNullAttributes as $attribute)
+                {
+                    if($provider[self::PROVIDER_DATA][$attribute] === NULL)
+                    {
+                        unset($provider[self::PROVIDER_DATA][$attribute]);
+                    }
+                }
+
                 array_push($serviceProviderTokensArray, $provider);
             }
 
-            $publicArray['service_provider_tokens'] = $serviceProviderTokensArray;
+            $publicArray[self::SERVICE_PROVIDER_TOKENS] = $serviceProviderTokensArray;
 
             // todo: when more than one tokens are come into picture, take union of statuses
             $publicArray[self::STATUS] = $serviceProviderTokens[0][self::STATUS];
+
+            if (array_key_exists(self::TOKEN_IIN, $provider[self::PROVIDER_DATA]))
+            {
+                $publicArray['card']['token_iin'] = $provider[self::PROVIDER_DATA][self::TOKEN_IIN];
+            }
         }
 
         $publicArray[self::NOTES] = [];
 
         return $publicArray;
-    }
-
-    public function toArrayPublicCryptogramData($serviceProviderTokens)
-    {
-        $serviceProviderTokensArray = array();
-
-        foreach ($serviceProviderTokens as $provider)
-        {
-            foreach (self::$cryptogramDataServiceProviderTokensUnsetAttributes as $attribute)
-            {
-                unset($provider[$attribute]);
-            }
-
-            foreach (self::$cryptogramDataProviderDataUnsetAttributes as $attribute)
-            {
-                unset($provider[self::PROVIDER_DATA][$attribute]);
-            }
-
-            $provider[self::PROVIDER_DATA][self::CRYPTOGRAM_VALUE] = (string)$provider[self::PROVIDER_DATA][self::CRYPTOGRAM_VALUE];
-
-            array_push($serviceProviderTokensArray, $provider);
-        }
-
-        return $serviceProviderTokensArray;
     }
 
     public function isUpiRecurringToken()

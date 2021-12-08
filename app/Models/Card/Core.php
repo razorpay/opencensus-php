@@ -100,23 +100,25 @@ class Core extends Base\Core
             }
         }
 
-        $card = (new Card\Entity)->buildCard($createInput, 'tokenizedCard');
+        $tokenizedCard = (new Card\Entity)->buildCard($createInput, 'tokenizedCard');
 
-        $card->merchant()->associate($merchant);
+        $tokenizedCard->merchant()->associate($merchant);
+
+        $card = $this->getCardForIin($tokenizedCard, $input);
 
         $iin = $this->fillNetworkDetails($card, $input);
 
         if (empty($iin) === false)
         {
-            $card->iinRelation()->associate($iin);
+            $tokenizedCard->iinRelation()->associate($iin);
         }
 
-        return [$card, $response['service_provider_tokens']];
+        return [$tokenizedCard, $response['service_provider_tokens']];
     }
 
-    public function fetchCryptogram($card, $merchant)
+    public function fetchCryptogram($serviceProviderTokenId, $merchant)
     {
-        return $this->getCryptogramResponseFromVault($card, $merchant);
+        return $this->getCryptogramResponseFromVault($serviceProviderTokenId, $merchant);
     }
 
     public function fetchToken($card)
@@ -652,13 +654,11 @@ class Core extends Base\Core
         return $cardVault ->createTokenizedCard($input, $merchant, $iinInfo);
     }
 
-    protected function getCryptogramResponseFromVault($card, $merchant)
+    protected function getCryptogramResponseFromVault($serviceProviderTokenId, $merchant)
     {
         $cardVault = (new Card\CardVault);
 
-        $cardVaultToken = $card->getVaultToken();
-
-        return $cardVault->fetchCryptogram($cardVaultToken, $merchant);
+        return $cardVault->fetchCryptogram($serviceProviderTokenId, $merchant);
     }
 
     protected function getTokenResponseFromVault($card)
@@ -719,5 +719,18 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    protected function getCardForIin($tokenizedCard, $inputCard)
+    {
+        $card = $tokenizedCard;
+
+        $card[Card\Entity::IIN] = substr($inputCard['number'] ?? 0, 0, 6);
+
+        $card[Card\Entity::EXPIRY_MONTH] = $inputCard[Card\Entity::EXPIRY_MONTH];
+
+        $card[Card\Entity::EXPIRY_YEAR] = $inputCard[Card\Entity::EXPIRY_YEAR];
+
+        return $card;
     }
 }

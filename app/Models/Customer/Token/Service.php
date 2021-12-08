@@ -606,13 +606,9 @@ class Service extends Base\Service
         {
             (new Validator)->validateInput(Validator::FETCH_CRYPTOGRAM, $input);
 
-            $token = $this->repo->token->findOrFailByPublicIdAndMerchant($input['id'], $this->merchant);
+            $serviceProviderToken = $this->core->fetchCryptogram($input['id'], $this->merchant);
 
-            $serviceProviderTokens = $this->core->fetchCryptogram($token, $this->merchant);
-
-            $response['service_provider_tokens'] = $token->toArrayPublicCryptogramData($serviceProviderTokens);
-
-            return $response;
+            return $this->generateCryptogramResponse($serviceProviderToken);
         }
 
         $this->validateMode();
@@ -749,6 +745,30 @@ class Service extends Base\Service
         $response['notes'] = [];
 
         return $response;
+    }
+
+    public function generateCryptogramResponse($serviceProviderTokens)
+    {
+        $serviceProviderTokensArray = array();
+
+        foreach ($serviceProviderTokens as $provider)
+        {
+            foreach (Token\Entity::$cryptogramDataServiceProviderTokensUnsetAttributes as $attribute)
+            {
+                unset($provider[$attribute]);
+            }
+
+            foreach (Token\Entity::$cryptogramDataProviderDataUnsetAttributes as $attribute)
+            {
+                unset($provider[Token\Entity::PROVIDER_DATA][$attribute]);
+            }
+
+            $provider[Token\Entity::PROVIDER_DATA][Token\Entity::CRYPTOGRAM_VALUE] = (string)$provider[Token\Entity::PROVIDER_DATA][Token\Entity::CRYPTOGRAM_VALUE];
+
+            array_push($serviceProviderTokensArray, $provider);
+        }
+
+        return $serviceProviderTokensArray[0][Token\Entity::PROVIDER_DATA];
     }
 
     public function updateStatus($input)

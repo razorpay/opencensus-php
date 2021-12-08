@@ -120,7 +120,7 @@ return [
 
     'testFetchCryptogram' => [
         'request' => [
-            'url' => '/tokens/payment_data',
+            'url' => '/tokens/service_provider_tokens/token_transactional_data',
             'method' => 'post',
             'content' => [
             ],
@@ -155,7 +155,6 @@ return [
                     'cvv' => '123',
                     'expiry_month' => '12',
                     'expiry_year' => '23',
-                    'name' => 'Gaurav Kumar',
                 ],
             ],
         ],
@@ -176,7 +175,6 @@ return [
                     'cvv' => '123',
                     'expiry_month' => '12',
                     'expiry_year' => '23',
-                    'name' => 'Gaurav Kumar',
                 ],
             ],
         ],
@@ -216,7 +214,6 @@ return [
                     'cvv' => '123',
                     'expiry_month' => '12',
                     'expiry_year' => '23',
-                    'name' => 'Gaurav Kumar',
                 ],
             ],
         ],
@@ -233,7 +230,7 @@ return [
 
     'testFetchCryptogramLive' => [
         'request' => [
-            'url' => '/tokens/payment_data',
+            'url' => '/tokens/service_provider_tokens/token_transactional_data',
             'method' => 'post',
             'content' => [
             ],
@@ -246,7 +243,7 @@ return [
 
     'testFetchCryptogramLiveInvalidTokenId' => [
         'request' => [
-            'url' => '/tokens/payment_data',
+            'url' => '/tokens/service_provider_tokens/token_transactional_data',
             'method' => 'post',
             'content' => [
             ],
@@ -264,7 +261,7 @@ return [
 
     'testFetchCryptogramLiveVaultFailure' => [
         'request' => [
-            'url' => '/tokens/payment_data',
+            'url' => '/tokens/service_provider_tokens/token_transactional_data',
             'method' => 'post',
             'content' => [
             ],

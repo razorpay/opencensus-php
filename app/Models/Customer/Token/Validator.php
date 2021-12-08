@@ -16,6 +16,7 @@ class Validator extends Base\Validator
 {
     const CREATE_DIRECT                           = 'create_direct';
     const CREATE_NETWORK_TOKEN                    = 'create_network_token';
+    const CREATE_NETWORK_CARD                     = 'create_network_card';
     const CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA = 'create_network_token_authentication_data';
     const FETCH_CRYPTOGRAM                        = 'fetch_cryptogram';
     const FETCH_TOKEN                             = 'fetch_token';
@@ -76,12 +77,17 @@ class Validator extends Base\Validator
         Entity::NOTES                => 'sometimes',
     ];
 
+    protected static $createNetworkCardRules = [
+        'number'       => 'required',
+        'expiry_month' => 'required',
+        'expiry_year'  => 'required',
+        'cvv'          => 'sometimes',
+    ];
 
     protected static $createNetworkTokenAuthenticationDataRules = [
         "provider"              => "string",
         "provider_reference_id" => "string",
     ];
-
 
     protected static $fetchCryptogramRules = [
         'id'     => 'required|public_id',

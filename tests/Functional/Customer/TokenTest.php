@@ -438,10 +438,6 @@ class TokenTest extends TestCase
 
         $this->assertNotNull($response['service_provider_tokens']);
 
-        $this->assertEquals(null, $response['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
-
-        $this->assertEquals(null, $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
-
         $this->assertArrayNotHasKey('customer_id', $response);
     }
 
@@ -628,15 +624,15 @@ class TokenTest extends TestCase
 
         $response = $this->startTest($fetchPayload);
 
-        $this->assertNotNull($response['service_provider_tokens'][0]['provider_data']['token_number']);
+        $this->assertNotNull($response['token_number']);
 
-        $this->assertNotNull($response['service_provider_tokens'][0]['provider_data']['cryptogram_value']);
+        $this->assertNotNull($response['cryptogram_value']);
 
-        $this->assertEquals('12', $response['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
+        $this->assertEquals('12', $response['token_expiry_month']);
 
-        $this->assertEquals('2021', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+        $this->assertEquals('2021', $response['token_expiry_year']);
 
-        $this->assertEquals('4100000000000099', $response['service_provider_tokens'][0]['provider_data']['token_number']);
+        $this->assertEquals('4100000000000099', $response['token_number']);
     }
 
     public function testFetchCryptogramLiveInvalidToken()
