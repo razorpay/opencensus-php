@@ -15,6 +15,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use RZP\Models\User\Role;
 use RZP\Models\Settlement;
 use RZP\Constants\Product;
@@ -426,7 +427,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $onboardMerchantInputRules = [
-        Terminal\Entity::GATEWAY               => 'required|in:hitachi,paysecure,fulcrum',
+        Terminal\Entity::GATEWAY               => 'required|in:hitachi,fulcrum,paysecure',
         'gateway_input'                        => 'sometimes',
         Terminal\Entity::GATEWAY_ACQUIRER      => 'sometimes',
         'currency_code'                        => 'sometimes',
@@ -612,6 +613,34 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateOrgForOnboarding(array $input)
+    {
+        $app = App::getFacadeRoot();
+
+        $orgId = $app['basicauth']->getOrgId();
+
+        $orgId = (new Org\Service)->getStrippedOrgId($orgId);
+
+        if($orgId === Org\Entity::RAZORPAY_ORG_ID)
+        {
+            return;
+        }
+
+        $validateOrgHasFeature = (new Org\Service)->validateOrgIdWithFeatureFlag($orgId, 'axis_org');
+
+        if($input['gateway'] === 'paysecure')
+        {
+            if($validateOrgHasFeature === true)
+            {
+                return;
+            }
+            else
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Org not allowed');
+            }
+        }
+    }
 
     protected function validateIsTestAccount(array $input)
     {

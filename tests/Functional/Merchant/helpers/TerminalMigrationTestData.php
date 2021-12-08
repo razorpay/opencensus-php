@@ -636,6 +636,75 @@ return [
         ],
     ],
 
+    'testAdminFetchTerminalByIdForHdfcOrg' => [
+        'request'    => [
+            'method'    => 'GET',
+            'org_id'    => 'org_6dLbNSpv5XbCOG'
+        ],
+        'response'   => [
+            'content'   => [
+                'id' => 'term_1000HdfcShared',
+                'org_id' => '6dLbNSpv5XbCOG',
+                'gateway' => 'hdfc',
+            ],
+        ],
+    ],
+
+    'testAdminFetchTerminalByIdForAxisOrg' => [
+        'request'    => [
+            'method'    => 'GET',
+            'org_id'    => 'org_6dLbNSpv5XbCOG'
+        ],
+        'response'   => [
+            'content'   => [
+                'id' => 'term_1000AxisMigsTl',
+                'org_id' => 'CLTnQqDj9Si8bx',
+                'gateway' => 'axis_migs',
+            ],
+        ],
+
+    ],
+
+    'testAdminFetchTerminalByIdForDifferentOrg' => [
+        'request'    => [
+            'method'    => 'GET',
+            'org_id'    => 'org_6dLbNSpv5XbCOG'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => 'BAD_REQUEST_ACCESS_DENIED',
+        ]
+    ],
+
+    'testAdminFetchTerminalByIdForInvalidTerminal' => [
+        'request'    => [
+            'method'    => 'GET',
+            'org_id'    => 'org_6dLbNSpv5XbCOG'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'invalidTerminalId is not a valid id',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ]
+    ],
+
     'testCheckEncryptedValueTerminalServiceValidResponseProxy' => [
         'request'    => [
             'method'    => 'POST',

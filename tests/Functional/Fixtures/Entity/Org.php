@@ -16,6 +16,7 @@ class Org extends Base
 
     const SBIN_ORG                  = 'SBINbankOrgnId';
     const HDFC_ORG                  = '6dLbNSpv5XbCOG';
+    const AXIS_ORG                  = 'CLTnQqDj9Si8bx';
     const RZP_ORG                   = '100000razorpay';
     const RZP_ORG_SIGNED            = 'org_100000razorpay';
     const AXIS_ORG_ID               = 'CLTnQqDj9Si8bx';
@@ -151,17 +152,18 @@ class Org extends Base
         $input = [];
         $permissions = (new PermissionEntity)->getAllPermissions();
 
-        // Default organisation to be used for tests
         if (isset($customInput['org']) && is_array($customInput['org']))
         {
             $input = $customInput['org'];
         }
 
+        // Default organisation to be used for tests
         $org = $this->fixtures->create('org', [
             'id'                      => self::AXIS_ORG_ID,
             'email'                   => 'admin@axis.com',
             'from_email'              => 'noreplay@axis.com',
             'cross_org_access'        => true,
+            'default_pricing_plan_id' => 'BAJq6FJDNJ4ZqD',
 
         ] + $input);
         $input = [];
@@ -177,6 +179,7 @@ class Org extends Base
             'org_id'    => self::AXIS_ORG_ID,
             'hostname'  => 'axis.com'
         ] + $input);
+
         $input = [];
 
         if (isset($customInput['group']) && is_array($customInput['group']))
@@ -190,7 +193,7 @@ class Org extends Base
             'org_id' => self::AXIS_ORG_ID,
         ] + $input);
         $input = [];
-        
+
         $adminRole = $this->fixtures->create('role', [
             'id'     => 'AxiAdminRoleId',
             'org_id' => self::AXIS_ORG_ID,
@@ -223,7 +226,6 @@ class Org extends Base
 
         return $org;
     }
-
 
     public function createRazorpayOrg()
     {
