@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer;
 
+use http\Url;
 use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Terminal;
@@ -10,7 +11,9 @@ use RZP\Models\Address;
 use RZP\Models\Device;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Customer\Account\Constants as AccountConstants;
 use RZP\Constants;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Payment;
 use RZP\Models\BankAccount;
 use RZP\Models\Upi;
@@ -205,6 +208,20 @@ class Core extends Base\Core
         return $data;
     }
 
+    protected function is1ccDemoFlow(array $input, Merchant\Entity $merchant)
+    {
+        //https://app.asana.com/0/1201308796210994/1201471085908835/f
+
+        if ($merchant === null or $merchant->isFeatureEnabled(FeatureConstants::ONE_CLICK_CHECKOUT) === false)
+        {
+            return false;
+        }
+
+        $otp = $input['otp'];
+        $contact = $input['contact'];
+        return $merchant->getId() === '10000000000000' and $contact === AccountConstants::DEMO_1CC_CONTACT and $otp === AccountConstants::DEMO_1CC_OTP;
+    }
+
     public function verifyOtp($input, $merchant)
     {
         Locale::setLocale($input, $merchant->getId());
@@ -214,8 +231,12 @@ class Core extends Base\Core
         // Parse contact
         $input = Customer\Validator::validateAndParseContactInInput($input);
 
-        // Verify the otp with raven service
-        $this->verifyRavenOtp($input, $merchant);
+        // 1cc demo OTP hardcode
+        if ($this->is1ccDemoFlow($input, $merchant) === false)
+        {
+            // Verify the otp with raven service
+            $this->verifyRavenOtp($input, $merchant);
+        }
 
         if ((empty($input['method']) === false) and
             ($input['method'] === Payment\Method::PAYLATER))
@@ -345,6 +366,12 @@ class Core extends Base\Core
             ['app_token' => $appToken],
             $this->repo->merchant->getSharedAccount(),
             true);
+
+        // 1cc Demo: Reject address saving for +911234567890
+        if ($customer->getContact() === AccountConstants::DEMO_1CC_CONTACT)
+        {
+            return [];
+        }
 
         $addressEntity = new Address\Core();
 

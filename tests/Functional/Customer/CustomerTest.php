@@ -11,6 +11,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 
 use Mockery;
+use RZP\Models\Customer\Account\Constants as AccountConstants;
 
 class CustomerTest extends TestCase
 {
@@ -650,7 +651,7 @@ class CustomerTest extends TestCase
 
         $this->session($data);
     }
-    
+
     public function testCardCountryDetailsInOtpFlow()
     {
         $this->ba->publicAuth();
@@ -668,5 +669,16 @@ class CustomerTest extends TestCase
         $this->assertNotEquals($content['tokens'], null);
 
         $this->assertNotEquals($content['tokens']['items'][0]['card']['country'], null);
+    }
+
+    public function test1ccDemoOtpFlow()
+    {
+        $this->ba->publicAuth();
+//      We don't mock Raven here as raven shouldn't be triggered in this flow.
+//      If Raven throws an error, the logic is incorrect
+
+        $content = $this->verifyOtp(AccountConstants::DEMO_1CC_CONTACT, 'abc@razorpay.com', AccountConstants::DEMO_1CC_OTP, '123', true);
+        $this->assertEquals(1, $content['success']);
+        $this->assertNotNull($content['session_id']);
     }
 }
