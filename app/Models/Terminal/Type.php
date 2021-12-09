@@ -64,6 +64,9 @@ class Type
       // Terminals for tokenisation
     const TOKENISATION                        = 'tokenisation';
 
+    // Terminals for CardMandate
+    const MANDATE_HUB                        = 'mandate_hub';
+
     protected static $types = [
         self::NON_RECURRING,
         self::RECURRING_3DS,
@@ -85,6 +88,7 @@ class Type
         self::OTM_PAY,
         self::OTM_COLLECT,
         self::TOKENISATION,
+        self::MANDATE_HUB,
     ];
 
     protected static $bitPosition = [
@@ -108,6 +112,7 @@ class Type
         self::OTM_PAY                          => 18,
         self::OTM_COLLECT                      => 19,
         self::TOKENISATION                     => 20,
+        self::MANDATE_HUB                      => 21,
     ];
 
     /**
