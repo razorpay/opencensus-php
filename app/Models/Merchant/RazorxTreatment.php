@@ -381,6 +381,9 @@ final class RazorxTreatment
     // Experiment for removal of extra fields during onboarding
     const LITE_ONBOARDING = 'lite_onboarding';
 
+    // Experiment for removal of extra fields during onboarding
+    const UPDATED_LITE_ONBOARDING = 'updated_lite_onboarding';
+
     // Experiment to send manual verification data to BVS
     const HARVESTER_SEGREGATE_QUERIES = 'HARVESTER_SEGREGATE_QUERIES';
 

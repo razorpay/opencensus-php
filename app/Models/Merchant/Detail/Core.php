@@ -1682,11 +1682,11 @@ class Core extends Base\Core
             $merchantDetails->reviewer()->associate($reviewer);
         }
 
-        $liteOnboardingExpt = (new Merchant\Core)->isRazorxExperimentEnable(
+        $updatedLiteOnboardingExpt = (new Merchant\Core)->isRazorxExperimentEnable(
             $merchant->getId(),
-            RazorxTreatment::LITE_ONBOARDING);
+            RazorxTreatment::UPDATED_LITE_ONBOARDING);
 
-        if ($liteOnboardingExpt === true)
+        if ($updatedLiteOnboardingExpt === true)
         {
             $promoterPanName = $merchantDetails->getPromoterPanName();
 

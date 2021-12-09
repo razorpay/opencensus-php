@@ -110,7 +110,8 @@ class ActivationTest extends OAuthTestCase
                     if ($feature === RazorxTreatment::SELF_SERVE_AUTO_KYC or
                         $feature === RazorxTreatment::PRICING_PLAN_DEFAULT_METHODS or
                         $feature === RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY or
-                        $feature === RazorxTreatment::LITE_ONBOARDING)
+                        $feature === RazorxTreatment::LITE_ONBOARDING or
+                        $feature === RazorxTreatment::UPDATED_LITE_ONBOARDING)
                     {
                         return 'on';
                     }
