@@ -15,6 +15,7 @@ class Entity extends Base\PublicEntity
     const STATUS            = 'status';
     const SUBJECT           = 'subject';
     const DESCRIPTION       = 'description';
+    const CREATED_BY        = 'created_by';
     const CREATED_AT        = 'created_at';
     const UPDATED_AT        = 'updated_at';
 
@@ -26,6 +27,8 @@ class Entity extends Base\PublicEntity
         self::TICKET_ID,
         self::TYPE,
         self::TICKET_DETAILS,
+        self::CREATED_BY,
+        self::STATUS
     ];
 
     protected $visible = [
@@ -34,6 +37,8 @@ class Entity extends Base\PublicEntity
         self::TICKET_ID,
         self::TYPE,
         self::TICKET_DETAILS,
+        self::CREATED_BY,
+        self::STATUS,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -48,6 +53,8 @@ class Entity extends Base\PublicEntity
         self::TICKET_ID,
         self::TYPE,
         self::TICKET_DETAILS,
+        self::STATUS,
+        self::CREATED_BY,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -93,4 +100,15 @@ class Entity extends Base\PublicEntity
 
         return $ticketDetails[Constants::FD_INSTANCE];
     }
+
+    public function getCreatedBy()
+    {
+        return $this->getAttribute(self::CREATED_BY);
+    }
+
+    public function setStatus(string $status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
+
 }

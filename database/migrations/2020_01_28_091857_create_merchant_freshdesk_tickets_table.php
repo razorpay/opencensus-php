@@ -27,7 +27,11 @@ class CreateMerchantFreshdeskTicketsTable extends Migration
 
             $table->char(Entity::TYPE);
 
+            $table->char(Entity::CREATED_BY, 64)->nullable();
+
             $table->text(Entity::TICKET_DETAILS);
+
+            $table->tinyInteger(Entity::STATUS)->default(0);
 
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);

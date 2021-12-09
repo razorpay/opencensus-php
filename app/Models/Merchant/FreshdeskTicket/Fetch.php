@@ -9,10 +9,12 @@ class Fetch extends BaseFetch
 {
     const RULES = [
         self::DEFAULTS => [
-            Entity::ID           => 'sometimes|string',
-            Entity::MERCHANT_ID  => 'sometimes|string',
-            Entity::TYPE         => 'sometimes|string',
-            Entity::TICKET_ID    => 'sometimes',
+            Entity::ID          => 'sometimes|string',
+            Entity::MERCHANT_ID => 'sometimes|string',
+            Entity::TYPE        => 'sometimes|string',
+            Entity::TICKET_ID   => 'sometimes',
+            Entity::CREATED_BY  => 'sometimes',
+            Entity::STATUS      => 'sometimes',
         ],
     ];
 
@@ -22,6 +24,8 @@ class Fetch extends BaseFetch
             Entity::MERCHANT_ID,
             Entity::TYPE,
             Entity::TICKET_ID,
+            Entity::CREATED_BY,
+            Entity::STATUS
         ],
     ];
 }

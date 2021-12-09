@@ -3,8 +3,11 @@
 
 namespace RZP\Models\Merchant\FreshdeskTicket\Processor;
 
+use RZP\Exception;
 use RZP\Models\Merchant\FreshdeskTicket\Entity;
 use RZP\Models\Merchant\FreshdeskTicket\Constants;
+use RZP\Models\Merchant\FreshdeskTicket\TicketCreatedBy;
+use RZP\Models\Merchant\FreshdeskTicket\TicketStatus;
 use RZP\Notifications\Support as SupportNotifications;
 use RZP\Models\Merchant\FreshdeskTicket\Validator as BaseValidator;
 
@@ -23,6 +26,17 @@ class Validator extends BaseValidator
         Entity::TYPE                                              => 'required|custom',
         Entity::TICKET_DETAILS                                    => 'required|array',
         Entity::TICKET_DETAILS . '.' . Constants::FD_INSTANCE     => 'required|custom:fd_instance',
+        Entity::CREATED_BY                                        => 'sometimes|custom:created_by',
+        Entity::STATUS                                            => 'sometimes|custom:status',
+    ];
+
+    protected static $ticketStatusUpdateCallbackRules = [
+        Entity::TICKET_ID                                         => 'required',
+        Entity::MERCHANT_ID                                       => 'required',
+        Entity::TYPE                                              => 'required|custom',
+        Entity::STATUS                                            => 'required|custom:status',
+        Entity::TICKET_DETAILS                                    => 'required|array',
+        Entity::TICKET_DETAILS . '.' . Constants::FD_INSTANCE     => 'required|custom:fd_instance',
     ];
 
     protected static $websiteCheckerReplyRules = [
@@ -38,5 +52,27 @@ class Validator extends BaseValidator
     protected function validateNotificationEvent($attribute, $value)
     {
         SupportNotifications\Events::validateEvent($value);
+    }
+
+    protected function validateCreatedBy($attribute, string $createdBy)
+    {
+        if (TicketCreatedBy::isValidCreatedBy($createdBy) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid fd ticket created by: ' . $createdBy,
+                Entity::CREATED_BY
+            );
+        }
+    }
+
+    protected function validateStatus($attribute, string $status)
+    {
+        if (TicketStatus::isValidStatusFromFreshdesk($status) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid fd ticket Status: ' . $status,
+                Entity::STATUS
+            );
+        }
     }
 }

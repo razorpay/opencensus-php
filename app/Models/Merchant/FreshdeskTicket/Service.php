@@ -459,6 +459,25 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('get_' . studly_case($type) . '_tickets' , $input);
 
+        if (array_key_exists(Constants::CF_CREATED_BY, $input) and
+            $input[Constants::CF_CREATED_BY] === TicketCreatedBy::AGENT
+        )
+        {
+            $tickets = $this->repo->merchant_freshdesk_tickets->fetch([
+                                                                          Entity::TYPE       => $type,
+                                                                          Entity::CREATED_BY => $input[Constants::CF_CREATED_BY],
+                                                                          Entity::STATUS     => TicketStatus::getDatabaseStatusMappingForStatusString(TicketStatus::OPEN),
+                                                                      ], $this->merchant->getId());
+
+            if ($tickets->count() === 0)
+            {
+                return [
+                    Constants::RESULTS => [],
+                    Constants::TOTAL   => 0
+                ];
+            }
+        }
+
         $queryString = $this->buildQueryStringForGetTickets($input);
 
         $queryParams = [
@@ -1536,5 +1555,35 @@ class Service extends Base\Service
         }
 
         return $input;
+    }
+
+    protected function updateStatusForTicket($type, $freshdeskTicketId, $merchant_id, $fd_instance, $status)
+    {
+        $tickets = $this->repo->merchant_freshdesk_tickets->fetch([
+                                                                      Entity::TYPE      => $type,
+                                                                      Entity::TICKET_ID => $freshdeskTicketId,
+                                                                  ], $merchant_id);
+
+        $ticketsProcessed = 0;
+
+        if ($tickets->count() !== 0)
+        {
+            foreach ($tickets as $ticket)
+            {
+                if ($ticket->getFdInstance() === $fd_instance)
+                {
+                    $ticketsProcessed++;
+
+                    $ticket->edit(array('status' => $status));
+
+                    $this->repo->merchant_freshdesk_tickets->saveOrFail($ticket);
+                }
+            }
+        }
+
+        if ($ticketsProcessed == 0)
+        {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
+        }
     }
 }

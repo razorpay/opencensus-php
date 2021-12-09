@@ -35,6 +35,7 @@ class FreshdeskTicketV2Test extends TestCase
     const RZP_CREATE_TICKET_SALESFORCE         = 'rzp_create_ticket_salesforce';
     const RZP_CREATE_TICKET_INTERNAL_AUTH      = 'rzp_create_ticket_internal_auth';
     const RZP_FETCH_TICKET_FILTER              = 'rzp_fetch_ticket_filter';
+    const RZP_FETCH_TICKET_FILTER_AGENT        = 'rzp_fetch_ticket_filter_agent';
     const RZP_FETCH_TICKET                     = 'rzp_fetch_ticket';
     const RZP_CREATE_TICKET_HTML_TAGS          = 'rzp_create_ticket_html_tags';
 
@@ -218,16 +219,66 @@ class FreshdeskTicketV2Test extends TestCase
         $this->startTest();
     }
 
+    public function testFetchTicketsForAgentWithFilterNoCall()
+    {
+        $this->startTest();
+    }
+
     public function testFetchTicketsForMerchantWithFilter()
     {
-        $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_TICKET_FILTER);
-
-        $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000+AND+custom_string%3A%27Merchant%27+AND+custom_string%3A%27Activation%27+AND+custom_string%3A%27merchant%27%22&page=1', 'get',
-                                                    $expectedRequestResponse['request'], $expectedRequestResponse['response'], 4);
-
         $this->createTicketsToFetch();
 
-        $this->startTest();
+        $testCases = [
+            [
+                'name'              => 'fetche_merchant_tickets',
+                'cf_created_by'     => 'merchant',
+                'fetch_response'    => self::RZP_FETCH_TICKET_FILTER,
+            ],
+            [
+                'name'              => 'fetch_agent_tickets',
+                'cf_created_by'     => 'agent',
+                'fetch_response'    => self::RZP_FETCH_TICKET_FILTER_AGENT,
+                'content'   =>
+                    [
+                    'total'   => 4,
+                    'results' => [
+                        [
+                            'id' => 'razorpayid0013',
+                        ],
+                        [
+                            'id' => 'razorpayid0013',
+                        ],
+                        [
+                            'id' => 'razorpayid0013',
+                        ],
+                        [
+                            'id' => 'razorpayid0013',
+                        ],
+                    ],
+                ]
+            ],
+        ];
+
+        foreach ($testCases as $testCase)
+        {
+            $this->testData[__FUNCTION__]['request']['content']['cf_created_by'] = $testCase['cf_created_by'];
+
+            if (empty($testCase['fetch_response']) === false)
+            {
+                $expectedRequestResponse    =   $this->getExpectedRequestResponse($testCase['fetch_response']);
+
+                $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000+AND+custom_string%3A%27Merchant%27+AND+custom_string%3A%27Activation%27+AND+custom_string%3A%27' . $testCase['cf_created_by'] . '%27%22&page=1', 'get',
+                                                            $expectedRequestResponse['request'], $expectedRequestResponse['response'], 4);
+            }
+
+            if (empty($testCase['content']) === false)
+            {
+                $this->testData[__FUNCTION__]['response']['content'] = $testCase['content'];
+            }
+
+            $this->startTest();
+        }
+
     }
 
     public function testFetchTicketsForMerchantFailedForSomeInstance()
@@ -1337,6 +1388,32 @@ class FreshdeskTicketV2Test extends TestCase
         $this->assertEquals(strtotime($frDueByBasedOnWeekAverageFreshdeskFormat), strtotime($response['fr_due_by']), '', 100);
     }
 
+    public function testReceiveFreshdeskWebhookOnTicketStatusUpdate()
+    {
+        $testCases = [
+            [
+                'ticket_id'   => '12',
+                'fd_instance' => 'rzp',
+            ],
+        ];
+
+        foreach ($testCases as $testCase)
+        {
+            $this->testData[__FUNCTION__]['request']['content']['ticket_id'] = $testCase['ticket_id'];
+
+            $this->testData[__FUNCTION__]['request']['content']['ticket_details']['fd_instance'] = $testCase['fd_instance'];
+
+            $this->ba->freshdeskWebhookAuth();
+
+            $this->startTest();
+
+            $ticket = $this->getDbEntityById('merchant_freshdesk_tickets', 'razorpayid0012');
+
+            $this->assertEquals(5 , $ticket['status']);
+
+        }
+    }
+
     public function testReceiveFreshdeskWebhookOnTicketCreated()
     {
         $testCases = [
@@ -1348,6 +1425,12 @@ class FreshdeskTicketV2Test extends TestCase
                 'ticket_id'     => '12345',
                 'fd_instance'   => 'rzpind',
             ],
+            [
+                'ticket_id'     => '12345',
+                'fd_instance'   => 'rzpind',
+                'created_by'    => 'agent',
+                'status'        =>  'Open',
+            ],
         ];
 
         foreach ($testCases as $testCase)
@@ -1357,6 +1440,15 @@ class FreshdeskTicketV2Test extends TestCase
             $this->testData[__FUNCTION__]['request']['content']['ticket_id'] = $testCase['ticket_id'];
 
             $this->testData[__FUNCTION__]['request']['content']['ticket_details']['fd_instance'] = $testCase['fd_instance'];
+
+            if (empty($testCase['created_by']) === false)
+            {
+                $this->testData[__FUNCTION__]['request']['content']['created_by'] = $testCase['created_by'];
+            }
+            if (empty($testCase['status']) === false)
+            {
+                $this->testData[__FUNCTION__]['request']['content']['status'] = $testCase['status'];
+            }
 
             $this->startTest();
 
@@ -1371,6 +1463,15 @@ class FreshdeskTicketV2Test extends TestCase
                                                       'fr_due_by'         => '2020-12-08T16:04:20Z',
                                                   ],
                                               ], $ticket);
+
+            if (empty($testCase['status']) === false)
+            {
+                $this->assertEquals(2, $ticket['status']);
+            }
+            if (empty($testCase['created_by']) === false)
+            {
+                $this->assertEquals($testCase['created_by'], $ticket['created_by']);
+            }
         }
     }
 
@@ -1791,6 +1892,60 @@ class FreshdeskTicketV2Test extends TestCase
 
                 ]];
         }
+        else if ($key === self::RZP_FETCH_TICKET_FILTER_AGENT)
+        {
+            return [
+                'request'  => [],
+                'response' => [
+                    'results' => [
+                        [
+                            'id'        => 13,
+                            'body'      => 'some random body 13',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "agent"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+
+                        ],
+                        [
+                            'id'        => 34,
+                            'body'      => 'some random body 34',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Merchant Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "agent"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+
+                        ],
+                        [
+                            // 56 is not mapped to this merchant in our db. so we don't show it in the response, even if Freshdesk somehow returned this in the response
+                            'id'        => 56,
+                            'body'      => 'some random body 56',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "agent"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+                        ],
+                        [
+                            // 78 is not mapped to 'support_dashboard' in our db. so we don't show it in the response
+                            'id'        => 78,
+                            'body'      => 'some random body 78',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "agent"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+                        ],
+                    ],
+
+                ]];
+        }
     }
 
     protected function createTicketsToFetch()
@@ -1819,6 +1974,18 @@ class FreshdeskTicketV2Test extends TestCase
             'merchant_id'    => '10000000000000',
             'type'           => 'reserve_balance_activate',
             'ticket_details' => $ticketDetails,
+        ]);
+
+        $this->fixtures->create('merchant_freshdesk_tickets', [
+            'id'             => 'razorpayid0013',
+            'ticket_id'      => '13',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'support_dashboard',
+            'ticket_details' => $ticketDetails,
+            'created_by'     => 'agent',
+            'status'         => 2,
+            'created_at'     => '1700000000',
+            'updated_at'     => '1700000000',
         ]);
     }
 }

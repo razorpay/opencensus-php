@@ -140,6 +140,25 @@ return [
         ],
     ],
 
+    'testFetchTicketsForAgentWithFilterNoCall' => [
+        'request'  => [
+            'url'     => '/fd/support_dashboard/ticket',
+            'method'  => 'GET',
+            'content' => ['cf_requester_category'    => 'Merchant',
+                          'cf_requestor_subcategory' => 'Activation',
+                          'cf_requester_item'        => '',
+                          'cf_created_by'            => 'agent'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 0,
+                'results' => [
+                ],
+            ],
+        ],
+    ],
+
     'testFetchTicketsForMerchantWithStatusOnly' => [
         'request'  => [
             'url'     => '/fd/support_dashboard/ticket',
@@ -797,6 +816,27 @@ return [
         'response' => [
             'content' => [
                 'description'  => 'ticket description',
+            ],
+        ],
+    ],
+
+    'testReceiveFreshdeskWebhookOnTicketStatusUpdate' => [
+        'request'   => [
+            'url'           => '/fd/webhook/ticket_status_update_callback',
+            'method'        => 'POST',
+            'content'       => [
+                'merchant_id'       => '10000000000000',
+                'ticket_id'         => '12',
+                'type'              => 'support_dashboard',
+                'status'            =>  'Closed',
+                'ticket_details'    => [
+                    'fd_instance'   => 'rzp',
+                ],
+            ],
+        ],
+        'response' => [
+            'content'       => [
+                'success' => true,
             ],
         ],
     ],

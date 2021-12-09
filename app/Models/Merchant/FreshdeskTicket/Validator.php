@@ -12,7 +12,13 @@ class Validator extends Base\Validator
         Entity::TICKET_ID       => 'required|string',
         Entity::TYPE            => 'required|string',
         Entity::TICKET_DETAILS  => 'sometimes',
+        Entity::CREATED_BY      => 'sometimes',
+        Entity::STATUS          => 'sometimes',
         Entity::MERCHANT_ID     => 'required|string|alpha_num'
+    ];
+
+    protected static $editRules = [
+        Entity::STATUS          => 'sometimes',
     ];
 
     protected static $createCustomerTicketRules = [

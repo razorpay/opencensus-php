@@ -6466,3 +6466,5 @@ ALTER TABLE qr_code_config
 
 ALTER TABLE merchant_documents
     ADD COLUMN document_date INTEGER UNSIGNED DEFAULT NULL;
+    
+ALTER TABLE `merchant_freshdesk_tickets` ADD COLUMN `created_by` varchar(64) DEFAULT NULL , ADD COLUMN `status` tinyint(1) NOT NULL DEFAULT 0 ;
