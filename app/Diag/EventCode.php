@@ -978,4 +978,14 @@ class EventCode
         'group' => 'error_response',
         'name'  => 'error.response'
     ];
+
+    const PAYMENT_NBPLUS_CALL_INITIATED = [
+      'group'   => 'nbplus',
+      'name'    => 'payment.nbplus.request.initiated'
+    ];
+
+    const PAYMENT_NBPLUS_CALL_PROCESSED = [
+        'group'   => 'nbplus',
+        'name'    => 'payment.nbplus.request.processed'
+    ];
 }
