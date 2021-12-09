@@ -22,6 +22,7 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { handleProductQuickGuide } from 'merchant/reducers/onboarding';
 import { fetchSubscriptionButtonsList as fetchAll } from 'merchant/reducers/subscriptionButtons/list';
 import { setIsPaymentButtonCodeUsed } from '../../utils';
+import { isMobileDevice } from 'merchant/components/Home/data';
 import track from './track';
 
 const getActions = (openGetCodeModal) => ({
@@ -54,7 +55,7 @@ const itemNames = {
           <span class={classList(recurringItems.length && 'Button--transparent Button')}>
             Recurring Plans ({recurringItems.length})
             {!!recurringItems.length && (
-              <Popover align="right">
+              <Popover align={isMobileDevice() ? 'top' : 'right'}>
                 <PopoverBody>
                   <table width="100%">
                     <thead>

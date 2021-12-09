@@ -8,6 +8,7 @@ import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import { trackListActions } from '../ga';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 // import mockPaymentPagesList from './data-mock';
 
@@ -34,7 +35,7 @@ export default ({ paymentPages, loading }) => {
           rows={paymentPages}
           emptyTableMsg="No data found!"
         >
-          {paymentPages.map(item => (
+          {paymentPages.map((item) => (
             <EntityItemRow id={item.id} key={item.id}>
               <td>
                 <NavLink
@@ -49,10 +50,7 @@ export default ({ paymentPages, loading }) => {
 
               {/* TODO: Check if needed to be manually calculated from items or we've direct value */}
               <td>
-                <Amount
-                  value={item.total_amount_paid}
-                  currency={item.currency}
-                />
+                <Amount value={item.total_amount_paid} currency={item.currency} />
               </td>
 
               <td>
@@ -73,36 +71,32 @@ export default ({ paymentPages, loading }) => {
                               <b>+ {item.payment_page_items.length - 2} more</b>
                             </span>
 
-                            <Popover align="right">
+                            <Popover align={isMobileDevice() ? 'top' : 'right'}>
                               <PopoverBody>
                                 <div class="more-items">
                                   <div>
                                     <span class="title">Item Name</span>
 
-                                    {item.payment_page_items
-                                      .slice(2)
-                                      .map((pi, ix) => (
-                                        <span class="item-ellipsis" key={ix}>
-                                          {pi.item.name}
-                                        </span>
-                                      ))}
+                                    {item.payment_page_items.slice(2).map((pi, ix) => (
+                                      <span class="item-ellipsis" key={ix}>
+                                        {pi.item.name}
+                                      </span>
+                                    ))}
                                   </div>
                                   <div>
                                     <span class="title">Quantities Sold</span>
 
-                                    {item.payment_page_items
-                                      .slice(2)
-                                      .map((pi, ix) => (
-                                        <span class="item-ellipsis" key={ix}>
-                                          {Number(pi.quantity_sold)}
-                                          {!!pi.stock && (
-                                            <span style={{ opacity: 0.7 }}>
-                                              {' '}
-                                              of {Number(pi.stock)}
-                                            </span>
-                                          )}
-                                        </span>
-                                      ))}
+                                    {item.payment_page_items.slice(2).map((pi, ix) => (
+                                      <span class="item-ellipsis" key={ix}>
+                                        {Number(pi.quantity_sold)}
+                                        {!!pi.stock && (
+                                          <span style={{ opacity: 0.7 }}>
+                                            {' '}
+                                            of {Number(pi.stock)}
+                                          </span>
+                                        )}
+                                      </span>
+                                    ))}
                                   </div>
                                 </div>
                               </PopoverBody>
@@ -124,10 +118,7 @@ export default ({ paymentPages, loading }) => {
                           <span class="item-ellipsis">
                             {Number(pi.quantity_sold)}
                             {!!pi.stock && (
-                              <span style={{ opacity: 0.7 }}>
-                                {' '}
-                                of {Number(pi.stock)}
-                              </span>
+                              <span style={{ opacity: 0.7 }}> of {Number(pi.stock)}</span>
                             )}
                           </span>
                         </td>
