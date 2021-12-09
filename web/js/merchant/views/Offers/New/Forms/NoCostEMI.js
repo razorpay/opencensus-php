@@ -56,6 +56,7 @@ export default class NoCostEMIForm extends BaseForm {
             currencySymbol={this.currencySymbol}
             offerType={this.state.formData.description.type}
             formData={this.state.formData.discountType}
+            emiData={this.state.emiData}
           />
         ),
       },

@@ -54,8 +54,8 @@ export default class CreateOfferWizard extends React.Component {
     }, 100);
   };
 
-  handleTabChange = ({ target }) => {
-    this.setState({ currentTab: Number(target.dataset.index) });
+  handleTabChange = ({ currentTarget }) => {
+    this.setState({ currentTab: Number(currentTarget.dataset.index) });
   };
 
   changeTab = (step) => () => {

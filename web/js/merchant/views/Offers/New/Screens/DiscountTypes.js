@@ -1,3 +1,4 @@
+import React, { useMemo } from 'react';
 import Input from 'common/new-ui/Input';
 import {
   DISCOUNT_TYPES,
@@ -20,12 +21,26 @@ export default function DiscountType({
   isFormLocked,
   hideDiscountType,
   showSubscriptionOfferFields,
+  emiData,
 }) {
   const isFLATDiscount = formData.discount_type === DISCOUNT_TYPES.FLAT;
   const isPERCENTDiscount = formData.discount_type === DISCOUNT_TYPES.PERCENT;
   const isNO_COST_EMIDiscount = formData.discount_type === DISCOUNT_TYPES.NO_COST_EMI;
   const isInstantOffer = offerType === OFFER_TYPES.Instant;
 
+  const minAmount = useMemo(() => {
+    const _minAmount = Object.keys(emiData.emi_plans || {}).reduce((min, current) => {
+      if (
+        emiData.emi_plans[current] &&
+        emiData.emi_plans[current].min_amount &&
+        emiData.emi_plans[current].min_amount < min
+      ) {
+        min = emiData.emi_plans[current].min_amount;
+      }
+      return min;
+    }, Infinity);
+    return _minAmount === Infinity ? 0 : _minAmount;
+  }, [emiData]);
   const showNoOfCycles = formData.redemption_type === 'cycle';
 
   return (
@@ -90,6 +105,7 @@ export default function DiscountType({
               flat_cashback: formData.flat_cashback,
               isPERCENTDiscount,
               max_amount: formData.max_amount,
+              minAmount,
             })}
             addonBefore={currencySymbol}
             disabled={isFormLocked}
@@ -161,6 +177,7 @@ function validateDiscountType(val) {
   if (!val || val == '') {
     return 'Please select a discount type';
   }
+  return false;
 }
 
 function validatePercentRate(val) {
@@ -175,6 +192,7 @@ function validatePercentRate(val) {
 
   const decimalPointError = validateDecimalPointValue(val);
   if (decimalPointError) return decimalPointError;
+  return false;
 }
 
 function validateFlatCashback(min_amount) {
@@ -193,13 +211,14 @@ function validateFlatCashback(min_amount) {
     if (val > minAmount) {
       return 'Discount value cannot be greater than minimum amount';
     }
+    return false;
   };
 }
 
-function validateMinAmount({ flat_cashback, isPERCENTDiscount, max_order_amount }) {
+function validateMinAmount({ flat_cashback, isPERCENTDiscount, max_order_amount, minAmount }) {
   return (val) => {
     if (!val && isPERCENTDiscount) {
-      return;
+      return false;
     }
 
     const decimalPointError = validateDecimalPointValue(val);
@@ -219,6 +238,10 @@ function validateMinAmount({ flat_cashback, isPERCENTDiscount, max_order_amount 
     if (maxOrderAmount && maxOrderAmount < val) {
       return 'Minimum order amount should be less than max order amount';
     }
+    if (minAmount && val < minAmount) {
+      return `Minimum order amount should be greater than or equal to ₹${minAmount / 100}`;
+    }
+    return false;
   };
 }
 
@@ -232,11 +255,12 @@ function validateMaxCashback(val) {
   if (val > MAX_DISCOUNT) {
     return `Maximum value allowed is ${MAX_DISCOUNT}`;
   }
+  return false;
 }
 
 function validateMaxOrderAmount(min_amount) {
   return (val) => {
-    if (!val || val === '') return;
+    if (!val || val === '') return false;
 
     const decimalPointError = validateDecimalPointValue(val);
     if (decimalPointError) return decimalPointError;
@@ -251,6 +275,7 @@ function validateMaxOrderAmount(min_amount) {
     if (!minAmount || val < minAmount) {
       return `Maximum order amount should be more than minimum order amount`;
     }
+    return false;
   };
 }
 
@@ -259,4 +284,5 @@ function validateDecimalPointValue(val) {
   const isValid = new RegExp(DECIMAL_POINT_REGEX).test(val);
 
   if (!isValid) return 'Please enter number upto 2 decimal points';
+  return false;
 }
