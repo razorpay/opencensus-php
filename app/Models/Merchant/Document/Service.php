@@ -319,7 +319,9 @@ class Service extends Base\Service
             array_push($fileIds,$file->getPublicFileStoreId());
         }
 
-        $zipFileId = $ufhService->downloadFiles($fileIds,$merchantId);
+        $prefix = "Firs";
+
+        $zipFileId = $ufhService->downloadFiles($fileIds,$merchantId,$prefix);
 
         $this->trace->info(TraceCode::BULK_DOWNLOAD,[
             'success' => isset($zipFileId),

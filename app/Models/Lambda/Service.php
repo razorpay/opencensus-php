@@ -255,7 +255,7 @@ class Service extends Base\Service
 
         $part = str_split($date,2);
 
-        $terminal = $this->repo->terminal->findMerchantIdByGatewayMerchantID($gatewayMerchantId);
+        $terminal = $this->repo->terminal->findMerchantIdByGatewayMerchantIDAll($gatewayMerchantId);
         $merchantId = $terminal->getMerchantId();
         $merchant = $this->repo->merchant->find($merchantId);
         $storageFileName = 'FIRS/'.$merchantId.'/'.$part[1].'/'.$part[0].'/'.$filename;

@@ -431,14 +431,14 @@ class UfhService
         return $requestData;
     }
 
-    public function downloadFiles(array $fileIds, string $merchantId)
+    public function downloadFiles(array $fileIds, string $merchantId, string $prefix = "Firs")
     {
         $input = [
             self::FILE_IDS          => $fileIds,
             self::CHANNEL           => "Bulk",
             self::JOB_NAME          => "bulk_job",
             self::MERCHANT_ID       => $merchantId,
-            self::PREFIX            => "Firs",
+            self::PREFIX            => $prefix,
         ];
 
         $response = $this->ufhClient->download($input);

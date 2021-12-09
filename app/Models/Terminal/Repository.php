@@ -2079,6 +2079,14 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
+    public function findMerchantIdByGatewayMerchantIDAll(string $gatewayMerchantId)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId);
+
+        return $query->first();
+    }
+
     public function fetchTerminalsForTokenization(int $count, array $terminalIds = [])
     {
         $gatewayHavingMpans = [Payment\Gateway::WORLDLINE, Payment\Gateway::HITACHI, Payment\Gateway::ISG];
