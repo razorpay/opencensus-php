@@ -1114,8 +1114,34 @@ class Service extends Base\Service
                     Payment\Entity::CURRENCY => $payment->getCurrency()
                 ];
 
-                $payment = $this->getNewProcessor($merchant)
-                                ->capture($payment, $captureInput);
+                if ($payment->isExternal() === true)
+                {
+                    if ($payment->hasOrder() === true)
+                    {
+                        $order = $payment->order;
+
+                        if (isset($order) === true)
+                        {
+                            $input[Payment\Entity::ORDER] = $order;
+                        }
+                    }
+
+                    $paymentMap = $this->app['pg_router']->paymentCapture($paymentId, $captureInput, true);
+
+                    $payment = (new Payment\Entity)->forceFill($paymentMap);
+
+                    if ((isset($paymentMap['card_id']) === true) and
+                        (isset($paymentMap['merchant_id']) === true))
+                    {
+                        $card = $this->repo->card->findByIdAndMerchantId($paymentMap['card_id'], $paymentMap['merchant_id']);
+
+                        $payment->card()->associate($card);
+                    }
+                }
+                else
+                {
+                    $payment = $this->getNewProcessor($merchant)->capture($payment, $captureInput);
+                }
 
                 $success++;
             }
