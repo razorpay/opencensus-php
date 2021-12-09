@@ -849,10 +849,11 @@ class CheckoutPreferencesTest extends TestCase
 
         $response = $this->getPreferences();
 
-        $this->assertEquals(2, count($response['methods']['paylater']));
+        $this->assertEquals(3, count($response['methods']['paylater']));
 
         $this->assertArrayHasKey('icic', $response['methods']['paylater']);
         $this->assertArrayHasKey('hdfc', $response['methods']['paylater']);
+        $this->assertArrayHasKey('kkbk', $response['methods']['paylater']);
     }
 
     public function testGetCheckoutPreferencesForPaytmWithTerminal()

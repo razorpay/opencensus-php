@@ -9,6 +9,7 @@ class BankCodes
 {
     public static $bankCodeMap = [
         PayLater::HDFC => '11460',                      // HDFC Bank
+        PayLater::KKBK => '19090',                      // KOTAK Bank
     ];
 
     public static $cardlessEmiBankCodeMap = [

@@ -13,6 +13,7 @@ class PayLater
     const LAZYPAY      = 'lazypay';
 
     const HDFC         = 'hdfc';
+    const KKBK         = 'kkbk';
 
     public static $fullName = [
         self::EPAYLATER    => 'ePayLater',
@@ -24,11 +25,13 @@ class PayLater
 
     public static $fullNameForSupportedBanks = [
         self::HDFC    => 'hdfc',
+        self::KKBK    => 'kkbk',
     ];
 
     public static $supportedBanks = [
         self::FLEXMONEY => [
             IFSC::HDFC,
+            IFSC::KKBK
         ]
     ];
 
