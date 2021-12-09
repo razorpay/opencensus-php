@@ -933,9 +933,29 @@ class Service extends Base\Service
 
         $this->determineAndSetMode();
 
-        $vpa = $this->repo->vpa->findByAddress($vpa, true);
+        $vpaUsername = $vpa;
+        $vpa         = $this->repo->vpa->findByAddress($vpa, true);
 
-        if ($vpa === null)
+        $vpaSource = null;
+
+        if ($vpa !== null)
+        {
+            $vpaSource = $vpa->virtualAccount;
+
+            if ($vpaSource === null)
+            {
+                $vpaSource = $vpa->qrCode;
+            }
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::VIRTUAL_ACCOUNT_ECOLLECT_VALIDATE_VPA_NOT_FOUND,
+                [
+                ]);
+        }
+
+        if ($vpaSource === null)
         {
             if (str_starts_with($input['SubscriberId'], 'qr'))
             {
@@ -947,18 +967,19 @@ class Service extends Base\Service
             return $response;
         }
 
-        $vpaSource = $vpa->virtualAccount;
-
-        if ($vpaSource === null)
-        {
-            $vpaSource = $vpa->qrCode;
-        }
-
-        if (($vpaSource !== null) and ($vpaSource->getStatus() === Status::ACTIVE))
+        if ($vpaSource->getStatus() === Status::ACTIVE)
         {
             $response['valid'] = true;
 
             $response['merchantName'] = $vpa->merchant->getBillingLabel();
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::VIRTUAL_ACCOUNT_ECOLLECT_VALIDATE_VPA_SOURCE_INACTIVE,
+                [
+                    $vpa->toArray(),
+                ]);
         }
 
         return $response;
