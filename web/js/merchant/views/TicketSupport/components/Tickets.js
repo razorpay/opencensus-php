@@ -147,7 +147,7 @@ export default class Tickets extends React.Component {
         {OPEN_TICKETS.length !== 0 && (
           <h1 className="tickets-section-title">
             {this.props.match.params.ticketType === 'agent' ? (
-              <span>'Razorpay is requesting some details'</span>
+              <span>Razorpay is requesting some details</span>
             ) : (
               <span>Open queries ({OPEN_TICKETS.length})</span>
             )}
