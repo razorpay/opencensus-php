@@ -1,13 +1,19 @@
 function merchantTncEntry() {
   function executeJS() {
-    var cdnDashboardUrl = window.cdnDashboardUrl || '';
+    const cdnDashboardUrl = window.cdnDashboardUrl || '';
 
-    var base = Array.prototype.slice
+    const base = Array.prototype.slice
       .call(document.querySelectorAll('script[src]'), -1)[0]
-      .src.replace(/[^\/]+$/, '');
+      .src.replace(/[^/]+$/, '');
 
-    websiteAssets.js.forEach(function (src) {
-      document.write('<script src="' + cdnDashboardUrl + src + '"></script>');
+    const appendScript = (src) => {
+      const s = document.createElement('script');
+      s.src = src;
+      document.documentElement.appendChild(s);
+    };
+
+    websiteAssets.js.forEach((src) => {
+      appendScript(cdnDashboardUrl + src);
     });
   }
 

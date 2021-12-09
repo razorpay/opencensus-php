@@ -1,4 +1,5 @@
 // Comments are not supported inside merchantEntry function have to disable the eslint for this file
+ // Comments are not supported inside merchantEntry function have to disable the eslint for this file
 
 function merchantEntry() {
   function executeJS() {
@@ -11,8 +12,14 @@ function merchantEntry() {
       document.documentElement.appendChild(link);
     };
 
+    const appendScript = (src) => {
+      const s = document.createElement('script');
+      s.src = src;
+      document.documentElement.appendChild(s);
+    };
+
     websiteAssets.js.forEach((src) => {
-      document.write(`<script src="${cdnDashboardUrl}${src}"></script>`);
+      appendScript(cdnDashboardUrl + src);
     });
 
     websiteAssets.css.forEach((src) => {
