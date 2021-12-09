@@ -10,6 +10,8 @@ import { showNotification as fnShowNotification } from 'merchant_common/reducers
 import { merchantFetch } from 'merchant/utils/ajax';
 import { workflowNames } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 /**
  * Needs Clarification Modal for merchant to respond to queries
@@ -65,6 +67,16 @@ const NeedsClarificationModal = ({
     })
       .then((res) => {
         if (res.success && res.data) {
+          analyticsTrack({
+            objectName: 'needs clarification fileupload',
+            actionName: 'result',
+            screen: 'my account',
+            properties: {
+              flowName: workflowType,
+              result: 'Success',
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
           const doc = {
             id: res.data.id,
             display_name: res.data.display_name,
@@ -73,6 +85,17 @@ const NeedsClarificationModal = ({
         }
       })
       .catch((err) => {
+        analyticsTrack({
+          objectName: 'needs clarification fileupload',
+          actionName: 'result',
+          screen: 'my account',
+          properties: {
+            flowName: workflowType,
+            result: 'Failure',
+            failureMessage: err.errors && err.errors.length ? `${err.errors[0]}` : null,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         showNotification({
           type: 'error',
           message: err.errors,
@@ -96,6 +119,15 @@ const NeedsClarificationModal = ({
   };
 
   const onSubmit = () => {
+    analyticsTrack({
+      objectName: 'needs clarification submit',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        flowName: workflowType,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     setIsSubmitting(true);
     const body = {
       merchant_workflow_clarification: response,
@@ -109,6 +141,16 @@ const NeedsClarificationModal = ({
     })
       .then((res) => {
         if (res.success) {
+          analyticsTrack({
+            objectName: 'needs clarification submit',
+            actionName: 'result',
+            screen: 'my account',
+            properties: {
+              flowName: workflowType,
+              result: 'Success',
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
           fetchWorkflowStatus(workflowType);
           if (onResponseSubmit) {
             onResponseSubmit();
@@ -117,6 +159,17 @@ const NeedsClarificationModal = ({
         }
       })
       .catch((err) => {
+        analyticsTrack({
+          objectName: 'needs clarification submit',
+          actionName: 'result',
+          screen: 'my account',
+          properties: {
+            flowName: workflowType,
+            result: 'Failure',
+            failureMessage: err.errors && err.errors.length ? `${err.errors[0]}` : null,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         setIsSubmitting(false);
         showNotification({
           type: 'error',
@@ -126,6 +179,15 @@ const NeedsClarificationModal = ({
   };
 
   useEffect(() => {
+    analyticsTrack({
+      objectName: 'needs clarification popup',
+      actionName: 'rendered',
+      screen: 'my account',
+      properties: {
+        flowName: workflowType,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     fetchWorkflowStatus(workflowType);
   }, []);
 

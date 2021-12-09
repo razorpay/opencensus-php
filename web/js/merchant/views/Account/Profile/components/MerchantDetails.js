@@ -119,6 +119,15 @@ const MerchantDetails = ({
   fetchWorkflowStatus,
 }) => {
   const openNeedsClarificationModal = ({ workflowType, clarificationReason, onResponseSubmit }) => {
+    analyticsTrack({
+      objectName: 'needs clarification respond',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        flowName: workflowType,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     openModal({
       size: 'small',
       component: (
