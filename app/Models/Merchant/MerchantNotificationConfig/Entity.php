@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
     const ID                          = 'id';
     const MERCHANT_ID                 = 'merchant_id';
     const CONFIG_STATUS               = 'config_status';
+    const NOTIFICATION_TYPE           = 'notification_type';
     const UPPER_THRESHOLD             = 'upper_threshold';
     const LOWER_THRESHOLD             = 'lower_threshold';
     const MODE                        = 'mode';
@@ -41,10 +42,11 @@ class Entity extends Base\PublicEntity
 
     // Default values
     protected $defaults = [
-        self::NOTIFY_AT     => 0,
-        self::NOTIFY_AFTER  => 900, // 15 minutes
-        self::CONFIG_STATUS => Status::ENABLED,
-        self::MODE => 'ALL',
+        self::NOTIFY_AT         => 0,
+        self::NOTIFY_AFTER      => 900, // 15 minutes*/
+        self::CONFIG_STATUS     => Status::ENABLED,
+        self::MODE              => 'ALL',
+        self::NOTIFICATION_TYPE => NotificationType::BENE_BANK_DOWNTIME,
     ];
 
     // Generators
@@ -56,6 +58,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::UPPER_THRESHOLD,
         self::LOWER_THRESHOLD,
+        self::NOTIFICATION_TYPE,
         self::NOTIFICATION_EMAILS,
         self::NOTIFICATION_MOBILE_NUMBERS,
         self::NOTIFY_AFTER,
@@ -66,6 +69,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::CONFIG_STATUS,
+        self::NOTIFICATION_TYPE,
         self::UPPER_THRESHOLD,
         self::LOWER_THRESHOLD,
         self::MODE,
@@ -81,6 +85,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::UPPER_THRESHOLD,
         self::LOWER_THRESHOLD,
+        self::NOTIFICATION_TYPE,
         self::NOTIFICATION_EMAILS,
         self::NOTIFICATION_MOBILE_NUMBERS,
         self::CONFIG_STATUS,
@@ -145,6 +150,11 @@ class Entity extends Base\PublicEntity
     public function getLastDisabledAt()
     {
         return $this->getAttribute(self::LAST_DISABLED_AT);
+    }
+
+    public function getNotificationType()
+    {
+        return $this->getAttribute(self::NOTIFICATION_TYPE);
     }
     // End of Getters
 

@@ -63,4 +63,13 @@ class FundLoadingDowntimeController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function notificationFlow($flowType)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->notificationFlow($flowType, $input);
+
+        return ApiResponse::json($response);
+    }
 }

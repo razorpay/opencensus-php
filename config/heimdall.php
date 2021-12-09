@@ -1175,7 +1175,7 @@ return [
 
         PermissionCategory::FUND_LOADING_DOWNTIME  => [
             Permission::MANAGE_FUND_LOADING_DOWNTIME => [
-                'description' => 'Create, Update Fund loading Downtime',
+                'description' => 'Create, Update and Notify Fund loading Downtime',
             ],
             Permission::VIEW_FUND_LOADING_DOWNTIME => [
                 'description' => 'View Fund loading Downtime',

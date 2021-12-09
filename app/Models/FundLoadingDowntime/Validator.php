@@ -3,39 +3,66 @@
 namespace RZP\Models\FundLoadingDowntime;
 
 use RZP\Models\Payout\Mode as Modes;
+use RZP\Models\FundLoadingDowntime\Entity as E;
+use RZP\Models\FundLoadingDowntime\Constants as C;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\FundLoadingDowntime\Notifications as Notifications;
 
 class Validator extends \RZP\Base\Validator
 {
+    const CREATION_FLOW     = 'creation_flow';
+    const UPDATION_FLOW     = 'updation_flow';
+    const CANCELLATION_FLOW = 'cancellation_flow';
+
     protected static $createRules = [
-        Entity::TYPE             => 'required|string|in:Scheduled Maintenance Activity,Sudden Downtime',
-        Entity::SOURCE           => 'required|string|in:Partner Bank,RBI,NPCI',
-        Entity::CHANNEL          => 'required|string|custom',
-        Entity::MODE             => 'required|string|custom',
-        Entity::START_TIME       => 'required|epoch',
-        Entity::END_TIME         => 'sometimes|required_with:start_time|epoch',
-        Entity::DOWNTIME_MESSAGE => 'sometimes|required|string',
-        Entity::CREATED_BY       => 'required|string|max:255',
+        E::TYPE             => 'required|string|in:Scheduled Maintenance Activity,Sudden Downtime',
+        E::SOURCE           => 'required|string|in:Partner Bank,RBI,NPCI',
+        E::CHANNEL          => 'required|string|custom',
+        E::MODE             => 'required|string|custom',
+        E::START_TIME       => 'required|epoch',
+        E::END_TIME         => 'sometimes|nullable|epoch',
+        E::DOWNTIME_MESSAGE => 'sometimes|string',
+        E::CREATED_BY       => 'required|string|max:255',
     ];
 
     protected static $updateRules = [
-        Entity::TYPE             => 'sometimes|required|string|in:Scheduled Maintenance Activity,Sudden Downtime',
-        Entity::SOURCE           => 'sometimes|required|string|in:Partner Bank,RBI,NPCI',
-        Entity::CHANNEL          => 'sometimes|required|string|custom',
-        Entity::MODE             => 'sometimes|required|string|custom',
-        Entity::START_TIME       => 'sometimes|required|epoch',
-        Entity::END_TIME         => 'sometimes|required_with:start_time|epoch',
-        Entity::DOWNTIME_MESSAGE => 'sometimes|required|string',
-        Entity::CREATED_BY       => 'sometimes|required|string|max:255',
+        E::START_TIME => 'sometimes|epoch',
+        E::END_TIME   => 'sometimes|epoch',
     ];
 
+    protected static $creationFlowRules = [
+        C::DOWNTIME_INPUTS                                                          => 'required',
+        Notifications::SEND_SMS                                                     => 'present|boolean',
+        Notifications::SEND_EMAIL                                                   => 'present|boolean',
+        C::DOWNTIME_INPUTS . '.' . C::DURATIONS_AND_MODES                           => 'required|array|min:1',
+        C::DOWNTIME_INPUTS . '.' . C::DURATIONS_AND_MODES . '.*.' . E::START_TIME   => 'required|epoch',
+        C::DOWNTIME_INPUTS . '.' . C::DURATIONS_AND_MODES . '.*.' . E::END_TIME     => 'sometimes|nullable|epoch',
+        C::DOWNTIME_INPUTS . '.' . C::DURATIONS_AND_MODES . '.*.' . C::MODES        => 'required|array|min:1',
+        C::DOWNTIME_INPUTS . '.' . C::DURATIONS_AND_MODES . '.*.' . C::MODES . '.*' => 'required|string|in:IMPS,NEFT,RTGS,UPI,IFT',
+    ];
+
+    protected static $updationFlowRules = [
+        C::UPDATE_DETAILS                         => 'required|array|min:1',
+        Notifications::SEND_SMS                   => 'present|boolean',
+        Notifications::SEND_EMAIL                 => 'present|boolean',
+        C::UPDATE_DETAILS . '.*.' . E::ID         => 'required|string',
+        C::UPDATE_DETAILS . '.*.' . E::START_TIME => 'sometimes|nullable|epoch',
+        C::UPDATE_DETAILS . '.*.' . E::END_TIME   => 'sometimes|nullable|epoch',
+    ];
+
+    protected static $cancellationFlowRules = [
+        C::DOWNTIME_IDS           => 'required|array|min:1',
+        C::DOWNTIME_IDS . ".*"    => 'required|string',
+        Notifications::SEND_SMS   => 'present|boolean',
+        Notifications::SEND_EMAIL => 'present|boolean',
+    ];
 
     public function getChannels()
     {
         return [
-            Constants::YES_BANK,
-            Constants::ICICI_BANK,
-            Constants::ALL,
+            C::YES_BANK,
+            C::ICICI_BANK,
+            C::ALL,
         ];
     }
 

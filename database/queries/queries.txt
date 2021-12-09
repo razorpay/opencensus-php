@@ -6483,3 +6483,11 @@ ALTER TABLE merchant_documents
 
 ALTER TABLE `merchant_freshdesk_tickets` ADD COLUMN `created_by` varchar(64) DEFAULT NULL , ADD COLUMN `status` tinyint(1) NOT NULL DEFAULT 0 ;
 
+ALTER TABLE merchant_notification_configs
+    ADD COLUMN `notification_type` VARCHAR(63) COLLATE utf8_bin NULL DEFAULT 'bene_bank_downtime',
+    MODIFY COLUMN `upper_threshold` INT NULL DEFAULT NULL,
+    MODIFY COLUMN `lower_threshold` INT NULL DEFAULT NULL,
+    MODIFY COLUMN `mode` VARCHAR(255) COLLATE utf8_bin NULL DEFAULT NULL,
+    MODIFY COLUMN `notification_emails` text COLLATE utf8_bin NULL DEFAULT NULL,
+    MODIFY COLUMN `notification_mobile_numbers` text COLLATE utf8_bin NULL DEFAULT NULL,
+    ADD INDEX `mnc_notification_type_merchant_id_index` (`notification_type`,`merchant_id`);

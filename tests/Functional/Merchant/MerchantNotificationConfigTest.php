@@ -19,6 +19,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant\MerchantNotificationConfig\Entity;
 
 class MerchantNotificationConfigTest extends TestCase
 {
@@ -62,7 +63,34 @@ class MerchantNotificationConfigTest extends TestCase
     public function testCreateMerchantNotificationConfigAsAdmin()
     {
         $this->ba->adminAuth();
+
         return $this->startTest();
+    }
+
+    public function testCreateMerchantNotificationConfigWithNotificationTypeAsAdmin()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $content = &$this->testData[__FUNCTION__]['request']['content'];
+
+        $this->assertArraySelectiveEquals(
+            [
+                Entity::MERCHANT_ID                 => '10000000000000',
+                Entity::NOTIFICATION_EMAILS         => implode(',', $content[Entity::NOTIFICATION_EMAILS]),
+                Entity::NOTIFICATION_MOBILE_NUMBERS => implode(',', $content[Entity::NOTIFICATION_MOBILE_NUMBERS]),
+                Entity::NOTIFICATION_TYPE           => $content[Entity::NOTIFICATION_TYPE]
+            ],
+            $this->getDbLastEntity('merchant_notification_config')->toArray()
+        );
+    }
+
+    public function testCreateDuplicateMerchantNotificationConfigWithNotificationTypeAsAdmin()
+    {
+        $this->testCreateMerchantNotificationConfigWithNotificationTypeAsAdmin();
+
+        $this->startTest();
     }
 
     public function testCreateMerchantNotificationConfigWhenConfigAlreadyExists()
@@ -94,7 +122,7 @@ class MerchantNotificationConfigTest extends TestCase
 
         $testData = &$this->testData[__FUNCTION__];
         $testData['request']['url']
-            = '/admin/merchants/10000000000000/merchant_notification_configs/' . $merchantNotificationConfig['id'];
+                  = '/admin/merchants/10000000000000/merchant_notification_configs/' . $merchantNotificationConfig['id'];
         $this->startTest();
     }
 
@@ -113,7 +141,7 @@ class MerchantNotificationConfigTest extends TestCase
 
         $testData = &$this->testData[__FUNCTION__];
         $testData['request']['url']
-            = '/admin/merchants/10000000000000/merchant_notification_configs/' . $merchantNotificationConfig['id'];
+                  = '/admin/merchants/10000000000000/merchant_notification_configs/' . $merchantNotificationConfig['id'];
         $this->startTest();
     }
 
@@ -255,7 +283,7 @@ class MerchantNotificationConfigTest extends TestCase
 
         $testData = &$this->testData[__FUNCTION__];
         $testData['request']['url']
-            = '/admin/merchants/10000000000000/merchant_notification_configs/' . $config['id'] . '/disable';
+                  = '/admin/merchants/10000000000000/merchant_notification_configs/' . $config['id'] . '/disable';
 
         $this->startTest();
     }
@@ -318,7 +346,7 @@ class MerchantNotificationConfigTest extends TestCase
 
         $testData = &$this->testData[__FUNCTION__];
         $testData['request']['url']
-            = '/admin/merchants/10000000000000/merchant_notification_configs/' . 'mnc_' . $config['id'] . '/enable';
+                  = '/admin/merchants/10000000000000/merchant_notification_configs/' . 'mnc_' . $config['id'] . '/enable';
 
         $this->startTest();
     }
@@ -329,7 +357,7 @@ class MerchantNotificationConfigTest extends TestCase
 
         $config = $this->testCreateMerchantNotificationConfigAsAdmin();
 
-        $testData = &$this->testData['testEnableMerchantNotificationConfigAsAdmin'];
+        $testData                   = &$this->testData['testEnableMerchantNotificationConfigAsAdmin'];
         $testData['request']['url'] =
             '/admin/merchants/10000000000000/merchant_notification_configs/' . $config['id'] . '/enable';
 
@@ -455,23 +483,23 @@ class MerchantNotificationConfigTest extends TestCase
         $this->ba->ftsAuth(Mode::LIVE);
 
         $request = [
-            'url' => '/fts/channel/notify',
-            'method' => 'post',
+            'url'     => '/fts/channel/notify',
+            'method'  => 'post',
             'content' => [
-                'type' => 'bene_health',
+                'type'    => 'bene_health',
                 'payload' => [
-                    'begin' => 1610430729,
+                    'begin'      => 1610430729,
                     'created_at' => 1610430729,
-                    'end' => 0,
-                    'entity' => 'bene_health',
-                    'id' => 'GOHp6DSA5odXTu',
+                    'end'        => 0,
+                    'entity'     => 'bene_health',
+                    'id'         => 'GOHp6DSA5odXTu',
                     'instrument' => [
                         'bank' => 'UTIB'
                     ],
-                    'method' => ['IMPS'],
-                    'scheduled' => false,
-                    'source' => 'BENEFICIARY',
-                    'status' => 'started',
+                    'method'     => ['IMPS'],
+                    'scheduled'  => false,
+                    'source'     => 'BENEFICIARY',
+                    'status'     => 'started',
                     'updated_at' => 1610430729
                 ]
             ],
@@ -558,7 +586,7 @@ class MerchantNotificationConfigTest extends TestCase
     {
         // The number of stuck payouts should be (at least one) more than the upper threshold, hence loop starts from 0
         // with less than or equal to comparator
-        for($x = 0; $x <= $upperThreshold; $x++)
+        for ($x = 0; $x <= $upperThreshold; $x++)
         {
             (new Payout())
                 ->createPayoutWithoutTransaction(

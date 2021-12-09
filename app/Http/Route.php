@@ -2854,6 +2854,7 @@ class Route
         'list_active_fund_loading_downtimes'      => ['get',       'fund_loading/downtimes/active',                                'FundLoadingDowntimeController@listActiveFundLoadingDowntimes'         ],
         'list_fund_loading_downtimes'             => ['get',       'fund_loading/downtimes',                                       'FundLoadingDowntimeController@listFundLoadingDowntimes'               ],
         'delete_fund_loading_downtime_by_id'      => ['delete',    'fund_loading/downtime/{id}',                                   'FundLoadingDowntimeController@deleteFundLoadingDowntime'              ],
+        'notification_flow_fund_loading_downtime' => ['post',      'fund_loading/downtime/notification/{flowType}',                'FundLoadingDowntimeController@notificationFlow'                             ],
 
         // Routes related to payments rearch for fetching/writing data
         'api_entity_fetch'                        => ['get',     'entities/{entity}/{id}',                                 'CardPSController@FetchEntity'                                  ],
@@ -5696,6 +5697,7 @@ class Route
         'list_active_fund_loading_downtimes',
         'list_fund_loading_downtimes',
         'delete_fund_loading_downtime_by_id',
+        'notification_flow_fund_loading_downtime',
 
         // Recon for alert_email field of stork
         'admin_webhook_email_stork_recon',
@@ -6827,6 +6829,7 @@ class Route
         'list_fund_loading_downtimes'               => Permission::VIEW_FUND_LOADING_DOWNTIME,
         'delete_fund_loading_downtime_by_id'        => Permission::MANAGE_FUND_LOADING_DOWNTIME,
         'list_active_fund_loading_downtimes'        => Permission::VIEW_FUND_LOADING_DOWNTIME,
+        'notification_flow_fund_loading_downtime'   => Permission::MANAGE_FUND_LOADING_DOWNTIME,
 
         // Workflow Service requests
         'wfs_config_create'                        => Permission::WFS_CONFIG_CREATE,
@@ -9597,6 +9600,7 @@ class Route
             'nodal_beneficiary_update',
             'nodal_file_upload_retry',
             'nodal_initiate_transfer_admin',
+            'notification_flow_fund_loading_downtime',
             'oauth_app_webhook_create',
             'oauth_application_create',
             'oauth_application_create_clients',

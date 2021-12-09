@@ -14,7 +14,7 @@ class Repository extends \RZP\Models\Base\Repository
     public function saveOrFailEntity(Entity $downtime)
     {
         if (empty($downtime->getEndTime()) === false and
-            (int)$downtime->getStartTime() > (int)$downtime->getEndTime())
+            (int) $downtime->getStartTime() > (int) $downtime->getEndTime())
         {
             throw new BadRequestValidationFailureException('End time should be greater than start time');
         }
@@ -22,7 +22,7 @@ class Repository extends \RZP\Models\Base\Repository
         $this->repo->fund_loading_downtimes->saveOrFail($downtime);
     }
 
-    public function fetchByCurrentTime($params) : PublicCollection
+    public function fetchByCurrentTime($params): PublicCollection
     {
         $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
         $this->processFetchParams($params);
@@ -32,10 +32,10 @@ class Repository extends \RZP\Models\Base\Repository
         $query = $this->buildFetchQuery($query, $params);
 
         return $query->where(Entity::START_TIME, '<=', $currentTime)
-                     ->where(function($query) use($currentTime) {
-                             return $query->whereNull(Entity::END_TIME)
-                                          ->orWhere(Entity::END_TIME, '>', $currentTime);
-                            })
+                     ->where(function($query) use ($currentTime) {
+                         return $query->whereNull(Entity::END_TIME)
+                                      ->orWhere(Entity::END_TIME, '>', $currentTime);
+                     })
                      ->get();
     }
 
@@ -43,10 +43,10 @@ class Repository extends \RZP\Models\Base\Repository
     {
         $this->processFetchParams($params);
 
-        $startTime=$params['start_time'];
+        $startTime = $params['start_time'];
         unset($params['start_time']);
 
-        $endTime = array_key_exists('end_time',$params)? $params['end_time'] : null;
+        $endTime = array_key_exists('end_time', $params) ? $params['end_time'] : null;
         unset($params['end_time']);
 
         $query = $this->newQuery();
@@ -63,12 +63,12 @@ class Repository extends \RZP\Models\Base\Repository
     protected function addQueryOrder($query)
     {
         $query->orderBy(Entity::UPDATED_AT, 'desc')
-              ->orderBy(Entity::START_TIME,'desc');
+              ->orderBy(Entity::START_TIME, 'desc');
     }
 
     public function getSimilarDowntime($params, $downtime = null)
     {
-        if(empty($downtime) === false)
+        if (empty($downtime) === false)
         {
             $params[Entity::START_TIME] = $params[Entity::START_TIME] ?? $downtime[Entity::START_TIME];
             $params[Entity::END_TIME]   = $params[Entity::END_TIME] ?? $downtime[Entity::END_TIME];
@@ -78,12 +78,12 @@ class Repository extends \RZP\Models\Base\Repository
         }
 
         return $this->newQuery()
-            ->where(Entity::START_TIME, '=', $params[Entity::START_TIME])
-            ->where(Entity::END_TIME, '=', $params[Entity::END_TIME] ?? null)
-            ->where(Entity::CHANNEL, '=', $params[Entity::CHANNEL])
-            ->where(Entity::MODE, '=', $params[Entity::MODE])
-            ->where(Entity::SOURCE, '=', $params[Entity::SOURCE])
-            ->first();
+                    ->where(Entity::START_TIME, '=', $params[Entity::START_TIME])
+                    ->where(Entity::END_TIME, '=', $params[Entity::END_TIME] ?? null)
+                    ->where(Entity::CHANNEL, '=', $params[Entity::CHANNEL])
+                    ->where(Entity::MODE, '=', $params[Entity::MODE])
+                    ->where(Entity::SOURCE, '=', $params[Entity::SOURCE])
+                    ->first();
     }
 
 }

@@ -9,7 +9,6 @@ use Config;
 use Request;
 use Exception;
 use Carbon\Carbon;
-
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Diag\EventCode;
@@ -35,6 +34,7 @@ use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
+use RZP\Models\FundLoadingDowntime\Notifications;
 use RZP\Models\Payment\Processor\TerminalProcessor;
 use RZP\Mail\Merchant\RazorpayX\FundLoadingFailed as FundLoadingFailedMail;
 use RZP\Models\Transaction\Processor\Ledger\FundLoading as LedgerFundLoading;
@@ -61,10 +61,16 @@ class Processor extends VirtualAccount\Processor
 
     /**
      * We use the below set of prefixes to decide if the bank transfer belongs to RazorpayX or not.
+     * This array needs to be updated if there are any changes to existing prefixes or addition of new prefixes.
+     * Also update the arrays 'YES_BANK_PREFIXES' and 'ICICI_BANK_PREFIXES' in FundLoadingDowntime/Notifications.php
+     * accordingly.
+     * @see Notifications
      */
     const PAYEE_ACCOUNT_PREFIXES_FOR_X = [
+        //icici prefixes
         '3434',
         '5656',
+        //yesbank prefixes
         '787878',
         '456456',
     ];

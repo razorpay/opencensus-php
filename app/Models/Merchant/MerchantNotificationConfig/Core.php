@@ -40,9 +40,19 @@ class Core extends Base\Core
 
         $this->implodeContactsForDB($input);
 
-        Validator::checkThreshold($input);
+        if ((empty($input[Entity::NOTIFICATION_TYPE]) === true) or
+            ($input[Entity::NOTIFICATION_TYPE] !== NotificationType::FUND_LOADING_DOWNTIME))
+        {
+            Validator::checkThreshold($input);
+        }
+        if (array_key_exists(Entity::NOTIFICATION_TYPE, $input) === false)
+        {
+            $input[Entity::NOTIFICATION_TYPE] = NotificationType::BENE_BANK_DOWNTIME;
+        }
 
-        $this->checkIfAlreadyExistingConfig(($input[Entity::MODE] ?? 'ALL'), $merchant->getId());
+        $this->checkIfAlreadyExistingConfig($input[Entity::MODE] ?? 'ALL',
+                                             $merchant->getId(),
+                                             $input[Entity::NOTIFICATION_TYPE]);
 
         $merchantNotificationConfig = new Entity();
 
@@ -75,9 +85,11 @@ class Core extends Base\Core
 
         Validator::checkThreshold($input, $merchantNotificationConfig);
 
-        if(empty($input['mode']) === false)
+        if (empty($input['mode']) === false)
         {
-            $this->checkIfAlreadyExistingConfig(($input[Entity::MODE]), $merchantNotificationConfig->getMerchantId());
+            $this->checkIfAlreadyExistingConfig($input[Entity::MODE],
+                                                $merchantNotificationConfig->getMerchantId(),
+                                                $merchantNotificationConfig->getNotificationType());
         }
 
         $updatedMerchantNotificationConfigEntity = $this->mutex->acquireAndRelease(
@@ -200,11 +212,12 @@ class Core extends Base\Core
         return $updatedEntity;
     }
 
-    protected function checkIfAlreadyExistingConfig($mode, $merchantId)
+    protected function checkIfAlreadyExistingConfig($mode, $merchantId, $notificationType)
     {
         /** @var  $notificationConfigs Base\PublicCollection*/
+
         $notificationConfigs = $this->repo->merchant_notification_config
-            ->findByMerchantIdAndMode($merchantId, $mode);
+                                          ->findByMerchantIdNotificationTypeAndMode($merchantId, $notificationType, $mode);
 
         $count = $notificationConfigs->count();
 

@@ -16,10 +16,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findByMerchantIdAndMode(string $merchantId, string $mode)
+    public function findByMerchantIdNotificationTypeAndMode(string $merchantId, $notificationType, $mode = 'ALL')
     {
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::NOTIFICATION_TYPE, '=', $notificationType)
                     ->where(Entity::MODE, '=', $mode)
                     ->get();
     }
@@ -59,7 +60,8 @@ class Repository extends Base\Repository
 
     public function getEnabledConfigsByTime(int $startTime, int $endTime = null)
     {
-        $query = $this->newQuery();
+        $query = $this->newQuery()
+                      ->where(Entity::CONFIG_STATUS, '=', Status::ENABLED);
 
         if (is_null($endTime) === true)
         {
@@ -76,7 +78,8 @@ class Repository extends Base\Repository
     public function getEnabledConfigsForMerchantByTime(string $merchantId, int $startTime, int $endTime = null)
     {
         $query = $this->newQuery()
-                  ->where(Entity::MERCHANT_ID, '=', $merchantId);
+                      ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                      ->where(Entity::CONFIG_STATUS, '=', Status::ENABLED);
 
         if (is_null($endTime) === true)
         {
@@ -88,5 +91,18 @@ class Repository extends Base\Repository
         }
 
         return $query->latest()->get();
+    }
+
+    public function getEnabledConfigsForNotificationType(string $notificationType)
+    {
+        $midColumn          = $this->repo->merchant_notification_config->dbColumn(Entity::MERCHANT_ID);
+        $emailIdColumn      = $this->repo->merchant_notification_config->dbColumn(Entity::NOTIFICATION_EMAILS);
+        $mobileNumberColumn = $this->repo->merchant_notification_config->dbColumn(Entity::NOTIFICATION_MOBILE_NUMBERS);
+
+        return $this->newQuery()
+                    ->select($midColumn, $emailIdColumn, $mobileNumberColumn)
+                    ->where(Entity::CONFIG_STATUS, '=', Status::ENABLED)
+                    ->where(Entity::NOTIFICATION_TYPE, '=', $notificationType)
+                    ->get();
     }
 }

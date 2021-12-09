@@ -28,16 +28,20 @@ class CreateMerchantNotificationConfigsTable extends Migration
             $table->string(Entity::CONFIG_STATUS)
                   ->default(MerchantNotificationConfig\Status::ENABLED);
 
-            $table->integer(Entity::UPPER_THRESHOLD);
+            $table->integer(Entity::UPPER_THRESHOLD)
+                  ->nullable();
 
-            $table->integer(Entity::LOWER_THRESHOLD);
+            $table->integer(Entity::LOWER_THRESHOLD)
+                  ->nullable();
 
             $table->string(Entity::MODE)
-                  ->default('ALL');
+                  ->nullable();
 
-            $table->text(Entity::NOTIFICATION_EMAILS);
+            $table->text(Entity::NOTIFICATION_EMAILS)
+                  ->nullable();
 
-            $table->text(Entity::NOTIFICATION_MOBILE_NUMBERS);
+            $table->text(Entity::NOTIFICATION_MOBILE_NUMBERS)
+                  ->nullable();
 
             $table->unsignedInteger(Entity::NOTIFY_AFTER)
                   ->default(900);
@@ -55,6 +59,9 @@ class CreateMerchantNotificationConfigsTable extends Migration
 
             $table->integer(Entity::UPDATED_AT);
 
+            $table->string(Entity::NOTIFICATION_TYPE)
+                  ->default('bene_bank_downtime');
+
             // indices
             $table->index(Entity::CREATED_AT);
 
@@ -65,6 +72,8 @@ class CreateMerchantNotificationConfigsTable extends Migration
             $table->index([Entity::MERCHANT_ID, Entity::CONFIG_STATUS]);
 
             $table->index([Entity::CONFIG_STATUS, Entity::CREATED_AT, Entity::ID]);
+
+            $table->index([Entity::NOTIFICATION_TYPE, Entity::MERCHANT_ID], 'mnc_notification_type_merchant_id_index');
         });
     }
 

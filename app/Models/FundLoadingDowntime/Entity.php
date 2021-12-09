@@ -8,25 +8,16 @@ class Entity extends Base\PublicEntity
 {
     use Base\Traits\HardDeletes;
 
-    const TYPE = 'type';
-
-    const SOURCE = 'source';
-
-    const CHANNEL = 'channel';
-
-    const MODE = 'mode';
-
-    const START_TIME = 'start_time';
-
-    const END_TIME = 'end_time';
-
-    const DOWNTIME_MESSAGE = 'downtime_message';
-
-    const CREATED_BY = 'created_by';
-
+    const TYPE                   = 'type';
+    const MODE                   = 'mode';
+    const ORG_ID                 = 'org_id';
+    const SOURCE                 = 'source';
+    const CHANNEL                = 'channel';
+    const END_TIME               = 'end_time';
+    const START_TIME             = 'start_time';
+    const CREATED_BY             = 'created_by';
+    const DOWNTIME_MESSAGE       = 'downtime_message';
     const FUND_LOADING_DOWNTIMES = 'fund_loading_downtimes';
-
-    const ORG_ID = 'org_id';
 
     protected static $sign = 'fdown';
 

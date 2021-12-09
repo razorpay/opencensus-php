@@ -63,6 +63,57 @@ return [
         ],
     ],
 
+    'testCreateMerchantNotificationConfigWithNotificationTypeAsAdmin' => [
+        'request'  => [
+            'url'     => '/admin/merchants/10000000000000/merchant_notification_configs',
+            'method'  => 'POST',
+            'content' => [
+                'notification_type'           => 'fund_loading_downtime',
+                'notification_emails'         => ['sagnik1@razorpay.com', 'sagnik2@gmail.com'],
+                'notification_mobile_numbers' => ['9468620969'],
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'notification_type'           => 'fund_loading_downtime',
+                'notification_emails'         => ['sagnik1@razorpay.com', 'sagnik2@gmail.com'],
+                'notification_mobile_numbers' => ['9468620969'],
+                'config_status'               => 'enabled',
+            ]
+        ],
+
+    ],
+    'testCreateDuplicateMerchantNotificationConfigWithNotificationTypeAsAdmin' => [
+        'request'  => [
+            'url'     => '/admin/merchants/10000000000000/merchant_notification_configs',
+            'method'  => 'POST',
+            'content' => [
+                'notification_type'           => 'fund_loading_downtime',
+                'notification_emails'         => ['sagnik1@razorpay.com', 'sagnik2@gmail.com'],
+                'notification_mobile_numbers' => ['9468620969'],
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'A merchant notification config already exists for the given mode.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_ALREADY_EXISTS_FOR_MODE,
+        ],
+
+    ],
     'testCreateMerchantNotificationConfigWhenConfigAlreadyExists' => [
         'request'   => [
             'url'     => '/merchant_notification_configs',

@@ -2,7 +2,11 @@
 
 namespace RZP\Models\FundLoadingDowntime;
 
-class Service extends \RZP\Models\Base\Service
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use RZP\Exception\LogicException;
+
+class Service extends Base\Service
 {
     protected $validator;
 
@@ -29,7 +33,7 @@ class Service extends \RZP\Models\Base\Service
         return $downtime->toArrayAdmin();
     }
 
-    public function listFundLoadingDowntimes($input) : array
+    public function listFundLoadingDowntimes($input): array
     {
         $downtime = $this->core()->listAllDowntimes($input);
 
@@ -59,5 +63,45 @@ class Service extends \RZP\Models\Base\Service
         $this->core()->delete($entity);
 
         return $entity->toArrayDeleted();
+    }
+
+    public function notificationFlow(string $flowType, array $input)
+    {
+        $this->trace->info(TraceCode::FUND_LOADING_DOWNTIME_NOTIFICATION_REQUEST,
+                           [
+                               "input"     => $input,
+                               "flow_type" => $flowType
+                           ]
+        );
+
+        switch ($flowType)
+        {
+            case Constants::CREATION:
+
+                $this->validator->validateInput(Validator::CREATION_FLOW, $input);
+
+                $response = $this->core->createMultipleDowntimesAndNotify($input, $flowType);
+                break;
+
+            case Constants::RESOLUTION:
+            case Constants::UPDATION:
+
+                $this->validator->validateInput(Validator::UPDATION_FLOW, $input);
+
+                $response = $this->core->updateMultipleDowntimesAndNotify($input, $flowType);
+                break;
+
+            case Constants::CANCELLATION:
+
+                $this->validator->validateInput(Validator::CANCELLATION_FLOW, $input);
+
+                $response = $this->core->deleteMultipleDowntimesAndNotify($input, $flowType);
+                break;
+
+            default:
+                throw new LogicException('Flow type not defined for ' . $flowType);
+        }
+
+        return $response;
     }
 }
