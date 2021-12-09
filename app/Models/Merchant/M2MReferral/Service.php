@@ -6,8 +6,10 @@ use Throwable;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Diag\EventCode;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Feature\Core as FeatureCore;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -109,7 +111,7 @@ class Service extends Base\Service
 
     protected function postSignUpEvent($m2mReferral)
     {
-        if (empty($m2mReferral->getValueFromMetaData(FB::EMAIL)) === false)
+        if (empty($m2mReferral->getValueFromMetaData(FB::EMAIL)) === false or empty($m2mReferral->getValueFromMetaData(Constants::MOBILE)) === false)
         {
             $fbresponse = (new FriendBuyService())->postSignupEvent(new FriendBuy\SignUpEventRequest($m2mReferral));
 
@@ -214,6 +216,9 @@ class Service extends Base\Service
      */
     public function performRewardValidation(RewardValidationRequest $request)
     {
+        $this->app['rzp.mode'] = Mode::LIVE;
+        $this->core()->setModeAndDefaultConnection(Mode::LIVE);
+
         //validations
         $merchant = $this->repo->merchant->findOrFailPublic($request->getMerchantId());
 
@@ -315,7 +320,7 @@ class Service extends Base\Service
 
             $data = [
                 StoreConstants::NAMESPACE                    => StoreConfigKey::ONBOARDING_NAMESPACE,
-                StoreConfigKey::REFERRAL_SUCCESS_POPUP_COUNT => env(Constants::M2M_REFERRAL_SUCCESS_POPUP_COUNT),
+                StoreConfigKey::REFEREE_SUCCESS_POPUP_COUNT => env(Constants::M2M_REFERRAL_SUCCESS_POPUP_COUNT),
                 StoreConfigKey::IS_SIGNED_UP_REFEREE         => false,
                 StoreConfigKey::REFERRAL_AMOUNT              => $referralAmount,
                 StoreConfigKey::REFERRAL_AMOUNT_CURRENCY     => 'INR'
@@ -459,6 +464,14 @@ class Service extends Base\Service
             $m2mReferralInput[$param] = $data[$param] ?? '';
             unset($data[$param]);
         }
+        if (isset($data[UserEntity::CONTACT_MOBILE]) === true)
+        {
+            $m2mReferralInput[Constants::MOBILE] = $data[UserEntity::CONTACT_MOBILE];
+        }
+
+        $this->trace->info(TraceCode::FRIEND_BUY_REWARD_VALIDATION_FAILED, [
+            'params' => $m2mReferralInput,
+        ]);
 
         return $m2mReferralInput;
     }
@@ -470,6 +483,9 @@ class Service extends Base\Service
      */
     public function fetchPublicReferralDetails(): array
     {
+        $this->app['rzp.mode'] = Mode::LIVE;
+        $this->core()->setModeAndDefaultConnection(Mode::LIVE);
+
         $coupon = $this->repo->coupon->fetchByCodeWithRelations(CouponConstants::M2M_FRIEND, Account::SHARED_ACCOUNT);
 
         $promotion = $coupon->source;
@@ -488,6 +504,9 @@ class Service extends Base\Service
      */
     public function fetchReferralDetails(): array
     {
+        $this->app['rzp.mode'] = Mode::LIVE;
+        $this->core()->setModeAndDefaultConnection(Mode::LIVE);
+
         $referralLink = null;
 
         $response[Constants::CAN_REFER] = false;
@@ -563,6 +582,7 @@ class Service extends Base\Service
                 'coupon'      => $coupon,
                 'm2mReferral' => $m2mReferral
             ]);
+
             $promotion = $coupon->source;
 
             $response[Constants::REFEREE_DETAILS][Constants::REFERRAL_AMOUNT] = $promotion->getCreditAmount();;

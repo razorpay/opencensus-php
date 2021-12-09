@@ -3624,7 +3624,6 @@ class Route
         'internal_merchants_fetch_by_params',
         'internal_feature_bulk_assign',
         'internal_feature_bulk_remove',
-        'friend_buy_reward_validation',
         'internal_feature_get_all',
         'user_fetch_by_verified_contact_internal',
         'merchant_risk_alerts_foh_workflow_trigger_nc',
@@ -7354,6 +7353,7 @@ class Route
     ];
 
     public static $direct = [
+        'friend_buy_reward_validation',
         'qr_code_demo',
         'qr_code_demo_cors',
         'store_hosted_page_data_options',
@@ -11294,9 +11294,6 @@ class Route
         'freshdesk_webhook' => [
             'fd_customer_dispute',
             'fd_consume_webhook',
-        ],
-        'friend_buy_webhook' => [
-            'friend_buy_reward_validation',
         ],
         'yellowmessenger' => [
             'care_service_chat_proxy',

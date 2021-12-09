@@ -5444,41 +5444,34 @@ class Core extends Base\Core
         $this->app->hubspot->skipMerchantOnboardingComm($email);
     }
 
-    /**
-     * @throws \Throwable
-     */
-    public function enableM2MReferralsCron()
+    public function enableM2MReferral($merchantId)
     {
-        $merchantIds = $this->getMerchantsToEnableM2MReferrals();
-
-        foreach ($merchantIds as $merchantId)
+        try
         {
-            try
-            {
-                (new Feature\Core)->create([
+            (new Feature\Core)->create([
 
-                                               Feature\Entity::ENTITY_TYPE => E::MERCHANT,
-                                               Feature\Entity::ENTITY_ID   => $merchantId,
-                                               Feature\Entity::NAME        => Feature\Constants::M2M_REFERRAL,
-                                           ], $shouldSync = true);
+                                           Feature\Entity::ENTITY_TYPE => E::MERCHANT,
+                                           Feature\Entity::ENTITY_ID   => $merchantId,
+                                           Feature\Entity::NAME        => Feature\Constants::M2M_REFERRAL,
+                                       ], $shouldSync = true);
 
-                $data = [
-                    Store\Constants::NAMESPACE                        => Store\ConfigKey::ONBOARDING_NAMESPACE,
-                    Store\ConfigKey::REFERRED_COUNT               => 0,
-                    Store\ConfigKey::REFERRAL_SUCCESS_POPUP_COUNT => 0
-                ];
+            $data = [
+                Store\Constants::NAMESPACE                    => Store\ConfigKey::ONBOARDING_NAMESPACE,
+                Store\ConfigKey::REFERRED_COUNT               => 0,
+                Store\ConfigKey::REFERRAL_SUCCESS_POPUP_COUNT => 0,
+                Store\ConfigKey::REFEREE_SUCCESS_POPUP_COUNT => 0
+            ];
 
-                (new Store\Core())->updateMerchantStore($merchantId, $data,Store\Constants::INTERNAL);
+            (new Store\Core())->updateMerchantStore($merchantId, $data, Store\Constants::INTERNAL);
 
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_FAILED, [
-                    'reason'      => 'something went wrong while enabling m2m referral feature',
-                    'trace'       => $e->getMessage(),
-                    'merchant_id' => $merchantId
-                ]);
-            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_FAILED, [
+                'reason'      => 'something went wrong while enabling m2m referral feature',
+                'trace'       => $e->getMessage(),
+                'merchant_id' => $merchantId
+            ]);
         }
     }
 
@@ -5494,7 +5487,7 @@ class Core extends Base\Core
      *
      * @return mixed
      */
-    protected function getMerchantsToEnableM2MReferrals() : array
+    public function enableM2MReferralsCron()
     {
 
         //get the last cron job run time
@@ -5508,91 +5501,53 @@ class Core extends Base\Core
         $this->cache->put(Constants::M2M_REFERRALS_ENABLE_CRON, Carbon::now()->getTimestamp());
 
         // Filter out all merchants that have transacted since last time cron ran
-        $transactedMerchants = $this->repo->transaction->fetchTransactedMerchants(
+        $merchants = $this->repo->transaction->fetchTransactedMerchants(
             'payment', $lastCronTime);
 
         $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_TRACE, [
             'last_cron_time'  => $lastCronTime,
             'type'            => 'm2m_referral',
             'filter'          => 'transactedMerchants',
-            'merchants_count' => count($transactedMerchants),
+            'merchants_count' => count($merchants),
         ]);
 
         //filter merchants of string RAZORPAY ORG
         // filter all merchants who are activated
-        $merchantIdList = $this->repo->merchant_detail->filterMerchantIdsByActivationStatus(
-            $transactedMerchants, [DetailStatus::ACTIVATED]);
+        $merchants = $this->repo->merchant_detail->filterMerchantIdsByActivationStatus(
+            $merchants, [DetailStatus::ACTIVATED]);
 
         $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_TRACE, [
             'type'            => 'm2m_referral',
             'filter'          => 'activatedMerchants',
-            'merchants_count' => count($merchantIdList),
+            'merchants_count' => count($merchants),
         ]);
 
         // filter all merchants who've have been activated for min no of days and belonging to razorpay org
-        $merchantIdList = $this->repo->merchant->filterMerchantIdsWithMinActivatedTime(
-            $transactedMerchants, env(Constants::M2M_REFERRAL_ENABLE_AFTER_MIN_ACTIVATED_TIME));
+        $merchants = $this->repo->merchant->filterMerchantIdsWithMinActivatedTime(
+            $merchants, env(Constants::M2M_REFERRAL_ENABLE_AFTER_MIN_ACTIVATED_TIME));
 
         $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_TRACE, [
             'type'            => 'm2m_referral',
             'filter'          => 'activatedMinTime',
-            'merchants_count' => count($merchantIdList),
+            'merchants_count' => count($merchants),
         ]);
-
-        // filter all merchants who've at least min no of transactions
-        $merchantIdList = $this->repo->transaction->filterMerchantsWithTransactionsCountAboveThreshold(
-            $merchantIdList, 'payment', env(Constants::M2M_REFERRAL_MIN_TRANSACTION_COUNT)
-        );
-
-        $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_TRACE, [
-            'merchants_count' => count($merchantIdList),
-            'filter'          => 'minPaymentTransaction',
-            'type'            => 'm2m_referral'
-        ]);
-
-
-        // filter all merchants who've at least min payment volume
-        $merchantsGMVList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold(
-            $merchantIdList, 'payment', env(Constants::M2M_REFERRAL_ENABLE_AFTER_MIN_TRANSACTION_VOLUME)
-        );
-
-        $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_TRACE, [
-            'merchants_count' => count($merchantsGMVList),
-            'filter'          => 'minPaymentVolumne',
-            'type'            => 'm2m_referral'
-        ]);
-
-        if (empty($merchantsGMVList) === true)
-        {
-            $this->trace->info(TraceCode::M2M_REFERRALS_CRON_SKIP, [
-                'merchants_count' => count($merchantsGMVList),
-                'type'            => 'm2m_referral',
-                'reason'          => 'no merchants found'
-            ]);
-
-            return [];
-        }
-
-        $merchantIdList = array_map(function($element) {
-            return $element[Entity::MERCHANT_ID];
-        }, $merchantsGMVList);
 
         //filter already m2m referral enabled merchants
 
-        $m2mReferralEnabledMerchants = $this->repo->feature->getMerchantIdsHavingFeature(Feature\Constants::M2M_REFERRAL, $merchantIdList);
+        $m2mReferralEnabledMerchants = $this->repo->feature->getMerchantIdsHavingFeature(Feature\Constants::M2M_REFERRAL, $merchants);
 
-        $merchantIdList = array_diff($merchantIdList, $m2mReferralEnabledMerchants);
+        $merchants = array_diff($merchants, $m2mReferralEnabledMerchants);
 
         $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_TRACE, [
-            'merchants_count' => count($merchantIdList),
+            'merchants_count' => count($merchants),
             'filter'          => 'featureNotAlreadyCreated',
             'type'            => 'm2m_referral'
         ]);
 
-        if (empty($merchantIdList) === true)
+        if (empty($merchants) === true)
         {
             $this->trace->info(TraceCode::M2M_REFERRALS_CRON_SKIP, [
-                'merchants_count' => count($merchantIdList),
+                'merchants_count' => count($merchants),
                 'type'            => 'm2m_referral',
                 'reason'          => 'no merchants found'
             ]);
@@ -5600,8 +5555,41 @@ class Core extends Base\Core
             return [];
         }
 
-        return $merchantIdList;
+        $druidData = (new Merchant\Service)->getDataFromDruidForMerchantIds($merchants);
+
+        foreach ($druidData as $data)
+        {
+            $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_TRACE, [
+                'data'       => $data
+            ]);
+
+            $merchantId = $data['merchant_details_merchant_id'];
+            $gmv        = $data[Merchant\Service::SEGMENT_DATA_MERCHANT_LIFE_TIME_GMV];
+
+            if (empty($gmv) === false and
+                $gmv > env(Constants::M2M_REFERRAL_ENABLE_AFTER_MIN_TRANSACTION_VOLUME)/100)
+            {
+                $txns = $this->repo->transaction->isMerchantPaymentCountAboveThreshold($merchantId, env(Constants::M2M_REFERRAL_MIN_TRANSACTION_COUNT));
+
+                $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_TRACE, [
+                    'merchantId' => $merchantId,
+                    'txns'       => $txns
+                ]);
+
+                if (empty($txns) === false &&
+                    count($txns) >= env(Constants::M2M_REFERRAL_MIN_TRANSACTION_COUNT))
+                {
+                    $this->trace->info(TraceCode::M2M_REFERRALS_ENABLE_CRON_TRACE, [
+                        'enableM2M' => $merchantId
+                    ]);
+
+                    $this->enableM2MReferral($merchantId);
+                }
+            }
+
+        }
     }
+
     public function uploadInvoiceForIncreaseTransactionLimit(Detail\Entity $merchantDetails, $invoiceProof)
     {
         $fileInputs = [

@@ -6466,5 +6466,20 @@ ALTER TABLE qr_code_config
 
 ALTER TABLE merchant_documents
     ADD COLUMN document_date INTEGER UNSIGNED DEFAULT NULL;
-    
+
+ CREATE TABLE m2m_referrals
+  (
+     id              CHAR(14) COLLATE utf8mb4_bin PRIMARY KEY,
+     merchant_id     CHAR(14) COLLATE utf8mb4_bin NOT NULL,
+     referrer_id     CHAR(14) COLLATE utf8mb4_bin DEFAULT NULL,
+     metadata        JSON DEFAULT NULL,
+     status          VARCHAR(30) DEFAULT NULL,
+     referrer_status VARCHAR(30) DEFAULT NULL,
+     created_at      INT NOT NULL,
+     updated_at      INT NOT NULL,
+     KEY m2m_referrals_merchant_id_index (merchant_id),
+     KEY m2m_referrals_referrer_id_index (referrer_id)
+  );
+
 ALTER TABLE `merchant_freshdesk_tickets` ADD COLUMN `created_by` varchar(64) DEFAULT NULL , ADD COLUMN `status` tinyint(1) NOT NULL DEFAULT 0 ;
+

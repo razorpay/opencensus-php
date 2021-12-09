@@ -15,6 +15,7 @@ use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Promotion\Repository;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use Illuminate\Validation\ValidationException;
 use RZP\Models\Coupon\Constants as CouponConstants;
 use RZP\Tests\Functional\TestCase;
@@ -31,7 +32,7 @@ use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
 use RZP\Models\Merchant\M2MReferral\Status as M2MEntityStatus;
 use RZP\Models\Merchant\M2MReferral\Entity as M2MReferralEntity;
-
+use function GuzzleHttp\json_decode;
 
 class M2MReferralTest extends TestCase
 {
@@ -135,7 +136,7 @@ class M2MReferralTest extends TestCase
 
     public function mockCoupon()
     {
-        $m2mFriend = $this->fixtures->create('promotion:onetime',['credit_amount'=>20000000]);
+        $m2mFriend = $this->fixtures->on('live')->create('promotion:onetime',['credit_amount'=>20000000]);
 
         $couponAttributes = [
             'entity_id'   => $m2mFriend->getId(),
@@ -144,9 +145,9 @@ class M2MReferralTest extends TestCase
             'code'        => Constants::M2M_FRIEND
         ];
 
-        $this->fixtures->create('coupon', $couponAttributes);
+        $this->fixtures->on('live')->create('coupon', $couponAttributes);
 
-        $m2mAdvocate1 = $this->fixtures->create('promotion:onetime',['credit_amount'=>20000000]);
+        $m2mAdvocate1 = $this->fixtures->on('live')->create('promotion:onetime',['credit_amount'=>20000000]);
 
         $couponAttributes = [
             'entity_id'   => $m2mAdvocate1->getId(),
@@ -155,9 +156,9 @@ class M2MReferralTest extends TestCase
             'code'        => Constants::M2M_ADVOCATE1
         ];
 
-        $this->fixtures->create('coupon', $couponAttributes);
+        $this->fixtures->on('live')->create('coupon', $couponAttributes);
 
-        $m2mAdvocate2 = $this->fixtures->create('promotion:onetime',['credit_amount'=>20000000]);
+        $m2mAdvocate2 = $this->fixtures->on('live')->create('promotion:onetime',['credit_amount'=>20000000]);
 
         $couponAttributes = [
             'entity_id'   => $m2mAdvocate1->getId(),
@@ -166,9 +167,9 @@ class M2MReferralTest extends TestCase
             'code'        => Constants::M2M_ADVOCATE2
         ];
 
-        $this->fixtures->create('coupon', $couponAttributes);
+        $this->fixtures->on('live')->create('coupon', $couponAttributes);
 
-        $m2mAdvocate3 = $this->fixtures->create('promotion:onetime',['credit_amount'=>20000000]);
+        $m2mAdvocate3 = $this->fixtures->on('live')->create('promotion:onetime',['credit_amount'=>20000000]);
 
         $couponAttributes = [
             'entity_id'   => $m2mAdvocate3->getId(),
@@ -177,9 +178,9 @@ class M2MReferralTest extends TestCase
             'code'        => Constants::M2M_ADVOCATE3
         ];
 
-        $this->fixtures->create('coupon', $couponAttributes);
+        $this->fixtures->on('live')->create('coupon', $couponAttributes);
 
-        $m2mAdvocate4 = $this->fixtures->create('promotion:onetime',['credit_amount'=>20000000]);
+        $m2mAdvocate4 = $this->fixtures->on('live')->create('promotion:onetime',['credit_amount'=>20000000]);
 
         $couponAttributes = [
             'entity_id'   => $m2mAdvocate4->getId(),
@@ -188,9 +189,9 @@ class M2MReferralTest extends TestCase
             'code'        => Constants::M2M_ADVOCATE4
         ];
 
-        $this->fixtures->create('coupon', $couponAttributes);
+        $this->fixtures->on('live')->create('coupon', $couponAttributes);
 
-        $m2mAdvocate5 = $this->fixtures->create('promotion:onetime',['credit_amount'=>20000000]);
+        $m2mAdvocate5 = $this->fixtures->on('live')->create('promotion:onetime',['credit_amount'=>20000000]);
 
         $couponAttributes = [
             'entity_id'   => $m2mAdvocate5->getId(),
@@ -199,15 +200,85 @@ class M2MReferralTest extends TestCase
             'code'        => Constants::M2M_ADVOCATE5
         ];
 
-        $this->fixtures->create('coupon', $couponAttributes);
+        $this->fixtures->on('live')->create('coupon', $couponAttributes);
 
         return [$m2mFriend,$m2mAdvocate1,$m2mAdvocate2,$m2mAdvocate3,$m2mAdvocate4,$m2mAdvocate5];
     }
 
+    public function testOauthSignup()
+    {
+        $adminId = Org::MAKER_ADMIN;
+        $formData = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+        $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
+        $this->app['config']->set('oauth.merchant_oauth_mock', true);
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $m2mReferral = $this->getDbLastEntity('m2m_referral');
+
+        $this->assertNotNull($m2mReferral);
+        $this->assertEquals(M2MEntityStatus::SIGNUP_EVENT_SENT, $m2mReferral->getAttribute(M2MReferralEntity::STATUS));
+        $this->assertArraySubset(
+            [
+                'utmSource'   => 'friendbuy',
+                'utmMedium'   => 'referral',
+                "utmCampaign" => "Referral Test",
+                "referralCode" => "mg5xnqzn",
+            ], $m2mReferral->getAttribute(M2MReferralEntity::METADATA));
+
+        $data = [
+            StoreConstants::NAMESPACE => StoreConfigKey::ONBOARDING_NAMESPACE
+        ];
+        $data = (new StoreCore())->fetchMerchantStore($m2mReferral->getAttribute('merchant_id'), $data,StoreConstants::INTERNAL);
+
+        $this->assertNotNull($data);
+        $this->assertEquals(true, $data[StoreConfigKey::IS_SIGNED_UP_REFEREE]);
+
+    }
+
+    public function testUserRegisterVerifySignupOtpSms()
+    {
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $m2mReferral = $this->getDbLastEntity('m2m_referral');
+
+        $this->assertNotNull($m2mReferral);
+        $this->assertEquals(M2MEntityStatus::SIGNUP_EVENT_SENT, $m2mReferral->getAttribute(M2MReferralEntity::STATUS));
+        $this->assertArraySubset(
+            [
+                'utmSource'   => 'friendbuy',
+                'utmMedium'   => 'referral',
+                "utmCampaign" => "Referral Test",
+                "referralCode" => "mg5xnqzn",
+                'mobile'        => '8877665544',
+            ], $m2mReferral->getAttribute(M2MReferralEntity::METADATA));
+
+        $data = [
+            StoreConstants::NAMESPACE => StoreConfigKey::ONBOARDING_NAMESPACE
+        ];
+        $data = (new StoreCore())->fetchMerchantStore($m2mReferral->getAttribute('merchant_id'), $data,StoreConstants::INTERNAL);
+
+        $this->assertNotNull($data);
+        $this->assertEquals(true, $data[StoreConfigKey::IS_SIGNED_UP_REFEREE]);
+
+    }
+
     public function testSignupFromFriendBuy()
     {
-        $testData = &$this->testData[__FUNCTION__];
-
         $this->mockHubSpotClient('trackSignupEvent');
 
         $this->ba->dashboardGuestAppAuth();
@@ -272,6 +343,7 @@ class M2MReferralTest extends TestCase
 
     public function testRewardValidation()
     {
+        $this->app['rzp.mode'] = 'live';
         $refereeMerchant  = $this->createMerchant('I0qYGdG9IGaVxz');
         $referrerMerchant = $this->createMerchant('Hm9Bv6kFufFS36');
 
@@ -284,7 +356,7 @@ class M2MReferralTest extends TestCase
 
         $promotions=$this->mockCoupon();
 
-        $this->ba->friendBuyWebhookAuth();
+        $this->ba->noAuth();
 
         $this->startTest();
 
@@ -329,7 +401,7 @@ class M2MReferralTest extends TestCase
         $data = (new StoreCore())->fetchMerchantStore($m2mReferral->getAttribute('merchant_id'), $data,StoreConstants::INTERNAL);
         $this->assertNotNull($data);
         $this->assertEquals(false, $data[StoreConfigKey::IS_SIGNED_UP_REFEREE]);
-        $this->assertEquals(1, $data[StoreConfigKey::REFERRAL_SUCCESS_POPUP_COUNT]);
+        $this->assertEquals(1, $data[StoreConfigKey::REFEREE_SUCCESS_POPUP_COUNT]);
 
     }
 
@@ -390,7 +462,7 @@ class M2MReferralTest extends TestCase
 
         $promotions=$this->mockCoupon();
 
-        $this->ba->friendBuyWebhookAuth();
+        $this->ba->noAuth();
 
         $this->startTest();
 
@@ -429,7 +501,7 @@ class M2MReferralTest extends TestCase
         $data = (new StoreCore())->fetchMerchantStore($m2mReferral->getAttribute('merchant_id'), $data,StoreConstants::INTERNAL);
         $this->assertNotNull($data);
         $this->assertEquals(false, $data[StoreConfigKey::IS_SIGNED_UP_REFEREE]);
-        $this->assertEquals(1, $data[StoreConfigKey::REFERRAL_SUCCESS_POPUP_COUNT]);
+        $this->assertEquals(1, $data[StoreConfigKey::REFEREE_SUCCESS_POPUP_COUNT]);
 
     }
 
@@ -469,7 +541,7 @@ class M2MReferralTest extends TestCase
 
         (new StoreCore())->updateMerchantStore($referrerMerchant->getId(), $data, StoreConstants::INTERNAL);
 
-        $this->ba->friendBuyWebhookAuth();
+        $this->ba->noAuth();
 
         $this->startTest();
 
@@ -534,7 +606,7 @@ class M2MReferralTest extends TestCase
 
         (new StoreCore())->updateMerchantStore($referrerMerchant->getId(), $data, StoreConstants::INTERNAL);
 
-        $this->ba->friendBuyWebhookAuth();
+        $this->ba->noAuth();
 
         $this->startTest();
 
@@ -565,7 +637,7 @@ class M2MReferralTest extends TestCase
 
     public function testRewardValidationInvalidPayload()
     {
-        $this->ba->friendBuyWebhookAuth();
+        $this->ba->noAuth();
 
         $this->expectException(ValidationException::class);
         $this->startTest();
@@ -573,24 +645,24 @@ class M2MReferralTest extends TestCase
 
     public function testRewardValidationInvalidSignature()
     {
-        $this->ba->friendBuyWebhookAuth();
+        $this->ba->noAuth();
 
         $this->expectException(AuthorizationException::class);
         $this->startTest();
     }
 
-    public function testRewardValidationInvalidAuth()
-    {
-        $this->ba->appAuth('rzp_' . 'test', 'invalid');
-
-        $this->startTest();
-    }
+//    public function testRewardValidationInvalidAuth()
+//    {
+//        $this->ba->appAuth('rzp_' . 'test', 'invalid');
+//
+//        $this->startTest();
+//    }
 
     public function testRewardValidationInvalidReferrer()
     {
         $refereeMerchant  = $this->createMerchant('I0qYGdG9IGaVxz');
         $referrerMerchant = $this->createMerchant('Hm9Bv6kFufFS36');
-        $this->ba->friendBuyWebhookAuth();
+        $this->ba->noAuth();
 
         $this->expectException(BadRequestException::class);
         $this->startTest();
@@ -601,7 +673,7 @@ class M2MReferralTest extends TestCase
     {
         $refereeMerchant  = $this->createMerchant('I0qYGdG9IGaVxz');
         $referrerMerchant = $this->createMerchant('Hm9Bv6kFufFS36');
-        $this->ba->friendBuyWebhookAuth();
+        $this->ba->noAuth();
 
         $this->expectException(BadRequestException::class);
         $this->startTest();
@@ -613,7 +685,7 @@ class M2MReferralTest extends TestCase
         $refereeMerchant  = $this->createMerchant('I0qYGdG9IGaVxz');
         $referrerMerchant = $this->createMerchant('Hm9Bv6kFufFS36');
 
-        $this->ba->friendBuyWebhookAuth();
+        $this->ba->noAuth();
         $promotions=$this->mockCoupon();
 
         $this->startTest();
@@ -670,7 +742,7 @@ class M2MReferralTest extends TestCase
         ];
         (new Core())->createM2MReferral($refereeMerchant, $input);
 
-        $this->ba->friendBuyWebhookAuth();
+        $this->ba->noAuth();
 
         $this->startTest();
         $repo              = new Repository();
@@ -723,7 +795,7 @@ class M2MReferralTest extends TestCase
         ];
         (new Core())->createM2MReferral($refereeMerchant, $input);
 
-        $this->ba->friendBuyWebhookAuth();
+        $this->ba->noAuth();
 
         $this->startTest();
 
@@ -784,27 +856,7 @@ class M2MReferralTest extends TestCase
             'entity_type' => 'merchant'
         ]);
 
-        $m2mFriend = $this->fixtures->on('live')->create('promotion:onetime',['credit_amount'=>20000000]);
-
-        $couponAttributes = [
-            'entity_id'   => $m2mFriend->getId(),
-            'entity_type' => 'promotion',
-            'merchant_id' => '100000Razorpay',
-            'code'        => Constants::M2M_FRIEND
-        ];
-
-        $this->fixtures->on('live')->create('coupon', $couponAttributes);
-
-        $m2mAdvocate1 = $this->fixtures->on('live')->create('promotion:onetime',['credit_amount'=>20000000]);
-
-        $couponAttributes = [
-            'entity_id'   => $m2mAdvocate1->getId(),
-            'entity_type' => 'promotion',
-            'merchant_id' => '100000Razorpay',
-            'code'        => Constants::M2M_ADVOCATE1
-        ];
-
-        $this->fixtures->on('live')->create('coupon', $couponAttributes);
+        $promotions=$this->mockCoupon();
 
         $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
 
@@ -837,27 +889,8 @@ class M2MReferralTest extends TestCase
 
         (new StoreCore())->updateMerchantStore($merchantDetail['merchant_id'], $data, StoreConstants::INTERNAL);
 
-        $m2mFriend = $this->fixtures->on('live')->create('promotion:onetime',['credit_amount'=>20000000]);
+        $promotions=$this->mockCoupon();
 
-        $couponAttributes = [
-            'entity_id'   => $m2mFriend->getId(),
-            'entity_type' => 'promotion',
-            'merchant_id' => '100000Razorpay',
-            'code'        => Constants::M2M_FRIEND
-        ];
-
-        $this->fixtures->on('live')->create('coupon', $couponAttributes);
-
-        $m2mAdvocate1 = $this->fixtures->on('live')->create('promotion:onetime',['credit_amount'=>20000000]);
-
-        $couponAttributes = [
-            'entity_id'   => $m2mAdvocate1->getId(),
-            'entity_type' => 'promotion',
-            'merchant_id' => '100000Razorpay',
-            'code'        => Constants::M2M_ADVOCATE1
-        ];
-
-        $this->fixtures->on('live')->create('coupon', $couponAttributes);
         $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
 
         $this->startTest();

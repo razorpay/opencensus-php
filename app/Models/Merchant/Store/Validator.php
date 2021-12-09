@@ -16,6 +16,7 @@ class Validator extends Base\Validator
         ConfigKey::REFERRAL_LINK                           => 'filled|string',
         ConfigKey::REFERRAL_CODE                           => 'filled|string',
         ConfigKey::REFERRAL_SUCCESS_POPUP_COUNT            => 'filled|integer|min:0|max:5',
+        ConfigKey::REFEREE_SUCCESS_POPUP_COUNT            => 'filled|integer|min:0|max:5',
         ConfigKey::IS_SIGNED_UP_REFEREE                    => 'filled|bool',
         ConfigKey::REFERRAL_AMOUNT                         => 'filled|integer',
         ConfigKey::REFERRAL_AMOUNT_CURRENCY                => 'filled|string',

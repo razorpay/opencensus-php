@@ -1,7 +1,53 @@
 <?php
 
 return [
+    'testOauthSignup' => [
+        'request'  => [
+            'url'     => '/users/oauth-register',
+            'method'  => 'POST',
+            'content' => [
+                'email'          => 'hello123@gmail.com',
+                'oauth_provider' => "[\"google\"]",
+                'id_token'       => 'valid id token',
+                'utmSource'            => 'friendbuy',
+                'utmMedium'            => 'referral',
+                "utmCampaign"          => "Referral Test",
+                "referralCode"          => "mg5xnqzn",
 
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'hello123@gmail.com',
+            ],
+        ],
+    ],
+    'testUserRegisterVerifySignupOtpSms' => [
+        'request' => [
+            'url'     => '/users/register/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'contact_mobile'        => '8877665544',
+                'captcha'               => 'faked',
+                'token'                 => 'token',
+                'otp'                   => '0007',
+                'utmSource'            => 'friendbuy',
+                'utmMedium'            => 'referral',
+                "utmCampaign"          => "Referral Test",
+                "referralCode"          => "mg5xnqzn",
+                ],
+        ],
+        'response' => [
+            "content" => [
+                "contact_mobile"            => "8877665544",
+                "signup_via_email"          => 0,
+                "confirmed"                 => false,
+                "email_verified"            => false,
+                "contact_mobile_verified"   => true,
+                "email"                     => null
+            ]
+        ]
+    ],
     'testRewardValidationInvalidReferee' => [
         'request'  => [
             'url'     => '/friendbuy/reward_validation',

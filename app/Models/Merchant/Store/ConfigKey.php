@@ -22,6 +22,7 @@ class ConfigKey
     const REFERRAL_LINK                = 'referral_link';
     const REFERRAL_CODE                = 'referral_code';
     const REFERRAL_SUCCESS_POPUP_COUNT = 'referral_success_popup_count';
+    const REFEREE_SUCCESS_POPUP_COUNT = 'referee_success_popup_count';
     const REFEREE_NAME                 = 'referee_name';
     const REFEREE_ID                   = 'referee_id';
     const REFERRAL_AMOUNT              = 'referral_amount';
@@ -56,6 +57,9 @@ class ConfigKey
                 Constants::WRITE => [Constants::INTERNAL]
             ],
             self::REFERRAL_SUCCESS_POPUP_COUNT => [
+                Constants::STORE => Constants::REDIS
+            ],
+            self::REFEREE_SUCCESS_POPUP_COUNT => [
                 Constants::STORE => Constants::REDIS
             ],
             self::REFEREE_NAME                 => [

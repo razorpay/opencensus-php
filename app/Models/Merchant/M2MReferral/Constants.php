@@ -30,6 +30,7 @@ class Constants
         self::REFERRAL_CODE,
     ];
 
+    const MOBILE     = "mobile";
     const FRIEND_BUY = "friendbuy";
     //metadata
     const MTU_EVENT_ID     = 'mtu_event_id';

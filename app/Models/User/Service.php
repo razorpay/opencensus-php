@@ -348,6 +348,8 @@ class Service extends Base\Service
     {
         $referrer = $input['ref'] ?? '';
 
+        $m2mReferralInput = $this->m2mReferralService->extractFriendBuyParams($input);
+
         $businessName = $input['business_name'] ?? '';
 
         $partnerIntent = $input[Merchant\Constants::PARTNER_INTENT] ?? false;
@@ -407,7 +409,7 @@ class Service extends Base\Service
 
             $signupMethod = Constants::OTP;
 
-            $this->signUpSuccess($user, $partnerIntent, $signupMethod);
+            $this->signUpSuccess($user, $partnerIntent, $signupMethod,$m2mReferralInput);
 
             return $data;
         }

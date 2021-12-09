@@ -526,19 +526,6 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
-    public function filterMerchantsWithTransactionsCountAboveThreshold(array $merchantIdList,string $type, int $threshold)
-    {
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
-                    ->where($this->dbColumn(Entity::TYPE), '=', $type)
-                    ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
-                    ->groupBy(Entity::MERCHANT_ID)
-                    ->selectRaw('COUNT(' . Entity::CREATED_AT . ') as txn_count,' . Entity::MERCHANT_ID)
-                    ->having('txn_count', '>=', $threshold)
-                    ->get()
-                    ->pluck(Entity::MERCHANT_ID)
-                    ->toArray();
-    }
-
     public function fetchTransactedMerchants(string $type, int $from, int $to = null, bool $regularMerchantsOnly = true)
     {
         $transactionsMerchantIdColumn  = $this->dbColumn(Entity::MERCHANT_ID);
@@ -2582,5 +2569,20 @@ class Repository extends Base\Repository
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->first()
                     ->toArray();
+    }
+
+
+    public function isMerchantPaymentCountAboveThreshold($merchantId,$paymentCountThreshold)
+    {
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $type = $this->dbColumn(Entity::TYPE);
+
+        return $this->newQuery()
+                    ->select($merchantIdColumn)
+                    ->where($type, '=', 'payment')
+                    ->where($merchantIdColumn, '=', $merchantId)
+                    ->orderby(Entity::CREATED_AT,"desc")
+                    ->take($paymentCountThreshold)
+                    ->get();
     }
 }
