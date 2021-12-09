@@ -901,7 +901,7 @@ class Service extends Base\Service
 
             try
             {
-                $payment = $this->repo->payment->findWithRelations($id);
+                $payment = $this->repo->payment->findByPublicId(Payment\Entity::getSignedId($id));
 
                 if (empty($payment) === true)
                 {
