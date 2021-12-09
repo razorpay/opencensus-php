@@ -1,8 +1,10 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
 
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
+import { isMobileDevice } from 'merchant/components/Home/data';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { onChangeNotes } from 'common/new-ui/Input/PairList';
 import CustomerSelector from 'merchant/components/CustomerSelector';
@@ -76,12 +78,12 @@ export default class CreationForm extends React.Component {
 
   onChangeNotes = (pairs) => {
     const notes = onChangeNotes(pairs);
-    this.setState({
+    this.setState((prevState) => ({
       formData: {
-        ...this.state.formData,
+        ...prevState.formData,
         notes,
       },
-    });
+    }));
 
     track.field('notes', notes);
   };
@@ -89,12 +91,12 @@ export default class CreationForm extends React.Component {
   updateDate = (ts) => {
     const closeBy = ts ? moment(ts) : null;
 
-    this.setState({
+    this.setState((prevState) => ({
       formData: {
-        ...this.state.formData,
+        ...prevState.formData,
         close_by: closeBy,
       },
-    });
+    }));
 
     track.field('close_by', closeBy);
   };
@@ -107,23 +109,26 @@ export default class CreationForm extends React.Component {
     track.field('customer', customer);
   };
 
+  // eslint-disable-next-line consistent-return
   onFieldChange = (event) => {
+    const { formData } = this.state;
     const fieldValue = event.target.value;
     const fieldName = event.target.name;
 
     const isInvalidField = !fieldName || fieldName.indexOf('notes[') > -1;
     if (isInvalidField) return true;
 
-    const formData = {
-      ...this.state.formData,
+    const updatedFormData = {
+      ...formData,
       [fieldName]: fieldValue,
     };
 
     this.setState({
-      formData,
+      formData: updatedFormData,
     });
   };
 
+  // eslint-disable-next-line consistent-return
   onFieldBlur = (event) => {
     const fieldValue = event.target.value;
     const fieldName = event.target.name;
@@ -183,6 +188,7 @@ export default class CreationForm extends React.Component {
             });
           }
 
+          // eslint-disable-next-line no-useless-return
           return;
         }, 100);
       },
@@ -190,7 +196,7 @@ export default class CreationForm extends React.Component {
   };
 
   onSubmit = () => {
-    const { formData, customer, close_by } = this.state;
+    const { formData, customer } = this.state;
     const payload = {
       ...formData,
     };
@@ -215,7 +221,7 @@ export default class CreationForm extends React.Component {
       delete payload.close_by;
     }
 
-    payload.fixed_amount = parseInt(payload.fixed_amount);
+    payload.fixed_amount = parseInt(payload.fixed_amount, 10);
 
     this.setState({
       isSubmitting: true,
@@ -264,6 +270,12 @@ export default class CreationForm extends React.Component {
     });
   };
 
+  redirectToListView = () => {
+    if (history) {
+      this.props.history.push('/qr_codes');
+    }
+  };
+
   render() {
     const { props, state } = this;
     const isSubmitDisabled = state.isSubmitting || state.isSubmitDisabled;
@@ -271,7 +283,14 @@ export default class CreationForm extends React.Component {
 
     return (
       <div class="QRCode--Create-wizard">
-        <div class="title">Create QR Code</div>
+        <div class={props.isModalView ? 'title' : 'title mt-16'}>
+          Create QR Code
+          {isMobileDevice() && (
+            <span onClick={this.redirectToListView}>
+              <i class="i i-close" />
+            </span>
+          )}
+        </div>
         <div class="form-container">
           <Form class={FORM_CLASS_NAME} onChange={this.onFieldChange} onSubmit={this.onSubmit}>
             <main>
@@ -281,6 +300,7 @@ export default class CreationForm extends React.Component {
                   label="QR Type"
                   name="type"
                   class="Input--vTop"
+                  labelClass="pb-8"
                   options={QR_TYPES}
                   disabled={isSubmitting}
                   defaultValue={QR_TYPES[0].value}
@@ -293,6 +313,7 @@ export default class CreationForm extends React.Component {
                 label="QR Usage"
                 name="usage"
                 class="Input--vTop"
+                labelClass="pb-8"
                 options={USAGE_OPTIONS}
                 disabled={isSubmitting}
                 defaultValue={USAGE_OPTIONS[0].value}
@@ -304,6 +325,7 @@ export default class CreationForm extends React.Component {
                 label="Accept only fixed amount on this QR?"
                 name="fixed_amount"
                 class="Input--vTop"
+                labelClass="pb-8"
                 defaultValue={FIXED_AMOUNT_OPTIONS[0].value}
                 options={FIXED_AMOUNT_OPTIONS}
                 disabled={isSubmitting}
@@ -347,6 +369,7 @@ export default class CreationForm extends React.Component {
                   </>
                 }
                 class="Input--vTop"
+                labelClass="pb-8"
                 placeholder="Description will be visible on the QR Code."
                 maxLength="120"
                 description={
@@ -381,6 +404,7 @@ export default class CreationForm extends React.Component {
                       </>
                     }
                     fieldLabel="Close this QR code after"
+                    labelClass="pb-8"
                     class="Input--vTop"
                     onChange={this.handleHasNoCloseBy}
                   />
@@ -413,7 +437,7 @@ export default class CreationForm extends React.Component {
                   </Input.Group>
 
                   <div class="Input Input--vTop Input--SelectCustomer">
-                    <div class="Input-label">
+                    <div class="Input-label pb-8">
                       Customer <small>(Optional)</small>
                     </div>
 
@@ -435,6 +459,7 @@ export default class CreationForm extends React.Component {
                       </>
                     }
                     description="This will appear on your dashboard."
+                    labelClass="pb-8"
                     disabled={isSubmitting}
                     onBlur={this.onFieldBlur}
                   />
@@ -443,6 +468,7 @@ export default class CreationForm extends React.Component {
                     class="Input--vTop"
                     name="notes"
                     label="Internal Notes"
+                    labelClass="pb-8"
                     onChange={this.onChangeNotes}
                     disabled={isSubmitting}
                     onBlur={this.onFieldBlur}
@@ -453,7 +479,13 @@ export default class CreationForm extends React.Component {
 
             <footer>
               {props.isModalView && (
-                <Button type="button" onClick={props.onClose}>
+                <Button class="btn-outline" type="button" onClick={props.onClose}>
+                  Cancel
+                </Button>
+              )}
+
+              {isMobileDevice() && !props.isModalView && (
+                <Button type="button" onClick={this.redirectToListView}>
                   Cancel
                 </Button>
               )}

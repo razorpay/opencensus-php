@@ -22,6 +22,10 @@ $formHeight = 471px
   width: 90%
   max-width: 400px
   overflow: initial
+  @media screen and (max-width: $screen-xs-max)
+    width: 100%
+    height: 100%
+    max-width: none !important
 
 .StandAloneContainer
   .QRCode--Create-wizard
@@ -30,6 +34,10 @@ $formHeight = 471px
     position: relative
     height: 80vh
     max-width: 400px
+    @media screen and (max-width: $screen-xs-max)
+      height: 100vh
+      max-height: none
+      max-width: none !important
 
 .QRCode--Create-wizard
   .title
@@ -42,6 +50,18 @@ $formHeight = 471px
     background: white
     z-index: 1
     width: 100%
+    @media screen and (max-width: $screen-xs-max)
+      position: fixed
+      height: 62px
+      background: #FFFFFF
+      border-radius: 2px
+      display: flex
+      align-content: center
+      justify-content: space-between
+
+  .mt-16
+    @media screen and (max-width: $screen-xs-max)
+      margin-top: 16%
 
   main
     padding: 81px 24px 132px 24px
@@ -60,6 +80,14 @@ $formHeight = 471px
     border-top: 1px solid #e0e0e0
     text-align: right
 
+    @media screen and (max-width: $screen-xs-max)
+      display: flex
+      justify-content: center
+      align-items: center
+      position: fixed
+      z-index: 9999
+      background: #F6F6F6
+
     .Button
       width: 168px
       padding: 9px 12px
@@ -73,6 +101,13 @@ $formHeight = 471px
   .Form
     height: $formHeight;
     overflow-y: scroll
+    @media screen and (max-width: $screen-xs-max)
+      height: 100vh
+
+  .pb-8
+    @media screen and (max-width: $screen-xs-max)
+        padding-bottom: 8px
+
     .amount
       margin-top: 0
 
@@ -180,6 +215,15 @@ $formHeight = 471px
 .QRCode--Preview
   max-width: 400px
   background: #E0E0E0
+  @media screen and (max-width: $screen-xs-max)
+    max-width: none
+    background: #E5E5E5
+    margin: none !important
+    height: 100%
+    width: 100%
+    margin-left: 0px
+    position: fixed
+    bottom: -66px
 
   .heading
     padding: 24px
@@ -204,13 +248,22 @@ $formHeight = 471px
   .footer
     background: #F6F6F6
     padding: 16px 24px
+    height: 74px
     display: flex
     justify-content: space-between
     align-items: center
-
+    @media screen and (max-width: $screen-xs-max)
+      padding: 16px 14px
+      position: fixed
+      width: 100%
+      bottom: 0
+      white-space: nowrap
+      justify-content: space-around
     button
       width: 168px
       margin-right: 0
+      @media screen and (max-width: $screen-xs-max)
+        width: 154px
 
 .QRCode--List
   .qr_usage

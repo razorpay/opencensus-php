@@ -86,7 +86,12 @@ export default class CreateQRCode extends React.Component {
 
   render() {
     const content = (
-      <Form isModalView={this.isModalView} onClose={this.onClose} onSubmit={this.onSubmit} />
+      <Form
+        isModalView={this.isModalView}
+        onClose={this.onClose}
+        onSubmit={this.onSubmit}
+        history={this.props.history}
+      />
     );
 
     return this.isModalView ? (
