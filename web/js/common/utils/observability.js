@@ -11,8 +11,8 @@ export function initSentry(appName) {
   if (window.APP_ENV === 'production') {
     try {
       errorService.init({
-        version: __VERSION__ || 'UNKNOWN',
-        environment: __VERSION__ ? environment : 'local',
+        version: window.__VERSION__ || 'UNKNOWN',
+        environment: window.__VERSION__ ? environment : 'local',
         dsn: window.SENTRY_DSN,
         beforeSend: (event, hint) => {
           if (hint?.originalException?.code === 'UNKNOWN_ERROR_CODE') {

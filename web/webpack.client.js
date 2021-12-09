@@ -153,7 +153,7 @@ module.exports = ({ config, project }) => {
             js : ${JSON.stringify(htmlWebpackPlugin.files.js)},
             css : ${JSON.stringify(htmlWebpackPlugin.files.css)}
           };
-          var __VERSION__ = ${htmlWebpackPlugin.options.version};
+          window.__VERSION__ = ${htmlWebpackPlugin.options.version};
           ${require(`./entry/${project}-entry`)()}})()`;
       },
     }),

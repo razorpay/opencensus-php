@@ -7,7 +7,7 @@ if (typeof window.Sentry !== 'undefined') {
     const environment = window.INSTANCE_TYPE === 'canary' ? 'canary' : window.APP_ENV;
     window.Sentry.init({
       environment,
-      release: __VERSION__,
+      release: window.__VERSION__,
       dsn: window.SENTRY_DSN,
     });
   });
