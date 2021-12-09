@@ -2,6 +2,7 @@ $white-color = rgb(255, 255, 255);
 $label-suggestions-border-color = #E8EAEE;
 $selected-label-bg-color = #dbe9ff;
 $light-blue-color = #2B83EA;
+$shadow-black-color = #3A45671E;
 
 .profile-container {
   .panel-heading {
@@ -10,16 +11,8 @@ $light-blue-color = #2B83EA;
   }
 
   .background-highlight {
-    background-color: rgba(11, 112, 231, 0.05);
+    background-color: #0B70E70C;
     color: #5B666D;
-  }
-
-  .text-bold {
-    font-weight: bold;
-  }
-
-  .text-danger {
-    color: red;
   }
 
   .list-group-item .i-notes {
@@ -411,45 +404,45 @@ $light-blue-color = #2B83EA;
 // Purpose Code styles
 .purpose-code-header {
   background: #FAFAFA;
-  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 2px 10px #00000019;
 }
 
 .purpose-code-modal-heading {
-  color: #0D2366
+  color: #0D2366;
 }
 
 .purpose-code-search-container {
-  padding: 24px
-  position: relative
+  padding: 24px;
+  position: relative;
 
   .purpose-code-search-input {
-    height: 40px
-    padding-left: 35px
+    height: 40px;
+    padding-left: 35px;
   }
 }
 
 .purpose-code-search-container > .purpose-code-search-close {
-  position: absolute
-  top: 40px
-  right: 40px
-  cursor: pointer
+  position: absolute;
+  top: 40px;
+  right: 40px;
+  cursor: pointer;
 }
 
 .purpose-code-search-container > .purpose-code-search-icon {
-  position: absolute
-  top: 37px
-  left: 35px
+  position: absolute;
+  top: 37px;
+  left: 35px;
 }
 
 .purpose-code-accordion-item {
-  margin-top: 0px !important
-  border-top: 1px solid rgba(228, 228, 228, 1)
+  margin-top: 0px !important;
+  border-top: 1px solid #e4e4e4;
 }
 
 .purpose-code-item {
-  padding: 10px 24px 10px 24px
-  color: #5B666D
-  cursor: pointer
+  padding: 10px 24px;
+  color: #5B666D;
+  cursor: pointer;
 }
 
 .purpose-code-item:hover {
@@ -457,106 +450,207 @@ $light-blue-color = #2B83EA;
 }
 
 .tick-icon-contain {
-  position: relative
-  left: 320px
-  top: -30px
-  width: 14px
-  height: 0px
+  position: relative;
+  left: 320px;
+  top: -30px;
+  width: 14px;
+  height: 0;
 }
 
 .purpose-code-desc {
-  padding: 0px 10px 0px 0px
+  padding-right: 10px;
 }
 
 .scroll-codes {
-  overflow-y: scroll
-  max-height: 350px
-  min-height: 350px
+  overflow-y: scroll;
+  max-height: 350px;
+  min-height: 350px;
 }
 
 .scroll-codes::-webkit-scrollbar {
-    display: none
+  display: none;
 }
 
 .purpose-code-accordion-content {
-  padding: 8px 0px 10px 0px !important
+  padding: 8px 0px 10px 0px !important;
 }
 
 .purpose-code-no-results {
-  padding: 16px 24px 16px 24px
-  align-items: center
-  justify-content: center
-  display: flex
+  padding: 16px 24px;
+  justify-content: center;
+  display: flex;
 }
 
 .purpose-code-category {
-  color: #515978
-  background-color: #FAFAFA !important
-  padding: 12px 24px 12px 24px !important
-  margin-right: 16px
+  color: #515978;
+  background-color: #FAFAFA !important;
+  padding: 12px 24px !important;
+  margin-right: 16px;
 }
 
 .select-purpose-code-button-contain {
-  padding: 24px
-  border: 1px solid rgba(173, 188, 201, 0.47)
-  background: rgba(241, 241, 241, 1)
+  padding: 24px;
+  border: 1px solid #ADBCC978;
+  background: #f1f1f1;
 }
 
 .select-purpose-code-button-disabled {
-  background: rgba(66, 131, 247, 0.54)
-  box-shadow: 1px 3px 6px rgba(58, 69, 103, 0.12)
-  border-radius: 2px
-  border: 2px solid transparent !important
-  font-weight: bold
-  height: 38px
+  background: #4283F78A;
+  box-shadow: 1px 3px 6px $shadow-black-color;
+  border-radius: 2px;
+  border: 2px solid transparent;
+  font-weight: 700;
+  height: 38px;
 }
 
 .select-purpose-code-button {
-  background: #4283F7
-  box-shadow: 1px 3px 6px rgba(58, 69, 103, 0.12)
-  border: 2px solid transparent !important
-  font-weight: bold
-  height: 38px
+  background: #4283F7;
+  box-shadow: 1px 3px 6px $shadow-black-color;
+  border: 2px solid transparent;
+  font-weight: 700;
+  height: 38px;
 }
 
 .purpose-code-confirmation-form {
-  margin-top: 200px
+  margin-top: 200px;
 }
 
 .purpose-code-confirmation-content {
-  padding: 26px
-  color: rgba(22, 47, 86, 0.74)
+  padding: 26px;
+  color: #162F56BD;
 
   .purpose-code-confirmation-text {
-    margin-top: 15px
+    margin-top: 15px;
   }
 }
 
 .purpose-code-confirmation-button-contain {
-  padding: 0px 24px 24px 24px
+  padding: 0 24px 24px;
 
   .purpose-code-confirmation-select-button {
-    background: #528FF0
-    border: 2px solid transparent
-    font-weight: bold
-    text-align: center
-    color: #FFFFFF
-    height: 38px
-    width: 250px
+    font-weight: 700;
+    text-align: center;
+    color: #FFFFFF;
+    height: 38px;
+    width: 205px;
   }
 
   .purpose-code-confirmation-back-button {
-    margin-left: 30px
-    color: #528FF0
-    cursor: pointer
+    margin-left: 30px;
+    color: #528FF0;
+    cursor: pointer;
   }
 }
 
 .purpose-code-edit-button {
-  margin-left: 15px
-  cursor: pointer
+  color: #528ff0;
+  width: 15px;
+  height: 15px;
+  margin-left: 10px;
+  cursor: pointer;
 }
 
+// FIRC Styles
+.firc-box {
+  width: 80px;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+
+  i {
+    color: #528ff0;
+    margin-left: 5px;
+  }
+}
+
+.firc-form-container {
+  padding: 24px;
+
+  .dropdown-container {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .label {
+    color: #162F568A;
+  }
+
+  .select {
+    height: 36px;
+    width: 130px;
+    margin-top: 5px;
+    background: #E0E4F919;
+    border: 0;
+    border-bottom: 1px solid #162F5619;
+
+    &--invalid {
+      color: #d12d2d;
+    }
+  }
+
+  .files-container {
+    margin: 24px 0px;
+
+    .count-label {
+      border-bottom: 1px solid #E1E5EA;
+      padding-bottom: 8px; 
+      color: #162F56;
+      opacity: 0.54;
+    }
+
+    .scroll-list {
+      margin: 8px 0px; 
+      min-height: 25px;
+      max-height: 130px;
+      overflow-y: auto;
+
+      .file {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4px 0;
+
+        .file-icon {
+          width: 10px;
+          height: 12px;
+          margin-right: 8px
+        }
+
+        .download-icon {
+          color: #528ff0;
+          width: 12px;
+          height: 10px;
+          margin-right: 8px
+          cursor: pointer;
+        }
+      }
+
+      &::-webkit-scrollbar {
+        width: 5px;
+        background-color: #d8dde5;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: #a9b3c2;
+      }
+    }
+  }
+      
+  .info-container {
+    margin: 24px 0px;
+    border-left: 3px solid #528FF0;
+    border-radius: 2px;
+    padding-left: 10px;
+    opacity: 0.9;
+  }
+
+  .spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+  }
+}
 
 .workflow-status
   width 200%

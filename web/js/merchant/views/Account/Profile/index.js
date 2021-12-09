@@ -25,7 +25,6 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import SupportDetails from 'merchant/views/Account/Profile/components/SupportDetails';
 import EmailSelfServeModal from 'merchant/views/Settings/EmailSelfServe/EmailInput';
 import User2FASettings from './components/User2FASettings';
-import PurposeCode from './components/PurposeCode';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
 import UpdateBillingLabel from './components/UpdateBillingLabel';
 import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
@@ -46,6 +45,14 @@ import {
   getWorkflowTypeForRoute,
 } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
+import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+
+const PurposeCodeAndFIRC = lazy(() =>
+  import(
+    /* webpackChunkName: "PurposeCodeAndFIRC" */ 'merchant/views/Account/Profile/components/PurposeCodeAndFIRC'
+  ),
+);
 class Profile extends Component {
   state = {
     loggedInUser: {},
@@ -600,7 +607,9 @@ class Profile extends Component {
             </IntoView>
           }
           {user.international && (
-            <PurposeCode onEditClick={this.editPurposeCodeHandler} user={user} />
+            <SuspenseWithLoader>
+              <PurposeCodeAndFIRC onEditClick={this.editPurposeCodeHandler} user={user} />
+            </SuspenseWithLoader>
           )}
         </div>
       </div>

@@ -4,6 +4,7 @@ export const EMAIL_UPDATE = 'email_update';
 export const CONTACT_NUMBER_UPDATE = 'contact_number_update';
 export const SUPPORT_DETAILS = 'support_details';
 export const SETTELEMENT_CYCLE = 'settlement_cycle';
+export const VIEW_FIRC = 'view_firc';
 
 // Needs Clarification - routes for communication over for sms/email
 // Opens up Needs Clarification Modal if workflow exists
