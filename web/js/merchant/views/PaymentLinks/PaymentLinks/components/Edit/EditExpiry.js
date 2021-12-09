@@ -1,11 +1,9 @@
+import React from 'react';
+
 import moment from 'moment';
-import { dateCalculator } from 'common/new-ui/Input/Calendar';
-import { timeCalculator } from 'common/new-ui/Input/Time';
 import Input from 'common/new-ui/Input';
 import Time from 'common/ui/Time';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-
-import { classList } from 'common/utils/rzp-utils';
 
 export default class EditExpiry extends React.Component {
   state = this.resetState();
@@ -33,7 +31,7 @@ export default class EditExpiry extends React.Component {
     this.props.trackerFn && this.props.trackerFn('Edit Expiry');
   };
 
-  updateDate = newDate => {
+  updateDate = (newDate) => {
     this.setState({ expire_by: newDate });
   };
 
@@ -42,17 +40,13 @@ export default class EditExpiry extends React.Component {
     let content = (
       <React.Fragment>
         {this.props.value ? (
-          <Time value={this.props.value} format="DD MMM YYYY, hh:mm a" />
+          <Time value={this.props.value} format="DD MMM YYYY, hh:mm a" class="mr-12" />
         ) : (
           'No Expiry'
         )}
 
         {isRoleAllowedEdit && (
-          <Button.Transparent
-            onClick={this.makeEditable}
-            class="Button--Link"
-            style={{ marginLeft: 12 }}
-          >
+          <Button.Transparent onClick={this.makeEditable} class="Button--Link">
             Change
           </Button.Transparent>
         )}
@@ -79,7 +73,7 @@ export default class EditExpiry extends React.Component {
                   this.props.trackerFn(
                     this.props.entityId,
                     'Cancel Expiry',
-                    this.state.expire_by !== this.state.value
+                    this.state.expire_by !== this.state.value,
                   );
               }}
             >
@@ -94,15 +88,12 @@ export default class EditExpiry extends React.Component {
                   .editFn({
                     expire_by: this.state.expire_by,
                   })
-                  .then(resp => {
+                  .then((resp) => {
                     if (resp && resp.data) {
                       this.setState(this.resetState());
 
                       this.props.trackerFn &&
-                        this.props.trackerFn(
-                          'Edit Expiry (Saved)',
-                          this.state.expire_by
-                        );
+                        this.props.trackerFn('Edit Expiry (Saved)', this.state.expire_by);
                     }
                   });
               }}

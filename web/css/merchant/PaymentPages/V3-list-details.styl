@@ -62,8 +62,6 @@
     max-height: 2000px // This height must be able to fit in ~25 payment page items
     position: relative
     margin-bottom: 48px
-    @media (max-width: 768px)
-      overflow-x: auto
 
   .panel-heading
     display: flex
@@ -109,6 +107,9 @@
 
     .entity-details
       min-width: 500px
+      @media (max-width: $screen-xs-max)
+        min-width: 100%
+
 
     .item-details
       width: 100%
@@ -245,9 +246,6 @@
       .entity-details, .item-details
         display: block
         width: 100%
-
-      .ClipboardCustom
-        display: block
 
     &.Entity--paymentpage-collapse
       .panel
