@@ -42,7 +42,7 @@ const VerifyOTP = ({
   contactEmail = '',
   showFormSection = false,
 }: IVerifyOTPProps): React.ReactElement => {
-  const { data } = useActivation();
+  const { data, postData } = useActivation();
   const snackbar = useSnackbar();
   const { user, experiments } = useApp();
   const [error, setError] = useState<string>('');
@@ -67,15 +67,6 @@ const VerifyOTP = ({
     return result;
   };
 
-  const [storeEmail] = useMutation((payload: { email: string }) =>
-    fetch<any>({
-      url: 'merchant/activation/email',
-      mode: 'live',
-      method: 'POST',
-      data: payload,
-    }),
-  );
-
   const [verify] = useMutation(verifyOtp, {
     onSuccess: async (res: {
       user: {
@@ -99,7 +90,7 @@ const VerifyOTP = ({
           user: { ...user.user, ...updateSelectedUserValue },
         });
         const verifiedEmail = contactEmail || res.user.email || '';
-        await storeEmail({ email: verifiedEmail });
+        await postData({ contact_email: verifiedEmail });
         updateSessions({ user: userData });
         snackbar.success('Your Email ID is now verified');
         emailVerified(true);

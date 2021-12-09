@@ -1837,12 +1837,7 @@ export default class ActivationWizard extends React.Component {
 
   postSuccessfulEmailVerify = (payload) => {
     try {
-      merchantFetch({
-        url: 'merchant/activation/email',
-        mode: 'live',
-        method: 'POST',
-        data: payload,
-      }).then(() => {
+      this.props.save(payload).then(() => {
         this.markTabIfActive(this.state.activeTab);
         //enable the checkbox post success verification
         this.setState({ isEmailNonMandatory: true });

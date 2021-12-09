@@ -93,7 +93,8 @@ const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any)
   };
 
   const isAllTabCompleted =
-    isContactDetailsCompleted &&
+    (isContactDetailsCompleted ||
+      (experiments.isEmailNonMandatoryOnL2Form && !user.user?.signup_via_email)) &&
     isBusinessOverviewCompleted &&
     isBusinessDetailsCompleted &&
     isBankAndCompanyDetailsCompleted &&

@@ -116,7 +116,7 @@ const CustomEmail = ({
             mode,
           });
           const verifiedEmail = email || res.data.user.email;
-          postSuccessfulEmailVerify({ email: verifiedEmail });
+          postSuccessfulEmailVerify({ contact_email: verifiedEmail });
           setIsEmailVerified(true);
           trackEventsAction({
             objectName: 'Verify Email',
