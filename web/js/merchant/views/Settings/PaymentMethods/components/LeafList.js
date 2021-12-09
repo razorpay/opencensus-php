@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
+
 import LeafListItem from './LeafListItem';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import Paypal from './Paypal';
 import International from './International';
 
-const LeafList = ({ instrument, intermediateInstrument }) => {
+const LeafList = ({ instrument, intermediateInstrument, user }) => {
   const [filter, setFilter] = useState('active');
   const ulRef = useRef(null);
   const addShadow = () => {
@@ -171,11 +173,35 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
           </React.Fragment>
         );
       })}
+      {/* FIRC banner for international merchants */}
+      {instrument.slug === 'international' && user.international && (
+        <div className="instrument-firc-banner">
+          <div>
+            <img
+              src={`${window.cdnBaseUrl}/static/assets/firc/blue_vector.svg`}
+              alt="FIRC Icon"
+              height="24"
+              width="24"
+            />
+          </div>
+          <div className="instrument-firc-content">
+            <div>
+              Download monthly <b>e-FIRC </b> directly from the dashboard now!
+            </div>
+            <div>
+              <u>
+                <Link to="/profile/view_firc">View FIRC</Link>
+              </u>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 const mapStateToProps = (state) => ({
+  user: state.session.user,
   instrument: state.instrumentRequests.leafInstrument,
   intermediateInstrument: state.instrumentRequests.intermediateInstrument,
 });
