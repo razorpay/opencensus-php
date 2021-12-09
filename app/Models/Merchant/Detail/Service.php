@@ -229,7 +229,20 @@ class Service extends Base\Service
                 User\Entity::EMAIL  => $input[User\Entity::EMAIL]
             ];
 
+            $merchantInput = [
+                User\Entity::EMAIL => $input[Merchant\Entity::EMAIL]
+            ];
+
             (new User\Service())->edit($this->user->getId(), $userInput);
+
+            (new Merchant\Service())->edit($this->merchant->getId(),$merchantInput);
+
+            $merchantDetails = $this->merchant->merchantDetail;
+
+            $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input) {
+                $merchantDetails->setContactEmail($input[Merchant\Entity::EMAIL]);
+                $this->repo->saveOrFail($merchantDetails);
+            });
         }
 
         return (new User\Service())->sendOtpEmailVerification($this->merchant, $this->user, $input);
