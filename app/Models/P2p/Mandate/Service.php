@@ -18,7 +18,6 @@ class Service extends Base\Service
 
     public function fetchAll(array $input): array
     {
-
         $response = $this->processor->fetchAll($input);
 
         return $response;
@@ -30,7 +29,7 @@ class Service extends Base\Service
 
         return $response;
     }
-    
+
     public function authorizeMandate(array $input): array
     {
         $response = $this->processor->authorizeMandate($input);

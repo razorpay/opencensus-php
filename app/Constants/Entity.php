@@ -366,6 +366,7 @@ class Entity
     const P2P_REGISTER_TOKEN     = 'p2p_register_token';
     const P2P_UPI_TRANSACTION    = 'p2p_upi_transaction';
     const P2P_CLIENT             = 'p2p_client';
+    const P2P_MANDATE            = 'p2p_mandate';
 
     // P2P Gateways
     const P2P_UPI_AXIS           = 'p2p_upi_axis';
@@ -982,6 +983,7 @@ class Entity
         self::P2P_UPI_TRANSACTION   => \RZP\Models\P2p\Transaction\UpiTransaction::class,
         self::P2P_CONCERN           => \RZP\Models\P2p\Transaction\Concern::class,
         self::P2P_CLIENT            => \RZP\Models\P2p\Client::class,
+        self::P2P_MANDATE           => \RZP\Models\P2p\Mandate::class,
 
         self::P2P_UPI_SHARP         => \RZP\Gateway\P2p\Upi::class,
         self::P2P_UPI_AXIS          => \RZP\Gateway\P2p\Upi::class,

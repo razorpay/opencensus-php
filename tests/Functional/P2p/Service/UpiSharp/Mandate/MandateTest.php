@@ -16,7 +16,7 @@ class MandateTest extends TestCase
 
         $this->expectException(RuntimeException::class);
 
-        $this->expectExceptionMessage("Not Implemented , Processor implementation is on the way");
+        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
 
         $helper->fetchAll();
     }
@@ -27,9 +27,20 @@ class MandateTest extends TestCase
 
         $this->expectException(RuntimeException::class);
 
-        $this->expectExceptionMessage("Not Implemented , Processor implementation is on the way");
+        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
 
         $response = $helper->fetch("20");
+    }
+
+    public function testInitiateAuthorize()
+    {
+        $helper = $this->getMandateHelper();
+
+        $this->expectException(RuntimeException::class);
+
+        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
+
+        $response = $helper->initiateAuthorize("20", []);
     }
 
     public function testInitiateReject()
@@ -38,7 +49,7 @@ class MandateTest extends TestCase
 
         $this->expectException(RuntimeException::class);
 
-        $this->expectExceptionMessage("Not Implemented , Processor implementation is on the way");
+        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
 
         $response = $helper->initiateReject("20", []);
     }
@@ -49,10 +60,9 @@ class MandateTest extends TestCase
 
         $this->expectException(RuntimeException::class);
 
-        $this->expectExceptionMessage("Not Implemented , Processor implementation is on the way");
+        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
 
         $response = $helper->initiatePause("20", []);
-
     }
 
     public function testInitiateUnPause()
@@ -61,7 +71,7 @@ class MandateTest extends TestCase
 
         $this->expectException(RuntimeException::class);
 
-        $this->expectExceptionMessage("Not Implemented , Processor implementation is on the way");
+        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
 
         $response = $helper->initiateUnPause("20", []);
     }
@@ -72,9 +82,20 @@ class MandateTest extends TestCase
 
         $this->expectException(RuntimeException::class);
 
-        $this->expectExceptionMessage("Not Implemented , Processor implementation is on the way");
+        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
 
         $response = $helper->initiateRevoke("20", []);
+    }
+
+    public function testAuthorizeMandate()
+    {
+        $helper = $this->getMandateHelper();
+
+        $this->expectException(RuntimeException::class);
+
+        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
+
+        $response = $helper->authorizeMandate("20", []);
     }
 
     public function testRejectMandate()
@@ -83,7 +104,7 @@ class MandateTest extends TestCase
 
         $this->expectException(RuntimeException::class);
 
-        $this->expectExceptionMessage("Not Implemented , Processor implementation is on the way");
+        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
 
         $response = $helper->rejectMandate("20", []);
     }
@@ -95,10 +116,9 @@ class MandateTest extends TestCase
 
         $this->expectException(RuntimeException::class);
 
-        $this->expectExceptionMessage("Not Implemented , Processor implementation is on the way");
+        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
 
         $response = $helper->pauseMandate("20", []);
-
     }
 
     public function testUnPauseMandate()
@@ -107,7 +127,7 @@ class MandateTest extends TestCase
 
         $this->expectException(RuntimeException::class);
 
-        $this->expectExceptionMessage("Not Implemented , Processor implementation is on the way");
+        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
 
         $response = $helper->unpauseMandate("20", []);
 
@@ -119,7 +139,7 @@ class MandateTest extends TestCase
 
         $this->expectException(RuntimeException::class);
 
-        $this->expectExceptionMessage("Not Implemented , Processor implementation is on the way");
+        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
 
         $response = $helper->revokeMandate("20", []);
     }
