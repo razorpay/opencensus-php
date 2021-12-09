@@ -748,14 +748,11 @@ class Constants
     // Used to disable tpv flow for merchants for business banking (Razorpay X) fund loading.
     const DISABLE_TPV_FLOW = 'disable_tpv_flow';
 
-    // used for axis org
-    const AXIS_ORG_FEATURE = 'axis_org';
-
     const SUB_VIRTUAL_ACCOUNT = 'sub_virtual_account';
 
-    
     // Used to enable alternate failure reason in payout for status code.
     const ALTERNATE_PAYOUT_FR = 'alternate_payout_fr';
+
     // Used to enable fund account of type wallet account (provider: amazonpay) for merchants for business banking (Razorpay X).
     const DISABLE_X_AMAZONPAY = 'disable_x_amazonpay';
 
@@ -1339,7 +1336,6 @@ class Constants
         self::EARLY_MANDATE_PRESENTMENT       => true,
         self::CRED_MERCHANT_CONSENT           => true,
         self::DISABLE_TPV_FLOW                => true,
-        self::AXIS_ORG_FEATURE                => true,
         self::SUB_VIRTUAL_ACCOUNT             => true,
         self::CAW_IGNORE_CUSTOMER_CHECK       => true,
         self::CAW_UPI                         => true,

@@ -8,9 +8,6 @@ use Redirect;
 use ApiResponse;
 use Illuminate\Support\Facades\File;
 
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
-use Razorpay\Api\Errors\BadRequestError;
 use RZP\Models\Admin;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Report;
@@ -74,15 +71,10 @@ class AdminController extends Controller
 
         if ($variantFlag === 'proxy')
         {
-            $headers =$this->app['terminals_service']->getTerminalServiceOrgHeaders();
-
-            $this->trace->info(TraceCode::ENTITY_ORG_ID, [
-                'headers' => $headers,
-            ]);
 
             $path = "v1/admin/terminals/" . $id;
 
-            $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path,[],$headers);
+            $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
 
             if ((new Terminal\Service())->compareTerminalArray($data, $response) === false)
             {
@@ -91,10 +83,9 @@ class AdminController extends Controller
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_ADMIN_FETCH_TERMINAL_BY_ID_COMPARISON_FAILED, $traceData);
             }
 
-            return ApiResponse::json($response);
+             return ApiResponse::json($response);
 
         }
-
         return ApiResponse::json($data);
     }
 

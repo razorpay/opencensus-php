@@ -4226,8 +4226,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const ACTIVE_DB_CONNECTIONS                                 = 'ACTIVE_DB_CONNECTIONS';
 
-    const ENTITY_ORG_ID                                         = 'ENTITY_ORG_ID';
-
     // Rendering Preferences / Options
     const OPTIONS_CREATE_REQUEST                                = 'OPTIONS_CREATE_REQUEST';
     const OPTIONS_CREATED                                       = 'OPTIONS_CREATED';

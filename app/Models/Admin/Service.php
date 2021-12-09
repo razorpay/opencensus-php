@@ -256,15 +256,7 @@ class Service extends Base\Service
     {
         $entity = $this->fetchEntityByNameAndId($entity, $id);
 
-        $terminal = $entity->toArrayAdmin($subMerchantFlag);
-
-        if ((new Org\Service)->validateEntityOrgId($terminal) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ACCESS_DENIED, null, $terminal['id']);
-        }
-
-        return $terminal;
+        return $entity->toArrayAdmin($subMerchantFlag);
     }
 
     protected function fetchEntityByNameAndId(

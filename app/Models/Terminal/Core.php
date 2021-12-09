@@ -36,8 +36,6 @@ class Core extends Base\Core
 
         $this->validateAndTokenizeMpansIfPresentInInput($input);
 
-        $this->validateGatewayAllowed($input); // we do not want to allow the assigning of specific terminals, eg paysecure from admin dashboard
-
         $input['merchant_id'] = $merchant->getKey();
 
         $input['org_id'] = $merchant->getOrgId();
@@ -88,10 +86,7 @@ class Core extends Base\Core
 
         $terminal->merchant()->associate($merchant);
 
-        if ($terminal->org()->doesntExist() === true)  // if modifier has not associated any org with this terminal
-        {                                               // associate the merchant's org
-            $terminal->org()->associate($merchant->org);
-        }
+        $terminal->org()->associate($merchant->org);
 
         $this->validateExistingTerminal($terminal);
 
@@ -986,14 +981,5 @@ class Core extends Base\Core
                 $input[$network] = $tokenizedMpan;
             }
         }
-    }
-
-    protected function validateGatewayAllowed(array $input)
-    {
-        $gatewayInput = [
-            'gateway' => $input['gateway']
-        ];
-
-        (new Validator())->validateInput('gateway_input', $gatewayInput);
     }
 }

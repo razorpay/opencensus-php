@@ -332,7 +332,6 @@ class Gateway
         self::CCAVENUE              => self::CCAVENUE,
         self::PINELABS              => self::PINELABS,
         self::NETBANKING_IDFC       => self::IDFC,
-        self::PAYSECURE             => self::ACQUIRER_AXIS,
         self::NETBANKING_SBI        => self::SBIN,
         self::NETBANKING_INDUSIND   => self::INDUSIND,
     ];

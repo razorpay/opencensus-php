@@ -79,10 +79,6 @@ class Validator extends Base\Validator
         Entity::ENABLED_WALLETS             => 'sometimes|array',
     ];
 
-    protected static $gatewayInputRules = [
-        Entity::GATEWAY                        => 'not_in:paysecure',
-    ];
-
     protected static $mpansBeforeTokenizationRules = [
         Entity::MC_MPAN                     => 'sometimes|string|size:16',
         Entity::VISA_MPAN                   => 'sometimes|string|size:16',
@@ -161,7 +157,6 @@ class Validator extends Base\Validator
         Payment\Gateway::CHECKOUT_DOT_COM,
         Payment\Gateway::BILLDESK_SIHUB,
         Payment\Gateway::MANDATE_HQ,
-        Payment\Gateway::PAYSECURE,
         Payment\Gateway::NETBANKING_BDBL,
         Payment\Gateway::MOBIKWIK,
     ];
@@ -823,18 +818,9 @@ class Validator extends Base\Validator
         Entity::CURRENCY                   => 'required|array',
         Entity::CARD                       => 'required|boolean|in:1',
         Entity::MERCHANT_ID                => 'required|alpha_num|size:14',
-        Entity::ENABLED                    => 'required|in:0,1',
+        Entity::ENABLED                    => 'required|in:0',
         Entity::GATEWAY_ACQUIRER           => 'required|in:axis',
-        Entity::STATUS                     => 'required|in:pending,activated',
-        Entity::ORG_ID                     => 'sometimes',
-        Entity::PROCURER                   => 'sometimes',
-        Entity::TYPE                       => 'sometimes'
-    ];
-
-    protected static $paysecureEditTerminalRules = [
-        Entity::TYPE                       => 'sometimes|array',
-        Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
-        Entity::CURRENCY                   => 'sometimes|array',
+        Entity::STATUS                     => 'required|in:pending',
     ];
 
     protected static $cybersourceEditTerminalRules = [

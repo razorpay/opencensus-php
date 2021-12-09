@@ -6376,8 +6376,6 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('onboard_merchant_input_' . $input['gateway'], $input); //validate input based on gateway
 
-        (new Validator)->validateOrgForOnboarding($input);
-
         if ($input['gateway'] === Payment\Gateway::HITACHI)
         {
             return (new TerminalService)->onboardMerchant($merchant, $input, false)
