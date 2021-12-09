@@ -223,11 +223,14 @@ class Service extends Base\Service
             throw new BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS);
         }
 
-        $userInput = [
-            User\Entity::EMAIL  => $input[User\Entity::EMAIL]
-        ];
+        if(empty($emailUser) === true)
+        {
+            $userInput = [
+                User\Entity::EMAIL  => $input[User\Entity::EMAIL]
+            ];
 
-        (new User\Service())->edit($this->user->getId(), $userInput);
+            (new User\Service())->edit($this->user->getId(), $userInput);
+        }
 
         return (new User\Service())->sendOtpEmailVerification($this->merchant, $this->user, $input);
     }
