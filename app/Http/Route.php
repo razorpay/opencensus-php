@@ -3026,6 +3026,7 @@ class Route
         'payout_service_process_scheduled_payout' => ['post',     'payouts_service/scheduled/process',                      'PayoutController@processSchedulePayoutOnPayoutService'        ],
         'retry_payouts_on_service'                => ['post',     'payouts_service/retry',                                  'PayoutController@retryPayoutsOnPayoutService'                 ],
         'create_payment_payout_service_axis_cc'   => ['post',     'payouts_service/payments/create/axis',                   'PaymentCreateController@postCreateS2SPayment'                 ],
+        'update_payout_payout_service'            => ['patch',    'payouts_service/payout/{payout_id}/update',              'PayoutController@updatePayoutEntry'                           ],
         'payout_analytics_axis_cc'                => ['get',      'payouts_analytics',                                      'PayoutController@payoutAnalytics'                             ],
 
         'payment_analytics_partition_cron'        => ['post',     'payment_analytics/partition',                            'PaymentController@createPaymentAnalyticsPartition'            ],
@@ -4112,6 +4113,7 @@ class Route
         'payout_purpose_get_internal',
         'bulk_payout_purpose_post',
         'create_payment_payout_service_axis_cc',
+        'update_payout_payout_service',
 
 
         // payment analytics cron creates a new partition and drops oldest partition, runs daily
@@ -11369,6 +11371,7 @@ class Route
             'create_workflow_for_payout',
             'payment_fetch_by_id_internal',
             'create_payment_payout_service_axis_cc',
+            'update_payout_payout_service',
             'user_fetch_internal',
             'fetch_actor_info_internal',
         ],
@@ -11863,6 +11866,7 @@ class Route
      * Banking specific private routes that user can access on API
      */
     const PRIVATE_BANKING_ROUTES = [
+
         //contact related routes
         'contact_create',
         'contact_list',

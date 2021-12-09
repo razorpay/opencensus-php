@@ -563,6 +563,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPayoutServiceCreate();
 
+        $this->registerPayoutServiceWorkflow();
+
         $this->registerPayoutServiceGet();
 
         $this->registerFTSChannelNotification();
@@ -1690,6 +1692,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             }
 
             return new RZP\Services\Pspx\Service();
+        });
+    }
+
+    protected function registerPayoutServiceWorkflow()
+    {
+        $this->app->singleton(PayoutService\Workflow::PAYOUT_SERVICE_WORKFLOW, function($app)
+        {
+            return new PayoutService\Workflow($app);
         });
     }
 }

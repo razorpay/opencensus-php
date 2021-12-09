@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Workflow\Service\Adapter;
 
+use Razorpay\Edge\Passport\Passport;
 use RZP\Http\RequestHeader;
 use RZP\Models\Payout\Entity;
 
@@ -15,14 +16,24 @@ class Payout extends Base
 
     const SUCCESS_ERROR_CODES   = [200, 201, 409];
 
-    public function getCallBackDetails(array $entityArr, array $input)
+    const X_REQUEST_ID          = 'X-Request-ID';
+
+    public function getCallBackDetails(array $entityArr, array $input, bool $isPayoutService)
     {
-        $headers = [
+        $ApiHeaders = [
             RequestHeader::X_Creator_Id         => $entityArr[Entity::USER_ID] ?? null,
             RequestHeader::X_RAZORPAY_ACCOUNT   => $entityArr[Entity::MERCHANT_ID] ?? null,
         ];
 
-        $workflowCallbackPath                   = '/payouts_internal/pout_' . $entityArr['id'];
+        $payoutServiceHeaders = [
+            RequestHeader::CONTENT_TYPE  => 'application/json',
+            self::X_REQUEST_ID           => $this->request->getId()
+        ];
+
+        $stateCallbacksHeaders = $ApiHeaders;
+        $workflowCallbacksHeaders = ($isPayoutService ? $payoutServiceHeaders : $ApiHeaders);
+
+        $workflowCallbackPath                   = ($isPayoutService ? '/v1/payouts/payouts_internal/' . $entityArr['id'] : '/payouts_internal/pout_' . $entityArr['id']);
 
         $stateCallBackCreatedPath               = '/wf-service/state/callback';
 
@@ -39,7 +50,7 @@ class Payout extends Base
                     'method'    => 'post',
                     'service'   => Constants::SERVICE_RX . $this->ba->getMode(),
                     'url_path'  => $stateCallBackCreatedPath,
-                    'headers'   => $headers,
+                    'headers'   => $stateCallbacksHeaders,
                     'payload'   => $payload,
                     'response_handler' => [
                         'type'                           => Constants::SUCCESS_STATUS_CODES,
@@ -51,7 +62,7 @@ class Payout extends Base
                     'method'    => 'patch',
                     'service'   => Constants::SERVICE_RX . $this->ba->getMode(),
                     'url_path'  => $stateCallBackProcessedPath,
-                    'headers'   => $headers,
+                    'headers'   => $stateCallbacksHeaders,
                     'payload'   => $payload,
                     'response_handler' => [
                         'type'                           => Constants::SUCCESS_STATUS_CODES,
@@ -65,9 +76,9 @@ class Payout extends Base
                         'approved'  => [
                             'type'      => 'basic',
                             'method'    => 'post',
-                            'service'   => Constants::SERVICE_RX . $this->ba->getMode(),
+                            'service'   => ($isPayoutService ? Constants::PAYOUT_SERVICE_CALLBACK : Constants::SERVICE_RX) . $this->ba->getMode(),
                             'url_path'  => $workflowCallbackPath.'/approve',
-                            'headers'   => $headers,
+                            'headers'   => $workflowCallbacksHeaders,
                             'payload'   => $payload,
                             'response_handler' => [
                                 'type'                           => Constants::SUCCESS_STATUS_CODES,
@@ -77,9 +88,9 @@ class Payout extends Base
                         'rejected' => [
                             'type'      => 'basic',
                             'method'    => 'post',
-                            'service'   => Constants::SERVICE_RX . $this->ba->getMode(),
+                            'service'   => ($isPayoutService ? Constants::PAYOUT_SERVICE_CALLBACK : Constants::SERVICE_RX) . $this->ba->getMode(),
                             'url_path'  => $workflowCallbackPath.'/reject',
-                            'headers'   => $headers,
+                            'headers'   => $workflowCallbacksHeaders,
                             'payload'   => $payload,
                             'response_handler' => [
                                 'type'                           => Constants::SUCCESS_STATUS_CODES,

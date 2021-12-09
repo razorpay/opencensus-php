@@ -172,6 +172,13 @@ class Authorization
         $this->proxy = false;
     }
 
+    public function payoutInternalAppAuth($hostname = null, $mode = 'test')
+    {
+        $this->appAuth('rzp_' . $mode, \Config::get('applications.payouts_service')['secret'], $hostname);
+
+        $this->proxy = false;
+    }
+
     public function salesForceAuth()
     {
         $this->appAuth('rzp_test_10000000000000', \Config::get('applications.salesforce')['secret']);

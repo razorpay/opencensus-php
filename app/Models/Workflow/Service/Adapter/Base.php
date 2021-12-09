@@ -23,11 +23,14 @@ abstract class Base
     /** @var RepositoryManager */
     protected $repo;
 
+    protected $request;
+
     public function __construct()
     {
         $this->repo     = app('repo');
         $this->trace    = app('trace');
         $this->ba       = app('basicauth');
+        $this->request  = app('request');
     }
 
     /**
@@ -39,6 +42,7 @@ abstract class Base
     {
         $configId = $this->getWorkflowEntityMap($entity)->getConfigId();
 
+        $isPayoutService = $entity->getIsPayoutService();
         $entityArr = $entity->toArray();
 
         $payload = [
@@ -49,7 +53,7 @@ abstract class Base
             'owner_id'      => $entity->getMerchantId(),
             'owner_type'    => Constants::MERCHANT,
             'comment'       => $input['user_comment'] ?? '',
-            'data'          => $this->getCallBackDetails($entityArr, $input),
+            'data'          => $this->getCallBackDetails($entityArr, $input, $isPayoutService),
         ];
 
         $this->enrichActorFieldsForActions($payload);
@@ -93,6 +97,7 @@ abstract class Base
     {
         $configId = $this->fetchConfigIdForEntity($entity, $input);
 
+        $isPayoutService = $entity->getIsPayoutService();
         $entityArr = $entity->toArray();
 
         $payload = [
@@ -100,7 +105,7 @@ abstract class Base
             'entity_type'       => $entity->getEntityName(),
             'title'             => $input['title'] ?? '',
             'description'       => $input['description'] ?? '',
-            'callback_details'  => $this->getCallBackDetails($entityArr, $input),
+            'callback_details'  => $this->getCallBackDetails($entityArr, $input, $isPayoutService),
             'config_id'         => $configId,
             'config_version'    => '1',
             'diff'              => $this->getDiffForWorkflow($entityArr),
@@ -111,7 +116,7 @@ abstract class Base
         return ['workflow' => $payload];
     }
 
-    abstract public function getCallBackDetails(array $entityArr, array $input);
+    abstract public function getCallBackDetails(array $entityArr, array $input, bool $isPayoutService);
 
     abstract public function getDiffForWorkflow(array $entityArr);
 
@@ -221,7 +226,7 @@ abstract class Base
         $input['actor_property_value']  = $actorInfo['actor_property_value'];
 
         // todo: make this generic
-        $input['service']               = Constants::SERVICE_RX . $this->ba->getMode();
+        $input['service'] = Constants::SERVICE_RX . $this->ba->getMode();
     }
 
     /**

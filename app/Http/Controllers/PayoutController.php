@@ -518,6 +518,15 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updatePayoutEntry(string $payoutId)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updatePayoutEntry($payoutId, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function payoutAnalytics()
     {
         $data = $this->service()->axisCCPayoutAnalytics();

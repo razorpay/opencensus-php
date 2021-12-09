@@ -1982,4 +1982,11 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    public function updatePayout($payoutId, $merchantId, $updates) {
+        return $this->newQuery()
+            ->where(Entity::ID, $payoutId)
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->update($updates);
+    }
 }

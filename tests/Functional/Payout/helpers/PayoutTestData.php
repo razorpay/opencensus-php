@@ -15637,5 +15637,22 @@ return [
                     'oauth::scope::read_write',
             ],
         ]
-    ]
+    ],
+
+    'testUpdatePayout' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts_service/payout/Gg7sgBZgvYjlSB/update',
+            'content' => [
+                "status"               => "pending",
+                "merchant_id"          => "10000000000000"
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'SUCCESS',
+                'error'  => null
+            ],
+        ],
+    ],
 ];

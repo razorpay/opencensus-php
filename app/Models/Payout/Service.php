@@ -2347,6 +2347,11 @@ class Service extends Base\Service
         return $input;
     }
 
+    public function updatePayoutEntry($payoutId, $input)
+    {
+        return $this->core->updatePayoutEntry($payoutId, $input);
+    }
+
     public function axisCCPayoutAnalytics()
     {
 

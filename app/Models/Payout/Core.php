@@ -141,6 +141,9 @@ class Core extends Base\Core
     /** @var Workflow\Service\Client  */
     protected $workflowService;
 
+    /** @var PayoutService\Workflow*/
+    protected $payoutWorkflowServiceClient;
+
     public function __construct()
     {
         parent::__construct();
@@ -148,6 +151,8 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
 
         $this->payoutStatusServiceClient = $this->app[PayoutService\Status::PAYOUT_SERVICE_STATUS];
+
+        $this->payoutWorkflowServiceClient = $this->app[PayoutService\Workflow::PAYOUT_SERVICE_WORKFLOW];
 
         $this->payoutDetailsServiceClient = $this->app[PayoutService\Details::PAYOUT_SERVICE_DETAIL];
 
@@ -1487,14 +1492,30 @@ class Core extends Base\Core
                         if (($approve === true) and
                             ($workflowAction->getApproved() === true))
                         {
-                            $payout = $this->processApprovePayout($payout, $input);
+                            if ($payout->getIsPayoutService() == true) {
+                                $this->payoutWorkflowServiceClient->approvePayoutViaMicroservice(
+                                    $payout->getId(),
+                                    $input[Entity::QUEUE_IF_LOW_BALANCE]
+                                );
+                            }
+                            else {
+                                $payout = $this->processApprovePayout($payout, $input);
+                            }
                         }
                         else
                         {
                             if (($approve === false) and
                                 ($workflowAction->isRejected() === true))
                             {
-                                $payout = $this->processRejectPayout($payout);
+                                if ($payout->getIsPayoutService() == true) {
+                                    $this->payoutWorkflowServiceClient->rejectPayoutViaMicroservice(
+                                        $payout->getId(),
+                                        $input[Entity::QUEUE_IF_LOW_BALANCE]
+                                    );
+                                }
+                                else {
+                                    $payout = $this->processRejectPayout($payout);
+                                }
                             }
                         }
 
@@ -1504,7 +1525,7 @@ class Core extends Base\Core
                 return $payout;
             });
 
-        return $payout;
+        return $this->repo->payout->findOrFail($payout->getId());
     }
 
 
@@ -4105,6 +4126,59 @@ class Core extends Base\Core
         );
 
         return (strtolower($variant) === 'on');
+    }
+
+    public function updatePayoutEntry($payoutId, $input) {
+
+        $this->trace->info(TraceCode::UPDATE_PAYOUT_INPUT, [
+                'payout_id' => $payoutId,
+                'input'     => $input,
+            ]);
+
+        try {
+            $merchantId = $input[Entity::MERCHANT_ID];
+
+            $updates = $this->filterPayoutUpdateFields($input);
+            $this->trace->info(TraceCode::UPDATE_PAYOUT_INPUT, [
+                'payout_id' => $payoutId,
+                'updates' => $updates,
+            ]);
+
+            (new Repository())->updatePayout($payoutId, $merchantId, $updates);
+
+            return [
+                Entity::STATUS => "SUCCESS",
+                Entity::ERROR  => NULL,
+            ];
+
+        } catch (\Exception $e) {
+
+            $this->trace->error(TraceCode::UPDATE_PAYOUT_INPUT_FAILURE, [
+                'payout_id' => $payoutId,
+                'message'      => $e->getMessage()
+            ]);
+
+            return [
+                Entity::STATUS => "FAIL",
+                Entity::ERROR  => $e->getMessage(),
+            ];
+        }
+
+    }
+
+    public function filterPayoutUpdateFields($input)
+    {
+        $updatableFields = [
+            Entity::STATUS => true
+        ];
+
+        foreach ($input as $key => $item) {
+            if (isset($updatableFields[$key]) == false) {
+                unset($input[$key]);
+            }
+        }
+
+        return $input;
     }
 
     public function prepareTemplateAndDispatchEmail($approverList)

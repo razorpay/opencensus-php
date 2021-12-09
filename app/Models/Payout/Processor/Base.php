@@ -994,11 +994,12 @@ class Base extends BaseCore
                         $payout->setStatus(Status::CREATED);
                     }
 
-                    if ($payout->getStatus() === Status::SCHEDULED or
-                        $payout->getStatus() === Status::QUEUED)
+                    if (($payout->getStatus() === Status::SCHEDULED) or
+                        ($payout->getStatus() === Status::QUEUED) or
+                        ($payout->getStatus() === Status::PENDING))
                     {
-                        if ($payout->getTransactionId() !== null and
-                            $this->app['basicauth']->isPayoutService())
+                        if (($payout->getTransactionId() !== null) and
+                            ($this->app['basicauth']->isPayoutService() === true))
                         {
                             $payout->setStatus(Status::CREATED);
                         }
@@ -2540,7 +2541,9 @@ class Base extends BaseCore
 
                 $status = $params[Payout\Entity::STATUS];
 
-                $payout = $this->repo->transaction(function () use ($input, $id, $status)
+                $workflowDetails = $params['workflow_details'];
+
+                $payout = $this->repo->transaction(function () use ($input, $id, $status, $workflowDetails)
                 {
                     $payout = $this->createPayoutEntity($input);
 
@@ -2565,6 +2568,8 @@ class Base extends BaseCore
                     {
                         $this->processSourceDetails($sourceDetails, $payout);
                     }
+
+                    $this->createWorkflowEntityMapEntry($workflowDetails, $payout);
 
                     $this->trace->info(TraceCode::PAYOUT_CREATED_FOR_MICROSERVICE,
                         [
@@ -2605,6 +2610,20 @@ class Base extends BaseCore
             ]);
 
         return $response;
+    }
+
+    public function createWorkflowEntityMapEntry(array $workflowDetails, Payout\Entity $payout) {
+
+        $workflowServiceEnabled = $workflowDetails['workflow_service_enabled'];
+
+        if ($workflowServiceEnabled == true) {
+            $input = [
+                EntityMap\Entity::WORKFLOW_ID => $workflowDetails[Entity::ID],
+                EntityMap\Entity::CONFIG_ID => $workflowDetails[EntityMap\Entity::CONFIG_ID]
+            ];
+
+            (new EntityMap\Core)->create($input, $payout);
+        }
     }
 
     public function createWorkflowPayoutEntry(array $params)
@@ -2767,6 +2786,11 @@ class Base extends BaseCore
     public function createPayoutServiceTransaction(array $params): array
     {
         $payoutId = $params[Payout\Entity::ID];
+        $this->trace->info(TraceCode::TRANSACTION_CREATE_REQUEST_FROM_MICROSERVICE,
+            [
+                'payout_id' => $payoutId,
+                'params' => $params
+            ]);
 
         return $this->mutex->acquireAndRelease(
             self::LEDGER_CREATION_PAYOUT_SERVICE . $payoutId,
@@ -2786,9 +2810,10 @@ class Base extends BaseCore
 
                     $status = $payout->getStatus();
 
-                    if ($status === Status::CREATE_REQUEST_SUBMITTED or
-                        $status === Status::SCHEDULED or
-                        $status === Status::QUEUED)
+                    if (($status === Status::CREATE_REQUEST_SUBMITTED) or
+                        ($status === Status::SCHEDULED) or
+                        ($status === Status::QUEUED) or
+                        ($status === Status::PENDING))
                     {
                         $payout = $this->processPayoutPostCreate($payout, $queueFlag);
 

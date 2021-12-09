@@ -202,6 +202,19 @@ class PayoutTest extends OAuthTestCase
         return $payout;
     }
 
+    public function testUpdatePayout()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts_service/payout/' . $payout->getPublicId() . '/update';
+        print_r($this->testData[__FUNCTION__]);
+
+        $this->ba->payoutInternalAppAuth();
+        $this->startTest();
+    }
+
     public function testErrorDescriptionForMinimumTransactionAmount()
     {
 

@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow\Service\Adapter;
 class Constants
 {
     const SERVICE_RX                    = 'rx_';
+    const PAYOUT_SERVICE_CALLBACK       = 'payouts_';
 
     const WORKFLOW_TYPE                 = 'workflow_type';
     const PAYOUT_APPROVAL_TYPE          = 'payout-approval';
