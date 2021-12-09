@@ -879,8 +879,8 @@ export default class HomeContainer extends Component {
 
   fetchReferredMerchants = async () => {
     const res = await fetchModalConfigDetails('onboarding');
-
-    if (res?.data?.referral_success_popup_count != 0) {
+    const referralSuccessCount = res?.data?.referral_success_popup_count ?? 0;
+    if (parseInt(referralSuccessCount, 10) !== 0) {
       this.setState({
         referredMerchants: res.data.referee_name,
         referredMerchantsAmount: res.data.referral_amount,
