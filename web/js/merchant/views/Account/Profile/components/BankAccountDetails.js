@@ -15,6 +15,7 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 
 const BankAccountDetails = ({
   bankAccount,
+  bank_detail_update_workflow,
   onChangeBankAccountDetails,
   isBankAccountChangeAllowed,
   settlement_amount,
@@ -59,7 +60,9 @@ const BankAccountDetails = ({
     isBankAccountChangeAllowed !== null &&
     !user.blockBankAccountUpdate() &&
     user.activation_status === 'activated' &&
-    !user.isOrgAxis;
+    !user.isOrgAxis &&
+    (bank_detail_update_workflow?.workflow_exists === false ||
+      !['open', 'approved'].includes(bank_detail_update_workflow?.workflow_status));
 
   return (
     <div class="panel panel-default" ref={bankAccountSectionRef}>
@@ -104,6 +107,17 @@ const BankAccountDetails = ({
               Request under review
             </span>
           ))}
+        <WorkflowStatus
+          roles={[rolesList.OWNER]}
+          workflowType={WORKFLOWS.BANK_DETAIL_UPDATE}
+          reviewStatus=" Your request to update your bank account has been received. Our team is going
+                    through the information provided by you."
+          onReplyClick={() =>
+            openNeedsClarificationModal({
+              workflowType: WORKFLOWS.BANK_DETAIL_UPDATE,
+            })
+          }
+        />
       </div>
       <div class="list-group details-row-container">
         <DetailRow label="IFSC Code" value={bankAccount.ifsc} />
@@ -112,17 +126,6 @@ const BankAccountDetails = ({
           label={() => (
             <div class="bank-account">
               <span>Beneficiary</span>
-              <WorkflowStatus
-                roles={[rolesList.OWNER]}
-                workflowType={WORKFLOWS.BANK_DETAIL_UPDATE}
-                reviewStatus=" Your request to update your bank account has been received. Our team is going
-                    through the information provided by you."
-                onReplyClick={() =>
-                  openNeedsClarificationModal({
-                    workflowType: WORKFLOWS.BANK_DETAIL_UPDATE,
-                  })
-                }
-              />
             </div>
           )}
           value={bankAccount.name}
@@ -134,7 +137,7 @@ const BankAccountDetails = ({
 
 const mapStateToProps = (state) => ({
   user: state.session.user,
-  workflows: state.workflows,
+  bank_detail_update_workflow: state.workflows[WORKFLOWS.BANK_DETAIL_UPDATE],
 });
 
 export default withRouter(
