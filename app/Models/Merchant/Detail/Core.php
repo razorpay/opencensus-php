@@ -4942,9 +4942,19 @@ class Core extends Base\Core
 
         foreach ($requestCreators as $requestCreator)
         {
-            if ($requestCreator instanceof requestDispatcher\RequestDispatcher)
+            try
             {
-                $requestCreator->triggerBVSRequest();
+                if ($requestCreator instanceof requestDispatcher\RequestDispatcher)
+                {
+                    $requestCreator->triggerBVSRequest();
+                }
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(TraceCode::BVS_VERIFICATION_ERROR, ['message'        => $e->getMessage(),
+                                                                        'merchantId'     => $merchant->getId(),
+                                                                        'requestCreator' => get_class($requestCreator)]);
+
             }
         }
     }

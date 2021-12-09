@@ -5144,7 +5144,8 @@ class Core extends Base\Core
 
         $variant = $this->app->razorx->getTreatment($merchantId,
                                                     $experimentName,
-                                                    $mode);
+                                                    $mode,
+                                                    2);
 
         return ($variant === Constants::RAZORX_EXPERIMENT_ON);
     }
