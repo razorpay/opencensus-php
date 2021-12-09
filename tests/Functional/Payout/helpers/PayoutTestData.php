@@ -15462,6 +15462,7 @@ return [
                     0 => [
                         'entity' => 'payout',
                         'fund_account_id' => 'fa_100000000000fa',
+                        'fund_account' => [],
                         'amount' => 10000,
                         'currency' => 'INR',
                         'notes' =>
@@ -15474,6 +15475,7 @@ return [
                         'utr' => NULL,
                         'user' => [],
                         'mode' => 'NEFT',
+                        'workflow_history' => [],
                         'reference_id' => NULL,
                         'narration' => 'Test Merchant Fund Transfer',
                         'batch_id' => NULL,

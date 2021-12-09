@@ -995,10 +995,11 @@ class Core extends Base\Core
                 TraceCode::FEATURE_GET_STATUS_REQUEST,
                 [
                     Entity::FEATURE     => $featureName,
-                    Entity::MERCHANT_ID => $entityId
+                    Entity::ENTITY_TYPE => $entityType,
+                    Entity::ENTITY_ID   => $entityId,
                 ]);
 
-            $entityId = $this->merchant->getId();
+            $entityId = $entityId ?? $this->merchant->getId();
 
             $response = new Base\Collection;
 
@@ -1018,7 +1019,8 @@ class Core extends Base\Core
                 TraceCode::FEATURE_GET_STATUS_FAILED,
                 [
                     Entity::FEATURE     => $featureName,
-                    Entity::MERCHANT_ID => $entityId,
+                    Entity::ENTITY_TYPE => $entityType,
+                    Entity::ENTITY_ID   => $entityId,
                     'error'             => $e->getMessage()
                 ]);
         }

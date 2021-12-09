@@ -211,7 +211,7 @@ class Service extends Base\Service
      * @return array
      * @throws Exception\BadRequestException
      */
-    public function checkFeatureEnabled($entityType, $entityId, $featureName): array
+    public function checkFeatureEnabled($entityType = Constants::MERCHANT, $entityId, $featureName): array
     {
         // Not removed from params
         // As in future iteration, there will be some checks added for Entity Type and ID
@@ -219,11 +219,7 @@ class Service extends Base\Service
 
         $featureCore = new Core;
 
-        $entityType = $entityType ?? Constants::MERCHANT;
-
         $entityId = $entityId ?? $this->merchant->getId();
-
-        $entityType = Constants::MERCHANT;
 
         return $featureCore->getStatus($entityType, $entityId, $featureName);
     }
