@@ -1,196 +1,109 @@
-import React from 'react';
+import React, { useReducer, useState, useRef, useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
-
-import Slider from 'common/ui/Slider';
 import { openSlider } from 'merchant_common/reducers/slider';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import {
-  fetchOngoingDowntimes,
-  fetchScheduledDowntimes,
-  fetchHistoricalDowntimes,
-} from './service';
+import { fetchOngoingDowntimes } from './service';
 import Spinner from 'common/ui/Spinner';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import CardsDetails from './CardsDetails';
-import UPIDetails from './UPIDetails';
-import NetBankingDetails from './NetBankingDetails';
-import CardsInfoDetails from './CardsInfoDetails';
-import UPIInfoDetails from './UPIInfoDetails';
-import NetBankingInfoDetails from './NetBankingInfoDetails';
-import UpcomingMaintenance from './UpcomingMaintenance';
-import HistoricalDowntimes from './HistoricalDowntimes';
 import { classList } from 'common/utils/rzp-utils';
 import FailedStatus from './FailedStatus';
 import OverallStatus from './OverallStatus';
+import Slider from 'common/ui/Slider';
 
-import moment from 'moment';
+import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
-class StatusDetails extends React.Component {
-  constructor(props) {
-    super(props);
+const UPIDetails = lazy(() => import(/* webpackChunkName: 'UPIDetails' */ './UPIDetails'));
+const CardsDetails = lazy(() => import(/* webpackChunkName: 'CardsDetails' */ './CardsDetails'));
 
-    this.state = {
-      sliderOpen: false,
-      time: '',
-      timeObj: '',
-      mode: 'summary',
-      paymentMethod: 'Cards',
-      cardDowntimes: {},
-      upiDowntimes: {},
-      netBankingDowntimes: {},
-      overallStatus: '',
-      methodsDown: [],
-      cardNetworksOperational: [],
-      cardIssuersOperational: [],
-      vpaOperational: [],
-      pspOperational: [],
-      netBankingOperational: [],
-      scheduledDowntimes: {},
-      isL1Loading: true,
-      isL2Loading: true,
-      skip: 0,
-      count: 5,
-      timeForNextAPI: 90,
-      disableRefresh: true,
-      errorInFetchingData: false,
-    };
+const NetBankingDetails = lazy(() =>
+  import(/* webpackChunkName: 'NetBankingDetails' */ './NetBankingDetails'),
+);
+const CardsInfoDetails = lazy(() =>
+  import(/* webpackChunkName: 'CardsInfoDetails' */ './CardsInfoDetails'),
+);
+const UPIInfoDetails = lazy(() =>
+  import(/* webpackChunkName: 'UPIInfoDetails' */ './UPIInfoDetails'),
+);
+const NetBankingInfoDetails = lazy(() =>
+  import(/* webpackChunkName: 'NetBankingInfoDetails' */ './NetBankingInfoDetails'),
+);
+const UpcomingMaintenance = lazy(() =>
+  import(/* webpackChunkName: 'UpcomingMaintenance' */ './UpcomingMaintenance'),
+);
+const HistoricalDowntimes = lazy(() =>
+  import(/* webpackChunkName: 'HistoricalDowntimes' */ './HistoricalDowntimes'),
+);
+
+// Initial state for status details page.
+const initialState = {
+  overallStatus: '',
+  cardDowntimes: {},
+  upiDowntimes: {},
+  netBankingDowntimes: {},
+  cardNetworksOperational: [],
+  cardIssuersOperational: [],
+  vpaOperational: [],
+  pspOperational: [],
+  netBankingOperational: [],
+  methodsDown: [],
+  time: '',
+  timeObj: null,
+};
+
+const initialReduerState = {
+  statusDetails: initialState,
+  isLoading: false,
+  errorInFetchingData: false,
+};
+
+// Action for reducer.
+const SET_STATUSDETAIL_LOADING = 'SET_STATUSDETAIL_LOADING';
+const SET_STATUSDETAIL = 'SET_STATUSDETAIL';
+const SET_STATUSDETAIL_FAILURE = 'SET_STATUSDETAIL_FAILURE';
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case SET_STATUSDETAIL_LOADING:
+      return {
+        ...state,
+        errorInFetchingData: false,
+        isLoading: true,
+      };
+    case SET_STATUSDETAIL:
+      return {
+        ...state,
+        statusDetails: action.payload,
+        isLoading: false,
+      };
+    case SET_STATUSDETAIL_FAILURE:
+      return {
+        ...state,
+        isLoading: false,
+        errorInFetchingData: true,
+      };
+    default:
+      return state;
   }
+};
 
-  checkForDebounce = () => {
-    const now = new Date();
-    const diffInSec = Math.ceil((now - this.state.timeObj) / 1000);
-    if (diffInSec > 30) {
-      this.setState({ disableRefresh: false, timeForNextAPI: diffInSec });
-    } else {
-      this.setState({ disableRefresh: true, timeForNextAPI: diffInSec });
-    }
-  };
+function StatusDetails(props) {
+  const [state, dispatch] = useReducer(reducer, initialReduerState);
+  const [mode, setMode] = useState('summary');
+  const [paymentMethod, setPaymentMethod] = useState('Cards');
+  const [isSliderOpen, setIsSliderOpen] = useState(false);
+  const [isRefreshDisable, setIsRefreshDisable] = useState(false);
+  const [timeForNextAPI, setTimeForNextAPI] = useState(0);
 
-  refreshData = () => {
-    if (this.state.mode === 'summary') {
-      this.setOngoingDowntimes();
-    } else {
-      this.setOngoingDowntimes();
-      this.setScheduledAndHistoricalDowntimes(this.state.paymentMethod);
-    }
-  };
+  const intervalForTime = useRef(null);
+  const intervalForDebounce = useRef(null);
 
-  onUserRefresh = () => {
-    this.setState({ disableRefresh: true });
-    this.refreshData();
-    clearInterval(this.intervalForTime);
-    this.intervalForTime = setInterval(() => this.refreshData(), 300000);
-  };
+  const { openSlider: sliderOpen, AppMode } = props;
 
-  switchToInfoView = (paymentMethod) => {
-    this.setState({ mode: 'info', paymentMethod });
-    this.setScheduledAndHistoricalDowntimes(paymentMethod);
-  };
-
-  switchToSummaryView = () => {
-    this.setState({ mode: 'summary' });
-  };
-
-  componentWillMount() {
-    const time = moment().format('hh:mm');
-    this.setState({
+  const {
+    statusDetails: {
       time,
-      timeObj: moment(),
-    });
-    this.setOngoingDowntimes();
-  }
-
-  setOngoingDowntimes = () => {
-    this.setState({ isL1Loading: true });
-    fetchOngoingDowntimes()
-      .then((response) => {
-        this.setState(response);
-        this.setState({ errorInFetchingData: false });
-      })
-      .catch(() => {
-        this.setState({ isL1Loading: false, errorInFetchingData: true });
-      });
-  };
-
-  setScheduledAndHistoricalDowntimes = (paymentMethod) => {
-    this.setState({ isL2Loading: true });
-    fetchScheduledDowntimes()
-      .then((scheduledDowntimes) => {
-        this.setState({ scheduledDowntimes });
-      })
-      .catch((err) => {
-        throw new Error(err);
-      });
-
-    this.setHistoricalDowntimes(paymentMethod);
-  };
-
-  setHistoricalDowntimes = async (paymentMethod) => {
-    try {
-      const params = [this.state.skip, this.state.count, paymentMethod];
-      const data = await fetchHistoricalDowntimes(...params);
-      this.setState({
-        isL2Loading: false,
-      });
-      return data;
-    } catch (err) {
-      throw new Error(err);
-    }
-  };
-
-  handleDocumentClick = (event) => {
-    const target = event.target;
-    const sliderContent = document.querySelector('.content-wrapper.status-details');
-    const sliderToggle = document.querySelector('.status-details-slide-toggle');
-    const statusDetails = document.querySelector(
-      '.panel.panel-default.SliderPanel.status-details--container',
-    );
-    if (
-      (sliderContent && sliderContent.contains(target)) ||
-      (sliderToggle && sliderToggle.contains(target)) ||
-      (statusDetails && statusDetails.contains(target))
-    ) {
-      return;
-    }
-    this.hideSlider();
-  };
-
-  componentDidMount() {
-    this.intervalForDebounce = setInterval(() => {
-      this.checkForDebounce();
-    }, 1000);
-    this.intervalForTime = setInterval(() => this.refreshData(), 300000);
-    document.addEventListener('click', this.handleDocumentClick, true);
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.intervalForTime);
-    clearInterval(this.intervalForDebounce);
-    document.removeEventListener('click', this.handleDocumentClick, true);
-  }
-
-  hideSlider = () => {
-    this.setState({ mode: 'summary', sliderOpen: false });
-  };
-
-  showSlider = () => {
-    this.props.openSlider();
-    this.setState({ sliderOpen: true });
-  };
-
-  handleSliderToggleClick = () => {
-    return this.state.sliderOpen ? this.hideSlider() : this.showSlider();
-  };
-
-  render() {
-    const {
-      sliderOpen,
-      time,
-      mode,
-      disableRefresh,
-      paymentMethod,
-      isL2Loading,
-      timeForNextAPI,
+      timeObj,
       cardDowntimes,
       cardNetworksOperational,
       cardIssuersOperational,
@@ -199,82 +112,190 @@ class StatusDetails extends React.Component {
       vpaOperational,
       netBankingDowntimes,
       netBankingOperational,
-      scheduledDowntimes,
-      isL1Loading,
-      errorInFetchingData,
       overallStatus,
       methodsDown,
-    } = this.state;
-    const { AppMode } = this.props;
+    },
+    isLoading,
+    errorInFetchingData,
+  } = state;
 
-    return (
-      <main className={classList('status-details', sliderOpen && 'status-details--active')}>
-        {/* Hidden the Bank Downtime from Test Mode*/}
-        {AppMode === 'live' && (
-          <div className="status-details-slide-toggle">
-            {/* 
+  const setOngoingDowntimes = useCallback(() => {
+    dispatch({ type: SET_STATUSDETAIL_LOADING });
+    fetchOngoingDowntimes()
+      .then((response) => {
+        dispatch({
+          type: SET_STATUSDETAIL,
+          payload: { ...state.statusDetails, ...response },
+        });
+      })
+      .catch(() => {
+        dispatch({ type: SET_STATUSDETAIL_FAILURE });
+      });
+  }, [state.statusDetails]);
+
+  const checkForDebounce = useCallback(() => {
+    const now = new Date();
+    const diffInSec = Math.floor((now - timeObj) / 1000);
+    if (diffInSec > 30) {
+      setIsRefreshDisable(false);
+      setTimeForNextAPI(0);
+      clearInterval(intervalForDebounce.current);
+    } else {
+      setTimeForNextAPI(diffInSec);
+    }
+  }, [timeObj]);
+
+  const refreshData = useCallback(() => {
+    setOngoingDowntimes();
+  }, [setOngoingDowntimes]);
+
+  const startInterval = useCallback(() => {
+    intervalForDebounce.current = setInterval(() => {
+      checkForDebounce();
+    }, 1000);
+    intervalForTime.current = setInterval(() => refreshData(), 300000);
+  }, [checkForDebounce, refreshData]);
+
+  const endInterval = () => {
+    clearInterval(intervalForTime.current);
+    clearInterval(intervalForDebounce.current);
+  };
+
+  useEffect(() => {
+    endInterval();
+
+    if (isSliderOpen) {
+      startInterval();
+    }
+  }, [isSliderOpen, startInterval]);
+
+  const onUserRefresh = () => {
+    refreshData();
+    setIsRefreshDisable(true);
+  };
+
+  const switchToInfoView = (pmtMethod) => {
+    setMode('info');
+    setPaymentMethod(pmtMethod);
+  };
+
+  const switchToSummaryView = () => {
+    setMode('summary');
+  };
+
+  const hideSlider = useCallback(() => {
+    setMode('summary');
+    endInterval();
+    setIsSliderOpen(false);
+  }, []);
+
+  const showSlider = () => {
+    setOngoingDowntimes();
+    setIsRefreshDisable(true);
+    setTimeForNextAPI(0);
+    sliderOpen();
+
+    setIsSliderOpen(true);
+  };
+
+  const handleDocumentClick = useCallback(
+    (event) => {
+      const target = event.target;
+      const sliderContent = document.querySelector('.content-wrapper.status-details');
+      const sliderToggle = document.querySelector('.status-details-slide-toggle');
+      const statusDetails = document.querySelector(
+        '.panel.panel-default.SliderPanel.status-details--container',
+      );
+      if (
+        (sliderContent && sliderContent.contains(target)) ||
+        (sliderToggle && sliderToggle.contains(target)) ||
+        (statusDetails && statusDetails.contains(target))
+      ) {
+        return;
+      }
+      hideSlider();
+    },
+    [hideSlider],
+  );
+
+  useEffect(() => {
+    document.addEventListener('click', handleDocumentClick, true);
+
+    return () => document.removeEventListener('click', handleDocumentClick, true);
+  }, []);
+
+  const handleSliderToggleClick = () => {
+    return isSliderOpen ? hideSlider() : showSlider();
+  };
+
+  return (
+    <main className={classList('status-details', isSliderOpen && 'status-details--active')}>
+      {/* Hidden the Bank Downtime from Test Mode*/}
+      {AppMode === 'live' && (
+        <div className="status-details-slide-toggle">
+          {/*
               For not we will only use the icon not text so commented the text variant for
               Kept the code commented for future references
              */}
-            {/* {!showMobileNav ? (
+          {/* {!showMobileNav ? (
               <span onClick={this.handleSliderToggleClick}>Bank Downtimesss</span>
             ) : ( */}
-            <i className="i i-downtime" onClick={this.handleSliderToggleClick} />
-            {/* )} */}
-          </div>
-        )}
-
-        {sliderOpen ? (
-          <Slider>
-            <ErrorBoundary resetOnProps>
-              <div className="content-wrapper content-sm txn-details status-details">
-                <div className="panel panel-default SliderPanel status-details--container">
-                  <div className="panel-heading">
-                    {mode === 'summary' ? (
-                      <b>Payment Methods Status</b>
-                    ) : (
-                      <>
-                        <img
-                          className="icon refresh-action"
-                          src={`${window.cdnBaseUrl}/static/assets/downtimes/arrow-left.svg`}
-                          onClick={this.switchToSummaryView}
-                          alt="Back button"
-                        />
-                        <span className="title">{paymentMethod}</span>
-                        <span className="description">Last updated {time} today </span>
-                        {disableRefresh ? (
-                          <span>
-                            <img
-                              src={`${window.cdnBaseUrl}/static/assets/downtimes/refresh-disabled.svg`}
-                              className="refresh-action"
-                              alt="Refresh is disabled"
-                            />
-                            <Popover align="bottom" theme="light">
-                              <PopoverBody>
-                                <div>Try again in {30 - timeForNextAPI} seconds</div>
-                              </PopoverBody>
-                            </Popover>
-                          </span>
-                        ) : (
+          <i className="i i-downtime" onClick={handleSliderToggleClick} />
+          {/* )} */}
+        </div>
+      )}
+      {isSliderOpen ? (
+        <Slider>
+          <ErrorBoundary resetOnProps>
+            <div className="content-wrapper content-sm txn-details status-details">
+              <div className="panel panel-default SliderPanel">
+                <div className="panel-heading">
+                  {mode === 'summary' ? (
+                    <b>Payment Methods Status</b>
+                  ) : (
+                    <>
+                      <img
+                        className="icon refresh-action"
+                        src={`${window.cdnBaseUrl}/static/assets/downtimes/arrow-left.svg`}
+                        onClick={switchToSummaryView}
+                        alt="Back button"
+                      />
+                      <span className="title">{paymentMethod}</span>
+                      <span className="description">Last updated {time} today </span>
+                      {isRefreshDisable ? (
+                        <span>
                           <img
-                            src={`${window.cdnBaseUrl}/static/assets/downtimes/refresh-cw.svg`}
-                            className="icon refresh-action"
-                            onClick={() => {
-                              if (!disableRefresh) {
-                                this.onUserRefresh();
-                              }
-                            }}
-                            alt="Refresh"
+                            src={`${window.cdnBaseUrl}/static/assets/downtimes/refresh-disabled.svg`}
+                            className="refresh-action"
+                            alt="Refresh is disabled"
                           />
-                        )}
-                      </>
-                    )}
-                  </div>
+                          <Popover align="bottom" theme="light">
+                            <PopoverBody>
+                              <div>Try again in {30 - timeForNextAPI} seconds</div>
+                            </PopoverBody>
+                          </Popover>
+                        </span>
+                      ) : (
+                        <img
+                          src={`${window.cdnBaseUrl}/static/assets/downtimes/refresh-cw.svg`}
+                          className="icon refresh-action"
+                          onClick={() => {
+                            if (!isRefreshDisable) {
+                              onUserRefresh();
+                            }
+                          }}
+                          alt="Refresh"
+                        />
+                      )}
+                    </>
+                  )}
+                </div>
+                <SuspenseWithLoader>
                   <div className="SliderPanel__Body">
                     <div className="panel-body ">
                       {mode === 'info' ? (
                         <div>
-                          {isL2Loading ? (
+                          {isLoading ? (
                             <div className="page-spinner-container">
                               <Spinner />
                             </div>
@@ -305,29 +326,26 @@ class StatusDetails extends React.Component {
                                 </p>
                               </section>
 
-                              <UpcomingMaintenance
-                                paymentMethod={paymentMethod}
-                                scheduledDowntimes={scheduledDowntimes}
-                              />
+                              <UpcomingMaintenance paymentMethod={paymentMethod} />
                               <HistoricalDowntimes paymentMethod={paymentMethod} />
                             </div>
                           )}
                         </div>
                       ) : (
                         <div>
-                          {isL1Loading ? (
+                          {isLoading ? (
                             <div className="page-spinner-container">
                               <Spinner />
                             </div>
                           ) : errorInFetchingData ? (
-                            <FailedStatus onUserRefresh={this.onUserRefresh} />
+                            <FailedStatus onUserRefresh={onUserRefresh} />
                           ) : (
                             <>
                               <div className="main-info">
                                 <OverallStatus status={overallStatus} downMethods={methodsDown} />
                                 <div className="date-and-time">
                                   Last updated {time} today{' '}
-                                  {disableRefresh ? (
+                                  {isRefreshDisable ? (
                                     <span>
                                       <img
                                         src={`${window.cdnBaseUrl}/static/assets/downtimes/refresh-disabled.svg`}
@@ -345,8 +363,8 @@ class StatusDetails extends React.Component {
                                       src={`${window.cdnBaseUrl}/static/assets/downtimes/refresh-cw.svg`}
                                       className="icon refresh-action"
                                       onClick={() => {
-                                        if (!disableRefresh) {
-                                          this.onUserRefresh();
+                                        if (!isRefreshDisable) {
+                                          onUserRefresh();
                                         }
                                       }}
                                       alt="Refresh"
@@ -357,15 +375,15 @@ class StatusDetails extends React.Component {
                               <div className="details-section">
                                 <CardsDetails
                                   cardDowntimes={cardDowntimes}
-                                  switchToInfoView={this.switchToInfoView}
+                                  switchToInfoView={switchToInfoView}
                                 />
                                 <UPIDetails
                                   upiDowntimes={upiDowntimes}
-                                  switchToInfoView={this.switchToInfoView}
+                                  switchToInfoView={switchToInfoView}
                                 />
                                 <NetBankingDetails
                                   netBankingDowntimes={netBankingDowntimes}
-                                  switchToInfoView={this.switchToInfoView}
+                                  switchToInfoView={switchToInfoView}
                                 />
                               </div>
                               <div className="status-disclaimer">
@@ -379,14 +397,13 @@ class StatusDetails extends React.Component {
                       )}
                     </div>
                   </div>
-                </div>
+                </SuspenseWithLoader>
               </div>
-            </ErrorBoundary>
-          </Slider>
-        ) : null}
-      </main>
-    );
-  }
+            </div>
+          </ErrorBoundary>
+        </Slider>
+      ) : null}
+    </main>
+  );
 }
-
 export default connect(null, { openSlider })(StatusDetails);

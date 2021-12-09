@@ -15,8 +15,8 @@ import NavFragment from './NavFragment';
 import AppSwitcher from './AppSwitcher';
 import ProfileDropdown from './ProfileDropdown';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import StatusDetails from './StatusDetails/index';
 import SupportRequestDropdown from './SupportRequestDropdown';
+import StatusDetails from './StatusDetails/index';
 
 const analyticsAction = (action) => {
   window?.rzpAnalytics?.({
