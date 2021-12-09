@@ -392,6 +392,18 @@ class Service extends Base\Service
                 $value = isset($value) ? explode(",",$value) : null;
             }
 
+            if ($key === Entity::PAYMENT_NETWORK)
+            {
+                $result = [];
+
+                foreach ($value as $v)
+                {
+                    $result[] = Card\Network::getCode($v);
+                }
+
+                $value = $result;
+            }
+
             if (in_array($key, [Entity::FIXED_RATE, Entity::PERCENT_RATE]))
             {
                 $value = (int)($value*100);
