@@ -315,7 +315,7 @@ return [
         'live'       => env('AWS_DOWNTIME_QUEUE'),
     ],
 
-    'low_balance_config_alerts_cron' => [
+    'low_balance_config_alerts' => [
         'test'       =>  env('AWS_LOW_BALANCE_CONFIG_ALERTS_TEST_QUEUE'),
         'live'       =>  env('AWS_LOW_BALANCE_CONFIG_ALERTS_LIVE_QUEUE'),
     ],
