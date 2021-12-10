@@ -2632,4 +2632,32 @@ class VirtualAccountTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testVpaValidationWithDuplicateVpaAddressAndDifferentEntityType()
+    {
+        $response = $this->createVirtualAccount([], false, null, null, true, null);
+
+        $vpa = $this->getLastEntity('vpa', true);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->create('vpa', [
+            'username'    => $vpa['username'],
+            'handle'      => $vpa['handle'],
+            'entity_type' => 'contact',
+            'entity_id'   => '1000000contact',
+        ]);
+
+        $vpa = $this->getLastEntity('vpa', true);
+
+        $input          = '<XML><Source>ICICI-EAZYPAY</Source><SubscriberId>' . explode('.', $vpa['username'])[1] . '</SubscriberId><TxnId>YBL457b50e1fa8b452ab996560a0c9bc8be</TxnId></XML>';
+        $virtualUpiRoot = explode('.', $this->vpaTerminal['virtual_upi_root'])[0];
+
+        $rawResponse = $this->ecollectValidateVirtualAccountVpa('upi_icici', $virtualUpiRoot, $input);
+        $response    = (array) simplexml_load_string($rawResponse->content());
+
+        $this->assertEquals($response['ActCode'], '0');
+        $this->assertEquals($response['Message'], 'VALID');
+        $this->assertEquals($response['CustName'], 'Test Merchant');
+        $this->assertEquals($response['TxnId'], 'YBL457b50e1fa8b452ab996560a0c9bc8be');
+    }
 }

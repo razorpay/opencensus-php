@@ -27,6 +27,7 @@ use RZP\Models\VirtualAccountTpv;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature\Constants;
 use RZP\Models\VirtualAccountProducts;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Offline\Device as OfflineDevice;
 
 class Service extends Base\Service
@@ -933,8 +934,12 @@ class Service extends Base\Service
 
         $this->determineAndSetMode();
 
-        $vpaUsername = $vpa;
-        $vpa         = $this->repo->vpa->findByAddress($vpa, true);
+        $vpa = $this->repo->vpa->findByAddressAndEntityTypes($vpa,
+                                                             [
+                                                                 EntityConstants::VIRTUAL_ACCOUNT,
+                                                                 EntityConstants::QR_CODE,
+                                                             ],
+                                                             true);
 
         $vpaSource = null;
 

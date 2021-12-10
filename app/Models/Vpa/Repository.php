@@ -82,4 +82,19 @@ class Repository extends Base\Repository
 
         return $entity;
     }
+
+    public function findByAddressAndEntityTypes($address, array $entityTypes, bool $withTrashed = false)
+    {
+        $query = $this->newQuery()
+                      ->address($address)
+                      ->whereIn(Entity::ENTITY_TYPE, $entityTypes)
+                      ->latest();
+
+        if ($withTrashed === true)
+        {
+            $query = $query->withTrashed();
+        }
+
+        return $query->first();
+    }
 }

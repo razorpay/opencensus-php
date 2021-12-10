@@ -8,6 +8,7 @@ use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
+use RZP\Constants\Entity as Constants;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Processor extends VirtualAccount\Processor
@@ -105,7 +106,7 @@ class Processor extends VirtualAccount\Processor
     {
         $payeeVpa = $entity->getPayeeVpa();
 
-        $vpa = $this->repo->vpa->findByAddress($payeeVpa, true);
+        $vpa = $this->repo->vpa->findByAddressAndEntityTypes($payeeVpa, [Constants::VIRTUAL_ACCOUNT], true);
 
         if ($vpa === null)
         {
