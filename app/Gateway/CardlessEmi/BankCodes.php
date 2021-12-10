@@ -19,6 +19,7 @@ class BankCodes
         CardlessEmi::FDRL => '10780',                      // Federal Bank
         CardlessEmi::ICIC => '14360',                      // ICICI Bank
         CardlessEmi::HCIN => '13860',                      // Home Credit
+        CardlessEmi::BARB => '19080',                      // Bank of baroda
     ];
 
     public static function getBankCode($ifsc)

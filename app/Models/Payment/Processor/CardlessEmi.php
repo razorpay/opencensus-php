@@ -18,6 +18,7 @@ class CardlessEmi
     const IDFB = 'idfb';
     const ICIC = 'icic';
     const HCIN = 'hcin';
+    const BARB = 'barb';
 
     const HCIN_IFSC = 'HCIN';
 
@@ -40,10 +41,12 @@ class CardlessEmi
         self::IDFB      => 'idfb',
         self::ICIC      => 'icic',
         self::HCIN      => 'hcin',
+        self::BARB      => 'barb',
     ];
 
     public static $supportedBanks = [
         self::FLEXMONEY => [
+            IFSC::BARB,
             IFSC::HDFC,
             IFSC::KKBK,
             IFSC::FDRL,
@@ -55,6 +58,7 @@ class CardlessEmi
 
     public static $defaultDisabledBanks = [
         self::FLEXMONEY => [
+            IFSC::BARB,
             IFSC::FDRL,
             IFSC::IDFB,
             IFSC::HDFC,

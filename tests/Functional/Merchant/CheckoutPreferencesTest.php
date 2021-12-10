@@ -1032,11 +1032,12 @@ class CheckoutPreferencesTest extends TestCase
 
         $response = $this->getPreferences();
 
-        $this->assertEquals(7, count($response['methods']['cardless_emi']));
+        $this->assertEquals(8, count($response['methods']['cardless_emi']));
 
         $this->assertArrayHasKey('kkbk', $response['methods']['cardless_emi']);
         $this->assertArrayHasKey('hdfc', $response['methods']['cardless_emi']);
         $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
+        $this->assertArrayHasKey('barb', $response['methods']['cardless_emi']);
     }
 
     public function testGetCheckoutPreferencesWithAmountGreater()
