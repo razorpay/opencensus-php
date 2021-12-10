@@ -234,7 +234,7 @@ class App extends Component {
 
     this.props.fetchGST();
 
-    const isMobileSignupCareActive = (new User(this.props.user)).isMobileSignupCareActive;
+    const isMobileSignupCareActive = (new User(user)).isMobileSignupCareActive;
     if (isMobileSignupCareActive) {
       this.props.fetchTicketsRaisedByAgents();
     }
