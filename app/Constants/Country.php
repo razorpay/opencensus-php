@@ -257,6 +257,31 @@ class Country
     const QA = "qa";
     const MZ = "mz";
 
+    const AUT = "AUT";
+    const BEL = "BEL";
+    const CZE = "CZE";
+    const DNK = "DNK";
+    const EST = "EST";
+    const FIN = "FIN";
+    const DEU = "DEU";
+    const LVA = "LVA";
+    const LTU = "LTU";
+    const NLD = "NLD";
+    const NOR = "NOR";
+    const POL = "POL";
+    const SVK = "SVK";
+    const ESP = "ESP";
+    const SWE = "SWE";
+    const GBR = "GBR";
+    const AUS = "AUS";
+    const NZL = "NZL";
+    const USA = "USA";
+    const CAN = "CAN";
+
+    const COUNTRYNAME = "countryName";
+    const COUNTRYALPHA2CODE = "countryAlpha2Code";
+    const COUNTRYALPHA3CODE = "countryAlpha3Code";
+
     protected static $countryCodeNameMap = [
         self::BD => "bangladesh",
         self::BE => "belgium",
@@ -510,6 +535,52 @@ class Country
         self::MZ => "mozambique",
     ];
 
+    protected static $countryAlpha3CodeMap = [
+        self::AT => self::AUT,
+        self::BE => self::BEL,
+        self::CZ => self::CZE,
+        self::DK => self::DNK,
+        self::EE => self::EST,
+        self::FI => self::FIN,
+        self::DE => self::DEU,
+        self::LV => self::LVA,
+        self::LT => self::LTU,
+        self::NL => self::NLD,
+        self::NO => self::NOR,
+        self::PL => self::POL,
+        self::SK => self::SVK,
+        self::ES => self::ESP,
+        self::SE => self::SWE,
+        self::GB => self::GBR,
+        self::AU => self::AUS,
+        self::NZ => self::NZL,
+        self::US => self::USA,
+        self::CA => self::CAN,
+    ];
+
+    protected static $countryCodeMapping = [
+        self::AT,
+        self::BE,
+        self::CZ,
+        self::DK,
+        self::EE,
+        self::FI,
+        self::DE,
+        self::LV,
+        self::LT,
+        self::NL,
+        self::NO,
+        self::PL,
+        self::SK,
+        self::ES,
+        self::SE,
+        self::GB,
+        self::AU,
+        self::NZ,
+        self::US,
+        self::CA,
+    ];
+
     public static function exists($code)
     {
         return defined(get_class() . '::' . strtoupper($code));
@@ -545,5 +616,30 @@ class Country
         }
 
         return true;
+    }
+
+    /* Obtain the Alpha-3 code by providing the Alpha-2 code of a country 
+    */
+    public static function getCountryAlpha3Code(string $code)
+    {
+        return self::$countryAlpha3CodeMap[$code] ?? null;
+    }
+
+    public static function getcountryDetails()
+    {
+        $data = array();
+
+        foreach (self::$countryCodeMapping as $country) 
+        {
+            $countryDetails = array(
+             self::COUNTRYNAME => Country::getCountryNameByCode($country),
+             self::COUNTRYALPHA2CODE => $country,
+             self::COUNTRYALPHA3CODE => Country::getCountryAlpha3Code($country),
+            );
+
+            array_push($data, $countryDetails);
+        }
+       
+        return $data;
     }
 }

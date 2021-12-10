@@ -1789,6 +1789,9 @@ class Route
         'merchant_patch_purpose_code'              => ['patch',    'merchants/purpose/code',                         'MerchantController@patchMerchantPurposeCode'                       ],
         'user_fetch_purpose_code'                  => ['get',      'users/purpose/code',                             'UserController@getUserDetails'                                     ],
 
+        //Location Route
+        'country_fetch'                            => ['get',      'countries',                                       'LocationController@getCountryDetails'                              ],
+        'state_fetch'                              => ['get',      'states/{id}',                                     'LocationController@getstateDetailsFromCountryCode'                              ],
         //FIRS Document Route
         'firs_document_categorize'                 => ['post',      'merchant/firs',                                 'LambdaController@processLambdaFIRS'                                ],
         'firs_document_fetch'                      => ['get',       'merchant/firs',                                 'DocumentController@fetchFIRSDocuments'                             ],
@@ -3231,6 +3234,8 @@ class Route
         '1cc_country_pincode_get',
         'third_watch_address_check',
         'banking_axis_invitations_send',
+        'country_fetch',
+        'state_fetch',
     ];
 
     public static $device = [
@@ -7025,6 +7030,8 @@ class Route
         'banking_axis_invitations_send'                   => Permission::REJECT_PAYOUT,
         // growth service
         'growth_downtime_for_x'                           => Permission::ENABLE_DOWNTIME_NOTIFICATION_X_DASHBOARD,
+        'country_fetch'                                   => '*',
+        'state_fetch'                                     => '*',   
 
         //FIRS documents
         'firs_document_fetch'                 =>'*',
@@ -8690,10 +8697,11 @@ class Route
             'banking_axis_invitations_send',
             'draft_invitation_fetch',
             'draft_invitation_accept',
-
             'update_serviceability_url',
             'update_coupon_validity_url',
             'update_fetch_coupons_url',
+            'country_fetch',
+            'state_fetch',
         ],
 
         'admin_dashboard' => [
@@ -10546,11 +10554,12 @@ class Route
             'risk_attributes_get',
 
             'create_risk_action',
-
             'merchant_workflow_clarification',
 
             'firs_document_fetch',
             'firs_document_download',
+            'country_fetch',
+            'state_fetch',
         ],
 
         //
