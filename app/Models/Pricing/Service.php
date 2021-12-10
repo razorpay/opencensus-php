@@ -382,7 +382,7 @@ class Service extends Base\Service
     {
         unset($rule[Constants::IDEMPOTENCY_KEY]);
 
-        array_walk($rule, function (&$value, &$key)
+        array_walk($rule, function (&$value, &$key) use ($rule)
         {
             $value = $value === '' ? null : $value;
 
@@ -392,7 +392,7 @@ class Service extends Base\Service
                 $value = isset($value) ? explode(",",$value) : null;
             }
 
-            if ($key === Entity::PAYMENT_NETWORK)
+            if ($rule[Entity::PAYMENT_METHOD] === Method::CARD and $key === Entity::PAYMENT_NETWORK)
             {
                 $result = [];
 
