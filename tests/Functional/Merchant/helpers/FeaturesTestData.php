@@ -2206,6 +2206,18 @@ return [
             ],
             'status_code' => 200,
         ],
-    ]
+    ],
 
+    'testFeatureStatus' => [
+        'request' => [
+            'url' => '/merchants/me/features',
+            'method' => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'features' => []
+            ],
+            'status_code' => 200
+        ]
+    ],
 ];

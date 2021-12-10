@@ -707,7 +707,7 @@ class Processor
             $paymentMethod = $input[Payment\Entity::METHOD] ?? '';
             $paymentMethodsUsingCards = [Payment\Entity::CARD, Payment\Entity::EMI];
             $library = $input['_']['library'] ?? '';
-            $allowedLibraries = [Payment\Analytics\Metadata::CHECKOUTJS, Payment\Analytics\Metadata::HOSTED];
+            $allowedLibraries = [Payment\Analytics\Metadata::CHECKOUTJS, Payment\Analytics\Metadata::HOSTED, Payment\Analytics\Metadata::RAZORPAYJS, Payment\Analytics\Metadata::CUSTOM];
 
             $this->trace->info(
                 TraceCode::TOKENISATION_CONSENT_LOG,
@@ -716,6 +716,7 @@ class Processor
                     'library'       => $library,
                     'method'        => $paymentMethod,
                     'user_consent'  => $input[self::USER_CONSENT_FOR_TOKENISATION] ?? '',
+                    'consent_to_save_card' => $input['consent_to_save_card'] ?? '',
                     'save'          => $input[self::SAVE] ?? '',
                 ]);
 

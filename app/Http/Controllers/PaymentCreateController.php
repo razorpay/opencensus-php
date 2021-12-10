@@ -24,6 +24,7 @@ use RZP\Trace\Tracer;
 use RZP\Error\ErrorCode;
 use RZP\Constants\HashAlgo;
 use RZP\Models\Locale\Core as LocaleCore;
+use RZP\Models\Payment\TokenisationConsent;
 
 class PaymentCreateController extends Controller
 {
@@ -169,6 +170,19 @@ class PaymentCreateController extends Controller
      */
     public function postCreatePaymentCheckoutCallback()
     {
+        $input = Request::all();
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $tokenisationConsent = new TokenisationConsent();
+
+        if($tokenisationConsent->showTokenisationConsentView($input, $merchant) === true)
+        {
+            $tokenisationConsent->logTokenisationConsentViewRequest($input);
+
+            return $tokenisationConsent->returnTokenisationConsentView($input);
+        }
+
         $ret = $this->createPayment();
 
         if ((is_array($ret)) and
@@ -202,6 +216,15 @@ class PaymentCreateController extends Controller
         $input = Request::all();
 
         $startTime = microtime(true);
+
+        $tokenisationConsent = new TokenisationConsent();
+
+        if($tokenisationConsent->checkIfRequestIsFromTokenisationConsentView($input) === true)
+        {
+            $input = $tokenisationConsent->decryptCardDetails($input);
+        }
+
+        $input = $this->setParametersBasedOnConsentToSaveCard($input);
 
         (new Payment\Metric())->pushCheckoutSubmitRequestMetrics($input, $startTime);
 
@@ -1623,5 +1646,27 @@ class PaymentCreateController extends Controller
         ]);
 
         $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_INITIATED, null, null, $metaDetails, $properties);
+    }
+
+    protected function setParametersBasedOnConsentToSaveCard(array $input): array
+    {
+        $library = $input['_']['library'] ?? '';
+        $allowedLibraries = [Payment\Analytics\Metadata::RAZORPAYJS, Payment\Analytics\Metadata::CUSTOM];
+
+        if((isset($input['consent_to_save_card']) === true) and
+            (in_array($library, $allowedLibraries, true) === true))
+        {
+            if(isset($input['card']['number']) === true)
+            {
+                $input['save'] = $input['consent_to_save_card'];
+            }
+            elseif((isset($input['token']) === true) and
+                    (isset($input['card']['cvv']) === true))
+            {
+                $input['user_consent_for_tokenisation'] = $input['consent_to_save_card'];
+            }
+        }
+
+        return $input;
     }
 }

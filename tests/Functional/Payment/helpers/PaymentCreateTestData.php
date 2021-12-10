@@ -859,5 +859,85 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'testUserConsentPageWithNewCard' => [
+        'response' => [
+            'input' => [
+                'amount' => '50000',
+                'currency' => 'INR',
+                'contact' => '9918899029',
+                '_[library]' => 'razorpayjs',
+                'save' => '1',
+                'method' => 'card',
+                'customer_id' => 'cust_100000customer'
+            ]
+        ]
+    ],
+
+    'testUserConsentPageWithEmiMethodForNewCard' => [
+        'response' => [
+            'input' => [
+                'amount' => '50000',
+                'currency' => 'INR',
+                'contact' => '9918899029',
+                '_[library]' => 'razorpayjs',
+                'save' => '1',
+                'method' => 'emi',
+                'customer_id' => 'cust_100000customer'
+            ]
+        ]
+    ],
+
+    'testUserConsentPageWithSavedCard' => [
+        'response' => [
+            'input' => [
+                'amount' => '50000',
+                'currency' => 'INR',
+                'contact' => '9918899029',
+                '_[library]' => 'razorpayjs',
+                'method' => 'card',
+                'customer_id' => 'cust_100000customer',
+            ]
+        ]
+    ],
+
+    'testUserConsentPageWithEmiMethodForSavedCard' => [
+        'response' => [
+            'input' => [
+                'amount' => '50000',
+                'currency' => 'INR',
+                'contact' => '9918899029',
+                '_[library]' => 'razorpayjs',
+                'method' => 'emi',
+                'customer_id' => 'cust_100000customer',
+            ]
+        ]
+    ],
+
+    'testUserConsentPageForSavedCardWithToken' => [
+        'response' => [
+            'input' => [
+                'amount' => '50000',
+                'currency' => 'INR',
+                'contact' => '9918899029',
+                '_[library]' => 'razorpayjs',
+                'method' => 'card',
+                'customer_id' => 'cust_100000customer',
+            ]
+        ]
+    ],
+
+    'testUserConsentPageForCustomLibrary' => [
+        'response' => [
+            'input' => [
+                'amount' => '50000',
+                'currency' => 'INR',
+                'contact' => '9918899029',
+                '_[library]' => 'custom',
+                'method' => 'card',
+                'customer_id' => 'cust_100000customer',
+            ]
+        ]
+    ],
 ];
 

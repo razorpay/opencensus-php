@@ -31,6 +31,7 @@ use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class PaymentCreateTest extends TestCase
 {
@@ -6729,4 +6730,486 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals('processed', $refund['status']);
     }
 
+    public function testUserConsentPageWithNewCard()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['save'] = '1';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/checkout',
+            'content' => $payment
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $response->assertViewIs('tokenisation.tokenisationConsentForm');
+
+        $responseContent = $response->getOriginalContent()->getData();
+
+        $card = $this->app['encrypter']->decrypt($responseContent['input']['card']);
+
+        $this->assertEquals($payment['card']['cvv'], $card['cvv']);
+
+        $this->assertEquals($payment['card']['number'], $card['number']);
+
+        $expectedResponse = $this->testData[__FUNCTION__]['response'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $responseContent);
+    }
+
+    public function testUserConsentPageWithEmiMethodForNewCard()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->enableEmi();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['save'] = '1';
+        $payment['method'] = 'emi';
+        $payment['emi_duration'] = '9';
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/checkout',
+            'content' => $payment
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $response->assertViewIs('tokenisation.tokenisationConsentForm');
+
+        $responseContent = $response->getOriginalContent()->getData();
+
+        $card = $this->app['encrypter']->decrypt($responseContent['input']['card']);
+
+        $this->assertEquals($payment['card']['cvv'], $card['cvv']);
+
+        $this->assertEquals($payment['card']['number'], $card['number']);
+
+        $expectedResponse = $this->testData[__FUNCTION__]['response'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $responseContent);
+    }
+
+    public function testUserConsentPageWithSavedCard()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card'] = array('cvv'  => 111);
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['token'] = 'token_100000custcard';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/checkout',
+            'content' => $payment
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $response->assertViewIs('tokenisation.tokenisationConsentForm');
+
+        $responseContent = $response->getOriginalContent()->getData();
+
+        $card = $this->app['encrypter']->decrypt($responseContent['input']['card']);
+
+        $token = $this->app['encrypter']->decrypt($responseContent['input']['token']);
+
+        $this->assertEquals($payment['card']['cvv'], $card['cvv']);
+
+        $this->assertEquals($payment['token'], $token);
+
+        $expectedResponse = $this->testData[__FUNCTION__]['response'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $responseContent);
+    }
+
+    public function testUserConsentPageWithEmiMethodForSavedCard()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card'] = array('cvv'  => '111');
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['token'] = 'token_100000custcard';
+        $payment['method'] = 'emi';
+        $payment['emi_duration'] = '9';
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/checkout',
+            'content' => $payment
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $response->assertViewIs('tokenisation.tokenisationConsentForm');
+
+        $responseContent = $response->getOriginalContent()->getData();
+
+        $card = $this->app['encrypter']->decrypt($responseContent['input']['card']);
+
+        $token = $this->app['encrypter']->decrypt($responseContent['input']['token']);
+
+        $this->assertEquals($payment['card']['cvv'], $card['cvv']);
+
+        $this->assertEquals($payment['token'], $token);
+
+        $expectedResponse = $this->testData[__FUNCTION__]['response'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $responseContent);
+    }
+
+    public function testUserConsentPageWithMerchantConsentDisabled()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_COLLECT_CONSENT]);
+
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card'] = array('cvv'  => 111);
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['token'] = 'token_100000custcard';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $response = $this->doAuthPaymentViaCheckoutRoute($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals($response['razorpay_payment_id'], $paymentEntity['id']);
+    }
+
+    public function testUserConsentPageWithInvalidLibrary()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card'] = array('cvv'  => 111);
+        $payment['_']['library'] = 'checkoutjs';
+        $payment['token'] = 'token_100000custcard';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $response = $this->doAuthPaymentViaCheckoutRoute($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals($response['razorpay_payment_id'], $paymentEntity['id']);
+    }
+
+    public function testUserConsentPageWithNonCardPaymentMethod()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['method'] = 'upi';
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/checkout',
+            'content' => $payment
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $response->assertViewIs('gateway.gatewayUpiForm');
+    }
+
+    public function testUserConsentPageWithoutCustomerId()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['method'] = 'card';
+
+        $response = $this->doAuthPaymentViaCheckoutRoute($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals($response['razorpay_payment_id'], $paymentEntity['id']);
+    }
+
+    public function testUserConsentPageWithoutCvv()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        unset($payment['card']['cvv']);
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['save'] = 1;
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('The cvv field is required');
+
+        $response = $this->doAuthPaymentViaCheckoutRoute($payment);
+    }
+
+    public function testUserConsentPageWithoutCardNumber()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        unset($payment['card']['number']);
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['save'] = 1;
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('The number field is required.');
+
+        $response = $this->doAuthPaymentViaCheckoutRoute($payment);
+    }
+
+    public function testUserConsentPageForSavedCardWithConsentToSaveCardParam()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card'] = array('cvv' => 111);
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['consent_to_save_card'] = 1;
+        $payment['token'] = 'token_100000custcard';
+
+        $response = $this->doAuthPaymentViaCheckoutRoute($payment);
+
+        $token = $this->getEntityById('token', '100000custcard', true);
+
+        $this->assertNotNull($token['acknowledged_at']);
+    }
+
+    public function testUserConsentPageForNewCardWithConsentToSaveCardParam()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['consent_to_save_card'] = '1';
+        $payment['save'] = '1';
+
+        $response = $this->doAuthPaymentViaCheckoutRoute($payment);
+
+        $token = $this->getLastEntity('token',true);
+
+        $this->assertNotNull($token['acknowledged_at']);
+    }
+
+    public function testUserConsentPageWithNewCardWithoutSaveParam()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $response = $this->doAuthPaymentViaCheckoutRoute($payment);
+
+        $token = $this->getLastEntity('token',true);
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertNull($token['acknowledged_at']);
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals($response['razorpay_payment_id'], $paymentEntity['id']);
+    }
+
+    public function testUserConsentPageForSavedCardWithConsentPreviouslyTaken()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->edit('token', '100000custcard', ['acknowledged_at' => Carbon::now()->timestamp]);
+
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['card'] = array('cvv' => 111);
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['token'] = 'token_100000custcard';
+
+        $response = $this->doAuthPaymentViaCheckoutRoute($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals($response['razorpay_payment_id'], $paymentEntity['id']);
+    }
+
+    public function testPaymentForNewCardWithEncryptedCardDetails()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['save'] = 1;
+        $payment['consent_to_save_card'] = 1;
+
+        $payment['card'] = $this->app['encrypter']->encrypt($payment['card']);
+
+        $response = $this->doAuthPaymentViaCheckoutRoute($payment);
+
+        $tokenEntity = $this->getLastEntity('token', true);
+
+        $this->assertNotNull($tokenEntity['acknowledged_at']);
+    }
+
+    public function testPaymentForSavedCardWithEncryptedCardDetails()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card'] = array('cvv' => 111);
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['consent_to_save_card'] = 1;
+        $payment['token'] = 'token_100000custcard';
+
+        $payment['card'] = $this->app['encrypter']->encrypt($payment['card']);
+        $payment['token'] = $this->app['encrypter']->encrypt($payment['token']);
+
+        $response = $this->doAuthPaymentViaCheckoutRoute($payment);
+
+        $token = $this->getEntityById('token', '100000custcard', true);
+
+        $this->assertNotNull($token['acknowledged_at']);
+    }
+
+    public function testPaymentWithRefusedUserConsentToSaveCard()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card'] = array('cvv' => 111);
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['consent_to_save_card'] = 0;
+        $payment['token'] = 'token_100000custcard';
+
+        $response = $this->doAuthPaymentViaCheckoutRoute($payment);
+
+        $token = $this->getEntityById('token', '100000custcard', true);
+
+        $this->assertNull($token['acknowledged_at']);
+    }
+
+    public function testUserConsentPageForSavedCardWithToken()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card'] = array('cvv' => 111);
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['token'] = '10000cardtoken';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/checkout',
+            'content' => $payment
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $response->assertViewIs('tokenisation.tokenisationConsentForm');
+
+        $responseContent = $response->getOriginalContent()->getData();
+
+        $card = $this->app['encrypter']->decrypt($responseContent['input']['card']);
+
+        $token = $this->app['encrypter']->decrypt($responseContent['input']['token']);
+
+        $this->assertEquals($payment['card']['cvv'], $card['cvv']);
+
+        $this->assertEquals($payment['token'], $token);
+
+        $expectedResponse = $this->testData[__FUNCTION__]['response'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $responseContent);
+    }
+
+    public function testUserConsentPageForCustomLibrary()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card'] = array('cvv'  => 111);
+        $payment['_']['library'] = 'custom';
+        $payment['token'] = 'token_100000custcard';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/checkout',
+            'content' => $payment
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $response->assertViewIs('tokenisation.tokenisationConsentForm');
+
+        $responseContent = $response->getOriginalContent()->getData();
+
+        $card = $this->app['encrypter']->decrypt($responseContent['input']['card']);
+
+        $token = $this->app['encrypter']->decrypt($responseContent['input']['token']);
+
+        $this->assertEquals($payment['card']['cvv'], $card['cvv']);
+
+        $this->assertEquals($payment['token'], $token);
+
+        $expectedResponse = $this->testData[__FUNCTION__]['response'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $responseContent);
+    }
 }

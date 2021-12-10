@@ -1577,4 +1577,47 @@ class Core extends Base\Core
 
         return false;
     }
+
+    /**
+     * @param $token
+     * @param $customerId
+     *
+     * @return bool
+     */
+    public function showTokenisationConsentViewForExistingSavedCard($token, $customerId): bool
+    {
+        try
+        {
+            Token\Entity::stripSignWithoutValidation($token);
+
+            Customer\Entity::stripSignWithoutValidation($customerId);
+
+            $tokenEntity = $this->repo->token->getByTokenAndCustomerId($token, $customerId);
+
+            if(isset($tokenEntity) === false)
+            {
+                $tokenEntity = $this->repo->token->getByTokenIdAndCustomerId($token, $customerId);
+
+                if(isset($tokenEntity) === false)
+                {
+                    return false;
+                }
+            }
+
+            $acknowledgedAt = $tokenEntity->getAcknowledgedAt();
+
+            if (empty($acknowledgedAt) === true)
+            {
+                return true;
+            }
+
+            return false;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(TraceCode::SAVED_CARD_TOKEN_NOT_FOUND, []);
+
+            return false;
+        }
+    }
 }

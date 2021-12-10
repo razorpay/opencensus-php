@@ -1488,7 +1488,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->payment['save'] = 1;
 
-        $this->payment['_']['library'] = 'razorpayjs';
+        $this->payment['_']['library'] = 'direct';
 
         $this->doAuthPaymentViaAjaxRoute($this->payment);
 

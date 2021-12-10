@@ -975,6 +975,14 @@ class Constants
     const ONBOARD_TOKENIZATION = 'onboard_tokenization';
 
     /**
+     * Feature flag to let Razorpay collect consent for tokenising cards in the payment flow through intermediate consent page
+     * This will be used for custom checkout merchants
+     * By default Razorpay collects consent
+     * Can use this feature flag to disable consent collection by Razorpay
+     */
+    const DISABLE_COLLECT_CONSENT = 'disable_collect_consent';
+
+    /**
      * Flag to enable the new composite payout flow meant for high tps merchants.
      * Initially implemented specifically for whatsapp.
      */
@@ -1418,6 +1426,7 @@ class Constants
         self::ORG_ANNOUNCEMENT_TAB_DISABLE    => true,
         self::ASYNC_TXN_FILL_DETAILS          => true,
         self::CREDIT_ID_BASED_NEW_QUERY       => true,
+        self::DISABLE_COLLECT_CONSENT         => true,
         self::ENABLE_IFSC_VALIDATION          => true,
         self::PUBLIC_SETTERS_VIA_OAUTH        => true,
         self::ENABLE_GRANULAR_DOWNTIMES       => true,
@@ -2047,6 +2056,11 @@ class Constants
             'feature'       => self::ONBOARD_TOKENIZATION,
             'display_name'  => 'Enable network tokenization for merchant',
             'documentation' => '',
+        ],
+        self::DISABLE_COLLECT_CONSENT => [
+            'feature'       => self::DISABLE_COLLECT_CONSENT,
+            'display_name'  => 'Disable tokenisation consent collection by Razorpay',
+            'documentation' => '',
         ]
     ];
 
@@ -2101,6 +2115,7 @@ class Constants
         self::ONE_CC_MANDATORY_LOGIN,
         self::ONE_CC_MERCHANT_DASHBOARD,
         self::ONBOARD_TOKENIZATION,
+        self::DISABLE_COLLECT_CONSENT,
     ];
 
     /*

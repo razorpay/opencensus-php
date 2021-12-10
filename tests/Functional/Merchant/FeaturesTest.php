@@ -2749,4 +2749,45 @@ Regards,
         $this->startTest();
     }
 
+    public function testFeatureStatus($featureToBeChecked = null): void
+    {
+        if(isset($featureToBeChecked) === false)
+        {
+            return;
+        }
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $features = $response['features'];
+
+        $this->assertContains($featureToBeChecked, $features);
+    }
+
+    /**
+     * Get all features, check if disable collect consent feature is present with false
+     * Enable the feature
+     * Get all features and check if feature is present with true
+     */
+    public function testTokenisationCollectConsentFeatureFlag(): void
+    {
+        $featureToBeChecked = [
+            'feature'       => 'disable_collect_consent',
+            'value'         => false,
+            'display_name'  => 'Disable tokenisation consent collection by Razorpay',
+        ];
+
+        $this->testFeatureStatus($featureToBeChecked);
+
+        $this->updateFeatureAsMerchant(
+            'add',
+            Mode::LIVE,
+            'disable_collect_consent'
+        );
+
+        $featureToBeChecked['value'] = true;
+
+        $this->testFeatureStatus($featureToBeChecked);
+    }
 }

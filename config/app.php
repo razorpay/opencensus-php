@@ -360,4 +360,6 @@ return array(
     'payment_store_hosted_base_url' => env('PAYMENT_STORE_HOSTED_BASE_URL'),
 
     'payment_handle_hosted_base_url' => env('PAYMENT_HANDLE_HOSTED_BASE_URL'),
+
+    'consent_view_splitz_experiment_id' => env('CONSENT_VIEW_SPLITZ_EXPERIMENT_ID'),
 );
