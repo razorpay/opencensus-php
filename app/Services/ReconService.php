@@ -85,7 +85,7 @@ class ReconService
     {
         if (array_key_exists("body", $input))
         {
-            $data = json_decode($input['body'], true);
+            $data = json_decode($input['body']);
         }
         else if ($method == self::GET) {
             $data = $input;
