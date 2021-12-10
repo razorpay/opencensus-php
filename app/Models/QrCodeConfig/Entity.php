@@ -14,7 +14,8 @@ class Entity extends Base\PublicEntity
     const CREATED_AT         = 'created_at';
     const DELETED_AT         = 'deleted_at';
     const UPDATED_AT         = 'updated_at';
-    const CUT_OFF_TIME       = 'cut_off_time' ;
+    const KEY                = 'config_key';
+    const VALUE              = 'config_value';
 
     protected $entity = 'qr_code_config';
 
@@ -23,7 +24,8 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::DELETED_AT,
         self::UPDATED_AT,
-        self::CUT_OFF_TIME,
+        self::KEY,
+        self::VALUE,
     ];
 
     protected $visible = [
@@ -31,26 +33,17 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::DELETED_AT,
         self::UPDATED_AT,
-        self::CUT_OFF_TIME,
+        self::KEY,
+        self::VALUE,
     ];
 
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
     }
-
-    public function getId()
-    {
-        return $this->getAttribute(self::ID);
-    }
-
+    
     public function setDeletedAt($deleted_at)
     {
-        $this->setAttribute($deleted_at);
-    }
-
-    public function getCutOffTime()
-    {
-        return $this->getAttribute(self::CUT_OFF_TIME);
+        $this->setAttribute(self::DELETED_AT, $deleted_at);
     }
 }

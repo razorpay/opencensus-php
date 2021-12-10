@@ -25,8 +25,12 @@ class CreateQrCodeConfigTable extends Migration
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH)
                   ->nullable(false);
 
-            $table->integer(Entity::CUT_OFF_TIME)
-                  ->nullable(true);
+            $table->string(Entity::KEY)
+                  ->nullable(false);
+
+            $table->text(Entity::VALUE)
+                  ->nullable(false);
+
 
             $table->integer(Entity::CREATED_AT)
                   ->nullable(false);
@@ -40,6 +44,8 @@ class CreateQrCodeConfigTable extends Migration
             $table->index(Entity::MERCHANT_ID);
 
             $table->index(Entity::CREATED_AT);
+            
+            $table->index(Entity::KEY);
         });
     }
 
