@@ -21,7 +21,7 @@ export default function DiscountType({
   isFormLocked,
   hideDiscountType,
   showSubscriptionOfferFields,
-  emiData,
+  emiData = {},
 }) {
   const isFLATDiscount = formData.discount_type === DISCOUNT_TYPES.FLAT;
   const isPERCENTDiscount = formData.discount_type === DISCOUNT_TYPES.PERCENT;
@@ -29,7 +29,7 @@ export default function DiscountType({
   const isInstantOffer = offerType === OFFER_TYPES.Instant;
 
   const minAmount = useMemo(() => {
-    const _minAmount = Object.keys(emiData.emi_plans || {}).reduce((min, current) => {
+    const _minAmount = Object.keys(emiData?.emi_plans || {}).reduce((min, current) => {
       if (
         emiData.emi_plans[current] &&
         emiData.emi_plans[current].min_amount &&
