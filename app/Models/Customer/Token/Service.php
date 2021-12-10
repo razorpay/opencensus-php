@@ -517,13 +517,15 @@ class Service extends Base\Service
 
     public function decryptCardNumberIfApplicable(& $input)
     {
-        $this->trace->info(TraceCode::TOKEN_REQUESTOR_CARD_NUMBER_DECRYPTION,[$input]);
         if (empty($input['card']['encrypted_number']) === true)
         {
             return;
         }
 
-        try {
+        $this->trace->info(TraceCode::TOKEN_REQUESTOR_CARD_NUMBER_DECRYPTION, [$input["card"]["encrypted_number"]]);
+
+        try
+        {
             $params = [
                 AESEncryption::MODE => AES::MODE_CBC,
                 AESEncryption::IV => $this->app['config']->get('applications.tokenisation.flipkart_secure_IV'),
