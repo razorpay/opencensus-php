@@ -21,4 +21,10 @@ class PincodeSearchController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getByCountry($country, $pincode)
+    {
+        $data = $this->app['pincodesearch']->fetchCityAndStateFromPincode($pincode, false, false, $country);
+        return ApiResponse::json($data);
+    }
 }

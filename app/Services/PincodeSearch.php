@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use Cache;
+use RZP\Constants\Country;
 use RZP\Http\Request\Requests;
 use RZP\Exception;
 use RZP\Models\Pincode;
@@ -46,8 +47,15 @@ class PincodeSearch
         $this->baseUrl = $this->config['url'];
     }
 
-    protected function getCacheKey(int $pincode, bool $useStateName = false)
+    protected function getCacheKey($pincode, bool $useStateName = false, string $country = Country::IN)
     {
+        if ($country !== Country::IN)
+        {
+            return sprintf(
+                ($useStateName === true ? self::STATE_NAME : '') . static::CACHE_KEY_FORMAT."_%s",
+                $pincode, $country
+            );
+        }
         $key = sprintf(
           ($useStateName === true ? self::STATE_NAME : '') . static::CACHE_KEY_FORMAT,
           $pincode
@@ -155,8 +163,26 @@ class PincodeSearch
             $response);
     }
 
-    public function fetchCityAndStateFromPincode($pincode, $useStateName = false, $useGstCodes = false): array
+    protected function fetchCityAndStateFromPincodeAndCountry($pincode, $country): array
     {
+        $key = $this->getCacheKey($pincode, false, $country);
+        if ($response = Cache::get($key))
+        {
+            return $response;
+        }
+        $response = (new GoogleMapsClient())->fetchCityAndState($country, $pincode);
+        $this->cache->put($key, $response, static::CACHE_TTL);
+        return $response;
+    }
+
+    public function fetchCityAndStateFromPincode($pincode, $useStateName = false, $useGstCodes = false, $country = "in"): array
+    {
+        $country = strtolower($country);
+        if ($country !== Country::IN)
+        {
+            return $this->fetchCityAndStateFromPincodeAndCountry($pincode, $country);
+        }
+
         $pincodeValidator = new Pincode\Validator(Pincode\Pincode::IN);
 
         if ($pincodeValidator->validate($pincode) === false)

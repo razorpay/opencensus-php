@@ -2216,6 +2216,7 @@ class Route
         // Pincode Service
         'pincode_get'                              => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
         '1cc_pincode_get'                          => ['get',      '1cc/pincodes/{id}',                              'PincodeSearchController@get'                                       ],
+        '1cc_country_pincode_get'                  => ['get',      'locations/country/{country}/pincode/{pincode}',  'PincodeSearchController@getByCountry'                              ],
         'internal_pincode_get'                     => ['get',      'internal/pincodes/{id}',                         'PincodeSearchController@get'                                       ],
         'cities_get'                               => ['get',      'cities',                                         'CityController@getCities'                                          ],
         'db_meta_query'                            => ['post',     'db_meta_query',                                  'AdminController@dbMetaDataQuery'                                   ],
@@ -3227,6 +3228,7 @@ class Route
         'order_update_customer_details_1cc',
         'order_reset_1cc',
         '1cc_pincode_get',
+        '1cc_country_pincode_get',
         'third_watch_address_check',
         'banking_axis_invitations_send',
     ];

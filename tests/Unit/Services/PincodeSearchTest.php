@@ -29,6 +29,20 @@ class PincodeSearchTest extends TestCase
         ], $result);
     }
 
+    public function testInternationalPincodeDetails()
+    {
+        $pincode = "99501";
+        $country = "us";
+
+        $result = $this->getPincodeSearcherClient()->fetchCityAndStateFromPincode($pincode, false, false, $country);
+
+        $this->assertSame([
+            "city"       => "anchorage",
+            "state"      => "alaska",
+            "state_code" => "ak",
+        ], $result);
+    }
+
     public function testInvalidPincodeDetails()
     {
         $pincode = '1100';

@@ -649,9 +649,10 @@ return [
     ],
 
     'pincodesearch' => [
-        'mock'    => env('PINCODE_MOCK', false),
-        'url'     => env('PINCODE_BASE_URL'),
-        'api_key' => env('PINCODE_SEARCH_API_KEY')
+        'mock'           => env('PINCODE_MOCK', false),
+        'url'            => env('PINCODE_BASE_URL'),
+        'api_key'        => env('PINCODE_SEARCH_API_KEY'),
+        'google_api_key' => env('MAGIC_CHECKOUT_MAPS_API_KEY'),
     ],
 
     'banking_account' => [
