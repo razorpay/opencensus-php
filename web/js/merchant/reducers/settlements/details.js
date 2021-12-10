@@ -6,6 +6,7 @@ const SETTLEMENT_FETCH = 'SETTLEMENT_FETCH';
 const SETTLEMENT_BREAKUP_FETCH = 'SETTLEMENT_BREAKUP_FETCH';
 const SETTLEMENT_SCHEDULE_FETCH = 'SETTLEMENT_SCHEDULE_FETCH';
 const HOLIDAY_LIST_FETCH = 'HOLIDAY_LIST_FETCH';
+const SETTLEMENT_CONFIG_FETCH = 'SETTLEMENT_CONFIG_FETCH';
 
 export const fetchItem = (id) => {
   const settlement = new Settlement();
@@ -39,6 +40,19 @@ export const fetchHolidayList = () => {
   };
 };
 
+export const fetchSettlementConfig = (id) => {
+  return {
+    type: SETTLEMENT_CONFIG_FETCH,
+    payload: merchantFetch({
+      url: 'settlements/dashboard/merchant_config/get',
+      method: 'post',
+      data: {
+        merchant_id: id,
+      },
+    }),
+  };
+};
+
 const initialState = {
   loading: true,
   settlement: {},
@@ -56,6 +70,11 @@ const initialState = {
   },
   holidayList: {
     loading: true,
+    data: {},
+    error: null,
+  },
+  config: {
+    loading: false,
     data: {},
     error: null,
   },
@@ -92,7 +111,7 @@ const calculateSettledAmountPerComponent = (items) => {
   }, []);
 };
 
-export default function (state = initialState, action) {
+export default (state = initialState, action) => {
   switch (action.type) {
     case `${SETTLEMENT_FETCH}::PENDING`:
       return set(state, 'loading', true);
@@ -173,7 +192,21 @@ export default function (state = initialState, action) {
         error: action.payload.errors,
       });
 
+    case `${SETTLEMENT_CONFIG_FETCH}::SUCCESS`:
+      return set(state, 'config', {
+        loading: false,
+        data: action.payload?.data,
+        error: null,
+      });
+
+    case `${SETTLEMENT_CONFIG_FETCH}::ERROR`:
+      return set(state, 'config', {
+        loading: false,
+        data: {},
+        error: action.payload?.errors,
+      });
+
     default:
       return state;
   }
-}
+};

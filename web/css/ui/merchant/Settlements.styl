@@ -1237,3 +1237,180 @@ i.settle-now {
     color: #0066DE;
     width: 100%;
     font-weight: bold;
+
+.settlements-header
+  width 100%
+  padding 20px 20px 0
+
+  .TestModeBanner
+    box-shadow 0 1px 4px #0000001a
+
+  .content-wrapper
+    background-color #ffffff
+    border 1px solid #e2e8ea
+    border-radius 2px
+    display flex
+    flex-direction column
+    border-top 0
+    box-shadow 0 1px 4px #0000001a
+
+    .content
+      max-width 100%
+      overflow scroll
+      display flex
+      margin 12px
+
+      .left-content
+        display flex
+        flex 0.6
+        align-items center
+        padding 10px 12px
+
+        .balance
+          font-weight bold
+          color #162F56
+          display inline
+
+        .info
+          color #57666E
+          font-size 12px
+
+        .box-left-pad10-inline
+          padding-left 24px
+          margin-left 24px
+
+        .info-icon
+          color #57666E
+          margin-left 5px
+          vertical-align middle
+
+      .right-content
+        flex 0.4
+        display flex
+        align-items center
+        justify-content flex-end
+
+        .clock-icon, .link-icon
+          margin 0 5px
+
+        .border-left
+          border-left 1px solid #cfdadd
+
+        .btn-link
+          text-decoration none
+
+.banner-wrapper
+  margin 0 24px 24px
+
+.settlements-banner
+  padding 16px 20px
+  border-radius 3px
+  max-width 100%
+  overflow scroll
+
+  &.highlight-error
+    background #ffeeee
+
+  &.highlight-warning
+    background #fcf8e3
+
+  .alert-red
+    color #D12D2D
+    padding-top 4px
+
+  .alert-yellow
+    color #ffbb00
+    padding-top 4px
+
+  .title-section, .sub-title-section
+    display flex
+
+    &:nth-child(1)
+      span
+        padding-left 10px
+
+    &:nth-child(2)
+      span
+        color #8A949A
+        padding-left 26px
+        padding-top 6px
+        font-size 12px
+  
+  .title-section
+    font-size 14px
+    line-height 20px
+
+  .title
+    font-weight bold
+    color #162F56
+
+  .sub-title-section
+    font-size 12px
+    line-height 14px
+
+  .action
+    font-weight bold
+    cursor pointer
+    padding-left 12px
+
+@media screen and (max-width: 960px)
+  .settlements-header .content-wrapper .content
+      display block
+      .right-content
+        justify-content flex-start
+
+@media screen and (max-width: 450px)
+  .right-content
+    .btn
+      white-space break-spaces
+
+
+.alert-red
+  color #D12D2D
+  padding-top 17px
+
+.bank-account-change
+  display flex
+  background #162f5605
+  border 1px solid #58666e21
+  border-radius 4px
+  padding 16px
+  color #CD8214
+
+.pr-5
+  padding-right 5px
+
+.flex-grow-1
+  flex-grow 1
+
+.settlement-detail-button-wrapper
+  flex-grow 0.4
+
+.font-13
+  font-size 13px
+
+.font-15
+  font-size 15px
+
+.ml-5
+  margin-left 5px
+
+.pt-0
+  padding-top 0
+
+.pb-0
+  padding-bottom 0
+
+.margin-10
+  margin 10px
+
+.settlement-details-overflow-box
+  .grey
+    opacity 0.7
+
+.settlement-detail-actions
+  display flex
+  flex-direction row
+  flex-grow 1
+  padding 15px 0
+  justify-content space-between

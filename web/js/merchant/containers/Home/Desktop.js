@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
-import { fetchInternationalProductsStatus } from 'merchant/reducers/config';
+import { fetchInternationalProductsStatus as fnFetchInternationalProductsStatus } from 'merchant/reducers/config';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import Header from 'common/ui/Header';
 import moment from 'moment';
@@ -27,7 +27,7 @@ import CatalystCampaignBannerPhase2 from 'merchant/components/Announcements/Cata
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import InternationalRequestStatusAnnouncement from 'merchant/components/Announcements/InternationalRequestStatus';
 import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
-import { openModal } from 'merchant_common/reducers/modals';
+import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 import CovidKnowMore from 'common/ui/CovidKnowMore';
 import CreditPullModal from 'merchant/containers/CreditPullModal';
@@ -47,10 +47,16 @@ import Time from 'common/ui/Time';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { analyticsTrack } from 'common/utils/analytics';
 import { fetchUser } from 'merchant/reducers/session';
+import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reducers/settlements/details';
 import AsyncButton from 'react-async-button';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
-import { showKYCStatusModal, fetchEscalations, showProductsModal } from 'merchant/reducers/home';
+import {
+  showKYCStatusModal,
+  fetchEscalations as fnFetchEscalations,
+  showProductsModal,
+} from 'merchant/reducers/home';
+import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from 'merchant/reducers/profile';
 import { isDedupe, getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import NCModal from 'merchant/components/Activation/NCModal';
 import DedupeModal from 'merchant/components/Home/DedupeModal';
@@ -97,17 +103,24 @@ class AnalyticsDesktop extends Component {
   }
 
   componentDidMount() {
-    this.props.fetchEscalations();
+    const {
+      user,
+      fetchEscalations,
+      fetchInternationalProductsStatus,
+      fetchSettlementConfig,
+      fetchBankAccountChangeStatus,
+    } = this.props;
+    fetchEscalations();
     analyticsTrack({
       objectName: 'home page',
       actionName: 'displayed',
       screen: 'home page',
     });
-    this.props.fetchInternationalProductsStatus();
+    fetchInternationalProductsStatus();
+    fetchSettlementConfig(user.id);
+    fetchBankAccountChangeStatus(user.id);
 
     this.checkIfFirstEverSettlement();
-
-    const { user } = this.props;
 
     const activationState = getActivationState(user, user.isUnregisteredBusiness);
     const shouldShowModal =
@@ -281,6 +294,18 @@ class AnalyticsDesktop extends Component {
     return [onboardingCard, ProductRecommendationWidget];
   };
 
+  onKnowMoreClick = () => {
+    const { user, settlement_amount, openModal } = this.props;
+    openModal({
+      size: 'medium',
+      component: <SettlementDetail user={user} settlementAmount={settlement_amount.data} />,
+    });
+    window.rzpAnalytics({
+      eventCategory: 'Settlement Revamp',
+      eventAction: 'Know more - Next Settlement',
+      eventLabel: `Home`,
+    });
+  };
   cta1ClickHandler = () => {
     const { history = {} } = this?.props;
     history?.push('/qr_codes');
@@ -324,6 +349,7 @@ class AnalyticsDesktop extends Component {
       settleNowRestrictionMsg,
       limitBreach,
       isOnDemandDisabled,
+      settlementConfig,
     } = this.props;
 
     const {
@@ -349,6 +375,10 @@ class AnalyticsDesktop extends Component {
     let balance = current_balance.data.balance;
     let negativeBalanceClassName = '';
     const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
+    const isOnTemporaryHold = settlementConfig.data?.config?.features?.hold?.status;
+    const isOnHold =
+      no_settlement?.on_hold || settlementConfig.data?.config?.features?.disable?.status;
+    const isSettlementOnHold = isOnTemporaryHold || isOnHold;
 
     if (balance < 0) {
       balance = Math.abs(current_balance.data.balance);
@@ -431,12 +461,12 @@ class AnalyticsDesktop extends Component {
                 card_id="donations-covid-relif-banner"
               >
                 Enable donations on Checkout Page and help India Fight COVID-19.{' '}
-                <Link to="/config" style={{ cursor: 'pointer' }}>
+                <Link to="/config" className="pointer">
                   <strong>Know More</strong>
                 </Link>{' '}
                 <AsyncButton
                   type="button"
-                  class="Button--secondary Button scheduled-btn-act btn-border"
+                  className="Button--secondary Button scheduled-btn-act btn-border"
                   onClick={this.onClickCovidEnableNow}
                   text="Enable Now"
                   pendingText="Enabling..."
@@ -481,12 +511,10 @@ class AnalyticsDesktop extends Component {
             >
               The business address you provided to Razorpay does not match with your address details
               on your GST certificate. On Jan 25, 2021, we will update your address to the same as
-              your GST details.{' '}
+              your GST details.
               <Link
-                class="Button--secondary Button scheduled-btn-act btn-border"
-                onClick={() => {}}
+                className="Button--secondary Button scheduled-btn-act btn-border mt-4 gst-mismatch-banner-link"
                 to="/profile#gst"
-                style={{ display: 'inline-block', marginTop: '4px' }}
               >
                 Review address
               </Link>
@@ -697,8 +725,8 @@ class AnalyticsDesktop extends Component {
             <Group>
               {this.props.user.isOrgAllowedFunctionality('current_balance') && (
                 <GroupItem>
-                  <div style={{ textAlign: 'right' }}>
-                    <span class="settlement-balance-amount">
+                  <div className="text-right">
+                    <span className="settlement-balance-amount">
                       <strong>Current Balance: </strong>
                       {!current_balance.loading && (
                         <Amount
@@ -709,66 +737,71 @@ class AnalyticsDesktop extends Component {
                       )}
                     </span>
                     <br />
+                    {isSettlementOnHold && (
+                      <div className="text-right full-width no-margin">
+                        {isOnHold
+                          ? 'Your settlements have been put on hold.'
+                          : 'Your settlements have been put on Temporary hold.'}
+                        <span className="pr-5">
+                          <i className="i i-info-circle" />
+                          <Popover theme="dark" align="bottom">
+                            <PopoverBody>
+                              Your settlements are currently not being processed.
+                            </PopoverBody>
+                          </Popover>
+                        </span>
+                        <span className="btn-link pointer" onClick={this.onKnowMoreClick}>
+                          Know More
+                        </span>
+                      </div>
+                    )}
                     {no_settlement &&
+                    !isSettlementOnHold &&
                     !user.isNewSettlementServiceEnabled &&
                     payments &&
                     payments.items.length > 0 &&
                     mode === 'live' ? (
-                      <div class="text-right" style={{ width: '100%' }}>
+                      <div className="text-right full-width no-margin">
                         {no_settlement.caption}
                         {no_settlement.reason && (
-                          <div style={{ display: 'inline' }}>
-                            <i class="i i-info-circle" />
+                          <span>
+                            <i className="i i-info-circle" />
                             <Popover theme="dark" align="left">
                               <PopoverBody>
                                 <div>{no_settlement.reason}</div>
                               </PopoverBody>
                             </Popover>
-                          </div>
+                          </span>
                         )}
                       </div>
                     ) : null}
-                    {!no_settlement && !nextSettlement ? (
-                      <div class="text-right" style={{ width: '100%' }}>
+                    {!isSettlementOnHold && !no_settlement && !nextSettlement ? (
+                      <div className="text-right full-width no-margin">
                         <strong>
-                          <Amount value={settlement_amount.data.settlement_amount} currency="INR" />
-                        </strong>{' '}
-                        will be settled on{' '}
+                          <Amount
+                            className="pr-5"
+                            value={settlement_amount.data.settlement_amount}
+                            currency="INR"
+                          />
+                        </strong>
+                        <span className="pr-5">will be settled on</span>
                         <Time
+                          className="pr-5"
                           value={settlement_amount.data.next_settlement_time}
                           format="DD MMM YYYY, hh:mm:ss a"
-                        />{' '}
+                        />
                         {settlement_amount.data.reason_for_delay && (
-                          <div style={{ display: 'inline' }}>
-                            <i class="i i-info-circle" />
+                          <span>
+                            <i className="i i-info-circle" />
                             <Popover theme="dark" align="left">
                               <PopoverBody>
                                 <div>{settlement_amount.data.reason_for_delay}</div>
                               </PopoverBody>
                             </Popover>
-                          </div>
+                          </span>
                         )}
-                        <span
-                          class="btn-link"
-                          style={{ marginLeft: '5px', fontWeight: 'bold' }}
-                          onClick={() => {
-                            this.props.openModal({
-                              size: 'medium',
-                              component: (
-                                <SettlementDetail
-                                  user={user}
-                                  settlementAmount={settlement_amount.data}
-                                />
-                              ),
-                            });
-                            window.rzpAnalytics({
-                              eventCategory: 'Settlement Revamp',
-                              eventAction: 'Know more - Next Settlement',
-                              eventLabel: `Home`,
-                            });
-                          }}
-                        >
-                          Know more
+                        <span className="btn-link ml-5 pointer" onClick={this.onKnowMoreClick}>
+                          <strong>Know more</strong>
                         </span>
                       </div>
                     ) : null}
@@ -849,7 +882,7 @@ class AnalyticsDesktop extends Component {
               <div className="section-title payment-insights-title">
                 {paymentInsightsTitle}&nbsp;
                 <small>
-                  <i class="i i-help" />
+                  <i className="i i-help" />
                   <Popover align="top">
                     <PopoverBody>
                       <p>
@@ -930,6 +963,7 @@ const mapStateToProps = (state) => ({
   config: state.config,
   internationalProductsStatus: state.config.internationalProductsStatus,
   limitBreach: state.home.limitBreach,
+  settlementConfig: state.settlement.config,
   can_refer: state.merchantReferral.data.can_refer,
   referee: state.merchantReferral.data.referee,
   transactionAmount: state.transactionAmount.amount,
@@ -938,12 +972,14 @@ const mapStateToProps = (state) => ({
 
 export default withRouter(
   connect(mapStateToProps, {
-    openModal,
-    fetchInternationalProductsStatus,
+    openModal: fnOpenModal,
+    fetchInternationalProductsStatus: fnFetchInternationalProductsStatus,
     ...NotificationActions,
     fetchUser,
     showKYCStatusModal,
-    fetchEscalations,
+    fetchEscalations: fnFetchEscalations,
+    fetchSettlementConfig: fnFetchSettlementConfig,
+    fetchBankAccountChangeStatus: fnFetchBankAccountChangeStatus,
     showProductsModal,
   })(AnalyticsDesktop),
 );

@@ -7,7 +7,7 @@ const messageFactory = {
     heading: 'Get your settlements on the same day automatically!',
     description:
       'You can get daily settlements on working days automatically without having to visit the dashboard each time.',
-    image: 'message-bubble',
+    image: 'early-settlement-light-blue',
     showEnableNowButton: true,
     hideRightImages: true,
   }),
@@ -15,7 +15,7 @@ const messageFactory = {
     heading: 'Scheduled settlement will be skipped',
     description:
       'Since you do not have enought current balance, your 5pm scheduled settlement will be skipped',
-    image: 'message-bubble',
+    image: 'notification',
   }),
   getBankHolidayUpcoming: ({ date, description }) => ({
     heading: 'A bank holiday is coming up. Settle now!',

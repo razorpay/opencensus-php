@@ -11,8 +11,8 @@ import DisputesList from 'merchant/views/Transactions/Disputes/List';
 import BatchPaymentsList from 'merchant/views/Transactions/BatchPayments/List';
 import BatchRefundsList from 'merchant/views/Transactions/BatchRefunds/List';
 import BatchRefundsUpload from 'merchant/views/Transactions/BatchRefunds/BatchUpload';
-import OnHoldBanner from 'common/ui/OnHoldBanner';
-import { fetchSettlementAmount } from 'merchant/reducers/home';
+import { fetchSettlementAmount as fnFetchSettlementAmount } from 'merchant/reducers/home';
+import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reducers/settlements/details';
 import Amount from 'common/ui/Amount';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
@@ -25,7 +25,7 @@ import { isMobileDevice } from 'merchant/components/Home/data';
 import { MobilePopup, UseAppFooter } from 'merchant/components/MobilePopup';
 import { getItem } from 'common/utils/localStorage';
 import { analyticsTrack } from 'common/utils/analytics';
-import { fetchOpen as fetchOpenDisputes } from 'merchant/reducers/disputes/details';
+import { fetchOpen as fnFetchOpenDisputes } from 'merchant/reducers/disputes/details';
 import { bindActionCreators } from 'redux';
 import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
@@ -47,8 +47,10 @@ class TransactionsContainer extends Component {
   }
 
   componentDidMount() {
-    this.props.fetchSettlementAmount();
-    this.props.fetchOpenDisputes();
+    const { user, fetchSettlementAmount, fetchOpenDisputes, fetchSettlementConfig } = this.props;
+    fetchSettlementAmount();
+    fetchOpenDisputes();
+    fetchSettlementConfig(user.id);
 
     const mwebPopupLS = !!getItem('transactions_mweb_popup'); // Check if popup is already shown to user once.
     const mwebPopupSS = !!getItem('payment links_mweb_popup'); // Check if popup is shown in session on another scrren.
@@ -88,12 +90,17 @@ class TransactionsContainer extends Component {
   };
 
   render() {
-    const { user, mode, openDisputes } = this.props;
+    const { user, mode, openDisputes, settlementConfig } = this.props;
     const { role, activation_status } = user;
 
     /* Added a check for if the settlement_amount is present or not otherwile it will be false as default*/
     const nextSettlement = !this.props?.settlement_amount?.data?.next_settlement_time;
-    const { no_settlement } = this.props.settlement_amount.data;
+    const { no_settlement } = this.props.settlement_amount?.data;
+
+    const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
+    const isOnHold =
+      no_settlement?.on_hold || settlementConfig?.data?.config?.features?.disable?.status;
+    const isSettlementOnHold = isOnTemporaryHold || isOnHold;
 
     const pathname = this.props.location.pathname;
 
@@ -262,32 +269,34 @@ class TransactionsContainer extends Component {
               <div class="text-right settlement-caption">
                 {no_settlement.caption}
                 {no_settlement.reason && (
-                  <div style={{ display: 'inline' }}>
+                  <span>
                     <i class="i i-info-circle" />
                     <PopoverComponent theme="dark" align="left">
                       <PopoverBody>
                         <div>{no_settlement.reason}</div>
                       </PopoverBody>
                     </PopoverComponent>
-                  </div>
+                  </span>
                 )}
               </div>
             ) : null}
-            {!no_settlement &&
+            {!isSettlementOnHold &&
+            !no_settlement &&
             !nextSettlement &&
             (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') ? (
-              <div class="text-right" style={{ width: '100%' }}>
-                <strong>
+              <div class="text-right full-width no-margin">
+                <strong className="pr-5">
                   <Amount
                     value={this.props.settlement_amount.data.settlement_amount}
                     currency="INR"
                   />
-                </strong>{' '}
-                will be settled on{' '}
+                </strong>
+                <span className="pr-5">will be settled on</span>
                 <Time
+                  className="pr-5"
                   value={this.props.settlement_amount.data.next_settlement_time}
                   format="DD MMM YYYY, hh:mm:ss a"
-                />{' '}
+                />
                 {this.props.settlement_amount.data.reason_for_delay && (
                   <div style={{ display: 'inline' }}>
                     <i class="i i-info-circle" />
@@ -326,30 +335,6 @@ class TransactionsContainer extends Component {
           </header>
 
           <TestModeBanner />
-
-          {mode === 'live' && nextSettlement && no_settlement && no_settlement.on_hold === true ? (
-            <OnHoldBanner
-              payments={this.props.payments}
-              user={user}
-              ctaOnClick={() => {
-                this.props.openModal({
-                  size: 'medium',
-                  component: (
-                    <SettlementDetail
-                      user={user}
-                      settlementAmount={this.props.settlement_amount.data}
-                    />
-                  ),
-                });
-
-                window.rzpAnalytics({
-                  eventCategory: 'Settlement Revamp',
-                  eventAction: 'View details - Funds on Hold',
-                  eventLabel: `Payments`,
-                });
-              }}
-            />
-          ) : null}
 
           <content>
             <ErrorBoundary resetOnProps>
@@ -397,12 +382,19 @@ const mapStateToProps = (state) => {
     config: state.config.config,
     payments: state.payments,
     openDisputes: state.dispute.openDisputes,
+    settlementConfig: state.settlement.config,
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
-    { fetchSettlementAmount, openModal, closeModal, fetchOpenDisputes },
+    {
+      fetchSettlementAmount: fnFetchSettlementAmount,
+      openModal,
+      closeModal,
+      fetchOpenDisputes: fnFetchOpenDisputes,
+      fetchSettlementConfig: fnFetchSettlementConfig,
+    },
     dispatch,
   );
 };

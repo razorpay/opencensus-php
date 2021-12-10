@@ -80,6 +80,7 @@ export const settlementStatusMap = {
   created: 'bg-light',
   scheduled: 'label-warning',
   on_hold: 'label-danger',
+  on_temporary_hold: 'label-danger',
   processed: 'label-success',
   failed: 'label-danger',
   partially_processed: 'label-partial-process',

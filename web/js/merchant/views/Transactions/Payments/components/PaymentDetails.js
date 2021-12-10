@@ -39,11 +39,8 @@ function PaymentDetails(props) {
     isRoleAllowedEdit,
     viewSettlementOverview,
     user,
-    settlement_amount,
     location,
   } = props;
-  const isSettlementOnHold =
-    (settlement_amount.data.no_settlement && settlement_amount.data.no_settlement.on_hold) || false;
 
   const isFromHomePage = location.state?.fromHomePage;
 
@@ -242,9 +239,7 @@ function PaymentDetails(props) {
                 </EntityDetailRow>
 
                 <ShowWhen
-                  additionalCondition={() =>
-                    user.isUxRevampPhase2Enabled && payment.transaction && !isSettlementOnHold
-                  }
+                  additionalCondition={() => user.isUxRevampPhase2Enabled && payment.transaction}
                 >
                   <EntityDetailRow label="Settlement Details">
                     <SettlementInfo data={payment} />

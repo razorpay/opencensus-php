@@ -19,8 +19,20 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from '../../../common/ui/DashboardBanner';
+import SettlementsHeader from './components/SettlementsHeader';
+import { fetchCurrentBalance as fnFetchCurrentBalance } from 'merchant/reducers/home';
+import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reducers/settlements/details';
+import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from 'merchant/reducers/profile';
 
-const Settlements = ({ user, merchantBalanceConfigs, current_balance, history = {} }) => {
+const Settlements = ({
+  user,
+  merchantBalanceConfigs,
+  current_balance,
+  history = {},
+  fetchCurrentBalance,
+  fetchSettlementConfig,
+  fetchBankAccountChangeStatus,
+}) => {
   const [settlementExists, setSettlementExists] = useState(true);
   const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
 
@@ -39,6 +51,9 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance, history = 
 
   useEffect(() => {
     checkIfFirstEverSettlement();
+    fetchCurrentBalance();
+    fetchSettlementConfig(user.id);
+    fetchBankAccountChangeStatus(user.id);
   }, []);
 
   const cta1ClickHandler = () => {
@@ -104,9 +119,15 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance, history = 
         </ShowWhen>
       </div>
 
+      <SettlementsHeader
+        settlementExists={settlementExists}
+        esOndemandSettlementEnabled={esOndemandSettlementEnabled}
+        checkIfFirstEverSettlement={checkIfFirstEverSettlement}
+      />
+
       <tabbed-container>
         <header>
-          <NavLink to="/settlements" onClick={() => checkIfFirstEverSettlement()}>
+          <NavLink to="/settlements" onClick={checkIfFirstEverSettlement}>
             Settlements
           </NavLink>
           {user.isOndemandSettlementEnabled && (
@@ -159,6 +180,10 @@ export default withRouter(
       current_balance: state.home.current_balance,
       merchantBalanceConfigs: state.home.merchantBalanceConfigs,
     }),
-    {},
+    {
+      fetchCurrentBalance: fnFetchCurrentBalance,
+      fetchSettlementConfig: fnFetchSettlementConfig,
+      fetchBankAccountChangeStatus: fnFetchBankAccountChangeStatus,
+    },
   )(Settlements),
 );

@@ -21,6 +21,8 @@ const BankAccountDetails = ({
   settlement_amount,
   location,
   user,
+  bankAccountChangeStatus,
+  settlementConfig,
   openModal,
 }) => {
   const bankAccountSectionRef = useRef(null);
@@ -53,7 +55,10 @@ const BankAccountDetails = ({
   }, [bankAccountSectionRef, location]);
 
   const isSettlementOnHold =
-    (settlement_amount.no_settlement && settlement_amount.no_settlement.on_hold) || false;
+    (settlement_amount?.no_settlement && settlement_amount?.no_settlement?.on_hold) ||
+    settlementConfig?.data?.config?.features?.disable?.status;
+
+  const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
 
   const showRequestChange =
     !isSettlementOnHold &&
@@ -61,32 +66,37 @@ const BankAccountDetails = ({
     !user.blockBankAccountUpdate() &&
     user.activation_status === 'activated' &&
     !user.isOrgAxis &&
+    !(isOnTemporaryHold && bankAccountChangeStatus) &&
     (bank_detail_update_workflow?.workflow_exists === false ||
       !['open', 'approved'].includes(bank_detail_update_workflow?.workflow_status));
 
   return (
-    <div class="panel panel-default" ref={bankAccountSectionRef}>
-      <div class="panel-heading">
+    <div className="panel panel-default" ref={bankAccountSectionRef}>
+      <div className="panel-heading">
         <TextHighlighter hashedWith={UPDATE_BANK_ACC}>Bank Account</TextHighlighter>
-        {settlement_amount.no_settlement &&
-          settlement_amount.no_settlement.on_hold &&
-          !user.isOrgAxis && (
-            <span class="pull-right" style={{ color: 'gray' }}>
-              Request Change
-              <small class="help-content">
-                <i class="i i-info-outline" />
-                <Popover align="top" theme="dark">
-                  <PopoverBody>
-                    <div>The bank account cannot be updated, since your funds are on hold.</div>
-                  </PopoverBody>
-                </Popover>
-              </small>
-            </span>
-          )}
+        {isSettlementOnHold && !user.isOrgAxis && (
+          <span className="pull-right gray">
+            <span>Request Change</span>
+            <small className="help-content">
+              <i className="i i-info-outline" />
+              <Popover align="top" theme="dark">
+                <PopoverBody>
+                  <div>The bank account cannot be updated, since your funds are on hold.</div>
+                </PopoverBody>
+              </Popover>
+            </small>
+          </span>
+        )}
+        {isOnTemporaryHold && bankAccountChangeStatus && (
+          <span className="pull-right bank-details-review">
+            <i className="i i-info-outline pr-5" /> Request to update bank account details is under
+            review
+          </span>
+        )}
         {showRequestChange &&
           (isBankAccountChangeAllowed ? (
-            <a
-              class="pull-right"
+            <span
+              className="nav-link pull-right"
               onClick={(...e) => {
                 analyticsTrack({
                   objectName: 'bank account edit',
@@ -101,11 +111,9 @@ const BankAccountDetails = ({
               }}
             >
               Request Change
-            </a>
-          ) : (
-            <span class="pull-right" style={{ opacity: '0.5' }}>
-              Request under review
             </span>
+          ) : (
+            <span className="pull-right under-review">Request under review</span>
           ))}
         <WorkflowStatus
           roles={[rolesList.OWNER]}
@@ -119,7 +127,7 @@ const BankAccountDetails = ({
           }
         />
       </div>
-      <div class="list-group details-row-container">
+      <div className="list-group details-row-container">
         <DetailRow label="IFSC Code" value={bankAccount.ifsc} />
         <DetailRow label="Account Number" value={bankAccount.account_number} />
         <DetailRow
@@ -137,6 +145,9 @@ const BankAccountDetails = ({
 
 const mapStateToProps = (state) => ({
   user: state.session.user,
+  bankAccountChangeStatus: state.profile.bankAccountChangeStatus,
+  settlementConfig: state.settlement.config,
+  workflows: state.workflows,
   bank_detail_update_workflow: state.workflows[WORKFLOWS.BANK_DETAIL_UPDATE],
 });
 

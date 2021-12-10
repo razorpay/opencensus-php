@@ -1,8 +1,6 @@
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { set, merge } from 'common/utils/immutable';
 import store from 'merchant/store';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const BANK_ACCOUNT_FETCH = 'BANK_ACCOUNT_FETCH';
 const GST_FETCH = 'GST_FETCH';
@@ -54,7 +52,7 @@ export const upgradeAccount = (data) => {
     return ajax({
       url: '/merchants/register',
       method: 'post',
-      data: data,
+      data,
       appendModeInURL: false,
     });
   };
@@ -65,7 +63,7 @@ export const updatePassword = (data) => {
     return ajax({
       url: '/password',
       method: 'post',
-      data: data,
+      data,
       appendModeInQueryParam: true,
     });
   };
@@ -254,7 +252,7 @@ export const updatePurposeCode = (data) => {
   });
 };
 
-let initialState = {
+const initialState = {
   invitations: [],
   rzp_gst: {
     gstin: '29AAGCR4375J1ZU',
@@ -277,10 +275,13 @@ let initialState = {
   },
 };
 
-export default function (state = initialState, action) {
+export default (state = initialState, action) => {
   switch (action.type) {
     case `${BANK_ACCOUNT_FETCH}::SUCCESS`:
       return set(state, 'bankAccount', action.payload.data);
+
+    case `${BANK_ACCOUNT_CHANGE_STATUS_FETCH}::SUCCESS`:
+      return set(state, 'bankAccountChangeStatus', action.payload?.data);
 
     case `${GST_FETCH}::SUCCESS`:
     case `${GST_SAVE}::SUCCESS`:
@@ -336,4 +337,4 @@ export default function (state = initialState, action) {
     default:
       return state;
   }
-}
+};

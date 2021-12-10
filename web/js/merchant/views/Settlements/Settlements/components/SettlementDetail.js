@@ -7,7 +7,7 @@ import Time from 'common/ui/Time';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { CreateTicketEmitter } from '../../../TicketSupport/utils';
 import { bindActionCreators } from 'redux';
-import { getCustomURL } from 'merchant/components/DocsLink';
+
 class SettlementDetail extends Component {
   handleContactSupport = () => {
     this.props.closeModal();
@@ -28,19 +28,26 @@ class SettlementDetail extends Component {
   };
 
   isOnHold = () => {
-    if (
-      this.props.settlementAmount.next_settlement_time === null &&
-      this.props.settlementAmount.no_settlement &&
-      this.props.settlementAmount.no_settlement.on_hold === true
-    ) {
-      return true;
-    } else {
-      return false;
-    }
+    const { settlementAmount, settlement, transactionOnHold } = this.props;
+    return (
+      settlementAmount.no_settlement?.on_hold ||
+      settlement.config?.data?.config?.features?.disable?.status ||
+      transactionOnHold
+    );
+  };
+
+  isOnTemporaryHold = () => {
+    const { settlement } = this.props;
+    return settlement.config?.data?.config?.features?.hold?.status;
+  };
+
+  isBankAccountChanged = () => {
+    return this.props.profile?.bankAccountChangeStatus;
   };
 
   get onHoldTitle() {
     const user = this.props.user;
+    const isOnHold = this.isOnHold();
     if (user.instantActivation.isWhitelistFlow || user.isUnregisteredBusiness) {
       if (user.activation_status === 'under_review') {
         return 'Your Settlements are currently on Hold';
@@ -49,7 +56,10 @@ class SettlementDetail extends Component {
         return 'Your Settlements will be processed post KYC submission';
       }
     }
-    return 'Settlements on hold';
+    if (isOnHold) {
+      return 'Settlements on Hold';
+    }
+    return 'Settlements on Temporary Hold';
   }
 
   get onHoldSubtitle() {
@@ -67,6 +77,9 @@ class SettlementDetail extends Component {
 
   get onHoldSubtext() {
     const user = this.props.user;
+    const isOnHold = this.isOnHold();
+    const isBankAccountChanged = this.isBankAccountChanged();
+
     if (user.instantActivation.isWhitelistFlow || user.isUnregisteredBusiness) {
       if (user.activation_status === 'under_review') {
         return (
@@ -88,10 +101,32 @@ class SettlementDetail extends Component {
         );
       }
     }
+    if (isOnHold) {
+      return (
+        <>
+          Your settlements have been put on hold because of some risk issues with your payments or
+          with your razorpay account.
+        </>
+      );
+    }
+    if (isBankAccountChanged) {
+      return (
+        <div className="bank-account-change">
+          <div className="pr-5">
+            <i className="i i-info-outline" />
+          </div>
+          <div>
+            Your request to update bank details is under review. Settlement will be retried after
+            updation of bank account details.
+          </div>
+        </div>
+      );
+    }
     return (
       <>
-        Because of some risk issues with your payments or with your razorpay account, your
-        settlements have been put on hold.
+        Your settlements have been put on hold because of some issues with your bank account. We
+        will not be able to process further settlements until the bank account details are updated
+        from your end.
       </>
     );
   }
@@ -99,6 +134,7 @@ class SettlementDetail extends Component {
   get actionButtons() {
     const user = this.props.user;
     const isOnHold = this.isOnHold();
+    const isOnTemporaryHold = this.isOnTemporaryHold();
 
     if (
       (user.instantActivation.isWhitelistFlow || user.isUnregisteredBusiness) &&
@@ -106,9 +142,9 @@ class SettlementDetail extends Component {
     ) {
       return (
         <>
-          <div>
+          <div className="settlement-detail-button-wrapper">
             <a
-              class="btn btn-default"
+              className="btn btn-default full-width"
               href="https://razorpay.freshdesk.com/a/solutions/articles/11000092582&sa=D&ust=1594198150522000&usg=AFQjCNHDpL3kI_n5NQwp8zP8yPBj7RszJQ"
               target="_blank"
               rel="noopener noreferrer"
@@ -117,8 +153,12 @@ class SettlementDetail extends Component {
             </a>
           </div>
 
-          <Link to="/activation">
-            <button class="btn btn-primary" onClick={this.handleCompleteKYC}>
+          <Link className="settlement-detail-button-wrapper" to="/activation">
+            <button
+              type="button"
+              className="btn btn-primary full-width"
+              onClick={this.handleCompleteKYC}
+            >
               Complete KYC
             </button>
           </Link>
@@ -126,30 +166,67 @@ class SettlementDetail extends Component {
       );
     }
 
-    return (
-      <>
-        {isOnHold && (
-          <div>
-            <button class="btn btn-default" onClick={this.handleContactSupport}>
+    if (isOnHold) {
+      return (
+        <>
+          <div className="settlement-detail-button-wrapper">
+            <button
+              type="button"
+              className="btn btn-default full-width"
+              onClick={this.handleContactSupport}
+            >
               Contact Support
             </button>
           </div>
-        )}
+          <a
+            className="settlement-detail-button-wrapper"
+            href="https://razorpay.com/settlement"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <button type="button" className="btn btn-primary full-width">
+              Settlement Guide
+            </button>
+          </a>
+        </>
+      );
+    }
 
-        <a
-          href={getCustomURL('https://razorpay.com/settlement')}
-          target="_blank"
-          rel="noopener noreferrer"
+    if (isOnTemporaryHold) {
+      return (
+        <Link
+          className="flex-grow-1"
+          to="/profile/update_bank_account"
+          onClick={() => {
+            this.props.closeModal();
+          }}
         >
-          <button class="btn btn-primary">Settlement Guide</button>
-        </a>
-      </>
+          <button type="button" className="btn btn-primary full-width">
+            Update Bank Account Details
+          </button>
+        </Link>
+      );
+    }
+
+    return (
+      <a
+        className="flex-grow-1"
+        href="https://razorpay.com/settlement"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <button type="button" className="btn btn-primary full-width">
+          Settlement Guide
+        </button>
+      </a>
     );
   }
 
   render() {
     const isOnHold = this.isOnHold();
-    const onHoldReason = this.props.settlementAmount.no_settlement;
+    const isOnTemporaryHold = this.isOnTemporaryHold();
+
+    const isSettlementOnHold = isOnHold || isOnTemporaryHold;
 
     return (
       <div>
@@ -164,31 +241,33 @@ class SettlementDetail extends Component {
             });
           }}
         />
-        <div class="modal-body">
-          <div class="settlement-details-overflow-box" style={{ paddingBottom: '0' }}>
-            <div class="emphzd" style={{ paddingTop: 0 }}>
-              <div class="settlement-alert-warning">
-                <span style={{ fontWeight: 'bold', fontSize: '15px' }}>
-                  {isOnHold ? (
-                    <b>{this.onHoldTitle}</b>
-                  ) : (
-                    <Fragment>
-                      <strong>
-                        <Amount
-                          value={this.props.settlementAmount.settlement_amount}
-                          currency="INR"
+        <div className="modal-body">
+          <div className="settlement-details-overflow-box pb-0">
+            <div className="emphzd pt-0">
+              <div className="settlement-alert-warning">
+                <span className="font-15 pr-5">
+                  <strong>
+                    {isSettlementOnHold ? (
+                      <b>{this.onHoldTitle}</b>
+                    ) : (
+                      <Fragment>
+                        <strong className="pr-5">
+                          <Amount
+                            value={this.props.settlementAmount.settlement_amount}
+                            currency="INR"
+                          />
+                        </strong>
+                        <span className="pr-5">will be settled by</span>
+                        <Time
+                          value={this.props.settlementAmount.next_settlement_time}
+                          format="DD MMM YYYY, hh:mm:ss A"
                         />
-                      </strong>{' '}
-                      will be settled by
-                      <Time
-                        value={this.props.settlementAmount.next_settlement_time}
-                        format="DD MMM YYYY, hh:mm:ss a"
-                      />
-                    </Fragment>
-                  )}
-                </span>{' '}
+                      </Fragment>
+                    )}
+                  </strong>
+                </span>
                 <p>
-                  {isOnHold ? (
+                  {isSettlementOnHold ? (
                     <span>{this.onHoldSubtitle}</span>
                   ) : (
                     <Fragment>
@@ -198,37 +277,20 @@ class SettlementDetail extends Component {
                   )}
                 </p>
               </div>
-              <hr style={{ margin: '10px' }} />
-              {isOnHold ? (
-                <p class="grey">
-                  {onHoldReason && onHoldReason.reason ? (
-                    <span class="grey" style={{ opacity: '.7' }}>
-                      {onHoldReason.reason}
-                    </span>
-                  ) : (
-                    <span class="grey" style={{ opacity: '.7' }}>
-                      {this.onHoldSubtext}
-                    </span>
-                  )}
+              <hr className="margin-10" />
+              {isSettlementOnHold ? (
+                <p className="grey">
+                  <span className="grey">{this.onHoldSubtext}</span>
                 </p>
               ) : (
-                <p class="grey" style={{ opacity: '.7' }}>
+                <p className="grey">
                   This is an estimate of the settlement amount and the actual settled amount may
                   vary based on the latest transactions in your account.
                 </p>
               )}
             </div>
           </div>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-evenly',
-              flexDirection: 'row',
-              padding: '15px',
-            }}
-          >
-            {this.actionButtons}
-          </div>
+          <div className="settlement-detail-actions">{this.actionButtons}</div>
         </div>
       </div>
     );

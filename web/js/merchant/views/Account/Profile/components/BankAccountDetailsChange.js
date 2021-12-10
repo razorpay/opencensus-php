@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Field, reduxForm, formValueSelector } from 'redux-form';
+import { Field, reduxForm } from 'redux-form';
+import { bindActionCreators, compose } from 'redux';
 import AsyncButton from 'react-async-button';
 
 import ModalHeader from 'common/ui/ModalHeader';
@@ -12,17 +13,16 @@ import { required } from 'common/utils/validators';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
-import { isWebkit } from 'common/utils/rzp-utils';
-import { validateBankDetails } from '../../../../../common/utils/rzp-utils';
+import { isWebkit, validateBankDetails } from 'common/utils/rzp-utils';
 
-const reVerifyAccountNumber = (value, allValues, props) => {
+const reVerifyAccountNumber = (value, allValues) => {
   return value !== allValues.account_number ? "Bank Number doesn't match" : undefined;
 };
 
 /* Method to validate weather the entered IFSC code is a valid one or not */
 const verifyIFSCCode = (value) => {
   return validateBankDetails(value, 'ifsc') ? undefined : 'Enter a Valid IFSC code';
-}; 
+};
 
 /* Method to Validate the account Number Entry by Pattern */
 const verifyAccountNumber = (value) => {
@@ -31,26 +31,15 @@ const verifyAccountNumber = (value) => {
 
 /* Method to validate the benificiary name */
 const validateBenificiaryName = (value) => {
-  return validateBankDetails(value, 'name') ? undefined : 'Enter a Valid Account Holder\'s Name';
+  return validateBankDetails(value, 'name') ? undefined : "Enter a Valid Account Holder's Name";
 };
 
-const regText = 'Beneficiary name should be the same as a business name',
-      unregText = 'Beneficiary name should be the same as your name in KYC documents';
+const regText = 'Beneficiary name should be the same as a business name';
+const unregText = 'Beneficiary name should be the same as your name in KYC documents';
 
-@connect(state=>{
-  return {
-    user:state.session.user,
-  }
-}, {
-  ...ModalActions,
-  ...NotificationsActions,
-})
-@reduxForm({
-  form: 'changeBankAccountDetails',
-})
-export default class BankAccountDetailsChange extends Component {
+class BankAccountDetailsChange extends Component {
   state = {
-    addressProof: null,
+    file: null,
   };
   handleFileChange = (event) => {
     if (event) {
@@ -61,14 +50,12 @@ export default class BankAccountDetailsChange extends Component {
   };
 
   handleSubmission = (body) => {
-    const { currentBankAccount } = this.props;
-
     if (!this.state.file) {
       this.props.showNotification({
         type: 'error',
         message: 'Please upload a valid Bank Account proof.',
       });
-      return;
+      return null;
     }
 
     body.address_proof_url = this.state.file;
@@ -77,12 +64,27 @@ export default class BankAccountDetailsChange extends Component {
   };
 
   render() {
-    const { isBankAccountChangeAllowed, user, handleSubmit } = this.props;
+    const { user, handleSubmit, settlementConfig } = this.props;
+
+    const isOnTemporaryHold = settlementConfig.data?.config?.features?.hold?.status;
+    const temporaryHoldReason = settlementConfig.data?.config?.features?.hold?.reason;
 
     return (
-      <div class="bank-details-change">
+      <div className="bank-details-change">
         <ModalHeader title="Change Bank Account Details" onCloseClick={this.props.closeModal} />
-        <div class="modal-body bank-details-change-content">
+        <div className="modal-body bank-details-change-content">
+          {isOnTemporaryHold && (
+            <div className="temporary-hold-banner">
+              <div className="pr-12">
+                <i className="i i-triangle-alert alert-red" />
+              </div>
+              <div>
+                <span className="pr-5">Your settlements have been put on hold due to</span>
+                <strong className="pr-5">{temporaryHoldReason}</strong>
+                <span>Please update alternate details to unblock settlements.</span>
+              </div>
+            </div>
+          )}
           <form class="form-horizontal" onSubmit={handleSubmit(this.handleSubmission)}>
             <Fieldset>
               <div class="form-group">
@@ -191,3 +193,21 @@ export default class BankAccountDetailsChange extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    user: state.session.user,
+    settlementConfig: state.settlement.config,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators({ ...ModalActions, ...NotificationsActions }, dispatch);
+};
+
+export default compose(
+  reduxForm({
+    form: 'changeBankAccountDetails',
+  }),
+  connect(mapStateToProps, mapDispatchToProps),
+)(BankAccountDetailsChange);
