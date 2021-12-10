@@ -21,7 +21,7 @@ const FircFiles = (props) => {
                 </div>
                 <div>
                   <i
-                    className="i-download-blue text-primary"
+                    className="i-download-blue download-icon"
                     onClick={() => {
                       downloadFiles({ month, year, document_id: file.id });
                     }}
