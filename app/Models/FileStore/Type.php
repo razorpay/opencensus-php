@@ -569,13 +569,7 @@ class Type
         self::ACTIVATION_BUCKET_CONFIG => MerchantDocumentType::VALID_DOCUMENTS,
 
         self::H2H_BUCKET_CONFIG => [
-            self::RBL_ENACH_DEBIT,
-            self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_CANCEL,
-            self::ICICI_NACH_COMBINED_CANCEL,
-            self::CITI_NACH_REGISTER,
-            self::CITI_NACH_DEBIT,
-            self::CITI_NACH_DEBIT_SUMMARY,
             self::CITI_NACH_EARLY_DEBIT,
             self::CITI_NACH_EARLY_DEBIT_SUMMARY,
             self::FIRST_DATA_PARES_FILE,
