@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant;
@@ -147,5 +148,29 @@ class AmountCreditsTest extends TestCase
 
         $this->ba->proxyAuth();
         $this->startTest();
+    }
+
+    public function test3MonthExpiryForAllAmountCredits()
+    {
+        $creditsLog = $this->addAmountCredits(['value' => 1000, 'campaign' => 'silent-ads']);
+
+        $created = Carbon::parse($creditsLog['created_at']);
+        $expiry = Carbon::parse($creditsLog['expired_at']);
+
+        $this->assertNotNull($creditsLog['expired_at']);
+
+        $diffInDays = $expiry->diffInDays($created);
+
+        $this->assertEquals(92, $diffInDays);
+    }
+
+    public function test50DaysExpiryForAmountCredits()
+    {
+        $expiryDate = Carbon::now()->addDays(50)->getTimestamp();
+        $creditsLog = $this->addAmountCredits(['value' => 1000, 'campaign' => 'silent-ads', 'expired_at' => $expiryDate]);
+
+        $this->assertNotNull($creditsLog['expired_at']);
+
+        $this->assertEquals($expiryDate, $creditsLog['expired_at']);
     }
 }

@@ -719,7 +719,14 @@ class CouponsTest extends TestCase
 
         $credit = $this->getLastEntity('credits', true);
 
-        $this->assertNull($credit['expired_at']);
+        $this->assertNotNull($credit['expired_at']);
+
+        $created = Carbon::parse($credit['created_at']);
+        $expiry = Carbon::parse($credit['expired_at']);
+
+        $diffInDays = $expiry->diffInDays($created);
+
+        $this->assertEquals(92, $diffInDays);
     }
 
     public function testApplyMtuCoupon()
@@ -769,7 +776,14 @@ class CouponsTest extends TestCase
 
         $credit = $this->getLastEntity('credits', true);
 
-        $this->assertNull($credit['expired_at']);
+        $this->assertNotNull($credit['expired_at']);
+
+        $created = Carbon::parse($credit['created_at']);
+        $expiry = Carbon::parse($credit['expired_at']);
+
+        $diffInDays = $expiry->diffInDays($created);
+
+        $this->assertEquals(92, $diffInDays);
 
         $this->assertTrue($response['success']);
     }

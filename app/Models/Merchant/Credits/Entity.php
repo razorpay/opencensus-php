@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Credits;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
@@ -111,6 +112,10 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $dates = [
+        self::EXPIRED_AT,
+    ];
+
+    protected static $modifiers = [
         self::EXPIRED_AT,
     ];
 // --------------------- Setters ----------------------------------------
@@ -247,6 +252,16 @@ class Entity extends Base\PublicEntity
         $creditsUsed = $this->getUsed() + $usedCount;
 
         $this->setUsed($creditsUsed);
+    }
+
+    protected function modifyExpiredAt(& $input)
+    {
+        // default type is amount that's why we are setting expiry as today + 92 days
+        if ((isset($input[self::TYPE]) === false or $input[self::TYPE] === Type::AMOUNT) &&
+            (empty($input[self::EXPIRED_AT]) === true))
+        {
+            $input[self::EXPIRED_AT] = Carbon::now()->addDays(92)->getTimestamp();
+        }
     }
 
 // --------------------- End Modifiers ---------------------------------------
