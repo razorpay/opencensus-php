@@ -12,7 +12,7 @@ import {
 import { fetchAccounts } from 'merchant/reducers/marketplace/accounts';
 import { fetchMerchantConfigs as fetchConfigs } from 'merchant/reducers/reports/configs';
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   const sessionUser = state.session.user;
 
   const { email, contact_email, transaction_report_email } = sessionUser;
@@ -35,13 +35,11 @@ const mapStateToProps = state => {
     current: true,
   };
 
-  const accounts = showSelectAccount
-    ? getAccounts(state.accounts, defaultAccount)
-    : undefined;
+  const accounts = showSelectAccount ? getAccounts(state.accounts, defaultAccount) : undefined;
 
   return {
     ...state.merchantReports,
-    user: pickProps(sessionUser, ['current']),
+    user: pickProps(sessionUser, ['current', 'international']),
     emailReportOptions: uniqueArray(emailReportOptions),
     mode: state.session.mode,
     showSelectAccount,
@@ -57,38 +55,6 @@ export default connect(mapStateToProps, {
   createLog,
   pollLog,
 })(Reports);
-
-function getCustomConfigs(sessionUser) {
-  const customConfigs = [];
-
-  if (sessionUser.isOrgAllowedFunctionality('monthlyInvoice')) {
-    customConfigs.push(customConfigMap['monthlyInvoice']);
-  }
-
-  if (sessionUser.findTag('borking_report')) {
-    customConfigs.push(customConfigMap['broking']);
-  }
-
-  if (sessionUser.findTag('rpp_report')) {
-    customConfigs.push(customConfigMap['rpp_report']);
-  }
-
-  if (sessionUser.findTag('dsp_report')) {
-    customConfigs.push(customConfigMap['dsp_report']);
-  }
-
-  return customConfigs;
-}
-
-function getAccounts(accountsData, defaultAccount) {
-  const { accounts, loading } = accountsData;
-  return loading
-    ? accountsData
-    : {
-        ...accountsData,
-        accounts: [defaultAccount, ...accounts],
-      };
-}
 
 const customConfigMap = {
   monthlyInvoice: {
@@ -115,3 +81,35 @@ const customConfigMap = {
     id: 'rpp_report',
   },
 };
+
+function getCustomConfigs(sessionUser) {
+  const customConfigs = [];
+
+  if (sessionUser.isOrgAllowedFunctionality('monthlyInvoice')) {
+    customConfigs.push(customConfigMap.monthlyInvoice);
+  }
+
+  if (sessionUser.findTag('borking_report')) {
+    customConfigs.push(customConfigMap.broking);
+  }
+
+  if (sessionUser.findTag('rpp_report')) {
+    customConfigs.push(customConfigMap.rpp_report);
+  }
+
+  if (sessionUser.findTag('dsp_report')) {
+    customConfigs.push(customConfigMap.dsp_report);
+  }
+
+  return customConfigs;
+}
+
+function getAccounts(accountsData, defaultAccount) {
+  const { accounts, loading } = accountsData;
+  return loading
+    ? accountsData
+    : {
+        ...accountsData,
+        accounts: [defaultAccount, ...accounts],
+      };
+}

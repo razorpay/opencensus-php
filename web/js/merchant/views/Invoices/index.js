@@ -10,6 +10,7 @@ import {
 import { fetchItems } from 'merchant/reducers/items';
 
 import PayPalForInvoice from 'merchant/components/Announcements/PayPalForInvoice';
+import FIRCBanner from 'merchant/components/Announcements/Firc';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import Invoices from 'merchant/views/Invoices/Invoices/List';
 import Items from 'merchant/views/Invoices/Items/List';
@@ -116,6 +117,7 @@ export default class InvoicesContainer extends Component {
             />
           </ShowWhen>
           <PayPalForInvoice />
+          {this.props?.user?.international && <FIRCBanner />}
         </div>
 
         <tabbed-container>

@@ -36,6 +36,7 @@ import {
   SETTELEMENT_CYCLE,
   NC_UPDATE_BANK_ACC,
   NC_UPDATE_GSTIN,
+  VIEW_FIRC,
 } from './deeplink-constants';
 import { CreateTicketEmitter } from '../../TicketSupport/utils';
 import { compose, bindActionCreators } from 'redux';
@@ -608,7 +609,9 @@ class Profile extends Component {
           }
           {user.international && (
             <SuspenseWithLoader>
-              <PurposeCodeAndFIRC onEditClick={this.editPurposeCodeHandler} user={user} />
+              <IntoView hashedWith={VIEW_FIRC}>
+                <PurposeCodeAndFIRC onEditClick={this.editPurposeCodeHandler} user={user} />
+              </IntoView>
             </SuspenseWithLoader>
           )}
         </div>

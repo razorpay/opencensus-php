@@ -10,7 +10,7 @@ import {
 } from 'merchant/reducers/reports/logs';
 import { fetchPartnerConfigs as fetchConfigs } from 'merchant/reducers/reports/configs';
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   const sessionUser = state.session.user;
 
   const { email, contact_email, transaction_report_email } = sessionUser;
@@ -23,7 +23,7 @@ const mapStateToProps = state => {
 
   return {
     ...state.partnerReports,
-    user: pickProps(sessionUser, ['current']),
+    user: pickProps(sessionUser, ['current', 'international']),
     emailReportOptions: uniqueArray(emailReportOptions),
     mode: state.session.mode,
     showSelectAccount: false,
