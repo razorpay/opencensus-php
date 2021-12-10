@@ -296,7 +296,7 @@ export const handlers = [
     );
   }),
 
-  rest.post('*/merchant/api/test/merchant/activation/otp/send', (req, res, ctx) => {
+  rest.post('*/merchant/api/live/merchant/activation/otp/send', (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.delay(50),

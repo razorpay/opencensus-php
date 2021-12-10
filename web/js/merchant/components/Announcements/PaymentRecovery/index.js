@@ -17,6 +17,7 @@ const trackRender = () => {
 
 const PaymentRecoveryAnnouncment = ({ userId }) => {
   const bannerID = `repayment-banner-${userId}`;
+  const bannerMessage = `There may be variations in your Razorpay balance due to free credits corrections. Please refer to 'Combined Reports' under the Reports section for more details.`;
 
   useEffect(() => {
     trackRender();
@@ -30,11 +31,7 @@ const PaymentRecoveryAnnouncment = ({ userId }) => {
       card_id="payment-recovery-banner"
       canBeClosed={true}
     >
-      <span class="display-inline">
-        You may find minor variations in your balance due to recent adjustments against your account
-        related to the application of promotional credits. Adjustment details are reflected in your
-        Combined Report.
-      </span>
+      <span class="display-inline">{bannerMessage}</span>
     </AnnouncementBanner>
   );
 };

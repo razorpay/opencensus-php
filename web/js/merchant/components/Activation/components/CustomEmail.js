@@ -58,7 +58,12 @@ const CustomEmail = ({
     // if email id not changed send send token in payload
     const payload = token && email === contactEmail ? { email, token } : { email };
 
-    merchantFetch({ url: 'merchant/activation/otp/send', method: 'POST', data: payload })
+    merchantFetch({
+      url: 'merchant/activation/otp/send',
+      method: 'POST',
+      data: payload,
+      mode: 'live',
+    })
       .then((res) => {
         setIsApiCall(false);
         if (res?.data && res?.data?.token) {

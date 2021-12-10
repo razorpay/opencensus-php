@@ -27,6 +27,7 @@ const getOTP = async (data) => {
     url: 'merchant/activation/otp/send',
     method: 'POST',
     data,
+    mode: 'live',
   });
   return fetchData;
 };
