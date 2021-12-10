@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Mail;
+use App;
 use Mockery;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
@@ -1439,6 +1440,681 @@ class CardPaymentServiceTest extends TestCase
         );
     }
 
+    public function testCreatePaymentWithTokenPanAndCryptogram()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        // we are ramping up auth terminal selection hence to make sure all test cases passes
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                            function ($mid, $feature, $mode)
+                            {
+                                if ($feature === 'card_payments_authorize_all_terminals')
+                                {
+                                    return 'off';
+                                }
+
+                                return 'on';
+
+                            }) );
+
+        $this->enableCpsConfig();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+                'type' => [
+                    'non_recurring' => '1',
+            ]
+        ]);
+
+
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('POST', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function(string $method, string $url, array $input) use ($terminal)
+            {
+                $input = $input['input'];
+
+                switch ($url)
+                {
+                    case 'action/authorize':
+
+                        $payment = $input['payment'];
+
+                        $this->assertEquals('test', $input['card']['cryptogram_value']);
+                        $this->assertTrue($input['card']['tokenised']);
+                        $this->assertEquals('PayU', $input['card']['token_provider']);
+
+                        $content = [
+                            'Message' => [
+                                'PAReq' => [
+                                    'Merchant' => [
+                                        'acqBIN' => '11111111111',
+                                        'merID'  => '12AB,cd/34-EF  -g,5/H-67'
+                                    ],
+                                    'CH' => [
+                                        'acctID' => 'NTU2NzYzMDAwMDAwMjAwNA==',
+                                    ],
+                                    'Purchase' => [
+                                        'xid'    => base64_encode(str_pad($payment['id'], 20, '0', STR_PAD_LEFT)),
+                                        'date'    => \Carbon\Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')->format('Ymd H:m:s'),
+                                        'amount' => '500.00',
+                                        'purchAmount' => '50000',
+                                        'currency' => '356',
+                                        'exponent' => 2,
+                                    ]
+                                ]
+                            ],
+                        ];
+
+                        $content['Message']['@attributes']['id'] = $payment['id'];
+
+                        $xml = \Lib\Formatters\Xml::create('ThreeDSecure', $content);
+
+                        $xml = zlib_encode($xml, 15);
+                        $xml = base64_encode($xml);
+
+                        return [
+                            'data' => [
+                                'content' => [
+                                    'TermUrl' => $input['callbackUrl'],
+                                    'PaReq' => $xml,
+                                    'MD' => $payment['id'],
+                                ],
+                                'method' => 'post',
+                                'url' =>  'https://api.razorpay.com/v1/gateway/acs/mpi_blade',
+                            ],
+                            'payment' => [
+                                'terminal_id' => $terminal->getId(),
+                                'auth_type' => null,
+                                'authentication_gateway' => 'mpi_blade'
+                            ],
+                        ];
+                    case 'action/callback':
+                        $this->assertEquals('test', $input['card']['cryptogram_value']);
+                        $this->assertTrue($input['card']['tokenised']);
+                        $this->assertEquals('PayU', $input['card']['token_provider']);
+                        return [
+                            'data' => [
+                                'acquirer' => [
+                                    'reference2' => 'test'
+                                ],
+                                'two_factor_auth' => 'Y'
+                            ],
+                            'payment' => [
+                                'auth_type' => "3ds",
+                            ],
+                        ];
+
+                    case 'action/capture':
+                        return [
+                            'data' => [
+                                'status' => 'captured',
+                            ],
+                        ];
+
+                    case 'action/pay':
+                        $this->assertEquals('test', $input['card']['cryptogram_value']);
+                        $this->assertTrue($input['card']['tokenised']);
+                        $this->assertEquals('PayU', $input['card']['token_provider']);
+                         return [
+                            'data' => [
+                                'acquirer' => [
+                                    'reference2' => 'test'
+                                ],
+                                'two_factor_auth' => 'Y'
+                            ],
+                            'payment' => [
+                                'auth_type' => "3ds",
+                            ],
+                        ];
+
+                    default:
+                        return null;
+                }
+            });
+
+        $paymentArray = $this->getDefaultTokenPanPaymentArray();
+
+        $this->fixtures->iin->create([
+            'iin'     => '404464',
+            'country' => 'US',
+            'issuer'  => 'MDB',
+            'network' => 'Visa',
+            'type'    => 'debit',
+            'flows'   => [
+                '3ds' => '1',
+                'ivr' => '1',
+                'otp' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '400782',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'type'    => 'credit',
+            'flows'   => [
+                '3ds' => '1',
+                'ivr' => '1',
+                'otp' => '1',
+            ]
+        ]);
+
+        
+        $paymentArray['card']['number'] = '4044649165235890';
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals('mpi_blade', $payment['authentication_gateway']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals(2, $payment['cps_route']);
+
+        $this->assertEquals("3ds", $payment['auth_type']);
+        $this->assertEquals("test", $payment['reference2']);
+        $this->assertEquals("Y", $payment['two_factor_auth']);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertNotNull($card['trivia']);
+        $this->assertEquals('IN', $card['country']);
+        $this->assertEquals('ICIC', $card['issuer']);
+        $this->assertEquals('credit', $card['type']);
+        $this->assertEquals('404464', $card['iin']);
+
+        $this->disbaleCpsConfig();
+    }
+
+    public function testCreatePaymentWithSavedNetworkTokenGlobal()
+    {
+        $this->mockSession();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        // we are ramping up auth terminal selection hence to make sure all test cases passes
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                            function ($mid, $feature, $mode)
+                            {
+                                if ($feature === 'card_payments_authorize_all_terminals')
+                                {
+                                    return 'off';
+                                }
+
+                                return 'on';
+
+                            }) );
+
+        $this->enableCpsConfig();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+                'type' => [
+                    'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->mockCardVaultWithCryptogram();
+
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('POST', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function(string $method, string $url, array $input) use ($terminal)
+            {
+                $input = $input['input'];
+
+                switch ($url)
+                {
+                    case 'action/authorize':
+
+                        $payment = $input['payment'];
+
+                        $this->assertEquals('test', $input['card']['cryptogram_value']);
+                        $this->assertTrue($input['card']['tokenised']);
+                        $this->assertEquals('Razorpay', $input['card']['token_provider']);
+
+                        $content = [
+                            'Message' => [
+                                'PAReq' => [
+                                    'Merchant' => [
+                                        'acqBIN' => '11111111111',
+                                        'merID'  => '12AB,cd/34-EF  -g,5/H-67'
+                                    ],
+                                    'CH' => [
+                                        'acctID' => 'NTU2NzYzMDAwMDAwMjAwNA==',
+                                    ],
+                                    'Purchase' => [
+                                        'xid'    => base64_encode(str_pad($payment['id'], 20, '0', STR_PAD_LEFT)),
+                                        'date'    => \Carbon\Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')->format('Ymd H:m:s'),
+                                        'amount' => '500.00',
+                                        'purchAmount' => '50000',
+                                        'currency' => '356',
+                                        'exponent' => 2,
+                                    ]
+                                ]
+                            ],
+                        ];
+
+                        $content['Message']['@attributes']['id'] = $payment['id'];
+
+                        $xml = \Lib\Formatters\Xml::create('ThreeDSecure', $content);
+
+                        $xml = zlib_encode($xml, 15);
+                        $xml = base64_encode($xml);
+
+                        return [
+                            'data' => [
+                                'content' => [
+                                    'TermUrl' => $input['callbackUrl'],
+                                    'PaReq' => $xml,
+                                    'MD' => $payment['id'],
+                                ],
+                                'method' => 'post',
+                                'url' =>  'https://api.razorpay.com/v1/gateway/acs/mpi_blade',
+                            ],
+                            'payment' => [
+                                'terminal_id' => $terminal->getId(),
+                                'auth_type' => null,
+                                'authentication_gateway' => 'mpi_blade'
+                            ],
+                        ];
+                    case 'action/callback':
+                        $this->assertEquals('test', $input['card']['cryptogram_value']);
+                        $this->assertTrue($input['card']['tokenised']);
+                        $this->assertEquals('Razorpay', $input['card']['token_provider']);
+                        return [
+                            'data' => [
+                                'acquirer' => [
+                                    'reference2' => 'test'
+                                ],
+                                'two_factor_auth' => 'Y'
+                            ],
+                            'payment' => [
+                                'auth_type' => "3ds",
+                            ],
+                        ];
+
+                    case 'action/capture':
+                        return [
+                            'data' => [
+                                'status' => 'captured',
+                            ],
+                        ];
+
+                    case 'action/pay':
+                        $this->assertEquals('test', $input['card']['cryptogram_value']);
+                        $this->assertTrue($input['card']['tokenised']);
+                        $this->assertEquals('Razorpay', $input['card']['token_provider']);
+                         return [
+                            'data' => [
+                                'acquirer' => [
+                                    'reference2' => 'test'
+                                ],
+                                'two_factor_auth' => 'Y'
+                            ],
+                            'payment' => [
+                                'auth_type' => "3ds",
+                            ],
+                        ];
+
+                    default:
+                        return null;
+                }
+            });
+
+        $paymentArray = $this->getDefaultTokenPanPaymentArray();
+
+        $this->fixtures->iin->create([
+            'iin'     => '404464',
+            'country' => 'US',
+            'issuer'  => 'MDB',
+            'network' => 'Visa',
+            'type'    => 'debit',
+            'flows'   => [
+                '3ds' => '1',
+                'ivr' => '1',
+                'otp' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '400782',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'type'    => 'credit',
+            'flows'   => [
+                '3ds' => '1',
+                'ivr' => '1',
+                'otp' => '1',
+            ]
+        ]);
+
+        $this->fixtures->card->create(
+            [
+                'id'                =>  '100000003lcard',
+                'merchant_id'       =>  '100000Razorpay',
+                'name'              =>  'test',
+                'iin'               =>  '411140',
+                'expiry_month'      =>  '12',
+                'expiry_year'       =>  '2100',
+                'issuer'            =>  'HDFC',
+                'network'           =>  'Visa',
+                'last4'             =>  '1111',
+                'type'              =>  'debit',
+                'vault'             =>  'visa',
+                'vault_token'       =>  'test_token',
+            ]
+        );
+
+       $this->fixtures->token->create(
+            [
+                'id'            => '100022custcard',
+                'token'         => '10003cardToken',
+                'customer_id'   => '10000gcustomer',
+                'method'        => 'card',
+                'card_id'       => '100000003lcard',
+                'used_at'       =>  10,
+                'merchant_id'   =>  '100000Razorpay',
+            ]
+        );
+
+        
+        unset($paymentArray['card']['number']);
+        unset($paymentArray['card']['cryptogram_value']);
+        unset($paymentArray['card']['tokenised']);
+        unset($paymentArray['card']['token_provider']);
+
+        $paymentArray['token'] = 'token_100022custcard';        
+      
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals('mpi_blade', $payment['authentication_gateway']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals(2, $payment['cps_route']);
+
+        $this->assertEquals("3ds", $payment['auth_type']);
+        $this->assertEquals("test", $payment['reference2']);
+        $this->assertEquals("Y", $payment['two_factor_auth']);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertNotNull($card['trivia']);
+        $this->assertEquals('IN', $card['country']);
+        $this->assertEquals('ICIC', $card['issuer']);
+        $this->assertEquals('credit', $card['type']);
+        $this->assertEquals('404464', $card['iin']);
+
+        $this->disbaleCpsConfig();
+    }
+
+     public function testCreatePaymentWithSavedNetworkTokenLocal()
+    {
+        $this->mockSession();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        // we are ramping up auth terminal selection hence to make sure all test cases passes
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                            function ($mid, $feature, $mode)
+                            {
+                                if ($feature === 'card_payments_authorize_all_terminals')
+                                {
+                                    return 'off';
+                                }
+
+                                return 'on';
+
+                            }) );
+
+        $this->enableCpsConfig();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+                'type' => [
+                    'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->mockCardVaultWithCryptogram();
+
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('POST', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function(string $method, string $url, array $input) use ($terminal)
+            {
+                $input = $input['input'];
+
+                switch ($url)
+                {
+                    case 'action/authorize':
+
+                        $payment = $input['payment'];
+
+                        $this->assertEquals('test', $input['card']['cryptogram_value']);
+                        $this->assertTrue($input['card']['tokenised']);
+                        $this->assertEquals('Razorpay', $input['card']['token_provider']);
+
+                        $content = [
+                            'Message' => [
+                                'PAReq' => [
+                                    'Merchant' => [
+                                        'acqBIN' => '11111111111',
+                                        'merID'  => '12AB,cd/34-EF  -g,5/H-67'
+                                    ],
+                                    'CH' => [
+                                        'acctID' => 'NTU2NzYzMDAwMDAwMjAwNA==',
+                                    ],
+                                    'Purchase' => [
+                                        'xid'    => base64_encode(str_pad($payment['id'], 20, '0', STR_PAD_LEFT)),
+                                        'date'    => \Carbon\Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')->format('Ymd H:m:s'),
+                                        'amount' => '500.00',
+                                        'purchAmount' => '50000',
+                                        'currency' => '356',
+                                        'exponent' => 2,
+                                    ]
+                                ]
+                            ],
+                        ];
+
+                        $content['Message']['@attributes']['id'] = $payment['id'];
+
+                        $xml = \Lib\Formatters\Xml::create('ThreeDSecure', $content);
+
+                        $xml = zlib_encode($xml, 15);
+                        $xml = base64_encode($xml);
+
+                        return [
+                            'data' => [
+                                'content' => [
+                                    'TermUrl' => $input['callbackUrl'],
+                                    'PaReq' => $xml,
+                                    'MD' => $payment['id'],
+                                ],
+                                'method' => 'post',
+                                'url' =>  'https://api.razorpay.com/v1/gateway/acs/mpi_blade',
+                            ],
+                            'payment' => [
+                                'terminal_id' => $terminal->getId(),
+                                'auth_type' => null,
+                                'authentication_gateway' => 'mpi_blade'
+                            ],
+                        ];
+                    case 'action/callback':
+                        $this->assertEquals('test', $input['card']['cryptogram_value']);
+                        $this->assertTrue($input['card']['tokenised']);
+                        $this->assertEquals('Razorpay', $input['card']['token_provider']);
+                        return [
+                            'data' => [
+                                'acquirer' => [
+                                    'reference2' => 'test'
+                                ],
+                                'two_factor_auth' => 'Y'
+                            ],
+                            'payment' => [
+                                'auth_type' => "3ds",
+                            ],
+                        ];
+
+                    case 'action/capture':
+                        return [
+                            'data' => [
+                                'status' => 'captured',
+                            ],
+                        ];
+
+                    case 'action/pay':
+                        $this->assertEquals('test', $input['card']['cryptogram_value']);
+                        $this->assertTrue($input['card']['tokenised']);
+                        $this->assertEquals('Razorpay', $input['card']['token_provider']);
+                         return [
+                            'data' => [
+                                'acquirer' => [
+                                    'reference2' => 'test'
+                                ],
+                                'two_factor_auth' => 'Y'
+                            ],
+                            'payment' => [
+                                'auth_type' => "3ds",
+                            ],
+                        ];
+
+                    default:
+                        return null;
+                }
+            });
+
+        $paymentArray = $this->getDefaultTokenPanPaymentArray();
+
+        $this->fixtures->iin->create([
+            'iin'     => '404464',
+            'country' => 'US',
+            'issuer'  => 'MDB',
+            'network' => 'Visa',
+            'type'    => 'debit',
+            'flows'   => [
+                '3ds' => '1',
+                'ivr' => '1',
+                'otp' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '400782',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'type'    => 'credit',
+            'flows'   => [
+                '3ds' => '1',
+                'ivr' => '1',
+                'otp' => '1',
+            ]
+        ]);
+
+        $this->fixtures->card->create(
+            [
+                'id'                =>  '100000003lcard',
+                'merchant_id'       =>  '10000000000000',
+                'name'              =>  'test',
+                'iin'               =>  '411140',
+                'expiry_month'      =>  '12',
+                'expiry_year'       =>  '2100',
+                'issuer'            =>  'HDFC',
+                'network'           =>  'Visa',
+                'last4'             =>  '1111',
+                'type'              =>  'debit',
+                'vault'             =>  'visa',
+                'vault_token'       =>  'test_token',
+            ]
+        );
+
+       $this->fixtures->token->create(
+            [
+                'id'            => '100022custcard',
+                'token'         => '10003cardToken',
+                'customer_id'   => '100000customer',
+                'method'        => 'card',
+                'card_id'       => '100000003lcard',
+                'used_at'       =>  10,
+                'merchant_id'   =>  '10000000000000',
+            ]
+        );
+
+        
+        unset($paymentArray['card']['number']);
+        unset($paymentArray['card']['cryptogram_value']);
+        unset($paymentArray['card']['tokenised']);
+        unset($paymentArray['card']['token_provider']);
+
+        $paymentArray['token'] = 'token_100022custcard';        
+        $paymentArray['customer_id'] = 'cust_100000customer';        
+      
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals('mpi_blade', $payment['authentication_gateway']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals(2, $payment['cps_route']);
+
+        $this->assertEquals("3ds", $payment['auth_type']);
+        $this->assertEquals("test", $payment['reference2']);
+        $this->assertEquals("Y", $payment['two_factor_auth']);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertNotNull($card['trivia']);
+        $this->assertEquals('IN', $card['country']);
+        $this->assertEquals('ICIC', $card['issuer']);
+        $this->assertEquals('credit', $card['type']);
+        $this->assertEquals('404464', $card['iin']);
+
+        $this->disbaleCpsConfig();
+    }
+
     protected function mockCpsEntityFetch($url)
     {
         switch ($url)
@@ -2433,5 +3109,91 @@ class CardPaymentServiceTest extends TestCase
         $processor = \Mockery::mock(Payment\Processor\Processor::class)->makePartial();
         $this->app->instance('processor.cps',$processor);
         $processor->shouldReceive('canAuthorizeViaCps')->withAnyArgs()->andReturn(false);
+    }
+
+    protected function mockCardVaultWithCryptogram($callable = null)
+    {
+        $app = App::getFacadeRoot();
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$app])->makePartial();
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $mpanVault = Mockery::mock('RZP\Services\CardVault', [$app, 'mpan'])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $mpanVault);
+
+        $callable = $callable ?: function ($route, $method, $input)
+        {
+            $response = [
+                'error' => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    $response['token'] = base64_encode($input['secret']);
+                    $response['fingerprint'] = strrev(base64_encode($input['secret']));
+                    $response['scheme'] = '0';
+                    break;
+
+                case 'detokenize':
+                    $response['value'] = base64_decode($input['token']);
+                    break;
+
+                case 'validate':
+                    if ($input['token'] === 'fail')
+                    {
+                        $response['success'] = false;
+                    }
+                    break;
+
+                case 'token/renewal' :
+                    $response['expiry_time'] = date('Y-m-d H:i:s', strtotime('+1 year'));
+                    break;
+
+                case 'delete':
+                    break;
+
+                case 'tokens/cryptogram':
+                        $response['service_provider_tokens'] = [
+                            [
+                                'type'  => 'network',
+                                'name'  => 'Visa',
+                                'data'  => [
+                                    'token_number' => '4044649165235890',
+                                    'cryptogram_value' => 'test',
+                                    'expiry_month' => 12,
+                                    'expiry_year' => 2021,
+                                ],
+                            ]
+                        ];
+                break;
+            }
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+                  ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+                  ->andReturnUsing($callable);
+
+        $mpanVault->shouldReceive('sendRequest')
+                  ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+                  ->andReturnUsing($callable);
+
+        $cardVault->shouldReceive('sendRequest')
+                  ->with(Mockery::type('string'), 'post', null)
+                  ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+    }
+
+    protected function mockSession($appToken = 'capp_1000000custapp')
+    {
+        $data = [ 'test_app_token' => $appToken ];
+
+        $this->session($data);
     }
 }

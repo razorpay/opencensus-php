@@ -260,8 +260,8 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => \RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code'   => 'BAD_REQUEST_VALIDATION_FAILURE',
+            'class'                 => \RZP\Exception\BadRequestException::class,
+            'internal_error_code'   => 'BAD_REQUEST_INVALID_ID',
         ],
     ],
 
@@ -309,8 +309,8 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => \RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code'   => 'BAD_REQUEST_VALIDATION_FAILURE',
+            'class'                 => \RZP\Exception\BadRequestException::class,
+            'internal_error_code'   => 'BAD_REQUEST_INVALID_ID',
         ],
     ],
 
@@ -376,8 +376,8 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => \RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code'   => 'BAD_REQUEST_VALIDATION_FAILURE',
+            'class'                 => \RZP\Exception\BadRequestException::class,
+            'internal_error_code'   => 'BAD_REQUEST_INVALID_ID',
         ],
     ],
 

@@ -1442,12 +1442,24 @@ class Core extends Base\Core
         return $token;
     }
 
-    public function fetchCryptogram($serviceProviderTokenId, $merchant)
+    public function fetchCryptogram($input, $merchant)
     {
-        $response = (new Card\Core)->fetchCryptogram($serviceProviderTokenId, $merchant);
+        if (empty($input['token_id']) === false)
+        {
+            $token = $this->repo->token->getByPublicIdAndMerchant($input['token_id'], $this->merchant);
 
+            $vaultToken = $token->card->getVaultToken();
+
+            $response = (new Card\Core)->fetchCryptogramForVaultToken($vaultToken, $merchant);
+        }
+        else
+        {
+            $response = (new Card\Core)->fetchCryptogram($input['id'], $merchant);
+        }
+        
         return $response[Entity::SERVICE_PROVIDER_TOKENS];
     }
+
 
     public function fetchToken($token)
     {

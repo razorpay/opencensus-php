@@ -47,8 +47,16 @@ trait CardCacheTrait
         if ($storeCvv === true)
         {
             $data['cvv'] = $this->app['encrypter']->encrypt($cvv);
+
+            if (empty($input['card'][Card\Entity::CRYPTOGRAM_VALUE]) === false)
+            {
+                $data[Card\Entity::CRYPTOGRAM_VALUE] = $this->app['encrypter']->encrypt($input['card'][Card\Entity::CRYPTOGRAM_VALUE]);
+                $data[Card\Entity::TOKENISED]        = $input['card'][Card\Entity::TOKENISED];
+                $data[CARD\Entity::TOKEN_PROVIDER]   = $input['card'][CARD\Entity::TOKEN_PROVIDER];
+            }
         }
 
+        
         $cacheTtl = $this->getCardCacheTtl($input);
 
         // If this is set to 0, set the cache forever
@@ -94,6 +102,13 @@ trait CardCacheTrait
         if (isset($data['cvv']) === true)
         {
             $input['card']['cvv'] = $this->app['encrypter']->decrypt($data['cvv']);
+        }
+
+        if (empty($data[Card\Entity::CRYPTOGRAM_VALUE]) === false)
+        {
+            $input['card'][Card\Entity::CRYPTOGRAM_VALUE] = $this->app['encrypter']->decrypt($data[Card\Entity::CRYPTOGRAM_VALUE]);
+            $input['card'][Card\Entity::TOKENISED]        = $data[Card\Entity::TOKENISED];
+            $input['card'][Card\Entity::TOKEN_PROVIDER]   = $data[Card\Entity::TOKEN_PROVIDER];
         }
     }
 

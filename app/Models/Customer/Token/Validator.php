@@ -90,15 +90,18 @@ class Validator extends Base\Validator
     ];
 
     protected static $fetchCryptogramRules = [
-        'id'     => 'required|public_id',
+        'id'         => 'sometimes',
+        'token_id'   => 'sometimes|public_id',
     ];
 
     protected static $fetchTokenRules = [
-        'id'     => 'required|public_id',
+        'id'         => 'sometimes',
+        'token_id'   => 'sometimes|public_id',
     ];
 
     protected static $deleteTokenRules = [
-        'id'     => 'required|public_id',
+        'id'         => 'sometimes',
+        'token_id'   => 'sometimes|public_id',
     ];
 
     protected static $getStatusRules = [

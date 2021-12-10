@@ -1852,6 +1852,24 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getDefaultTokenPanPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['card'] = array(
+            'number'            => '4012001038443335',
+            'name'              => 'Harshil',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2024',
+            'cvv'               => '566',
+            'cryptogram_value'  => 'test',
+            'tokenised'         => 1,
+            'token_provider'    => 'PayU'
+        );
+
+        return $payment;
+    }
+
     protected function getDefaultWalletPaymentArray($wallet = 'mobikwik')
     {
         $payment = $this->getDefaultPaymentArray();

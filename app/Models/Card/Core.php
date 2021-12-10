@@ -121,6 +121,11 @@ class Core extends Base\Core
         return $this->getCryptogramResponseFromVault($serviceProviderTokenId, $merchant);
     }
 
+    public function fetchCryptogramForVaultToken($vaultToken, $merchant)
+    {
+        return $this->getCryptogramResponse($vaultToken, $merchant);
+    }
+
     public function fetchToken($card)
     {
         return $this->getTokenResponseFromVault($card);
@@ -286,8 +291,11 @@ class Core extends Base\Core
         return array_merge(
             $card->toArray(),
             [
-                'number'       => $input['number'],
-                'cvv'          => $input['cvv'],
+                'number'                        => $input['number'],
+                'cvv'                           => $input['cvv'],
+                Card\Entity::CRYPTOGRAM_VALUE   => $input[Card\Entity::CRYPTOGRAM_VALUE] ?? null,
+                Card\Entity::TOKENISED          => (empty($input[Card\Entity::TOKENISED]) === false) ? boolval($input[Card\Entity::TOKENISED]) : false,
+                CARD\Entity::TOKEN_PROVIDER     => $input[CARD\Entity::TOKEN_PROVIDER] ?? null
             ]);
     }
 
@@ -360,14 +368,26 @@ class Core extends Base\Core
 
     public function fillNetworkDetails($card, $input)
     {
-        $network = Card\Network::detectNetwork($card->getIin());
+        $iinNumber = $card->getIin();
+        
+        // for tokenised card we need to fetch the details from a static list.
+        if ((empty($input[Card\Entity::TOKENISED]) === false) and
+            (boolval($input[Card\Entity::TOKENISED]) === true))
+        {
+            $tokenizedRange = substr($input['number'], 0, 9);
+            $iinNumber = Card\IIN\IIN::getTransactingIinforRange($tokenizedRange) ?? $iinNumber;
+        }
+
+        $network = Card\Network::detectNetwork($iinNumber);
 
         $networkName = Card\Network::getFullName($network);
 
         $card->setNetwork($networkName);
 
         // Get details for this iin from card repository
-        $iin = $this->repo->card->retrieveIinDetails($card->getIin());
+        $iin = $this->repo->card->retrieveIinDetails($iinNumber);
+
+        $cardIin = $this->repo->card->retrieveIinDetails($card->getIin());
 
         $type = null;
 
@@ -387,7 +407,7 @@ class Core extends Base\Core
             {
                 $this->trace->error(
                     TraceCode::CARD_NETWORK_INVALID,
-                    ['network' => $iinNetwork, 'iin' => $card->getIin()]);
+                    ['network' => $iinNetwork, 'iin' => $iinNumber]);
             }
 
             $type = $iin['type'];
@@ -413,7 +433,7 @@ class Core extends Base\Core
                 Entity::INTERNATIONAL   => $isInternational,
                 Entity::EMI             => $emi,
             ];
-
+            
             $card->fill($arr);
         }
         else
@@ -436,7 +456,7 @@ class Core extends Base\Core
 
         $this->checkCvvLength($card, $input);
 
-        return $iin;
+        return $cardIin;
     }
 
     protected function traceMissingIin($card)
@@ -564,6 +584,24 @@ class Core extends Base\Core
         return false;
     }
 
+    public function getCardInputFromCryptogram($cryptgram, $card, $input)
+    {
+        $input = [
+            Card\Entity::NUMBER           => $cryptgram['token_number'],
+            Card\Entity::NAME             => $card->getName(),
+            Card\Entity::EXPIRY_MONTH     => $cryptgram['expiry_month'],
+            Card\Entity::EXPIRY_YEAR      => $cryptgram['expiry_year'],
+            Card\Entity::CRYPTOGRAM_VALUE => $cryptgram['cryptogram_value'],
+            Card\Entity::TOKENISED        => 1,
+            Card\Entity::VAULT            => "rzpvault",
+            CARD\Entity::IS_CVV_OPTIONAL  => false,
+            Card\Entity::CVV              => $input['cvv'] ?? "123", // adding dummy cvv
+            Card\Entity::TOKEN_PROVIDER   => 'Razorpay',
+        ];
+
+        return $input;
+    }
+
     public function fillCardDetailsWithVaultToken($input): array
     {
         $cardNumber = null;
@@ -659,6 +697,13 @@ class Core extends Base\Core
         $cardVault = (new Card\CardVault);
 
         return $cardVault->fetchCryptogram($serviceProviderTokenId, $merchant);
+    }
+
+    protected function getCryptogramResponse($vaultToken, $merchant)
+    {
+        $cardVault = (new Card\CardVault);
+
+        return $cardVault->fetchCryptogramFromVaultToken($vaultToken, $merchant);
     }
 
     protected function getTokenResponseFromVault($card)

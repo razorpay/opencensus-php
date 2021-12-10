@@ -836,6 +836,8 @@ class Selector extends Base\Core
 
                     $paymentData['card']['flows'] = $flows;
                 }
+
+                $paymentData['card']['tokenised'] = $card->isTokenPan();
             }
 
             if ($payment->getEmiPlanId() !== null)

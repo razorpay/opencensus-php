@@ -641,6 +641,8 @@ class TokenTest extends TestCase
 
     public function testFetchCryptogramLiveInvalidToken()
     {
+        $this->markTestSkipped();
+        
         $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
 
         $this->app->instance('mpan.cardVault', $cardVault);
@@ -675,6 +677,8 @@ class TokenTest extends TestCase
         $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
 
         $fetchPayload = $this->testData['testFetchCryptogramLiveInvalidTokenId'];
+
+        $fetchPayload['request']['content'] = ['id' => '123'];
 
         $this->startTest($fetchPayload);
     }
@@ -835,6 +839,8 @@ class TokenTest extends TestCase
 
         $fetchPayload = $this->testData['testFetchTokenLive'];
 
+        $fetchPayload['request']['content'] = ['id' => '123'];
+
         $this->startTest($fetchPayload);
     }
 
@@ -984,6 +990,8 @@ class TokenTest extends TestCase
         $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
 
         $deletePayload = $this->testData['testTokenDelete'];
+
+        $deletePayload['request']['content'] = ['id' => '123'];
 
         $this->startTest($deletePayload);
     }

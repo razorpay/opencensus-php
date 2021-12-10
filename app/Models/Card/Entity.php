@@ -59,8 +59,12 @@ class Entity extends Base\PublicEntity
      */
     const NUMBER = 'number';
     const CVV    = 'cvv';
-    const IS_CVV_OPTIONAL = 'is_cvv_optional';
+    const IS_CVV_OPTIONAL   = 'is_cvv_optional';
     const IS_TOKENIZED_CARD = 'is_tokenized_card';
+
+    const TOKENISED         = 'tokenised';
+    const CRYPTOGRAM_VALUE  = 'cryptogram_value';
+    const TOKEN_PROVIDER    = 'token_provider';
 
     const COUNTRY_LENGTH = 2;
 
@@ -116,7 +120,8 @@ class Entity extends Base\PublicEntity
         self::IIN,
         self::TYPE,
         self::LAST4,
-        self::LENGTH
+        self::LENGTH,
+        self::TRIVIA,
     ];
 
     protected $hidden = [];
@@ -299,6 +304,15 @@ class Entity extends Base\PublicEntity
         if (empty($input['length']) === false)
         {
             $this->setAttribute(self::LENGTH, $input['length']);
+        }
+    }
+
+    protected function generateTrivia($input)
+    {
+        if ((empty($input['tokenised']) === false) and
+            (boolval($input['tokenised']) === true))
+        {
+            $this->setAttribute(self::TRIVIA, "1");  
         }
     }
 
@@ -807,6 +821,11 @@ class Entity extends Base\PublicEntity
         return ($network === Card\Network::$fullName[Card\Network::RUPAY]);
     }
 
+    public function isTokenPan()
+    {
+        return (empty($this->getAttribute(self::TRIVIA)) === false);
+    }
+
     public function isDiners()
     {
         $network = $this->getNetwork();
@@ -834,6 +853,12 @@ class Entity extends Base\PublicEntity
         $iin = $this->iinRelation;
 
         return $this->isRecurringSupportedOnIIN($this->merchant, $iin, $isInitial);
+    }
+
+    public function isRzpSavedCard()
+    {
+        return (($this->getAttribute(self::VAULT) === Card\Vault::RZP_ENCRYPTION) or
+                ($this->getAttribute(self::VAULT) === Card\Vault::RZP_VAULT));
     }
 
     public function isRecurringSupportedOnIIN(Merchant\Entity $merchant, IIN\Entity $iin = null, bool $isInitial = true)

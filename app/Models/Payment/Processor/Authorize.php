@@ -7559,6 +7559,11 @@ trait Authorize
     {
         $card = $this->repo->card->fetchForToken($token);
 
+        if ($card->isRzpSavedCard() === false)
+        {
+            return $this->createCardForNetworkToken($card, $input);
+        }
+
         $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken());
 
         // Recurring terminals accept null cvv.
@@ -7577,6 +7582,17 @@ trait Authorize
                 ]);
     }
 
+    protected function createCardForNetworkToken($card, $input)
+    {
+        $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $card->merchant);
+
+        $cardCore = new Card\Core;
+
+        $cardInput = $cardCore->getCardInputFromCryptogram($cryptogram, $card, $input);
+
+        return $this->createCardEntity($cardInput, true, $this->merchant, $input);
+    }
+
     /**
      * creates gateway input using saved card token, this method is used for
      * global card saving. we need to create a new card entity for merchant
@@ -7591,6 +7607,11 @@ trait Authorize
     protected function createCardEntityFromSavedToken(Token\Entity $token, array & $input): array
     {
         $card = $this->repo->card->fetchForToken($token);
+
+        if ($card->isRzpSavedCard() === false)
+        {
+            return $this->createCardForNetworkToken($card, $input);
+        }
 
         $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken());
 

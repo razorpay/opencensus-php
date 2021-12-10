@@ -609,7 +609,7 @@ class Service extends Base\Service
         {
             (new Validator)->validateInput(Validator::FETCH_CRYPTOGRAM, $input);
 
-            $serviceProviderToken = $this->core->fetchCryptogram($input['id'], $this->merchant);
+            $serviceProviderToken = $this->core->fetchCryptogram($input, $this->merchant);
 
             return $this->generateCryptogramResponse($serviceProviderToken);
         }

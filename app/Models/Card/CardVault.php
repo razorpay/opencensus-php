@@ -191,6 +191,22 @@ class CardVault extends Base\Core
         return $this->app['card.cardVault']->fetchCryptogram($input);
     }
 
+    public function fetchCryptogramFromVaultToken($vaultToken, $merchant)
+    {
+        $input['token'] = $vaultToken;
+
+        $input = $this->setMerchantDetails($input, $merchant);
+
+        return $this->app['card.cardVault']->fetchCryptogram($input);
+    }
+
+    public function fetchCryptogramForPayment($cardVaultToken, $merchant)
+    {
+        $response = $this->fetchCryptogramFromVaultToken($cardVaultToken, $merchant);
+
+        return $response['service_provider_tokens'][0]['data'];
+    }
+
     public function fetchToken($cardVaultToken)
     {
         $input['token'] = $cardVaultToken;
