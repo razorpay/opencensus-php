@@ -2156,18 +2156,28 @@ class Repository extends Base\Repository
             $query->select($txnId, $txnBalanceId, $txnMerchantId, $txnEntityId, $txnType, $txnCurrency, $txnCredit, $txnDebit, $txnFee, $txnTax, $txnOnHold, $txnCreatedAt);
         }
 
-            $query->where($txnBalanceId, $balance->getId())
-                ->whereNotNull($txnSettledAt)
-                ->where($txnSettled, 0)
-                ->where($txnMerchantId, $merchantId)
-                ->where($txnType, '!=', Type::SETTLEMENT);
+        if ($balance->isTypePrimary() === true)
+        {
+            $query->where(function ($query) use ($txnBalanceId, $balance) {
+                $query->where($txnBalanceId, $balance->getId())
+                    ->orWhereNull($txnBalanceId);
+            });
+        }
+        else
+        {
+            $query->where($txnBalanceId, $balance->getId());
+        }
 
-            if (empty($limits) == false)
-            {
-                $query->offset($limits['offset']);
-                $query->limit($limits['limit']);
+        $query->whereNotNull($txnSettledAt)
+              ->where($txnSettled, 0)
+              ->where($txnMerchantId, $merchantId)
+              ->where($txnType, '!=', Type::SETTLEMENT);
 
-            }
+        if (empty($limits) == false)
+        {
+            $query->offset($limits['offset']);
+            $query->limit($limits['limit']);
+        }
 
         if (empty($opt['transaction_ids']) === false)
         {
