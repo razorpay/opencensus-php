@@ -36,6 +36,7 @@ import {
 } from './deeplink-constants';
 import { getFeature } from 'common/utils/features';
 import EasterEgg from 'merchant/components/EasterEgg';
+import Firc from './components/FircAnnouncements/Firc';
 
 class CongfigurationContainer extends Component {
   state = {
@@ -339,6 +340,7 @@ class CongfigurationContainer extends Component {
             <IntoView hashedWith={REFUND_SETTINGS}>
               <DefaultRefundSpeed org={org} />
             </IntoView>
+            {user?.international && <Firc />}
             <ShowWhen
               additionalCondition={(usr) =>
                 usr.isOrgRZP &&
