@@ -3,6 +3,7 @@ import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils'
 import { merchantFetch } from 'merchant/utils/ajax';
 import { trackSupportOptions } from 'merchant/components/Support/ga';
 import { Link } from 'react-router-dom';
+import { fetchTicketsRaisedByAgents } from 'merchant/reducers/config';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -24,6 +25,7 @@ const isWorkingDay = () => {
   },
   {
     openModal,
+    fetchTicketsRaisedByAgents,
     closeModal,
   },
 )
@@ -81,6 +83,10 @@ class SupportBody extends Component {
   };
 
   componentDidMount() {
+    if (this.props.user.isMobileSignupCareActive) {
+      this.props.fetchTicketsRaisedByAgents();
+    }
+
     CreateTicketEmitter.on('create-ticket', (id, pcb, lcb) => {
       this.createTicket(id, pcb, lcb);
     });
