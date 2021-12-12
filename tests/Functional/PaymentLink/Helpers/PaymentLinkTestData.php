@@ -3046,4 +3046,24 @@ return [
             ]
         ]
     ],
+
+    'testPaymentHandleFetchWhenHandleDoesNotExists' => [
+        'request'  => [
+            'url'   => '/payment_handle',
+            'method'=> 'get',
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment Handle does not exists for this merchant. Please create a new one'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

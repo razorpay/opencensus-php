@@ -2019,6 +2019,13 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentHandleFetchWhenHandleDoesNotExists()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testPaymentHandleDeactivatedView()
     {
         $this->testPaymentHandleCreation();

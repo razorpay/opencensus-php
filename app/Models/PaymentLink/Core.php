@@ -179,17 +179,15 @@ class Core extends Base\Core
         return $paymentLink;
     }
 
-    public function getPaymentHandleByMerchant(Merchant\Entity $merchant): Entity
+    public function getPaymentHandleByMerchant(Merchant\Entity $merchant)
     {
         $merchantSetting = Settings\Accessor::for($merchant, Settings\Module::PAYMENT_LINK)
             ->all();
 
         if (empty($merchantSetting) === true || empty($merchantSetting[ENTITY::DEFAULT_PAYMENT_HANDLE]) === true)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Payment Handle does not exists for this merchant. Please create a new one',
-                null,
-                null);
+            throw new BadRequestValidationFailureException(
+                'Payment Handle does not exists for this merchant. Please create a new one');
         }
 
         $paymentHandleId = $merchantSetting[ENTITY::DEFAULT_PAYMENT_HANDLE][Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID];
