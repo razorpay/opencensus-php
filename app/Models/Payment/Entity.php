@@ -4978,7 +4978,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         if(($this->isCard() === true) and ($this->hasCard() === true))
         {
-            if(empty($this->card->iinRelation) === false)
+            if ((empty($this->card->iinRelation) === false )
+                && (empty($this->card->iinRelation->getCountry()) === false)
+                && ($this->card->iinRelation->getCountry() !== null))
             {
                 return ( ($this->merchant->isAVSEnabledInternationalMerchant())
                     && ($this->card->iinRelation->isAVSSupportedIIN()) );
