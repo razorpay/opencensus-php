@@ -2458,8 +2458,14 @@ export default class ActivationWizard extends React.Component {
     if (i === NEEDS_CLARIFICATION_STEP) {
       return false;
     }
-    return FORM_TABS_CONTENT[i].every((c) =>
-      Array.isArray(c) ? c.every((d) => isFieldValid(d, this)) : isFieldValid(c, this),
+    return (
+      FORM_TABS_CONTENT &&
+      FORM_TABS_CONTENT.length &&
+      FORM_TABS_CONTENT[i] &&
+      FORM_TABS_CONTENT[i].length &&
+      FORM_TABS_CONTENT[i].every((c) =>
+        Array.isArray(c) ? c.every((d) => isFieldValid(d, this)) : isFieldValid(c, this),
+      )
     );
   }
 }
