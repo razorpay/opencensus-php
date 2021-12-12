@@ -171,6 +171,8 @@ class Table
     //user device details
     const USER_DEVICE_DETAIL = 'user_device_details';
 
+    const APP_ATTRIBUTION_DETAIL = 'app_attribution_details';
+
     const MERCHANT_AUTO_KYC_ESCALATIONS = 'merchant_auto_kyc_escalations';
     const MERCHANT_AVG_ORDER_VALUE      = 'merchant_avg_order_value';
     const MERCHANT_TNC                  = 'merchant_tnc';

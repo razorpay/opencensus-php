@@ -3,6 +3,7 @@
 
 namespace RZP\Jobs;
 
+use RZP\Constants\Mode;
 use RZP\Http\Request\Requests;
 use RZP\Trace\TraceCode;
 
@@ -11,6 +12,13 @@ class SegmentRequestJob extends RequestJob
     protected $queueConfigKey = 'merchant_onboarding_escalation';
 
     public $timeout = 600;
+
+    public function __construct(array $request)
+    {
+        parent::__construct($request);
+
+        $this->mode = Mode::LIVE;
+    }
 
     protected function handleBatchRequest($method, $content)
     {

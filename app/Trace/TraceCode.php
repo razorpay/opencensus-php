@@ -2396,6 +2396,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const  MERCHANT_DETAILS_EDIT_REQUEST                        =  'MERCHANT_DETAILS_EDIT_REQUEST';
     const  MERCHANT_EDIT_REQUEST                                =  'MERCHANT_EDIT_REQUEST';
 
+    const CREATE_APPSFLYER_ATTRIBUTION_DETAILS                  = 'CREATE_APPSFLYER_ATTRIBUTION_DETAILS';
     const APPSFLYER_ATTRIBUTION_DETAILS                         = 'APPSFLYER_ATTRIBUTION_DETAILS';
     const APPSFLYER_ATTRIBUTION_DETAILS_ERROR                   = 'APPSFLYER_ATTRIBUTION_DETAILS_ERROR';
 

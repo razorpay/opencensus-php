@@ -170,6 +170,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\M2MReferral\Repository                $m2m_referral;
  * @property Models\Dispute\Repository                             $dispute;
  * @property Models\DeviceDetail\Repository                        $user_device_detail
+ * @property Models\DeviceDetail\Attribution\Repository            $app_attribution_detail
  * @property Models\Coupon\Repository                              $coupon
  * @property Models\Payout\PayoutsIntermediateTransactions\Repository $payouts_intermediate_transactions;
  * @property Models\Emi\Repository                                    $emi_plan

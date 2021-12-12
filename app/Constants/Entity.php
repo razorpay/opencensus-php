@@ -530,6 +530,8 @@ class Entity
     //user device details
     const USER_DEVICE_DETAIL = 'user_device_detail';
 
+    const APP_ATTRIBUTION_DETAIL = 'app_attribution_detail';
+
     //merchant on-boarding
     const MERCHANT_DETAIL   = 'merchant_detail';
     const MERCHANT_DOCUMENT = 'merchant_document';
@@ -1032,6 +1034,7 @@ class Entity
         self::CHARGE            => \RZP\Models\CapitalTransaction::class,
 
         self::USER_DEVICE_DETAIL              => \RZP\Models\DeviceDetail::class,
+        self::APP_ATTRIBUTION_DETAIL          => \RZP\Models\DeviceDetail\Attribution::class,
         self::MERCHANT_AUTO_KYC_ESCALATIONS   => \RZP\Models\Merchant\AutoKyc\Escalations::class,
         self::MERCHANT_AVG_ORDER_VALUE        => \RZP\Models\Merchant\AvgOrderValue::class,
         self::MERCHANT_TNC                    => \RZP\Models\Merchant\Tnc::class,

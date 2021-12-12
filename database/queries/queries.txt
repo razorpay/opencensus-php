@@ -6472,6 +6472,32 @@ ALTER TABLE qr_code_config
 ALTER TABLE merchant_documents
     ADD COLUMN document_date INTEGER UNSIGNED DEFAULT NULL;
 
+CREATE TABLE `app_attribution_details` (
+  `id` char(14) COLLATE utf8_bin NOT NULL,
+  `merchant_id` char(14) COLLATE utf8_bin NOT NULL,
+  `user_id` char(14) COLLATE utf8_bin NOT NULL,
+  `appsflyer_id` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `install_time` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `event_type` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `event_time` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `campaign_attributes` json DEFAULT NULL,
+  `contributor_1_attributes` json DEFAULT NULL,
+  `contributor_2_attributes` json DEFAULT NULL,
+  `contributor_3_attributes` json DEFAULT NULL,
+  `device_type` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `device_category` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `platform` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `os_version` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `app_version` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `created_at` int NOT NULL,
+  `updated_at` int NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `app_attribution_details_merchant_id_index` (`merchant_id`),
+  KEY `app_attribution_details_user_id_index` (`user_id`),
+  KEY `app_attribution_details_created_at_index` (`created_at`),
+  KEY `app_attribution_details_updated_at_index` (`updated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
  CREATE TABLE m2m_referrals
   (
      id              CHAR(14) COLLATE utf8mb4_bin PRIMARY KEY,

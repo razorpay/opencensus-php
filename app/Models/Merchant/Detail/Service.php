@@ -58,6 +58,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstant;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
+use \RZP\Models\DeviceDetail\Attribution\Core as AttributionCore;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
@@ -1593,6 +1594,9 @@ class Service extends Base\Service
             return;
         }
 
+        $this->app['rzp.mode'] = Mode::LIVE;
+        $this->core()->setModeAndDefaultConnection(Mode::LIVE);
+
         $userDeviceDetails = $this->repo->user_device_detail->fetchByAppsflyerId($appsflyerId);
 
         if(empty($userDeviceDetails) === true)
@@ -1605,10 +1609,9 @@ class Service extends Base\Service
             return;
         }
 
-        $this->app['rzp.mode'] = Mode::LIVE;
-        $this->core()->setModeAndDefaultConnection(Mode::LIVE);
-
         $merchantId = $userDeviceDetails->getMerchantId();
+
+        $userId = $userDeviceDetails->getUserId();
 
         $segmentProperties = [];
 
@@ -1618,6 +1621,20 @@ class Service extends Base\Service
         }
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        try
+        {
+            (new AttributionCore())->storeAttributionFromAppsflyer($merchantId, $userId, $input);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::APPSFLYER_ATTRIBUTION_DETAILS_ERROR, [
+                'data'          => $input,
+                'merchant_id'   => $merchantId,
+                'user_id'       => $userId,
+                'error'         => $e->getMessage()
+            ]);
+        }
 
         $this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties);
 
