@@ -4817,9 +4817,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ESCALATION_V2_FAILURE                 = 'ESCALATION_V2_FAILURE';
 
     //Notifications
-    const SEND_NOTIFICATION                                             = 'SEND_NOTIFICATION';
-    const SEND_NOTIFICATION_ATTEMPT_SKIPPED                             = 'SEND_NOTIFICATION_ATTEMPT_SKIPPED';
-    const SEND_NOTIFICATION_ATTEMPT_FAILED                              = 'SEND_NOTIFICATION_ATTEMPT_FAILED';
+    const SEND_NOTIFICATION                     = 'SEND_NOTIFICATION';
+    const SEND_NOTIFICATION_ATTEMPT_SKIPPED     = 'SEND_NOTIFICATION_ATTEMPT_SKIPPED';
+    const SEND_NOTIFICATION_ATTEMPT_FAILED      = 'SEND_NOTIFICATION_ATTEMPT_FAILED';
 
     //Merchant Onboarding Escalations
     const ESCALATION_CRON_TRACE                 = 'ESCALATION_CRON_TRACE';

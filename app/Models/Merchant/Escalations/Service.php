@@ -148,4 +148,21 @@ class Service extends Base\Service
     {
         return (new Core)->fetchLatestEscalationForMerchant($this->merchant);
     }
+
+    public function handleSendNotificationCron($input)
+    {
+        $core = (new Core);
+
+        try
+        {
+            $core->sendSignupStartedNotification();
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::SEND_NOTIFICATION_ATTEMPT_FAILED, [
+                'type'  => 'sendSignupStartedNotification',
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
 }

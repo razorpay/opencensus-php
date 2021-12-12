@@ -73,14 +73,15 @@ class Route
         'merchant_store_add'                       => ['post',     'merchants/config/store',                                'MerchantController@updateMerchantStore'   ],
         'merchant_store_fetch'                     => ['get',      'merchants/config/store',                                'MerchantController@fetchMerchantStore'    ],
 
-        'm2m_referral_link_get' => ['get',  'merchants/onboarding/m2m_referral', 'ReferralController@fetchReferralDetails' ],
+        'm2m_referral_link_get'         => ['get',  'merchants/onboarding/m2m_referral', 'ReferralController@fetchReferralDetails' ],
         'm2m_referral_link_get_public'  => ['get',  'm2m_referral',  'ReferralController@fetchPublicReferralDetails' ],
 
-        'merchant_report'                          => ['post',     'merchants/admin/report',                         'MerchantController@handleReport'                          ],
-        'merchant_onboarding_escalations'          => ['post',     'merchants/onboarding/escalations',               'MerchantController@handleOnboardingEscalationsCron'],
-        'fetch_merchant_escalation'                => ['get',      'merchants/onboarding/escalations',               'MerchantController@fetchOnboardingEscalations'],
-        'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
-        'internal_transactions'                    => ['post',      'internal/transactions',                         'TransactionController@postInternalTransaction'                 ],
+        'merchant_report'                          => ['post',     'merchants/admin/report',                         'MerchantController@handleReport'                     ],
+        'merchant_onboarding_escalations'          => ['post',     'merchants/onboarding/escalations',               'MerchantController@handleOnboardingEscalationsCron'  ],
+        'merchant_onboarding_notify'               => ['post',     'merchants/onboarding/notify',                    'MerchantController@handleSendNotificationCron'       ],
+        'fetch_merchant_escalation'                => ['get',      'merchants/onboarding/escalations',               'MerchantController@fetchOnboardingEscalations'       ],
+        'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'           ],
+        'internal_transactions'                    => ['post',     'internal/transactions',                          'TransactionController@postInternalTransaction'       ],
         // @todo: Require feature S2S for payment_create_private route.
         'payment_create_private'                   => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_private_json'              => ['post',     'payments/create/json',                           'PaymentCreateController@postCreateS2SJsonPayment'                  ],
@@ -3654,6 +3655,7 @@ class Route
         // cron for generating merchant report
         'merchant_report',
         'merchant_onboarding_escalations',
+        'merchant_onboarding_notify',
         'settlement_ondemand_process',
         'internal_balance_fetch_by_merchant_id',
         'internal_balance_fetch_by_merchant_id_old',
@@ -10682,6 +10684,7 @@ class Route
             'payout_notification_to_slack_app',
 
             'merchant_onboarding_escalations',
+            'merchant_onboarding_notify',
             'setcronjob_webhook',
             // The rest are crons
             'entity_tax_update',

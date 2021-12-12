@@ -29,6 +29,7 @@ class Events
     const L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR   = 'L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR';
     const INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED      = 'INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED';
     const L1_NOT_SUBMITTED_IN_1_HOUR                  = 'L1_NOT_SUBMITTED_IN_1_HOUR';
+    const SIGNUP_STARTED_NOTIFY                       = 'SIGNUP_STARTED_NOTIFY';
 
     const SMS_TEMPLATES = [
         self::PAYMENTS_ENABLED                            => 'sms.onboarding.payments_enabled',
@@ -53,6 +54,7 @@ class Events
         self::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED      => 'sms.onboarding.Onboarding_IA_SMS2',
         self::L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR   => 'sms.onboarding.Onboarding_L2_not_submit_Aadhaar_SMS3',
         self::L1_NOT_SUBMITTED_IN_1_HOUR                  => 'sms.onboarding.Onboarding_L1_not_submit_SMS2',
+        self::SIGNUP_STARTED_NOTIFY                       => 'sms.onboarding.Welcome_SMS_1',
     ];
 
 
@@ -81,7 +83,8 @@ class Events
         self::PAYMENTS_ENABLED                            => 'whatsapp.merchant.onboarding.payments_enabled',
         self::ONBOARDING_VERIFY_EMAIL                     => 'whatsapp.merchant.onboarding.onboarding_verify_email',
         self::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED      => 'whatsapp.merchant.onboarding.Onboarding_IA_WA2',
-        self::L1_NOT_SUBMITTED_IN_1_HOUR                  => 'whatsapp.merchant.onboarding.Onboarding_L1_not_submit_WA2_A'
+        self::L1_NOT_SUBMITTED_IN_1_HOUR                  => 'whatsapp.merchant.onboarding.Onboarding_L1_not_submit_WA2_A',
+        self::SIGNUP_STARTED_NOTIFY                       => 'whatsapp.merchant.onboarding.welcome_wa_noemoji',
     ];
 
     const EMAIL_TEMPLATES = [

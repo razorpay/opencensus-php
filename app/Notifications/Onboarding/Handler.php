@@ -39,6 +39,7 @@ class Handler extends BaseHandler
         Events::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
         Events::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU       => [Channel::SMS],
         Events::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED      => [Channel::SMS, Channel::WHATSAPP],
+        Events::SIGNUP_STARTED_NOTIFY                       => [Channel::SMS, Channel::WHATSAPP],
     ];
 
     private $activationStatus;

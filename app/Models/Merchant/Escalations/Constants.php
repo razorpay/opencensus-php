@@ -27,6 +27,7 @@ class Constants
     const INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED_IN_1_HOUR  = 'instantly_activated_but_not_transacted_in_1_hour';
     const AADHAAR_NOTIFY_TIMESTAMP_CACHE_KEY                = 'aadhaar_notify_timestamp';
     const BANK_DETAILS_NOTIFY_TIMESTAMP_CACHE_KEY           = 'bank_details_notify_timestamp';
+    const SIGNUP_STARTED_NOTIFY_TIMESTAMP_CACHE_KEY         = 'signup_started_notify_timestamp';
     const L1_NOT_SUBMITTED_IN_1_HOUR_CACHE_KEY              = 'l1_not_submitted_in_1_hour';
     const START_TIME                                        = 'start_time';
     const END_TIME                                          = 'end_time';
