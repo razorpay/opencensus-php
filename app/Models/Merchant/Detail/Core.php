@@ -2068,11 +2068,11 @@ class Core extends Base\Core
             $requestContext =  $this->app['request.ctx'];
             $request        =  $this->app['request'];
 
-            if($this->app['basicauth']->isAdminLoggedInAsMerchantOnDashboard()){
+            if(isset($requestContext) === false or isset($request) === false){
                 return;
             }
 
-            if(isset($requestContext)===false || isset($request)===false){
+            if($this->app['basicauth']->isAdminLoggedInAsMerchantOnDashboard() === true){
                 return;
             }
 
