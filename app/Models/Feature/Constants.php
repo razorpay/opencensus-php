@@ -923,6 +923,7 @@ class Constants
      * All Ledger Features for RX release
      */
     const LEDGER_JOURNAL_WRITES = 'ledger_journal_writes';
+    const LEDGER_REVERSE_SHADOW = 'ledger_reverse_shadow';
 
     /**
      * If contact number updated via admin dashboard, mark it verified by default if feature present on org
@@ -1397,6 +1398,7 @@ class Constants
         self::FEATURE_BBPS                    => true,
         self::ADDRESS_REQUIRED                => true,
         self::LEDGER_JOURNAL_WRITES           => true,
+        self::LEDGER_REVERSE_SHADOW           => true,
         self::ORG_AXIS_PAYPAL                 => true,
         self::AXIS_PAYPAL_ENABLE              => true,
         self::ORG_AXIS_WHATSAPP               => true,
