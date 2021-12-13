@@ -3909,10 +3909,22 @@ return [
         'request' => [
             'url'     => '/users/register/otp/verify',
             'method'  => 'POST',
-            'content' => [],
+            'content' => [
+                'contact_mobile'        => '8877665544',
+                'captcha'               => 'faked',
+                'token'                 => 'token',
+                'otp'                   => '0007',
+            ],
         ],
         'response' => [
-            "content" => []
+            "content" => [
+                "contact_mobile"            => '8877665544',
+                "signup_via_email"          => 0,
+                "confirmed"                 => false,
+                "email_verified"            => false,
+                "contact_mobile_verified"   => true,
+                "email"                     => null
+            ]
         ]
     ],
 

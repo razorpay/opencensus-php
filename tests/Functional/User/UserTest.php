@@ -5423,26 +5423,6 @@ class UserTest extends TestCase
 
     public function testUserRegisterVerifySignupOtpSms()
     {
-        $testData = & $this->testData[__FUNCTION__];
-
-        $content = [
-            'contact_mobile'        => '8877665544',
-            'captcha'               => 'faked',
-            'token'                 => 'token',
-            'otp'                   => '0007',
-        ];
-
-        $testData['request']['content'] = $content;
-
-        $testData['response']['content'] = [
-            "contact_mobile"            => $content["contact_mobile"],
-            "signup_via_email"          => 0,
-            "confirmed"                 => false,
-            "email_verified"            => false,
-            "contact_mobile_verified"   => true,
-            "email"                     => null
-        ];
-
         $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
@@ -5450,6 +5430,16 @@ class UserTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $this->assertEquals($merchant["signup_via_email"], 0);
+    }
+
+    public function testUserRegisterVerifySignupOtpSmsSevenSeriesNumber()
+    {
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['contact_mobile'] = '7877665544';
+        $testData['response']['content']['contact_mobile'] = '7877665544';
+
+        $this->testUserRegisterVerifySignupOtpSms();
+
     }
 
     public function testUserRegisterVerifySignupOtpEmail()

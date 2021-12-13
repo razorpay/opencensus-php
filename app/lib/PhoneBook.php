@@ -219,9 +219,9 @@ class PhoneBook
     {
         return [
             $this->format(PhoneBook::E164),
-            $this->format(PhoneBook::INTERNATIONAL),
+//            $this->format(PhoneBook::INTERNATIONAL),
             $this->format(PhoneBook::DOMESTIC),
-            $this->format(PhoneBook::NATIONAL),
+//            $this->format(PhoneBook::NATIONAL),
             $this->format(PhoneBook::SPACE_SEPARATED),
         ];
     }
