@@ -12,11 +12,10 @@ export const LoginCardArray = [
     type: 'default',
     imgSrc: '',
     imgAlt: '',
-    title: 'From Business to busy-ness!',
-    desc:
-      'Make your business busy & keep on growing! Accept payments now to get ₹3L worth payments free! #BusinessBanaoBusy',
+    title: '',
+    desc: '',
     ctaURL: '',
     ctaText: '',
-    id: 'DEC21-FREECREDIT',
+    id: '',
   },
 ];
