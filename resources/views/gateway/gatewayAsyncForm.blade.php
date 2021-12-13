@@ -168,8 +168,12 @@
     var request_url = data.request.url;
     var key_id = '{{ App::getFacadeRoot()['basicauth']->getPublicKey() }}';
     var payment_base = '{{$data["api"]}}/v1/payments/' + data.payment_id;
-    var cancel_url = payment_base + '/cancel?key_id='+key_id;
-    var callback_url = payment_base + '/redirect_callback?key_id='+key_id;
+    var query_param = '';
+    if (key_id != '') {
+        query_param = '?key_id=' + key_id;
+    }
+    var cancel_url = payment_base + '/cancel'+query_param;
+    var callback_url = payment_base + '/redirect_callback'+query_param;
 
     var $ =  function (id) {
       return document.getElementById(id);
