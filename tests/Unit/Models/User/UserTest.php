@@ -1581,6 +1581,17 @@ class UserTest extends TestCase
             ],
         ];
 
+        $expected = [
+            'id' => '100002Razorpay',
+            'otp_auth_token' => '100002Razorpay.1639136024'
+        ];
+
+        $token = Mockery::mock('\RZP\Services\TokenService', [$this->app]);
+
+        $token->shouldReceive('generate')->andReturn('100002Razorpay.1639136024');
+
+        $this->app->instance('token_service', $token);
+
         $hash = (new BcryptHasher())->make('blahblah123');
 
         $this->coreMock->shouldReceive('getUserEntity')->andReturn($this->userEntityMock);
@@ -1619,11 +1630,11 @@ class UserTest extends TestCase
 
         $this->merchantEntityMock->shouldReceive('getEmail')->andReturn('dummy@example.com');
 
-        $this->coreMock->shouldReceive('get')->andReturn([]);
+        $this->coreMock->shouldReceive('get')->andReturn(['id' => '100002Razorpay']);
 
         $response = $this->userService->login($content['userData']);
 
-        $this->assertEquals([], $response);
+        $this->assertEquals($expected, $response);
     }
 
     public function testCheckUserAccess()
@@ -2118,9 +2129,14 @@ class UserTest extends TestCase
             'merchants'             => '',
             'invitations'           => [],
             'settings'              => [],
+            'otp_auth_token'        => '100002Razorpay.1639136024',
         ];
 
         $this->userEntityMock->shouldReceive('isAccountLocked')->withAnyArgs()->andReturn(false);
+
+        $this->basicAuthMock->shouldReceive('getUser')->andReturn($this->userEntityMock);
+
+        $this->userEntityMock->shouldReceive('getId')->withAnyArgs()->andReturn('100002Razorpay');
 
         $module = Mockery::mock('\RZP\Modules\Manager', [$this->app]);
 
@@ -2145,6 +2161,12 @@ class UserTest extends TestCase
         $this->userEntityMock->shouldReceive('getEmail')->andReturn('dummy@example.com');
 
         $orgMock = Mockery::mock('RZP\Models\Admin\Org\Repository');
+
+        $token = Mockery::mock('\RZP\Services\TokenService', [$this->app]);
+
+        $token->shouldReceive('generate')->andReturn('100002Razorpay.1639136024');
+
+        $this->app->instance('token_service', $token);
 
         $this->repoMock->shouldReceive('driver')->with('org')->andReturn($orgMock);
 
@@ -2194,6 +2216,8 @@ class UserTest extends TestCase
         $this->app->instance('module', $module);
 
         $this->userEntityMock->shouldReceive('getWrong2faAttempts')->withAnyArgs()->andReturn(15);
+
+        $this->userEntityMock->shouldReceive('getId')->withAnyArgs()->andReturn('100002Razorpay');
 
         $this->userEntityMock->shouldReceive('getRestrictedAttribute')->withAnyArgs()->andReturn(true);
 

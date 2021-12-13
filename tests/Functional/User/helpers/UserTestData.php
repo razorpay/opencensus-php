@@ -663,7 +663,7 @@ return [
         ],
     ],
 
-    'testMobileVerifyOtp' => [
+    'testMobileLoginVerifyOtp' => [
         'request' => [
             'url'     => '/users/login/otp/verify',
             'method'  => 'POST',
@@ -3628,6 +3628,31 @@ return [
             'method'  => 'POST',
             'content' => [
                 'password'      => 'hello123'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => '9012345678',
+                'contact_mobile_verified' => true,
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'test2faWithOtpForXReturnsOtpAuthToken' => [
+        'request' => [
+            'url'     => '/users/2fa/verify',
+            'method'  => 'POST',
+            'content' => [
+                'otp'      => '0007'
             ],
         ],
         'response' => [

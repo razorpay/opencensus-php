@@ -750,7 +750,9 @@ class Service extends Base\Service
     {
         try
         {
-            return $this->core->login($input);
+            $response = $this->core->login($input);
+
+            return $this->setOtpAuthTokenForBankingRequest($response, $response[Entity::ID]);
         }
         catch (\Throwable $ex)
         {
@@ -771,14 +773,16 @@ class Service extends Base\Service
     {
         $user = $this->core->verifyLoginOtp($input);
 
-        return $user;
+        return $this->setOtpAuthTokenForBankingRequest($user, $user[Entity::ID]);
     }
 
     public function loginOtp2faPassword(array $input): array
     {
         $user = $this->auth->getUser();
 
-        return $this->core->loginOtp2faPassword($user, $input);
+        $response = $this->core->loginOtp2faPassword($user, $input);
+
+        return $this->setOtpAuthTokenForBankingRequest($response, $user->getId());
 
     }
 
@@ -843,7 +847,9 @@ class Service extends Base\Service
     {
         $user = $this->auth->getUser();
 
-        return $this->core->verifyUserSecondFactorAuth($user, $input);
+        $response = $this->core->verifyUserSecondFactorAuth($user, $input);
+
+        return $this->setOtpAuthTokenForBankingRequest($response, $user->getId());
     }
 
     public function get(string $id): array
@@ -1783,5 +1789,30 @@ class Service extends Base\Service
                                                              null,
                                                              $product,
                                                              $useWritePdo);
+    }
+
+    /**
+     * X necessarily needs users to have an email to work.
+     * For users signing up with mobile and switching to X or logging into X with mobile
+     * without having added their email address, X will be using `user_add_email` flow
+     * to prompt users to add an email.
+     * This flow requires users to authenticate themselves first before they are allowed to add an email address.
+     * For users who have just logged in to X with mobile, following this would require 3 OTPs to be entered by the User.
+     * In order to reduce the inconvenience, we send the `otp_auth_token` in response to a successful
+     * login which can be used to trigger the `user_add_email` flow.
+     * @param array $response
+     * @param string $userId
+     * @return array
+     */
+    protected function setOtpAuthTokenForBankingRequest(array $response, string $userId): array
+    {
+        $requestOriginProduct = $this->auth->getRequestOriginProduct();
+
+        if($requestOriginProduct === Product::BANKING)
+        {
+            $response['otp_auth_token'] = $this->app['token_service']->generate($userId);
+        }
+
+        return $response;
     }
 }

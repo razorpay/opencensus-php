@@ -624,7 +624,17 @@ class UserTest extends TestCase
 
         $this->ba->dashboardGuestAppAuth();
 
-        $this->startTest();
+        return $this->startTest();
+    }
+
+    public function testMobileLoginWithPasswordForXReturnsOtpAuthToken()
+    {
+        $testData = & $this->testData['testMobileLoginWithPassword'];
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $response = $this->testMobileLoginWithPassword();
+        $this->assertNotNull($response['otp_auth_token']);
+
     }
 
 
@@ -838,7 +848,7 @@ class UserTest extends TestCase
         $response=$this->startTest();
     }
 
-    public function testMobileVerifyOtp()
+    public function testMobileLoginVerifyOtp()
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
@@ -853,7 +863,18 @@ class UserTest extends TestCase
 
         $this->ba->dashboardGuestAppAuth();
 
-        $this->startTest();
+        return $this->startTest();
+    }
+
+    public function testMobileLoginVerifyOtpForXReturnsOtpAuthToken()
+    {
+        $testData = & $this->testData['testMobileLoginVerifyOtp'];
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $response = $this->testMobileLoginVerifyOtp();
+
+        $this->assertNotEmpty($response['otp_auth_token']);
     }
 
     public function testMailOtpLogin()
@@ -5010,7 +5031,39 @@ class UserTest extends TestCase
 
         $this->ba->dashboardGuestAppAuth();
 
-        $this->startTest();
+        return $this->startTest();
+    }
+
+    public function test2faWithPasswordForXReturnsOtpAuthToken()
+    {
+        $testData = & $this->testData['test2faWithPassword'];
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $response = $this->test2faWithPassword();
+        $this->assertNotNull($response['otp_auth_token']);
+    }
+
+    public function test2faWithOtpForXReturnsOtpAuthToken()
+    {
+        $user = $this->fixtures->create(
+            'user',
+            [
+                'contact_mobile' => '9012345678',
+                'contact_mobile_verified' => true,
+                'password' => 'hello123',
+                UserEntity::SECOND_FACTOR_AUTH => 1
+            ]
+        );
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+        $this->assertNotNull($response['otp_auth_token']);
+
     }
 
     public function test2faWithPasswordIncorrectPassword()
