@@ -611,6 +611,7 @@ class Gateway extends BaseProcessor
         $totalRecords = 0;
         $skippedRecordCount = 0;
         $processedRecordCount = 0;
+        $difference = 0;
         $bankTransactionRecords = [];
 
         $limit = (int) (new AdminService)->getConfigKey(
@@ -658,28 +659,29 @@ class Gateway extends BaseProcessor
 
                     if ($isPresent !== false)
                     {
+                        if ($record->getType() === Type::CREDIT)
+                        {
+                            $difference += $record->getAmount();
+                        }
+                        else
+                        {
+                            $difference += -1 * $record->getAmount();
+                        }
+                        if(($bankTransactions[$isPresent][Entity::BALANCE]-$record->getBalance() === $difference) and
+                           ($difference !==0))
+                        {
+                            foreach ($bankTransactions as $index => $bankTransaction)
+                            {
+                                $bankTransactions[$index][Entity::BALANCE]= $bankTransaction[Entity::BALANCE] - $difference;
+                            }
+
+                            // once the difference matches and we have subtracted from subsequent records amount equal
+                            // to difference, need to reset difference.
+                            $difference = 0;
+                        }
                         // when first record in response is a duplicate record it is observed that the successive transactions
                         // are having discrepancies in closing balance. The difference is observed to be +/- amount of duplicate
                         // transaction depending on credit or debit.
-                        if ($isPresent === 0)
-                        {
-                            if ($record->getType() === Type::CREDIT)
-                            {
-                                $difference = $record->getAmount();
-                            }
-                            else
-                            {
-                                $difference = -1 * $record->getAmount();
-                            }
-
-                            if($bankTransactions[0][Entity::BALANCE]-$record->getBalance() === $difference)
-                            {
-                                foreach ($bankTransactions as $index => $bankTransaction)
-                                {
-                                    $bankTransactions[$index][Entity::BALANCE]= $bankTransaction[Entity::BALANCE] - $difference;
-                                }
-                            }
-                        }
 
                         unset($bankTransactions[$isPresent]);
                         $skippedRecordCount++;

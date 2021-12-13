@@ -1225,4 +1225,181 @@ class IciciBankingAccountStatementTest extends TestCase
 
         $this->assertArraySubset($txnExpected, $txnActual, true);
     }
+
+    /**
+     * balance b
+    t1 r1  c  a1        b+a1 = cb1      c=> credit
+    t1 r2  c  a2        cb1+a2 = cb2
+
+    lasttrid -     t1|posted_date| cb2
+    bank response:
+    r1 - cb2+a1 = a1+cb1+a2 = cb1 + (a1+a2)
+    r2 - (cb2+a1) + a2 = cb1+a2+a1+a2  = cb1+a2 + (a1+a2)
+    r3 - cb2+a2+a1+a3 = cb2+a3 + (a1+a2)
+
+    dedup
+    r1 - repeat - 0th index
+    r2 - repeat - 1th index
+
+    r1
+    r2
+    r3
+    r4
+    r5
+     */
+    public function testDedupLogicForIcici()
+    {
+        (new AdminService)->setConfigKeys([
+                                              ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ['2224440041626905']]);
+
+        (new AdminService)->setConfigKeys([
+                                              ConfigKey::ICICI_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE => 2]);
+
+        (new AdminService)->setConfigKeys([
+                                              ConfigKey::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_AT_ONCE => 2]);
+
+        $mockedResponse = $this->getIciciDataResponse();
+
+        unset($mockedResponse[F::DATA][F::RECORD][2]);
+        $this->setMozartMockResponse($mockedResponse);
+
+        $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basdBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $testData = $this->testData['testIciciAccountStatementCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $basEntities = $this->getDbEntities(EntityConstants::BANKING_ACCOUNT_STATEMENT);
+
+        $this->assertEquals(2, count($basEntities));
+
+        $basBefore = $basEntities->toArray();
+
+        $this->assertEquals(1000000, $basBefore[0][BasEntity::BALANCE]);
+        $this->assertEquals(999900, $basBefore[1][BasEntity::BALANCE]);
+
+
+        (new AdminService)->setConfigKeys([
+                                              ConfigKey::ICICI_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE => 3]);
+
+        (new AdminService)->setConfigKeys([
+                                              ConfigKey::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_AT_ONCE => 3]);
+
+
+        $mockedResponse = $this->getIciciDataResponse();
+
+        $mockedResponse[F::DATA][F::RECORD][0][F::BALANCE] = "19,999.00";
+        $mockedResponse[F::DATA][F::RECORD][1][F::BALANCE] = "19,998.00";
+        $mockedResponse[F::DATA][F::RECORD][2][F::BALANCE] = "19,997.00";
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $basEntities = $this->getDbEntities(EntityConstants::BANKING_ACCOUNT_STATEMENT);
+
+        $basAfter = $basEntities->toArray();
+
+        $this->assertEquals(1000000, $basAfter[0][BasEntity::BALANCE]);
+        $this->assertEquals(999900, $basAfter[1][BasEntity::BALANCE]);
+        $this->assertEquals(999800, $basAfter[2][BasEntity::BALANCE]);
+
+        $this->assertEquals(3, count($basEntities));
+
+
+    }
+
+    public function testDedupLogicForIciciCaseWhenDifferenceResets()
+    {
+        (new AdminService)->setConfigKeys([
+                                              ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ['2224440041626905']]);
+
+        (new AdminService)->setConfigKeys([
+                                              ConfigKey::ICICI_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE => 3]);
+
+        (new AdminService)->setConfigKeys([
+                                              ConfigKey::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_AT_ONCE => 3]);
+
+        $mockedResponse = $this->getIciciDataResponse();
+        $mockedResponse[F::DATA][F::RECORD][2][F::TYPE] = 'CR';
+        $mockedResponse[F::DATA][F::RECORD][2][F::BALANCE] = '10,000.00';
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basdBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $testData = $this->testData['testIciciAccountStatementCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $basEntities = $this->getDbEntities(EntityConstants::BANKING_ACCOUNT_STATEMENT);
+
+        $this->assertEquals(3, count($basEntities));
+
+        $basBefore = $basEntities->toArray();
+
+        $this->assertEquals(1000000, $basBefore[0][BasEntity::BALANCE]);
+        $this->assertEquals(999900, $basBefore[1][BasEntity::BALANCE]);
+        $this->assertEquals(1000000, $basBefore[2][BasEntity::BALANCE]);
+
+
+        (new AdminService)->setConfigKeys([
+                                              ConfigKey::ICICI_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE => 4]);
+
+        (new AdminService)->setConfigKeys([
+                                              ConfigKey::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_AT_ONCE => 4]);
+
+
+        $mockedResponse = $this->getIciciDataResponse();
+        $mockedResponse[F::DATA][F::RECORD][3] = [
+            "AMOUNT"        => "5.00",
+            "BALANCE"       => "19,995.00",
+            "CHEQUENO"      => [],
+            "REMARKS"       => "INF/NEFT/023629961643/SBIN0050101/TestIcici/demon",
+            "TRANSACTIONID" => "S86758817",
+            "TXNDATE"       => "19-02-2021 04:29:56",
+            "TYPE"          => "DR",
+            "VALUEDATE"     => "19-02-2021",
+        ];
+
+        $mockedResponse[F::DATA][F::RECORD][0][F::BALANCE] = "20,000.00";
+        $mockedResponse[F::DATA][F::RECORD][1][F::BALANCE] = "19,999.00";
+        $mockedResponse[F::DATA][F::RECORD][2][F::TYPE] = 'CR';
+        $mockedResponse[F::DATA][F::RECORD][2][F::BALANCE] = "20,000.00";
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $basEntities = $this->getDbEntities(EntityConstants::BANKING_ACCOUNT_STATEMENT);
+
+        $basAfter = $basEntities->toArray();
+
+        $this->assertEquals(1000000, $basAfter[0][BasEntity::BALANCE]);
+        $this->assertEquals(999900, $basAfter[1][BasEntity::BALANCE]);
+        $this->assertEquals(1000000, $basAfter[2][BasEntity::BALANCE]);
+        $this->assertEquals(999500, $basAfter[3][BasEntity::BALANCE]);
+
+        $this->assertEquals(4, count($basEntities));
+    }
 }
