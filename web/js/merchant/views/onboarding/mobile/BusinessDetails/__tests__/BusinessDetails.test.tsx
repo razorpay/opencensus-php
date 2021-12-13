@@ -119,6 +119,7 @@ test('should render correct flow', async () => {
     cinInput,
     authSignatoryProofInput,
     authSignatoryNameInput,
+    billingLabelInput,
     pincodeInput,
     cityInput,
     stateInput,
@@ -132,6 +133,7 @@ test('should render correct flow', async () => {
 
   fireEvent.change(authSignatoryProofInput, { target: { value: 'AAPFA3421J' } });
   fireEvent.change(authSignatoryNameInput, { target: { value: 'testName' } });
+  fireEvent.change(billingLabelInput, { target: { value: 'Some Label' } });
   fireEvent.change(cinInput, { target: { value: 'U74899DL2000PLC105530' } });
   fireEvent.blur(cinInput);
 
@@ -139,14 +141,16 @@ test('should render correct flow', async () => {
   expect(buseinessNameInput.value).toBe('testing');
   expect(authSignatoryProofInput.value).toBe('AAPFA3421J');
   expect(authSignatoryNameInput.value).toBe('testName');
+  expect(billingLabelInput.value).toBe('Some Label');
   expect(cinInput.value).toBe('U74899DL2000PLC105530');
 
   fireEvent.change(addressInput, { target: { value: 'abc' } });
   fireEvent.blur(addressInput);
   fireEvent.change(pincodeInput, { target: { value: '530068' } });
   fireEvent.blur(pincodeInput);
+  expect(pincodeInput.value).toBe('530068');
   fireEvent.change(cityInput, { target: { value: 'Delhi' } });
   fireEvent.blur(cityInput);
-  fireEvent.change(stateInput, { target: { value: 'Delhi' } });
+  fireEvent.change(stateInput, { target: { value: 'DL' } });
   fireEvent.blur(stateInput);
 });

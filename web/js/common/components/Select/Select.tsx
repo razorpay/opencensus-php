@@ -212,6 +212,7 @@ const Select: React.FC<SelectPropsT> = ({
                   onChange={handleInputChange}
                   variant="filled"
                   value={inputValue}
+                  onBlur={onInputBlur}
                 />
               </View>
             </Space>

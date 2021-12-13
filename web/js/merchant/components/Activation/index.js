@@ -1725,8 +1725,10 @@ export default class ActivationWizard extends React.Component {
 
     // auto-populate billing label
     if (
-      fieldName === 'business_name' &&
-      dirty.business_name !== data.business_name &&
+      ((fieldName === 'business_name' && dirty.business_name !== data.business_name) ||
+        (fieldName === 'promoter_pan_name' &&
+          dirty.promoter_pan_name !== data.promoter_pan_name &&
+          this.isUnregBiz)) &&
       !isPresent(this.props.data.business_dba)
     ) {
       if (document.querySelector(`.form-container [name=business_dba]`)) {

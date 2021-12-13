@@ -12,7 +12,7 @@ import {
 } from '../services/utils';
 import { CIN_BusinessTypes, LLPIN_BusinessTypes } from '../Constants/OnboardingConstants';
 
-const isVisible = (fieldName, context) => {
+const isVisible = (fieldName, context): boolean => {
   switch (fieldName) {
     case 'company_pan':
       return !['11', '2', '1'].includes(context.business_overview.business_type.value);
@@ -94,7 +94,7 @@ const isVisible = (fieldName, context) => {
   }
 };
 
-const isTabComplete = (data, tab, isUpdatedLiteOnboarding = false) => {
+const isTabComplete = (data, tab, isUpdatedLiteOnboarding = false): boolean => {
   const tabData = data[tab];
   return Object.keys(tabData).every((key) => {
     if (key === 'bank_account_name' && isUpdatedLiteOnboarding) {

@@ -684,14 +684,11 @@ const businessDetails = [
           const { user } = this.props;
           const { dirty } = this.state;
 
-          const shouldApiCall = displayCompanyPAN(this);
-
           if (
             !user.activation_form_milestone &&
             user.isSyncExperimentEnabled &&
             dirty?.business_name &&
-            dirty?.business_name !== user?.business_name &&
-            shouldApiCall
+            dirty?.business_name !== user?.business_name
           ) {
             this.saveCurrentTab();
           }

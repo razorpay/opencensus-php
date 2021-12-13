@@ -11,17 +11,18 @@ import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import { debounce } from '../../services/utils';
 import useBusinessName from '../../hooks/useBusinessName';
 
-interface NameData {
+interface INameData {
   company_name?: string;
   identity_number?: string;
   identity_type?: string;
 }
 
-interface BusinessNamePropsT {
+interface IBusinessNameProps {
   errorText?: string | false | string[] | FormikErrors<any> | FormikErrors<any>[] | undefined;
   businessNameValue: string;
-  updateBusinessName: (value: NameData) => void;
+  updateBusinessName: (value: INameData) => void;
   disabled?: boolean;
+  onInputBlur: (value: string) => void;
 }
 
 const StyledSeparator = styled(View)`
@@ -30,12 +31,13 @@ const StyledSeparator = styled(View)`
   background-color: ${({ theme }) => getColor(theme, 'shade.920')};
 `;
 
-const BusinessName: React.FC<BusinessNamePropsT> = ({
+const BusinessName = ({
   businessNameValue = '',
   updateBusinessName,
   errorText,
   disabled = false,
-}) => {
+  onInputBlur,
+}: IBusinessNameProps): React.ReactElement => {
   const [inputValue, setInputValue] = useState(businessNameValue);
   const businessNameData = useRef({});
 
@@ -145,6 +147,7 @@ const BusinessName: React.FC<BusinessNamePropsT> = ({
       helpText="As mentioned in the PAN"
       onChange={onChange}
       onInputChange={onInputChange}
+      onInputBlur={onInputBlur}
       disabled={disabled}
       filterOptions={false}
       bottomSheetHeaderText="SELECT BUSINESS NAME"

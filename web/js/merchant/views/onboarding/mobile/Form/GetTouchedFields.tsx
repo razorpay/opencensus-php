@@ -14,7 +14,7 @@ const getTouchedFields = (formikProps) => {
 interface GetTouchedFieldsPropsT {
   handleSubmit: (updatedDetails) => void;
   isBlurCalled: boolean;
-  setIsBlurCalled: (value) => void;
+  setIsBlurCalled: (value: boolean) => void;
   tabName?: string;
 }
 

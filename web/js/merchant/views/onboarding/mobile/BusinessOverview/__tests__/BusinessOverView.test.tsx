@@ -19,12 +19,9 @@ test('renders all the input fields of the form correctly', async () => {
   await waitForLoadingToFinish();
   expect(screen.getByText('About Your Business')).toBeInTheDocument();
 
-  const [
-    businessTypeInput,
-    businessCategorySelect,
-    billingLabelInput,
-    AovField,
-  ]: any = screen.getAllByTestId('ds-text-input');
+  const [businessTypeInput, businessCategorySelect, AovField]: any = screen.getAllByTestId(
+    'ds-text-input',
+  );
 
   const businessModal = screen.getByTestId('ds-text-area');
   fireEvent.click(businessTypeInput);
@@ -33,10 +30,7 @@ test('renders all the input fields of the form correctly', async () => {
   fireEvent.change(businessCategorySelect, { target: { value: 'ecomerce' } });
 
   fireEvent.click(screen.getByText('Private Limited'));
-  fireEvent.change(billingLabelInput, { target: { value: 'Some Label' } });
   expect(businessTypeInput.value).toBe('Private Limited');
-  expect(billingLabelInput.value).toBe('Some Label');
-  fireEvent.blur(billingLabelInput);
 
   fireEvent.change(businessModal, {
     target: {

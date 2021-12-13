@@ -81,11 +81,11 @@ export const isL1Submitted = (activation_form_milestone: string | null): boolean
   return false;
 };
 
-export const isNone = (value) => {
+export const isNone = (value): boolean => {
   return value === null || value === undefined;
 };
 
-export function isBlank(value) {
+export function isBlank(value): boolean {
   if (value !== null && typeof value === 'object') {
     return !Object.keys(value).length;
   }
@@ -96,7 +96,7 @@ export function isBlank(value) {
   return isNone(value);
 }
 
-export function isPresent(obj) {
+export function isPresent(obj): boolean {
   return !isBlank(obj);
 }
 
@@ -238,7 +238,7 @@ export function isDocumentTabComplete(
   data,
   isGstinMandatory = false,
   isUpdatedLiteOnboarding = false,
-) {
+): boolean {
   const tabData = { ...onScreenDocuments(data, isUpdatedLiteOnboarding) };
   const optionalDocumentsFields = {
     iata_certificate: 'iata_certificate',
@@ -307,7 +307,7 @@ export function getDefaultSelectedDocs(context, type) {
   return defaultSelectedDoc[0];
 }
 
-export const autoPrefixUrls = (url: string) => {
+export const autoPrefixUrls = (url: string): string => {
   const regex = /^https?:\/\//i;
   if (!url || url.length === 0) {
     return url;
@@ -370,21 +370,21 @@ export function isBusinessProofUrlVisible(context) {
   return false;
 }
 
-export function isBusinessPanVisible(context) {
+export function isBusinessPanVisible(context): boolean {
   return (
     !isUnregisteredBusiness(context.business_overview.business_type.value) &&
     +context.business_overview.business_type.value !== PROPRIETORSHIP
   );
 }
 
-export function isPersonalPanVisible(context) {
+export function isPersonalPanVisible(context): boolean {
   return (
     !isUnregisteredBusiness(context.business_overview.business_type.value) &&
     +context.business_overview.business_type.value === PROPRIETORSHIP
   );
 }
 
-export function hasSelectedBlacklistCategory(context, businessCategory) {
+export function hasSelectedBlacklistCategory(context, businessCategory): boolean {
   const blacklistCategory: any = [];
 
   businessCategory.forEach((item) => {
@@ -403,7 +403,7 @@ export function hasSelectedBlacklistCategory(context, businessCategory) {
   );
 }
 
-export function getDocumentTitle(context) {
+export function getDocumentTitle(context): string {
   const businessType = context.business_overview.business_type.value;
 
   switch (businessType) {
@@ -420,7 +420,7 @@ export function getDocumentTitle(context) {
   }
 }
 
-export const checkIfDedupe = (data: any) => {
+export const checkIfDedupe = (data: any): string => {
   if (data.isInstantActivationEnabled) {
     if (data && data.dedupe) {
       const { isUnderReview, isMatch } = data.dedupe;
@@ -439,7 +439,7 @@ export const checkIfDedupe = (data: any) => {
   }
 };
 
-export const convertUnixToDate = ({ unixTimeStamp }) => {
+export const convertUnixToDate = ({ unixTimeStamp }): string => {
   const date = new Date(unixTimeStamp * 1000).toLocaleString('en-US', {
     month: 'long',
     day: 'numeric',
@@ -464,7 +464,7 @@ export const getFormatedCurrency = (amount = 0, currency = 'INR') => {
   });
 };
 
-export const getBankTabHeader = (businessType) => {
+export const getBankTabHeader = (businessType): { title: string; subtitle: string } => {
   let title = 'Bank Details';
   let subtitle = 'We will be depositing a small amount in this account to verify your bank details';
   if ([PRIVATE, PUBLIC, LLP, PARTNERSHIP, NGO, TRUST, SOCIETY].includes(businessType)) {

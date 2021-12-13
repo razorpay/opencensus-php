@@ -143,7 +143,6 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
     <Formik
       initialValues={{
         business_type: businessOverview.business_type.value,
-        business_dba: businessOverview.business_dba.value,
         business_website: businessOverview.business_website.value,
         playstore_url: playStoreURL,
         business_subcategory: businessOverview.business_subcategory.value,
@@ -153,7 +152,6 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
       }}
       initialErrors={{
         business_type: businessOverview.business_type.error,
-        business_dba: businessOverview.business_dba.error,
         business_website: businessOverview.business_website.error,
         business_subcategory: businessOverview.business_subcategory.error,
         merchant_avg_order_value: businessOverview.merchant_avg_order_value.error,
@@ -164,11 +162,6 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
           business_type: Yup.string()
             .nullable()
             .required('Business Type is a required field')
-            .nullable(),
-          business_dba: Yup.string()
-            .nullable()
-            .min(3, 'Please enter billing label with at least 3 characters')
-            .required('Billing Label is a required field')
             .nullable(),
           business_category: Yup.string()
             .nullable()
@@ -284,47 +277,6 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
                 ) : null}
               </Field>
 
-              <Field>
-                <Container>
-                  <TextInput
-                    width="auto"
-                    name="business_dba"
-                    label="Billing Label"
-                    helpText="Your brand name that your customers are familiar with"
-                    value={formikProps.values.business_dba}
-                    errorText={formikProps.touched.business_dba && formikProps.errors.business_dba}
-                    disabled={isFormLocked}
-                    onChange={(value) => {
-                      formikProps.setFieldValue('business_dba', value);
-                    }}
-                  />
-                  <IconContainer
-                    onClick={() => {
-                      if (isFormLocked) {
-                        return;
-                      }
-                      analyticsTrack({
-                        objectName: 'SignUp',
-                        actionName: 'faq',
-                        screen: 'home page',
-                        user,
-                        eventAction: 'initiated',
-                        properties: {
-                          clickSource: 'billing label',
-                        },
-                      });
-                      setFAQSection('Q1');
-                      setIsOpen(true);
-                    }}
-                  >
-                    <Icon
-                      name="helpCircle"
-                      size="small"
-                      fill={isFormLocked ? 'shade.930' : 'primary.800'}
-                    />
-                  </IconContainer>
-                </Container>
-              </Field>
               <Field visible={isEmailNonMandatoryOnL2Form && !user.user?.signup_via_email}>
                 <TextInput
                   width="auto"
@@ -341,7 +293,7 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
                   <View>
                     <TextArea
                       name="business_model"
-                      label="Business Model"
+                      label="Business Description"
                       placeholder="Enter text here"
                       width="auto"
                       value={formikProps.values.business_model}

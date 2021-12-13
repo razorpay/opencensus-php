@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
 import { useQuery } from 'react-query';
@@ -7,6 +8,7 @@ import Space from '@razorpay/blade-old/src/atoms/Space';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import TextArea from '@razorpay/blade-old/src/atoms/TextArea';
 import Text from '@razorpay/blade-old/src/atoms/Text';
+import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import Checkbox from '@razorpay/blade-old/src/atoms/Checkbox';
 import { Select, Option } from 'common/components/Select';
 import { FormSection, Field, GetTouchedFields } from '../Form';
@@ -36,6 +38,14 @@ import BusinessName from '../Fields/BusinessName';
 import GstinAutoPopulate from '../Fields/GstinAutoPopulate';
 import usePartnerActivation from '../hooks/usePartnerActivation';
 
+const Container = styled(View)`
+  position: relative;
+`;
+const IconContainer = styled.span`
+  position: absolute;
+  right: 12px;
+  top: 4px;
+`;
 const businessDetailsSchema = ({ hasGSTIN, businessOverviewDetails }) =>
   Yup.object().shape({
     company_pan: Yup.string()
@@ -75,6 +85,11 @@ const businessDetailsSchema = ({ hasGSTIN, businessOverviewDetails }) =>
         excludeEmptyString: true,
       })
       .required('Promoter PAN Name is a required field')
+      .nullable(),
+    business_dba: Yup.string()
+      .nullable()
+      .min(3, 'Please enter billing label with at least 3 characters')
+      .required('Billing Label is a required field')
       .nullable(),
     business_registered_address: Yup.string()
       .required('Registered address is a required field')
@@ -138,17 +153,17 @@ const businessDetailsSchema = ({ hasGSTIN, businessOverviewDetails }) =>
     }),
   });
 
-interface BusinessDetailsProps {
+interface IBusinessDetailsProps {
   isFormLocked?: boolean;
 }
 
-const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
+const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactElement => {
   const { data, postData } = useActivation();
   const { user, experiments } = useApp();
   const { gstinDetails } = useGstin();
   const snackbar = useSnackbar();
-  const [pinCode, setPinCodeValue] = useState('');
-  const [isRegisteredPin, setIsRegisteredPin] = useState(true);
+  const [pinCode, setPinCodeValue] = useState<string>('');
+  const [isRegisteredPin, setIsRegisteredPin] = useState<boolean>(true);
   const [addressFormikValue, setAddressFormikValue] = useState({});
 
   const { business_type: businessType } = data;
@@ -161,9 +176,11 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
   const setBusinessDetailsCompleted = useActivationFormState(
     (state) => state.setBusinessDetailsCompleted,
   );
+  const setIsOpen = useActivationFormState((state) => state.setIsFAQOpen);
+  const setFAQSection = useActivationFormState((state) => state.setFAQSection);
   const setSameAddress = useActivationFormState((state) => state.setSameAddress);
   const hasSameAdress = useActivationFormState((state) => state.same_address);
-  const [isBlurCalled, setIsBlurCalled] = useState(false);
+  const [isBlurCalled, setIsBlurCalled] = useState<boolean>(false);
   const { getFieldStatus } = usePartnerActivation();
 
   const autoFillCityState = (context) => {
@@ -214,12 +231,12 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
 
   const hasPoiStatus = getPoiVerificationStatus(data?.poi_verification_status);
 
-  const shouldShowPoiError =
+  const shouldShowPoiError: boolean =
     !data.submitted &&
     hasPoiStatus &&
     (!experiments.canSkipPoiValidation || experiments.isSyncExperimentEnabled);
 
-  const isCompanyPanInvalid =
+  const isCompanyPanInvalid: boolean =
     isVisible('company_pan', data) &&
     !data.submitted &&
     experiments.isSyncExperimentEnabled &&
@@ -271,7 +288,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
   const handleSameAddress = (checked) => {
     setSameAddress(checked);
     setIsBlurCalled(true);
-    // const checkboxStatus = checked ? 'select' : 'unselect';
   };
 
   const handleBlur = (e, formikProps) => {
@@ -336,9 +352,9 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
     }
   }, [isCompanyPanInvalid, shouldShowPoiError]);
 
-  const isPanVerified =
+  const isPanVerified: boolean =
     data.poi_verification_status === 'verified' && experiments.isSyncExperimentEnabled;
-  const isCompanyPanVerified =
+  const isCompanyPanVerified: boolean =
     data.company_pan_verification_status === 'verified' && experiments.isSyncExperimentEnabled;
 
   return (
@@ -350,6 +366,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
         business_name: businessDetails.business_name.value,
         promoter_pan: businessDetails.promoter_pan.value,
         promoter_pan_name: businessDetails.promoter_pan_name.value,
+        business_dba: businessDetails.business_dba.value,
         business_registered_address: businessDetails.business_registered_address.value,
         business_registered_state: businessDetails.business_registered_state.value || '',
         business_registered_city: businessDetails.business_registered_city.value || '',
@@ -430,6 +447,19 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                             formikProps.setFieldValue('company_cin', identity_number);
                           }
                         }
+                        if (!data.business_dba) {
+                          formikProps.setFieldTouched('business_dba');
+                          formikProps.setFieldValue('business_dba', company_name);
+                        }
+                        setIsBlurCalled(true);
+                      }}
+                      onInputBlur={(value) => {
+                        formikProps.setFieldTouched('business_name');
+                        formikProps.setFieldValue('business_name', value);
+                        if (!data.business_dba) {
+                          formikProps.setFieldTouched('business_dba');
+                          formikProps.setFieldValue('business_dba', value);
+                        }
                         setIsBlurCalled(true);
                       }}
                       disabled={
@@ -456,6 +486,12 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                     isCompanyPanVerified ||
                     getFieldStatus('business_name').isDisabled
                   }
+                  onChange={(value: string) => {
+                    if (!businessDetails.business_dba.value) {
+                      formikProps.setFieldTouched('business_dba');
+                      formikProps.setFieldValue('business_dba', value);
+                    }
+                  }}
                   helpText={
                     getFieldStatus('business_name').description || 'As mentioned in the PAN'
                   }
@@ -503,7 +539,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                 autoCapitalize="characters"
               />
             </Field>
-            <Field last>
+            <Field>
               <TextInput
                 width="auto"
                 name="promoter_pan_name"
@@ -517,10 +553,60 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                 disabled={
                   isFormLocked || isPanVerified || getFieldStatus('promoter_pan_name').isDisabled
                 }
+                onChange={(value: string) => {
+                  if (
+                    isUnregisteredBusiness(businessOverviewDetails.business_type.value) &&
+                    !businessDetails.business_dba.value
+                  ) {
+                    formikProps.setFieldTouched('business_dba');
+                    formikProps.setFieldValue('business_dba', value);
+                  }
+                }}
                 helpText={
                   getFieldStatus('promoter_pan_name').description || 'As mentioned in the PAN'
                 }
               />
+            </Field>
+            <Field last>
+              <Container>
+                <TextInput
+                  width="auto"
+                  name="business_dba"
+                  label="Billing Label"
+                  helpText="Your brand name that your customers are familiar with"
+                  value={formikProps.values.business_dba}
+                  errorText={formikProps.touched.business_dba && formikProps.errors.business_dba}
+                  disabled={isFormLocked}
+                  onChange={(value: string) => {
+                    formikProps.setFieldValue('business_dba', value);
+                  }}
+                />
+                <IconContainer
+                  onClick={() => {
+                    if (isFormLocked) {
+                      return;
+                    }
+                    analyticsTrack({
+                      objectName: 'SignUp',
+                      actionName: 'faq',
+                      screen: 'home page',
+                      user,
+                      eventAction: 'initiated',
+                      properties: {
+                        clickSource: 'billing label',
+                      },
+                    });
+                    setFAQSection('Q1');
+                    setIsOpen(true);
+                  }}
+                >
+                  <Icon
+                    name="helpCircle"
+                    size="small"
+                    fill={isFormLocked ? 'shade.930' : 'primary.800'}
+                  />
+                </IconContainer>
+              </Container>
             </Field>
           </FormSection>
 
@@ -552,9 +638,9 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                   formikProps.touched.business_registered_pin &&
                   formikProps.errors.business_registered_pin
                 }
-                onChange={(val) => {
-                  if (val.length === 6) {
-                    setPinCodeValue(val);
+                onChange={(value: string) => {
+                  if (value.length === 6) {
+                    setPinCodeValue(value);
                   }
                   setIsRegisteredPin(true);
                 }}
@@ -657,9 +743,9 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                     formikProps.setFieldTouched('business_operation_pin');
                     formikProps.setFieldValue('business_operation_pin', value);
                   }}
-                  onChange={(val) => {
-                    if (val.length === 6) {
-                      setPinCodeValue(val);
+                  onChange={(value: string) => {
+                    if (value.length === 6) {
+                      setPinCodeValue(value);
                     }
                     setIsRegisteredPin(false);
                   }}
@@ -793,15 +879,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
               ) : null}
             </FormSection>
           ) : null}
-
-          {/* {data.activation_flow !== 'greylist' ? (
-            <Text size="xsmall" align="center">
-              By submitting these details you agree to our{' '}
-              <Link href="https://razorpay.com/terms/" target="_blank" size="xsmall">
-                terms and conditions
-              </Link>
-            </Text>
-          ) : null} */}
 
           <GetTouchedFields
             handleSubmit={handleSubmit}
