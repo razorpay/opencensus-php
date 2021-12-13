@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import Lottie from 'react-lottie';
 import { NOOP } from 'merchant/views/Capital/Loans/constants';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import ErrorBoundary, { Ranks } from 'common/new-ui/ErrorBoundary';
 
 const CustomLottie = ({
   animationData,
@@ -30,7 +30,7 @@ const CustomLottie = ({
   };
 
   return (
-    <ErrorBoundary resetOnProps>
+    <ErrorBoundary resetOnProps rank={Ranks.P2}>
       <div
         onClick={!disabled ? onClick : NOOP}
         className={`lottie-wrapper ${disabled ? 'lottie-disabled' : ''}`}

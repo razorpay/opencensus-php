@@ -1,18 +1,9 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import InlineFallbackComponent from './FallbackComponent';
 import errorService from '@razorpay/universe-utils/errorService';
-
-enum Ranks {
-  P0 = 'P0',
-  P1 = 'P1',
-  P2 = 'P2',
-  P3 = 'P3',
-}
-
-enum Sections {
-  ANALYTICS = 'analytics',
-  HOME = 'home',
-}
+// TODO: Fix the import .ts issue
+import { Ranks, Teams } from './constants'; // Failing to load in .ts format
+import { getTeamName } from 'common/new-ui/ErrorBoundary/utils';
 
 interface FallbackComponentProps extends React.FC<any> {
   eventId?: string | null;
@@ -23,7 +14,9 @@ interface Props {
   FallbackComponent?: FallbackComponentProps;
   tags?: any;
   rank?: Ranks;
+  team?: Teams;
   resetOnProps?: any;
+  location?: any;
 }
 
 interface State {
@@ -32,7 +25,7 @@ interface State {
   eventId: string | null;
 }
 
-export default class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundary extends Component<Props, State> {
   state = {
     error: false,
     info: null,
@@ -41,9 +34,18 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   private node = React.createRef<HTMLDivElement>();
   componentDidCatch(error: Error, info: ErrorInfo): void {
+    const rank = this.props.rank || errorService.ErrorRank.P0;
+    let tags = this.props.tags;
+
+    const pathname = window.location.pathname;
+    const team = getTeamName(pathname);
+
+    // merge tags with extra tags
+    tags = { ...tags, route: pathname, team };
+
     errorService.captureError(error, {
-      tags: this.props.tags,
-      rank: this.props.rank || errorService.ErrorRank.P0,
+      tags,
+      rank,
       extra: {
         info,
       },
@@ -60,6 +62,7 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   render(): ReactNode {
     const { children, FallbackComponent } = this.props;
+
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { error, info, eventId } = this.state;
 
@@ -107,4 +110,6 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-export { InlineFallbackComponent, Ranks, Sections };
+export default ErrorBoundary;
+
+export { InlineFallbackComponent, Ranks, Teams };

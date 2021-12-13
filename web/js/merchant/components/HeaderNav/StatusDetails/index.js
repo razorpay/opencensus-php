@@ -1,7 +1,7 @@
 import React, { useReducer, useState, useRef, useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { openSlider } from 'merchant_common/reducers/slider';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { fetchOngoingDowntimes } from './service';
 import Spinner from 'common/ui/Spinner';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -246,7 +246,7 @@ function StatusDetails(props) {
       )}
       {isSliderOpen ? (
         <Slider>
-          <ErrorBoundary resetOnProps>
+          <ErrorBoundary resetOnProps rank={Ranks.P1} team={Teams.BANKING}>
             <div className="content-wrapper content-sm txn-details status-details">
               <div className="panel panel-default SliderPanel">
                 <div className="panel-heading">

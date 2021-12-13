@@ -1,7 +1,7 @@
 function PokedexEntry() {
   function executeJS() {
     const cdnDashboardUrl = window.cdnDashboardUrl || '';
-    
+
     const base = Array.prototype.slice
       .call(document.querySelectorAll('script[src]'), -1)[0]
       .src.replace(/[^/]+$/, '');

@@ -2,7 +2,7 @@ import { getMode } from '../mode';
 import getMobileDetect from 'common/utils/mobileDetect';
 import axios from 'axios';
 import errorService from '@razorpay/universe-utils/errorService';
-import { Sections } from 'common/new-ui/ErrorBoundary';
+import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 
 /* Delimiters are space / underscore */
 export const titleCase = (sentence) => {
@@ -92,8 +92,9 @@ const throwAnalyticsException = (errorMessage: string) => {
 
   errorService.captureError(error, {
     tags: {
-      section: Sections.ANALYTICS,
+      team: Teams.PLATFORM,
     },
+    rank: Ranks.P2,
   });
 };
 

@@ -1,5 +1,5 @@
 // Comments are not supported inside merchantEntry function have to disable the eslint for this file
- // Comments are not supported inside merchantEntry function have to disable the eslint for this file
+// Comments are not supported inside merchantEntry function have to disable the eslint for this file
 
 function merchantEntry() {
   function executeJS() {
