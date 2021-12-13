@@ -690,56 +690,58 @@ class Core extends Base\Core
         );
     }
 
-//    public function sendNotificationsToCouponCodeEligibleMerchant($input)
-//    {
-//        //Coupon Code Eligible Merchant who have not become mtu in 2 days
-//
-//        list($from, $to) = $this->getTimeWindowForCron($input, Constants::NOT_MTU_IN_TWO_DAY_CACHE_KEY,2);
-//
-//        $merchantIdList = $this->repo->merchant->fetchAllLiveAndActivatedMerchants($from,$to);
-//
-//        $offerMTUCouponCode = $this->repo->coupon->fetchByCodeWithRelations(CouponCodeConstants::MTU_COUPON, MerchantAccount::SHARED_ACCOUNT);
-//
-//        $merchantList = $this->repo
-//            ->merchant_promotion
-//            ->fetchMerchantsWithPromotion(
-//                $offerMTUCouponCode->getId(),
-//                $from,
-//                $to
-//            );
-//
-//        $merchantList =  array_diff($merchantIdList, $merchantList);
-//
-//        $filteredMerchants = $this->repo->transaction->filterMerchantsWithFirstTransactionAboveTimestamp(
-//            $merchantList, $from);
-//
-//        $merchantIdList =  array_diff($merchantList, $filteredMerchants);
-//
-//        $this->trace->info(TraceCode::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU_NOTIFICATION, [
-//            'merchants_count' => count($merchantIdList),
-//            'type'            => 'sendNotification',
-//            'to'              => $to,
-//            'from'            => $from
-//        ]);
-//
-//        if (empty($merchantIdList) === true)
-//        {
-//            $this->trace->info(TraceCode::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU_NOTIFICATION_SKIPPED, [
-//                'merchants_count' => count($merchantIdList),
-//                'type'            => 'sendNotification',
-//                'reason'          => 'no merchants found'
-//            ]);
-//            return;
-//        }
-//
-//        foreach ($merchantIdList as $merchantId)
-//        {
-//            $args = [
-//                Constants::MERCHANT => $this->repo->merchant->findOrFailPublic($merchantId)
-//            ];
-//
-//            (new OnboardingNotificationHandler($args))
-//                ->sendEventNotificationForMerchant($merchantId, Events::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU);
-//        }
-//    }
+/*
+    public function sendNotificationsToCouponCodeEligibleMerchant($input)
+    {
+        //Coupon Code Eligible Merchant who have not become mtu in 2 days
+
+        list($from, $to) = $this->getTimeWindowForCron($input, Constants::NOT_MTU_IN_TWO_DAY_CACHE_KEY,2);
+
+        $merchantIdList = $this->repo->merchant->fetchAllLiveAndActivatedMerchants($from,$to);
+
+        $offerMTUCouponCode = $this->repo->coupon->fetchByCodeWithRelations(CouponCodeConstants::MTU_COUPON, MerchantAccount::SHARED_ACCOUNT);
+
+        $merchantList = $this->repo
+            ->merchant_promotion
+            ->fetchMerchantsWithPromotion(
+                $offerMTUCouponCode->getId(),
+                $from,
+                $to
+            );
+
+        $merchantList =  array_diff($merchantIdList, $merchantList);
+
+        $filteredMerchants = $this->repo->transaction->filterMerchantsWithFirstTransactionAboveTimestamp(
+            $merchantList, $from);
+
+        $merchantIdList =  array_diff($merchantList, $filteredMerchants);
+
+        $this->trace->info(TraceCode::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU_NOTIFICATION, [
+            'merchants_count' => count($merchantIdList),
+            'type'            => 'sendNotification',
+            'to'              => $to,
+            'from'            => $from
+        ]);
+
+        if (empty($merchantIdList) === true)
+        {
+            $this->trace->info(TraceCode::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU_NOTIFICATION_SKIPPED, [
+                'merchants_count' => count($merchantIdList),
+                'type'            => 'sendNotification',
+                'reason'          => 'no merchants found'
+            ]);
+            return;
+        }
+
+        foreach ($merchantIdList as $merchantId)
+        {
+            $args = [
+                Constants::MERCHANT => $this->repo->merchant->findOrFailPublic($merchantId)
+            ];
+
+            (new OnboardingNotificationHandler($args))
+                ->sendEventNotificationForMerchant($merchantId, Events::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU);
+        }
+    }
+*/
 }

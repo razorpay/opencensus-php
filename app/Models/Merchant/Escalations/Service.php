@@ -108,16 +108,18 @@ class Service extends Base\Service
             ]);
         }
 
-//        try
-//        {
-//            $core->sendNotificationsToCouponCodeEligibleMerchant($input);
-//        }
-//        catch (\Exception $e)
-//        {
-//            $this->trace->info(TraceCode::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU_NOTIFICATION_FAILED, [
-//                'type' => 'sendCouponCodeEligibleMerchantNotMTUNotification', 'error' => $e->getMessage()
-//            ]);
-//        }
+/*
+        try
+        {
+            $core->sendNotificationsToCouponCodeEligibleMerchant($input);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU_NOTIFICATION_FAILED, [
+                'type' => 'sendCouponCodeEligibleMerchantNotMTUNotification', 'error' => $e->getMessage()
+            ]);
+        }
+*/
 
         try
         {
