@@ -429,6 +429,7 @@ class Core extends Base\Core
             }
 
             $data[Entity::AUTH_TYPE] = $tokenRegistration->getAuthType();
+            $data[Entity::MAX_AMOUNT] = $tokenRegistration->getMaxAmount();
         }
 
         if ($order->upiMandate !== null)

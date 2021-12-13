@@ -751,6 +751,11 @@ class ViewDataSerializerHosted extends Base\Core
             [E::SUBSCRIPTION_REGISTRATION]
             [E::PAYMENT] = $this->getNonFailurePaymentsForOrder($order);
 
+            if ($externalEntity->getMethod() === SubscriptionRegistration\Method::UPI)
+            {
+                $serialized[E::SUBSCRIPTION_REGISTRATION]['frequency'] = $order->upiMandate['frequency'];
+            }
+
             if ($externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)
             {
                 $bankAccount = $externalEntity->entity;

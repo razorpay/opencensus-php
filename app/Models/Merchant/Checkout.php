@@ -875,6 +875,8 @@ class Checkout
 
         $data['merchant_key'] = $this->app['basicauth']->getPublicKey();
 
+        $data['merchant_name'] = $merchant->getName();
+
         if(empty($data['merchant_key']) === true)
         {
             $data['merchant_key'] = (new key\Core)->getLatestActiveKeyForMerchant($merchant->getId());

@@ -143,6 +143,7 @@ class Entity extends Base\PublicEntity
 
     const LATE_AUTH_CONFIG_ID= 'late_auth_config_id';
 
+    const MAX_AMOUNT = 'max_amount';
     /**
      * This contains the capture settings whcih hets applied to late auth payments
      */
