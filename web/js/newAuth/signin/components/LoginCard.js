@@ -67,12 +67,14 @@ const LoginCard = ({ cardData, cardOrder }) => {
           {desc}
         </Text>
       </Space>
-      <Space margin={[1, 0, 3, 0]} padding={[0]}>
-        <CustomLinkButton as="a" href={ctaURL} target="_blank" onClick={handleCTAClick}>
-          {ctaText}
-          <span>→</span>
-        </CustomLinkButton>
-      </Space>
+      {ctaText ? (
+        <Space margin={[1, 0, 3, 0]} padding={[0]}>
+          <CustomLinkButton as="a" href={ctaURL} target="_blank" onClick={handleCTAClick}>
+            {ctaText}
+            <span>→</span>
+          </CustomLinkButton>
+        </Space>
+      ) : null}
     </View>
   );
 };

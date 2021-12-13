@@ -9,14 +9,14 @@ export const LoginCardArray = [
     id: 'Sep22-AppStore-Zapier-GTM-LoginCard',
   },
   {
-    type: 'with-image',
-    imgSrc: 'img/ftx.png',
-    imgAlt: 'Register for FTX’21!',
-    title: 'Register for FTX’21!',
+    type: 'default',
+    imgSrc: '',
+    imgAlt: '',
+    title: 'From Business to busy-ness!',
     desc:
-      'Catch top speakers like Ankur Warikoo(Nearbuy), Amitabh Kant(NITI Aayog), Nithin Kamath(Zerodha) & more live!',
-    ctaURL: 'https://razorpay.com/ftx/?coupon_code=welcometoftx21',
-    ctaText: 'Get your free ticket now!',
-    id: 'FTX21-LOGINCARD',
+      'Make your business busy & keep on growing! Accept payments now to get ₹3L worth payments free! #BusinessBanaoBusy',
+    ctaURL: '',
+    ctaText: '',
+    id: 'DEC21-FREECREDIT',
   },
 ];

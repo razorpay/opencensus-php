@@ -92,7 +92,7 @@ app
         return Object.keys(obj);
       };
 
-      const LoginCardIDs = ['Sep22-AppStore-Zapier-GTM-LoginCard', 'FTX21-LOGINCARD'];
+      const LoginCardIDs = ['Sep22-AppStore-Zapier-GTM-LoginCard', 'DEC21-FREECREDIT'];
       const actionToCardIDMap = {};
       const COOKIE_POLICY_DOCS = {
         CHROME:
