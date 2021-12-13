@@ -2223,6 +2223,7 @@ class Route
         '1cc_country_pincode_get'                  => ['get',      'locations/country/{country}/pincode/{pincode}',  'PincodeSearchController@getByCountry'                              ],
         'internal_pincode_get'                     => ['get',      'internal/pincodes/{id}',                         'PincodeSearchController@get'                                       ],
         'cities_get'                               => ['get',      'cities',                                         'CityController@getCities'                                          ],
+        'states_by_country'                        => ['get',      'locations/countries/{countryCode}/states',       'LocationController@getStatesByCountry'],
         'db_meta_query'                            => ['post',     'db_meta_query',                                  'AdminController@dbMetaDataQuery'                                   ],
 
         // Deprecated feature routes - maintaining for BC - Remove after dashboard changes
@@ -3244,6 +3245,7 @@ class Route
         '1cc_country_pincode_get',
         'third_watch_address_check',
         'banking_axis_invitations_send',
+        'states_by_country',
         'country_fetch',
         'state_fetch',
     ];
