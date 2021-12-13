@@ -55,6 +55,7 @@ class LOCController extends Controller
     const GET_ONHOLD_STATUS_REASONS                      = 'GET_ONHOLD_STATUS_REASONS';
     const SCHEDULE_LATE_REPAYMENT_NOTIFICATION           = 'SCHEDULE_LATE_REPAYMENT_NOTIFICATION';
     const WITHDRAWAL_CONFIG_UPDATE_DELAYED_REPAYMENTS    = 'WITHDRAWAL_CONFIG_DELAYED_REPAYMENT';
+    const RECON_REPAID_WITHDRAWALS_WITH_GROMOR           = 'RECON_REPAID_WITHDRAWALS_WITH_GROMOR';
 
     const ROUTES_URL_MAP = [
         self::SEED_DATA_REGEX                        => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalAPI/SeedData',
@@ -89,7 +90,8 @@ class LOCController extends Controller
     const CRON_URL_MAP = [
         self::WITHDRAWAL_ENGAGEMENT_MAILER_CRON              => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/WithdrawalEngagementMail',
         self::SCHEDULE_LATE_REPAYMENT_NOTIFICATION           => 'twirp/rzp.capital.loc.withdrawal.v1.RepaymentAPI/ScheduleLateRepaymentNotificationToPartnerCron',
-        self::WITHDRAWAL_CONFIG_UPDATE_DELAYED_REPAYMENTS    => 'twirp/rzp.capital.loc.withdrawal.v1.RepaymentAPI/SetOnHoldStatusForDelayedWithdrawalRepaymentsCron'
+        self::WITHDRAWAL_CONFIG_UPDATE_DELAYED_REPAYMENTS    => 'twirp/rzp.capital.loc.withdrawal.v1.RepaymentAPI/SetOnHoldStatusForDelayedWithdrawalRepaymentsCron',
+        self::RECON_REPAID_WITHDRAWALS_WITH_GROMOR           => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalAPI/ReconRepaidWithdrawalsWithGromor',
     ];
 
     const MERCHANT_ROUTES = [
@@ -131,11 +133,11 @@ class LOCController extends Controller
         self::UPDATE_WITHDRAWAL_REGEX                      => Name::LOC_WITHDRAWAL_EDIT,
         self::ADD_REPAYMENT_REGEX                          => Name::LOC_WITHDRAWAL_EDIT,
         self::GET_WITHDRAWAL_REGEX                         => Name::LOC_WITHDRAWAL_VIEW,
-        self::GET_FUNCTIONAL_WITHDRAWAL_CONFIG_REGEX       => Name:: LOC_CONFIG_VIEW,
+        self::GET_FUNCTIONAL_WITHDRAWAL_CONFIG_REGEX       => Name::LOC_CONFIG_VIEW,
         self::LIST_OR_SEARCH_WITHDRAWAL_REGEX              => Name::LOC_WITHDRAWAL_VIEW,
         self::REPAYMENTS_SCHEDULE                          => Name::LOC_WITHDRAWAL_VIEW,
         self::WITHDRAWAL_CONFIG_UPDATE_DELAYED_REPAYMENTS  => Name::LOC_CONFIG_EDIT,
-
+        self::RECON_REPAID_WITHDRAWALS_WITH_GROMOR         => Name::LOC_CONFIG_VIEW
     ];
 
     const MAIL_ERROR_REGEX = '/View \[emails.loc.(?:\w+)?\] not found./';
