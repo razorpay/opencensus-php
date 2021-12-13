@@ -1509,6 +1509,8 @@ class PublicErrorDescription
     const SERVER_ERROR_UPI_PAYMENT_SERVICE_REQUEST_TIMEOUT                          = 'We are facing some trouble completing your request at the moment. Please try again shortly.';
     const SERVER_ERROR_UPI_PAYMENT_SERVICE_CONNECTION_FAILED                        = 'We are facing some trouble completing your request at the moment. Please try again shortly.';
 
+    const BAD_REQUEST_MERCHANT_ID_IS_REQUIRED                                       = 'Merchant Id is a required param';
+
     const BAD_REQUEST_ENCRYPTED_COMMENT_NOT_FOUND                                   = 'No Credentials found';
 
     // Partner Kyc Access

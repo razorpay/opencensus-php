@@ -125,6 +125,10 @@ class Entity extends Base\PublicEntity
         self::SEQUENCE_NUMBER   => 'integer',
     ];
 
+    protected $ignoredRelations = [
+        "order"
+    ];
+
     // Relations
     public function merchant()
     {
@@ -292,6 +296,39 @@ class Entity extends Base\PublicEntity
         $sequenceNumber = new SequenceNumber($this->getConfirmedAt(), $this->freshTimestamp());
 
         return $sequenceNumber->generate($this->getFrequency());
+    }
+
+    public function getOrderAttribute()
+    {
+        $order = null;
+
+        if ($this->relationLoaded('order') === true)
+        {
+            $order = $this->getRelation('order');
+        }
+
+        if ($order !== null)
+        {
+            return $order;
+        }
+
+        $order = $this->order()->with('offers')->first();
+
+        if (empty($order) === false)
+        {
+            return $order;
+        }
+
+        if (empty($this[self::ORDER_ID]) === true)
+        {
+            return null;
+        }
+
+        $order = (new Order\Repository)->findOrFailPublic('order_'.$this[self::ORDER_ID]);
+
+        $this->order()->associate($order);
+
+        return $order;
     }
 
     public function toArrayTrace(): array

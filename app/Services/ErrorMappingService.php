@@ -4,7 +4,6 @@
 namespace RZP\Services;
 
 use JsonMachine\JsonMachine;
-use RZP\Models\Payment\Method;
 
 class ErrorMappingService
 {
@@ -20,8 +19,8 @@ class ErrorMappingService
         "pg/paylater"                                           => "paylater",
         "pg/upi"                                                => "upi",
         "pg/emandate"                                           => "emandate",
+        "pg/pg-router"                                          => "pg_router",
         ];
-
 
     public const FETCHED_ERROR_CODES_PATH = 'error_codes/error_codes/%s/internal_error_codes.json';
 

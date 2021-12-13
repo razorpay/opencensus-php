@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Offer;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Services\PGRouter;
@@ -19,7 +20,9 @@ use RZP\Models\Payment\Config;
 use RZP\Jobs\SyncOrderPgRouter;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\BankAccount\Beneficiary;
 use RZP\Jobs\UpdateSyncedOrderPgRouter;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Feature\Constants as FeatureConstants;
 
 class Core extends Base\Core
@@ -36,6 +39,21 @@ class Core extends Base\Core
      */
     public function create(array $input, Merchant\Entity $merchant, bool $partialPayment = false, $dummyProcessing=false)
     {
+        $routeToPGRouter = (new Service())->canRouteOrderCreationToPGRouter($input);
+
+        if ($routeToPGRouter === true)
+        {
+            $this->trace->info(TraceCode::ORDER_ROUTING_TO_PG_ROUTER);
+
+            $input['public_key'] = App::getFacadeRoot()['basicauth']->getPublicKey();
+
+            $input['merchant_id'] = $merchant->getId();
+
+            $input['partial_payment'] = $partialPayment;
+
+            return $this->app['pg_router']->createOrder($input, true);
+        }
+
         $inputTrace = $input;
 
         unset($inputTrace['bank_account']['account_number'], $inputTrace['bank_account']['name'],
@@ -168,10 +186,19 @@ class Core extends Base\Core
 
             $configCore = new Config\Core();
 
+            if ($configCore->merchant === null)
+            {
+                $configCore->merchant = $this->merchant;
+            }
+
             $configEntity = $configCore->create($config);
 
             $order->setLateAuthConfigId($configEntity->getId());
+
+            return $configEntity->getId();
         }
+
+        return null;
     }
 
     /*
@@ -530,6 +557,7 @@ class Core extends Base\Core
 
         $params = [Entity::RECEIPT => $receipt];
 
+        //TODO: Check if we can move this to data warehouse
         $duplicateOrders = $this->repo->order->fetch($params, $merchant->getId(), ConnectionType::SLAVE);
 
         if (count($duplicateOrders) > 0)
@@ -548,8 +576,13 @@ class Core extends Base\Core
      * Throws BAD_REQUEST_ERROR error with description "The id provided does not exist"
      */
 
-    private function validateCheckoutConfigId($configId)
+    public function validateCheckoutConfigId($configId, $merchant = null)
     {
+        if ($merchant !== null)
+        {
+            $this->merchant = $merchant;
+        }
+
         $this->repo->config->findByPublicIdAndMerchant($configId, $this->merchant);
     }
 
@@ -672,5 +705,188 @@ class Core extends Base\Core
                     'Invalid product type / Product type not implemented'
                 );
         }
+    }
+
+    public function internalOrderValidateTPVChecks($input)
+    {
+        $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+        $tpvRequired = $merchant->isTPVRequired();
+
+        if ($tpvRequired === false)
+        {
+            return;
+        }
+
+        $method = $input['method'] ?? null;
+
+        if (($method !== null) and
+            ($method !== Payment\Method::NETBANKING) and
+            ($method !== Payment\Method::UPI))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Order method needs to be netbanking or upi for the merchant');
+        }
+
+        $orderBank = $input['bank'] ?? null;
+
+        $tpvBanks = Netbanking::getSupportedBanksForTPV();
+
+        if (($method !== null and
+                $method === Payment\Method::NETBANKING) and
+            (in_array($orderBank, $tpvBanks, true) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Order bank does not support TPV');
+        }
+
+        if (isset($input['bank_account']['account_number']) === true)
+        {
+            $accountNumber = $input['bank_account']['account_number'];
+        }
+        elseif (isset($input['account_number']) === true)
+        {
+            $accountNumber = $input['account_number'];
+        }
+
+        if (empty($accountNumber) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ORDER_ACCOUNT_NUMBER_REQUIRED_FOR_MERCHANT);
+        }
+    }
+
+    public function internalCreateOrderRelations($input)
+    {
+        $data = null;
+
+        $order = (new Entity())->forceFill($input);
+
+        $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+        $this->merchant = $merchant;
+
+        $lateAuthConfigId = $this->createLateAuthConfigIfApplicable($input, $order);
+
+        if ($lateAuthConfigId !== null)
+        {
+            $data['late_auth_config_id'] = $lateAuthConfigId;
+        }
+
+        $bankAccount = $this->createBankAccountForTpv($input);
+
+        if (empty($bankAccount) === false)
+        {
+            $data['bank_account_number'] = $bankAccount->getAccountNumber();
+
+            $data['bank_account_beneficiary'] = $bankAccount->getBeneficiaryName();
+        }
+
+        $this->validateAndCreateEntityOffer($order,$input, $merchant);
+
+        $this->associateProducts($order, $input);
+
+        $orderPostCreateHook = new PostCreateHook($input, $order);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $orderPostCreateHook->process();
+
+        $token = $order->getTokenRegistration();
+
+        if ($token !== null)
+        {
+            $invoice = $order->getMethod() === Payment\Method::NACH ? $order->invoice : null;
+
+            $data['token'] = $token->toArrayTokenFields($invoice);
+        }
+
+        return $data;
+    }
+
+    private function createBankAccountForTpv($input)
+    {
+        if (isset($input[Entity::BANK_ACCOUNT]) === false)
+        {
+            return null;
+        }
+
+        $ba = new BankAccount\Entity;
+
+        $ba->merchant()->associate($this->merchant);
+
+        $ba = $ba->build($input[Entity::BANK_ACCOUNT], 'addTpvBankAccount');
+
+        $this->repo->bank_account->saveOrFail($ba);
+
+        (new Beneficiary)->enqueueForBeneficiaryRegistration($ba);
+
+        return $ba;
+    }
+
+    private function validateAndCreateEntityOffer($order, $input, $merchant)
+    {
+        $offerCore = (new Offer\Core);
+
+        $offerCore->merchant = $merchant;
+
+        if(($order->isOfferForced()) === null or ($order->isOfferForced() === false))
+        {
+            $defaultOffers = (new Offer\Core)->fetchDefaultOffersForMerchant($order->getMerchantId());
+
+            foreach($defaultOffers as $offer)
+            {
+                $offer = $offerCore->validateDefaultOfferForOrder($order, $offer);
+
+                if($offer !== null)
+                {
+                    $this->saveEntityOffer($order, $offer);
+                }
+            }
+        }
+
+        if (isset($input[Entity::OFFERS]) === false)
+        {
+            return;
+        }
+
+        foreach (array_unique($input[Entity::OFFERS]) as $offerId)
+        {
+            $offer = $offerCore->fetchAndValidateOfferForOrder($offerId, $order);
+
+            if(($offer->isDefaultOffer() === false) or ($order->isOfferForced() === true))
+            {
+                $this->saveEntityOffer($order, $offer);
+            }
+        }
+    }
+
+    private function saveEntityOffer($order, $offer)
+    {
+        $entityOffer = new Offer\EntityOffer\Entity();
+
+        $entityOffer->setAttribute(Offer\EntityOffer\Entity::ENTITY_ID, $order->getId());
+
+        $entityOffer->setAttribute(Offer\EntityOffer\Entity::ENTITY_TYPE, 'orders');
+
+        $entityOffer->setAttribute(Offer\EntityOffer\Entity::OFFER_ID, $offer->getId());
+
+        $entityOffer->save();
+    }
+
+    public function internalOrderValidateTransferParams($input)
+    {
+        $preCreateHooks = new PreCreateHook($input);
+
+        if (isset($input['transfers']) === true)
+        {
+            $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+            $preCreateHooks->merchant = $merchant;
+
+            $preCreateHooks->validateTransferParams($input['transfers']);
+        }
+
+        return true;
     }
 }

@@ -530,7 +530,7 @@ class Processor
                 "payment_capture" => false,
             ];
 
-            $this->order = (new Order\Core)->create($orderPayLoad, $this->merchant);
+            $this->order = (new Order\Service())->createOrder($orderPayLoad);
 
             $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($this->order->getId());
 
@@ -3595,6 +3595,11 @@ class Processor
 
         $this->setForceTerminalIdIfApplicable($payment, $input);
 
+        // Please keep this function at the end of transaction block, as
+        // we are updating orders which lies in PG Router service now.
+        // This has been done to temporarily handle the distributed transaction failures.
+        $this->updateExternalOrder();
+
         $metadata = $payment->getMetadata();
 
         $this->trace->info(
@@ -3607,6 +3612,20 @@ class Processor
         $this->payment = $payment;
 
         return $payment;
+    }
+
+    protected function updateExternalOrder()
+    {
+        if (($this->order !== null) and
+            ($this->order->isExternal() === true))
+        {
+            $input = [
+                Order\Entity::ATTEMPTS => $this->order->getAttempts(),
+                Order\Entity::STATUS   => $this->order->getStatus()
+            ];
+
+            $this->app['pg_router']->updateInternalOrder($input,$this->order->getId(),$this->order->getMerchantId(), true);
+        }
     }
 
     /**
@@ -3955,7 +3974,10 @@ class Processor
                 'attempts'      => $this->order->getAttempts(),
             ]);
 
-        $this->repo->saveOrFail($this->order);
+        if ($this->order->isExternal() === false)
+        {
+            $this->repo->saveOrFail($this->order);
+        }
 
         $this->trace->info(
             TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
@@ -5238,6 +5260,18 @@ class Processor
         $this->postPaymentAuthorizeOfferProcessing($this->payment);
 
         $this->updateOrderStatusPaidIfApplicable($order, $this->payment);
+
+        if (($order->isExternal() === true) and
+            ($order->getStatus() === Order\Status::PAID))
+        {
+            $input['status'] = Order\Status::PAID;
+
+            $this->app['pg_router']->updateInternalOrder($input,$order->getId(),$order->getMerchantId(), true);
+        }
+        else
+        {
+            $this->repo->saveOrFail($order);
+        }
 
         $this->repo->saveOrFail($order);
 

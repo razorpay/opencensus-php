@@ -7,6 +7,7 @@ use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer;
 use RZP\Models\Merchant\Methods;
+use RZP\Models\Customer as Customer;
 use RZP\Models\UpiMandate\Core as UpiMandateCore;
 use RZP\Models\SubscriptionRegistration\Core as TokenRegistrationCore;
 
@@ -39,7 +40,9 @@ class PostCreateHook extends Hook
 
         $customerId = $this->orderInput[Entity::CUSTOMER_ID];
 
-        $customer = $this->repo->customer->findByPublicId($customerId);
+        $customerId = Customer\Entity::verifyIdAndSilentlyStripSign($customerId);
+
+        $customer = $this->repo->customer->findById($customerId);
 
         if ((isset($this->orderInput[Entity::METHOD]) === true) and
             ($this->orderInput[Entity::METHOD]) === Methods\Entity::UPI)

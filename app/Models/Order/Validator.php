@@ -25,7 +25,7 @@ class Validator extends Base\Validator
     /**
      * @var Merchant\Entity
      */
-    protected $merchant;
+    public $merchant;
 
     public function __construct($entity = null)
     {
@@ -141,9 +141,16 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateAmount($input)
+    public function validateAmount($input)
     {
         $amount = $input['amount'];
+
+        $merchant = $this->merchant;
+
+        if ($merchant === null)
+        {
+            $merchant = $this->entity->merchant;
+        }
 
         if ((isset($input[Entity::METHOD]) === false) or
             (($input[Entity::METHOD] !== Payment\Method::EMANDATE) and
@@ -164,7 +171,7 @@ class Validator extends Base\Validator
             }
         }
 
-        $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
+        $maxAmountAllowed = $merchant->getMaxPaymentAmount();
 
         $currency = $input['currency'];
 
@@ -178,7 +185,7 @@ class Validator extends Base\Validator
         if (($baseAmount > $maxAmountAllowed) === true)
         {
             $this->trace->count(Metric::ORDER_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT, [
-                'business_type' => $this->entity->merchant->merchantDetail->getBusinessType() ?? "",
+                'business_type' => $merchant->merchantDetail->getBusinessType() ?? "",
             ]);
 
             throw new Exception\BadRequestValidationFailureException(
@@ -188,11 +195,16 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateCurrency($input)
+    public function validateCurrency($input)
     {
         $currency = $input[Entity::CURRENCY];
 
-        $merchant = $this->entity->merchant;
+        $merchant = $this->merchant;
+
+        if ($merchant === null)
+        {
+            $merchant = $this->entity->merchant;
+        }
 
         // if currency conversion is not enabled allow only INR
         // if currency conversion is enabled, it should be a valid current
@@ -531,7 +543,7 @@ class Validator extends Base\Validator
             case Payment\Method::EMANDATE:
                 $supportedBanks = Payment\Gateway::getAllEMandateBanks();
 
-                if ($input[Entity::AMOUNT] === '0')
+                if ((string)$input[Entity::AMOUNT] === '0')
                 {
                     $supportedBanks = Payment\Gateway::removeEmandateRegistrationDisabledBanks($supportedBanks);
 

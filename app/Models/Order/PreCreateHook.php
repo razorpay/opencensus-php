@@ -17,6 +17,8 @@ class PreCreateHook extends Hook
         ExtraParams::TRANSFERS => 'validateTransferParams'
     ];
 
+    public $merchant;
+
     public function process()
     {
         foreach (array_keys($this->hooks) as $hook)
@@ -115,7 +117,7 @@ class PreCreateHook extends Hook
                     'The currency should be INR for transfers');
             }
 
-            (new Transfer\Core())->validateTransfersInput($this->orderInput[Entity::AMOUNT], $input);
+            (new Transfer\Core())->validateTransfersInput($this->orderInput[Entity::AMOUNT], $input, $this->merchant);
         }
         catch (\Exception $e)
         {

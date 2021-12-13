@@ -633,7 +633,7 @@ class Notify
 
         if (($this->payment->isFailed() === false) and $this->fetchReward === true)
         {
-            $entityOffers = (new EntityOfferRepository())->findByEntityIdAndType($this->payment->getId());
+            $entityOffers = (new EntityOfferRepository())->findByEntityIdAndType($this->payment->getId(), 'reward');
 
             if (isset($entityOffers) === true)
             {

@@ -928,7 +928,6 @@ class PaymentFetchTest extends TestCase
                                 'currency'=>'INR',
                                 'method'=>'card',
                                 'auth_type'=>'3ds',
-                                'order_id'=>'GrClAVU8GPQU4M',
                                 'card_id'=>'GrClJNBzyquD7E',
                                 'base_amount'=>null,
                                 'authorized_amount'=>1,
@@ -1154,7 +1153,6 @@ class PaymentFetchTest extends TestCase
                                 'currency'=>'INR',
                                 'method'=>'card',
                                 'auth_type'=>'3ds',
-                                'order_id'=>'GrClAVU8GPQU4M',
                                 'card_id'=>'GrClJNBzyquD7E',
                                 'base_amount'=>null,
                                 'authorized_amount'=>1,
@@ -1287,7 +1285,6 @@ class PaymentFetchTest extends TestCase
                                 'currency'=>'INR',
                                 'method'=>'card',
                                 'auth_type'=>'3ds',
-                                'order_id'=>'GrClAVU8GPQU4M',
                                 'card' => [
                                     'merchant_id'       =>  '10000000000000',
                                     'name'              =>  'test',

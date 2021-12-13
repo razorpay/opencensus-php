@@ -12,6 +12,7 @@ use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
+use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Entity as Merchant;
@@ -287,5 +288,43 @@ class Repository extends Base\Repository
                     ->where(Balance\Entity::TYPE, '=', Balance\Type::BANKING)
                     ->where(Balance\Entity::ACCOUNT_TYPE, '=', Balance\AccountType::SHARED)
                     ->firstOrFail();
+    }
+
+    public function saveOrFail($virtualAccount, array $options = array())
+    {
+        $order = $this->stripOrderRelationIfApplicable($virtualAccount);
+
+        parent::saveOrFail($virtualAccount, $options);
+
+        $this->associateOrderIfApplicable($virtualAccount, $order);
+    }
+
+    protected function stripOrderRelationIfApplicable($virtualAccount)
+    {
+        $entity = $virtualAccount->entity;
+
+        if (($entity === null) or
+            ($entity->getEntityName() !== E::ORDER))
+        {
+            return;
+        }
+
+        $virtualAccount->entity()->dissociate();
+
+        $virtualAccount->setAttribute(Entity::ENTITY_ID, $entity->getId());
+
+        $virtualAccount->setAttribute(Entity::ENTITY_TYPE, E::ORDER);
+
+        return $entity;
+    }
+
+    public function associateOrderIfApplicable($virtualAccount, $order)
+    {
+        if ($order === null)
+        {
+            return;
+        }
+
+        $virtualAccount->entity()->associate($order);
     }
 }

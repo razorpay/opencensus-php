@@ -177,6 +177,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\Balance\SubBalanceMap\Repository         $sub_balance_map
  * @property Models\Merchant\Slab\Repository                          $merchant_slabs
  * @property Models\Merchant\Merchant1ccConfig\Repository             $merchant_1cc_configs
+ * @property Models\VirtualAccountProducts\Repository                 $virtual_account_products
  * @property Models\Offer\Repository                                  $offer
  */
 

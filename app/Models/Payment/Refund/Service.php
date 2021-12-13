@@ -2949,7 +2949,20 @@ class Service extends Base\Service
     {
         Entity::stripSignWithoutValidation($orderId);
 
-        $order = $this->repo->order->find($orderId);
+        $order = null;
+
+        try
+        {
+            $order = $this->repo->order->findOrFail($orderId);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::ORDER_NOT_FOUND,
+                [
+                    'error' => $e->getMessage()
+                ]);
+        }
 
         if (empty($order) === true)
         {

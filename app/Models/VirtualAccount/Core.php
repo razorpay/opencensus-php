@@ -239,7 +239,7 @@ class Core extends Base\Core
 
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 
-            $this->repo->saveOrFail($virtualAccount);
+            $this->repo->virtual_account->saveOrFail($virtualAccount);
 
             (new VirtualAccountProducts\Core())->create($virtualAccount);
 

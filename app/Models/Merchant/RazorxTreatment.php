@@ -348,6 +348,8 @@ final class RazorxTreatment
     // Experiment to block customer prefill on checkout
     const BLOCK_CUSTOMER_PREFILL = 'block_customer_prefill';
 
+    const ROUTE_ORDER_TO_PG_ROUTER = "route_order_to_pg_router";
+
     //Experiment to allow mtu coupon code application
     const MTU_COUPON_CODE = 'mtu_coupon_code';
 

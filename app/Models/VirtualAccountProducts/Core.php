@@ -21,6 +21,6 @@ class Core extends Base\Core
 
         $virtualAccountProduct->entity()->associate($virtualAccount->entity);
 
-        $this->repo->saveOrFail($virtualAccountProduct);
+        $this->repo->virtual_account_products->saveOrFail($virtualAccountProduct);
     }
 }

@@ -38,6 +38,13 @@ class Repository extends Base\Repository
         return $customer;
     }
 
+    public function findById($id, $columns = ['*'])
+    {
+        return $this->newQuery()
+            ->select($columns)
+            ->find($id);
+    }
+
     public function findByContactAndMerchant($contact, Merchant\Entity $merchant)
     {
         return $this->newQuery()

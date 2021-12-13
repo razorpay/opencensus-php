@@ -409,6 +409,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVOICE_NOTIFICATION_FAILED                           = 'INVOICE_NOTIFICATION_FAILED';
     const ORDER_PAID_FOR_PAYMENT_LINK_V2                        = 'ORDER_PAID_FOR_PAYMENT_LINK_V2';
     const ORDER_NOTIFY_REQUEST_FOR_PAYMENT_V2                   = 'ORDER_NOTIFY_REQUEST_FOR_PAYMENT_V2';
+    const ORDER_NOT_FOUND                                       = 'ORDER_NOT_FOUND';
     const MERCHANT_CACHE_EVICTION_REQUEST_FOR_PAYMENT_LINK_V2   = 'MERCHANT_CACHE_EVICTION_REQUEST_FOR_PAYMENT_LINK_V2';
     const ORDER_NOTIFY_REQUEST_PARAMS_FOR_PAYMENT_V2            = 'ORDER_NOTIFY_REQUEST_PARAMS_FOR_PAYMENT_V2';
     const ORDER_NOTIFY_RESPONSE_FOR_PAYMENT_V2                  = 'ORDER_NOTIFY_RESPONSE_FOR_PAYMENT_V2';
@@ -5038,6 +5039,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PG_ROUTER_REQUEST_FAILURE                           = 'PG_ROUTER_REQUEST_FAILURE';
 
     const PG_ROUTER_REQUEST                                   = 'PG_ROUTER_REQUEST';
+
+    const ORDER_ROUTING_TO_PG_ROUTER                          = 'ORDER_ROUTING_TO_PG_ROUTER';
 
     const PG_ROUTER_ERROR_LOGGING_RESPONSE_TIME_METRIC        = 'PG_ROUTER_ERROR_LOGGING_RESPONSE_TIME_METRIC';
 

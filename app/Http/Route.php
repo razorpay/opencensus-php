@@ -3076,12 +3076,21 @@ class Route
         'recon_service_workflow_file_upload_proxy'  => ['post',       'recon/service/workflow_file_upload',                     'ReconServiceController@workflowFileUpload'                     ],
         'recon_service_admin_request_proxy'       => ['post',       'recon/service/admin/{path?}',                          'ReconServiceController@handleAdminCall'                       ],
 
-        'payment_update_reference6'               => ['patch',      'payments/{id}/updateReference6',                       'PaymentController@updateReference6'                           ],
-
         // Metro
         'metro_project_create'                    => ['post',       'metro/projects',                                       'EdgeProxyController@proxy'                                    ],
         'metro_project_credentials_create'        => ['post',       'metro/projects/{id}/credentials',                      'EdgeProxyController@proxy'                                    ],
         'metro_project_topic_update'              => ['put',        'metro/projects/{id}/topics/{name}',                    'EdgeProxyController@proxy'                                    ],
+
+        // Routes for PgRouter
+        'internal_validate_order_token_params'       => ['post',       'internal/order/validate/token',                       'OrderController@internalOrderValidateTokenParams'],
+        'internal_validate_order_transfer_params'    => ['post',       'internal/order/validate/transfer',                    'OrderController@internalOrderValidateTransferParams'],
+        'internal_validate_order_bank'               => ['post',       'internal/order/validate/bank',                        'OrderController@internalOrderValidateBank'],
+        'internal_validate_order_amount'             => ['post',       'internal/order/validate/amount',                      'OrderController@internalOrderValidateAmount'],
+        'internal_validate_order_currency'           => ['post',       'internal/order/validate/currency',                    'OrderController@internalOrderValidateCurrency'],
+        'internal_validate_order_checkout_config'    => ['post',       'internal/order/validate/checkout_config',             'OrderController@internalOrderValidateCheckoutConfig'],
+        'internal_validate_order_tpv'                => ['post',       'internal/order/validate/tpv',                         'OrderController@internalOrderValidateTPV'],
+        'internal_create_order_relations'            => ['post',       'internal/create/order/relations',                     'OrderController@internalCreateOrderRelations'],
+        'payment_update_reference6'                  => ['patch',      'payments/{id}/updateReference6',                       'PaymentController@updateReference6'                           ],
 
         // Onboarding APIs
         'complete_submerchant_onboarding'         => ['post',       'submerchants/{id}/onboard',                             'MerchantController@completeSubmerchantOnboarding'],
@@ -4141,6 +4150,17 @@ class Route
 
         // merchant risk alert crons
         'merchant_risk_identify_blacklist_country_alerts',
+
+        //pg-router apis
+        'internal_validate_order_token_params',
+        'internal_validate_order_transfer_params',
+        'internal_validate_order_bank',
+        'internal_validate_order_amount',
+        'internal_validate_order_currency',
+        'internal_validate_order_checkout_config',
+        'internal_validate_order_tpv',
+        'internal_create_order_relations',
+        'payment_update_reference6',
 
         // cron to send emails about pending payouts
         'payout_send_pending_approval_email',
@@ -11308,7 +11328,15 @@ class Route
             'payment_notify',
             'order_fetch_by_id_internal_admin',
             'order_fetch_by_id_internal',
-            'payment_update_reference6'
+            'payment_update_reference6',
+            'internal_validate_order_token_params',
+            'internal_validate_order_transfer_params',
+            'internal_validate_order_bank',
+            'internal_validate_order_amount',
+            'internal_validate_order_currency',
+            'internal_validate_order_checkout_config',
+            'internal_validate_order_tpv',
+            'internal_create_order_relations',
         ],
 
         'freshdesk_webhook' => [

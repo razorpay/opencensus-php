@@ -239,6 +239,10 @@ class Entity extends Base\PublicEntity
         self::LINE_ITEMS,
     ];
 
+    protected $ignoredRelations = [
+        self::ORDER
+    ];
+
     protected $validOperations = [
         // Core's actions
         'create',
@@ -664,11 +668,14 @@ class Entity extends Base\PublicEntity
             {
                 $publicArray[self::AUTH_LINK_STATUS] = $tokenRegistration->getAuthLinkStatus($this, $order);
 
-                $productsArray = $order->products->toArrayPublic()['items'] ?? [];
-
-                if (sizeof($productsArray) > 0)
+                if ($order->products !== null)
                 {
-                    $publicArray['products'] = $productsArray;
+                    $productsArray = $order->products->toArrayPublic()['items'] ?? [];
+
+                    if (sizeof($productsArray) > 0)
+                    {
+                        $publicArray['products'] = $productsArray;
+                    }
                 }
             }
         }
@@ -1494,6 +1501,39 @@ class Entity extends Base\PublicEntity
         }
 
         return $this->order->getAmountPaid();
+    }
+
+    public function getOrderAttribute()
+    {
+        $order = null;
+
+        if ($this->relationLoaded('order') === true)
+        {
+            $order = $this->getRelation('order');
+        }
+
+        if ($order !== null)
+        {
+            return $order;
+        }
+
+        $order = $this->order()->with('offers')->first();
+
+        if (empty($order) === false)
+        {
+            return $order;
+        }
+
+        if (empty($this[self::ORDER_ID]) === true)
+        {
+            return null;
+        }
+
+        $order = (new Order\Repository)->findOrFailPublic('order_'.$this[self::ORDER_ID]);
+
+        $this->order()->associate($order);
+
+        return $order;
     }
 
     /**

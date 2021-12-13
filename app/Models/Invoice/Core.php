@@ -1353,9 +1353,12 @@ class Core extends Base\Core
             {
                 $this->unsetFirstPaymentMinAmountFieldIfApplicable($invoice);
 
-                $this->updateOrderOfIssuedInvoice($invoice);
-
                 $this->repo->saveOrFail($invoice);
+
+                // Please keep this function at the end of transaction block, as
+                // we are updating orders which lies in PG Router service now.
+                //This has been done to temporarily handle the distributed transaction failures.
+                $this->updateOrderOfIssuedInvoice($invoice);
             });
     }
 
@@ -1380,6 +1383,20 @@ class Core extends Base\Core
         }
 
         $order->setFirstPaymentMinAmount($invoice->getFirstPaymentMinAmount());
+
+        if ($order->isExternal() === true)
+        {
+            $input = [
+                Order\Entity::FIRST_PAYMENT_MIN_AMOUNT => $order->getFirstPaymentMinAmount(),
+                Order\Entity::PARTIAL_PAYMENT => $order->isPartialPaymentAllowed()
+            ];
+
+            $this->app['pg_router']->updateInternalOrder($input,$order->getId(),$order->getMerchantId(), true);
+        }
+        else
+        {
+            $this->repo->saveOrFail($order);
+        }
 
         $this->repo->saveOrFail($order);
     }

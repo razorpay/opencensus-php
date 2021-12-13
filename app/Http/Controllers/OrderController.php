@@ -91,7 +91,79 @@ class OrderController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->internalOrderUpdate($id,$input);
+        $data = $this->service()->internalOrderUpdate($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function internalOrderValidateTokenParams()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->internalOrderValidateTokenParams($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function internalOrderValidateTransferParams()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->internalOrderValidateTransferParams($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function internalOrderValidateBank()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->internalOrderValidateBank($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function internalOrderValidateAmount()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->internalOrderValidateAmount($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function internalOrderValidateCurrency()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->internalOrderValidateCurrency($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function internalOrderValidateCheckoutConfig()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->internalOrderValidateCheckoutConfig($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function internalOrderValidateTPV()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->internalOrderValidateTPV($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function internalCreateOrderRelations()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->internalCreateOrderRelations($input);
 
         return ApiResponse::json($data);
     }

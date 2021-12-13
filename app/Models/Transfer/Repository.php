@@ -270,6 +270,44 @@ class Repository extends Base\Repository
         return $query->pluck(Entity::ID)->toArray();
     }
 
+    public function saveOrFail($transfer, array $options = array())
+    {
+        $orderSource = $this->stripOrderSourceRelationIfApplicable($transfer);
+
+        parent::saveOrFail($transfer, $options);
+
+        $this->associateOrderSourceIfApplicable($transfer, $orderSource);
+    }
+
+    protected function stripOrderSourceRelationIfApplicable($transfer)
+    {
+        $source = $transfer->source;
+
+        if (($source === null) or
+            ($source->getEntityName() !== E::ORDER))
+        {
+            return;
+        }
+
+        $transfer->source()->dissociate();
+
+        $transfer->setAttribute(Entity::SOURCE_ID, $source->getId());
+
+        $transfer->setAttribute(Entity::SOURCE_TYPE, E::ORDER);
+
+        return $source;
+    }
+
+    public function associateOrderSourceIfApplicable($transfer, $order)
+    {
+        if ($order === null)
+        {
+            return;
+        }
+
+        $transfer->source()->associate($order);
+    }
+
     /**
      * Was used for data backfill activity.
      * Check updateSettlementStatusAndErrorCode() in Models\Transfer\Service.php for more.

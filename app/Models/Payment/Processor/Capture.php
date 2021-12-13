@@ -783,8 +783,6 @@ trait Capture
 
             list($txn, $merchantBalance) = $this->createTransactionFromCapturedPayment($payment);
 
-            $this->updateOrderAfterCapture($payment);
-
             $this->updateVirtualAccountStatusIfApplicable($payment);
 
             $this->updateAnalyticsIfApplicable($payment);
@@ -797,6 +795,11 @@ trait Capture
             {
                 $this->handleLateBalanceUpdate($txn, $merchantBalance);
             }
+
+            // Please keep this function at the end of transaction block, as
+            // we are updating orders which lies in PG Router service now.
+            // This has been done to temporarily handle the distributed transaction failures.
+            $this->updateOrderAfterCapture($payment);
         });
 
         $this->handleAsyncUpdateBalanceIfApplicable($payment, $payment->transaction);
@@ -1201,7 +1204,23 @@ trait Capture
 
         $this->updateOrderStatusPaidIfApplicable($order, $payment);
 
-        $this->repo->saveOrFail($order);
+        if ($order->isExternal() === true)
+        {
+            $input = [
+                Order\Entity::AMOUNT_PAID => $order->getAmountPaid()
+            ];
+
+            if ($order->getStatus() === Order\Status::PAID)
+            {
+                $input[Order\Entity::STATUS] = Order\Status::PAID;
+            }
+
+            $this->app['pg_router']->updateInternalOrder($input,$order->getId(),$order->getMerchantId(), true);
+        }
+        else
+        {
+            $this->repo->saveOrFail($order);
+        }
 
         $this->trace->info(
             TraceCode::ORDER_STATUS_PAID,

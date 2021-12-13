@@ -180,13 +180,13 @@ class CreateOrders extends Migration
 
         });
 
-        Schema::table(Table::PAYMENT, function($table)
-        {
-            $table->foreign(Payment::ORDER_ID)
-                  ->references(Order::ID)
-                  ->on(Table::ORDER)
-                  ->on_delete('restrict');
-        });
+//        Schema::table(Table::PAYMENT, function($table)
+//        {
+//            $table->foreign(Payment::ORDER_ID)
+//                  ->references(Order::ID)
+//                  ->on(Table::ORDER)
+//                  ->on_delete('restrict');
+//        });
     }
 
     /**

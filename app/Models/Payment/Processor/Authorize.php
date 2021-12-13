@@ -6219,7 +6219,16 @@ trait Authorize
                     'payment_id' => $payment->getId(),
                 ]);
 
-            $this->repo->saveOrFail($order);
+            if ($order->isExternal() === true)
+            {
+                $input = [Order\Entity::AUTHORIZED => true];
+
+                $this->app['pg_router']->updateInternalOrder($input,$order->getId(),$order->getMerchantId(), true);
+            }
+            else
+            {
+                $this->repo->saveOrFail($order);
+            }
         }
     }
 
@@ -8419,16 +8428,20 @@ trait Authorize
 
         $this->updateTokenOnAuthorized($payment, $data);
 
-        //
-        // If payment has an associated order
-        // set the order to be paid
-        //
-        $this->updateAuthorizedOrderStatus($payment);
-
         // We will be updating the details in upi_mandate too.
         $this->updateRecurringEntitiesForUpiIfApplicable($payment, $data);      
         // store billing_address for AVS
         $this->validateAndSaveBillingAddressForAVSIfApplicable($payment);
+
+        //
+        // If payment has an associated order
+        // set the order to be paid
+        //
+        //
+        // Please keep this function at the end of transaction block, as
+        // we are updating orders which lies in PG Router service now.
+        // This has been done to temporarily handle the distributed transaction failures.
+        $this->updateAuthorizedOrderStatus($payment);
     }
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool

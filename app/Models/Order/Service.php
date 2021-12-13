@@ -2,6 +2,9 @@
 
 namespace RZP\Models\Order;
 
+use App;
+use RZP\Constants\Mode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use ApiResponse;
 use RZP\Models\Base;
@@ -14,7 +17,8 @@ use RZP\Constants;
 use RZP\Models\BankAccount;
 use RZP\Base\ConnectionType;
 use RZP\Models\Bank\BankCodes;
-use RZP\Models\SubscriptionRegistration;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Processor\Netbanking;
 
@@ -81,9 +85,47 @@ class Service extends Base\Service
         return $order;
     }
 
+    public function canRouteOrderCreationToPGRouter($input)
+    {
+        if ((app()->isEnvironmentProduction() === true) and
+            ($this->mode === Mode::TEST))
+        {
+            return false;
+        }
+
+        if ((bool) ConfigKey::get(ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false)
+        {
+            return false;
+        }
+
+        if (isset($input[Entity::CONVENIENCE_FEE_CONFIG]) === true)
+        {
+            return false;
+        }
+
+        $result = $this->app->razorx->getTreatment($this->merchant->getId(), RazorxTreatment::ROUTE_ORDER_TO_PG_ROUTER, $this->mode);
+
+        return ($result === 'on');
+    }
+
     public function createOrder(array $input)
     {
         $this->checkRouteIsAccessible($input);
+
+        $routeToPGRouter = $this->canRouteOrderCreationToPGRouter($input);
+
+        if ($routeToPGRouter === true)
+        {
+            $this->trace->info(TraceCode::ORDER_ROUTING_TO_PG_ROUTER);
+
+            $this->modifyBankAccountRequestFromOldFormat($input);
+
+            $input['public_key'] = App::getFacadeRoot()['basicauth']->getPublicKey();
+
+            $input['merchant_id'] = $this->merchant->getId();
+
+            return $this->app['pg_router']->createOrder($input, true);
+        }
 
         $this->beforeCreate($input);
 
@@ -386,7 +428,7 @@ class Service extends Base\Service
         }
         else
         {
-            $order = $this->repo->order->find($orderId);
+            $order = $this->repo->order->findOrFail($orderId);
         }
 
         $checkoutConfigId = $order->getAttribute(Entity::CHECKOUT_CONFIG_ID);
@@ -450,6 +492,15 @@ class Service extends Base\Service
     {
         $orderId = Entity::verifyIdAndStripSign($id);
 
+        $order = $this->repo->order->findByIdAndMerchant($orderId, $this->merchant);
+
+        if ($order->isExternal() === true)
+        {
+            $order = $this->app['pg_router']->updateOrder($input, $orderId, $this->merchant->getId(), true);
+
+            return $order->toArrayPublic();
+        }
+
         $order = $this->mutex->acquireAndRelease($orderId,
             function() use ($orderId, $input)
             {
@@ -470,6 +521,21 @@ class Service extends Base\Service
     // This function is being used by Create Payment Link flow with options containing an Order
     public function createOrderFromOptionsForPaymentLinks(array $input, bool $enablePartialPayment = false)
     {
+        $routeToPGRouter = $this->canRouteOrderCreationToPGRouter($input);
+
+        if ($routeToPGRouter === true)
+        {
+            $this->modifyBankAccountRequestFromOldFormat($input);
+
+            $input['merchant_id'] = $this->merchant->getId();
+
+            $input['public_key'] = App::getFacadeRoot()['basicauth']->getPublicKey();
+
+            $input['partial_payment'] = $enablePartialPayment;
+
+            return $this->app['pg_router']->createOrder($input, true);
+        }
+
         $this->beforeCreate($input);
 
         $orderInput = (new Core())->getInputWithoutExtraParams($input);
@@ -586,5 +652,117 @@ class Service extends Base\Service
             ErrorCode::BAD_REQUEST_ORDER_ANOTHER_OPERATION_IN_PROGRESS);
 
         return $order->toArrayPublic();
+    }
+
+    public function internalOrderValidateTokenParams($input)
+    {
+        $preCreateHooks = new PreCreateHook($input);
+
+        if (isset($input['token']) === true)
+        {
+            $preCreateHooks->validateTokenParams($input['token']);
+        }
+
+        return true;
+    }
+
+    public function internalOrderValidateTransferParams($input)
+    {
+        if (isset($input['merchant_id']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(PublicErrorDescription::BAD_REQUEST_MERCHANT_ID_IS_REQUIRED);
+        }
+
+        return (new Core)->internalOrderValidateTransferParams($input);
+    }
+
+    public function internalOrderValidateBank($input)
+    {
+        if (isset($input['merchant_id']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(PublicErrorDescription::BAD_REQUEST_MERCHANT_ID_IS_REQUIRED);
+        }
+
+        $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+        $validator = new Validator();
+
+        $validator->merchant = $merchant;
+
+        $validator->validateBank($input);
+
+        return true;
+    }
+
+    public function internalOrderValidateAmount($input)
+    {
+        if (isset($input['merchant_id']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(PublicErrorDescription::BAD_REQUEST_MERCHANT_ID_IS_REQUIRED);
+        }
+
+        $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+        $validator = new Validator();
+
+        $validator->merchant = $merchant;
+
+        $validator->validateAmount($input);
+
+        return true;
+    }
+
+    public function internalOrderValidateCurrency($input)
+    {
+        if (isset($input['merchant_id']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(PublicErrorDescription::BAD_REQUEST_MERCHANT_ID_IS_REQUIRED);
+        }
+
+        $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+        $validator = new Validator();
+
+        $validator->merchant = $merchant;
+
+        $validator->validateCurrency($input);
+
+        return true;
+    }
+
+    public function internalOrderValidateCheckoutConfig($input)
+    {
+        if (isset($input['merchant_id']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(PublicErrorDescription::BAD_REQUEST_MERCHANT_ID_IS_REQUIRED);
+        }
+
+        $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+        (new Core)->validateCheckoutConfigId($input[Entity::CHECKOUT_CONFIG_ID],$merchant);
+
+        return true;
+    }
+
+    public function internalOrderValidateTPV($input)
+    {
+        if (isset($input['merchant_id']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(PublicErrorDescription::BAD_REQUEST_MERCHANT_ID_IS_REQUIRED);
+        }
+
+        (new Core)->internalOrderValidateTPVChecks($input);
+
+        return true;
+    }
+
+    public function internalCreateOrderRelations($input)
+    {
+        if (isset($input['merchant_id']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(PublicErrorDescription::BAD_REQUEST_MERCHANT_ID_IS_REQUIRED);
+        }
+
+       return (new Core)->internalCreateOrderRelations($input);
     }
 }

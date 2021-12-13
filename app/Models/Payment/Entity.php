@@ -689,6 +689,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     protected $lateBalanceUpdate = false;
 
+    protected $ignoredRelations = [
+        self::ORDER
+    ];
+
     // --------------------- Modifiers ---------------------------------------------
 
     protected function modifyEmail(& $input)
@@ -1975,6 +1979,39 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getIsPushedToKafka()
     {
         return $this->getAttribute(self::IS_PUSHED_TO_KAFKA);
+    }
+
+    public function getOrderAttribute()
+    {
+        $order = null;
+
+        if ($this->relationLoaded('order') === true)
+        {
+            $order = $this->getRelation('order');
+        }
+
+        if ($order !== null)
+        {
+            return $order;
+        }
+
+        $order = $this->order()->with('offers')->first();
+
+        if (empty($order) === false)
+        {
+            return $order;
+        }
+
+        if (empty($this[self::ORDER_ID]) === true)
+        {
+            return null;
+        }
+
+        $order = (new Order\Repository)->findOrFailPublic('order_'.$this[self::ORDER_ID]);
+
+        $this->order()->associate($order);
+
+        return $order;
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
@@ -4945,7 +4982,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $billingAddress = $this->fetchBillingAddressFromPayment();
 
-        if ($billingAddress === null) 
+        if ($billingAddress === null)
         {
             $billingAddress = $this->fetchBillingAddressFromCustomerToken();
         }

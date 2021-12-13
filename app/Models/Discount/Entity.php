@@ -61,6 +61,10 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    protected $ignoredRelations = [
+        "order"
+    ];
+
 
     // ----------------------- Associations ------------------------------------
 
@@ -116,6 +120,39 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getOrderAttribute()
+    {
+        $order = null;
+
+        if ($this->relationLoaded('order') === true)
+        {
+            $order = $this->getRelation('order');
+        }
+
+        if ($order !== null)
+        {
+            return $order;
+        }
+
+        $order = $this->order()->with('offers')->first();
+
+        if (empty($order) === false)
+        {
+            return $order;
+        }
+
+        if (empty($this[self::ORDER_ID]) === true)
+        {
+            return null;
+        }
+
+        $order = (new Order\Repository)->findOrFailPublic('order_'.$this[self::ORDER_ID]);
+
+        $this->order()->associate($order);
+
+        return $order;
     }
 
     // -------------------------- Setters --------------------------------------

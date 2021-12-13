@@ -231,7 +231,7 @@ class Core extends Base\Core
                 return $this->buildTransferEntity($order, $to, $input, $this->merchant);
             });
 
-            $this->repo->saveOrFail($transfer);
+            $this->repo->transfer->saveOrFail($transfer);
 
             $transfers->push($transfer->toArrayPublic());
         }
@@ -634,8 +634,12 @@ class Core extends Base\Core
         return false;
     }
 
-    public function validateTransfersInput(int $orderAmount, array $transfers)
+    public function validateTransfersInput(int $orderAmount, array $transfers, $merchant)
     {
+        if ($this->merchant === null)
+        {
+            $this->merchant = $merchant;
+        }
 
         $this->validateMerchantForTransfer($this->merchant);
 

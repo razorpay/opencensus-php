@@ -19,6 +19,8 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Order\OrderMeta\Type;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\Base\Traits\ExternalOwner;
+use RZP\Models\Base\Traits\ExternalEntity;
 use RZP\Tests\Functional\Order\OrderMeta\OrderMetaTest;
 
 /**
@@ -32,7 +34,7 @@ use RZP\Tests\Functional\Order\OrderMeta\OrderMetaTest;
  */
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait;
+    use NotesTrait, ExternalOwner, ExternalEntity;
 
     /**
      *
@@ -168,7 +170,7 @@ class Entity extends Base\PublicEntity
     const TAX_INVOICE = 'tax_invoice';
 
     const ORDER_META_1CC = 'order_meta_1cc';
-    
+
     const CONVENIENCE_FEE_CONFIG = 'convenience_fee_config';
 
     protected $fillable = [
@@ -767,7 +769,7 @@ class Entity extends Base\PublicEntity
 
     public function hasOffers(): bool
     {
-        return ($this->offers->isNotEmpty() === true);
+        return (($this->offers !== null) and ($this->offers->isNotEmpty() === true));
     }
 
     public function hasOrderMeta(): bool

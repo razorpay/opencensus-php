@@ -8,8 +8,14 @@ use Razorpay\Edge\Passport\Passport;
 use RZP\Constants\Entity;
 use RZP\Error\Error;
 use RZP\Exception;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Offer\EntityOffer\Repository as EntityOfferRepository;
 use RZP\Models\Payment;
 use RZP\Models\Card;
+use RZP\Models\Merchant;
+use RZP\Models\Offer;
+use RZP\Models\Order;
+use RZP\Models\Reward\Repository as RewardRepository;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Error\ErrorClass;
@@ -61,6 +67,8 @@ class PGRouter
     const PGRouterPaymentVerify = '/v1/payments/%s/verify';
 
     const PGRouterPaymentCancel = '/v1/payments/%s/cancel';
+
+    const PGRouterCreateOrder = 'v1/orders';
 
     const PGRouterPaymentCreateJson = 'v1/payments/create/json';
 
@@ -228,28 +236,58 @@ class PGRouter
     }
 
     /**
-     * @param string $id
-     * @param array $input
+     * This method has been called from External Repo.
      *
-     * @return array
+     * @param string $entity
+     * @param string $id
+     * @param string $merchantId
+     * @param array $input
+     * @return Card\Entity|Order\Entity|Payment\Entity|null
      */
     public function fetch(string $entity, string $id, string $merchantId, array $input)
     {
-        if ($entity === Entity::CARD)
+        switch ($entity)
         {
-            $endpoint = 'v1/cards/' . $id;
-        }
-        else
-        {
-            $endpoint = 'v1/payments/' . $id;
+            case Entity::ORDER:
+                return $this->fetchOrder($id, $merchantId, $input);
+            case Entity::CARD:
+                return $this->fetchCard($id, $merchantId, $input);
+            case Entity::PAYMENT:
+                return $this->fetchPayment($id, $merchantId, $input);
         }
 
-        $card = null;
+        return null;
+    }
+
+    public function fetchCard(string $id, string $merchantId, array $input)
+    {
+        $endpoint = 'v1/cards/' . $id;
 
         if (empty($merchantId) === false)
         {
             $endpoint .= '?merchant_id='.$merchantId;
         }
+
+        $response = $this->sendRequest($endpoint, Requests::GET, [], false);
+
+        if (empty($response) === false and isset($response['body']['data']['card']))
+        {
+            return (new Card\Entity)->forceFill($response['body']['data']['card']);
+        }
+
+        return null;
+    }
+
+    public function fetchPayment(string $id, string $merchantId, array $input)
+    {
+        $endpoint = 'v1/payments/' . $id;
+
+        if (empty($merchantId) === false)
+        {
+            $endpoint .= '?merchant_id='.$merchantId;
+        }
+
+        $card = null;
 
         $response = $this->sendRequest($endpoint, Requests::GET, [], false);
 
@@ -281,23 +319,130 @@ class PGRouter
             return $payment;
         }
 
-        if (empty($response) === false and isset($response['body']['data']['card']))
-        {
-            $card = (new Card\Entity)->forceFill($response['body']['data']['card']);
-
-            return $card;
-        }
-
         return null;
     }
 
-    public function save(string $id, array $input)
+    public function fetchOrder(string $id, string $merchantId, array $input)
     {
-        $endpoint = 'v1/payments/'.$id;
+        $endpoint = 'v1/orders/' . $id;
 
-        $this->sendRequest($endpoint, Requests::POST, $input, false);
+        if (empty($merchantId) === false)
+        {
+            $endpoint .= '?merchant_id='.$merchantId;
+        }
 
+        $response = $this->sendRequest($endpoint, Requests::GET, [], true);
+
+        return $this->forceFillOrderFromResponse($response);
+    }
+
+    public function save(string $entity, string $id, string $merchantId, array $input)
+    {
+        switch($entity)
+        {
+            case Entity::ORDER:
+
+                return $this->updateInternalOrder($input, $id, $merchantId, true);
+
+            case Entity::PAYMENT:
+
+                $endpoint = 'v1/payments/'.$id;
+
+                return $this->sendRequest($endpoint, Requests::POST, $input, false);
+        }
         return null;
+    }
+
+    public function createOrder(array $input, bool $throwExceptionOnFailure = false)
+    {
+        $response = $this->sendRequest(self::PGRouterCreateOrder, Requests::POST, $input, $throwExceptionOnFailure);
+
+        return $this->forceFillOrderFromResponse($response);
+    }
+
+    public function updateOrder(array $input, $orderId, $merchantId, bool $throwExceptionOnFailure = false)
+    {
+        $endpoint = 'v1/orders/' . $orderId;
+
+        if (empty($merchantId) === false)
+        {
+            $endpoint .= '?merchant_id='.$merchantId;
+        }
+
+        $response = $this->sendRequest($endpoint, Requests::PATCH, $input, $throwExceptionOnFailure);
+
+        return $this->forceFillOrderFromResponse($response);
+    }
+
+    public function updateInternalOrder(array $input, $orderId, $merchantId, bool $throwExceptionOnFailure = false)
+    {
+        $endpoint = 'v1/internal/orders/' . $orderId;
+
+        if (empty($merchantId) === false)
+        {
+            $endpoint .= '?merchant_id='.$merchantId;
+        }
+
+        $response = $this->sendRequest($endpoint, Requests::PATCH, $input, $throwExceptionOnFailure);
+
+        return $this->forceFillOrderFromResponse($response);
+    }
+
+    private function forceFillOrderFromResponse($response)
+    {
+        if ((empty($response) === false) and
+            (isset($response['body']) === true))
+        {
+            if (isset($response['body']['notes']) === true and is_array($response['body']['notes']) === false)
+            {
+                $response['body']['notes'] = json_decode($response['body']['notes']);
+            }
+
+            $order = (new Order\Entity())->forceFill($response['body']);
+
+            if (isset($response['body']['order_metas']) === true)
+            {
+                foreach ($response['body']['order_metas'] as $meta)
+                {
+                    $order_meta = (new Order\OrderMeta\Entity)->forceFill($meta);
+
+                    $order->orderMetas->add($order_meta);
+                }
+            }
+
+            $entityOffers = (new EntityOfferRepository())->findByEntityIdAndType($order->getId(), 'offer');
+
+            if ((isset($entityOffers) === true) and
+                (count($entityOffers) > 0))
+            {
+                $order->offers = new PublicCollection();
+
+                foreach ($entityOffers as $entityOffer)
+                {
+                    $offer = Offer\Entity::findOrFail($entityOffer->offer_id);
+
+                    $order->offers->push($offer);
+                }
+            }
+            if (strpos($this->request->getRequestUri(), '/v1/admin/') !== 0)
+            {
+                return $this->forceFillNonAdminEntites($order);
+            }
+            return $order;
+        }
+        return null;
+    }
+
+    public function forceFillNonAdminEntites($order)
+    {
+        if (isset($response['body']['merchant_id']) === true)
+        {
+            $merchant = Merchant\Entity::findOrFail($response['body']['merchant_id']);
+
+            $order = $order->merchant()->associate($merchant);
+        }
+
+        return $order;
     }
 
     /**
@@ -416,6 +561,9 @@ class PGRouter
 
             unset($traceRequest['content']['card']['cvv']);
 
+            unset($traceRequest['content']['bank_account']['account_number'], $traceRequest['content']['bank_account']['name'],
+                $traceRequest['content']['notes'], $traceRequest['content']['receipt'], $traceRequest['content']['cardnumber'],
+                $traceRequest['content']['products']);
         }
         else
         {
@@ -424,6 +572,10 @@ class PGRouter
             unset($content['card']['number']);
 
             unset($content['card']['cvv']);
+
+            unset($content['bank_account']['account_number'], $content['bank_account']['name'],
+                $content['notes'], $content['receipt'], $content['cardnumber'],
+                $content['products']);
 
             $traceRequest['content'] = json_encode($content);
         }
@@ -485,9 +637,6 @@ class PGRouter
 
         $errorData = [];
 
-        //TODO: Get method from pg router and update here
-        $errorData['method'] = "card";
-
         if (($metadata != null) and
             (isset($metadata['payment_id']) === true))
         {
@@ -501,6 +650,22 @@ class PGRouter
         }
 
         $internalErrorCode = $response['internal']['code'];
+
+        $internalMetadata = null;
+
+        if (isset($response['internal']['metadata']) === true)
+        {
+            $internalMetadata = $response['internal']['metadata'];
+        }
+
+        //TODO: Get method from pg router and update here
+        $errorData['method'] = "card";
+
+        if (($internalMetadata != null) and
+            (isset($internalMetadata['service']) === true))
+        {
+            $errorData['method'] = $internalMetadata['service'];
+        }
 
         $dimensions =[
             "status_code" => $statusCode,

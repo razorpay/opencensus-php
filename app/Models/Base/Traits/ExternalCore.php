@@ -21,7 +21,14 @@ trait ExternalCore
         {
             $id = $entity->getId();
 
-            $entity = $class->save($id, $entity->toArray());
+            $merchantId = '';
+
+            if ($entity->merchant !== null)
+            {
+                $merchantId = $entity->merchant->getId();
+            }
+
+            $entity = $class->save($entity->getEntityName(), $id, $merchantId, $entity->toArray());
 
             $entity = $this->fetchExternalEntity($id, '', []);
 

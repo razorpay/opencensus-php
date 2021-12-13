@@ -9,9 +9,13 @@ use RZP\Models\Offer;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Offer\EntityOffer;
+use RZP\Models\Base\Traits\ExternalCore;
+use RZP\Models\Base\Traits\ExternalRepo;
 
 class Repository extends Base\Repository
 {
+    use ExternalRepo, ExternalCore;
+
     protected $entity = 'order';
 
     protected $entityFetchParamRules = [
@@ -80,111 +84,138 @@ class Repository extends Base\Repository
 
     public function saveOrFail($entity, array $options = [])
     {
-        $currentOrder = $this->newQuery()->where('id', '=', $entity->getId())->get();
-
-        parent::saveOrFail($entity, $options);
-
-        try
+        if ($entity->isExternal() === false)
         {
-            $mode = App::getFacadeRoot()['rzp.mode'];
+            $currentOrder = $this->newQuery()->where('id', '=', $entity->getId())->get();
 
-            if ((isset($mode) === true) and
-                ($mode === 'live'))
+            parent::saveOrFail($entity, $options);
+
+            try
             {
-                $variant = App::getFacadeRoot()->razorx->getTreatment(
-                    $entity->getId(),
-                    Merchant\RazorxTreatment::PG_ROUTER_ORDER_SHOULD_DISPATCH_TO_QUEUE,
-                    $mode
-                );
+                $mode = App::getFacadeRoot()['rzp.mode'];
 
-                if ($variant === 'on')
+                if ((isset($mode) === true) and
+                    ($mode === 'live'))
                 {
-                    $core = new Core();
+                    $variant = App::getFacadeRoot()->razorx->getTreatment(
+                        $entity->getId(),
+                        Merchant\RazorxTreatment::PG_ROUTER_ORDER_SHOULD_DISPATCH_TO_QUEUE,
+                        $mode
+                    );
 
-                    if (count($currentOrder->toArray()) > 0)
+                    if ($variant === 'on')
                     {
-                        $currentOrder = $currentOrder->toArray()[0];
+                        $core = new Core();
 
-                        if ($currentOrder[Entity::PG_ROUTER_SYNCED] === 1)
+                        if (count($currentOrder->toArray()) > 0)
                         {
-                            $updatedOrder = $entity->toArray();
+                            $currentOrder = $currentOrder->toArray()[0];
 
-                            unset($updatedOrder['merchant'], $updatedOrder['bank_account'], $updatedOrder['offers']);
+                            if ($currentOrder[Entity::PG_ROUTER_SYNCED] === 1)
+                            {
+                                $updatedOrder = $entity->toArray();
 
-                            $data = array_map('unserialize', array_diff_assoc(array_map('serialize', $updatedOrder),
-                                array_map('serialize', $currentOrder)));
+                                unset($updatedOrder['merchant'], $updatedOrder['bank_account'], $updatedOrder['offers']);
 
-                            $data['id'] = $entity->getId();
+                                $data = array_map('unserialize', array_diff_assoc(array_map('serialize', $updatedOrder),
+                                    array_map('serialize', $currentOrder)));
 
-                            $data['updated_at'] = $entity->getUpdatedAt();
+                                $data['id'] = $entity->getId();
+
+                                $data['updated_at'] = $entity->getUpdatedAt();
+
+                                unset($data['merchant'], $data['bank_account'], $data['offers']);
+
+                                if ((isset($data['notes']) === true) and
+                                    (Arr::isAssoc($data['notes']) === false))
+                                {
+                                    $data['notes'] = array_combine($data['notes'], $data['notes']);
+                                }
+
+                                if ((isset($updatedOrder['notes']) === true) and
+                                    (Arr::isAssoc($updatedOrder['notes']) === false))
+                                {
+                                    $updatedOrder['notes'] = array_combine($updatedOrder['notes'], $updatedOrder['notes']);
+                                }
+
+                                if ((isset($data['notes']) === false) or
+                                    (count($data['notes']) === 0))
+                                {
+                                    $data['notes'] = null;
+                                }
+
+                                if ((isset($updatedOrder['notes']) === false) or
+                                    (count($updatedOrder['notes']) === 0))
+                                {
+                                    $updatedOrder['notes'] = null;
+                                }
+
+                                $requestData = [
+                                    'order_update_request' => $data,
+                                    'order_sync_request' => $updatedOrder
+                                ];
+
+                                $requestData['mode'] = $mode;
+
+                                $core->dispatchUpdatedOrderToPGRouter($requestData);
+                            }
+                        }
+                        else
+                        {
+                            $data = $entity->toArray();
+
+                            $data['mode'] = $mode;
 
                             unset($data['merchant'], $data['bank_account'], $data['offers']);
 
                             if ((isset($data['notes']) === true) and
-                                (Arr::isAssoc($data['notes']) === false))
-                            {
+                                (Arr::isAssoc($data['notes']) === false)) {
                                 $data['notes'] = array_combine($data['notes'], $data['notes']);
                             }
 
-                            if ((isset($updatedOrder['notes']) === true) and
-                                (Arr::isAssoc($updatedOrder['notes']) === false))
-                            {
-                                $updatedOrder['notes'] = array_combine($updatedOrder['notes'], $updatedOrder['notes']);
-                            }
+                            $core->dispatchOrderToPGRouter($data);
 
-                            if ((isset($data['notes']) === false) or
-                                (count($data['notes']) === 0))
-                            {
-                                $data['notes'] = null;
-                            }
+                            $entity->setAttribute(Entity::PG_ROUTER_SYNCED, true);
 
-                            if ((isset($updatedOrder['notes']) === false) or
-                                (count($updatedOrder['notes']) === 0))
-                            {
-                                $updatedOrder['notes'] = null;
-                            }
-
-                            $requestData = [
-                                'order_update_request' => $data,
-                                'order_sync_request'   => $updatedOrder
-                            ];
-
-                            $requestData['mode'] = $mode;
-
-                            $core->dispatchUpdatedOrderToPGRouter($requestData);
+                            parent::saveOrFail($entity, $options);
                         }
-                    }
-                    else
-                    {
-                        $data = $entity->toArray();
-
-                        $data['mode'] = $mode;
-
-                        unset($data['merchant'], $data['bank_account'], $data['offers']);
-
-                        if ((isset($data['notes']) === true) and
-                            (Arr::isAssoc($data['notes']) === false))
-                        {
-                            $data['notes'] = array_combine($data['notes'], $data['notes']);
-                        }
-
-                        $core->dispatchOrderToPGRouter($data);
-
-                        $entity->setAttribute(Entity::PG_ROUTER_SYNCED, true);
-
-                        parent::saveOrFail($entity, $options);
                     }
                 }
             }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    null,
+                    ['order_id' => $entity->getId()]
+                );
+            }
         }
-        catch(\Throwable $e)
+        else
         {
-            $this->trace->traceException(
-                $e,
-                null,
-                null,
-                ['order_id' => $entity->getId()]
-            );
+            return $this->saveExternalEntity($entity);
         }
+    }
+
+    public function save($order, array $options = array())
+    {
+        if ($order->isExternal() === false)
+        {
+            return parent::save($order, $options);
+        }
+
+        $order = $this->saveExternalEntity($order);
+
+        return $order;
+    }
+
+    public function reload(&$order)
+    {
+        if ($order->isExternal() === false)
+        {
+            return parent::reload($order);
+        }
+        return $order;
     }
 }
