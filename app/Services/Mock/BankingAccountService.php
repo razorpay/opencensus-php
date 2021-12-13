@@ -161,7 +161,7 @@ class BankingAccountService
             ];
         }
 
-        else if($path === 'is_serviceable_bulk' and $method === 'GET')
+        else if($path === 'is_serviceable_bulk?business_category=ECOMMERCE&business_type=PRIVATE_LIMITED&pin_code=833216' and $method === 'GET')
         {
             $result = [
                 'data' => [

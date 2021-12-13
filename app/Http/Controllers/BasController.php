@@ -100,7 +100,12 @@ class BasController extends Controller
 
         $data =  $this->service->checkPinCodeServiceabilityBulk($input);
 
-        return ApiResponse::json($data);
+        $response = ApiResponse::json($data);
+
+        // Request does not qualify for a preflight request but still requires CORS policy
+        $response->headers->set('Access-Control-Allow-Origin', $this->app['config']->get('app.razorpay_website_url'));
+
+        return $response;
     }
 
     public function checkCommonServiceability(){
