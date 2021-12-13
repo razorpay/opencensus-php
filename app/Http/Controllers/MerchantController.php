@@ -2657,6 +2657,15 @@ class MerchantController extends Controller
         return ApiResponse::json([], 201);
     }
 
+    public function updateMerchantPlatform()
+    {
+        $input = Request::all();
+
+        $this->service()->updateMerchantPlatform($input);
+
+        return ApiResponse::json([], 201);
+    }
+
     public function updateCodSlabs()
     {
         $input = Request::all();

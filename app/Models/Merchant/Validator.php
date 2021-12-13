@@ -586,6 +586,10 @@ class Validator extends Base\Validator
         'url'                          => 'required|url'
     ];
 
+    protected static $merchantPlatformUpdateRequestRules = [
+        'platform'                     => 'required|in:native,woocommerce,shopify,magento'
+    ];
+
     protected static $updateSlabRequestRules = [
         'amount' => 'required|integer',
         'fee'    => 'required|integer',

@@ -3120,13 +3120,15 @@ class Route
         'chargeback_poc'                            => ['post',       'bulk_edit/chargeback_poc',                                'MerchantController@updateChargebackPOC'                       ],
         'whitelisted_domain'                        => ['post',       'bulk_edit/whitelisted_domain',                            'MerchantController@updateWhitelistedDomain'                   ],
 
+        // 1 click checkout merchant calls
         'merchant_coupons'                        => ['post',         'merchant/coupons',                                        'MerchantController@fetchCouponCodes'                           ],
         'merchant_coupon_validity'                => ['post',         'merchant/coupon/apply',                                   'MerchantController@applyCoupon'                              ],
         'merchant_coupon_remove'                  => ['post',         'merchant/coupon/remove',                                  'MerchantController@removeCoupon'                              ],
         'update_fetch_coupons_url'                => ['post',         'merchant/coupons/url',                                     'MerchantController@updateFetchCouponsUrl'                    ],
         'update_coupon_validity_url'              => ['post',         'merchant/coupon/apply/url',                               'MerchantController@updateApplyCouponUrl'                  ],
         'shipping_info'                             => ['post',       'merchant/shipping_info',                                'MerchantController@getShippingInfo'                          ],
-        'update_serviceability_url'                 => ['post',       'merchant/shipping_info/url',                            'MerchantController@updateShippingInfoUrl'                  ],
+        'update_serviceability_url'                 => ['post',       'merchant/shipping_info/url',                            'MerchantController@updateShippingInfoUrl'                   ],
+        'update_merchant_platform'                 => ['post',        'merchant/1cc_platform',                                     'MerchantController@updateMerchantPlatform'                  ],
         'update_cod_slabs'                          => ['post',       'merchant/slabs/cod',                                    'MerchantController@updateCodSlabs'                           ],
         'update_shipping_slabs'                     => ['post',       'merchant/slabs/shipping',                               'MerchantController@updateShippingSlabs'                      ],
         'order_update_customer_details_1cc'         => ['patch',      'orders/1cc/{id}/customer/',                             'OrderController@updateCustomerDetailsFor1CCOrder'             ],
@@ -4956,6 +4958,7 @@ class Route
         'update_serviceability_url',
         'update_coupon_validity_url',
         'update_fetch_coupons_url',
+        'update_merchant_platform',
 
         // splitz
         'splitz_evaluate_bulk_proxy',
@@ -7055,7 +7058,7 @@ class Route
         // growth service
         'growth_downtime_for_x'                           => Permission::ENABLE_DOWNTIME_NOTIFICATION_X_DASHBOARD,
         'country_fetch'                                   => '*',
-        'state_fetch'                                     => '*',   
+        'state_fetch'                                     => '*',
 
         //FIRS documents
         'firs_document_fetch'                 =>'*',
@@ -8724,6 +8727,7 @@ class Route
             'update_serviceability_url',
             'update_coupon_validity_url',
             'update_fetch_coupons_url',
+            'update_merchant_platform',
             'country_fetch',
             'state_fetch',
         ],

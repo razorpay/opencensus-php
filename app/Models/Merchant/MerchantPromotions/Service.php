@@ -11,6 +11,8 @@ use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\Validator;
+use RZP\Models\Merchant\Shopify1cc;
+use RZP\Models\Merchant\Merchant1ccConfig;
 
 class Service extends Base\Service
 {
@@ -36,6 +38,7 @@ class Service extends Base\Service
         $orderId = $input['order_id'];
 
         $merchantOrderId = null;
+
         try
         {
             $merchantOrderId = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant)->getReceipt();
@@ -44,6 +47,7 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
+
         if ($merchantOrderId === null)
         {
             throw new Exception\BadRequestException(
@@ -52,44 +56,41 @@ class Service extends Base\Service
         }
         $input['order_id'] = $merchantOrderId;
 
-        $fetchCouponsUrlConfig = $this->merchant->getFetchCouponsUrlConfig();
-        if ($fetchCouponsUrlConfig === null)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_FETCH_COUPONS_URL_NOT_CONFIGURED);
-        }
-        $fetchCouponsUrl = $fetchCouponsUrlConfig->getValue();
-
-
-        $headers = [
-            'Content-Type' => 'application/json',
-            'Accept'       => 'application/json',
-        ];
-
-        $request = [
-            'url'     => $fetchCouponsUrl,
-            'method'  => Requests::POST,
-            'headers' => $headers,
-            'content' => json_encode($input),
-        ];
+        $platformConfig = $this->merchant->getMerchantPlatformConfig();
 
         $externalCallStart = millitime();
 
-        $response = $this->sendRequest($request, $mockResponse);
+        if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY)
+        {
+            $decodedResponse = (new Shopify1cc\Service)->getPromotions($input);
+        }
+        else
+        {
+            $fetchCouponsUrlConfig = $this->merchant->getFetchCouponsUrlConfig();
+
+            if ($fetchCouponsUrlConfig === null)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_FETCH_COUPONS_URL_NOT_CONFIGURED);
+            }
+            $fetchCouponsUrl = $fetchCouponsUrlConfig->getValue();
+
+            $response = $this->sendRequestToMerchant($fetchCouponsUrl, $input, $mockResponse);
+
+            $decodedResponse = json_decode($response->body, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE)
+            {
+                throw new Exception\ServerErrorException(
+                  'Error while calling Merchant URL',
+                  ErrorCode::SERVER_ERROR_MERCHANT_FETCH_COUPONS_EXTERNAL_CALL_EXCEPTION
+                );
+            }
+        }
 
         $this->traceResponseTime(
             Metric::MERCHANT_EXTERNAL_COUPONS_REQUEST_DURATION_MILLIS,
             $externalCallStart
         );
-
-        $decodedResponse = json_decode($response->body, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE)
-        {
-            throw new Exception\ServerErrorException(
-                'Error while calling Merchant URL',
-                ErrorCode::SERVER_ERROR_MERCHANT_FETCH_COUPONS_EXTERNAL_CALL_EXCEPTION
-            );
-        }
 
         $validator = (new Validator);
 
@@ -136,15 +137,6 @@ class Service extends Base\Service
             throw $e;
         }
 
-        $couponValidityUrlConfig = $this->merchant->getApplyCouponUrlConfig();
-
-        if ($couponValidityUrlConfig === null)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_COUPON_VALIDITY_URL_NOT_CONFIGURED);
-        }
-
-        $couponValidityUrl = $couponValidityUrlConfig->getValue();
-
         $orderId = $input['order_id'];
 
         $merchantOrderId = null;
@@ -154,47 +146,60 @@ class Service extends Base\Service
         }
         catch (Throwable $e)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_COUPON_VALIDITY_URL_NOT_CONFIGURED);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
 
         $input['order_id'] = $merchantOrderId;
 
-        $headers = [
-            'Content-Type' => 'application/json',
-            'Accept'       => 'application/json',
-        ];
-
-        $request = [
-            'url'     => $couponValidityUrl,
-            'method'  => Requests::POST,
-            'headers' => $headers,
-            'content' => json_encode($input),
-        ];
+        $platformConfig = $this->merchant->getMerchantPlatformConfig();
 
         $externalRequestStart = millitime();
 
-        $response = $this->sendRequest($request, $mockResponse);
+        if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY)
+        {
+            // replace with Shopify service in next PR
+            $res = (new Shopify1cc\Service)->applyPromotion($input);
+
+            $decodedResponse = $res['response'];
+
+            $statusCode = $res['status_code'];
+        }
+        else
+        {
+            $couponValidityUrlConfig = $this->merchant->getApplyCouponUrlConfig();
+
+            if ($couponValidityUrlConfig === null)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_COUPON_VALIDITY_URL_NOT_CONFIGURED);
+            }
+
+            $couponValidityUrl = $couponValidityUrlConfig->getValue();
+
+            $response = $this->sendRequestToMerchant($couponValidityUrl, $input, $mockResponse);
+
+            $decodedResponse = json_decode($response->body, true);
+
+            $statusCode = $response->status_code;
+
+            if (json_last_error() !== JSON_ERROR_NONE)
+            {
+                throw new Exception\ServerErrorException(
+                  'Error while calling Merchant URL',
+                  ErrorCode::SERVER_ERROR_MERCHANT_COUPON_VALIDITY_EXTERNAL_CALL_EXCEPTION
+                );
+            }
+        }
 
         $this->traceResponseTime(
             Metric::MERCHANT_EXTERNAL_COUPON_VALIDITY_REQUEST_TIME_MILLIS,
             $externalRequestStart
         );
 
-        $decodedResponse = json_decode($response->body, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE)
-        {
-            throw new Exception\ServerErrorException(
-                'Error while calling Merchant URL',
-                ErrorCode::SERVER_ERROR_MERCHANT_COUPON_VALIDITY_EXTERNAL_CALL_EXCEPTION
-            );
-        }
-
         $this->traceResponseTime(Metric::MERCHANT_COUPON_VALIDITY_REQUEST_DURATION_MILLIS, $startTimeMillis);
 
         try
         {
-            switch ($response->status_code)
+            switch ($statusCode)
             {
                 case 200:
                     (new Validator)->setStrictFalse()->validateInput('applyCouponResponse', $decodedResponse);
@@ -221,7 +226,7 @@ class Service extends Base\Service
 
     public function removeCoupon(array $input)
     {
-        if(isset($input['order_id']) === false)
+        if (isset($input['order_id']) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
@@ -282,5 +287,22 @@ class Service extends Base\Service
             ]);
 
         $this->trace->histogram($metric, $duration, $dimensions);
+    }
+
+    protected function sendRequestToMerchant($merchantUrl, $input, $mockResponse)
+    {
+      $headers = [
+          'Content-Type' => 'application/json',
+          'Accept'       => 'application/json',
+      ];
+
+      $request = [
+          'url'     => $merchantUrl,
+          'method'  => Requests::POST,
+          'headers' => $headers,
+          'content' => json_encode($input),
+      ];
+
+      return $this->sendRequest($request, $mockResponse);
     }
 }

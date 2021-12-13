@@ -4829,7 +4829,7 @@ class Service extends Base\Service
         if(isset($input[Constants::AGGREGATIONS]) === false) {
             return $this->app['eventManager']->query($input, self::REQUEST_TIMEOUT_MERCHANT_ANALYTICS);
         }
-        
+
         $queries = $this->segregateQueries($input);
 
         $response = [];
@@ -8099,6 +8099,22 @@ class Service extends Base\Service
             $input['url']
         );
     }
+
+    /**
+    * Add/Update Merchant Platform Type
+    * @param array $input
+    * @return void
+    * @throws \Throwable
+    */
+   public function updateMerchantPlatform(array $input)
+   {
+       (new Validator)->validateInput('merchantPlatformUpdateRequest', $input);
+
+       (new Merchant\Core)->associateMerchant1ccConfig(
+           Merchant1ccConfig\Type::PLATFORM,
+           $input['platform']
+       );
+   }
 
     /**
      * Adds/Updates COD Slabs for the merchant (1CC)

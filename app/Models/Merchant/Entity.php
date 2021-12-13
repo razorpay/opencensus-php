@@ -1494,6 +1494,15 @@ class Entity extends Base\PublicEntity
             );
     }
 
+    public function getMerchantPlatformConfig()
+    {
+        return (new Merchant1ccConfig\Repository())
+            ->findByMerchantAndConfigType(
+                $this->getId(),
+                Merchant1ccConfig\Type::PLATFORM
+            );
+    }
+
     public function setBrandColor($brandColor)
     {
         $this->setAttribute(self::BRAND_COLOR, $brandColor);
@@ -1679,7 +1688,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->attributes[self::EMAIL] ?? null;
     }
-    
+
     public function setEmail($email)
     {
         $this->setEmailAttribute($email);

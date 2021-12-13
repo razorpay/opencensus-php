@@ -8,10 +8,12 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Country;
-use RZP\Models\Merchant\Slab;
 use RZP\Http\Request\Requests;
+use RZP\Models\Merchant\Slab;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\Validator;
+use RZP\Models\Merchant\Shopify1cc;
+use RZP\Models\Merchant\Merchant1ccConfig;
 use RZP\Models\Feature\Constants as FeatureConstants;
 
 class Service extends Base\Service
@@ -143,37 +145,46 @@ class Service extends Base\Service
                 $address[self::SHIPPING_INFO_ID] = $id;
             });
 
-        $serviceabilityUrlConfig = $this->merchant->getShippingInfoUrlConfig();
+        $platformConfig = $this->merchant->getMerchantPlatformConfig();
 
-        if($serviceabilityUrlConfig === null)
+        if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_URL_NOT_CONFIGURED);
+            // replace with Shopify service in next PR
+            $decodedResponse = (new Shopify1cc\Service)->getShippingInfo($input);
         }
-
-        $serviceabilityUrl = $serviceabilityUrlConfig->getValue();
-
-        try
+        else
         {
-            $response = $this->sendMerchantShippingInfoRequest($merchantOrderId, $nonCachedAddresses, $serviceabilityUrl, $mockResponse);
+            $serviceabilityUrlConfig = $this->merchant->getShippingInfoUrlConfig();
 
-            $decodedResponse = json_decode($response->body, true);
-        }
-        catch(Throwable $exception)
-        {
-            // Swallowing the exception to allow the request to go through in case merchant call fails
-            $this->trace->info($exception->getMessage());
+            if ($serviceabilityUrlConfig === null)
+            {
+                throw new Exception\BadRequestException(
+                  ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_URL_NOT_CONFIGURED);
+            }
 
-            $decodedResponse = ['addresses' => []];
-        }
+            $serviceabilityUrl = $serviceabilityUrlConfig->getValue();
 
+            try
+            {
+                $response = $this->sendMerchantShippingInfoRequest($merchantOrderId, $nonCachedAddresses, $serviceabilityUrl, $mockResponse);
 
-        if(json_last_error() !== JSON_ERROR_NONE || $response->status_code !== 200)
-        {
-            $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
+                $decodedResponse = json_decode($response->body, true);
+            }
+            catch(Throwable $exception)
+            {
+                // Swallowing the exception to allow the request to go through in case merchant call fails
+                $this->trace->info($exception->getMessage());
+
+                $decodedResponse = ['addresses' => []];
+            }
+
+            if (json_last_error() !== JSON_ERROR_NONE || $response->status_code !== 200)
+            {
+                $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
                 ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]);
 
-            $decodedResponse = ['addresses' => []];
+                $decodedResponse = ['addresses' => []];
+            }
         }
 
         try
@@ -263,7 +274,7 @@ class Service extends Base\Service
 
         foreach ($slabs as $slab)
         {
-            if($slab['amount'] > $amount)
+            if ($slab['amount'] > $amount)
             {
                 break;
             }
@@ -289,7 +300,7 @@ class Service extends Base\Service
      */
     protected function sendMerchantShippingInfoRequest(string $merchantOrderId, array $addresses, string $serviceabilityUrl, array $mockResponse = null)
     {
-        if(!is_null($mockResponse))
+        if (!is_null($mockResponse))
         {
             return $this->sendRequest(null, $mockResponse);
         }

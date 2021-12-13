@@ -10749,6 +10749,42 @@ return [
         ],
     ],
 
+    'testUpdateMerchantPlatform' => [
+        'request'  => [
+            'url'     => '/merchant/1cc_platform',
+            'method'  => 'post',
+            'content' => [
+                'platform' => 'native',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 201
+        ],
+    ],
+
+    'testUpdateMerchantPlatformInvalidBody' => [
+        'request'  => [
+            'url'     => '/merchant/1cc_platform',
+            'method'  => 'post',
+            'content' => [
+                'platform' => 'INVALID_TYPE',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
     'testFetchCoupons' => [
         'request'  => [
             'url'     => '/merchant/coupons',

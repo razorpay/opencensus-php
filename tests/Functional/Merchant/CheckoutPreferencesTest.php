@@ -1984,6 +1984,20 @@ class CheckoutPreferencesTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateMerchantPlatform()
+    {
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
+    public function testUpdateMerchantPlatformInvalidBody()
+    {
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
     public function testGetCheckoutPreferencesWithFeeConfigNull()
     {
         $data = $this->testData[__FUNCTION__];

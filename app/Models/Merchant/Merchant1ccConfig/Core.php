@@ -12,7 +12,9 @@ class Core extends Base\Core
         $input[Entity::MERCHANT_ID] = $merchant->getId();
 
         $config = (new Entity)->build($input);
+
         $config->generateId();
+
         $this->repo->merchant_1cc_configs->saveOrFail($config);
 
         return $config;
