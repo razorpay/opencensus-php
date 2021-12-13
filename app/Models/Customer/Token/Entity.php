@@ -996,7 +996,7 @@ class Entity extends Base\PublicEntity
 
                 foreach (self::$providerDataUnsetNullAttributes as $attribute)
                 {
-                    if($provider[self::PROVIDER_DATA][$attribute] === NULL)
+                    if(array_key_exists($attribute, $provider[self::PROVIDER_DATA]) && $provider[self::PROVIDER_DATA][$attribute] === NULL)
                     {
                         unset($provider[self::PROVIDER_DATA][$attribute]);
                     }

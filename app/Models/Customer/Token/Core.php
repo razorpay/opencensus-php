@@ -1454,9 +1454,11 @@ class Core extends Base\Core
         }
         else
         {
-            $response = (new Card\Core)->fetchCryptogram($input['id'], $merchant);
+            $id = $this->stripSptPrefix($input['id']);
+
+            $response = (new Card\Core)->fetchCryptogram($id, $merchant);
         }
-        
+
         return $response[Entity::SERVICE_PROVIDER_TOKENS];
     }
 
@@ -1631,5 +1633,14 @@ class Core extends Base\Core
 
             return false;
         }
+    }
+
+    protected function stripSptPrefix($id)
+    {
+        $prefix = 'spt';
+
+        $delimiter = '_';
+
+        return substr($id, strlen($prefix . $delimiter));
     }
 }

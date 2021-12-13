@@ -587,7 +587,7 @@ class TokenTest extends TestCase
             $response['success'] = true;
             $response['service_provider_tokens'] = [
                 [
-                    'id' => '',
+                    'id' => 'spt_IW48g8IeV3uUHA',
                     'entity' => '',
                     'interoperable' => '',
                     'provider_type'  => 'network',
@@ -624,7 +624,7 @@ class TokenTest extends TestCase
 
         $fetchPayload = $this->testData['testFetchCryptogramLive'];
 
-        $fetchPayload['request']['content'] = ['id' => $response['id']];
+        $fetchPayload['request']['content'] = ['id' => 'spt_IW48g8IeV3uUHA'];
 
         $response = $this->startTest($fetchPayload);
 
@@ -642,7 +642,7 @@ class TokenTest extends TestCase
     public function testFetchCryptogramLiveInvalidToken()
     {
         $this->markTestSkipped();
-        
+
         $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
 
         $this->app->instance('mpan.cardVault', $cardVault);
