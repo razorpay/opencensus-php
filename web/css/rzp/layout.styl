@@ -1149,10 +1149,12 @@ tr:hover .row-action.btn-group {
 }
 
 .switch-merchant__Tether {
-  z-index: 4
+  z-index: 4;
+  left: -117px !important; // made important as tether element is taking default left from PowerSelect__Tether
 }
 
 .switch-merchant__Menu {
+  width: 250px;
   .help-content {
     width: 100%;
     display: block;
@@ -1162,6 +1164,10 @@ tr:hover .row-action.btn-group {
       opacity: 0.6;
       margin-top: 4px;
     }
+  }
+
+  .SwitchMerchantDropdown__option {
+    overflow-wrap: break-word;
   }
 
   .rzp-popover-body {

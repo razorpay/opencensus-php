@@ -4,7 +4,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 
 const SwitchMerchant = ({ user, onSwitchMerchant }) => {
   let merchants = user.merchants;
-  merchants = Object.keys(merchants).map(merchantId => merchants[merchantId]);
+  merchants = Object.keys(merchants).map((merchantId) => merchants[merchantId]);
   return (
     <PowerSelect
       options={merchants}
@@ -16,15 +16,9 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
         return (
           <span class="help-content">
             <span class="SwitchMerchantDropdown__option">
-              {option.id === user.current ? (
-                <i class="i i-check text-success pull-right" />
-              ) : null}
+              {option.id === user.current ? <i class="i i-check text-success pull-right" /> : null}
               {option.display_name || option.name}
-              <Popover
-                align="left"
-                theme="dark"
-                parentQuerySelector=".switch-merchant__Tether"
-              >
+              <Popover align="left" theme="dark" parentQuerySelector=".switch-merchant__Tether">
                 <PopoverBody>
                   <div>{option.display_name || option.name}</div>
                   <div class="text--secondary">({option.name})</div>
@@ -34,7 +28,7 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
           </span>
         );
       }}
-      onChange={({ option, select }) => {
+      onChange={({ option }) => {
         if (option) {
           onSwitchMerchant(option);
         }
@@ -58,14 +52,14 @@ export class SwitchMerchantTypeahead extends Component {
   }
 
   onSearch(e) {
-    const searchTerm = e.target.value,
-      { user } = this.props;
+    const searchTerm = e.target.value;
+    const { user } = this.props;
 
     if (searchTerm === this.state.searchTerm) {
       return;
     }
 
-    const merchants = this.merchantList.filter(item => {
+    const merchants = this.merchantList.filter((item) => {
       const name = user.merchants[item].name.toLowerCase();
 
       return name.indexOf(searchTerm.toLowerCase()) >= 0;
@@ -87,15 +81,14 @@ export class SwitchMerchantTypeahead extends Component {
           onChange={this.onSearch}
         />
         <ul className="merchants-list nav nav-stacked">
-          {this.state.merchants.map(item => {
+          {this.state.merchants.map((item) => {
             const isActive = item === user.current;
 
             return (
               <li key={item} className={`${isActive ? 'active' : ''}`}>
                 <a onClick={() => onSwitchMerchant(user.merchants[item])}>
                   <i className="i i-check" />{' '}
-                  {user.merchants[item].display_name ||
-                    user.merchants[item].name}
+                  {user.merchants[item].display_name || user.merchants[item].name}
                 </a>
               </li>
             );
