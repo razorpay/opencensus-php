@@ -1069,17 +1069,25 @@ class Header
 
 
     //ICICI CA Activation
-    const APPLICATION_NO            = 'APPLICATION_NO';
-    const TRACKER_ID                = 'TRACKER_ID';
-    const CLIENT_NAME               = 'Client name';
-    const F_NAME                    = 'F_NAME';
-    const L_NAME                    = 'L_NAME';
-    const LEADID                    = 'LEADID';
-    const ICICI_CA_ACCOUNT_NUMBER   = 'Account number';
-    const ICICI_CA_ACCOUNT_STATUS   = 'Account status';
-    const LAST_UPDATED_ON_DATE      = 'Last updated on date';
-    const LAST_UPDATED_ON_TIME      = 'Last updated on time';
-    const COMMENT_OR_REMARKS        = 'Comment/Remarks';
+    const APPLICATION_NO                          = 'APPLICATION_NO';
+    const TRACKER_ID                              = 'TRACKER_ID';
+    const CLIENT_NAME                             = 'Client name';
+    const F_NAME                                  = 'F_NAME';
+    const L_NAME                                  = 'L_NAME';
+    const LEADID                                  = 'LEADID';
+    const ICICI_CA_ACCOUNT_NUMBER                 = 'Account number';
+    const ICICI_LEAD_SUB_STATUS                   = 'Lead sub status';
+    const ICICI_CA_ACCOUNT_STATUS                 = 'Lead status*';
+    const LAST_UPDATED_ON_DATE                    = 'Last updated on date';
+    const LAST_UPDATED_ON_TIME                    = 'Last updated on time';
+    const COMMENT_OR_REMARKS                      = 'Comment/Remarks';
+    const LEAD_SENT_TO_BANK_DATE                  = 'Lead sent to bank date';
+    const DATE_ON_WHICH_1ST_APPOINTMENT_WAS_FIXED = 'Date on which 1st appointment was fixed';
+    const DOCS_COLLECTED_DATE                     = 'Docs collected date';
+    const CASE_INITIATION_DATE                    = 'Case initiation date';
+    const ACCOUNT_OPENED_DATE                     = 'Account Opened Date';
+    const MULTI_LOCATION                          = 'Multi location';
+    const DROP_OFF_REASON                         = 'Drop off reason';
 
     //Mastercard
     const SR_NO                                = "Sr. No";
@@ -3786,10 +3794,18 @@ class Header
                 self::L_NAME,
                 self::LEADID,
                 self::ICICI_CA_ACCOUNT_NUMBER,
-                self::ICICI_CA_ACCOUNT_STATUS,
+                self::ICICI_LEAD_SUB_STATUS,
+                self::ICICI_CA_ACCOUNT_STATUS, // PLease review this, should this be changed?
                 self::LAST_UPDATED_ON_DATE,
                 self::LAST_UPDATED_ON_TIME,
-                self::COMMENT_OR_REMARKS
+                self::COMMENT_OR_REMARKS,
+                self::LEAD_SENT_TO_BANK_DATE,
+                self::DATE_ON_WHICH_1ST_APPOINTMENT_WAS_FIXED,
+                self::DOCS_COLLECTED_DATE,
+                self::CASE_INITIATION_DATE,
+                self::ACCOUNT_OPENED_DATE,
+                self::MULTI_LOCATION,
+                self::DROP_OFF_REASON,
             ]
         ],
 
