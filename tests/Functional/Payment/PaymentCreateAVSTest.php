@@ -371,4 +371,23 @@ class PaymentCreateAVSTest extends TestCase
         $paymentEntity = $this->getDbEntityById('payment', $response['razorpay_payment_id']);
         return array($billingAddressArray, $paymentEntity);
     }
+
+    /* When the iin doesn't have the country Details, the avs_required flag is set as false
+    */
+    public function testFailureAddressRequired()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+
+        $flowsData = [
+            'content' => ['amount' => 5000, 'currency' => 'USD', 'card_number' => '4550034817906865'],
+            'method'  => 'POST',
+            'url'     => '/payment/flows',
+        ];
+
+        $response = $this->sendRequest($flowsData);
+
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(false, $responseContent['avs_required']);
+    }
 }

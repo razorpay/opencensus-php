@@ -4002,8 +4002,11 @@ class Service extends Base\Service
         if (($merchant !== null) and ($merchant->isInternational() === true)
             and ($merchant->isAddressRequiredEnabled() === true))
         {
-            if (($iinEntity !== null) and ($iinEntity->isInternational() === true) and (Country::isAddressRequiredCountry($iinEntity->getCountry())))
-            {
+            if (($iinEntity !== null) and ($iinEntity->isInternational() === true)
+                and (empty($iinEntity->getCountry()) === false)
+                and ($iinEntity->getCountry() !== null)
+                and (Country::isAddressRequiredCountry($iinEntity->getCountry()))
+            ) {
                 return true;
             }
         }
