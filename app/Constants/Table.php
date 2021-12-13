@@ -69,6 +69,7 @@ class Table
     const CORPORATE_CARD               = 'corporate_cards';
 
     const SUB_BALANCE_MAP              = 'sub_balance_map';
+    const PAYOUTS_STATUS_DETAILS       = 'payouts_status_details';
 
     const PAYOUTS_INTERMEDIATE_TRANSACTIONS = 'payouts_intermediate_transactions';
 

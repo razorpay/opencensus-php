@@ -6472,6 +6472,20 @@ ALTER TABLE qr_code_config
 ALTER TABLE merchant_documents
     ADD COLUMN document_date INTEGER UNSIGNED DEFAULT NULL;
 
+CREATE TABLE payouts_status_details
+(
+    id char(14) COLLATE utf8mb4_bin NOT NULL PRIMARY KEY,
+    payout_id char(14) COLLATE utf8mb4_bin NOT NULL,
+    status varchar(15) NOT NULL,
+    reason varchar(55),
+    description varchar(255),
+    mode varchar(50) NOT NULL,
+    triggered_by varchar(255) DEFAULT NULL,
+    created_at int NOT NULL,
+    updated_at int NOT NULL,
+    KEY payouts_status_details_payout_id_index (payout_id)
+);
+
 CREATE TABLE `app_attribution_details` (
   `id` char(14) COLLATE utf8_bin NOT NULL,
   `merchant_id` char(14) COLLATE utf8_bin NOT NULL,
@@ -6522,3 +6536,4 @@ ALTER TABLE merchant_notification_configs
     MODIFY COLUMN `notification_emails` text COLLATE utf8_bin NULL DEFAULT NULL,
     MODIFY COLUMN `notification_mobile_numbers` text COLLATE utf8_bin NULL DEFAULT NULL,
     ADD INDEX `mnc_notification_type_merchant_id_index` (`notification_type`,`merchant_id`);
+
