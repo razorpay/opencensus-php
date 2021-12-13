@@ -33,6 +33,10 @@ trait TerminalTrait
             ->andReturn($response);
     }
 
+    protected function mockTerminalsServiceConsecutiveSendRequest($firstClosure, $secondClosure) {
+        $this->terminalsServiceMock->shouldReceive('sendRequest')
+            ->andReturn($firstClosure, $secondClosure);
+    }
 
     protected function mockTerminalsServiceSendRequest($closure, $times = 2)
     {
@@ -131,6 +135,21 @@ trait TerminalTrait
         return $response;
     }
 
+    protected function getFulcrumOnboardResponse($id) : \Requests_Response
+    {
+        $data = [];
+        $terminal = ["id" => $id, "gateway" => "fulcrum"];
+        $data["terminal"] = $terminal;
+
+        $response = new \Requests_Response;
+
+        $responseData = ['data' => $data];
+
+        $response->body = json_encode($responseData);
+
+        return $response;
+    }
+
     protected function getProxyTerminalOnboardStatusResponse() : \Requests_Response
     {
         $data = [];
@@ -168,6 +187,18 @@ trait TerminalTrait
         throw new Exception\IntegrationException('Terminals service request failed with status code : 500',
             ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR);
     }
+
+    protected function getFulcrumOnboardResponseAndCreate(string $category, $merchantId = "10000000000000")
+    {
+        // Though in production actual terminal will be created by terminal service, but since that part is mocked,
+        // creating the terminal through code only and the mock response shd return that terminal id
+        $mockTerminal = $this->fixtures->create('terminal:direct_fulcrum_terminal', ["category"=>$category, "merchant_id"=> $merchantId]);
+
+        $tid = $mockTerminal->getId();
+
+        return $this->getFulcrumOnboardResponse($tid);
+    }
+
     protected function getSyncDeleteTerminalTerminalServiceResponse() : \Requests_Response
     {
 

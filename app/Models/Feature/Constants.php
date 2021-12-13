@@ -559,6 +559,11 @@ class Constants
     const SKIP_HITACHI_AUTO_ONBOARD  = 'skip_hitachi_auto_onboard';
 
     /*
+     * This flag will be used to skip some merchants from fulcrum automatic onboarding
+     */
+    const SKIP_FULCRUM_AUTO_ONBOARD  = 'skip_fulcrum_auto_onboard';
+
+    /*
      * This flag will be used to override the blacklist for hitachi blacklisted MCCs
      */
     const OVERRIDE_HITACHI_BLACKLIST = 'override_hitachi_blacklst'; // not a typo - there is a column length limit
@@ -1254,6 +1259,7 @@ class Constants
         self::AUTOMATED_COMM_PAYOUT           => true,
         self::OFFLINE_PAYMENTS                => true,
         self::SKIP_HITACHI_AUTO_ONBOARD       => true,
+        self::SKIP_FULCRUM_AUTO_ONBOARD       => true,
         self::SKIP_WORKFLOWS_FOR_API          => true,
         self::SKIP_WF_FOR_PAYROLL             => true,
         self::SKIP_WF_AT_PAYOUTS              => true,

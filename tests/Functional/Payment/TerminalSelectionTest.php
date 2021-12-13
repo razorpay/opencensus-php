@@ -1308,6 +1308,159 @@ class TerminalSelectionTest extends TestCase
         return $selectedTerminalIds;
     }
 
+    public function testFulcrumTerminalCreationOnRun()
+    {
+        $this->enableRazorXTreatmentForFulcrumTerminal();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->setCategory('1240');
+
+        $input = $this->getInputForFulcrumTerminalCreationOnRun();
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $category = "1240";
+        $this->mockTerminalsServiceConsecutiveSendRequest($this->getHitachiOnboardResponseAndCreate($category),
+            $this->getFulcrumOnboardResponseAndCreate($category));
+
+        $selectedTerminals = $selector->select();
+
+        $this->assertEquals(2, sizeof($selectedTerminals));
+
+        $selectedTerminalGateways = array_map(function($term) {
+            return $term->getGateway();
+        }, $selectedTerminals);
+
+        $this->assertTrue(in_array("fulcrum", $selectedTerminalGateways));
+    }
+
+    public function testSkipFulcrumTerminalCreationOnRun() {
+
+        $this->enableRazorXTreatmentForFulcrumTerminal();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->setCategory('1240');
+
+        $this->fixtures->merchant->addFeatures(Feature\Constants::SKIP_HITACHI_AUTO_ONBOARD);
+        $this->fixtures->merchant->addFeatures(Feature\Constants::SKIP_FULCRUM_AUTO_ONBOARD);
+
+        $input = $this->getInputForFulcrumTerminalCreationOnRun();
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+        $selectedTerminals = $selector->select();
+
+        // There should be no seleted terminals, not even of 'fulcrum' gateway
+        $this->assertEquals(1, sizeof($selectedTerminals));
+        $this->assertNull($selectedTerminals[0]);
+    }
+
+    // should not create terminal if method is not card
+    public function testFulcrumTerminalCreationOnRunForWallet()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'ROUTER_FULCRUM_ON_BOARDING')
+                    {
+                        return 'on';
+                    }
+                    return 'off';
+
+                }) );
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->setCategory('1240');
+
+        $merchantDetailArray = [
+            'contact_name'                  => 'rzp',
+            'contact_email'                 => 'test@rzp.com',
+            'merchant_id'                   => '10000000000000',
+            'business_operation_address'    => 'Koramangala',
+            'business_operation_state'      => 'KARNATAKA',
+            'business_operation_pin'        =>  560047,
+            'business_dba'                  => 'test',
+            'business_name'                 => 'rzp_test',
+            'business_operation_city'       => 'Bangalore',
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        unset($paymentArray['card']);
+        $paymentArray['status'] = 'created';
+        $paymentArray['method'] = 'wallet';
+        $paymentArray['wallet'] = 'olamoney';
+
+
+        $payment = (new Payment\Entity)->fill($paymentArray);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+        $payment->setId("IUZpAQvrlzgaHU");
+
+        $input = [
+            'payment' => $payment,
+            'merchant' => $payment->merchant
+        ];
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+        $selectedTerminals = $selector->select();
+
+        $this->assertNotTrue(in_array("fulcrum", $selectedTerminals));
+    }
+
+    //should not create new terminal if already fulcrum terminal exists
+    public function testDuplicateFulcrumTerminalCreationOnRun()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->enableRazorXTreatmentForFulcrumTerminal();
+
+        $this->fixtures->create('terminal:direct_fulcrum_terminal');
+        $this->fixtures->create('terminal:direct_hitachi_terminal');
+
+        $this->fixtures->merchant->setCategory('1240');
+
+        $input = $this->getInputForFulcrumTerminalCreationOnRun();
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+        $selectedTerminals = $selector->select();
+
+        $this->assertEquals(2, sizeof($selectedTerminals));
+
+        $terminal = $selectedTerminals[0];
+
+        $this->assertEquals('fulcrum', $terminal->getGateway());
+        $this->assertEquals('fulcrumDirectMerchantId', $terminal->getGatewayMerchantId());
+        $this->assertEquals('fulcrumDirectTerminalId', $terminal->getGatewayTerminalId());
+    }
+
     public function testHitachiTerminalCreationOnRun()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -1348,6 +1501,7 @@ class TerminalSelectionTest extends TestCase
         }, 1);
 
         $selectedTerminals = $selector->select();
+
         $this->assertEquals(1, sizeof($selectedTerminals));
         $terminal = $selectedTerminals[0];
 
@@ -1730,6 +1884,7 @@ class TerminalSelectionTest extends TestCase
     //should not create new terminal if already hitachi terminal exists
     public function testDuplicateHitachiTerminalCreationOnRun()
     {
+        $this->enableRazorXTreatmentForFulcrumTerminal();
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->fixtures->create('terminal:direct_hitachi_terminal');
@@ -1780,6 +1935,27 @@ class TerminalSelectionTest extends TestCase
         $terminal = $selectedTerminals[0];
 
         $this->assertEquals('hdfc', $terminal->getGateway());
+    }
+
+    protected function enableRazorXTreatmentForFulcrumTerminal() {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'ROUTER_FULCRUM_ON_BOARDING')
+                    {
+                        return 'on';
+                    }
+                    return 'off';
+
+                }) );
     }
 
     protected function enableRazorXTreatmentForTerminalService()
@@ -2327,6 +2503,57 @@ class TerminalSelectionTest extends TestCase
 
         $payment = (new Payment\Entity)->fill($paymentArray);
         $payment->card = $card;
+        $payment->setId("IUZpAQvrlzgaHU");
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+
+        $input = [
+            'payment' => $payment,
+            'merchant' => $payment->merchant
+        ];
+
+        return $input;
+    }
+
+    protected function getInputForFulcrumTerminalCreationOnRun()
+    {
+        $cardArray = [
+            'number'        => '4012001036275556',
+            'expiry_month'  => '1',
+            'expiry_year'   => '2035',
+            'cvv'           => '123',
+            'network'       => 'Visa',
+            'issuer'        => 'HDFC',
+            'name'          => 'Test',
+            'international' => false,
+        ];
+
+        $card = (new Card\Entity)->fill($cardArray);
+
+        $merchantDetailArray = [
+            'contact_name'                  => 'rzp',
+            'contact_email'                 => 'test@rzp.com',
+            'merchant_id'                   => '10000000000000',
+            'business_operation_address'    => 'Koramangala',
+            'business_operation_state'      => 'KARNATAKA',
+            'business_operation_pin'        =>  560047,
+            'business_dba'                  => 'test',
+            'business_name'                 => 'rzp_test',
+            'business_operation_city'       => 'Bangalore',
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        unset($paymentArray['card']);
+        $paymentArray['status'] = 'created';
+        $paymentArray['method'] = 'card';
+
+        $payment = (new Payment\Entity)->fill($paymentArray);
+        $payment->card = $card;
+        $payment->setId("IUZpAQvrlzgaHU");
 
         $merchant = Merchant\Entity::find('10000000000000');
 

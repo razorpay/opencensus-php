@@ -11,6 +11,7 @@ class Validator extends Base\Validator
 {
     protected $onboardAllowedGateways = [
         Payment\Gateway::HITACHI,
+        Payment\Gateway::FULCRUM,
         Payment\Gateway::UPI_HULK,
         Payment\Gateway::WORLDLINE,
     ];

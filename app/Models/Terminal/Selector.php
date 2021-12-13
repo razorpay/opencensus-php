@@ -178,6 +178,10 @@ class Selector extends Base\Core
 
             $this->processHitachiOnboarding($allTerminals);
 
+            if($this->shouldOnboardFulcrumTerminal($payment->getId()) === true) {
+                $this->processFulcrumOnboarding($allTerminals);
+            }
+
             $allTerminals = array_filter($allTerminals, function ($terminal)
             {
                 $status = $terminal->getStatus();
@@ -761,57 +765,48 @@ class Selector extends Base\Core
         return $sorterRules;
     }
 
-    protected function processHitachiOnboarding(&$allTerminals)
+    protected function processHitachiOnboarding(&$terminals)
     {
-        try
-        {
+        try {
             $payment = $this->input['payment'];
-
             $merchant = $this->input['merchant'];
+            $createTerminalCondition = ($payment->isMethod(Method::CARD) === true) and
+            ($payment->isBharatQr() === false) and
+            ((in_array($merchant->getCategory(), \RZP\Gateway\Hitachi\Gateway::BLACKLISTED_MCC) === false) or
+                ($merchant->isFeatureEnabled(Feature\Constants::OVERRIDE_HITACHI_BLACKLIST) === true));
 
-            if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_HITACHI_AUTO_ONBOARD) === true)
-            {
-                $this->trace->info(
-                    TraceCode::SKIPPING_HITACHI_AUTOMATIC_ONBOARDING,
-                    [
-                        'payment'             => $payment,
-                        'merchant'            => $merchant,
-                    ]);
-
-                return;
-            }
-
-            if (($payment->isMethod(Method::CARD) === true) and
-                ($payment->isBharatQr() === false) and
-                ((in_array($merchant->getCategory(), \RZP\Gateway\Hitachi\Gateway::BLACKLISTED_MCC) === false) or
-                 ($merchant->isFeatureEnabled(Feature\Constants::OVERRIDE_HITACHI_BLACKLIST) === true)))
-            {
-                $payment = $this->input['payment'];
-
-                $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getGatewayCurrency();
-
-                $hasHitachiDirectTerminal = (new TerminalService)->checkDirectTerminalForGateway(
-                    $allTerminals,
-                    Constants::HITACHI,
-                    $merchant,
-                    $currency);
-
-                if ($hasHitachiDirectTerminal === false)
-                {
-                    $newTerminal = $this->createDirectTerminal(Constants::HITACHI);
-
-                    if ($newTerminal !== null)
-                    {
-                        array_push($allTerminals, $newTerminal);
-                    }
-                }
-            }
+            $this->processDirectTerminalOnBoarding($terminals, Constants::HITACHI,
+                Feature\Constants::SKIP_HITACHI_AUTO_ONBOARD,
+                TraceCode::SKIPPING_HITACHI_AUTOMATIC_ONBOARDING, $createTerminalCondition);
         }
         catch (\Throwable $e)
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_TERMINAL_CREATION_ERROR);
         }
+    }
 
+    protected function processFulcrumOnboarding(&$terminals)
+    {
+        try {
+            $payment = $this->input['payment'];
+            $merchant = $this->input['merchant'];
+            $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getGatewayCurrency();
+            $hasHitachiTerminal = (new TerminalService)->checkDirectTerminalForGateway(
+                $terminals,
+                Constants::HITACHI,
+                $merchant,
+                $currency);
+
+            $createTerminalCondition = ($payment->isMethod(Method::CARD) === true) and
+            ($hasHitachiTerminal === true) and
+            ($payment->isBharatQr() === false);
+
+            $this->processDirectTerminalOnBoarding($terminals, Constants::FULCRUM, Feature\Constants::SKIP_FULCRUM_AUTO_ONBOARD, TraceCode::SKIPPING_FULCRUM_AUTOMATIC_ONBOARDING, $createTerminalCondition);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_TERMINAL_CREATION_ERROR);
+        }
     }
 
     private function sendParametersToSmartRoutingService($payment, $merchant, $allTerminals, $sortedTerminals)
@@ -1192,5 +1187,60 @@ class Selector extends Base\Core
         }
 
         return true;
+    }
+
+    protected function processDirectTerminalOnBoarding(&$allTerminals, $gateway, $skipFeatureCheck, $skipOnboardTraceCode, $createTerminalCondition) {
+        try
+        {
+            $payment = $this->input['payment'];
+            $merchant = $this->input['merchant'];
+            if ($merchant->isFeatureEnabled($skipFeatureCheck) === true)
+            {
+                $this->trace->info(
+                    $skipOnboardTraceCode,
+                    [
+                        'payment'             => $payment,
+                        'merchant'            => $merchant,
+                    ]);
+                return;
+            }
+            if ($createTerminalCondition === true)
+            {
+                $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getGatewayCurrency();
+                $hasDirectTerminal = (new TerminalService)->checkDirectTerminalForGateway(
+                    $allTerminals,
+                    $gateway,
+                    $merchant,
+                    $currency);
+
+                if ($hasDirectTerminal === false)
+                {
+                    $newTerminal = $this->createDirectTerminal($gateway);
+                    if ($newTerminal !== null)
+                    {
+                        array_push($allTerminals, $newTerminal);
+                    }
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_TERMINAL_CREATION_ERROR);
+        }
+    }
+
+    protected function shouldOnboardFulcrumTerminal(string $paymentId = null): bool {
+        if($paymentId === null)
+            return false;
+        $variantFlag = $this->app->razorx->getTreatment($paymentId, "ROUTER_FULCRUM_ON_BOARDING", $this->mode);
+
+        if ($variantFlag === 'on')
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

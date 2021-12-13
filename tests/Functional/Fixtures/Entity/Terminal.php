@@ -1892,6 +1892,37 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createDirectFulcrumTerminal(array $attributes = [])
+    {
+        $terminalId = \RZP\Models\Terminal\Shared::FULCRUM_DIRECT_TERMINAL;
+
+        $defaultValues = [
+            TerminalEntity::ID                        => $terminalId,
+            TerminalEntity::MERCHANT_ID               => '10000000000000',
+            TerminalEntity::GATEWAY                   => 'fulcrum',
+            TerminalEntity::CARD                      => 1,
+            TerminalEntity::NETBANKING                => 0,
+            TerminalEntity::SHARED                    => 0,
+            TerminalEntity::GATEWAY_ACQUIRER          => 'ratn',
+            TerminalEntity::GATEWAY_MERCHANT_ID       => 'fulcrumDirectMerchantId',
+            TerminalEntity::GATEWAY_TERMINAL_ID       => 'fulcrumDirectTerminalId',
+            TerminalEntity::GATEWAY_TERMINAL_PASSWORD => 'fulcrum',
+            TerminalEntity::GATEWAY_SECURE_SECRET     => 'secret',
+            TerminalEntity::CATEGORY                  => '1240',
+            TerminalEntity::CAPABILITY                => '2',
+            TerminalEntity::TYPE                      => [
+                Type::NON_RECURRING         => '1',
+                Type::RECURRING_3DS         => '1',
+                Type::RECURRING_NON_3DS     => '1',
+                Type::DEBIT_RECURRING       => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedEbsTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::EBS_RAZORPAY_TERMINAL;

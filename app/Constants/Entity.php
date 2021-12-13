@@ -263,6 +263,7 @@ class Entity
     const WALLET                 = 'wallet';
     const UPI_SBI                = 'upi_sbi';
     const HITACHI                = 'hitachi';
+    const FULCRUM                = "fulcrum";
     const UPI_RBL                = 'upi_rbl';
     const UPI_HULK               = 'upi_hulk';
     const UPI_AXIS               = 'upi_axis';
