@@ -129,6 +129,7 @@ return [
         'checkout_dot_com',
         'billdesk_sihub',
         'mandate_hq',
+        'emerchantpay',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -236,6 +237,7 @@ return [
     'mock_mozart'                 => env('MOZART_MOCK'),
     'mock_upi_citi'               => env('UPI_CITI_MOCK'),
     'mock_hdfc_debit_emi'         => env('HDFC_DEBIT_EMI_MOCK'),
+    'mock_emerchantpay'           => env('EMERCHANTPAY_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 

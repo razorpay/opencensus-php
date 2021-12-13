@@ -3136,4 +3136,9 @@ class Entity extends Base\PublicEntity
 
         return array_unique($relations);
     }
+
+    public function isAddressWithNameRequiredEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::ADDRESS_NAME_REQUIRED) === true);
+    }
 }

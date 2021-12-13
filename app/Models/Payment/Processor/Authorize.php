@@ -160,6 +160,8 @@ trait Authorize
 
         $this->preProcessWalletCurrencyWrapper($input, $payment);
 
+        $this->preProcessAppCurrencyWrapper($input, $payment);
+
         $this->storeRewards($payment, $input);
 
         return $this->gatewayRelatedProcessing($payment, $input, $gatewayInput);
@@ -3884,16 +3886,62 @@ trait Authorize
         }
     }
 
+    protected function preProcessAppCurrencyWrapper(array $input, Payment\Entity $payment)
+    {
+        if (($input['method'] !== Method::APP) or (Gateway::isDCCRequiredApp($input['provider'])) !== true)
+        {
+            return;
+        }
+
+        if ((isset($input['dcc_currency']) === true) and
+            (isset($input['currency_request_id']) === true) and
+            ($input['currency'] !== $input['dcc_currency']))
+        {
+            $dccCurrency = $input['dcc_currency'];
+
+            $dccCurrencyRequestId = $input['currency_request_id'];
+
+            $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $payment->getAmount(),
+                $dccCurrency, $dccCurrencyRequestId, $payment->merchant->getDccMarkupPercentage());
+
+            if (empty($requestedCurrencyData) === true)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID, 'currency_request_id',
+                    [
+                        'currency_request_id' => $dccCurrencyRequestId,
+                        'dcc_currency'        => $dccCurrency,
+                    ], 'Invalid currency_request_id');
+            }
+
+            $paymentMetaInput = [
+                'gateway_amount'            => $requestedCurrencyData['amount'],
+                'gateway_currency'          => $requestedCurrencyData['currency'],
+                'forex_rate'                => $requestedCurrencyData['forex_rate'],
+                'dcc_offered'               => true,
+                'payment_id'                => $payment->getId(),
+                'dcc_mark_up_percent'       => $requestedCurrencyData['dcc_mark_up_percent']
+            ];
+
+            $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+
+            $paymentMetaEntity->payment()->associate($payment);
+
+            $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
+        }
+    }
+
     protected function processCurrencyConversions(Payment\Entity $payment)
     {
         $currency = $payment->getCurrency();
 
         $merchant = $payment->merchant;
 
-        // For non-card method payments, check only if currency != INR
-        if ($currency !== Currency\Currency::INR && (($payment->getMethod() != Method::CARD) ||
-            ($merchant->isDCCEnabledInternationalMerchant() === false ||
-             $payment->isInternational() === false)))
+        // For card and App method payments, check all conditions
+        // and for rest payment methods check only if currency != INR
+        if ($currency !== Currency\Currency::INR &&
+            ((($payment->getMethod() != Method::CARD) && ($payment->getMethod() != Method::APP)) ||
+             ($merchant->isDCCEnabledInternationalMerchant() === false ||
+              $payment->isInternational() === false)))
         {
             // mcc is supported only for merchants where this flag is set to true or false
             // or merchant is not fee bearer
@@ -8429,7 +8477,7 @@ trait Authorize
         $this->updateTokenOnAuthorized($payment, $data);
 
         // We will be updating the details in upi_mandate too.
-        $this->updateRecurringEntitiesForUpiIfApplicable($payment, $data);      
+        $this->updateRecurringEntitiesForUpiIfApplicable($payment, $data);
         // store billing_address for AVS
         $this->validateAndSaveBillingAddressForAVSIfApplicable($payment);
 
@@ -9581,6 +9629,16 @@ trait Authorize
             unset($billingAddressFromInput['postal_code']);
         }
 
+        if (isset($billingAddressFromInput['first_name']) === true)
+        {
+            unset($billingAddressFromInput['first_name']);
+        }
+
+        if (isset($billingAddressFromInput['last_name']) === true)
+        {
+            unset($billingAddressFromInput['last_name']);
+        }
+
         (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
     }
 
@@ -9671,11 +9729,11 @@ trait Authorize
             unset($billingAddressToSave['postal_code']);
         }
 
-        if (empty($tokenBillingAddress) === true) 
+        if (empty($tokenBillingAddress) === true)
         {
             (new Address\Core)->create($token, Address\Type::TOKEN, $billingAddressToSave);
-        } 
-        else 
+        }
+        else
         {
             (new Address\Core)->edit($tokenBillingAddress, $billingAddressToSave);
         }
@@ -9809,24 +9867,38 @@ trait Authorize
     {
         $addressRequired = false;
 
-        if ($payment->isInternational() === true)
-        {
-            if (($payment->isCard() === true) and ($payment->card !== null))
-            {
+        $addressRequiredWithName = false;
+
+        if ($payment->isInternational() === true) {
+            if (($payment->isCard() === true) and ($payment->card !== null)) {
                 $addressRequired = (new Payment\Service)->isAddressRequired($payment->card->iinRelation, $payment->merchant);
+            }
+
+            if (in_array($payment->getWallet(), Payment\Gateway::ADDRESS_REQUIRED_APPS) === true) {
+                $addressRequiredWithName = (new Payment\Service)->isAddressWithNameRequired($input, $payment->merchant);
             }
         }
 
-        if ($addressRequired === true)
-        {
+        if ($addressRequired === true || $addressRequiredWithName === true) {
             //TODO : Validate Address fields as well
-            if(isset($input[Payment\Entity::BILLING_ADDRESS]) === false)
-            {
+            if (isset($input[Payment\Entity::BILLING_ADDRESS]) === false) {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,
                     null,
                     null,
-                    "Billing Address is Empty");
+                    "Billing Address is Empty"
+                );
+            }
+            if (($addressRequiredWithName === true) and
+                ((isset($input[Payment\Entity::BILLING_ADDRESS]['first_name']) === false) or
+                (isset($input[Payment\Entity::BILLING_ADDRESS]['last_name']) === false))){
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,
+                    null,
+                    null,
+                    "First or Last Name is Empty"
+                );
             }
         }
     }

@@ -5,6 +5,7 @@ namespace RZP\Models\Payment;
 use App;
 use RZP\Exception;
 
+use RZP\Models\Currency\Currency;
 use RZP\Models\Emi;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -139,6 +140,9 @@ class Gateway
     const CRED               = 'cred';
     const TWID               = 'twid';
     const LAZYPAY            = 'lazypay';
+    const TRUSTLY            = 'trustly';
+    const EMERCHANTPAY       = 'emerchantpay';
+
 
     const ACQUIRER_HDFC         = 'hdfc';
     const ACQUIRER_ICIC         = 'icic';
@@ -359,6 +363,43 @@ class Gateway
         self::ENACH_NPCI_NETBANKING => self::NPCI,
         self::ZAAKPAY               => self::ZAAKPAY,
         self::PINELABS              => self::PINELABS,
+    ];
+
+
+
+     /**
+     * These are the gateways that support
+     * multiple international apps flows
+     */
+    const MULTIPLE_APPS_SUPPORTED_GATEWAYS = [
+        self::EMERCHANTPAY,
+    ];
+
+    /**
+     * These are the apps that require
+     * address for processing
+     */
+    const ADDRESS_REQUIRED_APPS= [
+        self::TRUSTLY,
+    ];
+
+    /**
+     * These are the apps that require
+     * dynamic currency conversion for processing
+     */
+    const DCC_REQUIRED_APPS= [
+        self::TRUSTLY,
+    ];
+
+    /**
+     * Currency at 0 index for each app will be chosen
+     * as default currency, i.e selected by default on
+     * frontend and others will be shown in dropdown
+     * to choose from
+     */
+
+    const CURRENCIES_SUPPORTED_BY_APPS = [
+        self::TRUSTLY => [Currency::EUR,Currency::GBP],
     ];
 
     /**
@@ -1268,6 +1309,7 @@ class Gateway
         Payment\Gateway::CHECKOUT_DOT_COM,
         Payment\Gateway::ZAAKPAY,
         Payment\Gateway::PINELABS,
+        Payment\Gateway::EMERCHANTPAY,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -1500,6 +1542,7 @@ class Gateway
         Method::APP => [
             self::CRED,
             self::TWID,
+            self::EMERCHANTPAY,
         ],
     ];
 
@@ -2588,6 +2631,16 @@ class Gateway
         Gateway::CYBERSOURCE,
         Gateway::HITACHI,
         Gateway::CHECKOUT_DOT_COM,
+    ];
+
+     /**
+     * Gateways/Apps which support international payments
+     *
+     * @var array
+     */
+    public static $internationalGateways = [
+        Gateway::EMERCHANTPAY,
+        Gateway::TRUSTLY,
     ];
 
     /**
@@ -3895,6 +3948,7 @@ class Gateway
             self::NETBANKING_KVB,
             self::TWID,
             self::NETBANKING_BDBL,
+            self::EMERCHANTPAY,
         ];
 
         $isRouted = in_array($gateway, $gateways, true);
@@ -3998,6 +4052,7 @@ class Gateway
             self::TWID,
             self::NETBANKING_PNB,
             self::NETBANKING_BDBL,
+            self::EMERCHANTPAY,
         ];
 
         $acquirerGateways = [
@@ -4061,5 +4116,18 @@ class Gateway
     public static function isPowerWalletNotSupportedForGateway($gateway)
     {
         return in_array($gateway, self::$GatewaysWithoutPowerWalletSupport);
+    }
+
+    public static function isDCCRequiredApp($app)
+    {
+        return (in_array($app, self::DCC_REQUIRED_APPS, true));
+    }
+
+    public static function getSupportedCurrenciesByApp($app) : array
+    {
+        if((array_key_exists($app,self::CURRENCIES_SUPPORTED_BY_APPS)) === true){
+            return self::CURRENCIES_SUPPORTED_BY_APPS[$app];
+        }
+        return [];
     }
 }

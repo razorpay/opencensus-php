@@ -1038,7 +1038,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return;
         }
 
-        $isInternational = $this->isMethodCardOrEmi() ? $this->card->isInternational() : false;
+        $isInternational = $this->isMethodCardOrEmi() ? $this->card->isInternational() : ($this->isMethodInternationalApp() ? true : false);
 
         $this->setAttribute(self::INTERNATIONAL, $isInternational);
     }
@@ -3448,9 +3448,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function setPublicProviderAttribute(array & $array)
     {
-        if ($array[Entity::METHOD] === Method::APP)
-        {
+
+        if (($array[Entity::METHOD] === Method::APP) and
+            (in_array($array[self::GATEWAY], Payment\Gateway::MULTIPLE_APPS_SUPPORTED_GATEWAYS) === false)
+        ) {
             $array[self::PROVIDER] = $array[self::GATEWAY];
+            unset($array[self::WALLET]);
+        }
+
+        else if (($array[Entity::METHOD] === Method::APP) and
+            (in_array($array[self::GATEWAY], Payment\Gateway::MULTIPLE_APPS_SUPPORTED_GATEWAYS) === true)
+        ) {
+            $array[self::PROVIDER] = $array[self::WALLET];
             unset($array[self::WALLET]);
         }
 
@@ -3853,6 +3862,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $data['amount'] = $this->getGatewayAmount();
             $data['currency'] = $this->getGatewayCurrency();
+        }
+
+        if (($this->getGateway() === Gateway::EMERCHANTPAY) or
+            (Gateway::isDCCRequiredApp($this->getWallet()) === true))
+        {
+            $data['amount'] = $this->getGatewayAmount();
+            $data['currency'] = $this->getGatewayCurrency();
+
+            $data['billing_address'] = $this->getBillingAddress();
         }
 
         if (($this->isCard() === true) and
@@ -5183,5 +5201,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return $amount - $this->getConvenienceFee() - $this->getConvenienceFeeGst();
         }
         return $amount;
+    }
+
+    public function isInternationalGateway($gateway)
+    {
+        return (in_array($gateway, Payment\Gateway::$internationalGateways, true) === true);
+    }
+
+    public function isMethodInternationalApp()
+    {
+        return ($this->isMethod(Payment\Method::APP)) and
+            ($this->isInternationalGateway($this->getWallet()));
     }
 }

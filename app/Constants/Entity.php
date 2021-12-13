@@ -352,6 +352,7 @@ class Entity
     const NETBANKING_DCB         = 'netbanking_dcb';
     const NETBANKING_NSDL        = 'netbanking_nsdl';
     const CHECKOUT_DOT_COM       = 'checkout_dot_com';
+    const EMERCHANTPAY           = 'emerchantpay';
 
     // P2P Service Entities
     const P2P_VPA                = 'p2p_vpa';
@@ -949,6 +950,7 @@ class Entity
         self::CRED                   => \RZP\Gateway\Mozart::class,
         self::CHECKOUT_DOT_COM       => \RZP\Gateway\Mozart::class,
         self::CCAVENUE               => \RZP\Gateway\Ccavenue::class,
+        self::EMERCHANTPAY           => \RZP\Gateway\Mozart::class,
 
         // heimdall
         self::ORG                          => \RZP\Models\Admin\Org::class,

@@ -4237,4 +4237,28 @@ return [
             'status_code'   => 200,
         ],
     ],
+
+    'testCreateEmerchantpayTerminal' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/terminals',
+            'content' => [
+                'gateway'                  => 'emerchantpay',
+                'gateway_merchant_id'      => '12344',
+                'gateway_secure_secret'    => 'gateway_secure_secret',
+                'gateway_secure_secret2'   => 'gateway_secure_secret2',
+                'gateway_terminal_id'      => 'emtrustly',
+                'app'                      =>  1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'      => '12344',
+                'enabled_apps'             => [
+                    'trustly'
+                ],
+                'app'                       => true,
+            ]
+        ],
+    ],
 ];

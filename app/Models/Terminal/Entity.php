@@ -1161,7 +1161,8 @@ class Entity extends Base\PublicEntity
         {
             $gateway = $input[self::GATEWAY];
 
-            if (in_array($gateway, Payment\Gateway::$internationalCardGateways, true) === true)
+            if ((in_array($gateway, Payment\Gateway::$internationalCardGateways, true) === true) or 
+                (in_array($gateway, Payment\Gateway::$internationalGateways, true) === true))
             {
                 $input[self::INTERNATIONAL] = 1;
             }

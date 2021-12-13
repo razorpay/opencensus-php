@@ -159,6 +159,7 @@ class Validator extends Base\Validator
         Payment\Gateway::MANDATE_HQ,
         Payment\Gateway::NETBANKING_BDBL,
         Payment\Gateway::MOBIKWIK,
+        Payment\Gateway::EMERCHANTPAY,
     ];
 
     protected static $createValidators = [
@@ -2199,6 +2200,29 @@ class Validator extends Base\Validator
     protected static $editTerminalDefaultRules = [
         Entity::STATUS  => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::PLAN_ID => 'sometimes|alpha_num|size:14'
+    ];
+
+    protected static $emerchantpayTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:emerchantpay',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::APP                         => 'required|boolean|in:1',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET2      => 'required|string',
+        Entity::GATEWAY_TERMINAL_ID         => 'required|string',
+        Entity::INTERNATIONAL               => 'required|boolean|in:1',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::CURRENCY                    => 'sometimes|array',
+    ];
+
+    protected static $emerchantpayEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::APP                         => 'sometimes|boolean|in:1',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2      => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
+        Entity::INTERNATIONAL               => 'sometimes|boolean',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::CURRENCY                    => 'sometimes|array',
     ];
 
     public function validateType()

@@ -245,7 +245,8 @@ class Validator extends Base\Validator
         'amount'                    => 'sometimes|integer',
         'token'                     => 'sometimes|string|max:20',
         'language_code'             => 'sometimes',
-        'wallet'                    => 'sometimes|string'
+        'wallet'                    => 'sometimes|string',
+        'provider'                  => 'sometimes|string'
     ];
 
     protected static $postFlowsRules = [
@@ -254,7 +255,8 @@ class Validator extends Base\Validator
         'currency'           => 'sometimes|string|size:3',
         'amount'             => 'sometimes|integer',
         'token'              => 'sometimes|string|max:20',
-        'wallet'             => 'sometimes|string'
+        'wallet'             => 'sometimes|string',
+        'provider'           => 'sometimes|string'
     ];
 
     protected static $pspAmountLimit = [

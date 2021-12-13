@@ -58,6 +58,11 @@ class AppMethod extends Service
 
         $input = $this->convertEmptyArrayToNull($input);
 
+        if ($action !== Action::AUTHORIZE)
+        {
+            unset($input['payment']['billing_address']);
+        }
+
         $content = [
             Request::ACTION  => $action,
             Request::GATEWAY => $gateway,

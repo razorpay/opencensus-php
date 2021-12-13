@@ -1282,6 +1282,12 @@ class Entity extends Base\PublicEntity
             $data[self::CURRENCY] = $this->getGatewayCurrency();
         }
 
+        if ($this->payment->getGateway() === Payment\Gateway::EMERCHANTPAY)
+        {
+            $data[self::AMOUNT]   = $this->getGatewayAmount();
+            $data[self::CURRENCY] = $this->getGatewayCurrency();
+        }
+
         if (($this->payment->isCard() === true) and
             ($this->payment->getConvertCurrency() === true))
         {

@@ -906,6 +906,11 @@ class Constants
     const ADDRESS_REQUIRED = 'address_required';
 
     /**
+     * Feature flag to collect address, first name and last name from customers
+     */
+    const ADDRESS_NAME_REQUIRED = 'address_name_required';
+
+    /**
      * Merchant feature used to disable the Sift JS integration
      */
     const ENABLE_SIFT_JS   =   'enable_sift_js';
@@ -1433,6 +1438,7 @@ class Constants
         self::PUBLIC_SETTERS_VIA_OAUTH        => true,
         self::ENABLE_GRANULAR_DOWNTIMES       => true,
         self::EDIT_SINGLE_VA                  => true,
+        self::ADDRESS_NAME_REQUIRED           => true,
     ];
     // Entity type constants
     const ACCOUNT                       = 'account';

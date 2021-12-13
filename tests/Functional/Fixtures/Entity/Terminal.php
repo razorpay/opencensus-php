@@ -4373,4 +4373,25 @@ class Terminal extends Base
         return $this->createUpiPaytmTerminal($attributes);
 
     }
+
+    public function createEmerchantpayTerminal(array $override)
+    {
+        $attributes = [
+            'merchant_id'            => '10000000000000',
+            'gateway'                => 'emerchantpay',
+            'card'                   => 0,
+            'netbanking'             => 0,
+            'app'                    => 1,
+            'gateway_merchant_id'    => 'emerchantpay_merchant',
+            'gateway_secure_secret'  => 'emerchantpay_secret',
+            'gateway_secure_secret2' => 'emerchantpay_secret2',
+            'gateway_terminal_id'    => 'emtrustly',
+            'mode'                   => 3,
+            'enabled_apps'           => ['trustly'],
+        ];
+
+        $attributes = array_merge($attributes, $override);
+        
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
 }

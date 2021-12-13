@@ -490,6 +490,19 @@ class Pricing extends Base
                 'max_fee'             => 5000,
                 'org_id'              => '100000razorpay',
             ],
+            [
+                'id'                  => '1zE31zbybacap3',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'app',
+                'payment_method_type' => null,
+                'payment_network'     => 'trustly',
+                'payment_issuer'      => null,
+                'percent_rate'        => 300,
+                'fixed_rate'          => 0,
+                'org_id'              => '100000razorpay',
+            ],
         ];
 
         return $rows;

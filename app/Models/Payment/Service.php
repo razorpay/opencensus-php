@@ -1820,7 +1820,11 @@ class Service extends Base\Service
 
         $data['avs_required'] = $this->isAddressRequired($iinEntity, $merchant);
 
+        $data['address_name_required'] = $this->isAddressWithNameRequired($input, $merchant);
+
         $this->updateCurrencyWrapperIfApplicable($input, $merchant, $data);
+
+        $this->updateCurrencyWrapperForAppsIfApplicable($input, $merchant, $data);
 
         if (isset($input['order_id']) === true)
         {
@@ -1915,6 +1919,42 @@ class Service extends Base\Service
                 $data = array_merge($data, $currencyInfo);
         }
     }
+
+    public function updateCurrencyWrapperForAppsIfApplicable($input, $merchant, & $data)
+    {
+        if ((isset($input['provider']) !== true) or
+            (Gateway::isDCCRequiredApp($input['provider']) !== true))
+        {
+            return;
+        }
+
+        $enabledCurrencyList = Gateway::getSupportedCurrenciesByApp($input['provider']);
+
+        if (empty($enabledCurrencyList) === true)
+        {
+            return;
+        }
+
+        if ((isset($input['currency']) === true) and
+            (isset($input['amount']) === true))
+        {
+            $amount   = $input['amount'];
+            $currency = $input['currency'];
+
+            // Merchant Based Markup for DCC Payments Default as 6
+            $currencyInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentage());
+
+            // First Currency in Currency Map is set as default currency for an app.
+            $currencyInfo['app_currency'] = $enabledCurrencyList[0];
+
+            $currencyInfo['all_currencies'] = array_intersect_key(
+                                                          $currencyInfo['all_currencies'],
+                                                          array_flip($enabledCurrencyList));
+
+            $data = array_merge($data, $currencyInfo);
+        }
+    }
+
 
     public function isDccEnabledIIN($iinEntity): bool
     {
@@ -4208,5 +4248,25 @@ class Service extends Base\Service
         );
 
         return (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON);
+    }
+
+    /**
+     * Used in two places [GetFlows , PaymentCreate]
+     * @param $iinEntity
+     * @param Merchant\Entity $merchant
+     * @return bool
+     */
+    public function isAddressWithNameRequired($input, Merchant\Entity $merchant): bool
+    {
+        if (($merchant !== null) and ($merchant->isInternational() === true) and
+            ($merchant->isAddressWithNameRequiredEnabled() === true))
+        {
+            if ((isset($input['provider']) === true) and
+                (in_array($input['provider'], Payment\Gateway::ADDRESS_REQUIRED_APPS) === true))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

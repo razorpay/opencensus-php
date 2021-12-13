@@ -1294,6 +1294,7 @@ class DatabaseSeeder extends Seeder
         $this->createTwidTerminal();
         $this->createCcavenueTerminal();
         $this->createCheckoutDotComTerminal();
+        $this->createEmerchantpayTerminal();
     }
 
     protected function createNetbankingCorporationTerminals()
@@ -3000,6 +3001,28 @@ class DatabaseSeeder extends Seeder
                 'created_at'            => time(),
                 'updated_at'            => time(),
             ]
+        );
+    }
+
+    protected function createEmerchantpayTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                     => 'h1t3hfa4d2b48K',
+                'merchant_id'            => Account::TEST_ACCOUNT,
+                'gateway'                => Gateway::EMERCHANTPAY,
+                'card'                   => '0',
+                'netbanking'             => '0',
+                'app'                    => '1',
+                'enabled_apps'           => '["trustly"]',
+                'gateway_merchant_id'    => 'gateway_merchant_id',
+                'gateway_secure_secret'  => Crypt::encrypt('gateway_secure_secret'),
+                'gateway_secure_secret2' => Crypt::encrypt('gateway_secure_secret2'),
+                'gateway_terminal_id'    => 'emtrustly',
+                'recurring'              => 0,
+                'created_at'             => time(),
+                'updated_at'             => time(),
+            )
         );
     }
 }
