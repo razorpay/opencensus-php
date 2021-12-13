@@ -40,12 +40,15 @@ class RemindersController extends Controller
             '^merchant_settings$',
             '^configs$',
             '^batch\/service\/control$',
+            '^service\/[[:alnum:]|_]{1,100}\/configure$',
         ],
         self::PUT => [
             '^merchant_config$',
+            '^service\/[[:alnum:]|_]{1,100}\/configure$',
         ],
         self::PATCH => [
             '^merchant_settings\/[[:alnum:]]{14}$',
+            '^configs\/namespace\/[[:alnum:]|_]{1,100}$',
         ],
         self::DELETE => [
             '^configs\/[[:alnum:]]{14}$',
@@ -68,13 +71,16 @@ class RemindersController extends Controller
             '^configs$',
             '^namespace\/[[:alnum:]|_]{1,100}\/control$',
             '^batch\/service\/control$',
+            '^service\/[[:alnum:]|_]{1,100}\/configure$',
         ],
         self::PUT => [
             '^configs\/[[:alnum:]]{14}$',
+            '^service\/[[:alnum:]|_]{1,100}\/configure$',
         ],
         self::PATCH => [
             '^merchant_settings\/[[:alnum:]]{14}$',
             '^reminders\/next_run_at\/[[:alnum:]]{14}$',
+            '^configs\/namespace\/[[:alnum:]|_]{1,100}$',
         ],
         self::DELETE => [
             '^configs\/[[:alnum:]]{14}$',
