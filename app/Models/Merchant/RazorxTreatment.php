@@ -270,6 +270,8 @@ final class RazorxTreatment
 
     const PARTNER_KYC_COMMUNICATION = 'partner_kyc_communication';
 
+    const PARTNER_SUBMERCHANT_INVITE_SMS = 'partner_submerchant_invite_sms';
+
     // experiment to enable self serving of auto kyc registered merchants
     const SELF_SERVE_AUTO_KYC = 'self_serve_auto_kyc';
 

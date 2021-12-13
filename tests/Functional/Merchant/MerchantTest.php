@@ -3574,7 +3574,7 @@ IFSC Code  ICIC0001206
             });
     }
 
-    protected function expectRavenSendSmsRequest($ravenMock, $templateName, $receiver)
+    public function expectRavenSendSmsRequest($ravenMock, $templateName, $receiver)
     {
         $ravenMock->shouldReceive('sendSms')
             ->times(1)

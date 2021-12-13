@@ -4,10 +4,8 @@ namespace RZP\Tests\Functional\Merchant\Partner;
 
 use DB;
 use Mail;
+use Mockery;
 use Carbon\Carbon;
-use RZP\Constants\Product;
-use RZP\Mail\Merchant\PartnerOnBoarded;
-use RZP\Models\BankingAccount;
 use RZP\Models\Batch;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -17,14 +15,15 @@ use Illuminate\Http\UploadedFile;
 use RZP\Models\Merchant\Request;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Merchant\AccessMap;
+use RZP\Mail\Merchant\PartnerOnBoarded;
 use RZP\Models\Merchant\MerchantApplications;
-use RZP\Models\Merchant\MerchantApplications\Entity;
 use RZP\Tests\Functional\Fixtures\Entity\User;
-use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Tests\Functional\Merchant\MerchantTest;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
+use RZP\Models\Merchant\MerchantApplications\Entity;
 
 class PartnerTest extends OAuthTestCase
 {
@@ -1561,6 +1560,20 @@ class PartnerTest extends OAuthTestCase
         $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator']);
 
         $this->ba->proxyAuth();
+
+        $razorxMock = $this->getMockBuilder(Merchant\Core::class)
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $razorxMock->expects($this->any())
+            ->method('isRazorxExperimentEnable')
+            ->willReturn(true);
+
+        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+
+        $this->app->instance('raven', $ravenMock);
+
+        (new MerchantTest())->expectRavenSendSmsRequest($ravenMock,'sms.onboarding.partner_submerchant_invite', '9999999999');
 
         $this->startTest();
     }

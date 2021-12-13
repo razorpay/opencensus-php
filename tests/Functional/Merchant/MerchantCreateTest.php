@@ -11,6 +11,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\User\Role;
 use RZP\Models\Card\Network;
 use RZP\Models\Batch\Header;
+use RZP\Models\Merchant\Core;
 use Razorpay\OAuth\Application;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
@@ -884,7 +885,21 @@ class MerchantCreateTest extends TestCase
 
         $redisKey = (new RateLimitBatch())->getRateLimitRedisKey("10000000000000");
 
-        $response = $this->startTest();
+        $razorxMock = $this->getMockBuilder(Core::class)
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $razorxMock->expects($this->any())
+            ->method('isRazorxExperimentEnable')
+            ->willReturn(true);
+
+        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+
+        $this->app->instance('raven', $ravenMock);
+
+        (new MerchantTest())->expectRavenSendSmsRequest($ravenMock,'sms.onboarding.partner_submerchant_invite', '9876543210');
+
+        $this->startTest();
 
         $submerchant = $this->getLastEntity('merchant', true);
 
