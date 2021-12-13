@@ -44,6 +44,7 @@ class CreateFundLoadingDowntimesTable extends Migration
 
             $table->integer(Entity::UPDATED_AT);
 
+            $table->index([Entity::START_TIME, Entity::END_TIME], 'fund_loading_downtimes_start_time_end_time_index');
         });
     }
 

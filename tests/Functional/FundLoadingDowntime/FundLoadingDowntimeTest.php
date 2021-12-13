@@ -56,6 +56,10 @@ class FundLoadingDowntimeTest extends TestCase
 
         $this->fixtures->create('fund_loading_downtimes', $attributes);
 
+        $downtime = $this->getDbLastEntity('fund_loading_downtimes');
+
+        $this->assertEquals($downtime['id'], $attributes['id']);
+
         $this->startTest();
     }
 
