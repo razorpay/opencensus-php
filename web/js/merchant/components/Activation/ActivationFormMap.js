@@ -145,10 +145,13 @@ const contactFields = [
         isEmailNonMandatoryOnL2Form,
         user,
       } = activation.props.user;
+      const hasContactNumber = !!activation.props.data.contact_mobile;
       // if user signup from mobile disable the field
       return (
         (isEmailMandatoryOnL1 || isEmailNonMandatoryOnL1 || isEmailNonMandatoryOnL2Form) &&
-        user?.contact_mobile_verified
+        user?.contact_mobile_verified &&
+        !user?.signup_via_email &&
+        hasContactNumber
       );
     },
     onBlur: function onBlur(e, error) {

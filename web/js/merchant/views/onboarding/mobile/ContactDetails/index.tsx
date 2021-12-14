@@ -115,7 +115,9 @@ const ContactDetails: React.FC<IContactDetailsProps> = ({ isFormLocked }) => {
                 disabled={
                   isFormLocked ||
                   getFieldStatus('contact_mobile').isDisabled ||
-                  (user?.user?.contact_mobile_verified && isEmailVerificationRequired)
+                  (user?.user?.contact_mobile_verified &&
+                    isEmailVerificationRequired &&
+                    !!data.contact_mobile)
                 }
                 helpText={getFieldStatus('contact_mobile').description}
                 onChange={(value) => {
