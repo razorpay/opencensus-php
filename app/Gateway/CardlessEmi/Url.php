@@ -16,7 +16,7 @@ class Url
     const REFUND_EARLYSALARY         = '/paymentrefund';
 
     // Zest Money Urls
-    const TEST_DOMAIN_ZESTMONEY      = 'http://staging-app.zestmoney.in/PaymentGateway/Razorpay';
+    const TEST_DOMAIN_ZESTMONEY      = 'http://staging-app.zestmoney.in/PaymentGateway/RazorPay';
     const LIVE_DOMAIN_ZESTMONEY      = 'https://app.zestmoney.in/PaymentGateway/RazorPay';
 
     const CHECK_ACCOUNT_ZESTMONEY    = '/users/v1';
