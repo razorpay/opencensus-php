@@ -15,6 +15,8 @@ class UnexpectedPaymentReason
 
     const QR_CODE_PAYMENT_FAILED_UPI_NOT_ENABLED     = 'UPI transactions are not enabled for the merchant';
 
+    const QR_CODE_CUTOFF_TIME_EXCEEDED               = 'The payment transaction time exceeds the cutoff limit';
+
     protected static $toCreateUnexpected = [
         self::QR_CODE_PAYMENT_FAILED_FEE_OR_TAX_TAMPERED,
         self::QR_CODE_PAYMENT_FAILED_UPI_NOT_ENABLED,

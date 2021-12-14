@@ -1290,6 +1290,16 @@ final class FactoryData
                                                  ]
         );
 
+        $factory(\RZP\Models\QrCodeConfig\Entity::class, [
+                                                     'id'          => $faker->uniqueid,
+                                                     'created_at'  => $faker->timestamp,
+                                                     'updated_at'  => $faker->timestamp,
+                                                     'merchant_id' => '10000000000000',
+                                                     'config_key'  => 'cut_off_time',
+                                                     'config_value'=> 1500,
+                                                 ]
+        );
+
         $factory(\RZP\Models\QrCode\NonVirtualAccountQrCode\Entity::class, [
                                                                              'id'          => $faker->uniqueid,
                                                                              'created_at'  => $faker->timestamp,

@@ -46,4 +46,9 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::DELETED_AT, $deleted_at);
     }
+
+    public function getValue()
+    {
+        return $this->getAttribute(self::VALUE);
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\QrPayment;
 
+use Carbon\Carbon;
 use RZP\Base\Luhn;
 use RZP\Models\Card;
 use RZP\Models\Base;
@@ -12,10 +13,14 @@ use RZP\Models\VirtualAccount;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\LogicException;
+use RZP\Gateway\Upi\Icici\Fields;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\BharatQr\GatewayResponseParams;
 use RZP\Models\QrCode\NonVirtualAccountQrCode;
 use RZP\Models\QrPayment\UnexpectedPaymentReason;
+use RZP\Models\QrCodeConfig\Keys as QrCodeConfigKeys;
+use RZP\Models\QrCodeConfig\Repository as QrConfigRepo;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Processor extends Base\Core
@@ -322,6 +327,55 @@ class Processor extends Base\Core
         return $this->paymentProcessor;
     }
 
+    public function checkIfCutoffTimeIsExceeded($qrPayment)
+    {
+        //The time format we get from the input is YYYYMMDDHHMMSS (datetime format), 
+        //the time format we need in the code is epoch, the method strtotime converts datetime format to epoch
+        if (array_key_exists(Fields::TXN_COMPLETION_DATE, $this->callbackData) == true)
+        {
+            $transactionTime = strtotime($this->callbackData[Fields::TXN_COMPLETION_DATE]);
+        }
+        elseif (array_key_exists(Fields::TXN_INIT_DATE, $this->callbackData) == true)
+        {
+            $transactionTime = strtotime($this->callbackData[Fields::TXN_INIT_DATE]);
+        }
+        else
+        {
+            return false;
+        }
+
+        $currentTimeStamp = Carbon::now()->getTimestamp();
+
+        $cutOffConfig = (new QrConfigRepo())->findQrCodeConfigsByMerchantIdAndKey($this->qrCode->merchant->getId(),
+                                                                                  QrCodeConfigKeys::CUT_OFF_TIME);
+
+        if (($cutOffConfig == null) or ($cutOffConfig->getValue() == null))
+        {
+            return false;
+        }
+
+        if ($currentTimeStamp - $transactionTime > $cutOffConfig->getValue())
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function checkIfExperimentEnabled($qrPayment)
+    {
+        $merchantId = $this->qrCode->merchant->getId();
+
+        $variant = $this->app->razorx->getTreatment($merchantId, RazorxTreatment::QR_CODE_CUTOFF_CONFIG, $this->mode);
+
+        if ($variant !== 'on')
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     private function checkPaymentExpectedAndSetQrCode($qrPayment)
     {
         $this->setQrCode($qrPayment);
@@ -348,6 +402,14 @@ class Processor extends Base\Core
             ($qrPayment->getAmount() !== $this->qrCode->getAmount()))
         {
             $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::QR_PAYMENT_AMOUNT_MISMATCH);
+
+            return;
+        }
+
+        if (($this->checkIfExperimentEnabled($qrPayment) == true)
+            and ($this->checkIfCutoffTimeIsExceeded($qrPayment) == true))
+        {
+            $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::QR_CODE_CUTOFF_TIME_EXCEEDED);
 
             return;
         }
