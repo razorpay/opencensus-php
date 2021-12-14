@@ -9,6 +9,7 @@ Use Carbon\Carbon;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Excel\Export as ExcelExport;
 use RZP\Excel\ExportSheet as ExcelSheetExport;
@@ -433,6 +434,12 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
         $this->ba->adminAuth();
 
         $this->startTest();
+
+        $fileStore = $this->getDbLastEntityToArray(Entity::FILE_STORE);
+
+        $this->assertEquals("yesbank/nach/input_file/MMS-CANCEL-YESB-shared_utility_code-07032020-000001-INP", $fileStore['name']);
+
+        $this->assertEquals("enach_npci_nb_cancel", $fileStore['type']);
     }
 
     public function testCancelEmandateTokenWithMutipleUtilityCode()

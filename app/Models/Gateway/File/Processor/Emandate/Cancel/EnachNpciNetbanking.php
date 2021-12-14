@@ -30,8 +30,8 @@ class EnachNpciNetbanking extends Base
     const EXTENSION = FileStore\Format::ZIP;
     const FILE_TYPE = FileStore\Type::ENACH_NPCI_NB_CANCEL;
     const S3_PATH   = 'yesbank/nach/input_file/';
-    const FILE_NAME = 'MMS-CANCEL-YESB-{$utilityCode}-{$date}-API0{$count}-INP';
-    const ZIP_FILE  = 'MMS-CANCEL-YESB-{$utilityCode}-{$date}-API000001-INP';
+    const FILE_NAME = 'MMS-CANCEL-YESB-{$utilityCode}-{$date}-{$count}-INP';
+    const ZIP_FILE  = 'MMS-CANCEL-YESB-{$utilityCode}-{$date}-000001-INP';
 
     protected $fileStore = [];
 
@@ -51,7 +51,7 @@ class EnachNpciNetbanking extends Base
             {
                 foreach ($xmls as $count => $xml)
                 {
-                    $count = str_pad(++$count, 5, '0', STR_PAD_LEFT);
+                    $count = str_pad(++$count, 6, '0', STR_PAD_LEFT);
 
                     $fileName = strtr(self::FILE_NAME, ['{$utilityCode}' => $key, '{$date}' => $date, '{$count}' => $count]);
 

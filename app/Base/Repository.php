@@ -1136,9 +1136,9 @@ class Repository extends \Razorpay\Spine\Repository
         return $connection;
     }
 
-    public function getReportingReplicaConnection(string $mode = null)
+    public function getReportingReplicaConnection(string $mode = null): string
     {
-        if (in_array($this->app['env'], ['testing', 'dev'], true) === true)
+        if (in_array($this->app['env'], ['testing', 'dev', 'testing_docker'], true) === true)
         {
             return Config::get('database.default');
         }
