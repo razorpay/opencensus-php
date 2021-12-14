@@ -3817,7 +3817,7 @@ Team Razorpay',
     {
         $rejectionReason = ['subject' => 'Test subject', 'body' => 'Test body'];
 
-        $observerData = [ 'rejection_reason' => $rejectionReason, 'ticket_id' => '123', 'fd_instance' => 'rzp' ];
+        $observerData = [ 'rejection_reason' => $rejectionReason, 'ticket_id' => '123', 'fd_instance' => 'rzpind' ];
 
         $this->updateObserverData($workflowActionId, $observerData);
 
@@ -4317,7 +4317,7 @@ Team Razorpay',
     {
         $rejectionReason = ['subject' => 'Test subject', 'body' => 'Test body'];
 
-        $observerData = [ 'rejection_reason' => $rejectionReason, 'ticket_id' => '123', 'fd_instance' => 'rzp' ];
+        $observerData = [ 'rejection_reason' => $rejectionReason, 'ticket_id' => '123', 'fd_instance' => 'rzpind' ];
 
         $this->updateObserverData('w_action_' . $workflowActionId, $observerData);
 
@@ -4327,7 +4327,7 @@ Team Razorpay',
 
         $insertedObserverData = $insertedObserverData['workflow_observer_data'];
 
-        $expectedObserverData = ['rejection_reason' => json_encode($rejectionReason), 'ticket_id' => '123', 'fd_instance' => 'rzp' ];
+        $expectedObserverData = ['rejection_reason' => json_encode($rejectionReason), 'ticket_id' => '123', 'fd_instance' => 'rzpind' ];
 
         $this->assertArraySelectiveEquals($expectedObserverData, $insertedObserverData);
 

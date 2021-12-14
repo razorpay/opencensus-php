@@ -32,7 +32,7 @@ class TicketCreateCallback extends Base
 
     protected function setCfMerchantIdDashboardForTicket(Entity $ticket)
     {
-        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$ticket->getFdInstance()];
+        $url = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD, $ticket->getFdInstance());;
 
         $data = [
             Constants::CUSTOM_FIELDS => [

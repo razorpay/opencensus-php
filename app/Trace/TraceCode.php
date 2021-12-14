@@ -2614,6 +2614,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARE_SERVICE_RESPONSE                                 = 'CARE_SERVICE_RESPONSE';
 
     const FRESHDESK_DISPUTE_REQUEST                             = 'FRESHDESK_DISPUTE_REQUEST';
+    const FRESHDESK_OLD_INSTANCE                                = 'FRESHDESK_OLD_INSTANCE';
     const FRESHDESK_DISPUTE_REQUEST_ERROR                       = 'FRESHDESK_DISPUTE_REQUEST_ERROR';
     const FRESHDESK_DISPUTE_TICKET_ACTION                       = 'FRESHDESK_DISPUTE_TICKET_ACTION';
     const FRESHDESK_DISPUTE_AUTOMATION_RAZORX_VARIANT           = 'FRESHDESK_DISPUTE_AUTOMATION_RAZORX_VARIANT';

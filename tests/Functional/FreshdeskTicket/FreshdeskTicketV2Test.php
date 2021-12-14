@@ -55,7 +55,7 @@ class FreshdeskTicketV2Test extends TestCase
 
         $this->fixtures->create('merchant_freshdesk_tickets');
 
-        $ticketDetails["fd_instance"] = "rzp";
+        $ticketDetails["fd_instance"] = "rzpind";
 
         $this->fixtures->create('merchant_freshdesk_tickets', [
             'id'             => 'razorpayid0012',
@@ -212,7 +212,7 @@ class FreshdeskTicketV2Test extends TestCase
         $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_TICKET);
 
         $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000+AND+custom_string%3A%27Merchant%27+AND+custom_string%3A%27Activation%27%22&page=1', 'get',
-            $expectedRequestResponse['request'], $expectedRequestResponse['response'], 4);
+            $expectedRequestResponse['request'], $expectedRequestResponse['response'], 3);
 
         $this->createTicketsToFetch();
 
@@ -240,11 +240,8 @@ class FreshdeskTicketV2Test extends TestCase
                 'fetch_response'    => self::RZP_FETCH_TICKET_FILTER_AGENT,
                 'content'   =>
                     [
-                    'total'   => 4,
+                    'total'   => 3,
                     'results' => [
-                        [
-                            'id' => 'razorpayid0013',
-                        ],
                         [
                             'id' => 'razorpayid0013',
                         ],
@@ -268,7 +265,7 @@ class FreshdeskTicketV2Test extends TestCase
                 $expectedRequestResponse    =   $this->getExpectedRequestResponse($testCase['fetch_response']);
 
                 $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000+AND+custom_string%3A%27Merchant%27+AND+custom_string%3A%27Activation%27+AND+custom_string%3A%27' . $testCase['cf_created_by'] . '%27%22&page=1', 'get',
-                                                            $expectedRequestResponse['request'], $expectedRequestResponse['response'], 4);
+                                                            $expectedRequestResponse['request'], $expectedRequestResponse['response'], 3);
             }
 
             if (empty($testCase['content']) === false)
@@ -286,7 +283,7 @@ class FreshdeskTicketV2Test extends TestCase
         $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_TICKET);
 
         $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000+AND+custom_string%3A%27Merchant%27+AND+custom_string%3A%27Activation%27%22&page=1', 'get',
-                                                    $expectedRequestResponse['request'], $expectedRequestResponse['response'], 2);
+                                                    $expectedRequestResponse['request'], $expectedRequestResponse['response'], 1);
 
         $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000+AND+custom_string%3A%27Merchant%27+AND+custom_string%3A%27Activation%27%22&page=1', 'get',
                                                     $expectedRequestResponse['request'], null, 2);
@@ -301,7 +298,7 @@ class FreshdeskTicketV2Test extends TestCase
         $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_TICKET);
 
         $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000+AND+%28status%3A2%29%22&page=1', 'get',
-            $expectedRequestResponse['request'], $expectedRequestResponse['response'], 4);
+            $expectedRequestResponse['request'], $expectedRequestResponse['response'], 3);
 
         $this->createTicketsToFetch();
 
@@ -324,7 +321,7 @@ class FreshdeskTicketV2Test extends TestCase
             $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_TICKET);
 
             $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000%22&page=1', 'get',
-                $expectedRequestResponse['request'], $expectedRequestResponse['response'], 4);
+                $expectedRequestResponse['request'], $expectedRequestResponse['response'], 3);
 
             $this->startTest();
         }
@@ -479,42 +476,6 @@ class FreshdeskTicketV2Test extends TestCase
         $this->startTest();
     }
 
-    public function testCreateTicketRzp()
-    {
-        $frDueBy = time() + self::DAY * 2;
-
-        $frDueByFreshdeskFormat = $this->getTimeInFreshdeskFormat($frDueBy);
-
-        $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET);
-
-        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
-            $expectedRequestResponse['request'], $expectedRequestResponse['response']);
-
-        $this->fixtures->merchant->edit('10000000000000', ['signup_via_email' => 1]);
-
-        $this->fixtures->user->edit('MerchantUser01', ['signup_via_email' => 1]);
-
-        $response = $this->startTest();
-
-        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
-
-        $fdInstance = $ticket['ticket_details']['fd_instance'];
-
-        $this->assertNotEquals('razorpayid0012', $ticket['id']);
-
-        $this->assertNotEquals('99', $response['id']);
-
-        $this->assertEquals($response['id'], $ticket['id']);
-
-        // in this test case, we didnt have average FR response time for category+priority. so we proxied the FR time given by Freshdesk
-
-        $this->assertEquals($frDueByFreshdeskFormat, $response['fr_due_by']);
-
-        $this->assertEquals($frDueByFreshdeskFormat, $ticket['ticket_details']['fr_due_by']);
-
-        $this->assertEquals('rzp', $fdInstance);
-    }
-
     public function testCreateTicketRzpMobileSignup()
     {
         $frDueBy = time() + self::DAY * 2;
@@ -523,7 +484,7 @@ class FreshdeskTicketV2Test extends TestCase
 
         $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET_MOBILE_SIGNUP);
 
-        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzpind',
             $expectedRequestResponse['request'], $expectedRequestResponse['response']);
 
         $response = $this->startTest();
@@ -544,14 +505,14 @@ class FreshdeskTicketV2Test extends TestCase
 
         $this->assertEquals($frDueByFreshdeskFormat, $ticket['ticket_details']['fr_due_by']);
 
-        $this->assertEquals('rzp', $fdInstance);
+        $this->assertEquals('rzpind', $fdInstance);
     }
 
     public function testCreateTicketRzpWithHtmlTagsAndNoMerchantName()
     {
         $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET_HTML_TAGS);
 
-        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzpind',
             $expectedRequestResponse['request'], $expectedRequestResponse['response']);
 
         $this->fixtures->merchant->edit('10000000000000', ['name' => null]);
@@ -628,7 +589,7 @@ class FreshdeskTicketV2Test extends TestCase
 
             $expectedRequestResponse['response']['cc_emails'] = $testcase['cc_emails'];
 
-            $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
+            $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzpind',
                 $expectedRequestResponse['request'], $expectedRequestResponse['response']);
 
             $this->testData[__FUNCTION__]['response']['cc_emails'] = $testcase['cc_emails'];
@@ -643,7 +604,7 @@ class FreshdeskTicketV2Test extends TestCase
 
         $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET_SALESFORCE);
 
-        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzpind',
             $expectedRequestResponse['request'], $expectedRequestResponse['response']);
 
         $this->startTest();
@@ -661,7 +622,7 @@ class FreshdeskTicketV2Test extends TestCase
 
         $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET_INTERNAL_AUTH);
 
-        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzpind',
                                                                $expectedRequestResponse['request'], $expectedRequestResponse['response']);
 
         $this->startTest();
@@ -1393,7 +1354,7 @@ class FreshdeskTicketV2Test extends TestCase
         $testCases = [
             [
                 'ticket_id'   => '12',
-                'fd_instance' => 'rzp',
+                'fd_instance' => 'rzpind',
             ],
         ];
 
@@ -1419,7 +1380,7 @@ class FreshdeskTicketV2Test extends TestCase
         $testCases = [
             [
                'ticket_id'     => '1234',
-               'fd_instance'   => 'rzp',
+               'fd_instance'   => 'rzpind',
             ],
             [
                 'ticket_id'     => '12345',
@@ -1544,7 +1505,6 @@ class FreshdeskTicketV2Test extends TestCase
         $expectedUrlCap = $this->app['config']->get('applications.freshdesk.urlcap') . '/' . $expectedPath;
 
         $expectedUrls = [
-            'rzp'       => $expectedUrl1,
             'rzpind'    => $expectedUrlInd,
             'rzpsol'    => $expectedUrl2,
             'rzpx'      => $expectedUrlx,

@@ -41,8 +41,7 @@ class Service extends Base\Service
     const FRESHDESK_INSTANCES = [
         Type::SUPPORT_DASHBOARD_X => [Constants::RZPX   => Constants::URLX,
                                       Constants::RZPCAP => Constants::URLCAP],
-        Type::SUPPORT_DASHBOARD   => [Constants::RZP    => Constants::URL,
-                                      Constants::RZPIND => Constants::URLIND,
+        Type::SUPPORT_DASHBOARD   => [Constants::RZPIND => Constants::URLIND,
                                       Constants::RZPSOL => Constants::URL2,
                                       Constants::RZPCAP => Constants::URLCAP]
     ];
@@ -130,7 +129,7 @@ class Service extends Base\Service
 
         $fdInstance = $this->getFdInstanceWhileCreatingTickets($input);
 
-        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
+        $url = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD, $fdInstance);
 
         unset($input[Constants::FD_INSTANCE]);
 
@@ -145,20 +144,7 @@ class Service extends Base\Service
 
     protected function getFdInstanceWhileCreatingTickets($input)
     {
-        $result = $this->app->razorx->getTreatment($this->app['request']->getTaskId()
-            , Constants::RAZORX_FLAG_FRESHDESK_CUSTOMER_TICKET_CREATION_SERVER_PICK, Mode::LIVE);
-
-        if ($result === "on")
-        {
-            $fdInstance = Constants::RZPIND;
-        }
-
-        else
-        {
-            $fdInstance = Constants::RZP;
-        }
-
-        return $fdInstance;
+        return Constants::RZPIND;
     }
 
     /**
@@ -197,7 +183,7 @@ class Service extends Base\Service
 
         foreach ($fdInstance as $key => $value)
         {
-            $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance[$key]];
+            $url = $url = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD,$fdInstance[$key]);
 
             $tickets = $this->app[Constants::FRESHDESK_CLIENT]->getCustomerTickets($queryParams, $url);
 
@@ -271,10 +257,9 @@ class Service extends Base\Service
 
         $email = $input['email'];
 
-        $fdInstances = [Constants::RZPIND, Constants::RZP];
+        $fdInstances = [Constants::RZPIND];
 
-        $urls = [self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstances[0]],
-                self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstances[1]]];
+        $urls = [self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstances[0]]];
 
         $ticketFound = false;
 
@@ -360,7 +345,7 @@ class Service extends Base\Service
 
         $fdInstance = $input[Constants::FD_INSTANCE];
 
-        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
+        $url = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD, $fdInstance);
 
         unset($input[Constants::FD_INSTANCE]);
 
@@ -392,7 +377,7 @@ class Service extends Base\Service
 
         $input = $this->appendUserEmailToCCEmails($input);
 
-        $url = self::FRESHDESK_INSTANCES[$type][$fdInstance];
+        $url = $this->getFreshdeskUrlType($type, $fdInstance);
 
         unset($input[Constants::FD_INSTANCE]);
 
@@ -437,7 +422,7 @@ class Service extends Base\Service
 
         $fdInstance = $ticketEntity->getFdInstance();
 
-        $url = self::FRESHDESK_INSTANCES[$type][$fdInstance];
+        $url = $this->getFreshdeskUrlType($type, $fdInstance);
 
         $ticketWithStats = $this->app[Constants::FRESHDESK_CLIENT]->getTicketWithStats($ticketEntity->getTicketId(), $url);
 
@@ -529,7 +514,7 @@ class Service extends Base\Service
 
         $fdInstance = $ticketEntity->getFdInstance();
 
-        $url = self::FRESHDESK_INSTANCES[$type][$fdInstance];
+        $url = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD,$fdInstance);
 
         $queryParams = [
             Constants::PAGE     => $input[Constants::PAGE],
@@ -560,7 +545,7 @@ class Service extends Base\Service
 
         $fdInstance = $ticketEntity->getFdInstance();
 
-        $url = self::FRESHDESK_INSTANCES[$type][$fdInstance];
+        $url = $this->getFreshdeskUrlType($type, $fdInstance);
 
         $ticketReplyResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicketReply($ticketEntity->getTicketId(), $input, $url);
 
@@ -580,7 +565,7 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('create_' . studly_case($type) . '_grievance', $input);
 
-        $url = self::FRESHDESK_INSTANCES[$type][$fdInstance];
+        $url = $this->getFreshdeskUrlType($type, $fdInstance);;
 
         $tags = $this->appendTagsToTicket($ticketEntity->getTicketId(), $fdInstance, Constants::GRIEVANCE_TAGS);
 
@@ -839,7 +824,7 @@ class Service extends Base\Service
 
     protected function getFdInstance($type,array &$input): string
     {
-        $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
+        $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZPIND;
 
         $subCategoryFound = false;
 
@@ -1303,7 +1288,7 @@ class Service extends Base\Service
 
         $fdInstance = $ticket->getFdInstance();
 
-        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
+        $url = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD, $fdInstance);;
 
         $response = $this->app['freshdesk_client']->updateTicketV2($ticket->getTicketId(), $content, $url);
 
@@ -1326,7 +1311,7 @@ class Service extends Base\Service
             Constants::TICKET_TAGS  => $tags
         ];
 
-        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
+        $url = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD, $fdInstance);;
 
         return $this->app['freshdesk_client']->updateTicketV2($ticketId, $content, $url);
     }
@@ -1347,7 +1332,7 @@ class Service extends Base\Service
             Constants::BODY        =>   $replyBody
         ];
 
-        $url = self::FRESHDESK_INSTANCES[$type][$fdInstance];
+        $url = $this->getFreshdeskUrlType($type, $fdInstance);
 
         return $this->app[Constants::FRESHDESK_CLIENT]->postTicketReply($freshdeskTicketId, $input, $url);
     }
@@ -1419,7 +1404,7 @@ class Service extends Base\Service
 
     protected function appendTagsToTicket($ticketId, $fdInstance, array $tagsToAdd)
     {
-        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
+        $url = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD,$fdInstance);
 
         $ticket = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($ticketId, $url);
 
@@ -1555,6 +1540,22 @@ class Service extends Base\Service
         }
 
         return $input;
+    }
+    protected function getFreshdeskUrlType(string $type, string $fdInstance)
+    {
+        if ($fdInstance === Constants::RZP)
+        {
+            $this->trace->info(TraceCode::FRESHDESK_OLD_INSTANCE, [
+                'route_name'    =>  $this->app['request.ctx']->getRoute(),
+            ]);
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+        else
+        {
+            return self::FRESHDESK_INSTANCES[$type][$fdInstance];
+        }
+
     }
 
     protected function updateStatusForTicket($type, $freshdeskTicketId, $merchant_id, $fd_instance, $status)

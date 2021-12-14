@@ -11,13 +11,11 @@ trait FreshdeskTrait
 
     protected function expectFreshdeskRequestAndRespondWith($expectedPath, $expectedMethod, $expectedContent, $respondWith = [], $times = 1)
     {
-        $expectedUrl1 = $this->app['config']->get('applications.freshdesk.url') . '/' . $expectedPath;
         $expectedUrl2 = $this->app['config']->get('applications.freshdesk.url2') . '/' . $expectedPath;
         $expectedUrlInd = $this->app['config']->get('applications.freshdesk.urlind') . '/' . $expectedPath;
         $expectedUrlCap = $this->app['config']->get('applications.freshdesk.urlcap') . '/' . $expectedPath;
 
-
-        $expectedUrls = [$expectedUrl1, $expectedUrl2, $expectedUrlInd, $expectedUrlCap];
+        $expectedUrls = [ $expectedUrl2, $expectedUrlInd, $expectedUrlCap];
 
         $this->freshdeskClientMock
             ->shouldReceive('getResponse')
@@ -91,7 +89,7 @@ trait FreshdeskTrait
 
     public function getDefaultFreshdeskArray($merchantId="10000000000000")
         {
-            $ticketDetails["fd_instance"] = "rzp";
+            $ticketDetails["fd_instance"] = "rzpind";
 
             return [
             'id'             => 'razorpayid0012',

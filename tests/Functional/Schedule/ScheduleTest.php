@@ -300,7 +300,7 @@ class ScheduleTest extends TestCase
 
         $this->updateObserverData($response['id'],  [
             'ticket_id'     => 123,
-            'fd_instance'   => 'rzp'
+            'fd_instance'   => 'rzpind'
         ]);
 
         $this->esClient->indices()->refresh();
@@ -783,7 +783,7 @@ class ScheduleTest extends TestCase
                 'method' => "POST",
                 'workflow_observer_data' =>  [
                     'ticket_id' => '123',
-                    'fd_instance' => "rzp"
+                    'fd_instance' => "rzpind"
                 ],
                 'state' => "open",
                 'route' => "schedule_assign"

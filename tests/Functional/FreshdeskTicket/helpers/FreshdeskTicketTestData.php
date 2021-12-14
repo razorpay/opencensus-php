@@ -276,32 +276,6 @@ return [
         'response' => [
             'content'     => [
                 [
-                    'number'            => 3358,
-                    'status'            => 'Closed',
-                    'subject'           => '',
-                    'source'            => 2,
-                    'type'              => null,
-                    'payment_id'        => 'FrTYsVAuCrW8Fm',
-                    'refund_id'         => null,
-                    'order_id'          => null,
-                    'transaction_id'    => 'pay_FrTYsVAuCrW8Fm',
-                    'created_at'        => '2020-10-28T11:02:50Z',
-                    'updated_at'        => '2020-10-28T11:02:51Z',
-                ],
-                [
-                    'number'            => 3328,
-                    'status'            => 'Closed',
-                    'subject'           => '',
-                    'source'            => 2,
-                    'type'              => null,
-                    'payment_id'        => 'FrTYsVAuCrW8Fm',
-                    'refund_id'         => null,
-                    'order_id'          => null,
-                    'transaction_id'    => 'pay_FrTYsVAuCrW8Fm',
-                    'created_at'        => '2020-10-28T11:02:50Z',
-                    'updated_at'        => '2020-10-28T11:02:51Z',
-                ],
-                [
                     'number'            => 3368,
                     'status'            => 'Closed',
                     'subject'           => '',

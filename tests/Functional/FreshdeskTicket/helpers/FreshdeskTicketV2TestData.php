@@ -47,14 +47,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'total'   => 4,
+                'total'   => 2,
                 'results' => [
-                    [
-                        'id' => 'razorpayid0012',
-                    ],
-                    [
-                        'id' => 'razorpayid0034',
-                    ],
                     [
                         'id' => 'razorpayid0012',
                     ],
@@ -78,7 +72,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'total'   => 8,
+                'total'   => 6,
                 'results' => [
                     [
                         'id' => 'razorpayid0012',
@@ -97,13 +91,7 @@ return [
                     ],
                     [
                         'id' => 'razorpayid0034',
-                    ],
-                    [
-                        'id' => 'razorpayid0012',
-                    ],
-                    [
-                        'id' => 'razorpayid0034',
-                    ],
+                    ]
                 ],
             ],
         ],
@@ -119,13 +107,10 @@ return [
                           'cf_created_by'            => 'merchant'
                 ]
         ],
-        'response' => [
+       'response' => [
             'content' => [
-                'total'   => 4,
+                'total'   => 3,
                 'results' => [
-                    [
-                        'id' => 'razorpayid0012',
-                    ],
                     [
                         'id' => 'razorpayid0012',
                     ],
@@ -167,14 +152,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'total'   => 8,
+                'total'   => 6,
                 'results' => [
-                    [
-                        'id'    => 'razorpayid0012',
-                    ],
-                    [
-                        'id'    => 'razorpayid0034',
-                    ],
                     [
                         'id'    => 'razorpayid0012',
                     ],
@@ -221,14 +200,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'total'   => 8,
+                'total'   => 6,
                 'results' => [
-                    [
-                        'id'    => 'razorpayid0012',
-                    ],
-                    [
-                        'id'    => 'razorpayid0034',
-                    ],
                     [
                         'id'    => 'razorpayid0012',
                     ],
@@ -709,7 +682,7 @@ return [
             'content' => [
                 'ticket_id'     => '12',
                 'event'         => 'TICKET_CLOSED',
-                'fd_instance'   => 'rzp',
+                'fd_instance'   => 'rzpind',
             ],
         ],
         'response' => [
@@ -726,7 +699,7 @@ return [
             'content' => [
                 'ticket_id'   => '12',
                 'event'       => 'invalid event',
-                'fd_instance' => 'rzp',
+                'fd_instance' => 'rzpind',
             ],
         ],
         'response'  => [
@@ -850,7 +823,7 @@ return [
                 'ticket_id'         => '1234',
                 'type'              => 'support_dashboard',
                 'ticket_details'    => [
-                    'fd_instance'   => 'rzp',
+                    'fd_instance'   => 'rzpind',
                     'fr_due_by'     => '2020-12-08T16:04:20Z',
                 ],
             ],
@@ -930,7 +903,7 @@ return [
                 'due_by'        => '2021-06-04T05:21:22Z',
                 'fr_due_by'     => '2021-06-04T05:21:22Z',
                 'status'        => 2,
-                'fd_instance'   => 'rzp',
+                'fd_instance'   => 'rzpind',
                 'email'         => 'test@razorpay.com',
                 'custom_fields' => [
                     'cf_requester_category'    => 'Merchant',

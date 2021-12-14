@@ -1731,7 +1731,7 @@ class MerchantTest extends TestCase
 
         $this->updateObserverData($response['id'],  [
             'ticket_id'     => '123',
-            'fd_instance'   => 'rzp'
+            'fd_instance'   => 'rzpind'
         ]);
 
         $this->esClient->indices()->refresh();
@@ -1800,7 +1800,7 @@ class MerchantTest extends TestCase
 
         $this->updateObserverData($response['id'],  [
             'ticket_id'     => '123',
-            'fd_instance'   => 'rzp'
+            'fd_instance'   => 'rzpind'
         ]);
 
         $this->esClient->indices()->refresh();
@@ -1878,7 +1878,7 @@ class MerchantTest extends TestCase
 
         $this->updateObserverData($response['id'],  [
             'ticket_id'     => '123',
-            'fd_instance'   => 'rzp'
+            'fd_instance'   => 'rzpind'
         ],'live');
 
         $workflowAction = $this->getLastEntity('workflow_action', true,'live');
@@ -5890,7 +5890,7 @@ IFSC Code  ICIC0001206
 
         $this->updateObserverData($response['id'],  [
             'ticket_id'     => '123',
-            'fd_instance'   => 'rzp'
+            'fd_instance'   => 'rzpind'
         ]);
 
         $this->fixtures->create('merchant_freshdesk_tickets', $this->getDefaultFreshdeskArray());
@@ -5999,7 +5999,7 @@ IFSC Code  ICIC0001206
 
         $this->updateObserverData($response['id'],  [
             'ticket_id'     => '123',
-            'fd_instance'   => 'rzp'
+            'fd_instance'   => 'rzpind'
         ]);
 
         $this->fixtures->create('merchant_freshdesk_tickets', $this->getDefaultFreshdeskArray());
@@ -6085,7 +6085,7 @@ IFSC Code  ICIC0001206
 
         $this->updateObserverData($response['id'],  [
             'ticket_id'     => '123',
-            'fd_instance'   => 'rzp'
+            'fd_instance'   => 'rzpind'
         ]);
 
         $this->fixtures->create('merchant_freshdesk_tickets', $this->getDefaultFreshdeskArray());
@@ -6184,7 +6184,7 @@ IFSC Code  ICIC0001206
 
         $this->updateObserverData($response['id'],  [
             'ticket_id'     => '123',
-            'fd_instance'   => 'rzp'
+            'fd_instance'   => 'rzpind'
         ]);
 
         $this->fixtures->create('merchant_freshdesk_tickets', $this->getDefaultFreshdeskArray());
@@ -11697,7 +11697,7 @@ IFSC Code  ICIC0001206
                 'payload' => [
                     'workflow_observer_data' =>  [
                         'ticket_id' => 123,
-                        'fd_instance' => "rzp"
+                        'fd_instance' => "rzpind"
                     ],
 
                 ],
@@ -11714,7 +11714,7 @@ IFSC Code  ICIC0001206
                 'payload' => [
                     'workflow_observer_data' =>  [
                         'ticket_id' => 123,
-                        'fd_instance' => "rzp"
+                        'fd_instance' => "rzpind"
                     ],
 
                 ],
@@ -11731,7 +11731,7 @@ IFSC Code  ICIC0001206
                 'payload' => [
                     'workflow_observer_data' =>  [
                         'ticket_id' => 123,
-                        'fd_instance' => "rzp"
+                        'fd_instance' => "rzpind"
                     ],
 
                 ],
@@ -11748,7 +11748,7 @@ IFSC Code  ICIC0001206
                 'payload' => [
                     'workflow_observer_data' =>  [
                         'ticket_id' => 123,
-                        'fd_instance' => "rzp"
+                        'fd_instance' => "rzpind"
                     ],
 
                 ],
@@ -13725,7 +13725,7 @@ The same has been enabled for the account.
 
         $rejectionReason = ['subject' => 'Test subject', 'body' => 'Test body'];
 
-        $observerData = [ 'rejection_reason' => $rejectionReason, 'ticket_id' => '123', 'fd_instance' => 'rzp' ];
+        $observerData = [ 'rejection_reason' => $rejectionReason, 'ticket_id' => '123', 'fd_instance' => 'rzpind' ];
 
         $this->updateObserverData($workflowActionId, $observerData);
 
@@ -13735,7 +13735,7 @@ The same has been enabled for the account.
 
         $insertedObserverData = $insertedObserverData['workflow_observer_data'];
 
-        $expectedObserverData = ['rejection_reason' => json_encode($rejectionReason), 'ticket_id' => '123', 'fd_instance' => 'rzp' ];
+        $expectedObserverData = ['rejection_reason' => json_encode($rejectionReason), 'ticket_id' => '123', 'fd_instance' => 'rzpind' ];
 
         $this->assertArraySelectiveEquals($insertedObserverData, $expectedObserverData);
 

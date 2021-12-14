@@ -22,7 +22,7 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
      * @param string $authKey
      * @return array $response
      */
-    public function getTickets(array $queryParams, string $urlKey = 'url', string $authKey = 'token') : array
+    public function getTickets(array $queryParams, string $urlKey = 'urlind', string $authKey = 'token') : array
     {
         $response = [
             'results' => [
@@ -144,7 +144,7 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
      * @param $authKey
      * @return array $response
      */
-    public function getTicketConversations(string $ticketId, array $queryParams, $urlKey = 'url', $authKey = 'token') : array
+    public function getTicketConversations(string $ticketId, array $queryParams, $urlKey = 'urlind', $authKey = 'token') : array
     {
         $response = [
             [
@@ -182,7 +182,7 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
      * @param $authKey
      * @return array $response
      */
-    public function getTicketWithStats(string $ticketId, $urlKey = 'url', $authKey = 'token') : array
+    public function getTicketWithStats(string $ticketId, $urlKey = 'urlind', $authKey = 'token') : array
     {
         $response = [
             'cc_emails'=> [],
@@ -309,7 +309,7 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
      * @param $authKey
      * @return array $response
      */
-    public function postTicketReply(string $ticketId, array $input, $urlKey = 'url', $authKey = 'token') : array
+    public function postTicketReply(string $ticketId, array $input, $urlKey = 'urlind', $authKey = 'token') : array
     {
         $response = [
             'id'=> 11128041196,
@@ -341,7 +341,7 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
      * @param string $urlKey
      * @return array $response
      */
-    public function postTicket(array $input, $urlKey = 'url') : array
+    public function postTicket(array $input, $urlKey = 'urlind') : array
     {
         $response = [
             "cc_emails" => ["support@razorpay.com"],
@@ -377,7 +377,7 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
         return $response;
     }
 
-    public function getCustomerTickets($queryString, string $urlKey = 'url')
+    public function getCustomerTickets($queryString, string $urlKey = 'urlind')
     {
         $successResponse = [
             [
@@ -559,14 +559,8 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
         }
     }
 
-    public function fetchTicketById(string $ticketId, $urlKey = 'url')
+    public function fetchTicketById(string $ticketId, $urlKey = 'urlind')
     {
-        if (($urlKey == 'urlind') and
-            ($ticketId !== "3331"))
-        {
-            return [];
-        }
-
         switch ($ticketId)
         {
             case 3328:
@@ -690,7 +684,7 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
         }
     }
 
-    public function updateTicketV2(string $ticketId, array $input, $urlKey = 'url')
+    public function updateTicketV2(string $ticketId, array $input, $urlKey = 'urlind')
     {
         switch ($ticketId)
         {
@@ -763,7 +757,7 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
         }
     }
 
-    public function addNoteToTicket(string $ticketId, array $input, $urlKey = 'url')
+    public function addNoteToTicket(string $ticketId, array $input, $urlKey = 'urlind')
     {
         return [
             'body' => '<div>some description</div>',

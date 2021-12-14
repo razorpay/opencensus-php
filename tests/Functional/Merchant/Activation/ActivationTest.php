@@ -2713,7 +2713,7 @@ class ActivationTest extends OAuthTestCase
 
         $this->updateObserverData($response['id'],  [
             'ticket_id'     => 123,
-            'fd_instance'   => 'rzp'
+            'fd_instance'   => 'rzpind'
         ]);
 
         $this->esClient->indices()->refresh();
@@ -2802,7 +2802,7 @@ class ActivationTest extends OAuthTestCase
 
         $this->updateObserverData($response['id'],  [
             'ticket_id'     => 123,
-            'fd_instance'   => 'rzp'
+            'fd_instance'   => 'rzpind'
         ]);
 
         $this->esClient->indices()->refresh();
@@ -4136,7 +4136,7 @@ class ActivationTest extends OAuthTestCase
                 ],
                 'workflow_observer_data' =>  [
                     'ticket_id' => "123",
-                    'fd_instance' => "rzp"
+                    'fd_instance' => "rzpind"
                 ],
                 'state' => "open",
                 'route' => "merchant_activation_status",

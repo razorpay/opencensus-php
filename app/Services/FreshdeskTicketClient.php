@@ -86,7 +86,7 @@ class FreshdeskTicketClient
      * @param string $authKey
      * @return array $response
      */
-    public function getTickets(array $queryParams, string $urlKey = 'url') : array
+    public function getTickets(array $queryParams, string $urlKey = 'urlind') : array
     {
         $authKey = $this->getAuthKey($urlKey);
 
@@ -108,7 +108,7 @@ class FreshdeskTicketClient
      * @param string $urlKey
      * @return array $response
      */
-    public function postTicket(array $input, $urlKey = 'url') : array
+    public function postTicket(array $input, $urlKey = 'urlind') : array
     {
         $authKey = $this->getAuthKey($urlKey);
 
@@ -128,7 +128,7 @@ class FreshdeskTicketClient
      * @param string $urlKey
      * @return array $response
      */
-    public function sendOutboundEmail(array $input, $urlKey = 'url') : array
+    public function sendOutboundEmail(array $input, $urlKey = 'urlind') : array
     {
         $authKey = $this->getAuthKey($urlKey);
 
@@ -150,7 +150,7 @@ class FreshdeskTicketClient
      * @param $authKey
      * @return array $response
      */
-    public function getTicketConversations(string $ticketId, array $queryParams, $urlKey = 'url') : array
+    public function getTicketConversations(string $ticketId, array $queryParams, $urlKey = 'urlind') : array
     {
         $authKey = $this->getAuthKey($urlKey);
 
@@ -173,7 +173,7 @@ class FreshdeskTicketClient
      * @param $authKey
      * @return array $response
      */
-    public function getTicketWithStats(string $ticketId, $urlKey = 'url') : array
+    public function getTicketWithStats(string $ticketId, $urlKey = 'urlind') : array
     {
         $authKey = $this->getAuthKey($urlKey);
 
@@ -186,7 +186,7 @@ class FreshdeskTicketClient
         return $response ?? [];
     }
 
-    public function getCustomerTickets($queryString, string $urlKey = 'url')
+    public function getCustomerTickets($queryString, string $urlKey = 'urlind')
     {
         $authKey = $this->getAuthKey($urlKey);
 
@@ -199,7 +199,7 @@ class FreshdeskTicketClient
         return $response;
     }
 
-    public function fetchTicketById(string $ticketId, $urlKey = 'url')
+    public function fetchTicketById(string $ticketId, $urlKey = 'urlind')
     {
         $authKey = $this->getAuthKey($urlKey);
 
@@ -212,7 +212,7 @@ class FreshdeskTicketClient
         return $response ?? [];
     }
 
-    public function updateTicketV2(string $ticketId, array $input, $urlKey = 'url')
+    public function updateTicketV2(string $ticketId, array $input, $urlKey = 'urlind')
     {
         $authKey = $this->getAuthKey($urlKey);
 
@@ -225,7 +225,7 @@ class FreshdeskTicketClient
         return $response ?? [];
     }
 
-    public function addNoteToTicket(string $ticketId, array $input, $urlKey = 'url')
+    public function addNoteToTicket(string $ticketId, array $input, $urlKey = 'urlind')
     {
         $authKey = $this->getAuthKey($urlKey);
 
@@ -247,7 +247,7 @@ class FreshdeskTicketClient
      * @param $authKey
      * @return array $response
      */
-    public function postTicketReply(string $ticketId, array $input, $urlKey = 'url') : array
+    public function postTicketReply(string $ticketId, array $input, $urlKey = 'urlind') : array
     {
         $authKey = $this->getAuthKey($urlKey);
 
@@ -266,7 +266,7 @@ class FreshdeskTicketClient
      * @param $urlKey
      * @return string
      */
-    protected function getUrl($route, $urlKey = 'url') : string
+    protected function getUrl($route, $urlKey = 'urlind') : string
     {
         if ($this->isSandbox === true)
         {

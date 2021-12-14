@@ -98,7 +98,7 @@ class Constants
     // All custom fields allowed to be queried
     const CUSTOM_FIELDS_LIST_FOR_QUERY = [self::CF_REQUESTOR_CATEGORY, self::CF_REQUESTOR_SUBCATEGORY , self::CF_REQUESTOR_ITEM, self::CF_CREATED_BY];
     // Fd instances to find ticket details
-    const FD_INSTANCES_LIST_FOR_FETCHING_CUSTOMER_TICKETS = [self::RZP, self::RZPIND];
+    const FD_INSTANCES_LIST_FOR_FETCHING_CUSTOMER_TICKETS = [self::RZPIND];
 
     //Freshdesk  Ticket Fields
     const TICKET_PRIORITY   = 'priority';
