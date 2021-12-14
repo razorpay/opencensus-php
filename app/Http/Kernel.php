@@ -20,6 +20,7 @@ class Kernel extends HttpKernel
         Middleware\VerifyHttps::class,
         Acs\SyncEventTriggerMiddleware::class,
         Middleware\StripQueryParam::class,
+        Middleware\StripReferrerParam::class,
     ];
 
     /**
