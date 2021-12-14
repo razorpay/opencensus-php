@@ -142,7 +142,17 @@ trait RepositoryFetch
 
         $expands = $this->getExpandsForQueryFromInput($params);
 
+        $startTimeMs = round(microtime(true) * 1000);
+
         $query = $this->newQuery();
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $queryDuration = $endTimeMs - $startTimeMs;
+
+        $this->trace->info(TraceCode::BUILD_QUERY_RESPONSE_DURATION, [
+                'duration_ms'    => $queryDuration,
+        ]);
 
         if ($this->baseQuery !== null)
         {
@@ -151,6 +161,8 @@ trait RepositoryFetch
 
         $connection = null;
 
+        $startTimeMs = round(microtime(true) * 1000);
+
         if ((is_null($connectionType) === false) and
             ($this->app['env'] !== Environment::TESTING))
         {
@@ -158,6 +170,15 @@ trait RepositoryFetch
 
             $query = $this->newQueryWithConnection($connection);
         }
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $queryDuration = $endTimeMs - $startTimeMs;
+
+        $this->trace->info(TraceCode::REPLICA_LAG_RESPONSE_DURATION, [
+            'duration_ms'    => $queryDuration,
+        ]);
+
 
         $query = $query->with($expands);
 
@@ -173,10 +194,20 @@ trait RepositoryFetch
         // Currently (as commented in getMysqlAndEsParams method) we raise bad
         // request error if we get mix of MySQL and es params. Later we might support
         // such thing.
+        $startTimeMs = round(microtime(true) * 1000);
+
         if (count($esParams) > 0)
         {
             return $this->runEsFetch($esParams, $merchantId, $expands);
         }
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $queryDuration = $endTimeMs - $startTimeMs;
+
+        $this->trace->info(TraceCode::ES_SEARCH_RESPONSE_DURATION, [
+            'duration_ms'    => $queryDuration,
+        ]);
 
         // If above doesn't happen we build query for mysql fetch and return the
         // result.

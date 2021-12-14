@@ -4857,6 +4857,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRACE_BEFORE_RETURN_FROM_FETCH_PAYMENTS_WITH_INDEX     = 'TRACE_BEFORE_RETURN_FROM_FETCH_PAYMENTS_WITH_INDEX';
     const DATA_WAREHOUSE_REPLICATION_LAG                         = 'DATA_WAREHOUSE_REPLICATION_LAG';
     const QUERY_TIME_FOR_TRANSACTION_API                         = 'QUERY_TIME_FOR_TRANSACTION_API';
+    const ES_SEARCH_RESPONSE_DURATION                            = 'ES_SEARCH_RESPONSE_DURATION';
+    const REPLICA_LAG_RESPONSE_DURATION                          = 'REPLICA_LAG_RESPONSE_DURATION';
+    const BUILD_QUERY_RESPONSE_DURATION                          = 'BUILD_QUERY_RESPONSE_DURATION';
 
 
     // Low Balance Config
