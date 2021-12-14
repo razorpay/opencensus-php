@@ -6537,3 +6537,7 @@ ALTER TABLE merchant_notification_configs
     MODIFY COLUMN `notification_mobile_numbers` text COLLATE utf8_bin NULL DEFAULT NULL,
     ADD INDEX `mnc_notification_type_merchant_id_index` (`notification_type`,`merchant_id`);
 
+ALTER TABLE users MODIFY email varchar(255) DEFAULT NULL;
+ALTER TABLE users ADD COLUMN signup_via_email TINYINT(1) DEFAULT 1 NOT NULL;
+ALTER TABLE merchants ADD COLUMN signup_via_email TINYINT(1) DEFAULT 1 NOT NULL;
+ALTER TABLE merchants MODIFY email varchar(255) DEFAULT NULL;
