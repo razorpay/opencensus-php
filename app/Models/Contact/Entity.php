@@ -47,6 +47,8 @@ class Entity extends Base\PublicEntity
     const PAYMENT_TERMS   = 'payment_terms';
     const TDS_CATEGORY    = 'tds_category';
 
+    const GST_IN          = "gstin";
+    const EXPENSE_ID      = "expense_id";
     const RESPONSE_CODE   = 'response_code';
 
     // Raw Email used exclusively for ES
@@ -80,7 +82,9 @@ class Entity extends Base\PublicEntity
         self::FUND_ACCOUNTS,
         self::CREATED_AT,
         self::PAYMENT_TERMS,
-        self::TDS_CATEGORY
+        self::TDS_CATEGORY,
+        self::EXPENSE_ID,
+        self::GST_IN,
     ];
 
     protected $defaults = [
@@ -110,6 +114,8 @@ class Entity extends Base\PublicEntity
         self::FUND_ACCOUNTS,
         self::PAYMENT_TERMS,
         self::TDS_CATEGORY,
+        self::EXPENSE_ID,
+        self::GST_IN,
     ];
 
     protected $publicAuth = [
@@ -134,6 +140,10 @@ class Entity extends Base\PublicEntity
     protected $paymentTerms = null;
 
     protected $tdsCategory = null;
+
+    protected $expenseId = null;
+
+    protected $gstIn = null;
 
     // --------------- Getters ---------------
 
@@ -201,6 +211,16 @@ class Entity extends Base\PublicEntity
         $this->tdsCategory = $tdsCategory;
     }
 
+    public function setExpenseId(string $expenseId = null)
+    {
+        $this->expenseId = $expenseId;
+    }
+
+    public function setGstIn(string $gstIn = null)
+    {
+        $this->gstIn = $gstIn;
+    }
+
     // ------------- End Setters -------------
 
     // ----------- Public Setters ------------
@@ -247,6 +267,38 @@ class Entity extends Base\PublicEntity
         if ($basicAuth->isProxyAuth() === true)
         {
             $attributes[self::PAYMENT_TERMS] = $this->paymentTerms;
+        }
+    }
+
+    public function setPublicGstinAttribute(array &$attributes)
+    {
+        if ($attributes[self::TYPE] != Type::VENDOR)
+        {
+            return;
+        }
+
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->isProxyAuth() === true)
+        {
+            $attributes[self::GST_IN] = $this->gstIn;
+        }
+    }
+
+    public function setPublicExpenseIdAttribute(array &$attributes)
+    {
+        if ($attributes[self::TYPE] != Type::VENDOR)
+        {
+            return;
+        }
+
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->isProxyAuth() === true)
+        {
+            $attributes[self::EXPENSE_ID] = $this->expenseId;
         }
     }
 

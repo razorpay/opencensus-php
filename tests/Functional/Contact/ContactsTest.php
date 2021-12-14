@@ -52,7 +52,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock->expects($this->once())
             ->method('getVendorByContactId')
-            ->willReturn(['id' => '1', 'contact_id' => 'cont_1000000contact', 'payment_terms' => 10, 'tds_category' => 1]);
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_1000000contact', 'payment_terms' => 10, 'tds_category' => 1, 'expense_id' => '1', 'gstin' => 'test_gstin']);
 
         $this->startTest();
     }
@@ -72,7 +72,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock->expects($this->once())
             ->method('getVendorByContactId')
-            ->willReturn(['id' => '1', 'contact_id' => 'cont_1000000contact', 'payment_terms' => 10, 'tds_category' => 1]);
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_1000000contact', 'payment_terms' => 10, 'tds_category' => 1, 'expense_id' => '1', 'gstin' => 'test_gstin']);
 
         $this->startTest();
     }

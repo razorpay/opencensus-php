@@ -33,6 +33,8 @@ class Validator extends Base\Validator
         Entity::IDEMPOTENCY_KEY         => 'sometimes|nullable|string',
         Entity::PAYMENT_TERMS           => 'sometimes|numeric|integer|min:0',
         Entity::TDS_CATEGORY            => 'sometimes|numeric|integer|min:0',
+        Entity::EXPENSE_ID              => 'sometimes|string|max:40',
+        Entity::GST_IN                  => 'sometimes|string|max:40',
     ];
 
     protected static $editRules = [
@@ -45,6 +47,8 @@ class Validator extends Base\Validator
         Entity::NOTES         => 'sometimes|notes',
         Entity::PAYMENT_TERMS => 'sometimes|numeric|integer|min:0',
         Entity::TDS_CATEGORY  => 'sometimes|numeric|integer|min:0',
+        Entity::EXPENSE_ID    => 'sometimes|string|max:40',
+        Entity::GST_IN        => 'sometimes|string|max:40',
     ];
 
     protected static $createTypeRules = [

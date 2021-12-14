@@ -643,6 +643,16 @@ class Core extends Base\Core
 
             $contact->setPaymentTerms($vendor[Entity::PAYMENT_TERMS]);
             $contact->setTdsCategory($vendor[Entity::TDS_CATEGORY]);
+
+            if (isset($vendor[Entity::EXPENSE_ID]))
+            {
+                $contact->setExpenseId($vendor[Entity::EXPENSE_ID]);
+            }
+
+            if (isset($vendor[Entity::GST_IN]))
+            {
+                $contact->setGstIn($vendor[Entity::GST_IN]);
+            }
         }
 
         return $contact;
@@ -787,6 +797,17 @@ class Core extends Base\Core
                 $vendor = $contactIdVendorMap[$contact->getPublicId()];
                 $contact->setPaymentTerms($vendor[Entity::PAYMENT_TERMS]);
                 $contact->setTdsCategory($vendor[Entity::TDS_CATEGORY]);
+
+                if (isset($vendor[Entity::EXPENSE_ID]))
+                {
+                    $contact->setExpenseId($vendor[Entity::EXPENSE_ID]);
+                }
+
+                if (isset($vendor[Entity::GST_IN]))
+                {
+                    $contact->setGstIn($vendor[Entity::GST_IN]);
+                }
+
             }
         }
 

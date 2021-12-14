@@ -1494,10 +1494,8 @@ class Route
         'accounting_payouts_cash_flow_list_ba'                  => ['get',     'accounting-integration/cashflow/bank-accounts',      'AccountingPayoutsController@listCashFlowBA'            ],
         'accounting_payouts_cash_flow_update_ba_mapping'        => ['post',    'accounting-integration/cashflow/update-bank-mapping','AccountingPayoutsController@updateBAMapping'           ],
 
-        'accounting_integration_get_domain'                     => ['get',      'accounting-integration/domain/{app}',                 'AccountingPayoutsController@getDomains'               ],
         'accounting_integration_get_organization'               => ['get',      'accounting-integration/organizations/{app}',          'AccountingPayoutsController@getOrganisationsInfo'     ],
         'accounting_integration_set_organization'               => ['post',     'accounting-integration/organizations/{app}',          'AccountingPayoutsController@setOrganisationInfo'      ],
-
 
         'accounting_integration_tally_invoices'                 => ['post',     'accounting-integration/tally/invoices',                    'AccountingPayoutsController@createTallyInvoice'        ],
         'accounting_integration_tally_fetch_invoice'            => ['get',      'accounting-integration/tally/invoices',                    'AccountingPayoutsController@fetchTallyInvoice'         ],
@@ -4801,7 +4799,7 @@ class Route
         'accounting_payouts_sync_status',
         'accounting_payouts_sync',
         'accounting_payouts_waitlist',
-        'accounting_integration_get_domain',
+
         'accounting_integration_get_organization',
         'accounting_integration_set_organization',
         'accounting_integration_get_chart_of_accounts',
@@ -7085,7 +7083,6 @@ class Route
         'accounting_payouts_sync'                      => Permission::SYNC_ACCOUNTING_INTEGRATION,
         'accounting_payouts_waitlist'                  => Permission::WAITLIST_ACCOUNTING_INTEGRATION,
 
-        'accounting_integration_get_domain'            => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_integration_get_organization'      => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_integration_set_organization'      => Permission::CREATE_ACCOUNTING_INTEGRATION,
         'accounting_integration_get_chart_of_accounts' => Permission::VIEW_ACCOUNTING_INTEGRATION,
@@ -7708,7 +7705,7 @@ class Route
             'accounting_payouts_sync',
             'accounting_payouts_sync_status',
             'accounting_payouts_waitlist',
-            'accounting_integration_get_domain',
+
             'accounting_integration_get_organization',
             'accounting_integration_set_organization',
             'accounting_integration_get_chart_of_accounts',
@@ -8773,7 +8770,7 @@ class Route
             'accounting_payouts_sync',
             'accounting_payouts_sync_status',
             'accounting_payouts_waitlist',
-            'accounting_integration_get_domain',
+
             'accounting_integration_get_organization',
             'accounting_integration_set_organization',
             'accounting_integration_get_chart_of_accounts',
@@ -12060,7 +12057,7 @@ class Route
         'accounting_payouts_sync',
         'accounting_payouts_sync_internal',
         'accounting_payouts_waitlist',
-        'accounting_integration_get_domain',
+
         'accounting_integration_get_organization',
         'accounting_integration_set_organization',
         'accounting_integration_get_chart_of_accounts',
