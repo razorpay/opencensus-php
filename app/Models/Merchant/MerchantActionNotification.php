@@ -269,11 +269,13 @@ class MerchantActionNotification
                     Action::HOLD_FUNDS      =>  $this->freshdeskConfig['group_ids']['rzpind']['foh'],
                     Action::SUSPEND         =>  $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
                     Action::LIVE_DISABLE    =>  $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                    Action::DISABLE_INTERNATIONAL_PERMANENT => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                    Action::DISABLE_INTERNATIONAL_TEMPORARY => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
                 ];
 
                 $requestParams = [
                     'type'          =>  'Question',
-                    'tags'          =>  ['bulk_workflow_email'],
+                    'tags'          =>  $this->getTagsForAction($action),
                     'groupId'       =>  (int) $groupIdMapping[$action],
                     'subCategory'   =>  Constants::FD_SUB_CATEGORY_FUNDS_ON_HOLD,
                 ];

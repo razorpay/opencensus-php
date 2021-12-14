@@ -97,39 +97,10 @@ class MerchantActionNotificationTest extends TestCase
 
     public function testFOHBulkWorkflowFdTicketCreate()
     {
-        $expectedContent = [
-            'group_id'        => 82000655429,
-            'tags'            => ['bulk_workflow_email'],
-            'priority'        => 1,
-            'phone'           => '9991119991',
-            'custom_fields'   => [
-                'cf_ticket_queue'           => 'Merchant',
-                'cf_category'               => 'Risk Report_Merchant',
-                'cf_subcategory'            => 'Funds on hold',
-                'cf_product'                => 'Payment Gateway',
-                'cf_created_by'             =>  'agent',
-                'cf_merchant_id_dashboard'  => 'merchant_dashboard_10000000000000',
-                'cf_merchant_id'            => '10000000000000',
-            ],
-            'subject'         => 'Razorpay Account Review: test merchant | 10000000000000 | Funds under Review',
-        ];
+        $expectedContent =$this->getExpectedContentForFDTicket('hold_funds');
+        $expectedContent['group_id'] = (int) $this->freshdeskConfig['group_ids']['rzpind']['foh'];
 
-        $this->fixtures->edit('merchant', '10000000000000', [
-            'signup_via_email' => 0,
-        ]);
-
-        $this->fixtures->on('live')->edit('merchant_detail', '10000000000000', [
-            'contact_mobile' => '9991119991',
-        ]);
-
-        $this->fixtures->on('test')->edit('merchant_detail', '10000000000000', [
-            'contact_mobile' => '9991119991',
-        ]);
-
-        $this->fixtures->create('merchant_email', [
-            'type'  => 'chargeback',
-            'email' => null,
-        ]);
+        $this->createMerchant();
 
         $this->expectFreshdeskRequestAndRespondWith('tickets', 'post',
                                                     $expectedContent,
@@ -204,6 +175,35 @@ class MerchantActionNotificationTest extends TestCase
         $this->startTest();
     }
 
+    public function testInternationalDisableBulkWorkflowFdTicketCreate()
+    {
+        $expectedContent = $this->getExpectedContentForFDTicket('disable_international_temporary');
+
+        $this->createMerchant();
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets', 'post',
+                                                    $expectedContent,
+                                                    [
+                                                        'id' => '1234',
+                                                    ]);
+
+        $this->startTest();
+    }
+
+    public function testInternationalDisablePermanentBulkWorkflowFdTicketCreate()
+    {
+        $expectedContent = $this->getExpectedContentForFDTicket('disable_international_permanent');
+
+        $this->createMerchant();
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets', 'post',
+                                                    $expectedContent,
+                                                    [
+                                                        'id' => '1234',
+                                                    ]);
+
+        $this->startTest();
+    }
 
     function getExpectedContent($action)
     {
@@ -231,5 +231,51 @@ class MerchantActionNotificationTest extends TestCase
             'subject'         => $subject,
             'cc_emails'       => $ccEmails,
         ];
+    }
+
+    public function getExpectedContentForFDTicket($action)
+    {
+        $tag = ['bulk_workflow_email'];
+        if ($action == 'disable_international_temporary' or $action == 'disable_international_permanent')
+        {
+            $tag = ['bulk_workflow_email', 'international_disablement'];
+        }
+
+        return [
+            'group_id'      => (int) $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+            'tags'          => $tag,
+            'priority'      => 1,
+            'phone'         => '9991119991',
+            'custom_fields' => [
+                'cf_ticket_queue'          => 'Merchant',
+                'cf_category'              => 'Risk Report_Merchant',
+                'cf_subcategory'           => 'Funds on hold',
+                'cf_product'               => 'Payment Gateway',
+                'cf_created_by'            => 'agent',
+                'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                'cf_merchant_id'           => '10000000000000',
+            ],
+            'subject'       => self::SUBJECT[$action],
+        ];
+    }
+
+    public function createMerchant()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'signup_via_email' => 0,
+        ]);
+
+        $this->fixtures->on('live')->edit('merchant_detail', '10000000000000', [
+            'contact_mobile' => '9991119991',
+        ]);
+
+        $this->fixtures->on('test')->edit('merchant_detail', '10000000000000', [
+            'contact_mobile' => '9991119991',
+        ]);
+
+        $this->fixtures->create('merchant_email', [
+            'type'  => 'chargeback',
+            'email' => null,
+        ]);
     }
 }
