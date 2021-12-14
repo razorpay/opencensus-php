@@ -21,7 +21,6 @@ import {
   ActivationStatusLabel,
   SubmerchantSettlementLabel,
   XSubmerchantCAStatusLabel,
-  XSubmerchantVAStatusLabel,
 } from 'merchant/components/StatusLabel';
 import {
   submerchant as submerchantColumn,
@@ -136,30 +135,6 @@ const settlementStatus = {
         submerchant.details.activation_status === 'activated' &&
         submerchant.hold_funds === false
           ? 'active'
-          : 'inactive'
-      }
-    />
-  ),
-};
-
-const xVirtualAccountStatus = {
-  title: (
-    <Fragment>
-      Virtual Account Status&nbsp;
-      <span>
-        <i class="i i-info-circle" />
-        &nbsp;
-        <PopoverComponent align="top" theme="dark">
-          <PopoverBody>Current status of merchant's virtual account</PopoverBody>
-        </PopoverComponent>
-      </span>
-    </Fragment>
-  ),
-  value: (submerchant) => (
-    <XSubmerchantVAStatusLabel
-      status={
-        submerchant.banking_account && submerchant.banking_account.va_status
-          ? submerchant.banking_account.va_status.toLowerCase()
           : 'inactive'
       }
     />
@@ -616,7 +591,6 @@ class ProductSubMerchantsList extends ListContainer {
                     id,
                     email,
                     ...appIdColumn,
-                    xVirtualAccountStatus,
                     xCurrentAccountStatus,
                     addedOn,
                   ]}

@@ -13,7 +13,6 @@ import {
   SubmerchantSettlementLabelNew,
   SubmerchantSettlementLabel,
   XSubmerchantCAStatusLabel,
-  XSubmerchantVAStatusLabel,
 } from 'merchant/components/StatusLabel';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import SubMerchantKycStatusLabel from './SubMerchantKycStatusLabel';
@@ -129,16 +128,6 @@ export default (props) => {
                 </ShowWhen>
 
                 <ShowWhen additionalCondition={() => product === PRODUCT_TYPE.X}>
-                  <EntityDetailRow label="Virtual Account Status">
-                    <XSubmerchantVAStatusLabel
-                      status={
-                        submerchant.banking_account && submerchant.banking_account.va_status
-                          ? submerchant.banking_account.va_status.toLowerCase()
-                          : 'inactive'
-                      }
-                    />
-                  </EntityDetailRow>
-
                   <EntityDetailRow label="Current Account Status">
                     <XSubmerchantCAStatusLabel
                       status={
