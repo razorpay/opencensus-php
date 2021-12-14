@@ -485,8 +485,8 @@ export default class UpdateSubscription extends React.Component {
       // need to improve this css styling
       <div
         class={classList(
-          'PaymentLinks--Create SubscriptionLinks--update Wizard',
-          'upi-banner-visible',
+          'Links--Create SubscriptionLinks--update Wizard',
+          showUPIUnAvlBanner && 'upi-banner-visible',
         )}
       >
         <ModalAsideNav
@@ -503,7 +503,7 @@ export default class UpdateSubscription extends React.Component {
             <strong>{currentTabMeta.title}</strong>
           </div>
           <div class="description large">{currentTabMeta.desc}</div>
-          <Form class="PaymentLinks--Create--Form" layout="tabular" onChange={this.handleChangeIn}>
+          <Form layout="tabular" onChange={this.handleChangeIn}>
             {this.renderForm()}
           </Form>
         </main>

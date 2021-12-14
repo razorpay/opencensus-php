@@ -1,0 +1,155 @@
+/* Create Links wizard screen e.g Create PaymentLink, 
+   Create Subscription, Create Registration Link */ 
+$max-width = 640px
+
+.Links--Create
+  max-width $max-width
+  height 85vh
+  min-height 560px
+  max-height 690px
+  background #fafafa
+  position relative
+
+  .form-container
+    padding 30px 40px
+
+    .Input:not(.Input--vTop), .InputGroup:not(.InputGroup--vTop)
+      .Input-label
+        top 7px
+        @media screen and (max-width $screen-xs-max)
+          top 0px !important
+
+  .Form--tabular
+    .Input-content
+      margin-left 156px
+    .Input-label
+      width 136px
+
+  main
+    left 0
+    right 0
+    padding 30px
+    position absolute
+    bottom 80px
+    top 0
+    overflow auto
+    &.main--full
+      bottom 0
+    &::-webkit-scrollbar
+      display none;
+  
+  footer
+    left 0
+    padding 20px
+    right 0
+    background #F6F6F6
+    border-top 1px solid #e0e0e0
+    bottom 0
+    position absolute
+    text-align right
+    @media screen and (max-width $screen-xs-max)
+      display flex
+      justify-content center
+      align-items center
+      position fixed
+      z-index 9999999999
+      background #F6F6F6
+
+    button
+      vertical-align top
+
+    .Loader
+      float left
+      opacity 0
+      transition 1s opacity
+      margin-top 4px
+      line-height 27px
+
+      i, .spin-btn
+        margin-right 8px
+        vertical-align middle
+
+      .spin-btn
+        opacity 1
+
+      &--visible
+        opacity 1
+
+  main-title
+    display block
+    font-weight 600
+    margin-bottom 20px
+    font-size 18px !important
+    
+  .Form
+    margin-top 36px
+
+@media screen and (max-width $screen-xs-max)
+	.Links--Create
+    overflow hidden
+    main-title
+      position relative
+      padding 20px
+      text-align center
+      top -30px
+      margin-left -24px
+      margin-right -24px
+      margin-bottom 4px
+      background white
+      font-size 14px
+    aside
+      display none
+
+    main, footer
+      left 0 !important
+
+    .Form
+      margin-top 0
+
+    .Input-el
+      width 100%
+
+    .Select-elWrapper::before
+      left unset !important
+      right 4px
+
+    .form-container
+      padding 30px
+      form, form > div:first-child
+        margin-top 0
+
+    .Input > .Input-label
+      width 100%
+
+    .Input-elWrapper
+      width 100% !important
+      max-width calc(100vw - 48px)
+
+    .offer-selector .TypeAhead
+      width 100% !important
+
+    .Input
+      display block
+      > .Input-label
+        margin-bottom 12px
+        text-align left
+        float unset
+      > .Input-content
+        margin 0 0 16px;
+        
+    .plan-details h4
+      margin-top 0
+
+  .StandAloneContainer
+    margin 80px auto 40px
+    .Links--Create
+      height auto !important
+      max-height unset
+      > main, > footer
+        position static
+
+  .mobile-full-width-modal
+    .Links--Create
+      .form-container
+        padding 30px 0
+        bottom 65px

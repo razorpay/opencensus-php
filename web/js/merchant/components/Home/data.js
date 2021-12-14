@@ -1,49 +1,46 @@
 import colors, { namedColors } from 'common/utils/chart/colors';
 
 const API_ERROR = {
-    error: 'An error occured while fetching data from the server',
-  },
-  API_INVALID_RESP = {
-    error: 'Got unexpected response from the server',
-  },
-  OLDEST_TXN_ERROR = {
-    error: 'Unable to get your first transaction date',
-  },
-  isMobileDevice = () => window.innerWidth <= 1020;
+  error: 'An error occured while fetching data from the server',
+};
+const API_INVALID_RESP = {
+  error: 'Got unexpected response from the server',
+};
+const OLDEST_TXN_ERROR = {
+  error: 'Unable to get your first transaction date',
+};
+const isMobileDevice = () => window.innerWidth <= 767;
 
 const paymentMethodsOrder = [
-    'card',
-    'netbanking',
-    'upi',
-    'wallet',
-    'bank transfer',
-    'emi',
-    'emandate',
-  ],
-  platformsOrder = ['desktop', 'mweb', 'android', 'ios', 'others'],
-  platformColors = [
-    namedColors.blue,
-    namedColors.orange,
-    namedColors.androidGreen,
-    namedColors.lightBlue,
-    namedColors.red,
-  ],
-  platformColorMap = platformsOrder.reduce((result, platform, index) => {
-    result[platform] = platformColors[index];
-    return result;
-  }, {}),
-  paymentMethodsColorMap = paymentMethodsOrder.reduce(
-    (result, method, index) => {
-      result[method] = colors[index];
-      return result;
-    },
-    {}
-  ),
-  extraColors = colors.slice(paymentMethodsOrder.length);
+  'card',
+  'netbanking',
+  'upi',
+  'wallet',
+  'bank transfer',
+  'emi',
+  'emandate',
+];
+const platformsOrder = ['desktop', 'mweb', 'android', 'ios', 'others'];
+const platformColors = [
+  namedColors.blue,
+  namedColors.orange,
+  namedColors.androidGreen,
+  namedColors.lightBlue,
+  namedColors.red,
+];
+const platformColorMap = platformsOrder.reduce((result, platform, index) => {
+  result[platform] = platformColors[index];
+  return result;
+}, {});
+const paymentMethodsColorMap = paymentMethodsOrder.reduce((result, method, index) => {
+  result[method] = colors[index];
+  return result;
+}, {});
+const extraColors = colors.slice(paymentMethodsOrder.length);
 
 let extraColorsUsed = 0;
 
-const getPaymentMethodColor = paymentMethod => {
+const getPaymentMethodColor = (paymentMethod) => {
   paymentMethod = paymentMethod.toLowerCase();
 
   // see if color exists for the payment method or assign one from
@@ -60,7 +57,7 @@ const getPaymentMethodColor = paymentMethod => {
   return color;
 };
 
-const getPlatformColor = platform => {
+const getPlatformColor = (platform) => {
   return platformColorMap[platform.toLowerCase()];
 };
 

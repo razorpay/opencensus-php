@@ -37,9 +37,10 @@ import Review from './Review';
 import UPIBanner from '../components/UPIBanner';
 import Spinner from 'common/ui/Spinner';
 import moment from 'moment';
-
+import { isMobileDevice } from 'merchant/components/Home/data';
 import { trackSaveDuplicateSubscription, trackAddAddon, trackAddPlans } from '../ga';
 import analytics from '../../analytics';
+import './index.styl';
 
 const tabs = ['Plan Details', 'Add Ons', 'Link Details', 'Review'];
 
@@ -72,6 +73,7 @@ export default class NewSubscriptionLink extends React.Component {
     },
     internals: {},
   };
+  isMobileDevice = isMobileDevice();
 
   componentWillMount() {
     this.fetchDataForSubscription();
@@ -546,7 +548,7 @@ export default class NewSubscriptionLink extends React.Component {
     }
   }
 
-  renderWizard() {
+  renderWizard(isStandAlone = false) {
     const { isFetchingSubscription, currentTab, _selectedPlanAmount, fields } = this.state;
     const isLastTab = currentTab === tabs.length - 1;
 
@@ -563,8 +565,8 @@ export default class NewSubscriptionLink extends React.Component {
       // need to improve this css styling
       <div
         class={classList(
-          'PaymentLinks--Create SubscriptionLinks--new Wizard',
-          'upi-banner-visible',
+          'Links--Create SubscriptionLinks--new Wizard',
+          showUPIUnAvlBanner && 'upi-banner-visible',
         )}
       >
         {/* create subscription link tabs */}
@@ -584,12 +586,10 @@ export default class NewSubscriptionLink extends React.Component {
         ) : (
           <>
             <main class="form-container">
-              <main-title>{tabs[currentTab]}</main-title>
-              <Form
-                class="PaymentLinks--Create--Form"
-                layout="tabular"
-                onChange={this.handleChangeIn}
-              >
+              {(!this.isMobileDevice || isStandAlone) && (
+                <main-title>{tabs[currentTab]}</main-title>
+              )}
+              <Form layout="tabular" onChange={this.handleChangeIn}>
                 {this.renderForm()}
               </Form>
             </main>
@@ -655,11 +655,13 @@ export default class NewSubscriptionLink extends React.Component {
     const isModalView = this.props.onClose;
 
     return isModalView ? (
-      <Modal class="NewSubscriptionLink animate-down" onClose={this.props.onClose}>
-        <ModalContent>{this.renderWizard({ isModalView })}</ModalContent>
+      <Modal class="NewSubscriptionLink animate-down" onClose={this.props.onClose} fullWidth>
+        <ModalContent header={this.isMobileDevice ? tabs[this.state.currentTab] : null}>
+          {this.renderWizard(false)}
+        </ModalContent>
       </Modal>
     ) : (
-      <div class="StandAloneContainer">{this.renderWizard({ isModalView })}</div>
+      <div class="StandAloneContainer">{this.renderWizard(true)}</div>
     );
   }
 }

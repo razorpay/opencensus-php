@@ -103,15 +103,20 @@ export class Modal extends React.PureComponent {
       allowScroll,
       fadedCloseButton = false,
       canDisableCloseBtn = false,
+      fullWidth = false,
       ...rest
     } = this.props;
 
     const classArray = className
       ? className.split(' ').map((cls) => `Modal-container--${cls}`)
       : '';
+    const mobileFullWidthModalClass = fullWidth ? 'mobile-full-width-modal' : '';
 
     return (
-      <div className={classList('Modal-container', classArray)} {...rest}>
+      <div
+        className={classList('Modal-container', classArray, mobileFullWidthModalClass)}
+        {...rest}
+      >
         {showCloseBtn && (
           <span
             className={`Modal-close ${fadedCloseButton ? 'Modal-close-faded' : ''} ${

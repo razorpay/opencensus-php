@@ -352,7 +352,7 @@ export default class UploadNACHForm extends React.Component {
     const contentView = (
       <div
         class={classList(
-          'ModalSingleForm',
+          'Links--Create',
           'Wizard',
           'UploadNACH',
           !isDataAval && 'UploadNACH--Form',

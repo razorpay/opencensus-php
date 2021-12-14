@@ -82,40 +82,6 @@
   .main-content, .sidebar, .navbar, .tether-element, .page-nav-container, #wysiwyg-root
     filter: blur(4px)
 
-.ModalSingleForm
-  height: 85vh
-  min-height: 560px
-  max-height: 690px
-  max-width: 640px
-  background: #fafafa
-  position: relative
-  margin: auto
-
-  main
-    left: 0
-    right: 0
-    padding: 30px
-    position: absolute
-    bottom: 80px
-    top: 0
-    overflow: auto
-
-    main-title
-      display: block
-      font-weight: 600
-      margin-bottom: 20px
-      font-size: 18px
-
-  footer
-    left: 0
-    padding: 20px
-    right: 0
-    background: #f6f6f6
-    border-top: 1px solid #e0e0e0
-    bottom: 0
-    position: absolute
-    text-align: right
-
 .Modal-container--top-40
   top:40%
 
@@ -169,3 +135,22 @@
       span
         color: #fff
         background-color: $primary-color
+
+@media screen and (max-width: $screen-xs-max)
+  .mobile-full-width-modal
+    width 100%
+    height 100%
+    .Modal-content
+      > header,
+      > .Modal-body
+        padding 0 24px
+      > header
+        font-weight bold
+        font-size 18px
+        height 62px
+        display flex
+        align-items center
+      > .Modal-body
+        background #fafafa
+        footer
+          padding 14px 20px

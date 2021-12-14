@@ -31,6 +31,7 @@ import {
   trackCloseCreateForm,
 } from './ga';
 import analytics from '../analytics';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 const CustomerDetailsMandatoryFields = [
   'description',
@@ -137,6 +138,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       },
       validTabs: [false, false, false],
     };
+    this.isMobileDevice = isMobileDevice();
   }
 
   get isEmandatePayment() {
@@ -634,13 +636,13 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     }
   }
 
-  renderWizard = () => {
+  renderWizard = (isStandAlone = false) => {
     const { currentTab, validTabs, loading } = this.state;
     const tabs = this.Tabs;
     const isLastTab = currentTab === tabs.length - 1;
 
     return (
-      <div class="ModalSingleForm RegistrationLinks--New Wizard">
+      <div class="Links--Create RegistrationLinks--New Wizard">
         <ModalAsideNav
           title="Create Registration Links"
           tabs={tabs}
@@ -658,14 +660,11 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         ) : (
           <>
             <main class="form-container">
-              <main-title>Create Registration Link</main-title>
+              {(!this.isMobileDevice || isStandAlone) && (
+                <main-title>Create Registration Link</main-title>
+              )}
 
-              <Form
-                class="PaymentLinks--Create--Form"
-                layout="tabular"
-                onChange={this.handleChange}
-                onSubmit={this.onCreate}
-              >
+              <Form layout="tabular" onChange={this.handleChange} onSubmit={this.onCreate}>
                 {this.renderForm()}
               </Form>
             </main>
@@ -723,13 +722,15 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
 
     if (isModalView) {
       return (
-        <Modal class="NewRegistrationLink animate-down" onClose={this.onClose}>
-          <ModalContent>{this.renderWizard()}</ModalContent>
+        <Modal class="NewRegistrationLink animate-down" onClose={this.onClose} fullWidth>
+          <ModalContent header={this.isMobileDevice ? this.Tabs[this.state.currentTab] : null}>
+            {this.renderWizard(false)}
+          </ModalContent>
         </Modal>
       );
     }
 
-    return <div class="StandAloneContainer">{this.renderWizard()}</div>;
+    return <div class="StandAloneContainer">{this.renderWizard(true)}</div>;
   }
 }
 

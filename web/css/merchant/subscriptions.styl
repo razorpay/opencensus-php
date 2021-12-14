@@ -221,7 +221,7 @@
       margin-top: 10px
       max-width: 70% 
 
-.UploadNACH--Form.ModalSingleForm
+.UploadNACH--Form.Links--Create
   height: 390px
   min-height: 390px
 
@@ -564,7 +564,7 @@ div.Modal-container--CardPaymentsBlockedModal
   height: 32px
   line-height: 32px
   left: 0
-  top: -38px
+  bottom: 0
   border: 1px solid #e2e2e2
   text-align: left
   padding: 0 4px
@@ -575,3 +575,25 @@ div.Modal-container--CardPaymentsBlockedModal
 
   &.upi-banner-visible
     top: -76px
+
+@media screen and (max-width 767px)
+  .ReactModal__Overlay .batch-details .rzp-banner
+    margin-top 65px
+    & + .panel-body
+      margin-top 0
+  .plan-fields-wrapper, .batch-details, .SubscriptionLinks--Details, .txn-details
+    > .panel
+      > .panel-heading
+        display flex
+        align-items center
+        justify-content flex-start
+        min-height 65px
+        .i + strong
+          top 0
+        .btn-toolbar
+          padding-top 0
+          margin-top 0
+          margin-left auto
+        > button
+          position relative
+          top 0
