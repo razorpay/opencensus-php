@@ -1,0 +1,17 @@
+/* Test Files */
+tests/*
+
+/* Env Files */
+environment/.env.drone
+environment/.env.sample
+
+/* Mock */
+app/Services/Mock/*.php
+app/Gateway/Mozart/Mock/*
+app/Gateway/Aeps/Icici/Mock/certificates/key.pem
+app/Gateway/Upi/Icici/Mock/keys/*
+app/Gateway/Enach/Npci/Netbanking/Mock/keys/*
+
+/* DB Seeders */
+database/seeds/DatabaseSeeder.php
+database/queries/heimdall.sql
