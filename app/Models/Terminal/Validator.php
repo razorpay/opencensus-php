@@ -1906,24 +1906,33 @@ class Validator extends Base\Validator
     ];
 
     protected static $cardlessEmiTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:cardless_emi',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
-        Entity::CARDLESS_EMI                => 'required|boolean|in:1',
-        Entity::TYPE                        => 'sometimes|array',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
-        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::GATEWAY                                 => 'required|in:cardless_emi',
+        Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2                    => 'sometimes|string',
+        Entity::MODE                                    => 'sometimes|in:1,2,3',
+        Entity::CARDLESS_EMI                            => 'required|boolean|in:1',
+        Entity::TYPE                                    => 'sometimes|array',
+        Entity::TYPE . '.direct_settlement_with_refund' => 'sometimes|in:1',
+        Entity::GATEWAY_TERMINAL_PASSWORD               => 'sometimes',
+        Entity::GATEWAY_SECURE_SECRET                   => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2                  => 'sometimes|string',
+        Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $cardlessEmiEditTerminalRules = [
-        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
-        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
-        Entity::TYPE                        => 'sometimes|array',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
-        Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
-        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
-        Entity::ENABLED                     => 'sometimes|in:0,1',
-        Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
+        Entity::GATEWAY_MERCHANT_ID                     => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2                    => 'sometimes|string',
+        Entity::MODE                                    => 'sometimes|in:1,2,3',
+        Entity::TYPE                                    => 'sometimes|array',
+        Entity::TYPE . '.direct_settlement_with_refund' => 'sometimes|in:1',
+        Entity::GATEWAY_TERMINAL_PASSWORD               => 'sometimes',
+        Entity::GATEWAY_SECURE_SECRET                   => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2                  => 'sometimes|string',
+        Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::ENABLED                                 => 'sometimes|in:0,1',
+        Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
     ];
 
     protected static $credTerminalRules = [
@@ -2413,6 +2422,13 @@ class Validator extends Base\Validator
             Gateway::AXIS_MIGS,
             Gateway::ISG,
         ];
+
+        if ((isset($input[Entity::GATEWAY_ACQUIRER]) === true) and ($input[Entity::GATEWAY_ACQUIRER] === Gateway::SEZZLE) and ($gateway === Gateway::CARDLESS_EMI))
+        {
+            array_push($PurchaseOnlyGateway, Gateway::CARDLESS_EMI);
+
+            unset($authCaptureOnly[array_search(Gateway::CARDLESS_EMI,$authCaptureOnly)]);
+        }
 
         $isPurchaseSupportedCardGateway = ((Gateway::isMethodSupported(Payment\Method::CARD, $gateway)) and
             (in_array($gateway, $cardGatewaysWithPurchaseSupport, true)));

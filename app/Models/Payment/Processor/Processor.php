@@ -1101,6 +1101,9 @@ class Processor
             case CardlessEmi::WALNUT369:
                 $input['contact'] = $payment['contact'];
                 break;
+            case CardlessEmi::SEZZLE:
+                $input['contact'] = $payment['contact'];
+                break;
             default;
                 break;
         }

@@ -98,6 +98,7 @@ class Gateway
     const NACH_CITI              = 'nach_citi';
     const NACH_ICICI             = 'nach_icici';
     const PAYTM                  = 'paytm';
+    const SEZZLE                 = 'sezzle';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_SBI                = 'upi_sbi';
@@ -231,7 +232,7 @@ class Gateway
         self::HITACHI      => [self::ACQUIRER_RATN],
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
-        self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY, CardlessEmi::WALNUT369],
+        self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY, CardlessEmi::WALNUT369, CardlessEmi::SEZZLE],
         self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI, PayLater::FLEXMONEY, Paylater::LAZYPAY],
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX, self::ACQUIRER_ICIC],
@@ -300,6 +301,10 @@ class Gateway
             self::ACQUIRER_AXIS => self::AXIS,
             self::ACQUIRER_YESB => self::YESB,
         ],
+        self::CARDLESS_EMI => [
+            'default'    => self::SEZZLE,
+            self::SEZZLE => self::SEZZLE
+        ],
         self::CYBERSOURCE           => [
             'default'           => self::HDFC,
             self::ACQUIRER_HDFC => self::HDFC,
@@ -358,6 +363,7 @@ class Gateway
         self::ATOM                  => self::ATOM,
         self::IDFC                  => self::IDFC,
         self::SBIN                  => self::SBIN,
+        self::SEZZLE                => self::SEZZLE,
         self::WALLET_PAYPAL         => self::PAYPAL,
         self::WALLET_PAYZAPP        => self::HDFC,
         self::ENACH_NPCI_NETBANKING => self::NPCI,
@@ -3020,10 +3026,12 @@ class Gateway
     public static $redirectFlowProvider = [
         CardlessEmi::FLEXMONEY,
         CardlessEmi::WALNUT369,
+        CardlessEmi::SEZZLE,
     ];
 
     public static $checkAccountSkipProvider = [
         CardlessEmi::WALNUT369,
+        CardlessEmi::SEZZLE,
     ];
 
     public static $verifyClientOnS2s = [
@@ -3972,6 +3980,7 @@ class Gateway
         $acquirerGateways = [
             self::CARDLESS_EMI => [
                 CardlessEmi::WALNUT369,
+                CardlessEmi::SEZZLE,
             ],
             self::PAYLATER     => [
                 Paylater::LAZYPAY,
@@ -4058,6 +4067,7 @@ class Gateway
         $acquirerGateways = [
             self::CARDLESS_EMI => [
                 CardlessEmi::WALNUT369,
+                CardlessEmi::SEZZLE,
             ],
             self::PAYLATER     => [
                 Paylater::LAZYPAY,
