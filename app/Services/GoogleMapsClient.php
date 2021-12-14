@@ -21,8 +21,8 @@ class GoogleMapsClient
     {
         $app = App::getFacadeRoot();
 
-        $this->apiKey = $app['config']->get('applications.pincodesearcher.google_api_key');
-        $this->mock = $app['config']->get('applications.pincodesearcher.mock') === true;
+        $this->apiKey = $app['config']->get('applications.pincodesearch.google_api_key');
+        $this->mock = $app['config']->get('applications.pincodesearch.mock') === true;
     }
 
     /**
