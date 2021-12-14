@@ -648,6 +648,11 @@ class InvoiceController extends Controller
         bool $checkForBothFlags = false
     ): bool
     {
+        if ($this->app->runningUnitTests() === true)
+        {
+            return false;
+        }
+
         if ($this->app['basicauth']->isPaymentLinkServiceApp() === true)
         {
             return false;
@@ -658,22 +663,6 @@ class InvoiceController extends Controller
 
         if ($merchant !== null)
         {
-            if ($checkForBothFlags === true)
-            {
-                if (($merchant->isFeatureEnabled(Feature::PAYMENTLINKS_COMPATIBILITY_V2) === false) and
-                    ($merchant->isFeatureEnabled(Feature::PAYMENTLINKS_V2) === false))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if ($merchant->isFeatureEnabled(Feature::PAYMENTLINKS_COMPATIBILITY_V2) === false)
-                {
-                    return false;
-                }
-            }
-
             if ($checkForInput === true)
             {
                 return $this->checkInputHasTypeLink($input);
