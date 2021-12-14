@@ -2859,4 +2859,42 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testValidateInvalidCin' => [
+        'request'  => [
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+            'content' => [
+                'company_cin'       => 'U67190TN2014PTC096978abcdabcdbdbd',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The company cin format is invalid.',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testValidateCin' => [
+        'request'  => [
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+            'content' => [
+                'company_cin'       => 'U67190TN2014PTC096978',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 200
+        ],
+    ],
 ];

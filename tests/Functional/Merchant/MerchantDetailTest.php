@@ -5477,5 +5477,26 @@ You can now start accepting payments from https://www.example.com.
 
     }
 
+    public function testValidateInvalidCin()
+    {
+        $merchant = $this->fixtures->create('merchant:with_keys');
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testValidateCin()
+    {
+        $merchant = $this->fixtures->create('merchant:with_keys');
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user->getId());
+
+        $this->startTest();
+    }
 }
 
