@@ -150,6 +150,7 @@ class Upi
     const MVIX = 'MVIX';
     const MZRX = 'MZRX';
     const NBMX = 'NBMX';
+    const NESF = 'NESF';
     const NKGS = 'NKGS';
     const NNSB = 'NNSB';
     const NSPB = 'NSPB';
@@ -377,6 +378,7 @@ class Upi
         self::MVIX,
         self::MZRX,
         self::NBMX,
+        self::NESF,
         self::NKGS,
         self::NNSB,
         self::NSPB,
