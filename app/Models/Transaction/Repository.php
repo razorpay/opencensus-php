@@ -2587,11 +2587,10 @@ class Repository extends Base\Repository
         $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
         $type = $this->dbColumn(Entity::TYPE);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
                     ->select($merchantIdColumn)
                     ->where($type, '=', 'payment')
                     ->where($merchantIdColumn, '=', $merchantId)
-                    ->orderby(Entity::CREATED_AT,"desc")
                     ->take($paymentCountThreshold)
                     ->get();
     }
