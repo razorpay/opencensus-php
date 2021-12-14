@@ -922,9 +922,11 @@ class Repository extends Base\Repository
 
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->select($attributes)
-            ->join(Table::MERCHANT_DETAIL, $merchantsMerchantId, $merchantDetailsMerchantId)
-            ->whereNotNull($activatedAt)
-            ->where($activated, 1);
+            ->join(Table::MERCHANT_DETAIL, $merchantsMerchantId, $merchantDetailsMerchantId);
+        //Removing merchant activation check from filter for unblocking banking ops to take action on IIRs of non-activated merchants, should be reverted in the future.
+        // Ref. thread: https://razorpay.slack.com/archives/CNV2GTFEG/p1639122072426800
+        //    ->whereNotNull($activatedAt)
+        //    ->where($activated, 1);
 
         foreach ($filters as $attributeKey => $attributeValue)
         {
