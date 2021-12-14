@@ -10,7 +10,16 @@ import BalanceDetails from './BalanceDetails';
 import SettleNow from './SettleNow';
 
 function SettlementsHeader(props) {
-  const { user, settlement_amount, settlementConfig, openModal, holidayList } = props;
+  const {
+    user,
+    settlement_amount,
+    settlementConfig,
+    openModal,
+    holidayList,
+    settlementExists,
+    checkIfFirstEverSettlement,
+    esOndemandSettlementEnabled,
+  } = props;
 
   const { no_settlement } = settlement_amount.data;
 
@@ -47,7 +56,13 @@ function SettlementsHeader(props) {
                   <BalanceDetails />
                   {!isSettlementOnHold &&
                     user.isOndemandSettlementEnabled &&
-                    user.isAllowedView('early_settlement') && <SettleNow />}
+                    user.isAllowedView('early_settlement') && (
+                      <SettleNow
+                        settlementExists={settlementExists}
+                        esOndemandSettlementEnabled={esOndemandSettlementEnabled}
+                        checkIfFirstEverSettlement={checkIfFirstEverSettlement}
+                      />
+                    )}
                   <br />
                 </div>
               )}
