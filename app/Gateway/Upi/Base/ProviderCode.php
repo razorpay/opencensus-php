@@ -32,6 +32,7 @@ class ProviderCode
     const ANDB               = 'andb';
     const APB                = 'apb';
     const APL                = 'apl';
+    const YAPL               = 'yapl';
     const AUBANK             = 'aubank';
     const AXIS               = 'axis';
     const AXISBANK           = 'axisbank';
@@ -180,6 +181,7 @@ class ProviderCode
         self::ANDB               => IFSC::ANDB,
         self::APB                => IFSC::AIRP,
         self::APL                => IFSC::AIRP,
+        self::YAPL               => IFSC::YESB,
         self::AUBANK             => IFSC::AUBL,
         self::AXIS               => IFSC::UTIB,
         self::AXISBANK           => IFSC::UTIB,
@@ -327,6 +329,7 @@ class ProviderCode
         self::IBL           => ProviderPsp::PHONEPE,
         self::AXL           => ProviderPsp::PHONEPE,
         self::APL           => ProviderPsp::AMAZON_PAY,
+        self::YAPL          => ProviderPsp::AMAZON_PAY,
         self::BARODAMPAY    => ProviderPsp::BHIM_BARODAPAY,
 
         // used only for testing
@@ -397,6 +400,7 @@ class ProviderCode
         self::AXL           => ProviderPsp::PHONEPE,
         self::OKHDFCBANK    => ProviderPsp::GOOGLE_PAY,
         self::APL           => ProviderPsp::AMAZON_PAY,
+        self::YAPL          => ProviderPsp::AMAZON_PAY,
         self::BARODAMPAY    => ProviderPsp::BHIM_BARODAPAY,
         self::BOI           => ProviderPsp::BHIM_BOI_UPI,
         self::CNRB          => ProviderPsp::CANDI_CANARA_BANK,
