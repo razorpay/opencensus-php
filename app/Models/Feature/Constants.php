@@ -1015,8 +1015,6 @@ class Constants
 
     const ONE_CC_COUPONS = 'one_cc_coupons';
 
-    const CREDIT_ID_BASED_NEW_QUERY = 'credit_id_based_new_query';
-
     /**
      * Flag to enable the new granular downtimes apis & webhooks.
      * To send type and flow keys in instrument along with instrument_schema if applicable.
@@ -1438,7 +1436,6 @@ class Constants
         self::ONBOARD_TOKENIZATION            => true,
         self::ORG_ANNOUNCEMENT_TAB_DISABLE    => true,
         self::ASYNC_TXN_FILL_DETAILS          => true,
-        self::CREDIT_ID_BASED_NEW_QUERY       => true,
         self::DISABLE_COLLECT_CONSENT         => true,
         self::ENABLE_IFSC_VALIDATION          => true,
         self::PUBLIC_SETTERS_VIA_OAUTH        => true,

@@ -81,23 +81,6 @@ class Repository extends Base\Repository
     {
         assertTrue($this->isTransactionActive());
 
-        if($merchant->isFeatureEnabled(Feature\Constants::CREDIT_ID_BASED_NEW_QUERY) === false)
-        {
-            return Entity::lockForUpdate()->newQuery()
-                ->merchantId($merchant->getId())
-                ->where(Entity::TYPE, '=', $type)
-                ->whereRaw(Entity::VALUE . '>' . Entity::USED)
-                ->where(function ($query) use ($timestamp)
-                {
-                    $query->where(Entity::EXPIRED_AT, '>', $timestamp)
-                        ->orWhereNull(Entity::EXPIRED_AT);
-                }
-                )
-                // This is done because we want to keep the null EXPIRED at the bottom
-                ->orderBy(\DB::raw('-`expired_at`'), 'desc')
-                ->get();
-        }
-
         $merchantsCredits = $this->newQuery()
             ->merchantId($merchant->getId())
             ->get();
@@ -247,32 +230,6 @@ class Repository extends Base\Repository
     public function getTypeAggregatedMerchantCredits(Merchant\Entity $merchant): array
     {
         assertTrue($this->isTransactionActive());
-
-        if($merchant->isFeatureEnabled(Feature\Constants::CREDIT_ID_BASED_NEW_QUERY) === false)
-        {
-            $credits = Entity::lockForUpdate()->newQuery()
-                ->whereRaw(Entity::VALUE . '>' . Entity::USED)
-                ->merchantId($merchant->getId())
-                ->where(function ($query)
-                {
-                    $query->where(Entity::EXPIRED_AT, '>', time())
-                        ->orWhereNull(Entity::EXPIRED_AT);
-                })
-                ->get();
-
-            $data = [];
-
-            foreach ($credits as $credit)
-            {
-                if (isset($data[$credit->getType()]) === false)
-                {
-                    $data[$credit->getType()] = 0;
-                }
-                $data[$credit->getType()] += $credit->getUnusedCredits();
-            }
-
-            return $data;
-        }
 
         $merchantsCredits = $this->newQuery()
             ->merchantId($merchant->getId())
