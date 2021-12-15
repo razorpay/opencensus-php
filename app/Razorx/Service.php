@@ -220,6 +220,7 @@ class Service extends Base\Service
             'rx_tally_accrual',
             'rx_cohesive_pl_flows',
             'free_credit_recovery_banner',
+            'rx_mask_payroll_payouts'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
