@@ -279,6 +279,13 @@ class MerchantAttributeTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantUpsertingForXTransactions()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testMerchantUpsertingPreferencesForIntent()
     {
         $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_intent', 'current_account', 'true');

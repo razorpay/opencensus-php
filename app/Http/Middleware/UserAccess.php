@@ -8,6 +8,8 @@ use ApiResponse;
 use RZP\Exception;
 use RZP\Http\AxisCardsUser;
 use RZP\Http\Route;
+use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Models\Merchant\Attribute\Group;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
@@ -312,6 +314,13 @@ class UserAccess
         // If role doesn't have route permission then deny otherwise allow
         //Checking if its a Axis User or a X User below
         $isRoleValid = true;
+
+        if($routePermission === Permission::VIEW_TRANSACTION_STATEMENT) {
+            if ($this->getRoleTractionViewAccess($userRole) === 0) {
+                $isRoleValid = false;
+            }
+        }
+
         switch ($org)
         {
             case 'RAZORPAY_X':
@@ -367,5 +376,19 @@ class UserAccess
         }
 
         return $routePermissionList[$routeName];
+    }
+
+    private function getRoleTractionViewAccess(string $userRole)
+    {
+        $merchant = $this->ba->getMerchant();
+
+        $merchantAttributes = $this->repo->merchant_attribute->getValue($merchant, 'primary', Group::X_TRANSACTION_VIEW, $userRole);
+
+        if($merchantAttributes['value'] === 'true')
+        {
+            return 1;
+        }
+
+        return 0;
     }
 }

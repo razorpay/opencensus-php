@@ -316,6 +316,51 @@ return [
         ],
     ],
 
+    'testMerchantUpsertingForXTransactions' => [
+        'request' => [
+            'content' => [
+                    [
+                        'type' => 'Owner',
+                        'value' => 'true',
+                    ],
+                    [
+                        'type' => 'Admin',
+                        'value' => 'true'
+                    ],
+                    [
+                        'type' => 'operations',
+                        'value' => 'false'
+                    ],
+                    [
+                        'type' => 'Finance L1',
+                        'value' => 'false'
+                    ]
+            ],
+            'url' => '/merchant/preferences/x_transaction_view',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'type' => 'Admin',
+                    'value' => 'true'
+                ],
+                [
+                    'type' => 'Finance L1',
+                    'value' => 'false'
+                ],
+                [
+                    'type' => 'Owner',
+                    'value' => 'true'
+                ],
+                [
+                    'type' => 'operations',
+                    'value' => 'false'
+                ],
+            ],
+        ],
+    ],
+
     'testMerchantUpsertingPreferencesForCa' => [
         'request' => [
             'content' => [

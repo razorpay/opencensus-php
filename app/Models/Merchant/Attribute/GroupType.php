@@ -42,6 +42,14 @@ class GroupType
         Group::X_MERCHANT_SOURCE => [
             Type::PG,
             Type::WEBSITE
+        ],
+
+        Group::X_TRANSACTION_VIEW => [
+            Type::OWNER,
+            Type::ADMIN,
+            Type::FINANCE_L1,
+            Type::OPERATIONS,
+            Type::VIEW_ONLY,
         ]
     ];
 }

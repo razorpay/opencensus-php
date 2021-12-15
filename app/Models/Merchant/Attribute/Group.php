@@ -11,4 +11,5 @@ class Group
     const X_SIGNUP                      = 'x_signup';
     const X_MERCHANT_INTENT             = 'x_merchant_intent';
     const X_MERCHANT_SOURCE             = 'x_merchant_source';
+    const X_TRANSACTION_VIEW            = 'x_transaction_view';
 }
