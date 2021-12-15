@@ -67,16 +67,25 @@ return [
                 [
                     'type' => 'team_size',
                     'value' => '200+'
+                ],
+                [
+                    'type'  => 'nft_project',
+                    'value' => 'true'
                 ]
             ],
             'url' => '/merchant/preferences/x_merchant_preferences',
             'method' => 'POST'
         ],
         'response' => [
+            // response is sorted in alphabetic order
             'content' => [
                 [
                     'type' => 'business_category',
                     'value' => 'Education'
+                ],
+                [
+                    'type'  => 'nft_project',
+                    'value' => 'true'
                 ],
                 [
                     'type' => 'team_size',
@@ -628,6 +637,10 @@ return [
                 [
                     'type' => 'business_category',
                     'value' => 'School'
+                ],
+                [
+                    'type'  => 'nft_project',
+                    'value' => 'true'
                 ]
             ]
         ],

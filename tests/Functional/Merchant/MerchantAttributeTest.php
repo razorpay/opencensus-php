@@ -345,6 +345,7 @@ class MerchantAttributeTest extends TestCase
     public function testMerchantGetPreferencesByGroup()
     {
         $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_preferences', 'business_category', 'School');
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_preferences', 'nft_project', 'true');
         $this->fixtures->create('merchant_detail',[
             'merchant_id' => '10000000000000',
             'contact_name'=> 'Aditya',

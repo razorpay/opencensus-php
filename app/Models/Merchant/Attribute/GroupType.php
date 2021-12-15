@@ -17,7 +17,8 @@ class GroupType
             Type::BUSINESS_CATEGORY,
             Type::TEAM_SIZE,
             Type::MONTHLY_PAYOUT_COUNT,
-            Type::EXPLORE_DASHBOARD_BUTTON_AT_WELCOME_PAGE_CLICKED
+            Type::EXPLORE_DASHBOARD_BUTTON_AT_WELCOME_PAGE_CLICKED,
+            Type::NFT_PROJECT,
         ],
 
         Group::X_MERCHANT_CURRENT_ACCOUNTS => [
