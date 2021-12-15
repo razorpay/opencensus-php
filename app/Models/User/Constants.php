@@ -328,4 +328,9 @@ class Constants
         self::LOGIN_OTP_ACTION          => Metric::VERIFY_LOGIN_INCORRECT_OTP,
         self::VERIFY_USER_ACTION        => Metric::VERIFY_LOGIN_INCORRECT_OTP,
     ];
+
+    // Ras Signup
+    const RAS_SIGN_UP_CATEGORY      = 'sign_up_checker';
+    const RAS_SIGN_UP_SOURCE        = 'sign_up_service';
+    const RAS_SIGN_UP_EVENT_TYPE    = 'sign_up_success';
 }

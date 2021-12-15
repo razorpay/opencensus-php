@@ -6,6 +6,7 @@ use Mail;
 use Hash;
 use Config;
 use Carbon\Carbon;
+use RZP\Jobs\NotifyRas;
 use RZP\Models\Base\PublicEntity;
 use Illuminate\Hashing\BcryptHasher;
 use RZP\Exception;
@@ -17,6 +18,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
 use RZP\Models\Invitation;
+use Razorpay\Trace\Logger;
 use RZP\Models\Admin\Admin;
 use RZP\Constants\Timezone;
 use RZP\Http\RequestHeader;
@@ -248,7 +250,49 @@ class Service extends Base\Service
 
         $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS, $this->merchant, null, $customProperties);
 
-        $this->pushSegmentSignupEvent($user[Entity::ID], $customProperties);
+        $merchant = $this->pushSegmentSignupEvent($user[Entity::ID], $customProperties);
+
+        $this->notifyRasOnSignup($merchant, $customProperties, $user);
+    }
+
+    protected function notifyRasOnSignup($merchant, $customProperties, $user)
+    {
+        try
+        {
+            $rasAlertRequest = [
+                'merchant_id'     => $merchant->getId(),
+                'entity_type'     => 'merchant',
+                'entity_id'       => $merchant->getId(),
+                'category'        => Constants::RAS_SIGN_UP_CATEGORY,
+                'source'          => Constants::RAS_SIGN_UP_SOURCE,
+                'event_type'      => Constants::RAS_SIGN_UP_EVENT_TYPE,
+                'event_timestamp' => (string) Carbon::now()->getTimestamp(),
+                'data'            => [
+                    'contact_email'      => $customProperties[Entity::EMAIL],
+                    'contact_mobile'     => $user[Entity::CONTACT_MOBILE] ?? null,
+                    'business_type'      => $merchant->merchantDetail->getBusinessType(),
+                    'transaction_volume' => $merchant->merchantDetail->getTransactionVolume(),
+                    'client_id'          => $customProperties[Entity::VISITOR_ID],
+                    'client_ip'          => $this->app['request']->getClientIp(),
+                ],
+            ];
+
+            NotifyRas::dispatch($this->mode, $rasAlertRequest);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::MERCHANT_SIGNUP_COMPLETE_RAS_NOTIFICATION_FAILED,
+                [
+                    'contact_email'      => $customProperties[Entity::EMAIL],
+                    'contact_mobile'     => $user[Entity::CONTACT_MOBILE] ?? null,
+                    'category'           => Constants::RAS_SIGN_UP_CATEGORY,
+                    'event_type'         => Constants::RAS_SIGN_UP_EVENT_TYPE,
+                ]
+            );
+        }
     }
 
     protected function acceptInvite(array $user, array $invitation = null)
@@ -426,6 +470,8 @@ class Service extends Base\Service
             $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
                 $merchant, $customProperties, SegmentEvent::SIGNUP_SUCCESS);
         }
+
+        return $merchant;
     }
 
     protected function traceRegisterInput($input) {

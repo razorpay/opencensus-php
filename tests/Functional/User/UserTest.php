@@ -5,8 +5,10 @@ namespace RZP\Tests\Functional\User;
 use DB;
 use Mail;
 use Hash;
+use Queue;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Jobs\NotifyRas;
 use RZP\Error\ErrorCode;
 use RZP\Mail\User\Otp;
 use RZP\Mail\User\Login;
@@ -5425,7 +5427,11 @@ class UserTest extends TestCase
     {
         $this->ba->dashboardGuestAppAuth();
 
+        Queue::fake();
+
         $this->startTest();
+
+        Queue::assertPushed(NotifyRas::class);
 
         $merchant = $this->getLastEntity('merchant', true);
 
@@ -5466,7 +5472,11 @@ class UserTest extends TestCase
 
         $this->ba->dashboardGuestAppAuth();
 
+        Queue::fake();
+
         $this->startTest();
+
+        Queue::assertPushed(NotifyRas::class);
 
         $merchant = $this->getLastEntity('merchant', true);
 
