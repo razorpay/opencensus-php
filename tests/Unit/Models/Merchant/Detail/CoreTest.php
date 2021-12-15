@@ -3,14 +3,19 @@
 namespace Unit\Models\Merchant\Detail;
 
 use Carbon\Carbon;
+use RZP\Models\Coupon;
 use RZP\Constants\Mode;
+use RZP\Models\Coupon\Constants;
+use RZP\Models\Merchant\Detail\Core;
 use RZP\Models\Merchant\Escalations;
 use RZP\Services\RazorXClient;
 use Illuminate\Support\Facades\Mail;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
+use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Services\Segment\SegmentAnalyticsClient;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
@@ -21,6 +26,8 @@ use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\SelectiveRequiredFields;
+use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
+use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
 
 class CoreTest extends TestCase
@@ -100,6 +107,191 @@ class CoreTest extends TestCase
         $this->createPayment($merchantId, 10000);
 
         (new Escalations\Core)->handleMtuSegmentEvent();
+    }
+
+    protected function enableRazorXTreatmentForRazorX()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+    }
+
+    public function testMtuCouponApplicationOnFirstTransaction()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $promotionAttributes = [
+            'pricing_plan_id' => 'BAJq6FJDNJ4ZqD',
+        ];
+
+        $promotion = $this->fixtures->on('live')->create('promotion', $promotionAttributes);
+
+        $couponAttributes = [
+            'entity_id'   => $promotion->getId(),
+            'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
+            'code'        => Constants::MTU_COUPON
+        ];
+
+        $this->fixtures->on('live')->create('coupon', $couponAttributes);
+
+        $this->createTransaction($merchantId, 'payment', 10000, Carbon::now()->subHour()->getTimestamp());
+        $this->createPayment($merchantId, 10000);
+
+        $data = [
+            StoreConstants::NAMESPACE                    => StoreConfigKey::ONBOARDING_NAMESPACE,
+            StoreConfigKey::MTU_COUPON_POPUP_COUNT       => 1
+        ];
+
+        (new StoreCore())->updateMerchantStore($merchantId, $data, StoreConstants::INTERNAL);
+
+        (new Escalations\Core)->handleMtuSegmentEvent();
+
+        $data = (new StoreCore())->fetchValuesFromStore(
+            $merchantId,
+            StoreConfigKey::ONBOARDING_NAMESPACE,
+            [StoreConfigKey::ENABLE_MTU_CONGRATULATORY_POPUP],
+            StoreConstants::INTERNAL);
+
+        $this->assertTrue($data[StoreConfigKey::ENABLE_MTU_CONGRATULATORY_POPUP]);
+
+        $merchant = $this->getDbLastEntity('merchant');
+
+        $isCouponApplied = (new Coupon\Core)->isCouponApplied($merchant, Coupon\Constants::MTU_COUPON);
+
+        $this->assertTrue($isCouponApplied);
+    }
+
+    public function testNonRazorpayMerchantMtuCouponApplicationOnFirstTransaction()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->on('live')->edit('merchant', $merchantId, ['org_id' => Org::HDFC_ORG]);
+
+        $promotionAttributes = [
+            'pricing_plan_id' => 'BAJq6FJDNJ4ZqD',
+        ];
+
+        $promotion = $this->fixtures->on('live')->create('promotion', $promotionAttributes);
+
+        $couponAttributes = [
+            'entity_id'   => $promotion->getId(),
+            'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
+            'code'        => Constants::MTU_COUPON
+        ];
+
+        $this->fixtures->on('live')->create('coupon', $couponAttributes);
+
+        $this->createTransaction($merchantId, 'payment', 10000, Carbon::now()->subHour()->getTimestamp());
+        $this->createPayment($merchantId, 10000);
+
+        (new Escalations\Core)->handleMtuSegmentEvent();
+
+        $data = (new StoreCore())->fetchValuesFromStore(
+            $merchantId,
+            StoreConfigKey::ONBOARDING_NAMESPACE,
+            [StoreConfigKey::ENABLE_MTU_CONGRATULATORY_POPUP],
+            StoreConstants::INTERNAL);
+
+        $this->assertNull($data[StoreConfigKey::ENABLE_MTU_CONGRATULATORY_POPUP]);
+
+        $merchant = $this->getDbLastEntity('merchant');
+
+        $isCouponApplied = (new Coupon\Core)->isCouponApplied($merchant, Coupon\Constants::MTU_COUPON);
+
+        $this->assertFalse($isCouponApplied);
+    }
+
+    public function testEligibleForMtuPopupShow()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchantId = '1X4hRFHFx4UiXt';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+            'activated' => 1,
+            'live' => 1,
+            'activated_at' => Carbon::now()->subDays(2)->getTimestamp()
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $response = (new Core)->createResponse($merchantDetail);
+
+        $this->assertTrue($response['showMtuPopup']);
+    }
+
+    public function testNotEligibleForMtuPopupShow()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchantId = '1X4hRFHFx4UiXt';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+            'activated' => 1,
+            'live' => 1,
+            'activated_at' => Carbon::now()->subDay()->getTimestamp()
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $response = (new Core)->createResponse($merchantDetail);
+
+        $this->assertFalse($response['showMtuPopup']);
+    }
+
+    public function testNonRazorpayMerchantNotEligibleForMtuPopupShow()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchantId = '1X4hRFHFx4UiXt';
+
+        $this->fixtures->org->createHdfcOrg();
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+            'activated' => 1,
+            'live' => 1,
+            'activated_at' => Carbon::now()->subDays(2)->getTimestamp(),
+            'org_id' => Org::HDFC_ORG
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $response = (new Core)->createResponse($merchantDetail);
+
+        $this->assertFalse($response['showMtuPopup']);
     }
 
     public function testSegmentEventPushForFirstTransactionWithUserDeviceDetail()

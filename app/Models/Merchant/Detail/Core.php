@@ -2915,7 +2915,7 @@ class Core extends Base\Core
 
             if ($isMtuCouponExperimentEnabled === true)
             {
-                $response['isMtuCouponApplied'] = (new Coupon\Core)->isCouponApplied($merchant, Coupon\Constants::MTU_COUPON);
+                $response['showMtuPopup'] = $this->isMerchantEligibleForMtuPopup($merchant);
             }
 
             if ($this->isMerchantTncApplicable($merchant) === true)
@@ -2940,6 +2940,81 @@ class Core extends Base\Core
         $statusChangeLogs = (new Merchant\Core)->getActivationStatusChangeLog($merchant);
 
         return array_column($statusChangeLogs->toArray(), 'name');
+    }
+
+    private function isMerchantEligibleForMtuPopup(Merchant\Entity $merchant): bool
+    {
+//        activated AND
+//        live AND
+//        first transaction is not done AND
+//    no. of days since instantly activated >= 2d AND
+//    org = rzp AND
+//    coupon already not applied
+
+        if ($merchant->isActivated() === false or
+            $merchant->isLive() === false)
+        {
+            return false;
+        }
+
+        $query = [
+            'filters' => [
+                'default' => [
+                    [
+                        'created_at' => [
+                            'gte' => $merchant->getCreatedAt(),
+                            'lte' => Carbon::now()->getTimestamp()
+                        ],
+                        'authorized_at' => [
+                            'gt' => 0
+                        ],
+                    ],
+                ],
+            ],
+            'aggregations' => [
+                'firstTransaction' => [
+                    'agg_type' => 'oldest',
+                    'details' => [
+                        'index' => 'payments',
+                        'column' => 'created_at',
+                        'mode' => 'live',
+                        'limit' => 1,
+                        'result_fields' => ['base_amount'],
+                    ],
+                ],
+            ],
+        ];
+
+        $query = (new Merchant\Core)->processMerchantAnalyticsQuery($merchant->getId(), $query);
+
+        $aggregateData = $this->app['eventManager']->query($query);
+
+        $firstTransaction = $aggregateData['firstTransaction']['result'][0]['base_amount'] ?? 0;
+
+        if ($firstTransaction > 0)
+        {
+            return false;
+        }
+
+        if (Carbon::now()->subDays(2)->getTimestamp() < $merchant->getActivatedAt())
+        {
+            return false;
+        }
+
+        if ($merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
+        {
+            return false;
+        }
+
+        $isCouponCodeAlreadyApplied = (new Coupon\Core)->isCouponApplied(
+            $merchant, Coupon\Constants::MTU_COUPON);
+
+        if ($isCouponCodeAlreadyApplied === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /**

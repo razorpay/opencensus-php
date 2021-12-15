@@ -2581,6 +2581,13 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    public function emptyTransactionsForMerchantId(string $merchantId): bool
+    {
+        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+            ->where($this->dbColumn(Entity::TYPE), '=', 'payment')
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->count() === 0;
+    }
 
     public function isMerchantPaymentCountAboveThreshold($merchantId,$paymentCountThreshold)
     {

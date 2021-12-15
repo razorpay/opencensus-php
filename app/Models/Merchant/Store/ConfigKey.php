@@ -15,7 +15,8 @@ class ConfigKey
      * Keys are defined here
      */
 
-    const MTU_COUPON_POPUP_COUNT = 'mtu_coupon_popup_count';
+    const MTU_COUPON_POPUP_COUNT             = 'mtu_coupon_popup_count';
+    const ENABLE_MTU_CONGRATULATORY_POPUP    = 'enable_mtu_congratulatory_popup';
 
     //m2m referral
     const REFERRED_COUNT               = 'referred_count';
@@ -41,6 +42,9 @@ class ConfigKey
     const NAMESPACE_KEY_CONFIG = [
         self::ONBOARDING_NAMESPACE => [
             self::MTU_COUPON_POPUP_COUNT       => [
+                Constants::STORE => Constants::REDIS
+            ],
+            self::ENABLE_MTU_CONGRATULATORY_POPUP       => [
                 Constants::STORE => Constants::REDIS
             ],
             self::REFERRAL_CODE                => [

@@ -37,7 +37,7 @@ class Core extends Base\Core
 
         $namespace = $input[Constants::NAMESPACE] ?? null;
 
-        return $this->getAll($merchantId, $namespace, $role);;
+        return $this->getAll($merchantId, $namespace, $role);
     }
 
     //return all readable keys in the keys list for the role

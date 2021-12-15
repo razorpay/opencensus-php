@@ -123,7 +123,8 @@ class Core extends Base\Core
 
             $exptName = $config[Constants::EXPERIMENT_NAME]??null;
 
-            if (empty($exptName)===false and (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(), $exptName) === false)
+            if (empty($exptName) === false and
+                (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(), $exptName) === false)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE,

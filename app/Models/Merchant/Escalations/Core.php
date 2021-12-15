@@ -5,10 +5,13 @@ namespace RZP\Models\Merchant\Escalations;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Models\Coupon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Store;
 use RZP\Models\Merchant\Detail\Entity;
+use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Models\Merchant\Constants as MConstants;
 use RZP\Models\Coupon\Constants as CouponCodeConstants;
@@ -333,18 +336,17 @@ class Core extends Base\Core
                     'amount'                      => $merchantsTransaction['amount']
                 ];
 
+                $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);
 
-            $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);
-
-            if (empty($userDeviceDetail) === false)
-            {
-                $properties['signup_source'] = $userDeviceDetail->getSignupSource();
-            }
+                if (empty($userDeviceDetail) === false)
+                {
+                    $properties['signup_source'] = $userDeviceDetail->getSignupSource();
+                }
 
                 $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
                     $merchant, $properties, SegmentEvent::MTU_TRANSACTED);
 
-
+                $this->applyMtuCouponIfEligible($merchant);
             }
             catch (\Exception $e)
             {
@@ -356,6 +358,61 @@ class Core extends Base\Core
         }
 
         $this->app['segment-analytics']->buildRequestAndSend();
+    }
+
+    private function applyMtuCouponIfEligible(Merchant\Entity $merchant)
+    {
+        if ($this->isEligibleForMtuCouponApplication($merchant) === true)
+        {
+            (new Coupon\Core())->apply($merchant, [
+                Coupon\Entity::CODE => Coupon\Constants::MTU_COUPON
+            ]);
+
+            (new Merchant\Store\Core)->updateMerchantStore($merchant->getMerchantId(), [
+                Store\Constants::NAMESPACE                       => Store\ConfigKey::ONBOARDING_NAMESPACE,
+                Store\ConfigKey::ENABLE_MTU_CONGRATULATORY_POPUP => true
+            ]);
+        }
+    }
+
+    private function isEligibleForMtuCouponApplication(Merchant\Entity $merchant): bool
+    {
+        if ($merchant->getOrgId() !== Org::RAZORPAY_ORG_ID)
+        {
+            return false;
+        }
+
+        $data = (new Store\Core())->fetchValuesFromStore($merchant->getMerchantId(),
+            Store\ConfigKey::ONBOARDING_NAMESPACE,
+            [Store\ConfigKey::MTU_COUPON_POPUP_COUNT],
+            Store\Constants::INTERNAL
+        );
+
+        $popupCount = (int) $data[Store\ConfigKey::MTU_COUPON_POPUP_COUNT] ?? 0;
+
+        if ($popupCount === 0 or $popupCount > 5)
+        {
+            return false;
+        }
+
+        $isCouponCodeAlreadyApplied = (new Coupon\Core)->isCouponApplied(
+            $merchant, Coupon\Constants::MTU_COUPON);
+
+        if ($isCouponCodeAlreadyApplied === true)
+        {
+            return false;
+        }
+
+        $isMtuCouponExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::MTU_COUPON_CODE);
+
+        if ($isMtuCouponExperimentEnabled === false)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /**

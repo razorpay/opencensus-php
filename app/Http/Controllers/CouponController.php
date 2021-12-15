@@ -26,13 +26,4 @@ class CouponController extends Controller
 
         return ApiResponse::json($data);
     }
-
-    public function applyMtuCoupon()
-    {
-        $input = Request::all();
-
-        $response = $this->service()->applyMtuCoupon($input);
-
-        return ApiResponse::json($response);
-    }
 }

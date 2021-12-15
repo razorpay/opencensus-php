@@ -3,12 +3,17 @@
 namespace RZP\Models\Coupon;
 
 use App;
-use RZP\Diag\EventCode;
+use Throwable;
+use RZP\Models\Admin\Org\Entity as Org;
+use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
+
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Coupon;
+use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
-use Throwable;
+use RZP\Models\Merchant\Store;
 
 class Service extends Base\Service
 {
@@ -129,30 +134,5 @@ class Service extends Base\Service
         $result = $this->core()->apply($merchant, $input);
 
         return $result;
-    }
-
-    public function applyMtuCoupon(array $input)
-    {
-        $input[Entity::CODE] = Constants::MTU_COUPON;
-
-        $this->trace->info(TraceCode::COUPON_APPLY_REQUEST, $input);
-
-        $merchant = app('basicauth')->getMerchant();
-
-        try
-        {
-            $response = $this->core()->apply($merchant, $input);
-
-            $response['success'] = true;
-
-            return $response;
-        }
-        catch (\Exception $ex)
-        {
-            return [
-                'error' => $ex->getMessage(),
-                'success' => false
-            ];
-        }
     }
 }
