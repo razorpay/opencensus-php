@@ -3,8 +3,10 @@
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Models\Contact;
+use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Constants\Timezone;
+use RZP\Models\BankingAccount;
 use RZP\Services\HubspotClient;
 use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
@@ -5365,6 +5367,60 @@ class BankingAccountTest extends TestCase
                 'Customer Name' => $bankingAccountEntity->merchant->name,
                 'Sales POC Name' => $bankingAccountEntity->spocs()->first()->name,
                 'Sales POC Number' => $bankingAccountEntity->bankingAccountActivationDetails[ActivationDetail\Entity::SALES_POC_PHONE_NUMBER]
+            ]
+        ];
+
+        $this->assertEquals($expectedFileInput, $fileInput);
+    }
+
+    public function testBankingAccountLeadsMIS()
+    {
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $bankingAccountEntity = $this->getDbLastEntity('banking_account');
+
+        $this->prepareActivationDetail([
+            'assignee_team' => 'bank',
+            'merchant_poc_name' => 'Sample Name',
+            'merchant_poc_designation' => 'Financial Consultant',
+            'merchant_poc_email' => 'sample@sample.com',
+            'merchant_poc_phone_number' => '9876556789',
+            'account_type' => 'insignia',
+            'expected_monthly_gmv' => 40000,
+            'average_monthly_balance' => 0,
+            'business_category' => 'partnership',
+            'initial_cheque_value' => 222,
+        ]);
+
+        $misProcessor = new MIS\Leads([]);
+
+        // Assigning first value of array to fileinput to test with the input we created
+        $fileInput[0] = $misProcessor->getFileInput()[0];
+
+        // voluntarily mis-aligned to assert new line
+        // TODO: Assert cleanly
+
+        $expectedFileInput = [
+            [
+                'Customer Name' =>  $bankingAccountEntity->merchant->name,
+                'Customer Reference Number' => '10000',
+                'POC Name' => 'Sample Name',
+                'POC Designation' => 'Financial Consultant',
+                'Customer email' => 'sample@sample.com',
+                'Customer phone number' => '9876556789',
+                'Pincode Where CA is to be Opened' => $bankingAccountEntity->getPincode(),
+                'Constitution Type' => 'Partnership',
+                'ICV' => 222,
+                'Application Submission Date' => date('Y-m-d'),
+                'Timestamp' => Carbon::createFromTimestamp(time(), Timezone::IST)->format('h:i A'),
+                'Business Model' => null,
+                'Account Type' => 'Insignia',
+                'Comments' => 'Sample comment',
+                'GMV' => 40000,
+                'Razorpay POC Name' =>  $bankingAccountEntity->spocs()->first()->name,
+                'Razorpay POC Number' =>  $bankingAccountEntity->bankingAccountActivationDetails[ActivationDetail\Entity::SALES_POC_PHONE_NUMBER],
             ]
         ];
 

@@ -3146,6 +3146,22 @@ return [
         ],
     ],
 
+    'testBankingAccountLeadsMIS' => [
+        'request' => [
+            'url'     => '/banking_accounts/activation/mis/download',
+            'method'  => 'GET',
+            'content' => [
+                'mis_type' => 'leads',
+                'assignee_team' => 'bank'
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
+
     'testCitiesForAutoComplete' => [
         'request' => [
             'url'     => '/cities',
