@@ -19,6 +19,7 @@ class Channel
     const HDFC      = 'hdfc';
     const RBL       = 'rbl';
     const AXIS2     = 'axis2';
+    const AXIS3     = 'axis3';
     const ICICI2    = 'icici2';
     const CITI      = 'citi';
     const M2P       = 'm2p';
@@ -77,6 +78,7 @@ class Channel
             self::M2P,
             self::AMAZONPAY,
             self::ICICI_OPGSP_EXPORT,
+            self::AXIS3,
         ];
     }
 
