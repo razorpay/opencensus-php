@@ -403,6 +403,18 @@ class MerchantAttributeTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantGetPreferencesByGroupAndTypeAdmin()
+    {
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_allocated_bank', 'ICICI');
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+        $this->ba->adminAuth();
+        $this->startTest();
+    }
+
     public function createMerchantAttribute(string $merchant_id, string $product, string $group, string $type, string $value)
     {
         $this->fixtures->create('merchant_attribute',

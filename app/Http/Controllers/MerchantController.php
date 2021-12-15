@@ -2143,6 +2143,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getMerchantPreferencesAdmin($merchantId, string $group, string $type = null)
+    {
+        $response = $this->service(E::MERCHANT_ATTRIBUTE)->getPreferencesByGroupAndTypeAdmin($merchantId,$group, $type);
+
+        return ApiResponse::json($response);
+    }
+
     public function getPersonalisedMethods()
     {
         $input = Request::all();

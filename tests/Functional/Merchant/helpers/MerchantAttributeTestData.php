@@ -717,6 +717,24 @@ return [
         ],
     ],
 
+    'testMerchantGetPreferencesByGroupAndTypeAdmin' => [
+        'request' => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'url' => '/admin/merchant/preferences/10000000000000/x_merchant_current_accounts/ca_allocated_bank',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'type' => 'ca_allocated_bank',
+                    'value' => 'ICICI'
+                ]
+            ]
+        ],
+    ],
+
     'testGetPreferencesForDashboardSeenType' => [
         'request' => [
             'server' => [

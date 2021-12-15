@@ -187,6 +187,41 @@ class Service extends Base\Service
         return $this->core->fetchKeyValues($merchant, $product, $group, $type, $column);
     }
 
+
+    /**
+     * Get merchant preferences by group and type
+     * @param string $merchantId
+     * @param string $group
+     * @param string|null $type
+     * @return mixed
+     */
+    public function getPreferencesByGroupAndTypeAdmin(string $merchantId, string $group, string $type = null)
+    {
+
+        if ($this->auth->isAdminAuth() === true)
+        {
+            // In case of admin auth $merchantId will be part of the route
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        }
+        else
+        {
+            $merchant = $this->merchant;
+        }
+
+        $product = $this->auth->getRequestOriginProduct();
+
+        $type = !empty($type) ? [$type] : [];
+
+        $column = null;
+
+        if (in_array($group, [Group::X_MERCHANT_SOURCE, Group::X_MERCHANT_INTENT], true) === true)
+        {
+            $column = Entity::CREATED_AT;
+        }
+
+        return $this->core->fetchKeyValues($merchant, $product, $group, $type, $column);
+    }
+
     /**
      * Enable feature flags based on x_merchant_intent
      * @param Merchant\Entity $merchant
