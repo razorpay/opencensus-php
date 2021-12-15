@@ -46,14 +46,17 @@ class TransactionCreated extends Event implements ShouldQueue
             $currency     = $entity->getCurrency();
             $amount       = $entity->getAmount();
 
-            $appName      = $client->getConfigValue(Client\Config::APP_FULL_NAME);
-            $sender       = $client->getConfigValue(Client\Config::SMS_SENDER);
-            $smsSignature = $client->getConfigValue(Client\Config::SMS_SIGNATURE);
+            $appName        = $client->getConfigValue(Client\Config::APP_FULL_NAME);
+            $sender         = $client->getConfigValue(Client\Config::SMS_SENDER);
+            $smsSignature   = $client->getConfigValue(Client\Config::SMS_SIGNATURE);
+            $appCollectLink = $client->getConfigValue(Client\Config::APP_COLLECT_LINK);
+
+            $template = (empty($appCollectLink)) ? 'sms.p2p.collect' : 'sms.p2p.collect_with_link';
 
             return [
                 'receiver' => $entity->device->getFormattedContact(),
                 'source'   => "api.{$this->context->getMode()}.p2p",
-                'template' => 'sms.p2p.collect',
+                'template' => $template,
                 'sender'   => $sender,
                 'params'   => [
                     'payee_name'        => $payeeName,
@@ -63,6 +66,7 @@ class TransactionCreated extends Event implements ShouldQueue
                     'amount'            => $amount,
                     'formatted_amount'  => number_format($amount / 100, 2, '.', ''),
                     'sms_signature'     => $smsSignature,
+                    'app_collect_link'  => $appCollectLink ?? '',
                 ],
             ];
         }

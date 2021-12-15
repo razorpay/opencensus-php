@@ -27,8 +27,34 @@ class Core extends Base\Core
         return $client;
     }
 
+    private function mergeInputWithExistingClient(Entity $client, array $input): array
+    {
+        // Make sure getter exists for the added attribute
+        $attributesToMerge = [
+            Entity::SECRETS,
+            Entity::CONFIG,
+            Entity::GATEWAY_DATA
+        ];
+
+        foreach ($attributesToMerge as $attribute)
+        {
+            $getter = 'get' . studly_case($attribute);
+
+            if (is_array($input[$attribute] ?? null) === true)
+            {
+                $mergedAttribute = array_merge($client->{$getter}()->toArray(), $input[$attribute]);
+
+                $input[$attribute] = $mergedAttribute;
+            }
+        }
+
+        return $input;
+    }
+
     public function update(Handle\Entity $handle, Entity $client, array $input): Entity
     {
+        $input = $this->mergeInputWithExistingClient($client, $input);
+
         $client->edit($input);
 
         $this->repo->saveOrFail($client);

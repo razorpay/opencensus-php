@@ -443,6 +443,7 @@ class P2pSeeder extends Seeder
                 Client\Config::SMS_SENDER       => 'SENDER',
                 Client\Config::APP_FULL_NAME    => 'APPLICATION NAME',
                 Client\Config::SMS_SIGNATURE    => 'SMS SIGNATURE',
+                Client\Config::APP_COLLECT_LINK => 'AppCollectLink',
             ],
         ]);
 

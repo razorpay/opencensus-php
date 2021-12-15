@@ -168,7 +168,7 @@ class TransactionEventTest extends TestCase
             $this->assertArraySubset([
                 'receiver' => '+919988771111',
                 'source'    => 'api.test.p2p',
-                'template'  => 'sms.p2p.collect',
+                'template'  => 'sms.p2p.collect_with_link',
                 'sender'    => 'SENDER',
                 'params'    => [
                     'app_name'          => 'APPLICATION NAME',
@@ -178,6 +178,7 @@ class TransactionEventTest extends TestCase
                     'formatted_amount'  => '1.00',
                     'currency_label'    => 'Rs.',
                     'sms_signature'     => 'SMS SIGNATURE',
+                    'app_collect_link'  => 'AppCollectLink',
                 ],
             ], $input);
         });

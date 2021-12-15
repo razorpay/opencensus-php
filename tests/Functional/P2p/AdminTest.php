@@ -192,6 +192,60 @@ class AdminTest extends TestCase
         $client = $this->getDbLastEntity('p2p_client');
 
         $this->assertArraySubset($clientInput, $client->toArrayWithSecrets());
+
+        // Update the client config with app_collect_link
+        $clientInput = [
+            Client\Entity::CLIENT_TYPE  => $clientInput[ Client\Entity::CLIENT_TYPE],
+            Client\Entity::CLIENT_ID    => $clientInput[Client\Entity::CLIENT_ID],
+
+            Client\Entity::CONFIG       => [
+                'app_collect_link' => 'someCollect.link',
+            ],
+        ];
+
+        $updateHandle = [
+            Handle\Entity::CLIENT => $clientInput
+        ];
+
+        $this->updateHandle($handle['code'], $updateHandle);
+
+        $clientWithLink = $this->getDbLastEntity('p2p_client');
+
+        // Updated config will have old keys, with updated keys from $clientInput
+        $expectedConfig = array_merge($client->getConfig()->toArray(), $clientInput[Client\Entity::CONFIG]);
+
+        $this->assertEquals($expectedConfig, $clientWithLink->getConfig()->toArray());
+
+        // Asserting other attributes, which should not be updated.
+        $this->assertEquals($client->getGatewayData()->toArray(), $clientWithLink->getGatewayData()->toArray());
+        $this->assertEquals($client->getSecrets()->toArray(), $clientWithLink->getSecrets()->toArray());
+
+        // Setting property value as null
+        $clientInput = [
+            Client\Entity::CLIENT_TYPE  => $clientInput[ Client\Entity::CLIENT_TYPE],
+            Client\Entity::CLIENT_ID    => $clientInput[Client\Entity::CLIENT_ID],
+
+            Client\Entity::CONFIG       => [
+                'app_collect_link' => null,
+            ],
+        ];
+
+        $updateHandle = [
+            Handle\Entity::CLIENT => $clientInput
+        ];
+
+        $this->updateHandle($handle['code'], $updateHandle);
+
+        $clientWithLinkNull = $this->getDbLastEntity('p2p_client');
+
+        // Updated config will have old keys, with updated keys from $clientInput
+        $expectedConfig = array_merge($client->getConfig()->toArray(), $clientInput[Client\Entity::CONFIG]);
+
+        $this->assertEquals($expectedConfig, $clientWithLinkNull->getConfig()->toArray());
+
+        // Asserting other attributes, which should not be updated.
+        $this->assertEquals($client->getGatewayData()->toArray(), $clientWithLinkNull->getGatewayData()->toArray());
+        $this->assertEquals($client->getSecrets()->toArray(), $clientWithLinkNull->getSecrets()->toArray());
     }
 
     protected function createHandle($attributes = [])
