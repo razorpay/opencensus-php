@@ -99,7 +99,7 @@ class Checkout
 
         $data[Entity::METHODS] = (new Methods\Core)->addUpiType($merchant, $data[Entity::METHODS]);
 
-        $this->checkAndFillSavedTokens($input, $merchant, $data);
+        $this->checkAndFillSavedTokens($input, $merchant, $data, $mode);
 
         $this->checkAndAddDetailsForOrder($input, $merchant, $data);
 
@@ -636,7 +636,7 @@ class Checkout
         }
     }
 
-    protected function checkAndFillSavedTokens(array $input, Entity $merchant, array & $data)
+    protected function checkAndFillSavedTokens(array $input, Entity $merchant, array & $data ,$mode)
     {
         // we don't return the customer data if request is jsonp
         if (isset($input['callback']) === true)
@@ -738,6 +738,21 @@ class Checkout
                     $addresses = $this->repo->address->fetchAddressesForEntity($customer, $input);
 
                     $data['customer']['addresses'] = $addresses;
+                }
+            }
+            $treatment = $this->app->razorx->getTreatment(
+                $merchant->getId(),
+                Merchant\RazorxTreatment::BLOCK_CUSTOMER_PREFILL_IN_AUTHLINK,
+                $mode
+            );
+
+            if ($treatment === 'on')
+            {
+                // Unsets Customer email, name and contact if block_customer_prefill experiment is enabled
+                if (isset($data['customer']) === true)
+                {
+                    $data['customer']['email']   = '';
+                    $data['customer']['contact'] = '';
                 }
             }
         }
@@ -1365,7 +1380,7 @@ class Checkout
             $data[Entity::METHODS] = (new Methods\Core)->getFormattedMethods($merchant);
         }
 
-        $this->checkAndFillSavedTokens($input, $merchant, $data);
+        $this->checkAndFillSavedTokens($input, $merchant, $data ,$mode);
 
         $this->checkAndAddDetailsForOrder($input, $merchant, $data);
 

@@ -407,6 +407,10 @@ final class RazorxTreatment
     //Experiment for showing status details to selected merchant
     const ENABLE_STATUS_DETAILS_FEATURE = 'enable_status_details_feature';
 
+    // Experiment to block customer prefill on authlink checkout
+    const BLOCK_CUSTOMER_PREFILL_IN_AUTHLINK = 'block_customer_prefill_in_authlink';
+
     //Experiment for throwing exception of an invoice link older than six months is fetched
     const FAIL_OLD_INVOICE_ID_FETCH = 'fail_old_invoice_id_fetch';
+
 }
