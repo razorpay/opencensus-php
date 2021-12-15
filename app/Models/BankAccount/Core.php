@@ -111,6 +111,8 @@ class Core extends Base\Core
             }
         }
 
+        $this->sendBankAccountChangeNotification($ba, $merchant);
+
         return $ba;
     }
 
@@ -271,8 +273,6 @@ class Core extends Base\Core
 
 
                 $this->repo->delete($oldBankAccount);
-
-                $this->sendBankAccountChangeNotification($ba, $merchant);
 
                 $merchantDetails = $merchant->merchantDetail;
 
