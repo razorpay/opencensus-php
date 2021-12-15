@@ -1273,6 +1273,25 @@ class Constants
             ]
         ],
         [
+            'id'          => 'DEC-DA-NITRO-NEWYEAR',
+            'title'       => 'Year End Offer!',
+            'description' => "Get a reduced pricing of 1.65% on your transactions when you open a RazorpayX current account. Grab before it’s gone! 🎉",
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro_festive_bonanza_icon.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Try now',
+                    'url'   => '',
+                    'id'    => 'announcement-projectNitro-cta1',
+                ],
+            ],
+            'start_ts'    => 1639393945,
+            'end_ts'      => 1641813145,
+            'filters'     => [
+                'splitz_experiments'         => self::nitroSplitzExperimentsList,
+            ],
+        ],
+        [
             'id'          => 'May21-PLMApp-GTM',
             'title'       => 'Accept and track your payments on the go!',
             'description' => 'With the Payments Mobile App, create and share payment links instantly, track payments on the go and issue refunds with a single click from anywhere.',

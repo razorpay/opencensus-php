@@ -70,10 +70,9 @@ import CrossBorderPaymentsBanner from '../../components/Announcements/CrossBorde
 import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
-import NitroICICIBanner from '../../components/Announcements/NitroICICIBanner';
-import NitroCCCampaign from '../../components/Announcements/NitroCCCampaign';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
+import EndOfYearBanner from '../../components/Announcements/EndOfYearBanner';
 
 class AnalyticsDesktop extends Component {
   state = {
@@ -607,13 +606,6 @@ class AnalyticsDesktop extends Component {
             <ShowWhen additionalCondition={(usr) => usr.isCrossBorderPaymentsCampaignEnabled}>
               <CrossBorderPaymentsBanner productName="CrossBorderPayment-Create" />
             </ShowWhen>
-            <ShowWhen
-              additionalCondition={(usr) =>
-                usr.isNitroIciciBrandedCampaignEnabled || usr.isNitroIciciRemarketingCampaignEnabled
-              }
-            >
-              <NitroICICIBanner productName="home" />
-            </ShowWhen>
             <ShowWhen additionalCondition={(usr) => usr.isCatalystBannerFL}>
               <CatalystCampaignBannerPhase2
                 productName="Transactions"
@@ -650,9 +642,17 @@ class AnalyticsDesktop extends Component {
                 type="G"
               />
             </ShowWhen>
-            <ShowWhen additionalCondition={(usr) => usr.isNitroCCCampaignEnabled}>
-              <NitroCCCampaign productName="home" />
-            </ShowWhen>
+          </ShowWhen>
+
+          <ShowWhen
+            additionalCondition={(usr) =>
+              usr.isProjectNitroEnabled ||
+              usr.isNitroIciciBrandedCampaignEnabled ||
+              usr.isNitroIciciRemarketingCampaignEnabled ||
+              usr.isNitroCCCampaignEnabled
+            }
+          >
+            <EndOfYearBanner productName="home" />
           </ShowWhen>
 
           {/* capital banner*/}

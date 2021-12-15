@@ -19,27 +19,26 @@ import InputField from 'common/ui/Forms/InputField';
 import Textarea from 'common/ui/Forms/AutoResizeTextarea';
 import KeystoneModal from 'common/ui/OffersForYou/components/KeystoneModal';
 import NitroSelfServe from './Neostone/index';
-import NitroCCCampaignModal from 'common/ui/OffersForYou/components/NitroCCCampaignModal';
-import NitroICICIModal from '../../../merchant/components/Announcements/NitroICICIBanner/NitroICICIModal';
+import EndOfYearModal from '../../../merchant/components/Announcements/EndOfYearBanner/EndOfYearModal';
 
-const BENEFITS = {
-  other: [
-    'Use the dashboard or APIs to make rule based payouts',
-    'Add your entire team with specific access controls',
-    'Get a consolidated view of your finances 24X7',
-    'Track & automate every aspect of your finances',
-    'Process thousands of payouts simultaneously',
-    'Payouts via NEFT/IMPS/RTGS',
-  ],
-  corporateCards: [
-    'Minimum Limit of Rs. 25,000 and upto 10 lacs limit* on your Corporate Card',
-    'Add your entire team with specific access controls',
-    'Get a consolidated view of your finances 24X7',
-    'Use the dashboard or APIs to make rule based payouts',
-    'Process thousands of payouts simultaneously',
-    'Payouts via NEFT/IMPS/RTGS',
-  ],
-};
+// const BENEFITS = {
+//   other: [
+//     'Use the dashboard or APIs to make rule based payouts',
+//     'Add your entire team with specific access controls',
+//     'Get a consolidated view of your finances 24X7',
+//     'Track & automate every aspect of your finances',
+//     'Process thousands of payouts simultaneously',
+//     'Payouts via NEFT/IMPS/RTGS',
+//   ],
+//   corporateCards: [
+//     'Minimum Limit of Rs. 25,000 and upto 10 lacs limit* on your Corporate Card',
+//     'Add your entire team with specific access controls',
+//     'Get a consolidated view of your finances 24X7',
+//     'Use the dashboard or APIs to make rule based payouts',
+//     'Process thousands of payouts simultaneously',
+//     'Payouts via NEFT/IMPS/RTGS',
+//   ],
+// };
 
 const NAME = 'full_name';
 const PHONE = 'phone';
@@ -594,9 +593,10 @@ class DetailView extends React.Component {
     if (user.isProjectKeystoneCorporateCardsEnabled) return 'Nitro_Keystone_Card';
     if (user.isProjectKeystoneCashAdvanceEnabled) return 'Nitro_Keystone_CashAdvance';
     if (user.isProjectNitroCorporateCard) return 'Nitro_Capital';
-    if (user.isNitroIciciBrandedCampaignEnabled) return 'Nitro_ICICIBranded';
-    if (user.isNitroIciciRemarketingCampaignEnabled) return 'Nitro_ICICIRemarketing';
-    if (user.isNitroCCCampaignEnabled) return 'Nitro_CardOffer';
+    if (user.isNitroIciciBrandedCampaignEnabled || user.isNitroIciciRemarketingCampaignEnabled)
+      return 'Nitro_ICICIBrandedNewYear';
+    if (user.isNitroCCCampaignEnabled) return 'Nitro_CardOfferNewYear';
+    if (user.isProjectNitroEnabled) return 'Nitro_BaseNewYear';
     return nitroCampaignId(user).version;
   };
 
@@ -766,80 +766,69 @@ class DetailView extends React.Component {
 
   render() {
     const showNitroFormFields = this.state.showNitroFormFields;
-    const { isProjectNitroCorporateCard, isNitroFormFillEnabled } = this.props.user;
-    const content = isProjectNitroCorporateCard ? BENEFITS.corporateCards : BENEFITS.other;
+    // const { isProjectNitroCorporateCard, isNitroFormFillEnabled } = this.props.user;
+    // const content = isProjectNitroCorporateCard ? BENEFITS.corporateCards : BENEFITS.other;
 
     if (this.showKeystoneModal)
       return (
         <KeystoneModal user={this.props.user} save={this.save} tracking={this.props.tracking} />
       );
     if (showNitroFormFields) return <InfoForm save={this.save} tracking={this.props.tracking} />;
-    if (this.props.user.isNitroIciciBrandedCampaignEnabled)
-      return <NitroICICIModal save={this.save} />;
-    if (this.props.user.isNitroIciciRemarketingCampaignEnabled)
-      return <NitroICICIModal save={this.save} />;
-    if (this.props.user.isNitroCCCampaignEnabled)
-      return (
-        <NitroCCCampaignModal
-          user={this.props.user}
-          save={this.save}
-          tracking={this.props.tracking}
-        />
-      );
-    return (
-      <div className="razorpayx-announcement-details">
-        <div className="section">
-          <div className="left-section">
-            <img
-              className="rx-logo"
-              src="/dist/css/assets/razorpay-x-logo-white.svg"
-              alt="rx-logo"
-            />
-            {isProjectNitroCorporateCard ? (
-              <h3 className="heading">
-                Get <span>1.65% pricing</span> & a Corporate Card by switching to a RazorpayX
-                Current Account
-              </h3>
-            ) : (
-              <h3 className="heading">
-                Get <span>1.65% pricing</span> when you switch to a RazorpayX Current Account
-              </h3>
-            )}
-            <ul className="list">
-              {content.map((data) => (
-                <li key={data}>
-                  <img src="/dist/css/assets/rxca-bullet.svg" />
-                  <span>{data}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="btn-wrapper">
-              <AsyncBtn.Primary
-                type="submit"
-                class="btn btn-primary"
-                onClick={() => {
-                  if (isNitroFormFillEnabled) this.setState({ showNitroFormFields: true });
-                  else return this.save();
-                  return null;
-                }}
-              >
-                Apply For Current Account
-              </AsyncBtn.Primary>
-            </div>
-          </div>
-          <div className="right-section">
-            <img
-              src={
-                isProjectNitroCorporateCard
-                  ? '/dist/css/assets/rxcacc-dashboard-bg.png'
-                  : '/dist/css/assets/rxca-dashboard-bg.svg'
-              }
-              alt="razorpayx-current-account"
-            />
-          </div>
-        </div>
-      </div>
-    );
+    return <EndOfYearModal save={this.save} user={this.props.user} />;
+    // return (
+    //   <div className="razorpayx-announcement-details">
+    //     <div className="section">
+    //       <div className="left-section">
+    //         <img
+    //           className="rx-logo"
+    //           src="/dist/css/assets/razorpay-x-logo-white.svg"
+    //           alt="rx-logo"
+    //         />
+    //         {isProjectNitroCorporateCard ? (
+    //           <h3 className="heading">
+    //             Get <span>1.65% pricing</span> & a Corporate Card by switching to a RazorpayX
+    //             Current Account
+    //           </h3>
+    //         ) : (
+    //           <h3 className="heading">
+    //             Get <span>1.65% pricing</span> when you switch to a RazorpayX Current Account
+    //           </h3>
+    //         )}
+    //         <ul className="list">
+    //           {content.map((data) => (
+    //             <li key={data}>
+    //               <img src="/dist/css/assets/rxca-bullet.svg" />
+    //               <span>{data}</span>
+    //             </li>
+    //           ))}
+    //         </ul>
+    //         <div className="btn-wrapper">
+    //           <AsyncBtn.Primary
+    //             type="submit"
+    //             class="btn btn-primary"
+    //             onClick={() => {
+    //               if (isNitroFormFillEnabled) this.setState({ showNitroFormFields: true });
+    //               else return this.save();
+    //               return null;
+    //             }}
+    //           >
+    //             Apply For Current Account
+    //           </AsyncBtn.Primary>
+    //         </div>
+    //       </div>
+    //       <div className="right-section">
+    //         <img
+    //           src={
+    //             isProjectNitroCorporateCard
+    //               ? '/dist/css/assets/rxcacc-dashboard-bg.png'
+    //               : '/dist/css/assets/rxca-dashboard-bg.svg'
+    //           }
+    //           alt="razorpayx-current-account"
+    //         />
+    //       </div>
+    //     </div>
+    //   </div>
+    // );
   }
 }
 
