@@ -13197,14 +13197,15 @@ class PayoutTest extends OAuthTestCase
 
         $accountNumber = $this->bankingBalance->getAccountNumber();
 
-        $testData['request']['url'] = '/payouts?account_number=' . $accountNumber . '&exclude_sources[]=xpayroll';
+        $testData['request']['url'] = '/payouts?account_number=' . $accountNumber . '&mask_sources[]=xpayroll';
 
         $this->ba->proxyAuth();
 
         $response = $this->startTest();
 
-        // finally only 3 payout should be present
-        $this->assertEquals(3, $response['count']);
+        $this->assertEquals(5, $response['count']);
+        $this->assertEquals(0, $response['items'][3]['amount']);
+        $this->assertEquals(0, $response['items'][4]['amount']);
     }
 
     public function testFetchPayoutSkipXpayrollOnPrivateAuth()
@@ -13222,14 +13223,35 @@ class PayoutTest extends OAuthTestCase
 
         $accountNumber = $this->bankingBalance->getAccountNumber();
 
-        $testData['request']['url'] = '/payouts?account_number=' . $accountNumber . '&exclude_sources[]=xpayroll';
+        $testData['request']['url'] = '/payouts?account_number=' . $accountNumber . '&mask_sources[]=xpayroll';
 
         $this->ba->privateAuth();
 
         $response = $this->startTest();
 
-        // finally only 3 payout should be present
-        $this->assertEquals(3, $response['count']);
+        $this->assertEquals(5, $response['count']);
+        $this->assertEquals(0, $response['items'][3]['amount']);
+        $this->assertEquals(0, $response['items'][4]['amount']);
+
+    }
+
+    public function testGetXpayrollPayout()
+    {
+        $this->testCreateXpayrollPayoutWithSourceDetails();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutsOnProxyAuth'];
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts/'. $payout['id'] . '?mask_sources[]=xpayroll';
+
+        $payout2 = $this->startTest();
+
+        $this->assertEquals(0, $payout2['amount']);
     }
 
     public function testFetchPayoutWithSourceIdAndSourceTypeOnPrivateAuth()
