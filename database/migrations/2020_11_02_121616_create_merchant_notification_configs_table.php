@@ -72,8 +72,6 @@ class CreateMerchantNotificationConfigsTable extends Migration
             $table->index([Entity::MERCHANT_ID, Entity::CONFIG_STATUS]);
 
             $table->index([Entity::CONFIG_STATUS, Entity::CREATED_AT, Entity::ID]);
-
-            $table->index([Entity::NOTIFICATION_TYPE, Entity::MERCHANT_ID], 'mnc_notification_type_merchant_id_index');
         });
     }
 

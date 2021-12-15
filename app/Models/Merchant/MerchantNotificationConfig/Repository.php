@@ -93,16 +93,13 @@ class Repository extends Base\Repository
         return $query->latest()->get();
     }
 
-    public function getEnabledConfigsForNotificationType(string $notificationType)
+    public function getEnabledConfigsForNotificationType(string $notificationType, $limit = 1000)
     {
-        $midColumn          = $this->repo->merchant_notification_config->dbColumn(Entity::MERCHANT_ID);
-        $emailIdColumn      = $this->repo->merchant_notification_config->dbColumn(Entity::NOTIFICATION_EMAILS);
-        $mobileNumberColumn = $this->repo->merchant_notification_config->dbColumn(Entity::NOTIFICATION_MOBILE_NUMBERS);
-
         return $this->newQuery()
-                    ->select($midColumn, $emailIdColumn, $mobileNumberColumn)
                     ->where(Entity::CONFIG_STATUS, '=', Status::ENABLED)
                     ->where(Entity::NOTIFICATION_TYPE, '=', $notificationType)
+                    ->latest()
+                    ->limit($limit)
                     ->get();
     }
 }

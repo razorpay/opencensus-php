@@ -5,6 +5,7 @@ namespace RZP\Services\FTS;
 use Mail;
 use Razorpay\IFSC\IFSC;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant\MerchantNotificationConfig\NotificationType;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Models\Event\Entity;
@@ -262,7 +263,8 @@ class ChannelNotification
     {
         $notificationConfigs = $this->repo
                                     ->merchant_notification_config
-                                    ->getEnabledConfigs(self::DEFAULT_LIMIT);
+                                    ->getEnabledConfigsForNotificationType(NotificationType::BENE_BANK_DOWNTIME,
+                                                                           self::DEFAULT_LIMIT);
 
         $processedResult = $this->preProcessNotification($result);
 
