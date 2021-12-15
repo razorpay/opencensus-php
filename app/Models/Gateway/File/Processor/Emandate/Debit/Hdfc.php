@@ -25,6 +25,8 @@ class Hdfc extends Base
     const EXTENSION     = FileStore\Format::XLSX;
     const FILE_TYPE     = FileStore\Type::HDFC_EMANDATE_DEBIT;
 
+    const BASE_STORAGE_DIRECTORY = 'Hdfc/Emandate/Debit/';
+
     public function __construct()
     {
         parent::__construct();
@@ -79,5 +81,12 @@ class Hdfc extends Base
         return [
             Netbanking\Base\Entity::CLIENT_CODE => $this->getClientCode($token),
         ];
+    }
+
+    protected function getFileToWriteNameWithoutExt(array $data): string
+    {
+        $fileName = parent::getFileToWriteNameWithoutExt($data);
+
+        return static::BASE_STORAGE_DIRECTORY . $fileName;
     }
 }

@@ -548,8 +548,6 @@ class Type
      */
     const BUCKET_CONFIG_TYPE_MAPPING = [
         self::SETTLEMENT_BUCKET_CONFIG => [
-            self::HDFC_EMANDATE_REGISTER,
-            self::HDFC_EMANDATE_DEBIT,
             self::REPORT,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
@@ -569,9 +567,6 @@ class Type
         self::ACTIVATION_BUCKET_CONFIG => MerchantDocumentType::VALID_DOCUMENTS,
 
         self::H2H_BUCKET_CONFIG => [
-            self::ENACH_NPCI_NB_CANCEL,
-            self::CITI_NACH_EARLY_DEBIT,
-            self::CITI_NACH_EARLY_DEBIT_SUMMARY,
             self::FIRST_DATA_PARES_FILE,
             self::SBI_UPI_REFUND,
         ],
@@ -625,6 +620,8 @@ class Type
             self::CITI_NACH_REGISTER,
             self::CITI_NACH_DEBIT,
             self::CITI_NACH_DEBIT_SUMMARY,
+            self::CITI_NACH_EARLY_DEBIT,
+            self::CITI_NACH_EARLY_DEBIT_SUMMARY,
             self::CITI_NACH_COMBINED_CANCEL,
             self::RBL_ENACH_REGISTER,
             self::RBL_ENACH_DEBIT,
@@ -641,6 +638,8 @@ class Type
             self::GATEWAY_FAILED_REFUNDS,
             self::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT,
             self::HDFC_EMANDATE_REFUND,
+            self::HDFC_EMANDATE_REGISTER,
+            self::HDFC_EMANDATE_DEBIT,
             self::ICICI_PAYLATER_REFUND,
             self::OBC_NETBANKING_REFUND,
             self::ISG_REFUND,

@@ -24,6 +24,8 @@ class Hdfc extends Base
     const EXTENSION     = FileStore\Format::XLSX;
     const FILE_TYPE     = FileStore\Type::HDFC_EMANDATE_REGISTER;
 
+    const BASE_STORAGE_DIRECTORY = 'Hdfc/Emandate/Register/';
+
     public function fetchEntities(): PublicCollection
     {
         $begin = $this->gatewayFile->getBegin();
@@ -108,5 +110,12 @@ class Hdfc extends Base
         }
 
         return $rows;
+    }
+
+    protected function getFileToWriteNameWithoutExt(array $data): string
+    {
+        $fileName = parent::getFileToWriteNameWithoutExt($data);
+
+        return static::BASE_STORAGE_DIRECTORY . $fileName;
     }
 }

@@ -227,12 +227,14 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
         $file = $this->getLastEntity('file_store', true);
+        $date = Carbon::now(Timezone::IST)->format('dmYHis');
 
         $expectedFileContent = [
             'type'        => 'hdfc_emandate_register',
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'xlsx',
+            'name'        => 'Hdfc/Emandate/Register/HDFC_EMandate_Registration_' . $date . '_test',
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
@@ -557,12 +559,14 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         // Verify file_store entity
         $file = $this->getLastEntity('file_store', true);
+        $date = Carbon::now(Timezone::IST)->format('dmYHis');
 
         $expectedFileContent = [
             'type'        => 'hdfc_emandate_debit',
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'xlsx',
+            'name'        => 'Hdfc/Emandate/Debit/HDFC_EMandate_Debit_' . $date . '_test',
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
