@@ -28,6 +28,9 @@ class Raven
     // In test mode this otp is evaluated as true in verify.
     const TEST_VALID_OTP = '754081';
 
+    // Passing orgId into sms request raven service
+    const RavenOrgIdSmsRequest = "raven_org_id_sms_request";
+
     protected $baseUrl;
 
     protected $key;
@@ -78,6 +81,8 @@ class Raven
 
         $response = null;
 
+        $input = $this->appendOrgIdInContext($input);
+
         if ($app->environment(Environment::PRODUCTION) === false)
         {
             $response[self::SMS_ID] = self::TEST_SMS_ID;
@@ -122,6 +127,8 @@ class Raven
      */
     public function sendSms(array $input, bool $mockInTestMode = true): array
     {
+        $input = $this->appendOrgIdInContext($input);
+
         if (($this->mode === Mode::TEST) and ($mockInTestMode === true))
         {
             return [self::SMS_ID => self::TEST_SMS_ID];
@@ -312,5 +319,36 @@ class Raven
 
             throw new Exception\BadRequestException($errorCode);
         }
+    }
+
+    /**
+     * Appending org id in context in raven service call so that these details,
+     * Can be used on stork service for differentiating SMS requests by Org ID.
+     * @param array $input
+     * @return array|mixed
+     */
+    protected function appendOrgIdInContext(array $input)
+    {
+        $app = App::getFacadeRoot();
+
+        $basicAuth = $app['basicauth'];
+
+        $orgId = $basicAuth->getOrgId() ?? '';
+
+        // check if RazorX experiment is turned on then only pass orgId in sms request raven
+        $id   = $orgId ?? $app['request']->getTaskId() ?? '';
+
+        if (strtolower(app('razorx')->getTreatment($id, self::RavenOrgIdSmsRequest, Mode::LIVE)) === 'on')
+        {
+            // By default app is appending org_ as prefix but stork service expecting without prefix so trimming
+            $trimmedOrgId = str_replace('org_', '', $orgId);
+
+            if (isset($input['stork']['context']['org_id']) === false)
+            {
+                $input['stork']['context']['org_id'] = $trimmedOrgId;
+            }
+        }
+
+        return $input;
     }
 }
