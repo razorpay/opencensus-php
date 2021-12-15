@@ -1837,7 +1837,7 @@ class Service extends Base\Service
         // if any previous rejected workflow of gstin exist : do not show rejection reason for any old rejected workflow
         $this->stopShowingRejectionReasonForGstInSelfServe($detail->getId(), $detail->getEntity(), $input[DEConstants::IS_ADD_GSTIN_OPERATION]);
 
-        $this->sendNotificationForGstinUpdatedSelfServe($input[DEConstants::IS_ADD_GSTIN_OPERATION], true);
+        $this->sendNotificationForGstinUpdatedSelfServe($input[DEConstants::IS_ADD_GSTIN_OPERATION], true, $detail->merchant);
 
         $this->trace->info(TraceCode::GSTIN_UPDATED_WITH_REGISTERED_ADDRESS, []);
     }
@@ -1978,7 +1978,7 @@ class Service extends Base\Service
 
         $this->repo->merchant_detail->saveOrFail($merchantDetails);
 
-        $this->sendNotificationForGstinUpdatedSelfServe($input[DetailConstants::IS_ADD_GSTIN_OPERATION], false);
+        $this->sendNotificationForGstinUpdatedSelfServe($input[DetailConstants::IS_ADD_GSTIN_OPERATION], false, $merchant);
     }
 
     protected function storeGstinSelfServeInput($input)
@@ -2061,7 +2061,7 @@ class Service extends Base\Service
         ]);
     }
 
-    protected function sendNotificationForGstinUpdatedSelfServe($isAddOperation, $isBvsValidationSuccessEvent)
+    protected function sendNotificationForGstinUpdatedSelfServe($isAddOperation, $isBvsValidationSuccessEvent, $merchant)
     {
         $event = '';
 
@@ -2074,10 +2074,10 @@ class Service extends Base\Service
             $event = ($isAddOperation) ? DashboardEvents::GSTIN_ADDED_ON_WORKFLOW_APPROVE : DashboardEvents::GSTIN_UPDATED_ON_WORKFLOW_APPROVE;
         }
 
-        $merchantDetails = $this->merchant->merchantDetail;
+        $merchantDetails = $merchant->merchantDetail;
 
         $args = [
-            Constants::MERCHANT         => $this->merchant,
+            Constants::MERCHANT         => $merchant,
             DashboardEvents::EVENT      => $event,
             Constants::PARAMS           => [
                 Entity::GSTIN                       => $merchantDetails[Entity::GSTIN],
