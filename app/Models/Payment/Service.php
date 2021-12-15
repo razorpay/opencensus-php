@@ -1281,9 +1281,9 @@ class Service extends Base\Service
         {
             $orderId = $payment->getApiOrderId();
 
-            $transfersFromOrder = Tracer::inSpan(['name' => 'transfer.fetch_by_order'], function() use ($orderId, $transferStatus)
+            $transfersFromOrder = Tracer::inSpan(['name' => 'transfer.fetch_by_order'], function() use ($orderId)
             {
-                return (new Transfer\Core())->getForOrder($orderId, $transferStatus);
+                return (new Transfer\Core())->getForOrder($orderId);
             });
 
             foreach ($transfersFromOrder as $transferFromOrder)
