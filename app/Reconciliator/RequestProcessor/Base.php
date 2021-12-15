@@ -143,6 +143,7 @@ class Base extends Core
     const BT_RBL                   = 'BtRbl';
     const CHECKOUT_DOT_COM         = 'checkout_dot_com';
     const CARDLESS_EMI_EARLYSALARY = 'CardlessEmiEarlySalary';
+    const EMERCHANTPAY             = 'emerchantpay';
 
 
     /**
@@ -243,6 +244,7 @@ class Base extends Core
         self::PAYLATER_LAZYPAY         => [],
         self::NETBANKING_BDBL          => ['imps.dispute@bandhanbank.com'],
         self::CARDLESS_EMI_EARLYSALARY => [],
+        self::EMERCHANTPAY             => ['finance@emerchantpay.com'],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -374,6 +376,7 @@ class Base extends Core
         Gateway::WORLDLINE              => self::VAS_AXIS,
         Gateway::TWID                   => self::TWID,
         Gateway::CHECKOUT_DOT_COM       => self::CHECKOUT_DOT_COM,
+        Gateway::EMERCHANTPAY           => self::EMERCHANTPAY,
     ];
 
     // Gateways for which halt gateway mismatch recon flow is ready

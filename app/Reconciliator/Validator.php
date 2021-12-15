@@ -109,6 +109,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_RBL     => ["/RBL PG Recon File/"],
         RequestProcessor\Base::CARDLESS_EMI_ZESTMONEY  => ["/Settlement_RazorpayPG_[0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::NETBANKING_BDBL    => [""],
+        RequestProcessor\Base::EMERCHANTPAY       => ["/Settlement Razorpay\/(Trustly|Poli)\/(EUR|GBP|AUD)\/[0-9]{2}\/[0-9]{2}\/20[0-9]{2} to [0-9]{2}\/[0-9]{2}\/20[0-9]{2}/"],
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -815,6 +816,15 @@ class Validator extends Base\Core
             RequestProcessor\Base:: NETBANKING_BDBL);
 
         return ($validSubject and $validAttachmentCount);
+    }
+
+    public function validateEmerchantpayEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::EMERCHANTPAY);
+
+        return ($validSubject);
     }
 
     /**
