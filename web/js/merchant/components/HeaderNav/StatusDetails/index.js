@@ -8,6 +8,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import { classList } from 'common/utils/rzp-utils';
 import FailedStatus from './FailedStatus';
 import OverallStatus from './OverallStatus';
+import { downtimeAnalyticsTrack } from './utilities';
 import Slider from 'common/ui/Slider';
 
 import lazy from 'merchant/routes/LazyLoader';
@@ -119,18 +120,18 @@ function StatusDetails(props) {
     errorInFetchingData,
   } = state;
 
-  const setOngoingDowntimes = useCallback(() => {
+  const setOngoingDowntimes = useCallback(async () => {
     dispatch({ type: SET_STATUSDETAIL_LOADING });
-    fetchOngoingDowntimes()
-      .then((response) => {
-        dispatch({
-          type: SET_STATUSDETAIL,
-          payload: { ...state.statusDetails, ...response },
-        });
-      })
-      .catch(() => {
-        dispatch({ type: SET_STATUSDETAIL_FAILURE });
+
+    try {
+      const response = await fetchOngoingDowntimes();
+      dispatch({
+        type: SET_STATUSDETAIL,
+        payload: { ...state.statusDetails, ...response },
       });
+    } catch (err) {
+      dispatch({ type: SET_STATUSDETAIL_FAILURE });
+    }
   }, [state.statusDetails]);
 
   const checkForDebounce = useCallback(() => {
@@ -174,9 +175,27 @@ function StatusDetails(props) {
     setIsRefreshDisable(true);
   };
 
-  const switchToInfoView = (pmtMethod) => {
+  const switchToInfoView = async (pmtMethod) => {
+    let currentDowntimes = null;
+
     setMode('info');
     setPaymentMethod(pmtMethod);
+    await setOngoingDowntimes();
+
+    if (pmtMethod === 'Cards') {
+      currentDowntimes = cardDowntimes;
+    } else if (pmtMethod === 'UPI') {
+      currentDowntimes = upiDowntimes;
+    } else if (pmtMethod === 'Net Banking') {
+      currentDowntimes = netBankingDowntimes;
+    }
+
+    // analyticsTrack
+    downtimeAnalyticsTrack({
+      objectName: 'Downtime Details viewed',
+      method: paymentMethod,
+      currentDowntimes,
+    });
   };
 
   const switchToSummaryView = () => {
@@ -196,6 +215,9 @@ function StatusDetails(props) {
     sliderOpen();
 
     setIsSliderOpen(true);
+
+    // analyticsTrack
+    downtimeAnalyticsTrack({ objectName: 'Downtime Status page visited', method: 'Summary' });
   };
 
   const handleDocumentClick = useCallback(
