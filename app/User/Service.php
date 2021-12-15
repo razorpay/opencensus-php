@@ -598,7 +598,7 @@ class Service extends Base\Service
         // Below conditions are false when a PG user logs into X for the first time or vice versa.
         if ((empty($user->currentMerchant()) === false)  and
             ((($isBankingRequest === true) and ($user->currentMerchant()->banking_role !== null)) or
-            (($isBankingRequest === false) and ($user->currentMerchant()->role === false))))
+            (($isBankingRequest === false) and ($user->currentMerchant()->role !== null))))
         {
             $res['currentMerchantId'] = $currentMerchantId;
         }
@@ -675,7 +675,7 @@ class Service extends Base\Service
         // Below conditions are false when a PG user logs into X for the first time or vice versa.
         if ((empty($user->currentMerchant()) === false)  and
             ((($isBankingRequest === true) and ($user->currentMerchant()->banking_role !== null)) or
-            (($isBankingRequest === false) and ($user->currentMerchant()->role === false))))
+            (($isBankingRequest === false) and ($user->currentMerchant()->role !== null))))
         {
             $res['currentMerchantId'] = $currentMerchantId;
         }
@@ -961,6 +961,7 @@ class Service extends Base\Service
         $splitzExperiments = $params['splitzExperiments'] ?? "1";
         $experiments = $params['experiments'] ?? "1";
         $payouts = $params['payouts'] ?? "1";
+        $fetchMerchantDetails = $params['merchant_details'] ?? "1";
 
         $user = Auth::user();
 
@@ -1031,12 +1032,14 @@ class Service extends Base\Service
             $data['current_account_waitlist_number'] = Merchant\Constants::MERCHANT_WAITLIST[$currentMerchantId] ?? null;
 
             $merchantService = new Merchant\Service;
+
             // Fetch merchant details for current merchant
-            $data = $data + (new MerchantDetails\Service)->fetchDetails();
+            if($fetchMerchantDetails === "1")
+            {
+                $data = (new MerchantDetails\Service())->updateMerchantDetails($data, $currentMerchantId);
+            }
 
             $this->traceMerchantActivatedTruthyValue($data, __LINE__);
-
-            $data["pre_signup"] = (new MerchantDetails\Service)->getPresignupDetails($currentMerchantId, $data);
 
             foreach ($merchants as $merchant) {
 
@@ -1062,9 +1065,6 @@ class Service extends Base\Service
                             'data' => $data['experiments']
                         ]);
                     }
-
-
-                    $data = $this->updateInstantActivationExperiment($data);
 
                     $isBankingRequest = ApiUrl::isBankingOriginRequest();
 
@@ -1142,63 +1142,6 @@ class Service extends Base\Service
                 if (((bool) $merchant['activated']) === true)
                 {
                     $activated = true;
-                }
-            }
-
-            // with mobile signup going live, only contact name is used
-            // as a pre_signup completeness check
-            $data['pre_signup_complete'] = (strlen($data["pre_signup"][Merchant\Entity::CONTACT_NAME]) !== 0);
-
-            // We don't show presignup form for user
-            // created before this date
-            if ($user->created_at < self::PRE_SIGNUP_TIMESTAMP)
-            {
-                $data['pre_signup_complete'] = true;
-            }
-
-            // for non-registered check if pre_signup_complete done or not;
-
-            if ($this->isPartnerIntentTrue($data) or
-                $this->isExperimentOnAndIsUnregisteredBusinessType($data) === true)
-            {
-                if ((((new MerchantDetails\Service))->isPreSignupDetailsSetForNotRegisteredBusiness($data['pre_signup'])) === true)
-                {
-                    $data['pre_signup_complete'] = true;
-                }
-            }
-
-            // There are approx 3k merchants who have not
-            // filled "role" or "department", but are
-            // already activated.
-            if ($activated)
-            {
-                $data['pre_signup_complete'] = true;
-            }
-
-            if ((isset($data['activation_status']) === true) and ($data['activation_status'] !== null))
-            {
-                $data['pre_signup_complete'] = true;
-            }
-
-            if (($currentMerchant->role !== 'owner') and
-                ($currentMerchant->banking_role !== 'owner'))
-            {
-                $data['pre_signup_complete'] = true;
-            }
-
-            // Using this because test balance is not getting created for X
-            // as pre_signup_complete becomes true when experiment remove_presignup_functionality is on
-            // Slack thread: https://razorpay.slack.com/archives/C017XUC6V44/p1632118553161500?thread_ts=1631973030.154000&cid=C017XUC6V44
-            $isPrimaryRequest = ApiUrl::isPrimaryOriginRequest();
-
-            if($data['pre_signup_complete'] === false and
-                $isPrimaryRequest === true)
-            {
-                $skipPreSignup = $merchantService->getTreatment('remove_presignup_functionality');
-
-                if($skipPreSignup['result'] === 'on')
-                {
-                    $data['pre_signup_complete'] = true;
                 }
             }
         }
@@ -1297,12 +1240,12 @@ class Service extends Base\Service
             // as a pre_signup completeness check
             // This is same as on UserController
             $data['pre_signup_complete'] = (strlen($data['pre_signup'][Merchant\Entity::CONTACT_NAME]) !== 0);
-
+            $merchantDetailService = new MerchantDetails\Service;
             // for non-registered check if pre_signup_complete done or not;
 
-            if ($this->isExperimentOnAndIsUnregisteredBusinessType($data) === true)
+            if ($merchantDetailService->isExperimentOnAndIsUnregisteredBusinessType($data) === true)
             {
-                if ((((new MerchantDetails\Service))->isPreSignupDetailsSetForNotRegisteredBusiness($data['pre_signup'])) === true)
+                if (($merchantDetailService->isPreSignupDetailsSetForNotRegisteredBusiness($data['pre_signup'])) === true)
                 {
                     $data['pre_signup_complete'] = true;
                 }
@@ -1614,46 +1557,6 @@ class Service extends Base\Service
         $path = 'users/access';
 
         return $request->send($path.'?'.http_build_query($queryParams), 'GET');
-    }
-
-    /**
-     * check and update that instant activation behaviour should be enable for a merchant or not.
-     *
-     * @param array $data
-     *
-     * @return array
-     */
-    public function updateInstantActivationExperiment(array $data): array
-    {
-        $enableInstantActivations = true;
-
-        //
-        // For merchants who are in older activation flow and have already submitted L2 form ,
-        // activation_flow will be null and submitted flag will be true. instant activation should be disabled for them.
-        // merchant who have already submitted(L2) and got activated() should have older experience only.
-        //
-        if (($data['activation_flow'] === null)
-            and (((bool) $data['submitted']) === true))
-        {
-            $enableInstantActivations = false;
-        }
-
-        //
-        // For unregistered business activation flow will be null so instant activation should be true for unregistered business
-        //
-        if ($this->isExperimentOnAndIsUnregisteredBusinessType($data) === true)
-        {
-            $enableInstantActivations = true;
-        }
-
-        $data['instant_activations'] = $enableInstantActivations;
-
-        $this->trace->info(TraceCode::ENABLE_INSTANT_ACTIVATIONS, [
-            'instant_activations' => $data['instant_activations'],
-            'merchant_id'         => $data['id'] ?? '',
-        ]);
-
-        return $data;
     }
 
     /**
@@ -1992,22 +1895,6 @@ class Service extends Base\Service
         ]);
 
         return $data;
-    }
-
-    protected function isExperimentOnAndIsUnregisteredBusinessType(array $data): bool
-    {
-
-
-            // check business_type
-
-            $businessType = $data['pre_signup']['business_type'] ?? null;
-
-            if (MerchantDetails\BusinessType::isBusinessTypeForNotRegisteredBusiness($businessType) === true)
-            {
-                return true;
-            }
-
-        return false;
     }
 
     private function markUserTwoFactorVerified()
