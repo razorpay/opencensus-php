@@ -53,6 +53,9 @@ $dark-grey = #E1E6E6;
   width: 70%
   margin-left: auto
   margin-right: auto
+  @media screen and (max-width $screen-sm-min)
+    width: 98%
+    margin-top: 4px
 
   .LogList
     padding: 24px 0
@@ -90,15 +93,21 @@ $dark-grey = #E1E6E6;
       &__Body
         padding: 16px;
         display: flex;
+        @media screen and (max-width $screen-sm-min)
+          display: block
         justify-content: space-between;
         align-items: center;
 
         & > div
           flex-grow: 1
           flex-basis: 0
+          @media screen and (max-width $screen-sm-min)
+            margin-top: 15px
 
       &__InfoBar
-        padding: 3px 16px
+        padding: 10px 16px
+        @media screen and (max-width $screen-sm-min)
+          padding: 16px
         &--in-process
           background-color: $dark-grey
         &--no-data,
@@ -110,10 +119,14 @@ $dark-grey = #E1E6E6;
 
 
   .Input.EmailReport
+    @media screen and (max-width $screen-sm-min)
+      display: block
     > .Input-content
       > .Input
         > .Input-label
           top: 0
+          @media screen and (max-width $screen-sm-min)
+            margin: 10px 0
 
     .Input--checkbox
       .Input-content
@@ -121,6 +134,9 @@ $dark-grey = #E1E6E6;
 
     .Input.ChooseEmail
       vertical-align: bottom
+      @media screen and (max-width $screen-sm-min)
+        display: block
+        margin-top: 10px
 
     .NoOfEmailsSelected
       margin-right: 5px
@@ -130,21 +146,40 @@ $dark-grey = #E1E6E6;
     box-shadow: 0 1px 1px $grey-border
     margin: -24px -24px 0 -24px
     padding: 24px
+    @media screen and (max-width $screen-sm-min)
+      padding 24px 20px
+    @media screen and (max-width: 359px)
+      padding 24px 10px
 
     .SelectConfig
       margin-left: -24px
       margin-right: -24px
       border-left: 2px solid $color-pending
-
       .Input
         margin-top: 0
 
       .rzp-banner
         border: none
         padding-left: 24px
+        @media screen and (max-width $screen-sm-min)
+          display: block
+          padding-left: 15px
+          .rzp-banner-text
+            display: block
+            .Input-elWrapper
+              width: 100%
 
+    .select-date-interval
+      display: table-cell
+      @media screen and (max-width $screen-sm-min)
+        display: block
+        .Input--Calendar
+          .Input-label
+            margin-top: 15px
     .rzp-accounts-list
-      width: 400px;
+      width: 400px
+      @media screen and (max-width $screen-sm-min)
+        width: 100%
 
     .Input
       .Input-elWrapper

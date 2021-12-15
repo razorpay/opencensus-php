@@ -185,14 +185,15 @@ export default class SelectPeriod extends React.Component {
               </div>
             )}
           </div>
-
-          <SelectInterval
-            selectedPeriod={selectedPeriod}
-            onDateChange={this.onDateChange}
-            onDateTimeChange={this.onDateTimeChange}
-            withTime={withTime}
-            defaults={defaults}
-          />
+          <div className="select-date-interval">
+            <SelectInterval
+              selectedPeriod={selectedPeriod}
+              onDateChange={this.onDateChange}
+              onDateTimeChange={this.onDateTimeChange}
+              withTime={withTime}
+              defaults={defaults}
+            />
+          </div>
           {!!dateRangeError && selectedPeriod === 'dateRange' && (
             <div class="m-t text-danger text-small">{dateRangeError}</div>
           )}
