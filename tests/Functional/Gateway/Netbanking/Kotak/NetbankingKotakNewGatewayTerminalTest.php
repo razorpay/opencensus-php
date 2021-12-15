@@ -16,7 +16,7 @@ use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
-class NetbankingKotakNewGatewayTest extends TestCase
+class NetbankingKotakNewGatewayTerminalTest extends TestCase
 {
     use PaymentTrait;
     use PartnerTrait;
@@ -37,7 +37,7 @@ class NetbankingKotakNewGatewayTest extends TestCase
         $terminalAttrs = [
             'id'                    => 'DrctNbKtkTrmnl',
             'account_type'          => 'enc',
-            'gateway_merchant_id'   =>  'OSIND',
+            'gateway_merchant_id'   =>  'OSRAZORPAY',
         ];
 
         $this->fixtures->create(
@@ -48,18 +48,16 @@ class NetbankingKotakNewGatewayTest extends TestCase
             'id'                    => 'TpvNbKotakTmnl',
             'network_category'      => 'securities',
             'tpv'                   => 1,
-            'gateway_merchant_id'   =>  'OTIND',
+            'gateway_merchant_id'   =>  'OTRAZORPAY',
         ];
 
-        $terminal = $this->fixtures->create(
+        $this->terminal = $this->fixtures->create(
             'terminal:shared_netbanking_kotak_terminal',
             $terminalAttrs);
     }
 
     public function testPayment()
     {
-        $this->mockRazorxTreatment('kotak_new_integration');
-
         $payment = $this->doNetbankingKotakAuthAndCapturePayment();
 
         $payment = $this->getLastEntity('payment', true);
@@ -69,7 +67,7 @@ class NetbankingKotakNewGatewayTest extends TestCase
         $payment = $this->getLastEntity('netbanking', true);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNewNetbankingEntity'], $payment);
+            $this->testData['testPaymentNewNetbankingEntity1'], $payment);
 
         $this->assertArrayHasKey('bank_payment_id', $payment);
         $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
@@ -77,8 +75,6 @@ class NetbankingKotakNewGatewayTest extends TestCase
 
     public function testPartnerPayment()
     {
-        $this->mockRazorxTreatment('kotak_new_integration');
-
         list($clientId, $submerchantId) = $this->setUpPartnerAuthForPayment();
 
         $payment = $this->getDefaultNetbankingPaymentArray();
@@ -94,7 +90,7 @@ class NetbankingKotakNewGatewayTest extends TestCase
         $payment = $this->getLastEntity('netbanking', true);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNewNetbankingEntity'], $payment);
+            $this->testData['testPaymentNewNetbankingEntity1'], $payment);
 
         $this->assertArrayHasKey('bank_payment_id', $payment);
         $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
@@ -102,8 +98,6 @@ class NetbankingKotakNewGatewayTest extends TestCase
 
     public function testAmountTampering()
     {
-        $this->mockRazorxTreatment('kotak_new_integration');
-
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             $content['Amount'] = '1';
@@ -121,8 +115,6 @@ class NetbankingKotakNewGatewayTest extends TestCase
 
     public function testTpvPayment($tpvFeatureEnabled = false)
     {
-        $this->mockRazorxTreatment('kotak_new_integration');
-
         if ($tpvFeatureEnabled === false)
         {
             $this->fixtures->merchant->enableTPV();
@@ -150,7 +142,7 @@ class NetbankingKotakNewGatewayTest extends TestCase
         $payment = $this->getLastEntity('netbanking', true);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentTpvNewNetbankingEntity'], $payment);
+            $this->testData['testPaymentTpvNewNetbankingEntity1'], $payment);
 
         $this->assertArrayHasKey('bank_payment_id', $payment);
         $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
@@ -158,8 +150,6 @@ class NetbankingKotakNewGatewayTest extends TestCase
 
     protected function createTpvOrderForBank($bank)
     {
-        $this->mockRazorxTreatment('kotak_new_integration');
-
         $request = [
             'content' => [
                 'amount'         => 50000,
@@ -184,8 +174,6 @@ class NetbankingKotakNewGatewayTest extends TestCase
 
     public function testPaymentVerify()
     {
-        $this->mockRazorxTreatment('kotak_new_integration');
-
         $payment = $this->doNetbankingKotakAuthAndCapturePayment();
 
         $payment = $this->getLastEntity('payment', true);
@@ -197,8 +185,6 @@ class NetbankingKotakNewGatewayTest extends TestCase
 
     public function testVerifyFailed()
     {
-        $this->mockRazorxTreatment('kotak_new_integration');
-
         $payment = $this->doNetbankingKotakAuthAndCapturePayment();
 
         $payment = $this->getLastEntity('payment', true);
@@ -222,8 +208,6 @@ class NetbankingKotakNewGatewayTest extends TestCase
 
     public function testRefundsFileGeneration()
     {
-        $this->mockRazorxTreatment('kotak_new_integration');
-
         // this route is deprecated. This has been moved to 'gateway/files'
         $this->markTestSkipped();
 
@@ -276,8 +260,6 @@ class NetbankingKotakNewGatewayTest extends TestCase
 
     public function testVerifyCallback()
     {
-        $this->mockRazorxTreatment('kotak_new_integration');
-
         $payment = $this->doNetbankingKotakAuthAndCapturePayment();
 
         $payment = $this->getDbLastEntity('payment');
@@ -287,8 +269,6 @@ class NetbankingKotakNewGatewayTest extends TestCase
 
     public function testVerifyCallbackFailed()
     {
-        $this->mockRazorxTreatment('kotak_new_integration');
-
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === Action::VERIFY)
@@ -313,8 +293,6 @@ class NetbankingKotakNewGatewayTest extends TestCase
 
     public function testFailedPaymentVerifyCallback()
     {
-        $this->mockRazorxTreatment('kotak_new_integration');
-
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === Action::CALLBACK)
@@ -343,8 +321,6 @@ class NetbankingKotakNewGatewayTest extends TestCase
 
     public function testFailedPaymentCallbackWithError()
     {
-        $this->mockRazorxTreatment('kotak_new_integration');
-
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === Action::CALLBACK)
@@ -369,8 +345,6 @@ class NetbankingKotakNewGatewayTest extends TestCase
 
     public function testFailedPaymentCallbackWithRandomError()
     {
-        $this->mockRazorxTreatment('kotak_new_integration');
-
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if ($action === Action::CALLBACK)

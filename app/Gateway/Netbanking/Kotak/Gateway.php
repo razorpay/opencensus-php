@@ -71,6 +71,11 @@ class Gateway extends Base\Gateway
 
         $merchantId = $this->getMerchantId($variant, $input['merchant']->isTPVRequired());
 
+        if ($merchantId === 'OSRAZORPAY' || $merchantId === 'OTRAZORPAY')
+        {
+            $variant = self::newIntegration;
+        }
+
         //checking verification_id and payment_id before adding to entity for excluding duplicates.
         $gatewayPayment = $this->checkTraceIdAndPaymentIdPresent($content, $input);
 
@@ -315,6 +320,13 @@ class Gateway extends Base\Gateway
 
         $variant = $this->app->razorx->getTreatment($input['payment']['merchant_id'], $featureFlag, $this->mode);
 
+        $merchantId = $this->getMerchantId($variant, $input['merchant']->isTPVRequired());
+
+        if ($merchantId === 'OSRAZORPAY' || $merchantId === 'OTRAZORPAY')
+        {
+            $variant = self::newIntegration;
+        }
+
         if ($variant === self::newIntegration)
         {
             $data = array(
@@ -474,18 +486,7 @@ class Gateway extends Base\Gateway
         }
         elseif ($this->mode === Mode::TEST)
         {
-            if ($variant !== self::newIntegration)
-            {
-                return $this->getTestMerchantId();
-            }
-            else if ($tpvReq === true)
-            {
-                return 'OTIND';
-            }
-            else
-            {
-                return 'OSIND';
-            }
+            return $this->input['terminal']['gateway_merchant_id'];
         }
     }
 
