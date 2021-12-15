@@ -1279,40 +1279,41 @@ const uploadFields = [
           ? activation.state.dirty.business_type
           : activation.props.data.business_type;
 
-      const li1 = 'GST Certificate / Shop Establishment Act Certificate / Registration Certificate';
-      const li2 = 'Partnership Deed';
-      const li3 = 'Certificate of Incorporation';
-      const li4 = 'Registration Proof or Certificate';
+      const proprietorshipDesc =
+        'GST Certificate / Shop Establishment Act Certificate / Registration Certificate';
+      const partnershipDesc = 'Partnership Deed';
+      const cioDesc = 'Certificate of Incorporation';
+      const registrationProofDesc = 'Registration Proof or Certificate';
 
       let description;
 
       if (currentBusinessType == PROPRIETORSHIP) {
-        description = li1;
-      } else if ([LLP, PARTNERSHIP].indexOf(Number(currentBusinessType)) > -1) {
-        description = li2;
-      } else if ([PRIVATE, PUBLIC].indexOf(Number(currentBusinessType)) > -1) {
-        description = li3;
+        description = proprietorshipDesc;
+      } else if ([PARTNERSHIP].indexOf(Number(currentBusinessType)) > -1) {
+        description = partnershipDesc;
+      } else if ([PRIVATE, PUBLIC, LLP].indexOf(Number(currentBusinessType)) > -1) {
+        description = cioDesc;
       } else if (ORG_BusinessTypes.indexOf(Number(currentBusinessType)) > -1) {
-        description = li4;
+        description = registrationProofDesc;
       } else if (currentBusinessType == null) {
         description = (
           <ul>
             Upload scan as per your Business:
             <li>
               <b>Proprietorship firm: </b>
-              {li1}
+              {proprietorshipDesc}
             </li>
             <li>
               <b>Partnership firm or LLP: </b>
-              {li2}
+              {partnershipDesc}
             </li>
             <li>
               <b>Private Limited or Public: </b>
-              {li3}
+              {cioDesc}
             </li>
             <li>
               <b>Trust, Society, NGO or others: </b>
-              {li4}
+              {registrationProofDesc}
             </li>
           </ul>
         );
