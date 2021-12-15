@@ -1268,31 +1268,9 @@ class Service extends Base\Service
     {
         Payment\Entity::verifyIdAndStripSign($id);
 
-        $variant = $this->app['razorx']->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::ROUTE_TRANSFER_STATE,
-            $this->mode
-        );
-
-        $this->trace->info(
-            TraceCode::ROUTE_TRANSFER_STATE_RAZORX_REQUEST,
-            [
-                'merchant_id'   => $this->merchant->getId(),
-                'mode'          => $this->mode,
-                'variant'       => $variant,
-            ]
-        );
-
-        $transferStatus = [];
-
-        if (strtolower($variant) !== 'on')
+        $transfers = Tracer::inSpan(['name' => 'transfer.fetch_by_payment'], function() use ($id)
         {
-            $transferStatus = Transfer\Constant::FETCH_STATUS;
-        }
-
-        $transfers = Tracer::inSpan(['name' => 'transfer.fetch_by_payment'], function() use ($id, $transferStatus)
-        {
-            return (new Transfer\Core())->getForPayment($id, $transferStatus);
+            return (new Transfer\Core())->getForPayment($id);
         });
 
         $payment = $this->repo

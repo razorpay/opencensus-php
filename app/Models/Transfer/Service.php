@@ -45,29 +45,6 @@ class Service extends Base\Service
                         ->findByPublicIdAndMerchant($id, $this->merchant, $input);
         });
 
-        $variant = $this->app['razorx']->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::ROUTE_TRANSFER_STATE,
-            $this->mode
-        );
-
-        $this->trace->info(
-            TraceCode::ROUTE_TRANSFER_STATE_RAZORX_REQUEST,
-            [
-                'merchant_id'   => $this->merchant->getId(),
-                'mode'          => $this->mode,
-                'variant'       => $variant,
-            ]
-        );
-
-        if (strtolower($variant) !== 'on')
-        {
-            if ($transfer->isCreated() or $transfer->isFailed())
-            {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
-            }
-        }
-
         return $transfer->toArrayPublicWithExpand();
     }
 
@@ -190,26 +167,6 @@ class Service extends Base\Service
         );
 
         $merchantId = $this->merchant->getId();
-
-        $variant = $this->app['razorx']->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::ROUTE_TRANSFER_STATE,
-            $this->mode
-        );
-
-        $this->trace->info(
-            TraceCode::ROUTE_TRANSFER_STATE_RAZORX_REQUEST,
-            [
-                'merchant_id'   => $this->merchant->getId(),
-                'mode'          => $this->mode,
-                'variant'       => $variant,
-            ]
-        );
-
-        if (strtolower($variant) !== 'on')
-        {
-            $input[Entity::STATUS] = Constant::FETCH_STATUS;
-        }
 
         $transfers = Tracer::inSpan(['name' => 'transfer.fetch_multiple'], function() use ($input, $merchantId)
         {

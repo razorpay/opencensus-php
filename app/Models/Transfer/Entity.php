@@ -740,8 +740,6 @@ class Entity extends Base\PublicEntity
 
     public function toArrayPublic()
     {
-        $this->modifyPublicArray();
-
         $data = parent::toArrayPublic();
 
         if (empty($data[Entity::ACCOUNT_CODE]) === true)
@@ -754,8 +752,6 @@ class Entity extends Base\PublicEntity
 
     public function toArrayPublicWithExpand()
     {
-        $this->modifyPublicArray();
-
         $data = parent::toArrayPublicWithExpand();
 
         if (empty($data[Entity::ACCOUNT_CODE]) === true)
@@ -779,55 +775,5 @@ class Entity extends Base\PublicEntity
         }
 
         return parent::build($input);
-    }
-
-    protected function modifyPublicArray()
-    {
-        $variant = app('razorx')->getTreatment(
-            $this->getMerchantId(),
-            Merchant\RazorxTreatment::ROUTE_TRANSFER_STATE,
-            app('rzp.mode')
-        );
-
-        if (strtolower($variant) !== 'on')
-        {
-            if ($this->isCreated() === true)
-            {
-                $this->public = [
-                    self::RECIPIENT,
-                    self::ACCOUNT_CODE,
-                    self::AMOUNT,
-                    self::CURRENCY,
-                    self::NOTES,
-                    self::LINKED_ACCOUNT_NOTES,
-                    self::ON_HOLD,
-                    self::ON_HOLD_UNTIL,
-                ];
-            }
-            else
-            {
-                $this->public = [
-                    self::ID,
-                    self::ENTITY,
-                    self::SOURCE,
-                    self::RECIPIENT,
-                    self::RECIPIENT_DETAILS,
-                    self::ACCOUNT_CODE,
-                    self::AMOUNT,
-                    self::CURRENCY,
-                    self::AMOUNT_REVERSED,
-                    self::NOTES,
-                    self::FEES,
-                    self::TAX,
-                    self::ON_HOLD,
-                    self::ON_HOLD_UNTIL,
-                    self::RECIPIENT_SETTLEMENT_ID,
-                    self::RECIPIENT_SETTLEMENT,
-                    self::CREATED_AT,
-                    self::LINKED_ACCOUNT_NOTES,
-                    self::PROCESSED_AT,
-                ];
-            }
-        }
     }
 }
